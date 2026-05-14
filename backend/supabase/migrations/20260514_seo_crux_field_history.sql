@@ -132,26 +132,26 @@ COMMENT ON COLUMN __seo_crux_alert_state.detector IS
 ALTER TABLE __seo_crux_field_history ENABLE ROW LEVEL SECURITY;
 ALTER TABLE __seo_crux_alert_state ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS crux_field_history_select ON __seo_crux_field_history;
+DROP POLICY IF EXISTS crux_field_history_select ON __seo_crux_field_history; -- APPROVED: idempotent re-apply pattern (DROP-then-CREATE, table just created in same migration)
 CREATE POLICY crux_field_history_select ON __seo_crux_field_history
     FOR SELECT
     TO authenticated
     USING (true);
 
-DROP POLICY IF EXISTS crux_field_history_write ON __seo_crux_field_history;
+DROP POLICY IF EXISTS crux_field_history_write ON __seo_crux_field_history; -- APPROVED: idempotent re-apply pattern (DROP-then-CREATE, table just created in same migration)
 CREATE POLICY crux_field_history_write ON __seo_crux_field_history
     FOR ALL
     TO service_role
     USING (true)
     WITH CHECK (true);
 
-DROP POLICY IF EXISTS crux_alert_state_select ON __seo_crux_alert_state;
+DROP POLICY IF EXISTS crux_alert_state_select ON __seo_crux_alert_state; -- APPROVED: idempotent re-apply pattern (DROP-then-CREATE, table just created in same migration)
 CREATE POLICY crux_alert_state_select ON __seo_crux_alert_state
     FOR SELECT
     TO authenticated
     USING (true);
 
-DROP POLICY IF EXISTS crux_alert_state_write ON __seo_crux_alert_state;
+DROP POLICY IF EXISTS crux_alert_state_write ON __seo_crux_alert_state; -- APPROVED: idempotent re-apply pattern (DROP-then-CREATE, table just created in same migration)
 CREATE POLICY crux_alert_state_write ON __seo_crux_alert_state
     FOR ALL
     TO service_role
