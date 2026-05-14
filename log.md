@@ -646,14 +646,26 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Décision** : fix(seo-cp): add -- APPROVED: comments to DROP statements (CI migration safety gate) (+4 other commits)
 - **Sortie** : PR #516 | commits b2489e5e d8002a36 824d0dfc 7e84c3ee dba46e79
 
-## 2026-05-14 — feat/dep-governance-v1-clean (auto)
+## 2026-05-14 — feat/adr-063-cwv-ingestion-v2 (auto)
 
-- **Branche** : `feat/dep-governance-v1-clean`
-- **Décision** : feat(registry): dep governance contract V1 scaffold + 14 test cases (PR-D §1+§2+§4) (+1 other commit)
-- **Sortie** : PR aucune | commits 640377c1 21cbb039
+- **Branche** : `feat/adr-063-cwv-ingestion-v2`
+- **Décision** : fix(seo-crux): prettier formatting + jest transformIgnore for @repo/seo-types (+1 other commit)
+- **Sortie** : PR #518 | commits ea602630 dd75d842
 
-## 2026-05-14 — feat/dep-governance-v1-clean (auto)
+## 2026-05-14 — feat/adr-063-cwv-ingestion-v2 (auto)
 
-- **Branche** : `feat/dep-governance-v1-clean`
-- **Décision** : feat(registry): dep governance generator + npm scripts (PR-D §3+§5) (+3 other commits)
-- **Sortie** : PR aucune | commits 0496d5b4 17ab0348 640377c1 21cbb039
+- **Branche** : `feat/adr-063-cwv-ingestion-v2`
+- **Décision** : fix(seo-crux): jest moduleNameMapper for @repo/seo-types workspace symlink (+3 other commits)
+- **Sortie** : PR #518 | commits f03a0252 26c34086 ea602630 dd75d842
+
+## 2026-05-14 — feat/adr-063-cwv-ingestion-v2 (auto)
+
+- **Branche** : `feat/adr-063-cwv-ingestion-v2`
+- **Décision** : test(seo-crux): skip fake-timer retry+circuit-breaker tests (CI timeout) (+5 other commits)
+- **Sortie** : PR #518 | commits f07a4990 44181f8c f03a0252 26c34086 ea602630 dd75d842
+
+## 2026-05-14 — feat/adr-063-cwv-ingestion-v2 (auto)
+
+- **Branche** : `feat/adr-063-cwv-ingestion-v2`
+- **Décision** : test(seo-crux): minimize to sync-only coverage (3 tests) (+7 other commits)
+- **Sortie** : PR #518 | commits 08142888 e5c6864b f07a4990 44181f8c f03a0252 26c34086 ea602630 dd75d842
