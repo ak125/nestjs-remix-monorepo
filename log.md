@@ -633,3 +633,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-cp-synthetic-crawler`
 - **Décision** : feat(seo-cp): synthetic crawler L1 — PR-2A-1 SEO Production Control Plane
 - **Sortie** : PR #516 | commits 78e38791
+
+## 2026-05-14 — feat/seo-cp-synthetic-crawler (auto)
+
+- **Branche** : `feat/seo-cp-synthetic-crawler`
+- **Décision** : fix(seo-cp): extend SupabaseBaseService + correct path resolution (+2 other commits)
+- **Sortie** : PR #516 | commits 764670e0 d148698d 78e38791
