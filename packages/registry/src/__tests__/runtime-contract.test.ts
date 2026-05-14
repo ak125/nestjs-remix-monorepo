@@ -82,6 +82,70 @@ describe("§4.1 schema integrity — real runtime-topology.yaml", () => {
   });
 });
 
+describe("§4.2 cross-contract L1 — every contract id exists in audit/registry/runtime.json", () => {
+  const L1_PATH = path.join(REPO_ROOT, "audit/registry/runtime.json");
+
+  test("loads L1 runtime registry (depends on `npm run audit:inventory && npm run registry:build` upstream)", () => {
+    const raw = readFileSync(L1_PATH, "utf8");
+    const doc = JSON.parse(raw) as { entries: Array<{ id: string }> };
+    assert.ok(Array.isArray(doc.entries), "L1 runtime.json must have entries[]");
+    assert.ok(
+      doc.entries.length > 0,
+      "L1 runtime.json must contain at least 1 entry",
+    );
+  });
+
+  test("every contract entry.id appears in L1 runtime.json entries (subset)", () => {
+    const contract = loadRealContract();
+    const raw = readFileSync(L1_PATH, "utf8");
+    const l1 = JSON.parse(raw) as { entries: Array<{ id: string }> };
+    const l1Ids = new Set(l1.entries.map((e) => e.id));
+
+    const missing: string[] = [];
+    for (const entry of contract.entrypoints) {
+      if (!l1Ids.has(entry.id)) missing.push(entry.id);
+    }
+
+    assert.equal(
+      missing.length,
+      0,
+      `${missing.length} contract entries NOT found in L1 runtime.json: ${missing.slice(0, 5).join(", ")}${missing.length > 5 ? "…" : ""}. ` +
+        "Either the YAML drifted (entry no longer exists in code) or L1 builder needs to re-run.",
+    );
+  });
+});
+
+describe("§4.3 cross-contract domains.yaml — every entry.domain is declared", () => {
+  const DOMAINS_PATH = path.join(
+    REPO_ROOT,
+    ".spec/00-canon/repository-registry/domains.yaml",
+  );
+
+  function loadDomainIds(): Set<string> {
+    const raw = readFileSync(DOMAINS_PATH, "utf8");
+    const doc = parseYaml(raw) as { entries: Array<{ id: string }> };
+    return new Set(doc.entries.map((e) => e.id));
+  }
+
+  test("every contract entry.domain matches a domains.yaml entry id", () => {
+    const contract = loadRealContract();
+    const declaredDomains = loadDomainIds();
+
+    const unknown: string[] = [];
+    for (const entry of contract.entrypoints) {
+      if (!declaredDomains.has(entry.domain)) {
+        unknown.push(`${entry.id} → domain=${entry.domain}`);
+      }
+    }
+
+    assert.equal(
+      unknown.length,
+      0,
+      `${unknown.length} entries reference undeclared domains: ${unknown.slice(0, 5).join(", ")}${unknown.length > 5 ? "…" : ""}`,
+    );
+  });
+});
+
 describe("§4.1 schema integrity — fixture-based negative paths", () => {
   test("rejects extra top-level field (.strict() at root)", () => {
     const tampered = { ...validFixture, extra: "smuggled" };
