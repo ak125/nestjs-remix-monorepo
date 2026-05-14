@@ -36,7 +36,7 @@ import type {
   FileEntry,
   RuntimeEntry,
   OwnershipRegistry,
-} from "@repo/registry";
+} from "../../packages/registry/src/index";
 
 type Severity = "error" | "warn";
 interface Finding {
