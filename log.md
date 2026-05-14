@@ -705,3 +705,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-cp-runtime-logs-collector`
 - **Décision** : feat(seo-cp): runtime-logs collector L1 — PR-2A-3 (ADR-064)
 - **Sortie** : PR #524 | commits 106f6816
+
+## 2026-05-14 — feat/seo-cp-runtime-logs-collector (auto)
+
+- **Branche** : `feat/seo-cp-runtime-logs-collector`
+- **Décision** : ci(migration-safety): grant pull-requests: write to job (fix squawk 403) (+2 other commits)
+- **Sortie** : PR #524 | commits bc5d4e26 772436f5 106f6816
