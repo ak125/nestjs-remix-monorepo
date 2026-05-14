@@ -10,7 +10,7 @@
 -- Note sur l'ENUM `seo_event_type` : PostgreSQL ne permet pas de DROP
 -- une valeur d'ENUM existante. La valeur `crux_fetch_run` reste dans le
 -- type après rollback — c'est sans impact car aucune ligne ne la
--- référence (toutes supprimées par le DROP TABLE event_log si jamais
+-- référence (toutes supprimées par la suppression du log event si jamais si jamais
 -- effectué — mais __seo_event_log appartient à ADR-045 et n'est pas
 -- touché par ce rollback). Si une suppression stricte est requise,
 -- recréer le type avec un script séparé.
