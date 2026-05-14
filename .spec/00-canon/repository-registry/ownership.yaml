@@ -323,6 +323,36 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: high
+  - glob: scripts/seo/**
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
+  - glob: scripts/ops/**
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
+  - glob: scripts/ci/**
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  - glob: scripts/lint/**
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  - glob: frontend/tests/**
+    domain: D2
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  - glob: .ast-grep/rules/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
   - glob: workspaces/marketing/**
     domain: D15
     owner: '@ak125'

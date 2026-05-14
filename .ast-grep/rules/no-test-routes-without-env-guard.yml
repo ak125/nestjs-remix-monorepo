@@ -1,0 +1,37 @@
+id: no-test-routes-without-env-guard
+language: typescript
+severity: error
+message: |
+  Tout fichier sous `frontend/app/routes/__test.*` doit déclarer en début de
+  loader un triple guard ENV pour garantir qu'il ne fuit JAMAIS en PROD :
+
+      if (process.env.NODE_ENV === "production") {
+        throw new Response(null, { status: 404 });
+      }
+      if (process.env.ENABLE_TEST_ROUTES !== "true") {
+        throw new Response(null, { status: 404 });
+      }
+
+  Ces routes ne sont nécessaires que pour le test E2E
+  `frontend/tests/e2e/cache-control-on-error.spec.ts` (D.3 de PR-1). Elles
+  doivent être exclues du build PROD via `vite.config.ts`
+  (`build.rollupOptions.external`).
+
+  Voir le plan :
+  /home/deploy/.claude/plans/aucun-l-ment-s-lectionn-aller-functional-scott.md
+files:
+  - frontend/app/routes/__test*.*
+rule:
+  all:
+    - any:
+        - pattern: "export async function loader($$$) { $$$BODY }"
+        - pattern: "export const loader = async ($$$) => { $$$BODY }"
+        - pattern: "export const loader: LoaderFunction = async ($$$) => { $$$BODY }"
+    - not:
+        has:
+          regex: 'process\.env\.NODE_ENV\s*===\s*[''"]production[''"]'
+          stopBy: end
+    - not:
+        has:
+          regex: 'process\.env\.ENABLE_TEST_ROUTES'
+          stopBy: end
