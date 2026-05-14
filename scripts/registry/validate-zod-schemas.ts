@@ -7,11 +7,10 @@
  * `.github/workflows/registry-build.yml` (Phase 1 freshness gate, ADR-058
  * §Acceptance V1) and runnable locally via `npm run registry:validate:zod`.
  *
- * Imports schemas directly from source (`packages/registry/src/index`) rather
- * than the built package — tsx resolves TypeScript, so no `npm run -w
- * @repo/registry build` step is needed in CI. Same pattern as
- * `tests/registry/rpc-parser.test.ts` (direct source import for internal
- * validation scripts tightly coupled to the schemas).
+ * Imports schemas via the `@repo/registry` alias. The workspace is
+ * source-only (no `dist/` build) — its `package.json` exports point at
+ * `src/index.ts` directly, and tsx resolves TypeScript on the fly. No
+ * `npm run -w @repo/registry build` step is needed in CI or locally.
  *
  * Exit codes :
  *   0 — every entry across all 5 registries passes its schema
@@ -28,7 +27,7 @@ import {
   DepEntrySchema,
   DbTableEntrySchema,
   RpcEntrySchema,
-} from "../../packages/registry/src/index";
+} from "@repo/registry";
 
 const REGISTRY_DIR = resolve(__dirname, "../../audit/registry");
 
