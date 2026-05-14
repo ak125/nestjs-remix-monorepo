@@ -687,3 +687,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-cp-cf-analytics-collector`
 - **Décision** : feat(seo-cp): cloudflare analytics collector L1 — PR-2A-2 (ADR-064)
 - **Sortie** : PR #520 | commits 8701fdf4
+
+## 2026-05-14 — feat/seo-cp-cf-analytics-collector (auto)
+
+- **Branche** : `feat/seo-cp-cf-analytics-collector`
+- **Décision** : fix(ci): grant pull-requests:write to migration-safety job (squawk upload-to-github) (+2 other commits)
+- **Sortie** : PR #520 | commits adf76ba3 f240f3b5 8701fdf4
