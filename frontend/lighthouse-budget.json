@@ -7,15 +7,6 @@
       { "metric": "interactive", "budget": 12100 },
       { "metric": "total-blocking-time", "budget": 500 },
       { "metric": "cumulative-layout-shift", "budget": 0.25 }
-    ],
-    "resourceSizes": [
-      { "resourceType": "script", "budget": 1250 },
-      { "resourceType": "stylesheet", "budget": 400 },
-      { "resourceType": "total", "budget": 1800 }
-    ],
-    "resourceCounts": [
-      { "resourceType": "script", "budget": 30 },
-      { "resourceType": "stylesheet", "budget": 10 }
     ]
   }
 ]

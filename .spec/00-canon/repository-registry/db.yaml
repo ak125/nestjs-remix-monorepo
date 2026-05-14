@@ -1,0 +1,127 @@
+# yaml-language-server: $schema=../_schema/db.schema.json
+# .spec/00-canon/repository-registry/db.yaml
+#
+# AutoMecanik monorepo — canonical DB contract V1 (PR-3a, ADR-058 follow-on,
+# ADR-062 conformant).
+#
+# The `# yaml-language-server:` directive above links this YAML to its
+# generated JSON Schema mirror for IDE validation. The schema file is
+# gitignored — run `npm run db-contract:build` after a fresh clone.
+#
+# ──────────────────────────────────────────────────────────────────────────────────
+#  DOCTRINE — read before adding anything to this file
+# ──────────────────────────────────────────────────────────────────────────────────
+#  This file holds DB OWNERSHIP & ACCESS SURFACE INVARIANTS ONLY.
+#
+#  Do NOT add to this file:
+#    × column schemas / DDL          → use migrations (backend/supabase/migrations/)
+#    × RLS policies                  → use migrations + ADR-021 pattern
+#    × deletePolicy state            → use `delete-policy.yaml`
+#    × rlsEnabled / row counts       → derived in `audit/registry/db.json`
+#    × RPC signatures                → use `audit/registry/rpc.json`
+#    × runtime access metrics        → OTel / Sentry
+#    × per-query observability       → out of contract scope
+#
+#  Loi A (ADR-062): this contract is NEVER derived from audit/registry/db.json.
+#  Loi B (ADR-062): the generated _schema/db.schema.json is read-only mirror.
+#
+#  V1 COVERAGE: a curated set of P0/P1 tables (≤ 20). Adding a table here is
+#  a deliberate governance act — table appears in db.yaml ⇔ a human committed
+#  to its access contract. Not exhaustive; PR-3c will audit real-vs-contract.
+#
+#  ENFORCEMENT TRAJECTORY:
+#    PR-3a (this file) — contract + Zod schema + generator. No enforcement.
+#    PR-3b             — committed artifact + freshness gate (warn-only, ratchet).
+#    PR-3c             — audit script: real Layer 1 access vs declared contract (report only).
+#    PR-3d             — ratchet on NEW access surfaces only (grandfather existing).
+# ──────────────────────────────────────────────────────────────────────────────────
+#
+# WORKFLOW
+# Edit this YAML → run `npm run db-contract:build` → commit ONLY the YAML.
+# The JSON schema mirror under _schema/ is gitignored.
+
+schemaVersion: "1.0.0"
+adr: ADR-058
+
+tables:
+  # ── D11 Commerce & Users (money path) ──
+  - name: public.__paybox_gate_log
+    domain: D11
+    owner: "@ak125/payments-team"
+    criticality: critical
+    allowed_access_surfaces: [backend, service_role]
+    forbidden_access_surfaces: [frontend, anon, authenticated]
+    notes: |
+      Payments HMAC gate audit log. ADR-021 vague 2a: REVOKE ALL anon,
+      authenticated; service_role grant via DO block idempotent.
+
+  - name: public.__write_audit_log
+    domain: D11
+    owner: "@ak125/payments-team"
+    criticality: critical
+    allowed_access_surfaces: [backend, service_role]
+    forbidden_access_surfaces: [frontend, anon, authenticated]
+    notes: |
+      Idempotency ledger for write operations on money path.
+
+  - name: public.__abandoned_cart_emails
+    domain: D11
+    owner: "@ak125/payments-team"
+    criticality: high
+    allowed_access_surfaces: [backend, worker, service_role]
+    forbidden_access_surfaces: [frontend, anon, authenticated]
+    notes: |
+      Cart recovery email queue. BullMQ worker consumer.
+
+  # ── D3 SEO & Sitemap (P0 read model, content surface) ──
+  - name: public.__seo_page
+    domain: D3
+    owner: "@ak125/seo-team"
+    criticality: critical
+    allowed_access_surfaces: [backend, rpc]
+    forbidden_access_surfaces: [frontend, anon, authenticated]
+    notes: |
+      Canonical SEO page metadata. Frontend reads via RPC (get_seo_page_*).
+      RLS state is intentionally not tracked here; see migrations and
+      audit/registry/db.json.
+
+  - name: public.__seo_keywords
+    domain: D3
+    owner: "@ak125/seo-team"
+    criticality: high
+    allowed_access_surfaces: [backend, rpc]
+    forbidden_access_surfaces: [frontend, anon, authenticated]
+    notes: |
+      V-Level classification keywords (T=keywords axis, ADR-027 derivative).
+
+  # ── D4 Vehicle / Compatibility (P0 TecDoc) ──
+  - name: public.__vehicles
+    domain: D4
+    owner: "@ak125/vehicle-team"
+    criticality: critical
+    allowed_access_surfaces: [backend, rpc]
+    forbidden_access_surfaces: [frontend, anon, authenticated]
+    notes: |
+      53,959 types (30,502 legacy + 23,457 remapped). Frontend reads via
+      cached RPC compat_*. Range 60000-83456 noindex.
+
+  # ── D1 Catalog Core (P0 75GB) ──
+  - name: public.pieces
+    domain: D1
+    owner: "@ak125/catalog-team"
+    criticality: critical
+    allowed_access_surfaces: [backend, rpc]
+    forbidden_access_surfaces: [frontend, anon, authenticated]
+    notes: |
+      Catalog core. Frontend reaches it strictly via cached RPC; never direct query.
+
+  # ── D7 Knowledge Graph & Diagnostic ──
+  - name: public.kg_nodes
+    domain: D7
+    owner: "@ak125"
+    criticality: high
+    allowed_access_surfaces: [backend, service_role]
+    forbidden_access_surfaces: [frontend, anon, authenticated]
+    notes: |
+      Knowledge graph nodes. RLS state is intentionally not tracked here;
+      see migrations and audit/registry/db.json.
