@@ -615,3 +615,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-cp-criticality-tiers`
 - **Décision** : fix(seo): closure INC-2026-005 — GSC 5xx 30 400 pages recovery + tactical hardening (#510)
 - **Sortie** : PR aucune | commits e118d599
+
+## 2026-05-14 — feat/seo-cp-criticality-tiers (auto)
+
+- **Branche** : `feat/seo-cp-criticality-tiers`
+- **Décision** : chore(registry): renumber ADR-062 → ADR-064 (062 + 063 already taken) (+3 other commits)
+- **Sortie** : PR #515 | commits 815d3307 7fbe8bd1 24e425ab e118d599
