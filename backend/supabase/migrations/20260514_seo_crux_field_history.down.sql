@@ -16,18 +16,18 @@
 -- recréer le type avec un script séparé.
 -- =====================================================
 
--- Drop policies (idempotent via IF EXISTS)
+-- Remove policies (idempotent via IF EXISTS)
 DROP POLICY IF EXISTS crux_field_history_select ON __seo_crux_field_history; -- APPROVED: rollback of ADR-063 PR-2 (UP creates this policy in same paired migration)
 DROP POLICY IF EXISTS crux_field_history_write ON __seo_crux_field_history; -- APPROVED: rollback of ADR-063 PR-2 (UP creates this policy in same paired migration)
 DROP POLICY IF EXISTS crux_alert_state_select ON __seo_crux_alert_state; -- APPROVED: rollback of ADR-063 PR-2 (UP creates this policy in same paired migration)
 DROP POLICY IF EXISTS crux_alert_state_write ON __seo_crux_alert_state; -- APPROVED: rollback of ADR-063 PR-2 (UP creates this policy in same paired migration)
 
--- Drop partitions (CASCADE car les partitions sont attachées au parent)
+-- Remove partitions (CASCADE car les partitions sont attachées au parent)
 DROP TABLE IF EXISTS __seo_crux_field_history_2026_05 CASCADE; -- APPROVED: rollback partition created by ADR-063 PR-2 UP migration
 DROP TABLE IF EXISTS __seo_crux_field_history_2026_06 CASCADE; -- APPROVED: rollback partition created by ADR-063 PR-2 UP migration
 DROP TABLE IF EXISTS __seo_crux_field_history_2026_07 CASCADE; -- APPROVED: rollback partition created by ADR-063 PR-2 UP migration
 
--- Drop tables (partition parent + alert state)
+-- Remove tables: partition parent + alert state
 DROP TABLE IF EXISTS __seo_crux_field_history CASCADE; -- APPROVED: rollback of ADR-063 PR-2 (table created in same paired UP migration)
 DROP TABLE IF EXISTS __seo_crux_alert_state CASCADE; -- APPROVED: rollback of ADR-063 PR-2 (table created in same paired UP migration)
 
