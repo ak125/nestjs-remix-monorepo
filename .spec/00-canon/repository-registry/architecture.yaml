@@ -15,9 +15,9 @@
 #
 #  Do NOT add to this file:
 #    × feature flags          → use GrowthBook / config
-#    × topology instances     → use `runtime-topology.yaml` (PR-4)
+#    × topology instances     → use `runtime-topology.yaml` (PR-5)
 #    × runtime observability  → use OTel config / Sentry tags
-#    × queue/cache mapping    → use `runtime-topology.yaml` (PR-4)
+#    × queue/cache mapping    → use `workers.yaml` (canon roadmap — separate contract for instance-level config)
 #    × SEO flows / role canon → use existing seo-role-contracts (PR-F SEO)
 #    × projection graph       → see `db.yaml`
 #    × RAG flows              → use ADR-046 wiki-exports SoT

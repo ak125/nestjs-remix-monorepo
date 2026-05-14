@@ -12,16 +12,19 @@
   "scripts": {
     "build:architecture": "tsx src/bin/build-architecture-artifacts.ts",
     "build:db-contract": "tsx src/bin/build-db-contract-artifacts.ts",
+    "build:runtime-contract": "tsx src/bin/build-runtime-contract-artifacts.ts",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test src/**/*.test.ts"
   },
   "dependencies": {
     "js-yaml": "4.1.1",
+    "micromatch": "^4.0.8",
     "zod": "^3.25.76",
     "zod-to-json-schema": "3.23.0"
   },
   "devDependencies": {
     "@types/js-yaml": "4.0.9",
+    "@types/micromatch": "^4.0.9",
     "@types/node": "^20.0.0",
     "tsx": "^4.7.0",
     "typescript": "^5.9.3"

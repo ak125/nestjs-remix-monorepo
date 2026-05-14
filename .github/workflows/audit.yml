@@ -76,6 +76,17 @@ jobs:
         if: always()
         run: npm run db-contract:build
 
+      - name: 🚦 Runtime contract — regenerate IDE schema mirror (PR-5)
+        # Mirror of architecture:build / db-contract:build pattern. Pure regen
+        # of .spec/00-canon/_schema/runtime-topology.schema.json (gitignored).
+        # If Zod parse / cross-contract test fails, surfaces a real bug in
+        # runtime-topology.yaml. No committed artifact; no freshness gate yet
+        # — PR-5b will introduce the projection layer + freshness gate.
+        # The @repo/registry test step below (warn-only via PR-W3 #512) picks
+        # up the new runtime-contract.test.ts cases automatically.
+        if: always()
+        run: npm run runtime-contract:build
+
       # RATCHET DEADLINE — mechanical expiration via env var + date check.
       # After the deadline, the STEP fails visibly (red ✘ in the CI summary, ::error::
       # in the log), but the WORKFLOW still passes because `continue-on-error: true` is

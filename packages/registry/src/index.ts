@@ -27,6 +27,7 @@ export { FileKindSchema, type FileKind } from "./shared/kind";
 export { RiskSchema, type Risk } from "./shared/risk";
 export { DeletePolicySchema, type DeletePolicy } from "./shared/delete-policy";
 export { DerivedFromSchema, type DerivedFrom } from "./shared/derived-from";
+export { OwnerIdSchema, type OwnerId } from "./shared/owner";
 
 // ── Layer 1 entries (auto-generated) ──
 export { FileEntrySchema, type FileEntry } from "./entries/file-entry";
