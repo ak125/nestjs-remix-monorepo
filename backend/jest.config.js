@@ -22,6 +22,8 @@ module.exports = {
     '^src/(.*)$': '<rootDir>/src/$1',
     '^@repo/database-types$': '<rootDir>/tests/__mocks__/@repo/database-types.ts',
     '^@repo/database-types/(.*)$': '<rootDir>/tests/__mocks__/@repo/database-types.ts',
+    '^@repo/seo-types$': '<rootDir>/../packages/seo-types/src/index.ts',
+    '^@repo/seo-types/(.*)$': '<rootDir>/../packages/seo-types/src/$1.ts',
   },
   // Ignore dist and node_modules
   testPathIgnorePatterns: ['/node_modules/', '/dist/'],
