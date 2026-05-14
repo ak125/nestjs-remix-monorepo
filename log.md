@@ -627,3 +627,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/adr-063-cwv-monitoring-crux-api`
 - **Décision** : fix(seo-crux): reword down.sql comment to avoid migration-safety false positive (+3 other commits)
 - **Sortie** : PR #514 | commits ac7fd3ad feb1d4b0 5d1a7535 15092a48
+
+## 2026-05-14 — feat/pr-5-runtime-contract-v1 (auto)
+
+- **Branche** : `feat/pr-5-runtime-contract-v1`
+- **Décision** : feat(registry): add inferLayerFromPath helper (PR-5 prep) (+1 other commit)
+- **Sortie** : PR aucune | commits a84ff2a8 68144b2a
