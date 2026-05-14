@@ -651,3 +651,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/dep-governance-v1-clean`
 - **Décision** : feat(registry): dep governance contract V1 scaffold + 14 test cases (PR-D §1+§2+§4) (+1 other commit)
 - **Sortie** : PR aucune | commits 640377c1 21cbb039
+
+## 2026-05-14 — feat/dep-governance-v1-clean (auto)
+
+- **Branche** : `feat/dep-governance-v1-clean`
+- **Décision** : feat(registry): dep governance generator + npm scripts (PR-D §3+§5) (+3 other commits)
+- **Sortie** : PR aucune | commits 0496d5b4 17ab0348 640377c1 21cbb039
