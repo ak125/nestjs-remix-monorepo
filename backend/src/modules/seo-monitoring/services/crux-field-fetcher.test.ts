@@ -12,16 +12,24 @@ import { SeoMonitoringRunsService } from './seo-monitoring-runs.service';
 
 const buildHistoryResponse = () => ({
   record: {
-    key: { origin: 'https://www.automecanik.com', formFactor: 'PHONE' as const },
+    key: {
+      origin: 'https://www.automecanik.com',
+      formFactor: 'PHONE' as const,
+    },
     metrics: {
       largest_contentful_paint: { percentilesTimeseries: { p75s: [2300] } },
       interaction_to_next_paint: { percentilesTimeseries: { p75s: [180] } },
       cumulative_layout_shift: { percentilesTimeseries: { p75s: [0.08] } },
-      experimental_time_to_first_byte: { percentilesTimeseries: { p75s: [600] } },
+      experimental_time_to_first_byte: {
+        percentilesTimeseries: { p75s: [600] },
+      },
       first_contentful_paint: { percentilesTimeseries: { p75s: [1500] } },
     },
     collectionPeriods: [
-      { firstDate: { year: 2026, month: 4, day: 1 }, lastDate: { year: 2026, month: 4, day: 28 } },
+      {
+        firstDate: { year: 2026, month: 4, day: 1 },
+        lastDate: { year: 2026, month: 4, day: 28 },
+      },
     ],
   },
 });
@@ -40,7 +48,9 @@ function buildSupabaseMock(state: MockState) {
           select: jest.fn().mockReturnThis(),
           gte: jest.fn().mockReturnThis(),
           order: jest.fn().mockReturnThis(),
-          limit: jest.fn().mockResolvedValue({ data: state.topUrlsData, error: null }),
+          limit: jest
+            .fn()
+            .mockResolvedValue({ data: state.topUrlsData, error: null }),
         };
       }
       if (table === '__seo_crux_field_history') {
@@ -60,7 +70,11 @@ async function buildService(opts: {
   available: boolean;
   topUrls?: Array<{ page: string; clicks: number }>;
   upsertError?: { message: string } | null;
-}): Promise<{ service: CruxFieldFetcherService; state: MockState; cruxClient: jest.Mocked<CruxApiClient> }> {
+}): Promise<{
+  service: CruxFieldFetcherService;
+  state: MockState;
+  cruxClient: jest.Mocked<CruxApiClient>;
+}> {
   const state: MockState = {
     topUrlsData: opts.topUrls ?? [],
     upsertError: opts.upsertError ?? null,
@@ -94,12 +108,21 @@ async function buildService(opts: {
       CruxFieldFetcherService,
       { provide: CruxApiClient, useValue: cruxClientMock },
       { provide: SeoMonitoringRunsService, useValue: runsServiceMock },
-      { provide: ConfigService, useValue: { get: (k: string) => (k === 'SUPABASE_URL' ? 'https://mock.supabase.co' : undefined) } },
+      {
+        provide: ConfigService,
+        useValue: {
+          get: (k: string) =>
+            k === 'SUPABASE_URL' ? 'https://mock.supabase.co' : undefined,
+        },
+      },
     ],
   }).compile();
 
   const service = moduleRef.get(CruxFieldFetcherService);
-  Object.defineProperty(service, 'supabase', { value: buildSupabaseMock(state), writable: false });
+  Object.defineProperty(service, 'supabase', {
+    value: buildSupabaseMock(state),
+    writable: false,
+  });
 
   return { service, state, cruxClient: cruxClientMock };
 }
@@ -118,20 +141,38 @@ describe('CruxFieldFetcherService', () => {
     });
 
     it('0-2 days 404 → fetch daily', () => {
-      expect(service.shouldFetchToday({ consecutive404Days: 0, lastChecked: '2026-05-14' }, new Date('2026-05-14'))).toBe(true);
-      expect(service.shouldFetchToday({ consecutive404Days: 2, lastChecked: '2026-05-14' }, new Date('2026-05-14'))).toBe(true);
+      expect(
+        service.shouldFetchToday(
+          { consecutive404Days: 0, lastChecked: '2026-05-14' },
+          new Date('2026-05-14'),
+        ),
+      ).toBe(true);
+      expect(
+        service.shouldFetchToday(
+          { consecutive404Days: 2, lastChecked: '2026-05-14' },
+          new Date('2026-05-14'),
+        ),
+      ).toBe(true);
     });
 
     it('3-20 days 404 → weekly (day-of-month % 7 == 0)', () => {
       const sticky = { consecutive404Days: 5, lastChecked: '2026-05-14' };
-      expect(service.shouldFetchToday(sticky, new Date('2026-05-07'))).toBe(true);
-      expect(service.shouldFetchToday(sticky, new Date('2026-05-08'))).toBe(false);
+      expect(service.shouldFetchToday(sticky, new Date('2026-05-07'))).toBe(
+        true,
+      );
+      expect(service.shouldFetchToday(sticky, new Date('2026-05-08'))).toBe(
+        false,
+      );
     });
 
     it('21+ days 404 → monthly (day-of-month == 1)', () => {
       const sticky = { consecutive404Days: 30, lastChecked: '2026-05-14' };
-      expect(service.shouldFetchToday(sticky, new Date('2026-05-01'))).toBe(true);
-      expect(service.shouldFetchToday(sticky, new Date('2026-05-07'))).toBe(false);
+      expect(service.shouldFetchToday(sticky, new Date('2026-05-01'))).toBe(
+        true,
+      );
+      expect(service.shouldFetchToday(sticky, new Date('2026-05-07'))).toBe(
+        false,
+      );
     });
   });
 
@@ -144,7 +185,9 @@ describe('CruxFieldFetcherService', () => {
     });
 
     it('fetches origin × 2 form factors and persists rows', async () => {
-      const { service, state, cruxClient } = await buildService({ available: true });
+      const { service, state, cruxClient } = await buildService({
+        available: true,
+      });
       const out = await service.fetchAndPersist({ originOnly: true });
       expect(cruxClient.fetchOriginHistory).toHaveBeenCalledTimes(2);
       expect(out.originSuccess).toBe(2);
@@ -153,8 +196,13 @@ describe('CruxFieldFetcherService', () => {
     });
 
     it('dryRun skips upsert', async () => {
-      const { service, state, cruxClient } = await buildService({ available: true });
-      const out = await service.fetchAndPersist({ originOnly: true, dryRun: true });
+      const { service, state, cruxClient } = await buildService({
+        available: true,
+      });
+      const out = await service.fetchAndPersist({
+        originOnly: true,
+        dryRun: true,
+      });
       expect(cruxClient.fetchOriginHistory).toHaveBeenCalledTimes(2);
       expect(out.rowsInserted).toBe(0);
       expect(state.upsertedCount).toBe(0);

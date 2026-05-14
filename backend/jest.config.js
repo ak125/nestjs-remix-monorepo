@@ -27,7 +27,7 @@ module.exports = {
   testPathIgnorePatterns: ['/node_modules/', '/dist/'],
   // Transform ESM packages from monorepo workspaces
   transformIgnorePatterns: [
-    '/node_modules/(?!(@repo/database-types|@monorepo/shared-types)/)',
+    '/node_modules/(?!(@repo/database-types|@repo/seo-types|@monorepo/shared-types)/)',
   ],
   // Setup files - load .env.test for Supabase credentials
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],

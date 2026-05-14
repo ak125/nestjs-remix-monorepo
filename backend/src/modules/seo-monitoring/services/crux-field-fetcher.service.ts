@@ -123,7 +123,10 @@ export class CruxFieldFetcherService {
    *  - 3..20 days 404 → fetch only if day-of-month % 7 == 0 (~weekly)
    *  - 21+ days 404 → fetch only if day-of-month == 1 (~monthly)
    */
-  shouldFetchToday(sticky: StickyState | null, today: Date = new Date()): boolean {
+  shouldFetchToday(
+    sticky: StickyState | null,
+    today: Date = new Date(),
+  ): boolean {
     if (!sticky || sticky.consecutive404Days === 0) return true;
     if (sticky.consecutive404Days < STICKY_DAILY_LIMIT) return true;
     const dayOfMonth = today.getUTCDate();
@@ -156,7 +159,9 @@ export class CruxFieldFetcherService {
     };
 
     if (!this.cruxClient.isAvailable()) {
-      this.logger.log('CrUX client unavailable (no key or circuit open) — skipping');
+      this.logger.log(
+        'CrUX client unavailable (no key or circuit open) — skipping',
+      );
       result.warnings.push('crux_client_unavailable');
       return result;
     }
@@ -177,7 +182,12 @@ export class CruxFieldFetcherService {
         );
         result.apiCalls += outcome.attempts;
         if (outcome.response) {
-          const rows = this.mapHistoryToRows(outcome.response, origin, null, formFactor);
+          const rows = this.mapHistoryToRows(
+            outcome.response,
+            origin,
+            null,
+            formFactor,
+          );
           if (!options.dryRun && rows.length > 0) {
             const inserted = await this.upsertRows(rows);
             result.rowsInserted += inserted;
@@ -193,7 +203,9 @@ export class CruxFieldFetcherService {
 
       if (!options.originOnly) {
         const topUrls = await this.sampleTopUrls(options.topUrlsLimit ?? 100);
-        this.logger.log(`Sampled ${topUrls.length} top URLs for CrUX URL-level fetch`);
+        this.logger.log(
+          `Sampled ${topUrls.length} top URLs for CrUX URL-level fetch`,
+        );
 
         for (const url of topUrls) {
           const outcome = await this.cruxClient.fetchUrlHistory(url, 'PHONE');

@@ -9,7 +9,9 @@ import { CruxApiClient } from './crux-api-client.service';
 
 const originalFetch = global.fetch;
 
-function mockFetch(impl: (url: string, init: RequestInit) => Promise<Response>) {
+function mockFetch(
+  impl: (url: string, init: RequestInit) => Promise<Response>,
+) {
   global.fetch = jest.fn(impl) as unknown as typeof fetch;
 }
 
@@ -17,25 +19,51 @@ const buildHistoryResponse = () => ({
   record: {
     key: { origin: 'https://www.automecanik.com', formFactor: 'PHONE' },
     metrics: {
-      largest_contentful_paint: { percentilesTimeseries: { p75s: [2300, 2350, 2310] } },
-      interaction_to_next_paint: { percentilesTimeseries: { p75s: [180, 190, 175] } },
-      cumulative_layout_shift: { percentilesTimeseries: { p75s: ['0.08', '0.09', '0.07'] } },
-      experimental_time_to_first_byte: { percentilesTimeseries: { p75s: [600, 620, 590] } },
-      first_contentful_paint: { percentilesTimeseries: { p75s: [1500, 1550, 1480] } },
+      largest_contentful_paint: {
+        percentilesTimeseries: { p75s: [2300, 2350, 2310] },
+      },
+      interaction_to_next_paint: {
+        percentilesTimeseries: { p75s: [180, 190, 175] },
+      },
+      cumulative_layout_shift: {
+        percentilesTimeseries: { p75s: ['0.08', '0.09', '0.07'] },
+      },
+      experimental_time_to_first_byte: {
+        percentilesTimeseries: { p75s: [600, 620, 590] },
+      },
+      first_contentful_paint: {
+        percentilesTimeseries: { p75s: [1500, 1550, 1480] },
+      },
     },
     collectionPeriods: [
-      { firstDate: { year: 2026, month: 4, day: 1 }, lastDate: { year: 2026, month: 4, day: 28 } },
-      { firstDate: { year: 2026, month: 4, day: 8 }, lastDate: { year: 2026, month: 5, day: 5 } },
-      { firstDate: { year: 2026, month: 4, day: 15 }, lastDate: { year: 2026, month: 5, day: 12 } },
+      {
+        firstDate: { year: 2026, month: 4, day: 1 },
+        lastDate: { year: 2026, month: 4, day: 28 },
+      },
+      {
+        firstDate: { year: 2026, month: 4, day: 8 },
+        lastDate: { year: 2026, month: 5, day: 5 },
+      },
+      {
+        firstDate: { year: 2026, month: 4, day: 15 },
+        lastDate: { year: 2026, month: 5, day: 12 },
+      },
     ],
   },
 });
 
-async function buildClient(apiKey: string | undefined = 'test-key'): Promise<CruxApiClient> {
+async function buildClient(
+  apiKey: string | undefined = 'test-key',
+): Promise<CruxApiClient> {
   const moduleRef = await Test.createTestingModule({
     providers: [
       CruxApiClient,
-      { provide: ConfigService, useValue: { get: (k: string) => (k === 'CRUX_API_KEY' ? apiKey : undefined) } },
+      {
+        provide: ConfigService,
+        useValue: {
+          get: (k: string) => (k === 'CRUX_API_KEY' ? apiKey : undefined),
+        },
+      },
     ],
   }).compile();
   return moduleRef.get(CruxApiClient);
@@ -66,9 +94,15 @@ describe('CruxApiClient', () => {
   });
 
   it('returns parsed response on 200 OK', async () => {
-    mockFetch(async () => new Response(JSON.stringify(buildHistoryResponse()), { status: 200 }));
+    mockFetch(
+      async () =>
+        new Response(JSON.stringify(buildHistoryResponse()), { status: 200 }),
+    );
     const client = await buildClient('test-key');
-    const out = await client.fetchOriginHistory('https://www.automecanik.com', 'PHONE');
+    const out = await client.fetchOriginHistory(
+      'https://www.automecanik.com',
+      'PHONE',
+    );
     expect(out.response).not.toBeNull();
     expect(out.status).toBe(200);
     expect(out.attempts).toBe(1);
@@ -84,7 +118,10 @@ describe('CruxApiClient', () => {
   });
 
   it('returns null on 200 OK but malformed body fails Zod parse', async () => {
-    mockFetch(async () => new Response(JSON.stringify({ malformed: true }), { status: 200 }));
+    mockFetch(
+      async () =>
+        new Response(JSON.stringify({ malformed: true }), { status: 200 }),
+    );
     const client = await buildClient('test-key');
     const out = await client.fetchOriginHistory('https://x', 'PHONE');
     expect(out.response).toBeNull();
@@ -100,7 +137,9 @@ describe('CruxApiClient', () => {
       mockFetch(async () => {
         n++;
         if (n === 1) return new Response('boom', { status: 503 });
-        return new Response(JSON.stringify(buildHistoryResponse()), { status: 200 });
+        return new Response(JSON.stringify(buildHistoryResponse()), {
+          status: 200,
+        });
       });
       const client = await buildClient('test-key');
       const p = client.fetchOriginHistory('https://x', 'PHONE');
