@@ -1,0 +1,75 @@
+# yaml-language-server: $schema=../_schema/dep-governance.schema.json
+# .spec/00-canon/repository-registry/dep-governance.yaml
+#
+# AutoMecanik monorepo — canonical dependency governance contract (PR-D, ADR-058 follow-on).
+#
+# The `# yaml-language-server:` directive above links this YAML to its generated
+# JSON Schema mirror for IDE validation (RedHat YAML extension / Helix LSP / etc.).
+# The path is RELATIVE so it resolves correctly in worktrees / sub-checkouts. The
+# schema file is gitignored — run `npm run dep-governance:build` after a fresh
+# clone to populate it.
+#
+# ──────────────────────────────────────────────────────────────────────────────────
+#  DOCTRINE — read before adding anything to this file
+# ──────────────────────────────────────────────────────────────────────────────────
+#  This file holds NPM DEPENDENCY CLASSIFICATION INVARIANTS ONLY. It is NOT a
+#  dumping ground.
+#
+#  Do NOT add to this file:
+#    × license restrictions / SPDX policy → use `license-policy.yaml` (canon roadmap)
+#    × version range hygiene / lockfile rules → use `version-policy.yaml` or renovate
+#    × CVE / vulnerability info → use `audit-ci` / `npm audit` output
+#    × workspace deps (@fafa/*, @repo/*) → see `architecture.yaml` boundaries
+#    × phantom-dep prevention (transitive imports declared) → use dependency-cruiser rule
+#    × cross-family forbidden imports → V2 cross-contract with architecture.yaml/ownership.yaml
+#    × runtime entrypoint metadata → see `runtime-topology.yaml`
+#    × DB tables / RLS → see `db.yaml`
+#    × extraction confidence / source classification → it lives in L1 (audit/registry/deps.json)
+#
+#  If you're tempted to add a section that isn't a DEPENDENCY CLASSIFICATION
+#  INVARIANT, open a NEW contract file instead.
+#
+#  FUTURE-SPLIT WARNING:
+#  If a section starts describing INSTANCE-LEVEL config (a specific package's
+#  pinned exact version, a CVE allowlist, a license exception) instead of
+#  CLASSIFICATION (which canonical family does this dep belong to, who owns it,
+#  which domain consumes it), STOP and create a dedicated contract file.
+# ──────────────────────────────────────────────────────────────────────────────────
+#
+# V1 COVERAGE: this contract protects ONE invariant —
+#   the **canonical classification of npm dependencies** by functional family,
+#   with stable ownership and primary consuming domain.
+#
+# It does NOT cover license enforcement, version-range hygiene, CVE policy,
+# workspace deps, phantom-dep prevention, or cross-family forbidden imports —
+# those are dedicated contracts / tools.
+#
+# L1 ALIGNMENT:
+#   `id` format = `npm:<name>@<version>` (matches Layer 1 audit/registry/deps.json
+#   produced by scripts/registry/build-deps-registry.js, 232 entries verified
+#   2026-05-14). Cross-contract test §4.2 verifies that every L2 id appears in
+#   L1 (subset, not equivalence).
+#
+# ID-NAME COHERENCE:
+#   `id` MUST encode `name`: stripping the `npm:` prefix and the `@version`
+#   suffix from `id` MUST equal the `name` field. Enforced by Zod superRefine.
+#
+# WORKFLOW
+#   Edit this YAML → run `npm run dep-governance:build` → commit ONLY the YAML.
+#   The JSON schema mirror at `.spec/00-canon/_schema/dep-governance.schema.json`
+#   is gitignored, regenerated at each build.
+
+schemaVersion: "1.0.0"
+adr: ADR-058
+
+dependencies:
+  # V1 STUB — single entry to prove schema integrity (test §4.1) and
+  # cross-contracts (§4.2 L1 / §4.3 domains / §4.4 ownership / §4.5 family).
+  # Will be enriched to ~30 sample entries (multi-family, multi-domain)
+  # in a follow-up commit within PR-D.
+  - id: "npm:zod@^3.25.76"
+    name: "zod"
+    family: validation
+    domain: D14                          # Gamme Aggregates (cross-cutting; zod used everywhere)
+    owner: "@ak125"
+    notes: "Universal runtime validation; used in every workspace + canon contracts."
