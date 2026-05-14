@@ -43,10 +43,15 @@ const ContractDomainSchema = DomainIdSchema.refine(
 
 // L1 id format = `npm:<name>@<version>` (verified on audit/registry/deps.json
 // 232 entries). Strict format match enables cross-contract test §4.2.
+//
+// Version part accepts SemVer-range chars: `^`, `~`, `>=`, `<=`, `>`, `<`,
+// digits, dots, hyphens (prerelease), plus signs (build metadata), letters
+// (alpha/beta/rc tags). The `*` wildcard belongs to workspace: ids only and
+// is intentionally rejected here (PR-D V1 scope = npm only, not workspace).
 const DepIdSchema = z
   .string()
   .regex(
-    /^npm:[@a-zA-Z0-9._/-]+@[\w.\-+]+$/,
+    /^npm:[@a-zA-Z0-9._/-]+@[\^~><=a-zA-Z0-9._\-+]+$/,
     "id must be `npm:<name>@<version>` (matches L1 audit/registry/deps.json format)",
   );
 
