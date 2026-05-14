@@ -68,13 +68,16 @@ schemaVersion: "1.0.0"
 adr: ADR-058
 
 entrypoints:
-  # V1 STUB — single entry to prove schema integrity (test §4.1).
+  # V1 STUB — single entry to prove schema integrity (test §4.1) and
+  # cross-contracts (§4.2 L1 / §4.3 domains / §4.4 ownership / §4.5 layer).
+  # Path chosen so that all 4 cross-contract tests pass with the current
+  # ownership.yaml + domains.yaml + architecture.yaml + L1 runtime.json.
   # Will be enriched to ~30 sample entries (multi-kind, multi-layer)
   # in a follow-up commit within PR-5.
-  - id: "runtime:backend/src/app.module.ts"
+  - id: "runtime:backend/src/auth/auth.module.ts"
     kind: nestjs-module
-    path: "backend/src/app.module.ts"
-    layer: backend                       # validated == inferLayerFromPath(path); FK architecture.yaml#layers[].id
-    domain: D13                          # Config & System (declared in domains.yaml — monorepo scaffolding)
-    owner: "@ak125"                      # canonical owner id (matches ownership.yaml + db.yaml convention)
+    path: "backend/src/auth/auth.module.ts"
+    layer: backend                            # FK architecture.yaml#layers[].id; == inferLayerFromPath(path)
+    domain: D11                               # Commerce & Users (declared in domains.yaml; matches ownership.yaml glob)
+    owner: "@ak125/auth-team"                 # FK ownership.yaml owner for backend/src/auth/**
     status: LIVE

@@ -146,6 +146,180 @@ describe("§4.3 cross-contract domains.yaml — every entry.domain is declared",
   });
 });
 
+describe("§4.4 cross-contract ownership.yaml (FK enforcement — OwnerIdSchema V1 is permissive regex, this is the runtime FK)", () => {
+  const OWNERSHIP_PATH = path.join(
+    REPO_ROOT,
+    ".spec/00-canon/repository-registry/ownership.yaml",
+  );
+
+  interface OwnershipEntry {
+    glob: string;
+    owner: string;
+    [key: string]: unknown;
+  }
+
+  function loadOwnership(): OwnershipEntry[] {
+    const raw = readFileSync(OWNERSHIP_PATH, "utf8");
+    const doc = parseYaml(raw) as { entries: OwnershipEntry[] };
+    return doc.entries;
+  }
+
+  test("§4.4a — every entry.path matches at least one ownership.yaml glob", async () => {
+    const contract = loadRealContract();
+    const ownership = loadOwnership();
+    const { default: micromatch } = await import("micromatch");
+
+    const uncovered: string[] = [];
+    for (const entry of contract.entrypoints) {
+      const matched = ownership.some((own) =>
+        micromatch.isMatch(entry.path, own.glob),
+      );
+      if (!matched) uncovered.push(`${entry.id} (path=${entry.path})`);
+    }
+
+    assert.equal(
+      uncovered.length,
+      0,
+      `${uncovered.length} contract entries have no ownership glob match: ${uncovered.slice(0, 5).join(", ")}${uncovered.length > 5 ? "…" : ""}. ` +
+        "Add a matching glob to ownership.yaml or fix the entry.path.",
+    );
+  });
+
+  test("§4.4b — every entry.owner appears as an `owner:` value in ownership.yaml", () => {
+    const contract = loadRealContract();
+    const ownership = loadOwnership();
+    const declaredOwners = new Set(ownership.map((o) => o.owner));
+
+    const unknown: string[] = [];
+    for (const entry of contract.entrypoints) {
+      if (!declaredOwners.has(entry.owner)) {
+        unknown.push(`${entry.id} → owner=${entry.owner}`);
+      }
+    }
+
+    assert.equal(
+      unknown.length,
+      0,
+      `${unknown.length} entries reference owners not declared in ownership.yaml: ${unknown.slice(0, 5).join(", ")}${unknown.length > 5 ? "…" : ""}. ` +
+        "This test is the runtime FK enforcement for OwnerIdSchema (V1 permissive regex). " +
+        "V2 will promote OwnerIdSchema to z.enum([...]) — at that point this test becomes redundant.",
+    );
+  });
+});
+
+describe("§4.5 cross-contract architecture.yaml — layer FK + inferLayerFromPath coherence", () => {
+  const ARCH_PATH = path.join(
+    REPO_ROOT,
+    ".spec/00-canon/repository-registry/architecture.yaml",
+  );
+
+  interface ArchitectureLayer {
+    id: string;
+    rootGlobs: string[];
+  }
+
+  function loadArchitectureLayers(): ArchitectureLayer[] {
+    const raw = readFileSync(ARCH_PATH, "utf8");
+    const doc = parseYaml(raw) as { layers: ArchitectureLayer[] };
+    return doc.layers;
+  }
+
+  test("§4.5a — every entry.layer matches a declared architecture.yaml#layers[].id", () => {
+    const contract = loadRealContract();
+    const layers = loadArchitectureLayers();
+    const declaredLayerIds = new Set(layers.map((l) => l.id));
+
+    const unknown: string[] = [];
+    for (const entry of contract.entrypoints) {
+      if (!declaredLayerIds.has(entry.layer)) {
+        unknown.push(`${entry.id} → layer=${entry.layer}`);
+      }
+    }
+
+    assert.equal(
+      unknown.length,
+      0,
+      `${unknown.length} entries reference layers not declared in architecture.yaml: ${unknown.slice(0, 5).join(", ")}${unknown.length > 5 ? "…" : ""}. ` +
+        `Declared layers: ${[...declaredLayerIds].join(", ")}.`,
+    );
+  });
+
+  test("§4.5b — every entry.layer === inferLayerFromPath(entry.path, layers) (single source of truth = path)", async () => {
+    const contract = loadRealContract();
+    const layers = loadArchitectureLayers();
+    const { inferLayerFromPath } = await import(
+      "../canonical/lib/infer-layer-from-path"
+    );
+
+    const drifted: string[] = [];
+    for (const entry of contract.entrypoints) {
+      const inferred = inferLayerFromPath(entry.path, layers);
+      if (inferred !== entry.layer) {
+        drifted.push(
+          `${entry.id}: declared=${entry.layer} ≠ inferred=${inferred ?? "<no-match>"}`,
+        );
+      }
+    }
+
+    assert.equal(
+      drifted.length,
+      0,
+      `${drifted.length} entries have declared layer ≠ path-inferred layer: ${drifted.slice(0, 5).join("; ")}${drifted.length > 5 ? "…" : ""}. ` +
+        "Fix entry.path or entry.layer to align. SoT = path.",
+    );
+  });
+});
+
+describe("§4.6 size warning — soft threshold for ratchet conversation", () => {
+  const SOFT_THRESHOLD = 600;
+
+  test(`entries.length < ${SOFT_THRESHOLD} (operational threshold, not schema limit)`, () => {
+    const contract = loadRealContract();
+    assert.ok(
+      contract.entrypoints.length < SOFT_THRESHOLD,
+      `runtime-topology.yaml has ${contract.entrypoints.length} entries (soft threshold: < ${SOFT_THRESHOLD}). ` +
+        "Soft threshold reached. Ratchet decision needed — bump threshold OR split " +
+        "runtime-topology.yaml into per-layer files (canon doctrine warns against " +
+        "monolithic dumps). Do NOT raise the Zod .max(5000) as a substitute.",
+    );
+  });
+});
+
+describe("§4.7 determinism — generator output is byte-identical across runs", () => {
+  // This test validates the GENERATOR (not the YAML). It exec()s the generator
+  // twice and asserts SHA-256 stability of the produced schema.json.
+  const { execSync } = require("node:child_process");
+  const { createHash } = require("node:crypto");
+  const SCHEMA_OUT = path.join(
+    REPO_ROOT,
+    ".spec/00-canon/_schema/runtime-topology.schema.json",
+  );
+
+  test("two consecutive builds produce the same schema.json bytes", () => {
+    execSync("npm run runtime-contract:build", {
+      cwd: REPO_ROOT,
+      stdio: "pipe",
+    });
+    const first = readFileSync(SCHEMA_OUT);
+    const firstSha = createHash("sha256").update(first).digest("hex");
+
+    execSync("npm run runtime-contract:build", {
+      cwd: REPO_ROOT,
+      stdio: "pipe",
+    });
+    const second = readFileSync(SCHEMA_OUT);
+    const secondSha = createHash("sha256").update(second).digest("hex");
+
+    assert.equal(
+      firstSha,
+      secondSha,
+      `Determinism broken: ${firstSha.slice(0, 12)} ≠ ${secondSha.slice(0, 12)}. ` +
+        "Likely cause: util.inspect() with unsorted keys, Date.now() in output, " +
+        "or non-deterministic JSON serialization. Mirror db-contract pattern.",
+    );
+  });
+});
+
 describe("§4.1 schema integrity — fixture-based negative paths", () => {
   test("rejects extra top-level field (.strict() at root)", () => {
     const tampered = { ...validFixture, extra: "smuggled" };
