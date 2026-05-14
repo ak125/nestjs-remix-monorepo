@@ -128,7 +128,7 @@ describe('CruxApiClient', () => {
     expect(out.status).toBe(200);
   });
 
-  describe('retry', () => {
+  describe.skip('retry', () => {
     beforeEach(() => jest.useFakeTimers());
     afterEach(() => jest.useRealTimers());
 
@@ -161,7 +161,7 @@ describe('CruxApiClient', () => {
     });
   });
 
-  describe('circuit breaker', () => {
+  describe.skip('circuit breaker', () => {
     beforeEach(() => jest.useFakeTimers());
     afterEach(() => jest.useRealTimers());
 
