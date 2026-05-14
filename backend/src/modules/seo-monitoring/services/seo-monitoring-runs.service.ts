@@ -19,7 +19,8 @@ export type IngestionSource =
   | 'ga4'
   | 'cwv'
   | 'gsc_links'
-  | 'indexation';
+  | 'indexation'
+  | 'crux';
 
 export interface RunStartContext {
   source: IngestionSource;
