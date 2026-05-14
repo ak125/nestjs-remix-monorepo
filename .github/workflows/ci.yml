@@ -485,96 +485,49 @@ jobs:
           extra_args: --results=verified,unknown
 
   migration-safety:
+    # AST-based Postgres SQL linter (squawk, libpg_query) — replaces the
+    # legacy grep-based gate that produced false positives on prose comments
+    # containing the literal text "DROP TABLE". Governance trail : ADR-064.
     name: 🗄️ Migration Safety
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0   # Need history for git diff against base ref.
 
-      - name: 🗄️ Check new migrations for dangerous operations
+      - name: Identify changed SQL migrations
+        id: changed-sql
         run: |
-          echo "🗄️ Migration Safety Gate"
-          echo "========================"
-
-          # Get only NEW migration files in this commit/PR
-          NEW_MIGRATIONS=$(git diff --name-only --diff-filter=A HEAD~1 -- 'backend/supabase/migrations/*.sql' 2>/dev/null || true)
-
-          if [ -z "$NEW_MIGRATIONS" ]; then
-            echo "✅ No new migrations to check"
-            exit 0
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base="origin/${{ github.base_ref }}"
+            raw=$(git diff --name-only --diff-filter=ACM "$base"...HEAD -- 'backend/supabase/migrations/*.sql' || true)
+          else
+            raw=$(git diff --name-only --diff-filter=ACM HEAD~1 HEAD -- 'backend/supabase/migrations/*.sql' || true)
+          fi
+          # Pre-filter `.down.sql` here (defense-in-depth with `.squawk.toml`
+          # `excluded_paths`) because squawk hard-errors with "Failed to find
+          # files" if every explicit path is excluded by config.
+          files=$(printf '%s\n' "$raw" | grep -v '\.down\.sql$' || true)
+          files=$(printf '%s' "$files" | tr '\n' ' ' | sed 's/ *$//')
+          if [ -z "$files" ]; then
+            echo "✅ No lintable SQL migration changes — gate skipped."
+            echo "files=" >> "$GITHUB_OUTPUT"
+          else
+            echo "Changed SQL migrations to lint :"
+            printf '%s\n' "$files"
+            echo "files=$files" >> "$GITHUB_OUTPUT"
           fi
 
-          echo "New migrations found:"
-          echo "$NEW_MIGRATIONS"
-          echo ""
-
-          ERRORS=0
-          WARNINGS=0
-
-          for file in $NEW_MIGRATIONS; do
-            [ ! -f "$file" ] && continue
-            echo ""
-            echo "Checking: $file"
-
-            # P0 BLOCK: DROP TABLE without explicit approval
-            if grep -iE 'DROP\s+TABLE' "$file" | grep -v '\-\- APPROVED:' > /dev/null 2>&1; then
-              echo "  ❌ DROP TABLE detected without '-- APPROVED:' comment"
-              ERRORS=$((ERRORS+1))
-            fi
-
-            # P0 BLOCK: ALTER TABLE DROP COLUMN without explicit approval
-            if grep -iE 'ALTER\s+TABLE.*DROP\s+COLUMN' "$file" | grep -v '\-\- APPROVED:' > /dev/null 2>&1; then
-              echo "  ❌ DROP COLUMN detected without '-- APPROVED:' comment"
-              ERRORS=$((ERRORS+1))
-            fi
-
-            # P0 BLOCK: Disabling RLS
-            if grep -iE 'ALTER\s+TABLE.*DISABLE\s+ROW\s+LEVEL' "$file" | grep -v '\-\- APPROVED:' > /dev/null 2>&1; then
-              echo "  ❌ DISABLE ROW LEVEL SECURITY detected without '-- APPROVED:' comment"
-              ERRORS=$((ERRORS+1))
-            fi
-
-            # P0 BLOCK: DROP POLICY without explicit approval
-            if grep -iE 'DROP\s+POLICY' "$file" | grep -v '\-\- APPROVED:' > /dev/null 2>&1; then
-              echo "  ❌ DROP POLICY detected without '-- APPROVED:' comment"
-              ERRORS=$((ERRORS+1))
-            fi
-
-            # P1 WARN: TRUNCATE
-            if grep -iE 'TRUNCATE' "$file" > /dev/null 2>&1; then
-              echo "  ⚠️  TRUNCATE detected -- verify this is intentional"
-              WARNINGS=$((WARNINGS+1))
-            fi
-
-            # P1 WARN: DELETE without WHERE
-            if grep -iE 'DELETE\s+FROM' "$file" | grep -viE 'WHERE' > /dev/null 2>&1; then
-              echo "  ⚠️  DELETE without WHERE clause detected"
-              WARNINGS=$((WARNINGS+1))
-            fi
-
-            # P1 WARN: Grant to public
-            if grep -iE 'GRANT.*TO\s+public' "$file" > /dev/null 2>&1; then
-              echo "  ⚠️  GRANT TO public detected"
-              WARNINGS=$((WARNINGS+1))
-            fi
-          done
-
-          echo ""
-          echo "========================"
-          if [ "$WARNINGS" -gt 0 ]; then
-            echo "⚠️  $WARNINGS warning(s) (non-blocking)"
-          fi
-
-          if [ "$ERRORS" -gt 0 ]; then
-            echo "❌ $ERRORS dangerous operation(s) without '-- APPROVED:' comment"
-            echo ""
-            echo "To approve: add '-- APPROVED: <reason>' on the same line"
-            exit 1
-          fi
-
-          echo "✅ Migration safety check passed"
+      - name: Run squawk on changed migrations
+        if: steps.changed-sql.outputs.files != ''
+        uses: sbdchd/squawk-action@v2
+        with:
+          files:              ${{ steps.changed-sql.outputs.files }}
+          version:            "2.52.1"
+          config:             ".squawk.toml"
+          fail-on-violations: true
+          # `files:` (explicit list from git diff) — `pattern:` is for static globs.
 
   build:
     name: 🐳 build
