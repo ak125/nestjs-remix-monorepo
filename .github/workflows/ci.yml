@@ -97,107 +97,15 @@ jobs:
       - name: 🧪 URL Pattern Tests
         run: cd frontend && npm run test -- --run tests/unit/url-patterns.test.ts
 
-      - name: 📦 Bundle size check (gzip)
-        if: always()
-        run: |
-          ASSETS="frontend/build/client/assets"
-          if [ ! -d "$ASSETS" ]; then
-            echo "ℹ️ No frontend build output found (build may have been skipped)"
-            exit 0
-          fi
-
-          # --- Measure gzip sizes ---
-          JS_GZ=0
-          JS_RAW=0
-          for f in $(find "$ASSETS" -name '*.js'); do
-            raw=$(wc -c < "$f")
-            gz=$(gzip -c "$f" | wc -c)
-            JS_RAW=$((JS_RAW + raw))
-            JS_GZ=$((JS_GZ + gz))
-          done
-
-          CSS_GZ=0
-          CSS_RAW=0
-          for f in $(find "$ASSETS" -name '*.css'); do
-            raw=$(wc -c < "$f")
-            gz=$(gzip -c "$f" | wc -c)
-            CSS_RAW=$((CSS_RAW + raw))
-            CSS_GZ=$((CSS_GZ + gz))
-          done
-
-          JS_GZ_KB=$((JS_GZ / 1024))
-          CSS_GZ_KB=$((CSS_GZ / 1024))
-          JS_RAW_KB=$((JS_RAW / 1024))
-          CSS_RAW_KB=$((CSS_RAW / 1024))
-
-          # --- Initial load: framework chunks loaded on every page ---
-          INIT_GZ=0
-          for pattern in "react-vendor-*.js" "radix-vendor-*.js" "root-*.js" "entry.client-*.js"; do
-            for f in $ASSETS/$pattern; do
-              [ -f "$f" ] && INIT_GZ=$((INIT_GZ + $(gzip -c "$f" | wc -c)))
-            done
-          done
-          INIT_GZ_KB=$((INIT_GZ / 1024))
-
-          # --- Largest individual chunk ---
-          LARGEST_GZ=0
-          LARGEST_NAME=""
-          for f in $(find "$ASSETS" -name '*.js'); do
-            gz=$(gzip -c "$f" | wc -c)
-            if [ "$gz" -gt "$LARGEST_GZ" ]; then
-              LARGEST_GZ=$gz
-              LARGEST_NAME=$(basename "$f")
-            fi
-          done
-          LARGEST_GZ_KB=$((LARGEST_GZ / 1024))
-
-          # --- Budgets (gzip bytes) ---
-          JS_GZ_BUDGET=$((800 * 1024))       # 800 KB gzip
-          INIT_GZ_BUDGET=$((200 * 1024))      # 200 KB gzip
-          CHUNK_GZ_BUDGET=$((100 * 1024))     # 100 KB gzip per chunk
-
-          JS_STATUS="✅"
-          [ "$JS_GZ" -gt "$JS_GZ_BUDGET" ] && JS_STATUS="⚠️"
-          INIT_STATUS="✅"
-          [ "$INIT_GZ" -gt "$INIT_GZ_BUDGET" ] && INIT_STATUS="⚠️"
-          CHUNK_STATUS="✅"
-          [ "$LARGEST_GZ" -gt "$CHUNK_GZ_BUDGET" ] && CHUNK_STATUS="⚠️"
-
-          # --- Report ---
-          echo "## 📦 Bundle Size Report (gzip)" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Metric | Size | Budget | Status |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------|------|--------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| JS total (gzip) | ${JS_GZ_KB} KB | 800 KB | ${JS_STATUS} |" >> $GITHUB_STEP_SUMMARY
-          echo "| CSS total (gzip) | ${CSS_GZ_KB} KB | — | — |" >> $GITHUB_STEP_SUMMARY
-          echo "| Initial load (gzip) | ${INIT_GZ_KB} KB | 200 KB | ${INIT_STATUS} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Largest chunk | ${LARGEST_GZ_KB} KB | 100 KB | ${CHUNK_STATUS} |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "_Raw sizes: JS ${JS_RAW_KB} KB, CSS ${CSS_RAW_KB} KB_" >> $GITHUB_STEP_SUMMARY
-
-          # --- Top 5 chunks by gzip size ---
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Top 5 chunks (gzip)" >> $GITHUB_STEP_SUMMARY
-          echo "| Chunk | Raw | Gzip |" >> $GITHUB_STEP_SUMMARY
-          echo "|-------|-----|------|" >> $GITHUB_STEP_SUMMARY
-          for f in $(find "$ASSETS" -name '*.js'); do
-            raw=$(wc -c < "$f")
-            gz=$(gzip -c "$f" | wc -c)
-            echo "$gz $raw $(basename "$f")"
-          done | sort -rn | head -5 | while read gz raw name; do
-            echo "| ${name%.js} | $((raw / 1024)) KB | $((gz / 1024)) KB |" >> $GITHUB_STEP_SUMMARY
-          done
-
-          # --- CI warnings ---
-          if [ "$JS_GZ" -gt "$JS_GZ_BUDGET" ]; then
-            echo "::warning::JS bundle (${JS_GZ_KB} KB gzip) exceeds budget (800 KB)"
-          fi
-          if [ "$INIT_GZ" -gt "$INIT_GZ_BUDGET" ]; then
-            echo "::warning::Initial load (${INIT_GZ_KB} KB gzip) exceeds budget (200 KB)"
-          fi
-          if [ "$LARGEST_GZ" -gt "$CHUNK_GZ_BUDGET" ]; then
-            echo "::warning::Chunk '${LARGEST_NAME}' (${LARGEST_GZ_KB} KB gzip) exceeds 100 KB limit"
-          fi
+      # Bundle size : délégué à size-limit (source de vérité unique
+      # frontend/.size-limit.json, partagée avec perf-gates.yml). Standard
+      # industriel (Andrey Sitnik, adopté par React/Redux/MobX/Prettier).
+      # Voir frontend/size-limit.README.md pour philosophie et calibration.
+      # Ce step était auparavant 100 lignes bash inline en warn-only — non
+      # bloquant, source de vérité dupliquée vs perf-gates.yml, budgets
+      # hardcodés. Remplacé pour cohérence et vrai gate (exit non-zero).
+      - name: 📦 Bundle size gate (size-limit, gzip)
+        run: npm run size
 
   test:
     name: 🧪 Backend Tests
