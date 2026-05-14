@@ -83,4 +83,4 @@ size-limit ne supporte que `error` (exit code) — pas de niveau `warn`. C'est i
 ## Historique
 
 - **2026-05-14 (création, PR #507)** : adoption size-limit. Élimination du script custom `bundle-stats.mjs` (PR #506) et du bloc inline gzip de `ci.yml`. Source de vérité unique : `frontend/.size-limit.json`. Calibration empirique sur build commit `9797b488` (post PR #506 merge).
-- **Historique antérieur** : voir entrée correspondante dans `lighthouse-budget.README.md` (encore présent pour le job Lighthouse PREPROD non-bloquant `ci.yml`, à migrer dans un PR-suivi).
+- **Historique antérieur** : voir [`lighthouse-budget.README.md`](./lighthouse-budget.README.md) — fichier conservé exclusivement pour le job `lighthouse:` PREPROD post-deploy de `ci.yml` (observe-only, mesure timing synthétique sur serveur réel). Ne migre pas vers size-limit : contexte différent (artefact statique vs serveur deployed). Détails dans son README.

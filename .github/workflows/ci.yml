@@ -963,9 +963,20 @@ jobs:
           retention-days: 7
 
   # ============================================
-  # Lighthouse Performance Audit (post-deploy)
+  # Lighthouse Performance Audit (post-deploy, observe-only)
   # ============================================
-
+  # SCOPE : observabilité timing synthétique sur serveur PREPROD réel après
+  # deploy main. **Non-bloquant** (cf. step "Lighthouse summary"). Catch les
+  # régressions de TTFB / cold start / CDN / gzip serveur qu'un bundle scan
+  # statique ne voit pas.
+  #
+  # **N'est PAS un PR gate** : l'anti-régression bundle PR est dans
+  # perf-gates.yml via size-limit sur frontend/.size-limit.json (déterministe,
+  # gzip, bloquant). Voir frontend/size-limit.README.md.
+  #
+  # Budgets de timing : frontend/lighthouse-budget.json (timings only depuis
+  # 2026-05-14 ; les resourceSizes/resourceCounts ont migré vers .size-limit.json
+  # — source de vérité unique pour les budgets bundle).
   lighthouse:
     name: 🔦 Lighthouse Performance Audit
     runs-on: [self-hosted, Linux, X64]
