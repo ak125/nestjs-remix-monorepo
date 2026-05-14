@@ -74,7 +74,7 @@ jobs:
           fi
           echo "✓ Deterministic across 2 runs"
 
-      - name: Run RPC parser fixture tests (V1-3 : 3 parse modes)
+      - name: "Run RPC parser fixture tests (V1-3: 3 parse modes)"
         run: npm run registry:test:rpc-parser
 
       - name: Validate outputs against @repo/registry Zod schemas
