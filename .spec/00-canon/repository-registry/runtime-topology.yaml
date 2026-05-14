@@ -1,0 +1,80 @@
+# yaml-language-server: $schema=../_schema/runtime-topology.schema.json
+# .spec/00-canon/repository-registry/runtime-topology.yaml
+#
+# AutoMecanik monorepo — canonical runtime contract (PR-5, ADR-058 follow-on).
+#
+# The `# yaml-language-server:` directive above links this YAML to its generated
+# JSON Schema mirror for IDE validation (RedHat YAML extension / Helix LSP / etc.).
+# The path is RELATIVE so it resolves correctly in worktrees / sub-checkouts. The
+# schema file is gitignored — run `npm run runtime-contract:build` after a fresh
+# clone to populate it.
+#
+# ──────────────────────────────────────────────────────────────────────────────────
+#  DOCTRINE — read before adding anything to this file
+# ──────────────────────────────────────────────────────────────────────────────────
+#  This file holds RUNTIME ENTRYPOINT INVARIANTS ONLY. It is NOT a dumping ground.
+#
+#  Do NOT add to this file:
+#    × queue concurrency / retry policies → use `workers.yaml` (canon roadmap)
+#    × cron schedules + repeatable jobs   → use `workers.yaml` or `cron.yaml`
+#    × cache TTL / Redis keys             → use `cache.yaml` (canon roadmap)
+#    × event subscribers / emitters       → use `events.yaml` (canon roadmap)
+#    × HTTP route auth gates / RBAC       → use `capabilities.yaml` (canon roadmap)
+#    × RPC signatures + caller surfaces   → use `rpc.yaml` (canon roadmap)
+#    × architectural boundaries           → see `architecture.yaml`
+#    × DB tables / RLS / access surfaces  → see `db.yaml`
+#    × extraction confidence              → it lives in L1 (audit/registry/runtime.json),
+#                                           not in this canon. An entrypoint's status
+#                                           is not a function of how confidently we
+#                                           parsed it.
+#
+#  If you're tempted to add a section that isn't a runtime entrypoint invariant,
+#  open a NEW contract file instead.
+#
+#  FUTURE-SPLIT WARNING:
+#  If a section starts describing INSTANCE-LEVEL config (a specific queue's
+#  concurrency, a cron's exact cadence, a cache's specific TTL) instead of
+#  INVARIANTS (kind of entrypoint, owner, status, layer), STOP and create a
+#  dedicated contract file.
+# ──────────────────────────────────────────────────────────────────────────────────
+#
+# V1 COVERAGE: this contract protects ONE invariant —
+#   the **canonical classification of executable runtime entrypoints** with
+#   stable ownership, domain attribution, lifecycle status, and layer assignment.
+#
+# It does NOT cover queue config, cron schedules, cache topology, RPC signatures,
+# or HTTP auth gates — those are dedicated contracts (canon roadmap §63-71).
+#
+# DERIVED-NOT-DECLARED:
+#   `layer` IS declared in YAML for human readability + grep-friendliness, but
+#   it is MECHANICALLY VALIDATED at build time against:
+#     1. `architecture.yaml#layers[].id` (FK existence check) — test §4.5a
+#     2. `inferLayerFromPath(path, architectureLayers)` — test §4.5b
+#   Any drift (e.g. `path: frontend/... layer: backend`) FAILS the build.
+#   The single source of truth is `path`. Future fields derivable from `path`
+#   must follow the same pattern or be omitted entirely.
+#
+# L1 ALIGNMENT:
+#   `id` format = `runtime:<path>` (matches Layer 1 audit/registry/runtime.json
+#   produced by scripts/registry/build-runtime-registry.js). Cross-contract
+#   test §4.2 verifies that every L2 id appears in L1 (subset, not equivalence).
+#
+# WORKFLOW
+#   Edit this YAML → run `npm run runtime-contract:build` → commit ONLY the YAML.
+#   The JSON schema mirror at `.spec/00-canon/_schema/runtime-topology.schema.json`
+#   is gitignored, regenerated at each build.
+
+schemaVersion: "1.0.0"
+adr: ADR-058
+
+entrypoints:
+  # V1 STUB — single entry to prove schema integrity (test §4.1).
+  # Will be enriched to ~30 sample entries (multi-kind, multi-layer)
+  # in a follow-up commit within PR-5.
+  - id: "runtime:backend/src/app.module.ts"
+    kind: nestjs-module
+    path: "backend/src/app.module.ts"
+    layer: backend                       # validated == inferLayerFromPath(path); FK architecture.yaml#layers[].id
+    domain: D13                          # Config & System (declared in domains.yaml — monorepo scaffolding)
+    owner: "@ak125"                      # canonical owner id (matches ownership.yaml + db.yaml convention)
+    status: LIVE
