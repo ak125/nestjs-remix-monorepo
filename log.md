@@ -681,3 +681,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/pr-w3b-registry-tests-blocking`
 - **Décision** : ci(audit): promote @repo/registry contract tests to BLOCKING gate (PR-W3b)
 - **Sortie** : PR aucune | commits fce47ec9
+
+## 2026-05-14 — feat/seo-cp-cf-analytics-collector (auto)
+
+- **Branche** : `feat/seo-cp-cf-analytics-collector`
+- **Décision** : feat(seo-cp): cloudflare analytics collector L1 — PR-2A-2 (ADR-064)
+- **Sortie** : PR #520 | commits 8701fdf4
