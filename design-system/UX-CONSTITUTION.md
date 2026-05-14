@@ -111,8 +111,8 @@ Before ANY component or page ships:
 
 ## Enforcement
 
-- **CI/CD:** `.github/workflows/perf-gates.yml` blocks PRs with CWV violations
-- **Lighthouse Budget:** `lighthouse-budget.json` defines per-path thresholds
+- **CI/CD:** `.github/workflows/perf-gates.yml` blocks PRs on structural bundle regressions (size/count/largest chunk) via `scripts/perf/bundle-stats.mjs` — déterministe, pas de Lighthouse synthétique.
+- **Bundle budgets:** `frontend/bundle-stats.config.json` — see `frontend/bundle-stats.README.md` for philosophy and calibration history.
 - **Database:** `__ux_perf_gates` table stores configurable thresholds
 - **Skills:** `.claude/skills/ui-ux-pro-max/` validates designs
 
