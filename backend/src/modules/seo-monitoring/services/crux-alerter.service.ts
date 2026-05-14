@@ -261,6 +261,236 @@ export class CruxAlerterService {
   }
 
   /**
+   * Daily orchestration entry point (PR-5).
+   *
+   * Queries the latest period from `__seo_crux_field_history`, applies
+   * detectors A (absolute, all rows) + B (Δ%, origin-level rows only),
+   * transitions state, and emits alerts.
+   *
+   * Returns a per-run summary. Errors caught per-row to avoid one bad row
+   * blocking the rest.
+   */
+  async runDailyEvaluation(): Promise<AlerterRunResult> {
+    const result: AlerterRunResult = {
+      evaluated: 0,
+      emittedOpen: 0,
+      emittedStillOpen: 0,
+      emittedResolved: 0,
+      errors: [],
+    };
+
+    // Step 1 — Fetch latest collection period rows (origin + URLs)
+    const { data: latestRows, error: latestErr } = await this.supabase
+      .from('__seo_crux_field_history')
+      .select(
+        'origin, url, form_factor, collection_period_end_date, p75_lcp_ms, p75_inp_ms, p75_cls',
+      )
+      .order('collection_period_end_date', { ascending: false })
+      .limit(1000);
+
+    if (latestErr) {
+      result.errors.push(`latest rows query failed: ${latestErr.message}`);
+      return result;
+    }
+    if (!latestRows || latestRows.length === 0) {
+      return result;
+    }
+
+    // Group by (origin, url, form_factor) and keep only the most recent period per group
+    const latestByGroup = new Map<
+      string,
+      {
+        origin: string;
+        url: string | null;
+        form_factor: CruxFormFactor;
+        p75_lcp_ms: number | null;
+        p75_inp_ms: number | null;
+        p75_cls: number | null;
+        end_date: string;
+      }
+    >();
+    for (const row of latestRows as Array<{
+      origin: string;
+      url: string | null;
+      form_factor: CruxFormFactor;
+      collection_period_end_date: string;
+      p75_lcp_ms: number | null;
+      p75_inp_ms: number | null;
+      p75_cls: number | null;
+    }>) {
+      const key = `${row.origin}|${row.url ?? ''}|${row.form_factor}`;
+      if (!latestByGroup.has(key)) {
+        latestByGroup.set(key, {
+          origin: row.origin,
+          url: row.url,
+          form_factor: row.form_factor,
+          p75_lcp_ms: row.p75_lcp_ms,
+          p75_inp_ms: row.p75_inp_ms,
+          p75_cls: row.p75_cls,
+          end_date: row.collection_period_end_date,
+        });
+      }
+    }
+
+    // Step 2 — For each group, evaluate detectors
+    const metricKeys: CruxMetricKey[] = ['lcp', 'inp', 'cls'];
+
+    for (const group of latestByGroup.values()) {
+      for (const metric of metricKeys) {
+        const value = this.getMetricValue(group, metric);
+        if (value === null) continue;
+        result.evaluated++;
+
+        try {
+          // Detector A (absolute) — all rows
+          const sevA = this.evaluateAbsolute(metric, value);
+
+          // Detector B (delta) — origin-level only (V1)
+          let sevB: CruxAlertSeverity | null = null;
+          let baselineMedian: number | null = null;
+          let deltaPct: number | null = null;
+          if (group.url === null) {
+            const baseline = await this.fetchBaseline(
+              group.origin,
+              group.form_factor,
+              metric,
+              group.end_date,
+            );
+            const eval2 = this.evaluateDelta(metric, value, baseline);
+            sevB = eval2.severity;
+            baselineMedian = eval2.baselineMedian;
+            deltaPct = eval2.deltaPct;
+          }
+
+          // Pick the more severe of the two detectors (CRIT > WARN > null)
+          const sev = this.pickWorseSeverity(sevA, sevB);
+          const detector: CruxAlertDetector =
+            sev !== null && sev === sevB ? 'delta' : 'absolute';
+
+          // Load existing state for transition decision
+          const existing = await this.loadExistingState(
+            group.origin,
+            group.url,
+            group.form_factor,
+            metric,
+          );
+          const newState = this.transitionState(existing, sev);
+          if (newState === null) continue;
+
+          await this.emitAlert({
+            origin: group.origin,
+            url: group.url,
+            form_factor: group.form_factor,
+            metric,
+            detector,
+            severity: sev ?? existing?.severity ?? 'WARN',
+            state: newState,
+            observedValue: value,
+            baselineMedian,
+            deltaPct,
+          });
+
+          if (newState === 'OPEN') result.emittedOpen++;
+          else if (newState === 'STILL_OPEN') result.emittedStillOpen++;
+          else if (newState === 'RESOLVED') result.emittedResolved++;
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          result.errors.push(
+            `eval ${group.origin}|${group.url ?? ''}|${group.form_factor}|${metric}: ${msg}`,
+          );
+        }
+      }
+    }
+
+    return result;
+  }
+
+  /** Extract the appropriate metric value from a row. */
+  private getMetricValue(
+    row: {
+      p75_lcp_ms: number | null;
+      p75_inp_ms: number | null;
+      p75_cls: number | null;
+    },
+    metric: CruxMetricKey,
+  ): number | null {
+    if (metric === 'lcp') return row.p75_lcp_ms;
+    if (metric === 'inp') return row.p75_inp_ms;
+    if (metric === 'cls') return row.p75_cls;
+    return null;
+  }
+
+  /** Pick the more severe of two severities (CRIT > WARN > null). */
+  private pickWorseSeverity(
+    a: CruxAlertSeverity | null,
+    b: CruxAlertSeverity | null,
+  ): CruxAlertSeverity | null {
+    if (a === 'CRIT' || b === 'CRIT') return 'CRIT';
+    if (a === 'WARN' || b === 'WARN') return 'WARN';
+    return null;
+  }
+
+  /** Fetch trailing-4 baseline values for delta detector. */
+  private async fetchBaseline(
+    origin: string,
+    form_factor: CruxFormFactor,
+    metric: CruxMetricKey,
+    excludeEndDate: string,
+  ): Promise<number[]> {
+    const column =
+      metric === 'lcp'
+        ? 'p75_lcp_ms'
+        : metric === 'inp'
+          ? 'p75_inp_ms'
+          : 'p75_cls';
+    const { data, error } = await this.supabase
+      .from('__seo_crux_field_history')
+      .select(`${column}, collection_period_end_date`)
+      .eq('origin', origin)
+      .is('url', null)
+      .eq('form_factor', form_factor)
+      .lt('collection_period_end_date', excludeEndDate)
+      .order('collection_period_end_date', { ascending: false })
+      .limit(DELTA_BASELINE_PERIODS);
+    if (error || !data) return [];
+    return (data as Array<Record<string, unknown>>)
+      .map((r) => r[column])
+      .filter((v): v is number => typeof v === 'number');
+  }
+
+  /** Load existing alert state for a target. */
+  private async loadExistingState(
+    origin: string,
+    url: string | null,
+    form_factor: CruxFormFactor,
+    metric: CruxMetricKey,
+  ): Promise<{
+    state: CruxAlertState;
+    severity: CruxAlertSeverity;
+    lastEmittedAt: Date;
+  } | null> {
+    const { data, error } = await this.supabase
+      .from('__seo_crux_alert_state')
+      .select('state, severity, last_emitted_at')
+      .eq('origin', origin)
+      .eq('url_key', url ?? '')
+      .eq('form_factor', form_factor)
+      .eq('metric', metric)
+      .maybeSingle();
+    if (error || !data) return null;
+    const row = data as {
+      state: CruxAlertState;
+      severity: CruxAlertSeverity;
+      last_emitted_at: string;
+    };
+    return {
+      state: row.state,
+      severity: row.severity,
+      lastEmittedAt: new Date(row.last_emitted_at),
+    };
+  }
+
+  /**
    * Upsert into `__seo_crux_alert_state`. PK conflict on
    * (origin, url_key, form_factor, metric) → UPDATE.
    * `url_key` generated server-side, omitted from payload.
