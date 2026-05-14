@@ -75,9 +75,15 @@ jobs:
         if: steps.filter.outputs.frontend == 'true'
         run: npm ci
 
-      - name: Build frontend
+      - name: Build (turbo — frontend + workspace deps in order)
         if: steps.filter.outputs.frontend == 'true'
-        run: npm run -w frontend build
+        # `npm run build` = `turbo build` au root. Respecte le DAG des
+        # workspace deps (@repo/database-types, @monorepo/shared-types, etc.)
+        # qui doivent être built avant frontend pour que Remix puisse les
+        # résoudre. `npm run -w frontend build` seul casse cette ordre
+        # (cf. PR #506 first run failure : "Failed to resolve entry for
+        # package @repo/database-types").
+        run: npm run build
         env:
           # Build TypeScript/Vite — pas d'exécution NestJS, donc pas de mocks
           # Supabase service_role, ni RAG, ni payments. Seuls les VITE_* publics
