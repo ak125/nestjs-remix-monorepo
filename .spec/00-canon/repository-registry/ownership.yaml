@@ -47,6 +47,11 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: high
+  - glob: .squawk.toml
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
   - glob: frontend/.size-limit.json
     domain: D13
     owner: '@ak125'

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { DomainIdSchema } from '../shared/domain';
+import { OwnerIdSchema } from '../shared/owner';
 
 // V1 MINIMAL — 3 top-level fields only: schemaVersion, adr, tables[].
 // Everything else (column DDL, RLS state, deletePolicy, RPC signatures,
@@ -22,9 +23,9 @@ const ContractDomainSchema = DomainIdSchema.refine(
   { message: 'db.yaml domains must be explicit (D1..D15) — UNKNOWN is forbidden in canon SoT' },
 );
 
-const OwnerSchema = z
-  .string()
-  .regex(/^@[a-z0-9-]+(\/[a-z0-9-]+)?$/, 'owner must be @org or @org/team');
+// Alias for backward compatibility with existing db-contract consumers.
+// Single source of truth = OwnerIdSchema in shared/owner.ts (PR-5).
+const OwnerSchema = OwnerIdSchema;
 
 // Table name in `schema.name` form (Postgres lowercase; underscores allowed,
 // leading underscore allowed for private tables like __seo_page).

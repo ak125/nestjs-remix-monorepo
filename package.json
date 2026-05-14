@@ -18,6 +18,8 @@
     "pipeline:full": "node scripts/mcp-orchestrator.js",
     "migrate:auto": "node scripts/auto-migrate.js",
     "audit:full": "node ../audit-migration-exhaustif.js",
+    "sql:lint": "node node_modules/squawk-cli/js/bin/squawk --config .squawk.toml 'backend/supabase/migrations/**/*.sql'",
+    "sql:lint:check": "node node_modules/squawk-cli/js/bin/squawk --version",
     "changeset": "changeset",
     "changeset:version": "changeset version",
     "changeset:publish": "changeset publish",
@@ -63,7 +65,8 @@
     "architecture:build": "npm -w @repo/registry run build:architecture",
     "architecture:test": "tsx --test tests/registry/architecture-generator.test.ts",
     "depcruise:integrity-test": "tsx --test tests/registry/depcruise-integrity.test.ts",
-    "db-contract:build": "npm -w @repo/registry run build:db-contract"
+    "db-contract:build": "npm -w @repo/registry run build:db-contract",
+    "runtime-contract:build": "npm -w @repo/registry run build:runtime-contract"
   },
   "keywords": [],
   "author": "",
@@ -99,16 +102,17 @@
     "prettier": "^3.8.3",
     "reflect-metadata": "^0.1.14",
     "rxjs": "^7.8.2",
+    "squawk-cli": "2.52.1",
     "turbo": "^2.9.12",
     "typescript": "^5.9.3"
   },
   "dependencies": {
     "@remix-run/express": "^2.17.4",
-    "@repo/seo-roles": "*",
     "@remix-run/node": "^2.17.4",
     "@remix-run/react": "^2.17.4",
     "@remix-run/serve": "^2.17.4",
     "@remix-run/server-runtime": "^2.17.4",
+    "@repo/seo-roles": "*",
     "@supabase/supabase-js": "^2.95.0",
     "abort-controller": "^3.0.0",
     "autoprefixer": "^10.4.14",
