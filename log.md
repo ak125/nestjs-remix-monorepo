@@ -669,3 +669,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/adr-063-cwv-ingestion-v2`
 - **Décision** : test(seo-crux): minimize to sync-only coverage (3 tests) (+7 other commits)
 - **Sortie** : PR #518 | commits 08142888 e5c6864b f07a4990 44181f8c f03a0252 26c34086 ea602630 dd75d842
+
+## 2026-05-14 — feat/rpc-contract-v1-clean (auto)
+
+- **Branche** : `feat/rpc-contract-v1-clean`
+- **Décision** : refactor(registry): promote AccessSurfaceSchema to shared (PR-R prep)
+- **Sortie** : PR aucune | commits e55ddfbf
