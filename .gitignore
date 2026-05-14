@@ -247,3 +247,4 @@ audit/registry/cache/
 # merge conflicts. Fresh checkouts: run the build once for IDE $schema resolution.
 .spec/00-canon/_schema/architecture.schema.json
 .spec/00-canon/_schema/db.schema.json
+.spec/00-canon/_schema/runtime-topology.schema.json
