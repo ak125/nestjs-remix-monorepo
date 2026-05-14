@@ -490,6 +490,13 @@ jobs:
     # containing the literal text "DROP TABLE". Governance trail : ADR-064.
     name: 🗄️ Migration Safety
     runs-on: ubuntu-latest
+    # squawk-action's `upload-to-github` mode posts a comment on the PR with
+    # rule violations. Default workflow permissions (contents: read) refuse
+    # this with 403 Forbidden. Grant pull-requests: write at the job level
+    # (least-privilege override) so the squawk feedback lands on the PR.
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - name: Check out code
         uses: actions/checkout@v4
