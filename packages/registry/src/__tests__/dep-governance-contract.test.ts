@@ -282,8 +282,9 @@ describe("§4.5 family enum coverage — every family declared SHOULD be used", 
   // 1 dep, OR be documented as reserved (V1 may have unused families intentionally).
   // This test surfaces dead enum values for V1.5 cleanup conversation, NOT a hard fail.
   const RESERVED_V1: ReadonlyArray<string> = [
-    "vehicle",     // reserved — TecDoc-equivs not yet extracted
-    "payments",    // V1 may not have direct payment SDK if paybox is HTTP-only
+    "vehicle",     // reserved — TecDoc-equivs not yet extracted as deps
+    "payments",    // paybox/systempay are HTTP-only integrations (no SDK dep V1)
+    "other",       // escape hatch only — no permanent residents per doctrine
   ];
 
   test("every non-reserved family in FamilyIdSchema is used by at least 1 dep", () => {
