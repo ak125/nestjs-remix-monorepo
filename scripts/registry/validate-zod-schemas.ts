@@ -27,7 +27,7 @@ import {
   DepEntrySchema,
   DbTableEntrySchema,
   RpcEntrySchema,
-} from "@repo/registry";
+} from "../../packages/registry/src/index";
 
 const REGISTRY_DIR = resolve(__dirname, "../../audit/registry");
 

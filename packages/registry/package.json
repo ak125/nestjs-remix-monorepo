@@ -1,16 +1,12 @@
 {
   "name": "@repo/registry",
   "version": "0.1.0",
-  "description": "Zod schemas for Repository Control Plane (ADR-058 V1). 3-layer registry : Layer 1 auto (audit/registry/*.json) + Layer 2 overlay manuel (.spec/00-canon/repository-registry/*.yaml) + Layer 3 projection canonique générée (canonical.json). Hybrid consumption : default subpath `.` serves TS source for tsx scripts (no build prereq), explicit subpath `./runtime` serves compiled dist/ for NestJS backend value imports (L4 Governance bindings, ADR-064).",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "description": "Zod schemas for Repository Control Plane (ADR-058 V1). 3-layer registry : Layer 1 auto (audit/registry/*.json) + Layer 2 overlay manuel (.spec/00-canon/repository-registry/*.yaml) + Layer 3 projection canonique générée (canonical.json). Compiled package : `@repo/registry` resolves to dist/ via tsc --build cascade (Turbo ^build). tsx scripts in scripts/registry/ import the TypeScript source directly by relative path to avoid the build prerequisite.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./src/index.ts",
-      "default": "./src/index.ts"
-    },
-    "./runtime": {
-      "types": "./src/index.ts",
+      "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     }
   },
