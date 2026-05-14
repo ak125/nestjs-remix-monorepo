@@ -87,6 +87,17 @@ jobs:
         if: always()
         run: npm run runtime-contract:build
 
+      - name: 📦 Dep governance — regenerate IDE schema mirror (PR-D)
+        # Mirror of runtime-contract:build pattern. Pure regen of
+        # .spec/00-canon/_schema/dep-governance.schema.json (gitignored).
+        # If Zod parse / cross-contract test fails, surfaces a real bug in
+        # dep-governance.yaml. No committed artifact; no freshness gate yet
+        # — V2 may add a license/version-policy contract + gate.
+        # The @repo/registry test step below (warn-only via PR-W3 #512) picks
+        # up the new dep-governance-contract.test.ts cases automatically.
+        if: always()
+        run: npm run dep-governance:build
+
       # RATCHET DEADLINE — mechanical expiration via env var + date check.
       # After the deadline, the STEP fails visibly (red ✘ in the CI summary, ::error::
       # in the log), but the WORKFLOW still passes because `continue-on-error: true` is
