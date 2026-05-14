@@ -633,3 +633,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/pr-5-runtime-contract-v1`
 - **Décision** : feat(registry): add inferLayerFromPath helper (PR-5 prep) (+1 other commit)
 - **Sortie** : PR aucune | commits a84ff2a8 68144b2a
+
+## 2026-05-14 — feat/pr-5-runtime-contract-v1 (auto)
+
+- **Branche** : `feat/pr-5-runtime-contract-v1`
+- **Décision** : feat(registry): runtime contract V1 scaffold + schema integrity tests (PR-5 §1+§2+§4.1) (+4 other commits)
+- **Sortie** : PR aucune | commits 99424438 38903907 90da8c75 a84ff2a8 68144b2a
