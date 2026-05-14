@@ -29,6 +29,7 @@ export { DeletePolicySchema, type DeletePolicy } from "./shared/delete-policy";
 export { DerivedFromSchema, type DerivedFrom } from "./shared/derived-from";
 export { OwnerIdSchema, type OwnerId } from "./shared/owner";
 export { FamilyIdSchema, type FamilyId } from "./shared/family";
+export { AccessSurfaceSchema, type AccessSurface } from "./shared/access-surface";
 
 // ── Layer 1 entries (auto-generated) ──
 export { FileEntrySchema, type FileEntry } from "./entries/file-entry";
@@ -95,10 +96,11 @@ export {
 } from "./canonical/architecture-contract";
 
 // ── DB contract (PR-3a) ──
+// AccessSurfaceSchema PROMOTED to shared/access-surface.ts in PR-R — exported above.
+// OwnerSchema PROMOTED to shared/owner.ts in PR-5 — db-contract aliases it for back-compat.
 export {
   DbContractSchema,
   TableSchema,
-  AccessSurfaceSchema,
   CriticalitySchema,
   OwnerSchema,
   TableNameSchema,
