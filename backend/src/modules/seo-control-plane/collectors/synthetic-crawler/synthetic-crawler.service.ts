@@ -282,12 +282,13 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
         has_title: title !== null,
         title_text: title ? title.slice(0, 500) : null,
         has_h1: h1 !== null,
-        h1_text: h1
-          ? h1
-              .slice(0, 500)
-              .replace(/<[^>]*>/g, '')
-              .trim()
-          : null,
+        // Store raw inner content truncated to 500 chars. We intentionally
+        // do NOT strip nested HTML tags : regex stripping is brittle on
+        // nested/malformed markup (CodeQL js/incomplete-multi-character-
+        // sanitization) and not security-critical here — L2 drift engine
+        // compares raw strings, doesn't render them. If a real DOM strip is
+        // needed later, use cheerio or domhandler.
+        h1_text: h1 ? h1.slice(0, 500) : null,
         has_canonical: canonical !== null,
         canonical_url: canonical,
         robots_meta: robotsMeta,
