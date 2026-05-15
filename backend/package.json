@@ -33,6 +33,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.0",
     "@google-analytics/data": "^5.2.1",
+    "@growthbook/growthbook": "^1.6.5",
     "@nestjs-modules/ioredis": "^2.0.2",
     "@nestjs/bull": "^10.2.3",
     "@nestjs/bullmq": "^11.0.4",
