@@ -783,3 +783,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `chore/turbo-dev-depends-on-build`
 - **Décision** : chore(turbo): dev task depends on workspace builds
 - **Sortie** : PR #573 | commits 3c67dc79a
+
+## 2026-05-15 — feat/pr-7a-contract-drift-ratchet (auto)
+
+- **Branche** : `feat/pr-7a-contract-drift-ratchet`
+- **Décision** : chore(canon): cover audit/baselines/** in ownership.yaml (D15/@ak125) (+4 other commits)
+- **Sortie** : PR #545 | commits 48766b587 3402aee3f 347f4bcf5 0923c3217 18263e997
