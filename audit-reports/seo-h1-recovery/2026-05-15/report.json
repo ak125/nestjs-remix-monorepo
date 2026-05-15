@@ -1,0 +1,1836 @@
+{
+  "summary": {
+    "run_id": "run_1778853879880_pzl6er",
+    "role": "R1_ROUTER",
+    "generated_at": "2026-05-15T14:04:58.883Z",
+    "total_assets_audited": 23,
+    "evidence_tier_distribution": {
+      "exact_match_snapshot": 0,
+      "exact_match_event_log": 0,
+      "exact_match_blog_advice": 16,
+      "exact_match_builder_template": 0,
+      "heuristic_recent_change": 0,
+      "unknown": 7
+    },
+    "confidence_distribution": {
+      "high": 16,
+      "medium": 0,
+      "low": 7
+    },
+    "strong_candidates": [
+      {
+        "asset": {
+          "asset_id": "r1_router:pg:cardan",
+          "field_path": "h1",
+          "pg_numeric_id": 13,
+          "pg_alias": "cardan",
+          "gamme_label": "Cardan",
+          "role_id": "R1_ROUTER",
+          "url": "https://automecanik.com/pieces/cardan",
+          "physical": {
+            "table": "__seo_gamme",
+            "column": "sg_h1"
+          }
+        },
+        "observed_value": "Rétroviseur extérieur — trouvez la référence compatible",
+        "observed_value_normalized": "rétroviseur extérieur — trouvez la référence compatible",
+        "observed_hash": "6420753e83403922f1a648c820156203429279f223c79d379d9d2646556b94e1",
+        "evidence_tier": "exact_match_blog_advice",
+        "confidence": "high",
+        "source_details": {
+          "blog_advice_id": "16"
+        },
+        "legacy_candidate": "Comment changer un cardan",
+        "legacy_source": "__blog_advice",
+        "scores": {
+          "current": {
+            "length": 55,
+            "length_ok": true,
+            "has_gamme_name": false,
+            "pas_cher_count": 0,
+            "pas_cher_penalty": false,
+            "has_html_residue": false,
+            "all_caps": false,
+            "word_count": 7,
+            "word_count_ok": true,
+            "composite": 5
+          },
+          "legacy": {
+            "length": 25,
+            "length_ok": false,
+            "has_gamme_name": true,
+            "pas_cher_count": 0,
+            "pas_cher_penalty": false,
+            "has_html_residue": false,
+            "all_caps": false,
+            "word_count": 4,
+            "word_count_ok": true,
+            "composite": 7
+          },
+          "score_delta": 2
+        },
+        "observed_at": "2026-05-15T14:04:56.584Z"
+      },
+      {
+        "asset": {
+          "asset_id": "r1_router:pg:disque-de-frein",
+          "field_path": "h1",
+          "pg_numeric_id": 82,
+          "pg_alias": "disque-de-frein",
+          "gamme_label": "Disque de frein",
+          "role_id": "R1_ROUTER",
+          "url": "https://automecanik.com/pieces/disque-de-frein",
+          "physical": {
+            "table": "__seo_gamme",
+            "column": "sg_h1"
+          }
+        },
+        "observed_value": "Bobine d'allumage — trouvez la référence compatible avec votre véhicule",
+        "observed_value_normalized": "bobine d'allumage — trouvez la référence compatible avec votre véhicule",
+        "observed_hash": "d075ca1228dd9c0b718638b4dc7580a05034f34879b13c5203cdbe6c54a45555",
+        "evidence_tier": "exact_match_blog_advice",
+        "confidence": "high",
+        "source_details": {
+          "blog_advice_id": "47"
+        },
+        "legacy_candidate": "Changer un disque de frein : guide complet [2026]",
+        "legacy_source": "__blog_advice",
+        "scores": {
+          "current": {
+            "length": 71,
+            "length_ok": false,
+            "has_gamme_name": false,
+            "pas_cher_count": 0,
+            "pas_cher_penalty": false,
+            "has_html_residue": false,
+            "all_caps": false,
+            "word_count": 10,
+            "word_count_ok": true,
+            "composite": 4
+          },
+          "legacy": {
+            "length": 49,
+            "length_ok": true,
+            "has_gamme_name": true,
+            "pas_cher_count": 0,
+            "pas_cher_penalty": false,
+            "has_html_residue": false,
+            "all_caps": false,
+            "word_count": 9,
+            "word_count_ok": true,
+            "composite": 8
+          },
+          "score_delta": 4
+        },
+        "observed_at": "2026-05-15T14:04:56.690Z"
+      },
+      {
+        "asset": {
+          "asset_id": "r1_router:pg:pompe-de-direction-assistee",
+          "field_path": "h1",
+          "pg_numeric_id": 12,
+          "pg_alias": "pompe-de-direction-assistee",
+          "gamme_label": "Pompe de direction assistée",
+          "role_id": "R1_ROUTER",
+          "url": "https://automecanik.com/pieces/pompe-de-direction-assistee",
+          "physical": {
+            "table": "__seo_gamme",
+            "column": "sg_h1"
+          }
+        },
+        "observed_value": "Butée d'embrayage — trouvez la référence compatible",
+        "observed_value_normalized": "butée d'embrayage — trouvez la référence compatible",
+        "observed_hash": "3fd97d5e9acc8d172ca8108d3f0a1de9da417183707db0cd5843a1bdfa6ccb86",
+        "evidence_tier": "exact_match_blog_advice",
+        "confidence": "high",
+        "source_details": {
+          "blog_advice_id": "27"
+        },
+        "legacy_candidate": "Changer une pompe de direction assistée",
+        "legacy_source": "__blog_advice",
+        "scores": {
+          "current": {
+            "length": 51,
+            "length_ok": true,
+            "has_gamme_name": false,
+            "pas_cher_count": 0,
+            "pas_cher_penalty": false,
+            "has_html_residue": false,
+            "all_caps": false,
+            "word_count": 7,
+            "word_count_ok": true,
+            "composite": 5
+          },
+          "legacy": {
+            "length": 39,
+            "length_ok": true,
+            "has_gamme_name": true,
+            "pas_cher_count": 0,
+            "pas_cher_penalty": false,
+            "has_html_residue": false,
+            "all_caps": false,
+            "word_count": 6,
+            "word_count_ok": true,
+            "composite": 8
+          },
+          "score_delta": 3
+        },
+        "observed_at": "2026-05-15T14:04:56.794Z"
+      },
+      {
+        "asset": {
+          "asset_id": "r1_router:pg:alternateur",
+          "field_path": "h1",
+          "pg_numeric_id": 4,
+          "pg_alias": "alternateur",
+          "gamme_label": "Alternateur",
+          "role_id": "R1_ROUTER",
+          "url": "https://automecanik.com/pieces/alternateur",
+          "physical": {
+            "table": "__seo_gamme",
+            "column": "sg_h1"
+          }
+        },
+        "observed_value": "Filtre à huile — trouvez la référence compatible avec votre véhicule",
+        "observed_value_normalized": "filtre à huile — trouvez la référence compatible avec votre véhicule",
+        "observed_hash": "fa3560377a740af55ae18874ce9bf24f17d634fb1dcf61da01bf5d5058345672",
+        "evidence_tier": "exact_match_blog_advice",
+        "confidence": "high",
+        "source_details": {
+          "blog_advice_id": "20"
+        },
+        "legacy_candidate": "Comment changer votre alternateur",
+        "legacy_source": "__blog_advice",
+        "scores": {
+          "current": {
+            "length": 68,
+            "length_ok": false,
+            "has_gamme_name": false,
+            "pas_cher_count": 0,
+            "pas_cher_penalty": false,
+            "has_html_residue": false,
+            "all_caps": false,
+            "word_count": 11,
+            "word_count_ok": true,
+            "composite": 4
+          },
+          "legacy": {
+            "length": 33,
+            "length_ok": false,
+            "has_gamme_name": true,
+            "pas_cher_count": 0,
+            "pas_cher_penalty": false,
+            "has_html_residue": false,
+            "all_caps": false,
+            "word_count": 4,
+            "word_count_ok": true,
+            "composite": 7
+          },
+          "score_delta": 3
+        },
+        "observed_at": "2026-05-15T14:04:56.999Z"
+      },
+      {
+        "asset": {
+          "asset_id": "r1_router:pg:filtre-a-huile",
+          "field_path": "h1",
+          "pg_numeric_id": 7,
+          "pg_alias": "filtre-a-huile",
+          "gamme_label": "Filtre à huile",
+          "role_id": "R1_ROUTER",
+          "url": "https://automecanik.com/pieces/filtre-a-huile",
+          "physical": {
+            "table": "__seo_gamme",
+            "column": "sg_h1"
+          }
+        },
+        "observed_value": "Courroie d'accessoire — trouvez la référence compatible avec votre véhicule",
+        "observed_value_normalized": "courroie d'accessoire — trouvez la référence compatible avec votre véhicule",
+        "observed_hash": "30127c19bd80c574a506c233c68a60b0ed33506ed392adb317d9b07f44f40c89",
+        "evidence_tier": "exact_match_blog_advice",
+        "confidence": "high",
+        "source_details": {
+          "blog_advice_id": "42"
+        },
+        "legacy_candidate": "Comment changer un filtre à huile",
+        "legacy_source": "__blog_advice",
+        "scores": {
+          "current": {
+            "length": 75,
+            "length_ok": false,
+            "has_gamme_name": false,
+            "pas_cher_count": 0,
+            "pas_cher_penalty": false,
+            "has_html_residue": false,
+            "all_caps": false,
+            "word_count": 10,
+            "word_count_ok": true,
+            "composite": 4
+          },
+          "legacy": {
+            "length": 33,
+            "length_ok": false,
+            "has_gamme_name": true,
+            "pas_cher_count": 0,
+            "pas_cher_penalty": false,
+            "has_html_residue": false,
+            "all_caps": false,
+            "word_count": 6,
+            "word_count_ok": true,
+            "composite": 7
+          },
+          "score_delta": 3
+        },
+        "observed_at": "2026-05-15T14:04:57.101Z"
+      },
+      {
+        "asset": {
+          "asset_id": "r1_router:pg:filtre-a-air",
+          "field_path": "h1",
+          "pg_numeric_id": 8,
+          "pg_alias": "filtre-a-air",
+          "gamme_label": "Filtre à air",
+          "role_id": "R1_ROUTER",
+          "url": "https://automecanik.com/pieces/filtre-a-air",
+          "physical": {
+            "table": "__seo_gamme",
+            "column": "sg_h1"
+          }
+        },
+        "observed_value": "Pompe de direction assistée — trouvez la référence compatible",
+        "observed_value_normalized": "pompe de direction assistée — trouvez la référence compatible",
+        "observed_hash": "38b3899a64d6786a8ed88b20ca9a92e3150213eb853ae8cc26772ce0fc3037e5",
+        "evidence_tier": "exact_match_blog_advice",
+        "confidence": "high",
+        "source_details": {
+          "blog_advice_id": "43"
+        },
+        "legacy_candidate": "Comment changer un filtre à air",
+        "legacy_source": "__blog_advice",
+        "scores": {
+          "current": {
+            "length": 61,
+            "length_ok": true,
+            "has_gamme_name": false,
+            "pas_cher_count": 0,
+            "pas_cher_penalty": false,
+            "has_html_residue": false,
+            "all_caps": false,
+            "word_count": 9,
+            "word_count_ok": true,
+            "composite": 5
+          },
+          "legacy": {
+            "length": 31,
+            "length_ok": false,
+            "has_gamme_name": true,
+            "pas_cher_count": 0,
+            "pas_cher_penalty": false,
+            "has_html_residue": false,
+            "all_caps": false,
+            "word_count": 6,
+            "word_count_ok": true,
+            "composite": 7
+          },
+          "score_delta": 2
+        },
+        "observed_at": "2026-05-15T14:04:57.204Z"
+      },
+      {
+        "asset": {
+          "asset_id": "r1_router:pg:filtre-a-carburant",
+          "field_path": "h1",
+          "pg_numeric_id": 9,
+          "pg_alias": "filtre-a-carburant",
+          "gamme_label": "Filtre à carburant",
+          "role_id": "R1_ROUTER",
+          "url": "https://automecanik.com/pieces/filtre-a-carburant",
+          "physical": {
+            "table": "__seo_gamme",
+            "column": "sg_h1"
+          }
+        },
+        "observed_value": "Cardan — trouvez la référence compatible avec votre véhicule",
+        "observed_value_normalized": "cardan — trouvez la référence compatible avec votre véhicule",
+        "observed_hash": "d97f3b8e433b0fc2c8aaefaa40070547bc3d3c6656c1b677d419b748b54f7c44",
+        "evidence_tier": "exact_match_blog_advice",
+        "confidence": "high",
+        "source_details": {
+          "blog_advice_id": "44"
+        },
+        "legacy_candidate": "Comment changer un filtre à carburant",
+        "legacy_source": "__blog_advice",
+        "scores": {
+          "current": {
+            "length": 60,
+            "length_ok": true,
+            "has_gamme_name": false,
+            "pas_cher_count": 0,
+            "pas_cher_penalty": false,
+            "has_html_residue": false,
+            "all_caps": false,
+            "word_count": 9,
+            "word_count_ok": true,
+            "composite": 5
+          },
+          "legacy": {
+            "length": 37,
+            "length_ok": true,
+            "has_gamme_name": true,
+            "pas_cher_count": 0,
+            "pas_cher_penalty": false,
+            "has_html_residue": false,
+            "all_caps": false,
+            "word_count": 6,
+            "word_count_ok": true,
+            "composite": 8
+          },
+          "score_delta": 3
+        },
+        "observed_at": "2026-05-15T14:04:57.303Z"
+      },
+      {
+        "asset": {
+          "asset_id": "r1_router:pg:courroie-d-accessoire",
+          "field_path": "h1",
+          "pg_numeric_id": 10,
+          "pg_alias": "courroie-d-accessoire",
+          "gamme_label": "Courroie d'accessoire",
+          "role_id": "R1_ROUTER",
+          "url": "https://automecanik.com/pieces/courroie-d-accessoire",
+          "physical": {
+            "table": "__seo_gamme",
+            "column": "sg_h1"
+          }
+        },
+        "observed_value": "Tube d'échappement — trouvez la référence compatible",
+        "observed_value_normalized": "tube d'échappement — trouvez la référence compatible",
+        "observed_hash": "6052dddce02a9f9a2a19455b09a5eea51557422ca1124ea3f3833fb317542b08",
+        "evidence_tier": "exact_match_blog_advice",
+        "confidence": "high",
+        "source_details": {
+          "blog_advice_id": "61"
+        },
+        "legacy_candidate": "Comment changer une courroie d'accessoires",
+        "legacy_source": "__blog_advice",
+        "scores": {
+          "current": {
+            "length": 52,
+            "length_ok": true,
+            "has_gamme_name": false,
+            "pas_cher_count": 0,
+            "pas_cher_penalty": false,
+            "has_html_residue": false,
+            "all_caps": false,
+            "word_count": 7,
+            "word_count_ok": true,
+            "composite": 5
+          },
+          "legacy": {
+            "length": 42,
+            "length_ok": true,
+            "has_gamme_name": true,
+            "pas_cher_count": 0,
+            "pas_cher_penalty": false,
+            "has_html_residue": false,
+            "all_caps": false,
+            "word_count": 5,
+            "word_count_ok": true,
+            "composite": 8
+          },
+          "score_delta": 3
+        },
+        "observed_at": "2026-05-15T14:04:57.403Z"
+      },
+      {
+        "asset": {
+          "asset_id": "r1_router:pg:machoires-de-frein",
+          "field_path": "h1",
+          "pg_numeric_id": 70,
+          "pg_alias": "machoires-de-frein",
+          "gamme_label": "Mâchoires de frein",
+          "role_id": "R1_ROUTER",
+          "url": "https://automecanik.com/pieces/machoires-de-frein",
+          "physical": {
+            "table": "__seo_gamme",
+            "column": "sg_h1"
+          }
+        },
+        "observed_value": "Kit d'embrayage — trouvez la référence compatible avec votre véhicule",
+        "observed_value_normalized": "kit d'embrayage — trouvez la référence compatible avec votre véhicule",
+        "observed_hash": "2b14437ceab41ce52519f60b22d536deda3e80aaa9d880d36064dc880ec43ba6",
+        "evidence_tier": "exact_match_blog_advice",
+        "confidence": "high",
+        "source_details": {
+          "blog_advice_id": "51"
+        },
+        "legacy_candidate": "Comment changer des mâchoires de frein",
+        "legacy_source": "__blog_advice",
+        "scores": {
+          "current": {
+            "length": 69,
+            "length_ok": false,
+            "has_gamme_name": false,
+            "pas_cher_count": 0,
+            "pas_cher_penalty": false,
+            "has_html_residue": false,
+            "all_caps": false,
+            "word_count": 10,
+            "word_count_ok": true,
+            "composite": 4
+          },
+          "legacy": {
+            "length": 38,
+            "length_ok": true,
+            "has_gamme_name": true,
+            "pas_cher_count": 0,
+            "pas_cher_penalty": false,
+            "has_html_residue": false,
+            "all_caps": false,
+            "word_count": 6,
+            "word_count_ok": true,
+            "composite": 8
+          },
+          "score_delta": 4
+        },
+        "observed_at": "2026-05-15T14:04:58.073Z"
+      },
+      {
+        "asset": {
+          "asset_id": "r1_router:pg:flexible-de-frein",
+          "field_path": "h1",
+          "pg_numeric_id": 83,
+          "pg_alias": "flexible-de-frein",
+          "gamme_label": "Flexible de frein",
+          "role_id": "R1_ROUTER",
+          "url": "https://automecanik.com/pieces/flexible-de-frein",
+          "physical": {
+            "table": "__seo_gamme",
+            "column": "sg_h1"
+          }
+        },
+        "observed_value": "Pressostat d'huile — trouvez la référence compatible",
+        "observed_value_normalized": "pressostat d'huile — trouvez la référence compatible",
+        "observed_hash": "17bbe0d55048d89599f24ea24f1758d44eed09b99e415f0723c8d127fda81caa",
+        "evidence_tier": "exact_match_blog_advice",
+        "confidence": "high",
+        "source_details": {
+          "blog_advice_id": "55"
+        },
+        "legacy_candidate": "Comment changer un flexible de frein",
+        "legacy_source": "__blog_advice",
+        "scores": {
+          "current": {
+            "length": 52,
+            "length_ok": true,
+            "has_gamme_name": false,
+            "pas_cher_count": 0,
+            "pas_cher_penalty": false,
+            "has_html_residue": false,
+            "all_caps": false,
+            "word_count": 7,
+            "word_count_ok": true,
+            "composite": 5
+          },
+          "legacy": {
+            "length": 36,
+            "length_ok": true,
+            "has_gamme_name": true,
+            "pas_cher_count": 0,
+            "pas_cher_penalty": false,
+            "has_html_residue": false,
+            "all_caps": false,
+            "word_count": 6,
+            "word_count_ok": true,
+            "composite": 8
+          },
+          "score_delta": 3
+        },
+        "observed_at": "2026-05-15T14:04:58.378Z"
+      },
+      {
+        "asset": {
+          "asset_id": "r1_router:pg:joint-de-collecteur",
+          "field_path": "h1",
+          "pg_numeric_id": 40,
+          "pg_alias": "joint-de-collecteur",
+          "gamme_label": "Joint de collecteur",
+          "role_id": "R1_ROUTER",
+          "url": "https://automecanik.com/pieces/joint-de-collecteur",
+          "physical": {
+            "table": "__seo_gamme",
+            "column": "sg_h1"
+          }
+        },
+        "observed_value": "Courroie de distribution — trouvez la référence compatible",
+        "observed_value_normalized": "courroie de distribution — trouvez la référence compatible",
+        "observed_hash": "8e766bb8cc3d7a9697a8f556674f78f50db1065d3688429ce5bfd5e319e13f23",
+        "evidence_tier": "exact_match_blog_advice",
+        "confidence": "high",
+        "source_details": {
+          "blog_advice_id": "83"
+        },
+        "legacy_candidate": "Comment changer un joint de collecteur",
+        "legacy_source": "__blog_advice",
+        "scores": {
+          "current": {
+            "length": 58,
+            "length_ok": true,
+            "has_gamme_name": false,
+            "pas_cher_count": 0,
+            "pas_cher_penalty": false,
+            "has_html_residue": false,
+            "all_caps": false,
+            "word_count": 8,
+            "word_count_ok": true,
+            "composite": 5
+          },
+          "legacy": {
+            "length": 38,
+            "length_ok": true,
+            "has_gamme_name": true,
+            "pas_cher_count": 0,
+            "pas_cher_penalty": false,
+            "has_html_residue": false,
+            "all_caps": false,
+            "word_count": 6,
+            "word_count_ok": true,
+            "composite": 8
+          },
+          "score_delta": 3
+        },
+        "observed_at": "2026-05-15T14:04:58.574Z"
+      },
+      {
+        "asset": {
+          "asset_id": "r1_router:pg:etrier-de-frein",
+          "field_path": "h1",
+          "pg_numeric_id": 78,
+          "pg_alias": "etrier-de-frein",
+          "gamme_label": "Étrier de frein",
+          "role_id": "R1_ROUTER",
+          "url": "https://automecanik.com/pieces/etrier-de-frein",
+          "physical": {
+            "table": "__seo_gamme",
+            "column": "sg_h1"
+          }
+        },
+        "observed_value": "Récepteur d'embrayage — trouvez la référence compatible",
+        "observed_value_normalized": "récepteur d'embrayage — trouvez la référence compatible",
+        "observed_hash": "f95b300f062df76675fb4e6e29fe5796366648cc09f5bb7a5ca48dcbd38bf6f6",
+        "evidence_tier": "exact_match_blog_advice",
+        "confidence": "high",
+        "source_details": {
+          "blog_advice_id": "48"
+        },
+        "legacy_candidate": "Comment changer un étrier de frein",
+        "legacy_source": "__blog_advice",
+        "scores": {
+          "current": {
+            "length": 55,
+            "length_ok": true,
+            "has_gamme_name": false,
+            "pas_cher_count": 0,
+            "pas_cher_penalty": false,
+            "has_html_residue": false,
+            "all_caps": false,
+            "word_count": 7,
+            "word_count_ok": true,
+            "composite": 5
+          },
+          "legacy": {
+            "length": 34,
+            "length_ok": false,
+            "has_gamme_name": true,
+            "pas_cher_count": 0,
+            "pas_cher_penalty": false,
+            "has_html_residue": false,
+            "all_caps": false,
+            "word_count": 6,
+            "word_count_ok": true,
+            "composite": 7
+          },
+          "score_delta": 2
+        },
+        "observed_at": "2026-05-15T14:04:58.776Z"
+      },
+      {
+        "asset": {
+          "asset_id": "r1_router:pg:feu-clignotant",
+          "field_path": "h1",
+          "pg_numeric_id": 62,
+          "pg_alias": "feu-clignotant",
+          "gamme_label": "Feu clignotant",
+          "role_id": "R1_ROUTER",
+          "url": "https://automecanik.com/pieces/feu-clignotant",
+          "physical": {
+            "table": "__seo_gamme",
+            "column": "sg_h1"
+          }
+        },
+        "observed_value": "Pompe à carburant — trouvez la référence compatible",
+        "observed_value_normalized": "pompe à carburant — trouvez la référence compatible",
+        "observed_hash": "90d8e216194e53e5c4a6317079fdecdd6332a1c72190b6a8bd5db0849e431e27",
+        "evidence_tier": "exact_match_blog_advice",
+        "confidence": "high",
+        "source_details": {
+          "blog_advice_id": "95"
+        },
+        "legacy_candidate": "Comment changer un feu clignotant",
+        "legacy_source": "__blog_advice",
+        "scores": {
+          "current": {
+            "length": 51,
+            "length_ok": true,
+            "has_gamme_name": false,
+            "pas_cher_count": 0,
+            "pas_cher_penalty": false,
+            "has_html_residue": false,
+            "all_caps": false,
+            "word_count": 8,
+            "word_count_ok": true,
+            "composite": 5
+          },
+          "legacy": {
+            "length": 33,
+            "length_ok": false,
+            "has_gamme_name": true,
+            "pas_cher_count": 0,
+            "pas_cher_penalty": false,
+            "has_html_residue": false,
+            "all_caps": false,
+            "word_count": 5,
+            "word_count_ok": true,
+            "composite": 7
+          },
+          "score_delta": 2
+        },
+        "observed_at": "2026-05-15T14:04:58.883Z"
+      }
+    ],
+    "heuristic_candidates": [],
+    "unknown_assets_count": 7,
+    "score_delta_avg_all_candidates": 2.8461538461538463,
+    "business_critical_strong_count": 13,
+    "gate_decision": {
+      "go": true,
+      "condition_met": "b",
+      "thresholds": {
+        "cond_a_min_count": 20,
+        "cond_a_min_ratio": 0.1,
+        "cond_b_min_count": 10,
+        "cond_b_min_score_delta_avg": 2,
+        "cond_c_min_critical_urls": 5
+      },
+      "observed": {
+        "strong_count": 13,
+        "strong_ratio": 0.5652173913043478,
+        "score_delta_avg": 2.8461538461538463,
+        "business_critical_strong_count": 13
+      },
+      "reasoning": "Condition (b) met: 13 strong candidates (>= 10) AND avg score_delta 2.85 (>= 2)."
+    }
+  },
+  "rows": [
+    {
+      "asset": {
+        "asset_id": "r1_router:pg:cardan",
+        "field_path": "h1",
+        "pg_numeric_id": 13,
+        "pg_alias": "cardan",
+        "gamme_label": "Cardan",
+        "role_id": "R1_ROUTER",
+        "url": "https://automecanik.com/pieces/cardan",
+        "physical": {
+          "table": "__seo_gamme",
+          "column": "sg_h1"
+        }
+      },
+      "observed_value": "Rétroviseur extérieur — trouvez la référence compatible",
+      "observed_value_normalized": "rétroviseur extérieur — trouvez la référence compatible",
+      "observed_hash": "6420753e83403922f1a648c820156203429279f223c79d379d9d2646556b94e1",
+      "evidence_tier": "exact_match_blog_advice",
+      "confidence": "high",
+      "source_details": {
+        "blog_advice_id": "16"
+      },
+      "legacy_candidate": "Comment changer un cardan",
+      "legacy_source": "__blog_advice",
+      "scores": {
+        "current": {
+          "length": 55,
+          "length_ok": true,
+          "has_gamme_name": false,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 7,
+          "word_count_ok": true,
+          "composite": 5
+        },
+        "legacy": {
+          "length": 25,
+          "length_ok": false,
+          "has_gamme_name": true,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 4,
+          "word_count_ok": true,
+          "composite": 7
+        },
+        "score_delta": 2
+      },
+      "observed_at": "2026-05-15T14:04:56.584Z"
+    },
+    {
+      "asset": {
+        "asset_id": "r1_router:pg:disque-de-frein",
+        "field_path": "h1",
+        "pg_numeric_id": 82,
+        "pg_alias": "disque-de-frein",
+        "gamme_label": "Disque de frein",
+        "role_id": "R1_ROUTER",
+        "url": "https://automecanik.com/pieces/disque-de-frein",
+        "physical": {
+          "table": "__seo_gamme",
+          "column": "sg_h1"
+        }
+      },
+      "observed_value": "Bobine d'allumage — trouvez la référence compatible avec votre véhicule",
+      "observed_value_normalized": "bobine d'allumage — trouvez la référence compatible avec votre véhicule",
+      "observed_hash": "d075ca1228dd9c0b718638b4dc7580a05034f34879b13c5203cdbe6c54a45555",
+      "evidence_tier": "exact_match_blog_advice",
+      "confidence": "high",
+      "source_details": {
+        "blog_advice_id": "47"
+      },
+      "legacy_candidate": "Changer un disque de frein : guide complet [2026]",
+      "legacy_source": "__blog_advice",
+      "scores": {
+        "current": {
+          "length": 71,
+          "length_ok": false,
+          "has_gamme_name": false,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 10,
+          "word_count_ok": true,
+          "composite": 4
+        },
+        "legacy": {
+          "length": 49,
+          "length_ok": true,
+          "has_gamme_name": true,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 9,
+          "word_count_ok": true,
+          "composite": 8
+        },
+        "score_delta": 4
+      },
+      "observed_at": "2026-05-15T14:04:56.690Z"
+    },
+    {
+      "asset": {
+        "asset_id": "r1_router:pg:pompe-de-direction-assistee",
+        "field_path": "h1",
+        "pg_numeric_id": 12,
+        "pg_alias": "pompe-de-direction-assistee",
+        "gamme_label": "Pompe de direction assistée",
+        "role_id": "R1_ROUTER",
+        "url": "https://automecanik.com/pieces/pompe-de-direction-assistee",
+        "physical": {
+          "table": "__seo_gamme",
+          "column": "sg_h1"
+        }
+      },
+      "observed_value": "Butée d'embrayage — trouvez la référence compatible",
+      "observed_value_normalized": "butée d'embrayage — trouvez la référence compatible",
+      "observed_hash": "3fd97d5e9acc8d172ca8108d3f0a1de9da417183707db0cd5843a1bdfa6ccb86",
+      "evidence_tier": "exact_match_blog_advice",
+      "confidence": "high",
+      "source_details": {
+        "blog_advice_id": "27"
+      },
+      "legacy_candidate": "Changer une pompe de direction assistée",
+      "legacy_source": "__blog_advice",
+      "scores": {
+        "current": {
+          "length": 51,
+          "length_ok": true,
+          "has_gamme_name": false,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 7,
+          "word_count_ok": true,
+          "composite": 5
+        },
+        "legacy": {
+          "length": 39,
+          "length_ok": true,
+          "has_gamme_name": true,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 6,
+          "word_count_ok": true,
+          "composite": 8
+        },
+        "score_delta": 3
+      },
+      "observed_at": "2026-05-15T14:04:56.794Z"
+    },
+    {
+      "asset": {
+        "asset_id": "r1_router:pg:demarreur",
+        "field_path": "h1",
+        "pg_numeric_id": 2,
+        "pg_alias": "demarreur",
+        "gamme_label": "Démarreur",
+        "role_id": "R1_ROUTER",
+        "url": "https://automecanik.com/pieces/demarreur",
+        "physical": {
+          "table": "__seo_gamme",
+          "column": "sg_h1"
+        }
+      },
+      "observed_value": "Démarreur — trouvez la référence compatible avec votre véhicule",
+      "observed_value_normalized": "démarreur — trouvez la référence compatible avec votre véhicule",
+      "observed_hash": "f715082dbd035994609449100539d4d804043bd969a7deb1c2931bbe3fd10604",
+      "evidence_tier": "exact_match_blog_advice",
+      "confidence": "high",
+      "source_details": {
+        "blog_advice_id": "32"
+      },
+      "legacy_candidate": "Changer un démarreur",
+      "legacy_source": "__blog_advice",
+      "scores": {
+        "current": {
+          "length": 63,
+          "length_ok": true,
+          "has_gamme_name": true,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 9,
+          "word_count_ok": true,
+          "composite": 8
+        },
+        "legacy": {
+          "length": 20,
+          "length_ok": false,
+          "has_gamme_name": true,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 3,
+          "word_count_ok": true,
+          "composite": 7
+        },
+        "score_delta": -1
+      },
+      "observed_at": "2026-05-15T14:04:56.898Z"
+    },
+    {
+      "asset": {
+        "asset_id": "r1_router:pg:alternateur",
+        "field_path": "h1",
+        "pg_numeric_id": 4,
+        "pg_alias": "alternateur",
+        "gamme_label": "Alternateur",
+        "role_id": "R1_ROUTER",
+        "url": "https://automecanik.com/pieces/alternateur",
+        "physical": {
+          "table": "__seo_gamme",
+          "column": "sg_h1"
+        }
+      },
+      "observed_value": "Filtre à huile — trouvez la référence compatible avec votre véhicule",
+      "observed_value_normalized": "filtre à huile — trouvez la référence compatible avec votre véhicule",
+      "observed_hash": "fa3560377a740af55ae18874ce9bf24f17d634fb1dcf61da01bf5d5058345672",
+      "evidence_tier": "exact_match_blog_advice",
+      "confidence": "high",
+      "source_details": {
+        "blog_advice_id": "20"
+      },
+      "legacy_candidate": "Comment changer votre alternateur",
+      "legacy_source": "__blog_advice",
+      "scores": {
+        "current": {
+          "length": 68,
+          "length_ok": false,
+          "has_gamme_name": false,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 11,
+          "word_count_ok": true,
+          "composite": 4
+        },
+        "legacy": {
+          "length": 33,
+          "length_ok": false,
+          "has_gamme_name": true,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 4,
+          "word_count_ok": true,
+          "composite": 7
+        },
+        "score_delta": 3
+      },
+      "observed_at": "2026-05-15T14:04:56.999Z"
+    },
+    {
+      "asset": {
+        "asset_id": "r1_router:pg:filtre-a-huile",
+        "field_path": "h1",
+        "pg_numeric_id": 7,
+        "pg_alias": "filtre-a-huile",
+        "gamme_label": "Filtre à huile",
+        "role_id": "R1_ROUTER",
+        "url": "https://automecanik.com/pieces/filtre-a-huile",
+        "physical": {
+          "table": "__seo_gamme",
+          "column": "sg_h1"
+        }
+      },
+      "observed_value": "Courroie d'accessoire — trouvez la référence compatible avec votre véhicule",
+      "observed_value_normalized": "courroie d'accessoire — trouvez la référence compatible avec votre véhicule",
+      "observed_hash": "30127c19bd80c574a506c233c68a60b0ed33506ed392adb317d9b07f44f40c89",
+      "evidence_tier": "exact_match_blog_advice",
+      "confidence": "high",
+      "source_details": {
+        "blog_advice_id": "42"
+      },
+      "legacy_candidate": "Comment changer un filtre à huile",
+      "legacy_source": "__blog_advice",
+      "scores": {
+        "current": {
+          "length": 75,
+          "length_ok": false,
+          "has_gamme_name": false,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 10,
+          "word_count_ok": true,
+          "composite": 4
+        },
+        "legacy": {
+          "length": 33,
+          "length_ok": false,
+          "has_gamme_name": true,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 6,
+          "word_count_ok": true,
+          "composite": 7
+        },
+        "score_delta": 3
+      },
+      "observed_at": "2026-05-15T14:04:57.101Z"
+    },
+    {
+      "asset": {
+        "asset_id": "r1_router:pg:filtre-a-air",
+        "field_path": "h1",
+        "pg_numeric_id": 8,
+        "pg_alias": "filtre-a-air",
+        "gamme_label": "Filtre à air",
+        "role_id": "R1_ROUTER",
+        "url": "https://automecanik.com/pieces/filtre-a-air",
+        "physical": {
+          "table": "__seo_gamme",
+          "column": "sg_h1"
+        }
+      },
+      "observed_value": "Pompe de direction assistée — trouvez la référence compatible",
+      "observed_value_normalized": "pompe de direction assistée — trouvez la référence compatible",
+      "observed_hash": "38b3899a64d6786a8ed88b20ca9a92e3150213eb853ae8cc26772ce0fc3037e5",
+      "evidence_tier": "exact_match_blog_advice",
+      "confidence": "high",
+      "source_details": {
+        "blog_advice_id": "43"
+      },
+      "legacy_candidate": "Comment changer un filtre à air",
+      "legacy_source": "__blog_advice",
+      "scores": {
+        "current": {
+          "length": 61,
+          "length_ok": true,
+          "has_gamme_name": false,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 9,
+          "word_count_ok": true,
+          "composite": 5
+        },
+        "legacy": {
+          "length": 31,
+          "length_ok": false,
+          "has_gamme_name": true,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 6,
+          "word_count_ok": true,
+          "composite": 7
+        },
+        "score_delta": 2
+      },
+      "observed_at": "2026-05-15T14:04:57.204Z"
+    },
+    {
+      "asset": {
+        "asset_id": "r1_router:pg:filtre-a-carburant",
+        "field_path": "h1",
+        "pg_numeric_id": 9,
+        "pg_alias": "filtre-a-carburant",
+        "gamme_label": "Filtre à carburant",
+        "role_id": "R1_ROUTER",
+        "url": "https://automecanik.com/pieces/filtre-a-carburant",
+        "physical": {
+          "table": "__seo_gamme",
+          "column": "sg_h1"
+        }
+      },
+      "observed_value": "Cardan — trouvez la référence compatible avec votre véhicule",
+      "observed_value_normalized": "cardan — trouvez la référence compatible avec votre véhicule",
+      "observed_hash": "d97f3b8e433b0fc2c8aaefaa40070547bc3d3c6656c1b677d419b748b54f7c44",
+      "evidence_tier": "exact_match_blog_advice",
+      "confidence": "high",
+      "source_details": {
+        "blog_advice_id": "44"
+      },
+      "legacy_candidate": "Comment changer un filtre à carburant",
+      "legacy_source": "__blog_advice",
+      "scores": {
+        "current": {
+          "length": 60,
+          "length_ok": true,
+          "has_gamme_name": false,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 9,
+          "word_count_ok": true,
+          "composite": 5
+        },
+        "legacy": {
+          "length": 37,
+          "length_ok": true,
+          "has_gamme_name": true,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 6,
+          "word_count_ok": true,
+          "composite": 8
+        },
+        "score_delta": 3
+      },
+      "observed_at": "2026-05-15T14:04:57.303Z"
+    },
+    {
+      "asset": {
+        "asset_id": "r1_router:pg:courroie-d-accessoire",
+        "field_path": "h1",
+        "pg_numeric_id": 10,
+        "pg_alias": "courroie-d-accessoire",
+        "gamme_label": "Courroie d'accessoire",
+        "role_id": "R1_ROUTER",
+        "url": "https://automecanik.com/pieces/courroie-d-accessoire",
+        "physical": {
+          "table": "__seo_gamme",
+          "column": "sg_h1"
+        }
+      },
+      "observed_value": "Tube d'échappement — trouvez la référence compatible",
+      "observed_value_normalized": "tube d'échappement — trouvez la référence compatible",
+      "observed_hash": "6052dddce02a9f9a2a19455b09a5eea51557422ca1124ea3f3833fb317542b08",
+      "evidence_tier": "exact_match_blog_advice",
+      "confidence": "high",
+      "source_details": {
+        "blog_advice_id": "61"
+      },
+      "legacy_candidate": "Comment changer une courroie d'accessoires",
+      "legacy_source": "__blog_advice",
+      "scores": {
+        "current": {
+          "length": 52,
+          "length_ok": true,
+          "has_gamme_name": false,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 7,
+          "word_count_ok": true,
+          "composite": 5
+        },
+        "legacy": {
+          "length": 42,
+          "length_ok": true,
+          "has_gamme_name": true,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 5,
+          "word_count_ok": true,
+          "composite": 8
+        },
+        "score_delta": 3
+      },
+      "observed_at": "2026-05-15T14:04:57.403Z"
+    },
+    {
+      "asset": {
+        "asset_id": "r1_router:pg:attelage",
+        "field_path": "h1",
+        "pg_numeric_id": 39,
+        "pg_alias": "attelage",
+        "gamme_label": "Attelage",
+        "role_id": "R1_ROUTER",
+        "url": "https://automecanik.com/pieces/attelage",
+        "physical": {
+          "table": "__seo_gamme",
+          "column": "sg_h1"
+        }
+      },
+      "observed_value": "Balais d'essuie-glace — trouvez la référence compatible",
+      "observed_value_normalized": "balais d'essuie-glace — trouvez la référence compatible",
+      "observed_hash": "9a5ede26884e375e43b5761247ef922db99cbdc65a4ea9fe2e9faf19c7b4d651",
+      "evidence_tier": "unknown",
+      "confidence": "low",
+      "source_details": {},
+      "scores": {
+        "current": {
+          "length": 55,
+          "length_ok": true,
+          "has_gamme_name": false,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 7,
+          "word_count_ok": true,
+          "composite": 5
+        }
+      },
+      "observed_at": "2026-05-15T14:04:57.545Z"
+    },
+    {
+      "asset": {
+        "asset_id": "r1_router:pg:butee-d-embrayage",
+        "field_path": "h1",
+        "pg_numeric_id": 48,
+        "pg_alias": "butee-d-embrayage",
+        "gamme_label": "Butée d'embrayage",
+        "role_id": "R1_ROUTER",
+        "url": "https://automecanik.com/pieces/butee-d-embrayage",
+        "physical": {
+          "table": "__seo_gamme",
+          "column": "sg_h1"
+        }
+      },
+      "observed_value": "Joint de cache-culbuteurs — trouvez la référence compatible",
+      "observed_value_normalized": "joint de cache-culbuteurs — trouvez la référence compatible",
+      "observed_hash": "4bc312268836faddaf9f096950cd6770bb23a4e7960819cb0847ac154f2271bc",
+      "evidence_tier": "exact_match_blog_advice",
+      "confidence": "high",
+      "source_details": {
+        "blog_advice_id": "76"
+      },
+      "legacy_candidate": "SYMPTÔMES BUTÉE D'EMBRAYAGE HS",
+      "legacy_source": "__blog_advice",
+      "scores": {
+        "current": {
+          "length": 59,
+          "length_ok": true,
+          "has_gamme_name": false,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 8,
+          "word_count_ok": true,
+          "composite": 5
+        },
+        "legacy": {
+          "length": 30,
+          "length_ok": false,
+          "has_gamme_name": true,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": true,
+          "word_count": 4,
+          "word_count_ok": true,
+          "composite": 6
+        },
+        "score_delta": 1
+      },
+      "observed_at": "2026-05-15T14:04:57.646Z"
+    },
+    {
+      "asset": {
+        "asset_id": "r1_router:pg:vis-de-disque",
+        "field_path": "h1",
+        "pg_numeric_id": 54,
+        "pg_alias": "vis-de-disque",
+        "gamme_label": "Vis de disque",
+        "role_id": "R1_ROUTER",
+        "url": "https://automecanik.com/pieces/vis-de-disque",
+        "physical": {
+          "table": "__seo_gamme",
+          "column": "sg_h1"
+        }
+      },
+      "observed_value": "Capteur ABS — trouvez la référence compatible",
+      "observed_value_normalized": "capteur abs — trouvez la référence compatible",
+      "observed_hash": "c4d9bf47b06311e1911945b5f9152b23802ec738c48e5f5a639632783229cb83",
+      "evidence_tier": "unknown",
+      "confidence": "low",
+      "source_details": {},
+      "scores": {
+        "current": {
+          "length": 45,
+          "length_ok": true,
+          "has_gamme_name": false,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 7,
+          "word_count_ok": true,
+          "composite": 5
+        }
+      },
+      "observed_at": "2026-05-15T14:04:57.759Z"
+    },
+    {
+      "asset": {
+        "asset_id": "r1_router:pg:bouchon-vase-d-expansion",
+        "field_path": "h1",
+        "pg_numeric_id": 56,
+        "pg_alias": "bouchon-vase-d-expansion",
+        "gamme_label": "Bouchon vase d'expansion",
+        "role_id": "R1_ROUTER",
+        "url": "https://automecanik.com/pieces/bouchon-vase-d-expansion",
+        "physical": {
+          "table": "__seo_gamme",
+          "column": "sg_h1"
+        }
+      },
+      "observed_value": "Filtre d'habitacle — trouvez la référence compatible",
+      "observed_value_normalized": "filtre d'habitacle — trouvez la référence compatible",
+      "observed_hash": "03fc176df12efa763e46fe6fef186938a33b954e1e29417c68cae54a86e7cb6a",
+      "evidence_tier": "unknown",
+      "confidence": "low",
+      "source_details": {},
+      "scores": {
+        "current": {
+          "length": 52,
+          "length_ok": true,
+          "has_gamme_name": false,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 7,
+          "word_count_ok": true,
+          "composite": 5
+        }
+      },
+      "observed_at": "2026-05-15T14:04:57.863Z"
+    },
+    {
+      "asset": {
+        "asset_id": "r1_router:pg:relais-de-clignotant",
+        "field_path": "h1",
+        "pg_numeric_id": 61,
+        "pg_alias": "relais-de-clignotant",
+        "gamme_label": "Relais de clignotant",
+        "role_id": "R1_ROUTER",
+        "url": "https://automecanik.com/pieces/relais-de-clignotant",
+        "physical": {
+          "table": "__seo_gamme",
+          "column": "sg_h1"
+        }
+      },
+      "observed_value": "Joint de carter d'huile — référence compatible",
+      "observed_value_normalized": "joint de carter d'huile — référence compatible",
+      "observed_hash": "0bd3cb418892fa31ae000addab485a9da4ac6f3fce52520c26e06dcdef034228",
+      "evidence_tier": "unknown",
+      "confidence": "low",
+      "source_details": {},
+      "scores": {
+        "current": {
+          "length": 46,
+          "length_ok": true,
+          "has_gamme_name": false,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 7,
+          "word_count_ok": true,
+          "composite": 5
+        }
+      },
+      "observed_at": "2026-05-15T14:04:57.968Z"
+    },
+    {
+      "asset": {
+        "asset_id": "r1_router:pg:machoires-de-frein",
+        "field_path": "h1",
+        "pg_numeric_id": 70,
+        "pg_alias": "machoires-de-frein",
+        "gamme_label": "Mâchoires de frein",
+        "role_id": "R1_ROUTER",
+        "url": "https://automecanik.com/pieces/machoires-de-frein",
+        "physical": {
+          "table": "__seo_gamme",
+          "column": "sg_h1"
+        }
+      },
+      "observed_value": "Kit d'embrayage — trouvez la référence compatible avec votre véhicule",
+      "observed_value_normalized": "kit d'embrayage — trouvez la référence compatible avec votre véhicule",
+      "observed_hash": "2b14437ceab41ce52519f60b22d536deda3e80aaa9d880d36064dc880ec43ba6",
+      "evidence_tier": "exact_match_blog_advice",
+      "confidence": "high",
+      "source_details": {
+        "blog_advice_id": "51"
+      },
+      "legacy_candidate": "Comment changer des mâchoires de frein",
+      "legacy_source": "__blog_advice",
+      "scores": {
+        "current": {
+          "length": 69,
+          "length_ok": false,
+          "has_gamme_name": false,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 10,
+          "word_count_ok": true,
+          "composite": 4
+        },
+        "legacy": {
+          "length": 38,
+          "length_ok": true,
+          "has_gamme_name": true,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 6,
+          "word_count_ok": true,
+          "composite": 8
+        },
+        "score_delta": 4
+      },
+      "observed_at": "2026-05-15T14:04:58.073Z"
+    },
+    {
+      "asset": {
+        "asset_id": "r1_router:pg:repartiteur-de-frein",
+        "field_path": "h1",
+        "pg_numeric_id": 73,
+        "pg_alias": "repartiteur-de-frein",
+        "gamme_label": "Répartiteur de frein",
+        "role_id": "R1_ROUTER",
+        "url": "https://automecanik.com/pieces/repartiteur-de-frein",
+        "physical": {
+          "table": "__seo_gamme",
+          "column": "sg_h1"
+        }
+      },
+      "observed_value": "Arbre à cames — trouvez la référence compatible",
+      "observed_value_normalized": "arbre à cames — trouvez la référence compatible",
+      "observed_hash": "5f61c10cb594c53c52b1cc8eba2b4446514484551c1b8341c4ebd71a3643389b",
+      "evidence_tier": "unknown",
+      "confidence": "low",
+      "source_details": {},
+      "scores": {
+        "current": {
+          "length": 47,
+          "length_ok": true,
+          "has_gamme_name": false,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 8,
+          "word_count_ok": true,
+          "composite": 5
+        }
+      },
+      "observed_at": "2026-05-15T14:04:58.174Z"
+    },
+    {
+      "asset": {
+        "asset_id": "r1_router:pg:feu-stop",
+        "field_path": "h1",
+        "pg_numeric_id": 76,
+        "pg_alias": "feu-stop",
+        "gamme_label": "Feu stop",
+        "role_id": "R1_ROUTER",
+        "url": "https://automecanik.com/pieces/feu-stop",
+        "physical": {
+          "table": "__seo_gamme",
+          "column": "sg_h1"
+        }
+      },
+      "observed_value": "Pompe à huile — trouvez la référence compatible",
+      "observed_value_normalized": "pompe à huile — trouvez la référence compatible",
+      "observed_hash": "92a5aef81842daccc8d09bd76528925914b942bdd79fb38f4583df28c013c224",
+      "evidence_tier": "unknown",
+      "confidence": "low",
+      "source_details": {},
+      "scores": {
+        "current": {
+          "length": 47,
+          "length_ok": true,
+          "has_gamme_name": false,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 8,
+          "word_count_ok": true,
+          "composite": 5
+        }
+      },
+      "observed_at": "2026-05-15T14:04:58.277Z"
+    },
+    {
+      "asset": {
+        "asset_id": "r1_router:pg:flexible-de-frein",
+        "field_path": "h1",
+        "pg_numeric_id": 83,
+        "pg_alias": "flexible-de-frein",
+        "gamme_label": "Flexible de frein",
+        "role_id": "R1_ROUTER",
+        "url": "https://automecanik.com/pieces/flexible-de-frein",
+        "physical": {
+          "table": "__seo_gamme",
+          "column": "sg_h1"
+        }
+      },
+      "observed_value": "Pressostat d'huile — trouvez la référence compatible",
+      "observed_value_normalized": "pressostat d'huile — trouvez la référence compatible",
+      "observed_hash": "17bbe0d55048d89599f24ea24f1758d44eed09b99e415f0723c8d127fda81caa",
+      "evidence_tier": "exact_match_blog_advice",
+      "confidence": "high",
+      "source_details": {
+        "blog_advice_id": "55"
+      },
+      "legacy_candidate": "Comment changer un flexible de frein",
+      "legacy_source": "__blog_advice",
+      "scores": {
+        "current": {
+          "length": 52,
+          "length_ok": true,
+          "has_gamme_name": false,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 7,
+          "word_count_ok": true,
+          "composite": 5
+        },
+        "legacy": {
+          "length": 36,
+          "length_ok": true,
+          "has_gamme_name": true,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 6,
+          "word_count_ok": true,
+          "composite": 8
+        },
+        "score_delta": 3
+      },
+      "observed_at": "2026-05-15T14:04:58.378Z"
+    },
+    {
+      "asset": {
+        "asset_id": "r1_router:pg:ampoule-feu-clignotant",
+        "field_path": "h1",
+        "pg_numeric_id": 105,
+        "pg_alias": "ampoule-feu-clignotant",
+        "gamme_label": "Ampoule feu clignotant",
+        "role_id": "R1_ROUTER",
+        "url": "https://automecanik.com/pieces/ampoule-feu-clignotant",
+        "physical": {
+          "table": "__seo_gamme",
+          "column": "sg_h1"
+        }
+      },
+      "observed_value": "Commande de ventilation — trouvez la référence compatible avec votre véhicule",
+      "observed_value_normalized": "commande de ventilation — trouvez la référence compatible avec votre véhicule",
+      "observed_hash": "74447de3c8d6fa22f03f986b07fb721195654a1c72c5f679fbfadf86406a3a99",
+      "evidence_tier": "unknown",
+      "confidence": "low",
+      "source_details": {},
+      "scores": {
+        "current": {
+          "length": 77,
+          "length_ok": false,
+          "has_gamme_name": false,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 11,
+          "word_count_ok": true,
+          "composite": 4
+        }
+      },
+      "observed_at": "2026-05-15T14:04:58.478Z"
+    },
+    {
+      "asset": {
+        "asset_id": "r1_router:pg:joint-de-collecteur",
+        "field_path": "h1",
+        "pg_numeric_id": 40,
+        "pg_alias": "joint-de-collecteur",
+        "gamme_label": "Joint de collecteur",
+        "role_id": "R1_ROUTER",
+        "url": "https://automecanik.com/pieces/joint-de-collecteur",
+        "physical": {
+          "table": "__seo_gamme",
+          "column": "sg_h1"
+        }
+      },
+      "observed_value": "Courroie de distribution — trouvez la référence compatible",
+      "observed_value_normalized": "courroie de distribution — trouvez la référence compatible",
+      "observed_hash": "8e766bb8cc3d7a9697a8f556674f78f50db1065d3688429ce5bfd5e319e13f23",
+      "evidence_tier": "exact_match_blog_advice",
+      "confidence": "high",
+      "source_details": {
+        "blog_advice_id": "83"
+      },
+      "legacy_candidate": "Comment changer un joint de collecteur",
+      "legacy_source": "__blog_advice",
+      "scores": {
+        "current": {
+          "length": 58,
+          "length_ok": true,
+          "has_gamme_name": false,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 8,
+          "word_count_ok": true,
+          "composite": 5
+        },
+        "legacy": {
+          "length": 38,
+          "length_ok": true,
+          "has_gamme_name": true,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 6,
+          "word_count_ok": true,
+          "composite": 8
+        },
+        "score_delta": 3
+      },
+      "observed_at": "2026-05-15T14:04:58.574Z"
+    },
+    {
+      "asset": {
+        "asset_id": "r1_router:pg:retroviseur-exterieur",
+        "field_path": "h1",
+        "pg_numeric_id": 50,
+        "pg_alias": "retroviseur-exterieur",
+        "gamme_label": "Rétroviseur  extérieur",
+        "role_id": "R1_ROUTER",
+        "url": "https://automecanik.com/pieces/retroviseur-exterieur",
+        "physical": {
+          "table": "__seo_gamme",
+          "column": "sg_h1"
+        }
+      },
+      "observed_value": "Pompe à vide de freinage — trouvez la référence compatible avec votre véhicule",
+      "observed_value_normalized": "pompe à vide de freinage — trouvez la référence compatible avec votre véhicule",
+      "observed_hash": "f3b270a3b78112f35b2015e8b342029f1a4378225c907f141274cd4d266114b5",
+      "evidence_tier": "exact_match_blog_advice",
+      "confidence": "high",
+      "source_details": {
+        "blog_advice_id": "100"
+      },
+      "legacy_candidate": "Comment changer un rétroviseur",
+      "legacy_source": "__blog_advice",
+      "scores": {
+        "current": {
+          "length": 78,
+          "length_ok": false,
+          "has_gamme_name": false,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 13,
+          "word_count_ok": true,
+          "composite": 4
+        },
+        "legacy": {
+          "length": 30,
+          "length_ok": false,
+          "has_gamme_name": false,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 4,
+          "word_count_ok": true,
+          "composite": 4
+        },
+        "score_delta": 0
+      },
+      "observed_at": "2026-05-15T14:04:58.671Z"
+    },
+    {
+      "asset": {
+        "asset_id": "r1_router:pg:etrier-de-frein",
+        "field_path": "h1",
+        "pg_numeric_id": 78,
+        "pg_alias": "etrier-de-frein",
+        "gamme_label": "Étrier de frein",
+        "role_id": "R1_ROUTER",
+        "url": "https://automecanik.com/pieces/etrier-de-frein",
+        "physical": {
+          "table": "__seo_gamme",
+          "column": "sg_h1"
+        }
+      },
+      "observed_value": "Récepteur d'embrayage — trouvez la référence compatible",
+      "observed_value_normalized": "récepteur d'embrayage — trouvez la référence compatible",
+      "observed_hash": "f95b300f062df76675fb4e6e29fe5796366648cc09f5bb7a5ca48dcbd38bf6f6",
+      "evidence_tier": "exact_match_blog_advice",
+      "confidence": "high",
+      "source_details": {
+        "blog_advice_id": "48"
+      },
+      "legacy_candidate": "Comment changer un étrier de frein",
+      "legacy_source": "__blog_advice",
+      "scores": {
+        "current": {
+          "length": 55,
+          "length_ok": true,
+          "has_gamme_name": false,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 7,
+          "word_count_ok": true,
+          "composite": 5
+        },
+        "legacy": {
+          "length": 34,
+          "length_ok": false,
+          "has_gamme_name": true,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 6,
+          "word_count_ok": true,
+          "composite": 7
+        },
+        "score_delta": 2
+      },
+      "observed_at": "2026-05-15T14:04:58.776Z"
+    },
+    {
+      "asset": {
+        "asset_id": "r1_router:pg:feu-clignotant",
+        "field_path": "h1",
+        "pg_numeric_id": 62,
+        "pg_alias": "feu-clignotant",
+        "gamme_label": "Feu clignotant",
+        "role_id": "R1_ROUTER",
+        "url": "https://automecanik.com/pieces/feu-clignotant",
+        "physical": {
+          "table": "__seo_gamme",
+          "column": "sg_h1"
+        }
+      },
+      "observed_value": "Pompe à carburant — trouvez la référence compatible",
+      "observed_value_normalized": "pompe à carburant — trouvez la référence compatible",
+      "observed_hash": "90d8e216194e53e5c4a6317079fdecdd6332a1c72190b6a8bd5db0849e431e27",
+      "evidence_tier": "exact_match_blog_advice",
+      "confidence": "high",
+      "source_details": {
+        "blog_advice_id": "95"
+      },
+      "legacy_candidate": "Comment changer un feu clignotant",
+      "legacy_source": "__blog_advice",
+      "scores": {
+        "current": {
+          "length": 51,
+          "length_ok": true,
+          "has_gamme_name": false,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 8,
+          "word_count_ok": true,
+          "composite": 5
+        },
+        "legacy": {
+          "length": 33,
+          "length_ok": false,
+          "has_gamme_name": true,
+          "pas_cher_count": 0,
+          "pas_cher_penalty": false,
+          "has_html_residue": false,
+          "all_caps": false,
+          "word_count": 5,
+          "word_count_ok": true,
+          "composite": 7
+        },
+        "score_delta": 2
+      },
+      "observed_at": "2026-05-15T14:04:58.883Z"
+    }
+  ]
+}
