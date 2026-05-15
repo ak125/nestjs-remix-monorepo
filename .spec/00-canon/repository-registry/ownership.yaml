@@ -273,11 +273,26 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: high
+  - glob: backend/supabase/migrations/*seo_revert_candidates_log*
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
+  - glob: backend/src/modules/seo/recovery/**
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: high
   - glob: scripts/seo/bootstrap/**
     domain: D3
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: medium
+  - glob: scripts/seo/recovery/**
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: high
   - glob: backend/src/modules/seo/governance/**
     domain: D3
     owner: '@ak125/seo-team'
