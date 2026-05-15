@@ -1,0 +1,27 @@
+{
+  "generated_at": "2026-05-15T16:07:16.183Z",
+  "mode": "strict",
+  "total_files_scanned": 1087,
+  "total_findings": 2,
+  "violations": [],
+  "accepted_findings": [
+    {
+      "file": "backend/src/modules/metadata/services/optimized-metadata.service.ts",
+      "line": 160,
+      "column": "mta_h1",
+      "match": ".mta_h1 =",
+      "excerpt": "dbData.mta_h1 = updateData.h1;",
+      "reason": "object_property_write",
+      "acceptance_reason": "gateway_preflighted"
+    },
+    {
+      "file": "backend/src/modules/seo/seo.service.ts",
+      "line": 89,
+      "column": "mta_h1",
+      "match": "mta_h1:",
+      "excerpt": "mta_h1: h1Value,",
+      "reason": "object_property_write",
+      "acceptance_reason": "gateway_preflighted"
+    }
+  ]
+}
