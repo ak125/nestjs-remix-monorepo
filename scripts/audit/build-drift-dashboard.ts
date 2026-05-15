@@ -107,7 +107,7 @@ export interface DashboardJson {
     };
     depCruiserGenerated: { mtime: string | null; ageHours: number | null };
   };
-  ownership: { gapCount: number; sample: string[] };
+  ownership: { gapCount: number; sample: string[]; orphans: string[] };
   coverage: Record<string, unknown>;
 }
 
@@ -278,7 +278,7 @@ function signal2_fingerprint(
 
 function signal3_ownership(
   repoRoot: string,
-): { gapCount: number; sample: string[] } {
+): { gapCount: number; sample: string[]; orphans: string[] } {
   const ownershipPath = join(
     repoRoot,
     ".spec/00-canon/repository-registry/ownership.yaml",
@@ -289,7 +289,7 @@ function signal3_ownership(
   try {
     yamlText = readFileSync(ownershipPath, "utf8");
   } catch {
-    return { gapCount: 0, sample: [] };
+    return { gapCount: 0, sample: [], orphans: [] };
   }
   const overlay: any = yamlLoad(yamlText);
   const entries: any[] = Array.isArray(overlay?.entries) ? overlay.entries : [];
@@ -299,7 +299,7 @@ function signal3_ownership(
   try {
     filesParsed = JSON.parse(readFileSync(filesPath, "utf8"));
   } catch {
-    return { gapCount: 0, sample: [] };
+    return { gapCount: 0, sample: [], orphans: [] };
   }
   const fileEntries: any[] = Array.isArray(filesParsed?.entries)
     ? filesParsed.entries
@@ -312,7 +312,12 @@ function signal3_ownership(
     const matched = micromatch.isMatch(p, globs, { dot: true });
     if (!matched) orphans.push(p);
   }
-  return { gapCount: orphans.length, sample: orphans.slice(0, 10) };
+  const sortedOrphans = orphans.slice().sort();
+  return {
+    gapCount: sortedOrphans.length,
+    sample: sortedOrphans.slice(0, 10),
+    orphans: sortedOrphans,
+  };
 }
 
 function signal4to6_coverage(

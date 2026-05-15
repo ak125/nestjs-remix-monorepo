@@ -1,5 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildDashboard } from "./build-drift-dashboard.ts";
@@ -72,6 +74,56 @@ test("ownership gap detection: no orphans for files that match globs", async () 
   const r = await buildDashboard({ repoRoot: FIXTURE_OK });
   assert.equal(r.json.ownership.gapCount, 0);
   assert.deepEqual(r.json.ownership.sample, []);
+  assert.deepEqual(r.json.ownership.orphans, []);
+});
+
+test("ownership gap detection: full orphans list emitted, sorted, >10 entries", async () => {
+  // Synthetic repo: 12 files where only 2 match the glob. Verifies that the
+  // returned `orphans` array is the FULL list (not truncated like `sample`),
+  // is sorted, and that `sample` is its first-10 prefix.
+  const root = mkdtempSync(join(tmpdir(), "drift-orphans-"));
+  mkdirSync(join(root, ".spec/00-canon/repository-registry"), { recursive: true });
+  mkdirSync(join(root, "audit/registry"), { recursive: true });
+
+  writeFileSync(
+    join(root, ".spec/00-canon/repository-registry/ownership.yaml"),
+    "schemaVersion: 1.0.0\nentries:\n  - glob: backend/**\n    domain: D1\n    owner: x\n    sourceConfidence: high\n    risk: low\n",
+    "utf8",
+  );
+
+  const orphanPaths = [
+    "orphan-z.ts",
+    "orphan-a.ts",
+    "orphan-m.ts",
+    "orphan-c.ts",
+    "orphan-b.ts",
+    "orphan-d.ts",
+    "orphan-e.ts",
+    "orphan-f.ts",
+    "orphan-g.ts",
+    "orphan-h.ts",
+    "orphan-i.ts",
+    "orphan-j.ts",
+  ];
+  const ownedPaths = ["backend/src/owned-1.ts", "backend/src/owned-2.ts"];
+  const allPaths = [...orphanPaths, ...ownedPaths];
+  writeFileSync(
+    join(root, "audit/registry/files.json"),
+    JSON.stringify({
+      entries: allPaths.map((p) => ({ path: p, id: p, owner: null, domain: null })),
+    }),
+    "utf8",
+  );
+
+  const r = await buildDashboard({ repoRoot: root });
+  const sortedOrphans = orphanPaths.slice().sort();
+  assert.equal(r.json.ownership.gapCount, orphanPaths.length);
+  assert.deepEqual(r.json.ownership.orphans, sortedOrphans);
+  assert.deepEqual(r.json.ownership.sample, sortedOrphans.slice(0, 10));
+  assert.ok(
+    r.json.ownership.orphans.length >= r.json.ownership.sample.length,
+    "orphans must be at least as long as sample",
+  );
 });
 
 test("canonical fingerprint: sotFingerprint surfaced, stale=false when sections non-empty", async () => {
