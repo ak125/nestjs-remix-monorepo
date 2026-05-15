@@ -73,7 +73,11 @@ jobs:
         id: ratchet
         run: |
           set -euo pipefail
-          npm run audit:contract-drift-ratchet:json > audit-reports/contract-drift-ratchet.json
+          # Bypass `npm run` to keep banner lines out of the JSON output —
+          # `npm run --silent` is not reliable across versions, and the
+          # downstream summary/comment steps need pristine JSON to parse.
+          ./node_modules/.bin/tsx scripts/audit/check-contract-drift-ratchet.ts --json \
+            > audit-reports/contract-drift-ratchet.json
 
       - name: Append ratchet summary to step summary
         if: always()
