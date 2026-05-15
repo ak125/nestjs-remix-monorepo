@@ -693,3 +693,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/frontend-fetchpriority-react18-helper`
 - **Décision** : docs(img-priority): correct JSDoc — attribute IS rendered, browser already honors LCP (+2 other commits)
 - **Sortie** : PR #534 | commits a7081ef9 25ee4430 10b8a7eb
+
+## 2026-05-15 — fix/frontend-fetchpriority-react18-helper (auto)
+
+- **Branche** : `fix/frontend-fetchpriority-react18-helper`
+- **Décision** : chore(registry): add ownership entry for frontend/app/utils/img-priority.ts (+4 other commits)
+- **Sortie** : PR #534 | commits 96ec3ac0 b7a880bc a7081ef9 25ee4430 10b8a7eb
