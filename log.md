@@ -729,3 +729,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/pr-3b-architecture-freshness-blocking`
 - **Décision** : chore(architecture): regenerate .dependency-cruiser.generated.cjs (PR-3b ratchet self-hosting fix) (+2 other commits)
 - **Sortie** : PR #531 | commits 035327f5 caee5a3c 0589ed20
+
+## 2026-05-15 — feat/pr-6-contract-drift-observatory (auto)
+
+- **Branche** : `feat/pr-6-contract-drift-observatory`
+- **Décision** : test(observatory): empty commit to validate PR-comment upsert (PR-6) (+4 other commits)
+- **Sortie** : PR #540 | commits ef4d8815a da0694748 7193c7082 27d794048 8cd5d6463

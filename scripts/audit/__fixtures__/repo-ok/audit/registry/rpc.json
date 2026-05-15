@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedBy": "fixture-pr6-observatory",
+  "entries": [
+    {
+      "id": "public.fixture_rpc#sig:abc123",
+      "name": "fixture_rpc",
+      "schema": "public",
+      "domain": "D1",
+      "status": "LIVE",
+      "owner": "platform",
+      "sourceConfidence": "high",
+      "parseMode": "parsed",
+      "args": [],
+      "returnType": "void",
+      "language": "plpgsql",
+      "securityDefiner": false,
+      "searchPath": ["public"],
+      "definedInMigrations": ["20260101_fixture.sql"],
+      "usedBy": [],
+      "parseWarnings": [],
+      "schemaVersion": "1.0.0"
+    }
+  ]
+}

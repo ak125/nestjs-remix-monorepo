@@ -9,3 +9,7 @@ phase0-astgrep.txt
 dep-graph.json
 dep-graph.dot
 dep-graph.svg
+
+# Contract Drift Observatory V1 — ephemeral CI outputs (PR-6)
+drift-dashboard.md
+contract-health.json

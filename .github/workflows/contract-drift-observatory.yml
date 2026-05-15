@@ -1,0 +1,173 @@
+name: 📋 Contract Drift Observatory V1 (warn-only, PR-6)
+
+# Read-only observatory per ADR-058 §23 sequence (observe → ratchet → enforce).
+# Aggregates drift signals from the 5 contracts shipped in PR #511 / #519 /
+# #523 / #526 / #530. Never blocks (continue-on-error + exit 0). Outputs:
+#   - $GITHUB_STEP_SUMMARY (always)
+#   - artifact `contract-drift-observatory` (30d retention)
+#   - PR comment on pull_request events (UPSERT via HTML marker, no spam)
+# Does NOT regenerate canonical.json — pure consumer.
+# Does NOT prebuild @repo/registry — script imports the TS source via
+# relative path (documented pattern from packages/registry/package.json).
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "audit/registry/**"
+      - "audit-reports/*-coverage-*.md"
+      - "packages/registry/**"
+      - ".spec/00-canon/repository-registry/**"
+      - "scripts/audit/build-drift-dashboard.ts"
+      - "scripts/audit/build-drift-dashboard.test.ts"
+      - "scripts/audit/__fixtures__/**"
+      - ".github/workflows/contract-drift-observatory.yml"
+  push:
+    branches: [main]
+    paths:
+      - "audit/registry/**"
+      - "audit-reports/*-coverage-*.md"
+      - "packages/registry/**"
+      - "scripts/audit/build-drift-dashboard.ts"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: drift-observatory-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  observe:
+    name: Aggregate contract drift signals (warn-only)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install deps
+        # No prebuild of @repo/registry is required — the aggregator imports
+        # the TS source via relative path, the same way scripts/registry/*.ts
+        # already do. `npm ci` installs micromatch + js-yaml + tsx via root
+        # (added to root devDependencies in Task 1 of PR-6 — hoisting safe).
+        run: npm ci
+
+      - name: Smoke test the aggregator against fixtures (catches logic regressions)
+        # Catches regressions that would pass on live data but break a fixture
+        # path (or vice-versa). Warn-only, never blocks.
+        id: smoke
+        run: |
+          set -uo pipefail
+          npm run audit:drift-dashboard:check || echo "::warning::smoke tests failed (observatory still warn-only — surfacing in summary)"
+
+      - name: Run drift dashboard aggregator
+        id: drift
+        run: |
+          set -uo pipefail
+          npm run audit:drift-dashboard || echo "::warning::aggregator exited non-zero (still continuing — observatory is warn-only)"
+          test -f audit-reports/drift-dashboard.md   || echo "::warning::drift-dashboard.md not produced"
+          test -f audit-reports/contract-health.json || echo "::warning::contract-health.json not produced"
+
+      - name: Append dashboard to GitHub Step Summary
+        if: always()
+        run: |
+          {
+            echo "# 📋 Contract Drift Observatory V1";
+            echo "";
+            echo "_Warn-only observer — never blocks CI. ADR-058 §23 observe phase._";
+            echo "";
+            if [ -f audit-reports/drift-dashboard.md ]; then
+              cat audit-reports/drift-dashboard.md;
+            else
+              echo "⚠️ Dashboard markdown not produced — see job log.";
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload artifact (30d retention)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: contract-drift-observatory
+          path: |
+            audit-reports/drift-dashboard.md
+            audit-reports/contract-health.json
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Upsert PR comment with summary (warn-only, single comment)
+        if: always() && github.event_name == 'pull_request' && hashFiles('audit-reports/contract-health.json') != ''
+        uses: actions/github-script@v9
+        with:
+          # Marker is HTML comment → invisible in rendered MD, durable for matching.
+          # github-script@v9 — same version used by spec-canon-prompt-registry-drift.yml.
+          # Our script body uses only `require('node:fs')` + the injected `github` /
+          # `context` / `core` objects — never `require('@actions/github')`, which is
+          # the v9 breaking change.
+          script: |
+            const fs = require('node:fs');
+            const MARKER = '<!-- contract-drift-observatory-v1 -->';
+            try {
+              const health = JSON.parse(fs.readFileSync('audit-reports/contract-health.json', 'utf8'));
+              const glyph  = (s) => s === 'ok' ? '✅' : s === 'invalid' ? '⚠️' : '❌';
+              const rows   = health.contracts
+                .map(c => `| \`${c.name}\` | \`${c.file}\` | ${glyph(c.status)} ${c.status} | ${c.entries} |`)
+                .join('\n');
+              const stale  = health.fingerprint?.canonical?.stale
+                ? `⚠️ stale (${health.fingerprint.canonical.staleReason})`
+                : '✅ fresh';
+              const sotFp  = health.fingerprint?.canonical?.sotFingerprint ?? '?';
+              const gaps   = health.ownership?.gapCount ?? '?';
+              const body = [
+                MARKER,
+                '## 📋 Contract Drift Observatory V1',
+                '',
+                '_Warn-only observer (PR-6). Full dashboard in the job **step summary** + downloadable **artifact**._',
+                '',
+                '| Contract | File | Status | L1 entries |',
+                '|---|---|---|---:|',
+                rows,
+                '',
+                `**Canonical fingerprint:** ${stale} · sotFingerprint \`${sotFp}\``,
+                `**Ownership gaps:** ${gaps}`,
+                '',
+                '> This check never blocks. Reproduce locally with `npm run audit:drift-dashboard`.',
+              ].join('\n');
+
+              // Upsert: find existing marker, edit if found, else create.
+              const { data: comments } = await github.rest.issues.listComments({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                per_page: 100,
+              });
+              const existing = comments.find((c) => typeof c.body === 'string' && c.body.includes(MARKER));
+              if (existing) {
+                await github.rest.issues.updateComment({
+                  comment_id: existing.id,
+                  owner: context.repo.owner,
+                  repo:  context.repo.repo,
+                  body,
+                });
+                core.info(`drift-observatory: updated comment ${existing.id}`);
+              } else {
+                await github.rest.issues.createComment({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo:  context.repo.repo,
+                  body,
+                });
+                core.info('drift-observatory: created new comment');
+              }
+            } catch (e) {
+              core.warning(`drift-observatory comment skipped: ${e.message}`);
+            }
