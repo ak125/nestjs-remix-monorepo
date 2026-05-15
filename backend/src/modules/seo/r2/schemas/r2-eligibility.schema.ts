@@ -28,27 +28,31 @@ export type R2EligibilitySubscores = z.infer<
 >;
 
 // ── Verdict (decision tree output) ─────────────────────────────────────────────
-
+//
+// ADR-067 amendment (2026-05-15) : SUPPRESSED automatique INTERDIT.
+// Le pipeline ne peut émettre que 3 verdicts : eligible | review | reject.
+// SUPPRESSED reste un statut DB mais devient manual-only (admin override UI).
+// Voir MEMORY feedback_no_auto_page_suppression_ever.
 export const R2EligibilityVerdictEnum = z.enum([
   'eligible',
-  'suppressed',
+  'review',
   'reject',
 ]);
 
 export type R2EligibilityVerdictKind = z.infer<typeof R2EligibilityVerdictEnum>;
 
 /**
- * Sibling target for SUPPRESSED canonical decision (cf ADR-066 + MEMORY
- * feedback_seo_suppressed_canonical_decision).
+ * Manual canonical target for admin SUPPRESSED override (ADR-067).
+ * Le pipeline ne produit jamais cette valeur — admin UI uniquement
+ * (via review queue flip). Conservé schema-side pour le path manual
+ * et l'audit-trail des décisions humaines.
  */
-export const SuppressedCanonicalTargetSchema = z.object({
+export const ManualCanonicalTargetSchema = z.object({
   typeId: z.number().int().positive(),
   pgId: z.number().int().positive(),
 });
 
-export type SuppressedCanonicalTarget = z.infer<
-  typeof SuppressedCanonicalTargetSchema
->;
+export type ManualCanonicalTarget = z.infer<typeof ManualCanonicalTargetSchema>;
 
 // ── Full verdict (consumed by R2EligibilityService) ────────────────────────────
 
@@ -58,7 +62,6 @@ export const R2EligibilityVerdictSchema = z.object({
   subscores: R2EligibilitySubscoresSchema,
   verdict: R2EligibilityVerdictEnum,
   reason: z.string(),
-  suppressedCanonicalTarget: SuppressedCanonicalTargetSchema.optional(),
 });
 
 export type R2EligibilityVerdict = z.infer<typeof R2EligibilityVerdictSchema>;
@@ -73,7 +76,9 @@ export const R2EligibilityLogRowSchema = z.object({
   eligibilityScore: z.number().min(0).max(100),
   subscores: R2EligibilitySubscoresSchema,
   verdict: R2EligibilityVerdictEnum,
-  suppressedTarget: z.number().int().positive().nullable().optional(),
+  // ADR-067 : pipeline n'émet jamais SUPPRESSED. Kept nullable for legacy rows
+  // and for the manual admin path (review queue → suppressed flip).
+  manualCanonicalTarget: z.number().int().positive().nullable().optional(),
   reason: z.string().nullable().optional(),
   evaluatedAt: z.date().optional(), // server default NOW()
 });

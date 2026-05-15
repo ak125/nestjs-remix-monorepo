@@ -26,13 +26,20 @@ import type { MotorDelta } from '../schemas/r2-composition.schema';
 import type {
   R2EligibilitySubscores,
   R2EligibilityVerdict,
-  SuppressedCanonicalTarget,
 } from '../schemas/r2-eligibility.schema';
 import {
   R2CommercialDistinctivenessService,
   type CommercialInputs,
 } from './r2-commercial-distinctiveness.service';
 
+/**
+ * ADR-067 (2026-05-15) : pipeline ne peut émettre que 3 verdicts —
+ * eligible | review | reject. SUPPRESSED reste manual-only (admin UI).
+ *
+ * Plus de `hasCanonicalSiblingIndex` ni `siblingCanonicalTarget` ici :
+ * la décision SUPPRESSED humaine se fait dans la review queue après
+ * que le pipeline a émis `review`, jamais avant.
+ */
 export interface EligibilityRunInputs {
   pgId: number;
   typeId: number;
@@ -40,8 +47,6 @@ export interface EligibilityRunInputs {
   commercialInputs: CommercialInputs;
   productCount: number;
   searchVolumeFactor: number; // log-normalized 0-100 (V-Level or GSC clicks proxy)
-  hasCanonicalSiblingIndex: boolean; // diversity service preview
-  siblingCanonicalTarget?: SuppressedCanonicalTarget;
 }
 
 @Injectable()
@@ -106,24 +111,16 @@ export class R2EligibilityService {
       };
     }
 
-    // Below threshold : SUPPRESSED if canonical sibling fiable, REJECT otherwise.
-    if (inputs.hasCanonicalSiblingIndex && inputs.siblingCanonicalTarget) {
-      return {
-        eligible: false,
-        eligibilityScore: roundedScore,
-        subscores,
-        verdict: 'suppressed',
-        suppressedCanonicalTarget: inputs.siblingCanonicalTarget,
-        reason: `score=${roundedScore} < ${THRESHOLD_V1}, canonical sibling type_id=${inputs.siblingCanonicalTarget.typeId}`,
-      };
-    }
-
+    // ADR-067 (2026-05-15) : Below threshold + valid productCount → REVIEW
+    // (enrichment queue or human validation). Pipeline never emits SUPPRESSED.
+    // The admin can manually flip a REVIEW page to SUPPRESSED via UI later if
+    // a real duplicate is confirmed humanly (rare exception path).
     return {
       eligible: false,
       eligibilityScore: roundedScore,
       subscores,
-      verdict: 'reject',
-      reason: `score=${roundedScore} < ${THRESHOLD_V1}, no canonical sibling fiable`,
+      verdict: 'review',
+      reason: `score=${roundedScore} < THRESHOLD_V1=${THRESHOLD_V1} — REVIEW queue (enrichment or human validation, ADR-067)`,
     };
   }
 

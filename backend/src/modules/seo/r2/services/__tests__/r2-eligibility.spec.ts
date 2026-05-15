@@ -61,8 +61,6 @@ describe('R2EligibilityService', () => {
       commercialInputs: baseCommercialInputs,
       productCount: 1,
       searchVolumeFactor: 50,
-      hasCanonicalSiblingIndex: true,
-      siblingCanonicalTarget: { typeId: 67890, pgId: 100 },
     });
     expect(verdict.verdict).toBe('reject');
     expect(verdict.eligibilityScore).toBe(0);
@@ -77,15 +75,16 @@ describe('R2EligibilityService', () => {
       commercialInputs: baseCommercialInputs,
       productCount: 50,
       searchVolumeFactor: 70,
-      hasCanonicalSiblingIndex: false,
     });
     expect(verdict.eligibilityScore).toBeGreaterThanOrEqual(THRESHOLD_V1);
     expect(verdict.verdict).toBe('eligible');
     expect(verdict.eligible).toBe(true);
   });
 
-  it('returns suppressed when below threshold AND canonical sibling exists', () => {
-    // Make motor very weak (no deltas at all) + low commercial distinctness
+  // ADR-067 (2026-05-15) — SUPPRESSED automatique INTERDIT.
+  // Pipeline below threshold + productCount >= 2 → REVIEW (jamais SUPPRESSED).
+  // Le path SUPPRESSED reste manual-only (admin UI override).
+  it('returns review when below threshold AND productCount >= 2 (ADR-067 no auto suppressed)', () => {
     const weakMotor: MotorDelta = {
       ...baseMotor,
       hasPowerDelta: false,
@@ -111,48 +110,45 @@ describe('R2EligibilityService', () => {
       commercialInputs: weakCommercialInputs,
       productCount: 3,
       searchVolumeFactor: 10,
-      hasCanonicalSiblingIndex: true,
-      siblingCanonicalTarget: { typeId: 67890, pgId: 100 },
     });
     expect(verdict.eligibilityScore).toBeLessThan(THRESHOLD_V1);
-    expect(verdict.verdict).toBe('suppressed');
-    expect(verdict.suppressedCanonicalTarget).toEqual({
-      typeId: 67890,
-      pgId: 100,
-    });
+    expect(verdict.verdict).toBe('review');
+    // No suppressedCanonicalTarget — ADR-067 forbids pipeline-emitted SUPPRESSED
+    expect(verdict.reason).toContain('REVIEW');
   });
 
-  it('returns reject when below threshold AND no canonical sibling', () => {
-    const weakMotor: MotorDelta = {
-      ...baseMotor,
-      hasPowerDelta: false,
-      hasEngineDelta: false,
-      hasPeriodDelta: false,
-      hasFuelDelta: false,
-      hasBodyDelta: false,
-      uniqueProductFamilies: [],
-      productCount: 3,
-    };
-    const weakCommercialInputs = {
-      ...baseCommercialInputs,
-      targetFamilies: baseCommercialInputs.clusterFamilies,
-      targetOemRefs: baseCommercialInputs.clusterOemRefs,
-      targetSuppliers: baseCommercialInputs.clusterSuppliers,
-      targetMedianPriceCents: baseCommercialInputs.clusterMedianPriceCents,
-      targetCompatScope: baseCommercialInputs.clusterCompatScope,
-    };
-    const verdict = service.evaluate({
-      pgId: 100,
-      typeId: 12345,
-      motorDelta: weakMotor,
-      commercialInputs: weakCommercialInputs,
-      productCount: 3,
-      searchVolumeFactor: 10,
-      hasCanonicalSiblingIndex: false,
-    });
-    expect(verdict.eligibilityScore).toBeLessThan(THRESHOLD_V1);
-    expect(verdict.verdict).toBe('reject');
-    expect(verdict.suppressedCanonicalTarget).toBeUndefined();
+  it('verdict enum never includes "suppressed" from pipeline (ADR-067)', () => {
+    // Exhaustive sweep : with varying motor strength + productCount >= 2,
+    // verdict must always be in {eligible, review} (never suppressed)
+    const scenarios = [
+      { hp: false, eng: false, prod: 5, sv: 0 },
+      { hp: true, eng: false, prod: 10, sv: 30 },
+      { hp: true, eng: true, prod: 200, sv: 90 },
+      { hp: false, eng: true, prod: 3, sv: 100 },
+    ];
+    for (const sc of scenarios) {
+      const motor: MotorDelta = {
+        ...baseMotor,
+        hasPowerDelta: sc.hp,
+        hasEngineDelta: sc.eng,
+        hasPeriodDelta: false,
+        hasFuelDelta: false,
+        hasBodyDelta: false,
+        productCount: sc.prod,
+      };
+      const verdict = service.evaluate({
+        pgId: 100,
+        typeId: 12345,
+        motorDelta: motor,
+        commercialInputs: baseCommercialInputs,
+        productCount: sc.prod,
+        searchVolumeFactor: sc.sv,
+      });
+      expect(['eligible', 'review']).toContain(verdict.verdict);
+      // Runtime safety check : enum guarantees no 'suppressed' at type level,
+      // but assert at runtime in case of upstream regression.
+      expect(verdict.verdict as string).not.toBe('suppressed');
+    }
   });
 
   it('exposes all 4 subscores in verdict', () => {
@@ -163,7 +159,6 @@ describe('R2EligibilityService', () => {
       commercialInputs: baseCommercialInputs,
       productCount: 50,
       searchVolumeFactor: 60,
-      hasCanonicalSiblingIndex: false,
     });
     expect(verdict.subscores.motor).toBeGreaterThanOrEqual(0);
     expect(verdict.subscores.motor).toBeLessThanOrEqual(100);
