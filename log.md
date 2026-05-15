@@ -681,3 +681,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/pr-w3b-registry-tests-blocking`
 - **Décision** : ci(audit): promote @repo/registry contract tests to BLOCKING gate (PR-W3b)
 - **Sortie** : PR aucune | commits fce47ec9
+
+## 2026-05-15 — fix/frontend-fetchpriority-react18-helper (auto)
+
+- **Branche** : `fix/frontend-fetchpriority-react18-helper`
+- **Décision** : fix(frontend): wrap fetchPriority in lowercase helper for React 18 runtime
+- **Sortie** : PR #534 | commits 10b8a7eb
