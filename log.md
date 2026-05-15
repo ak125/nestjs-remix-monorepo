@@ -735,3 +735,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/pr-6-contract-drift-observatory`
 - **Décision** : test(observatory): empty commit to validate PR-comment upsert (PR-6) (+4 other commits)
 - **Sortie** : PR #540 | commits ef4d8815a da0694748 7193c7082 27d794048 8cd5d6463
+
+## 2026-05-15 — feat/seo-r2-composition-v2-foundation (auto)
+
+- **Branche** : `feat/seo-r2-composition-v2-foundation`
+- **Décision** : chore(registry): add seo_r2_v2 migration glob to ownership.yaml (ADR-066) (+3 other commits)
+- **Sortie** : PR #543 | commits 6ab4fe6e2 40102ed6b 3441fd143 a08d62eb9
