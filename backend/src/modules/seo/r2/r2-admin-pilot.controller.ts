@@ -16,13 +16,20 @@
  * MEMORY feedback_no_overclaim_security_words : 2-layer admin + Rego).
  */
 
-import { Controller, Post, Body, UseGuards, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Logger,
+  BadRequestException,
+} from '@nestjs/common';
 import { IsAdminGuard } from '@auth/is-admin.guard';
 import { R2EligibilityService } from './services/r2-eligibility.service';
 import { R2FeatureFlagService } from './services/r2-feature-flag.service';
-import {
+import type {
   R2EnrichSingleDto,
-  type R2EnrichSingleResponse,
+  R2EnrichSingleResponse,
 } from './dto/r2-enrich-single.dto';
 
 @Controller('api/admin/seo/r2')
@@ -47,6 +54,21 @@ export class R2AdminPilotController {
   async enrichSingle(
     @Body() dto: R2EnrichSingleDto,
   ): Promise<R2EnrichSingleResponse> {
+    // Inline validation (no class-validator dep — aligned with monorepo pattern,
+    // cf seo-generator.controller.ts).
+    if (
+      !dto ||
+      !Number.isInteger(dto.pgId) ||
+      dto.pgId <= 0 ||
+      !Number.isInteger(dto.typeId) ||
+      dto.typeId <= 0 ||
+      dto.typeId > 99_999_999
+    ) {
+      throw new BadRequestException(
+        'pgId + typeId must be positive integers (typeId <= 99_999_999)',
+      );
+    }
+
     const flagEnabled = await this.featureFlag.isEnabled();
     const ts = new Date().toISOString();
 

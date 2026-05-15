@@ -57,14 +57,14 @@ CREATE EXTENSION IF NOT EXISTS vector;
 -- =============================================================================
 CREATE TABLE IF NOT EXISTS public.__seo_r2_pages (
   id                          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  pg_id                       INTEGER     NOT NULL,
-  type_id                     INTEGER     NOT NULL,
+  pg_id                       BIGINT     NOT NULL,
+  type_id                     BIGINT     NOT NULL,
   status                      TEXT        NOT NULL DEFAULT 'draft'
     CHECK (status IN ('draft', 'published', 'review', 'rejected', 'regenerating', 'suppressed')),
   decision                    TEXT        NOT NULL DEFAULT 'noindex_follow'
     CHECK (decision IN ('index', 'noindex_follow', 'review_required', 'regenerate', 'reject', 'suppressed')),
-  canonical_target_type_id    INTEGER,                    -- SUPPRESSED → pointe sibling INDEX, anti-chain enforced par Rego
-  retry_count                 INTEGER     NOT NULL DEFAULT 0 CHECK (retry_count >= 0 AND retry_count <= 2),
+  canonical_target_type_id    BIGINT,                    -- SUPPRESSED → pointe sibling INDEX, anti-chain enforced par Rego
+  retry_count                 BIGINT     NOT NULL DEFAULT 0 CHECK (retry_count >= 0 AND retry_count <= 2),
   contract_version            TEXT        NOT NULL DEFAULT '2.0.0',
   content_hash                TEXT,                       -- sha256(content_main), NULL si pas encore INDEX
   eligibility_score           NUMERIC(5,2) CHECK (eligibility_score IS NULL OR (eligibility_score >= 0 AND eligibility_score <= 100)),
@@ -117,15 +117,15 @@ GRANT SELECT, INSERT, UPDATE ON public.__seo_r2_page_content TO service_role;
 -- =============================================================================
 CREATE TABLE IF NOT EXISTS public.__seo_r2_metrics (
   page_id                          BIGINT      PRIMARY KEY REFERENCES public.__seo_r2_pages(id) ON DELETE CASCADE,
-  overall_seo_score                INTEGER     CHECK (overall_seo_score IS NULL OR (overall_seo_score >= 0 AND overall_seo_score <= 100)),
-  motor_delta_score                INTEGER     CHECK (motor_delta_score IS NULL OR (motor_delta_score >= 0 AND motor_delta_score <= 100)),
-  compat_delta_score               INTEGER     CHECK (compat_delta_score IS NULL OR (compat_delta_score >= 0 AND compat_delta_score <= 100)),
-  commercial_distinctiveness_score INTEGER     CHECK (commercial_distinctiveness_score IS NULL OR (commercial_distinctiveness_score >= 0 AND commercial_distinctiveness_score <= 100)),
-  crawl_value_score                INTEGER     CHECK (crawl_value_score IS NULL OR (crawl_value_score >= 0 AND crawl_value_score <= 100)),
+  overall_seo_score                BIGINT     CHECK (overall_seo_score IS NULL OR (overall_seo_score >= 0 AND overall_seo_score <= 100)),
+  motor_delta_score                BIGINT     CHECK (motor_delta_score IS NULL OR (motor_delta_score >= 0 AND motor_delta_score <= 100)),
+  compat_delta_score               BIGINT     CHECK (compat_delta_score IS NULL OR (compat_delta_score >= 0 AND compat_delta_score <= 100)),
+  commercial_distinctiveness_score BIGINT     CHECK (commercial_distinctiveness_score IS NULL OR (commercial_distinctiveness_score >= 0 AND commercial_distinctiveness_score <= 100)),
+  crawl_value_score                BIGINT     CHECK (crawl_value_score IS NULL OR (crawl_value_score >= 0 AND crawl_value_score <= 100)),
   semantic_similarity_score        NUMERIC(4,3) CHECK (semantic_similarity_score IS NULL OR (semantic_similarity_score >= 0 AND semantic_similarity_score <= 1)),
   collision_risk_score             NUMERIC(4,3) CHECK (collision_risk_score IS NULL OR (collision_risk_score >= 0 AND collision_risk_score <= 1)),
   catalog_overlap_score            NUMERIC(4,3) CHECK (catalog_overlap_score IS NULL OR (catalog_overlap_score >= 0 AND catalog_overlap_score <= 1)),
-  specific_block_count             INTEGER     CHECK (specific_block_count IS NULL OR specific_block_count >= 0),
+  specific_block_count             BIGINT     CHECK (specific_block_count IS NULL OR specific_block_count >= 0),
   boilerplate_ratio                NUMERIC(4,3) CHECK (boilerplate_ratio IS NULL OR (boilerplate_ratio >= 0 AND boilerplate_ratio <= 1)),
   computed_at                      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -198,8 +198,8 @@ GRANT SELECT, INSERT ON public.__seo_r2_embeddings TO service_role;
 -- 6. __seo_r2_composition_inputs : SoT replay-safe (snapshot input, pas content)
 -- =============================================================================
 CREATE TABLE IF NOT EXISTS public.__seo_r2_composition_inputs (
-  pg_id                INTEGER     NOT NULL,
-  type_id              INTEGER     NOT NULL,
+  pg_id                BIGINT     NOT NULL,
+  type_id              BIGINT     NOT NULL,
   input_hash           TEXT        NOT NULL,              -- sha256(fast-json-stable-stringify(r1+r8+motor+cluster+catalog_signature))
   r1_signals           JSONB       NOT NULL,
   r8_signals           JSONB       NOT NULL,
@@ -228,13 +228,13 @@ GRANT SELECT, INSERT ON public.__seo_r2_composition_inputs TO service_role;
 -- =============================================================================
 CREATE TABLE IF NOT EXISTS public.__seo_r2_eligibility_log (
   id                BIGINT GENERATED ALWAYS AS IDENTITY   PRIMARY KEY,
-  pg_id             INTEGER     NOT NULL,
-  type_id           INTEGER     NOT NULL,
-  attempt           INTEGER     NOT NULL DEFAULT 1,
+  pg_id             BIGINT     NOT NULL,
+  type_id           BIGINT     NOT NULL,
+  attempt           BIGINT     NOT NULL DEFAULT 1,
   eligibility_score NUMERIC(5,2) NOT NULL CHECK (eligibility_score >= 0 AND eligibility_score <= 100),
   subscores         JSONB       NOT NULL,                 -- { motor, compat, commercial, crawl }
   verdict           TEXT        NOT NULL CHECK (verdict IN ('eligible', 'suppressed', 'reject')),
-  suppressed_target INTEGER,                              -- si verdict=suppressed, sibling type_id
+  suppressed_target BIGINT,                              -- si verdict=suppressed, sibling type_id
   reason            TEXT,
   evaluated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -254,8 +254,8 @@ GRANT SELECT, INSERT ON public.__seo_r2_eligibility_log TO service_role;
 -- =============================================================================
 CREATE TABLE IF NOT EXISTS public.__seo_r2_page_versions (
   id                BIGINT GENERATED ALWAYS AS IDENTITY   PRIMARY KEY,
-  pg_id             INTEGER     NOT NULL,
-  type_id           INTEGER     NOT NULL,
+  pg_id             BIGINT     NOT NULL,
+  type_id           BIGINT     NOT NULL,
   version_sha       TEXT        NOT NULL UNIQUE,          -- sha256 du tar.zst
   tar_path          TEXT        NOT NULL,                 -- chemin filesystem ou Storage URL
   contract_version  TEXT        NOT NULL,
@@ -280,8 +280,8 @@ GRANT SELECT, INSERT ON public.__seo_r2_page_versions TO service_role;
 -- =============================================================================
 CREATE TABLE IF NOT EXISTS public.__seo_r2_qa_reviews (
   id              BIGINT GENERATED ALWAYS AS IDENTITY   PRIMARY KEY,
-  pg_id           INTEGER     NOT NULL,
-  type_id         INTEGER     NOT NULL,
+  pg_id           BIGINT     NOT NULL,
+  type_id         BIGINT     NOT NULL,
   decision        TEXT        NOT NULL CHECK (decision IN ('index', 'suppressed', 'review_required', 'regenerate', 'reject')),
   reasons         TEXT[]      NOT NULL DEFAULT '{}',      -- raisons Rego deny + autres
   reviewer        TEXT,                                    -- NULL = automatique, non-NULL = human actor
@@ -304,10 +304,10 @@ GRANT SELECT, INSERT ON public.__seo_r2_qa_reviews TO service_role;
 -- =============================================================================
 CREATE TABLE IF NOT EXISTS public.__seo_r2_regeneration_queue (
   id              BIGINT GENERATED ALWAYS AS IDENTITY   PRIMARY KEY,
-  pg_id           INTEGER     NOT NULL,
-  type_id         INTEGER     NOT NULL,
+  pg_id           BIGINT     NOT NULL,
+  type_id         BIGINT     NOT NULL,
   reason          TEXT        NOT NULL,
-  retry_count     INTEGER     NOT NULL DEFAULT 0 CHECK (retry_count >= 0 AND retry_count <= 2),
+  retry_count     BIGINT     NOT NULL DEFAULT 0 CHECK (retry_count >= 0 AND retry_count <= 2),
   queued_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   processed_at    TIMESTAMPTZ,
   UNIQUE(pg_id, type_id)                                   -- 1 pending regen max par page (pas de duplication queue)

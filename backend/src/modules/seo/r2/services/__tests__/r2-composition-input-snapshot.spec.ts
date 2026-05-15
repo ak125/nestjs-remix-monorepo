@@ -58,7 +58,7 @@ const baseInput: R2CompositionInput = {
   catalogSignature: {
     signature: 'a'.repeat(64),
     sortedOemRefs: ['REF1'],
-    sortedSubgroups: ['SG1'],
+    subgroupsKeys: ['SG1'],
     productFamilyCounts: { 'filter-oil': 5 },
   },
 };

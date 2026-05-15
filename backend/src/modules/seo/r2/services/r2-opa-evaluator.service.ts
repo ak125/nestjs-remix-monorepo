@@ -87,14 +87,14 @@ export class R2OpaEvaluatorService implements OnModuleInit {
     }
 
     try {
-      // Lazy require to avoid hard dependency in tsconfig.
-      // @ts-expect-error : optional dep, may not be installed in V1 foundation
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      // Lazy require to avoid hard dependency. @open-policy-agent/opa-wasm
+      // peer-installed in PR 2 V1.5. PR 1 foundation : graceful fallback.
+      // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-explicit-any
       const opaWasm:
         | { loadPolicySync(bytes: Buffer): OpaWasmModule }
         | undefined =
         // eslint-disable-next-line @typescript-eslint/no-require-imports
-        require('@open-policy-agent/opa-wasm');
+        (require as any)('@open-policy-agent/opa-wasm');
 
       if (!opaWasm?.loadPolicySync) {
         this.logger.warn(
