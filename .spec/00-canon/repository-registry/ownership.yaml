@@ -338,6 +338,19 @@ entries:
     owner: '@ak125'
     sourceConfidence: medium
     risk: medium
+  # PR-6 Contract Drift Observatory fixture trees include dot-prefixed paths
+  # (.dependency-cruiser.generated.cjs placeholder + .spec/ subtree) that
+  # `scripts/audit/**` cannot reach under default micromatch dot-handling.
+  - glob: scripts/audit/__fixtures__/**/.*
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  - glob: scripts/audit/__fixtures__/**/.spec/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
   - glob: scripts/registry/**
     domain: D15
     owner: '@ak125'
