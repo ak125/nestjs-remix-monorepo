@@ -519,15 +519,30 @@ jobs:
             echo "files=$files" >> "$GITHUB_OUTPUT"
           fi
 
+      # Direct squawk binary invocation (industry-standard CI linter pattern :
+      # exit-code-driven, no third-party API side-effects). The previous
+      # `sbdchd/squawk-action@v2` wrapper called `upload-to-github`, which
+      # POSTs a PR comment and requires `pull-requests: write` — adding write
+      # scope to every pipeline just to render diagnostics is bricolage.
+      # Violations show up in the job log; squawk exits non-zero on violation,
+      # which fails the job. Same approach as eslint / tsc / ruff / clippy.
+      - name: Install squawk
+        if: steps.changed-sql.outputs.files != ''
+        env:
+          SQUAWK_VERSION: "2.52.1"
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/bin"
+          curl -fsSL \
+            "https://github.com/sbdchd/squawk/releases/download/v${SQUAWK_VERSION}/squawk-linux-x86_64" \
+            -o "$RUNNER_TEMP/bin/squawk"
+          chmod +x "$RUNNER_TEMP/bin/squawk"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/bin/squawk" --version
+
       - name: Run squawk on changed migrations
         if: steps.changed-sql.outputs.files != ''
-        uses: sbdchd/squawk-action@v2
-        with:
-          files:              ${{ steps.changed-sql.outputs.files }}
-          version:            "2.52.1"
-          config:             ".squawk.toml"
-          fail-on-violations: true
-          # `files:` (explicit list from git diff) — `pattern:` is for static globs.
+        run: squawk --config .squawk.toml ${{ steps.changed-sql.outputs.files }}
 
   build:
     name: 🐳 build
