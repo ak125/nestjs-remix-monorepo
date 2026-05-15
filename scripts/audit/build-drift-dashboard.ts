@@ -9,6 +9,9 @@
  *
  * Always exits 0. NEVER regenerates canonical.json or any builder output.
  *
+ * See ADR-058 §23 "observe → ratchet → enforce". The script is a pure
+ * consumer of Layer 1 (auto) + curated coverage MDs — never a producer.
+ *
  * Plan: /home/deploy/.claude/plans/pr-6-est-faisable-maintenant-deep-storm.md
  */
 import {
