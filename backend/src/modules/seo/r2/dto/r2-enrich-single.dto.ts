@@ -20,7 +20,9 @@ export interface R2EnrichSingleResponse {
   featureFlagEnabled: boolean;
   eligibility: {
     score: number;
-    verdict: 'eligible' | 'suppressed' | 'reject';
+    // ADR-067 : pipeline ne peut émettre que ces 3 verdicts.
+    // 'suppressed' reste un statut DB pour le path manual admin uniquement.
+    verdict: 'eligible' | 'review' | 'reject';
     reason: string;
     subscores: {
       motor: number;
@@ -28,7 +30,6 @@ export interface R2EnrichSingleResponse {
       commercial: number;
       crawl: number;
     };
-    suppressedCanonicalTypeId?: number;
   };
   warning?: string;
   timestamp: string;
