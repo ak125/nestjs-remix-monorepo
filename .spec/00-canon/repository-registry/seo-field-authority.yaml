@@ -1,0 +1,130 @@
+# .spec/00-canon/repository-registry/seo-field-authority.yaml
+#
+# Field Authority Registry for SEO content fields.
+# PR-B of the SEO Governance Control Plane plan
+# (/home/deploy/.claude/plans/lors-du-audite-seo-concurrent-swan.md §5 Phase B).
+#
+# Établit l'autorité canonique d'écriture par champ SEO. L'authorité vit ICI,
+# pas inventée à runtime — OPA (Phase C) l'applique, ne la définit pas.
+#
+# Consommé par (futur) :
+#   - PR-C OPA Write Gateway (NestJS-only sync middleware, bundle WASM lit le
+#     JSON projeté pour décider allow/deny avec contexte authority)
+#   - PR-E Recovery Rollout (écritures legacy_recovery doivent matcher
+#     authoritative_writers ET porter source_metadata.evidence_tier ∈ exact_match_*)
+#
+# Validation :
+#   - scripts/audit/validate-seo-field-authority.ts (--lenient par défaut en
+#     PR-B ; --strict activé seulement à partir de PR-C via CI, car le
+#     service h1-deterministic-builder n'existe qu'en Phase C)
+#   - npm run registry:validate (Zod global)
+#
+# Discipline 4-layer (ADR-058) : ce fichier appartient au Layer 2 overlay
+# manuel. Aucun composant runtime n'écrit ici — édition manuelle uniquement,
+# revue par owners @ak125/seo-team.
+#
+# Memory rules :
+#   - feedback_no_touch_meta_h1_if_optimized (STRICT) — règle source du chantier
+#   - feedback_deterministic_evidence_tiers_over_bayesian — enum strict
+#   - feedback_branch_scope_discipline — scope strict PR-B (h1 uniquement)
+#
+# Verdict empirique PR-A1 #532 (2026-05-15) qui motive le verrou :
+# H1 shifting / cross-gamme misassignment (pas LLM overwrite individuel) sur
+# 13 / 23 R1 audités. Cause probable : bulk update SQL avec mauvaise jointure.
+
+schemaVersion: "1.0.0"
+
+# ── Configuration globale ──────────────────────────────────────────────────────
+#
+# Source de l'autorité : ce fichier YAML. Le JSON dans audit/registry/ est une
+# projection générée par scripts/audit/build-seo-field-authority.ts — JAMAIS
+# édité à la main (sinon drift détecté par validate-seo-field-authority.ts).
+
+defaults:
+  # Durée par défaut du lock après écriture authoritative (Phase E + Phase C
+  # OPA policy lira ce default si lock_default_duration_days absent du field).
+  lock_default_duration_days: 90
+  # Cadence de revue annuelle d'un H1 lock = 365j (recadrer si SEO performance
+  # delta significatif vs baseline).
+  review_cadence_days: 365
+
+# ── Fields gouvernés ───────────────────────────────────────────────────────────
+#
+# PR-B scope strict : h1 uniquement. meta_title / meta_description / canonical /
+# robots / og:image sont des extensions naturelles (même schema) à introduire en
+# PR séparée une fois l'architecture h1 stabilisée (Phase D / Phase E shipped).
+
+fields:
+  - field_path: h1
+    description: |
+      H1 — Primary page heading. Critical pour topic relevance SEO.
+      Audit forensic PR-A1 #532 (verdict 2026-05-15 condition b) a révélé un
+      pattern systémique de H1 shifting (chaque R1 affiche le H1 d'une autre
+      gamme). Ce field devient gouverné pour empêcher toute récurrence.
+
+    # Rôles SEO concernés (cf. seo-batch agent matrix R1-R8).
+    # R1_ROUTER  = pages catalogue /pieces/{gamme}
+    # R3_CONSEILS = pages conseils sectionnelles
+    # R6_GUIDE_ACHAT = guides achat purchase guide
+    # R7_BRAND = pages marque /constructeurs/{brand}
+    # R8_VEHICLE = pages véhicule
+    roles: [R1_ROUTER, R3_CONSEILS, R6_GUIDE_ACHAT, R7_BRAND, R8_VEHICLE]
+
+    # Mapping field_path logique → colonnes physiques. Le gateway OPA (Phase C)
+    # utilise ce mapping pour cibler la bonne table/colonne selon le role_id
+    # du write event. role_filter='legacy_fallback' = base à utiliser quand
+    # aucun override role-spécifique n'existe.
+    physical_columns:
+      - table: __seo_r1_gamme_slots
+        column: r1s_h1_override
+        role_filter: R1_ROUTER
+      - table: __seo_gamme_purchase_guide
+        column: sgpg_h1_override
+        role_filter: R6_GUIDE_ACHAT
+      - table: __seo_gamme
+        column: sg_h1
+        role_filter: legacy_fallback
+      - table: __meta_tags_ariane
+        column: mta_h1
+        role_filter: R7_BRAND|R8_VEHICLE
+
+    # Writers autorisés (enum strict). Chaque kind a une référence service
+    # canonique (path NestJS dotted) ou un via= pour les origines non-service
+    # (admin-ui, recovery pipeline). Le validator --strict vérifie l'existence
+    # des paths service à partir de PR-C.
+    authoritative_writers:
+      - kind: deterministic_builder
+        service: backend.modules.seo.builders.h1-deterministic-builder
+        notes: |
+          Service à créer en Phase C (PR-C). Le validator est LENIENT en PR-B
+          et ne fail PAS sur l'absence ; passera STRICT à partir de PR-C.
+      - kind: human_curated
+        via: admin-ui
+        notes: Écritures depuis l'interface admin authentifiée IsAdminGuard.
+      - kind: legacy_recovery
+        via: seo-recovery-pipeline
+        notes: |
+          Réservé à Phase E (PR-E rollout). Une écriture legacy_recovery
+          doit obligatoirement porter source_metadata.evidence_tier ∈
+          {exact_match_snapshot, exact_match_event_log, exact_match_blog_advice,
+          exact_match_builder_template} pour passer l'OPA policy.
+
+    # Writers explicitement refusés. Le validator vérifie qu'au minimum
+    # llm_generated_direct est présent (canon enforcement).
+    denied_writers:
+      - kind: llm_generated_direct
+        notes: |
+          Toute écriture LLM directe (sans validation humaine ou builder
+          déterministe intermédiaire) est refusée. Aligné règle stricte
+          feedback_no_touch_meta_h1_if_optimized.
+
+    # Durée du lock après écriture autoritaire (override du defaults global).
+    lock_default_duration_days: 90
+    review_cadence_days: 365
+
+# ── Note d'extension future ────────────────────────────────────────────────────
+#
+# meta_title, meta_description, canonical_url, robots_meta, og_image suivent la
+# MÊME structure. Ils sont volontairement OMIS de PR-B pour scope strict — à
+# introduire en PR séparée une fois Phase C+E stabilisées et que l'architecture
+# h1 a fait ses preuves sur DEV. Voir plan §15 anti-scope-creep.

@@ -1,0 +1,73 @@
+{
+  "$generated": {
+    "by": "scripts/audit/build-seo-field-authority.ts",
+    "from": ".spec/00-canon/repository-registry/seo-field-authority.yaml",
+    "note": "DO NOT EDIT BY HAND. Regenerate via `pnpm tsx scripts/audit/build-seo-field-authority.ts`.",
+    "schemaVersion": "1.0.0"
+  },
+  "defaults": {
+    "lock_default_duration_days": 90,
+    "review_cadence_days": 365
+  },
+  "fields": [
+    {
+      "authoritative_writers": [
+        {
+          "kind": "deterministic_builder",
+          "notes": "Service à créer en Phase C (PR-C). Le validator est LENIENT en PR-B\net ne fail PAS sur l'absence ; passera STRICT à partir de PR-C.\n",
+          "service": "backend.modules.seo.builders.h1-deterministic-builder"
+        },
+        {
+          "kind": "human_curated",
+          "notes": "Écritures depuis l'interface admin authentifiée IsAdminGuard.",
+          "via": "admin-ui"
+        },
+        {
+          "kind": "legacy_recovery",
+          "notes": "Réservé à Phase E (PR-E rollout). Une écriture legacy_recovery\ndoit obligatoirement porter source_metadata.evidence_tier ∈\n{exact_match_snapshot, exact_match_event_log, exact_match_blog_advice,\nexact_match_builder_template} pour passer l'OPA policy.\n",
+          "via": "seo-recovery-pipeline"
+        }
+      ],
+      "denied_writers": [
+        {
+          "kind": "llm_generated_direct",
+          "notes": "Toute écriture LLM directe (sans validation humaine ou builder\ndéterministe intermédiaire) est refusée. Aligné règle stricte\nfeedback_no_touch_meta_h1_if_optimized.\n"
+        }
+      ],
+      "description": "H1 — Primary page heading. Critical pour topic relevance SEO.\nAudit forensic PR-A1 #532 (verdict 2026-05-15 condition b) a révélé un\npattern systémique de H1 shifting (chaque R1 affiche le H1 d'une autre\ngamme). Ce field devient gouverné pour empêcher toute récurrence.\n",
+      "field_path": "h1",
+      "lock_default_duration_days": 90,
+      "physical_columns": [
+        {
+          "column": "r1s_h1_override",
+          "role_filter": "R1_ROUTER",
+          "table": "__seo_r1_gamme_slots"
+        },
+        {
+          "column": "sgpg_h1_override",
+          "role_filter": "R6_GUIDE_ACHAT",
+          "table": "__seo_gamme_purchase_guide"
+        },
+        {
+          "column": "sg_h1",
+          "role_filter": "legacy_fallback",
+          "table": "__seo_gamme"
+        },
+        {
+          "column": "mta_h1",
+          "role_filter": "R7_BRAND|R8_VEHICLE",
+          "table": "__meta_tags_ariane"
+        }
+      ],
+      "review_cadence_days": 365,
+      "roles": [
+        "R1_ROUTER",
+        "R3_CONSEILS",
+        "R6_GUIDE_ACHAT",
+        "R7_BRAND",
+        "R8_VEHICLE"
+      ]
+    }
+  ],
+  "schemaVersion": "1.0.0"
+}
