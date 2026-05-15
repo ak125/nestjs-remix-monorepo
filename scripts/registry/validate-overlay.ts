@@ -33,7 +33,7 @@ import {
   DomainsRegistrySchema,
   StatusOverridesSchema,
   DeletePolicyOverlaySchema,
-} from "@repo/registry";
+} from "../../packages/registry/src/index";
 
 const MONOREPO_ROOT = path.resolve(__dirname, "..", "..");
 const OVERLAY_DIR = path.join(

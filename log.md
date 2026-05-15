@@ -675,3 +675,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/adr-063-cwv-alerting`
 - **Décision** : feat(seo-crux): alerter service (pr-4 adr-063)
 - **Sortie** : PR #525 | commits a6f3b25f
+
+## 2026-05-14 — feat/pr-w3b-registry-tests-blocking (auto)
+
+- **Branche** : `feat/pr-w3b-registry-tests-blocking`
+- **Décision** : ci(audit): promote @repo/registry contract tests to BLOCKING gate (PR-W3b)
+- **Sortie** : PR aucune | commits fce47ec9
