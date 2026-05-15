@@ -18,6 +18,7 @@ depends_on:
 - WorkerModule
 - CatalogModule
 - AiContentModule
+- R2V2Module
 - NestCacheModule
 ---
 
