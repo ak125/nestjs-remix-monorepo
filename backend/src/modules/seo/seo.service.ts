@@ -3,6 +3,7 @@ import { TABLES } from '@repo/database-types';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { MetaTagsArianeDataService } from '../../database/services/meta-tags-ariane-data.service';
+import { SeoContentWriteService } from './governance/seo-content-write.service';
 
 // 🎯 INTERFACES SEO (utilisées par dynamic-seo-v4-ultimate.service.ts)
 // Interfaces commentées - utilisées uniquement pour référence de types
@@ -17,6 +18,7 @@ export class SeoService extends SupabaseBaseService {
   constructor(
     configService: ConfigService,
     private readonly metaTagsData: MetaTagsArianeDataService,
+    private readonly seoContentWrite: SeoContentWriteService,
   ) {
     super(configService);
     this.logger.log(
@@ -60,17 +62,38 @@ export class SeoService extends SupabaseBaseService {
       // Génération d'un ID unique basé sur l'URL
       const mtaId = urlPath.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
 
+      const h1Value = metadata.h1 || metadata.meta_title;
+
+      // 1. Upsert non-H1 fields first (row creation/title/desc/etc.). H1 column
+      //    is intentionally absent here — it goes through the gateway in step 2.
+      //    If the row doesn't exist yet, the upsert creates it ; H1 will be
+      //    written atomically by step 2 below (RPC seo_apply_h1_write).
       const data = await this.metaTagsData.upsert({
         mta_id: `seo_${mtaId}_${Date.now()}`,
         mta_alias: urlPath,
         mta_title: metadata.meta_title,
         mta_descrip: metadata.meta_description,
         mta_keywords: metadata.meta_keywords,
-        mta_h1: metadata.h1 || metadata.meta_title,
+        // mta_h1 → routed via SeoContentWriteService.applyH1 (PR-D atomic RPC)
         mta_content: metadata.content || metadata.meta_description,
         mta_ariane: metadata.breadcrumb || '',
         mta_relfollow: metadata.rel_follow || 'follow',
       });
+
+      // 2. PR-D : atomic UPDATE mta_h1 + INSERT __seo_content_events.applied +
+      //    INSERT __seo_policy_evaluations.allow, all in ONE Postgres transaction
+      //    via RPC seo_apply_h1_write. Throws PolicyDeniedException on deny.
+      //    No state possible "H1 modified but event missing".
+      if (h1Value) {
+        await this.seoContentWrite.applyH1({
+          target: { kind: 'mta_alias', mtaAlias: urlPath },
+          value: h1Value,
+          source: {
+            kind: 'human_curated',
+            actor: metadata._actor ?? 'admin:seo-service',
+          },
+        });
+      }
 
       this.logger.log(`Métadonnées mises à jour pour ${urlPath}`);
       return data;

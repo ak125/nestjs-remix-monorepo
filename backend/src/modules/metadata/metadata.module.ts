@@ -18,6 +18,8 @@ import { CacheModule } from '@nestjs/cache-manager';
 
 // Modules externes
 import { DatabaseModule } from '../../database/database.module';
+// PR-C — Governance gateway (OPA write authority for h1 field)
+import { SeoGovernanceModule } from '../seo/governance/seo-governance.module';
 
 // Services
 import { OptimizedMetadataService } from './services/optimized-metadata.service';
@@ -37,6 +39,8 @@ import { BreadcrumbAdminController } from './controllers/breadcrumb-admin.contro
     }),
     // Accès base de données
     DatabaseModule,
+    // PR-C : OPA gateway for governed H1 writes
+    SeoGovernanceModule,
   ],
   controllers: [
     OptimizedMetadataController,
