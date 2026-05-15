@@ -4,17 +4,18 @@
  * ADR-064 §Architecture 4-layer :
  *   - L4 Governance binding : CriticalityLoaderService (lit seo-criticality.yaml)
  *   - L1 Collectors :
- *       • SyntheticCrawlerService — fetch + HTML probe (PR-2A-1)
- *       • CfAnalyticsCollectorService — Cloudflare GraphQL Analytics (PR-2A-2)
+ *       • SyntheticCrawlerService — fetch + HTML probe (PR-2A-1, Source B)
+ *       • CfAnalyticsCollectorService — Cloudflare GraphQL Analytics (PR-2A-2, Source C)
+ *       • RuntimeLogsCollectorService — `__error_logs` query (PR-2A-3, Source A)
  *
  * Sous-PRs suivantes :
- *   - PR-2A-3 : RuntimeLogsCollectorService (`__error_logs` query)
- *   - PR-2A-4 : GscCoverageCollectorService (Search Console API)
+ *   - PR-2A-4 : GscCoverageCollectorService (Search Console API — Source D)
  *   - PR-2B : Evaluators (L2) — séparation stricte, lecture L1 only
  *   - PR-2C : Actions (L3) — déclenché par L2, jamais L1 direct
  *
- * Queue BullMQ dédiée `seo-crawler-monitor` (NON mutualisée avec `seo-monitor`
+ * Queue BullMQ partagée `seo-crawler-monitor` (NON mutualisée avec `seo-monitor`
  * pour éviter contention — cf. ADR-064 et feedback_schedulemodule_disabled_use_bullmq).
+ * Mutualisation interne L1 OK : synthetic q15min + cf-analytics q5min + runtime-logs q5min = charge négligeable.
  */
 
 import { Module } from '@nestjs/common';
@@ -28,6 +29,9 @@ import { SyntheticCrawlerSchedulerService } from './collectors/synthetic-crawler
 import { CfAnalyticsCollectorService } from './collectors/cf-analytics/cf-analytics.service';
 import { CfAnalyticsProcessor } from './collectors/cf-analytics/cf-analytics.processor';
 import { CfAnalyticsSchedulerService } from './collectors/cf-analytics/cf-analytics.scheduler.service';
+import { RuntimeLogsCollectorService } from './collectors/runtime-logs/runtime-logs.service';
+import { RuntimeLogsProcessor } from './collectors/runtime-logs/runtime-logs.processor';
+import { RuntimeLogsSchedulerService } from './collectors/runtime-logs/runtime-logs.scheduler.service';
 import { SYNTHETIC_QUEUE_NAME } from './types';
 
 @Module({
@@ -38,14 +42,18 @@ import { SYNTHETIC_QUEUE_NAME } from './types';
   ],
   providers: [
     CriticalityLoaderService,
-    // L1 — synthetic crawler (PR-2A-1)
+    // L1 — synthetic crawler (PR-2A-1, Source B)
     SyntheticCrawlerService,
     SyntheticCrawlerProcessor,
     SyntheticCrawlerSchedulerService,
-    // L1 — cf-analytics (PR-2A-2)
+    // L1 — cf-analytics (PR-2A-2, Source C)
     CfAnalyticsCollectorService,
     CfAnalyticsProcessor,
     CfAnalyticsSchedulerService,
+    // L1 — runtime-logs (PR-2A-3, Source A)
+    RuntimeLogsCollectorService,
+    RuntimeLogsProcessor,
+    RuntimeLogsSchedulerService,
   ],
   exports: [CriticalityLoaderService],
 })
