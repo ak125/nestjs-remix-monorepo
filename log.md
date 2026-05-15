@@ -717,3 +717,15 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-cp-runtime-logs-collector`
 - **Décision** : Revert "ci(migration-safety): grant pull-requests: write to job (fix squawk 403)" (+4 other commits)
 - **Sortie** : PR #524 | commits f3b660d6 ec89dff3 bc5d4e26 772436f5 106f6816
+
+## 2026-05-15 — feat/pr-3b-architecture-freshness-blocking (auto)
+
+- **Branche** : `feat/pr-3b-architecture-freshness-blocking`
+- **Décision** : ci(audit): promote architecture freshness gate to BLOCKING (PR-3b)
+- **Sortie** : PR #531 | commits 0589ed20
+
+## 2026-05-15 — feat/pr-3b-architecture-freshness-blocking (auto)
+
+- **Branche** : `feat/pr-3b-architecture-freshness-blocking`
+- **Décision** : chore(architecture): regenerate .dependency-cruiser.generated.cjs (PR-3b ratchet self-hosting fix) (+2 other commits)
+- **Sortie** : PR #531 | commits 035327f5 caee5a3c 0589ed20
