@@ -157,25 +157,207 @@ async function checkSynthetic(
   };
 }
 
-async function checkRuntime(_ev: AppliedEventRow): Promise<SourceResult> {
-  // TODO PR-E+1 : implement HTTP fetch + parse <h1> from response body.
-  // Memory feedback_no_temporary_debug_endpoints : reuse existing fetch
-  // infra (synthetic crawler service ?). Stub here documents the contract.
-  return {
-    source: 'runtime',
-    status: 'skipped',
-    details: 'PR-E ships scaffolding ; runtime fetch wired in PR-E+1',
-  };
+/**
+ * PR-E+1 — real HTTP fetch + parse <h1> from response body. UA identifiable
+ * (memory feedback_synthetic_bot_ua_never_spoof_googlebot — never spoof
+ * Googlebot, always declare identity).
+ */
+async function checkRuntime(ev: AppliedEventRow): Promise<SourceResult> {
+  const url = urlFromAssetId(ev.asset_id);
+  if (!url) {
+    return {
+      source: 'runtime',
+      status: 'skipped',
+      details: 'no url derivable',
+    };
+  }
+
+  const ua =
+    process.env.SEO_RECOVERY_VALIDATOR_UA ??
+    'AutoMecanikRecoveryValidator/1.0 (+https://www.automecanik.com/about/seo)';
+  try {
+    const controller = new AbortController();
+    const timeoutMs = Number(process.env.SEO_RECOVERY_VALIDATOR_TIMEOUT_MS ?? 15_000);
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: { 'User-Agent': ua, Accept: 'text/html' },
+      signal: controller.signal,
+      redirect: 'follow',
+    });
+    clearTimeout(timeout);
+
+    if (!res.ok) {
+      return {
+        source: 'runtime',
+        status: 'error',
+        details: `http ${res.status}`,
+      };
+    }
+    const body = await res.text();
+    const h1 = extractFirstH1(body);
+    if (!h1) {
+      return {
+        source: 'runtime',
+        status: 'mismatch',
+        details: '<h1> not found in body',
+      };
+    }
+    if (normalize(h1) === normalize(ev.value_text ?? '')) {
+      return { source: 'runtime', status: 'ok' };
+    }
+    return {
+      source: 'runtime',
+      status: 'mismatch',
+      details: `runtime=${JSON.stringify(h1).slice(0, 60)}… vs applied=${JSON.stringify(ev.value_text ?? '').slice(0, 60)}…`,
+    };
+  } catch (err) {
+    return {
+      source: 'runtime',
+      status: 'error',
+      details: err instanceof Error ? err.message : String(err),
+    };
+  }
 }
 
-async function checkGsc(_ev: AppliedEventRow): Promise<SourceResult> {
-  // TODO PR-E+1 : query GSC API for impressions delta on the URL J+7. Alert
-  // only ; never gate primary decision (memory feedback_gsc_is_secondary_signal_only).
-  return {
-    source: 'gsc',
-    status: 'skipped',
-    details: 'PR-E ships scaffolding ; GSC client wired in PR-E+1',
-  };
+function normalize(s: string): string {
+  return s
+    .normalize('NFC')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .toLowerCase();
+}
+
+function extractFirstH1(html: string): string | null {
+  const m = /<h1\b[^>]*>([\s\S]*?)<\/h1>/i.exec(html);
+  if (!m) return null;
+  // Strip nested tags + decode common entities ; lightweight, no DOM lib.
+  return m[1]
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'")
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
+ * PR-E+1 — Google Search Console secondary signal (alert only, never gates).
+ * Memory feedback_gsc_is_secondary_signal_only : GSC carries J-2 to J-7
+ * latency, so we use it as a sanity alert at J+7, NOT as a primary validator.
+ *
+ * Queries impressions for the URL over a 7-day window post-applied vs the
+ * 7-day window before. If post drops > GSC_DELTA_ALERT_PCT (default 10%),
+ * emits a warning. Status remains 'ok' for validator decision purposes —
+ * the synthetic + runtime gates are what flip a write to reverted.
+ */
+async function checkGsc(ev: AppliedEventRow): Promise<SourceResult> {
+  // Only run J+7 (≥168h since applied). Earlier windows return 'skipped'.
+  const ageMs = Date.now() - new Date(ev.created_at).getTime();
+  if (ageMs < 7 * 24 * 60 * 60 * 1000) {
+    return {
+      source: 'gsc',
+      status: 'skipped',
+      details: 'event < 7 days old, gsc check deferred',
+    };
+  }
+
+  const clientEmail = process.env.GSC_CLIENT_EMAIL;
+  const privateKey = process.env.GSC_PRIVATE_KEY?.replace(/\\n/g, '\n');
+  const siteUrl = process.env.GSC_SITE_URL;
+  if (!clientEmail || !privateKey || !siteUrl) {
+    return {
+      source: 'gsc',
+      status: 'skipped',
+      details:
+        'GSC credentials missing (GSC_CLIENT_EMAIL / GSC_PRIVATE_KEY / GSC_SITE_URL)',
+    };
+  }
+
+  const url = urlFromAssetId(ev.asset_id);
+  if (!url) {
+    return { source: 'gsc', status: 'skipped', details: 'no url derivable' };
+  }
+
+  try {
+    // Lazy-load googleapis to avoid pulling it into the script bundle if
+    // credentials aren't configured.
+    const { google } = await import('googleapis');
+    const auth = new google.auth.JWT({
+      email: clientEmail,
+      key: privateKey,
+      scopes: ['https://www.googleapis.com/auth/webmasters.readonly'],
+    });
+    const sc = google.searchconsole({ version: 'v1', auth });
+
+    const appliedDate = new Date(ev.created_at);
+    const dayMs = 24 * 60 * 60 * 1000;
+    const isoDay = (d: Date): string => d.toISOString().slice(0, 10);
+    const postStart = isoDay(appliedDate);
+    const postEnd = isoDay(new Date(appliedDate.getTime() + 7 * dayMs));
+    const preStart = isoDay(new Date(appliedDate.getTime() - 7 * dayMs));
+    const preEnd = isoDay(new Date(appliedDate.getTime() - dayMs));
+
+    const queryFor = async (startDate: string, endDate: string): Promise<number> => {
+      const r = await sc.searchanalytics.query({
+        siteUrl,
+        requestBody: {
+          startDate,
+          endDate,
+          dimensions: ['page'],
+          dimensionFilterGroups: [
+            {
+              filters: [
+                { dimension: 'page', operator: 'equals', expression: url },
+              ],
+            },
+          ],
+          rowLimit: 1,
+        },
+      });
+      return r.data.rows?.[0]?.impressions ?? 0;
+    };
+
+    const [pre, post] = await Promise.all([
+      queryFor(preStart, preEnd),
+      queryFor(postStart, postEnd),
+    ]);
+
+    const deltaPctThreshold = Number(
+      process.env.SEO_GSC_DELTA_ALERT_PCT ?? 10,
+    );
+    if (pre === 0) {
+      // No pre-baseline, can't compare. Status ok but log info.
+      return {
+        source: 'gsc',
+        status: 'ok',
+        details: `pre=0 post=${post} (no baseline)`,
+      };
+    }
+    const deltaPct = ((post - pre) / pre) * 100;
+    if (deltaPct < -deltaPctThreshold) {
+      // Alert only — never demote validator decision to mismatch.
+      return {
+        source: 'gsc',
+        status: 'ok',
+        details: `ALERT impressions Δ=${deltaPct.toFixed(1)}% (pre=${pre} post=${post}, threshold=-${deltaPctThreshold}%)`,
+      };
+    }
+    return {
+      source: 'gsc',
+      status: 'ok',
+      details: `impressions Δ=${deltaPct.toFixed(1)}% (pre=${pre} post=${post})`,
+    };
+  } catch (err) {
+    return {
+      source: 'gsc',
+      status: 'error',
+      details: err instanceof Error ? err.message : String(err),
+    };
+  }
 }
 
 async function insertValidatedEvent(
