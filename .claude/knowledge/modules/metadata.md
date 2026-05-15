@@ -13,6 +13,7 @@ primary_files:
 depends_on:
 - CacheModule
 - DatabaseModule
+- SeoGovernanceModule
 ---
 
 # Module Metadata

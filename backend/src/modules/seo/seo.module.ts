@@ -159,10 +159,14 @@ import { SeoRoleTemplateSelector } from './services/chain/seo-role-template-sele
 import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
 import { PageRoleValidationInterceptor } from './interceptors/page-role-validation.interceptor';
 
+// PR-C — Governance gateway (OPA write authority for h1 field)
+import { SeoGovernanceModule } from './governance/seo-governance.module';
+
 @Module({
   imports: [
     ConfigModule,
     DatabaseModule,
+    SeoGovernanceModule,
 
     // Modules externes
     WorkerModule,
