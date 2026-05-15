@@ -455,6 +455,60 @@ jobs:
           echo "✅ ADR compliance: PASS"
 
   # ============================================
+  # SEO Governance Control Plane (PR-C)
+  # ============================================
+
+  seo-h1-write-path:
+    name: 🛡️ SEO H1 Write Path (anti-bypass scanner)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install dependencies (root only — scanner uses tsx)
+        run: npm ci --prefer-offline --no-audit --no-fund
+      - name: 🛡️ Run anti-bypass scanner (strict)
+        run: |
+          echo "🛡️ PR-C : scanning for direct writes to canonical H1 columns."
+          echo "Whitelist : gateway, data abstraction, tests, migrations,"
+          echo "            and files that call SeoContentWriteService.preflightH1()."
+          npm run audit:h1-write-path
+      - name: Upload findings.json
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: seo-h1-write-path-findings-${{ github.run_id }}
+          path: audit-reports/h1-write-paths/**/findings.json
+          retention-days: 30
+
+  seo-field-authority:
+    name: 🛡️ SEO Field Authority (canon registry, strict)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit --no-fund
+      - name: 🛡️ Validate seo-field-authority.yaml (strict from PR-C)
+        run: |
+          if [ ! -f .spec/00-canon/repository-registry/seo-field-authority.yaml ]; then
+            echo "⚠️  seo-field-authority.yaml not yet on this branch — PR-B must merge first."
+            echo "Skipping (registry-new-file-gate enforces canon presence at merge time)."
+            exit 0
+          fi
+          echo "🛡️ Validating canon + JSON projection + service references…"
+          npm run audit:seo-field-authority
+
+  # ============================================
   # Security & Safety Gates (Phase 2)
   # ============================================
 

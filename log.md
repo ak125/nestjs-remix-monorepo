@@ -729,3 +729,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/pr-3b-architecture-freshness-blocking`
 - **Décision** : chore(architecture): regenerate .dependency-cruiser.generated.cjs (PR-3b ratchet self-hosting fix) (+2 other commits)
 - **Sortie** : PR #531 | commits 035327f5 caee5a3c 0589ed20
+
+## 2026-05-15 — feat/seo-governance-control-plane-phase-d (auto)
+
+- **Branche** : `feat/seo-governance-control-plane-phase-d`
+- **Décision** : feat(seo): pr-c opa write gateway + scanner anti-bypass (single write path)
+- **Sortie** : PR aucune | commits 9b8055cb3

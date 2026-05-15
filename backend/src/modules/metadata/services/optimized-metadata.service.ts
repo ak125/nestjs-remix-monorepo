@@ -20,6 +20,7 @@ import { Injectable, Logger, Inject } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { MetaTagsArianeDataService } from '../../../database/services/meta-tags-ariane-data.service';
+import { SeoContentWriteService } from '../../seo/governance/seo-content-write.service';
 
 export interface PageMetadata {
   title: string;
@@ -50,6 +51,7 @@ export class OptimizedMetadataService {
   constructor(
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     private readonly metaTagsData: MetaTagsArianeDataService,
+    private readonly seoContentWrite: SeoContentWriteService,
   ) {
     this.logger.log('📄 OptimizedMetadataService initialisé');
   }
@@ -142,7 +144,10 @@ export class OptimizedMetadataService {
         dbData.mta_keywords = Array.isArray(updateData.keywords)
           ? updateData.keywords.join(', ')
           : updateData.keywords;
-      if (updateData.h1 !== undefined) dbData.mta_h1 = updateData.h1;
+      // PR-D : H1 column is NOT included in this bulk upsert. It is written
+      // atomically (UPDATE + INSERT event + INSERT eval) via the gateway RPC
+      // in the step 2 below — same Postgres transaction, no "H1 written but
+      // event missing" race possible.
       if (updateData.breadcrumb !== undefined)
         dbData.mta_ariane = updateData.breadcrumb;
       if (updateData.robots !== undefined)
@@ -150,8 +155,21 @@ export class OptimizedMetadataService {
       if (updateData.content !== undefined)
         dbData.mta_content = updateData.content;
 
-      // Upsert dans la table
+      // 1. Upsert non-H1 fields (row creation/title/desc/etc.).
       await this.metaTagsData.upsertWithoutReturn(dbData);
+
+      // 2. PR-D atomic H1 write through gateway. Throws PolicyDeniedException
+      //    on OPA deny.
+      if (updateData.h1 !== undefined) {
+        await this.seoContentWrite.applyH1({
+          target: { kind: 'mta_alias', mtaAlias: cleanPath },
+          value: updateData.h1,
+          source: {
+            kind: 'human_curated',
+            actor: 'admin:optimized-metadata-service',
+          },
+        });
+      }
 
       // Invalider le cache
       await this.clearCache(cleanPath);
