@@ -20,6 +20,7 @@ import { Injectable, Logger, Inject } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { MetaTagsArianeDataService } from '../../../database/services/meta-tags-ariane-data.service';
+import { SeoContentWriteService } from '../../seo/governance/seo-content-write.service';
 
 export interface PageMetadata {
   title: string;
@@ -50,6 +51,7 @@ export class OptimizedMetadataService {
   constructor(
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
     private readonly metaTagsData: MetaTagsArianeDataService,
+    private readonly seoContentWrite: SeoContentWriteService,
   ) {
     this.logger.log('📄 OptimizedMetadataService initialisé');
   }
@@ -142,7 +144,21 @@ export class OptimizedMetadataService {
         dbData.mta_keywords = Array.isArray(updateData.keywords)
           ? updateData.keywords.join(', ')
           : updateData.keywords;
-      if (updateData.h1 !== undefined) dbData.mta_h1 = updateData.h1;
+      // PR-C : preflight OPA pour toute écriture H1 — gateway évalue + audit
+      // (cf. SeoContentWriteService.preflightH1). Throws PolicyDeniedException
+      // si denied — caller propage. Source par défaut = human_curated (cet
+      // endpoint est appelé depuis admin-ui IsAdminGuard).
+      if (updateData.h1 !== undefined) {
+        await this.seoContentWrite.preflightH1({
+          target: { kind: 'mta_alias', mtaAlias: cleanPath },
+          value: updateData.h1,
+          source: {
+            kind: 'human_curated',
+            actor: 'admin:optimized-metadata-service',
+          },
+        });
+        dbData.mta_h1 = updateData.h1;
+      }
       if (updateData.breadcrumb !== undefined)
         dbData.mta_ariane = updateData.breadcrumb;
       if (updateData.robots !== undefined)
@@ -150,7 +166,9 @@ export class OptimizedMetadataService {
       if (updateData.content !== undefined)
         dbData.mta_content = updateData.content;
 
-      // Upsert dans la table
+      // Upsert dans la table (mta_h1 inclus si présent, validé par gateway
+      // preflight ci-dessus — scanner anti-bypass whitelist ce fichier via
+      // détection du call SeoContentWriteService.preflightH1).
       await this.metaTagsData.upsertWithoutReturn(dbData);
 
       // Invalider le cache
