@@ -38,6 +38,7 @@ import {
 import { useState, useEffect } from "react";
 import brandColorsStyles from "~/styles/brand-colors.css?url";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { imgPriority } from "~/utils/img-priority";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { ErrorGeneric } from "../components/errors";
@@ -524,7 +525,7 @@ export default function VehicleDetailPage() {
                     className="w-full h-full object-cover"
                     loading="eager"
                     decoding="async"
-                    fetchPriority="high"
+                    {...imgPriority("high")}
                     onError={() => setImageError(true)}
                   />
                 ) : (

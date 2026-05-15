@@ -8,6 +8,7 @@ import {
 import { Reveal, Section, SectionHeader } from "~/components/layout";
 import { Input } from "~/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { imgPriority } from "~/utils/img-priority";
 
 // Check if a family is popular
 function isPopular(name: string): boolean {
@@ -59,7 +60,7 @@ const CatalogFamilyCard = memo(function CatalogFamilyCard({
               alt={`Pièces ${cat.n} — catalogue AutoMecanik`}
               className="w-full h-full object-contain p-3 transition-transform duration-300 group-hover:scale-105"
               loading={isAboveFold ? "eager" : "lazy"}
-              fetchPriority={isAboveFold ? "high" : undefined}
+              {...imgPriority(isAboveFold ? "high" : undefined)}
               width="400"
               height="300"
             />

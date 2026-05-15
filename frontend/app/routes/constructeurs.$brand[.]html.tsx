@@ -31,6 +31,7 @@ import {
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import brandColorsStyles from "~/styles/brand-colors.css?url";
+import { imgPriority } from "~/utils/img-priority";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { PopularGammesSection } from "../components/constructeurs/PopularGammesSection";
@@ -540,7 +541,7 @@ export default function BrandCatalogPage() {
                           alt={`Logo ${manufacturer.marque_name}`}
                           className="w-full h-full object-contain drop-shadow-2xl group-hover:scale-105 transition-all duration-700"
                           loading="eager"
-                          fetchPriority="high"
+                          {...imgPriority("high")}
                           onError={(e) => {
                             e.currentTarget.src = "/images/default-brand.png";
                             e.currentTarget.onerror = null;

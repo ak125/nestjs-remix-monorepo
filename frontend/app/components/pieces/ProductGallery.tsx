@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback, memo } from "react";
 import { ImageOptimizer } from "~/utils/image-optimizer";
+import { imgPriority } from "~/utils/img-priority";
 
 /**
  * Extract Supabase storage path from a full URL for imgproxy transformation.
@@ -152,7 +153,7 @@ export const ProductGallery = memo(function ProductGallery({
             className="w-full h-full object-contain"
             loading={priority ? "eager" : "lazy"}
             decoding="async"
-            fetchPriority={priority ? "high" : "auto"}
+            {...imgPriority(priority ? "high" : "auto")}
             onError={(e) => {
               e.currentTarget.src = "/images/default-piece.svg";
             }}
@@ -210,7 +211,7 @@ export const ProductGallery = memo(function ProductGallery({
                 className="w-full h-full object-contain touch-pan-y"
                 loading={priority ? "eager" : "lazy"}
                 decoding="async"
-                fetchPriority={priority ? "high" : "auto"}
+                {...imgPriority(priority ? "high" : "auto")}
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}

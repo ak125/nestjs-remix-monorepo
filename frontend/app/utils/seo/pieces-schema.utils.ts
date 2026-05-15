@@ -193,8 +193,8 @@ export type HeroImagePreloadMeta = {
   href: string;
   imageSrcSet: string; // ✅ React camelCase (pas imagesrcset)
   imageSizes: string; // ✅ React camelCase (pas imagesizes)
-  fetchPriority: "high";
-  [key: string]: string; // Index signature pour compatibilité Remix meta
+  fetchpriority: "high"; // lowercase requis : react-dom 18.3 ne mappe pas la version camelCase ; voir frontend/app/utils/img-priority.ts
+  [key: string]: string;
 };
 
 /**
@@ -249,7 +249,7 @@ export function buildHeroImagePreload(
       href: defaultHref,
       imageSrcSet,
       imageSizes,
-      fetchPriority: "high",
+      fetchpriority: "high",
     },
   ];
 }

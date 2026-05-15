@@ -20,6 +20,7 @@ import { logger } from "~/utils/logger";
 import { CompactBlogHeader } from "../components/blog/CompactBlogHeader";
 import { HtmlContent } from "../components/seo/HtmlContent";
 import { Card, CardContent } from "../components/ui/card";
+import { imgPriority } from "../utils/img-priority";
 
 /* ===========================
    Types
@@ -348,7 +349,7 @@ export default function BlogPiecesAutoMarqueModele() {
                     className="w-full h-auto max-h-56 object-contain mx-auto"
                     loading="eager"
                     decoding="async"
-                    fetchPriority="high"
+                    {...imgPriority("high")}
                     onError={(e) => {
                       const img = e.currentTarget;
                       // Fallback: image modèle → logo marque → placeholder
