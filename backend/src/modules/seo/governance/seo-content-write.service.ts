@@ -9,7 +9,7 @@
  *      Throws PolicyDeniedException on deny
  *
  * Why preflight (not the physical UPDATE) :
- * The physical UPDATE / UPSERT for a row in __meta_tags_ariane often includes
+ * The physical UPDATE / UPSERT for a row in ___meta_tags_ariane often includes
  * 6+ fields besides H1 (mta_title, mta_descrip, mta_content, mta_ariane,
  * mta_relfollow, etc.). Splitting H1 into a separate write would create
  * non-atomic operations and double-writes. The preflight pattern lets the
@@ -26,13 +26,14 @@
  *   - __seo_r1_gamme_slots.r1s_h1_override   (R1_ROUTER)
  *   - __seo_gamme_purchase_guide.sgpg_h1_override (R6_GUIDE_ACHAT)
  *   - __seo_gamme.sg_h1                       (legacy_fallback / R3)
- *   - __meta_tags_ariane.mta_h1               (R7_BRAND | R8_VEHICLE / generic mtaAlias)
+ *   - ___meta_tags_ariane.mta_h1               (R7_BRAND | R8_VEHICLE / generic mtaAlias)
  *
  * Memory : feedback_single_write_path_needs_bypass_scanner
  * Plan : §6 Phase C
  */
 
 import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
+import { createHash } from 'crypto';
 import { SupabaseClient, createClient } from '@supabase/supabase-js';
 import {
   OpaPolicyEngineService,
@@ -81,6 +82,79 @@ export interface PreflightResult {
   allow: true;
   decision: PolicyDecision;
   evaluationId: string | null;
+}
+
+/**
+ * PR-D — Result of an atomic applyH1 call (preflight + UPDATE + event in one
+ * Postgres transaction via RPC `seo_apply_h1_write`).
+ */
+export interface ApplyH1Result {
+  allow: true;
+  decision: PolicyDecision;
+  evaluationId: string;
+  eventId: string;
+  rowsUpdated: number;
+  tableUpdated: string;
+  columnUpdated: string;
+}
+
+function normalizeH1(value: string): string {
+  return value.normalize('NFC').trim().replace(/\s+/g, ' ').toLowerCase();
+}
+
+function hashH1Value(value: string): string {
+  return createHash('sha256').update(normalizeH1(value), 'utf8').digest('hex');
+}
+
+// ── PR-D : physical column resolution (mirror of seo-field-authority.yaml) ──
+//
+// Hard-coded here, matching the YAML canon and the RPC seo_apply_h1_write
+// whitelist. New roles MUST update both this map AND the RPC's CHECK clause.
+
+interface PhysicalMapping {
+  table: string;
+  column: string;
+  idColumn: string;
+}
+
+function resolveH1Physical(target: H1Target): PhysicalMapping {
+  switch (target.kind) {
+    case 'mta_alias':
+      return {
+        table: '___meta_tags_ariane',
+        column: 'mta_h1',
+        idColumn: 'mta_alias',
+      };
+    case 'r1_pg':
+      return {
+        table: '__seo_r1_gamme_slots',
+        column: 'r1s_h1_override',
+        idColumn: 'r1s_pg_id',
+      };
+    case 'r6_pg':
+      return {
+        table: '__seo_gamme_purchase_guide',
+        column: 'sgpg_h1_override',
+        idColumn: 'sgpg_pg_id',
+      };
+    case 'legacy_gamme':
+      return {
+        table: '__seo_gamme',
+        column: 'sg_h1',
+        idColumn: 'sg_id',
+      };
+  }
+}
+
+function physicalIdValue(target: H1Target): string {
+  switch (target.kind) {
+    case 'mta_alias':
+      return target.mtaAlias;
+    case 'r1_pg':
+    case 'r6_pg':
+    case 'legacy_gamme':
+      return String(target.pgId);
+  }
 }
 
 export class PolicyDeniedException extends HttpException {
@@ -209,6 +283,96 @@ export class SeoContentWriteService {
       );
       return null;
     }
+  }
+
+  /**
+   * PR-D — Atomic H1 write : OPA preflight + UPDATE canonical column + INSERT
+   * `__seo_content_events` (applied) + INSERT `__seo_policy_evaluations` (allow),
+   * all wrapped in a single Postgres transaction via RPC `seo_apply_h1_write`.
+   *
+   * Guarantees : no state where H1 column is updated but the event row is
+   * missing (or vice-versa). If the RPC throws, all three INSERTs/UPDATE roll
+   * back atomically.
+   *
+   * On policy deny : the RPC is NOT called ; instead a deny audit row is
+   * recorded directly (via this.recordEvaluation) and PolicyDeniedException
+   * is thrown — caller surfaces 403.
+   */
+  async applyH1(input: PreflightH1Input): Promise<ApplyH1Result> {
+    const opaInput = this.buildOpaInput(input);
+    const decision = this.opa.evaluateH1Write(opaInput);
+
+    if (!decision.allow) {
+      // Deny path : audit-trail recorded directly (no RPC, no atomic
+      // transaction needed since nothing is being written downstream).
+      await this.recordEvaluation(input, opaInput, decision);
+      this.logger.warn(
+        `[SeoContentWrite] DENY (applyH1) asset=${targetAssetId(input.target)} ` +
+          `source=${input.source.kind} reasons=${decision.reasons.join(' | ')}`,
+      );
+      throw new PolicyDeniedException(decision);
+    }
+
+    // Allow path : delegate the atomic 3-statement write to Postgres RPC.
+    const physical = resolveH1Physical(input.target);
+    const valueHash = hashH1Value(input.value);
+    const sourceMetadata: Record<string, unknown> = {
+      evidence_tier: input.source.evidenceTier ?? null,
+      proposed_event_id: input.source.proposedEvent?.eventId ?? null,
+      flag_state: input.source.flagState ?? null,
+      builder_service: input.source.service ?? null,
+    };
+
+    const { data, error } = await this.supabase.rpc('seo_apply_h1_write', {
+      p_asset_id: targetAssetId(input.target),
+      p_target_table: physical.table,
+      p_target_column: physical.column,
+      p_target_id_column: physical.idColumn,
+      p_target_id_value: physicalIdValue(input.target),
+      p_h1_value: input.value,
+      p_value_hash: valueHash,
+      p_source_kind: input.source.kind,
+      p_source_metadata: sourceMetadata,
+      p_actor: input.source.actor,
+      p_policy_name: decision.policyName,
+      p_policy_bundle_sha: decision.policyBundleSha,
+      p_input_snapshot: opaInput,
+    });
+
+    if (error) {
+      throw new Error(
+        `[SeoContentWrite] applyH1 RPC failed for asset=${targetAssetId(input.target)}: ${error.message}`,
+      );
+    }
+    const row =
+      Array.isArray(data) && data.length > 0
+        ? (data[0] as {
+            evaluation_id: string;
+            event_id: string;
+            rows_updated: number;
+          })
+        : null;
+    if (!row) {
+      throw new Error(
+        `[SeoContentWrite] applyH1 RPC returned no row for asset=${targetAssetId(input.target)}`,
+      );
+    }
+
+    this.logger.log(
+      `[SeoContentWrite] APPLIED asset=${targetAssetId(input.target)} ` +
+        `source=${input.source.kind} → ${physical.table}.${physical.column} ` +
+        `rows=${row.rows_updated} event_id=${row.event_id}`,
+    );
+
+    return {
+      allow: true,
+      decision,
+      evaluationId: row.evaluation_id,
+      eventId: row.event_id,
+      rowsUpdated: row.rows_updated,
+      tableUpdated: physical.table,
+      columnUpdated: physical.column,
+    };
   }
 
   /**

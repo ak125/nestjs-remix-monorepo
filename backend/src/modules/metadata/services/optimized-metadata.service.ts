@@ -144,21 +144,10 @@ export class OptimizedMetadataService {
         dbData.mta_keywords = Array.isArray(updateData.keywords)
           ? updateData.keywords.join(', ')
           : updateData.keywords;
-      // PR-C : preflight OPA pour toute écriture H1 — gateway évalue + audit
-      // (cf. SeoContentWriteService.preflightH1). Throws PolicyDeniedException
-      // si denied — caller propage. Source par défaut = human_curated (cet
-      // endpoint est appelé depuis admin-ui IsAdminGuard).
-      if (updateData.h1 !== undefined) {
-        await this.seoContentWrite.preflightH1({
-          target: { kind: 'mta_alias', mtaAlias: cleanPath },
-          value: updateData.h1,
-          source: {
-            kind: 'human_curated',
-            actor: 'admin:optimized-metadata-service',
-          },
-        });
-        dbData.mta_h1 = updateData.h1;
-      }
+      // PR-D : H1 column is NOT included in this bulk upsert. It is written
+      // atomically (UPDATE + INSERT event + INSERT eval) via the gateway RPC
+      // in the step 2 below — same Postgres transaction, no "H1 written but
+      // event missing" race possible.
       if (updateData.breadcrumb !== undefined)
         dbData.mta_ariane = updateData.breadcrumb;
       if (updateData.robots !== undefined)
@@ -166,10 +155,21 @@ export class OptimizedMetadataService {
       if (updateData.content !== undefined)
         dbData.mta_content = updateData.content;
 
-      // Upsert dans la table (mta_h1 inclus si présent, validé par gateway
-      // preflight ci-dessus — scanner anti-bypass whitelist ce fichier via
-      // détection du call SeoContentWriteService.preflightH1).
+      // 1. Upsert non-H1 fields (row creation/title/desc/etc.).
       await this.metaTagsData.upsertWithoutReturn(dbData);
+
+      // 2. PR-D atomic H1 write through gateway. Throws PolicyDeniedException
+      //    on OPA deny.
+      if (updateData.h1 !== undefined) {
+        await this.seoContentWrite.applyH1({
+          target: { kind: 'mta_alias', mtaAlias: cleanPath },
+          value: updateData.h1,
+          source: {
+            kind: 'human_curated',
+            actor: 'admin:optimized-metadata-service',
+          },
+        });
+      }
 
       // Invalider le cache
       await this.clearCache(cleanPath);
