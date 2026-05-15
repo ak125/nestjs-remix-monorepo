@@ -1,15 +1,25 @@
 /**
  * Helper pour la prop `fetchpriority` sur `<img>` / `<link rel="preload">`.
  *
- * react-dom 18.3.1 ne reconnaît pas la prop `fetchPriority` (camelCase) au
- * runtime : il émet un warning "unknown prop" et n'écrit pas l'attribut sur
- * le DOM, ce qui supprime le hint LCP au navigateur. L'attribut HTML réel est
- * `fetchpriority` (lowercase). React 19 mappe correctement la version
- * camelCase ; tant que Remix 2.17 nous bloque sur React 18, on passe la prop
- * lowercase via spread pour bypasser le filtre de react-dom.
+ * react-dom 18.3.1 n'a pas `fetchPriority` dans son allowlist d'attributs DOM
+ * connus (grep `fetchPriority` dans react-dom/cjs/* → 0 hit). Conséquence en
+ * SSR + hydratation :
  *
- * Migration React 19 : supprimer ce fichier et remplacer
- * `{...imgPriority(x)}` par `fetchPriority={x}` (find/replace global).
+ *   1. React émet le warning « React does not recognize the `fetchPriority`
+ *      prop on a DOM element » à chaque render.
+ *   2. Le passthrough générique des string-attrs sérialise quand même
+ *      `fetchPriority="high"` (camelCase préservée) dans le HTML.
+ *   3. Le browser parse le HTML en case-insensitive (HTML5 §13), donc
+ *      l'attribut est interprété comme `fetchpriority` et le hint LCP est
+ *      honoré au préload-scan.
+ *
+ * En clair : la fonctionnalité LCP marchait déjà ; ce helper supprime le
+ * warning React + aligne la sérialisation HTML sur la spec lowercase.
+ *
+ * React 19 mappe correctement la version camelCase nativement ; quand Remix
+ * v3 / React Router v7 débloquera la migration, supprimer ce fichier et
+ * remplacer `{...imgPriority(x)}` par `fetchPriority={x}` (find/replace
+ * global).
  */
 
 export type ImgPriority = "high" | "low" | "auto";
