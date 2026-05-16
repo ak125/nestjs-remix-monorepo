@@ -21,7 +21,6 @@
 
 export const R8_ENRICHMENT_QUEUE_NAME = 'r8-enrichment';
 export const R8_ENRICHMENT_JOB_NAME = 'r8-enrich-type';
-export const R8_ENRICHMENT_CONCURRENCY = 5;
 
 export const SEO_OUTBOX_QUEUE_NAME = 'seo-outbox-relay';
 export const SEO_OUTBOX_RELAY_JOB_NAME = 'seo-outbox-relay-poll';
