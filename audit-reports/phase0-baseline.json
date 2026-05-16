@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "captured_at": "2026-05-13",
-  "captured_on_commit": "b762890a",
+  "captured_at": "2026-05-16",
+  "captured_on_commit": "chore/cleanup-unused-types-wave-2026-05",
   "thresholds": {
     "unused_files_delta": 5,
     "unused_exports_delta": 10,
@@ -15,13 +15,13 @@
     "ast_grep_errors_delta": 0
   },
   "knip": {
-    "unused_files": 342,
-    "unused_exports": 228,
-    "unused_types": 370,
-    "unused_dependencies": 4,
-    "unused_dev_dependencies": 4,
-    "unlisted_dependencies": 38,
-    "unlisted_binaries": 5,
+    "unused_files": 332,
+    "unused_exports": 795,
+    "unused_types": 615,
+    "unused_dependencies": 42,
+    "unused_dev_dependencies": 35,
+    "unlisted_dependencies": 40,
+    "unlisted_binaries": 9,
     "duplicate_exports": 41
   },
   "madge": {
