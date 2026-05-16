@@ -12,6 +12,8 @@
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../../database/database.module';
+import { R2R8GateStatusController } from './controllers/r2-r8-gate-status.controller';
+import { R2R8SeedRunnerController } from './controllers/r2-r8-seed-runner.controller';
 import { R1GammeCompletenessAuditController } from './r1-gamme-completeness-audit.controller';
 import { R2AdminPilotController } from './r2-admin-pilot.controller';
 import {
@@ -22,7 +24,11 @@ import {
   OutboxRelayProcessor,
   R8EnrichmentProcessor,
 } from './queues/r8-enrichment.processor';
+import { R8_SEED_RUN_QUEUE_NAME } from './queues/r8-seed-run.constants';
+import { R8SeedRunProcessor } from './queues/r8-seed-run.processor';
 import { OutboxRelayService } from './services/outbox-relay.service';
+import { R2R8GateStatusService } from './services/r2-r8-gate-status.service';
+import { R2R8SeedJobOrchestratorService } from './services/r2-r8-seed-job-orchestrator.service';
 import { R1GammeCompletenessAuditService } from './services/r1-gamme-completeness-audit.service';
 import { R2CatalogSignatureService } from './services/r2-catalog-signature.service';
 import { R2CommercialDistinctivenessService } from './services/r2-commercial-distinctiveness.service';
@@ -50,9 +56,15 @@ import { SeoOutboxRelaySchedulerService } from './services/seo-outbox-relay-sche
     BullModule.registerQueue(
       { name: R8_ENRICHMENT_QUEUE_NAME },
       { name: SEO_OUTBOX_QUEUE_NAME },
+      { name: R8_SEED_RUN_QUEUE_NAME },
     ),
   ],
-  controllers: [R2AdminPilotController, R1GammeCompletenessAuditController],
+  controllers: [
+    R2AdminPilotController,
+    R1GammeCompletenessAuditController,
+    R2R8SeedRunnerController, // ADR-072 PR 2D-3 admin seed runner
+    R2R8GateStatusController, // ADR-072 PR 2D-3 gate status
+  ],
   providers: [
     R1GammeCompletenessAuditService,
     R2CatalogSignatureService,
@@ -71,6 +83,9 @@ import { SeoOutboxRelaySchedulerService } from './services/seo-outbox-relay-sche
     SeoOutboxRelaySchedulerService, // BullMQ repeatable scheduler
     R8EnrichmentProcessor,
     OutboxRelayProcessor,
+    R2R8GateStatusService, // ADR-072 PR 2D-3
+    R2R8SeedJobOrchestratorService, // ADR-072 PR 2D-3
+    R8SeedRunProcessor, // ADR-072 PR 2D-3
     {
       // Redis provider stub — PR 2 V1.5 wires real Redis client (BullMQ Redis
       // reused). For PR 1 foundation, feature flag falls back to env var.
@@ -98,6 +113,8 @@ import { SeoOutboxRelaySchedulerService } from './services/seo-outbox-relay-sche
     R8ParentEnrichmentService,
     R8SnapshotSeedService,
     OutboxRelayService,
+    R2R8GateStatusService,
+    R2R8SeedJobOrchestratorService,
   ],
 })
 export class R2V2Module {}
