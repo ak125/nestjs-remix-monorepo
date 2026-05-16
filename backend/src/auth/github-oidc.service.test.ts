@@ -1,5 +1,6 @@
 import { Test } from '@nestjs/testing';
-import { ForbiddenException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import {
   SignJWT,
   generateKeyPair,
@@ -8,6 +9,7 @@ import {
   type JWK,
   type KeyLike,
 } from 'jose';
+import IORedisMock from 'ioredis-mock';
 
 import {
   GithubOidcService,
@@ -39,6 +41,7 @@ const VALID_CLAIMS: Omit<GithubOidcClaims, 'iat' | 'exp' | 'iss' | 'aud'> = {
 async function setupKeysAndService(): Promise<{
   privateKey: KeyLike;
   service: GithubOidcService;
+  redis: InstanceType<typeof IORedisMock>;
 }> {
   const { publicKey, privateKey } = await generateKeyPair('RS256', {
     extractable: true,
@@ -49,14 +52,25 @@ async function setupKeysAndService(): Promise<{
   jwk.use = 'sig';
 
   const localJwks = createLocalJWKSet({ keys: [jwk] });
+  const redis = new IORedisMock();
+  // ioredis-mock shares an in-memory store globally across instances by
+  // default; flush to isolate state per test (avoids cross-test jti pollution).
+  await redis.flushall();
 
   const moduleRef = await Test.createTestingModule({
-    providers: [GithubOidcService],
+    providers: [
+      GithubOidcService,
+      {
+        provide: ConfigService,
+        useValue: { get: () => undefined },
+      },
+    ],
   }).compile();
 
   const service = moduleRef.get(GithubOidcService);
   service.setJwksForTesting(localJwks);
-  return { privateKey, service };
+  service.setRedisForTesting(redis as unknown as never);
+  return { privateKey, service, redis };
 }
 
 async function signClaims(
@@ -219,5 +233,86 @@ describe('GithubOidcService — exposed constants (Phase 0.6 paradigm)', () => {
 
   it('exposes CLOCK_TOLERANCE_SECONDS = 30 (runner ↔ VPS clock drift budget)', () => {
     expect(GithubOidcService.CLOCK_TOLERANCE_SECONDS).toBe(30);
+  });
+
+  it('exposes REDIS_DB_INDEX = 1 (isolation from Bull DB 0)', () => {
+    expect(GithubOidcService.REDIS_DB_INDEX).toBe(1);
+  });
+
+  it('exposes REDIS_JTI_PREFIX = "oidc:jti:" (namespace separation from Bull)', () => {
+    expect(GithubOidcService.REDIS_JTI_PREFIX).toBe('oidc:jti:');
+  });
+});
+
+// ───────────────────────────────────────────────────────────────────
+// Anti-replay (Phase 4) — jti uniqueness via Redis SETNX
+// ───────────────────────────────────────────────────────────────────
+
+describe('GithubOidcService — anti-replay (Phase 4)', () => {
+  it('accepts a fresh jti and stores it in Redis', async () => {
+    const { privateKey, service, redis } = await setupKeysAndService();
+    const token = await signClaims(privateKey);
+
+    await expect(service.validate(token)).resolves.toBeDefined();
+
+    // Redis should now contain an oidc:jti:* key
+    const keys = await redis.keys('oidc:jti:*');
+    expect(keys.length).toBe(1);
+  });
+
+  it('rejects a replay of the same jti', async () => {
+    const { privateKey, service } = await setupKeysAndService();
+
+    // Sign two tokens with the SAME jti (manually via SignJWT to control jti)
+    const sharedJti = `jti-replay-${Math.random()}`;
+    const signer = (jti: string) =>
+      new SignJWT({ ...VALID_CLAIMS })
+        .setProtectedHeader({ alg: 'RS256', kid: KID, typ: 'JWT' })
+        .setIssuer(GithubOidcService.ISSUER)
+        .setAudience(GithubOidcService.AUDIENCE)
+        .setIssuedAt()
+        .setExpirationTime('10m')
+        .setJti(jti)
+        .sign(privateKey);
+
+    const t1 = await signer(sharedJti);
+    const t2 = await signer(sharedJti);
+
+    await expect(service.validate(t1)).resolves.toBeDefined();
+    await expect(service.validate(t2)).rejects.toThrow(UnauthorizedException);
+    await expect(service.validate(t2)).rejects.toThrow(/token already used/);
+  });
+
+  it('rejects when jti claim is absent', async () => {
+    const { privateKey, service } = await setupKeysAndService();
+
+    const tokenWithoutJti = await new SignJWT({ ...VALID_CLAIMS })
+      .setProtectedHeader({ alg: 'RS256', kid: KID, typ: 'JWT' })
+      .setIssuer(GithubOidcService.ISSUER)
+      .setAudience(GithubOidcService.AUDIENCE)
+      .setIssuedAt()
+      .setExpirationTime('10m')
+      .sign(privateKey);
+
+    await expect(service.validate(tokenWithoutJti)).rejects.toThrow(
+      UnauthorizedException,
+    );
+    await expect(service.validate(tokenWithoutJti)).rejects.toThrow(
+      /missing jti claim/,
+    );
+  });
+
+  it('stores jti with TTL >= (exp - now) + 60s', async () => {
+    const { privateKey, service, redis } = await setupKeysAndService();
+    const token = await signClaims(privateKey, {}, { exp: '10m' });
+
+    await service.validate(token);
+
+    const keys = await redis.keys('oidc:jti:*');
+    expect(keys.length).toBe(1);
+    const ttl = await redis.ttl(keys[0]);
+    // 10m token + 60s safety = ~660s. Floor 60s in code. Allow generous bounds.
+    expect(ttl).toBeGreaterThanOrEqual(60);
+    expect(ttl).toBeLessThanOrEqual(700);
   });
 });
