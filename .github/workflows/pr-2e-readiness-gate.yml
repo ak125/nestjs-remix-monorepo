@@ -1,0 +1,82 @@
+name: 🚦 PR 2E readiness gate
+
+# Industry-standard machine gate (ADR-072 PR 2D-3) — blocks any PR that targets
+# the R2 v2 R2DataLoader / pilot V1 work (PR 2E) until the R8 snapshot store is
+# seeded for every `auto_type` row (canon MEMORY
+# `project-r2-v2-canon-sequence-202605`).
+#
+# Trigger : PR labelled `r2-v2-pr-2e` or branch name matching `feat/seo-r2-pr-2e*`.
+# Behavior : runs a small Node script (`scripts/ci/pr-2e-readiness-gate.mjs`)
+#   that queries Supabase counts + a 10-typeId sample, posts the result as a
+#   PR comment (idempotent via marker), and fails the workflow if the gate is
+#   not passing.
+#
+# Required secrets (already present per backend deploys) :
+#   SUPABASE_URL                 — canonical project URL
+#   SUPABASE_SERVICE_ROLE_KEY    — used for read-only SELECT count(*) queries
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled]
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  gate:
+    name: 🚦 Gate check (snapshots ≥ auto_types)
+    if: |
+      contains(github.event.pull_request.labels.*.name, 'r2-v2-pr-2e') ||
+      startsWith(github.event.pull_request.head.ref, 'feat/seo-r2-pr-2e')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: 📦 Install gate script deps
+        run: |
+          set -euo pipefail
+          # Local install so the gate is self-contained (no full monorepo install).
+          npm init --yes >/dev/null
+          npm install --no-save @supabase/supabase-js@^2 >/dev/null
+
+      - name: 🚦 Evaluate gate
+        id: gate
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/ci/pr-2e-readiness-gate.mjs
+
+      - name: 💬 Comment on PR (idempotent via marker)
+        if: always()
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const fs = require('fs');
+            const markdown = fs.readFileSync('gate-report.md', 'utf8');
+            const marker = '<!-- pr-2e-readiness-gate -->';
+            const body = marker + '\n' + markdown;
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const existing = await github.paginate(
+              github.rest.issues.listComments,
+              { owner, repo, issue_number, per_page: 100 },
+            );
+            const previous = existing.find(c => c.body && c.body.startsWith(marker));
+            if (previous) {
+              await github.rest.issues.updateComment({
+                owner, repo, comment_id: previous.id, body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner, repo, issue_number, body,
+              });
+            }

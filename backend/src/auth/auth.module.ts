@@ -9,7 +9,9 @@ import { AuthSessionController } from './controllers/auth-session.controller';
 import { AuthPermissionsController } from './controllers/auth-permissions.controller';
 import { AuthTokenController } from './controllers/auth-token.controller';
 import { ProfileController } from './profile.controller';
+import { AdminSessionGuard } from './admin-session.guard';
 import { CookieSerializer } from './cookie-serializer';
+import { GithubOidcGuard } from './github-oidc.guard';
 import { GithubOidcService } from './github-oidc.service';
 import { IsAdminGuard } from './is-admin.guard';
 import { LocalAuthGuard } from './local-auth.guard';
@@ -47,12 +49,16 @@ import { PermissionsGuard } from './guards/permissions.guard';
     PermissionsService,
     PermissionsGuard,
     GithubOidcService,
+    AdminSessionGuard,
+    GithubOidcGuard,
   ],
   exports: [
     AuthService,
     PermissionsService,
     PermissionsGuard,
     GithubOidcService,
+    AdminSessionGuard,
+    GithubOidcGuard,
   ],
 })
 export class AuthModule {}
