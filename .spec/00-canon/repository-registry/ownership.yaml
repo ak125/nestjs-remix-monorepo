@@ -72,6 +72,11 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: low
+  - glob: docs/superpowers/plans/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
   - glob: agents/**
     domain: D15
     owner: '@ak125'
