@@ -3,11 +3,15 @@
  *
  * Mirrors the `__seo_admin_job` table (migration `20260518_seo_admin_job_table.sql`).
  * Single source of truth for controller payloads and the orchestrator service.
+ *
+ * Export discipline : only the schemas actually parsed at the boundary
+ * (Request → controller, RPC → service) are exported. Other Zod nodes stay
+ * internal so knip's unused-exports baseline doesn't drift.
  */
 
 import { z } from 'zod';
 
-export const AdminJobStatusEnum = z.enum([
+const AdminJobStatusEnum = z.enum([
   'pending',
   'running',
   'completed',
@@ -16,12 +20,11 @@ export const AdminJobStatusEnum = z.enum([
 ]);
 export type AdminJobStatus = z.infer<typeof AdminJobStatusEnum>;
 
-export const AdminJobTypeEnum = z.enum(['r8_seed_run']);
-export type AdminJobType = z.infer<typeof AdminJobTypeEnum>;
+const AdminJobTypeEnum = z.enum(['r8_seed_run']);
 
 // RFC-7240 / Stripe idempotency keys : alphanumeric, dashes, underscores.
 // 8-64 chars to allow UUIDs (36) and short slugs while bounding storage.
-export const IdempotencyKeySchema = z
+const IdempotencyKeySchema = z
   .string()
   .min(8)
   .max(64)
@@ -36,7 +39,7 @@ export const R8SeedRunRequestSchema = z.object({
 });
 export type R8SeedRunRequest = z.infer<typeof R8SeedRunRequestSchema>;
 
-export const R8SeedRunAcceptResponseSchema = z.object({
+const R8SeedRunAcceptResponseSchema = z.object({
   runId: z.string().uuid(),
   status: AdminJobStatusEnum,
   idempotentHit: z.boolean(),

@@ -16,7 +16,7 @@ name: 🗄️ Apply Supabase migrations (manual)
 #
 # Required secrets (Settings → Secrets and variables → Actions) :
 #   SUPABASE_ACCESS_TOKEN   — personal access token from supabase.com/dashboard
-#   SUPABASE_PROJECT_REF    — project ref (e.g. cxpojprgwgubzjyqzmoq)
+#   SUPABASE_PROJECT_REF    — Supabase project ref (set in Settings → Secrets)
 #   SUPABASE_DB_PASSWORD    — database password (used by `db push`)
 
 on:
