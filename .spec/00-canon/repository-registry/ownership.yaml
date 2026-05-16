@@ -92,6 +92,16 @@ entries:
     owner: '@ak125'
     sourceConfidence: medium
     risk: medium
+  - glob: backend/src/common/pipes/params/**
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  - glob: backend/src/common/schemas/**
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
   - glob: backend/src/config/**
     domain: D13
     owner: '@ak125'
