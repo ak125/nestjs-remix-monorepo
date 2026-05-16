@@ -117,6 +117,7 @@ import { SitemapV10Controller } from './controllers/sitemap-v10.controller';
 import { SitemapUnifiedController } from './controllers/sitemap-unified.controller';
 import { SitemapStreamingController } from './controllers/sitemap-streaming.controller';
 import { SitemapDeltaController } from './controllers/sitemap-delta.controller';
+import { SitemapSchedulerDiagnosticController } from './controllers/sitemap-scheduler-diagnostic.controller';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // CONTROLEURS CONTENT (ex seo-content)
@@ -201,6 +202,7 @@ import { R2V2Module } from './r2/r2-v2.module';
     SitemapUnifiedController,
     SitemapStreamingController,
     SitemapDeltaController,
+    SitemapSchedulerDiagnosticController,
     // Content
     ReferenceController,
     DiagnosticController,
