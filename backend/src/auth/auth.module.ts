@@ -10,6 +10,7 @@ import { AuthPermissionsController } from './controllers/auth-permissions.contro
 import { AuthTokenController } from './controllers/auth-token.controller';
 import { ProfileController } from './profile.controller';
 import { CookieSerializer } from './cookie-serializer';
+import { GithubOidcService } from './github-oidc.service';
 import { IsAdminGuard } from './is-admin.guard';
 import { LocalAuthGuard } from './local-auth.guard';
 import { LocalStrategy } from './local.strategy';
@@ -45,7 +46,13 @@ import { PermissionsGuard } from './guards/permissions.guard';
     IsAdminGuard,
     PermissionsService,
     PermissionsGuard,
+    GithubOidcService,
   ],
-  exports: [AuthService, PermissionsService, PermissionsGuard],
+  exports: [
+    AuthService,
+    PermissionsService,
+    PermissionsGuard,
+    GithubOidcService,
+  ],
 })
 export class AuthModule {}
