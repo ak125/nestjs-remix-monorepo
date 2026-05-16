@@ -62,7 +62,8 @@ export class OutboxRelayService extends SupabaseBaseService {
     const startedAt = Date.now();
     const limit = Math.max(1, options.batchSize ?? SEO_OUTBOX_RELAY_BATCH_SIZE);
 
-    const { data, error } = await this.supabase.rpc(
+    // 🛡️ RPC Safety Gate — worker context (no `source: 'api'`).
+    const { data, error } = await this.callRpc<OutboxRow[]>(
       '__seo_outbox_claim_batch',
       { p_limit: limit },
     );
@@ -77,7 +78,7 @@ export class OutboxRelayService extends SupabaseBaseService {
       };
     }
 
-    const rows = (data ?? []) as OutboxRow[];
+    const rows = data ?? [];
     if (rows.length === 0) {
       return {
         claimed: 0,

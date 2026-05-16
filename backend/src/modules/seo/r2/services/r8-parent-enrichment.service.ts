@@ -50,6 +50,13 @@ export interface R8EnrichmentOutcome {
   outboxEventId: number | null; // null only when RPC reuses an event row
 }
 
+interface PublishSnapshotRow {
+  snapshot_id: number;
+  inserted: boolean;
+  pages_pointer_updated: boolean;
+  outbox_event_id: number;
+}
+
 interface AutoTypeRow {
   type_id: string;
   type_marque_id: string | null;
@@ -169,7 +176,11 @@ export class R8ParentEnrichmentService extends SupabaseBaseService {
 
     // Canonical write path : RPC wraps INSERT snapshot + UPDATE pages pointer
     // + INSERT outbox event in a single SQL transaction.
-    const { data, error } = await this.supabase.rpc(
+    //
+    // 🛡️ RPC Safety Gate — callRpc routes via SupabaseBaseService.callRpc so
+    // governance allowlist / deny rules apply. Worker context (no `source:
+    // 'api'`) skips allowlist enforcement but still records the call.
+    const { data, error } = await this.callRpc<PublishSnapshotRow[]>(
       '__seo_r8_publish_snapshot',
       {
         p_type_id: typeId,
@@ -189,7 +200,9 @@ export class R8ParentEnrichmentService extends SupabaseBaseService {
     }
 
     // RPC returns a single row : { snapshot_id, inserted, pages_pointer_updated, outbox_event_id }
-    const row = Array.isArray(data) ? data[0] : data;
+    const row = Array.isArray(data)
+      ? data[0]
+      : (data as PublishSnapshotRow | null);
     if (!row || typeof row.snapshot_id !== 'number') {
       this.logger.error(
         `enrichTypeId(${typeId}) RPC returned malformed payload: ${JSON.stringify(data)}`,
