@@ -35,15 +35,23 @@ npm run audit:cleanup-candidates:check
 At PR-8b creation time, for each file in the batch:
 
 1. Find the matching record in `pr-8-controlled-cleanup-candidates.json` — must have `decision === "candidate"` and `confidence === "high"`.
-2. Verify `proof.validateScriptSha256` still equals `sha256(scripts/cleanup/validate-before-delete.sh)` on `main` (gate unchanged).
-3. Verify `meta.inputFingerprint` still matches the current `main` state (inputs not drifted).
-4. Run `bash scripts/cleanup/validate-before-delete.sh <file>` — must exit 0 (`SAFE`).
-5. Embed the matching `proof.*` block + the `activeRuntimeCheck` result in the PR body.
-6. `git rm <file>`.
+2. **Target-scoped invariance check** (PR-8d): `npm run audit:cleanup-candidates:check -- --target <path>` — exits 0 iff the target's proof block is invariant (`canonical.owner/domain/status/deletePolicy/importedByCount/importedBy[]` unchanged, `validateScriptSha256` unchanged, snapshot precheck c0-c3 unchanged, `neverAutoDelete.{protected,matchedGlob}` unchanged, `unreachableModule.verdict` unchanged). Cosmetic global drift (e.g., `ownership.yaml` mutated on UNRELATED paths by concurrent PRs) is tolerated by design.
+3. Run `bash scripts/cleanup/validate-before-delete.sh <file>` — must exit 0 (`SAFE`).
+4. Embed the matching `proof.*` block + the `activeRuntimeCheck` result in the PR body.
+5. `git rm <file>`.
 
-**No deletion without a matching proof block AND a fresh `activeRuntimeCheck` AND an unchanged input fingerprint.**
+**No deletion without a passing target-scoped check AND a fresh `activeRuntimeCheck` SAFE.**
 
-## CI ratchet (future PR-8d)
+### Two check modes
+
+| Mode | Command | Tolerates global drift? | Used by |
+|------|---------|------------------------|---------|
+| **Global strict** | `npm run audit:cleanup-candidates:check` | No — exits 1 on ANY input fingerprint or toolchain change | PR-8c-N inventory regen ritual; future CI ratchet (warn-only → blocking) |
+| **Target-scoped** | `npm run audit:cleanup-candidates:check -- --target <path>` | Yes — only checks the target's per-field proof invariance | PR-8b-N deletion batches (each file in the batch authorizes itself) |
+
+**Canonical rule**: *"Global inventory drift may exist. Deletion is allowed only if target-scoped proof remains invariant."*
+
+## CI ratchet (future PR-8e+)
 
 `npm run audit:cleanup-candidates:check` will be wired as a warn-only step in `.github/workflows/registry-build.yml`. It fails if the committed JSON drifts from a fresh generator run. Once 2-3 batches have shipped clean, promote to blocking.
 

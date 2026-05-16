@@ -7,8 +7,11 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import stableStringify from "fast-json-stable-stringify";
 
-import { buildInventory, NEVER_AUTO_DELETE_GLOBS } from "./build-cleanup-candidates.ts";
-import { CleanupInventorySchema } from "./cleanup-candidates.schema.ts";
+import { buildInventory, checkTarget, NEVER_AUTO_DELETE_GLOBS } from "./build-cleanup-candidates.ts";
+import { CleanupInventorySchema, type CleanupInventory } from "./cleanup-candidates.schema.ts";
+import { mkdtempSync, writeFileSync as fsWriteSync } from "node:fs";
+import { tmpdir } from "node:os";
+import stableStringify from "fast-json-stable-stringify";
 
 const HERE = fileURLToPath(new URL(".", import.meta.url));
 const FIX = (name: string) => join(HERE, "__fixtures__/cleanup-candidates", name);
@@ -98,6 +101,91 @@ test("renderMarkdown emits a projection with the three top-level decision sectio
   assert.match(md, /## candidate \(/);
   assert.match(md, /## blocked \(/);
   assert.match(md, /## excluded \(/);
+});
+
+// ---------------------------------------------------------------------------
+// PR-8d: target-scoped invariance check.
+// Tolerates global inventory drift (e.g. ownership.yaml mutations on unrelated paths)
+// as long as the target's proof block stays invariant.
+// ---------------------------------------------------------------------------
+
+// Helper: write a CleanupInventory to a tmp file, then run checkTarget against it
+// using the same fixtures so the fresh re-compute is comparable to the committed one.
+async function checkTargetWithCommittedInventory(
+  committedInv: CleanupInventory,
+  targetPath: string,
+): Promise<{ ok: boolean; drifts: string[] }> {
+  const dir = mkdtempSync(join(tmpdir(), "pr8d-"));
+  const jsonOut = join(dir, "inv.json");
+  fsWriteSync(jsonOut, stableStringify(committedInv) + "\n");
+  return checkTarget(targetPath, jsonOut, inputs);
+}
+
+test("checkTarget: target invariant (same inputs) → authorized", async () => {
+  const inv = await buildInventory(inputs);
+  const r = await checkTargetWithCommittedInventory(inv, "frontend/app/utils/dead.ts");
+  assert.equal(r.ok, true, `Expected authorized, got drifts: ${JSON.stringify(r.drifts)}`);
+  assert.deepEqual(r.drifts, []);
+});
+
+test("checkTarget: target not in inventory → blocked", async () => {
+  const inv = await buildInventory(inputs);
+  const r = await checkTargetWithCommittedInventory(inv, "some/unknown/file.ts");
+  assert.equal(r.ok, false);
+  assert.match(r.drifts[0], /not present/i);
+});
+
+test("checkTarget: target decision != candidate → blocked", async () => {
+  const inv = await buildInventory(inputs);
+  // "frontend/app/routes/_index.tsx" is excluded (NEVER_AUTO_DELETE)
+  const r = await checkTargetWithCommittedInventory(inv, "frontend/app/routes/_index.tsx");
+  assert.equal(r.ok, false);
+  assert.match(r.drifts[0], /decision/i);
+});
+
+test("checkTarget: target's canonical record mutated → blocked", async () => {
+  const inv = await buildInventory(inputs);
+  // Tamper: simulate canonical.owner change for the target.
+  const tampered: CleanupInventory = JSON.parse(JSON.stringify(inv));
+  const target = tampered.candidates.find(c => c.path === "frontend/app/utils/dead.ts");
+  assert.ok(target?.proof.canonical);
+  target!.proof.canonical!.owner = "@different-team";
+  const r = await checkTargetWithCommittedInventory(tampered, "frontend/app/utils/dead.ts");
+  assert.equal(r.ok, false);
+  assert.ok(r.drifts.some(d => d.includes("owner")), `Expected owner drift: ${JSON.stringify(r.drifts)}`);
+});
+
+test("checkTarget: target's importedByCount mutated → blocked", async () => {
+  const inv = await buildInventory(inputs);
+  const tampered: CleanupInventory = JSON.parse(JSON.stringify(inv));
+  const target = tampered.candidates.find(c => c.path === "frontend/app/utils/dead.ts");
+  target!.proof.canonical!.importedByCount = 42;
+  target!.proof.canonical!.importedBy = ["fake/importer.ts"];
+  const r = await checkTargetWithCommittedInventory(tampered, "frontend/app/utils/dead.ts");
+  assert.equal(r.ok, false);
+  assert.ok(r.drifts.some(d => d.includes("importedByCount")), `Expected importedByCount drift: ${JSON.stringify(r.drifts)}`);
+});
+
+test("checkTarget: validateScriptSha256 mutated → blocked (gate logic changed)", async () => {
+  const inv = await buildInventory(inputs);
+  const tampered: CleanupInventory = JSON.parse(JSON.stringify(inv));
+  const target = tampered.candidates.find(c => c.path === "frontend/app/utils/dead.ts");
+  target!.proof.validateScriptSha256 = "0".repeat(64);
+  const r = await checkTargetWithCommittedInventory(tampered, "frontend/app/utils/dead.ts");
+  assert.equal(r.ok, false);
+  assert.ok(r.drifts.some(d => d.includes("validateScriptSha256")), `Expected gate sha drift: ${JSON.stringify(r.drifts)}`);
+});
+
+test("checkTarget: cosmetic global drift (different generatedAt or whole-file fingerprints) → still authorized", async () => {
+  const inv = await buildInventory(inputs);
+  const tampered: CleanupInventory = JSON.parse(JSON.stringify(inv));
+  // Mutate global fingerprints + generatedAt, but NOT the target's per-field canonical/proof.
+  tampered.meta.inputFingerprint.ownershipYaml = "f".repeat(64);
+  tampered.meta.inputFingerprint.contractHealth = "e".repeat(64);
+  tampered.meta.generatedAt = "2030-01-01T00:00:00.000Z";
+  // The target's per-field canonical proof block stays identical.
+  const r = await checkTargetWithCommittedInventory(tampered, "frontend/app/utils/dead.ts");
+  assert.equal(r.ok, true, `Expected authorized despite cosmetic drift, got: ${JSON.stringify(r.drifts)}`);
 });
 
 // ---------------------------------------------------------------------------

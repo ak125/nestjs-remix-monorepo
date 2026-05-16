@@ -249,14 +249,141 @@ export async function buildInventory(input: BuildInputs): Promise<CleanupInvento
   return CleanupInventorySchema.parse(inventory);
 }
 
+// Default input paths for CLI runs (extracted as a constant for reuse by checkTarget).
+const DEFAULT_INPUTS: Omit<BuildInputs, "generatedAtOverride"> = {
+  deadCodePath: "audit/dead-code-candidates.json",
+  canonicalPath: "audit/registry/canonical.json",
+  contractHealthPath: "audit-reports/contract-health.json",
+  ownershipYamlPath: ".spec/00-canon/repository-registry/ownership.yaml",
+  validateScriptPath: "scripts/cleanup/validate-before-delete.sh",
+  unreachableModulesDir: "audit/unreachable-modules",
+};
+
+/**
+ * Target-scoped invariance check (PR-8d).
+ *
+ * Tolerates global inventory drift (e.g., ownership.yaml mutations on UNRELATED paths
+ * from concurrent PRs) as long as the per-target proof remains invariant. Used by
+ * PR-8b-N batches to authorize deletion of a specific file without requiring a
+ * full inventory regen for every cosmetic main mutation.
+ *
+ * Canonical rule:
+ *   "Global inventory drift may exist. Deletion is allowed only if target-scoped
+ *    proof remains invariant."
+ *
+ * Fields compared per target (MUST all match between committed and fresh):
+ *   - decision (must be "candidate")
+ *   - proof.canonical.{owner, domain, status, deletePolicy, importedByCount, importedBy[], importsCount}
+ *   - proof.validateScriptSha256 (the act-time gate MUST be unchanged)
+ *   - proof.validation.snapshotPrecheck.{c0..c3}
+ *   - proof.neverAutoDelete.{protected, matchedGlob}
+ *   - proof.unreachableModule.verdict
+ *
+ * Intentionally NOT compared (these may drift on unrelated paths without affecting target):
+ *   - meta.inputFingerprint.* (whole-file fingerprints; the entire point of target-scoped mode)
+ *   - meta.generatedAt, meta.toolchain
+ *   - proof.{deadCodeSnapshotSha256, canonicalSnapshotSha256, ownershipYamlSha256, contractHealthSha256}
+ *   - proof.driftOrphan (corroborating signal only)
+ *   - proof.unreachableModule.{triageDoc, source}
+ */
+export async function checkTarget(
+  targetPath: string,
+  jsonOut: string,
+  inputsOverride?: Omit<BuildInputs, "generatedAtOverride">,
+): Promise<{ ok: boolean; drifts: string[] }> {
+  if (!existsSync(jsonOut)) {
+    return { ok: false, drifts: [`Committed inventory not found at ${jsonOut}`] };
+  }
+  const committed = CleanupInventorySchema.parse(JSON.parse(readFileSync(jsonOut, "utf8")));
+  const committedRecord = committed.candidates.find(c => c.path === targetPath);
+  if (!committedRecord) {
+    return { ok: false, drifts: [`Target "${targetPath}" not present in committed inventory`] };
+  }
+  if (committedRecord.decision !== "candidate") {
+    return { ok: false, drifts: [`Target "${targetPath}" decision = "${committedRecord.decision}" (must be "candidate")`] };
+  }
+
+  // Re-compute fresh inventory in memory, pin generatedAt to committed (irrelevant for target check).
+  const inputsToUse = inputsOverride ?? DEFAULT_INPUTS;
+  const fresh = await buildInventory({ ...inputsToUse, generatedAtOverride: committed.meta.generatedAt });
+  const freshRecord = fresh.candidates.find(c => c.path === targetPath);
+  if (!freshRecord) {
+    return { ok: false, drifts: [`Target "${targetPath}" disappeared from fresh inventory (deleted? renamed?)`] };
+  }
+
+  const drifts: string[] = [];
+  const c = committedRecord, f = freshRecord;
+
+  // 1. Decision
+  if (c.decision !== f.decision) drifts.push(`decision: ${c.decision} → ${f.decision}`);
+
+  // 2. Canonical invariants (owner, domain, status, deletePolicy, importedBy, imports)
+  const cc = c.proof.canonical, fc = f.proof.canonical;
+  if ((cc == null) !== (fc == null)) drifts.push(`canonical presence: ${cc != null} → ${fc != null}`);
+  if (cc && fc) {
+    if (cc.owner !== fc.owner) drifts.push(`canonical.owner: "${cc.owner}" → "${fc.owner}"`);
+    if (cc.domain !== fc.domain) drifts.push(`canonical.domain: "${cc.domain}" → "${fc.domain}"`);
+    if (cc.status !== fc.status) drifts.push(`canonical.status: ${cc.status} → ${fc.status}`);
+    if (cc.deletePolicy !== fc.deletePolicy) drifts.push(`canonical.deletePolicy: ${cc.deletePolicy} → ${fc.deletePolicy}`);
+    if (cc.importedByCount !== fc.importedByCount) drifts.push(`canonical.importedByCount: ${cc.importedByCount} → ${fc.importedByCount}`);
+    const cIb = [...cc.importedBy].sort().join("|");
+    const fIb = [...fc.importedBy].sort().join("|");
+    if (cIb !== fIb) drifts.push(`canonical.importedBy contents changed`);
+    if (cc.importsCount !== fc.importsCount) drifts.push(`canonical.importsCount: ${cc.importsCount} → ${fc.importsCount}`);
+  }
+
+  // 3. Validate script sha (THE act-time gate — must NEVER change between inventory and deletion)
+  if (c.proof.validateScriptSha256 !== f.proof.validateScriptSha256) {
+    drifts.push(`validateScriptSha256 changed (gate logic mutated — re-emit inventory before deleting)`);
+  }
+
+  // 4. Snapshot precheck c0-c3
+  const cp = c.proof.validation.snapshotPrecheck, fp = f.proof.validation.snapshotPrecheck;
+  for (const k of ["c0_not_never_auto_delete", "c1_zero_static_import", "c2_zero_dynamic_import", "c3_zero_runtime_use"] as const) {
+    if (cp[k] !== fp[k]) drifts.push(`snapshotPrecheck.${k}: ${cp[k]} → ${fp[k]}`);
+  }
+
+  // 5. NeverAutoDelete (target's protection status)
+  if (c.proof.neverAutoDelete.protected !== f.proof.neverAutoDelete.protected) {
+    drifts.push(`neverAutoDelete.protected: ${c.proof.neverAutoDelete.protected} → ${f.proof.neverAutoDelete.protected}`);
+  }
+  if (c.proof.neverAutoDelete.matchedGlob !== f.proof.neverAutoDelete.matchedGlob) {
+    drifts.push(`neverAutoDelete.matchedGlob: ${c.proof.neverAutoDelete.matchedGlob} → ${f.proof.neverAutoDelete.matchedGlob}`);
+  }
+
+  // 6. Unreachable module verdict (retain vs drop vs absent)
+  if (c.proof.unreachableModule.verdict !== f.proof.unreachableModule.verdict) {
+    drifts.push(`unreachableModule.verdict: ${c.proof.unreachableModule.verdict} → ${f.proof.unreachableModule.verdict}`);
+  }
+
+  return { ok: drifts.length === 0, drifts };
+}
+
 // CLI entrypoint
 async function main() {
-  const args = new Set(process.argv.slice(2));
-  const checkMode = args.has("--check");
+  const argv = process.argv.slice(2);
+  const argSet = new Set(argv);
+  const checkMode = argSet.has("--check");
+  const targetIdx = argv.indexOf("--target");
+  const targetPath = targetIdx >= 0 ? argv[targetIdx + 1] : null;
   const jsonOut = "audit/cleanup/pr-8-controlled-cleanup-candidates.json";
 
-  // In --check mode, pin `generatedAt` to whatever the committed artifact carries — so the
-  // comparison is purely structural and never flaps because of HEAD-timestamp drift.
+  // --check --target <path>: target-scoped invariance check (PR-8d).
+  if (checkMode && targetPath) {
+    const { ok, drifts } = await checkTarget(targetPath, jsonOut);
+    if (ok) {
+      console.log(`✓ Target "${targetPath}" invariant — deletion authorized.`);
+      console.log(`  (Global inventory drift may exist on other paths; tolerated by canon §PR-8d.)`);
+      process.exit(0);
+    }
+    console.error(`✗ Target "${targetPath}" drift detected — deletion NOT authorized:`);
+    for (const d of drifts) console.error(`  - ${d}`);
+    console.error("");
+    console.error("Resolution: re-emit inventory (PR-8c-N) to refresh the target's canonical record.");
+    process.exit(1);
+  }
+
+  // --check (no --target): global strict check (existing behavior).
   let generatedAtOverride: string | undefined;
   if (checkMode) {
     if (!existsSync(jsonOut)) {
@@ -271,15 +398,7 @@ async function main() {
     }
   }
 
-  const inv = await buildInventory({
-    deadCodePath: "audit/dead-code-candidates.json",
-    canonicalPath: "audit/registry/canonical.json",
-    contractHealthPath: "audit-reports/contract-health.json",
-    ownershipYamlPath: ".spec/00-canon/repository-registry/ownership.yaml",
-    validateScriptPath: "scripts/cleanup/validate-before-delete.sh",
-    unreachableModulesDir: "audit/unreachable-modules",
-    generatedAtOverride,
-  });
+  const inv = await buildInventory({ ...DEFAULT_INPUTS, generatedAtOverride });
 
   const json = stableStringify(inv) + "\n";
 
@@ -289,6 +408,7 @@ async function main() {
     console.error(`Inventory drift: ${jsonOut} does not match a fresh generator run.`);
     console.error("Possible causes: inputs changed without regeneration, or toolchain (node/platform/arch) differs from the run that produced the committed artifact.");
     console.error("To regenerate locally: `npm run audit:cleanup-candidates` (sets a fresh generatedAt; commit the result).");
+    console.error("To authorize a single-file deletion despite drift: `npm run audit:cleanup-candidates:check -- --target <path>` (PR-8d target-scoped mode).");
     process.exit(1);
   }
 
