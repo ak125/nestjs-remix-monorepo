@@ -9,26 +9,32 @@
  * Keeps knip's unused-exports baseline tight.
  */
 
-import { z } from 'zod';
+// Type-only contracts — emitted by the admin endpoint, consumed by the CI
+// gate (`scripts/ci/pr-2e-readiness-gate.mjs` declares its own JS shape).
+// No Zod schema is parsed at runtime, so we declare TS interfaces directly
+// to satisfy `@typescript-eslint/no-unused-vars` + keep knip's
+// unused-exports baseline clean.
 
-const R8GateSampleEntrySchema = z.object({
-  typeId: z.number().int().positive(),
-  hasSnapshot: z.boolean(),
-  enrichmentStatus: z
-    .enum(['minimal', 'enriched', 'stale', 'failed'])
-    .nullable(),
-});
-export type R8GateSampleEntry = z.infer<typeof R8GateSampleEntrySchema>;
+export type R8GateSampleEnrichmentStatus =
+  | 'minimal'
+  | 'enriched'
+  | 'stale'
+  | 'failed';
 
-const R8GateStatusSchema = z.object({
-  snapshots: z.number().int().nonnegative(),
-  autoTypes: z.number().int().nonnegative(),
-  pass: z.boolean(),
-  lag: z.number().int(),
-  lagPercent: z.number(),
-  sample: z.array(R8GateSampleEntrySchema).max(10),
-  computedAt: z.string().datetime(),
-  cacheTtlSeconds: z.number().int().nonnegative(),
-  fromCache: z.boolean(),
-});
-export type R8GateStatus = z.infer<typeof R8GateStatusSchema>;
+export interface R8GateSampleEntry {
+  typeId: number;
+  hasSnapshot: boolean;
+  enrichmentStatus: R8GateSampleEnrichmentStatus | null;
+}
+
+export interface R8GateStatus {
+  snapshots: number;
+  autoTypes: number;
+  pass: boolean;
+  lag: number;
+  lagPercent: number;
+  sample: R8GateSampleEntry[];
+  computedAt: string;
+  cacheTtlSeconds: number;
+  fromCache: boolean;
+}

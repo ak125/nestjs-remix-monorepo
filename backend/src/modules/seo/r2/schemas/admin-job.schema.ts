@@ -39,16 +39,15 @@ export const R8SeedRunRequestSchema = z.object({
 });
 export type R8SeedRunRequest = z.infer<typeof R8SeedRunRequestSchema>;
 
-const R8SeedRunAcceptResponseSchema = z.object({
-  runId: z.string().uuid(),
-  status: AdminJobStatusEnum,
-  idempotentHit: z.boolean(),
-  acceptedAt: z.string().datetime(),
-  dryRun: z.boolean(),
-});
-export type R8SeedRunAcceptResponse = z.infer<
-  typeof R8SeedRunAcceptResponseSchema
->;
+// Type-only — never validated at the boundary (controllers emit it, no
+// downstream Zod parse). Hand-written to keep ESLint happy + knip clean.
+export interface R8SeedRunAcceptResponse {
+  runId: string;
+  status: AdminJobStatus;
+  idempotentHit: boolean;
+  acceptedAt: string;
+  dryRun: boolean;
+}
 
 export const AdminJobRowSchema = z.object({
   jobId: z.string().uuid(),
