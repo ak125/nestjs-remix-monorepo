@@ -29,17 +29,37 @@ export type R2EligibilitySubscores = z.infer<
 
 // ── Verdict (decision tree output) ─────────────────────────────────────────────
 //
-// ADR-067 amendment (2026-05-15) : SUPPRESSED automatique INTERDIT.
-// Le pipeline ne peut émettre que 3 verdicts : eligible | review | reject.
+// ADR-067 (2026-05-15) : SUPPRESSED automatique INTERDIT.
+// ADR-068 (2026-05-16) : renommage 'review' → 'review_required' (cohérence canon
+// avec R2DecisionV2Enum.review_required). REJECT scope strict — 4 raisons UNIQUES
+// (productCount_under_2 / data_invalid / url_impossible / compatibility_absent).
+// Voir MEMORY feedback_no_auto_page_suppression_ever (canon-strict, 4 interdictions auto).
+//
+// Le pipeline ne peut émettre que 3 verdicts : eligible | review_required | reject.
 // SUPPRESSED reste un statut DB mais devient manual-only (admin override UI).
-// Voir MEMORY feedback_no_auto_page_suppression_ever.
 export const R2EligibilityVerdictEnum = z.enum([
   'eligible',
-  'review',
+  'review_required',
   'reject',
 ]);
 
 export type R2EligibilityVerdictKind = z.infer<typeof R2EligibilityVerdictEnum>;
+
+/**
+ * ADR-068 (2026-05-16) — REJECT scope strict : 4 raisons UNIQUES.
+ * Doit être aligné avec Rego policy `r2-content-write.rego` :
+ *   valid_reject_reasons := {productCount_under_2, data_invalid, url_impossible, compatibility_absent}
+ *
+ * PAS pour similarité forte (catalog overlap, semantic cosine) → verdict 'review_required'.
+ */
+export const R2RejectReasonEnum = z.enum([
+  'productCount_under_2',
+  'data_invalid',
+  'url_impossible',
+  'compatibility_absent',
+]);
+
+export type R2RejectReasonKind = z.infer<typeof R2RejectReasonEnum>;
 
 /**
  * Manual canonical target for admin SUPPRESSED override (ADR-067).
@@ -61,6 +81,9 @@ export const R2EligibilityVerdictSchema = z.object({
   eligibilityScore: z.number().min(0).max(100), // composite weighted
   subscores: R2EligibilitySubscoresSchema,
   verdict: R2EligibilityVerdictEnum,
+  // ADR-068 : si verdict='reject', rejectReason DOIT être l'une des 4 raisons strict.
+  // Undefined pour 'eligible' / 'review_required'.
+  rejectReason: R2RejectReasonEnum.optional(),
   reason: z.string(),
 });
 
