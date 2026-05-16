@@ -40,7 +40,10 @@ export function renderMarkdown(inv: CleanupInventory): string {
     for (const r of rows) {
       const ib = r.proof.canonical?.importedByCount ?? "n/a";
       const status = r.proof.canonical?.status ?? "n/a";
-      const rat = r.proof.decisionRationale.replace(/\|/g, "\\|");
+      // Escape backslashes FIRST, then pipes — order matters to keep escapes idempotent
+      // and to satisfy js/incomplete-sanitization. Rationale strings are generator-controlled
+      // (no user input), but we keep the escape complete for robustness.
+      const rat = r.proof.decisionRationale.replace(/\\/g, "\\\\").replace(/\|/g, "\\|");
       lines.push(`| \`${r.path}\` | ${r.domain} | ${r.kind} | ${r.confidence} | ${status} | ${ib} | ${rat} |`);
     }
     lines.push("");
