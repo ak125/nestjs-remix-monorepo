@@ -753,3 +753,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/seo-secure-sitemap-write-endpoints`
 - **Décision** : docs: design — sitemap regen service authentication (OIDC + anti-replay) (+1 other commit)
 - **Sortie** : PR #550 | commits a429aa07b 8af0f5885
+
+## 2026-05-16 — fix/seo-secure-sitemap-write-endpoints (auto)
+
+- **Branche** : `fix/seo-secure-sitemap-write-endpoints`
+- **Décision** : docs: spec v2 — sitemap regen auth (18 refinements post user review) (+3 other commits)
+- **Sortie** : PR #550 | commits f0c34c61b 4f3d3eca1 a429aa07b 8af0f5885
