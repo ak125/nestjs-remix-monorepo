@@ -777,3 +777,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/vehicles-strict-numeric-pipe`
 - **Décision** : chore(ownership): register backend/src/common/{pipes/params,schemas} (+1 other commit)
 - **Sortie** : PR #553 | commits 6f0030af8 08159f793
+
+## 2026-05-16 — chore/turbo-dev-depends-on-build (auto)
+
+- **Branche** : `chore/turbo-dev-depends-on-build`
+- **Décision** : chore(turbo): dev task depends on workspace builds
+- **Sortie** : PR #573 | commits 3c67dc79a
