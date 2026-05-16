@@ -659,22 +659,11 @@ jobs:
           RAG_API_KEY=disabled-preprod-readonly
           # ADR-063 — CrUX API key (optional, blank-allowed = graceful degrade)
           CRUX_API_KEY=${CRUX_API_KEY}
-          # BEGIN sitemap-oidc-auth
-          # GitHub OIDC federation for sitemap regen (Phase 0.5 — propagates
-          # config from compose ${VAR} refs to runtime). Cf. spec
-          # docs/superpowers/specs/2026-05-16-sitemap-regen-auth-design.md.
-          # Values are non-sensitive (allowlists, audience) — overridable via
-          # GitHub Actions Variables (vars.X) but kept as literals here so
-          # DEV preprod boots correctly even before any var is set in UI.
-          GITHUB_OIDC_AUDIENCE=${GITHUB_OIDC_AUDIENCE:-automecanik-sitemap-regen}
-          GITHUB_OIDC_REPOSITORY=${GITHUB_OIDC_REPOSITORY:-ak125/nestjs-remix-monorepo}
-          GITHUB_OIDC_ALLOWED_EVENTS=${GITHUB_OIDC_ALLOWED_EVENTS:-schedule,workflow_dispatch}
-          GITHUB_OIDC_ALLOWED_REFS=${GITHUB_OIDC_ALLOWED_REFS:-refs/heads/main}
-          GITHUB_OIDC_ALLOWED_JOB_REFS=${GITHUB_OIDC_ALLOWED_JOB_REFS:-ak125/nestjs-remix-monorepo/.github/workflows/sitemap-daily-regen.yml@refs/heads/main}
-          GITHUB_OIDC_ALLOWED_SUBS=${GITHUB_OIDC_ALLOWED_SUBS:-repo:ak125/nestjs-remix-monorepo:ref:refs/heads/main}
-          REDIS_OIDC_DB_INDEX=${REDIS_OIDC_DB_INDEX:-1}
-          SITEMAP_LEGACY_INTERNAL_KEY_ENABLED=${SITEMAP_LEGACY_INTERNAL_KEY_ENABLED:-true}
-          # END sitemap-oidc-auth
+          # (Phase 0.6) Sitemap OIDC validation invariants are hardcoded in
+          # GithubOidcService (cf. docs/superpowers/specs/2026-05-16-sitemap-regen-auth-design.md
+          # Components > GithubOidcService — class static readonly constants).
+          # Preprod heredoc has no OIDC config to propagate — preprod is an
+          # ephemeral CI container with no automatic Bearer-token caller.
           EOF
 
           cd $PREPROD_DIR
