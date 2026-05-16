@@ -753,3 +753,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-sitemap-auth-phase-0-foundation`
 - **Décision** : chore(auth): add jose + cron-parser + ioredis-mock deps for sitemap OIDC auth
 - **Sortie** : PR aucune | commits d650eada2
+
+## 2026-05-16 — chore/pr-8a-controlled-cleanup-inventory (auto)
+
+- **Branche** : `chore/pr-8a-controlled-cleanup-inventory`
+- **Décision** : feat(audit): markdown projection for cleanup-candidates inventory (+4 other commits)
+- **Sortie** : PR aucune | commits a82d25b49 191914803 72f191f3f bb7b22f00 dcc71f3cf
