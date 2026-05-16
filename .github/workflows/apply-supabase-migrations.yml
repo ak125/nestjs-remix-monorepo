@@ -1,27 +1,27 @@
 name: 🗄️ Apply Supabase migrations (manual)
 
-# Supabase Management REST API workflow — applies pending migrations
-# from `backend/supabase/migrations/` to the canonical Supabase project.
+# Mini migration engine driven by `scripts/ci/apply-supabase-migration.py`
+# (Flyway / Sqitch / dbmate forward-only pattern).
 #
-# Pure REST path. No `supabase` CLI binary. No libpq connection. No DB
-# password handling. Same transport the Supabase MCP server uses.
-#
-# Trigger : workflow_dispatch only (manual + audit-trail in Actions tab).
+# Trigger : workflow_dispatch only.
 #
 # Defense in depth :
 #   1. workflow_dispatch only (no auto trigger)
 #   2. typed input `confirm=APPLY` required for the apply step
-#   3. `dry_run=true` default — lists pending migrations without applying
-#   4. concurrency single-flight (cancel-in-progress=false)
-#   5. GitHub Actions audit trail (logs persisted)
+#   3. `dry_run=true` default — lists pending without applying
+#   4. `status_only=true` mode runs the read-only state table + exits non-zero on drift
+#   5. `concurrency: single-flight` on the workflow level
+#   6. `pg_try_advisory_lock(88442211)` fail-fast on the Postgres side
+#   7. Migrations transactional by default; opt-out via header marker
+#      `-- @non_transactional`
+#   8. 3-state machine in `infra.schema_migrations` (applying / applied / failed)
+#   9. Checksum drift = HARD FAIL
+#  10. `infra.schema_migrations` append-only (column-scoped UPDATE, no DELETE)
 #
 # Secrets :
-#   SUPABASE_ACCESS_TOKEN  — NEW : Personal Access Token from
-#                            https://supabase.com/dashboard/account/tokens
-#   SUPABASE_URL           — reused : project ref derived from hostname
+#   DATABASE_URL  — reused from existing repo secrets (libpq URI).
 #
-# All logic lives in `scripts/ci/apply-supabase-migration.py` (stdlib
-# only, self-tested via `--self-test`).
+# Required runner tooling : Python 3.10+, pip (preinstalled on ubuntu-latest).
 
 on:
   workflow_dispatch:
@@ -35,6 +35,11 @@ on:
         required: true
         type: boolean
         default: true
+      status_only:
+        description: 'Print the migration status table and exit (read-only).'
+        required: true
+        type: boolean
+        default: false
       limit:
         description: 'Apply at most N migrations this run (blank = no limit).'
         required: false
@@ -49,33 +54,46 @@ concurrency:
 
 jobs:
   apply:
-    name: 🗄️ Apply via Management API
+    name: 🗄️ Mini migration engine
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - name: 🛑 Confirm token
-        if: ${{ !inputs.dry_run && inputs.confirm != 'APPLY' }}
+        if: ${{ !inputs.status_only && !inputs.dry_run && inputs.confirm != 'APPLY' }}
         run: |
-          echo "::error::Apply step requires confirm=APPLY (got '${{ inputs.confirm }}'). Re-run with confirm=APPLY or dry_run=true."
+          echo "::error::Apply step requires confirm=APPLY (got '${{ inputs.confirm }}'). Re-run with confirm=APPLY, dry_run=true, or status_only=true."
           exit 1
 
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v4
 
-      - name: 🧪 Self-test the migration script
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 📦 Install psycopg
+        run: pip install --quiet --no-cache-dir 'psycopg[binary]==3.2.*'
+
+      - name: 🧪 Self-test the migration engine
         run: python3 scripts/ci/apply-supabase-migration.py --self-test
 
-      - name: 🔍 Dry-run / 🗄️ Apply
+      - name: 🚦 Run engine
         env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
           ARGS=()
-          if [ "${{ inputs.dry_run }}" = "true" ]; then
-            ARGS+=("--dry-run")
-          fi
-          if [ -n "${{ inputs.limit }}" ]; then
-            ARGS+=("--limit" "${{ inputs.limit }}")
+          if [ "${{ inputs.status_only }}" = "true" ]; then
+            ARGS+=("--status")
+          else
+            if [ "${{ inputs.dry_run }}" = "true" ]; then
+              ARGS+=("--dry-run")
+            fi
+            if [ -n "${{ inputs.limit }}" ]; then
+              ARGS+=("--limit" "${{ inputs.limit }}")
+            fi
           fi
           python3 scripts/ci/apply-supabase-migration.py "${ARGS[@]}"
