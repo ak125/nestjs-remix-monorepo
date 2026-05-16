@@ -112,14 +112,16 @@ describe('R2EligibilityService', () => {
       searchVolumeFactor: 10,
     });
     expect(verdict.eligibilityScore).toBeLessThan(THRESHOLD_V1);
-    expect(verdict.verdict).toBe('review');
-    // No suppressedCanonicalTarget — ADR-067 forbids pipeline-emitted SUPPRESSED
-    expect(verdict.reason).toContain('REVIEW');
+    expect(verdict.verdict).toBe('review_required');
+    // ADR-068 : pas de rejectReason pour verdict review_required
+    expect(verdict.rejectReason).toBeUndefined();
+    expect(verdict.reason).toContain('REVIEW_REQUIRED');
   });
 
-  it('verdict enum never includes "suppressed" from pipeline (ADR-067)', () => {
+  it('verdict enum never includes "suppressed" / "review" from pipeline (ADR-067 + ADR-068)', () => {
     // Exhaustive sweep : with varying motor strength + productCount >= 2,
-    // verdict must always be in {eligible, review} (never suppressed)
+    // verdict must always be in {eligible, review_required} (never suppressed,
+    // never the legacy short "review" — ADR-068 renamed to review_required).
     const scenarios = [
       { hp: false, eng: false, prod: 5, sv: 0 },
       { hp: true, eng: false, prod: 10, sv: 30 },
@@ -144,11 +146,24 @@ describe('R2EligibilityService', () => {
         productCount: sc.prod,
         searchVolumeFactor: sc.sv,
       });
-      expect(['eligible', 'review']).toContain(verdict.verdict);
-      // Runtime safety check : enum guarantees no 'suppressed' at type level,
-      // but assert at runtime in case of upstream regression.
+      expect(['eligible', 'review_required']).toContain(verdict.verdict);
       expect(verdict.verdict as string).not.toBe('suppressed');
+      expect(verdict.verdict as string).not.toBe('review'); // ADR-068 renamed
     }
+  });
+
+  it('ADR-068 : reject verdict carries strict rejectReason (productCount_under_2)', () => {
+    const verdict = service.evaluate({
+      pgId: 100,
+      typeId: 12345,
+      motorDelta: { ...baseMotor, productCount: 0 },
+      commercialInputs: baseCommercialInputs,
+      productCount: 0,
+      searchVolumeFactor: 0,
+    });
+    expect(verdict.verdict).toBe('reject');
+    expect(verdict.rejectReason).toBe('productCount_under_2');
+    expect(verdict.reason).toContain('ADR-068');
   });
 
   it('exposes all 4 subscores in verdict', () => {

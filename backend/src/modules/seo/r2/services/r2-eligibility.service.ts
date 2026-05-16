@@ -65,14 +65,19 @@ export class R2EligibilityService {
    * persisting result in __seo_r2_eligibility_log.
    */
   evaluate(inputs: EligibilityRunInputs): R2EligibilityVerdict {
-    // Hard reject : productCount < 2 (legacy noindex rule preserved)
+    // ADR-068 (2026-05-16) — REJECT scope strict : 4 raisons UNIQUES.
+    // Cette branche couvre `productCount_under_2`. Les 3 autres raisons
+    // (data_invalid / url_impossible / compatibility_absent) sont détectées en
+    // amont par R2DataLoaderService (PR 2 V1.5) qui propage une erreur explicite
+    // au lieu d'invoquer evaluate().
     if (inputs.productCount < 2) {
       return {
         eligible: false,
         eligibilityScore: 0,
         subscores: { motor: 0, compat: 0, commercial: 0, crawl: 0 },
         verdict: 'reject',
-        reason: `productCount=${inputs.productCount} < 2 (noindex rule)`,
+        rejectReason: 'productCount_under_2',
+        reason: `ADR-068 REJECT scope strict : productCount=${inputs.productCount} < 2 (page invalide)`,
       };
     }
 
@@ -111,16 +116,17 @@ export class R2EligibilityService {
       };
     }
 
-    // ADR-067 (2026-05-15) : Below threshold + valid productCount → REVIEW
-    // (enrichment queue or human validation). Pipeline never emits SUPPRESSED.
-    // The admin can manually flip a REVIEW page to SUPPRESSED via UI later if
-    // a real duplicate is confirmed humanly (rare exception path).
+    // ADR-067 (2026-05-15) + ADR-068 (2026-05-16) : Below threshold + valid
+    // productCount → REVIEW_REQUIRED (enrichment queue or human validation).
+    // Pipeline never emits SUPPRESSED ni noindex auto ni canonical sibling auto.
+    // Page valide DOIT rester candidate INDEX (canonical self, sitemap include).
+    // Admin peut flipper REVIEW_REQUIRED → SUPPRESSED via UI uniquement.
     return {
       eligible: false,
       eligibilityScore: roundedScore,
       subscores,
-      verdict: 'review',
-      reason: `score=${roundedScore} < THRESHOLD_V1=${THRESHOLD_V1} — REVIEW queue (enrichment or human validation, ADR-067)`,
+      verdict: 'review_required',
+      reason: `score=${roundedScore} < THRESHOLD_V1=${THRESHOLD_V1} — REVIEW_REQUIRED queue (enrichissement/validation humaine, ADR-068)`,
     };
   }
 
