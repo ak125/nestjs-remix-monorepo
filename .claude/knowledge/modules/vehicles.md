@@ -16,6 +16,7 @@ depends_on:
 - ConfigModule
 - DatabaseModule
 - SeoShadowObservatoryModule
+- ParamsPipesModule
 - CatalogModule
 - CacheModule
 ---

@@ -19,6 +19,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import * as React from "react";
+import { z } from "zod";
 
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { CompactBlogHeader } from "~/components/blog/CompactBlogHeader";
@@ -50,7 +51,27 @@ interface PopularModel {
   dateRange: string;
   imageUrl: string | null;
   slug: string;
+  marqueId: number | null;
+  marqueAlias: string | null;
 }
+
+/**
+ * Contrat runtime renvoyé par GET /api/brands/popular-models.
+ * Parsé via `safeParse` au boundary plutôt qu'un cast `as` (anti drift
+ * silencieux backend ↔ frontend, cf. Sentry event 5df734d4).
+ */
+const PopularModelApiDtoSchema = z.object({
+  modele_id: z.number().int().positive(),
+  modele_name: z.string().min(1),
+  modele_alias: z.string().min(1),
+  marque_id: z.number().int().positive(),
+  marque_name: z.string().min(1),
+  marque_alias: z.string().min(1),
+  type_name: z.string().optional().nullable(),
+  date_range: z.string().optional().nullable(),
+  image_url: z.string().optional().nullable(),
+});
+type PopularModelApiDto = z.infer<typeof PopularModelApiDtoSchema>;
 
 interface PageMetadata {
   title: string;
@@ -117,18 +138,36 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       }),
     );
 
-    const mappedModels: PopularModel[] = (modelsData?.data || []).map(
-      (model: any) => ({
-        id: model.modele_id || model.id,
-        name: model.modele_name || model.name,
-        brandName: model.marque_name || model.brandName,
-        modelName: model.modele_name || model.modelName,
-        typeName: model.type_name || model.typeName || "",
-        dateRange: model.date_range || model.dateRange || "",
-        imageUrl: model.image_url || model.imageUrl || null,
-        slug: model.modele_alias || model.slug || "",
-      }),
-    );
+    // Runtime parse (pas `as`) : si backend dérive on capte au boundary
+    // avec un warn + degrade graceful (carrousel vide) plutôt qu'un crash
+    // SSR silencieux.
+    const parsedModels = z
+      .array(PopularModelApiDtoSchema)
+      .safeParse(modelsData?.data ?? []);
+
+    if (!parsedModels.success) {
+      logger.warn("Popular models API payload non-conforme", {
+        issueCount: parsedModels.error.issues.length,
+        firstIssue: parsedModels.error.issues[0],
+      });
+    }
+
+    const validModels: PopularModelApiDto[] = parsedModels.success
+      ? parsedModels.data
+      : [];
+
+    const mappedModels: PopularModel[] = validModels.map((model) => ({
+      id: model.modele_id,
+      name: model.modele_name,
+      brandName: model.marque_name,
+      modelName: model.modele_name,
+      typeName: model.type_name ?? "",
+      dateRange: model.date_range ?? "",
+      imageUrl: model.image_url ?? null,
+      slug: model.modele_alias,
+      marqueId: model.marque_id,
+      marqueAlias: model.marque_alias,
+    }));
 
     return defer({
       brands: mappedBrands,
@@ -562,12 +601,17 @@ export default function BlogPiecesAutoIndex() {
 
                 {/* Models Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {visibleModels.map((model) => (
-                    <Link
-                      key={model.id}
-                      to={`/brands/${model.slug}`}
-                      className="group"
-                    >
+                  {visibleModels.map((model) => {
+                    // Check sémantique (pas truthy) : 0 invalide même si le
+                    // backend Zod l'interdit déjà, plus robuste si DTO évolue.
+                    const hasValidLink =
+                      typeof model.marqueId === "number" &&
+                      Number.isInteger(model.marqueId) &&
+                      model.marqueId > 0 &&
+                      typeof model.marqueAlias === "string" &&
+                      model.marqueAlias.length > 0;
+
+                    const cardInner = (
                       <Card className="h-full hover:shadow-xl transition-all duration-300 border-2 border-gray-100 hover:border-green-300 bg-white overflow-hidden group-hover:-translate-y-1">
                         {/* Image */}
                         <div className="relative h-48 overflow-hidden bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100">
@@ -610,7 +654,9 @@ export default function BlogPiecesAutoIndex() {
                           {/* Footer */}
                           <div className="flex items-center justify-between pt-3 border-t-2 border-gray-100">
                             <span className="text-sm font-medium text-gray-600">
-                              Voir les pièces
+                              {hasValidLink
+                                ? "Voir les pièces"
+                                : "Fiche indisponible"}
                             </span>
                             <div className="p-1 bg-success/5 rounded-md group-hover:bg-success/20 transition-colors">
                               <ArrowRight className="w-4 h-4 text-green-600 group-hover:translate-x-0.5 transition-transform" />
@@ -618,8 +664,28 @@ export default function BlogPiecesAutoIndex() {
                           </div>
                         </CardContent>
                       </Card>
-                    </Link>
-                  ))}
+                    );
+
+                    return hasValidLink ? (
+                      <Link
+                        key={model.id}
+                        to={`/constructeurs/${model.marqueAlias}-${model.marqueId}.html`}
+                        className="group"
+                      >
+                        {cardInner}
+                      </Link>
+                    ) : (
+                      <div
+                        key={model.id}
+                        role="article"
+                        aria-label={`${model.brandName} ${model.modelName} — fiche non disponible`}
+                        title="Fiche marque non disponible"
+                        className="group opacity-60 cursor-not-allowed"
+                      >
+                        {cardInner}
+                      </div>
+                    );
+                  })}
                 </div>
 
                 {/* Carousel Indicators */}
