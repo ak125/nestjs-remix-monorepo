@@ -532,7 +532,114 @@ def run_self_test() -> int:
     _, sum2 = classify(local[:2], remote2)
     assert sum2["applying"] == 1 and sum2["failed"] == 1, sum2
 
+    # 7. --exclude parsing helper (used by run_baseline) ----------------
+    def parse_exclude(csv: str) -> set[str]:
+        return {x.strip() for x in csv.split(",") if x.strip()}
+
+    assert parse_exclude("") == set()
+    assert parse_exclude("a") == {"a"}
+    assert parse_exclude("a,b , c , ") == {"a", "b", "c"}
+    assert parse_exclude(" , , ") == set()
+
     print("OK — all self-tests passed.")
+    return 0
+
+
+# ── Baseline (Flyway baselineOnMigrate / Sqitch deploy --to) ────────────────
+
+
+def run_baseline(
+    conn,
+    local: list[LocalMigration],
+    remote: dict[str, "RemoteMigration"],
+    exclude_csv: str,
+) -> int:
+    """Bulk-mark every local migration as ``status='applied'`` without
+    running its SQL.
+
+    Used **once** when adopting this engine on a project where the
+    migrations are already deployed via another channel (Supabase
+    dashboard, MCP, manual psql). ``--exclude id1,id2`` keeps specific
+    files genuinely ``pending``.
+
+    Behaviour :
+    * ON CONFLICT (id) DO NOTHING — re-running the baseline is safe.
+    * ``runner = "baseline-{GITHUB_RUN_ID}"`` for forensic distinction
+      from regular engine runs (which use ``runner = "gh-actions:..."``).
+    * Real SHA-256 checksums (not placeholders) so subsequent ``--status``
+      runs do not see all rows as ``drift``.
+    """
+    excluded = {x.strip() for x in exclude_csv.split(",") if x.strip()}
+    unknown = excluded - {m.id for m in local}
+    if unknown:
+        fail(
+            6,
+            f"--exclude references unknown migration ids: {sorted(unknown)}. "
+            "Check the filename stems with --status first.",
+        )
+
+    runner = (
+        f"baseline-{os.environ.get('GITHUB_RUN_ID', '')}"
+        if os.environ.get("GITHUB_RUN_ID")
+        else "baseline-local"
+    )
+    git_sha = os.environ.get("GITHUB_SHA", "")
+
+    candidates = [m for m in local if m.id not in excluded]
+    print(
+        f"Baseline plan : {len(candidates)} files to mark applied, "
+        f"{len(excluded)} excluded, "
+        f"{len(local) - len(candidates) - len(excluded)} skipped (none expected)."
+    )
+
+    inserted = 0
+    skipped = 0
+    conn.autocommit = False
+    try:
+        with conn.cursor() as cur:
+            for m in candidates:
+                cur.execute(
+                    """
+                    INSERT INTO infra.schema_migrations
+                        (id, checksum, status, applied_at,
+                         execution_ms, runner, git_sha)
+                    VALUES (%s, %s, 'applied', NOW(), 0, %s, %s)
+                    ON CONFLICT (id) DO NOTHING
+                    """,
+                    (m.id, m.checksum, runner, git_sha),
+                )
+                # `rowcount` is 1 on insert, 0 on conflict-skip.
+                if cur.rowcount == 1:
+                    inserted += 1
+                else:
+                    skipped += 1
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.autocommit = True
+
+    print(
+        f"Baseline result : {inserted} rows inserted, {skipped} already "
+        f"present (idempotent skip), {len(excluded)} kept pending."
+    )
+
+    write_step_summary(
+        [
+            "## Baseline result",
+            "",
+            f"- Inserted : **{inserted}** new rows (`runner={runner}`)",
+            f"- Already present : **{skipped}** (idempotent skip, ON CONFLICT)",
+            f"- Excluded : **{len(excluded)}** files kept pending",
+        ]
+        + (
+            ["", "### Excluded ids", ""] + [f"- `{x}`" for x in sorted(excluded)]
+            if excluded
+            else []
+        )
+    )
+
     return 0
 
 
@@ -557,6 +664,25 @@ def main(argv: list[str]) -> int:
         "--limit", type=int, default=None,
         help="Apply at most N migrations this run (staged rollouts).",
     )
+    parser.add_argument(
+        "--baseline", action="store_true",
+        help=(
+            "Mark every local migration as already-applied without running "
+            "its SQL. Use ONCE when adopting this engine on a project where "
+            "the migrations are already deployed via another channel "
+            "(Supabase dashboard, MCP, manual psql). Combine with "
+            "--exclude to keep specific files genuinely pending. "
+            "Canon Flyway baselineOnMigrate / Sqitch deploy --to."
+        ),
+    )
+    parser.add_argument(
+        "--exclude", type=str, default="",
+        help=(
+            "Comma-separated migration ids to EXCLUDE from --baseline. "
+            "These files remain `pending` and will be applied by the next "
+            "regular run. Example: --exclude 20260518_seo_admin_job_table"
+        ),
+    )
     args = parser.parse_args(argv)
 
     if args.self_test:
@@ -575,6 +701,9 @@ def main(argv: list[str]) -> int:
         remote = fetch_remote(conn)
 
         rows, summary = classify(local, remote)
+
+        if args.baseline:
+            return run_baseline(conn, local, remote, args.exclude)
 
         if args.status:
             return print_status(rows, summary)

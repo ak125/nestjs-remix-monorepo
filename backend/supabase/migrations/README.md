@@ -94,6 +94,13 @@ python3 scripts/ci/apply-supabase-migration.py
 # Apply at most N migrations (staged rollout)
 python3 scripts/ci/apply-supabase-migration.py --limit 1
 
+# Baseline : mark every local file as applied WITHOUT running it.
+# Use ONCE when adopting this engine on a project where migrations are
+# already deployed via another channel (Supabase dashboard, MCP, psql).
+# Combine with --exclude to keep specific files genuinely pending.
+python3 scripts/ci/apply-supabase-migration.py --baseline \
+  --exclude 20260518_seo_admin_job_table
+
 # Self-tests (no DB connection)
 python3 scripts/ci/apply-supabase-migration.py --self-test
 ```

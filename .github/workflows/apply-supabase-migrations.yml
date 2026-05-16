@@ -44,6 +44,19 @@ on:
         description: 'Apply at most N migrations this run (blank = no limit).'
         required: false
         default: ''
+      baseline_only:
+        description: |
+          Mark every local migration as already-applied without running its SQL.
+          Use ONCE when adopting this engine on a project where migrations are
+          already deployed via another channel. Combine with `exclude_ids` to
+          keep specific files genuinely pending.
+        required: true
+        type: boolean
+        default: false
+      exclude_ids:
+        description: 'Comma-separated migration ids to keep pending during --baseline (e.g. "20260518_seo_admin_job_table").'
+        required: false
+        default: ''
 
 permissions:
   contents: read
@@ -61,7 +74,13 @@ jobs:
       - name: 🛑 Confirm token
         if: ${{ !inputs.status_only && !inputs.dry_run && inputs.confirm != 'APPLY' }}
         run: |
-          echo "::error::Apply step requires confirm=APPLY (got '${{ inputs.confirm }}'). Re-run with confirm=APPLY, dry_run=true, or status_only=true."
+          echo "::error::Mutating step requires confirm=APPLY (got '${{ inputs.confirm }}'). Re-run with confirm=APPLY, dry_run=true, or status_only=true."
+          exit 1
+
+      - name: 🛑 Reject mutually-exclusive modes
+        if: ${{ inputs.baseline_only && (inputs.status_only || inputs.dry_run || inputs.limit != '') }}
+        run: |
+          echo "::error::baseline_only cannot be combined with status_only / dry_run / limit. Pick one mode per run."
           exit 1
 
       - name: ⬇️ Checkout repo
@@ -86,7 +105,12 @@ jobs:
         run: |
           set -euo pipefail
           ARGS=()
-          if [ "${{ inputs.status_only }}" = "true" ]; then
+          if [ "${{ inputs.baseline_only }}" = "true" ]; then
+            ARGS+=("--baseline")
+            if [ -n "${{ inputs.exclude_ids }}" ]; then
+              ARGS+=("--exclude" "${{ inputs.exclude_ids }}")
+            fi
+          elif [ "${{ inputs.status_only }}" = "true" ]; then
             ARGS+=("--status")
           else
             if [ "${{ inputs.dry_run }}" = "true" ]; then
