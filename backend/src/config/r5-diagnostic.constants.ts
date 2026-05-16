@@ -7,10 +7,7 @@
 
 // ── Bloc classification ─────────────────────────────────
 
-export type R5BlocStatus =
-  | 'required'
-  | 'recommended'
-  | 'forbidden_if_no_signal';
+type R5BlocStatus = 'required' | 'recommended' | 'forbidden_if_no_signal';
 
 /**
  * 9 blocs du template R5, classifies par obligation.
@@ -173,21 +170,9 @@ export const R5_WARNING_FLAGS = [
   'AFTER_REPAIR_TOPIC',
 ] as const;
 
-export type R5BlockingFlag = (typeof R5_BLOCKING_FLAGS)[number];
-export type R5WarningFlag = (typeof R5_WARNING_FLAGS)[number];
+type R5BlockingFlag = (typeof R5_BLOCKING_FLAGS)[number];
+type R5WarningFlag = (typeof R5_WARNING_FLAGS)[number];
 export type R5QualityFlag = R5BlockingFlag | R5WarningFlag;
-
-/**
- * Flags promotables : WARNING → BLOCKING apres calibrage sur les 24 pages.
- */
-export const R5_PROMOTABLE_FLAGS: R5WarningFlag[] = [
-  'NOT_STRATEGIC_TOPIC',
-  'VEHICLE_DEPENDENT',
-  'GENERIC_PAGE',
-  'NO_DIFFERENTIATION',
-  'MISSING_RISK_LEVEL',
-  'MISSING_GAMMES',
-];
 
 // ── Quality thresholds ──────────────────────────────────
 
@@ -207,32 +192,7 @@ export const R5_QUALITY_THRESHOLDS = {
 
 // ── Surface routing rules (double filter) ───────────────
 
-export type IntentDominant =
-  | 'agir'
-  | 'comprendre'
-  | 'personnaliser'
-  | 'orienter';
-export type VehicleDependency = 'low' | 'medium' | 'high';
 export type SurfaceTarget = 'R3' | 'R4' | 'R5' | 'TOOL';
-
-export interface SurfaceRoutingResult {
-  surface: SurfaceTarget;
-  confidence: number;
-  reason: string;
-}
-
-/**
- * Matrice de routage : intention × dependance vehicule → surface.
- */
-export const SURFACE_ROUTING_MATRIX: Record<
-  IntentDominant,
-  Record<VehicleDependency, SurfaceTarget>
-> = {
-  agir: { low: 'R3', medium: 'R3', high: 'TOOL' },
-  comprendre: { low: 'R4', medium: 'R4', high: 'TOOL' },
-  personnaliser: { low: 'TOOL', medium: 'TOOL', high: 'TOOL' },
-  orienter: { low: 'R5', medium: 'R5', high: 'TOOL' },
-} as const;
 
 // ── After-repair detection ──────────────────────────────
 

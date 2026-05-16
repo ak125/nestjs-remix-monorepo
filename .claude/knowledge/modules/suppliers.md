@@ -2,7 +2,7 @@
 module: suppliers
 sources:
 - backend/src/modules/suppliers
-last_scan: '2026-05-15'
+last_scan: '2026-05-16'
 primary_files:
 - backend/src/modules/suppliers/dto/index.ts
 - backend/src/modules/suppliers/dto/supplier.dto.ts

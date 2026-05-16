@@ -22,15 +22,14 @@ import {
 
 // ── Section ID (reuses existing enum) ───────────────────
 
-export const R6SectionIdSchema = z.enum(R6_SECTION_IDS);
+const R6SectionIdSchema = z.enum(R6_SECTION_IDS);
 
 // ── Alt text template ───────────────────────────────────
 
-export const R6AltTextSchema = z.object({
+const R6AltTextSchema = z.object({
   template: z.string().min(5).max(140),
   variables: z.record(z.string()).optional(),
 });
-export type R6AltText = z.infer<typeof R6AltTextSchema>;
 
 // ── Media slot (discriminated union, 7 variants) ────────
 
@@ -53,7 +52,7 @@ const r6BaseSlot = {
   notes: z.string().max(200).optional(),
 };
 
-export const R6MediaSlotSchema = z.discriminatedUnion('type', [
+const R6MediaSlotSchema = z.discriminatedUnion('type', [
   // image — cost 1
   z.object({
     ...r6BaseSlot,
@@ -120,11 +119,10 @@ export const R6MediaSlotSchema = z.discriminatedUnion('type', [
     attribution: z.string().max(100).optional(),
   }),
 ]);
-export type R6MediaSlot = z.infer<typeof R6MediaSlotSchema>;
 
 // ── Quality tier ID (for QualityTiersTable block) ───────
 
-export const R6QualityTierIdSchema = z.enum(R6_QUALITY_TIER_IDS);
+const R6QualityTierIdSchema = z.enum(R6_QUALITY_TIER_IDS);
 
 // ══════════════════════════════════════════════════════════
 // Content blocks V2 (discriminated union, 13 variants)
@@ -132,7 +130,7 @@ export const R6QualityTierIdSchema = z.enum(R6_QUALITY_TIER_IDS);
 
 // ── RichText (generic) ──────────────────────────────────
 
-export const R6RichTextBlockSchema = z.object({
+const R6RichTextBlockSchema = z.object({
   block_type: z.literal('RichText'),
   content: z.string().min(10),
   word_count: z.number().int().min(20).optional(),
@@ -141,7 +139,7 @@ export const R6RichTextBlockSchema = z.object({
 
 // ── HeroDecision (NEW V2 — hero_decision section) ───────
 
-export const R6HeroDecisionBlockSchema = z.object({
+const R6HeroDecisionBlockSchema = z.object({
   block_type: z.literal('HeroDecision'),
   h1: z.string().min(20).max(90),
   promise: z.string().min(20).max(200),
@@ -153,7 +151,7 @@ export const R6HeroDecisionBlockSchema = z.object({
 
 // ── DecisionQuick (kept from V1) ────────────────────────
 
-export const R6DecisionQuickBlockSchema = z.object({
+const R6DecisionQuickBlockSchema = z.object({
   block_type: z.literal('DecisionQuick'),
   question: z.string().min(10).max(120),
   options: z
@@ -170,7 +168,7 @@ export const R6DecisionQuickBlockSchema = z.object({
 
 // ── QualityTiersTable (NEW V2 — replaces CompareTable) ──
 
-export const R6QualityTiersTableBlockSchema = z.object({
+const R6QualityTiersTableBlockSchema = z.object({
   block_type: z.literal('QualityTiersTable'),
   tiers: z
     .array(
@@ -191,7 +189,7 @@ export const R6QualityTiersTableBlockSchema = z.object({
 
 // ── CompatibilityChecklist (V2 rename from CompatibilityBox) ──
 
-export const R6CompatibilityChecklistBlockSchema = z.object({
+const R6CompatibilityChecklistBlockSchema = z.object({
   block_type: z.literal('CompatibilityChecklist'),
   axes: z
     .array(
@@ -208,7 +206,7 @@ export const R6CompatibilityChecklistBlockSchema = z.object({
 
 // ── PriceGuide (NEW V2 — price_guide section) ──────────
 
-export const R6PriceGuideBlockSchema = z.object({
+const R6PriceGuideBlockSchema = z.object({
   block_type: z.literal('PriceGuide'),
   mode: z.enum(['ranges', 'factors']),
   tiers: z
@@ -234,7 +232,7 @@ export const R6PriceGuideBlockSchema = z.object({
 // ── BrandsGuide (NEW V2 — brands_guide section) ────────
 // Anti-defamation: JAMAIS nommer de marques a eviter
 
-export const R6BrandsGuideBlockSchema = z.object({
+const R6BrandsGuideBlockSchema = z.object({
   block_type: z.literal('BrandsGuide'),
   recognized_brands: z
     .array(
@@ -259,7 +257,7 @@ export const R6BrandsGuideBlockSchema = z.object({
 
 // ── BudgetTiers (kept from V1 — legacy fallback) ────────
 
-export const R6BudgetTiersBlockSchema = z.object({
+const R6BudgetTiersBlockSchema = z.object({
   block_type: z.literal('BudgetTiers'),
   tiers: z
     .array(
@@ -277,7 +275,7 @@ export const R6BudgetTiersBlockSchema = z.object({
 
 // ── Checklist (kept — pitfalls section) ─────────────────
 
-export const R6ChecklistBlockSchema = z.object({
+const R6ChecklistBlockSchema = z.object({
   block_type: z.literal('Checklist'),
   title: z.string().min(3).max(80).default('Avant de commander'),
   items: z
@@ -295,7 +293,7 @@ export const R6ChecklistBlockSchema = z.object({
 // ── WhenPro (NEW V2 — when_pro section) ─────────────────
 // PAS de procedure : juste quand et pourquoi faire appel a un pro
 
-export const R6WhenProBlockSchema = z.object({
+const R6WhenProBlockSchema = z.object({
   block_type: z.literal('WhenPro'),
   cases: z
     .array(
@@ -311,7 +309,7 @@ export const R6WhenProBlockSchema = z.object({
 
 // ── FAQ (kept from V1) ──────────────────────────────────
 
-export const R6FaqBlockSchema = z.object({
+const R6FaqBlockSchema = z.object({
   block_type: z.literal('FAQ'),
   items: z
     .array(
@@ -327,7 +325,7 @@ export const R6FaqBlockSchema = z.object({
 
 // ── FurtherReading (kept — cta_final section) ───────────
 
-export const R6FurtherReadingBlockSchema = z.object({
+const R6FurtherReadingBlockSchema = z.object({
   block_type: z.literal('FurtherReading'),
   links: z
     .array(
@@ -349,7 +347,7 @@ export const R6FurtherReadingBlockSchema = z.object({
 
 // ── InternalLinks (kept — cta_final section) ────────────
 
-export const R6InternalLinksBlockSchema = z.object({
+const R6InternalLinksBlockSchema = z.object({
   block_type: z.literal('InternalLinks'),
   links: z
     .array(
@@ -371,7 +369,7 @@ export const R6InternalLinksBlockSchema = z.object({
 
 // ── Union of all R6 block schemas V2 (13 variants) ──────
 
-export const R6BlockSchema = z.discriminatedUnion('block_type', [
+const R6BlockSchema = z.discriminatedUnion('block_type', [
   R6RichTextBlockSchema,
   R6HeroDecisionBlockSchema,
   R6DecisionQuickBlockSchema,
@@ -386,11 +384,10 @@ export const R6BlockSchema = z.discriminatedUnion('block_type', [
   R6FurtherReadingBlockSchema,
   R6InternalLinksBlockSchema,
 ]);
-export type R6Block = z.infer<typeof R6BlockSchema>;
 
 // ── Section plan ────────────────────────────────────────
 
-export const R6SectionPlanSchema = z.object({
+const R6SectionPlanSchema = z.object({
   section_id: R6SectionIdSchema,
   include_terms: z.array(z.string().min(2).max(60)).min(1),
   forbidden_overlap: z.array(z.string()).optional(),
@@ -408,11 +405,10 @@ export const R6SectionPlanSchema = z.object({
     })
     .optional(),
 });
-export type R6SectionPlan = z.infer<typeof R6SectionPlanSchema>;
 
 // ── Section terms map with superRefine (minimums + GR7 + required sections V2) ─
 
-export const R6SectionsMapSchema = z
+const R6SectionsMapSchema = z
   .record(R6SectionIdSchema, R6SectionPlanSchema)
   .superRefine((map, ctx) => {
     // Per-section include_terms minimum
@@ -469,23 +465,21 @@ export const R6SectionsMapSchema = z
       }
     }
   });
-export type R6SectionsMap = z.infer<typeof R6SectionsMapSchema>;
 
 // ── Gate report ─────────────────────────────────────────
 
-export const R6GateResultSchema = z.object({
+const R6GateResultSchema = z.object({
   gate: z.string(),
   status: z.enum(['pass', 'fail', 'warn']),
   message: z.string(),
   fixes_applied: z.array(z.string()).optional(),
 });
 
-export const R6GateReportSchema = z.record(z.string(), R6GateResultSchema);
-export type R6GateReport = z.infer<typeof R6GateReportSchema>;
+const R6GateReportSchema = z.record(z.string(), R6GateResultSchema);
 
 // ── Intent classification result ────────────────────────
 
-export const R6IntentResultSchema = z.object({
+const R6IntentResultSchema = z.object({
   intent_type: z.enum(['R6', 'R3', 'R5', 'R1', 'ambiguous']),
   score_r6: z.number().min(0).max(100),
   score_r3: z.number().min(0).max(100).optional(),
@@ -495,32 +489,29 @@ export const R6IntentResultSchema = z.object({
   buying_token_hits: z.array(z.string()).optional(),
   is_valid_r6: z.boolean(),
 });
-export type R6IntentResult = z.infer<typeof R6IntentResultSchema>;
 
 // ── SEO brief ───────────────────────────────────────────
 
-export const R6SeoBriefSchema = z.object({
+const R6SeoBriefSchema = z.object({
   meta_title: z.string().min(20).max(70).optional(),
   meta_description: z.string().min(100).max(170).optional(),
   canonical_policy: z.enum(['self']).optional(),
   primary_keyword: z.string().min(3).optional(),
   secondary_keywords: z.array(z.string()).optional(),
 });
-export type R6SeoBrief = z.infer<typeof R6SeoBriefSchema>;
 
 // ── Hero V2 (now backed by HeroDecision block) ─────────
 
-export const R6HeroSchema = z.object({
+const R6HeroSchema = z.object({
   h1: z.string().min(20).max(90),
   subtitle: z.string().min(10).max(180).optional(),
   media_slots: z.array(R6MediaSlotSchema).optional(),
   takeaways: z.array(z.string().min(5).max(100)).min(2).max(5),
 });
-export type R6Hero = z.infer<typeof R6HeroSchema>;
 
 // ── Governance ──────────────────────────────────────────
 
-export const R6GovernanceSchema = z.object({
+const R6GovernanceSchema = z.object({
   cannibalization_priority: z.literal('lowest'),
   jaccard_r1: z.number().min(0).max(1),
   jaccard_r3: z.number().min(0).max(1),
@@ -528,11 +519,10 @@ export const R6GovernanceSchema = z.object({
   max_allowed_overlap: z.literal(0.12),
   gate_report: R6GateReportSchema.optional(),
 });
-export type R6Governance = z.infer<typeof R6GovernanceSchema>;
 
 // ── Media slots proposal (P0 output) ────────────────────
 
-export const R6MediaSlotsProposalSchema = z.object({
+const R6MediaSlotsProposalSchema = z.object({
   hero: R6MediaSlotSchema.optional(),
   by_section: z.record(R6SectionIdSchema, z.array(R6MediaSlotSchema)),
   constraints: z
@@ -543,7 +533,6 @@ export const R6MediaSlotsProposalSchema = z.object({
     })
     .optional(),
 });
-export type R6MediaSlotsProposal = z.infer<typeof R6MediaSlotsProposalSchema>;
 
 // ══════════════════════════════════════════════════════════
 // R6 Page Contract V2 (top-level)
@@ -621,9 +610,5 @@ export const R6PageContractSchema = z.object({
   gate_report: R6GateReportSchema.optional(),
   quality_score: z.number().int().min(0).max(100).optional(),
 });
-export type R6PageContract = z.infer<typeof R6PageContractSchema>;
 
 // ── Partial schema (intermediate pipeline phases) ───────
-
-export const R6PageContractPartialSchema = R6PageContractSchema.partial();
-export type R6PageContractPartial = z.infer<typeof R6PageContractPartialSchema>;

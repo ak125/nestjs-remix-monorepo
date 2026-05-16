@@ -10,7 +10,7 @@ import { z } from 'zod';
 
 // ── Enums canoniques ──
 
-export const SourceTypeSchema = z.enum([
+const SourceTypeSchema = z.enum([
   'internal_validated',
   'canonical_validated',
   'oem_primary',
@@ -47,7 +47,7 @@ export const SourceTypeSchema = z.enum([
   'app_document',
 ]);
 
-export const StorageZoneSchema = z.enum([
+const StorageZoneSchema = z.enum([
   'knowledge/internal',
   'knowledge/canonical',
   'knowledge/gammes',
@@ -83,7 +83,7 @@ export const StorageZoneSchema = z.enum([
   'knowledge/_quarantine/foundation',
 ]);
 
-export const TruthLevelSchema = z.enum([
+const TruthLevelSchema = z.enum([
   'high',
   'medium',
   'low',
@@ -92,7 +92,7 @@ export const TruthLevelSchema = z.enum([
   'variable',
 ]);
 
-export const VerificationStatusSchema = z.enum([
+const VerificationStatusSchema = z.enum([
   'verified',
   'primary_source',
   'validated',
@@ -114,36 +114,7 @@ export const VerificationStatusSchema = z.enum([
   'asset_unverified',
 ]);
 
-export const DocFamilySchema = z.enum([
-  'canonical',
-  'internal',
-  'gamme',
-  'vehicle',
-  'brand',
-  'reference',
-  'diagnostic',
-  'guide',
-  'faq',
-  'policy',
-  'brief',
-  'evidence',
-  'raw',
-  'legacy',
-  'quarantine',
-  'news',
-  'blog',
-  'forum',
-  'community',
-  'editorial',
-  'research',
-  'audit',
-  'shadow',
-  'media',
-  'support',
-  'app',
-]);
-
-export const NextPhaseTargetSchema = z.enum([
+const NextPhaseTargetSchema = z.enum([
   'phase_1_5',
   'phase_1_6',
   'phase_2',
@@ -158,7 +129,7 @@ export const NextPhaseTargetSchema = z.enum([
   'none',
 ]);
 
-export const AllowedUsageSchema = z.enum([
+const AllowedUsageSchema = z.enum([
   'storage',
   'audit',
   'scoring',
@@ -181,86 +152,12 @@ export const AllowedUsageSchema = z.enum([
   'app_usage',
 ]);
 
-// ── Document schema with business rules ──
-
-export const DocumentStorageCanonSchema = z
-  .object({
-    document_id: z.string().min(1),
-    title: z.string().optional(),
-    source_type: SourceTypeSchema,
-    storage_zone: StorageZoneSchema,
-    truth_level: TruthLevelSchema,
-    verification_status: VerificationStatusSchema,
-    foundation_gate_passed: z.boolean(),
-    business_pool_admissible: z.boolean(),
-    doc_family: DocFamilySchema,
-    next_phase_target: NextPhaseTargetSchema,
-    allowed_usages: z.array(AllowedUsageSchema).min(1),
-    canonical_storage_key: z.string().min(1),
-    source_url: z.string().optional(),
-    source_domain: z.string().optional(),
-    source_language: z.string().optional(),
-    metadata: z.record(z.string(), z.unknown()).optional(),
-    notes: z.string().optional(),
-    created_at: z.string().datetime(),
-    updated_at: z.string().datetime(),
-  })
-  .superRefine((doc, ctx) => {
-    // R1: foundation_gate=false → business_pool must be false
-    if (!doc.foundation_gate_passed && doc.business_pool_admissible) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['business_pool_admissible'],
-        message:
-          'business_pool_admissible doit etre false si foundation_gate_passed = false',
-      });
-    }
-
-    // R2: business_pool=true → must include retrieval_business
-    if (
-      doc.business_pool_admissible &&
-      !doc.allowed_usages.includes('retrieval_business')
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['allowed_usages'],
-        message:
-          'retrieval_business doit etre present si business_pool_admissible = true',
-      });
-    }
-
-    // R3: secondary sources never business-admissible by default
-    const secondarySources: string[] = [
-      'forum_thread',
-      'community_post',
-      'press_article',
-      'external_blog_post',
-      'exploratory_web_source',
-    ];
-    if (
-      secondarySources.includes(doc.source_type) &&
-      doc.business_pool_admissible
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['business_pool_admissible'],
-        message:
-          'les sources secondaires/exploratoires ne doivent pas etre admissibles metier par defaut',
-      });
-    }
-  });
-
-export type DocumentStorageCanon = z.infer<typeof DocumentStorageCanonSchema>;
-
 // ── Policy schema (models the matrix itself as config) ──
 
-export const FoundationGateExpectationSchema = z.enum([
-  'pass',
-  'conditional',
-  'fail',
-]);
+const FoundationGateExpectationSchema = z.enum(['pass', 'conditional', 'fail']);
 
-export const DocumentStoragePolicySchema = z.object({
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const _DocumentStoragePolicySchema = z.object({
   source_type: SourceTypeSchema,
   default_storage_zone: StorageZoneSchema,
   default_truth_level: TruthLevelSchema,
@@ -272,22 +169,6 @@ export const DocumentStoragePolicySchema = z.object({
   notes: z.string().optional(),
 });
 
-export type DocumentStoragePolicy = z.infer<typeof DocumentStoragePolicySchema>;
-
-// ── Helpers ──
-
-export function isBusinessUsable(doc: DocumentStorageCanon): boolean {
-  return (
-    doc.foundation_gate_passed &&
-    doc.business_pool_admissible &&
-    doc.allowed_usages.includes('retrieval_business')
-  );
-}
-
-export function isAuditOnly(doc: DocumentStorageCanon): boolean {
-  return (
-    !doc.business_pool_admissible &&
-    (doc.allowed_usages.includes('audit') ||
-      doc.allowed_usages.includes('comparison'))
-  );
-}
+export type DocumentStoragePolicy = z.infer<
+  typeof _DocumentStoragePolicySchema
+>;
