@@ -90,6 +90,16 @@ test("toolchain captured in meta (replay safety)", async () => {
   assert.equal(inv.meta.toolchain.arch, process.arch);
 });
 
+test("renderMarkdown emits a projection with the three top-level decision sections", async () => {
+  const { renderMarkdown } = await import("./build-cleanup-candidates-markdown.ts");
+  const inv = await buildInventory(inputs);
+  const md = renderMarkdown(inv);
+  assert.match(md, /^# PR-8 Controlled Cleanup/);
+  assert.match(md, /## candidate \(/);
+  assert.match(md, /## blocked \(/);
+  assert.match(md, /## excluded \(/);
+});
+
 // ---------------------------------------------------------------------------
 // Drift insurance: NEVER_AUTO_DELETE_GLOBS bash ↔ TS parity.
 // Until PR-8d/PR-9 externalize to a shared YAML SoT, this test is the only
