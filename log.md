@@ -747,3 +747,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-r2-composition-v2-foundation`
 - **Décision** : fix(seo-r2): ci failures - class-validator removal, bigint ids, opa require cast (+5 other commits)
 - **Sortie** : PR #543 | commits 694945cf7 4f626d0e3 6ab4fe6e2 40102ed6b 3441fd143 a08d62eb9
+
+## 2026-05-16 — fix/seo-secure-sitemap-write-endpoints (auto)
+
+- **Branche** : `fix/seo-secure-sitemap-write-endpoints`
+- **Décision** : docs: design — sitemap regen service authentication (OIDC + anti-replay) (+1 other commit)
+- **Sortie** : PR #550 | commits a429aa07b 8af0f5885
