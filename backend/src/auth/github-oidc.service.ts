@@ -24,15 +24,19 @@ import {
   ForbiddenException,
   Injectable,
   Logger,
+  OnModuleDestroy,
   OnModuleInit,
   UnauthorizedException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import * as Sentry from '@sentry/nestjs';
 import {
   createRemoteJWKSet,
   jwtVerify,
   type JWTPayload,
   type JWTVerifyGetKey,
 } from 'jose';
+import Redis from 'ioredis';
 
 export interface GithubOidcClaims extends JWTPayload {
   repository: string;
@@ -50,8 +54,10 @@ export interface GithubOidcClaims extends JWTPayload {
 }
 
 @Injectable()
-export class GithubOidcService implements OnModuleInit {
+export class GithubOidcService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(GithubOidcService.name);
+
+  constructor(private readonly config: ConfigService) {}
 
   // ─────────────────────────────────────────────────────────────────
   // Hardcoded invariants (Phase 0.6 paradigm — never env-overridable).
@@ -89,6 +95,18 @@ export class GithubOidcService implements OnModuleInit {
   /** Clock tolerance for exp/nbf/iat (runner ↔ PROD VPS time skew). */
   static readonly CLOCK_TOLERANCE_SECONDS = 30;
 
+  /**
+   * Redis DB index for jti anti-replay store. Isolated from Bull (DB 0).
+   * Hardcoded per Phase 0.6 paradigm — invariant by convention.
+   */
+  static readonly REDIS_DB_INDEX = 1;
+
+  /**
+   * Redis key prefix for jti anti-replay records.
+   * Namespace separation from Bull's `bull:*` keys.
+   */
+  static readonly REDIS_JTI_PREFIX = 'oidc:jti:';
+
   // ─────────────────────────────────────────────────────────────────
 
   /**
@@ -97,8 +115,24 @@ export class GithubOidcService implements OnModuleInit {
    */
   protected jwks!: JWTVerifyGetKey;
 
+  /**
+   * Dedicated Redis client for anti-replay (Phase 4) — separate connection
+   * from Bull's queue.client (DB 0). Lazy-connect, max 3 retries per command.
+   * Tests override via `setRedisForTesting()`.
+   */
+  protected redis!: Redis;
+
   onModuleInit(): void {
     this.jwks = this.createJwks();
+    if (!this.redis) {
+      this.redis = this.createRedis();
+    }
+  }
+
+  async onModuleDestroy(): Promise<void> {
+    if (this.redis) {
+      await this.redis.quit().catch(() => undefined);
+    }
   }
 
   /**
@@ -113,6 +147,22 @@ export class GithubOidcService implements OnModuleInit {
   }
 
   /**
+   * Factory hook for Redis — production opens a dedicated connection to the
+   * anti-replay DB. Tests override via `setRedisForTesting()` with an
+   * ioredis-mock instance.
+   */
+  protected createRedis(): Redis {
+    return new Redis({
+      host: this.config.get<string>('REDIS_HOST', 'localhost'),
+      port: parseInt(this.config.get<string>('REDIS_PORT', '6379'), 10),
+      password: this.config.get<string>('REDIS_PASSWORD') || undefined,
+      db: GithubOidcService.REDIS_DB_INDEX,
+      lazyConnect: true,
+      maxRetriesPerRequest: 3,
+    });
+  }
+
+  /**
    * Test seam — override the JWKS resolver post-init (vitest/jest unit tests).
    * Production code MUST NOT call this.
    */
@@ -121,13 +171,21 @@ export class GithubOidcService implements OnModuleInit {
   }
 
   /**
+   * Test seam — override the Redis client post-init (vitest/jest unit tests).
+   * Pass an ioredis-mock instance or a similar mock.
+   * Production code MUST NOT call this.
+   */
+  setRedisForTesting(redis: Redis): void {
+    this.redis = redis;
+  }
+
+  /**
    * Validate a Bearer JWT from a GitHub Actions OIDC token.
    * - Verifies signature, iss, aud, exp, nbf, iat (with clockTolerance).
    * - Verifies all 5 pinned claims (repository, event_name, ref, job_workflow_ref, sub).
+   * - Asserts jti has not been seen before (Phase 4 anti-replay via Redis SETNX).
    * - Audit-logs success.
-   * - Fail-closed: throws on any mismatch.
-   *
-   * Phase 4 will add `assertNotReplayed(payload)` here (Redis SETNX on jti).
+   * - Fail-closed: throws on any mismatch / replay / Redis unavailability.
    */
   async validate(token: string): Promise<GithubOidcClaims> {
     const { payload } = await jwtVerify(token, this.jwks, {
@@ -136,8 +194,44 @@ export class GithubOidcService implements OnModuleInit {
       clockTolerance: GithubOidcService.CLOCK_TOLERANCE_SECONDS,
     });
     this.assertClaims(payload);
+    await this.assertNotReplayed(payload);
     this.auditLog(payload);
     return payload as GithubOidcClaims;
+  }
+
+  /**
+   * Anti-replay : SETNX `oidc:jti:<jti>` with TTL = (exp - now) + 60s safety.
+   * Returns successfully if the key was created (first time we see this jti).
+   * Throws UnauthorizedException if the key already exists (replay detected).
+   *
+   * Fail-closed : if jti claim is absent or Redis is unavailable, throws. We
+   * never silently accept a token without anti-replay verification.
+   */
+  private async assertNotReplayed(p: JWTPayload): Promise<void> {
+    if (!p.jti) {
+      throw new UnauthorizedException('missing jti claim');
+    }
+
+    const expMs = (p.exp ?? 0) * 1000;
+    const remainingSec = Math.max(60, (expMs - Date.now()) / 1000);
+    const ttlSec = Math.ceil(remainingSec + 60);
+    const key = GithubOidcService.REDIS_JTI_PREFIX + String(p.jti);
+
+    const result = await this.redis.set(key, '1', 'EX', ttlSec, 'NX');
+
+    if (result !== 'OK') {
+      this.logger.error(
+        `Token replay detected: jti=${p.jti} repo=${p.repository}`,
+      );
+      Sentry.captureMessage('oidc_token_replay', {
+        level: 'error',
+        tags: {
+          jti: String(p.jti),
+          repository: String(p.repository),
+        },
+      });
+      throw new UnauthorizedException('token already used');
+    }
   }
 
   private assertClaims(p: JWTPayload): void {
@@ -177,7 +271,3 @@ export class GithubOidcService implements OnModuleInit {
     });
   }
 }
-
-// Suppress unused-import warning for UnauthorizedException — used in Phase 4
-// for the anti-replay path. Kept here so the Phase 4 PR diff is minimal.
-void UnauthorizedException;
