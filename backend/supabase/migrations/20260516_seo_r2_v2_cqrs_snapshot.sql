@@ -1,3 +1,18 @@
+-- squawk-ignore-file adding-foreign-key-constraint
+-- squawk-ignore-file require-concurrent-index-creation
+--
+-- Rationale (ADR-072) :
+--   - `adding-foreign-key-constraint` : les ADD COLUMN ... REFERENCES sur
+--     __seo_r8_pages et __seo_r2_pages portent sur des colonnes NOUVELLEMENT
+--     créées (current_snapshot_id, NULL par défaut). Aucune row pré-existante ne
+--     pointe vers __seo_r2_page_snapshot (table créée dans cette migration).
+--     Le SHARE ROW EXCLUSIVE lock est sur des tables que personne ne lit ni
+--     n'écrit pendant la migration (R2 v2 pas encore en production).
+--   - `require-concurrent-index-creation` : indexes partiels sur la colonne
+--     current_snapshot_id qui vient d'être ajoutée (toutes valeurs NULL au
+--     moment de CREATE INDEX). CONCURRENTLY impossible dans migration tx
+--     (assume_in_transaction = true côté .squawk.toml).
+--
 -- =============================================================================
 -- ADR-072 — R2 v2 CQRS Snapshot Artifact + Outbox + R8 Snapshot Store
 -- =============================================================================
@@ -150,7 +165,7 @@ CREATE TABLE IF NOT EXISTS public.__seo_outbox_event (
   trace_id        TEXT,
   occurred_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   published_at    TIMESTAMPTZ,                                       -- NULL = pending; set when relayed to BullMQ
-  attempts        INTEGER NOT NULL DEFAULT 0 CHECK (attempts >= 0),
+  attempts        BIGINT NOT NULL DEFAULT 0 CHECK (attempts >= 0),
   last_error      TEXT
 );
 
