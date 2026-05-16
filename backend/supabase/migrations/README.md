@@ -106,8 +106,7 @@ python3 scripts/ci/apply-supabase-migration.py --self-test
 CREATE SCHEMA IF NOT EXISTS infra;
 
 CREATE TABLE infra.schema_migrations (
-  version        TEXT PRIMARY KEY,                       -- from filename
-  name           TEXT NOT NULL,                          -- from filename
+  id             TEXT PRIMARY KEY,                       -- filename stem, e.g. "20260518_seo_admin_job_table"
   checksum       TEXT NOT NULL,                          -- sha256(file bytes)
   status         TEXT NOT NULL DEFAULT 'applied'
                  CHECK (status IN ('applying', 'applied', 'failed')),
