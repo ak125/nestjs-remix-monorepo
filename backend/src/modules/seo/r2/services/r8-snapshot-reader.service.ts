@@ -186,9 +186,7 @@ export class R8SnapshotReaderService extends SupabaseBaseService {
     return `r8:snapshot:${typeId}`;
   }
 
-  private async tryCacheGet(
-    key: string,
-  ): Promise<R8SnapshotReadResult | null> {
+  private async tryCacheGet(key: string): Promise<R8SnapshotReadResult | null> {
     if (!this.cache) {
       return null;
     }

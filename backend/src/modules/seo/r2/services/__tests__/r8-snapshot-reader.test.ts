@@ -8,7 +8,10 @@
  * mirror canon r2-composition-input-snapshot.spec.ts.
  */
 
-import { R8SnapshotReaderService, R8SnapshotCacheClient } from '../r8-snapshot-reader.service';
+import {
+  R8SnapshotReaderService,
+  R8SnapshotCacheClient,
+} from '../r8-snapshot-reader.service';
 
 const validSnapshotRow = {
   id: 42,
@@ -104,13 +107,18 @@ function createService(
   const svc = Object.create(
     R8SnapshotReaderService.prototype,
   ) as R8SnapshotReaderService;
-  (svc as unknown as { logger: { log: () => void; error: () => void; warn: () => void } }).logger = {
+  (
+    svc as unknown as {
+      logger: { log: () => void; error: () => void; warn: () => void };
+    }
+  ).logger = {
     log: () => {},
     error: () => {},
     warn: () => {},
   };
   (svc as unknown as { supabase: unknown }).supabase = supabase;
-  (svc as unknown as { cache: R8SnapshotCacheClient | undefined }).cache = cache;
+  (svc as unknown as { cache: R8SnapshotCacheClient | undefined }).cache =
+    cache;
   return svc;
 }
 
@@ -129,7 +137,10 @@ describe('R8SnapshotReaderService', () => {
 
     it('returns found=true for status=minimal', async () => {
       const svc = createService(
-        makeFakeSupabaseFound({ ...validSnapshotRow, enrichment_status: 'minimal' }),
+        makeFakeSupabaseFound({
+          ...validSnapshotRow,
+          enrichment_status: 'minimal',
+        }),
       );
       const result = await svc.getLatestSnapshot(12345);
       expect(result.found).toBe(true);
@@ -137,7 +148,10 @@ describe('R8SnapshotReaderService', () => {
 
     it('returns found=true for status=stale (R2 compose continues with stale)', async () => {
       const svc = createService(
-        makeFakeSupabaseFound({ ...validSnapshotRow, enrichment_status: 'stale' }),
+        makeFakeSupabaseFound({
+          ...validSnapshotRow,
+          enrichment_status: 'stale',
+        }),
       );
       const result = await svc.getLatestSnapshot(12345);
       expect(result.found).toBe(true);
@@ -145,7 +159,10 @@ describe('R8SnapshotReaderService', () => {
 
     it('returns found=false reason=r8_enrichment_failed when status=failed', async () => {
       const svc = createService(
-        makeFakeSupabaseFound({ ...validSnapshotRow, enrichment_status: 'failed' }),
+        makeFakeSupabaseFound({
+          ...validSnapshotRow,
+          enrichment_status: 'failed',
+        }),
       );
       const result = await svc.getLatestSnapshot(12345);
       expect(result.found).toBe(false);
@@ -185,7 +202,9 @@ describe('R8SnapshotReaderService', () => {
       const svc = createService(makeFakeSupabaseFound(validSnapshotRow));
       await expect(svc.getLatestSnapshot(0)).rejects.toThrow(/Invalid typeId/);
       await expect(svc.getLatestSnapshot(-1)).rejects.toThrow(/Invalid typeId/);
-      await expect(svc.getLatestSnapshot(1.5)).rejects.toThrow(/Invalid typeId/);
+      await expect(svc.getLatestSnapshot(1.5)).rejects.toThrow(
+        /Invalid typeId/,
+      );
     });
   });
 
@@ -199,7 +218,8 @@ describe('R8SnapshotReaderService', () => {
               id: 42,
               typeId: 12345,
               versionSha: 'b'.repeat(64),
-              disambiguationSignature: validSnapshotRow.disambiguation_signature,
+              disambiguationSignature:
+                validSnapshotRow.disambiguation_signature,
               enrichmentStatus: 'enriched',
               sourceLineage: null,
               createdAt: '2026-05-15T10:00:00Z',
@@ -228,7 +248,10 @@ describe('R8SnapshotReaderService', () => {
         setEx: jest.fn().mockResolvedValue(undefined),
         del: jest.fn().mockResolvedValue(undefined),
       };
-      const svc = createService(makeFakeSupabaseFound(validSnapshotRow), fakeCache);
+      const svc = createService(
+        makeFakeSupabaseFound(validSnapshotRow),
+        fakeCache,
+      );
       await svc.getLatestSnapshot(12345);
       expect(fakeCache.setEx).toHaveBeenCalledWith(
         'r8:snapshot:12345',
@@ -243,7 +266,10 @@ describe('R8SnapshotReaderService', () => {
         setEx: jest.fn().mockResolvedValue(undefined),
         del: jest.fn().mockResolvedValue(undefined),
       };
-      const svc = createService(makeFakeSupabaseFound(validSnapshotRow), fakeCache);
+      const svc = createService(
+        makeFakeSupabaseFound(validSnapshotRow),
+        fakeCache,
+      );
       const result = await svc.getLatestSnapshot(12345);
       expect(result.found).toBe(true); // DB succeeded despite cache error
     });
@@ -254,7 +280,10 @@ describe('R8SnapshotReaderService', () => {
         setEx: jest.fn().mockResolvedValue(undefined),
         del: jest.fn().mockResolvedValue(undefined),
       };
-      const svc = createService(makeFakeSupabaseFound(validSnapshotRow), fakeCache);
+      const svc = createService(
+        makeFakeSupabaseFound(validSnapshotRow),
+        fakeCache,
+      );
       await svc.invalidateCache(12345);
       expect(fakeCache.del).toHaveBeenCalledWith('r8:snapshot:12345');
     });

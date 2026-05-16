@@ -63,10 +63,10 @@ export const R8DisambiguationSignatureSchema = z.object({
   powerHp: z.number().int().nonnegative().nullable(),
   yearsFrom: z.number().int().nullable(),
   yearsTo: z.number().int().nullable(),
-  bodyType: z.string().nullable(),         // "3/5 portes", "Break", etc.
+  bodyType: z.string().nullable(), // "3/5 portes", "Break", etc.
   fuelType: z.string().nullable(),
-  engineCode: z.string().nullable(),       // ex: "K9K 770"
-  euroNorm: z.string().nullable(),         // ex: "Euro5"
+  engineCode: z.string().nullable(), // ex: "K9K 770"
+  euroNorm: z.string().nullable(), // ex: "Euro5"
   literage: z.string().nullable(),
   // Sibling list (R2 S_SIBLING_TABLE + S_COMPAT_DIFFERENCES source)
   siblings: z.array(R8SiblingEntrySchema).default([]),
