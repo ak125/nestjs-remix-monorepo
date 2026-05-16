@@ -26,6 +26,10 @@ import {
 import { R2MotorDeltaService } from './services/r2-motor-delta.service';
 import { R2OpaEvaluatorService } from './services/r2-opa-evaluator.service';
 import { R2VehicleFamilyService } from './services/r2-vehicle-family.service';
+import {
+  R8SnapshotReaderService,
+  R8_SNAPSHOT_CACHE_TOKEN,
+} from './services/r8-snapshot-reader.service';
 
 @Module({
   imports: [DatabaseModule],
@@ -41,10 +45,18 @@ import { R2VehicleFamilyService } from './services/r2-vehicle-family.service';
     R2OpaEvaluatorService,
     R2VehicleFamilyService,
     R2FeatureFlagService,
+    R8SnapshotReaderService, // ADR-072 §3 R8 Vehicle Domain bounded context read-side
     {
       // Redis provider stub — PR 2 V1.5 wires real Redis client (BullMQ Redis
       // reused). For PR 1 foundation, feature flag falls back to env var.
       provide: R2_FEATURE_FLAG_REDIS_TOKEN,
+      useValue: null,
+    },
+    {
+      // R8 snapshot cache provider (Redis L1) — null fallback pour PR 2D
+      // foundation (cache désactivé tant que pas branché). PR 2D-2 ou PR 2E
+      // wire le vrai client Redis (BullMQ Redis réutilisé).
+      provide: R8_SNAPSHOT_CACHE_TOKEN,
       useValue: null,
     },
   ],
@@ -57,6 +69,7 @@ import { R2VehicleFamilyService } from './services/r2-vehicle-family.service';
     R2MotorDeltaService,
     R2OpaEvaluatorService,
     R2FeatureFlagService,
+    R8SnapshotReaderService,
   ],
 })
 export class R2V2Module {}
