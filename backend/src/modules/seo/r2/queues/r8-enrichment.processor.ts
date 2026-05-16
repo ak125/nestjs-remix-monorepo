@@ -27,7 +27,7 @@ import {
   SEO_OUTBOX_RELAY_JOB_NAME,
 } from './r8-enrichment.constants';
 
-export interface R8EnrichmentJobResult {
+interface R8EnrichmentJobResult {
   startedAt: string;
   finishedAt: string;
   durationMs: number;
