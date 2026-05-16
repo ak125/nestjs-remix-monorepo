@@ -63,9 +63,8 @@ BOOTSTRAP_SQL = """
 CREATE SCHEMA IF NOT EXISTS infra;
 
 CREATE TABLE IF NOT EXISTS infra.schema_migrations (
-  version        TEXT PRIMARY KEY,
-  name           TEXT NOT NULL,
-  checksum       TEXT NOT NULL,
+  id             TEXT PRIMARY KEY,                            -- filename stem (canonical identity, Sqitch/dbmate pattern)
+  checksum       TEXT NOT NULL,                               -- sha256(file bytes) hex
   status         TEXT NOT NULL DEFAULT 'applied'
                  CHECK (status IN ('applying', 'applied', 'failed')),
   started_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -75,6 +74,10 @@ CREATE TABLE IF NOT EXISTS infra.schema_migrations (
   git_sha        TEXT,
   error_message  TEXT
 );
+
+CREATE INDEX IF NOT EXISTS idx_schema_migrations_status
+  ON infra.schema_migrations (status)
+  WHERE status IN ('applying', 'failed');
 
 GRANT SELECT, INSERT ON infra.schema_migrations TO service_role;
 GRANT UPDATE (status, applied_at, execution_ms, error_message)
@@ -87,8 +90,7 @@ GRANT UPDATE (status, applied_at, execution_ms, error_message)
 
 @dataclass(frozen=True)
 class LocalMigration:
-    version: str
-    name: str
+    id: str  # filename stem (canonical identity)
     path: Path
     checksum: str
     non_transactional: bool
@@ -96,8 +98,7 @@ class LocalMigration:
 
 @dataclass(frozen=True)
 class RemoteMigration:
-    version: str
-    name: str
+    id: str
     checksum: str
     status: str  # 'applying' | 'applied' | 'failed'
     applied_at: str | None
@@ -147,14 +148,17 @@ def parse_local_migrations() -> list[LocalMigration]:
                 f"[warn] skipping non-matching filename: {entry.name}\n"
             )
             continue
-        version, name = match.group(1), match.group(2)
+        # Identity = filename stem (everything before `.sql`). Sqitch/dbmate
+        # canon — the filesystem already enforces uniqueness, so no auxiliary
+        # uniqueness check is needed. Multiple files can share an 8-digit date
+        # prefix as long as their full filenames differ.
+        migration_id = entry.name[:-4]
         sql_bytes = entry.read_bytes()
         checksum = hashlib.sha256(sql_bytes).hexdigest()
         sql_text = sql_bytes.decode("utf-8")
         items.append(
             LocalMigration(
-                version=version,
-                name=name,
+                id=migration_id,
                 path=entry,
                 checksum=checksum,
                 non_transactional=is_non_transactional_header(sql_text),
@@ -163,26 +167,22 @@ def parse_local_migrations() -> list[LocalMigration]:
     return items
 
 
-def enforce_ordering_and_uniqueness(items: list[LocalMigration]) -> "None":
-    versions = [m.version for m in items]
-    if versions != sorted(versions):
-        for i in range(1, len(versions)):
-            if versions[i] < versions[i - 1]:
+def enforce_ordering(items: list[LocalMigration]) -> "None":
+    """Ensure files sort lexicographically by id (== filename stem).
+
+    Already guaranteed by `parse_local_migrations()` which iterates
+    `sorted(MIGRATIONS_DIR)`. The assertion guards against future refactors
+    of the iteration order.
+    """
+    ids = [m.id for m in items]
+    if ids != sorted(ids):
+        for i in range(1, len(ids)):
+            if ids[i] < ids[i - 1]:
                 fail(
                     3,
                     "Migrations must be in lexicographic order. Out-of-order: "
-                    f"{versions[i - 1]!r} then {versions[i]!r}.",
+                    f"{ids[i - 1]!r} then {ids[i]!r}.",
                 )
-    seen: dict[str, int] = {}
-    for v in versions:
-        seen[v] = seen.get(v, 0) + 1
-    dupes = sorted(v for v, count in seen.items() if count > 1)
-    if dupes:
-        fail(
-            3,
-            f"Duplicate version prefixes detected: {dupes}. "
-            "Rename one of them with a later timestamp.",
-        )
 
 
 # ── Database operations ──────────────────────────────────────────────────────
@@ -227,20 +227,18 @@ def fetch_remote(conn) -> dict[str, RemoteMigration]:
     with conn.cursor() as cur:
         cur.execute(
             """
-            SELECT version, name, checksum, status,
-                   applied_at::text, runner
+            SELECT id, checksum, status, applied_at::text, runner
             FROM infra.schema_migrations
             """
         )
         rows = cur.fetchall()
     return {
         row[0]: RemoteMigration(
-            version=row[0],
-            name=row[1],
-            checksum=row[2],
-            status=row[3],
-            applied_at=row[4],
-            runner=row[5],
+            id=row[0],
+            checksum=row[1],
+            status=row[2],
+            applied_at=row[3],
+            runner=row[4],
         )
         for row in rows
     }
@@ -252,11 +250,11 @@ def insert_applied_tx(
     cur.execute(
         """
         INSERT INTO infra.schema_migrations
-            (version, name, checksum, status, applied_at,
+            (id, checksum, status, applied_at,
              execution_ms, runner, git_sha)
-        VALUES (%s, %s, %s, 'applied', NOW(), %s, %s, %s)
+        VALUES (%s, %s, 'applied', NOW(), %s, %s, %s)
         """,
-        (mig.version, mig.name, mig.checksum, execution_ms, runner, git_sha),
+        (mig.id, mig.checksum, execution_ms, runner, git_sha),
     )
 
 
@@ -266,34 +264,34 @@ def insert_applying(
     cur.execute(
         """
         INSERT INTO infra.schema_migrations
-            (version, name, checksum, status, runner, git_sha)
-        VALUES (%s, %s, %s, 'applying', %s, %s)
+            (id, checksum, status, runner, git_sha)
+        VALUES (%s, %s, 'applying', %s, %s)
         """,
-        (mig.version, mig.name, mig.checksum, runner, git_sha),
+        (mig.id, mig.checksum, runner, git_sha),
     )
 
 
-def mark_applied(cur, version: str, execution_ms: int) -> "None":
+def mark_applied(cur, migration_id: str, execution_ms: int) -> "None":
     cur.execute(
         """
         UPDATE infra.schema_migrations
         SET status = 'applied',
             applied_at = NOW(),
             execution_ms = %s
-        WHERE version = %s AND status = 'applying'
+        WHERE id = %s AND status = 'applying'
         """,
-        (execution_ms, version),
+        (execution_ms, migration_id),
     )
 
 
-def mark_failed(cur, version: str, error: str) -> "None":
+def mark_failed(cur, migration_id: str, error: str) -> "None":
     cur.execute(
         """
         UPDATE infra.schema_migrations
         SET status = 'failed', error_message = %s
-        WHERE version = %s
+        WHERE id = %s
         """,
-        (error[:2000], version),
+        (error[:2000], migration_id),
     )
 
 
@@ -317,13 +315,13 @@ def apply_migration(
         except Exception as e:
             try:
                 with conn.cursor() as cur:
-                    mark_failed(cur, mig.version, str(e))
+                    mark_failed(cur, mig.id, str(e))
             except Exception as inner:
                 sys.stderr.write(f"[warn] mark_failed also raised: {inner}\n")
             raise
         elapsed_ms = int((time.monotonic() - start) * 1000)
         with conn.cursor() as cur:
-            mark_applied(cur, mig.version, elapsed_ms)
+            mark_applied(cur, mig.id, elapsed_ms)
         return elapsed_ms
 
     # Transactional path : atomic apply + insert.
@@ -350,10 +348,10 @@ def classify(
 ):
     """Return (rows, summary) for the ``--status`` table.
 
-    ``rows`` is a list of ``(version, name, status, applied_at, runner)``.
+    ``rows`` is a list of ``(id, status, applied_at, runner)``.
     ``summary`` is a counter dict.
     """
-    rows: list[tuple[str, str, str, str, str]] = []
+    rows: list[tuple[str, str, str, str]] = []
     summary = {
         "applied": 0,
         "pending": 0,
@@ -362,10 +360,10 @@ def classify(
         "applying": 0,
         "failed": 0,
     }
-    local_versions = {m.version for m in local}
+    local_ids = {m.id for m in local}
 
     for mig in local:
-        r = remote.get(mig.version)
+        r = remote.get(mig.id)
         if r is None:
             state = "pending"
         elif r.status == "applying":
@@ -379,21 +377,19 @@ def classify(
         summary[state] += 1
         rows.append(
             (
-                mig.version,
-                mig.name,
+                mig.id,
                 state,
                 (r.applied_at if r else "") or "—",
                 (r.runner if r else "") or "—",
             )
         )
 
-    for version, r in sorted(remote.items()):
-        if version not in local_versions:
+    for mid, r in sorted(remote.items()):
+        if mid not in local_ids:
             summary["orphan"] += 1
             rows.append(
                 (
-                    version,
-                    r.name,
+                    mid,
                     "orphan",
                     r.applied_at or "—",
                     r.runner or "—",
@@ -404,11 +400,11 @@ def classify(
 
 
 def print_status(rows, summary) -> int:
-    name_w = max((len(r[1]) for r in rows), default=4)
-    runner_w = max((len(r[4]) for r in rows), default=6)
-    fmt = f"{{:<14}} {{:<{name_w}}}  {{:<9}} {{:<24}} {{:<{runner_w}}}"
-    print(fmt.format("VERSION", "NAME", "STATUS", "APPLIED_AT", "RUNNER"))
-    print(fmt.format("-" * 14, "-" * name_w, "-" * 9, "-" * 24, "-" * runner_w))
+    id_w = max((len(r[0]) for r in rows), default=4)
+    runner_w = max((len(r[3]) for r in rows), default=6)
+    fmt = f"{{:<{id_w}}}  {{:<9}}  {{:<24}}  {{:<{runner_w}}}"
+    print(fmt.format("ID", "STATUS", "APPLIED_AT", "RUNNER"))
+    print(fmt.format("-" * id_w, "-" * 9, "-" * 24, "-" * runner_w))
     for row in rows:
         print(fmt.format(*row))
     print()
@@ -481,29 +477,20 @@ def run_self_test() -> int:
     no_string = "INSERT INTO t VALUES ('-- @non_transactional');\n"
     assert not is_non_transactional_header(no_string)
 
-    # 3. Ordering / uniqueness ------------------------------------------
+    # 3. Ordering (id = filename stem, lexicographic) -------------------
     good = [
-        LocalMigration("20260101", "a", Path("/tmp/a"), "h1", False),
-        LocalMigration("20260102", "b", Path("/tmp/b"), "h2", False),
+        LocalMigration("20260101_a", Path("/tmp/a"), "h1", False),
+        LocalMigration("20260101_b", Path("/tmp/b"), "h2", False),  # shared date OK
+        LocalMigration("20260102_a", Path("/tmp/c"), "h3", False),
     ]
-    enforce_ordering_and_uniqueness(good)
-
-    dup = [
-        LocalMigration("20260101", "a", Path("/tmp/a"), "h1", False),
-        LocalMigration("20260101", "b", Path("/tmp/b"), "h2", False),
-    ]
-    try:
-        enforce_ordering_and_uniqueness(dup)
-        raise AssertionError("duplicate not detected")
-    except SystemExit as e:
-        assert e.code == 3
+    enforce_ordering(good)
 
     out_of_order = [
-        LocalMigration("20260102", "b", Path("/tmp/b"), "h2", False),
-        LocalMigration("20260101", "a", Path("/tmp/a"), "h1", False),
+        LocalMigration("20260102_a", Path("/tmp/c"), "h3", False),
+        LocalMigration("20260101_a", Path("/tmp/a"), "h1", False),
     ]
     try:
-        enforce_ordering_and_uniqueness(out_of_order)
+        enforce_ordering(out_of_order)
         raise AssertionError("out-of-order not detected")
     except SystemExit as e:
         assert e.code == 3
@@ -514,19 +501,19 @@ def run_self_test() -> int:
     h2 = hashlib.sha256(payload).hexdigest()
     assert h1 == h2 and len(h1) == 64
 
-    # 5. Classifier -----------------------------------------------------
+    # 5. Classifier — applied / pending / drift / orphan ----------------
     local = [
-        LocalMigration("20260101", "a", Path("/tmp/a"), "h1", False),
-        LocalMigration("20260102", "b", Path("/tmp/b"), "h2", False),
-        LocalMigration("20260103", "c", Path("/tmp/c"), "h3", False),
+        LocalMigration("20260101_a", Path("/tmp/a"), "h1", False),
+        LocalMigration("20260101_b", Path("/tmp/b"), "h2", False),  # same date prefix, different id
+        LocalMigration("20260103_c", Path("/tmp/c"), "h3", False),
     ]
     remote = {
-        "20260101": RemoteMigration("20260101", "a", "h1", "applied",
-                                    "2026-05-01T00:00:00Z", "gh:1"),
-        "20260102": RemoteMigration("20260102", "b", "DIFFERENT", "applied",
-                                    "2026-05-02T00:00:00Z", "gh:1"),
-        "20260099": RemoteMigration("20260099", "old", "h0", "applied",
-                                    "2025-12-01T00:00:00Z", "gh:0"),
+        "20260101_a": RemoteMigration("20260101_a", "h1", "applied",
+                                      "2026-05-01T00:00:00Z", "gh:1"),
+        "20260101_b": RemoteMigration("20260101_b", "DIFFERENT", "applied",
+                                      "2026-05-02T00:00:00Z", "gh:1"),
+        "20260099_old": RemoteMigration("20260099_old", "h0", "applied",
+                                        "2025-12-01T00:00:00Z", "gh:0"),
     }
     rows, summary = classify(local, remote)
     assert summary["applied"] == 1, summary
@@ -537,10 +524,10 @@ def run_self_test() -> int:
 
     # 6. Classifier — applying + failed ---------------------------------
     remote2 = {
-        "20260101": RemoteMigration("20260101", "a", "h1", "applying",
-                                    None, "gh:1"),
-        "20260102": RemoteMigration("20260102", "b", "h2", "failed",
-                                    None, "gh:1"),
+        "20260101_a": RemoteMigration("20260101_a", "h1", "applying",
+                                      None, "gh:1"),
+        "20260101_b": RemoteMigration("20260101_b", "h2", "failed",
+                                      None, "gh:1"),
     }
     _, sum2 = classify(local[:2], remote2)
     assert sum2["applying"] == 1 and sum2["failed"] == 1, sum2
@@ -576,7 +563,7 @@ def main(argv: list[str]) -> int:
         return run_self_test()
 
     local = parse_local_migrations()
-    enforce_ordering_and_uniqueness(local)
+    enforce_ordering(local)
     if not local:
         print("No migration files found under backend/supabase/migrations/.")
         return 0
@@ -602,25 +589,23 @@ def main(argv: list[str]) -> int:
                 f"failed={summary['failed']}). Resolve before applying.",
             )
 
-        pending = [m for m in local if m.version not in remote]
+        pending = [m for m in local if m.id not in remote]
         if args.limit is not None:
             pending = pending[: max(0, args.limit)]
 
         # GitHub Step Summary (always)
         plan_lines = ["## Migration plan", ""]
-        plan_lines.append("| Status | Version | Name | Mode |")
-        plan_lines.append("| --- | --- | --- | --- |")
+        plan_lines.append("| Status | ID | Mode |")
+        plan_lines.append("| --- | --- | --- |")
         for m in local:
-            if m.version in remote:
+            if m.id in remote:
                 state = "✅ applied"
             elif m in pending:
                 state = "⏳ pending"
             else:
                 state = "⏸️ deferred (limit)"
             mode = "non-transactional" if m.non_transactional else "transactional"
-            plan_lines.append(
-                f"| {state} | `{m.version}` | `{m.name}` | {mode} |"
-            )
+            plan_lines.append(f"| {state} | `{m.id}` | {mode} |")
         write_step_summary(plan_lines)
 
         if not pending:
@@ -631,7 +616,7 @@ def main(argv: list[str]) -> int:
             print("Dry-run — no migration will be applied.")
             for m in pending:
                 mode = "non-tx" if m.non_transactional else "tx"
-                print(f"  would apply {m.version}_{m.name} ({mode})")
+                print(f"  would apply {m.id} ({mode})")
             return 0
 
         runner = f"gh-actions:{os.environ.get('GITHUB_RUN_ID', 'local')}"
@@ -641,13 +626,13 @@ def main(argv: list[str]) -> int:
         for m in pending:
             mode = "non-tx" if m.non_transactional else "tx"
             print(
-                f"Applying {m.version}_{m.name} ({mode}) ... ",
+                f"Applying {m.id} ({mode}) ... ",
                 end="",
                 flush=True,
             )
             ms = apply_migration(conn, m, runner, git_sha)
             print(f"OK in {ms}ms")
-            applied.append((f"{m.version}_{m.name}", ms))
+            applied.append((m.id, ms))
 
         write_step_summary(
             ["", "### Applied this run", ""]
