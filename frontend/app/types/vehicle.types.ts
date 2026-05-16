@@ -16,7 +16,7 @@
  * Interface pour les marques de véhicules
  * Basée sur la table auto_marque
  */
-export interface VehicleBrand {
+interface VehicleBrand {
   marque_id: number;
   marque_name: string;
   marque_alias?: string;
@@ -71,68 +71,19 @@ export interface VehicleType {
 }
 
 // ====================================
-// 🔍 TYPES DE RECHERCHE ET FILTRAGE
-// ====================================
-
-/**
- * Options de pagination pour les requêtes
- */
-export interface PaginationOptions {
-  page?: number;
-  limit?: number;
-  search?: string;
-}
-
-/**
- * Filtres pour la recherche de véhicules
- */
-export interface VehicleFilters extends PaginationOptions {
-  brandId?: number;
-  modelId?: number;
-  typeId?: number;
-  year?: number;
-  yearFrom?: number;
-  yearTo?: number;
-  fuel?: string;
-  powerMin?: number;
-  powerMax?: number;
-}
-
-/**
- * Réponse générique pour les requêtes véhicules
- */
-export interface VehicleResponse<T> {
-  data: T[];
-  total: number;
-  page: number;
-  limit: number;
-  hasNext: boolean;
-  hasPrev: boolean;
-}
-
-// ====================================
 // 🎯 TYPES POUR LES SÉLECTEURS
 // ====================================
 
 /**
  * Propriétés communes pour tous les sélecteurs
  */
-export interface BaseSelectorProps {
+interface BaseSelectorProps {
   value?: string;
   placeholder?: string;
   disabled?: boolean;
   className?: string;
   allowClear?: boolean;
   autoFocus?: boolean;
-}
-
-/**
- * Props pour le sélecteur de marques
- */
-export interface BrandSelectorProps extends BaseSelectorProps {
-  onValueChange?: (brandId: string, brand?: VehicleBrand) => void;
-  showFeaturedFirst?: boolean;
-  showLogos?: boolean;
 }
 
 /**
@@ -160,148 +111,8 @@ export interface TypeSelectorProps extends BaseSelectorProps {
   showDetails?: boolean;
 }
 
-/**
- * Props pour le sélecteur d'années
- */
-export interface YearSelectorProps extends BaseSelectorProps {
-  onValueChange?: (year: number) => void;
-  typeId?: number;
-  minYear?: number;
-  maxYear?: number;
-  defaultToCurrent?: boolean;
-}
-
 // ====================================
-// 📊 TYPES POUR LES STATISTIQUES
-// ====================================
-
-/**
- * Statistiques des marques
- */
-export interface BrandStats {
-  totalBrands: number;
-  activeBrands: number;
-  featuredBrands: number;
-  topBrands: Array<{
-    marque_name: string;
-    models_count: number;
-    types_count: number;
-  }>;
-}
-
-/**
- * Statistiques des modèles
- */
-export interface ModelStats {
-  totalModels: number;
-  activeModels: number;
-  modelsWithTypes: number;
-  topModels: Array<{
-    modele_name: string;
-    marque_name: string;
-    types_count: number;
-  }>;
-}
-
-/**
- * Statistiques des types
- */
-export interface TypeStats {
-  totalTypes: number;
-  activeTypes: number;
-  byFuel: Record<string, number>;
-  byPowerRange: Record<string, number>;
-  yearRange: {
-    min: number;
-    max: number;
-  };
-}
-
-// ====================================
-// 🎬 TYPES POUR LES ÉVÉNEMENTS
-// ====================================
-
-/**
- * Événement de sélection de véhicule complet
- */
-export interface VehicleSelectionEvent {
-  brand?: VehicleBrand;
-  model?: VehicleModel;
-  type?: VehicleType;
-  year?: number;
-  isComplete: boolean;
-}
-
-/**
- * Événement de changement dans un sélecteur
- */
-export interface SelectorChangeEvent<T> {
-  value: string;
-  item?: T;
-  timestamp: number;
-  source: "user" | "api" | "reset";
-}
-
-// ====================================
-// 🛠️ TYPES UTILITAIRES
-// ====================================
-
-/**
- * État de chargement pour les composants
- */
-export interface LoadingState {
-  isLoading: boolean;
-  error?: string;
-  lastUpdate?: number;
-}
-
-/**
- * Configuration pour le cache
- */
-export interface CacheConfig {
-  ttl: number; // Time to live en secondes
-  maxSize: number;
-  keyPrefix?: string;
-}
-
-/**
- * Configuration pour la validation
- */
-export interface ValidationConfig {
-  required?: boolean;
-  minLength?: number;
-  maxLength?: number;
-  pattern?: RegExp;
-  customValidator?: (value: any) => boolean | string;
-}
-
-// ====================================
-// 🎨 TYPES POUR L'AFFICHAGE
-// ====================================
-
-/**
- * Configuration d'affichage pour les listes
- */
-export interface DisplayConfig {
-  showSearch?: boolean;
-  showCounter?: boolean;
-  showIcons?: boolean;
-  itemsPerPage?: number;
-  sortBy?: "name" | "popularity" | "recent";
-  sortOrder?: "asc" | "desc";
-}
-
-/**
- * Thème pour les composants
- */
-export interface ThemeConfig {
-  variant?: "default" | "outlined" | "filled";
-  size?: "sm" | "md" | "lg";
-  color?: "primary" | "secondary" | "success" | "warning" | "error";
-}
-
-// ====================================
-// � TYPES COMPOSITES POUR COMPOSANTS
+// 🎨 TYPES COMPOSITES POUR COMPOSANTS
 // ====================================
 
 /**
@@ -329,31 +140,6 @@ export interface VehicleData {
   updatedAt?: string;
 }
 
-/**
- * Interface pour les données de véhicule enrichies
- * Inclut les relations et statistiques
- */
-export interface VehicleInfo extends VehicleData {
-  // Relations
-  vehicleBrand?: VehicleBrand;
-  vehicleModel?: VehicleModel;
-  vehicleType?: VehicleType;
-  // Statistiques
-  stats?: {
-    viewCount?: number;
-    partsCount?: number;
-    popularParts?: string[];
-    lastUpdated?: string;
-  };
-  // SEO
-  seo?: {
-    title?: string;
-    description?: string;
-    keywords?: string[];
-    canonicalUrl?: string;
-  };
-}
-
 // ====================================
-// �🔄 TYPES DE COMPATIBILITÉ
+// 🔄 TYPES DE COMPATIBILITÉ
 // ====================================
