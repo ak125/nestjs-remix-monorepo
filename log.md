@@ -753,3 +753,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-sitemap-auth-phase-0-foundation`
 - **Décision** : chore(auth): add jose + cron-parser + ioredis-mock deps for sitemap OIDC auth
 - **Sortie** : PR aucune | commits d650eada2
+
+## 2026-05-16 — fix/vehicles-strict-numeric-pipe (auto)
+
+- **Branche** : `fix/vehicles-strict-numeric-pipe`
+- **Décision** : chore(ownership): register backend/src/common/{pipes/params,schemas} (+1 other commit)
+- **Sortie** : PR #553 | commits 6f0030af8 08159f793
