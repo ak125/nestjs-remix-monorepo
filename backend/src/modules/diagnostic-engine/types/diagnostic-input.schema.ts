@@ -81,7 +81,6 @@ export const SignalInputSchema = z.object({
   secondary_signals: z.array(z.string()).optional(),
   context: SignalContextSchema.optional(),
 });
-export type SignalInput = z.infer<typeof SignalInputSchema>;
 
 // ── Main Input ──────────────────────────────────────────
 

@@ -12,7 +12,7 @@ import type {
   UsageContextInput,
 } from '../types/diagnostic-input.schema';
 
-export interface MaintenanceRecommendation {
+interface MaintenanceRecommendation {
   operation_slug: string;
   operation_label: string;
   description: string;
@@ -25,7 +25,7 @@ export interface MaintenanceRecommendation {
   related_pg_id?: number;
 }
 
-export interface PreventiveScheduleItem {
+interface PreventiveScheduleItem {
   operation: string;
   next_at_km: string;
   status: 'overdue' | 'approaching' | 'ok' | 'unknown';

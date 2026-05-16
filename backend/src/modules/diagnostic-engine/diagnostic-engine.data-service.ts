@@ -29,7 +29,7 @@ export interface DiagSymptom {
   active: boolean;
 }
 
-export interface DiagCause {
+interface DiagCause {
   id: number;
   slug: string;
   system_id: number;

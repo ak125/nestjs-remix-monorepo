@@ -35,7 +35,7 @@ export interface MaintenanceScheduleItem {
   status: 'ok' | 'due_soon' | 'overdue' | 'time_only';
 }
 
-export interface MaintenanceAlertAction {
+interface MaintenanceAlertAction {
   rule_alias: string;
   rule_label: string;
   maintenance_priority: 'critique' | 'important' | 'normal' | null;

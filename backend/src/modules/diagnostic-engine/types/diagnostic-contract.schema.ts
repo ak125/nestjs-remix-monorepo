@@ -22,9 +22,8 @@ export const DiagnosticIntentEnum = z.enum([
   'preventive_check',
   'breakdown', // ADR-032 D-intents : urgence routière (panne immobilisante)
 ]);
-export type DiagnosticIntent = z.infer<typeof DiagnosticIntentEnum>;
 
-export const DiagnosticSectionRoleEnum = z.enum([
+const DiagnosticSectionRoleEnum = z.enum([
   'vehicle_context',
   'usage_context',
   'signal_summary',
@@ -39,9 +38,8 @@ export const DiagnosticSectionRoleEnum = z.enum([
   'faq',
   'further_reading',
 ]);
-export type DiagnosticSectionRole = z.infer<typeof DiagnosticSectionRoleEnum>;
 
-export const DiagnosticBlockEnum = z.enum([
+const DiagnosticBlockEnum = z.enum([
   'VehicleContextCard',
   'UsageProfileCard',
   'SignalSummary',
@@ -58,9 +56,8 @@ export const DiagnosticBlockEnum = z.enum([
   'FurtherReading',
   'InternalLinks',
 ]);
-export type DiagnosticBlock = z.infer<typeof DiagnosticBlockEnum>;
 
-export const CoverageAxisEnum = z.enum([
+const CoverageAxisEnum = z.enum([
   'vehicle_context',
   'usage_context',
   'signal_capture',
@@ -77,20 +74,8 @@ export const CoverageAxisEnum = z.enum([
   'uncertainty',
   'catalog_guard',
 ]);
-export type CoverageAxis = z.infer<typeof CoverageAxisEnum>;
 
-export const MustNotDoEnum = z.enum([
-  'seo_reasoning',
-  'marketing_language',
-  'direct_repair_steps',
-  'absolute_interval_claims_without_vehicle_context',
-  'premature_conclusion',
-  'catalog_push_without_verification',
-  'vague_terms',
-]);
-export type MustNotDo = z.infer<typeof MustNotDoEnum>;
-
-export const VehicleFieldEnum = z.enum([
+const VehicleFieldEnum = z.enum([
   'type_id',
   'brand',
   'model',
@@ -100,7 +85,7 @@ export const VehicleFieldEnum = z.enum([
   'mileage_km',
 ]);
 
-export const UsageFieldEnum = z.enum([
+const UsageFieldEnum = z.enum([
   'usage_profile',
   'last_service_km',
   'last_service_date',
@@ -113,9 +98,8 @@ export const SignalModeEnum = z.enum([
   'dtc_code',
   'free_text', // MVP: normalise vers symptom_slugs avant le moteur
 ]);
-export type SignalMode = z.infer<typeof SignalModeEnum>;
 
-export const KBEnum = z.enum([
+const KBEnum = z.enum([
   'KB_SYMPTOMS',
   'KB_CAUSES',
   'KB_VERIFICATIONS',
@@ -129,33 +113,21 @@ export const KBEnum = z.enum([
 
 // Alignes sur le RAG reel (/opt/automecanik/rag/knowledge/)
 // Les fichiers RAG utilisent truth_level L1-L4, doc_family, verification_status
-export const RagTruthLevelEnum = z.enum(['L1', 'L2', 'L3', 'L4']);
-export const RagDocFamilyEnum = z.enum([
+const RagTruthLevelEnum = z.enum(['L1', 'L2', 'L3', 'L4']);
+const RagDocFamilyEnum = z.enum([
   'diagnostic', // /knowledge/diagnostic/*.md
   'catalog', // /knowledge/gammes/*.md (source_type: gamme)
   'knowledge', // /knowledge/canonical/*.md (is_canonical: true)
   'guide', // /knowledge/guides/*.md
   'reference', // /knowledge/reference/*.md
 ]);
-export const RagVerificationStatusEnum = z.enum([
-  'verified',
-  'draft',
-  'unverified',
-]);
+const RagVerificationStatusEnum = z.enum(['verified', 'draft', 'unverified']);
 
-export const TechnicalLevelEnum = z.enum([
-  'consumer',
-  'intermediate',
-  'technical',
-]);
-export type TechnicalLevel = z.infer<typeof TechnicalLevelEnum>;
-
-export const CautionLevelEnum = z.enum(['low', 'medium', 'high']);
-export type CautionLevel = z.infer<typeof CautionLevelEnum>;
+const CautionLevelEnum = z.enum(['low', 'medium', 'high']);
 
 // ── Section Definition ──────────────────────────────────
 
-export const SectionDefinitionSchema = z.object({
+const SectionDefinitionSchema = z.object({
   section_id: z.string().min(1),
   section_role: DiagnosticSectionRoleEnum,
   required: z.boolean(),
@@ -164,7 +136,6 @@ export const SectionDefinitionSchema = z.object({
   caution_level: CautionLevelEnum,
   ui_blocks: z.array(DiagnosticBlockEnum),
 });
-export type SectionDefinition = z.infer<typeof SectionDefinitionSchema>;
 
 // ── DiagnosticContract ──────────────────────────────────
 
@@ -233,41 +204,3 @@ export const DiagnosticContractSchema = z.object({
     toc_enabled: z.boolean(),
   }),
 });
-
-export type DiagnosticContract = z.infer<typeof DiagnosticContractSchema>;
-
-// ── P0 Audit Output ─────────────────────────────────────
-
-export const P0AuditOutputSchema = z.object({
-  primary_intent: DiagnosticIntentEnum,
-  secondary_intents: z.array(DiagnosticIntentEnum).max(4),
-  system_scope: z.string().min(1),
-  part_scope: z.string().default(''),
-  technical_level: TechnicalLevelEnum,
-  high_caution_required: z.boolean(),
-  must_cover_axes: z.array(CoverageAxisEnum),
-  must_not_do: z.array(MustNotDoEnum),
-  notes: z.string(),
-});
-export type P0AuditOutput = z.infer<typeof P0AuditOutputSchema>;
-
-// ── P1 Section Planner Output ───────────────────────────
-
-export const PlannedSectionSchema = z.object({
-  section_id: z.string().min(1),
-  section_label: z.string().min(1),
-  section_role: DiagnosticSectionRoleEnum,
-  required: z.boolean(),
-  goal: z.string().min(1),
-  must_cover_axes: z.array(CoverageAxisEnum),
-  caution_level: CautionLevelEnum,
-  ui_blocks: z.array(DiagnosticBlockEnum),
-});
-export type PlannedSection = z.infer<typeof PlannedSectionSchema>;
-
-export const P1SectionPlannerOutputSchema = z.object({
-  sections: z.array(PlannedSectionSchema).min(1),
-});
-export type P1SectionPlannerOutput = z.infer<
-  typeof P1SectionPlannerOutputSchema
->;
