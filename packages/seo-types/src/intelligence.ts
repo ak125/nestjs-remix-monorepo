@@ -6,7 +6,7 @@
  * + typed `payload` per variant.
  */
 import { z } from "zod";
-import { SeveritySchema } from "./onpage";
+import { SeveritySchema } from "./onpage.js";
 
 // ─── Discriminator ────────────────────────────────────────────────────────
 
