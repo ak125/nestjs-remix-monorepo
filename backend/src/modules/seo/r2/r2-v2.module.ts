@@ -11,7 +11,9 @@
 
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../../database/database.module';
+import { R1GammeCompletenessAuditController } from './r1-gamme-completeness-audit.controller';
 import { R2AdminPilotController } from './r2-admin-pilot.controller';
+import { R1GammeCompletenessAuditService } from './services/r1-gamme-completeness-audit.service';
 import { R2CatalogSignatureService } from './services/r2-catalog-signature.service';
 import { R2CommercialDistinctivenessService } from './services/r2-commercial-distinctiveness.service';
 import { R2CompositionInputSnapshotService } from './services/r2-composition-input-snapshot.service';
@@ -27,8 +29,9 @@ import { R2VehicleFamilyService } from './services/r2-vehicle-family.service';
 
 @Module({
   imports: [DatabaseModule],
-  controllers: [R2AdminPilotController],
+  controllers: [R2AdminPilotController, R1GammeCompletenessAuditController],
   providers: [
+    R1GammeCompletenessAuditService,
     R2CatalogSignatureService,
     R2CommercialDistinctivenessService,
     R2CompositionInputSnapshotService,
@@ -46,6 +49,7 @@ import { R2VehicleFamilyService } from './services/r2-vehicle-family.service';
     },
   ],
   exports: [
+    R1GammeCompletenessAuditService,
     R2CatalogSignatureService,
     R2CommercialDistinctivenessService,
     R2CompositionService,
