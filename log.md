@@ -771,3 +771,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `chore/pr-8a-controlled-cleanup-inventory`
 - **Décision** : chore(registry): add ownership entry for audit/cleanup/** (PR-8a prerequisite) (+8 other commits)
 - **Sortie** : PR #567 | commits 05771dff2 8c900c13c e13df3ff0 31da20001 a82d25b49 191914803 72f191f3f bb7b22f00 dcc71f3cf
+
+## 2026-05-16 — fix/vehicles-strict-numeric-pipe (auto)
+
+- **Branche** : `fix/vehicles-strict-numeric-pipe`
+- **Décision** : chore(ownership): register backend/src/common/{pipes/params,schemas} (+1 other commit)
+- **Sortie** : PR #553 | commits 6f0030af8 08159f793

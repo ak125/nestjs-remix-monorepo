@@ -77,16 +77,43 @@ export class BrandsController {
 
   /**
    * GET /api/brands/popular-models
-   * Retourne modèles populaires
+   * Retourne les modèles populaires avec leur marque jointe
+   * (marque_id + marque_name + marque_alias) pour permettre au frontend
+   * de construire des liens SEO `/constructeurs/{alias}-{id}.html`.
+   *
+   * Avant: utilisait `getModels({limit})` qui ne joignait pas auto_marque,
+   * d'où marque_alias absent côté frontend → lien retombait sur
+   * `/brands/{model.slug}` invalide → Sentry NaN smallint crash
+   * (event 5df734d4).
    */
   @Get('popular-models')
   async getPopularModels(@Query('limit', ParseIntPipe) limit: number = 12) {
-    const result = await this.modelsService.getModels({ limit });
+    const models = await this.modelsService.getPopularModels(limit);
+
+    // Aplatir la jointure `auto_marque` au niveau racine pour le frontend.
+    const data = models.map((model) => {
+      const marque =
+        (
+          model as unknown as {
+            auto_marque?: {
+              marque_id?: number;
+              marque_name?: string;
+              marque_alias?: string;
+            };
+          }
+        ).auto_marque || {};
+      return {
+        ...model,
+        marque_id: marque.marque_id,
+        marque_name: marque.marque_name,
+        marque_alias: marque.marque_alias,
+      };
+    });
 
     return {
       success: true,
-      data: result.data || [],
-      total: result.total,
+      data,
+      total: data.length,
     };
   }
 
