@@ -1,0 +1,120 @@
+name: 🗄️ Apply Supabase migrations (manual)
+
+# Industry-standard Supabase CLI workflow for applying migrations to the
+# canonical Supabase project (ADR-072 PR 2D-3). Replaces the "manual MCP /
+# psql one-shot" anti-pattern with an auditable, environment-gated workflow.
+#
+# Trigger : workflow_dispatch only (manual + audit-trail in Actions tab).
+# Environment : `production-supabase` → requires manual approval per
+#   Settings → Environments → production-supabase → reviewers.
+#
+# Safety :
+#   - typed input "APPLY" required to proceed (avoid accidental clicks)
+#   - dry-run path lists pending migrations without applying
+#   - explicit confirm + dry-run output shown before apply step
+#   - Supabase CLI prints the SQL transactions it will run
+#
+# Required secrets (Settings → Secrets and variables → Actions) :
+#   SUPABASE_ACCESS_TOKEN   — personal access token from supabase.com/dashboard
+#   SUPABASE_PROJECT_REF    — project ref (e.g. cxpojprgwgubzjyqzmoq)
+#   SUPABASE_DB_PASSWORD    — database password (used by `db push`)
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type APPLY to confirm migration push to the canonical Supabase project."
+        required: true
+        default: ""
+      dry_run:
+        description: "Dry-run only — list pending migrations without applying."
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  # Single-flight : never run two apply workflows concurrently.
+  group: apply-supabase-migrations
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    name: 🗄️ Supabase db push
+    runs-on: ubuntu-latest
+    environment: production-supabase
+    timeout-minutes: 20
+    steps:
+      - name: 🛑 Confirm token
+        if: ${{ !inputs.dry_run && inputs.confirm != 'APPLY' }}
+        run: |
+          echo "::error::Apply step requires confirm=APPLY (got '${{ inputs.confirm }}'). Re-run with confirm=APPLY or dry_run=true."
+          exit 1
+
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v4
+
+      - name: 🛠️ Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: 🔗 Link Supabase project
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          supabase link --project-ref "${{ secrets.SUPABASE_PROJECT_REF }}"
+
+      - name: 📋 List local migrations (always)
+        run: |
+          set -euo pipefail
+          echo "## Local migrations" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          ls -1 backend/supabase/migrations/ | grep -E '\.sql$' | sort | tee -a "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 🔍 Dry-run — show pending migrations
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          echo "## Pending migrations (server-side diff)" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          supabase migration list --linked | tee -a "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 🗄️ Apply migrations (db push)
+        if: ${{ !inputs.dry_run }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          echo "## Apply result" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          supabase db push --linked --yes 2>&1 | tee -a "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 📋 Post-apply state
+        if: ${{ !inputs.dry_run }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          echo "## Post-apply migration list" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          supabase migration list --linked | tee -a "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
