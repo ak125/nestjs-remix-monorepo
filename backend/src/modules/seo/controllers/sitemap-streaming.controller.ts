@@ -3,7 +3,14 @@
  * API simplifiée pour générer et servir les sitemaps compressés
  */
 
-import { Controller, Get, Post, Query, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Query,
+  Logger,
+  UseGuards,
+} from '@nestjs/common';
 import { SitemapStreamingService } from '../services/sitemap-streaming.service';
 import {
   StreamingGenerationResult,
@@ -12,6 +19,7 @@ import {
   StreamingConfig,
 } from '../interfaces/sitemap-streaming.interface';
 import { RateLimitSitemap } from '../../../common/decorators/rate-limit.decorator';
+import { AdminOrInternalKeyGuard } from '../../../auth/admin-or-internal-key.guard';
 
 @RateLimitSitemap() // 🛡️ 3 req/min - Sitemaps are memory-intensive
 @Controller('sitemap-v2/streaming')
@@ -33,6 +41,7 @@ export class SitemapStreamingController {
    * - dryRun: true | false (simulation sans écriture)
    */
   @Post('generate')
+  @UseGuards(AdminOrInternalKeyGuard)
   async generate(
     @Query('type') type?: string,
     @Query('forceRegeneration') forceRegeneration?: string,
@@ -124,6 +133,7 @@ export class SitemapStreamingController {
    * Nettoyer tous les fichiers sitemaps
    */
   @Post('cleanup')
+  @UseGuards(AdminOrInternalKeyGuard)
   async cleanup(): Promise<{
     success: boolean;
     message: string;

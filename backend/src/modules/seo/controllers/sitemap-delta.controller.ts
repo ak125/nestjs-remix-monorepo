@@ -3,9 +3,17 @@
  * Endpoints pour gérer le diff journalier et sitemap-latest.xml
  */
 
-import { Controller, Get, Post, Param, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  Logger,
+  UseGuards,
+} from '@nestjs/common';
 import { SitemapDeltaService } from '../services/sitemap-delta.service';
 import { RateLimitSitemap } from '../../../common/decorators/rate-limit.decorator';
+import { AdminOrInternalKeyGuard } from '../../../auth/admin-or-internal-key.guard';
 
 @RateLimitSitemap() // 🛡️ 3 req/min - Sitemaps are memory-intensive
 @Controller('sitemap-v2/delta')
@@ -88,6 +96,7 @@ export class SitemapDeltaController {
    * Déclencher manuellement la génération de sitemap-latest.xml
    */
   @Post('generate')
+  @UseGuards(AdminOrInternalKeyGuard)
   async triggerGeneration() {
     this.logger.log('🔄 Manual trigger: delta sitemap generation');
 
@@ -104,6 +113,7 @@ export class SitemapDeltaController {
    * Nettoyer les deltas expirés
    */
   @Post('cleanup')
+  @UseGuards(AdminOrInternalKeyGuard)
   async cleanupExpired() {
     this.logger.log('🧹 Manual trigger: cleanup expired deltas');
 

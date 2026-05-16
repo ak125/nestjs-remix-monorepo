@@ -11,7 +11,14 @@
  * - POST /api/sitemap/v10/ping             → Ping Google
  */
 
-import { Controller, Get, Post, Param, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  Logger,
+  UseGuards,
+} from '@nestjs/common';
 import {
   SitemapV10Service,
   TemperatureBucket,
@@ -19,7 +26,15 @@ import {
 import { SitemapV10ScoringService } from '../services/sitemap-v10-scoring.service';
 import { SitemapV10HubsService } from '../services/sitemap-v10-hubs.service';
 import { RateLimitSitemap } from '../../../common/decorators/rate-limit.decorator';
+import { AdminOrInternalKeyGuard } from '../../../auth/admin-or-internal-key.guard';
 
+/**
+ * Toutes les routes d'écriture (@Post) requièrent une session admin
+ * (cookie `connect.sid` + `level >= 7`) OU le header `X-Internal-Key` valide.
+ * Pré-fix 2026-05-16 ces endpoints étaient publics — un POST anonyme pouvait
+ * régénérer 102k URLs (15s CPU + écritures disque). Le rate-limit 3 req/min
+ * ne discriminait pas l'origine. Les @Get restent publics (stats lecture seule).
+ */
 @RateLimitSitemap() // 🛡️ 3 req/min - Sitemaps are memory-intensive
 @Controller('api/sitemap/v10')
 export class SitemapV10Controller {
@@ -36,6 +51,7 @@ export class SitemapV10Controller {
    * Génère tous les sitemaps par température
    */
   @Post('generate-all')
+  @UseGuards(AdminOrInternalKeyGuard)
   async generateAll(): Promise<{
     success: boolean;
     message: string;
@@ -99,6 +115,7 @@ export class SitemapV10Controller {
    * Génère le sitemap d'un bucket spécifique
    */
   @Post('generate/:bucket')
+  @UseGuards(AdminOrInternalKeyGuard)
   async generateBucket(@Param('bucket') bucket: string): Promise<{
     success: boolean;
     message: string;
@@ -151,6 +168,7 @@ export class SitemapV10Controller {
    * Recalcule les scores de toutes les pages
    */
   @Post('refresh-scores')
+  @UseGuards(AdminOrInternalKeyGuard)
   async refreshScores(): Promise<{
     success: boolean;
     message: string;
@@ -193,6 +211,7 @@ export class SitemapV10Controller {
    * Génère les hubs de crawl (version legacy - non paginée)
    */
   @Post('generate-hubs')
+  @UseGuards(AdminOrInternalKeyGuard)
   async generateHubs(): Promise<{
     success: boolean;
     message: string;
@@ -251,6 +270,7 @@ export class SitemapV10Controller {
    * - risk/weak-cluster.html (pages à risque)
    */
   @Post('generate-hubs-robust')
+  @UseGuards(AdminOrInternalKeyGuard)
   async generateHubsRobust(): Promise<{
     success: boolean;
     message: string;
@@ -361,6 +381,7 @@ export class SitemapV10Controller {
    * Ping Google pour le sitemap index
    */
   @Post('ping')
+  @UseGuards(AdminOrInternalKeyGuard)
   async pingGoogle(): Promise<{
     success: boolean;
     message: string;
