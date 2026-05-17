@@ -80,9 +80,6 @@ export class CfRumProcessor {
   @OnQueueFailed()
   onJobFailed(job: Job<CfRumJobData>, err: Error): void {
     if (job.name !== CF_RUM_JOB_NAME) return;
-    this.logger.error(
-      `cf-rum job ${job.id} failed: ${err.message}`,
-      err.stack,
-    );
+    this.logger.error(`cf-rum job ${job.id} failed: ${err.message}`, err.stack);
   }
 }

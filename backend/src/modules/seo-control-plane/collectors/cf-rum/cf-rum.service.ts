@@ -114,7 +114,7 @@ query SeoControlPlaneCfRumPerformance($accountTag: String!, $from: Date!, $to: D
 
 interface CfPageloadGroup {
   dimensions: {
-    date: string;          // 'YYYY-MM-DD'
+    date: string; // 'YYYY-MM-DD'
     requestPath: string | null;
   };
   count: number;
@@ -465,17 +465,50 @@ export class CfRumCollectorService extends SupabaseBaseService {
         const cell = this.ensureCell(out, t, pg);
         cell.samples += g.count;
         // Conservative aggregation : on garde le worst-case observed.
-        cell.lcp_p50_ms = maxNullable(cell.lcp_p50_ms, msToInt(q.performanceLargestContentfulPaintPathP50));
-        cell.lcp_p75_ms = maxNullable(cell.lcp_p75_ms, msToInt(q.performanceLargestContentfulPaintPathP75));
-        cell.lcp_p95_ms = maxNullable(cell.lcp_p95_ms, msToInt(q.performanceLargestContentfulPaintPathP95));
-        cell.cls_p50_milli = maxNullable(cell.cls_p50_milli, clsToMilli(q.performanceCumulativeLayoutShiftP50));
-        cell.cls_p75_milli = maxNullable(cell.cls_p75_milli, clsToMilli(q.performanceCumulativeLayoutShiftP75));
-        cell.cls_p95_milli = maxNullable(cell.cls_p95_milli, clsToMilli(q.performanceCumulativeLayoutShiftP95));
-        cell.inp_p50_ms = maxNullable(cell.inp_p50_ms, msToInt(q.performanceInteractionToNextPaintP50));
-        cell.inp_p75_ms = maxNullable(cell.inp_p75_ms, msToInt(q.performanceInteractionToNextPaintP75));
-        cell.inp_p95_ms = maxNullable(cell.inp_p95_ms, msToInt(q.performanceInteractionToNextPaintP95));
-        cell.fcp_p75_ms = maxNullable(cell.fcp_p75_ms, msToInt(q.performanceFirstContentfulPaintP75));
-        cell.ttfb_p75_ms = maxNullable(cell.ttfb_p75_ms, msToInt(q.performanceTimeToFirstByteP75));
+        cell.lcp_p50_ms = maxNullable(
+          cell.lcp_p50_ms,
+          msToInt(q.performanceLargestContentfulPaintPathP50),
+        );
+        cell.lcp_p75_ms = maxNullable(
+          cell.lcp_p75_ms,
+          msToInt(q.performanceLargestContentfulPaintPathP75),
+        );
+        cell.lcp_p95_ms = maxNullable(
+          cell.lcp_p95_ms,
+          msToInt(q.performanceLargestContentfulPaintPathP95),
+        );
+        cell.cls_p50_milli = maxNullable(
+          cell.cls_p50_milli,
+          clsToMilli(q.performanceCumulativeLayoutShiftP50),
+        );
+        cell.cls_p75_milli = maxNullable(
+          cell.cls_p75_milli,
+          clsToMilli(q.performanceCumulativeLayoutShiftP75),
+        );
+        cell.cls_p95_milli = maxNullable(
+          cell.cls_p95_milli,
+          clsToMilli(q.performanceCumulativeLayoutShiftP95),
+        );
+        cell.inp_p50_ms = maxNullable(
+          cell.inp_p50_ms,
+          msToInt(q.performanceInteractionToNextPaintP50),
+        );
+        cell.inp_p75_ms = maxNullable(
+          cell.inp_p75_ms,
+          msToInt(q.performanceInteractionToNextPaintP75),
+        );
+        cell.inp_p95_ms = maxNullable(
+          cell.inp_p95_ms,
+          msToInt(q.performanceInteractionToNextPaintP95),
+        );
+        cell.fcp_p75_ms = maxNullable(
+          cell.fcp_p75_ms,
+          msToInt(q.performanceFirstContentfulPaintP75),
+        );
+        cell.ttfb_p75_ms = maxNullable(
+          cell.ttfb_p75_ms,
+          msToInt(q.performanceTimeToFirstByteP75),
+        );
       }
     }
 
@@ -538,10 +571,7 @@ export class CfRumCollectorService extends SupabaseBaseService {
     if (error) throw new Error(`Supabase upsert error: ${error.message}`);
   }
 
-  private finalize(
-    r: CfRumRunResult,
-    startedAtMs: number,
-  ): CfRumRunResult {
+  private finalize(r: CfRumRunResult, startedAtMs: number): CfRumRunResult {
     r.finished_at = new Date().toISOString();
     r.duration_ms = Date.now() - startedAtMs;
     this.logger.log(

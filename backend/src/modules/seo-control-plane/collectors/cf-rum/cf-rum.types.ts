@@ -40,9 +40,9 @@ export interface CfRumJobData {
 
 /** Row insérée dans __seo_snapshot_cf_rum. */
 export interface CfRumSnapshot {
-  bucket_start: string;          // ISO timestamp aligné minuit UTC du jour mesuré
+  bucket_start: string; // ISO timestamp aligné minuit UTC du jour mesuré
   tier: CfRumTierBucket;
-  path_group: string;            // '/pieces/*', '/blog/*', '/', '/other', 'total'
+  path_group: string; // '/pieces/*', '/blog/*', '/', '/other', 'total'
 
   // Volume
   visit_count: number;
@@ -77,18 +77,23 @@ export interface CfRumRunResult {
   finished_at: string;
   duration_ms: number;
   triggered_by: CfRumTriggeredBy;
-  bucket_date: string;           // jour UTC mesuré ('YYYY-MM-DD')
-  pageload_events: number;       // nb de lignes GraphQL pageload reçues
-  performance_events: number;    // nb de lignes GraphQL performance reçues
+  bucket_date: string; // jour UTC mesuré ('YYYY-MM-DD')
+  pageload_events: number; // nb de lignes GraphQL pageload reçues
+  performance_events: number; // nb de lignes GraphQL performance reçues
   rows_upserted: number;
   totals_period: {
     visits: number;
     pageviews: number;
-    lcp_p75_ms: number | null;   // p75 LCP du rollup total/total
+    lcp_p75_ms: number | null; // p75 LCP du rollup total/total
     cls_p75_milli: number | null;
     inp_p75_ms: number | null;
   };
-  skipped?: 'read_only' | 'disabled' | 'no_token' | 'no_account_id' | 'cf_api_error';
+  skipped?:
+    | 'read_only'
+    | 'disabled'
+    | 'no_token'
+    | 'no_account_id'
+    | 'cf_api_error';
   errorMessage?: string;
 }
 

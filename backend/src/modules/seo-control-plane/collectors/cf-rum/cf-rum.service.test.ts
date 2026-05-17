@@ -1,10 +1,7 @@
 import type { ConfigService } from '@nestjs/config';
 import type { SeoCriticality } from '@repo/registry';
 import { CriticalityLoaderService } from '../../services/criticality-loader.service';
-import {
-  CfRumCollectorService,
-  normalizePathGroup,
-} from './cf-rum.service';
+import { CfRumCollectorService, normalizePathGroup } from './cf-rum.service';
 
 const VALID_CONFIG: SeoCriticality = {
   schemaVersion: '1.0.0',
@@ -100,50 +97,60 @@ function mockFetch(
   pageload: MockPageload[],
   performance: MockPerformance[],
 ): jest.Mock {
-  return jest.fn().mockImplementation(async (_url: string, init: RequestInit) => {
-    const body = JSON.parse(init.body as string) as { query: string };
-    const isPageload = body.query.includes('rumPageloadEventsAdaptiveGroups');
-    return {
-      ok: true,
-      status: 200,
-      text: async () => '',
-      json: async () => ({
-        data: {
-          viewer: {
-            accounts: [
-              isPageload
-                ? {
-                    rumPageloadEventsAdaptiveGroups: pageload.map((p) => ({
-                      dimensions: { date: p.date, requestPath: p.path },
-                      count: p.count,
-                      sum: { visits: p.visits ?? p.count },
-                    })),
-                  }
-                : {
-                    rumPerformanceEventsAdaptiveGroups: performance.map((p) => ({
-                      dimensions: { date: p.date, requestPath: p.path },
-                      count: p.count,
-                      quantiles: {
-                        performanceLargestContentfulPaintPathP50: p.lcpP50 ?? null,
-                        performanceLargestContentfulPaintPathP75: p.lcpP75 ?? null,
-                        performanceLargestContentfulPaintPathP95: p.lcpP95 ?? null,
-                        performanceCumulativeLayoutShiftP50: null,
-                        performanceCumulativeLayoutShiftP75: p.clsP75 ?? null,
-                        performanceCumulativeLayoutShiftP95: null,
-                        performanceInteractionToNextPaintP50: null,
-                        performanceInteractionToNextPaintP75: p.inpP75 ?? null,
-                        performanceInteractionToNextPaintP95: null,
-                        performanceFirstContentfulPaintP75: p.fcpP75 ?? null,
-                        performanceTimeToFirstByteP75: p.ttfbP75 ?? null,
-                      },
-                    })),
-                  },
-            ],
+  return jest
+    .fn()
+    .mockImplementation(async (_url: string, init: RequestInit) => {
+      const body = JSON.parse(init.body as string) as { query: string };
+      const isPageload = body.query.includes('rumPageloadEventsAdaptiveGroups');
+      return {
+        ok: true,
+        status: 200,
+        text: async () => '',
+        json: async () => ({
+          data: {
+            viewer: {
+              accounts: [
+                isPageload
+                  ? {
+                      rumPageloadEventsAdaptiveGroups: pageload.map((p) => ({
+                        dimensions: { date: p.date, requestPath: p.path },
+                        count: p.count,
+                        sum: { visits: p.visits ?? p.count },
+                      })),
+                    }
+                  : {
+                      rumPerformanceEventsAdaptiveGroups: performance.map(
+                        (p) => ({
+                          dimensions: { date: p.date, requestPath: p.path },
+                          count: p.count,
+                          quantiles: {
+                            performanceLargestContentfulPaintPathP50:
+                              p.lcpP50 ?? null,
+                            performanceLargestContentfulPaintPathP75:
+                              p.lcpP75 ?? null,
+                            performanceLargestContentfulPaintPathP95:
+                              p.lcpP95 ?? null,
+                            performanceCumulativeLayoutShiftP50: null,
+                            performanceCumulativeLayoutShiftP75:
+                              p.clsP75 ?? null,
+                            performanceCumulativeLayoutShiftP95: null,
+                            performanceInteractionToNextPaintP50: null,
+                            performanceInteractionToNextPaintP75:
+                              p.inpP75 ?? null,
+                            performanceInteractionToNextPaintP95: null,
+                            performanceFirstContentfulPaintP75:
+                              p.fcpP75 ?? null,
+                            performanceTimeToFirstByteP75: p.ttfbP75 ?? null,
+                          },
+                        }),
+                      ),
+                    },
+              ],
+            },
           },
-        },
-      }),
-    };
-  });
+        }),
+      };
+    });
 }
 
 describe('normalizePathGroup', () => {
@@ -225,15 +232,21 @@ describe('CfRumCollectorService', () => {
 
   it('prefers CLOUDFLARE_ANALYTICS_TOKEN over CLOUDFLARE_API_TOKEN when both set', async () => {
     let capturedAuth: string | undefined;
-    globalThis.fetch = jest.fn().mockImplementation(async (_url, init: RequestInit) => {
-      capturedAuth = (init.headers as Record<string, string>).Authorization;
-      return {
-        ok: true,
-        status: 200,
-        text: async () => '',
-        json: async () => ({ data: { viewer: { accounts: [{ rumPageloadEventsAdaptiveGroups: [] }] } } }),
-      };
-    }) as unknown as typeof globalThis.fetch;
+    globalThis.fetch = jest
+      .fn()
+      .mockImplementation(async (_url, init: RequestInit) => {
+        capturedAuth = (init.headers as Record<string, string>).Authorization;
+        return {
+          ok: true,
+          status: 200,
+          text: async () => '',
+          json: async () => ({
+            data: {
+              viewer: { accounts: [{ rumPageloadEventsAdaptiveGroups: [] }] },
+            },
+          }),
+        };
+      }) as unknown as typeof globalThis.fetch;
 
     const upsertSpy = jest.fn().mockResolvedValue({ error: null });
     const svc = buildSvc(
@@ -252,14 +265,38 @@ describe('CfRumCollectorService', () => {
   it('aggregates pageload + performance by tier × path_group, upserts to __seo_snapshot_cf_rum', async () => {
     globalThis.fetch = mockFetch(
       [
-        { date: '2026-05-16', path: '/pieces/foo-1.html', count: 100, visits: 80 },
-        { date: '2026-05-16', path: '/pieces/bar-2.html', count: 50, visits: 40 },
+        {
+          date: '2026-05-16',
+          path: '/pieces/foo-1.html',
+          count: 100,
+          visits: 80,
+        },
+        {
+          date: '2026-05-16',
+          path: '/pieces/bar-2.html',
+          count: 50,
+          visits: 40,
+        },
         { date: '2026-05-16', path: '/blog/post-x', count: 30, visits: 25 },
         { date: '2026-05-16', path: '/admin/dashboard', count: 10, visits: 5 },
       ],
       [
-        { date: '2026-05-16', path: '/pieces/foo-1.html', count: 100, lcpP75: 2100, clsP75: 0.087, inpP75: 180 },
-        { date: '2026-05-16', path: '/blog/post-x', count: 30, lcpP75: 1800, clsP75: 0.05, inpP75: 150 },
+        {
+          date: '2026-05-16',
+          path: '/pieces/foo-1.html',
+          count: 100,
+          lcpP75: 2100,
+          clsP75: 0.087,
+          inpP75: 180,
+        },
+        {
+          date: '2026-05-16',
+          path: '/blog/post-x',
+          count: 30,
+          lcpP75: 1800,
+          clsP75: 0.05,
+          inpP75: 150,
+        },
       ],
     ) as unknown as typeof globalThis.fetch;
 
@@ -338,42 +375,49 @@ describe('CfRumCollectorService', () => {
 
   it('persists volumes with null percentiles when performance query fails (non-fatal)', async () => {
     let call = 0;
-    globalThis.fetch = jest.fn().mockImplementation(async (_url, init: RequestInit) => {
-      call++;
-      const body = JSON.parse(init.body as string) as { query: string };
-      const isPageload = body.query.includes('rumPageloadEventsAdaptiveGroups');
-      if (isPageload) {
-        return {
-          ok: true,
-          status: 200,
-          text: async () => '',
-          json: async () => ({
-            data: {
-              viewer: {
-                accounts: [
-                  {
-                    rumPageloadEventsAdaptiveGroups: [
-                      {
-                        dimensions: { date: '2026-05-16', requestPath: '/pieces/x' },
-                        count: 42,
-                        sum: { visits: 30 },
-                      },
-                    ],
-                  },
-                ],
+    globalThis.fetch = jest
+      .fn()
+      .mockImplementation(async (_url, init: RequestInit) => {
+        call++;
+        const body = JSON.parse(init.body as string) as { query: string };
+        const isPageload = body.query.includes(
+          'rumPageloadEventsAdaptiveGroups',
+        );
+        if (isPageload) {
+          return {
+            ok: true,
+            status: 200,
+            text: async () => '',
+            json: async () => ({
+              data: {
+                viewer: {
+                  accounts: [
+                    {
+                      rumPageloadEventsAdaptiveGroups: [
+                        {
+                          dimensions: {
+                            date: '2026-05-16',
+                            requestPath: '/pieces/x',
+                          },
+                          count: 42,
+                          sum: { visits: 30 },
+                        },
+                      ],
+                    },
+                  ],
+                },
               },
-            },
-          }),
+            }),
+          };
+        }
+        // Performance query fails.
+        return {
+          ok: false,
+          status: 500,
+          text: async () => 'Schema mismatch',
+          json: async () => ({}),
         };
-      }
-      // Performance query fails.
-      return {
-        ok: false,
-        status: 500,
-        text: async () => 'Schema mismatch',
-        json: async () => ({}),
-      };
-    }) as unknown as typeof globalThis.fetch;
+      }) as unknown as typeof globalThis.fetch;
 
     const upsertSpy = jest.fn().mockResolvedValue({ error: null });
     const svc = buildSvc(
@@ -437,22 +481,26 @@ describe('CfRumCollectorService', () => {
   it('uses J-1 UTC as the default bucket date', async () => {
     // Stable mock: no data, just observe the date arg sent to CF.
     let capturedFrom: string | undefined;
-    globalThis.fetch = jest.fn().mockImplementation(async (_url, init: RequestInit) => {
-      const body = JSON.parse(init.body as string) as { variables: { from: string } };
-      capturedFrom = body.variables.from;
-      return {
-        ok: true,
-        status: 200,
-        text: async () => '',
-        json: async () => ({
-          data: {
-            viewer: {
-              accounts: [{ rumPageloadEventsAdaptiveGroups: [] }],
+    globalThis.fetch = jest
+      .fn()
+      .mockImplementation(async (_url, init: RequestInit) => {
+        const body = JSON.parse(init.body as string) as {
+          variables: { from: string };
+        };
+        capturedFrom = body.variables.from;
+        return {
+          ok: true,
+          status: 200,
+          text: async () => '',
+          json: async () => ({
+            data: {
+              viewer: {
+                accounts: [{ rumPageloadEventsAdaptiveGroups: [] }],
+              },
             },
-          },
-        }),
-      };
-    }) as unknown as typeof globalThis.fetch;
+          }),
+        };
+      }) as unknown as typeof globalThis.fetch;
 
     const upsertSpy = jest.fn().mockResolvedValue({ error: null });
     const svc = buildSvc(

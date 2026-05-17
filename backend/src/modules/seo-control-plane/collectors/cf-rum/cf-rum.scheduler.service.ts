@@ -43,9 +43,7 @@ export class CfRumSchedulerService implements OnModuleInit {
 
   onModuleInit(): void {
     if (!this.isEnabled()) {
-      this.logger.log(
-        'SEO_CP_CF_RUM_ENABLED=false — cf-rum scheduler skipped',
-      );
+      this.logger.log('SEO_CP_CF_RUM_ENABLED=false — cf-rum scheduler skipped');
       return;
     }
     void this.configureRepeatableJob();
@@ -89,9 +87,7 @@ export class CfRumSchedulerService implements OnModuleInit {
       for (const job of jobs) {
         if (job.name === CF_RUM_JOB_NAME) {
           await this.queue.removeRepeatableByKey(job.key);
-          this.logger.log(
-            `🗑️ Removed stale cf-rum repeatable job: ${job.key}`,
-          );
+          this.logger.log(`🗑️ Removed stale cf-rum repeatable job: ${job.key}`);
         }
       }
     } catch (err) {
@@ -109,10 +105,7 @@ export class CfRumSchedulerService implements OnModuleInit {
    * marge de 1 h. Conservative.
    */
   private getCron(): string {
-    return this.configService.get<string>(
-      'SEO_CP_CF_RUM_CRON',
-      '0 1 * * *',
-    );
+    return this.configService.get<string>('SEO_CP_CF_RUM_CRON', '0 1 * * *');
   }
 
   /**
