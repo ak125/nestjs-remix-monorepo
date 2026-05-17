@@ -15,6 +15,7 @@ import {
   type InventoryArtifact,
   type InventoryFamily,
 } from "./dependency-modernization.schema";
+import { escapeMarkdownCell } from "./utils/escape-markdown-cell";
 
 const REPO_ROOT = path.resolve(__dirname, "..", "..");
 const INVENTORY = path.join(REPO_ROOT, "audit", "dependencies", "dependency-modernization-inventory.json");
@@ -24,10 +25,11 @@ function read(): InventoryArtifact {
   return InventoryArtifactSchema.parse(JSON.parse(fs.readFileSync(INVENTORY, "utf8")));
 }
 
-// Escape pipe characters in cell content so they don't break the markdown table.
+// GFM-table-safe cell: escapes backslash, pipe, backtick, and newlines so
+// values cannot break the table or escape inline-code. See utils/escape-markdown-cell.
 function cell(value: string | number | undefined | null): string {
   if (value === undefined || value === null) return "—";
-  return String(value).replace(/\|/g, "\\|");
+  return escapeMarkdownCell(String(value));
 }
 
 function fmtList(arr: ReadonlyArray<string> | undefined, fallback = "—"): string {
