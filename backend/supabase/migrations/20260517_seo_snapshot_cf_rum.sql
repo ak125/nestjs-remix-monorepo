@@ -81,16 +81,40 @@ COMMENT ON TABLE public.__seo_snapshot_cf_rum IS
   'PR-2A-2.5 ADR-064 — L1 Cloudflare RUM Web Vitals, daily buckets, partitioned daily, TTL 90j. Source edge-RUM (utilisateur réel) complémentaire de __seo_snapshot_cf_analytics (edge-server status codes).';
 
 -- ── Indexes (propagated to child partitions) ────────────────────────────────
+-- R2 (sql-governance-rules.md) : chaque CREATE INDEX justifié table+pattern+gain+RPC.
+-- Volume cible (cf. l'en-tête fichier) : ~40 rows/jour × 90 jours = ~3 600 rows max,
+-- partitionné quotidiennement, storage négligeable. Pas de seq-scan pénalisant sur
+-- une partition seule (~40 rows), mais le pruning + ordering ci-dessous évite
+-- les agrégations cross-partition coûteuses sur les fenêtres SLO 7j / 28j.
 
+-- INDEX: idx_snap_cf_rum_bucket_tier
+-- Table: public.__seo_snapshot_cf_rum (~3 600 rows max, storage négligeable)
+-- Pattern: WHERE bucket_start BETWEEN <a> AND <b> AND tier = '<tier>' ORDER BY bucket_start DESC
+--          (queries SLO L2 engine — p50/p75/p95 LCP/CLS/INP par tier sur fenêtre 7j/28j)
+-- Gain attendu: Seq Scan ~3 600 rows → Index Scan ~280 rows (1 tier × 7j × ~40 rows)
+-- RPC concernees: L2 SLO engine (ADR-064 PR-2B+, future) ; cf-rum.service.ts:535 indirect
 CREATE INDEX IF NOT EXISTS idx_snap_cf_rum_bucket_tier
   ON public.__seo_snapshot_cf_rum (bucket_start DESC, tier);
 
+-- INDEX: idx_snap_cf_rum_run_id
+-- Table: public.__seo_snapshot_cf_rum (~3 600 rows max, storage négligeable)
+-- Pattern: WHERE run_id = <uuid> — audit-trail lookup (rejouer / diagnostiquer un run
+--          collector spécifique, identifier les buckets manquants, debugging CF GraphQL)
+-- Gain attendu: Seq Scan ~3 600 rows → Index Scan ~40 rows (1 run = 10 paths × 4 tiers)
+-- RPC concernees: ops debugging via psql ; futur dashboard collector runs (ADR-064)
 CREATE INDEX IF NOT EXISTS idx_snap_cf_rum_run_id
   ON public.__seo_snapshot_cf_rum (run_id);
 
--- Anti-duplicate : (bucket_start, tier, path_group) unique. CF GraphQL est
--- idempotent pour les buckets passés — UPSERT-on-conflict côté caller s'appuie
--- sur cet index.
+-- INDEX: uniq_snap_cf_rum_bucket_tier_path (UNIQUE)
+-- Table: public.__seo_snapshot_cf_rum (~3 600 rows max, storage négligeable)
+-- Pattern: anti-duplicate gate pour UPSERT ON CONFLICT (bucket_start, tier, path_group)
+--          CF GraphQL rumPerformanceEventsAdaptiveGroups est idempotent sur les buckets
+--          passés (re-fetch même fenêtre renvoie les mêmes valeurs ABR-agrégées) — on
+--          se repose sur cet index pour absorber les retries cron sans dupliquer.
+-- Gain attendu: empêche le drift de cardinalité sur re-runs ; sans lui, chaque retry
+--               doublerait la table (~80 rows/jour × N retries) et casserait les p75.
+-- RPC concernees: backend/src/modules/seo-control-plane/collectors/cf-rum/cf-rum.service.ts:537
+--                 (.upsert avec onConflict: 'bucket_start,tier,path_group')
 CREATE UNIQUE INDEX IF NOT EXISTS uniq_snap_cf_rum_bucket_tier_path
   ON public.__seo_snapshot_cf_rum (bucket_start, tier, path_group);
 
