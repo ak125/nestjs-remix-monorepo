@@ -1,0 +1,51 @@
+name: 🌅 Morning health digest
+
+# Daily weekday digest published as a GitHub issue assigned to @ak125.
+# Owner (subscribed to repo) receives the email automatically.
+#
+# Replaces Claude Desktop routine `trig_017ywezN156yjiVW8BRVcYi6` (disabled
+# 2026-05-17) — self-hosted in repo, audit-trail via git history.
+#
+# Cron: 05:00 UTC = 07:00 Europe/Paris (CEST) on weekdays.
+on:
+  schedule:
+    - cron: "0 5 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  actions: read
+  contents: read
+
+concurrency:
+  group: morning-health-digest
+  cancel-in-progress: false
+
+jobs:
+  digest:
+    name: Collect signals + publish digest issue
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout (shallow)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run morning digest script
+        id: collect
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: bash .github/scripts/morning-health-digest.sh
+
+      - name: Create digest issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh issue create \
+            --repo "$REPO" \
+            --title "${{ steps.collect.outputs.title }}" \
+            --body-file "${{ steps.collect.outputs.body_path }}" \
+            --assignee ak125
