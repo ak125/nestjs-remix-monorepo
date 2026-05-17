@@ -795,3 +795,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/pr-7a-contract-drift-ratchet`
 - **Décision** : fix(ci): bypass npm banner in ratchet json output (workflow surgical fix) (+6 other commits)
 - **Sortie** : PR #545 | commits af746ad61 f539f83e4 48766b587 3402aee3f 347f4bcf5 0923c3217 18263e997
+
+## 2026-05-17 — feat/seo-cp-cf-rum-collector (auto)
+
+- **Branche** : `feat/seo-cp-cf-rum-collector`
+- **Décision** : feat(seo-cp): pr-2a-2.5 cloudflare rum collector (web vitals edge ingestion)
+- **Sortie** : PR #583 | commits 24fdf7367
