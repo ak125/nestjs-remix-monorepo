@@ -1,5 +1,7 @@
 # PR-9 Modernization Roadmap (PR-9a → PR-9g)
 
+> **See also: [`phase-progression-rules.md`](phase-progression-rules.md)** — meta-rules governing PR-9a → PR-12 evidence-gated progression. No phase may expand its perimeter without evidence produced by the previous phase. PR-9b is the smoke test of the entire control plane.
+
 > **Locked sequence. Locked scope per PR. Locked rules** (see `README.md` for the 54 central rules; abbreviated below):
 > - one family / one rollback / one CI proof / one runtime-risk analysis
 > - no cross-family PR (rule #2)
