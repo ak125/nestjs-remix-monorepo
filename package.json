@@ -52,6 +52,8 @@
     "audit:contract-drift-ratchet:json": "tsx scripts/audit/check-contract-drift-ratchet.ts --json",
     "audit:contract-drift-ratchet:refresh": "tsx scripts/audit/check-contract-drift-ratchet.ts --refresh",
     "audit:contract-drift-ratchet:test": "tsx --test scripts/audit/check-contract-drift-ratchet.test.ts",
+    "audit:pr-9-modernization-inventory": "tsx scripts/audit/build-dependency-modernization-inventory.ts",
+    "audit:pr-9-modernization-inventory:check": "tsx scripts/audit/build-dependency-modernization-inventory.ts --check",
     "audit:db-usage": "node scripts/audit/build-db-usage-map.js",
     "audit:inventory": "node scripts/audit/build-deep-inventory.js && node scripts/audit/build-db-usage-map.js",
     "audit:inventory:check": "npm run audit:inventory && git diff --exit-code -- audit/*.json",
