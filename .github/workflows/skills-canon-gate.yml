@@ -1,0 +1,87 @@
+name: Skills Canon gate (PR-V2 Phase 0, warn-only)
+
+# AI Governance Control Plane — Phase 0 (warn-only).
+#
+# For every SKILL.md under .claude/skills/<name>/, validates :
+#   1. Frontmatter present + valid YAML
+#   2. Conforms to .spec/00-canon/ai-registry/skill.schema.json
+#   3. `name` matches dirname
+#   4. `owners[]` cross-referenced in ownership.yaml (warn if not)
+#   5. `domain` exists in domains.yaml
+#   6. `description` contains "Use when" (CSO trigger)
+#
+# Progressive enforcement per ADR-058 PR-G / PR-7a ratchet pattern :
+#   - Phase 0 (this PR-V2)   : warn-only, continue-on-error: true
+#   - Phase 1 (PR-V2.5, J+7) : hard-fail on NEW skills only
+#   - Phase 2 (PR-V3, J+14)  : hard-fail on all skills + required check
+#
+# Trigger : PRs touching .claude/skills/** OR the schema/validator itself.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".claude/skills/**"
+      - ".spec/00-canon/ai-registry/**"
+      - "scripts/governance/validate-skills-frontmatter.js"
+      - ".github/workflows/skills-canon-gate.yml"
+
+jobs:
+  skills-canon-gate:
+    name: Skills canon (frontmatter + schema, warn-only Phase 0)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # Phase 0 — warn-only. Promote to hard-fail in PR-V2.5 / PR-V3.
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install
+        run: npm ci
+
+      - name: Validate skills frontmatter (the gate)
+        id: gate
+        run: |
+          set -e
+          node scripts/governance/validate-skills-frontmatter.js --json > /tmp/skills-report.json
+          cat /tmp/skills-report.json | jq -c '{ok, totalSkills, failureCount}'
+
+      - name: Surface findings
+        if: always()
+        run: |
+          {
+            REPORT=/tmp/skills-report.json
+            if [ ! -f "$REPORT" ]; then
+              echo "## ⚠️ Skills canon gate — report not generated"
+              exit 0
+            fi
+            OK=$(jq -r '.ok' "$REPORT")
+            TOTAL=$(jq -r '.totalSkills' "$REPORT")
+            FAIL=$(jq -r '.failureCount' "$REPORT")
+            if [ "$OK" = "true" ]; then
+              echo "## ✅ Skills canon gate PASSED (Phase 0 warn-only)"
+              echo ""
+              echo "- Total skills: $TOTAL"
+              echo "- All passed: $OK"
+            else
+              echo "## ⚠️ Skills canon gate — $FAIL/$TOTAL skill(s) drifted (Phase 0 warn-only)"
+              echo ""
+              echo "Failures :"
+              echo ""
+              jq -r '.results[] | select(.verdict != "ok") | "### `\(.skill)` — **\(.verdict)**\n" + (.errors // [] | map("- ERROR: \(.)") | join("\n")) + "\n" + (.warnings // [] | map("- WARN: \(.)") | join("\n"))' "$REPORT"
+              echo ""
+              echo "**Fix** : align frontmatter with \`.spec/00-canon/ai-registry/skill.schema.json\`."
+              echo "See \`.claude/skills/README.md\` (skill creation guide) for canonical template."
+              echo ""
+              echo "_Phase 0 = warn-only. Hard-fail starts in PR-V2.5 (new skills only)._"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -1,8 +1,16 @@
 ---
 name: frontend-design
 description: Use when building or redesigning a frontend component, page, layout, or section in the AutoMecanik monorepo — produces production-grade UI with a distinctive aesthetic direction and a measurable a11y/perf budget, avoiding generic AI design patterns. Triggers — "build a [component]", "design [page]", "create a UI for X", "refonte visuelle d'un élément", or chained after a UI audit identifying missing components.
+type: technique
+status: stable
+owners: ['@ak125']
+domain: D15
+runtime_class: mutating
+llm_safe: true
+last_verified: '2026-05-18'
 license: Internal - Automecanik. Inherits upstream MIT terms from anthropics/claude-plugins-official/frontend-design.
 compatibility: Designed for Claude Code in the AutoMecanik monorepo. Stack — Remix + React 18 + shadcn/ui + Tailwind CSS + lucide-react. Requires packages/design-tokens (SoT for colors, typography, spacing).
+tags: [frontend, remix, shadcn, tailwind, design-tokens, a11y, wcag]
 metadata:
   version: "2.0"
   upstream: anthropics/claude-plugins-official/frontend-design@2026-05

@@ -1,9 +1,21 @@
 ---
 name: db-migration
-description: "Supabase migration patterns, RLS audit, schema validation. Guides safe DDL operations."
-argument-hint: "[migration-name]"
-disable-model-invocation: true
-version: "1.1"
+description: Use when writing or reviewing a Supabase migration — applies safe DDL patterns (idempotent, reversible, additive-first), RLS audit, schema validation against canonical types. Triggers — "create migration X", "audit migration Y", "add RLS policy", "alter table Z safely", or any task in backend/supabase/migrations/.
+type: discipline
+status: stable
+owners: ['@ak125']
+domain: D15
+runtime_class: privileged
+llm_safe: false
+last_verified: '2026-05-18'
+license: Internal - Automecanik
+compatibility: Designed for Claude Code in the AutoMecanik monorepo. Stack — Supabase + PostgreSQL. Touches backend/supabase/migrations/ and __* canonical tables. Privileged because DDL is irreversible on prod.
+tags: [supabase, postgres, ddl, rls, migration, governance]
+metadata:
+  version: "1.1"
+  argument-hint: "[migration-name]"
+  disable-model-invocation: true
+  spec: agentskills.io/specification v1
 ---
 
 # Database Migration Skill
