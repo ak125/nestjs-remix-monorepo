@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/ak125/nestjs-remix-monorepo/main/audit/impeccable/baseline.schema.json",
+  "title": "Impeccable design ratchet baseline",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["total", "byCategory", "byFile"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "note": { "type": "string" },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "computedFrom": {
+      "type": "string",
+      "description": "Commit identifier the baseline was computed from (e.g., git@<sha>)."
+    },
+    "total": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total impeccable issues at baseline."
+    },
+    "byCategory": {
+      "type": "object",
+      "additionalProperties": { "type": "integer", "minimum": 0 },
+      "description": "Issue count per impeccable category (key) — current PR must not exceed any value."
+    },
+    "byFile": {
+      "type": "object",
+      "additionalProperties": { "type": "integer", "minimum": 0 },
+      "description": "Issue count per file path — files with 0 here cannot newly introduce issues."
+    }
+  }
+}
