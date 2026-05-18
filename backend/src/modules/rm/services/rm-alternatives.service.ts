@@ -344,7 +344,8 @@ export class RmAlternativesService {
       .select('type_modele_id')
       .in('type_id_i', compat_type_ids.slice(0, 2000))
       .eq('type_marque_id', String(target.target_marque_id))
-      .eq('type_display', '1');
+      .eq('type_display', '1')
+      .eq('type_relfollow', '1');
 
     const modele_ids = Array.from(
       new Set(
@@ -396,6 +397,7 @@ export class RmAlternativesService {
         .select('type_id, type_alias, type_modele_id, type_marque_id')
         .eq('type_modele_id', String(m.modele_id))
         .eq('type_display', '1')
+        .eq('type_relfollow', '1')
         .limit(50);
       if (!types || types.length === 0) continue;
       const type_ids = types.map((t: any) => parseInt(String(t.type_id), 10));
