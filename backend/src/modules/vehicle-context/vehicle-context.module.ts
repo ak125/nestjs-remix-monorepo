@@ -35,9 +35,11 @@ import { VehicleContextService } from './vehicle-context.service';
 })
 export class VehicleContextModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(VehicleContextMiddleware).forRoutes(
-      { path: 'api/diagnostic/*', method: RequestMethod.ALL },
-      { path: 'api/v1/orientation/*', method: RequestMethod.ALL },
-    );
+    consumer
+      .apply(VehicleContextMiddleware)
+      .forRoutes(
+        { path: 'api/diagnostic/*', method: RequestMethod.ALL },
+        { path: 'api/v1/orientation/*', method: RequestMethod.ALL },
+      );
   }
 }

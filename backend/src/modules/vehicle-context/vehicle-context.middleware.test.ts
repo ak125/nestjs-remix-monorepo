@@ -8,10 +8,7 @@
 
 import type { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import {
-  signVehicleContext,
-  VEHICLE_CTX_COOKIE_NAME,
-} from '@repo/registry';
+import { signVehicleContext, VEHICLE_CTX_COOKIE_NAME } from '@repo/registry';
 import type { FeatureFlagsService } from '../../config/feature-flags.service';
 import { VehicleContextMiddleware } from './vehicle-context.middleware';
 import { VehicleContextService } from './vehicle-context.service';
@@ -66,9 +63,9 @@ describe('VehicleContextMiddleware', () => {
     await middleware.use(req as never, {} as never, next);
     expect(req.vehicleContext).toBeUndefined();
     expect(next).toHaveBeenCalledTimes(1);
-    expect(emittedEvents.filter((e) => e.name.startsWith('vehicle_ctx_'))).toHaveLength(
-      0,
-    );
+    expect(
+      emittedEvents.filter((e) => e.name.startsWith('vehicle_ctx_')),
+    ).toHaveLength(0);
   });
 
   test('valid cookie : req.vehicleContext populated', async () => {
@@ -141,7 +138,8 @@ describe('VehicleContextMiddleware', () => {
   });
 
   test('VehicleContextService.persist signs + sets cookie + emits vehicle_ctx_set', async () => {
-    const cookies: Array<{ name: string; value: string; options: unknown }> = [];
+    const cookies: Array<{ name: string; value: string; options: unknown }> =
+      [];
     const res = {
       req: { secure: false },
       cookie: (name: string, value: string, options: unknown) => {

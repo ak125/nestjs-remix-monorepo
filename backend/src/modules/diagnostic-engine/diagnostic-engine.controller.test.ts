@@ -78,9 +78,7 @@ describe('mapAnalyzeInputToVehicleContextPayload (PR-B.4)', () => {
   });
 
   test('returns null when vehicle_context is absent', () => {
-    expect(
-      mapAnalyzeInputToVehicleContextPayload({ signals: [] }),
-    ).toBeNull();
+    expect(mapAnalyzeInputToVehicleContextPayload({ signals: [] })).toBeNull();
   });
 
   test('returns null when body is null / undefined / non-object', () => {

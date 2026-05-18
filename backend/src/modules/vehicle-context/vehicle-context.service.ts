@@ -50,10 +50,7 @@ export class VehicleContextService implements VehicleContextPort {
    * Sign + set the cookie + emit `vehicle_ctx_set`. The caller MUST `await`
    * this before sending the response.
    */
-  async persist(
-    payload: VehicleContextPayload,
-    res: Response,
-  ): Promise<void> {
+  async persist(payload: VehicleContextPayload, res: Response): Promise<void> {
     const token = await signVehicleContext({ payload, secret: this.secret });
 
     res.cookie(VEHICLE_CTX_COOKIE_NAME, token, {

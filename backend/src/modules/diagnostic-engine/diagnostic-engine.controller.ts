@@ -197,7 +197,9 @@ export class DiagnosticEngineController {
     try {
       await this.vehicleContext.persist(payload, res);
     } catch (err) {
-      this.logger.warn(`vehicle_ctx persist skipped: ${(err as Error).message}`);
+      this.logger.warn(
+        `vehicle_ctx persist skipped: ${(err as Error).message}`,
+      );
     }
   }
 
