@@ -188,9 +188,9 @@ export function TechnicalSpec({
   importance = "normal",
 }: TechnicalSpecProps) {
   const importanceColors = {
-    critical: "border-l-4 border-red-700 bg-red-100",
-    important: "border-l-4 border-amber-500 bg-orange-50",
-    normal: "border-l-2 border-gray-200 bg-neutral-50",
+    critical: "bg-red-100",
+    important: "bg-orange-50",
+    normal: "bg-neutral-50",
   };
 
   const content = (
@@ -475,7 +475,7 @@ export function SimplifiedExplanation({
   icon = "💡",
 }: SimplifiedExplanationProps) {
   return (
-    <div className="flex gap-3 p-4 bg-blue-50 border-l-4 border-secondary-500 rounded-lg">
+    <div className="flex gap-3 p-4 bg-blue-50 border-secondary-500 rounded-lg">
       <div className="flex-shrink-0 text-2xl">{icon}</div>
 
       <div className="flex-1">
