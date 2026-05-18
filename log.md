@@ -801,3 +801,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-cp-cf-rum-collector`
 - **Décision** : feat(seo-cp): pr-2a-2.5 cloudflare rum collector (web vitals edge ingestion)
 - **Sortie** : PR #583 | commits 24fdf7367
+
+## 2026-05-18 — feat/vehicle-context-cookie-jws (auto)
+
+- **Branche** : `feat/vehicle-context-cookie-jws`
+- **Décision** : fix(vehicle-context): PR-B.8 CI green (prettier + gitleaks + dep inventory) (+7 other commits)
+- **Sortie** : PR #606 | commits b99f9f80e 2fe8f2beb 6eb399a47 019b10d89 6dcfb20a5 6833edfae a51962447 ce57fa9d8
