@@ -1,0 +1,26 @@
+name: Preprod vocabulary guard
+
+# Block confused `preprod` formulations in markdown files (ADR-075).
+# Canon `.claude/rules/deployment.md` defines DEV / PREPROD / PROD strictly.
+# 419 occurrences confuses in monorepo+vault+memory (2026-05-18 audit) — this
+# guard prevents future drift mechanically. Local pre-commit hook runs the
+# same check; CI is authoritative.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  no-confusing-preprod-formulations:
+    name: Block forbidden DEV/PREPROD/PROD formulations in .md
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lint preprod vocabulary (full repo)
+        run: bash scripts/lint/check-preprod-vocabulary.sh
