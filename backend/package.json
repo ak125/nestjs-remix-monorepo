@@ -112,6 +112,7 @@
     "@fafa/eslint-config": "*",
     "@fafa/frontend": "*",
     "@fafa/typescript-config": "*",
+    "eslint-plugin-fafa-ports": "*",
     "@nestjs/cli": "^10.0.0",
     "@nestjs/schematics": "^10.0.0",
     "@nestjs/testing": "^10.4.20",

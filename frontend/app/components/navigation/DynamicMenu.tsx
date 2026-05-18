@@ -137,11 +137,7 @@ export const DynamicMenu = memo(function DynamicMenu({
         className={`menu-item-wrapper ${level > 0 ? "ml-4" : ""}`}
       >
         <div
-          className={`
-            menu-item flex items-center justify-between p-3 rounded-lg
-            hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors
-            ${isActive ? "bg-primary/10 dark:bg-primary/98/20 text-primary border-l-4 border-blue-500" : ""}
-          `}
+          className={`menu-item flex items-center justify-between p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${isActive ? "bg-primary/10 dark:bg-primary/98/20 text-primary " : ""}`}
         >
           <div className="flex items-center flex-1">
             {hasChildren && (
@@ -222,7 +218,7 @@ export const DynamicMenu = memo(function DynamicMenu({
         </div>
 
         {hasChildren && !isCollapsed && (
-          <div className="menu-children mt-1 border-l-2 border-gray-100 ml-6 pl-4">
+          <div className="menu-children mt-1 ml-6 pl-4">
             {item.children!.map((child) =>
               renderMenuItem(child, level + 1, itemPath),
             )}
