@@ -78,20 +78,20 @@ export class SeoControlService extends SupabaseBaseService {
 
     const [trafficRaw, losersRaw, lowCtrRaw, alertsRaw, conversionRaw] =
       await Promise.all([
-        this.getBlock('traffic', range, () =>
+        this.getBlock<unknown>('traffic', range, () =>
           this.invokeRpc('rpc_seo_traffic_v1', {
             p_window_days: days,
             p_now: nowIso,
           }),
         ),
-        this.getBlock('losers', range, () =>
+        this.getBlock<unknown[]>('losers', range, () =>
           this.invokeRpc('rpc_seo_top_losers_v1', {
             p_window_days: days,
             p_now: nowIso,
             p_limit: 20,
           }),
         ),
-        this.getBlock('lowctr', range, () =>
+        this.getBlock<unknown[]>('lowctr', range, () =>
           this.invokeRpc('rpc_seo_low_ctr_v1', {
             p_window_days: days,
             p_now: nowIso,
@@ -100,13 +100,13 @@ export class SeoControlService extends SupabaseBaseService {
             p_limit: 50,
           }),
         ),
-        this.getBlock('alerts', range, () =>
+        this.getBlock<unknown[]>('alerts', range, () =>
           this.invokeRpc('rpc_seo_alerts_v1', {
             p_now: nowIso,
             p_limit: 50,
           }),
         ),
-        this.getBlock('conversion', range, () =>
+        this.getBlock<unknown[] | null>('conversion', range, () =>
           this.invokeRpc('rpc_seo_conversion_v1', {
             p_window_days: days,
             p_now: nowIso,
@@ -116,24 +116,29 @@ export class SeoControlService extends SupabaseBaseService {
       ]);
 
     // Inject decisions on each applicable row
+    const losersArr = (losersRaw as any[] | null | undefined) ?? [];
+    const lowCtrArr = (lowCtrRaw as any[] | null | undefined) ?? [];
+    const alertsArr = (alertsRaw as any[] | null | undefined) ?? [];
+    const conversionArr = conversionRaw as any[] | null | undefined;
+
     const enriched = {
       trafficWindow: trafficRaw,
-      topLosers: (losersRaw ?? []).map((r: any) => ({
+      topLosers: losersArr.map((r: any) => ({
         ...r,
         decisions: this.decisions.deriveLoser(r),
       })),
-      lowCtrOpportunities: (lowCtrRaw ?? []).map((r: any) => ({
+      lowCtrOpportunities: lowCtrArr.map((r: any) => ({
         ...r,
         decisions: this.decisions.deriveLowCtr(r),
       })),
-      technicalAlerts: (alertsRaw ?? []).map((r: any) => ({
+      technicalAlerts: alertsArr.map((r: any) => ({
         ...r,
         decisions: this.decisions.deriveAlert(r),
       })),
       conversionGap:
-        conversionRaw === null
+        conversionArr == null
           ? null
-          : (conversionRaw ?? []).map((r: any) => ({
+          : conversionArr.map((r: any) => ({
               ...r,
               decisions: this.decisions.deriveConversion(r),
             })),
@@ -289,16 +294,22 @@ export class SeoControlService extends SupabaseBaseService {
   }
 
   /**
-   * Thin wrapper around supabase.rpc().
-   * Throws on error (caller decides recovery — fail-loud for forensic).
-   * Renamed from `callRpc` to avoid override conflict with SupabaseBaseService.
+   * Thin wrapper around the inherited callRpc() (SupabaseBaseService) for
+   * fail-loud semantics : throws on error instead of returning { data, error }.
+   *
+   * MUST use callRpc (not this.supabase.rpc direct) per RPC Safety Gate
+   * (scripts/audit/rpc-safety-gate.js + .github/workflows/ci.yml). Direct
+   * supabase.rpc bypasses the governance RpcGateService.
    */
-  private async invokeRpc(name: string, params: Record<string, unknown>): Promise<any> {
-    const { data, error } = await this.supabase.rpc(name, params);
+  private async invokeRpc<T>(
+    name: string,
+    params: Record<string, unknown>,
+  ): Promise<T> {
+    const { data, error } = await this.callRpc<T>(name, params);
     if (error) {
       this.logger.error(`RPC ${name} failed`, error);
       throw error;
     }
-    return data;
+    return data as T;
   }
 }

@@ -308,6 +308,26 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: medium
+  - glob: backend/supabase/migrations/*seo_control*
+    domain: D8
+    owner: '@ak125/admin-team'
+    sourceConfidence: high
+    risk: medium
+  - glob: docs/seo/audit-orders-cart-link.md
+    domain: D8
+    owner: '@ak125/admin-team'
+    sourceConfidence: high
+    risk: low
+  - glob: docs/seo/explain-analyze-pr-sbd-1.md
+    domain: D8
+    owner: '@ak125/admin-team'
+    sourceConfidence: high
+    risk: low
+  - glob: docs/seo/synthetic-monitoring-decision-pr-sbd-1.md
+    domain: D8
+    owner: '@ak125/admin-team'
+    sourceConfidence: high
+    risk: low
   - glob: backend/supabase/migrations/README.md
     domain: D13
     owner: '@ak125'

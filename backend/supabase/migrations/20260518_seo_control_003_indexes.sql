@@ -1,3 +1,4 @@
+-- squawk-ignore-file ban-concurrent-index-creation-in-transaction
 -- =====================================================
 -- PR-SBD-1 Task 1 Step 11 — Indexes CONCURRENTLY (non-transactional)
 -- Date: 2026-05-18
@@ -5,6 +6,12 @@
 --       docs/seo/audit-orders-cart-link.md
 --       docs/seo/explain-analyze-pr-sbd-1.md (gate merge)
 -- =====================================================
+--
+-- Squawk directive : `ban-concurrent-index-creation-in-transaction` ignored
+-- file-wide because this migration is EXPLICITLY non-transactional. The
+-- Supabase migration runner detects the absence of BEGIN/COMMIT and applies
+-- each CREATE INDEX CONCURRENTLY as a standalone statement. Cf. existing
+-- patterns 20260120_rm_expression_index.sql / 20260128_add_index_pieces_*.sql.
 --
 -- CREATE INDEX CONCURRENTLY cannot run inside a transaction block.
 -- Apply each statement separately (psql \i or migration runner with

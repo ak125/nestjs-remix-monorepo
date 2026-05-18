@@ -52,6 +52,23 @@ HARD_BLOCK_PATTERNS=(
   '^backend/src/modules/seo/.*canonical.*\.ts$'
 )
 
+# Exclusions du hard-block — cohérent avec canon `seo-criticality.yaml` qui
+# excludes `admin/*`, `api/*`, `_*`, `__*` du SEO public. Sans ces exclusions,
+# toute nouvelle route admin/api/internal crée un faux positif R-SEO-09.
+# Incident PR-SBD-1 (2026-05-18) : admin.seo-control.tsx hard-bloqué à tort.
+# Réf : .spec/00-canon/repository-registry/seo-criticality.yaml (excluded section)
+#       + feedback_r_seo_09_phase1_path_based_block.md
+EXCLUDE_PATTERNS=(
+  '^frontend/app/routes/admin\.'
+  '^frontend/app/routes/api\.'
+  '^frontend/app/routes/account\.'
+  '^frontend/app/routes/account_\.'
+  '^frontend/app/routes/_'
+  '^frontend/app/routes/__'
+  '^frontend/app/routes/auth\.'
+  '^frontend/app/routes/commercial\.'
+)
+
 WARN_PATTERNS=(
   '^backend/src/modules/seo/.*sitemap.*\.ts$'
   '^backend/src/modules/seo/.*redirect.*\.ts$'
@@ -81,6 +98,19 @@ WARNS=()
 for entry in "${CHANGED[@]}"; do
   status="${entry%%	*}"
   file="${entry#*	}"
+
+  # Skip excluded paths (admin/api/auth/etc — not SEO public surface).
+  excluded=0
+  for pat in "${EXCLUDE_PATTERNS[@]}"; do
+    if [[ "$file" =~ $pat ]]; then
+      excluded=1
+      break
+    fi
+  done
+  if [[ $excluded -eq 1 ]]; then
+    continue
+  fi
+
   for pat in "${HARD_BLOCK_PATTERNS[@]}"; do
     if [[ "$file" =~ $pat ]]; then
       HARD_BLOCKS+=("[$status] $file")
