@@ -507,3 +507,11 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: high
+  # Backend D4 implementation of VehicleContextPort (PR-B.2). Middleware +
+  # service + jest spec ; narrow-route mounting on /api/diagnostic/* and
+  # /api/v1/orientation/*. Owner D4 (Vehicle), risk high (cookie security).
+  - glob: backend/src/modules/vehicle-context/**
+    domain: D4
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
