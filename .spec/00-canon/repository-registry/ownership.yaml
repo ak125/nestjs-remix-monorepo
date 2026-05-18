@@ -515,3 +515,16 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: high
+  # Remix SSR helper (PR-B.3) — reads/verifies the same JWS cookie on the
+  # Node side of Remix loaders. Lives under app/server/ so the Vite plugin
+  # tree-shakes it out of the client bundle. Same D4 owner.
+  - glob: frontend/app/server/vehicle-context.server.ts
+    domain: D4
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
+  - glob: frontend/tests/unit/vehicle-context.server.test.ts
+    domain: D4
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
