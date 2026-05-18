@@ -2,6 +2,7 @@
   "name": "@repo/database-types",
   "version": "1.0.0",
   "description": "Shared database types and schemas for the monorepo",
+  "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -29,7 +30,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "clean": "rm -rf dist",
+    "clean": "rm -rf dist *.tsbuildinfo",
     "typecheck": "tsc --noEmit",
     "generate:types": "echo 'Run: supabase gen types typescript --project-id YOUR_PROJECT_ID > src/types.ts'",
     "generate:zod": "tsx scripts/generate-zod-schemas.ts"

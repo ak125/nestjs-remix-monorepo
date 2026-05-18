@@ -1,3 +1,39 @@
+# Block manual edits to canon mirrors (ADR-061 §3 — canon mirrors are READ-ONLY).
+# Canon mirrors (`.claude/canon-mirrors/<canon>.md` + workspaces) are synced by
+# cron VPS DEV (governance-vault/_scripts/cron-sync-canon-mirrors.sh). Manual edits
+# break the SoT contract — vault canon must remain the only source of truth.
+#
+# Le hook est self-consistent : il appelle `sync_canon_mirrors.py --check` qui
+# compare les fichiers staged à la distribution canon vault. Si match (cas cron :
+# le --write vient juste d'aligner), le check pass. Si manuel (différent du canon),
+# le check fail et le commit est bloqué.
+#
+# Tolérance : si vault inaccessible localement (`$GOVERNANCE_VAULT_PATH`),
+# warn-only (CI authoritatif).
+CANON_MIRRORS_CHANGED=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '(^|/)\.claude/canon-mirrors/.+\.md$' || true)
+if [ -n "$CANON_MIRRORS_CHANGED" ]; then
+  VAULT_PATH="${GOVERNANCE_VAULT_PATH:-/opt/automecanik/governance-vault}"
+  if [ ! -f "$VAULT_PATH/_scripts/sync_canon_mirrors.py" ]; then
+    echo "WARNING: canon-mirrors edits staged but vault sync script not found at $VAULT_PATH."
+    echo "Cannot verify locally — CI will run the authoritative check."
+  else
+    if ! python3 "$VAULT_PATH/_scripts/sync_canon_mirrors.py" --check --monorepo . >/dev/null 2>&1; then
+      echo ""
+      echo "ERROR (ADR-061 §3): canon-mirrors content drift detected vs vault canon."
+      echo ""
+      echo "Canon mirrors are READ-ONLY. Manual edits are forbidden."
+      echo "To update a canon, edit the vault source (ledger/rules/rules-*.md) and run:"
+      echo "  bash $VAULT_PATH/_scripts/cron-sync-canon-mirrors.sh"
+      echo ""
+      echo "Files staged:"
+      echo "$CANON_MIRRORS_CHANGED" | sed 's|^|  - |'
+      echo ""
+      echo "See https://github.com/ak125/governance-vault/blob/main/ledger/decisions/adr/ADR-061-workspace-governance.md §3"
+      exit 1
+    fi
+  fi
+fi
+
 # Block any staged file under app/.local/governance-vault/
 # (deprecated per ADR-015 — governance vault is at /opt/automecanik/governance-vault/)
 BLOCKED=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '^\.local/governance-vault/' || true)
@@ -49,6 +85,28 @@ if command -v python3 >/dev/null 2>&1 \
   CHANGED=$(git diff --name-only -- '.claude/knowledge/' || true)
   if [ -n "$CHANGED" ]; then
     git add $CHANGED 2>/dev/null || true
+  fi
+fi
+
+# Repository Control Plane (ADR-058) — Layer 2 overlay validation + Layer 1/3 no-manual-edit guard
+# Lightweight pre-commit checks per ADR-058 §Stratégie hooks :
+#   - validate-overlay : Zod check on .spec/00-canon/repository-registry/*.yaml (< 1s)
+#   - no-manual-edit-generated : refuse git add on audit/registry/*.json sauf
+#     (a) npm_lifecycle_event ∈ registry:* AND (b) reproducible from current SoT
+# These run only when relevant files are staged.
+if git diff --cached --name-only --diff-filter=ACMR | grep -qE '^\.spec/00-canon/repository-registry/.*\.yaml$'; then
+  if command -v npm >/dev/null 2>&1 && [ -f scripts/registry/validate-overlay.js ]; then
+    npm run registry:validate --silent || {
+      echo ""
+      echo "ERROR (ADR-058): Layer 2 overlay validation failed."
+      echo "Fix the YAML errors above (or revert) before committing."
+      exit 1
+    }
+  fi
+fi
+if git diff --cached --name-only --diff-filter=ACMR | grep -qE '^audit/registry/[a-z]+\.json$'; then
+  if [ -x scripts/registry/check-no-manual-edit-generated.sh ]; then
+    bash scripts/registry/check-no-manual-edit-generated.sh || exit 1
   fi
 fi
 

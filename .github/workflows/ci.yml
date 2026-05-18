@@ -56,6 +56,12 @@ jobs:
       - name: 🛡️ Cache-Control discipline (Remix routes)
         run: bash scripts/lint/check-no-zero-arg-headers-with-s-maxage.sh
 
+      # PR-1 INC-2026-005 closure : CACHE-HEADERS-OK exemptions must cite a
+      # traceable reference (#NNN | INC-YYYY-NNN | ADR-NNN) + reason. Sister
+      # to the ast-grep rule frontend-no-headers-bypass-buildCacheHeaders.yml.
+      - name: 🛡️ CACHE-HEADERS-OK exemptions traceable
+        run: bash scripts/lint/check-cache-headers-ok-references.sh
+
   typecheck:
     name: ʦ TypeScript
     runs-on: ubuntu-latest
@@ -97,107 +103,15 @@ jobs:
       - name: 🧪 URL Pattern Tests
         run: cd frontend && npm run test -- --run tests/unit/url-patterns.test.ts
 
-      - name: 📦 Bundle size check (gzip)
-        if: always()
-        run: |
-          ASSETS="frontend/build/client/assets"
-          if [ ! -d "$ASSETS" ]; then
-            echo "ℹ️ No frontend build output found (build may have been skipped)"
-            exit 0
-          fi
-
-          # --- Measure gzip sizes ---
-          JS_GZ=0
-          JS_RAW=0
-          for f in $(find "$ASSETS" -name '*.js'); do
-            raw=$(wc -c < "$f")
-            gz=$(gzip -c "$f" | wc -c)
-            JS_RAW=$((JS_RAW + raw))
-            JS_GZ=$((JS_GZ + gz))
-          done
-
-          CSS_GZ=0
-          CSS_RAW=0
-          for f in $(find "$ASSETS" -name '*.css'); do
-            raw=$(wc -c < "$f")
-            gz=$(gzip -c "$f" | wc -c)
-            CSS_RAW=$((CSS_RAW + raw))
-            CSS_GZ=$((CSS_GZ + gz))
-          done
-
-          JS_GZ_KB=$((JS_GZ / 1024))
-          CSS_GZ_KB=$((CSS_GZ / 1024))
-          JS_RAW_KB=$((JS_RAW / 1024))
-          CSS_RAW_KB=$((CSS_RAW / 1024))
-
-          # --- Initial load: framework chunks loaded on every page ---
-          INIT_GZ=0
-          for pattern in "react-vendor-*.js" "radix-vendor-*.js" "root-*.js" "entry.client-*.js"; do
-            for f in $ASSETS/$pattern; do
-              [ -f "$f" ] && INIT_GZ=$((INIT_GZ + $(gzip -c "$f" | wc -c)))
-            done
-          done
-          INIT_GZ_KB=$((INIT_GZ / 1024))
-
-          # --- Largest individual chunk ---
-          LARGEST_GZ=0
-          LARGEST_NAME=""
-          for f in $(find "$ASSETS" -name '*.js'); do
-            gz=$(gzip -c "$f" | wc -c)
-            if [ "$gz" -gt "$LARGEST_GZ" ]; then
-              LARGEST_GZ=$gz
-              LARGEST_NAME=$(basename "$f")
-            fi
-          done
-          LARGEST_GZ_KB=$((LARGEST_GZ / 1024))
-
-          # --- Budgets (gzip bytes) ---
-          JS_GZ_BUDGET=$((800 * 1024))       # 800 KB gzip
-          INIT_GZ_BUDGET=$((200 * 1024))      # 200 KB gzip
-          CHUNK_GZ_BUDGET=$((100 * 1024))     # 100 KB gzip per chunk
-
-          JS_STATUS="✅"
-          [ "$JS_GZ" -gt "$JS_GZ_BUDGET" ] && JS_STATUS="⚠️"
-          INIT_STATUS="✅"
-          [ "$INIT_GZ" -gt "$INIT_GZ_BUDGET" ] && INIT_STATUS="⚠️"
-          CHUNK_STATUS="✅"
-          [ "$LARGEST_GZ" -gt "$CHUNK_GZ_BUDGET" ] && CHUNK_STATUS="⚠️"
-
-          # --- Report ---
-          echo "## 📦 Bundle Size Report (gzip)" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Metric | Size | Budget | Status |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------|------|--------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| JS total (gzip) | ${JS_GZ_KB} KB | 800 KB | ${JS_STATUS} |" >> $GITHUB_STEP_SUMMARY
-          echo "| CSS total (gzip) | ${CSS_GZ_KB} KB | — | — |" >> $GITHUB_STEP_SUMMARY
-          echo "| Initial load (gzip) | ${INIT_GZ_KB} KB | 200 KB | ${INIT_STATUS} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Largest chunk | ${LARGEST_GZ_KB} KB | 100 KB | ${CHUNK_STATUS} |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "_Raw sizes: JS ${JS_RAW_KB} KB, CSS ${CSS_RAW_KB} KB_" >> $GITHUB_STEP_SUMMARY
-
-          # --- Top 5 chunks by gzip size ---
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Top 5 chunks (gzip)" >> $GITHUB_STEP_SUMMARY
-          echo "| Chunk | Raw | Gzip |" >> $GITHUB_STEP_SUMMARY
-          echo "|-------|-----|------|" >> $GITHUB_STEP_SUMMARY
-          for f in $(find "$ASSETS" -name '*.js'); do
-            raw=$(wc -c < "$f")
-            gz=$(gzip -c "$f" | wc -c)
-            echo "$gz $raw $(basename "$f")"
-          done | sort -rn | head -5 | while read gz raw name; do
-            echo "| ${name%.js} | $((raw / 1024)) KB | $((gz / 1024)) KB |" >> $GITHUB_STEP_SUMMARY
-          done
-
-          # --- CI warnings ---
-          if [ "$JS_GZ" -gt "$JS_GZ_BUDGET" ]; then
-            echo "::warning::JS bundle (${JS_GZ_KB} KB gzip) exceeds budget (800 KB)"
-          fi
-          if [ "$INIT_GZ" -gt "$INIT_GZ_BUDGET" ]; then
-            echo "::warning::Initial load (${INIT_GZ_KB} KB gzip) exceeds budget (200 KB)"
-          fi
-          if [ "$LARGEST_GZ" -gt "$CHUNK_GZ_BUDGET" ]; then
-            echo "::warning::Chunk '${LARGEST_NAME}' (${LARGEST_GZ_KB} KB gzip) exceeds 100 KB limit"
-          fi
+      # Bundle size : délégué à size-limit (source de vérité unique
+      # frontend/.size-limit.json, partagée avec perf-gates.yml). Standard
+      # industriel (Andrey Sitnik, adopté par React/Redux/MobX/Prettier).
+      # Voir frontend/size-limit.README.md pour philosophie et calibration.
+      # Ce step était auparavant 100 lignes bash inline en warn-only — non
+      # bloquant, source de vérité dupliquée vs perf-gates.yml, budgets
+      # hardcodés. Remplacé pour cohérence et vrai gate (exit non-zero).
+      - name: 📦 Bundle size gate (size-limit, gzip)
+        run: npm run size
 
   test:
     name: 🧪 Backend Tests
@@ -571,96 +485,64 @@ jobs:
           extra_args: --results=verified,unknown
 
   migration-safety:
+    # AST-based Postgres SQL linter (squawk, libpg_query) — replaces the
+    # legacy grep-based gate that produced false positives on prose comments
+    # containing the literal text "DROP TABLE". Governance trail : ADR-064.
     name: 🗄️ Migration Safety
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0   # Need history for git diff against base ref.
 
-      - name: 🗄️ Check new migrations for dangerous operations
+      - name: Identify changed SQL migrations
+        id: changed-sql
         run: |
-          echo "🗄️ Migration Safety Gate"
-          echo "========================"
-
-          # Get only NEW migration files in this commit/PR
-          NEW_MIGRATIONS=$(git diff --name-only --diff-filter=A HEAD~1 -- 'backend/supabase/migrations/*.sql' 2>/dev/null || true)
-
-          if [ -z "$NEW_MIGRATIONS" ]; then
-            echo "✅ No new migrations to check"
-            exit 0
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base="origin/${{ github.base_ref }}"
+            raw=$(git diff --name-only --diff-filter=ACM "$base"...HEAD -- 'backend/supabase/migrations/*.sql' || true)
+          else
+            raw=$(git diff --name-only --diff-filter=ACM HEAD~1 HEAD -- 'backend/supabase/migrations/*.sql' || true)
+          fi
+          # Pre-filter `.down.sql` here (defense-in-depth with `.squawk.toml`
+          # `excluded_paths`) because squawk hard-errors with "Failed to find
+          # files" if every explicit path is excluded by config.
+          files=$(printf '%s\n' "$raw" | grep -v '\.down\.sql$' || true)
+          files=$(printf '%s' "$files" | tr '\n' ' ' | sed 's/ *$//')
+          if [ -z "$files" ]; then
+            echo "✅ No lintable SQL migration changes — gate skipped."
+            echo "files=" >> "$GITHUB_OUTPUT"
+          else
+            echo "Changed SQL migrations to lint :"
+            printf '%s\n' "$files"
+            echo "files=$files" >> "$GITHUB_OUTPUT"
           fi
 
-          echo "New migrations found:"
-          echo "$NEW_MIGRATIONS"
-          echo ""
+      # Direct squawk binary invocation (industry-standard CI linter pattern :
+      # exit-code-driven, no third-party API side-effects). The previous
+      # `sbdchd/squawk-action@v2` wrapper called `upload-to-github`, which
+      # POSTs a PR comment and requires `pull-requests: write` — adding write
+      # scope to every pipeline just to render diagnostics is bricolage.
+      # Violations show up in the job log; squawk exits non-zero on violation,
+      # which fails the job. Same approach as eslint / tsc / ruff / clippy.
+      - name: Install squawk
+        if: steps.changed-sql.outputs.files != ''
+        env:
+          SQUAWK_VERSION: "2.52.1"
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/bin"
+          curl -fsSL \
+            "https://github.com/sbdchd/squawk/releases/download/v${SQUAWK_VERSION}/squawk-linux-x64" \
+            -o "$RUNNER_TEMP/bin/squawk"
+          chmod +x "$RUNNER_TEMP/bin/squawk"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/bin/squawk" --version
 
-          ERRORS=0
-          WARNINGS=0
-
-          for file in $NEW_MIGRATIONS; do
-            [ ! -f "$file" ] && continue
-            echo ""
-            echo "Checking: $file"
-
-            # P0 BLOCK: DROP TABLE without explicit approval
-            if grep -iE 'DROP\s+TABLE' "$file" | grep -v '\-\- APPROVED:' > /dev/null 2>&1; then
-              echo "  ❌ DROP TABLE detected without '-- APPROVED:' comment"
-              ERRORS=$((ERRORS+1))
-            fi
-
-            # P0 BLOCK: ALTER TABLE DROP COLUMN without explicit approval
-            if grep -iE 'ALTER\s+TABLE.*DROP\s+COLUMN' "$file" | grep -v '\-\- APPROVED:' > /dev/null 2>&1; then
-              echo "  ❌ DROP COLUMN detected without '-- APPROVED:' comment"
-              ERRORS=$((ERRORS+1))
-            fi
-
-            # P0 BLOCK: Disabling RLS
-            if grep -iE 'ALTER\s+TABLE.*DISABLE\s+ROW\s+LEVEL' "$file" | grep -v '\-\- APPROVED:' > /dev/null 2>&1; then
-              echo "  ❌ DISABLE ROW LEVEL SECURITY detected without '-- APPROVED:' comment"
-              ERRORS=$((ERRORS+1))
-            fi
-
-            # P0 BLOCK: DROP POLICY without explicit approval
-            if grep -iE 'DROP\s+POLICY' "$file" | grep -v '\-\- APPROVED:' > /dev/null 2>&1; then
-              echo "  ❌ DROP POLICY detected without '-- APPROVED:' comment"
-              ERRORS=$((ERRORS+1))
-            fi
-
-            # P1 WARN: TRUNCATE
-            if grep -iE 'TRUNCATE' "$file" > /dev/null 2>&1; then
-              echo "  ⚠️  TRUNCATE detected -- verify this is intentional"
-              WARNINGS=$((WARNINGS+1))
-            fi
-
-            # P1 WARN: DELETE without WHERE
-            if grep -iE 'DELETE\s+FROM' "$file" | grep -viE 'WHERE' > /dev/null 2>&1; then
-              echo "  ⚠️  DELETE without WHERE clause detected"
-              WARNINGS=$((WARNINGS+1))
-            fi
-
-            # P1 WARN: Grant to public
-            if grep -iE 'GRANT.*TO\s+public' "$file" > /dev/null 2>&1; then
-              echo "  ⚠️  GRANT TO public detected"
-              WARNINGS=$((WARNINGS+1))
-            fi
-          done
-
-          echo ""
-          echo "========================"
-          if [ "$WARNINGS" -gt 0 ]; then
-            echo "⚠️  $WARNINGS warning(s) (non-blocking)"
-          fi
-
-          if [ "$ERRORS" -gt 0 ]; then
-            echo "❌ $ERRORS dangerous operation(s) without '-- APPROVED:' comment"
-            echo ""
-            echo "To approve: add '-- APPROVED: <reason>' on the same line"
-            exit 1
-          fi
-
-          echo "✅ Migration safety check passed"
+      - name: Run squawk on changed migrations
+        if: steps.changed-sql.outputs.files != ''
+        run: squawk --config .squawk.toml ${{ steps.changed-sql.outputs.files }}
 
   build:
     name: 🐳 build
@@ -735,6 +617,11 @@ jobs:
           # donc le fail-fast trigger ici. Source : audit-trail vault
           # 2026-05-07-pr339-deploy-regression.md.
           SESSION_SECRET: ${{ secrets.PREPROD_SESSION_SECRET }}
+          # ADR-063 — CrUX API key for CWV field monitoring (backend-only, optional).
+          # When unset, the CrUX fetcher logs a warning and skips runs (V1 graceful
+          # degrade ; cron `seo-monitor` continues without CrUX step). Production
+          # requires the GH secret `CRUX_API_KEY` to be set on the repository.
+          CRUX_API_KEY: ${{ secrets.CRUX_API_KEY }}
           READ_ONLY: "true"
         run: |
           docker pull massdoc/nestjs-remix-monorepo:preprod
@@ -770,6 +657,13 @@ jobs:
           # cannot reach a real RAG instance from preprod read-only mode anyway.
           RAG_SERVICE_URL=http://disabled:8000
           RAG_API_KEY=disabled-preprod-readonly
+          # ADR-063 — CrUX API key (optional, blank-allowed = graceful degrade)
+          CRUX_API_KEY=${CRUX_API_KEY}
+          # (Phase 0.6) Sitemap OIDC validation invariants are hardcoded in
+          # GithubOidcService (cf. docs/superpowers/specs/2026-05-16-sitemap-regen-auth-design.md
+          # Components > GithubOidcService — class static readonly constants).
+          # Preprod heredoc has no OIDC config to propagate — preprod is an
+          # ephemeral CI container with no automatic Bearer-token caller.
           EOF
 
           cd $PREPROD_DIR
@@ -1055,9 +949,20 @@ jobs:
           retention-days: 7
 
   # ============================================
-  # Lighthouse Performance Audit (post-deploy)
+  # Lighthouse Performance Audit (post-deploy, observe-only)
   # ============================================
-
+  # SCOPE : observabilité timing synthétique sur serveur PREPROD réel après
+  # deploy main. **Non-bloquant** (cf. step "Lighthouse summary"). Catch les
+  # régressions de TTFB / cold start / CDN / gzip serveur qu'un bundle scan
+  # statique ne voit pas.
+  #
+  # **N'est PAS un PR gate** : l'anti-régression bundle PR est dans
+  # perf-gates.yml via size-limit sur frontend/.size-limit.json (déterministe,
+  # gzip, bloquant). Voir frontend/size-limit.README.md.
+  #
+  # Budgets de timing : frontend/lighthouse-budget.json (timings only depuis
+  # 2026-05-14 ; les resourceSizes/resourceCounts ont migré vers .size-limit.json
+  # — source de vérité unique pour les budgets bundle).
   lighthouse:
     name: 🔦 Lighthouse Performance Audit
     runs-on: [self-hosted, Linux, X64]

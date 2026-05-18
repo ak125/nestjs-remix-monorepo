@@ -1,0 +1,12 @@
+{
+  "generatedAt": "2026-05-16T00:00:00.000Z",
+  "schemaVersion": "v1",
+  "contracts": [],
+  "ownership": {
+    "gapCount": 1,
+    "sample": ["frontend/app/utils/dead.ts"],
+    "orphans": ["frontend/app/utils/dead.ts"]
+  },
+  "fingerprint": {},
+  "coverage": {}
+}

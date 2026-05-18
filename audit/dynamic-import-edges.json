@@ -1,0 +1,106 @@
+{
+  "_generated_by": "scripts/audit/build-deep-inventory.js",
+  "count": 20,
+  "edges": [
+    {
+      "from": "backend/src/modules/admin/services/execution-router.service.ts",
+      "to": "fs",
+      "kind": "import()"
+    },
+    {
+      "from": "backend/src/modules/admin/services/execution-router.service.ts",
+      "to": "path",
+      "kind": "import()"
+    },
+    {
+      "from": "backend/src/modules/rag-proxy/services/pdf-text-extractor.service.ts",
+      "to": "pdf-parse",
+      "kind": "import()"
+    },
+    {
+      "from": "backend/src/modules/rag-proxy/services/rag-ingestion.service.ts",
+      "to": "child_process",
+      "kind": "import()"
+    },
+    {
+      "from": "backend/src/modules/rag-proxy/services/rag-knowledge.service.ts",
+      "to": "fs",
+      "kind": "import()"
+    },
+    {
+      "from": "backend/src/modules/rag-proxy/services/rag-knowledge.service.ts",
+      "to": "path",
+      "kind": "import()"
+    },
+    {
+      "from": "backend/src/modules/system/services/health-check.service.ts",
+      "to": "dns/promises",
+      "kind": "import()"
+    },
+    {
+      "from": "frontend/app/components/pieces/CompatibilityConfirmationBlock.tsx",
+      "to": "~/components/expert/CompatibilityResolverModal",
+      "kind": "import()"
+    },
+    {
+      "from": "frontend/app/components/pieces/PiecesVehicleContent.tsx",
+      "to": "~/components/pieces/PiecesStatistics",
+      "kind": "import()"
+    },
+    {
+      "from": "frontend/app/entry.client.tsx",
+      "to": "~/utils/analytics-sanitize",
+      "kind": "import()"
+    },
+    {
+      "from": "frontend/app/root.tsx",
+      "to": "frontend/app/components/home/Footer.tsx",
+      "kind": "import()"
+    },
+    {
+      "from": "frontend/app/root.tsx",
+      "to": "frontend/app/components/layout/BottomNav.tsx",
+      "kind": "import()"
+    },
+    {
+      "from": "frontend/app/root.tsx",
+      "to": "frontend/app/components/rag/ChatWidget.tsx",
+      "kind": "import()"
+    },
+    {
+      "from": "frontend/app/routes/admin.brands-seo.tsx",
+      "to": "~/components/RichTextEditor",
+      "kind": "import()"
+    },
+    {
+      "from": "frontend/app/routes/blog-pieces-auto.conseils.$pg_alias.tsx",
+      "to": "~/components/blog/RelatedArticlesSidebar",
+      "kind": "import()"
+    },
+    {
+      "from": "frontend/app/routes/blog-pieces-auto.conseils.$pg_alias.tsx",
+      "to": "~/components/blog/VehicleCarousel",
+      "kind": "import()"
+    },
+    {
+      "from": "frontend/app/routes/diagnostic-auto._index.tsx",
+      "to": "~/utils/analytics",
+      "kind": "import()"
+    },
+    {
+      "from": "frontend/app/routes/orders.new.tsx",
+      "to": "~/server/remix-integration.server",
+      "kind": "import()"
+    },
+    {
+      "from": "frontend/app/routes/pieces.$slug.tsx",
+      "to": "~/utils/analytics",
+      "kind": "import()"
+    },
+    {
+      "from": "frontend/app/server/remix-integration.server.ts",
+      "to": "frontend/app/server/remix-api.server.ts",
+      "kind": "import()"
+    }
+  ]
+}

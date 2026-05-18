@@ -70,12 +70,15 @@ Les PRs de cleanup doivent :
 - **Regrouper par cohérence** (ex : tout `frontend/app/components/admin/` dans 1 PR, pas mélanger avec `/cart/`)
 - **Ne pas régresser la baseline** : le CI `audit.yml` lance `audit:baseline` qui bloque si les counts régressent au-delà des seuils.
 
-Après merge d'une PR cleanup, le mainteneur refresh la baseline :
+Après merge d'une PR cleanup, le mainteneur refresh la baseline en une commande (PR #267) :
 ```bash
-npm run audit:baseline:json > /tmp/current.json
-# Merge manually the "current" numbers into audit-reports/phase0-baseline.json
-git commit -m "chore(baseline): refresh after #XXX cleanup"
+npm run audit:baseline:refresh
+git commit -am "chore(baseline): refresh after #XXX cleanup"
 ```
+
+Le refresh ré-exécute les quatre audits, écrit atomiquement la baseline, et préserve `thresholds` / `notes` / `version` plus les sous-champs que les parsers n'extraient pas. Garde `ensureDepsInstalled()` : refuse de tourner si `node_modules/{knip,madge,dependency-cruiser,@ast-grep/cli}` manque — lance `npm ci` d'abord.
+
+Depuis PR #449, le refresh affiche aussi un **warning stderr** listant toute métrique dont le `+delta` dépasse son seuil avant d'écrire — `Ctrl-C` si la régression est accidentelle, sinon le maintainer "banque" volontairement les nouveaux counts.
 
 ## Limites honnêtes de `validate-before-delete.sh`
 

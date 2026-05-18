@@ -1,0 +1,40 @@
+name: canon-registries-validate
+
+on:
+  pull_request:
+    paths:
+      - ".spec/00-canon/repository-registry/**"
+      - "scripts/canon/validate-cross-references.py"
+      - ".github/workflows/canon-registries-validate.yml"
+  push:
+    branches: [main]
+    paths:
+      - ".spec/00-canon/repository-registry/**"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install ajv-cli
+        run: npm install -g ajv-cli@5
+      - name: Validate pipelines.registry.json
+        run: |
+          ajv validate \
+            -s .spec/00-canon/repository-registry/_schema/pipelines.registry.schema.json \
+            -d .spec/00-canon/repository-registry/pipelines.registry.json
+      - name: Validate projections.registry.json
+        run: |
+          ajv validate \
+            -s .spec/00-canon/repository-registry/_schema/projections.registry.schema.json \
+            -d .spec/00-canon/repository-registry/projections.registry.json
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Validate cross-references coherence
+        run: python3 scripts/canon/validate-cross-references.py

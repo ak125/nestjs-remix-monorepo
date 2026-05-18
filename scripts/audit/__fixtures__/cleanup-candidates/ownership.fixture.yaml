@@ -1,0 +1,7 @@
+ownership:
+  - glob: "backend/src/**"
+    owner: "@team-backend"
+    domain: "backend-core"
+  - glob: "frontend/app/routes/**"
+    owner: "@team-frontend"
+    domain: "frontend-shared"
