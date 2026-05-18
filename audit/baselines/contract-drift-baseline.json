@@ -1,0 +1,2173 @@
+{
+  "schemaVersion": "v1",
+  "createdAt": "2026-05-15",
+  "createdOnCommit": "0923c321752f",
+  "sourcePr": null,
+  "mode": "block-new-only",
+  "summary": {
+    "ownership_gap": 538,
+    "contract_invalid": 0,
+    "contract_missing": 0,
+    "canonical_stale": 0
+  },
+  "findings": [
+    {
+      "kind": "ownership_gap",
+      "id": ".dependency-cruiser.cjs"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": ".spec/templates/type-schema-template.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": ".spec/types/cart.schema.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": ".spec/types/payment.schema.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/.eslintrc.js"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/jest.config.js"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/scripts/add-missing-links.js"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/scripts/clean-seo-marque-entities.js"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/scripts/detect-all-entities.js"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/scripts/fix-all-entities.js"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/scripts/fix-entities-simple.js"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/scripts/fix-seo-fragments-entities.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/scripts/fix-unused-vars.js"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/scripts/generate-sitemaps.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/scripts/list-all-tables.js"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/scripts/run-fix-seo-marque.js"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/scripts/search-text-in-db.js"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/scripts/seo-content-audit.js"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/scripts/seo/audit-v9-inventaire.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/scripts/seo/audit/__tests__/diff-v4-vs-current.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/scripts/seo/audit/__tests__/gap-matrix-generator.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/scripts/seo/audit/__tests__/inventory-services.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/scripts/seo/audit/__tests__/r2-routes-audit.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/scripts/seo/audit/__tests__/types.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/scripts/seo/audit/diff-v4-vs-current.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/scripts/seo/audit/gap-matrix-generator.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/scripts/seo/audit/inventory-services.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/scripts/seo/audit/php-vs-remix-comparison.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/scripts/seo/audit/r2-routes-audit.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/scripts/seo/audit/r2-volume-sample.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/scripts/seo/audit/types.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/scripts/test-html-entities.js"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/api/api.module.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/api/errors-api.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/app.module.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/app.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/common/decorators/index.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/common/decorators/rate-limit.decorator.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/common/decorators/roles.decorator.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/common/decorators/user.decorator.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/common/exceptions/authentication.exception.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/common/exceptions/business-rule.exception.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/common/exceptions/configuration.exception.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/common/exceptions/database.exception.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/common/exceptions/domain-conflict.exception.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/common/exceptions/domain-not-found.exception.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/common/exceptions/domain-validation.exception.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/common/exceptions/domain.exception.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/common/exceptions/error-codes.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/common/exceptions/external-service.exception.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/common/exceptions/index.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/common/exceptions/operation-failed.exception.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/common/index.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/common/interceptors/admin-response.interceptor.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/common/interceptors/method-not-allowed.interceptor.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/common/interceptors/rate-limit-headers.interceptor.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/common/pipes/index.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/common/pipes/zod-query-validation.pipe.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/common/pipes/zod-validation.pipe.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/common/utils/error.utils.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/common/utils/index.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/common/utils/supabase-key.util.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/common/utils/url-builder.utils.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/controllers/analytics.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/controllers/orders.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/controllers/users.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/database/database.module.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/database/services/cart-data.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/database/services/database-composition.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/database/services/index.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/database/services/invoices.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/database/services/meta-tags-ariane-data.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/database/services/orders.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/database/services/payment.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/database/services/promo-data.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/database/services/shipping-data.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/database/services/supabase-base.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/database/types/database.types.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/database/utils/supabase-type-helpers.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/instrument.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/main.server.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/main.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/api.module.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/auth/dto/auth.dto.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/bot-guard/bot-guard.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/bot-guard/bot-guard.middleware.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/bot-guard/bot-guard.module.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/bot-guard/bot-guard.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/config/config.module.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/config/controllers/simple-database-config.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/config/dto/config.dto.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/config/interfaces/config.interfaces.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/config/schemas/config.schemas.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/config/services/database-config.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/config/services/simple-database-config.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/config/validators/config.validator.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/config/validators/environment.validator.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/errors/controllers/error.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/errors/controllers/internal-error-log.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/errors/entities/error-log.entity.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/errors/errors.module.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/errors/filters/global-error.filter.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/errors/services/error-log.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/errors/services/error.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/errors/services/redirect.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/invoices.module.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/layout/controllers/layout.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/layout/controllers/section.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/layout/layout.module.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/layout/services/footer.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/layout/services/header.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/layout/services/index.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/layout/services/layout.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/layout/services/meta-tags.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/layout/services/quick-search.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/layout/services/social-share.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/mcp-validation/config/mcp-route-map.config.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/mcp-validation/decorators/mcp-verify.decorator.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/mcp-validation/index.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/mcp-validation/interceptors/mcp-shadow.interceptor.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/mcp-validation/interceptors/mcp-verify.interceptor.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/mcp-validation/mcp-validation.module.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/mcp-validation/mcp-validation.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/mcp-validation/mcp-validation.types.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/mcp-validation/middleware/request-id.middleware.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/mcp-validation/services/chrome-devtools-client.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/mcp-validation/services/external-compatibility-cache.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/mcp-validation/services/external-compatibility-consensus.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/mcp-validation/services/external-compatibility-partslink24.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/mcp-validation/services/external-compatibility-scraping.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/mcp-validation/services/external-compatibility.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/mcp-validation/services/external-compatibility.types.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/mcp-validation/services/mcp-alerting.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/mcp-validation/services/mcp-query.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/mcp-validation/types/mcp-verify.types.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/metadata/controllers/breadcrumb-admin.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/metadata/controllers/optimized-breadcrumb.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/metadata/controllers/optimized-metadata.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/metadata/metadata.module.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/metadata/services/optimized-breadcrumb.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/metadata/services/optimized-metadata.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/navigation/navigation.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/navigation/navigation.module.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/navigation/navigation.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/navigation/services/commercial-menu.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/navigation/services/expedition-menu.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/navigation/services/seo-menu.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/search/controllers/pieces.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/search/controllers/search-debug.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/search/controllers/search-enhanced-existing.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/search/controllers/search.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/search/search.module.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/search/services/database-analysis.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/search/services/indexation.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/search/services/meilisearch.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/search/services/pieces-analysis.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/search/services/search-cache.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/search/services/search-enhanced-existing.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/search/services/search-filter.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/search/services/search-monitoring.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/search/services/search-simple.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/search/services/search-suggestion.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/search/services/supabase-indexation.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/search/services/vehicle-naming.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/shipping/shipping-new.module.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/shipping/shipping.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/shipping/shipping.module.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/shipping/shipping.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/staff/dto/staff.dto.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/staff/services/staff-data.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/staff/staff.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/staff/staff.module.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/staff/staff.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/substitution/controllers/substitution.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/substitution/services/intent-extractor.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/substitution/services/substitution-logger.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/substitution/services/substitution.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/substitution/substitution.module.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/substitution/types/substitution.types.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/suppliers/dto/index.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/suppliers/dto/supplier.dto.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/suppliers/dto/supplier.schemas.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/suppliers/suppliers-modern.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/suppliers/suppliers.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/suppliers/suppliers.module.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/suppliers/suppliers.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/support/controllers/ai-support.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/support/controllers/claim.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/support/controllers/contact.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/support/controllers/faq.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/support/controllers/legal.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/support/controllers/quote.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/support/controllers/review.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/support/controllers/support-analytics.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/support/index.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/support/services/ai-analysis.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/support/services/ai-smart-response.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/support/services/claim.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/support/services/contact.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/support/services/faq.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/support/services/legal-page.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/support/services/legal-version.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/support/services/legal.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/support/services/notification.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/support/services/quote.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/support/services/review.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/support/services/support-analytics.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/support/services/support-config.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/support/support.module.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/support/types/index.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/system/processors/metrics.processor.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/system/services/database-monitor.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/system/services/db-governance.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/system/services/health-check.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/system/services/metrics.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/system/services/system.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/system/simple.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/system/system-health.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/system/system.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/system/system.module.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/system/types/db-governance.types.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/upload/dto/upload.dto.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/upload/services/supabase-storage.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/vehicles/brands.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/vehicles/controllers/admin-vehicle-cache.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/vehicles/decorators/performance-monitoring.decorator.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/vehicles/dto/vehicles-simple-zod.dto.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/vehicles/dto/vehicles-zod.dto.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/vehicles/dto/vehicles.dto.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/vehicles/pipes/vehicle-validation.pipe.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/vehicles/services/brand-bestsellers.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/vehicles/services/brand-rpc.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/vehicles/services/core/vehicle-cache.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/vehicles/services/core/vehicle-enrichment.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/vehicles/services/data/vehicle-brands.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/vehicles/services/data/vehicle-models.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/vehicles/services/data/vehicle-types.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/vehicles/services/enhanced-vehicle.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/vehicles/services/search/vehicle-mine.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/vehicles/services/search/vehicle-search.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/vehicles/services/seo/brand-seo.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/vehicles/services/vehicle-meta.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/vehicles/services/vehicle-motor-codes.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/vehicles/services/vehicle-profile.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/vehicles/services/vehicle-rpc.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/vehicles/services/vehicles-performance.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/vehicles/types/vehicle.types.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/vehicles/vehicles-forms-simple.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/vehicles/vehicles.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/vehicles/vehicles.module.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/modules/vehicles/vehicles.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/notifications/notifications-center.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/notifications/notifications-center.module.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/notifications/notifications.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/notifications/notifications.gateway.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/notifications/notifications.module.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/notifications/notifications.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/remix/remix-api.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/remix/remix.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/remix/remix.module.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/remix/remix.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/search/global-search.controller.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/search/global-search.module.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/security/rpc-gate/index.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/security/rpc-gate/rpc-gate.errors.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/security/rpc-gate/rpc-gate.module.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/security/rpc-gate/rpc-gate.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/security/rpc-gate/rpc-gate.types.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/services/mail.module.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/services/mail.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/shared/crypto/crypto.module.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/shared/crypto/index.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/shared/crypto/password-crypto.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/types/order.types.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/utils/fetch-with-retry.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/utils/html-entities.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/utils/promise-helpers.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/workers/main.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/workers/processors/agentic.processor.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/workers/processors/cache.processor.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/workers/processors/email.processor.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/workers/processors/pipeline-chain.processor.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/workers/processors/seo-monitor.processor.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/workers/services/content-merger.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/workers/services/rag-change-watcher.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/workers/services/seo-monitor-scheduler.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/workers/types/content-refresh.types.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/workers/worker.module.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/test-supabase-connection.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/test-supabase-seo-fragments.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/__mocks__/@repo/database-types.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/setup.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/admin-job-health.service.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/auth-guards.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/auth.service.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/breakdown-intent.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/buying-guide-data.service.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/cyberplus-signature.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/diagnostic-content.service.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/diagnostic-engine.kg-extensions.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/enricher-text-utils.service.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/enricher-yaml-parser.service.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/env-validation-readonly.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/error-log-hardening.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/gamme-response-builder.service.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/maintenance-calculator.service.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/maintenance-calendar-endpoint.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/order-calculation.service.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/order-status.service.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/page-role-links.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/page-role-validator.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/password-crypto.service.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/paybox-callback-gate.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/paybox-service-log-sanitization.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/rag-knowledge-bootstrap.guard.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/rag-pipeline-hardening.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/rag-proxy.controller.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/rag-proxy.service.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/rag-webhook-completion.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/rag-webhook.controller.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/readonly-guards.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/seo-monitoring/google-credentials.service.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/seo-monitoring/quality-history.controller.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/seo-shadow-chain-runner.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/seo-shadow-diff-engine.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/seo-shadow-event-sink.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/seo-shadow-observatory.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/seo-shadow-purge.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/seo-shadow-sampler.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/seo-shadow-url-normalizer.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/seo-template-interpolation.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/seo/dynamic-seo-v4-ultimate.service.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/seo/quality-validator.service.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/seo/risk-flags-engine.service.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/seo/sitemap-v10.service.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/supabase-key-util.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/tests/unit/vehicle-rpc.service.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/wait-and-start.js"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "commitlint.config.js"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/.eslintrc.cjs"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/auth/unified.server.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/config/monitoring.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/config/site.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/config/visual-intent.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/constants/r1-sections.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/contexts/DensityContext.tsx"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/entry.client.tsx"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/entry.server.tsx"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/hooks/use-orders-filters.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/hooks/use-pieces-filters.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/hooks/useAdvancedAnalytics.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/hooks/useAdvancedAnalyticsComplete.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/hooks/useAiContent.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/hooks/useApi.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/hooks/useCart.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/hooks/useCartSidebar.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/hooks/useCommandPalette.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/hooks/useConfig.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/hooks/useContentLinkTracking.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/hooks/useConversionTracking.tsx"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/hooks/useEnhancedSearch.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/hooks/useHomeData.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/hooks/useHydrated.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/hooks/useImagePreloader.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/hooks/useIsomorphicEffect.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/hooks/useMobileNavigation.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/hooks/useNewsletterState.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/hooks/usePageRole.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/hooks/useProductCompatibility.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/hooks/useProductSearch.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/hooks/useRemixForm.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/hooks/useRootData.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/hooks/useScrollAnimation.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/hooks/useScrollBehavior.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/hooks/useSearchState.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/hooks/useSeoLinkTracking.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/hooks/useTableUrlState.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/hooks/useUser.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/hooks/useVehicleContext.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/hooks/useVehicleEnrichment.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/hooks/useVehiclePersistence.tsx"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/lib/auth.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/lib/schemas/validation.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/lib/seo-utils.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/lib/sitemap-fetch.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/lib/utils.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/root.tsx"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/schemas/auth.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/schemas/cart.schemas.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/schemas/checkout.schemas.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/server/remix-api.server.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/server/remix-integration.server.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/server/session.server.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/admin-api.server.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/admin-orders.server.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/admin.server.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/ai.api.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/api.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/api/brand.api.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/api/catalog-families.api.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/api/claim.api.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/api/config.api.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/api/constructeur.api.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/api/contact.api.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/api/enhanced-product.api.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/api/enhanced-vehicle.api.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/api/faq.api.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/api/gamme-api.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/api/glossary.api.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/api/hierarchy.api.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/api/legal.api.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/api/quote.api.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/api/review.api.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/api/rm-api.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/api/search.api.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/api/seo-switches.api.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/api/v5-ultimate.api.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/api/vehicle-api-unified.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/brand-colors.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/cart.api.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/cart.server.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/common/errors.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/monitoring.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/order.server.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/orders.server.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/orders/orders.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/payment-admin.server.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/payment.server.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/permissions.server.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/pieces/pieces-route.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/pieces/pieces.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/profile.server.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/services/seo/seo-variations.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/types/admin-r1.types.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/types/brand.types.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/types/catalog.types.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/types/gamme-content-contract.types.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/types/gamme-page-contract.types.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/types/layout.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/types/navigation.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/types/orders.types.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/types/payment.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/types/pieces-route.types.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/types/pieces.types.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/types/r1-images.types.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/types/r1-related.types.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/types/r3-guide.types.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/types/r6-guide.types.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/types/vehicle.types.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/analytics-sanitize.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/analytics.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/api-url.server.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/api.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/blog-metadata.tsx"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/cache-control.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/chat-intent.utils.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/date.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/dedupe-strings.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/delivery-eta.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/editorial-parser.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/family-theme.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/faq-validator.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/fetch-with-retry.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/fetch.utils.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/filter-presets.demo.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/format-catalog-count.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/format.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/gamme-contract-qa.utils.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/gamme-page-contract.utils.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/homepage-rpc.mapper.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/homepage-rpc.schema.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/image-optimizer.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/internal-api.server.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/logger.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/meta-helpers.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/og-constants.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/og-image.utils.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/orders.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/orders.utils.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/page-role.types.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/performance.utils.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/permissions.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/pieces-filters.utils.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/pieces-loader.utils.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/pieces-route.utils.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/pieces-vehicle.loader.server.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/pieces-vehicle.meta.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/proxy-headers.server.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/r1-builders.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/r1-copy-gate.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/r1-family-defaults.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/r1-faq-merge.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/r1-reusable-content.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/r1-section-pack.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/r1-source-tracker.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/rm-mapper.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/safe-loader.server.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/safe-redirect.server.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/sanitize-advice.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/search-mappers.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/seo-clean.utils.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/seo.server.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/seo/blog-sitemap.server.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/seo/canonical.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/seo/meta-generators.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/seo/pieces-schema.utils.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/stock.utils.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/storage.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/supabase-storage.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/type-guards.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/url-builder.utils.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/vehicle-cookie.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/app/utils/web-vitals.client.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/frontend/tests/e2e/responsive.spec.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/index.cjs"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/playwright.config.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/postcss.config.cjs"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/tailwind.config.cjs"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/vite.config.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "frontend/vitest.config.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "jest.config.js"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "migrations/analyze-missing-positions.js"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "services/remotion-renderer/src/compositions/components/BrakingSchematicSVG.tsx"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "services/remotion-renderer/src/compositions/index.tsx"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "services/remotion-renderer/src/compositions/ShortBrakingFact.tsx"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "services/remotion-renderer/src/compositions/ShortProductHighlight.tsx"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "services/remotion-renderer/src/compositions/TestCard.tsx"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "services/remotion-renderer/src/lib/ffmpeg-check.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "services/remotion-renderer/src/lib/ffmpeg-postprocess.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "services/remotion-renderer/src/lib/render-video.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "services/remotion-renderer/src/lib/s3-upload.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "services/remotion-renderer/src/routes/cleanup.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "services/remotion-renderer/src/routes/health.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "services/remotion-renderer/src/routes/postprocess.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "services/remotion-renderer/src/routes/presigned-url.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "services/remotion-renderer/src/routes/render.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "services/remotion-renderer/src/server.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "services/remotion-renderer/src/types/contract.ts"
+    }
+  ],
+  "notes": [
+    "Accepted existing drift ceiling — DO NOT widen without ratchet-down justification.",
+    "CI fails iff a NEW finding (current − baseline) appears.",
+    "Reductions are always allowed and surfaced as 'resolved' in CI summary.",
+    "Refresh via `npm run audit:contract-drift-ratchet:refresh` — MAINTAINER-ONLY MANUAL."
+  ]
+}

@@ -306,3 +306,8 @@ Implementation : `DecisionTrace` (decisionId, decidedBy, decidedAt, pipelineVers
 | 1.5 | `rag-state.types.ts` (PHASE15_*) | `rag-contracts.types.ts` | `rag-normalization.service.ts` | `20260315_phase15_normalization.sql` |
 | 1.6 | `rag-state.types.ts` (PHASE16_*) | `rag-readiness.types.ts` | `rag-admissibility-gate.service.ts` | `20260316_phase16_admissibility_gate.sql` |
 | 2 | `rag-state.types.ts` (PHASE2_*) | `rag-exploitation.types.ts` | (a venir) | `20260317_phase2_exploitation.sql` |
+
+## Companions machine-readable
+
+- [`pipelines.registry.json`](repository-registry/pipelines.registry.json) — registry des pipelines content/SEO/RAG, statut `READY` / `PARTIAL` / `MISSING` par pipeline (6 pipelines tracked). Validé en CI par `pipelines.registry.schema.json` (ajv).
+- [`projections.registry.json`](repository-registry/projections.registry.json) — registry des projections runtime DB SEO (`seo_runtime_v1` status `PLANNED`). Validé en CI par `projections.registry.schema.json`. Cross-references bidirectionnelles avec `pipelines.registry.json` (`feeds_projection` ↔ `fed_by_pipeline`) vérifiées par `scripts/canon/validate-cross-references.py`. Réf ADR-058.

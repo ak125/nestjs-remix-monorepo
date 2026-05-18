@@ -1,0 +1,96 @@
+name: Registry build (ADR-058 PR-C, warn-only)
+
+# Phase 1 freshness gate — warning-only per ADR-058 §Acceptance V1.
+# Re-runs the 5 Layer 1 builders + RPC parser fixtures test on every PR
+# and pushes to main. Does NOT block PRs (continue-on-error: true) since
+# the canonical projection (Layer 3) merging happens in PR-E, not here.
+#
+# When PR-E ships, this workflow will also assert reproducibility
+# (canonical.json hash stable) — for now we just exercise the builders.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/registry/**"
+      - "scripts/audit/build-deep-inventory.js"
+      - "scripts/audit/build-db-usage-map.js"
+      - "packages/registry/**"
+      - "tests/registry/**"
+      - "audit/**"
+      - "backend/supabase/migrations/**"
+      - ".github/workflows/registry-build.yml"
+      - "package.json"
+  push:
+    branches: [main]
+    paths:
+      - "scripts/registry/**"
+      - "packages/registry/**"
+      - "tests/registry/**"
+      - ".github/workflows/registry-build.yml"
+
+jobs:
+  registry-build:
+    name: Registry Layer 1 builders (warn-only)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # continue-on-error keeps this gate non-blocking until PR-E + 7-14d signal.
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run upstream audit producers (provide inputs for builders)
+        run: npm run audit:inventory
+
+      - name: Build all 5 Layer 1 registries
+        run: npm run registry:build
+
+      - name: Verify outputs are valid JSON + sorted
+        run: |
+          for f in audit/registry/files.json audit/registry/runtime.json audit/registry/deps.json audit/registry/db.json audit/registry/rpc.json; do
+            test -f "$f" || { echo "MISSING: $f"; exit 1; }
+            jq empty < "$f" || { echo "INVALID JSON: $f"; exit 1; }
+          done
+
+      - name: Determinism check (V1-2 invariant — hash stable across 2 runs)
+        run: |
+          sha256sum audit/registry/*.json > /tmp/h1.txt
+          npm run registry:build
+          sha256sum audit/registry/*.json > /tmp/h2.txt
+          if ! diff -q /tmp/h1.txt /tmp/h2.txt; then
+            echo "::warning::Registry outputs are not deterministic across 2 runs"
+            diff /tmp/h1.txt /tmp/h2.txt
+            exit 1
+          fi
+          echo "✓ Deterministic across 2 runs"
+
+      - name: "Run RPC parser fixture tests (V1-3: 3 parse modes)"
+        run: npm run registry:test:rpc-parser
+
+      - name: Validate outputs against @repo/registry Zod schemas
+        run: npm run registry:validate:zod
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## Registry Layer 1 build summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          for f in audit/registry/files.json audit/registry/runtime.json audit/registry/deps.json audit/registry/db.json audit/registry/rpc.json; do
+            if [ -f "$f" ]; then
+              count=$(jq '.entries | length' < "$f")
+              sha=$(sha256sum "$f" | cut -c1-12)
+              echo "- \`$f\` : **$count entries**, sha256:$sha" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "- \`$f\` : ❌ MISSING" >> $GITHUB_STEP_SUMMARY
+            fi
+          done

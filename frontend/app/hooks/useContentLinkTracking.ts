@@ -21,6 +21,7 @@
 
 import { useLocation } from '@remix-run/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { postJsonBeacon } from '~/utils/beacon';
 
 // Types pour le tracking A/B
 export interface LinkFormula {
@@ -181,7 +182,7 @@ export function useContentLinkTracking(
    * Track les impressions des liens
    */
   const trackImpressionsBatch = useCallback(
-    async (links: HTMLAnchorElement[]) => {
+    (links: HTMLAnchorElement[]) => {
       if (typeof window === 'undefined' || !trackImpressions) return;
       if (links.length === 0) return;
 
@@ -195,24 +196,14 @@ export function useContentLinkTracking(
         byType.set(type, (byType.get(type) || 0) + 1);
       });
 
-      // Envoyer les impressions
-      try {
-        await Promise.all(
-          Array.from(byType.entries()).map(([linkType, count]) =>
-            fetch('/api/seo/track-impression', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                linkType,
-                pageUrl,
-                linkCount: count,
-                sessionId,
-              }),
-            }),
-          ),
-        );
-      } catch {
-        // Silencieux
+      // sendBeacon avec fallback fetch keepalive — voir frontend/app/utils/beacon.ts.
+      for (const [linkType, count] of byType.entries()) {
+        postJsonBeacon('/api/seo/track-impression', {
+          linkType,
+          pageUrl,
+          linkCount: count,
+          sessionId,
+        });
       }
     },
     [location.pathname, trackImpressions],

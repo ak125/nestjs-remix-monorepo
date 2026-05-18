@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "captured_at": "2026-04-24",
-  "captured_on_commit": "c18cd233",
+  "captured_at": "2026-05-16",
+  "captured_on_commit": "95403c7d3",
   "thresholds": {
     "unused_files_delta": 5,
     "unused_exports_delta": 10,
@@ -15,25 +15,26 @@
     "ast_grep_errors_delta": 0
   },
   "knip": {
-    "unused_files": 362,
-    "unused_exports": 218,
-    "unused_types": 355,
+    "unused_files": 328,
+    "unused_exports": 238,
+    "unused_types": 214,
     "unused_dependencies": 4,
     "unused_dev_dependencies": 4,
-    "unlisted_dependencies": 9,
-    "unlisted_binaries": 3,
+    "unlisted_dependencies": 37,
+    "unlisted_binaries": 5,
     "duplicate_exports": 41
   },
   "madge": {
-    "cycles": 17,
+    "cycles": 15,
     "backend_cycles": 16,
     "frontend_cycles": 1
   },
   "depcruise": {
-    "violations": 148,
+    "violations": 144,
     "errors": 0,
     "modules_cruised": 2101,
-    "dependencies_cruised": 8425
+    "dependencies_cruised": 8425,
+    "warnings": 144
   },
   "ast_grep": {
     "warnings": 0,
@@ -44,6 +45,7 @@
     "ast_grep_errors_delta = 0 means any new blocking rule violation fails CI immediately.",
     "cycles_delta = 0 because any new cycle indicates coupling going the wrong direction.",
     "unused_files tolerates +5 to accommodate genuinely new files (e.g. new controller) that knip hasn't yet traced transitively.",
-    "After each cleanup PR merges, refresh this baseline via `npm run audit:baseline:refresh` and commit the new counts."
+    "After each cleanup PR merges, refresh this baseline via `npm run audit:baseline:refresh` and commit the new counts.",
+    "Since PR #449, --refresh prints a stderr warning listing any metric whose +delta exceeds threshold before writing — Ctrl-C if unintentional."
   ]
 }

@@ -507,3 +507,297 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `monorepo/pr5-url-immutability-gate`
 - **Décision** : feat(seo): add R-SEO-09 URL immutability gate phase 1 surface guard (+1 other commit)
 - **Sortie** : PR #428 | commits 18cc6c59 22ff92fc
+
+## 2026-05-13 — feat/registry-pr-b-schemas (auto)
+
+- **Branche** : `feat/registry-pr-b-schemas`
+- **Décision** : feat(registry): add @repo/registry package — Zod schemas V1 (ADR-058 PR-B)
+- **Sortie** : PR #457 | commits 0504fd38
+
+## 2026-05-13 — feat/registry-pr-c-data-layer (auto)
+
+- **Branche** : `feat/registry-pr-c-data-layer`
+- **Décision** : feat(registry): 5 Layer 1 builders + RPC parse modes + CI warn-only (ADR-058 PR-C) (+2 other commits)
+- **Sortie** : PR #458 | commits b281943b f067e9ec 0504fd38
+
+## 2026-05-13 — feat/registry-pr-d-canon-overlay (auto)
+
+- **Branche** : `feat/registry-pr-d-canon-overlay`
+- **Décision** : feat(registry): Layer 2 overlay manuel + seed/validate + DomainId D1..D15 (ADR-058 PR-D) (+4 other commits)
+- **Sortie** : PR #460 | commits 66d9e64f b08d3e90 b281943b f067e9ec 0504fd38
+
+## 2026-05-13 — feat/registry-pr-e-canonical (auto)
+
+- **Branche** : `feat/registry-pr-e-canonical`
+- **Décision** : feat(registry): canonical projection Layer 3 + freshness CI Phase 1 + 4 invariants (ADR-058 PR-E) (+6 other commits)
+- **Sortie** : PR #462 | commits a1d79d5b 658018c4 66d9e64f b08d3e90 b281943b f067e9ec 0504fd38
+
+## 2026-05-13 — feat/registry-pr-g-block-new (auto)
+
+- **Branche** : `feat/registry-pr-g-block-new`
+- **Décision** : feat(registry): CI Phase 2 block-new gate + pre-push hook (ADR-058 PR-G) (+8 other commits)
+- **Sortie** : PR #464 | commits 27d515d8 77d4b57a a1d79d5b 658018c4 66d9e64f b08d3e90 b281943b f067e9ec 0504fd38
+
+## 2026-05-13 — feat/registry-pr-g-block-new (auto)
+
+- **Branche** : `feat/registry-pr-g-block-new`
+- **Décision** : chore(registry): regen canonical + REPO_MAP after merge main (PR-G recovery) (+12 other commits)
+- **Sortie** : PR #482 | commits 0653d797 00fe3be6 60209305 5828f494 27d515d8 77d4b57a a1d79d5b 658018c4 66d9e64f b08d3e90 b281943b f067e9ec 0504fd38
+
+## 2026-05-13 — feat/registry-pr-g-block-new (auto)
+
+- **Branche** : `feat/registry-pr-g-block-new`
+- **Décision** : fix(registry-new-file-gate): invoke node direct (npm wrapper pollutes JSON stdout) (+14 other commits)
+- **Sortie** : PR #482 | commits 3eb76950 5368dec1 0653d797 00fe3be6 60209305 5828f494 27d515d8 77d4b57a a1d79d5b 658018c4 66d9e64f b08d3e90 b281943b f067e9ec 0504fd38
+
+## 2026-05-13 — feat/registry-pr-g-block-new (auto)
+
+- **Branche** : `feat/registry-pr-g-block-new`
+- **Décision** : fix(check-new-files): sanitize argv ref + execFileSync (CodeQL injection guard) (+16 other commits)
+- **Sortie** : PR #482 | commits f0c6f729 b05435e8 3eb76950 5368dec1 0653d797 00fe3be6 60209305 5828f494 27d515d8 77d4b57a a1d79d5b 658018c4 66d9e64f b08d3e90 b281943b f067e9ec 0504fd38
+
+## 2026-05-14 — feat/ci-workspace-invariants (auto)
+
+- **Branche** : `feat/ci-workspace-invariants`
+- **Décision** : feat(ci): workspace mini-monorepo check (ADR-061 §6)
+- **Sortie** : PR aucune | commits 9331cadd
+
+## 2026-05-14 — feat/canon-mirrors-precommit-hook (auto)
+
+- **Branche** : `feat/canon-mirrors-precommit-hook`
+- **Décision** : feat(canon-mirrors): pre-commit hook blocks manual edits (ADR-061 §3)
+- **Sortie** : PR aucune | commits c725253e
+
+## 2026-05-14 — feat/pr-4-frontend-utils-batch-1 (auto)
+
+- **Branche** : `feat/pr-4-frontend-utils-batch-1`
+- **Décision** : chore(cleanup): drop 4 frontend dead utils (PR-4 batch 1)
+- **Sortie** : PR aucune | commits c24a3fe5
+
+## 2026-05-14 — refactor/registry-zod-validator-extract (auto)
+
+- **Branche** : `refactor/registry-zod-validator-extract`
+- **Décision** : refactor(ci): extract Zod validator to tsx script, remove inline heredoc + build dependency
+- **Sortie** : PR #503 | commits 47dea57f
+
+## 2026-05-14 — refactor/registry-zod-validator-extract (auto)
+
+- **Branche** : `refactor/registry-zod-validator-extract`
+- **Décision** : refactor(registry): convert @repo/registry to source-only workspace (+2 other commits)
+- **Sortie** : PR #503 | commits 90f20f13 9afc7674 47dea57f
+
+## 2026-05-14 — fix/perf-gates-bundle-stats-no-lighthouse (auto)
+
+- **Branche** : `fix/perf-gates-bundle-stats-no-lighthouse`
+- **Décision** : fix(ci): remplace Lighthouse-CI synthétique par bundle-stats déterministe
+- **Sortie** : PR #506 | commits 8b2dfd70
+
+## 2026-05-14 — fix/perf-gates-bundle-stats-no-lighthouse (auto)
+
+- **Branche** : `fix/perf-gates-bundle-stats-no-lighthouse`
+- **Décision** : fix(perf-gates): use turbo build at root, not -w frontend (workspace deps) (+2 other commits)
+- **Sortie** : PR #506 | commits dbb88af1 d2f291a8 8b2dfd70
+
+## 2026-05-14 — feat/db-contract-v1 (auto)
+
+- **Branche** : `feat/db-contract-v1`
+- **Décision** : feat(db-contract): §2 add canon db.yaml — 8 P0/P1 tables (V1 minimal) (+1 other commit)
+- **Sortie** : PR aucune | commits 82a7cede 48330a0d
+
+## 2026-05-14 — feat/db-contract-v1 (auto)
+
+- **Branche** : `feat/db-contract-v1`
+- **Décision** : feat(db-contract): §6 size invariants + doctrine pointer cleanup (+6 other commits)
+- **Sortie** : PR #511 | commits 3a654957 f9aa65a7 e1bc4a24 c27b7035 106c0bb6 82a7cede 48330a0d
+
+## 2026-05-14 — feat/seo-cp-criticality-tiers (auto)
+
+- **Branche** : `feat/seo-cp-criticality-tiers`
+- **Décision** : fix(seo): closure INC-2026-005 — GSC 5xx 30 400 pages recovery + tactical hardening (#510)
+- **Sortie** : PR aucune | commits e118d599
+
+## 2026-05-14 — feat/seo-cp-criticality-tiers (auto)
+
+- **Branche** : `feat/seo-cp-criticality-tiers`
+- **Décision** : chore(registry): renumber ADR-062 → ADR-064 (062 + 063 already taken) (+3 other commits)
+- **Sortie** : PR #515 | commits 815d3307 7fbe8bd1 24e425ab e118d599
+
+## 2026-05-14 — feat/adr-063-cwv-monitoring-crux-api (auto)
+
+- **Branche** : `feat/adr-063-cwv-monitoring-crux-api`
+- **Décision** : fix(seo-crux): reword down.sql comment to avoid migration-safety false positive (+3 other commits)
+- **Sortie** : PR #514 | commits ac7fd3ad feb1d4b0 5d1a7535 15092a48
+
+## 2026-05-14 — feat/seo-cp-synthetic-crawler (auto)
+
+- **Branche** : `feat/seo-cp-synthetic-crawler`
+- **Décision** : feat(seo-cp): synthetic crawler L1 — PR-2A-1 SEO Production Control Plane
+- **Sortie** : PR #516 | commits 78e38791
+
+## 2026-05-14 — feat/seo-cp-synthetic-crawler (auto)
+
+- **Branche** : `feat/seo-cp-synthetic-crawler`
+- **Décision** : fix(seo-cp): extend SupabaseBaseService + correct path resolution (+2 other commits)
+- **Sortie** : PR #516 | commits 764670e0 d148698d 78e38791
+
+## 2026-05-14 — feat/seo-cp-synthetic-crawler (auto)
+
+- **Branche** : `feat/seo-cp-synthetic-crawler`
+- **Décision** : fix(seo-cp): add -- APPROVED: comments to DROP statements (CI migration safety gate) (+4 other commits)
+- **Sortie** : PR #516 | commits b2489e5e d8002a36 824d0dfc 7e84c3ee dba46e79
+
+## 2026-05-14 — feat/adr-063-cwv-ingestion-v2 (auto)
+
+- **Branche** : `feat/adr-063-cwv-ingestion-v2`
+- **Décision** : fix(seo-crux): prettier formatting + jest transformIgnore for @repo/seo-types (+1 other commit)
+- **Sortie** : PR #518 | commits ea602630 dd75d842
+
+## 2026-05-14 — feat/adr-063-cwv-ingestion-v2 (auto)
+
+- **Branche** : `feat/adr-063-cwv-ingestion-v2`
+- **Décision** : fix(seo-crux): jest moduleNameMapper for @repo/seo-types workspace symlink (+3 other commits)
+- **Sortie** : PR #518 | commits f03a0252 26c34086 ea602630 dd75d842
+
+## 2026-05-14 — feat/adr-063-cwv-ingestion-v2 (auto)
+
+- **Branche** : `feat/adr-063-cwv-ingestion-v2`
+- **Décision** : test(seo-crux): skip fake-timer retry+circuit-breaker tests (CI timeout) (+5 other commits)
+- **Sortie** : PR #518 | commits f07a4990 44181f8c f03a0252 26c34086 ea602630 dd75d842
+
+## 2026-05-14 — feat/adr-063-cwv-ingestion-v2 (auto)
+
+- **Branche** : `feat/adr-063-cwv-ingestion-v2`
+- **Décision** : test(seo-crux): minimize to sync-only coverage (3 tests) (+7 other commits)
+- **Sortie** : PR #518 | commits 08142888 e5c6864b f07a4990 44181f8c f03a0252 26c34086 ea602630 dd75d842
+
+## 2026-05-14 — feat/adr-063-cwv-alerting (auto)
+
+- **Branche** : `feat/adr-063-cwv-alerting`
+- **Décision** : feat(seo-crux): alerter service (pr-4 adr-063)
+- **Sortie** : PR #525 | commits a6f3b25f
+
+## 2026-05-14 — feat/pr-w3b-registry-tests-blocking (auto)
+
+- **Branche** : `feat/pr-w3b-registry-tests-blocking`
+- **Décision** : ci(audit): promote @repo/registry contract tests to BLOCKING gate (PR-W3b)
+- **Sortie** : PR aucune | commits fce47ec9
+
+## 2026-05-14 — feat/seo-cp-cf-analytics-collector (auto)
+
+- **Branche** : `feat/seo-cp-cf-analytics-collector`
+- **Décision** : feat(seo-cp): cloudflare analytics collector L1 — PR-2A-2 (ADR-064)
+- **Sortie** : PR #520 | commits 8701fdf4
+
+## 2026-05-14 — feat/seo-cp-cf-analytics-collector (auto)
+
+- **Branche** : `feat/seo-cp-cf-analytics-collector`
+- **Décision** : fix(ci): grant pull-requests:write to migration-safety job (squawk upload-to-github) (+2 other commits)
+- **Sortie** : PR #520 | commits adf76ba3 f240f3b5 8701fdf4
+
+## 2026-05-14 — feat/seo-cp-cf-analytics-collector (auto)
+
+- **Branche** : `feat/seo-cp-cf-analytics-collector`
+- **Décision** : fix(seo-cp): squawk-conform migration cf_analytics (drop BEGIN/COMMIT, BIGINT, SET timeouts) (+4 other commits)
+- **Sortie** : PR #520 | commits 9e67a8d4 be4723e1 adf76ba3 f240f3b5 8701fdf4
+
+## 2026-05-14 — feat/seo-cp-runtime-logs-collector (auto)
+
+- **Branche** : `feat/seo-cp-runtime-logs-collector`
+- **Décision** : feat(seo-cp): runtime-logs collector L1 — PR-2A-3 (ADR-064)
+- **Sortie** : PR #524 | commits 106f6816
+
+## 2026-05-14 — feat/seo-cp-runtime-logs-collector (auto)
+
+- **Branche** : `feat/seo-cp-runtime-logs-collector`
+- **Décision** : ci(migration-safety): grant pull-requests: write to job (fix squawk 403) (+2 other commits)
+- **Sortie** : PR #524 | commits bc5d4e26 772436f5 106f6816
+
+## 2026-05-14 — feat/seo-cp-runtime-logs-collector (auto)
+
+- **Branche** : `feat/seo-cp-runtime-logs-collector`
+- **Décision** : Revert "ci(migration-safety): grant pull-requests: write to job (fix squawk 403)" (+4 other commits)
+- **Sortie** : PR #524 | commits f3b660d6 ec89dff3 bc5d4e26 772436f5 106f6816
+
+## 2026-05-15 — feat/pr-3b-architecture-freshness-blocking (auto)
+
+- **Branche** : `feat/pr-3b-architecture-freshness-blocking`
+- **Décision** : ci(audit): promote architecture freshness gate to BLOCKING (PR-3b)
+- **Sortie** : PR #531 | commits 0589ed20
+
+## 2026-05-15 — feat/pr-3b-architecture-freshness-blocking (auto)
+
+- **Branche** : `feat/pr-3b-architecture-freshness-blocking`
+- **Décision** : chore(architecture): regenerate .dependency-cruiser.generated.cjs (PR-3b ratchet self-hosting fix) (+2 other commits)
+- **Sortie** : PR #531 | commits 035327f5 caee5a3c 0589ed20
+
+## 2026-05-15 — feat/pr-6-contract-drift-observatory (auto)
+
+- **Branche** : `feat/pr-6-contract-drift-observatory`
+- **Décision** : test(observatory): empty commit to validate PR-comment upsert (PR-6) (+4 other commits)
+- **Sortie** : PR #540 | commits ef4d8815a da0694748 7193c7082 27d794048 8cd5d6463
+
+## 2026-05-15 — feat/seo-r2-composition-v2-foundation (auto)
+
+- **Branche** : `feat/seo-r2-composition-v2-foundation`
+- **Décision** : chore(registry): add seo_r2_v2 migration glob to ownership.yaml (ADR-066) (+3 other commits)
+- **Sortie** : PR #543 | commits 6ab4fe6e2 40102ed6b 3441fd143 a08d62eb9
+
+## 2026-05-15 — feat/seo-r2-composition-v2-foundation (auto)
+
+- **Branche** : `feat/seo-r2-composition-v2-foundation`
+- **Décision** : fix(seo-r2): ci failures - class-validator removal, bigint ids, opa require cast (+5 other commits)
+- **Sortie** : PR #543 | commits 694945cf7 4f626d0e3 6ab4fe6e2 40102ed6b 3441fd143 a08d62eb9
+
+## 2026-05-16 — feat/seo-sitemap-auth-phase-0-foundation (auto)
+
+- **Branche** : `feat/seo-sitemap-auth-phase-0-foundation`
+- **Décision** : chore(auth): add jose + cron-parser + ioredis-mock deps for sitemap OIDC auth
+- **Sortie** : PR aucune | commits d650eada2
+
+## 2026-05-16 — chore/pr-8a-controlled-cleanup-inventory (auto)
+
+- **Branche** : `chore/pr-8a-controlled-cleanup-inventory`
+- **Décision** : feat(audit): markdown projection for cleanup-candidates inventory (+4 other commits)
+- **Sortie** : PR aucune | commits a82d25b49 191914803 72f191f3f bb7b22f00 dcc71f3cf
+
+## 2026-05-16 — chore/pr-8a-controlled-cleanup-inventory (auto)
+
+- **Branche** : `chore/pr-8a-controlled-cleanup-inventory`
+- **Décision** : feat(audit): emit PR-8 controlled cleanup inventory (333 candidates, deterministic) (+6 other commits)
+- **Sortie** : PR aucune | commits e13df3ff0 31da20001 a82d25b49 191914803 72f191f3f bb7b22f00 dcc71f3cf
+
+## 2026-05-16 — chore/pr-8a-controlled-cleanup-inventory (auto)
+
+- **Branche** : `chore/pr-8a-controlled-cleanup-inventory`
+- **Décision** : chore(registry): add ownership entry for audit/cleanup/** (PR-8a prerequisite) (+8 other commits)
+- **Sortie** : PR #567 | commits 05771dff2 8c900c13c e13df3ff0 31da20001 a82d25b49 191914803 72f191f3f bb7b22f00 dcc71f3cf
+
+## 2026-05-16 — fix/vehicles-strict-numeric-pipe (auto)
+
+- **Branche** : `fix/vehicles-strict-numeric-pipe`
+- **Décision** : chore(ownership): register backend/src/common/{pipes/params,schemas} (+1 other commit)
+- **Sortie** : PR #553 | commits 6f0030af8 08159f793
+
+## 2026-05-16 — chore/turbo-dev-depends-on-build (auto)
+
+- **Branche** : `chore/turbo-dev-depends-on-build`
+- **Décision** : chore(turbo): dev task depends on workspace builds
+- **Sortie** : PR #573 | commits 3c67dc79a
+
+## 2026-05-15 — feat/pr-7a-contract-drift-ratchet (auto)
+
+- **Branche** : `feat/pr-7a-contract-drift-ratchet`
+- **Décision** : chore(canon): cover audit/baselines/** in ownership.yaml (D15/@ak125) (+4 other commits)
+- **Sortie** : PR #545 | commits 48766b587 3402aee3f 347f4bcf5 0923c3217 18263e997
+
+## 2026-05-15 — feat/pr-7a-contract-drift-ratchet (auto)
+
+- **Branche** : `feat/pr-7a-contract-drift-ratchet`
+- **Décision** : fix(ci): bypass npm banner in ratchet json output (workflow surgical fix) (+6 other commits)
+- **Sortie** : PR #545 | commits af746ad61 f539f83e4 48766b587 3402aee3f 347f4bcf5 0923c3217 18263e997
+
+## 2026-05-17 — feat/seo-cp-cf-rum-collector (auto)
+
+- **Branche** : `feat/seo-cp-cf-rum-collector`
+- **Décision** : feat(seo-cp): pr-2a-2.5 cloudflare rum collector (web vitals edge ingestion)
+- **Sortie** : PR #583 | commits 24fdf7367

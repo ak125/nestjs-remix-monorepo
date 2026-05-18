@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/ak125/nestjs-remix-monorepo/.spec/00-canon/repository-registry/_schema/projections.registry.schema.json",
+  "title": "Projections Registry Canon",
+  "description": "Registry machine-readable des projections runtime DB SEO. Réf ADR-058.",
+  "type": "object",
+  "required": ["schema_version", "projections"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "schema_url": { "type": "string" },
+    "generated_at": { "type": ["string", "null"] },
+    "projections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "projection_id",
+          "status",
+          "source",
+          "fed_by_pipeline",
+          "tables",
+          "projection_contract_version",
+          "adr"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "projection_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*_v[0-9]+$"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["PLANNED", "SHADOW", "LIVE", "DEPRECATED"]
+          },
+          "source": { "type": "string" },
+          "fed_by_pipeline": {
+            "type": "string",
+            "description": "Doit référencer un pipeline.id présent dans pipelines.registry.json"
+          },
+          "tables": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "pattern": "^__[a-z_]+$" }
+          },
+          "materialized_views": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "runner": { "type": "string" },
+          "refresh_worker": { "type": "string" },
+          "rpc": { "type": "string" },
+          "consumers": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["R0_HOME", "R1_ROUTER", "R2_PRODUCT", "R3_CONSEILS", "R4_REFERENCE", "R6_GUIDE_ACHAT", "R7_BRAND", "R8_VEHICLE"]
+            }
+          },
+          "consumers_non_seo": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["rag", "support", "diagnostic_tool"]
+            }
+          },
+          "projection_contract_version": {
+            "type": "string",
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+          },
+          "rollout_flag": { "type": "string" },
+          "owner_pr": { "type": "string" },
+          "adr": {
+            "type": "string",
+            "pattern": "^ADR-[0-9]{3}$"
+          }
+        }
+      }
+    }
+  }
+}

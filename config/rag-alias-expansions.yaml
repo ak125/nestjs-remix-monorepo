@@ -140,6 +140,16 @@ maitre-cylindre-de-frein:
   - maitre-cylindre
   - mc frein
   - mc de frein
+  # Added 2026-04-23 from Keyword Stats 2026-04-23 at 16_53_56.csv
+  # 8/9 candidats retenus (rejet: "maitre frein" — trop lâche, matche autres pièces frein)
+  - cylindre de frein        # vol=500 — synonyme principal
+  - cylindre maitre          # vol=50  — inversion
+  - maitres cylindres        # vol=50  — pluriel
+  - master cylindre          # vol=50  — anglicisme FR
+  - master cylindre de frein # vol=50  — anglicisme FR
+  - met cylindre             # vol=50  — normalisation Google Ads "maître"→"met"
+  - met cylindre de frein    # vol=50  — idem
+  - met cylindre frein       # vol=50  — idem
 
 capteur-abs:
   - sonde abs

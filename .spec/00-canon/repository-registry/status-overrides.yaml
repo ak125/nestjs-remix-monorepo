@@ -1,0 +1,22 @@
+# .spec/00-canon/repository-registry/status-overrides.yaml
+#
+# Layer 2 overlay — status overrides for the Repository Control Plane (ADR-058).
+#
+# Initially mostly empty — the auto-classification in Layer 1 builders (PR-C)
+# is the primary mechanism. This file is for surgical overrides when builders
+# cannot infer correctly (rare). Each override is auditable : reason + date + setBy
+# are mandatory.
+#
+# Anti-pattern (per ADR-058 invariant V1-3) : don't use this file to mass-classify
+# ambiguous paths as LEGACY ; let them stay UNKNOWN until builders can resolve.
+
+schemaVersion: "1.0.0"
+
+entries:
+  - glob: "backend/src/rm/**"
+    status: LEGACY
+    reason: |
+      ADR-004 rm/ Module Scope : DEV-only module, import non résolu en Docker
+      build. Marked LEGACY in canon since 2026-02-03 — not deployed to runtime.
+    setAt: "2026-05-13"
+    setBy: "@ak125"
