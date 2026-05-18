@@ -1,16 +1,26 @@
 import {
+  Body,
   Controller,
-  Get,
-  Query,
-  ParseIntPipe,
   DefaultValuePipe,
+  Get,
+  Headers,
+  HttpCode,
+  HttpStatus,
   Logger,
+  ParseIntPipe,
+  Post,
+  Query,
+  Req,
 } from '@nestjs/common';
+import type { Request } from 'express';
 import {
   OperationFailedException,
   DomainNotFoundException,
 } from '@common/exceptions';
 import { RmBuilderService } from '../services/rm-builder.service';
+import { RmAlternativesService } from '../services/rm-alternatives.service';
+import { RmSoft404TrackerService } from '../services/rm-soft404-tracker.service';
+import { TrackSoft404BodySchema, type TrackSoft404Body } from '../dto/alternatives-v2.dto';
 
 /**
  * 🏗️ RM Controller
@@ -27,7 +37,11 @@ import { RmBuilderService } from '../services/rm-builder.service';
 export class RmController {
   private readonly logger = new Logger(RmController.name);
 
-  constructor(private readonly rmBuilder: RmBuilderService) {}
+  constructor(
+    private readonly rmBuilder: RmBuilderService,
+    private readonly rmAlternatives: RmAlternativesService,
+    private readonly rmTracker: RmSoft404TrackerService,
+  ) {}
 
   /**
    * 📦 GET /api/rm/products
@@ -265,18 +279,46 @@ export class RmController {
   ) {
     try {
       const clampedLimit = Math.min(Math.max(limit, 1), 24);
-      const result = await this.rmBuilder.getAlternatives(
-        gamme_id,
-        type_id,
-        clampedLimit,
-      );
-      return { success: true, ...result };
+      return await this.rmAlternatives.compute(type_id, gamme_id, clampedLimit);
     } catch (err) {
       this.logger.warn(
-        `Alternatives endpoint error for gamme=${gamme_id} type=${type_id}: ${err instanceof Error ? err.message : err}`,
+        `Alternatives v2 endpoint error gamme=${gamme_id} type=${type_id}: ${err instanceof Error ? err.message : err}`,
       );
-      return { success: true, alternativeGammes: [], alternativeVehicles: [] };
+      return {
+        success: true,
+        version: 'v2',
+        etag: 'sha256-empty',
+        alternativeVehicles: [],
+        alternativeGammes: [],
+        relatedModels: [],
+      };
     }
+  }
+
+  /**
+   * 📡 POST /api/rm/alternatives/track-soft-404
+   *
+   * Append-only beacon for soft-404 tracking.
+   * Fire-and-forget, returns 204 No Content.
+   * Invalid bodies are silently rejected.
+   */
+  @Post('alternatives/track-soft-404')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async trackSoft404(
+    @Body() body: unknown,
+    @Req() req: Request,
+    @Headers('user-agent') ua: string | undefined,
+    @Headers('referer') referer: string | undefined,
+  ): Promise<void> {
+    const parsed = TrackSoft404BodySchema.safeParse(body);
+    if (!parsed.success) return; // fire-and-forget : silent reject on invalid body
+
+    const sessionId = (req as any)?.session?.id ?? null;
+    await this.rmTracker.track(parsed.data as { pg_id: number; type_id: number }, {
+      sessionId,
+      ua: ua ?? null,
+      referrer: referer ?? null,
+    });
   }
 
   /**
