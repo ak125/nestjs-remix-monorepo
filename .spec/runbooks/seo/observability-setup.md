@@ -98,7 +98,7 @@ SEO_ALERTS_EMAIL_TO=automecanik.seo@gmail.com
 
 > **Note** : les `*_PRIVATE_KEY` doivent être encodées avec les `\n` littéraux (la valeur du JSON `private_key`, recopiée tel quel). Le code dans `crawl-budget-audit.service.ts:213` fait déjà `.replace(/\\n/g, '\n')` au runtime.
 
-### En CI / DEV pré-prod (GitHub Actions secrets)
+### En CI / le container PREPROD (GitHub Actions secrets)
 
 Aller sur le repo GitHub → **Settings → Secrets and variables → Actions → New repository secret** pour chaque clé ci-dessus.
 
@@ -106,7 +106,7 @@ Pour les `*_PRIVATE_KEY` en GitHub Actions, **conserver les `\n` littéraux** da
 
 ### En PROD
 
-À ne **pas** activer tant que la pipeline n'a pas été validée 1 semaine en DEV pré-prod. Variable `SEO_MONITORING_ENABLED=false` par défaut en prod.
+À ne **pas** activer tant que la pipeline n'a pas été validée 1 semaine en le container PREPROD. Variable `SEO_MONITORING_ENABLED=false` par défaut en prod.
 
 ## 5. Vérification finale
 

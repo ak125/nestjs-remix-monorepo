@@ -72,6 +72,18 @@ if [ -n "$STAGED_ROUTES" ]; then
   bash scripts/lint/check-no-zero-arg-headers-with-s-maxage.sh $STAGED_ROUTES || exit 1
 fi
 
+# Block confused `preprod` formulations in markdown files (ADR-075).
+# Canon `.claude/rules/deployment.md` defines DEV / PREPROD / PROD strictly.
+# Forbidden : "DEV pré-prod" / "preprod.automecanik.com" / "preprod miroir" /
+# "staging soak|env|server|VPS|deploy|deployment|gate". See
+# scripts/lint/check-preprod-vocabulary.sh for the full pattern set + allowlist.
+STAGED_MD=$(git diff --cached --name-only --diff-filter=ACMR \
+  | grep -E '\.md$' || true)
+if [ -n "$STAGED_MD" ]; then
+  # shellcheck disable=SC2086
+  bash scripts/lint/check-preprod-vocabulary.sh $STAGED_MD || exit 1
+fi
+
 # Refresh auto-generated YAML frontmatter + AUTO-GENERATED blocks in
 # .claude/knowledge/modules/*.md so last_scan + primary_files stay honest.
 # Only touches files when the module .ts changed; otherwise no-op.

@@ -117,7 +117,7 @@ Ces règles vivent dans `.claude/rules/*` — `knowledge/` les référence, jama
 
 - [rules/backend.md](../rules/backend.md) — stack NestJS, three-tier, session, Redis
 - [rules/frontend.md](../rules/frontend.md) — Remix, shadcn/ui + Tailwind, conventions
-- [rules/deployment.md](../rules/deployment.md) — DEV preprod / PROD (tag), Docker, Caddy
+- [rules/deployment.md](../rules/deployment.md) — the PREPROD container / PROD (tag), Docker, Caddy
 - [rules/payments.md](../rules/payments.md) — règles HMAC critiques, timingSafeEqual, security
 - [rules/context7.md](../rules/context7.md) — Context7 MCP usage (frugal)
 - [rules/agent-exit-contract.md](../rules/agent-exit-contract.md) — anti-overclaim pour agents

@@ -5,13 +5,13 @@
 > **Locked sequence. Locked scope per PR. Locked rules** (see `README.md` for the 54 central rules; abbreviated below):
 > - one family / one rollback / one CI proof / one runtime-risk analysis
 > - no cross-family PR (rule #2)
-> - `requires_staging_soak: true` ⇒ observe `staging_soak_hours` on DEV preprod (46.224.118.55) before any prod tag (rule #3)
+> - `requires_staging_soak: true` ⇒ observe `staging_soak_hours` on the PREPROD container (49.12.233.2:3200) before any prod tag (rule #3)
 > - `production_approved: false` ⇒ NEVER prod (rule #4)
 > - verify `node_runtime_requirement` against Dockerfile + CI matrix BEFORE opening the PR (rule #5)
 > - upgrade every `peer_dependency_cluster` member together (rule #6) — consume the **resolved** list from `inventory.json`, never the patterns (rule #24)
 > - resolve every `migration_blockers` token BEFORE opening the PR (rule #7)
 > - `rollback_complexity: dangerous` ⇒ PR body MUST contain a written rollback runbook (rule #8)
-> - `observability_requirements` live on DEV preprod BEFORE prod tag (rule #9)
+> - `observability_requirements` live on the PREPROD container BEFORE prod tag (rule #9)
 > - `data_migration_required: true` ⇒ rollback runbook includes data-side rollback (rule #10)
 > - `supports_dual_runtime` drives `deployment_sequence` realism (rule #11)
 > - rollback runbook MUST be drillable inside `rollback_rto_minutes` (rule #12)
@@ -20,7 +20,7 @@
 > - `rollback_runbook_required: true` ⇒ machine-readable gate (rule #15)
 > - `expected_user_impact` ⇒ release notes + comms + support triage (rule #16)
 > - `perf_baseline_metrics` ⇒ named at PR-9a time (rule #17)
-> - `estimated_recovery_sequence` ⇒ ordered, drillable on DEV preprod (rule #18)
+> - `estimated_recovery_sequence` ⇒ ordered, drillable on the PREPROD container (rule #18)
 > - `stateful_surface` ⇒ where the state lives (rule #19)
 > - `rollback_validation_checks` ⇒ rollback isn't done until these pass (rule #20)
 > - `canary_abort_conditions` ⇒ quantitative thresholds (rule #21)
@@ -110,7 +110,7 @@
 - **Preconditions:** PR-9b merged.
 - **Scope:** bump `zod` to 4.x in every workspace simultaneously. Update consumers for defaults / `.email()` / error-formatting API changes.
 - **CI proof:** `npm run typecheck && npm run test`. Add 1 sample shape-test per major schema family.
-- **Staging soak:** 24h on DEV preprod with synthetic form-submit traffic.
+- **PREPROD soak:** 24h on the PREPROD container with synthetic form-submit traffic.
 - **Rollback:** revert PR.
 - **Runtime risk:** changes parse semantics; every form + DTO path must be re-exercised.
 
@@ -133,7 +133,7 @@
 - **Preconditions:** PR-9c merged. All BullMQ consumers identified.
 - **Scope:** bump cluster + update Worker registrations + re-emit repeatable jobs.
 - **CI proof:** new smoke harness `tsx scripts/queues/smoke-repeat.ts` (added in PR-9d). Existing BullMQ workers smoke green.
-- **Staging soak:** 48h on DEV preprod.
+- **PREPROD soak:** 48h on the PREPROD container.
 - **Rollback runbook (mandatory in PR body):** (1) revert PR, (2) drain v5 repeatable jobs, (3) re-emit in v4 Job-ID format, (4) verify workers consuming, (5) `queue-metrics` back to baseline.
 - **Runtime risk:** queues stop processing if Worker registration drifts. **Workers MUST deploy before API.**
 
@@ -156,7 +156,7 @@
 - **Preconditions:** PR-9d merged.
 - **Scope:** Step A (`PR-9e.1`) — introduce `AuthService` abstraction. Step B (`PR-9e.2`) — bump cluster including `connect-redis` v7 → v8.
 - **CI proof:** login/logout E2E pass; admin/* smoke pass; session round-trip sample.
-- **Staging soak:** 48h on DEV preprod with synthetic login/logout traffic.
+- **PREPROD soak:** 48h on the PREPROD container with synthetic login/logout traffic.
 - **Rollback runbook (mandatory in PR body):** (1) deploy PROD banner, (2) revert PR, (3) verify connect-redis v7 cookie format accepted, (4) clear new-format cookies, (5) `session-roundtrip` synthetic green.
 - **Runtime risk:** session format change ⇒ forced sign-out at deploy boundary. Banner mandatory.
 
@@ -199,7 +199,7 @@
 - **Preconditions:** PR-9b/c/d/e merged. **PR-9f.0 merged with verdict `PASS`.** `node_runtime_requirement: ">=20"` verified in Dockerfile + `.github/workflows/ci.yml` matrix BEFORE opening.
 - **Scope:** bump every cluster member simultaneously, ensure Express 5 + RxJS 7.x peers. Address breaking decorator/metadata API.
 - **CI proof:** `npm run build && npm run test && npm run typecheck` green. Container `/health` 200 within 5s. `onModuleInit` ast-grep rule passes.
-- **Staging soak:** 72h on DEV preprod.
+- **PREPROD soak:** 72h on the PREPROD container.
 - **Rollback runbook (mandatory in PR body):** (1) prepare paired rollback PRs for Express 5→4 + RxJS 7→6 ratchets, (2) revert PR-9f, (3) verify `/health` 200 within 5s, (4) run smoke E2E, (5) confirm `traces` continuity, (6) only ratchet Express/RxJS if peer-dep deadlock observed.
 - **Runtime risk:** wide blast.
 
