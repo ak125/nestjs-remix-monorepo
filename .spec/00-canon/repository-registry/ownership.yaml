@@ -87,6 +87,11 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: high
+  - glob: .npmrc
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
   - glob: frontend/.size-limit.json
     domain: D13
     owner: '@ak125'
