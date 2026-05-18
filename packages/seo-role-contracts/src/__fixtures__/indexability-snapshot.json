@@ -1,0 +1,679 @@
+[
+  {
+    "stratum": "R0_HOME_index",
+    "input": {
+      "surfaceKey": "R0_HOME",
+      "requestedUrl": "https://www.automecanik.com/",
+      "canonicalUrl": "https://www.automecanik.com/"
+    },
+    "expectedKind": "INDEX_FOLLOW",
+    "expectedReasonCodes": []
+  },
+  {
+    "stratum": "R0_HOME_canonical_mismatch",
+    "input": {
+      "surfaceKey": "R0_HOME",
+      "requestedUrl": "https://www.automecanik.com/?ref=campaign",
+      "canonicalUrl": "https://www.automecanik.com/"
+    },
+    "expectedKind": "NOINDEX_NOFOLLOW",
+    "expectedReasonCodes": ["CANONICAL_MISMATCH"]
+  },
+  {
+    "stratum": "R8_VEHICLE_all_ok",
+    "input": {
+      "surfaceKey": "R8_VEHICLE",
+      "requestedUrl": "https://www.automecanik.com/constructeurs/peugeot-128/308-128041/2-0-hdi-58712.html",
+      "canonicalUrl": "https://www.automecanik.com/constructeurs/peugeot-128/308-128041/2-0-hdi-58712.html",
+      "availableGammes": 12
+    },
+    "expectedKind": "INDEX_FOLLOW",
+    "expectedReasonCodes": []
+  },
+  {
+    "stratum": "R8_VEHICLE_all_ok",
+    "input": {
+      "surfaceKey": "R8_VEHICLE",
+      "requestedUrl": "https://www.automecanik.com/constructeurs/renault-140/clio-iv-140006/1-5-dci-58801.html",
+      "canonicalUrl": "https://www.automecanik.com/constructeurs/renault-140/clio-iv-140006/1-5-dci-58801.html",
+      "availableGammes": 8
+    },
+    "expectedKind": "INDEX_FOLLOW",
+    "expectedReasonCodes": []
+  },
+  {
+    "stratum": "R8_VEHICLE_all_ok",
+    "input": {
+      "surfaceKey": "R8_VEHICLE",
+      "requestedUrl": "https://www.automecanik.com/constructeurs/bmw-33/serie-3-f30-33112/320d-58912.html",
+      "canonicalUrl": "https://www.automecanik.com/constructeurs/bmw-33/serie-3-f30-33112/320d-58912.html",
+      "availableGammes": 15
+    },
+    "expectedKind": "INDEX_FOLLOW",
+    "expectedReasonCodes": []
+  },
+  {
+    "stratum": "R8_VEHICLE_all_ok",
+    "input": {
+      "surfaceKey": "R8_VEHICLE",
+      "requestedUrl": "https://www.automecanik.com/constructeurs/citroen-46/c4-ii-46031/1-6-bluehdi-59020.html",
+      "canonicalUrl": "https://www.automecanik.com/constructeurs/citroen-46/c4-ii-46031/1-6-bluehdi-59020.html",
+      "availableGammes": 5
+    },
+    "expectedKind": "INDEX_FOLLOW",
+    "expectedReasonCodes": []
+  },
+  {
+    "stratum": "R8_VEHICLE_all_ok",
+    "input": {
+      "surfaceKey": "R8_VEHICLE",
+      "requestedUrl": "https://www.automecanik.com/constructeurs/audi-22/a3-iii-22035/2-0-tdi-59123.html",
+      "canonicalUrl": "https://www.automecanik.com/constructeurs/audi-22/a3-iii-22035/2-0-tdi-59123.html",
+      "availableGammes": 22
+    },
+    "expectedKind": "INDEX_FOLLOW",
+    "expectedReasonCodes": []
+  },
+  {
+    "stratum": "R8_VEHICLE_gammes_below_threshold",
+    "input": {
+      "surfaceKey": "R8_VEHICLE",
+      "requestedUrl": "https://www.automecanik.com/constructeurs/lada-90/priora-90037/1-6-71034.html",
+      "canonicalUrl": "https://www.automecanik.com/constructeurs/lada-90/priora-90037/1-6-71034.html",
+      "availableGammes": 4
+    },
+    "expectedKind": "NOINDEX_FOLLOW",
+    "expectedReasonCodes": ["GAMMES_BELOW_THRESHOLD"]
+  },
+  {
+    "stratum": "R8_VEHICLE_gammes_below_threshold",
+    "input": {
+      "surfaceKey": "R8_VEHICLE",
+      "requestedUrl": "https://www.automecanik.com/constructeurs/seat-147/leon-i-147003/1-9-tdi-32101.html",
+      "canonicalUrl": "https://www.automecanik.com/constructeurs/seat-147/leon-i-147003/1-9-tdi-32101.html",
+      "availableGammes": 2
+    },
+    "expectedKind": "NOINDEX_FOLLOW",
+    "expectedReasonCodes": ["GAMMES_BELOW_THRESHOLD"]
+  },
+  {
+    "stratum": "R8_VEHICLE_gammes_below_threshold",
+    "input": {
+      "surfaceKey": "R8_VEHICLE",
+      "requestedUrl": "https://www.automecanik.com/constructeurs/dacia-47/sandero-47025/1-5-dci-29401.html",
+      "canonicalUrl": "https://www.automecanik.com/constructeurs/dacia-47/sandero-47025/1-5-dci-29401.html",
+      "availableGammes": 0
+    },
+    "expectedKind": "NOINDEX_FOLLOW",
+    "expectedReasonCodes": ["GAMMES_BELOW_THRESHOLD"]
+  },
+  {
+    "stratum": "R8_VEHICLE_gammes_below_threshold",
+    "input": {
+      "surfaceKey": "R8_VEHICLE",
+      "requestedUrl": "https://www.automecanik.com/constructeurs/skoda-150/fabia-iii-150006/1-0-tsi-58423.html",
+      "canonicalUrl": "https://www.automecanik.com/constructeurs/skoda-150/fabia-iii-150006/1-0-tsi-58423.html",
+      "availableGammes": 1
+    },
+    "expectedKind": "NOINDEX_FOLLOW",
+    "expectedReasonCodes": ["GAMMES_BELOW_THRESHOLD"]
+  },
+  {
+    "stratum": "R8_VEHICLE_gammes_below_threshold",
+    "input": {
+      "surfaceKey": "R8_VEHICLE",
+      "requestedUrl": "https://www.automecanik.com/constructeurs/fiat-58/uno-i-58166/1-0-146e-126486.html",
+      "canonicalUrl": "https://www.automecanik.com/constructeurs/fiat-58/uno-i-58166/1-0-146e-126486.html",
+      "availableGammes": 3
+    },
+    "expectedKind": "NOINDEX_FOLLOW",
+    "expectedReasonCodes": ["GAMMES_BELOW_THRESHOLD"]
+  },
+  {
+    "stratum": "R8_VEHICLE_tecdoc_release_gate",
+    "input": {
+      "surfaceKey": "R8_VEHICLE",
+      "requestedUrl": "https://www.automecanik.com/constructeurs/peugeot-128/expert-ii-128085/2-0-hdi-4x4-76550.html",
+      "canonicalUrl": "https://www.automecanik.com/constructeurs/peugeot-128/expert-ii-128085/2-0-hdi-4x4-76550.html",
+      "availableGammes": 10,
+      "tecdocReleaseGateOpen": true
+    },
+    "expectedKind": "NOINDEX_NOFOLLOW",
+    "expectedReasonCodes": ["TECDOC_RELEASE_GATE"]
+  },
+  {
+    "stratum": "R8_VEHICLE_tecdoc_release_gate",
+    "input": {
+      "surfaceKey": "R8_VEHICLE",
+      "requestedUrl": "https://www.automecanik.com/constructeurs/mercedes-benz-108/cla-shooting-brake-x118-108284/cla-200-73707.html",
+      "canonicalUrl": "https://www.automecanik.com/constructeurs/mercedes-benz-108/cla-shooting-brake-x118-108284/cla-200-73707.html",
+      "availableGammes": 8,
+      "tecdocReleaseGateOpen": true
+    },
+    "expectedKind": "NOINDEX_NOFOLLOW",
+    "expectedReasonCodes": ["TECDOC_RELEASE_GATE"]
+  },
+  {
+    "stratum": "R8_VEHICLE_tecdoc_release_gate",
+    "input": {
+      "surfaceKey": "R8_VEHICLE",
+      "requestedUrl": "https://www.automecanik.com/constructeurs/dacia-47/logan-iii-42574/65444.html",
+      "canonicalUrl": "https://www.automecanik.com/constructeurs/dacia-47/logan-iii-42574/65444.html",
+      "availableGammes": 6,
+      "tecdocReleaseGateOpen": true
+    },
+    "expectedKind": "NOINDEX_NOFOLLOW",
+    "expectedReasonCodes": ["TECDOC_RELEASE_GATE"]
+  },
+  {
+    "stratum": "R8_VEHICLE_tecdoc_release_gate",
+    "input": {
+      "surfaceKey": "R8_VEHICLE",
+      "requestedUrl": "https://www.automecanik.com/constructeurs/kia-88/cee-d-sw-iii-88092/70652.html",
+      "canonicalUrl": "https://www.automecanik.com/constructeurs/kia-88/cee-d-sw-iii-88092/70652.html",
+      "availableGammes": 7,
+      "tecdocReleaseGateOpen": true
+    },
+    "expectedKind": "NOINDEX_NOFOLLOW",
+    "expectedReasonCodes": ["TECDOC_RELEASE_GATE"]
+  },
+  {
+    "stratum": "R8_VEHICLE_tecdoc_release_gate",
+    "input": {
+      "surfaceKey": "R8_VEHICLE",
+      "requestedUrl": "https://www.automecanik.com/constructeurs/audi-22/q5-ii-22094/2-0-tfsi-quattro-78001.html",
+      "canonicalUrl": "https://www.automecanik.com/constructeurs/audi-22/q5-ii-22094/2-0-tfsi-quattro-78001.html",
+      "availableGammes": 14,
+      "tecdocReleaseGateOpen": true
+    },
+    "expectedKind": "NOINDEX_NOFOLLOW",
+    "expectedReasonCodes": ["TECDOC_RELEASE_GATE"]
+  },
+  {
+    "stratum": "R8_VEHICLE_canonical_mismatch",
+    "input": {
+      "surfaceKey": "R8_VEHICLE",
+      "requestedUrl": "https://www.automecanik.com/constructeurs/peugeot-128/308-128041/2-0-hdi-58712.html?utm_source=google",
+      "canonicalUrl": "https://www.automecanik.com/constructeurs/peugeot-128/308-128041/2-0-hdi-58712.html",
+      "availableGammes": 12
+    },
+    "expectedKind": "NOINDEX_NOFOLLOW",
+    "expectedReasonCodes": ["CANONICAL_MISMATCH"]
+  },
+  {
+    "stratum": "R8_VEHICLE_canonical_mismatch",
+    "input": {
+      "surfaceKey": "R8_VEHICLE",
+      "requestedUrl": "https://www.automecanik.com/constructeurs/renault-140/clio-iv-140006/1-5-dci-58801",
+      "canonicalUrl": "https://www.automecanik.com/constructeurs/renault-140/clio-iv-140006/1-5-dci-58801.html",
+      "availableGammes": 8
+    },
+    "expectedKind": "NOINDEX_NOFOLLOW",
+    "expectedReasonCodes": ["CANONICAL_MISMATCH"]
+  },
+  {
+    "stratum": "R8_VEHICLE_canonical_mismatch_exclusivity",
+    "input": {
+      "surfaceKey": "R8_VEHICLE",
+      "requestedUrl": "https://x.com/a?utm=b",
+      "canonicalUrl": "https://x.com/a",
+      "availableGammes": 1,
+      "fingerprintMatch": true,
+      "tecdocReleaseGateOpen": true
+    },
+    "expectedKind": "NOINDEX_NOFOLLOW",
+    "expectedReasonCodes": ["CANONICAL_MISMATCH"]
+  },
+  {
+    "stratum": "R8_VEHICLE_fingerprint",
+    "input": {
+      "surfaceKey": "R8_VEHICLE",
+      "requestedUrl": "https://www.automecanik.com/constructeurs/foo-bar-29101.html",
+      "canonicalUrl": "https://www.automecanik.com/constructeurs/foo-bar-29101.html",
+      "availableGammes": 10,
+      "fingerprintMatch": true
+    },
+    "expectedKind": "NOINDEX_FOLLOW",
+    "expectedReasonCodes": ["FINGERPRINT_DUPLICATE"]
+  },
+  {
+    "stratum": "R8_VEHICLE_fingerprint",
+    "input": {
+      "surfaceKey": "R8_VEHICLE",
+      "requestedUrl": "https://www.automecanik.com/constructeurs/foo-bar-30215.html",
+      "canonicalUrl": "https://www.automecanik.com/constructeurs/foo-bar-30215.html",
+      "availableGammes": 8,
+      "fingerprintMatch": true
+    },
+    "expectedKind": "NOINDEX_FOLLOW",
+    "expectedReasonCodes": ["FINGERPRINT_DUPLICATE"]
+  },
+  {
+    "stratum": "R8_VEHICLE_fingerprint",
+    "input": {
+      "surfaceKey": "R8_VEHICLE",
+      "requestedUrl": "https://www.automecanik.com/constructeurs/foo-bar-31412.html",
+      "canonicalUrl": "https://www.automecanik.com/constructeurs/foo-bar-31412.html",
+      "availableGammes": 6,
+      "fingerprintMatch": true
+    },
+    "expectedKind": "NOINDEX_FOLLOW",
+    "expectedReasonCodes": ["FINGERPRINT_DUPLICATE"]
+  },
+  {
+    "stratum": "R1_GAMME_ROUTER_index",
+    "input": {
+      "surfaceKey": "R1_GAMME_ROUTER",
+      "requestedUrl": "https://www.automecanik.com/pieces/disque-de-frein-82.html",
+      "canonicalUrl": "https://www.automecanik.com/pieces/disque-de-frein-82.html",
+      "availableFamilies": 8
+    },
+    "expectedKind": "INDEX_FOLLOW",
+    "expectedReasonCodes": []
+  },
+  {
+    "stratum": "R1_GAMME_ROUTER_index",
+    "input": {
+      "surfaceKey": "R1_GAMME_ROUTER",
+      "requestedUrl": "https://www.automecanik.com/pieces/alternateur-4.html",
+      "canonicalUrl": "https://www.automecanik.com/pieces/alternateur-4.html",
+      "availableFamilies": 3
+    },
+    "expectedKind": "INDEX_FOLLOW",
+    "expectedReasonCodes": []
+  },
+  {
+    "stratum": "R1_GAMME_ROUTER_families_below",
+    "input": {
+      "surfaceKey": "R1_GAMME_ROUTER",
+      "requestedUrl": "https://www.automecanik.com/pieces/ressort-de-direction-9999.html",
+      "canonicalUrl": "https://www.automecanik.com/pieces/ressort-de-direction-9999.html",
+      "availableFamilies": 2
+    },
+    "expectedKind": "NOINDEX_FOLLOW",
+    "expectedReasonCodes": ["FAMILIES_BELOW_THRESHOLD"]
+  },
+  {
+    "stratum": "R1_GAMME_ROUTER_families_below",
+    "input": {
+      "surfaceKey": "R1_GAMME_ROUTER",
+      "requestedUrl": "https://www.automecanik.com/pieces/niche-rare-8888.html",
+      "canonicalUrl": "https://www.automecanik.com/pieces/niche-rare-8888.html",
+      "availableFamilies": 0
+    },
+    "expectedKind": "NOINDEX_FOLLOW",
+    "expectedReasonCodes": ["FAMILIES_BELOW_THRESHOLD"]
+  },
+  {
+    "stratum": "R1_GAMME_VEHICLE_ROUTER_families_below",
+    "input": {
+      "surfaceKey": "R1_GAMME_VEHICLE_ROUTER",
+      "requestedUrl": "https://www.automecanik.com/pieces/disque-de-frein-82/lada-90/priora-90037/65500.html",
+      "canonicalUrl": "https://www.automecanik.com/pieces/disque-de-frein-82/lada-90/priora-90037/65500.html",
+      "availableFamilies": 1,
+      "availableGammes": 8
+    },
+    "expectedKind": "NOINDEX_FOLLOW",
+    "expectedReasonCodes": ["FAMILIES_BELOW_THRESHOLD"]
+  },
+  {
+    "stratum": "R1_GAMME_VEHICLE_ROUTER_gammes_below",
+    "input": {
+      "surfaceKey": "R1_GAMME_VEHICLE_ROUTER",
+      "requestedUrl": "https://www.automecanik.com/pieces/disque-de-frein-82/dacia-47/sandero-47025/29401.html",
+      "canonicalUrl": "https://www.automecanik.com/pieces/disque-de-frein-82/dacia-47/sandero-47025/29401.html",
+      "availableFamilies": 5,
+      "availableGammes": 2
+    },
+    "expectedKind": "NOINDEX_FOLLOW",
+    "expectedReasonCodes": ["GAMMES_BELOW_THRESHOLD"]
+  },
+  {
+    "stratum": "R1_GAMME_VEHICLE_ROUTER_all_ok",
+    "input": {
+      "surfaceKey": "R1_GAMME_VEHICLE_ROUTER",
+      "requestedUrl": "https://www.automecanik.com/pieces/disque-de-frein-82/peugeot-128/208-128021/1-6-hdi-58000.html",
+      "canonicalUrl": "https://www.automecanik.com/pieces/disque-de-frein-82/peugeot-128/208-128021/1-6-hdi-58000.html",
+      "availableFamilies": 6,
+      "availableGammes": 9
+    },
+    "expectedKind": "INDEX_FOLLOW",
+    "expectedReasonCodes": []
+  },
+  {
+    "stratum": "R2_PRODUCT_LIST_conditions_missing",
+    "input": {
+      "surfaceKey": "R2_PRODUCT_LIST",
+      "requestedUrl": "https://www.automecanik.com/pieces/joint-de-carter-d-huile-455/peugeot-128/408-128060/2-0-16v-6344.html",
+      "canonicalUrl": "https://www.automecanik.com/pieces/joint-de-carter-d-huile-455/peugeot-128/408-128060/2-0-16v-6344.html"
+    },
+    "expectedKind": "NOINDEX_NOFOLLOW",
+    "expectedReasonCodes": ["R2_CONDITIONS_MISSING"]
+  },
+  {
+    "stratum": "R2_PRODUCT_LIST_gate_fail",
+    "input": {
+      "surfaceKey": "R2_PRODUCT_LIST",
+      "requestedUrl": "https://www.automecanik.com/pieces/disque-de-frein-82/citroen-46/c3-picasso-46022/1-6-vti-122715.html",
+      "canonicalUrl": "https://www.automecanik.com/pieces/disque-de-frein-82/citroen-46/c3-picasso-46022/1-6-vti-122715.html",
+      "r2Conditions": {
+        "has_price": false,
+        "has_stock": true,
+        "has_image": true,
+        "has_oem_ref": true,
+        "has_equivalent_ref": false,
+        "has_unique_product_ref": true,
+        "has_valid_canonical": true,
+        "is_duplicate_variant": false
+      },
+      "availableGammes": 3
+    },
+    "expectedKind": "NOINDEX_NOFOLLOW",
+    "expectedReasonCodes": ["R2_GATE_FAIL"]
+  },
+  {
+    "stratum": "R2_PRODUCT_LIST_index",
+    "input": {
+      "surfaceKey": "R2_PRODUCT_LIST",
+      "requestedUrl": "https://www.automecanik.com/pieces/alternateur-4/peugeot-128/308-128041/2-0-hdi-58712.html",
+      "canonicalUrl": "https://www.automecanik.com/pieces/alternateur-4/peugeot-128/308-128041/2-0-hdi-58712.html",
+      "r2Conditions": {
+        "has_price": true,
+        "has_stock": true,
+        "has_image": true,
+        "has_oem_ref": true,
+        "has_equivalent_ref": false,
+        "has_unique_product_ref": true,
+        "has_valid_canonical": true,
+        "is_duplicate_variant": false
+      },
+      "availableGammes": 5
+    },
+    "expectedKind": "INDEX_FOLLOW",
+    "expectedReasonCodes": []
+  },
+  {
+    "stratum": "R2_PRODUCT_conditions_missing",
+    "input": {
+      "surfaceKey": "R2_PRODUCT",
+      "requestedUrl": "https://www.automecanik.com/produits/sku-12345.html",
+      "canonicalUrl": "https://www.automecanik.com/produits/sku-12345.html"
+    },
+    "expectedKind": "NOINDEX_NOFOLLOW",
+    "expectedReasonCodes": ["R2_CONDITIONS_MISSING"]
+  },
+  {
+    "stratum": "R2_PRODUCT_conditions_missing",
+    "input": {
+      "surfaceKey": "R2_PRODUCT",
+      "requestedUrl": "https://www.automecanik.com/produits/sku-54321.html",
+      "canonicalUrl": "https://www.automecanik.com/produits/sku-54321.html"
+    },
+    "expectedKind": "NOINDEX_NOFOLLOW",
+    "expectedReasonCodes": ["R2_CONDITIONS_MISSING"]
+  },
+  {
+    "stratum": "R2_PRODUCT_gate_fail_image",
+    "input": {
+      "surfaceKey": "R2_PRODUCT",
+      "requestedUrl": "https://www.automecanik.com/produits/sku-00001.html",
+      "canonicalUrl": "https://www.automecanik.com/produits/sku-00001.html",
+      "r2Conditions": {
+        "has_price": true,
+        "has_stock": true,
+        "has_image": false,
+        "has_oem_ref": true,
+        "has_equivalent_ref": false,
+        "has_unique_product_ref": true,
+        "has_valid_canonical": true,
+        "is_duplicate_variant": false
+      }
+    },
+    "expectedKind": "NOINDEX_NOFOLLOW",
+    "expectedReasonCodes": ["R2_GATE_FAIL"]
+  },
+  {
+    "stratum": "R2_PRODUCT_gate_fail_stock",
+    "input": {
+      "surfaceKey": "R2_PRODUCT",
+      "requestedUrl": "https://www.automecanik.com/produits/sku-00002.html",
+      "canonicalUrl": "https://www.automecanik.com/produits/sku-00002.html",
+      "r2Conditions": {
+        "has_price": true,
+        "has_stock": false,
+        "has_image": true,
+        "has_oem_ref": true,
+        "has_equivalent_ref": false,
+        "has_unique_product_ref": true,
+        "has_valid_canonical": true,
+        "is_duplicate_variant": false
+      }
+    },
+    "expectedKind": "NOINDEX_NOFOLLOW",
+    "expectedReasonCodes": ["R2_GATE_FAIL"]
+  },
+  {
+    "stratum": "R2_PRODUCT_gate_fail_no_refs",
+    "input": {
+      "surfaceKey": "R2_PRODUCT",
+      "requestedUrl": "https://www.automecanik.com/produits/sku-00003.html",
+      "canonicalUrl": "https://www.automecanik.com/produits/sku-00003.html",
+      "r2Conditions": {
+        "has_price": true,
+        "has_stock": true,
+        "has_image": true,
+        "has_oem_ref": false,
+        "has_equivalent_ref": false,
+        "has_unique_product_ref": true,
+        "has_valid_canonical": true,
+        "is_duplicate_variant": false
+      }
+    },
+    "expectedKind": "NOINDEX_NOFOLLOW",
+    "expectedReasonCodes": ["R2_GATE_FAIL"]
+  },
+  {
+    "stratum": "R2_PRODUCT_gate_fail_duplicate",
+    "input": {
+      "surfaceKey": "R2_PRODUCT",
+      "requestedUrl": "https://www.automecanik.com/produits/sku-00004.html",
+      "canonicalUrl": "https://www.automecanik.com/produits/sku-00004.html",
+      "r2Conditions": {
+        "has_price": true,
+        "has_stock": true,
+        "has_image": true,
+        "has_oem_ref": true,
+        "has_equivalent_ref": true,
+        "has_unique_product_ref": true,
+        "has_valid_canonical": true,
+        "is_duplicate_variant": true
+      }
+    },
+    "expectedKind": "NOINDEX_NOFOLLOW",
+    "expectedReasonCodes": ["R2_GATE_FAIL"]
+  },
+  {
+    "stratum": "R2_PRODUCT_all_ok",
+    "input": {
+      "surfaceKey": "R2_PRODUCT",
+      "requestedUrl": "https://www.automecanik.com/produits/sku-99001.html",
+      "canonicalUrl": "https://www.automecanik.com/produits/sku-99001.html",
+      "r2Conditions": {
+        "has_price": true,
+        "has_stock": true,
+        "has_image": true,
+        "has_oem_ref": true,
+        "has_equivalent_ref": false,
+        "has_unique_product_ref": true,
+        "has_valid_canonical": true,
+        "is_duplicate_variant": false
+      }
+    },
+    "expectedKind": "INDEX_FOLLOW",
+    "expectedReasonCodes": []
+  },
+  {
+    "stratum": "R2_PRODUCT_all_ok",
+    "input": {
+      "surfaceKey": "R2_PRODUCT",
+      "requestedUrl": "https://www.automecanik.com/produits/sku-99002.html",
+      "canonicalUrl": "https://www.automecanik.com/produits/sku-99002.html",
+      "r2Conditions": {
+        "has_price": true,
+        "has_stock": true,
+        "has_image": true,
+        "has_oem_ref": false,
+        "has_equivalent_ref": true,
+        "has_unique_product_ref": true,
+        "has_valid_canonical": true,
+        "is_duplicate_variant": false
+      }
+    },
+    "expectedKind": "INDEX_FOLLOW",
+    "expectedReasonCodes": []
+  },
+  {
+    "stratum": "R2_PRODUCT_canonical_mismatch",
+    "input": {
+      "surfaceKey": "R2_PRODUCT",
+      "requestedUrl": "https://www.automecanik.com/produits/sku-99003.html?gclid=abc",
+      "canonicalUrl": "https://www.automecanik.com/produits/sku-99003.html",
+      "r2Conditions": {
+        "has_price": true,
+        "has_stock": true,
+        "has_image": true,
+        "has_oem_ref": true,
+        "has_equivalent_ref": false,
+        "has_unique_product_ref": true,
+        "has_valid_canonical": true,
+        "is_duplicate_variant": false
+      }
+    },
+    "expectedKind": "NOINDEX_NOFOLLOW",
+    "expectedReasonCodes": ["CANONICAL_MISMATCH"]
+  },
+  {
+    "stratum": "R2_PRODUCT_IN_VEHICLE_all_ok",
+    "input": {
+      "surfaceKey": "R2_PRODUCT_IN_VEHICLE",
+      "requestedUrl": "https://www.automecanik.com/produits-in-vehicle/sku-12345-vehicule-58000.html",
+      "canonicalUrl": "https://www.automecanik.com/produits-in-vehicle/sku-12345-vehicule-58000.html",
+      "r2Conditions": {
+        "has_price": true,
+        "has_stock": true,
+        "has_image": true,
+        "has_oem_ref": true,
+        "has_equivalent_ref": false,
+        "has_unique_product_ref": true,
+        "has_valid_canonical": true,
+        "is_duplicate_variant": false
+      }
+    },
+    "expectedKind": "INDEX_FOLLOW",
+    "expectedReasonCodes": []
+  },
+  {
+    "stratum": "R3_ADVICE_index",
+    "input": {
+      "surfaceKey": "R3_ADVICE",
+      "requestedUrl": "https://www.automecanik.com/conseils/changer-disque-de-frein.html",
+      "canonicalUrl": "https://www.automecanik.com/conseils/changer-disque-de-frein.html"
+    },
+    "expectedKind": "INDEX_FOLLOW",
+    "expectedReasonCodes": []
+  },
+  {
+    "stratum": "R3_DIAG_SECTION_index",
+    "input": {
+      "surfaceKey": "R3_DIAG_SECTION",
+      "requestedUrl": "https://www.automecanik.com/diagnostic/alternateur.html",
+      "canonicalUrl": "https://www.automecanik.com/diagnostic/alternateur.html"
+    },
+    "expectedKind": "INDEX_FOLLOW",
+    "expectedReasonCodes": []
+  },
+  {
+    "stratum": "R6_BUYING_GUIDE_families_below",
+    "input": {
+      "surfaceKey": "R6_BUYING_GUIDE",
+      "requestedUrl": "https://www.automecanik.com/guide-achat/niche-rare.html",
+      "canonicalUrl": "https://www.automecanik.com/guide-achat/niche-rare.html",
+      "availableFamilies": 1
+    },
+    "expectedKind": "NOINDEX_FOLLOW",
+    "expectedReasonCodes": ["FAMILIES_BELOW_THRESHOLD"]
+  },
+  {
+    "stratum": "R6_BUYING_GUIDE_index",
+    "input": {
+      "surfaceKey": "R6_BUYING_GUIDE",
+      "requestedUrl": "https://www.automecanik.com/guide-achat/disque-de-frein.html",
+      "canonicalUrl": "https://www.automecanik.com/guide-achat/disque-de-frein.html",
+      "availableFamilies": 12
+    },
+    "expectedKind": "INDEX_FOLLOW",
+    "expectedReasonCodes": []
+  },
+  {
+    "stratum": "R7_BRAND_HUB_families_below",
+    "input": {
+      "surfaceKey": "R7_BRAND_HUB",
+      "requestedUrl": "https://www.automecanik.com/marque/lada.html",
+      "canonicalUrl": "https://www.automecanik.com/marque/lada.html",
+      "availableFamilies": 2
+    },
+    "expectedKind": "NOINDEX_FOLLOW",
+    "expectedReasonCodes": ["FAMILIES_BELOW_THRESHOLD"]
+  },
+  {
+    "stratum": "R7_BRAND_HUB_index",
+    "input": {
+      "surfaceKey": "R7_BRAND_HUB",
+      "requestedUrl": "https://www.automecanik.com/marque/peugeot.html",
+      "canonicalUrl": "https://www.automecanik.com/marque/peugeot.html",
+      "availableFamilies": 18
+    },
+    "expectedKind": "INDEX_FOLLOW",
+    "expectedReasonCodes": []
+  },
+  {
+    "stratum": "BLOG_ARTICLE_index",
+    "input": {
+      "surfaceKey": "BLOG_ARTICLE",
+      "requestedUrl": "https://www.automecanik.com/blog/entretien-vehicule.html",
+      "canonicalUrl": "https://www.automecanik.com/blog/entretien-vehicule.html"
+    },
+    "expectedKind": "INDEX_FOLLOW",
+    "expectedReasonCodes": []
+  },
+  {
+    "stratum": "BLOG_ADVICE_canonical_mismatch",
+    "input": {
+      "surfaceKey": "BLOG_ADVICE",
+      "requestedUrl": "https://www.automecanik.com/blog/conseil-foo.html?ref=newsletter",
+      "canonicalUrl": "https://www.automecanik.com/blog/conseil-foo.html"
+    },
+    "expectedKind": "NOINDEX_NOFOLLOW",
+    "expectedReasonCodes": ["CANONICAL_MISMATCH"]
+  },
+  {
+    "stratum": "STATIC_PAGE_index",
+    "input": {
+      "surfaceKey": "STATIC_PAGE",
+      "requestedUrl": "https://www.automecanik.com/conditions-generales.html",
+      "canonicalUrl": "https://www.automecanik.com/conditions-generales.html"
+    },
+    "expectedKind": "INDEX_FOLLOW",
+    "expectedReasonCodes": []
+  },
+  {
+    "stratum": "UNAVAILABLE_410_no_canonical_strict",
+    "input": {
+      "surfaceKey": "UNAVAILABLE_410",
+      "requestedUrl": "https://www.automecanik.com/old-url-removed.html?session=abc",
+      "canonicalUrl": "https://www.automecanik.com/old-url-removed.html"
+    },
+    "expectedKind": "INDEX_FOLLOW",
+    "expectedReasonCodes": []
+  }
+]

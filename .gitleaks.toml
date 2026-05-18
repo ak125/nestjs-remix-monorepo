@@ -22,6 +22,9 @@ title = "AutoMecanik Gitleaks Config"
     '''\.gitleaks\.toml$''',
     # npm lockfile contains integrity hashes that look entropic
     '''package-lock\.json$''',
+    # Test fixtures (synthetic data by convention — no real secrets)
+    '''__fixtures__/''',
+    '''__tests__/''',
   ]
   regexes = [
     # CI placeholder string used in tests

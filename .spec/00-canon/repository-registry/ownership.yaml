@@ -42,6 +42,11 @@ entries:
     owner: '@ak125'
     sourceConfidence: medium
     risk: high
+  - glob: .github/scripts/**
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: medium
+    risk: high
   - glob: .github/workflows/agents-md-validation.yml
     domain: D15
     owner: '@ak125'
@@ -82,6 +87,21 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: low
+  - glob: audit/cleanup/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  - glob: audit/baselines/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  - glob: audit/dependencies/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
   - glob: backend/src/auth/**
     domain: D11
     owner: '@ak125/auth-team'
@@ -91,6 +111,16 @@ entries:
     domain: D10
     owner: '@ak125'
     sourceConfidence: medium
+    risk: medium
+  - glob: backend/src/common/pipes/params/**
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  - glob: backend/src/common/schemas/**
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
     risk: medium
   - glob: backend/src/config/**
     domain: D13
@@ -263,6 +293,21 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: medium
+  - glob: backend/supabase/migrations/*seo_r2_v2*
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
+  - glob: backend/supabase/migrations/*seo_admin_job*
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
+  - glob: backend/supabase/migrations/README.md
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
   - glob: docker/**
     domain: D13
     owner: '@ak125'
@@ -338,6 +383,19 @@ entries:
     owner: '@ak125'
     sourceConfidence: medium
     risk: medium
+  # PR-6 Contract Drift Observatory fixture trees include dot-prefixed paths
+  # (.dependency-cruiser.generated.cjs placeholder + .spec/ subtree) that
+  # `scripts/audit/**` cannot reach under default micromatch dot-handling.
+  - glob: scripts/audit/__fixtures__/**/.*
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  - glob: scripts/audit/__fixtures__/**/.spec/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
   - glob: scripts/registry/**
     domain: D15
     owner: '@ak125'

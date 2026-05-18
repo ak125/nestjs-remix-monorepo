@@ -534,7 +534,7 @@ jobs:
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/bin"
           curl -fsSL \
-            "https://github.com/sbdchd/squawk/releases/download/v${SQUAWK_VERSION}/squawk-linux-x86_64" \
+            "https://github.com/sbdchd/squawk/releases/download/v${SQUAWK_VERSION}/squawk-linux-x64" \
             -o "$RUNNER_TEMP/bin/squawk"
           chmod +x "$RUNNER_TEMP/bin/squawk"
           echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
@@ -659,6 +659,11 @@ jobs:
           RAG_API_KEY=disabled-preprod-readonly
           # ADR-063 — CrUX API key (optional, blank-allowed = graceful degrade)
           CRUX_API_KEY=${CRUX_API_KEY}
+          # (Phase 0.6) Sitemap OIDC validation invariants are hardcoded in
+          # GithubOidcService (cf. docs/superpowers/specs/2026-05-16-sitemap-regen-auth-design.md
+          # Components > GithubOidcService — class static readonly constants).
+          # Preprod heredoc has no OIDC config to propagate — preprod is an
+          # ephemeral CI container with no automatic Bearer-token caller.
           EOF
 
           cd $PREPROD_DIR

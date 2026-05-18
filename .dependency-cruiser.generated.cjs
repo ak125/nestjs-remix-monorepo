@@ -2,7 +2,7 @@
  * AUTO-GENERATED — DO NOT EDIT.
  *
  * Source:                      .spec/00-canon/repository-registry/architecture.yaml
- * Source SHA-256:              1a605c05e870dfcab1ed5a1edac0b5d0d32f8d26b7e11eeb92adf55ed96221b5
+ * Source SHA-256:              096d0bdd137e677d8a5cbefa7db1c8b1e9bb68724a59c067368911cd08a30588
  * Generated format version:    1
  * Generated module format:     cjs
  * Generated with Node:         v22.x
