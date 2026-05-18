@@ -170,7 +170,7 @@ export const PieceDetailModal = memo(function PieceDetailModal({
   return (
     <DialogPrimitive.Root open={isOpen} onOpenChange={handleOpenChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 duration-200" />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-neutral-900/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 duration-200" />
         <DialogPrimitive.Content
           className="fixed inset-0 z-50 flex items-center justify-center p-4 focus:outline-none"
           aria-describedby={undefined}

@@ -256,7 +256,7 @@ export const ProductCard = memo(function ProductCard({
         <div
           className={`
           absolute inset-0
-          bg-black/0 group-hover:bg-black/5
+          bg-neutral-900/0 group-hover:bg-neutral-900/5
           transition-colors duration-300
           pointer-events-none
         `}
