@@ -12,6 +12,7 @@ import {
   signVehicleContext,
   VEHICLE_CTX_COOKIE_NAME,
 } from '@repo/registry';
+import type { FeatureFlagsService } from '../../config/feature-flags.service';
 import { VehicleContextMiddleware } from './vehicle-context.middleware';
 import { VehicleContextService } from './vehicle-context.service';
 
@@ -25,6 +26,9 @@ const stubConfig = (): ConfigService =>
       throw new Error(`unexpected key ${key}`);
     },
   }) as unknown as ConfigService;
+
+const stubFlags = (enabled: boolean): FeatureFlagsService =>
+  ({ vehicleContextEnabled: enabled }) as unknown as FeatureFlagsService;
 
 function makeReq(cookieHeader?: string): {
   headers: { cookie?: string };
@@ -53,7 +57,7 @@ describe('VehicleContextMiddleware', () => {
       });
     });
     service = new VehicleContextService(stubConfig(), events);
-    middleware = new VehicleContextMiddleware(service, events);
+    middleware = new VehicleContextMiddleware(service, events, stubFlags(true));
   });
 
   test('absent cookie : req.vehicleContext stays undefined, no event emitted', async () => {
@@ -175,5 +179,28 @@ describe('VehicleContextMiddleware', () => {
     expect(cleared).toEqual([
       { name: VEHICLE_CTX_COOKIE_NAME, options: { path: '/' } },
     ]);
+  });
+
+  test('kill-switch off : middleware passes through, valid cookie is ignored', async () => {
+    const offMiddleware = new VehicleContextMiddleware(
+      service,
+      events,
+      stubFlags(false),
+    );
+    const token = await signVehicleContext({
+      payload: { source: 'diagnostic' },
+      secret: SECRET,
+    });
+    const req = makeReq(`${VEHICLE_CTX_COOKIE_NAME}=${token}`);
+    const next = jest.fn();
+
+    await offMiddleware.use(req as never, {} as never, next);
+
+    expect(req.vehicleContext).toBeUndefined();
+    expect(next).toHaveBeenCalledTimes(1);
+    // No vehicle_ctx_* events emitted while flag is off (no set, no invalid, no consumed).
+    expect(
+      emittedEvents.filter((e) => e.name.startsWith('vehicle_ctx_')),
+    ).toHaveLength(0);
   });
 });

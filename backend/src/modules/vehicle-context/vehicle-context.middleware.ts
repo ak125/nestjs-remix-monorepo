@@ -2,6 +2,7 @@ import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import type { NextFunction, Request, Response } from 'express';
 import { VEHICLE_CTX_COOKIE_NAME } from '@repo/registry';
+import { FeatureFlagsService } from '../../config/feature-flags.service';
 import { VehicleContextService } from './vehicle-context.service';
 
 /**
@@ -23,9 +24,18 @@ export class VehicleContextMiddleware implements NestMiddleware {
   constructor(
     private readonly service: VehicleContextService,
     private readonly events: EventEmitter2,
+    private readonly flags: FeatureFlagsService,
   ) {}
 
   async use(req: Request, _res: Response, next: NextFunction): Promise<void> {
+    // PR-B.6 — Kill-switch. When `VEHICLE_CTX_ENABLED=false` (or runtime
+    // override), the middleware short-circuits to a pass-through. Existing
+    // cookies are NOT cleared (so re-enabling restores prior sessions).
+    if (!this.flags.vehicleContextEnabled) {
+      next();
+      return;
+    }
+
     const token = readCookie(req.headers.cookie, VEHICLE_CTX_COOKIE_NAME);
 
     // Absent cookie : nothing to do. NOT an invalid event — only present-but-broken
