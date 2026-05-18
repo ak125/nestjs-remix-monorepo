@@ -18,6 +18,10 @@ import {
 } from '../services/sitemap-v10.service';
 import { SitemapV10ScoringService } from '../services/sitemap-v10-scoring.service';
 import { SitemapV10HubsService } from '../services/sitemap-v10-hubs.service';
+import {
+  SitemapV10FreshnessService,
+  SitemapFreshnessReport,
+} from '../services/sitemap-v10-freshness.service';
 import { RateLimitSitemap } from '../../../common/decorators/rate-limit.decorator';
 
 @RateLimitSitemap() // 🛡️ 3 req/min - Sitemaps are memory-intensive
@@ -29,7 +33,21 @@ export class SitemapV10Controller {
     private readonly sitemapService: SitemapV10Service,
     private readonly scoringService: SitemapV10ScoringService,
     private readonly hubsService: SitemapV10HubsService,
+    private readonly freshnessService: SitemapV10FreshnessService,
   ) {}
+
+  /**
+   * GET /api/sitemap/v10/freshness
+   * Observable SLO source for sitemap freshness. Public read-only — surfaces
+   * fs mtime, parsed `<lastmod>`, BullMQ scheduler registration, and a
+   * boolean `isHealthy` against the `SEO_SITEMAP_FRESHNESS_WARN_HOURS`
+   * threshold (default 36h). Consumed by `scripts/ci/check-sitemap-freshness.sh`
+   * and the `sitemap-freshness-slo.yml` GH workflow that fires daily.
+   */
+  @Get('freshness')
+  async getFreshness(): Promise<SitemapFreshnessReport> {
+    return this.freshnessService.getFreshness();
+  }
 
   /**
    * POST /api/sitemap/v10/generate-all

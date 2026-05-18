@@ -1,0 +1,81 @@
+name: 🛰️ Sitemap freshness SLO
+
+# Hits the public GET /api/sitemap/v10/freshness endpoint and fails if the
+# sitemap is older than the threshold OR if the BullMQ scheduler is no longer
+# registered. Prevents recurrence of the silent-stale class of bug that caused
+# the traffic-drop incident 2026-04-22 → 2026-05-13 (see PR #487).
+#
+# Schedule rationale:
+#  - Backend cron fires at 03:00 UTC (SitemapV10SchedulerService).
+#  - SEO daily-fetch cron fires at 04:00 UTC.
+#  - This SLO check fires at 06:00 UTC, leaving 3h margin for the regen to finish.
+
+on:
+  schedule:
+    - cron: '0 6 * * *' # 06:00 UTC daily
+  workflow_dispatch:
+    inputs:
+      url:
+        description: Freshness endpoint URL to probe
+        required: false
+        default: https://www.automecanik.com/api/sitemap/v10/freshness
+      warn_threshold_hours:
+        description: Max staleHours allowed before failing
+        required: false
+        default: '36'
+
+# Note: this workflow used to also run on `pull_request` to validate the
+# script syntax. That was removed because the probe targets the deployed
+# PROD endpoint — pre-merge runs always 404 by design (the endpoint isn't
+# deployed yet) and were blocking the merge of the very PR that ships the
+# endpoint. The script is unit-coverable via the backend Jest suite +
+# manual `workflow_dispatch` after deploy.
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Probe and assert
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Make script executable
+        run: chmod +x scripts/ci/check-sitemap-freshness.sh
+
+      - name: Run freshness check
+        id: probe
+        env:
+          SEO_FRESHNESS_URL: ${{ inputs.url || 'https://www.automecanik.com/api/sitemap/v10/freshness' }}
+          SEO_FRESHNESS_WARN_HOURS: ${{ inputs.warn_threshold_hours || '36' }}
+        run: ./scripts/ci/check-sitemap-freshness.sh
+
+      # Notify Sentry on failure so the existing alert rule (single-recipient
+      # email mirror, cf. memory `sentry-vps-bootstrap-20260506`) surfaces this
+      # in the user's mailbox without requiring a separate SMTP setup. Skipped
+      # silently if the SENTRY_DSN secret is not configured in the repo —
+      # ergo this workflow merges cleanly even before SENTRY_DSN is added.
+      - name: Notify Sentry (on failure)
+        if: failure() && env.SENTRY_DSN != ''
+        env:
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+        run: |
+          python3 -m pip install --quiet sentry-sdk
+          python3 - <<'PY'
+          import os, sentry_sdk
+          sentry_sdk.init(
+              dsn=os.environ['SENTRY_DSN'],
+              environment='production',
+              release='sitemap-freshness-watchdog',
+              traces_sample_rate=0.0,
+          )
+          sentry_sdk.set_tag('watchdog', 'sitemap-freshness-slo')
+          sentry_sdk.set_tag('workflow_run', os.environ.get('GITHUB_RUN_ID', ''))
+          sentry_sdk.capture_message(
+              'sitemap-freshness-slo watchdog FAILED — sitemap is stale or scheduler missing',
+              level='error',
+          )
+          sentry_sdk.flush(timeout=5)
+          PY
