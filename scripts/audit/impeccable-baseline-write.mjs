@@ -15,7 +15,7 @@
 //
 // Output: writes audit/impeccable/baseline.json with stable key ordering.
 
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { argv, cwd, exit, stderr, stdout } from "node:process";
 import { relative, sep } from "node:path";
 import { execSync } from "node:child_process";
@@ -126,15 +126,31 @@ function main() {
   const report = loadJson(args.from, "report");
   const next = aggregate(report);
 
-  if (existsSync(BASELINE_PATH) && !args.allowIncrease) {
-    const existing = loadJson(BASELINE_PATH, "existing baseline");
-    const increase = refusesIncrease(existing, next);
-    if (increase) {
-      stderr.write(
-        `✘ refusing to write: would increase ${increase}.\n` +
-          "  Use --allow-increase only for the initial bootstrap PR.\n",
-      );
-      exit(1);
+  if (!args.allowIncrease) {
+    // Read-or-skip pattern (no TOCTOU): try to read existing baseline; if
+    // missing, treat as bootstrap. If present, validate the new counts can
+    // only stay flat or shrink. Avoids existsSync+writeFileSync race.
+    let existing = null;
+    try {
+      existing = JSON.parse(readFileSync(BASELINE_PATH, "utf8"));
+    } catch (err) {
+      if (err.code !== "ENOENT") {
+        stderr.write(
+          `✘ existing baseline at ${BASELINE_PATH} unreadable: ${err.message}\n` +
+            "  Use --allow-increase only if this is the initial bootstrap PR.\n",
+        );
+        exit(2);
+      }
+    }
+    if (existing) {
+      const increase = refusesIncrease(existing, next);
+      if (increase) {
+        stderr.write(
+          `✘ refusing to write: would increase ${increase}.\n` +
+            "  Use --allow-increase only for the initial bootstrap PR.\n",
+        );
+        exit(1);
+      }
     }
   }
 
