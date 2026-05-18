@@ -163,9 +163,9 @@ Detecte via : `PageRole.R2_PRODUCT` ou pattern `pieces.$gamme.$marque.$modele.$t
 | R2-8 | **B10** CTA ajout panier + guides lies | MOYENNE |
 | R2-9 | Maillage interne vers R3 (guide) et R4 (reference) | MOYENNE |
 
-### R3 — Blog/Guide (article, guide d'achat)
+### R3_CONSEILS — Conseils how-to / article éditorial
 
-Detecte via : `PageRole.R3_BLOG` ou pattern `blog-pieces-auto.*`
+Detecte via : `PageRole.R3_CONSEILS` ou pattern `blog-pieces-auto.*` (legacy `PageRole.R3_BLOG` est normalisé vers `R3_CONSEILS` par `LEGACY_ROLE_ALIASES`).
 
 **Application COMPLETE du squelette R2D2 (les 10 blocs) :**
 
