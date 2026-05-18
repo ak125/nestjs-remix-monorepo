@@ -1,0 +1,33 @@
+id: domain-port-naming-intent
+language: typescript
+severity: error
+message: |
+  Cross-domain Port method has non-intent-based naming. Methods like
+  `getAll()`, `getEverything()`, `loadStuff()`, `fetchBulk()`, `getCombined()`
+  signal a generic "give me everything" API instead of a focused intent.
+
+  Why this matters :
+    - A Port should express WHAT the domain wants, not HOW data is fetched
+    - Generic getters = coupling to peer-domain internals (canon violation)
+    - Each Port method = ONE intent (suggestParts, getRelatedSchedule, enrich)
+
+  Fix:
+    - Rename to express the calling domain's intent
+    - Example: `getAll()` → `suggestRelevantItems()`
+    - Example: `fetchBulk()` → `enrichWithFacts()`
+
+  See `ddd-bounded-contexts-anti-god-engine` memory.
+files:
+  - backend/src/**/ports/**/*.port.ts
+ignores:
+  - backend/src/**/ports/**/*.spec.ts
+rule:
+  all:
+    - kind: property_identifier
+    - regex: '^(get|fetch|load|read|find)(All|Everything|Stuff|Bulk|Combined|Anything)$'
+    - inside:
+        kind: interface_declaration
+        has:
+          kind: type_identifier
+          regex: 'Port$'
+        stopBy: end
