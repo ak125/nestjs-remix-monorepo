@@ -794,6 +794,45 @@ jobs:
           echo "- /api/catalog/families: ✅" >> $GITHUB_STEP_SUMMARY
           echo "- / (homepage): $STATUS" >> $GITHUB_STEP_SUMMARY
 
+      - name: 🩹 Soft-404 R2 smoke
+        run: |
+          BASE="http://localhost:3200"
+          FAILED=0
+          echo "## 🩹 Soft-404 R2 Smoke" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          while IFS= read -r url || [ -n "$url" ]; do
+            # skip blank lines + comments
+            [[ -z "${url// }" ]] && continue
+            case "$url" in \#*) continue ;; esac
+            echo "🔎 $url"
+            HTTP_OUT=$(curl -s -i --max-time 15 "$BASE$url" || true)
+            if [ -z "$HTTP_OUT" ]; then
+              echo "❌ curl failed for $url"
+              echo "- $url: ❌ curl failed" >> $GITHUB_STEP_SUMMARY
+              FAILED=1
+              continue
+            fi
+            ASSERT_OUT=$(echo "$HTTP_OUT" | python3 scripts/ci/assert-soft-404.py 2>&1)
+            ASSERT_RC=$?
+            if [ "$ASSERT_RC" = "0" ]; then
+              echo "✅ $url"
+              echo "- $url: ✅" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "❌ $url"
+              echo "$ASSERT_OUT"
+              echo "- $url: ❌" >> $GITHUB_STEP_SUMMARY
+              echo "  \`\`\`" >> $GITHUB_STEP_SUMMARY
+              echo "$ASSERT_OUT" >> $GITHUB_STEP_SUMMARY
+              echo "  \`\`\`" >> $GITHUB_STEP_SUMMARY
+              FAILED=1
+            fi
+          done < scripts/ci/soft-404-fixtures.txt
+          if [ "$FAILED" = "1" ]; then
+            echo "::error::Soft-404 smoke assertions failed"
+            exit 1
+          fi
+          echo "✅ All soft-404 fixtures passed"
+
       - name: ⏱️ Response Time Baseline
         run: |
           BASE="http://localhost:3200"
