@@ -1,9 +1,21 @@
 ---
 name: vehicle-ops
-description: "Vehicle operations: lookup, V-Level classification, compatibility RPC, cache, data quality, diagnostic & maintenance (ADR-032). Anti-patterns DB (no FK, TEXT columns, type_display string)."
-argument-hint: "[diagnose|vlevel|cache|quality|maintenance|dtc] [gamme-id or type-id]"
-allowed-tools: Read, Grep, Glob, Bash, mcp__claude_ai_Supabase__execute_sql
-version: "1.1"
+description: Use when working with vehicle data — lookup by type / gamme, V-Level classification, compatibility RPC, cache strategy, data quality audit, diagnostic / maintenance (ADR-032). Surfaces the known DB anti-patterns (no FK, TEXT columns, type_display as string). Triggers — "diagnose vehicle X", "audit gamme Y", "check compatibility", "VehicleSelector broken", or any task touching auto_type / pieces_gamme tables.
+type: technique
+status: stable
+owners: ['@ak125']
+domain: D15
+runtime_class: mutating
+llm_safe: false
+last_verified: '2026-05-18'
+license: Internal - Automecanik
+compatibility: Designed for Claude Code in the AutoMecanik monorepo. Stack — NestJS + Supabase. Requires Supabase MCP read access to auto_type, pieces_gamme, v_compat_strict views. Uses RAG/vault as SoT for vehicle facts (no LLM hallucination).
+allowed-tools: Read Grep Glob Bash mcp__claude_ai_Supabase__execute_sql
+tags: [vehicle, vlevel, compatibility, supabase, adr-032, diagnostic]
+metadata:
+  version: "1.1"
+  argument-hint: "[diagnose|vlevel|cache|quality|maintenance|dtc] [gamme-id or type-id]"
+  spec: agentskills.io/specification v1
 ---
 
 # Vehicle Operations — v1.0

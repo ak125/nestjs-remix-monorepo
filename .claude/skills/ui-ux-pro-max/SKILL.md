@@ -1,8 +1,20 @@
 ---
 name: ui-ux-pro-max
-description: "UI/UX design intelligence. 67 styles, 96 palettes, 57 font pairings, 25 charts, 13 stacks. Search, generate design systems, accessibility audit."
-argument-hint: "[design-query or component-type]"
-version: "1.1"
+description: Use when validating or choosing design system primitives (67 styles, 96 color palettes, 57 font pairings, 99 UX guidelines, 25 chart types across 13 stacks) for an AutoMecanik front-end. Triggers — "validate this design", "choose a palette", "audit a11y", "what font pairs with X", or chained after /frontend-design for standards check.
+type: reference
+status: stable
+owners: ['@ak125']
+domain: D15
+runtime_class: read-only
+llm_safe: true
+last_verified: '2026-05-18'
+license: Internal - Automecanik
+compatibility: Designed for Claude Code in the AutoMecanik monorepo. Stack — Remix + shadcn/ui + Tailwind CSS. Consults packages/design-tokens as project-specific overlay.
+tags: [design-system, ui, ux, a11y, typography, palettes, charts]
+metadata:
+  version: "1.1"
+  argument-hint: "[design-query or component-type]"
+  spec: agentskills.io/specification v1
 ---
 # UI/UX Pro Max - Design Intelligence
 
