@@ -813,3 +813,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `chore/impeccable-cli-devdep`
 - **Décision** : chore(frontend): add impeccable@2.1.9 CLI for design anti-pattern detection
 - **Sortie** : PR #597 | commits 54afbb9d8
+
+## 2026-05-18 — feat/vehicle-context-cookie-jws (auto)
+
+- **Branche** : `feat/vehicle-context-cookie-jws`
+- **Décision** : Merge remote-tracking branch 'origin/main' into feat/vehicle-context-cookie-jws (+9 other commits)
+- **Sortie** : PR #606 | commits 4cfd22868 54aecaacd b99f9f80e 2fe8f2beb 6eb399a47 019b10d89 6dcfb20a5 6833edfae a51962447 ce57fa9d8
