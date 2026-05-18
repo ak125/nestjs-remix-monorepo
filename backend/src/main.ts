@@ -1,3 +1,27 @@
+// Dev-only safety net : register tsconfig-paths before any other require().
+// PROD utilise tsc-alias pour réécrire les @alias en relatifs au build (single-shot,
+// race-free). En dev, `tsc --watch` et `tsc-alias --watch` tournent en parallèle ;
+// nodemon peut redémarrer node sur un dist/*.js fraîchement réécrit par tsc mais
+// pas encore traité par tsc-alias → MODULE_NOT_FOUND `@common/exceptions`.
+// La registration runtime ci-dessous patche le loader Node pour résoudre les
+// `@alias/*` résiduels, éliminant la race. Inactive en prod (tsc-alias a déjà fait
+// le travail au build, et tsconfig-paths reste en devDependencies).
+if (process.env.NODE_ENV !== 'production') {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  require('tsconfig-paths').register({
+    baseUrl: __dirname,
+    paths: {
+      '@auth/*': ['auth/*'],
+      '@cache/*': ['cache/*'],
+      '@common/*': ['common/*'],
+      '@config/*': ['config/*'],
+      '@database/*': ['database/*'],
+      '@security/*': ['security/*'],
+      '@modules/*': ['modules/*'],
+    },
+  });
+}
+
 // Sentry MUST be imported first so its OpenTelemetry-based auto-instrumentation
 // can patch http/fs/express before any other module loads.
 // `instrument.ts` also runs `dotenv/config` internally — populating env vars

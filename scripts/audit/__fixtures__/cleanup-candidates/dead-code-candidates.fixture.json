@@ -1,0 +1,78 @@
+{
+  "_generated_by": "fixture",
+  "note": "synthetic — 4 candidates exercising candidate/blocked/excluded + orphan",
+  "count": 5,
+  "by_confidence": { "high": 2, "medium": 1, "low": 1 },
+  "candidates": [
+    {
+      "path": "frontend/app/utils/dead.ts",
+      "domain": "frontend-shared",
+      "kind": "other",
+      "confidence": "high",
+      "derived_from": ["knip"],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "frontend/app/routes/_index.tsx",
+      "domain": "frontend-shared",
+      "kind": "route",
+      "confidence": "high",
+      "derived_from": ["depcruise-no-dependents"],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": false,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": false
+      },
+      "reason": "depcruise no-dependents"
+    },
+    {
+      "path": "backend/src/auth/exception.filter.ts",
+      "domain": "auth",
+      "kind": "interceptor",
+      "confidence": "medium",
+      "derived_from": ["knip"],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": false,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused"
+    },
+    {
+      "path": "backend/src/modules/x/orphan.service.ts",
+      "domain": "backend-core",
+      "kind": "service",
+      "confidence": "low",
+      "derived_from": ["depcruise-orphan"],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "depcruise no-dependents"
+    },
+    {
+      "path": "frontend/app/utils/orphan-from-orphan.ts",
+      "domain": "frontend-shared",
+      "kind": "other",
+      "confidence": "low",
+      "derived_from": ["knip"],
+      "precheck_verdict": {
+        "c0_not_never_auto_delete": true,
+        "c1_zero_static_import": true,
+        "c2_zero_dynamic_import": true,
+        "c3_zero_runtime_use": true
+      },
+      "reason": "knip unused — file absent from canonical (safety gate test)"
+    }
+  ]
+}

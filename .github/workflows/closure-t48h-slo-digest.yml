@@ -1,0 +1,74 @@
+name: 📊 Closure 2026-05-17 — T+48h SLO digest
+
+# One-shot SLO digest 48h after the closure sequence executed on 2026-05-17
+# (4 PRs merged: #562 #565 #566 #579 + 13 stales closed).
+#
+# Replaces Claude Desktop routine `trig_01EGEoNa8u6DbEXs6KtuPoMJ` (disabled
+# 2026-05-17). GitHub Actions has no native "run-once-at-date" trigger, so
+# we use a daily cron with a date guard. After 2026-05-19 fires successfully
+# this workflow file SHOULD BE DELETED in a follow-up cleanup PR.
+#
+# Cron: 17:30 UTC daily, guarded to fire only on 2026-05-19.
+# Target run: 2026-05-19T17:38Z (= 19:38 Europe/Paris).
+on:
+  schedule:
+    - cron: "30 17 * * *"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: read
+  actions: read
+  contents: read
+
+concurrency:
+  group: closure-t48h-slo-digest
+  cancel-in-progress: false
+
+jobs:
+  date-guard:
+    name: Date guard (fire only on 2026-05-19)
+    runs-on: ubuntu-latest
+    outputs:
+      proceed: ${{ steps.guard.outputs.proceed }}
+    steps:
+      - name: Check date
+        id: guard
+        run: |
+          TODAY=$(date -u +%F)
+          if [ "$TODAY" = "2026-05-19" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+            echo "🛑 Skip — today is $TODAY, target is 2026-05-19."
+          fi
+
+  digest:
+    name: Measure 9 SLO + publish T+48h digest
+    needs: date-guard
+    if: needs.date-guard.outputs.proceed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout (shallow)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run T+48h SLO digest script
+        id: collect
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: bash .github/scripts/closure-t48h-slo-digest.sh
+
+      - name: Create T+48h digest issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh issue create \
+            --repo "$REPO" \
+            --title "${{ steps.collect.outputs.title }}" \
+            --body-file "${{ steps.collect.outputs.body_path }}" \
+            --assignee ak125

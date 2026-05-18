@@ -278,7 +278,41 @@ def main() -> int:
 
     created, updated = process(args.mode, modules, headers_only=args.headers_only)
     print(f"Done. {len(modules)} modules scanned, {created} created, {updated} updated.")
+
+    # ADR-058 PR-F : refresh REPO_MAP.md (LLM entrypoint) when canonical.json
+    # is available. This crosses Python → Node via subprocess. No-op gracefully
+    # if canonical.json absent (PR-E builds it ; in fresh checkouts before
+    # `npm run registry` runs, the map just isn't refreshed yet).
+    _maybe_refresh_repo_map()
+
     return 0
+
+
+def _maybe_refresh_repo_map() -> None:
+    """Cross-language hook : invoke `node scripts/registry/build-llm-repo-map.js`
+    when `audit/registry/canonical.json` exists. Failures are non-fatal —
+    refresh-knowledge runs in pre-commit hot path and must not block commits.
+    """
+    import subprocess
+    import os
+
+    root = Path(__file__).resolve().parents[2]
+    canonical = root / "audit" / "registry" / "canonical.json"
+    builder = root / "scripts" / "registry" / "build-llm-repo-map.js"
+    if not canonical.exists() or not builder.exists():
+        # Either Layer 3 not built yet (fresh checkout) or PR-F not deployed.
+        return
+    try:
+        subprocess.run(
+            ["node", str(builder), "--quiet"],
+            cwd=str(root),
+            check=True,
+            timeout=30,
+            env={**os.environ, "npm_lifecycle_event": "registry:build:llm-map"},
+        )
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError) as e:
+        # Non-fatal : log to stderr and move on
+        print(f"[refresh-knowledge] REPO_MAP.md refresh skipped: {e}", file=sys.stderr)
 
 
 if __name__ == "__main__":

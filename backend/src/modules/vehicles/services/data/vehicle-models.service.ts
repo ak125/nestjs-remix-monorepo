@@ -614,7 +614,11 @@ export class VehicleModelsService extends SupabaseBaseService {
           // BATCH: Collecter les noms de modèles uniques
           const modelNames = [...new Set(topModels.map((m) => m.modele_name))];
 
-          // BATCH: Récupérer tous les modèles en une seule requête
+          // BATCH: Récupérer tous les modèles en une seule requête.
+          // ⚠️ marque_alias inclus pour permettre au frontend de construire
+          // un lien SEO `/constructeurs/{alias}-{id}.html` valide (sinon
+          // le lien retombait sur /brands/{slug} invalide — cf. Sentry
+          // event 5df734d4 NaN smallint).
           const { data: modelsData, error } = await this.client
             .from(TABLES.auto_modele)
             .select(
@@ -622,7 +626,8 @@ export class VehicleModelsService extends SupabaseBaseService {
               *,
               auto_marque!inner(
                 marque_id,
-                marque_name
+                marque_name,
+                marque_alias
               )
             `,
             )

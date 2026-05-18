@@ -1,0 +1,2135 @@
+{
+  "_generated_by": "scripts/audit/build-deep-inventory.js",
+  "domains": {
+    "admin": {
+      "dirs": [
+        "backend/src/modules/admin",
+        "backend/src/modules/admin/controllers",
+        "backend/src/modules/admin/decorators",
+        "backend/src/modules/admin/dto",
+        "backend/src/modules/admin/events",
+        "backend/src/modules/admin/schemas",
+        "backend/src/modules/admin/services",
+        "backend/src/modules/admin/services/buying-guide",
+        "backend/src/modules/admin/services/r1-image-prompt-builders",
+        "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__"
+      ],
+      "files_count": 117,
+      "loc_total": 39597,
+      "has_barrel": true
+    },
+    "agentic-engine": {
+      "dirs": [
+        "backend/src/modules/agentic-engine",
+        "backend/src/modules/agentic-engine/constants",
+        "backend/src/modules/agentic-engine/events",
+        "backend/src/modules/agentic-engine/services",
+        "backend/src/modules/agentic-engine/types"
+      ],
+      "files_count": 14,
+      "loc_total": 2391,
+      "has_barrel": false
+    },
+    "ai-content": {
+      "dirs": [
+        "backend/src/modules/ai-content",
+        "backend/src/modules/ai-content/config",
+        "backend/src/modules/ai-content/dto",
+        "backend/src/modules/ai-content/providers",
+        "backend/src/modules/ai-content/services",
+        "backend/src/modules/ai-content/templates"
+      ],
+      "files_count": 12,
+      "loc_total": 3228,
+      "has_barrel": false
+    },
+    "analytics": {
+      "dirs": [
+        "backend/src/modules/analytics",
+        "backend/src/modules/analytics/controllers",
+        "backend/src/modules/analytics/services"
+      ],
+      "files_count": 3,
+      "loc_total": 865,
+      "has_barrel": false
+    },
+    "api": {
+      "dirs": [
+        "backend/src/modules"
+      ],
+      "files_count": 1,
+      "loc_total": 32,
+      "has_barrel": false
+    },
+    "auth": {
+      "dirs": [
+        "backend/src/auth",
+        "backend/src/auth/controllers",
+        "backend/src/auth/decorators",
+        "backend/src/auth/dto",
+        "backend/src/auth/guards",
+        "backend/src/modules/auth/dto"
+      ],
+      "files_count": 32,
+      "loc_total": 4008,
+      "has_barrel": true
+    },
+    "backend-core": {
+      "dirs": [
+        "backend/src",
+        "backend/src/api",
+        "backend/src/controllers",
+        "backend/src/notifications",
+        "backend/src/remix",
+        "backend/src/search",
+        "backend/src/security/rpc-gate",
+        "backend/src/services",
+        "backend/src/types",
+        "backend/src/utils"
+      ],
+      "files_count": 33,
+      "loc_total": 5370,
+      "has_barrel": true
+    },
+    "blog": {
+      "dirs": [
+        "backend/src/modules/blog",
+        "backend/src/modules/blog/controllers",
+        "backend/src/modules/blog/interfaces",
+        "backend/src/modules/blog/services",
+        "backend/src/modules/blog/utils"
+      ],
+      "files_count": 31,
+      "loc_total": 11829,
+      "has_barrel": false
+    },
+    "blog-metadata": {
+      "dirs": [
+        "backend/src/modules/blog-metadata"
+      ],
+      "files_count": 3,
+      "loc_total": 445,
+      "has_barrel": false
+    },
+    "bot-guard": {
+      "dirs": [
+        "backend/src/modules/bot-guard"
+      ],
+      "files_count": 4,
+      "loc_total": 610,
+      "has_barrel": false
+    },
+    "cache": {
+      "dirs": [
+        "backend/src/cache"
+      ],
+      "files_count": 2,
+      "loc_total": 435,
+      "has_barrel": false
+    },
+    "cart": {
+      "dirs": [
+        "backend/src/modules/cart",
+        "backend/src/modules/cart/controllers",
+        "backend/src/modules/cart/dto",
+        "backend/src/modules/cart/services"
+      ],
+      "files_count": 18,
+      "loc_total": 3589,
+      "has_barrel": false
+    },
+    "catalog": {
+      "dirs": [
+        "backend/src/modules/catalog",
+        "backend/src/modules/catalog/controllers",
+        "backend/src/modules/catalog/interfaces",
+        "backend/src/modules/catalog/services",
+        "backend/src/modules/catalog/types",
+        "backend/src/modules/catalog/utils"
+      ],
+      "files_count": 31,
+      "loc_total": 8622,
+      "has_barrel": false
+    },
+    "commercial": {
+      "dirs": [
+        "backend/src/modules/commercial",
+        "backend/src/modules/commercial/archives"
+      ],
+      "files_count": 3,
+      "loc_total": 642,
+      "has_barrel": false
+    },
+    "common": {
+      "dirs": [
+        "backend/src/common",
+        "backend/src/common/decorators",
+        "backend/src/common/exceptions",
+        "backend/src/common/interceptors",
+        "backend/src/common/pipes",
+        "backend/src/common/utils"
+      ],
+      "files_count": 27,
+      "loc_total": 1168,
+      "has_barrel": true
+    },
+    "config": {
+      "dirs": [
+        "backend/src/config",
+        "backend/src/modules/config",
+        "backend/src/modules/config/controllers",
+        "backend/src/modules/config/dto",
+        "backend/src/modules/config/interfaces",
+        "backend/src/modules/config/schemas",
+        "backend/src/modules/config/services",
+        "backend/src/modules/config/validators"
+      ],
+      "files_count": 92,
+      "loc_total": 23113,
+      "has_barrel": true
+    },
+    "customers": {
+      "dirs": [
+        "backend/src/modules/customers/dto"
+      ],
+      "files_count": 1,
+      "loc_total": 76,
+      "has_barrel": false
+    },
+    "dashboard": {
+      "dirs": [
+        "backend/src/modules/dashboard"
+      ],
+      "files_count": 3,
+      "loc_total": 1182,
+      "has_barrel": false
+    },
+    "database": {
+      "dirs": [
+        "backend/src/database",
+        "backend/src/database/services",
+        "backend/src/database/types",
+        "backend/src/database/utils"
+      ],
+      "files_count": 13,
+      "loc_total": 21101,
+      "has_barrel": true
+    },
+    "dev-only": {
+      "dirs": [
+        "backend/src/modules/rm",
+        "backend/src/modules/rm/controllers",
+        "backend/src/modules/rm/services",
+        "backend/src/modules/rm/services/__tests__"
+      ],
+      "files_count": 5,
+      "loc_total": 1697,
+      "has_barrel": false
+    },
+    "diagnostic-engine": {
+      "dirs": [
+        "backend/src/modules/diagnostic-engine",
+        "backend/src/modules/diagnostic-engine/constants",
+        "backend/src/modules/diagnostic-engine/engines",
+        "backend/src/modules/diagnostic-engine/services",
+        "backend/src/modules/diagnostic-engine/types"
+      ],
+      "files_count": 17,
+      "loc_total": 3885,
+      "has_barrel": false
+    },
+    "errors": {
+      "dirs": [
+        "backend/src/modules/errors",
+        "backend/src/modules/errors/controllers",
+        "backend/src/modules/errors/entities",
+        "backend/src/modules/errors/filters",
+        "backend/src/modules/errors/services"
+      ],
+      "files_count": 8,
+      "loc_total": 2875,
+      "has_barrel": false
+    },
+    "frontend-routes": {
+      "dirs": [
+        "frontend/app/routes",
+        "frontend/app/routes/_public+"
+      ],
+      "files_count": 240,
+      "loc_total": 118016,
+      "has_barrel": false
+    },
+    "frontend-shared": {
+      "dirs": [
+        "frontend/app",
+        "frontend/app/auth",
+        "frontend/app/components",
+        "frontend/app/components/account",
+        "frontend/app/components/admin",
+        "frontend/app/components/admin/gamme-seo",
+        "frontend/app/components/admin/patterns",
+        "frontend/app/components/admin/seo",
+        "frontend/app/components/ai",
+        "frontend/app/components/auth",
+        "frontend/app/components/blog",
+        "frontend/app/components/blog/conseil",
+        "frontend/app/components/blog/guide-achat",
+        "frontend/app/components/blog/guide-selecteur",
+        "frontend/app/components/cart",
+        "frontend/app/components/catalog",
+        "frontend/app/components/checkout",
+        "frontend/app/components/common",
+        "frontend/app/components/constructeurs",
+        "frontend/app/components/content",
+        "frontend/app/components/dashboard",
+        "frontend/app/components/diagnostic-wizard",
+        "frontend/app/components/diagnostic-wizard/hooks",
+        "frontend/app/components/diagnostic-wizard/results",
+        "frontend/app/components/diagnostic-wizard/steps",
+        "frontend/app/components/ecommerce",
+        "frontend/app/components/errors",
+        "frontend/app/components/expert",
+        "frontend/app/components/faq",
+        "frontend/app/components/filters",
+        "frontend/app/components/forms",
+        "frontend/app/components/gamme",
+        "frontend/app/components/guide",
+        "frontend/app/components/heroes",
+        "frontend/app/components/home",
+        "frontend/app/components/layout",
+        "frontend/app/components/layout/templates",
+        "frontend/app/components/manufacturers",
+        "frontend/app/components/model",
+        "frontend/app/components/navbar",
+        "frontend/app/components/navigation",
+        "frontend/app/components/notifications",
+        "frontend/app/components/orders",
+        "frontend/app/components/pieces",
+        "frontend/app/components/pieces/ai-predictions",
+        "frontend/app/components/products",
+        "frontend/app/components/profile",
+        "frontend/app/components/rag",
+        "frontend/app/components/search",
+        "frontend/app/components/seo",
+        "frontend/app/components/shipping",
+        "frontend/app/components/trust",
+        "frontend/app/components/ui",
+        "frontend/app/components/users",
+        "frontend/app/components/vehicle",
+        "frontend/app/components/vehicle/r8",
+        "frontend/app/components/vehicle/r8/sections",
+        "frontend/app/components/vehicles",
+        "frontend/app/config",
+        "frontend/app/constants",
+        "frontend/app/contexts",
+        "frontend/app/hooks",
+        "frontend/app/lib",
+        "frontend/app/lib/schemas",
+        "frontend/app/schemas",
+        "frontend/app/server",
+        "frontend/app/services",
+        "frontend/app/services/api",
+        "frontend/app/services/common",
+        "frontend/app/services/orders",
+        "frontend/app/services/pieces",
+        "frontend/app/services/seo",
+        "frontend/app/types",
+        "frontend/app/utils",
+        "frontend/app/utils/seo"
+      ],
+      "files_count": 610,
+      "loc_total": 118784,
+      "has_barrel": true
+    },
+    "gamme-rest": {
+      "dirs": [
+        "backend/src/modules/gamme-rest",
+        "backend/src/modules/gamme-rest/controllers",
+        "backend/src/modules/gamme-rest/services",
+        "backend/src/modules/gamme-rest/services/__tests__",
+        "backend/src/modules/gamme-rest/types",
+        "backend/src/modules/gamme-rest/utils",
+        "backend/src/modules/gamme-rest/utils/__tests__"
+      ],
+      "files_count": 18,
+      "loc_total": 6406,
+      "has_barrel": true
+    },
+    "health": {
+      "dirs": [
+        "backend/src/modules/health"
+      ],
+      "files_count": 1,
+      "loc_total": 63,
+      "has_barrel": false
+    },
+    "invoices": {
+      "dirs": [
+        "backend/src/modules",
+        "backend/src/modules/invoices"
+      ],
+      "files_count": 4,
+      "loc_total": 255,
+      "has_barrel": false
+    },
+    "knowledge-graph": {
+      "dirs": [
+        "backend/src/modules/knowledge-graph"
+      ],
+      "files_count": 6,
+      "loc_total": 1647,
+      "has_barrel": true
+    },
+    "layout": {
+      "dirs": [
+        "backend/src/modules/layout",
+        "backend/src/modules/layout/controllers",
+        "backend/src/modules/layout/services"
+      ],
+      "files_count": 10,
+      "loc_total": 2723,
+      "has_barrel": true
+    },
+    "marketing": {
+      "dirs": [
+        "backend/src/modules/marketing",
+        "backend/src/modules/marketing/controllers",
+        "backend/src/modules/marketing/dto",
+        "backend/src/modules/marketing/interfaces",
+        "backend/src/modules/marketing/services",
+        "backend/src/modules/marketing/templates"
+      ],
+      "files_count": 25,
+      "loc_total": 4719,
+      "has_barrel": false
+    },
+    "mcp-validation": {
+      "dirs": [
+        "backend/src/modules/mcp-validation",
+        "backend/src/modules/mcp-validation/config",
+        "backend/src/modules/mcp-validation/decorators",
+        "backend/src/modules/mcp-validation/interceptors",
+        "backend/src/modules/mcp-validation/middleware",
+        "backend/src/modules/mcp-validation/services",
+        "backend/src/modules/mcp-validation/types"
+      ],
+      "files_count": 19,
+      "loc_total": 7381,
+      "has_barrel": true
+    },
+    "messages": {
+      "dirs": [
+        "backend/src/modules/messages",
+        "backend/src/modules/messages/dto",
+        "backend/src/modules/messages/repositories"
+      ],
+      "files_count": 8,
+      "loc_total": 1478,
+      "has_barrel": true
+    },
+    "metadata": {
+      "dirs": [
+        "backend/src/modules/metadata",
+        "backend/src/modules/metadata/controllers",
+        "backend/src/modules/metadata/services"
+      ],
+      "files_count": 6,
+      "loc_total": 1930,
+      "has_barrel": false
+    },
+    "navigation": {
+      "dirs": [
+        "backend/src/modules/navigation",
+        "backend/src/modules/navigation/services"
+      ],
+      "files_count": 6,
+      "loc_total": 1427,
+      "has_barrel": false
+    },
+    "orders": {
+      "dirs": [
+        "backend/src/modules/orders",
+        "backend/src/modules/orders/controllers",
+        "backend/src/modules/orders/dto",
+        "backend/src/modules/orders/events",
+        "backend/src/modules/orders/listeners",
+        "backend/src/modules/orders/schemas",
+        "backend/src/modules/orders/services",
+        "backend/src/modules/orders/types"
+      ],
+      "files_count": 22,
+      "loc_total": 6381,
+      "has_barrel": true
+    },
+    "payments": {
+      "dirs": [
+        "backend/src/modules/payments",
+        "backend/src/modules/payments/controllers",
+        "backend/src/modules/payments/dto",
+        "backend/src/modules/payments/entities",
+        "backend/src/modules/payments/repositories",
+        "backend/src/modules/payments/services",
+        "backend/src/modules/payments/utils"
+      ],
+      "files_count": 28,
+      "loc_total": 5654,
+      "has_barrel": true
+    },
+    "pkg-database-types": {
+      "dirs": [
+        "packages/database-types/scripts",
+        "packages/database-types/src",
+        "packages/database-types/src/api",
+        "packages/database-types/src/enums",
+        "packages/database-types/src/helpers"
+      ],
+      "files_count": 16,
+      "loc_total": 21178,
+      "has_barrel": true
+    },
+    "pkg-design-tokens": {
+      "dirs": [
+        "packages/design-tokens",
+        "packages/design-tokens/examples",
+        "packages/design-tokens/scripts",
+        "packages/design-tokens/src",
+        "packages/design-tokens/src/tokens"
+      ],
+      "files_count": 9,
+      "loc_total": 2254,
+      "has_barrel": true
+    },
+    "pkg-eslint-config": {
+      "dirs": [
+        "packages/eslint-config"
+      ],
+      "files_count": 1,
+      "loc_total": 35,
+      "has_barrel": false
+    },
+    "pkg-seo-types": {
+      "dirs": [
+        "packages/seo-types/src"
+      ],
+      "files_count": 6,
+      "loc_total": 730,
+      "has_barrel": true
+    },
+    "products": {
+      "dirs": [
+        "backend/src/modules/products",
+        "backend/src/modules/products/controllers",
+        "backend/src/modules/products/dto",
+        "backend/src/modules/products/schemas",
+        "backend/src/modules/products/services",
+        "backend/src/modules/products/types"
+      ],
+      "files_count": 27,
+      "loc_total": 7115,
+      "has_barrel": true
+    },
+    "promo": {
+      "dirs": [
+        "backend/src/modules/promo"
+      ],
+      "files_count": 3,
+      "loc_total": 394,
+      "has_barrel": false
+    },
+    "rag-knowledge-bootstrap": {
+      "dirs": [
+        "backend/src/modules/rag-knowledge-bootstrap"
+      ],
+      "files_count": 2,
+      "loc_total": 120,
+      "has_barrel": false
+    },
+    "rag-proxy": {
+      "dirs": [
+        "backend/src/modules/rag-proxy",
+        "backend/src/modules/rag-proxy/dto",
+        "backend/src/modules/rag-proxy/events",
+        "backend/src/modules/rag-proxy/services",
+        "backend/src/modules/rag-proxy/types"
+      ],
+      "files_count": 44,
+      "loc_total": 15226,
+      "has_barrel": true
+    },
+    "scripts": {
+      "dirs": [
+        "backend/scripts",
+        "backend/scripts/seo",
+        "backend/scripts/seo/audit",
+        "backend/scripts/seo/audit/__tests__",
+        "scripts",
+        "scripts/audit",
+        "scripts/cleanup",
+        "scripts/db",
+        "scripts/marketing",
+        "scripts/mcp-server",
+        "scripts/testing",
+        "scripts/ui-audit",
+        "scripts/ui-audit/analyzer",
+        "scripts/ui-audit/evaluators",
+        "scripts/ui-audit/generators",
+        "scripts/ui-audit/rules",
+        "scripts/ui-governance"
+      ],
+      "files_count": 58,
+      "loc_total": 11208,
+      "has_barrel": true
+    },
+    "search": {
+      "dirs": [
+        "backend/src/modules/search",
+        "backend/src/modules/search/controllers",
+        "backend/src/modules/search/services"
+      ],
+      "files_count": 17,
+      "loc_total": 6355,
+      "has_barrel": false
+    },
+    "seo": {
+      "dirs": [
+        "backend/src/modules/seo",
+        "backend/src/modules/seo/__tests__",
+        "backend/src/modules/seo/config",
+        "backend/src/modules/seo/constants",
+        "backend/src/modules/seo/controllers",
+        "backend/src/modules/seo/dto",
+        "backend/src/modules/seo/helpers",
+        "backend/src/modules/seo/infrastructure",
+        "backend/src/modules/seo/interceptors",
+        "backend/src/modules/seo/interfaces",
+        "backend/src/modules/seo/registries",
+        "backend/src/modules/seo/registries/__tests__",
+        "backend/src/modules/seo/schemas",
+        "backend/src/modules/seo/services",
+        "backend/src/modules/seo/services/chain",
+        "backend/src/modules/seo/services/chain/__tests__",
+        "backend/src/modules/seo/services/policies",
+        "backend/src/modules/seo/services/policies/__tests__",
+        "backend/src/modules/seo/types",
+        "backend/src/modules/seo/utils",
+        "backend/src/modules/seo/utils/__tests__",
+        "backend/src/modules/seo/validation",
+        "backend/src/modules/seo/validation/__tests__",
+        "packages/seo-role-contracts/src",
+        "packages/seo-role-contracts/src/__tests__",
+        "packages/seo-role-contracts/src/contracts",
+        "packages/seo-roles/src",
+        "packages/seo-roles/src/__tests__",
+        "scripts/seo"
+      ],
+      "files_count": 171,
+      "loc_total": 44647,
+      "has_barrel": true
+    },
+    "seo-logs": {
+      "dirs": [
+        "backend/src/modules/seo-logs",
+        "backend/src/modules/seo-logs/controllers",
+        "backend/src/modules/seo-logs/dto",
+        "backend/src/modules/seo-logs/services"
+      ],
+      "files_count": 12,
+      "loc_total": 3646,
+      "has_barrel": false
+    },
+    "seo-monitoring": {
+      "dirs": [
+        "backend/src/modules/seo-monitoring",
+        "backend/src/modules/seo-monitoring/controllers",
+        "backend/src/modules/seo-monitoring/processors",
+        "backend/src/modules/seo-monitoring/services"
+      ],
+      "files_count": 14,
+      "loc_total": 2865,
+      "has_barrel": false
+    },
+    "seo-shadow-observatory": {
+      "dirs": [
+        "backend/src/modules/seo-shadow-observatory"
+      ],
+      "files_count": 10,
+      "loc_total": 969,
+      "has_barrel": false
+    },
+    "shared": {
+      "dirs": [
+        "backend/src/shared/crypto"
+      ],
+      "files_count": 3,
+      "loc_total": 270,
+      "has_barrel": true
+    },
+    "shipping": {
+      "dirs": [
+        "backend/src/modules/shipping"
+      ],
+      "files_count": 4,
+      "loc_total": 501,
+      "has_barrel": false
+    },
+    "staff": {
+      "dirs": [
+        "backend/src/modules/staff",
+        "backend/src/modules/staff/dto",
+        "backend/src/modules/staff/services"
+      ],
+      "files_count": 5,
+      "loc_total": 957,
+      "has_barrel": false
+    },
+    "substitution": {
+      "dirs": [
+        "backend/src/modules/substitution",
+        "backend/src/modules/substitution/controllers",
+        "backend/src/modules/substitution/services",
+        "backend/src/modules/substitution/types"
+      ],
+      "files_count": 6,
+      "loc_total": 1433,
+      "has_barrel": false
+    },
+    "suppliers": {
+      "dirs": [
+        "backend/src/modules/suppliers",
+        "backend/src/modules/suppliers/dto"
+      ],
+      "files_count": 7,
+      "loc_total": 1995,
+      "has_barrel": true
+    },
+    "support": {
+      "dirs": [
+        "backend/src/modules/support",
+        "backend/src/modules/support/controllers",
+        "backend/src/modules/support/services",
+        "backend/src/modules/support/types"
+      ],
+      "files_count": 24,
+      "loc_total": 9377,
+      "has_barrel": true
+    },
+    "system": {
+      "dirs": [
+        "backend/src/modules/system",
+        "backend/src/modules/system/processors",
+        "backend/src/modules/system/services",
+        "backend/src/modules/system/types"
+      ],
+      "files_count": 11,
+      "loc_total": 2499,
+      "has_barrel": false
+    },
+    "uncategorized": {
+      "dirs": [
+        "",
+        ".spec/templates",
+        ".spec/types",
+        "backend",
+        "backend/tests",
+        "backend/tests/__mocks__/@repo",
+        "backend/tests/unit",
+        "backend/tests/unit/seo",
+        "backend/tests/unit/seo-monitoring",
+        "frontend",
+        "frontend/frontend/tests/e2e",
+        "frontend/tests/a11y",
+        "frontend/tests/e2e",
+        "frontend/tests/qa-audit",
+        "frontend/tests/qa-audit/config",
+        "frontend/tests/qa-audit/helpers",
+        "frontend/tests/qa-audit/suites",
+        "frontend/tests/unit",
+        "frontend/tests/unit/utils",
+        "frontend/tests/visual",
+        "migrations",
+        "services/remotion-renderer/src",
+        "services/remotion-renderer/src/compositions",
+        "services/remotion-renderer/src/compositions/components",
+        "services/remotion-renderer/src/lib",
+        "services/remotion-renderer/src/routes",
+        "services/remotion-renderer/src/types"
+      ],
+      "files_count": 108,
+      "loc_total": 21635,
+      "has_barrel": true
+    },
+    "upload": {
+      "dirs": [
+        "backend/src/modules/upload",
+        "backend/src/modules/upload/dto",
+        "backend/src/modules/upload/services"
+      ],
+      "files_count": 10,
+      "loc_total": 3580,
+      "has_barrel": true
+    },
+    "users": {
+      "dirs": [
+        "backend/src/modules/users",
+        "backend/src/modules/users/controllers",
+        "backend/src/modules/users/dto",
+        "backend/src/modules/users/schemas",
+        "backend/src/modules/users/services"
+      ],
+      "files_count": 27,
+      "loc_total": 5153,
+      "has_barrel": true
+    },
+    "vehicles": {
+      "dirs": [
+        "backend/src/modules/vehicles",
+        "backend/src/modules/vehicles/controllers",
+        "backend/src/modules/vehicles/decorators",
+        "backend/src/modules/vehicles/dto",
+        "backend/src/modules/vehicles/pipes",
+        "backend/src/modules/vehicles/services",
+        "backend/src/modules/vehicles/services/core",
+        "backend/src/modules/vehicles/services/data",
+        "backend/src/modules/vehicles/services/search",
+        "backend/src/modules/vehicles/services/seo",
+        "backend/src/modules/vehicles/types"
+      ],
+      "files_count": 28,
+      "loc_total": 8537,
+      "has_barrel": false
+    },
+    "wiki": {
+      "dirs": [
+        "scripts/wiki"
+      ],
+      "files_count": 2,
+      "loc_total": 216,
+      "has_barrel": false
+    },
+    "workers": {
+      "dirs": [
+        "backend/src/workers",
+        "backend/src/workers/processors",
+        "backend/src/workers/services",
+        "backend/src/workers/types"
+      ],
+      "files_count": 11,
+      "loc_total": 3052,
+      "has_barrel": false
+    }
+  },
+  "cross_domain_edges": [
+    {
+      "from": "admin",
+      "to": "ai-content",
+      "count": 3
+    },
+    {
+      "from": "admin",
+      "to": "auth",
+      "count": 5
+    },
+    {
+      "from": "admin",
+      "to": "backend-core",
+      "count": 1
+    },
+    {
+      "from": "admin",
+      "to": "common",
+      "count": 7
+    },
+    {
+      "from": "admin",
+      "to": "config",
+      "count": 82
+    },
+    {
+      "from": "admin",
+      "to": "database",
+      "count": 1
+    },
+    {
+      "from": "admin",
+      "to": "gamme-rest",
+      "count": 1
+    },
+    {
+      "from": "admin",
+      "to": "orders",
+      "count": 1
+    },
+    {
+      "from": "admin",
+      "to": "products",
+      "count": 3
+    },
+    {
+      "from": "admin",
+      "to": "rag-proxy",
+      "count": 13
+    },
+    {
+      "from": "admin",
+      "to": "seo",
+      "count": 12
+    },
+    {
+      "from": "admin",
+      "to": "staff",
+      "count": 2
+    },
+    {
+      "from": "admin",
+      "to": "system",
+      "count": 3
+    },
+    {
+      "from": "admin",
+      "to": "vehicles",
+      "count": 2
+    },
+    {
+      "from": "admin",
+      "to": "workers",
+      "count": 13
+    },
+    {
+      "from": "agentic-engine",
+      "to": "config",
+      "count": 2
+    },
+    {
+      "from": "agentic-engine",
+      "to": "database",
+      "count": 1
+    },
+    {
+      "from": "ai-content",
+      "to": "common",
+      "count": 1
+    },
+    {
+      "from": "analytics",
+      "to": "database",
+      "count": 1
+    },
+    {
+      "from": "api",
+      "to": "backend-core",
+      "count": 2
+    },
+    {
+      "from": "api",
+      "to": "commercial",
+      "count": 1
+    },
+    {
+      "from": "api",
+      "to": "database",
+      "count": 2
+    },
+    {
+      "from": "api",
+      "to": "navigation",
+      "count": 1
+    },
+    {
+      "from": "api",
+      "to": "seo-logs",
+      "count": 1
+    },
+    {
+      "from": "api",
+      "to": "system",
+      "count": 1
+    },
+    {
+      "from": "api",
+      "to": "users",
+      "count": 1
+    },
+    {
+      "from": "auth",
+      "to": "backend-core",
+      "count": 2
+    },
+    {
+      "from": "auth",
+      "to": "common",
+      "count": 2
+    },
+    {
+      "from": "auth",
+      "to": "database",
+      "count": 3
+    },
+    {
+      "from": "auth",
+      "to": "shared",
+      "count": 2
+    },
+    {
+      "from": "auth",
+      "to": "users",
+      "count": 6
+    },
+    {
+      "from": "backend-core",
+      "to": "admin",
+      "count": 1
+    },
+    {
+      "from": "backend-core",
+      "to": "ai-content",
+      "count": 1
+    },
+    {
+      "from": "backend-core",
+      "to": "analytics",
+      "count": 1
+    },
+    {
+      "from": "backend-core",
+      "to": "api",
+      "count": 1
+    },
+    {
+      "from": "backend-core",
+      "to": "auth",
+      "count": 2
+    },
+    {
+      "from": "backend-core",
+      "to": "blog",
+      "count": 1
+    },
+    {
+      "from": "backend-core",
+      "to": "bot-guard",
+      "count": 1
+    },
+    {
+      "from": "backend-core",
+      "to": "cache",
+      "count": 1
+    },
+    {
+      "from": "backend-core",
+      "to": "cart",
+      "count": 2
+    },
+    {
+      "from": "backend-core",
+      "to": "catalog",
+      "count": 3
+    },
+    {
+      "from": "backend-core",
+      "to": "commercial",
+      "count": 1
+    },
+    {
+      "from": "backend-core",
+      "to": "config",
+      "count": 8
+    },
+    {
+      "from": "backend-core",
+      "to": "dashboard",
+      "count": 1
+    },
+    {
+      "from": "backend-core",
+      "to": "database",
+      "count": 5
+    },
+    {
+      "from": "backend-core",
+      "to": "diagnostic-engine",
+      "count": 1
+    },
+    {
+      "from": "backend-core",
+      "to": "errors",
+      "count": 5
+    },
+    {
+      "from": "backend-core",
+      "to": "gamme-rest",
+      "count": 1
+    },
+    {
+      "from": "backend-core",
+      "to": "health",
+      "count": 1
+    },
+    {
+      "from": "backend-core",
+      "to": "invoices",
+      "count": 1
+    },
+    {
+      "from": "backend-core",
+      "to": "layout",
+      "count": 1
+    },
+    {
+      "from": "backend-core",
+      "to": "marketing",
+      "count": 1
+    },
+    {
+      "from": "backend-core",
+      "to": "mcp-validation",
+      "count": 1
+    },
+    {
+      "from": "backend-core",
+      "to": "messages",
+      "count": 2
+    },
+    {
+      "from": "backend-core",
+      "to": "metadata",
+      "count": 1
+    },
+    {
+      "from": "backend-core",
+      "to": "orders",
+      "count": 2
+    },
+    {
+      "from": "backend-core",
+      "to": "payments",
+      "count": 1
+    },
+    {
+      "from": "backend-core",
+      "to": "products",
+      "count": 1
+    },
+    {
+      "from": "backend-core",
+      "to": "promo",
+      "count": 1
+    },
+    {
+      "from": "backend-core",
+      "to": "rag-knowledge-bootstrap",
+      "count": 1
+    },
+    {
+      "from": "backend-core",
+      "to": "rag-proxy",
+      "count": 1
+    },
+    {
+      "from": "backend-core",
+      "to": "search",
+      "count": 1
+    },
+    {
+      "from": "backend-core",
+      "to": "seo",
+      "count": 3
+    },
+    {
+      "from": "backend-core",
+      "to": "seo-monitoring",
+      "count": 1
+    },
+    {
+      "from": "backend-core",
+      "to": "shared",
+      "count": 1
+    },
+    {
+      "from": "backend-core",
+      "to": "staff",
+      "count": 1
+    },
+    {
+      "from": "backend-core",
+      "to": "suppliers",
+      "count": 1
+    },
+    {
+      "from": "backend-core",
+      "to": "support",
+      "count": 1
+    },
+    {
+      "from": "backend-core",
+      "to": "system",
+      "count": 1
+    },
+    {
+      "from": "backend-core",
+      "to": "users",
+      "count": 3
+    },
+    {
+      "from": "backend-core",
+      "to": "vehicles",
+      "count": 1
+    },
+    {
+      "from": "backend-core",
+      "to": "workers",
+      "count": 1
+    },
+    {
+      "from": "blog",
+      "to": "auth",
+      "count": 2
+    },
+    {
+      "from": "blog",
+      "to": "backend-core",
+      "count": 4
+    },
+    {
+      "from": "blog",
+      "to": "cache",
+      "count": 2
+    },
+    {
+      "from": "blog",
+      "to": "catalog",
+      "count": 3
+    },
+    {
+      "from": "blog",
+      "to": "common",
+      "count": 3
+    },
+    {
+      "from": "blog",
+      "to": "config",
+      "count": 3
+    },
+    {
+      "from": "blog",
+      "to": "search",
+      "count": 14
+    },
+    {
+      "from": "blog",
+      "to": "seo",
+      "count": 8
+    },
+    {
+      "from": "cache",
+      "to": "config",
+      "count": 2
+    },
+    {
+      "from": "cart",
+      "to": "auth",
+      "count": 5
+    },
+    {
+      "from": "cart",
+      "to": "backend-core",
+      "count": 1
+    },
+    {
+      "from": "cart",
+      "to": "config",
+      "count": 3
+    },
+    {
+      "from": "cart",
+      "to": "database",
+      "count": 12
+    },
+    {
+      "from": "cart",
+      "to": "products",
+      "count": 2
+    },
+    {
+      "from": "cart",
+      "to": "promo",
+      "count": 2
+    },
+    {
+      "from": "catalog",
+      "to": "backend-core",
+      "count": 2
+    },
+    {
+      "from": "catalog",
+      "to": "common",
+      "count": 2
+    },
+    {
+      "from": "catalog",
+      "to": "config",
+      "count": 2
+    },
+    {
+      "from": "catalog",
+      "to": "database",
+      "count": 1
+    },
+    {
+      "from": "catalog",
+      "to": "products",
+      "count": 1
+    },
+    {
+      "from": "commercial",
+      "to": "database",
+      "count": 1
+    },
+    {
+      "from": "config",
+      "to": "analytics",
+      "count": 1
+    },
+    {
+      "from": "config",
+      "to": "backend-core",
+      "count": 1
+    },
+    {
+      "from": "config",
+      "to": "database",
+      "count": 1
+    },
+    {
+      "from": "config",
+      "to": "rag-proxy",
+      "count": 2
+    },
+    {
+      "from": "config",
+      "to": "seo",
+      "count": 1
+    },
+    {
+      "from": "config",
+      "to": "workers",
+      "count": 3
+    },
+    {
+      "from": "dashboard",
+      "to": "auth",
+      "count": 2
+    },
+    {
+      "from": "dashboard",
+      "to": "database",
+      "count": 2
+    },
+    {
+      "from": "database",
+      "to": "backend-core",
+      "count": 3
+    },
+    {
+      "from": "database",
+      "to": "catalog",
+      "count": 1
+    },
+    {
+      "from": "database",
+      "to": "config",
+      "count": 1
+    },
+    {
+      "from": "diagnostic-engine",
+      "to": "database",
+      "count": 1
+    },
+    {
+      "from": "diagnostic-engine",
+      "to": "rag-proxy",
+      "count": 2
+    },
+    {
+      "from": "errors",
+      "to": "auth",
+      "count": 3
+    },
+    {
+      "from": "frontend-routes",
+      "to": "frontend-shared",
+      "count": 345
+    },
+    {
+      "from": "gamme-rest",
+      "to": "admin",
+      "count": 3
+    },
+    {
+      "from": "gamme-rest",
+      "to": "backend-core",
+      "count": 1
+    },
+    {
+      "from": "gamme-rest",
+      "to": "catalog",
+      "count": 3
+    },
+    {
+      "from": "gamme-rest",
+      "to": "common",
+      "count": 3
+    },
+    {
+      "from": "gamme-rest",
+      "to": "config",
+      "count": 2
+    },
+    {
+      "from": "gamme-rest",
+      "to": "database",
+      "count": 1
+    },
+    {
+      "from": "gamme-rest",
+      "to": "seo",
+      "count": 2
+    },
+    {
+      "from": "layout",
+      "to": "config",
+      "count": 1
+    },
+    {
+      "from": "marketing",
+      "to": "ai-content",
+      "count": 2
+    },
+    {
+      "from": "marketing",
+      "to": "config",
+      "count": 2
+    },
+    {
+      "from": "marketing",
+      "to": "database",
+      "count": 1
+    },
+    {
+      "from": "mcp-validation",
+      "to": "backend-core",
+      "count": 2
+    },
+    {
+      "from": "messages",
+      "to": "database",
+      "count": 1
+    },
+    {
+      "from": "metadata",
+      "to": "config",
+      "count": 1
+    },
+    {
+      "from": "metadata",
+      "to": "database",
+      "count": 3
+    },
+    {
+      "from": "navigation",
+      "to": "database",
+      "count": 2
+    },
+    {
+      "from": "orders",
+      "to": "api",
+      "count": 1
+    },
+    {
+      "from": "orders",
+      "to": "auth",
+      "count": 3
+    },
+    {
+      "from": "orders",
+      "to": "backend-core",
+      "count": 5
+    },
+    {
+      "from": "orders",
+      "to": "cart",
+      "count": 2
+    },
+    {
+      "from": "orders",
+      "to": "database",
+      "count": 1
+    },
+    {
+      "from": "orders",
+      "to": "shipping",
+      "count": 2
+    },
+    {
+      "from": "payments",
+      "to": "backend-core",
+      "count": 1
+    },
+    {
+      "from": "payments",
+      "to": "config",
+      "count": 4
+    },
+    {
+      "from": "payments",
+      "to": "database",
+      "count": 2
+    },
+    {
+      "from": "payments",
+      "to": "orders",
+      "count": 1
+    },
+    {
+      "from": "products",
+      "to": "backend-core",
+      "count": 1
+    },
+    {
+      "from": "products",
+      "to": "common",
+      "count": 4
+    },
+    {
+      "from": "products",
+      "to": "database",
+      "count": 1
+    },
+    {
+      "from": "promo",
+      "to": "database",
+      "count": 2
+    },
+    {
+      "from": "rag-proxy",
+      "to": "auth",
+      "count": 1
+    },
+    {
+      "from": "rag-proxy",
+      "to": "common",
+      "count": 1
+    },
+    {
+      "from": "rag-proxy",
+      "to": "config",
+      "count": 21
+    },
+    {
+      "from": "rag-proxy",
+      "to": "upload",
+      "count": 2
+    },
+    {
+      "from": "search",
+      "to": "catalog",
+      "count": 1
+    },
+    {
+      "from": "search",
+      "to": "common",
+      "count": 1
+    },
+    {
+      "from": "search",
+      "to": "database",
+      "count": 1
+    },
+    {
+      "from": "seo",
+      "to": "ai-content",
+      "count": 2
+    },
+    {
+      "from": "seo",
+      "to": "backend-core",
+      "count": 1
+    },
+    {
+      "from": "seo",
+      "to": "catalog",
+      "count": 4
+    },
+    {
+      "from": "seo",
+      "to": "common",
+      "count": 9
+    },
+    {
+      "from": "seo",
+      "to": "config",
+      "count": 39
+    },
+    {
+      "from": "seo",
+      "to": "database",
+      "count": 2
+    },
+    {
+      "from": "seo",
+      "to": "workers",
+      "count": 2
+    },
+    {
+      "from": "seo-logs",
+      "to": "common",
+      "count": 1
+    },
+    {
+      "from": "seo-logs",
+      "to": "config",
+      "count": 2
+    },
+    {
+      "from": "seo-monitoring",
+      "to": "admin",
+      "count": 1
+    },
+    {
+      "from": "seo-monitoring",
+      "to": "common",
+      "count": 1
+    },
+    {
+      "from": "seo-monitoring",
+      "to": "config",
+      "count": 1
+    },
+    {
+      "from": "shipping",
+      "to": "cart",
+      "count": 2
+    },
+    {
+      "from": "suppliers",
+      "to": "common",
+      "count": 1
+    },
+    {
+      "from": "suppliers",
+      "to": "database",
+      "count": 1
+    },
+    {
+      "from": "support",
+      "to": "backend-core",
+      "count": 2
+    },
+    {
+      "from": "support",
+      "to": "database",
+      "count": 1
+    },
+    {
+      "from": "system",
+      "to": "database",
+      "count": 2
+    },
+    {
+      "from": "users",
+      "to": "auth",
+      "count": 1
+    },
+    {
+      "from": "users",
+      "to": "backend-core",
+      "count": 1
+    },
+    {
+      "from": "users",
+      "to": "common",
+      "count": 2
+    },
+    {
+      "from": "users",
+      "to": "database",
+      "count": 1
+    },
+    {
+      "from": "users",
+      "to": "messages",
+      "count": 1
+    },
+    {
+      "from": "vehicles",
+      "to": "catalog",
+      "count": 6
+    },
+    {
+      "from": "vehicles",
+      "to": "common",
+      "count": 3
+    },
+    {
+      "from": "vehicles",
+      "to": "config",
+      "count": 4
+    },
+    {
+      "from": "vehicles",
+      "to": "database",
+      "count": 2
+    },
+    {
+      "from": "vehicles",
+      "to": "seo-shadow-observatory",
+      "count": 1
+    },
+    {
+      "from": "workers",
+      "to": "admin",
+      "count": 4
+    },
+    {
+      "from": "workers",
+      "to": "agentic-engine",
+      "count": 10
+    },
+    {
+      "from": "workers",
+      "to": "backend-core",
+      "count": 1
+    },
+    {
+      "from": "workers",
+      "to": "cart",
+      "count": 2
+    },
+    {
+      "from": "workers",
+      "to": "config",
+      "count": 6
+    },
+    {
+      "from": "workers",
+      "to": "rag-proxy",
+      "count": 1
+    },
+    {
+      "from": "workers",
+      "to": "seo-monitoring",
+      "count": 2
+    }
+  ],
+  "deep_access_violations": [
+    {
+      "from": "backend/src/modules/admin/controllers/admin-buying-guide-preview.controller.ts",
+      "to": "backend/src/modules/gamme-rest/services/buying-guide-data.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/controllers/admin-db-governance.controller.ts",
+      "to": "backend/src/modules/system/services/db-governance.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/controllers/admin-db-governance.controller.ts",
+      "to": "backend/src/modules/system/types/db-governance.types.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/controllers/admin-products.controller.ts",
+      "to": "backend/src/modules/products/products.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/controllers/admin-products.controller.ts",
+      "to": "backend/src/modules/products/services/products-catalog.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/controllers/admin-rag-ingest.controller.ts",
+      "to": "backend/src/modules/rag-proxy/services/pdf-rag-classifier.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/controllers/admin-rag-ingest.controller.ts",
+      "to": "backend/src/modules/rag-proxy/services/pdf-text-extractor.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/controllers/admin-rag-ingest.controller.ts",
+      "to": "backend/src/modules/rag-proxy/services/rag-cleanup.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/controllers/admin-rag-ingest.controller.ts",
+      "to": "backend/src/modules/rag-proxy/services/rag-gamme-detection.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/controllers/admin-rag-ingest.controller.ts",
+      "to": "backend/src/modules/rag-proxy/services/rag-md-merger.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/controllers/admin-rag-pipeline-status.controller.ts",
+      "to": "backend/src/modules/seo/schemas/rag-pipeline-status.response.schema.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/controllers/admin-rag-pipeline-status.controller.ts",
+      "to": "backend/src/modules/seo/utils/parse-response.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/controllers/admin-staff.controller.ts",
+      "to": "backend/src/modules/staff/staff.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/controllers/admin-vehicle-cache.controller.ts",
+      "to": "backend/src/modules/vehicles/services/vehicle-rpc.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/services/brand-editorial.service.ts",
+      "to": "backend/src/modules/seo/types/page-role.types.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/services/brand-editorial.service.ts",
+      "to": "backend/src/modules/seo/validation/page-role-validator.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/services/buying-guide-enricher.service.ts",
+      "to": "backend/src/modules/rag-proxy/services/rag-foundation-gate.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/services/buying-guide/buying-guide-rag-fetcher.service.ts",
+      "to": "backend/src/modules/rag-proxy/rag-proxy.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/services/buying-guide/buying-guide-seo-draft.service.ts",
+      "to": "backend/src/modules/ai-content/ai-content.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/services/conseil-enricher.service.ts",
+      "to": "backend/src/modules/ai-content/ai-content.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/services/conseil-enricher.service.ts",
+      "to": "backend/src/modules/rag-proxy/rag-proxy.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/services/conseil-enricher.service.ts",
+      "to": "backend/src/modules/rag-proxy/services/pdf-rag-classifier.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/services/conseil-enricher.service.ts",
+      "to": "backend/src/modules/rag-proxy/services/rag-foundation-gate.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/services/conseil-enricher.service.ts",
+      "to": "backend/src/modules/rag-proxy/services/rag-md-merger.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/services/execution-router.service.ts",
+      "to": "backend/src/modules/seo/services/reference.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/services/execution-router.service.ts",
+      "to": "backend/src/modules/seo/validation/diagnostic.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/services/keyword-plan-gates.service.ts",
+      "to": "backend/src/modules/seo/seo-v4.types.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/services/r7-brand-enricher.service.ts",
+      "to": "backend/src/modules/seo/validation/page-role-validator.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
+      "to": "backend/src/modules/seo/services/chain/seo-role-template-selector.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/services/rag-gamme-reader.service.ts",
+      "to": "backend/src/modules/rag-proxy/services/rag-knowledge.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/services/seo-cockpit.service.ts",
+      "to": "backend/src/modules/seo/services/googlebot-detector.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/admin/services/seo-cockpit.service.ts",
+      "to": "backend/src/modules/seo/services/risk-flags-engine.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/blog/controllers/advice-hierarchy.controller.ts",
+      "to": "backend/src/modules/search/services/supabase-indexation.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/blog/services/advice-enrichment.service.ts",
+      "to": "backend/src/modules/catalog/utils/image-urls.utils.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/blog/services/advice-enrichment.service.ts",
+      "to": "backend/src/modules/search/services/supabase-indexation.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/blog/services/advice-transform.service.ts",
+      "to": "backend/src/modules/search/services/supabase-indexation.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/blog/services/advice.service.ts",
+      "to": "backend/src/modules/search/services/supabase-indexation.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/blog/services/blog-article-data.service.ts",
+      "to": "backend/src/modules/search/services/supabase-indexation.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/blog/services/blog-article-relation.service.ts",
+      "to": "backend/src/modules/search/services/supabase-indexation.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/blog/services/blog-article-transform.service.ts",
+      "to": "backend/src/modules/catalog/utils/image-urls.utils.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/blog/services/blog-seo.service.ts",
+      "to": "backend/src/modules/search/services/supabase-indexation.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/blog/services/blog-seo.service.ts",
+      "to": "backend/src/modules/seo/internal-linking.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/blog/services/blog-statistics.service.ts",
+      "to": "backend/src/modules/search/services/supabase-indexation.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/blog/services/blog.service.ts",
+      "to": "backend/src/modules/seo/internal-linking.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/blog/services/constructeur-search.service.ts",
+      "to": "backend/src/modules/search/services/supabase-indexation.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/blog/services/constructeur.service.ts",
+      "to": "backend/src/modules/search/services/supabase-indexation.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/blog/services/glossary.service.ts",
+      "to": "backend/src/modules/search/services/supabase-indexation.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/blog/services/guide.service.ts",
+      "to": "backend/src/modules/catalog/utils/image-urls.utils.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/blog/services/guide.service.ts",
+      "to": "backend/src/modules/search/services/supabase-indexation.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/blog/services/r3-guide.service.test.ts",
+      "to": "backend/src/modules/seo/internal-linking.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/blog/services/r3-guide.service.ts",
+      "to": "backend/src/modules/seo/internal-linking.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/blog/services/r3-guide.service.ts",
+      "to": "backend/src/modules/seo/seo-v4.types.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/blog/services/r6-guide.service.ts",
+      "to": "backend/src/modules/search/services/supabase-indexation.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/blog/services/r6-guide.service.ts",
+      "to": "backend/src/modules/seo/internal-linking.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/blog/services/r6-guide.service.ts",
+      "to": "backend/src/modules/seo/seo-v4.types.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/cart/controllers/cart-items.controller.ts",
+      "to": "backend/src/modules/products/services/stock.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/cart/services/cart.service.ts",
+      "to": "backend/src/modules/promo/promo.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/catalog/catalog.module.ts",
+      "to": "backend/src/modules/products/services/pricing.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/diagnostic-engine/engines/rag-enrichment.engine.ts",
+      "to": "backend/src/modules/rag-proxy/rag-proxy.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/gamme-rest/services/buying-guide-data.service.ts",
+      "to": "backend/src/modules/seo/validation/purchase-guide-validation.constants.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/gamme-rest/services/gamme-data-transformer.service.ts",
+      "to": "backend/src/modules/catalog/utils/image-urls.utils.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/gamme-rest/services/gamme-page-data.service.ts",
+      "to": "backend/src/modules/catalog/services/unified-page-data.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/gamme-rest/services/r1-related-resources.service.ts",
+      "to": "backend/src/modules/admin/services/rag-data.types.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/gamme-rest/services/r1-related-resources.service.ts",
+      "to": "backend/src/modules/admin/services/rag-gamme-reader.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/marketing/services/multi-channel-copywriter.service.ts",
+      "to": "backend/src/modules/ai-content/ai-content.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/orders/services/orders.service.ts",
+      "to": "backend/src/modules/cart/services/shipping-calculator.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/orders/services/orders.service.ts",
+      "to": "backend/src/modules/shipping/shipping.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/payments/services/payment.service.ts",
+      "to": "backend/src/modules/orders/events/order.events.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/rag-proxy/rag-proxy.module.ts",
+      "to": "backend/src/modules/upload/services/supabase-storage.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/rag-proxy/services/rag-image-management.service.ts",
+      "to": "backend/src/modules/upload/services/supabase-storage.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/search/services/search-simple.service.ts",
+      "to": "backend/src/modules/catalog/utils/image-urls.utils.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/seo-monitoring/processors/seo-daily-fetch.processor.ts",
+      "to": "backend/src/modules/admin/services/admin-job-health.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/seo/controllers/reference.controller.ts",
+      "to": "backend/src/modules/catalog/utils/image-urls.utils.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/seo/services/product-image.service.ts",
+      "to": "backend/src/modules/catalog/utils/image-urls.utils.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/seo/services/seo-generator.service.ts",
+      "to": "backend/src/modules/ai-content/ai-content.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/seo/services/sitemap-vehicle-pieces-validator.service.ts",
+      "to": "backend/src/modules/catalog/services/catalog-data-integrity.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/shipping/shipping.service.ts",
+      "to": "backend/src/modules/cart/services/shipping-calculator.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/vehicles/brands.controller.ts",
+      "to": "backend/src/modules/catalog/utils/image-urls.utils.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/vehicles/services/brand-bestsellers.service.ts",
+      "to": "backend/src/modules/catalog/utils/image-urls.utils.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/vehicles/services/vehicle-profile.service.ts",
+      "to": "backend/src/modules/catalog/utils/image-urls.utils.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/vehicles/vehicles.controller.ts",
+      "to": "backend/src/modules/catalog/services/popular-gammes.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/vehicles/vehicles.service.ts",
+      "to": "backend/src/modules/catalog/utils/image-urls.utils.ts",
+      "rule": "no-deep-module-access"
+    }
+  ]
+}

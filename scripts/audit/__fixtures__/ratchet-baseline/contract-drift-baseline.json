@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "v1",
+  "createdAt": "2026-05-15",
+  "createdOnCommit": "fixture-sha",
+  "sourcePr": 540,
+  "mode": "block-new-only",
+  "summary": {
+    "ownership_gap": 2,
+    "contract_invalid": 0,
+    "contract_missing": 0,
+    "canonical_stale": 0
+  },
+  "findings": [
+    { "kind": "ownership_gap", "id": "fixtures/legacy-a.ts" },
+    { "kind": "ownership_gap", "id": "fixtures/legacy-b.ts" }
+  ],
+  "notes": ["Test fixture — accepted ceiling."]
+}

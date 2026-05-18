@@ -1,0 +1,375 @@
+{
+  "_generated_by": "scripts/audit/build-deep-inventory.js",
+  "count": 41,
+  "duplicates": [
+    {
+      "path": "backend/src/auth/dto/register.dto.ts",
+      "names": [
+        "RegisterSchema",
+        "default"
+      ],
+      "domain": "auth",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "backend/src/common/decorators/user.decorator.ts",
+      "names": [
+        "User",
+        "UserDecorator"
+      ],
+      "domain": "common",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "backend/src/config/seo-link-limits.config.ts",
+      "names": [
+        "SEO_LINK_LIMITS",
+        "default"
+      ],
+      "domain": "config",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "frontend/app/components/AdminSidebar.tsx",
+      "names": [
+        "AdminSidebar",
+        "default"
+      ],
+      "domain": "frontend-shared",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "frontend/app/components/CommercialSidebar.tsx",
+      "names": [
+        "CommercialSidebar",
+        "default"
+      ],
+      "domain": "frontend-shared",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "frontend/app/components/constructeurs/PopularGammesSection.tsx",
+      "names": [
+        "PopularGammesSection",
+        "default"
+      ],
+      "domain": "frontend-shared",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "frontend/app/components/constructeurs/RelatedBrandsSection.tsx",
+      "names": [
+        "RelatedBrandsSection",
+        "default"
+      ],
+      "domain": "frontend-shared",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "frontend/app/components/ecommerce/SmartHeader.tsx",
+      "names": [
+        "SmartHeader",
+        "default"
+      ],
+      "domain": "frontend-shared",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "frontend/app/components/errors/ErrorSearchBar.tsx",
+      "names": [
+        "ErrorSearchBar",
+        "default"
+      ],
+      "domain": "frontend-shared",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "frontend/app/components/errors/PopularCategories.tsx",
+      "names": [
+        "PopularCategories",
+        "default"
+      ],
+      "domain": "frontend-shared",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "frontend/app/components/layout/HeroSection.tsx",
+      "names": [
+        "HeroSection",
+        "default"
+      ],
+      "domain": "frontend-shared",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "frontend/app/components/model/ModelContentV1Display.tsx",
+      "names": [
+        "ModelContentV1Display",
+        "default"
+      ],
+      "domain": "frontend-shared",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "frontend/app/components/model/MotorisationsTable.tsx",
+      "names": [
+        "MotorisationsTable",
+        "default"
+      ],
+      "domain": "frontend-shared",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "frontend/app/components/navbar/CartSidebarSimple.tsx",
+      "names": [
+        "CartSidebarSimple",
+        "default"
+      ],
+      "domain": "frontend-shared",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "frontend/app/components/pieces/PiecesOemSection.tsx",
+      "names": [
+        "PiecesOemSection",
+        "default"
+      ],
+      "domain": "frontend-shared",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "frontend/app/components/pieces/PiecesRelatedArticles.tsx",
+      "names": [
+        "PiecesRelatedArticles",
+        "default"
+      ],
+      "domain": "frontend-shared",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "frontend/app/components/pieces/PiecesToolbar.tsx",
+      "names": [
+        "PiecesToolbar",
+        "default"
+      ],
+      "domain": "frontend-shared",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "frontend/app/components/products/ProductsQuickActions.tsx",
+      "names": [
+        "ProductsQuickActions",
+        "default"
+      ],
+      "domain": "frontend-shared",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "frontend/app/components/products/ProductsStatsCard.tsx",
+      "names": [
+        "ProductsStatsCard",
+        "default"
+      ],
+      "domain": "frontend-shared",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "frontend/app/components/seo/AntiMistakesSection.tsx",
+      "names": [
+        "AntiMistakesSection",
+        "default"
+      ],
+      "domain": "frontend-shared",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "frontend/app/components/seo/FAQSection.tsx",
+      "names": [
+        "FAQSection",
+        "default"
+      ],
+      "domain": "frontend-shared",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "frontend/app/components/seo/HtmlContent.tsx",
+      "names": [
+        "HtmlContent",
+        "default"
+      ],
+      "domain": "frontend-shared",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "frontend/app/components/seo/PurchaseGuideSection.tsx",
+      "names": [
+        "PurchaseGuideSection",
+        "default"
+      ],
+      "domain": "frontend-shared",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "frontend/app/components/seo/SymptomsSection.tsx",
+      "names": [
+        "SymptomsSection",
+        "default"
+      ],
+      "domain": "frontend-shared",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "frontend/app/components/ui/ResponsiveImage.tsx",
+      "names": [
+        "ResponsiveImage",
+        "default"
+      ],
+      "domain": "frontend-shared",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "frontend/app/hooks/useCart.ts",
+      "names": [
+        "useCart",
+        "useCartContext"
+      ],
+      "domain": "frontend-shared",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "frontend/app/hooks/useSeoLinkTracking.ts",
+      "names": [
+        "default",
+        "useSeoLinkTracking"
+      ],
+      "domain": "frontend-shared",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "frontend/app/services/api/brand.api.ts",
+      "names": [
+        "brandApi",
+        "default"
+      ],
+      "domain": "frontend-shared",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "frontend/app/services/brand-colors.service.ts",
+      "names": [
+        "brandColorsService",
+        "default"
+      ],
+      "domain": "frontend-shared",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "frontend/app/services/cart.api.ts",
+      "names": [
+        "cartApi",
+        "default"
+      ],
+      "domain": "frontend-shared",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "frontend/app/services/cart.server.ts",
+      "names": [
+        "cartServerService",
+        "default"
+      ],
+      "domain": "frontend-shared",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "frontend/app/utils/image-optimizer.ts",
+      "names": [
+        "ImageOptimizer",
+        "default"
+      ],
+      "domain": "frontend-shared",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "scripts/ui-audit/analyzer/file-parser.ts",
+      "names": [
+        "default",
+        "parseFile"
+      ],
+      "domain": "scripts",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "scripts/ui-audit/evaluators/rule-evaluator.ts",
+      "names": [
+        "default",
+        "evaluateRules"
+      ],
+      "domain": "scripts",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "scripts/ui-audit/evaluators/scoring-engine.ts",
+      "names": [
+        "calculateScores",
+        "default"
+      ],
+      "domain": "scripts",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "scripts/ui-audit/generators/audit-md.ts",
+      "names": [
+        "default",
+        "generateAuditMd"
+      ],
+      "domain": "scripts",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "scripts/ui-audit/generators/scores.ts",
+      "names": [
+        "default",
+        "generateScoresJson"
+      ],
+      "domain": "scripts",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "scripts/ui-audit/generators/tree-output.ts",
+      "names": [
+        "default",
+        "generateTreeOutput"
+      ],
+      "domain": "scripts",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "scripts/ui-audit/index.ts",
+      "names": [
+        "auditPage",
+        "default"
+      ],
+      "domain": "scripts",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "scripts/ui-audit/rules/hard-rules.ts",
+      "names": [
+        "HARD_RULES",
+        "default"
+      ],
+      "domain": "scripts",
+      "fix": "collapse-to-named"
+    },
+    {
+      "path": "scripts/ui-audit/rules/soft-rules.ts",
+      "names": [
+        "SOFT_RULES",
+        "default"
+      ],
+      "domain": "scripts",
+      "fix": "collapse-to-named"
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "schema_version": "1.0.0",
+  "schema_url": "./_schema/pipelines.registry.schema.json",
+  "generated_at": null,
+  "pipelines": [
+    {
+      "id": "raw_to_wiki",
+      "from": "automecanik-raw/",
+      "to": "automecanik-wiki/proposals/",
+      "kind": "promotion",
+      "status": "PARTIAL",
+      "scripts": ["automecanik-wiki/_scripts/recycle-from-rag.py"],
+      "gaps": ["claim extraction structurée", "source_map typed Pydantic", "structured proposal renderer"],
+      "owner_pr": "PR-3a (monorepo orchestration) + PR-3b (wiki repo bridge)",
+      "adr": "ADR-058"
+    },
+    {
+      "id": "wiki_to_exports_rag",
+      "from": "automecanik-wiki/wiki/<entity_type>/",
+      "to": "automecanik-wiki/exports/rag/<entity_type>/*.md",
+      "kind": "filtered_view",
+      "status": "READY",
+      "scripts": [
+        "app/scripts/rag-sync/sync-wiki-exports-to-rag.py",
+        "app/scripts/cron/sync-rag-from-wiki.sh"
+      ],
+      "entity_types_supported": ["gamme", "vehicle", "constructeur", "support", "diagnostic"],
+      "adr": "ADR-031"
+    },
+    {
+      "id": "wiki_to_exports_seo",
+      "from": "automecanik-wiki/wiki/<entity_type_singular>/",
+      "to": "automecanik-wiki/exports/seo/<entity_type>/*.json",
+      "kind": "filtered_view",
+      "status": "MISSING",
+      "scripts": [],
+      "entity_types_supported": ["gamme", "vehicle", "constructeur", "diagnostic"],
+      "entity_types_excluded": ["support"],
+      "rule": "roles_allowed must be non-empty; entities without SEO RoleId must be routed to exports/support",
+      "owner_pr": "PR-5a",
+      "adr": "ADR-058"
+    },
+    {
+      "id": "wiki_to_exports_support",
+      "from": "automecanik-wiki/wiki/<entity_type_singular>/",
+      "to": "automecanik-wiki/exports/support/<entity_type>/*.json",
+      "kind": "filtered_view",
+      "status": "MISSING",
+      "scripts": [],
+      "entity_types_supported": ["support", "diagnostic (sans block R3 S2_DIAG)"],
+      "owner_pr": "followup-task (hors PR-0..7)",
+      "adr": "ADR-058"
+    },
+    {
+      "id": "exports_seo_to_db_projection",
+      "from": "automecanik-wiki/exports/seo/",
+      "to": "__seo_projection_*, __seo_entity_*",
+      "kind": "runtime_projection",
+      "status": "MISSING",
+      "scripts": [],
+      "feeds_projection": "seo_runtime_v1",
+      "owner_pr": "PR-6",
+      "adr": "ADR-058"
+    },
+    {
+      "id": "db_projection_to_pages",
+      "from": "__seo_entity_facts(active_version_id)",
+      "to": "frontend/app/routes/{pieces,gammes,marques,blog}.*",
+      "kind": "runtime_consumer",
+      "status": "PARTIAL",
+      "scripts": [],
+      "gaps": ["RPC get_active_seo_projection à créer", "loaders Remix lisent legacy"],
+      "owner_pr": "PR-7",
+      "adr": "ADR-058"
+    }
+  ]
+}

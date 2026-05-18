@@ -2,6 +2,7 @@
   "name": "@repo/seo-types",
   "version": "1.0.0",
   "description": "Shared SEO types and Zod schemas for the SEO department modules (Observability, On-page, Content ops, Intelligence, GEO/AEO).",
+  "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -34,12 +35,17 @@
       "types": "./dist/content-ops.d.ts",
       "import": "./dist/content-ops.js",
       "require": "./dist/content-ops.js"
+    },
+    "./crux": {
+      "types": "./dist/crux.d.ts",
+      "import": "./dist/crux.js",
+      "require": "./dist/crux.js"
     }
   },
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "clean": "rm -rf dist",
+    "clean": "rm -rf dist *.tsbuildinfo",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test src/**/*.test.ts"
   },

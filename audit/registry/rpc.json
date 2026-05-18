@@ -1,0 +1,5915 @@
+{
+  "entries": [
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260320_phase2_db_governance.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.__gov_m1_table_sizes",
+      "language": "sql",
+      "name": "__gov_m1_table_sizes",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public",
+        "public"
+      ],
+      "securityDefiner": true,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260320_phase2_db_governance.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.__gov_m2_index_sizes",
+      "language": "sql",
+      "name": "__gov_m2_index_sizes",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public",
+        "public"
+      ],
+      "securityDefiner": true,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260320_phase2_db_governance.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.__gov_m3_stale_stats",
+      "language": "sql",
+      "name": "__gov_m3_stale_stats",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public",
+        "public"
+      ],
+      "securityDefiner": true,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260320_phase2_db_governance.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.__gov_m4_dead_tuples",
+      "language": "sql",
+      "name": "__gov_m4_dead_tuples",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public",
+        "public"
+      ],
+      "securityDefiner": true,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260320_phase2_db_governance.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.__gov_m5_seq_scans",
+      "language": "sql",
+      "name": "__gov_m5_seq_scans",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public",
+        "public"
+      ],
+      "securityDefiner": true,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260320_phase2_db_governance.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.__gov_m6_unused_indexes",
+      "language": "sql",
+      "name": "__gov_m6_unused_indexes",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public"
+      ],
+      "securityDefiner": true,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260420_seo_brand_editorial_table.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.__seo_brand_editorial_set_updated_at",
+      "language": "plpgsql",
+      "name": "__seo_brand_editorial_set_updated_at",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "trigger",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260126_create_seo_observable.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.__seo_observable_updated_at",
+      "language": "plpgsql",
+      "name": "__seo_observable_updated_at",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "TRIGGER",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260128_dco_v2_tables.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.__ux_debt_updated_at",
+      "language": "plpgsql",
+      "name": "__ux_debt_updated_at",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "TRIGGER",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_url",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260124_add_page_role.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.assign_page_role_from_url",
+      "language": "",
+      "name": "assign_page_role_from_url",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "seo_page_role",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_email",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260310_auth_unified_lookup.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.auth_email_exists",
+      "language": "plpgsql",
+      "name": "auth_email_exists",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "BOOLEAN",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_email",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260310_auth_unified_lookup.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.auth_resolve_user",
+      "language": "plpgsql",
+      "name": "auth_resolve_user",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": true,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_batch_size",
+          "type": "int"
+        },
+        {
+          "mode": "IN",
+          "name": "p_pg_id",
+          "type": "int"
+        }
+      ],
+      "definedInMigrations": [
+        "20260130_rpc_backfill_type_ids_v2.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.backfill_seo_keywords_type_ids#sig:225a97f9",
+      "language": "plpgsql",
+      "name": "backfill_seo_keywords_type_ids",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_batch_size",
+          "type": "int"
+        }
+      ],
+      "definedInMigrations": [
+        "20260129_rpc_backfill_type_ids.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.backfill_seo_keywords_type_ids#sig:e4076a13",
+      "language": "plpgsql",
+      "name": "backfill_seo_keywords_type_ids",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_pg_id",
+          "type": "INTEGER"
+        }
+      ],
+      "definedInMigrations": [
+        "20260427_gamme_page_cache_build_fn.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.build_gamme_page_payload",
+      "language": "plpgsql",
+      "name": "build_gamme_page_payload",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "JSONB",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_gamme_id",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_vehicle_id",
+          "type": "BIGINT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260115_rm_tables.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.build_rm_listing",
+      "language": "plpgsql",
+      "name": "build_rm_listing",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "rm_listing",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public",
+        "pg_temp"
+      ],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_type_id",
+          "type": "INTEGER"
+        }
+      ],
+      "definedInMigrations": [
+        "20260421_vehicle_page_cache_inline_and_drop_legacy.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.build_vehicle_page_payload#sig:7e35db43",
+      "language": "plpgsql",
+      "name": "build_vehicle_page_payload",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "JSONB",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_type_id",
+          "type": "integer"
+        }
+      ],
+      "definedInMigrations": [
+        "20260425_optimize_build_vehicle_page_payload_catalog.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.build_vehicle_page_payload#sig:c19fc985",
+      "language": "plpgsql",
+      "name": "build_vehicle_page_payload",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "jsonb",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_quality",
+          "type": "rm_quality_enum"
+        },
+        {
+          "mode": "IN",
+          "name": "p_stock_status",
+          "type": "rm_stock_status_enum"
+        },
+        {
+          "mode": "IN",
+          "name": "p_has_image",
+          "type": "BOOLEAN"
+        },
+        {
+          "mode": "IN",
+          "name": "p_price",
+          "type": "INT -- Price in centimes"
+        }
+      ],
+      "definedInMigrations": [
+        "20260115_rm_helpers.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.calculate_product_score",
+      "language": "plpgsql",
+      "name": "calculate_product_score",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "INT",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260123_seo_enterprise_dashboard.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.calculate_risk_flags",
+      "language": "",
+      "name": "calculate_risk_flags",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead",
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_token",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_table",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260204_killswitch_all_in_one.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.check_breakglass",
+      "language": "plpgsql",
+      "name": "check_breakglass",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "BOOLEAN",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public",
+        "public"
+      ],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_window_minutes",
+          "type": "integer"
+        },
+        {
+          "mode": "IN",
+          "name": "p_min_count",
+          "type": "integer"
+        }
+      ],
+      "definedInMigrations": [
+        "20260421_add_check_error_logs_5xx_threshold_rpc.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.check_error_logs_5xx_threshold",
+      "language": "sql",
+      "name": "check_error_logs_5xx_threshold",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public"
+      ],
+      "securityDefiner": true,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_window_hours",
+          "type": "integer"
+        }
+      ],
+      "definedInMigrations": [
+        "20260417_add_check_payment_tunnel_health_rpc.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.check_payment_tunnel_health",
+      "language": "sql",
+      "name": "check_payment_tunnel_health",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public"
+      ],
+      "securityDefiner": true,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260204_breakglass_mechanism.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.cleanup_expired_breakglass",
+      "language": "plpgsql",
+      "name": "cleanup_expired_breakglass",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "INT",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public"
+      ],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_temperature",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260122_sitemap_v10_enterprise.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.count_sitemap_urls_by_temperature",
+      "language": "plpgsql",
+      "name": "count_sitemap_urls_by_temperature",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "BIGINT",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_window_days",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_drop_pct",
+          "type": "NUMERIC"
+        },
+        {
+          "mode": "IN",
+          "name": "p_role_id",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_metric_name",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260507_seo_quality_history.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.detect_quality_outliers",
+      "language": "SQL",
+      "name": "detect_quality_outliers",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": true,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260123_seo_enterprise_dashboard.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.detect_satellite_pages",
+      "language": "plpgsql",
+      "name": "detect_satellite_pages",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "INTEGER",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_pm_oes",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_pm_nb_stars",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_pm_quality",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260115_rm_helpers.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.determine_product_quality",
+      "language": "plpgsql",
+      "name": "determine_product_quality",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "rm_quality_enum",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_pri_dispo",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260115_rm_helpers.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.determine_stock_status",
+      "language": "plpgsql",
+      "name": "determine_stock_status",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "rm_stock_status_enum",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260507_seo_quality_history.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.ensure_next_quality_history_partition",
+      "language": "plpgsql",
+      "name": "ensure_next_quality_history_partition",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "TEXT",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_pg_id",
+          "type": "integer"
+        }
+      ],
+      "definedInMigrations": [
+        "20260423_extract_vehicle_keywords_roman_arabic.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.extract_vehicle_keywords",
+      "language": "plpgsql",
+      "name": "extract_vehicle_keywords",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "TABLE(kw_id bigint, kw text, matched_model text, matched_energy text, was_updated boolean)",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260430_marketing_layer_phase1.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.fn_marketing_brief_updated_at",
+      "language": "plpgsql",
+      "name": "fn_marketing_brief_updated_at",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "TRIGGER",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260507_canonicalize_seo_r3_keyword_plan.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.fn_skp_canon_check",
+      "language": "",
+      "name": "fn_skp_canon_check",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "TRIGGER",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260424_fix_fn_warn_orphan_pg_id_polyglot.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.fn_warn_orphan_pg_id",
+      "language": "plpgsql",
+      "name": "fn_warn_orphan_pg_id",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "trigger",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_pg_id",
+          "type": "VARCHAR(20)"
+        },
+        {
+          "mode": "IN",
+          "name": "p_pg_name",
+          "type": "VARCHAR(255)"
+        },
+        {
+          "mode": "IN",
+          "name": "p_family_name",
+          "type": "VARCHAR(255)"
+        }
+      ],
+      "definedInMigrations": [
+        "20260104_purchase_guide_v2_all_gammes.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.generate_purchase_guide_v2",
+      "language": "",
+      "name": "generate_purchase_guide_v2",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "VOID",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260126_create_seo_observable.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_all_seo_observables_for_sitemap",
+      "language": "sql",
+      "name": "get_all_seo_observables_for_sitemap",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260125_create_seo_reference.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_all_seo_references",
+      "language": "plpgsql",
+      "name": "get_all_seo_references",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_type_id",
+          "type": "INTEGER"
+        },
+        {
+          "mode": "IN",
+          "name": "p_exclude_gamme_id",
+          "type": "INTEGER"
+        },
+        {
+          "mode": "IN",
+          "name": "p_limit",
+          "type": "INTEGER"
+        }
+      ],
+      "definedInMigrations": [
+        "20260309_no_products_alternatives_rpcs.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_alternative_gammes_for_vehicle",
+      "language": "sql",
+      "name": "get_alternative_gammes_for_vehicle",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_gamme_id",
+          "type": "INTEGER"
+        },
+        {
+          "mode": "IN",
+          "name": "p_exclude_type_id",
+          "type": "INTEGER"
+        },
+        {
+          "mode": "IN",
+          "name": "p_limit",
+          "type": "INTEGER"
+        }
+      ],
+      "definedInMigrations": [
+        "20260309_no_products_alternatives_rpcs.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_alternative_vehicles_for_gamme#sig:553c6de2",
+      "language": "sql",
+      "name": "get_alternative_vehicles_for_gamme",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_gamme_id",
+          "type": "integer"
+        },
+        {
+          "mode": "IN",
+          "name": "p_exclude_type_id",
+          "type": "integer"
+        },
+        {
+          "mode": "IN",
+          "name": "p_limit",
+          "type": "integer"
+        }
+      ],
+      "definedInMigrations": [
+        "20260421_adr017_rpc_pieces_cast_cleanup.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_alternative_vehicles_for_gamme#sig:fca9ebcc",
+      "language": "sql",
+      "name": "get_alternative_vehicles_for_gamme",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_type_ids",
+          "type": "bigint[]"
+        }
+      ],
+      "definedInMigrations": [
+        "20260129_rpc_get_auto_types_batch.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_auto_types_batch",
+      "language": "plpgsql",
+      "name": "get_auto_types_batch",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_marque_id",
+          "type": "INTEGER"
+        }
+      ],
+      "definedInMigrations": [
+        "20260101_fix_brand_page_urls.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_brand_page_data_optimized",
+      "language": "plpgsql",
+      "name": "get_brand_page_data_optimized",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "JSON",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_start_date",
+          "type": "TIMESTAMPTZ"
+        },
+        {
+          "mode": "IN",
+          "name": "p_end_date",
+          "type": "TIMESTAMPTZ"
+        }
+      ],
+      "definedInMigrations": [
+        "20260202_create_claims_table.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_claim_stats",
+      "language": "plpgsql",
+      "name": "get_claim_stats",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "JSON",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public",
+        "pg_temp"
+      ],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_page_role",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260128_dco_v2_tables.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_cwv_summary_by_role",
+      "language": "plpgsql",
+      "name": "get_cwv_summary_by_role",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_page_role",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_flow_pack",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260128_dco_v2_tables.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_design_system",
+      "language": "plpgsql",
+      "name": "get_design_system",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "__ux_design_systems",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_pg_id",
+          "type": "INTEGER"
+        }
+      ],
+      "definedInMigrations": [
+        "20260427_gamme_page_cache_build_fn.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_gamme_page_data_cached",
+      "language": "plpgsql",
+      "name": "get_gamme_page_data_cached",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "JSON",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260128_fix_homepage_rpc_gammes_count.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_homepage_data_optimized",
+      "language": "plpgsql",
+      "name": "get_homepage_data_optimized",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "JSON",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_url",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260128_dco_v2_tables.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_latest_ux_capture",
+      "language": "plpgsql",
+      "name": "get_latest_ux_capture",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "__ux_captures",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_gamme_id",
+          "type": "integer"
+        },
+        {
+          "mode": "IN",
+          "name": "p_vehicle_id",
+          "type": "bigint"
+        },
+        {
+          "mode": "IN",
+          "name": "p_limit",
+          "type": "integer"
+        }
+      ],
+      "definedInMigrations": [
+        "20260210_fix_position_in_listing_products.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_listing_products_extended",
+      "language": "sql",
+      "name": "get_listing_products_extended",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "TABLE(id integer, nom text, reference text, reference_clean text, description text, quantite_vente numeric, has_image boolean, has_oem boolean, filtre_gamme text, is_accessory boolean, filtre_side text, marque text, marque_id integer, marque_logo text, nb_stars integer, prix_unitaire integer, prix_ttc numeric, prix_consigne integer, stock_status text, dispo boolean, quality text, score integer, image text)",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_gamme_id",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_vehicle_id",
+          "type": "BIGINT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_limit",
+          "type": "INT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260118_rm_remove_stock_filter.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_listing_products_for_build",
+      "language": "plpgsql",
+      "name": "get_listing_products_for_build",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public",
+        "pg_temp"
+      ],
+      "securityDefiner": true,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_gamme_id",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_vehicle_id",
+          "type": "BIGINT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_limit",
+          "type": "INT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260120_rm_sql_function.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_listing_products_for_build_v2",
+      "language": "SQL",
+      "name": "get_listing_products_for_build_v2",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_piece_id",
+          "type": "integer"
+        }
+      ],
+      "definedInMigrations": [
+        "20260412_piece_detail_rpc_and_indexes.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_piece_detail",
+      "language": "plpgsql",
+      "name": "get_piece_detail",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "jsonb",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_type_id",
+          "type": "INTEGER"
+        },
+        {
+          "mode": "IN",
+          "name": "p_pg_id",
+          "type": "INTEGER"
+        }
+      ],
+      "definedInMigrations": [
+        "20260324_fix_ghost_pieces_rpc_v3.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_pieces_for_type_gamme_v3",
+      "language": "plpgsql",
+      "name": "get_pieces_for_type_gamme_v3",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "JSONB",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public"
+      ],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_type_id",
+          "type": "INTEGER"
+        },
+        {
+          "mode": "IN",
+          "name": "p_pg_id",
+          "type": "INTEGER"
+        }
+      ],
+      "definedInMigrations": [
+        "20260128_get_pieces_for_type_gamme_v4_raw_seo.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_pieces_for_type_gamme_v4",
+      "language": "plpgsql",
+      "name": "get_pieces_for_type_gamme_v4",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "JSONB",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public"
+      ],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_start_date",
+          "type": "TIMESTAMPTZ"
+        },
+        {
+          "mode": "IN",
+          "name": "p_end_date",
+          "type": "TIMESTAMPTZ"
+        }
+      ],
+      "definedInMigrations": [
+        "20260202_create_quotes_tables.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_quote_stats",
+      "language": "plpgsql",
+      "name": "get_quote_stats",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "JSON",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public",
+        "pg_temp"
+      ],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_pg_id",
+          "type": "INTEGER"
+        }
+      ],
+      "definedInMigrations": [
+        "20260427_r1_related_blocks_cache_schema.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_r1_related_blocks_cached",
+      "language": "sql",
+      "name": "get_r1_related_blocks_cached",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "JSONB",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_gamme_id",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_vehicle_id",
+          "type": "BIGINT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_rebuild_if_missing",
+          "type": "BOOLEAN"
+        }
+      ],
+      "definedInMigrations": [
+        "20260115_rm_tables.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_rm_listing",
+      "language": "plpgsql",
+      "name": "get_rm_listing",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "rm_listing",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public",
+        "pg_temp"
+      ],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260122_sitemap_v10_dashboard.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_seo_critical_alerts",
+      "language": "",
+      "name": "get_seo_critical_alerts",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead",
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_days",
+          "type": "INTEGER"
+        }
+      ],
+      "definedInMigrations": [
+        "20260129_seo_interpolation_alerts.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_seo_interpolation_stats",
+      "language": "plpgsql",
+      "name": "get_seo_interpolation_stats",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_slug",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260126_create_seo_observable.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_seo_observable_by_slug",
+      "language": "sql",
+      "name": "get_seo_observable_by_slug",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "SETOF __seo_observable",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_limit",
+          "type": "INTEGER"
+        }
+      ],
+      "definedInMigrations": [
+        "20260126_create_seo_observable.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_seo_observable_featured",
+      "language": "sql",
+      "name": "get_seo_observable_featured",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "SETOF __seo_observable",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_cluster_id",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_limit",
+          "type": "INTEGER"
+        }
+      ],
+      "definedInMigrations": [
+        "20260126_create_seo_observable.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_seo_observables_by_cluster",
+      "language": "sql",
+      "name": "get_seo_observables_by_cluster",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "SETOF __seo_observable",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_slug",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260309_r4_flexible_sections.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_seo_reference_by_slug",
+      "language": "",
+      "name": "get_seo_reference_by_slug",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead",
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_temperature",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_limit",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_offset",
+          "type": "INT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260122_sitemap_v10_enterprise.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_sitemap_urls_by_temperature",
+      "language": "plpgsql",
+      "name": "get_sitemap_urls_by_temperature",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_days_min",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_days_max",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_limit",
+          "type": "INT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260125_hub_stabilize_rpc.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_stabilize_pages",
+      "language": "plpgsql",
+      "name": "get_stabilize_pages",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_gamme_alias",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_marque_alias",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_modele_alias",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_type_alias",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_gamme_id",
+          "type": "INTEGER"
+        }
+      ],
+      "definedInMigrations": [
+        "20260315_unify_cross_gamme_car_new.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_substitution_data",
+      "language": "plpgsql",
+      "name": "get_substitution_data",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "JSONB",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_limit",
+          "type": "INT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260125_money_pages_dynamic.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_top_money_gammes",
+      "language": "plpgsql",
+      "name": "get_top_money_gammes",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "TABLE (gamme_id INT, gamme_name TEXT, total_volume BIGINT)",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_limit",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_offset",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_risk_flag",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260123_seo_enterprise_dashboard.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_urls_at_risk",
+      "language": "plpgsql",
+      "name": "get_urls_at_risk",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_status",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_limit",
+          "type": "INTEGER"
+        }
+      ],
+      "definedInMigrations": [
+        "20260128_dco_v2_tables.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_ux_debt_by_roi",
+      "language": "plpgsql",
+      "name": "get_ux_debt_by_roi",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "__ux_captures",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_type_id",
+          "type": "INTEGER"
+        }
+      ],
+      "definedInMigrations": [
+        "20260420_vehicle_page_cache_build_fn.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_vehicle_page_data_cached",
+      "language": "plpgsql",
+      "name": "get_vehicle_page_data_cached",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "JSON",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_pg_id",
+          "type": "INTEGER"
+        }
+      ],
+      "definedInMigrations": [
+        "20260202_rpc_get_vlevel_data.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_vlevel_data",
+      "language": "plpgsql",
+      "name": "get_vlevel_data",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "JSON",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_pg_id",
+          "type": "INTEGER"
+        }
+      ],
+      "definedInMigrations": [
+        "20260131_rpc_section_k_details.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_vlevel_section_k_extras",
+      "language": "plpgsql",
+      "name": "get_vlevel_section_k_extras",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_pg_id",
+          "type": "INTEGER"
+        }
+      ],
+      "definedInMigrations": [
+        "20260129_rpc_section_k_metrics.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_vlevel_section_k_metrics",
+      "language": "plpgsql",
+      "name": "get_vlevel_section_k_metrics",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_pg_id",
+          "type": "INTEGER"
+        }
+      ],
+      "definedInMigrations": [
+        "20260131_rpc_section_k_details.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_vlevel_section_k_missing",
+      "language": "plpgsql",
+      "name": "get_vlevel_section_k_missing",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_token",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_granted_by",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_reason",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_tables",
+          "type": "TEXT[]"
+        },
+        {
+          "mode": "IN",
+          "name": "p_hours",
+          "type": "INT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260204_killswitch_all_in_one.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.grant_breakglass",
+      "language": "plpgsql",
+      "name": "grant_breakglass",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "BIGINT",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public"
+      ],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_case_id",
+          "type": "UUID"
+        }
+      ],
+      "definedInMigrations": [
+        "20260127_kg_v3_case_learning.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_apply_learning",
+      "language": "",
+      "name": "kg_apply_learning",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "INT",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_node_id",
+          "type": "UUID"
+        },
+        {
+          "mode": "IN",
+          "name": "p_reviewer_id",
+          "type": "UUID"
+        },
+        {
+          "mode": "IN",
+          "name": "p_review_notes",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260126_kg_v3_governance.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_approve_node",
+      "language": "",
+      "name": "kg_approve_node",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "JSONB",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260126_kg_v3_governance.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_audit_edges_trigger",
+      "language": "",
+      "name": "kg_audit_edges_trigger",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "TRIGGER",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260126_kg_v3_governance.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_audit_nodes_trigger",
+      "language": "",
+      "name": "kg_audit_nodes_trigger",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "TRIGGER",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_days_threshold",
+          "type": "INT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260127_kg_v3_case_learning.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_auto_infer_outcomes",
+      "language": "plpgsql",
+      "name": "kg_auto_infer_outcomes",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "INT",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_rule_id",
+          "type": "UUID"
+        },
+        {
+          "mode": "IN",
+          "name": "p_profile_id",
+          "type": "UUID"
+        },
+        {
+          "mode": "IN",
+          "name": "p_is_urban",
+          "type": "BOOLEAN"
+        },
+        {
+          "mode": "IN",
+          "name": "p_is_diesel",
+          "type": "BOOLEAN"
+        },
+        {
+          "mode": "IN",
+          "name": "p_is_aggressive",
+          "type": "BOOLEAN"
+        },
+        {
+          "mode": "IN",
+          "name": "p_is_heavy_load",
+          "type": "BOOLEAN"
+        },
+        {
+          "mode": "IN",
+          "name": "p_is_extreme",
+          "type": "BOOLEAN"
+        }
+      ],
+      "definedInMigrations": [
+        "20260125_kg_v3_maintenance_risk.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_calculate_adapted_interval",
+      "language": "",
+      "name": "kg_calculate_adapted_interval",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead",
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_edge_id",
+          "type": "UUID"
+        },
+        {
+          "mode": "IN",
+          "name": "p_min_feedback",
+          "type": "INT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260125_kg_v3_feedback.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_calculate_bayesian_weight",
+      "language": "",
+      "name": "kg_calculate_bayesian_weight",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead",
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_current_km",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_maintenance_records",
+          "type": "JSONB"
+        },
+        {
+          "mode": "IN",
+          "name": "p_ctx_phase",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_ctx_temp",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_ctx_speed",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_observable_count",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_vehicle_id",
+          "type": "UUID"
+        },
+        {
+          "mode": "IN",
+          "name": "p_engine_family_code",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_has_dtc",
+          "type": "BOOLEAN"
+        }
+      ],
+      "definedInMigrations": [
+        "20260128_fix_kg_confidence_score_arrays.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_calculate_confidence_score",
+      "language": "",
+      "name": "kg_calculate_confidence_score",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead",
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_rule_id",
+          "type": "UUID"
+        },
+        {
+          "mode": "IN",
+          "name": "p_current_km",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_last_maintenance_km",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_current_date",
+          "type": "DATE"
+        },
+        {
+          "mode": "IN",
+          "name": "p_last_maintenance_date",
+          "type": "DATE"
+        },
+        {
+          "mode": "IN",
+          "name": "p_profile_id",
+          "type": "UUID"
+        }
+      ],
+      "definedInMigrations": [
+        "20260125_kg_v3_maintenance_risk.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_calculate_risk_level",
+      "language": "",
+      "name": "kg_calculate_risk_level",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead",
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_label_id",
+          "type": "UUID"
+        }
+      ],
+      "definedInMigrations": [
+        "20260125_kg_v3_truth_labels.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_calculate_truth_label_reliability",
+      "language": "",
+      "name": "kg_calculate_truth_label_reliability",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "FLOAT",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_edge_id",
+          "type": "UUID"
+        },
+        {
+          "mode": "IN",
+          "name": "p_min_labels",
+          "type": "INT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260125_kg_v3_truth_labels.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_calculate_weight_with_truth_labels",
+      "language": "",
+      "name": "kg_calculate_weight_with_truth_labels",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead",
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260127_kg_v3_case_learning.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_cases_updated_at",
+      "language": "plpgsql",
+      "name": "kg_cases_updated_at",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "TRIGGER",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_observable_ids",
+          "type": "UUID[]"
+        }
+      ],
+      "definedInMigrations": [
+        "20260127_kg_v3_safety_gate.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_check_safety_gate",
+      "language": "",
+      "name": "kg_check_safety_gate",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead",
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_node_id",
+          "type": "UUID"
+        },
+        {
+          "mode": "IN",
+          "name": "p_reason",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_replacement_node_id",
+          "type": "UUID"
+        }
+      ],
+      "definedInMigrations": [
+        "20260126_kg_v3_governance.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_deprecate_node",
+      "language": "",
+      "name": "kg_deprecate_node",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "JSONB",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_vehicle_id",
+          "type": "UUID"
+        },
+        {
+          "mode": "IN",
+          "name": "p_observable_labels",
+          "type": "TEXT[]"
+        },
+        {
+          "mode": "IN",
+          "name": "p_confidence_threshold",
+          "type": "FLOAT"
+        }
+      ],
+      "definedInMigrations": [
+        "20251230_knowledge_graph.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_diagnose",
+      "language": "",
+      "name": "kg_diagnose",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead",
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_observable_labels",
+          "type": "TEXT[]"
+        },
+        {
+          "mode": "IN",
+          "name": "p_engine_family_code",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_confidence_threshold",
+          "type": "FLOAT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_limit",
+          "type": "INT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260125_kg_v3_diagnose_vehicle_aware.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_diagnose_by_labels",
+      "language": "plpgsql",
+      "name": "kg_diagnose_by_labels",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "SETOF kg_diagnosis_result",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_observable_labels",
+          "type": "TEXT[]"
+        },
+        {
+          "mode": "IN",
+          "name": "p_ctx_phase",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_ctx_temp",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_ctx_speed",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_engine_family_code",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_confidence_threshold",
+          "type": "FLOAT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_limit",
+          "type": "INT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260125_kg_v3_diagnose_vehicle_aware.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_diagnose_contextual",
+      "language": "plpgsql",
+      "name": "kg_diagnose_contextual",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "SETOF kg_diagnosis_result",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_observable_ids",
+          "type": "UUID[]"
+        },
+        {
+          "mode": "IN",
+          "name": "p_vehicle_id",
+          "type": "UUID"
+        },
+        {
+          "mode": "IN",
+          "name": "p_engine_family_code",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_confidence_threshold",
+          "type": "FLOAT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_limit",
+          "type": "INT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260125_kg_v3_diagnose_vehicle_aware.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_diagnose_vehicle_aware",
+      "language": "",
+      "name": "kg_diagnose_vehicle_aware",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "SETOF kg_diagnosis_result",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_observable_ids",
+          "type": "UUID[]"
+        },
+        {
+          "mode": "IN",
+          "name": "p_vehicle_id",
+          "type": "UUID"
+        },
+        {
+          "mode": "IN",
+          "name": "p_engine_family_code",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_current_km",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_last_maintenance_records",
+          "type": "JSONB"
+        },
+        {
+          "mode": "IN",
+          "name": "p_ctx_phase",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_ctx_temp",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_ctx_speed",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_limit",
+          "type": "INT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260125_kg_v3_explainable_score.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_diagnose_with_explainable_score",
+      "language": "",
+      "name": "kg_diagnose_with_explainable_score",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead",
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_observable_ids",
+          "type": "UUID[]"
+        },
+        {
+          "mode": "IN",
+          "name": "p_vehicle_id",
+          "type": "UUID"
+        },
+        {
+          "mode": "IN",
+          "name": "p_engine_family_code",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_current_km",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_skip_diagnosis_if_critical",
+          "type": "BOOLEAN"
+        }
+      ],
+      "definedInMigrations": [
+        "20260127_kg_v3_safety_gate.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_diagnose_with_safety",
+      "language": "",
+      "name": "kg_diagnose_with_safety",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "JSONB",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260125_kg_v3_versioning.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_edge_auto_history",
+      "language": "",
+      "name": "kg_edge_auto_history",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "TRIGGER",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_diagnosis_result",
+          "type": "JSONB"
+        }
+      ],
+      "definedInMigrations": [
+        "20260128_kg_v3_explainable_output.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_explain_diagnosis_result",
+      "language": "plpgsql",
+      "name": "kg_explain_diagnosis_result",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "JSONB",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_fault_id",
+          "type": "UUID"
+        }
+      ],
+      "definedInMigrations": [
+        "20251230_knowledge_graph.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_find_actions_for_fault",
+      "language": "plpgsql",
+      "name": "kg_find_actions_for_fault",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_observable_ids",
+          "type": "UUID[]"
+        }
+      ],
+      "definedInMigrations": [
+        "20251230_knowledge_graph.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_find_faults_from_observables",
+      "language": "plpgsql",
+      "name": "kg_find_faults_from_observables",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_fault_id",
+          "type": "UUID"
+        }
+      ],
+      "definedInMigrations": [
+        "20251230_knowledge_graph.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_find_parts_for_fault",
+      "language": "plpgsql",
+      "name": "kg_find_parts_for_fault",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_observable_ids",
+          "type": "UUID[]"
+        },
+        {
+          "mode": "IN",
+          "name": "p_ktypnr",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_engine_family_code",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_limit",
+          "type": "INT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260127_kg_v3_case_learning.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_find_similar_cases",
+      "language": "",
+      "name": "kg_find_similar_cases",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead",
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_fault_ids",
+          "type": "UUID[]"
+        },
+        {
+          "mode": "IN",
+          "name": "p_matched_observable_ids",
+          "type": "UUID[]"
+        },
+        {
+          "mode": "IN",
+          "name": "p_ctx_phase",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_ctx_temp",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_ctx_speed",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260128_kg_v3_explainable_output.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_generate_batch_explanations",
+      "language": "plpgsql",
+      "name": "kg_generate_batch_explanations",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "JSONB",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_fault_id",
+          "type": "UUID"
+        },
+        {
+          "mode": "IN",
+          "name": "p_matched_observable_ids",
+          "type": "UUID[]"
+        },
+        {
+          "mode": "IN",
+          "name": "p_ctx_phase",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_ctx_temp",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_ctx_speed",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260128_kg_v3_explainable_output.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_generate_explainable_diagnostic",
+      "language": "",
+      "name": "kg_generate_explainable_diagnostic",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "JSONB",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_fault_id",
+          "type": "UUID"
+        },
+        {
+          "mode": "IN",
+          "name": "p_engine_family_code",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_vehicle_year",
+          "type": "INT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260125_kg_v3_observable_pro.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_get_compatible_parts_for_fault",
+      "language": "",
+      "name": "kg_get_compatible_parts_for_fault",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead",
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_user_id",
+          "type": "UUID"
+        }
+      ],
+      "definedInMigrations": [
+        "20260125_kg_v3_explainable_score.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_get_confidence_improvements",
+      "language": "",
+      "name": "kg_get_confidence_improvements",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead",
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_code",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260429_diag_maintenance_via_kg.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_get_dtc_lookup",
+      "language": "sql",
+      "name": "kg_get_dtc_lookup",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_edge_type",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260125_kg_v3_diagnose_vehicle_aware.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_get_edge_type_weight_multiplier",
+      "language": "plpgsql",
+      "name": "kg_get_edge_type_weight_multiplier",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "FLOAT",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_input_type",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260125_kg_v3_observable_pro.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_get_input_type_confidence",
+      "language": "plpgsql",
+      "name": "kg_get_input_type_confidence",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "FLOAT",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_days",
+          "type": "INT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260127_kg_v3_case_learning.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_get_learning_stats",
+      "language": "",
+      "name": "kg_get_learning_stats",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead",
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_milestones",
+          "type": "INT[]"
+        },
+        {
+          "mode": "IN",
+          "name": "p_fuel_type",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260429_diag_maintenance_via_kg.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_get_maintenance_alerts_by_milestone",
+      "language": "plpgsql",
+      "name": "kg_get_maintenance_alerts_by_milestone",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_engine_family_code",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_current_km",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_profile_id",
+          "type": "UUID"
+        },
+        {
+          "mode": "IN",
+          "name": "p_last_maintenance_records",
+          "type": "JSONB"
+        }
+      ],
+      "definedInMigrations": [
+        "20260125_kg_v3_maintenance_risk.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_get_smart_maintenance_schedule#sig:0b3a8e2a",
+      "language": "",
+      "name": "kg_get_smart_maintenance_schedule",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "SETOF kg_smart_maintenance_item",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_engine_family_code",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_current_km",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_profile_id",
+          "type": "UUID"
+        },
+        {
+          "mode": "IN",
+          "name": "p_last_maintenance_records",
+          "type": "JSONB"
+        },
+        {
+          "mode": "IN",
+          "name": "p_type_id",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_fuel_type",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260429_diag_maintenance_via_kg.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_get_smart_maintenance_schedule#sig:1b4233d0",
+      "language": "plpgsql",
+      "name": "kg_get_smart_maintenance_schedule",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_engine_family_code",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_current_km",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_vehicle_age_months",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_last_maintenance_km",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_last_maintenance_date",
+          "type": "DATE"
+        }
+      ],
+      "definedInMigrations": [
+        "20260125_kg_v3_maintenance.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_get_vehicle_maintenance_schedule",
+      "language": "",
+      "name": "kg_get_vehicle_maintenance_schedule",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "SETOF kg_maintenance_item",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_engine_family_code",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260125_kg_v3_maintenance.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_get_vehicle_recalls",
+      "language": "",
+      "name": "kg_get_vehicle_recalls",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "SETOF kg_recall_item",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260125_kg_v3_versioning.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_node_auto_history",
+      "language": "",
+      "name": "kg_node_auto_history",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "TRIGGER",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_batch_size",
+          "type": "INT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260125_kg_v3_feedback.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_process_feedback_batch",
+      "language": "",
+      "name": "kg_process_feedback_batch",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead",
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_batch_size",
+          "type": "INT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260125_kg_v3_truth_labels.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_process_truth_labels_batch",
+      "language": "",
+      "name": "kg_process_truth_labels_batch",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead",
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260126_kg_v3_governance.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_quality_report",
+      "language": "",
+      "name": "kg_quality_report",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "JSONB",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_observable_ids",
+          "type": "UUID[]"
+        },
+        {
+          "mode": "IN",
+          "name": "p_engine_family_code",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260125_kg_v3_explainable_score.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_quick_diagnose",
+      "language": "plpgsql",
+      "name": "kg_quick_diagnose",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_file_path",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_file_hash",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260125_kg_v3_rag_sync.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_rag_file_needs_sync",
+      "language": "plpgsql",
+      "name": "kg_rag_file_needs_sync",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "BOOLEAN",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_file_path",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_item_id",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260125_kg_v3_rag_sync.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_rag_get_node_id",
+      "language": "plpgsql",
+      "name": "kg_rag_get_node_id",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "UUID",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_file_path",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_file_hash",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_category",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_nodes_created",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_nodes_updated",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_edges_created",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_edges_updated",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_errors_count",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_errors_detail",
+          "type": "JSONB"
+        },
+        {
+          "mode": "IN",
+          "name": "p_affected_node_ids",
+          "type": "UUID[]"
+        },
+        {
+          "mode": "IN",
+          "name": "p_affected_edge_ids",
+          "type": "UUID[]"
+        },
+        {
+          "mode": "IN",
+          "name": "p_duration_ms",
+          "type": "INT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260125_kg_v3_rag_sync.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_rag_record_sync",
+      "language": "",
+      "name": "kg_rag_record_sync",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "UUID",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_file_path",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_item_id",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_item_type",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_kg_node_id",
+          "type": "UUID"
+        }
+      ],
+      "definedInMigrations": [
+        "20260125_kg_v3_rag_sync.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_rag_upsert_mapping",
+      "language": "plpgsql",
+      "name": "kg_rag_upsert_mapping",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "UUID",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_observable_ids",
+          "type": "UUID[]"
+        },
+        {
+          "mode": "IN",
+          "name": "p_ktypnr",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_engine_family_code",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_current_km",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_user_id",
+          "type": "UUID"
+        },
+        {
+          "mode": "IN",
+          "name": "p_session_id",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_vehicle_id",
+          "type": "UUID"
+        }
+      ],
+      "definedInMigrations": [
+        "20260127_kg_v3_case_learning.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_record_case",
+      "language": "",
+      "name": "kg_record_case",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "UUID",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_event_type",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_feedback_source",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_edge_id",
+          "type": "UUID"
+        },
+        {
+          "mode": "IN",
+          "name": "p_fault_id",
+          "type": "UUID"
+        },
+        {
+          "mode": "IN",
+          "name": "p_observable_ids",
+          "type": "UUID[]"
+        },
+        {
+          "mode": "IN",
+          "name": "p_diagnosis_cache_id",
+          "type": "UUID"
+        },
+        {
+          "mode": "IN",
+          "name": "p_feedback_data",
+          "type": "JSONB"
+        },
+        {
+          "mode": "IN",
+          "name": "p_user_id",
+          "type": "UUID"
+        },
+        {
+          "mode": "IN",
+          "name": "p_session_id",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260125_kg_v3_feedback.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_record_feedback",
+      "language": "",
+      "name": "kg_record_feedback",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "UUID",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_case_id",
+          "type": "UUID"
+        },
+        {
+          "mode": "IN",
+          "name": "p_outcome_type",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_verification_method",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_problem_solved",
+          "type": "BOOLEAN"
+        },
+        {
+          "mode": "IN",
+          "name": "p_actual_fault_id",
+          "type": "UUID"
+        },
+        {
+          "mode": "IN",
+          "name": "p_order_id",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_customer_rating",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_notes",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260127_kg_v3_case_learning.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_record_outcome",
+      "language": "",
+      "name": "kg_record_outcome",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "BOOLEAN",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_diagnosis_cache_id",
+          "type": "UUID"
+        },
+        {
+          "mode": "IN",
+          "name": "p_edge_ids",
+          "type": "UUID[]"
+        },
+        {
+          "mode": "IN",
+          "name": "p_fault_id",
+          "type": "UUID"
+        },
+        {
+          "mode": "IN",
+          "name": "p_outcome_confirmed",
+          "type": "BOOLEAN"
+        },
+        {
+          "mode": "IN",
+          "name": "p_confirmation_method",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_replaced_part_pg_id",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_confirmation_date",
+          "type": "DATE"
+        },
+        {
+          "mode": "IN",
+          "name": "p_confirmation_km",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_evidence_data",
+          "type": "JSONB"
+        },
+        {
+          "mode": "IN",
+          "name": "p_verification_quality",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_submitted_by",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_submitted_by_user_id",
+          "type": "UUID"
+        },
+        {
+          "mode": "IN",
+          "name": "p_order_id",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_notes",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260125_kg_v3_truth_labels.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_record_truth_label",
+      "language": "",
+      "name": "kg_record_truth_label",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "UUID",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_node_id",
+          "type": "UUID"
+        },
+        {
+          "mode": "IN",
+          "name": "p_reviewer_id",
+          "type": "UUID"
+        },
+        {
+          "mode": "IN",
+          "name": "p_rejection_reason",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260126_kg_v3_governance.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_reject_node",
+      "language": "",
+      "name": "kg_reject_node",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "JSONB",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260127_kg_v3_safety_gate.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_safety_triggers_updated_at",
+      "language": "plpgsql",
+      "name": "kg_safety_triggers_updated_at",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "TRIGGER",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_node_id",
+          "type": "UUID"
+        },
+        {
+          "mode": "IN",
+          "name": "p_submitter_notes",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260126_kg_v3_governance.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_submit_for_review",
+      "language": "plpgsql",
+      "name": "kg_submit_for_review",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "JSONB",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260125_kg_v3_truth_labels.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_truth_labels_updated_at",
+      "language": "plpgsql",
+      "name": "kg_truth_labels_updated_at",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "TRIGGER",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20251230_knowledge_graph.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.kg_update_updated_at",
+      "language": "plpgsql",
+      "name": "kg_update_updated_at",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "TRIGGER",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260123_seo_enterprise_dashboard.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.link_satellites_to_entities",
+      "language": "plpgsql",
+      "name": "link_satellites_to_entities",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "INTEGER",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260204_killswitch_all_in_one.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.list_active_breakglass",
+      "language": "plpgsql",
+      "name": "list_active_breakglass",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public"
+      ],
+      "securityDefiner": true,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_run_id",
+          "type": "UUID"
+        },
+        {
+          "mode": "IN",
+          "name": "p_bucket",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_status",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_urls_total",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_files_generated",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_duration_ms",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_error",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260122_sitemap_v10_enterprise.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.log_sitemap_generation",
+      "language": "plpgsql",
+      "name": "log_sitemap_generation",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "VOID",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_ord_id",
+          "type": "text"
+        },
+        {
+          "mode": "IN",
+          "name": "p_date_pay",
+          "type": "text"
+        }
+      ],
+      "definedInMigrations": [
+        "20260417_fix_mark_order_paid_atomic_type_error.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.mark_order_paid_atomic",
+      "language": "plpgsql",
+      "name": "mark_order_paid_atomic",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "boolean",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_type_ids",
+          "type": "INTEGER[]"
+        },
+        {
+          "mode": "IN",
+          "name": "p_reason",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_rebuild_immediately",
+          "type": "BOOLEAN"
+        }
+      ],
+      "definedInMigrations": [
+        "20260425_mark_stale_with_followup_rebuild.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.mark_stale_with_followup_rebuild",
+      "language": "plpgsql",
+      "name": "mark_stale_with_followup_rebuild",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "INTEGER",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_text",
+          "type": "text"
+        }
+      ],
+      "definedInMigrations": [
+        "20260423_match_keyword_text_to_vehicle.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.match_keyword_text_to_vehicle",
+      "language": "plpgsql",
+      "name": "match_keyword_text_to_vehicle",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "TABLE(matched_model text, matched_energy text)",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_texts",
+          "type": "text[]"
+        }
+      ],
+      "definedInMigrations": [
+        "20260423_match_keyword_text_to_vehicle.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.match_keyword_text_to_vehicle_batch",
+      "language": "plpgsql",
+      "name": "match_keyword_text_to_vehicle_batch",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "TABLE(input text, matched_model text, matched_energy text)",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_retention_days",
+          "type": "INTEGER"
+        }
+      ],
+      "definedInMigrations": [
+        "20260128_mcp_validation_shadow.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.mcp_cleanup_old_logs",
+      "language": "plpgsql",
+      "name": "mcp_cleanup_old_logs",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "INTEGER",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_hours",
+          "type": "INTEGER"
+        }
+      ],
+      "definedInMigrations": [
+        "20260128_mcp_validation_shadow.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.mcp_get_dashboard_summary",
+      "language": "plpgsql",
+      "name": "mcp_get_dashboard_summary",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_data_type",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_hours",
+          "type": "INTEGER"
+        }
+      ],
+      "definedInMigrations": [
+        "20260128_mcp_validation_shadow.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.mcp_get_match_rate",
+      "language": "plpgsql",
+      "name": "mcp_get_match_rate",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_limit",
+          "type": "INTEGER"
+        },
+        {
+          "mode": "IN",
+          "name": "p_hours",
+          "type": "INTEGER"
+        }
+      ],
+      "definedInMigrations": [
+        "20260128_mcp_validation_shadow.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.mcp_get_mismatch_endpoints",
+      "language": "plpgsql",
+      "name": "mcp_get_mismatch_endpoints",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_text",
+          "type": "text"
+        },
+        {
+          "mode": "IN",
+          "name": "p_type_id",
+          "type": "integer"
+        }
+      ],
+      "definedInMigrations": [
+        "20260120_rm_seo_helpers.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.process_prix_pas_cher",
+      "language": "plpgsql",
+      "name": "process_prix_pas_cher",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "text",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_text",
+          "type": "text"
+        },
+        {
+          "mode": "IN",
+          "name": "p_marker",
+          "type": "text"
+        },
+        {
+          "mode": "IN",
+          "name": "p_switches",
+          "type": "jsonb"
+        },
+        {
+          "mode": "IN",
+          "name": "p_type_id",
+          "type": "integer"
+        },
+        {
+          "mode": "IN",
+          "name": "p_offset",
+          "type": "integer"
+        }
+      ],
+      "definedInMigrations": [
+        "20260120_rm_seo_helpers.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.process_seo_switch",
+      "language": "plpgsql",
+      "name": "process_seo_switch",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "text",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_template",
+          "type": "text"
+        },
+        {
+          "mode": "IN",
+          "name": "p_type_id",
+          "type": "integer"
+        },
+        {
+          "mode": "IN",
+          "name": "p_pg_id",
+          "type": "integer"
+        },
+        {
+          "mode": "IN",
+          "name": "p_mf_id",
+          "type": "integer"
+        },
+        {
+          "mode": "IN",
+          "name": "p_marque_name",
+          "type": "text"
+        },
+        {
+          "mode": "IN",
+          "name": "p_marque_alias",
+          "type": "text"
+        },
+        {
+          "mode": "IN",
+          "name": "p_marque_id",
+          "type": "integer"
+        },
+        {
+          "mode": "IN",
+          "name": "p_modele_name",
+          "type": "text"
+        },
+        {
+          "mode": "IN",
+          "name": "p_modele_alias",
+          "type": "text"
+        },
+        {
+          "mode": "IN",
+          "name": "p_modele_id",
+          "type": "integer"
+        },
+        {
+          "mode": "IN",
+          "name": "p_type_name",
+          "type": "text"
+        },
+        {
+          "mode": "IN",
+          "name": "p_type_alias",
+          "type": "text"
+        },
+        {
+          "mode": "IN",
+          "name": "p_type_power_ps",
+          "type": "text"
+        }
+      ],
+      "definedInMigrations": [
+        "20260120_rm_seo_template.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.process_seo_template",
+      "language": "plpgsql",
+      "name": "process_seo_template",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "text",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "days_to_keep",
+          "type": "INTEGER"
+        }
+      ],
+      "definedInMigrations": [
+        "20260129_seo_interpolation_alerts.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.purge_seo_interpolation_alerts",
+      "language": "plpgsql",
+      "name": "purge_seo_interpolation_alerts",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "INTEGER",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260418_rag_watcher_breaker_metrics_rpc.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.rag_watcher_breaker_metrics",
+      "language": "sql",
+      "name": "rag_watcher_breaker_metrics",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "jsonb",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public"
+      ],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_pg_id",
+          "type": "INTEGER"
+        }
+      ],
+      "definedInMigrations": [
+        "20260427_gamme_page_cache_build_fn.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.rebuild_gamme_page_cache",
+      "language": "plpgsql",
+      "name": "rebuild_gamme_page_cache",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "BOOLEAN",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_type_id",
+          "type": "INTEGER"
+        }
+      ],
+      "definedInMigrations": [
+        "20260420_vehicle_page_cache_build_fn.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.rebuild_vehicle_page_cache",
+      "language": "plpgsql",
+      "name": "rebuild_vehicle_page_cache",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "BOOLEAN",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_pg_id",
+          "type": "INTEGER"
+        }
+      ],
+      "definedInMigrations": [
+        "20260315_unify_cross_gamme_car_new.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.refresh_gamme_aggregates",
+      "language": "plpgsql",
+      "name": "refresh_gamme_aggregates",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": true,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_batch_size",
+          "type": "INTEGER"
+        }
+      ],
+      "definedInMigrations": [
+        "20260427_gamme_page_cache_build_fn.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.refresh_stale_gamme_cache",
+      "language": "plpgsql",
+      "name": "refresh_stale_gamme_cache",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "INTEGER",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_batch_size",
+          "type": "INTEGER"
+        }
+      ],
+      "definedInMigrations": [
+        "20260420_vehicle_page_cache_build_fn.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.refresh_stale_vehicle_cache",
+      "language": "plpgsql",
+      "name": "refresh_stale_vehicle_cache",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "INTEGER",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260122_sitemap_v10_enterprise.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.refresh_temperature_scores",
+      "language": "plpgsql",
+      "name": "refresh_temperature_scores",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "INTEGER",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_old_id",
+          "type": "INTEGER"
+        }
+      ],
+      "definedInMigrations": [
+        "20260327_resolve_type_id_remap.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.resolve_type_id_remap",
+      "language": "sql",
+      "name": "resolve_type_id_remap",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": true,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_id",
+          "type": "BIGINT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_revoked_by",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260204_killswitch_all_in_one.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.revoke_breakglass",
+      "language": "plpgsql",
+      "name": "revoke_breakglass",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "BOOLEAN",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public",
+        "public"
+      ],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_gamme_id",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_vehicle_id",
+          "type": "BIGINT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_limit",
+          "type": "INT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260117_rm_get_page_complete.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.rm_get_page_complete",
+      "language": "plpgsql",
+      "name": "rm_get_page_complete",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "JSONB",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public",
+        "pg_temp"
+      ],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_gamme_id",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_vehicle_id",
+          "type": "BIGINT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_limit",
+          "type": "INT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260408_rm_page_v2_seo_extraction.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.rm_get_page_complete_v2",
+      "language": "plpgsql",
+      "name": "rm_get_page_complete_v2",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "JSONB",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public",
+        "pg_temp"
+      ],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_query",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_limit",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_domain",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_min_truth_level",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260128_rag_knowledge_fallback.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.search_rag_knowledge",
+      "language": "plpgsql",
+      "name": "search_rag_knowledge",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_dtc_code",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260126_create_seo_observable.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.search_seo_observable_by_dtc",
+      "language": "sql",
+      "name": "search_seo_observable_by_dtc",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "SETOF __seo_observable",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260122_sitemap_v10_dashboard.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.snapshot_index_status",
+      "language": "",
+      "name": "snapshot_index_status",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "INTEGER",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "html",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260107_clean_html_from_seo_descriptions.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.strip_html_tags",
+      "language": "",
+      "name": "strip_html_tags",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "TEXT",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260123_seo_enterprise_dashboard.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.sync_entity_health_from_scores",
+      "language": "plpgsql",
+      "name": "sync_entity_health_from_scores",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "INTEGER",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260125_sync_keywords_trigger.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.sync_keywords_to_gamme_aggregates",
+      "language": "",
+      "name": "sync_keywords_to_gamme_aggregates",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "TRIGGER",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260122_sitemap_v10_enterprise.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.sync_sitemap_p_link_to_seo_page",
+      "language": "plpgsql",
+      "name": "sync_sitemap_p_link_to_seo_page",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "INTEGER",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260425_trigger_auto_type_rebuild_vehicle_cache.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.trg_auto_type_rebuild_cache",
+      "language": "plpgsql",
+      "name": "trg_auto_type_rebuild_cache",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "TRIGGER",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260310_auth_unified_lookup.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.trg_prevent_customer_admin_overlap",
+      "language": "plpgsql",
+      "name": "trg_prevent_customer_admin_overlap",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "TRIGGER",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260128_create_seo_keyword_type_mapping.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.trg_seo_keyword_type_mapping_updated_at",
+      "language": "plpgsql",
+      "name": "trg_seo_keyword_type_mapping_updated_at",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "TRIGGER",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260421_adr017_rpc_pieces_cast_cleanup.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.unknown",
+      "language": "",
+      "name": "unknown",
+      "owner": "__unassigned__",
+      "parseError": "Header regex failed",
+      "parseMode": "unknown_signature",
+      "parseWarnings": [],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "low",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260202_create_claims_table.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.update_claims_updated_at",
+      "language": "plpgsql",
+      "name": "update_claims_updated_at",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "TRIGGER",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public",
+        "pg_temp"
+      ],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260123_seo_enterprise_dashboard.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.update_index_status_from_crawl_log",
+      "language": "plpgsql",
+      "name": "update_index_status_from_crawl_log",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "INTEGER",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260202_create_quotes_tables.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.update_quote_requests_updated_at",
+      "language": "plpgsql",
+      "name": "update_quote_requests_updated_at",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "TRIGGER",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public",
+        "pg_temp"
+      ],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260312_r4_taxonomy_search.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.update_ref_search_vector",
+      "language": "plpgsql",
+      "name": "update_ref_search_vector",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "trigger",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260122_create_seo_keywords_table.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.update_seo_keywords_updated_at",
+      "language": "plpgsql",
+      "name": "update_seo_keywords_updated_at",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "TRIGGER",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260125_create_seo_reference.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.update_seo_reference_updated_at",
+      "language": "plpgsql",
+      "name": "update_seo_reference_updated_at",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "TRIGGER",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20251027_crawl_budget_experiments.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.update_updated_at_column",
+      "language": "plpgsql",
+      "name": "update_updated_at_column",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "TRIGGER",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260128_backfill_v2_repetitions.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.update_v2_repetitions_on_change",
+      "language": "plpgsql",
+      "name": "update_v2_repetitions_on_change",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "TRIGGER",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260128_backfill_v2_repetitions.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.update_v2_repetitions_on_delete",
+      "language": "plpgsql",
+      "name": "update_v2_repetitions_on_delete",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "TRIGGER",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_capture_id",
+          "type": "UUID"
+        }
+      ],
+      "definedInMigrations": [
+        "20260128_dco_v2_tables.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.validate_capture_against_gates",
+      "language": "",
+      "name": "validate_capture_against_gates",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead",
+        "LANGUAGE clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_url",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_role",
+          "type": "seo_page_role"
+        }
+      ],
+      "definedInMigrations": [
+        "20260124_add_page_role.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.validate_page_role",
+      "language": "plpgsql",
+      "name": "validate_page_role",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "BOOLEAN",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    }
+  ],
+  "generatedBy": "scripts/registry/build-rpc-registry.js",
+  "schemaVersion": "1.0.0"
+}
