@@ -24,6 +24,20 @@ jobs:
     timeout-minutes: 5
 
     steps:
+      - name: ⬇️ Checkout repo
+        # Required by the long-tail step which executes
+        # `scripts/ci/sample-smoke-urls.ts`. PR #510 added that step without
+        # checkout/setup-node, breaking the workflow on every schedule since
+        # 2026-05-14.
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js 22
+        # Self-hosted runner has no node/npx in PATH by default. Matches the
+        # canonical pattern used by the other self-hosted jobs in ci.yml.
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
       - name: 🏥 Health endpoint
         id: health-check
         run: |
@@ -76,7 +90,64 @@ jobs:
           if [ "$FAILED" = "1" ]; then
             exit 1
           fi
-          echo "✅ All 8 pages OK"
+          echo "✅ All 12 ancre pages OK"
+
+      - name: 🎲 Long-tail rotatif (150 URLs stratifiées seed=YYYYMMDD)
+        id: longtail-check
+        # PR-1 INC-2026-005 closure — extension du sample 12 → 150 URLs
+        # stratifiées par seed quotidien déterministe (rotatif mais reproductible
+        # toute la journée). Anti-flake : 3 retries, fail si rate_5xx > 0.5%.
+        # Voir [[feedback_ci_smoke_neq_runtime_monitoring]] : CI smoke protège
+        # le code merge, le synthetic crawler PR-2 protège le runtime.
+        run: |
+          SEED=$(date -u +%Y%m%d)
+          echo "📅 Daily seed: $SEED"
+          mapfile -t URLS < <(npx -y tsx scripts/ci/sample-smoke-urls.ts --seed=$SEED --total=150 2>/tmp/sample.err)
+          cat /tmp/sample.err
+          TOTAL=${#URLS[@]}
+          if [ "$TOTAL" -lt 100 ]; then
+            echo "❌ Sample too small ($TOTAL < 100). Sitemap may be unreachable."
+            exit 1
+          fi
+          echo "📦 Sampled $TOTAL URLs (target 150)"
+          THRESHOLD_5XX_PCT=0.5
+          FAIL_5XX=0
+          PASS=0
+          for URL in "${URLS[@]}"; do
+            PATH_PART="${URL#https://www.automecanik.com}"
+            PATH_PART="${PATH_PART#https://automecanik.com}"
+            RETRY_STATUS=""
+            for try in 1 2 3; do
+              RETRY_STATUS=$(docker exec $CONTAINER wget --spider -qS "http://localhost:3000$PATH_PART" 2>&1 | grep "HTTP/" | tail -1 | awk '{print $2}')
+              if [ -z "$RETRY_STATUS" ]; then RETRY_STATUS="000"; fi
+              if [ "$RETRY_STATUS" -ge "200" ] && [ "$RETRY_STATUS" -lt "500" ]; then
+                break
+              fi
+            done
+            if [ "$RETRY_STATUS" -ge "500" ] && [ "$RETRY_STATUS" -lt "600" ]; then
+              echo "❌ 5xx after 3 retries: $PATH_PART → $RETRY_STATUS"
+              FAIL_5XX=$((FAIL_5XX + 1))
+            else
+              PASS=$((PASS + 1))
+            fi
+          done
+          RATE_PCT=$(awk -v f=$FAIL_5XX -v t=$TOTAL 'BEGIN{printf "%.3f", (f/t)*100}')
+          echo "📊 Result: $PASS pass / $FAIL_5XX × 5xx / $TOTAL total → rate ${RATE_PCT}% (threshold ${THRESHOLD_5XX_PCT}%)"
+          OVER=$(awk -v r=$RATE_PCT -v th=$THRESHOLD_5XX_PCT 'BEGIN{print (r>th)?1:0}')
+          if [ "$OVER" = "1" ]; then
+            echo "❌ 5xx rate exceeded threshold"
+            exit 1
+          fi
+          echo "✅ Long-tail rate_5xx within threshold"
+
+      - name: 📤 Upload long-tail smoke manifest
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prod-smoke-longtail-manifest-${{ github.run_id }}
+          path: audit-reports/prod-smoke/
+          retention-days: 30
+          if-no-files-found: ignore
 
       - name: 🚨 INC-2026-007 — __error_logs 5xx /constructeurs/* (1h window)
         id: vehicle-5xx-check

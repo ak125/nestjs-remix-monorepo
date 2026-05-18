@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedBy": "fixture-pr6-observatory",
+  "entries": [
+    {
+      "id": "backend:AppModule",
+      "path": "backend/src/app.module.ts",
+      "kind": "nestjs-module",
+      "status": "LIVE",
+      "sourceConfidence": "high",
+      "dependsOn": [],
+      "schemaVersion": "1.0.0"
+    }
+  ]
+}

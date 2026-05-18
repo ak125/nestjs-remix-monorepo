@@ -10,6 +10,41 @@
 
 import 'dotenv/config';
 import * as Sentry from '@sentry/nestjs';
+import type { ErrorEvent, EventHint } from '@sentry/nestjs';
+
+// Exported `beforeSend` predicate. Drops client-aborted body-parser errors
+// (raw-body fires `BadRequestError: request aborted` with `err.type =
+// 'request.aborted'` when the TCP connection is cut before the request body
+// finishes streaming — typical for tracking beacons during page unload). Also
+// scrubs sensitive request headers as defence-in-depth on top of Sentry's
+// server-side PII scrubbing.
+export function sanitizeSentryEvent(
+  event: ErrorEvent,
+  hint: EventHint,
+): ErrorEvent | null {
+  const err = hint?.originalException as
+    | { type?: string; message?: string }
+    | undefined;
+  if (err?.type === 'request.aborted' || err?.message === 'request aborted') {
+    return null;
+  }
+
+  if (event.request?.headers) {
+    const h = event.request.headers as Record<string, string>;
+    for (const k of Object.keys(h)) {
+      const lower = k.toLowerCase();
+      if (
+        lower === 'authorization' ||
+        lower === 'cookie' ||
+        lower === 'set-cookie' ||
+        lower.startsWith('x-api-key')
+      ) {
+        h[k] = '[Filtered]';
+      }
+    }
+  }
+  return event;
+}
 
 const dsn = process.env.SENTRY_DSN;
 
@@ -35,25 +70,6 @@ if (dsn) {
     // but we override to comply with RGPD minimisation by default.
     sendDefaultPii: process.env.SENTRY_SEND_PII === 'true',
 
-    // Defence-in-depth scrub of sensitive request headers. The Sentry server-
-    // side scrubbing also handles common PII patterns; this filter ensures
-    // auth tokens never leave the process even if server scrubbing misfires.
-    beforeSend(event) {
-      if (event.request?.headers) {
-        const h = event.request.headers as Record<string, string>;
-        for (const k of Object.keys(h)) {
-          const lower = k.toLowerCase();
-          if (
-            lower === 'authorization' ||
-            lower === 'cookie' ||
-            lower === 'set-cookie' ||
-            lower.startsWith('x-api-key')
-          ) {
-            h[k] = '[Filtered]';
-          }
-        }
-      }
-      return event;
-    },
+    beforeSend: sanitizeSentryEvent,
   });
 }

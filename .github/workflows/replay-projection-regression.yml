@@ -1,0 +1,71 @@
+name: replay-projection-regression
+
+# ADR-059 SEO Runtime Projection — Phase B PR-6c-a.
+# Régression test G1/G2 sur replay_projection.py.
+# Toute PR touchant les workers projection ou le replay doit garder ces tests verts.
+
+on:
+  pull_request:
+    paths:
+      - "scripts/seo-projection/**"
+      - "backend/src/modules/seo/projection/**"
+      - "tests/seo_projection/**"
+      - ".github/workflows/replay-projection-regression.yml"
+  push:
+    branches: [main]
+    paths:
+      - "scripts/seo-projection/**"
+      - "backend/src/modules/seo/projection/**"
+
+jobs:
+  replay-tests:
+    name: Replay deterministic property-based tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install \
+            'click>=8.1,<9' \
+            'pyyaml>=6.0,<7' \
+            'hypothesis>=6.92,<7' \
+            'pytest>=7.4,<9'
+
+      - name: Run pytest seo_projection (full suite)
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          cd ${{ github.workspace }}
+          python -m pytest tests/seo_projection/ -v --tb=short
+
+      - name: CLI sanity — script imports cleanly
+        run: |
+          python -c "
+          import sys, importlib.util
+          spec = importlib.util.spec_from_file_location(
+              'replay_projection',
+              '${{ github.workspace }}/scripts/seo-projection/replay_projection.py',
+          )
+          m = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(m)
+          # Verify expected public surface
+          assert hasattr(m, 'verify_snapshot_integrity')
+          assert hasattr(m, 'verify_versions_complete')
+          assert hasattr(m, 'validate_run_for_replay')
+          assert hasattr(m, 'write_replay_manifest')
+          assert hasattr(m, 'assert_no_git_checkout_source')
+          assert m.REQUIRED_VERSIONS == (
+              'projection_contract_version', 'builder_version',
+              'pipeline_version', 'extractor_version', 'runner_version',
+          )
+          print('replay_projection module surface OK')
+          "
+
+      - name: CLI smoke — --help works
+        run: |
+          python ${{ github.workspace }}/scripts/seo-projection/replay_projection.py --help

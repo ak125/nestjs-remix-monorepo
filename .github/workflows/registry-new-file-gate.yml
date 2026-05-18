@@ -1,0 +1,82 @@
+name: Registry block-new gate (ADR-058 PR-G, Phase 2 BLOCKING)
+
+# Phase 2 block-new gate per ADR-058 §Acceptance V1 :
+#   - SEVERITY: ERROR (blocking, no continue-on-error)
+#   - For each newly-added file in the PR (diff-filter=A vs base), verify
+#     ownership.yaml glob matches AND domain resolved (D1..D15 via ownership
+#     entry's domain field OR domains.yaml fallback).
+#   - Exception globs (always pass) : audit/registry/**, **.test.ts,
+#     **.spec.ts, __tests__/**, .changeset/**
+#
+# Acceptance criterion : after PR-G mergée + 7-14 days signal vert
+# (0 false-positive blocking a legitimate PR), ADR-058 promotes to `accepted`
+# in PR-H.
+#
+# Trigger : only on PRs (no push to main — bypass via direct push is anyway
+# blocked by branch protection).
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  registry-block-new:
+    name: Block-new (owner + domain required)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # NO continue-on-error : this gate BLOCKS merge per ADR-058 PR-G.
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # needed for `git diff origin/main..HEAD`
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install
+        run: npm ci
+
+      - name: Validate overlay first (precondition)
+        # If overlay is malformed, abort early with a clear message.
+        run: npm run registry:validate
+
+      - name: Check new files (the actual gate)
+        id: gate
+        # Invoke node directly (NOT `npm run`) — npm prefixes stdout with the
+        # script header "> nestjs-remix-monorepo@1.0.0 registry:check-new-files"
+        # which pollutes JSON output and breaks downstream jq parse.
+        run: |
+          set -e
+          node scripts/registry/check-new-files.js --base origin/main --json > /tmp/gate-report.json
+          cat /tmp/gate-report.json | jq -c '{ok, missing_owner, missing_domain, missing_both, totalNew}'
+
+      - name: Surface failures (if any)
+        if: failure()
+        run: |
+          {
+            echo "## ❌ Registry block-new gate FAILED";
+            echo "";
+            echo "The following newly-added files lack owner / domain resolution :";
+            echo "";
+            cat /tmp/gate-report.json 2>/dev/null \
+              | jq -r '.results[] | select(.verdict != "ok") | "- `\(.path)` — **\(.verdict)**"' \
+              || echo "(could not parse gate-report.json)";
+            echo "";
+            echo "**Fix** : add a glob in \`.spec/00-canon/repository-registry/ownership.yaml\`";
+            echo "covering these paths. The glob MUST carry both \`domain\` (D1..D15) and \`owner\`.";
+            echo "";
+            echo "See ADR-058 §PR-G + CLAUDE.md \"Registry Lookup First\".";
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Summary on success
+        if: success()
+        run: |
+          {
+            echo "## ✅ Registry block-new gate PASSED";
+            echo "";
+            jq -r '"- Total new files: \(.totalNew)\n- All resolved owner+domain: \(.ok)"' /tmp/gate-report.json 2>/dev/null;
+          } >> "$GITHUB_STEP_SUMMARY"

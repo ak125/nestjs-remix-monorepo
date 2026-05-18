@@ -6,44 +6,39 @@ on:
     # Pattern "required-but-skippable" (PR #364 unblock) :
     # - Le workflow run TOUJOURS sur PR pour pouvoir produire le check
     #   "CWV Performance Check" exigé par branch protection main.
-    # - Le job lighthouse a un step early qui détecte les paths via
-    #   dorny/paths-filter. Si aucun path frontend/SSR-relevant n'est touché,
-    #   les steps lourds (build + lhci) sont skippés et le job émet success.
+    # - Le job a un step early qui détecte les paths frontend-relevant via
+    #   dorny/paths-filter. Si aucun path frontend n'est touché, les steps
+    #   lourds (build + bundle-stats) sont skippés et le job émet success.
     # - Conserve la propriété anti-Dependabot regression (#279-#283 du
-    #   2026-05-04) : aucune execution lighthouse pour les bumps dev-deps.
+    #   2026-05-04) : aucun build pour les bumps dev-deps backend.
     # - Évite le blocage des PRs scripts-only (ex: #364 PR-D docstring)
     #   qui n'auraient pas trigger le workflow auparavant et restaient
     #   bloquées sur "14 of 14 expected" en branch protection.
 
-# Thresholds : voir frontend/lighthouse-budget.json (calibré sur baseline
-# mesuré, anti-régression). Documentation + procédure de mise à jour dans
-# frontend/lighthouse-budget.README.md.
+# Thresholds : voir frontend/bundle-stats.config.json (budgets structurels
+# déterministes — taille/count des assets du build client, mesurés directement
+# sur disque sans booter Chrome). Documentation + philosophie + procédure
+# de mise à jour dans frontend/bundle-stats.README.md.
+#
+# Pourquoi pas Lighthouse-CI ici (historique 2026-05-14) :
+# Variance synthétique 14.5× observée sur runner partagé (TBT 160 ms median vs
+# 1823 ms spike sur code identique), flake rate 13 % empirique sur 100 runs.
+# Lighthouse en CI synthétique mesure mal et coûte ~9 min/PR (build + server
+# boot + mocks Supabase + 3 runs Chrome). Bundle stats = même protection
+# régression structurelle, déterministe, ~2 min/PR. CWV utilisateurs réels =
+# chantier ADR séparé via CrUX API (data field, ce que Google Search utilise).
 
-# `pull-requests: write` requis par le step "Comment PR with Results" pour
-# poster le récap performance. Sans cette permission le workflow échoue
-# avec "Resource not accessible by integration" même quand l'audit lui-même
-# passe (cf. PR #224 run 25176006026). Les autres permissions restent à
-# `read` par défaut (least-privilege).
 permissions:
   contents: read
   pull-requests: write
 
 jobs:
-  lighthouse:
+  bundle-stats:
+    # Nom du check identique à l'ancien job lighthouse — préserve la branch
+    # protection rule "CWV Performance Check" sans nécessiter de change UI.
     name: 🔍 CWV Performance Check
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    services:
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+    timeout-minutes: 8
 
     steps:
       - uses: actions/checkout@v4
@@ -51,169 +46,72 @@ jobs:
       # Path filter au niveau job (vs workflow-level) pour permettre au job
       # de produire un check status "success" même quand les paths ne match
       # pas. Pattern "required-but-skippable" (cf. on.pull_request comment).
-      - name: Detect SSR-relevant changes
+      - name: Detect frontend-relevant changes
         id: filter
         uses: dorny/paths-filter@v3
         with:
           filters: |
-            ssr:
-              - 'frontend/app/**'
-              - 'frontend/public/**'
-              - 'frontend/vite.config.ts'
-              - 'frontend/tsconfig.json'
-              - 'backend/src/**'
-              - 'packages/*/src/**'
+            frontend:
+              - 'frontend/**'
+              - 'packages/**'
               - '.github/workflows/perf-gates.yml'
-              - 'frontend/lighthouse-budget.json'
+              - 'frontend/.size-limit.json'
 
-      - name: Skip notice (no SSR-relevant changes)
-        if: steps.filter.outputs.ssr != 'true'
+      - name: Skip notice (no frontend-relevant changes)
+        if: steps.filter.outputs.frontend != 'true'
         run: |
-          echo "::notice::No SSR-relevant paths changed — skipping lighthouse audit (success)."
+          echo "::notice::No frontend-relevant paths changed — skipping bundle stats (success)."
           echo "Touched paths : $(git diff --name-only origin/${{ github.base_ref }}...HEAD | head -20)"
 
       - name: Setup Node.js
-        if: steps.filter.outputs.ssr == 'true'
+        if: steps.filter.outputs.frontend == 'true'
         uses: actions/setup-node@v6
         with:
           node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
-        if: steps.filter.outputs.ssr == 'true'
+        if: steps.filter.outputs.frontend == 'true'
         run: npm ci
 
-      - name: Build
-        if: steps.filter.outputs.ssr == 'true'
+      - name: Build (turbo — frontend + workspace deps in order)
+        if: steps.filter.outputs.frontend == 'true'
+        # `npm run build` = `turbo build` au root. Respecte le DAG des
+        # workspace deps (@repo/database-types, @monorepo/shared-types, etc.)
+        # qui doivent être built avant frontend pour que Remix puisse les
+        # résoudre. `npm run -w frontend build` seul casse cette ordre
+        # (cf. PR #506 first run failure : "Failed to resolve entry for
+        # package @repo/database-types").
         run: npm run build
         env:
+          # Build TypeScript/Vite — pas d'exécution NestJS, donc pas de mocks
+          # Supabase service_role, ni RAG, ni payments. Seuls les VITE_* publics
+          # peuvent être baked dans le bundle client si la config Vite les pull.
+          # Fallback aux mocks quand les secrets ne sont pas exposés (PRs
+          # Dependabot et forks — politique GitHub 2021 anti-exfiltration).
           NODE_ENV: production
-          # Fallback aux mocks quand les secrets ne sont pas exposés (PRs Dependabot
-          # et forks — politique GitHub 2021 anti-exfiltration). Le build TypeScript
-          # n'exécute pas Nest donc les valeurs n'ont pas besoin d'être réelles.
           SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'https://mock.supabase.co' }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_KEY || 'ci-mock-anon-key' }}
 
-      - name: Start server
-        if: steps.filter.outputs.ssr == 'true'
+      - name: Bundle size gate (size-limit, gzip)
+        if: steps.filter.outputs.frontend == 'true'
+        # size-limit (Andrey Sitnik) — standard industriel (React, Redux,
+        # MobX, Prettier, Lodash). Source de vérité unique :
+        # frontend/.size-limit.json. Gzip natif. Exit non-zero sur dépassement
+        # → vrai gate, pas warn-only comme l'ancien inline bash de ci.yml.
+        # Voir frontend/size-limit.README.md pour philosophie + calibration.
         run: |
-          npm run start &
-          echo "⏳ Waiting for server to start..."
-          # 300s needed because backend does cache warming (176 gammes + hierarchy + homepage)
-          # at onApplicationBootstrap. In local dev this takes ~5s; in CI runners with
-          # remote Supabase, cold RPCs, and slow network it can take 60-180s — and
-          # occasionally up to ~280s under load (observed exit 124 at 180s on PR #190
-          # while server logs showed "Démarrage du serveur" + "Redis connecté" with
-          # no further output, indicating the cache-warm onApplicationBootstrap was
-          # still in progress). Job-level timeout-minutes:15 still caps total runtime
-          # if cold-path is genuinely broken.
-          timeout 300 bash -c 'until curl -s http://localhost:3000/health > /dev/null 2>&1; do sleep 2; done'
-          echo "✅ Server is ready"
-        env:
-          NODE_ENV: production
-          PORT: 3000
-          # APP_URL: required by PaymentsModule boot (payment.config.ts:48-62).
-          # Without it, backend crashes silently with ConfigurationException
-          # after DiagnosticEngineModule init, and the 60s /health wait times
-          # out (exit 124). Reproducing this fault locally with these exact
-          # mocks + NODE_ENV=production but no APP_URL matches the CI crash
-          # exactly. Incident: INC-2026-009.
-          APP_URL: http://localhost:3000
-          # RAG_SERVICE_URL / RAG_API_KEY : requis par RagKnowledgeService,
-          # RagChatService, RagPipelineService, RagIngestionService via getOrThrow.
-          # Sans ces vars, Nest crash au boot avec:
-          #   TypeError: Configuration key "RAG_SERVICE_URL" does not exist
-          # Valeurs mock CI : le service RAG n'est pas requis pour Lighthouse/CWV.
-          RAG_SERVICE_URL: http://disabled:8000
-          RAG_API_KEY: ci-mock-rag-api-key-not-for-production-use
-          REDIS_URL: redis://localhost:6379
-          # ADR-028 Option D : READ_ONLY=true permet le boot en mode read-only.
-          # EnvValidation + SupabaseBaseService respectent ce contrat depuis les PRs
-          # #246/#274/#276/#277 (mergées 2026-05-03), MAIS de nombreux services
-          # backend créent leur propre client via `createClient(url, key)` sans
-          # passer par SupabaseBaseService — ils plantent au boot si SERVICE_ROLE_KEY
-          # est vide ("supabaseKey is required" depuis @supabase/supabase-js).
-          # Refactorer ces ~30 services pour respecter ADR-028 est hors scope de ce
-          # fix CI (PR de suivi à prévoir).
-          # Solution courante : mocks aux trois variables (pattern déjà adopté par
-          # le job `🧪 Backend Tests` de ci.yml lignes 230-231). Ces mocks sont des
-          # string literals CI-only et n'exposent aucun secret prod. READ_ONLY=true
-          # garantit qu'aucune écriture ne sortira du process Nest même si le client
-          # se croit "service_role" — `__write_log_redirect` + RLS hardening (ADR-021)
-          # protègent côté DB. Lighthouse ne fait que des HTTP GET sur les pages SSR
-          # cachées, les RPCs DB live sont court-circuitées par le warmer cache
-          # homepage / hierarchy.
-          # Bénéfice transverse : sur les PRs Dependabot et forks, GitHub n'expose
-          # pas les Actions secrets (politique 2021 anti-exfiltration). Sans
-          # fallback mocks, le job échouait systématiquement (cf #279, #280, #281,
-          # #282, #283 — tous bloqués par cette même cause).
-          READ_ONLY: "true"
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'https://mock.supabase.co' }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_KEY || 'ci-mock-anon-key' }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || 'ci-mock-service-role-key-not-for-production-use' }}
-          SESSION_SECRET: ci-perf-test-session-secret-not-for-production-use
-          SYSTEMPAY_SITE_ID: "00000000"
-          SYSTEMPAY_CERTIFICATE_PROD: "ci-mock-systempay-certificate-prod-not-for-production-use"
-          SYSTEMPAY_CERTIFICATE_TEST: "ci-mock-systempay-certificate-test-not-for-production-use"
-          PAYBOX_SITE: "0000000"
-          PAYBOX_HMAC_KEY: "0000000000000000000000000000000000000000000000000000000000000000"
+          npm run size 2>&1 | tee size-limit-output.txt
 
-      - name: Run Lighthouse CI
-        if: steps.filter.outputs.ssr == 'true'
-        id: lighthouse
-        uses: treosh/lighthouse-ci-action@v12
-        with:
-          urls: |
-            http://localhost:3000/
-            http://localhost:3000/pieces/plaquette-de-frein-402/renault-140/megane-iii-140049/1-5-dci-100413.html
-            http://localhost:3000/constructeurs/renault-140.html
-          budgetPath: ./frontend/lighthouse-budget.json
-          # uploadArtifacts: false — l'action treosh/lighthouse-ci-action@v12 utilise
-          # actions/upload-artifact@v3 en interne, déprécié par GitHub depuis 2024.
-          # `temporaryPublicStorage: true` suffit pour récupérer le rapport via le
-          # lien retourné par l'action (cf. lighthouseLinks dans Comment PR step).
-          uploadArtifacts: false
-          temporaryPublicStorage: true
-
-      - name: Check CWV Thresholds
-        if: always() && steps.filter.outputs.ssr == 'true'
+      - name: Generate step summary
+        if: steps.filter.outputs.frontend == 'true' && always()
         run: |
-          echo "🎯 Performance Gate Results"
-          echo "=========================="
-          echo ""
-          echo "📊 Thresholds Applied:"
-          echo "  • LCP  ≤ 2500ms"
-          echo "  • CLS  ≤ 0.1"
-          echo "  • TTFB ≤ 800ms"
-          echo "  • TBT  ≤ 300ms"
-          echo "  • FCP  ≤ 2000ms"
-          echo ""
-          echo "If this job fails, check Lighthouse artifacts for details."
-          echo "Budget violations will cause automatic failure."
-
-      - name: Comment PR with Results
-        if: github.event_name == 'pull_request' && steps.filter.outputs.ssr == 'true'
-        uses: actions/github-script@v9
-        with:
-          script: |
-            const lighthouseLinks = '${{ steps.lighthouse.outputs.links }}';
-
-            const body = `## 🎯 Performance Gate Results
-
-            | Metric | Threshold | Status |
-            |--------|-----------|--------|
-            | LCP | ≤ 2500ms | ${{ job.status == 'success' && '✅' || '❌' }} |
-            | CLS | ≤ 0.1 | ${{ job.status == 'success' && '✅' || '❌' }} |
-            | TTFB | ≤ 800ms | ${{ job.status == 'success' && '✅' || '❌' }} |
-
-            📈 [View Full Lighthouse Report](${lighthouseLinks || 'Check artifacts'})
-
-            ---
-            *Powered by DCO V2 Anti-Regression Gates*`;
-
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: body
-            });
+          echo "## 📦 Bundle size — size-limit (gzip)" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Déterministe, mesuré directement sur \`frontend/build/client/assets/\` — pas de Lighthouse, pas de Chrome, pas de mocks." >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          cat size-limit-output.txt | grep -E "^[[:space:]]*(Size|Size limit|Time|Loading)|^[[:space:]]+[A-Z]" >> "$GITHUB_STEP_SUMMARY" || cat size-limit-output.txt >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "_CWV utilisateurs réels : monitoring CrUX (chantier ADR séparé, hors scope ce gate)._" >> "$GITHUB_STEP_SUMMARY"

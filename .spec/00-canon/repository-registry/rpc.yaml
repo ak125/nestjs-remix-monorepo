@@ -1,0 +1,264 @@
+# yaml-language-server: $schema=../_schema/rpc.schema.json
+# .spec/00-canon/repository-registry/rpc.yaml
+#
+# AutoMecanik monorepo — canonical RPC contract (PR-R, ADR-058 follow-on).
+#
+# The `# yaml-language-server:` directive above links this YAML to its generated
+# JSON Schema mirror for IDE validation. The schema file is gitignored — run
+# `npm run rpc-contract:build` after a fresh clone to populate it.
+#
+# ──────────────────────────────────────────────────────────────────────────────────
+#  DOCTRINE — read before adding anything to this file
+# ──────────────────────────────────────────────────────────────────────────────────
+#  This file holds RPC FUNCTION CLASSIFICATION INVARIANTS ONLY. It is NOT a
+#  dumping ground.
+#
+#  Do NOT add to this file:
+#    × SQL signature args / returnType    → it lives in L1 (audit/registry/rpc.json),
+#                                            full signatures + parseMode are extraction
+#                                            metadata, not invariants
+#    × SECURITY DEFINER deep security analysis → use dedicated audit (separate PR),
+#                                                  rpc.yaml only declares the BOOLEAN
+#                                                  expectation (securityDefinerExpected)
+#    × RPC→RPC call graph                  → V2 cross-contract (dependency graph)
+#    × usedBy callsite cross-check         → V2 cross-contract with runtime-topology.yaml
+#    × RLS interaction                     → see `db.yaml` (access surfaces on tables)
+#    × HTTP route auth gates               → use `capabilities.yaml` (canon roadmap)
+#    × license / version policy            → see `dep-governance.yaml` / future contracts
+#    × runtime entrypoint metadata         → see `runtime-topology.yaml`
+#
+#  If you're tempted to add a section that isn't an RPC CLASSIFICATION INVARIANT,
+#  open a NEW contract file instead.
+#
+#  FUTURE-SPLIT WARNING:
+#  If a section starts describing INSTANCE-LEVEL config (a specific RPC's exact
+#  SQL body, a CVE allowlist, a security-definer audit trail) instead of
+#  CLASSIFICATION (which domain owns this RPC, who can call it, status), STOP
+#  and create a dedicated contract file.
+# ──────────────────────────────────────────────────────────────────────────────────
+#
+# V1 COVERAGE: this contract protects ONE invariant —
+#   the **canonical classification of Supabase RPC functions** by domain,
+#   ownership, lifecycle status, and allowed caller surfaces.
+#
+# It does NOT cover SQL signatures (args/returnType), deep security analysis,
+# RPC→RPC dependency graphs, or callsite cross-checks — those are V2 / dedicated
+# contracts.
+#
+# L1 ALIGNMENT:
+#   `id` format = `<schema>.<name>` (matches Layer 1 audit/registry/rpc.json
+#   produced by scripts/registry/build-rpc-registry.js, 180 entries verified
+#   2026-05-14, all currently with domain=UNKNOWN + status=UNKNOWN — exactly
+#   the governance gap PR-R fills via L2).
+#
+# ID-NAME COHERENCE:
+#   `id` MUST encode `name`: stripping the `<schema>.` prefix from `id` MUST
+#   equal the `name` field. Enforced by Zod superRefine.
+#
+# ACCESS SURFACES:
+#   `accessSurface[]` lists WHO is allowed to call this RPC (≥ 1, ≤ 8).
+#   Values: backend, rpc, frontend, anon, authenticated, service_role,
+#   edge_function, worker. NO overlap with a forbidden list V1 (out of scope).
+#
+# WORKFLOW
+#   Edit this YAML → run `npm run rpc-contract:build` → commit ONLY the YAML.
+#   The JSON schema mirror at `.spec/00-canon/_schema/rpc.schema.json` is
+#   gitignored, regenerated at each build.
+
+schemaVersion: "1.0.0"
+adr: ADR-058
+
+rpcs:
+  # V1 SAMPLE — 18 RPCs from L1 audit/registry/rpc.json (180 total),
+  # selected so ALL 7 cross-contract tests pass against current
+  # ownership.yaml + domains.yaml + AccessSurfaceSchema.
+  # Selection criteria :
+  #   - Status LIVE only (assumed by heuristic — V2 may need DEPRECATED audit)
+  #   - Name matches a heuristic domain rule (regex-based dispatch)
+  #   - accessSurface inferred from name pattern (governance/seo/cwv/rag → +service_role)
+  #   - securityDefinerExpected = L1 securityDefiner flag (extracted from migrations)
+  #   - Owner = @ak125 universal default (granular per-team owners V2)
+  # Diversification: 8 of 15 domains covered (D1, D3, D4, D6, D7, D10, D11, D15).
+  #
+  # V1 GAPS — domains with no V1 RPC (intentionally deferred):
+  #   - D2 (Legacy/XTR), D5 (Blog/Content), D8 (Read Model), D9 (Import/ETL),
+  #     D12 (Marketing), D13 (Config), D14 (Gamme cross-cutting)
+  #   These domains either have no public RPC, or RPCs not yet covered by
+  #   heuristic regex. V2 will extend coverage with explicit per-domain audit.
+  #
+  # V1 ACCESS SURFACES — used (not RESERVED):
+  #   - backend       : NestJS controllers/services (universal)
+  #   - service_role  : Supabase service_role key bypass RLS (governance + RAG)
+  # RESERVED V1 (test §4.5 RESERVED_V1):
+  #   - rpc, anon, edge_function, worker, frontend, authenticated
+
+  # ── D15 Security & Governance (3 RPCs — governance metrics) ──
+  - id: "public.__gov_m1_table_sizes"
+    name: "__gov_m1_table_sizes"
+    domain: D15
+    owner: "@ak125"
+    status: LIVE
+    accessSurface:
+      - backend
+      - service_role
+    securityDefinerExpected: true
+  - id: "public.__gov_m2_index_sizes"
+    name: "__gov_m2_index_sizes"
+    domain: D15
+    owner: "@ak125"
+    status: LIVE
+    accessSurface:
+      - backend
+      - service_role
+    securityDefinerExpected: true
+  - id: "public.__gov_m3_stale_stats"
+    name: "__gov_m3_stale_stats"
+    domain: D15
+    owner: "@ak125"
+    status: LIVE
+    accessSurface:
+      - backend
+      - service_role
+    securityDefinerExpected: true
+
+  # ── D3 SEO & Sitemap (3 RPCs) ──
+  - id: "public.__seo_brand_editorial_set_updated_at"
+    name: "__seo_brand_editorial_set_updated_at"
+    domain: D3
+    owner: "@ak125"
+    status: LIVE
+    accessSurface:
+      - backend
+      - service_role
+    securityDefinerExpected: false
+  - id: "public.__seo_observable_updated_at"
+    name: "__seo_observable_updated_at"
+    domain: D3
+    owner: "@ak125"
+    status: LIVE
+    accessSurface:
+      - backend
+      - service_role
+    securityDefinerExpected: false
+  - id: "public.backfill_seo_keywords_type_ids"
+    name: "backfill_seo_keywords_type_ids"
+    domain: D3
+    owner: "@ak125"
+    status: LIVE
+    accessSurface:
+      - backend
+      - service_role
+    securityDefinerExpected: false
+
+  # ── D4 Vehicle / Compatibility (3 RPCs) ──
+  - id: "public.build_vehicle_page_payload"
+    name: "build_vehicle_page_payload"
+    domain: D4
+    owner: "@ak125"
+    status: LIVE
+    accessSurface:
+      - backend
+    securityDefinerExpected: true
+  - id: "public.extract_vehicle_keywords"
+    name: "extract_vehicle_keywords"
+    domain: D4
+    owner: "@ak125"
+    status: LIVE
+    accessSurface:
+      - backend
+    securityDefinerExpected: false
+  - id: "public.get_alternative_gammes_for_vehicle"
+    name: "get_alternative_gammes_for_vehicle"
+    domain: D4
+    owner: "@ak125"
+    status: LIVE
+    accessSurface:
+      - backend
+    securityDefinerExpected: false
+
+  # ── D10 Quality, Monitoring & Observabilité (1 RPC) ──
+  - id: "public.get_cwv_summary_by_role"
+    name: "get_cwv_summary_by_role"
+    domain: D10
+    owner: "@ak125"
+    status: LIVE
+    accessSurface:
+      - backend
+      - service_role
+    securityDefinerExpected: false
+
+  # ── D1 Catalog Core (3 RPCs — pieces lookup) ──
+  - id: "public.get_piece_detail"
+    name: "get_piece_detail"
+    domain: D1
+    owner: "@ak125"
+    status: LIVE
+    accessSurface:
+      - backend
+    securityDefinerExpected: true
+  - id: "public.get_pieces_for_type_gamme_v3"
+    name: "get_pieces_for_type_gamme_v3"
+    domain: D1
+    owner: "@ak125"
+    status: LIVE
+    accessSurface:
+      - backend
+    securityDefinerExpected: true
+  - id: "public.get_pieces_for_type_gamme_v4"
+    name: "get_pieces_for_type_gamme_v4"
+    domain: D1
+    owner: "@ak125"
+    status: LIVE
+    accessSurface:
+      - backend
+    securityDefinerExpected: true
+
+  # ── D7 Knowledge Graph & Diagnostic (1 RPC) ──
+  - id: "public.kg_generate_explainable_diagnostic"
+    name: "kg_generate_explainable_diagnostic"
+    domain: D7
+    owner: "@ak125"
+    status: LIVE
+    accessSurface:
+      - backend
+    securityDefinerExpected: false
+
+  # ── D6 RAG & AI Engine (3 RPCs — RAG sync orchestration) ──
+  - id: "public.kg_rag_file_needs_sync"
+    name: "kg_rag_file_needs_sync"
+    domain: D6
+    owner: "@ak125"
+    status: LIVE
+    accessSurface:
+      - backend
+      - service_role
+    securityDefinerExpected: false
+  - id: "public.kg_rag_get_node_id"
+    name: "kg_rag_get_node_id"
+    domain: D6
+    owner: "@ak125"
+    status: LIVE
+    accessSurface:
+      - backend
+      - service_role
+    securityDefinerExpected: false
+  - id: "public.kg_rag_record_sync"
+    name: "kg_rag_record_sync"
+    domain: D6
+    owner: "@ak125"
+    status: LIVE
+    accessSurface:
+      - backend
+      - service_role
+    securityDefinerExpected: false
+
+  # ── D11 Commerce & Users (1 RPC — payment atomicity) ──
+  - id: "public.mark_order_paid_atomic"
+    name: "mark_order_paid_atomic"
+    domain: D11
+    owner: "@ak125"
+    status: LIVE
+    accessSurface:
+      - backend
+    securityDefinerExpected: true
+    notes: "Atomic payment confirmation — must be SECURITY DEFINER to bypass RLS for cross-table state mutation. Critical path."

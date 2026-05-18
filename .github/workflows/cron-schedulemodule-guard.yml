@@ -1,0 +1,38 @@
+name: 🕐 Cron / ScheduleModule guard
+
+# Prevent the regression that caused traffic-drop 2026-04-22 → 2026-05-13:
+# @nestjs/schedule was disabled in app.module.ts but @Cron decorators
+# remained in the codebase, silently inert (no error, no log).
+#
+# Cf. PR #487 (sitemap regeneration restoration via BullMQ).
+# Cf. audit-reports/seo-smoke/2026-05-13/PHASE-MINUS-1-REPORT.md.
+
+on:
+  pull_request:
+    paths:
+      - "backend/src/**/*.ts"
+      - "scripts/ci/check-cron-needs-schedulemodule.sh"
+      - ".github/workflows/cron-schedulemodule-guard.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "backend/src/**/*.ts"
+      - "scripts/ci/check-cron-needs-schedulemodule.sh"
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    name: Detect inert scheduling decorators
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Make guard script executable
+        run: chmod +x scripts/ci/check-cron-needs-schedulemodule.sh
+
+      - name: Run guard
+        run: ./scripts/ci/check-cron-needs-schedulemodule.sh

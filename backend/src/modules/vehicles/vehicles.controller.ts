@@ -11,6 +11,10 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { DomainNotFoundException } from '@common/exceptions';
+import {
+  PositiveIntParamPipe,
+  PositiveSmallIntParamPipe,
+} from '../../common/pipes/params';
 import { Request, Response } from 'express';
 import { VehiclesService } from './vehicles.service';
 import { VehiclePaginationDto } from './dto/vehicles.dto';
@@ -72,56 +76,52 @@ export class VehiclesController {
   }
 
   @Get('brands/:brandId')
-  async getBrandById(@Param('brandId') brandId: string) {
-    return this.vehicleBrandsService.getBrandById(parseInt(brandId, 10));
+  async getBrandById(
+    @Param('brandId', PositiveSmallIntParamPipe) brandId: number,
+  ) {
+    return this.vehicleBrandsService.getBrandById(brandId);
   }
 
   @Get('brands/:brandId/models')
   async getModelsByBrand(
-    @Param('brandId') brandId: string,
+    @Param('brandId', PositiveSmallIntParamPipe) brandId: number,
     @Query() query: Record<string, string>,
     @Res({ passthrough: true }) res: Response,
   ) {
     const params = this.parseQueryParams(query);
-    params.brandId = brandId;
+    params.brandId = String(brandId);
 
     // 🔍 Header pour traçabilité du cache (debugging)
     res.setHeader('X-Cache-Source', 'vehicleModelsService.getModelsByBrand');
     res.setHeader('X-Filter-Year', query.year || 'none');
 
-    return this.vehicleModelsService.getModelsByBrand(
-      parseInt(brandId, 10),
-      params,
-    );
+    return this.vehicleModelsService.getModelsByBrand(brandId, params);
   }
 
   @Get('brands/:brandId/years')
   async getYearsByBrand(
-    @Param('brandId') brandId: string,
+    @Param('brandId', PositiveSmallIntParamPipe) brandId: number,
     @Query() query: Record<string, string>,
   ) {
     const params = this.parseQueryParams(query);
-    params.brandId = brandId;
-    return this.vehicleBrandsService.getYearsByBrand(
-      parseInt(brandId, 10),
-      params,
-    );
+    params.brandId = String(brandId);
+    return this.vehicleBrandsService.getYearsByBrand(brandId, params);
   }
 
   @Get('models/:modelId/types')
   async getTypesByModel(
-    @Param('modelId') modelId: string,
+    @Param('modelId', PositiveSmallIntParamPipe) modelId: number,
     @Query() query: Record<string, string>,
   ) {
     const params = this.parseQueryParams(query);
-    params.modelId = modelId;
+    params.modelId = String(modelId);
 
     // 🔧 Support du filtrage par année
     if (query.year) {
       params.year = parseInt(query.year);
     }
 
-    return this.vehicleTypesService.getTypesByModel(parseInt(modelId, 10), {
+    return this.vehicleTypesService.getTypesByModel(modelId, {
       ...params,
       includeEngine: true,
     });
@@ -155,13 +155,13 @@ export class VehiclesController {
   }
 
   @Get('types/:typeId')
-  async getVehicleType(@Param('typeId') typeId: string) {
-    return this.vehicleTypesService.getTypeById(parseInt(typeId, 10), true);
+  async getVehicleType(@Param('typeId', PositiveIntParamPipe) typeId: number) {
+    return this.vehicleTypesService.getTypeById(typeId, true);
   }
 
   @Get('mines/model/:id')
-  async getMinesByModel(@Param('id') modelId: string) {
-    return this.vehicleMineService.getMinesByModel(parseInt(modelId, 10));
+  async getMinesByModel(@Param('id', PositiveIntParamPipe) modelId: number) {
+    return this.vehicleMineService.getMinesByModel(modelId);
   }
 
   @Get('test-mines')
@@ -189,8 +189,10 @@ export class VehiclesController {
   }
 
   @Get('meta-tags/:typeId')
-  async getMetaTagsByTypeId(@Param('typeId') typeId: string) {
-    return this.vehicleMetaService.getMetaTagsByTypeId(parseInt(typeId, 10));
+  async getMetaTagsByTypeId(
+    @Param('typeId', PositiveIntParamPipe) typeId: number,
+  ) {
+    return this.vehicleMetaService.getMetaTagsByTypeId(typeId);
   }
 
   /**

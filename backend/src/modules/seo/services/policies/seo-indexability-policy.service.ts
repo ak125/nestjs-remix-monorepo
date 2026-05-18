@@ -2,14 +2,20 @@ import { Injectable } from '@nestjs/common';
 import {
   type SurfaceKey,
   type R2IndexabilityConditions,
+  type IndexabilityInput as ComposerInput,
+  type IndexabilityVerdict as ComposerVerdict,
+  type RobotsValue,
+  ReasonCode,
+  computeIndexabilityVerdict,
+  legacyStringFromKind,
 } from '@repo/seo-role-contracts';
 import { SeoSurfaceRegistry } from '../../registries/seo-surface.registry';
 import { R2IndexabilityGate } from './r2-indexability-gate.service';
 
-export type RobotsValue =
-  | 'index,follow'
-  | 'noindex,follow'
-  | 'noindex,nofollow';
+// Backward compat (cf. plan UIDP v5/C4) — exposé legacy. Retrait V1.5.
+// Les nouveaux callers doivent consommer directement `computeIndexabilityVerdict`
+// du package `@repo/seo-role-contracts`.
+export type { RobotsValue };
 
 export interface IndexabilityInput {
   surfaceKey: SurfaceKey;
@@ -29,15 +35,28 @@ export interface IndexabilityVerdict {
 }
 
 /**
- * Calcule la directive `robots` selon les seuils legacy + le gate R2.
+ * Thin wrapper Injectable sur `computeIndexabilityVerdict()` du package
+ * `@repo/seo-role-contracts` (PR-UIDP-1).
  *
- * Cascade décisionnelle (cf. plan v9 section 3.6) :
- *   1. URL ≠ canonical (si strict) ⇒ noindex,nofollow
- *   2. Surface R2 et gate fail ⇒ noindex,nofollow
- *   3. availableFamilies < min_families ⇒ noindex,follow
- *   4. availableGammes < min_gammes ⇒ noindex,follow
- *   5. Fingerprint match (PR-9) ⇒ noindex,follow
- *   6. Sinon ⇒ index,follow
+ * Préserve la signature legacy `{ robots, blockingReasons }` pour les
+ * callers existants. **Déprécié** — les nouveaux callers (loaders Remix
+ * R2/R8 PR-UIDP-2) doivent consommer directement le composer pure du
+ * package et `emitRobotsForVerdict()` pour l'émission texte. Retrait V1.5.
+ *
+ * Cascade décisionnelle déléguée au package (cf. compose-indexability.ts) :
+ *   1. URL ≠ canonical (si strict) ⇒ noindex,nofollow + CANONICAL_MISMATCH
+ *   2. R2 conditions missing ⇒ noindex,nofollow + R2_CONDITIONS_MISSING
+ *   3. R2 gate fail ⇒ noindex,nofollow + R2_GATE_FAIL
+ *   4. availableFamilies < min_families ⇒ noindex,follow + FAMILIES_BELOW_THRESHOLD
+ *   5. availableGammes < min_gammes ⇒ noindex,follow + GAMMES_BELOW_THRESHOLD
+ *   6. Fingerprint match (PR-9) ⇒ noindex,follow + FINGERPRINT_DUPLICATE
+ *   7. TecDoc release gate ⇒ noindex,nofollow + TECDOC_RELEASE_GATE
+ *      (exposé uniquement aux loaders R8 via composer direct)
+ *   8. Sinon ⇒ index,follow
+ *
+ * Behaviour-preserving 100% vs. version pré-UIDP : les `blockingReasons`
+ * legacy strings sont reconstruites depuis le `reasonCode` canonique pour
+ * compat de log/test.
  */
 @Injectable()
 export class SeoIndexabilityPolicyService {
@@ -47,73 +66,67 @@ export class SeoIndexabilityPolicyService {
   ) {}
 
   computeIndexability(input: IndexabilityInput): IndexabilityVerdict {
-    const reasons: string[] = [];
-    const thresholds = this.surfaces.getThresholds(input.surfaceKey);
-
-    // 1. URL ≠ canonical strict
-    if (
-      thresholds.strict_canonical_match &&
-      input.requestedUrl !== input.canonicalUrl
-    ) {
-      reasons.push(
-        `url_mismatch_canonical(${input.requestedUrl} != ${input.canonicalUrl})`,
-      );
-      return { robots: 'noindex,nofollow', blockingReasons: reasons };
-    }
-
-    // 2. R2 gate
-    if (this.isR2Surface(input.surfaceKey)) {
-      if (!input.r2Conditions) {
-        reasons.push('r2_conditions_missing');
-        return { robots: 'noindex,nofollow', blockingReasons: reasons };
-      }
-      const verdict = this.r2Gate.evaluate(input.r2Conditions);
-      if (!verdict.indexable) {
-        return {
-          robots: 'noindex,nofollow',
-          blockingReasons: verdict.blockingReasons,
-        };
-      }
-    }
-
-    // 3. min_families
-    if (
-      thresholds.min_families !== null &&
-      input.availableFamilies !== undefined &&
-      input.availableFamilies < thresholds.min_families
-    ) {
-      reasons.push(
-        `families_below_threshold(${input.availableFamilies}<${thresholds.min_families})`,
-      );
-      return { robots: 'noindex,follow', blockingReasons: reasons };
-    }
-
-    // 4. min_gammes
-    if (
-      thresholds.min_gammes !== null &&
-      input.availableGammes !== undefined &&
-      input.availableGammes < thresholds.min_gammes
-    ) {
-      reasons.push(
-        `gammes_below_threshold(${input.availableGammes}<${thresholds.min_gammes})`,
-      );
-      return { robots: 'noindex,follow', blockingReasons: reasons };
-    }
-
-    // 5. Fingerprint match (PR-9)
-    if (input.fingerprintMatch === true) {
-      reasons.push('fingerprint_duplicate_match');
-      return { robots: 'noindex,follow', blockingReasons: reasons };
-    }
-
-    return { robots: 'index,follow', blockingReasons: [] };
+    const composerInput: ComposerInput = {
+      surfaceKey: input.surfaceKey,
+      requestedUrl: input.requestedUrl,
+      canonicalUrl: input.canonicalUrl,
+      availableFamilies: input.availableFamilies,
+      availableGammes: input.availableGammes,
+      r2Conditions: input.r2Conditions,
+      fingerprintMatch: input.fingerprintMatch,
+      // tecdocReleaseGateOpen non exposé via legacy input — les callers
+      // qui en ont besoin (loaders Remix R8) utilisent le composer directement.
+    };
+    const verdict: ComposerVerdict = computeIndexabilityVerdict(composerInput);
+    return {
+      robots: legacyStringFromKind(verdict.kind),
+      blockingReasons: this.legacyReasonsFromCode(verdict, input),
+    };
   }
 
-  private isR2Surface(key: SurfaceKey): boolean {
-    return (
-      key === 'R2_PRODUCT' ||
-      key === 'R2_PRODUCT_IN_VEHICLE' ||
-      key === 'R2_PRODUCT_LIST'
-    );
+  /**
+   * Reconstruit les strings `blockingReasons` legacy pour préserver
+   * l'API publique (tests + log). Retrait V1.5 — les consommateurs
+   * migrent vers `verdict.reasonCodes` enum canonique.
+   */
+  private legacyReasonsFromCode(
+    verdict: ComposerVerdict,
+    input: IndexabilityInput,
+  ): string[] {
+    if (verdict.reasonCodes.length === 0) return [];
+    const code = verdict.reasonCodes[0];
+    switch (code) {
+      case ReasonCode.CANONICAL_MISMATCH:
+        return [
+          `url_mismatch_canonical(${input.requestedUrl} != ${input.canonicalUrl})`,
+        ];
+      case ReasonCode.R2_CONDITIONS_MISSING:
+        return ['r2_conditions_missing'];
+      case ReasonCode.R2_GATE_FAIL: {
+        // Reconstruit la liste R2 sub-reasons depuis le gate (préserve
+        // l'ancien shape "blockingReasons" qui exposait les R2 details).
+        if (input.r2Conditions) {
+          const r2Verdict = this.r2Gate.evaluate(input.r2Conditions);
+          if (!r2Verdict.indexable) return r2Verdict.blockingReasons;
+        }
+        return ['r2_gate_fail'];
+      }
+      case ReasonCode.FAMILIES_BELOW_THRESHOLD: {
+        const thresholds = this.surfaces.getThresholds(input.surfaceKey);
+        return [
+          `families_below_threshold(${input.availableFamilies}<${thresholds.min_families})`,
+        ];
+      }
+      case ReasonCode.GAMMES_BELOW_THRESHOLD: {
+        const thresholds = this.surfaces.getThresholds(input.surfaceKey);
+        return [
+          `gammes_below_threshold(${input.availableGammes}<${thresholds.min_gammes})`,
+        ];
+      }
+      case ReasonCode.FINGERPRINT_DUPLICATE:
+        return ['fingerprint_duplicate_match'];
+      case ReasonCode.TECDOC_RELEASE_GATE:
+        return ['tecdoc_release_gate'];
+    }
   }
 }
