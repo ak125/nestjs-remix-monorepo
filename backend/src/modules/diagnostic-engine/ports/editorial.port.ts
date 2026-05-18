@@ -1,4 +1,4 @@
-import type { DomainId } from "@repo/registry";
+import type { DomainId } from '@repo/registry';
 
 /**
  * EditorialPort — DiagnosticDomain (D4/D7) → EditorialDomain (D6 RAG & AI Engine) handoff.
@@ -30,6 +30,6 @@ export interface EditorialPort {
   enrich(causes: readonly EditorialCause[]): Promise<readonly EditorialFact[]>;
 }
 
-export const EDITORIAL_PORT = Symbol.for("DiagnosticDomain.EditorialPort");
+export const EDITORIAL_PORT = Symbol.for('DiagnosticDomain.EditorialPort');
 
-export const TARGET_DOMAIN: DomainId = "D6";
+export const TARGET_DOMAIN: DomainId = 'D6';

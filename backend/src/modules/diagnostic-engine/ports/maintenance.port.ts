@@ -1,4 +1,4 @@
-import type { DomainId } from "@repo/registry";
+import type { DomainId } from '@repo/registry';
 
 /**
  * MaintenancePort — DiagnosticDomain (D4/D7) → MaintenanceDomain (D16) handoff.
@@ -34,7 +34,7 @@ export interface MaintenanceScheduleItem {
   readonly service_code: string;
   readonly km_due?: number;
   readonly months_due?: number;
-  readonly urgency: "preventive" | "due_soon" | "overdue";
+  readonly urgency: 'preventive' | 'due_soon' | 'overdue';
 }
 
 export interface MaintenancePort {
@@ -44,6 +44,6 @@ export interface MaintenancePort {
   ): Promise<readonly MaintenanceScheduleItem[]>;
 }
 
-export const MAINTENANCE_PORT = Symbol.for("DiagnosticDomain.MaintenancePort");
+export const MAINTENANCE_PORT = Symbol.for('DiagnosticDomain.MaintenancePort');
 
-export const TARGET_DOMAIN: DomainId = "D16";
+export const TARGET_DOMAIN: DomainId = 'D16';

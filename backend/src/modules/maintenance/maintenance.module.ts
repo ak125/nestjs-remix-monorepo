@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Module } from '@nestjs/common';
 
 /**
  * MaintenanceModule (D16) — Preventive Maintenance domain.

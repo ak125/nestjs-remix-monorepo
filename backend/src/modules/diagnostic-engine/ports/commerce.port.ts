@@ -1,4 +1,4 @@
-import type { DomainId } from "@repo/registry";
+import type { DomainId } from '@repo/registry';
 
 /**
  * CommercePort — DiagnosticDomain (D4/D7) → CommerceDomain (D11) handoff.
@@ -26,7 +26,7 @@ export interface CommerceCause {
 
 export interface SuggestedGamme {
   readonly pg_id: number;
-  readonly confidence: "low" | "medium" | "high" | "insufficient";
+  readonly confidence: 'low' | 'medium' | 'high' | 'insufficient';
   readonly estimated_cost_min?: number;
   readonly estimated_cost_max?: number;
 }
@@ -38,6 +38,6 @@ export interface CommercePort {
   ): Promise<readonly SuggestedGamme[]>;
 }
 
-export const COMMERCE_PORT = Symbol.for("DiagnosticDomain.CommercePort");
+export const COMMERCE_PORT = Symbol.for('DiagnosticDomain.CommercePort');
 
-export const TARGET_DOMAIN: DomainId = "D11";
+export const TARGET_DOMAIN: DomainId = 'D11';

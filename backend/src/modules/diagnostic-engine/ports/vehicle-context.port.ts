@@ -1,5 +1,5 @@
-import type { DomainId } from "@repo/registry";
-import type { Request, Response } from "express";
+import type { DomainId } from '@repo/registry';
+import type { Request, Response } from 'express';
 
 /**
  * VehicleContextPort — All domains → VehicleDomain (D4 Vehicle / Compatibility).
@@ -28,7 +28,7 @@ export interface VehicleContext {
   readonly engine_slug?: string;
   readonly year?: number;
   readonly mileage_km?: number;
-  readonly source: "diagnostic" | "manual" | "gsc";
+  readonly source: 'diagnostic' | 'manual' | 'gsc';
   readonly iat: number; // issued-at timestamp
 }
 
@@ -37,12 +37,14 @@ export interface VehicleContextPort {
   get(req: Request): VehicleContext | null;
 
   /** Persist context as signed cookie on response. PR-B implementation. */
-  persist(ctx: Omit<VehicleContext, "v" | "iat">, res: Response): void;
+  persist(ctx: Omit<VehicleContext, 'v' | 'iat'>, res: Response): void;
 
   /** Clear cookie (logout / reset). */
   clear(res: Response): void;
 }
 
-export const VEHICLE_CONTEXT_PORT = Symbol.for("DiagnosticDomain.VehicleContextPort");
+export const VEHICLE_CONTEXT_PORT = Symbol.for(
+  'DiagnosticDomain.VehicleContextPort',
+);
 
-export const TARGET_DOMAIN: DomainId = "D4";
+export const TARGET_DOMAIN: DomainId = 'D4';
