@@ -42,7 +42,6 @@ import { useState } from "react";
 
 import { DiagnosticWizard } from "~/components/diagnostic-wizard/DiagnosticWizard";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
-import { getVehicleContext } from "~/server/vehicle-context.server"; // PR-B.5 — VCP cookie read
 import { HeroDiagnostic } from "~/components/heroes";
 import Container from "~/components/layout/Container";
 import {
@@ -239,42 +238,12 @@ async function fetchWikiContent<T>(
   }
 }
 
-/**
- * PR-B.5 — Renders a human-readable label from a VehicleContext payload.
- * Returns null if no identifying field is available (the banner caller
- * then falls back to "Véhicule identifié").
- */
-function formatVehicleLabel(ctx: {
-  brand_slug?: string;
-  model_slug?: string;
-  engine_slug?: string;
-  year?: number;
-}): string | null {
-  const parts: string[] = [];
-  if (ctx.brand_slug) parts.push(titleCase(ctx.brand_slug));
-  if (ctx.model_slug) parts.push(titleCase(ctx.model_slug));
-  if (ctx.engine_slug) parts.push(ctx.engine_slug.toUpperCase());
-  if (ctx.year) parts.push(`(${ctx.year})`);
-  return parts.length > 0 ? parts.join(" ") : null;
-}
-
-function titleCase(slug: string): string {
-  return slug
-    .split("-")
-    .map((s) => (s.length > 0 ? s.charAt(0).toUpperCase() + s.slice(1) : s))
-    .join(" ");
-}
-
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request: _request }: LoaderFunctionArgs) {
   const API_URL = process.env.VITE_API_URL || "http://127.0.0.1:3000";
 
-  // PR-B.5 — read the `vehicle_ctx` JWS cookie SSR-side. Returns null when
-  // absent / invalid (silent fallback, page renders identically).
-  const vehicleContextPromise = getVehicleContext(request);
-
-  // Single Promise.all → 5 parallel fetches (featured SEO + 4 wiki endpoints)
-  // + cookie read. Graceful degradation: any failure returns empty data.
-  const [featuredJson, vocab, signsData, faqData, safetyData, vehicleContext] =
+  // Single Promise.all → 5 parallel fetches (featured SEO + 4 wiki endpoints).
+  // Graceful degradation: any failure returns empty data, page renders without crash.
+  const [featuredJson, vocab, signsData, faqData, safetyData] =
     await Promise.all([
       fetch(`${API_URL}/api/seo/diagnostic/featured`, {
         headers: { Accept: "application/json" },
@@ -294,7 +263,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
         API_URL,
         "safety-config",
       ),
-      vehicleContextPromise,
     ]);
 
   return json({
@@ -304,20 +272,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
     signs: signsData?.signs ?? [],
     faq: faqData?.faq ?? [],
     riskLevels: safetyData?.risk_levels ?? {},
-    vehicleContext, // PR-B.5 — null if no cookie / invalid
   });
 }
 
 export default function DiagnosticAutoIndex() {
-  const {
-    featured,
-    clusters,
-    perceptionIcons,
-    signs,
-    faq,
-    riskLevels,
-    vehicleContext,
-  } = useLoaderData<typeof loader>();
+  const { featured, clusters, perceptionIcons, signs, faq, riskLevels } =
+    useLoaderData<typeof loader>();
   const [searchQuery, setSearchQuery] = useState("");
   const [dtcCode, setDtcCode] = useState("");
 
@@ -373,26 +333,6 @@ export default function DiagnosticAutoIndex() {
       <section className="bg-white border-b py-8">
         <Container>
           <div className="max-w-2xl mx-auto">
-            {/* PR-B.5 — afficher le véhicule reconnu depuis le cookie VCP
-                signé (HS256, OPTION A). Le wizard reste neutre ; la
-                bannière sert de confirmation visible que le funnel R8→R5
-                ou R5→R5 a propagé le contexte. */}
-            {vehicleContext ? (
-              <div
-                className="mb-4 flex items-start gap-3 rounded-md border border-emerald-200 bg-emerald-50/60 px-4 py-3"
-                aria-label="Véhicule reconnu"
-              >
-                <Car className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
-                <div className="text-sm">
-                  <p className="font-medium text-emerald-900">
-                    Diagnostic pour votre véhicule
-                  </p>
-                  <p className="text-emerald-800/80">
-                    {formatVehicleLabel(vehicleContext) ?? "Véhicule identifié"}
-                  </p>
-                </div>
-              </div>
-            ) : null}
             <DiagnosticWizard />
           </div>
         </Container>
