@@ -14,7 +14,7 @@ import {
   DECISION_RULE_IDS,
   ROLE_IDS,
   SEO_CONTROL_DECISION_RULES_V1,
-} from '@repo/seo-types/control-dashboard';
+} from '@repo/seo-types';
 import { SeoControlDecisionsService } from '../../../src/modules/admin/services/seo-control-decisions.service';
 
 describe('SeoControlDecisionsService', () => {

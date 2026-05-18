@@ -23,7 +23,7 @@ import {
   type Decisions,
   type RoleId,
   SEO_CONTROL_DECISION_RULES_V1,
-} from '@repo/seo-types/control-dashboard';
+} from '@repo/seo-types';
 
 @Injectable()
 export class SeoControlDecisionsService {

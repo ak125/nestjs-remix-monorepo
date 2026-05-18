@@ -217,6 +217,18 @@ export class FeatureFlagsService {
     return this.bool('ABANDONED_CART_EMAIL_ENABLED', false);
   }
 
+  // ── SEO Business Control Dashboard flag (PR-SBD-1 Task 7) ──
+
+  /**
+   * Controls visibility of /admin/seo-control dashboard route + endpoint.
+   * Default: false (Phase A rollout — only admin Fafa overrides ON).
+   * Kill-switch silencieux : OFF → endpoint returns 404 (not 503) to hide
+   * the surface entirely from non-admins.
+   */
+  get seoControlDashboardEnabled(): boolean {
+    return this.bool('SEO_CONTROL_DASHBOARD_ENABLED', false);
+  }
+
   // ── Write Guard flags (P1.5) ──
 
   get writeGuardEnabled(): boolean {
@@ -288,6 +300,7 @@ export class FeatureFlagsService {
     'WRITE_GUARD_CANARY_ROLES',
     'WRITE_GUARD_CANARY_GROUPS',
     'RAG_VIRTUAL_MERGE_ENABLED',
+    'SEO_CONTROL_DASHBOARD_ENABLED',
   ]);
 
   listFlags(): Record<

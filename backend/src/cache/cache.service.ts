@@ -156,6 +156,33 @@ export class CacheService implements OnModuleInit {
     }
   }
 
+  /**
+   * SET key value EX ttl NX — atomic "set if not exists" with TTL.
+   * Used for dedupe windows (e.g. audit log dedupe 15min for dashboard_view).
+   *
+   * @returns true if the key was set (first occurrence in window),
+   *          false if the key already existed (deduped — skip side effects).
+   */
+  async setNx(key: string, value: string, ttlSeconds: number): Promise<boolean> {
+    try {
+      if (!this.redisClient || !this.redisReady) {
+        this.logger.warn(`Redis not ready for SET NX ${key}`);
+        return false;
+      }
+      const result = await this.redisClient.set(
+        key,
+        value,
+        'EX',
+        ttlSeconds,
+        'NX',
+      );
+      return result === 'OK';
+    } catch (error) {
+      this.logger.error(`Cache SET NX ${key} error: ${error}`);
+      return false;
+    }
+  }
+
   async exists(key: string): Promise<boolean> {
     try {
       if (!this.redisClient) return false;

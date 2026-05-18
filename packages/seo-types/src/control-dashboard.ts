@@ -38,14 +38,9 @@ import {
 export const RangeSchema = z.enum(['7d', '28d']);
 export type Range = z.infer<typeof RangeSchema>;
 
-export const SeveritySchema = z.enum([
-  'critical',
-  'high',
-  'medium',
-  'low',
-  'info',
-]);
-export type Severity = z.infer<typeof SeveritySchema>;
+// Re-use SeveritySchema from onpage barrel (avoid duplicate export collision)
+import { SeveritySchema } from './onpage.js';
+export { SeveritySchema };
 
 export const SurfaceKeySchema = z.enum(SURFACE_KEYS);
 export const RoleIdSchema = z.enum(ROLE_IDS);
