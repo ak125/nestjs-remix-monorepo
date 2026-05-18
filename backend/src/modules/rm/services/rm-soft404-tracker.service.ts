@@ -13,7 +13,14 @@ const BOT_PATTERNS =
 // déclenchait CodeQL js/polynomial-redos sur des strings type "EdgeEdgeEdge..." :
 // alternation + .+ greedy + alternation = backtracking polynomial. Réécrit en
 // String.prototype.includes, sémantique identique, complexité linéaire stricte.
-const BROWSER_NAMES = ['Chrome', 'Safari', 'Firefox', 'Edge', 'Opera', 'Mozilla/5.0'] as const;
+const BROWSER_NAMES = [
+  'Chrome',
+  'Safari',
+  'Firefox',
+  'Edge',
+  'Opera',
+  'Mozilla/5.0',
+] as const;
 const BROWSER_ENGINES = ['AppleWebKit', 'Gecko', 'Trident'] as const;
 
 function hasAny(haystack: string, needles: readonly string[]): boolean {
@@ -35,7 +42,8 @@ export class RmSoft404TrackerService {
   classifyUA(ua: string | null | undefined): UaClass {
     if (!ua) return 'unknown';
     if (BOT_PATTERNS.test(ua)) return 'bot';
-    if (hasAny(ua, BROWSER_NAMES) && hasAny(ua, BROWSER_ENGINES)) return 'browser';
+    if (hasAny(ua, BROWSER_NAMES) && hasAny(ua, BROWSER_ENGINES))
+      return 'browser';
     return 'unknown';
   }
 
