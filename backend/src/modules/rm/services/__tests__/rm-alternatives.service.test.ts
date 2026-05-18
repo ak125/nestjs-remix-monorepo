@@ -1,17 +1,27 @@
 // backend/src/modules/rm/services/__tests__/rm-alternatives.service.test.ts
-import { Test, TestingModule } from '@nestjs/testing';
+
+// SupabaseBaseService check les env vars dans son constructor. En test on
+// court-circuite avec un stub minimal (canon, cf. rm-builder-seo-shadow.test.ts).
+process.env.SUPABASE_URL = process.env.SUPABASE_URL || 'http://localhost:54321';
+process.env.SUPABASE_SERVICE_KEY =
+  process.env.SUPABASE_SERVICE_KEY || 'test-service-key';
+process.env.SUPABASE_SERVICE_ROLE_KEY =
+  process.env.SUPABASE_SERVICE_ROLE_KEY || 'test-service-role-key';
+
 import { RmAlternativesService } from '../rm-alternatives.service';
-// ↑ This import WILL fail in TDD red — the service does not exist yet. That's intentional.
+import type { CacheService } from '@cache/cache.service';
 
-import { SupabaseBaseService } from '@database/services/supabase-base.service';
-import { CacheService } from '@cache/cache.service';
-
+/**
+ * Pattern test : instanciation directe + Object.assign de `this.supabase`
+ * (canon repo : 203 services `extends SupabaseBaseService`, cf.
+ * rm-builder-seo-shadow.test.ts pour la référence).
+ */
 describe('RmAlternativesService', () => {
   let service: RmAlternativesService;
   let cacheMock: jest.Mocked<Partial<CacheService>>;
   let supabaseMock: any;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     cacheMock = {
       get: jest.fn(),
       set: jest.fn(),
@@ -30,14 +40,9 @@ describe('RmAlternativesService', () => {
       __builder: builder,
     };
 
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        RmAlternativesService,
-        { provide: SupabaseBaseService, useValue: { client: supabaseMock } },
-        { provide: CacheService, useValue: cacheMock },
-      ],
-    }).compile();
-    service = module.get<RmAlternativesService>(RmAlternativesService);
+    service = new RmAlternativesService(cacheMock as unknown as CacheService);
+    // Override le client supabase hérité (protected readonly) en runtime
+    (service as any).supabase = supabaseMock;
   });
 
   describe('compute()', () => {
