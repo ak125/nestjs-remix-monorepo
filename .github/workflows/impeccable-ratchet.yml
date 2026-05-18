@@ -1,0 +1,73 @@
+name: "🎨 Impeccable design ratchet (block-new, BLOCKING)"
+
+# Decremental ratchet for impeccable design anti-pattern counts.
+# Fails the PR if total or any category exceeds audit/impeccable/baseline.json.
+# Pattern: ADR-058 Registry Gate block-new (cf. PR-7a / PR-G).
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "frontend/**"
+      - "packages/design-tokens/**"
+      - "audit/impeccable/baseline.json"
+      - ".github/workflows/impeccable-ratchet.yml"
+      - "scripts/audit/impeccable-ratchet-check.mjs"
+      - "scripts/audit/impeccable-baseline-write.mjs"
+  push:
+    branches: [main]
+
+concurrency:
+  group: impeccable-ratchet-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  ratchet:
+    name: "Impeccable count ≤ committed baseline"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PUPPETEER_SKIP_DOWNLOAD: "true"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install deps (root `.npmrc` skips puppeteer download)
+        run: npm ci
+
+      - name: Run impeccable detection (--fast, JSON)
+        run: |
+          # impeccable exits 2 when issues found — capture stdout to a file
+          # and rely on the ratchet check below for pass/fail.
+          npm --workspace=@fafa/frontend run design:detect:json --silent \
+            > /tmp/impeccable-current.json 2> /tmp/impeccable-stderr.log || true
+          test -s /tmp/impeccable-current.json || {
+            echo "✘ empty impeccable output:"
+            cat /tmp/impeccable-stderr.log
+            exit 1
+          }
+          echo "captured $(jq 'length' /tmp/impeccable-current.json) issues"
+
+      - name: Compare against baseline (block-new ratchet)
+        run: |
+          node scripts/audit/impeccable-ratchet-check.mjs \
+            --json-file /tmp/impeccable-current.json
+
+      - name: Upload current report (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: impeccable-current-report
+          path: /tmp/impeccable-current.json
+          if-no-files-found: ignore
+          retention-days: 14
