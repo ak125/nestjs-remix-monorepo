@@ -2,7 +2,7 @@
 module: marketing
 sources:
 - backend/src/modules/marketing
-last_scan: '2026-05-17'
+last_scan: '2026-05-18'
 primary_files:
 - backend/src/modules/marketing/controllers/marketing-backlinks.controller.ts
 - backend/src/modules/marketing/controllers/marketing-briefs.controller.ts

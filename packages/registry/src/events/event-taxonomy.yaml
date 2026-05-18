@@ -1,0 +1,137 @@
+# packages/registry/src/events/event-taxonomy.yaml
+#
+# Canonical Event Taxonomy — Diagnostic Control Plane V1.
+#
+# Single source of truth for every analytics / observability event emitted
+# across the funnel R5→R1 and beyond. Frontend `track*` calls and backend
+# OTel spans MUST reference an event from this file (lint enforced via
+# ast-grep rule `frontend-analytics-canonical-event.yml`, L2 in
+# `.claude/governance/guard-hierarchy.yaml`).
+#
+# Canon : `feedback_verify_shared_schemas_before_inventing_zod.md` —
+# before inventing a new event, grep this file. Any new event = add an
+# entry here first, then implement.
+#
+# Schema (per event) :
+#   name           : snake_case identifier emitted in GA4 / OTel span name
+#   domain         : DomainId producing the event (D1..D16, or
+#                    `cross:<from>-<to>` for explicit cross-domain handoffs)
+#   description    : one-line intent
+#   payload_schema : optional JSON Schema path (relative to this file) for
+#                    payload validation in V1.5+ ; leave empty in V1 if
+#                    fields documented here are sufficient
+#   fields         : list of payload attributes
+#                    [ name, type, required, description ]
+#   status         : stable | experimental | deprecated
+#   since          : semver tag when introduced ("v1" for PR-A through PR-E)
+#   l1_metric      : optional Prom metric name this event feeds
+#
+# Cross-domain handoff convention :
+#   - Events named `<from-domain>_to_<to-domain>` are explicit handoffs.
+#   - They MUST set `domain: cross:<from>-<to>` to be excluded from
+#     single-domain rollups.
+#   - The receiving domain DOES NOT emit a mirror event — handoffs counted
+#     once from the sender side (canon : avoid double-counting funnels).
+
+schemaVersion: "1.0.0"
+
+# Port contract version pinning — bumped via L4 ADR only.
+# Each entry references the domain port whose stable contract is reflected
+# in the events below. Breaking change to a port signature = bump here +
+# ADR + deprecation cycle.
+port_contracts:
+  - port: DiagnosticResultPort
+    version: "v1"
+    owner_domain: diagnostic
+  - port: CommercePort
+    version: "v1"
+    owner_domain: commerce
+  - port: MaintenancePort
+    version: "v1"
+    owner_domain: maintenance
+  - port: EditorialPort
+    version: "v1"
+    owner_domain: editorial
+  - port: VehicleContextPort
+    version: "v1"
+    owner_domain: vehicle
+
+events:
+  - name: diagnostic_started
+    domain: diagnostic
+    description: |
+      Wizard R5 first interaction — user has clicked into the diagnostic
+      funnel. Funnel-as-truth baseline denominator.
+    fields:
+      - { name: session_id, type: string, required: true, description: "anonymous session uuid" }
+      - { name: entry_route, type: string, required: true, description: "origin route slug" }
+      - { name: vehicle_ctx_present, type: boolean, required: true, description: "cookie set at start" }
+    status: stable
+    since: v1
+    l1_metric: domain_sessions_total
+
+  - name: diagnostic_step_advanced
+    domain: diagnostic
+    description: |
+      User progressed from one wizard step to the next. Critical for
+      funnel drop-off attribution (where does R5 lose users).
+    fields:
+      - { name: session_id, type: string, required: true, description: "anonymous session uuid" }
+      - { name: step_from, type: integer, required: true, description: "previous step index 0..N" }
+      - { name: step_to, type: integer, required: true, description: "next step index 0..N" }
+      - { name: duration_ms, type: integer, required: true, description: "time spent on step_from" }
+    status: stable
+    since: v1
+
+  - name: diagnostic_completed
+    domain: diagnostic
+    description: |
+      Wizard reached terminal step with at least one hypothesis cause
+      surfaced. Currently dead-event in code — wired in PR-C.
+    fields:
+      - { name: session_id, type: string, required: true, description: "anonymous session uuid" }
+      - { name: causes_count, type: integer, required: true, description: "number of hypothesis causes returned" }
+      - { name: safety_flag, type: string, required: false, description: "CRITIQUE | ATTENTION | NORMAL" }
+    status: stable
+    since: v1
+    l1_metric: domain_sessions_total
+
+  - name: diagnostic_to_commerce
+    domain: cross:diagnostic-commerce
+    description: |
+      User clicked a part-suggestion CTA exiting R5 toward R1. Primary
+      success signal of the funnel-as-truth V1 evidence gate
+      (`diagnostic_to_commerce / diagnostic_completed` ≥ baseline + 30 %).
+    fields:
+      - { name: session_id, type: string, required: true, description: "anonymous session uuid" }
+      - { name: gamme_id, type: integer, required: true, description: "destination gamme pg_id" }
+      - { name: vehicle_ctx_present, type: boolean, required: true, description: "context propagated to R1" }
+    status: stable
+    since: v1
+    l1_metric: domain_handoff_total
+
+  - name: diagnostic_to_maintenance
+    domain: cross:diagnostic-maintenance
+    description: |
+      User clicked the "voir entretien" CTA exiting R5 toward Maintenance
+      surface. Separation-of-intent signal — confirms D16 is consumed
+      independently from D1 commerce.
+    fields:
+      - { name: session_id, type: string, required: true, description: "anonymous session uuid" }
+      - { name: vehicle_ctx_present, type: boolean, required: true, description: "context propagated" }
+    status: stable
+    since: v1
+    l1_metric: domain_handoff_total
+
+  - name: diagnostic_abandoned
+    domain: diagnostic
+    description: |
+      Wizard left before terminal step (step ≤ 2) — beforeunload event.
+      Drives `diagnostic_to_commerce / diagnostic_completed` denominator
+      sanity (abandons ≠ completed).
+    fields:
+      - { name: session_id, type: string, required: true, description: "anonymous session uuid" }
+      - { name: last_step, type: integer, required: true, description: "step index where user left" }
+      - { name: has_draft, type: boolean, required: true, description: "localStorage draft kept for resume" }
+    status: stable
+    since: v1

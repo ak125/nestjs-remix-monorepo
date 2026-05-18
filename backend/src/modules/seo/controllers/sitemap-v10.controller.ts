@@ -2,8 +2,8 @@
  * 🔥 CONTRÔLEUR SITEMAP V10 - ENDPOINTS TEMPÉRATURE
  *
  * Endpoints:
- * - POST /api/sitemap/v10/generate-all      → Génère tous les buckets
- * - POST /api/sitemap/v10/generate/:bucket  → Génère un bucket spécifique
+ * - POST /api/sitemap/v10/generate-all      → ASYNC : enqueue BullMQ job, returns 202 + jobId (since 2026-05-18, fix CF 524 timeout)
+ * - POST /api/sitemap/v10/generate/:bucket  → Génère un bucket spécifique (sync, single bucket fits CF timeout)
  * - POST /api/sitemap/v10/refresh-scores   → Recalcule les scores
  * - POST /api/sitemap/v10/generate-hubs    → Génère les hubs de crawl (legacy)
  * - POST /api/sitemap/v10/generate-hubs-robust → 🚀 Hubs paginés (max 5k/file)
@@ -11,13 +11,28 @@
  * - POST /api/sitemap/v10/ping             → Ping Google
  */
 
-import { Controller, Get, Post, Param, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  Logger,
+  HttpCode,
+  HttpStatus,
+  ServiceUnavailableException,
+} from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bull';
+import { Queue } from 'bull';
 import {
   SitemapV10Service,
   TemperatureBucket,
 } from '../services/sitemap-v10.service';
 import { SitemapV10ScoringService } from '../services/sitemap-v10-scoring.service';
 import { SitemapV10HubsService } from '../services/sitemap-v10-hubs.service';
+import {
+  SITEMAP_REGENERATE_JOB_NAME,
+  SitemapRegenerateJobData,
+} from '../services/sitemap-v10-scheduler.service';
 import { RateLimitSitemap } from '../../../common/decorators/rate-limit.decorator';
 
 @RateLimitSitemap() // 🛡️ 3 req/min - Sitemaps are memory-intensive
@@ -29,68 +44,87 @@ export class SitemapV10Controller {
     private readonly sitemapService: SitemapV10Service,
     private readonly scoringService: SitemapV10ScoringService,
     private readonly hubsService: SitemapV10HubsService,
+    @InjectQueue('seo-monitor') private readonly seoMonitorQueue: Queue,
   ) {}
 
   /**
    * POST /api/sitemap/v10/generate-all
-   * Génère tous les sitemaps par température
+   *
+   * Enqueues a BullMQ job to regenerate all temperature-bucket sitemaps.
+   * Returns 202 Accepted immediately — actual regeneration runs async in
+   * `SitemapRegenerateProcessor` on the `seo-monitor` queue.
+   *
+   * Why async (since 2026-05-18) : in-app sync path takes >100s on prod-scale
+   * data (102k URLs across 7 buckets + 113 hub files), exceeding the
+   * Cloudflare 100s origin timeout. The daily GH Actions cron
+   * (`.github/workflows/sitemap-daily-regen.yml`) was failing with CF 524
+   * since the workflow shipped (PR #565, 2026-05-17). See issue #586.
+   *
+   * Idempotence : deterministic jobId scoped to current UTC date
+   * (`sitemap-v10-api-YYYY-MM-DD`) — multiple same-day API triggers dedupe
+   * to a single BullMQ job. Distinct from the nightly scheduler's
+   * `sitemap-v10-nightly-regeneration` repeatable jobId (worst case = 2
+   * regens per day; the regeneration itself is idempotent).
+   *
+   * Tracking : observers can poll the `seo-monitor` BullMQ queue via
+   * existing Bull Board admin tooling or the scheduler heartbeat (Phase 7,
+   * PR #566).
    */
   @Post('generate-all')
+  @HttpCode(HttpStatus.ACCEPTED)
   async generateAll(): Promise<{
-    success: boolean;
+    success: true;
+    accepted: true;
     message: string;
-    data?: {
-      totalUrls: number;
-      totalFiles: number;
-      durationMs: number;
-      indexPath?: string;
-      buckets: Array<{
-        bucket: string;
-        success: boolean;
-        urlCount: number;
-        filesGenerated: number;
-        error?: string;
-      }>;
-      hubResult?: {
-        success: boolean;
-        totalUrls: number;
-        totalFiles: number;
-        error?: string;
-      };
+    data: {
+      jobId: string;
+      jobName: string;
+      triggeredBy: SitemapRegenerateJobData['triggeredBy'];
+      enqueuedAt: string;
     };
   }> {
-    this.logger.log('📝 POST /api/sitemap/v10/generate-all');
+    this.logger.log('📝 POST /api/sitemap/v10/generate-all (async enqueue)');
+
+    const today = new Date().toISOString().slice(0, 10);
+    const deterministicJobId = `sitemap-v10-api-${today}`;
+    const triggeredBy: SitemapRegenerateJobData['triggeredBy'] = 'api';
 
     try {
-      const result = await this.sitemapService.generateAll();
+      const job = await this.seoMonitorQueue.add(
+        SITEMAP_REGENERATE_JOB_NAME,
+        { triggeredBy } satisfies SitemapRegenerateJobData,
+        {
+          jobId: deterministicJobId,
+          removeOnComplete: 14,
+          removeOnFail: 30,
+          attempts: 2,
+          backoff: { type: 'exponential', delay: 60_000 },
+        },
+      );
+
+      this.logger.log(
+        `✅ Enqueued sitemap regeneration job ${job.id} (jobId=${deterministicJobId})`,
+      );
 
       return {
-        success: result.success,
-        message: result.success
-          ? 'All V10 sitemaps generated successfully'
-          : 'Some sitemaps failed to generate',
+        success: true,
+        accepted: true,
+        message:
+          'Sitemap regeneration enqueued (async). Processor runs on the seo-monitor BullMQ queue.',
         data: {
-          totalUrls: result.totalUrls,
-          totalFiles: result.totalFiles,
-          durationMs: result.totalDurationMs,
-          indexPath: result.indexPath,
-          buckets: result.results.map((r) => ({
-            bucket: r.bucket,
-            success: r.success,
-            urlCount: r.urlCount,
-            filesGenerated: r.filesGenerated,
-            error: r.error,
-          })),
-          hubResult: result.hubResult,
+          jobId: String(job.id ?? deterministicJobId),
+          jobName: SITEMAP_REGENERATE_JOB_NAME,
+          triggeredBy,
+          enqueuedAt: new Date().toISOString(),
         },
       };
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
-      this.logger.error(`Generate all failed: ${message}`);
-      return {
+      this.logger.error(`Failed to enqueue sitemap regeneration: ${message}`);
+      throw new ServiceUnavailableException({
         success: false,
-        message: `Generation failed: ${message}`,
-      };
+        message: `Failed to enqueue sitemap regeneration: ${message}`,
+      });
     }
   }
 

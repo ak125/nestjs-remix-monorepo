@@ -1,0 +1,234 @@
+{
+  "compliantCount": 8,
+  "generatedAt": "2026-05-18T14:37:29.046Z",
+  "issues": [],
+  "schemaPath": ".spec/00-canon/ai-registry/skill.schema.json",
+  "schemaVersion": "1.0.0",
+  "skills": [
+    {
+      "checksum": "sha256:689e4195c2799da2e52871d2ccb6d059cb1ff1b195f75939f347431edd5d417b",
+      "domain": "D15",
+      "last_verified": "2026-05-18",
+      "llm_safe": true,
+      "metadata": {
+        "argument-hint": "[PR-number or file-path]",
+        "spec": "agentskills.io/specification v1",
+        "version": "1.1"
+      },
+      "name": "code-review",
+      "owners": [
+        "@ak125"
+      ],
+      "path": ".claude/skills/code-review/SKILL.md",
+      "runtime_class": "read-only",
+      "spec_compliant": true,
+      "status": "stable",
+      "tags": [
+        "adr",
+        "governance",
+        "hmac",
+        "review",
+        "rls",
+        "security"
+      ],
+      "type": "technique"
+    },
+    {
+      "checksum": "sha256:ee71c215d24e15e4545b7c3849617a7486e848f1759c36bc0e62e29cc080f128",
+      "domain": "D15",
+      "last_verified": "2026-05-18",
+      "llm_safe": false,
+      "metadata": {
+        "argument-hint": "[migration-name]",
+        "disable-model-invocation": true,
+        "spec": "agentskills.io/specification v1",
+        "version": "1.1"
+      },
+      "name": "db-migration",
+      "owners": [
+        "@ak125"
+      ],
+      "path": ".claude/skills/db-migration/SKILL.md",
+      "runtime_class": "privileged",
+      "spec_compliant": true,
+      "status": "stable",
+      "tags": [
+        "ddl",
+        "governance",
+        "migration",
+        "postgres",
+        "rls",
+        "supabase"
+      ],
+      "type": "discipline"
+    },
+    {
+      "checksum": "sha256:8ca10c2fb164f10c3dc5c23a7e3b8bd7cb233c441f6920ee68bcb7a3672c8feb",
+      "domain": "D15",
+      "last_verified": "2026-05-18",
+      "llm_safe": true,
+      "metadata": {
+        "argument-hint": "[component or page description]",
+        "spec": "agentskills.io/specification v1",
+        "upstream": "anthropics/claude-plugins-official/frontend-design@2026-05",
+        "version": "2.0"
+      },
+      "name": "frontend-design",
+      "owners": [
+        "@ak125"
+      ],
+      "path": ".claude/skills/frontend-design/SKILL.md",
+      "runtime_class": "mutating",
+      "spec_compliant": true,
+      "status": "stable",
+      "tags": [
+        "a11y",
+        "design-tokens",
+        "frontend",
+        "remix",
+        "shadcn",
+        "tailwind",
+        "wcag"
+      ],
+      "type": "technique"
+    },
+    {
+      "checksum": "sha256:808af540f907829ba6209469756272b35b404ccfdec7f4ed2032e0715fd4f67f",
+      "domain": "D15",
+      "last_verified": "2026-05-18",
+      "llm_safe": false,
+      "metadata": {
+        "adr_references": "ADR-015, ADR-058, ADR-061",
+        "spec": "agentskills.io/specification v1",
+        "version": "1.0"
+      },
+      "name": "governance-vault-ops",
+      "owners": [
+        "@ak125"
+      ],
+      "path": ".claude/skills/governance-vault-ops/SKILL.md",
+      "runtime_class": "privileged",
+      "spec_compliant": true,
+      "status": "stable",
+      "tags": [
+        "adr-015",
+        "audit",
+        "governance",
+        "ledger",
+        "ssh-signing",
+        "vault"
+      ],
+      "type": "discipline"
+    },
+    {
+      "checksum": "sha256:dcc01148c536d8c60faf0ce7f68d5ff94270e76f74d230daf6855e6836e0158d",
+      "domain": "D15",
+      "last_verified": "2026-05-18",
+      "llm_safe": true,
+      "metadata": {
+        "argument-hint": "[/url-path or file-pattern]",
+        "spec": "agentskills.io/specification v1",
+        "version": "1.1"
+      },
+      "name": "responsive-audit",
+      "owners": [
+        "@ak125"
+      ],
+      "path": ".claude/skills/responsive-audit/SKILL.md",
+      "runtime_class": "read-only",
+      "spec_compliant": true,
+      "status": "stable",
+      "tags": [
+        "mobile-first",
+        "responsive",
+        "shadcn",
+        "viewport",
+        "wcag"
+      ],
+      "type": "technique"
+    },
+    {
+      "checksum": "sha256:2635f7fee262729b9670f8bd2777a707f26b1bceb4131652b0a08102f37be7d5",
+      "domain": "D15",
+      "last_verified": "2026-05-18",
+      "llm_safe": true,
+      "metadata": {
+        "spec": "agentskills.io/specification v1",
+        "version": "1.0"
+      },
+      "name": "session-log",
+      "owners": [
+        "@ak125"
+      ],
+      "path": ".claude/skills/session-log/SKILL.md",
+      "runtime_class": "mutating",
+      "spec_compliant": true,
+      "status": "stable",
+      "tags": [
+        "audit-trail",
+        "logging",
+        "session",
+        "stop-hook"
+      ],
+      "type": "technique"
+    },
+    {
+      "checksum": "sha256:e48cd63c0c1b5d5036b9ea424a7751772ecc58719347579bb8c59e531cc2edd1",
+      "domain": "D15",
+      "last_verified": "2026-05-18",
+      "llm_safe": true,
+      "metadata": {
+        "argument-hint": "[design-query or component-type]",
+        "spec": "agentskills.io/specification v1",
+        "version": "1.1"
+      },
+      "name": "ui-ux-pro-max",
+      "owners": [
+        "@ak125"
+      ],
+      "path": ".claude/skills/ui-ux-pro-max/SKILL.md",
+      "runtime_class": "read-only",
+      "spec_compliant": true,
+      "status": "stable",
+      "tags": [
+        "a11y",
+        "charts",
+        "design-system",
+        "palettes",
+        "typography",
+        "ui",
+        "ux"
+      ],
+      "type": "reference"
+    },
+    {
+      "checksum": "sha256:814551595593f803f9589acd0a1a27f4414c679286b431a2b283a7a9de6fb7a4",
+      "domain": "D15",
+      "last_verified": "2026-05-18",
+      "llm_safe": false,
+      "metadata": {
+        "argument-hint": "[diagnose|vlevel|cache|quality|maintenance|dtc] [gamme-id or type-id]",
+        "spec": "agentskills.io/specification v1",
+        "version": "1.1"
+      },
+      "name": "vehicle-ops",
+      "owners": [
+        "@ak125"
+      ],
+      "path": ".claude/skills/vehicle-ops/SKILL.md",
+      "runtime_class": "mutating",
+      "spec_compliant": true,
+      "status": "stable",
+      "tags": [
+        "adr-032",
+        "compatibility",
+        "diagnostic",
+        "supabase",
+        "vehicle",
+        "vlevel"
+      ],
+      "type": "technique"
+    }
+  ],
+  "totalSkills": 8
+}
