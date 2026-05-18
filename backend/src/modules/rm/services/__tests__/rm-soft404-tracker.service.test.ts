@@ -1,27 +1,31 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { RmSoft404TrackerService } from '../rm-soft404-tracker.service';
-import { SupabaseBaseService } from '@database/services/supabase-base.service';
-import { CacheService } from '@cache/cache.service';
+// SupabaseBaseService check les env vars dans son constructor. En test on
+// court-circuite avec un stub minimal (canon, cf. rm-builder-seo-shadow.test.ts).
+process.env.SUPABASE_URL = process.env.SUPABASE_URL || 'http://localhost:54321';
+process.env.SUPABASE_SERVICE_KEY =
+  process.env.SUPABASE_SERVICE_KEY || 'test-service-key';
+process.env.SUPABASE_SERVICE_ROLE_KEY =
+  process.env.SUPABASE_SERVICE_ROLE_KEY || 'test-service-role-key';
 
+import { RmSoft404TrackerService } from '../rm-soft404-tracker.service';
+import type { CacheService } from '@cache/cache.service';
+
+/**
+ * Pattern test : instanciation directe + Object.assign de `this.supabase`
+ * (canon repo : 203 services `extends SupabaseBaseService`, cf.
+ * rm-builder-seo-shadow.test.ts pour la référence).
+ */
 describe('RmSoft404TrackerService', () => {
   let service: RmSoft404TrackerService;
   let cache: jest.Mocked<Partial<CacheService>>;
   let supabaseInsert: jest.Mock;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     cache = { get: jest.fn(), set: jest.fn() };
     supabaseInsert = jest.fn().mockResolvedValue({ error: null });
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        RmSoft404TrackerService,
-        {
-          provide: SupabaseBaseService,
-          useValue: { client: { from: () => ({ insert: supabaseInsert }) } },
-        },
-        { provide: CacheService, useValue: cache },
-      ],
-    }).compile();
-    service = module.get<RmSoft404TrackerService>(RmSoft404TrackerService);
+
+    service = new RmSoft404TrackerService(cache as unknown as CacheService);
+    // Override le client supabase hérité (protected readonly) en runtime
+    (service as any).supabase = { from: () => ({ insert: supabaseInsert }) };
   });
 
   it('classifie un UA Googlebot comme "bot"', () => {

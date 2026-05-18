@@ -43,13 +43,12 @@ interface VehicleTarget {
 }
 
 @Injectable()
-export class RmAlternativesService {
-  private readonly logger = new Logger(RmAlternativesService.name);
+export class RmAlternativesService extends SupabaseBaseService {
+  protected readonly logger = new Logger(RmAlternativesService.name);
 
-  constructor(
-    private readonly supabase: SupabaseBaseService,
-    private readonly cache: CacheService,
-  ) {}
+  constructor(private readonly cache: CacheService) {
+    super();
+  }
 
   async compute(
     type_id: number,
@@ -105,21 +104,9 @@ export class RmAlternativesService {
     return response;
   }
 
-  /**
-   * Returns the Supabase query client.
-   * The injected `SupabaseBaseService` instance exposes the client via `.client`
-   * (as set up in tests) or `.supabase` (the actual protected property).
-   */
-  private getClient(): any {
-    return (
-      (this.supabase as any).client ??
-      (this.supabase as any).supabase ??
-      this.supabase
-    );
-  }
-
   private async loadTarget(type_id: number): Promise<VehicleTarget | null> {
-    const sb = this.getClient();
+    // inherited from SupabaseBaseService (extends pattern, 203 services canon)
+    const sb = this.supabase;
     const { data, error } = await sb
       .from('auto_type')
       .select('type_modele_id, type_marque_id, type_power_ps')
@@ -148,7 +135,8 @@ export class RmAlternativesService {
     pg_id: number,
     raw_limit: number,
   ): Promise<VehicleCandidate[]> {
-    const sb = this.getClient();
+    // inherited from SupabaseBaseService (extends pattern, 203 services canon)
+    const sb = this.supabase;
     const { data: compat } = await sb
       .from('pieces_relation_type')
       .select('rtp_type_id')
@@ -283,7 +271,8 @@ export class RmAlternativesService {
       piece_count: number;
     }>
   > {
-    const sb = this.getClient();
+    // inherited from SupabaseBaseService (extends pattern, 203 services canon)
+    const sb = this.supabase;
     const { data: rels } = await sb
       .from('pieces_relation_type')
       .select('rtp_pg_id')
@@ -360,7 +349,8 @@ export class RmAlternativesService {
   ): Promise<
     Array<{ modele_id: number; modele_name: string; modele_alias: string }>
   > {
-    const sb = this.getClient();
+    // inherited from SupabaseBaseService (extends pattern, 203 services canon)
+    const sb = this.supabase;
     const { data: compat_types } = await sb
       .from('pieces_relation_type')
       .select('rtp_type_id')
@@ -412,7 +402,8 @@ export class RmAlternativesService {
     target: VehicleTarget,
   ): Promise<RelatedModel[]> {
     if (modeles.length === 0) return [];
-    const sb = this.getClient();
+    // inherited from SupabaseBaseService (extends pattern, 203 services canon)
+    const sb = this.supabase;
 
     // Fetch marque once — all related models share the same target_marque_id
     const { data: marque } = await sb

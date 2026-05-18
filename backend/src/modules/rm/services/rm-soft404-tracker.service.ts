@@ -31,13 +31,12 @@ function hasAny(haystack: string, needles: readonly string[]): boolean {
 }
 
 @Injectable()
-export class RmSoft404TrackerService {
-  private readonly logger = new Logger(RmSoft404TrackerService.name);
+export class RmSoft404TrackerService extends SupabaseBaseService {
+  protected readonly logger = new Logger(RmSoft404TrackerService.name);
 
-  constructor(
-    private readonly supabase: SupabaseBaseService,
-    private readonly cache: CacheService,
-  ) {}
+  constructor(private readonly cache: CacheService) {
+    super();
+  }
 
   classifyUA(ua: string | null | undefined): UaClass {
     if (!ua) return 'unknown';
@@ -45,14 +44,6 @@ export class RmSoft404TrackerService {
     if (hasAny(ua, BROWSER_NAMES) && hasAny(ua, BROWSER_ENGINES))
       return 'browser';
     return 'unknown';
-  }
-
-  private getClient() {
-    return (
-      (this.supabase as any).client ??
-      (this.supabase as any).supabase ??
-      this.supabase
-    );
   }
 
   async track(
@@ -69,13 +60,15 @@ export class RmSoft404TrackerService {
     if (recent) return;
 
     const ua_class = this.classifyUA(ctx.ua);
-    const sb = this.getClient();
-    const { error } = await sb.from('__soft_404_events').insert({
-      pg_id: body.pg_id,
-      type_id: body.type_id,
-      referrer: ctx.referrer,
-      ua_class,
-    });
+    // inherited from SupabaseBaseService (extends pattern, 203 services canon)
+    const { error } = await this.supabase
+      .from('__soft_404_events' as any)
+      .insert({
+        pg_id: body.pg_id,
+        type_id: body.type_id,
+        referrer: ctx.referrer,
+        ua_class,
+      } as any);
     if (error) {
       this.logger.warn(`Soft-404 track insert failed: ${error.message}`);
       return;
