@@ -427,6 +427,9 @@ export class RmAlternativesService {
     };
 
     const result: RelatedModel[] = [];
+    // V1 accepted debt : boucle séquentielle (max 4 modèles × 2 queries = 8 round-trips
+    // au pire). Cache Redis 5min couvre les paths chauds. V1.5 : batcher en 2 IN
+    // queries globales si p95 cold-cache dépasse SLO (cf. spec §3.3.3 / final review).
     for (const m of modeles) {
       const { data: types } = await sb
         .from('auto_type')

@@ -1,18 +1,10 @@
 # Soft-404 fixtures (chaque ligne : URL relative à tester via curl)
 # Format : /pieces/<gamme>/<marque>/<modele>/<type>.html
-# Confirmées via: NOT EXISTS pieces_relation_type pour le couple (type_id, pg_id).
-# Vérifié 2026-05-18.
+# Confirmées via : NOT EXISTS pieces_relation_type pour le couple (type_id, pg_id).
+# Vérifié 2026-05-18 via Supabase MCP execute_sql.
+# Marques + gammes diversifiées pour couvrir BMW/Renault/Audi × freinage/alternateur/filtration.
 /pieces/kit-de-freins-arriere-3859/bmw-33/serie-5-f10-f18-33053/2-0-525-d-11836.html
-# 4 fixtures complémentaires à valider pre-merge final via la query :
-#   SELECT t.type_alias||'-'||t.type_id AS type_slug,
-#          m.modele_alias||'-'||m.modele_id AS modele_slug,
-#          ma.marque_alias||'-'||ma.marque_id AS marque_slug,
-#          pg.pg_alias||'-'||pg.pg_id AS gamme_slug
-#   FROM auto_type t JOIN auto_modele m ON m.modele_id=t.type_modele_id::int
-#   JOIN auto_marque ma ON ma.marque_id=m.modele_marque_id::int
-#   CROSS JOIN pieces_gamme pg
-#   WHERE t.type_display='1' AND t.type_relfollow='1' AND m.modele_display=1
-#     AND ma.marque_display=1 AND pg.pg_display='1'
-#     AND NOT EXISTS (SELECT 1 FROM pieces_relation_type r
-#                     WHERE r.rtp_type_id::int=t.type_id_i AND r.rtp_pg_id::int=pg.pg_id)
-#   ORDER BY random() LIMIT 4;
+/pieces/alternateur-4/bmw-33/serie-5-e60-33052/530-i-phase-2-16023.html
+/pieces/filtre-a-huile-7/renault-140/sandero-stepway-140085/1-5-dci-11688.html
+/pieces/filtre-a-air-8/audi-22/a4-i-22038/1-8-26774.html
+/pieces/filtre-a-air-8/audi-22/a4-ii-22040/s4-2-7-quattro-35503.html
