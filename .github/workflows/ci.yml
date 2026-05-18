@@ -795,6 +795,11 @@ jobs:
           echo "- / (homepage): $STATUS" >> $GITHUB_STEP_SUMMARY
 
       - name: 🩹 Soft-404 R2 smoke
+        # shell explicite : par défaut `bash -e {0}` (errexit). Or la capture
+        # `ASSERT_OUT=$(python3 ... )` propage l'exit code si le script exit 1
+        # → bash quitte AVANT d'imprimer le motif du FAIL. On force shell sans
+        # errexit pour collecter tous les FAILs + leurs raisons.
+        shell: bash {0}
         run: |
           BASE="http://localhost:3200"
           FAILED=0
@@ -805,10 +810,11 @@ jobs:
             [[ -z "${url// }" ]] && continue
             case "$url" in \#*) continue ;; esac
             echo "🔎 $url"
-            HTTP_OUT=$(curl -s -i --max-time 15 "$BASE$url" || true)
-            if [ -z "$HTTP_OUT" ]; then
-              echo "❌ curl failed for $url"
-              echo "- $url: ❌ curl failed" >> $GITHUB_STEP_SUMMARY
+            HTTP_OUT=$(curl -s -i --max-time 15 "$BASE$url")
+            CURL_RC=$?
+            if [ "$CURL_RC" != "0" ] || [ -z "$HTTP_OUT" ]; then
+              echo "❌ curl failed for $url (rc=$CURL_RC)"
+              echo "- $url: ❌ curl failed (rc=$CURL_RC)" >> $GITHUB_STEP_SUMMARY
               FAILED=1
               continue
             fi
