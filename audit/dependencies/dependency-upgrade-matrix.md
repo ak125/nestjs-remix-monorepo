@@ -71,7 +71,7 @@ Prose surrounding the tables (reading guides, callouts) is human-edited.
 **Reading guide:**
 - `rollback_complexity: dangerous` ⇒ PR body MUST contain a written rollback runbook.
 - `migration_blockers` ⇒ every token MUST resolve to a merged PR / verified configuration / shipped upstream release BEFORE opening the family's PR.
-- `observability_requirements` ⇒ every signal MUST be live and ingesting from DEV preprod (46.224.118.55) BEFORE the family's prod tag — CI green is not enough.
+- `observability_requirements` ⇒ every signal MUST be live and ingesting from the PREPROD container (49.12.233.2:3200) BEFORE the family's prod tag — CI green is not enough.
 
 ## Table 4 — Operational metadata (data migration / dual runtime / RTO / ownership / perf baseline)
 
@@ -95,7 +95,7 @@ Prose surrounding the tables (reading guides, callouts) is human-edited.
 **Reading guide:**
 - `data_migration_required: yes` ⇒ rollback runbook MUST cover the data-side rollback.
 - `supports_dual_runtime`: `full` ⇒ may use `dual-runtime` deployment stage; `partial` ⇒ split deployment; `none` ⇒ atomic swap mandatory, banner/maintenance window needed.
-- `rollback_rto_minutes` ⇒ rollback runbook MUST be drillable inside this window. Drill on DEV preprod once during the soak period.
+- `rollback_rto_minutes` ⇒ rollback runbook MUST be drillable inside this window. Drill on the PREPROD container once during the soak period.
 - `upgrade_owner_domain` ⇒ map to `repository-registry` ownership domains (ADR-058). Every domain MUST have a named human owner via CODEOWNERS / ownership.yaml — never `__unassigned__`.
 - `requires_perf_baseline: yes` ⇒ PR body MUST contain before/after measurement on `/api/_perf` or equivalent baseline. No baseline = no merge.
 
@@ -122,7 +122,7 @@ Prose surrounding the tables (reading guides, callouts) is human-edited.
 - `rollback_runbook_required: true` ⇒ PR validators / CI / orchestrators consume this directly. Schema invariant: `rollback_complexity: dangerous` forces this to `true` — cannot be relaxed.
 - `expected_user_impact` ⇒ release notes + customer comms + support triage MUST mention each impact token. `[none]` is explicit.
 - `perf_baseline_metrics` ⇒ exactly which numbers to capture. Schema invariant: `requires_perf_baseline: true` (on production-approved families) forces this to be non-empty.
-- `estimated_recovery_sequence` ⇒ ordered, drillable on DEV preprod during the soak window. Schema invariant: `dangerous` forces this to be non-empty. Each step is a kebab-case token greppable across PRs.
+- `estimated_recovery_sequence` ⇒ ordered, drillable on the PREPROD container during the soak window. Schema invariant: `dangerous` forces this to be non-empty. Each step is a kebab-case token greppable across PRs.
 
 ## Table 6 — State + canary metadata (state surface / abort thresholds / parallel windows)
 
@@ -145,7 +145,7 @@ Prose surrounding the tables (reading guides, callouts) is human-edited.
 
 **Reading guide:**
 - `stateful_surface` ⇒ "where the state actually lives" — incident triage starts here.
-- `rollback_validation_checks` ⇒ "rollback is not done until these pass" — drill on DEV preprod during soak.
+- `rollback_validation_checks` ⇒ "rollback is not done until these pass" — drill on the PREPROD container during soak.
 - `canary_abort_conditions` ⇒ "what makes us pull the plug" — quantitative thresholds, not vibes.
 - `runtime_state_coupling` ⇒ "what primitives we touch" — drives blast analysis at PR-review time.
 - `safe_parallel_window_minutes` ⇒ "max minutes the dual-runtime can be live" — infinite dual-runtime is a lie; banner / canary coordination caps this. `0` = atomic swap (dual_runtime=none).
