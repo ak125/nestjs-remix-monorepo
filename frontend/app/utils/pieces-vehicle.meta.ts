@@ -10,6 +10,75 @@ import {
   buildHeroImagePreload,
   buildPiecesProductSchema,
 } from "~/utils/seo/pieces-schema.utils";
+import type { NoProductsData } from "~/components/pieces/NoProductsAlternatives";
+
+const SITE = "AutoMecanik";
+
+function buildSoft404Meta(data: NoProductsData): MetaDescriptor[] {
+  const ctx = data.vehicleContext;
+  const years =
+    ctx.yearFrom && ctx.yearTo
+      ? `${ctx.yearFrom}-${ctx.yearTo}`
+      : ctx.yearFrom || ctx.yearTo;
+  const vehicleSuffix =
+    `${ctx.marqueName} ${ctx.modeleName} ${ctx.typeName}${years ? ` (${years})` : ""}`.replace(
+      /\s+/g,
+      " ",
+    ).trim();
+
+  const title = `${data.gammeName} non référencé pour ${vehicleSuffix} — Alternatives | ${SITE}`;
+
+  const ps = ctx.typePowerPs ? `${ctx.typePowerPs}ch ` : "";
+  const fuel = ctx.typeFuel ? `${ctx.typeFuel} ` : "";
+  const description =
+    `Le ${data.gammeName.toLowerCase()} n'est pas référencé pour la ${ctx.marqueName} ${ctx.modeleName} ${ctx.typeName} ${ps}${fuel}${years ? `(${years})` : ""}. Découvrez les alternatives compatibles et les autres motorisations qui disposent de ce produit.`.replace(
+      /\s+/g,
+      " ",
+    ).trim();
+
+  const itemList: Array<{
+    "@type": "ListItem";
+    position: number;
+    name: string;
+    url: string;
+  }> = [];
+
+  data.alternativeVehicles.slice(0, 6).forEach((v) => {
+    const typeSlug = `${v.type_alias ?? v.type_name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${v.type_id}`;
+    itemList.push({
+      "@type": "ListItem",
+      position: itemList.length + 1,
+      name: `${data.gammeName} pour ${v.marque_name} ${v.modele_name} ${v.type_name}`,
+      url: `/pieces/${data.gammeAlias}-${data.gammeId}/${v.marque_alias}-${v.marque_id}/${v.modele_alias}-${v.modele_id}/${typeSlug}.html`,
+    });
+  });
+
+  data.alternativeGammes.slice(0, 4).forEach((g) => {
+    itemList.push({
+      "@type": "ListItem",
+      position: itemList.length + 1,
+      name: `${g.pg_name} pour ${ctx.marqueName} ${ctx.modeleName} ${ctx.typeName}`,
+      url: `/pieces/${g.pg_alias}-${g.pg_id}.html`,
+    });
+  });
+
+  return [
+    { title },
+    { name: "description", content: description },
+    { name: "robots", content: "noindex, follow" },
+    { property: "og:title", content: title },
+    { property: "og:description", content: description },
+    { property: "og:type", content: "website" },
+    {
+      "script:ld+json": {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        name: `Alternatives ${data.gammeName} pour ${vehicleSuffix}`,
+        itemListElement: itemList,
+      },
+    },
+  ];
+}
 
 export function buildPiecesVehicleMeta(
   data: any,
@@ -22,16 +91,9 @@ export function buildPiecesVehicleMeta(
     ];
   }
 
-  // Page alternatives (0 produits) — noindex
+  // Page alternatives (0 produits) — noindex + meta contextuelle + JSON-LD ItemList
   if ("noProducts" in data && data.noProducts) {
-    return [
-      { title: `${data.gammeName} - Non disponible | AutoMecanik` },
-      {
-        name: "description",
-        content: `${data.gammeName} pour ${data.vehicleLabel}. Découvrez nos alternatives disponibles.`,
-      },
-      { name: "robots", content: "noindex, follow" },
-    ];
+    return buildSoft404Meta(data as NoProductsData);
   }
 
   // Type narrowing: apres les early returns, data est forcement le type complet
