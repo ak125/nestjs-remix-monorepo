@@ -24,7 +24,11 @@ describe('RmAlternativesService', () => {
       order: jest.fn().mockReturnThis(),
       single: jest.fn(),
     };
-    supabaseMock = { from: jest.fn(() => builder), rpc: jest.fn(), __builder: builder };
+    supabaseMock = {
+      from: jest.fn(() => builder),
+      rpc: jest.fn(),
+      __builder: builder,
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -55,7 +59,10 @@ describe('RmAlternativesService', () => {
 
     it('produit un etag sha256-stable et écrit dans le cache (cache miss)', async () => {
       cacheMock.get!.mockResolvedValue(null);
-      supabaseMock.__builder.single.mockResolvedValue({ data: null, error: null });
+      supabaseMock.__builder.single.mockResolvedValue({
+        data: null,
+        error: null,
+      });
       const r1 = await service.compute(11836, 3859, 12);
       const r2 = await service.compute(11836, 3859, 12);
       expect(r1.etag).toMatch(/^sha256-[0-9a-f]{64}$/);
@@ -115,10 +122,15 @@ describe('RmAlternativesService', () => {
 
     it("filtre les véhicules qui n'ont aucune relation pieces_relation_type (compat-aware)", async () => {
       cacheMock.get!.mockResolvedValue(null);
-      supabaseMock.__builder.single.mockResolvedValue({ data: null, error: null });
+      supabaseMock.__builder.single.mockResolvedValue({
+        data: null,
+        error: null,
+      });
       await service.compute(11836, 3859, 12);
       const fromCalls = supabaseMock.from.mock.calls.map((c: any[]) => c[0]);
-      expect(fromCalls).toEqual(expect.arrayContaining(['pieces_relation_type']));
+      expect(fromCalls).toEqual(
+        expect.arrayContaining(['pieces_relation_type']),
+      );
     });
   });
 
