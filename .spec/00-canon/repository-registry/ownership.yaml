@@ -383,6 +383,11 @@ entries:
     owner: '@ak125'
     sourceConfidence: medium
     risk: low
+  - glob: packages/eslint-plugin-fafa-ports/**
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
   - glob: packages/registry/**
     domain: D15
     owner: '@ak125'
