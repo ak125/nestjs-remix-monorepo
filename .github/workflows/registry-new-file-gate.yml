@@ -40,9 +40,6 @@ jobs:
       - name: Install
         run: npm ci
 
-      - name: Build @repo/registry (dependency of check-new-files via overlay)
-        run: npm run -w @repo/registry build
-
       - name: Validate overlay first (precondition)
         # If overlay is malformed, abort early with a clear message.
         run: npm run registry:validate

@@ -120,3 +120,32 @@ export {
   type R2IndexabilityVerdict,
   evaluateR2Indexability,
 } from "./r2-indexability-conditions";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PR-UIDP-1 (v5) — Unified Indexability Decision Plane :
+// composer pure function + emitter unique + types canon.
+// Cf. ADR-NN UIDP V1 (governance-vault).
+// ─────────────────────────────────────────────────────────────────────────────
+
+// RobotsVerdict types (PR-UIDP-1)
+export {
+  RobotsVerdictKind,
+  RobotsVerdictKindSchema,
+  ReasonCode,
+  ReasonCodeSchema,
+  IndexabilityVerdictContextSchema,
+  type IndexabilityVerdictContext,
+  IndexabilityVerdictSchema,
+  type IndexabilityVerdict,
+  IndexabilityInputSchema,
+  type IndexabilityInput,
+  // Backward compat (déprécié, retrait V1.5 — cf. v5/C4)
+  type RobotsValue,
+  legacyStringFromKind,
+} from "./robots-verdict";
+
+// Pure cascade composer (PR-UIDP-1)
+export { computeIndexabilityVerdict } from "./compose-indexability";
+
+// Single emission point meta + header (PR-UIDP-1)
+export { emitRobotsForVerdict, type RobotsEmission } from "./emit-robots";

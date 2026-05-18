@@ -74,41 +74,11 @@ jobs:
           fi
           echo "✓ Deterministic across 2 runs"
 
-      - name: Run RPC parser fixture tests (V1-3 : 3 parse modes)
+      - name: "Run RPC parser fixture tests (V1-3: 3 parse modes)"
         run: npm run registry:test:rpc-parser
 
       - name: Validate outputs against @repo/registry Zod schemas
-        run: |
-          node --input-type=module -e "
-          import { readFileSync } from 'node:fs';
-          import { FileEntrySchema, RuntimeEntrySchema, DepEntrySchema, DbTableEntrySchema, RpcEntrySchema } from '@repo/registry';
-
-          const checks = [
-            ['audit/registry/files.json', FileEntrySchema],
-            ['audit/registry/runtime.json', RuntimeEntrySchema],
-            ['audit/registry/deps.json', DepEntrySchema],
-            ['audit/registry/db.json', DbTableEntrySchema],
-            ['audit/registry/rpc.json', RpcEntrySchema],
-          ];
-          let fail = 0;
-          for (const [path, schema] of checks) {
-            const doc = JSON.parse(readFileSync(path, 'utf8'));
-            for (let i = 0; i < doc.entries.length; i++) {
-              const r = schema.safeParse(doc.entries[i]);
-              if (!r.success) {
-                console.error('FAIL', path, '[' + i + ']', doc.entries[i].id, r.error.format());
-                fail++;
-                if (fail >= 5) { console.error('... (more failures truncated)'); break; }
-              }
-            }
-            if (fail >= 5) break;
-          }
-          if (fail > 0) {
-            console.error('::warning::' + fail + ' Zod validation failures across registries');
-            process.exit(1);
-          }
-          console.log('✓ All entries validate against @repo/registry schemas');
-          "
+        run: npm run registry:validate:zod
 
       - name: Summary
         if: always()

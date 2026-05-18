@@ -59,6 +59,26 @@ cat docs/CONSOLIDATION-GUIDE.md
 
 👉 **Guide complet** : [docs/CONSOLIDATION-GUIDE.md](./docs/CONSOLIDATION-GUIDE.md)
 
+### 🏛️ Architecture contract — bootstrap
+
+After cloning and `npm install`, run once to populate IDE schema validation
+and depcruise enforcement artifacts:
+
+```bash
+npm run architecture:build
+```
+
+This regenerates `.dependency-cruiser.generated.cjs` (tracked) and
+`.spec/00-canon/_schema/architecture.schema.json` (gitignored, for `$schema`
+auto-completion in VSCode). It's also run by CI on every PR.
+
+**DO NOT EDIT `.dependency-cruiser.generated.cjs` directly.** It is an
+AUTO-GENERATED artifact owned by `@repo/registry`. To change architectural
+boundaries, edit `.spec/00-canon/repository-registry/architecture.yaml` and
+re-run `npm run architecture:build`. Direct edits will be overwritten on the
+next build and rejected by the CI freshness gate. If a reviewer asks you to
+"just patch the generated file" — refuse and edit the YAML instead.
+
 ---
 
 ## 🏗️ Architecture

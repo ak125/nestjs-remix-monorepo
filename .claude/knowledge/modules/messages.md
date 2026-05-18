@@ -2,7 +2,7 @@
 module: messages
 sources:
 - backend/src/modules/messages
-last_scan: '2026-05-13'
+last_scan: '2026-05-17'
 primary_files:
 - backend/src/modules/messages/dto/index.ts
 - backend/src/modules/messages/dto/message.schemas.ts

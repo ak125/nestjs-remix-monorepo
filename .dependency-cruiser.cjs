@@ -20,9 +20,43 @@
  *   - no-orphans          (48 violations, Phase 2)
  *   - no-deep-module-access (77 violations, Phase 2)
  */
+// Architecture contract — generated rules (PR-2).
+// File is committed but recreated by `npm run architecture:build`. On a fresh clone
+// before that command runs, fall back to an empty list rather than crashing depcruise.
+let generatedRules = [];
+try {
+  generatedRules = require('./.dependency-cruiser.generated.cjs');
+} catch (e) {
+  if (e && e.code === 'MODULE_NOT_FOUND') {
+    process.emitWarning(
+      '.dependency-cruiser.generated.cjs missing — run `npm run architecture:build`. ' +
+        'Continuing with inline rules only (architectural boundaries not enforced).',
+      {
+        code: 'ARCHITECTURE_ARTIFACT_MISSING',
+        detail: 'See PR-2 / ADR-058 for the regen workflow.',
+      },
+    );
+  } else {
+    throw e;
+  }
+}
+
 /** @type {import('dependency-cruiser').IConfiguration} */
 module.exports = {
   forbidden: [
+    // ── Architectural invariants (generated from .spec/00-canon/repository-registry/architecture.yaml) ──
+    ...generatedRules,
+
+    // ── NON-ARCHITECTURAL HYGIENE RULES ──
+    // These are repo hygiene / tech-debt rules — NOT architectural invariants.
+    // They MUST NOT be moved into architecture.yaml. Each owns a different invariant kind:
+    //   - no-circular / no-orphans : module graph health (debt/ratchet)
+    //   - not-to-deprecated         : dependency hygiene
+    //   - no-deep-module-access     : barrel/index discipline
+    //   - not-to-test / not-to-spec : production-code isolation
+    //   - no-non-package-json       : phantom-dep integrity
+    // If a future hygiene rule grows architectural meaning, open an ADR — do not silently
+    // migrate it. The contract carries ONE invariant kind; hygiene stays inline.
     {
       name: 'no-circular',
       severity: 'warn',
@@ -53,22 +87,6 @@ module.exports = {
       comment: 'Imported module is deprecated. Promoted to error 2026-05-01 (Phase 1, 0 violations).',
       from: {},
       to: { dependencyTypes: ['deprecated'] },
-    },
-    {
-      name: 'frontend-not-to-backend-src',
-      severity: 'error',
-      comment:
-        'Frontend must go through HTTP/API, never reach into backend source directly. Promoted to error 2026-05-01 (Phase 1, 0 violations).',
-      from: { path: '^frontend/app/' },
-      to: { path: '^backend/src/' },
-    },
-    {
-      name: 'backend-not-to-frontend',
-      severity: 'error',
-      comment:
-        'Backend must not reach into frontend source (coupling + bundling disaster). Promoted to error 2026-05-01 (Phase 1, 0 violations).',
-      from: { path: '^backend/src/' },
-      to: { path: '^frontend/app/' },
     },
     {
       name: 'no-deep-module-access',

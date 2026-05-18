@@ -1,0 +1,82 @@
+# yaml-language-server: $schema=../_schema/architecture.schema.json
+# .spec/00-canon/repository-registry/architecture.yaml
+#
+# AutoMecanik monorepo — canonical architecture contract (PR-2, ADR-058 follow-on).
+#
+# The `# yaml-language-server:` directive above links this YAML to its generated JSON
+# Schema mirror for IDE validation (RedHat YAML extension / Helix LSP / etc.). The path
+# is RELATIVE so it resolves correctly in worktrees / sub-checkouts. The schema file is
+# gitignored — run `npm run architecture:build` after a fresh clone to populate it.
+#
+# ──────────────────────────────────────────────────────────────────────────────────
+#  DOCTRINE — read before adding anything to this file
+# ──────────────────────────────────────────────────────────────────────────────────
+#  This file holds ARCHITECTURAL INVARIANTS ONLY. It is NOT a dumping ground.
+#
+#  Do NOT add to this file:
+#    × feature flags          → use GrowthBook / config
+#    × topology instances     → use `runtime-topology.yaml` (PR-5)
+#    × runtime observability  → use OTel config / Sentry tags
+#    × queue/cache mapping    → use `workers.yaml` (canon roadmap — separate contract for instance-level config)
+#    × SEO flows / role canon → use existing seo-role-contracts (PR-F SEO)
+#    × projection graph       → see `db.yaml`
+#    × RAG flows              → use ADR-046 wiki-exports SoT
+#    × DB schema / RLS        → see `db.yaml`
+#
+#  If you're tempted to add a section that isn't an architectural invariant —
+#  open a NEW contract file instead.
+#
+#  FUTURE-SPLIT WARNING:
+#  If a section starts describing INSTANCES (a specific queue, a specific cron,
+#  a specific cache key) instead of INVARIANTS (kind of code, boundaries,
+#  ownership), STOP and create a dedicated contract file.
+# ──────────────────────────────────────────────────────────────────────────────────
+#
+# V1 COVERAGE: this contract protects ONE invariant — the **SSR/API import
+# boundary** between frontend/app/ and backend/src/. It does NOT cover
+# packages/*↔backend/*, scripts/*↔backend/*, rag/*↔workers/* — those are PR-3+
+# territory in dedicated contract files.
+#
+# WORKFLOW
+# Edit this YAML → run `npm run architecture:build` → commit ONLY the YAML
+# and the .dependency-cruiser.generated.cjs. The JSON schema mirror is
+# gitignored, regenerated each build.
+
+schemaVersion: "1.0.0"
+adr: ADR-058
+
+# Layers — the canonical top-level tiers of the monorepo. Used by boundaries[] as
+# `from`/`to` identifiers. NOT a runtime topology, NOT a call-graph — just the names
+# of the tier directories.
+layers:
+  - id: frontend
+    rootGlobs: ["frontend/app/**"]
+  - id: backend
+    rootGlobs: ["backend/src/**"]
+  - id: packages
+    rootGlobs: ["packages/**"]
+  - id: scripts
+    rootGlobs: ["scripts/**"]
+  - id: workers
+    rootGlobs: ["backend/src/workers/**"]
+
+# Boundaries — the only invariant this contract enforces.
+# Each entry emits one or more rules into .dependency-cruiser.generated.cjs.
+# Rule names MUST be unique across all boundaries[] (schema enforces).
+boundaries:
+  - id: frontend-backend-symmetry
+    rationale: >
+      ADR-058 §boundary-A — frontend (Remix SSR) and backend (NestJS) are independent
+      build units. Cross-imports break the deployment contract (frontend ships to
+      Cloudflare; backend to Caddy/Docker).
+    emitDepcruise:
+      - name: frontend-not-to-backend-src
+        severity: error
+        comment: "Generated from architecture.yaml#boundaries[frontend-backend-symmetry]. Frontend MUST NOT import backend internals — use the public HTTP API."
+        fromPath: "^frontend/app/"
+        toPath: "^backend/src/"
+      - name: backend-not-to-frontend
+        severity: error
+        comment: "Generated from architecture.yaml#boundaries[frontend-backend-symmetry]. Backend MUST NOT import frontend code — shared types go in packages/."
+        fromPath: "^backend/src/"
+        toPath: "^frontend/app/"

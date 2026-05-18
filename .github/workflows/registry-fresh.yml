@@ -48,9 +48,6 @@ jobs:
       - name: Install
         run: npm ci
 
-      - name: Build @repo/registry (dist for downstream scripts)
-        run: npm run -w @repo/registry build
-
       - name: Run upstream audit producers
         run: npm run audit:inventory
 

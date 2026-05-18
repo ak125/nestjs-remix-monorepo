@@ -111,8 +111,8 @@ Before ANY component or page ships:
 
 ## Enforcement
 
-- **CI/CD:** `.github/workflows/perf-gates.yml` blocks PRs with CWV violations
-- **Lighthouse Budget:** `lighthouse-budget.json` defines per-path thresholds
+- **CI/CD:** `.github/workflows/perf-gates.yml` blocks PRs on bundle regressions via [size-limit](https://github.com/ai/size-limit) (Andrey Sitnik, standard industriel adopté par React/Redux/MobX/Prettier). Gzip-based, déterministe, pas de Lighthouse synthétique.
+- **Bundle budgets:** `frontend/.size-limit.json` — see `frontend/size-limit.README.md` for philosophy and calibration history.
 - **Database:** `__ux_perf_gates` table stores configurable thresholds
 - **Skills:** `.claude/skills/ui-ux-pro-max/` validates designs
 

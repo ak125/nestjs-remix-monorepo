@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedBy": "fixture-pr6-observatory",
+  "entries": [
+    {
+      "id": "npm:zod@^3.25.76",
+      "name": "zod",
+      "version": "^3.25.76",
+      "source": "npm",
+      "workspaces": ["@fafa/backend"],
+      "declaredIn": ["backend/package.json"],
+      "status": "LIVE",
+      "owner": "platform",
+      "sourceConfidence": "high",
+      "schemaVersion": "1.0.0"
+    }
+  ]
+}

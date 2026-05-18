@@ -1,0 +1,73 @@
+{
+  "schemaVersion": "1.0.0",
+  "meta": { "inputHashes": {} },
+  "files": [
+    {
+      "path": "frontend/app/utils/dead.ts",
+      "id": "frontend/app/utils/dead.ts",
+      "owner": "@team-frontend",
+      "domain": "frontend-shared",
+      "status": "UNKNOWN",
+      "kind": "script",
+      "loc": 12,
+      "runtime": false,
+      "risk": "low",
+      "deletePolicy": "FREE",
+      "derivedFrom": ["knip"],
+      "imports": [],
+      "importedBy": [],
+      "sourceConfidence": "high"
+    },
+    {
+      "path": "frontend/app/routes/_index.tsx",
+      "id": "frontend/app/routes/_index.tsx",
+      "owner": "@team-frontend",
+      "domain": "frontend-shared",
+      "status": "LIVE",
+      "kind": "route",
+      "loc": 80,
+      "runtime": true,
+      "risk": "high",
+      "deletePolicy": "LOCKED",
+      "derivedFrom": ["depcruise"],
+      "imports": [],
+      "importedBy": [],
+      "sourceConfidence": "high"
+    },
+    {
+      "path": "backend/src/auth/exception.filter.ts",
+      "id": "backend/src/auth/exception.filter.ts",
+      "owner": "@team-auth",
+      "domain": "auth",
+      "status": "LIVE",
+      "kind": "controller",
+      "loc": 40,
+      "runtime": true,
+      "risk": "high",
+      "deletePolicy": "FREE",
+      "derivedFrom": ["knip"],
+      "imports": [],
+      "importedBy": ["backend/src/app.module.ts"],
+      "sourceConfidence": "medium"
+    },
+    {
+      "path": "backend/src/modules/x/orphan.service.ts",
+      "id": "backend/src/modules/x/orphan.service.ts",
+      "owner": "@team-backend",
+      "domain": "backend-core",
+      "status": "LEGACY",
+      "kind": "service",
+      "loc": 30,
+      "runtime": false,
+      "risk": "low",
+      "deletePolicy": "FREE",
+      "derivedFrom": ["depcruise"],
+      "imports": [],
+      "importedBy": [],
+      "sourceConfidence": "medium"
+    }
+  ],
+  "db": {},
+  "deps": {},
+  "runtime": {}
+}

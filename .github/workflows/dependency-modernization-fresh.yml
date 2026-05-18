@@ -1,0 +1,93 @@
+name: 📦 Dependency Modernization Inventory freshness (PR-9a, BLOCKING)
+
+# PR-9a — Dependency Modernization Control Plane freshness gate.
+#
+# The inventory at audit/dependencies/dependency-modernization-inventory.json
+# is a pure deterministic projection of:
+#   - audit/registry/deps.json
+#   - audit/dependencies/family-overlay.yaml
+#   - package-lock.json
+# with an artifact_immutability_hash = sha256(depsSha || overlaySha || lockfileSha).
+#
+# Drift is always a forgotten regenerate — never transient state. BLOCKING from
+# day one is justified by the cryptographic invariant (input shas + final hash).
+# Fix is mechanical: `npm run audit:pr-9-modernization-inventory`.
+#
+# Does NOT install or upgrade any package. Pure static projection.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "audit/registry/deps.json"
+      - "audit/dependencies/family-overlay.yaml"
+      - "audit/dependencies/dependency-modernization-inventory.json"
+      - "scripts/audit/build-dependency-modernization-inventory.ts"
+      - "scripts/audit/dependency-modernization.schema.ts"
+      - "package-lock.json"
+      - ".github/workflows/dependency-modernization-fresh.yml"
+  push:
+    branches: [main]
+    paths:
+      - "audit/registry/deps.json"
+      - "audit/dependencies/family-overlay.yaml"
+      - "audit/dependencies/dependency-modernization-inventory.json"
+      - "scripts/audit/build-dependency-modernization-inventory.ts"
+      - "scripts/audit/dependency-modernization.schema.ts"
+      - "package-lock.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: dependency-modernization-fresh-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  inventory-fresh:
+    name: Dependency Modernization Inventory determinism (BLOCKING)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Determinism check (committed vs regenerated)
+        # --check mode rebuilds the artifact in a tmp file and compares its sha256
+        # against the committed file. Exits 1 on any drift; prints the regenerator
+        # command. Pure file-system operations — no network, no install.
+        run: npm run audit:pr-9-modernization-inventory:check
+
+      - name: Append summary
+        if: always()
+        run: |
+          {
+            echo "# 📦 Dependency Modernization Inventory (PR-9a)"
+            echo ""
+            echo "_BLOCKING determinism gate — drift = forgotten regenerate, fix is mechanical._"
+            echo ""
+            if [ -f audit/dependencies/dependency-modernization-inventory.json ]; then
+              echo '```json'
+              jq '{
+                inventoryFormat,
+                schemaVersion,
+                matrixVersion,
+                artifact_immutability_hash,
+                summary
+              }' audit/dependencies/dependency-modernization-inventory.json
+              echo '```'
+            else
+              echo "⚠️ Inventory file not present in the tree — see job log."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
