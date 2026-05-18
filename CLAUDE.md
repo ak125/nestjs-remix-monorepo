@@ -5,6 +5,18 @@
 
 ---
 
+## Vocabulaire déploiement — lire `.claude/rules/deployment.md` AVANT toute action infra
+
+Le vocabulaire **DEV / PREPROD / PROD** est strict. Trois environnements distincts coexistent sur deux machines physiques (mapping IP × port × tag dans la rule canon, jamais hardcodé ici) :
+
+- **DEV** : poste opérateur, pas de container deploy
+- **PREPROD** : container CI éphémère sur le runner self-hosted, READ_ONLY=true, E2E Smoke + Lighthouse seulement
+- **PROD** : container live derrière Caddy, trafic réel utilisateurs
+
+Formulations **interdites** par lint CI `scripts/lint/check-preprod-vocabulary.sh` : "DEV pré-prod", "preprod.automecanik.com" (hostname inexistant), "preprod miroir", "staging soak/env/server/VPS/deploy/deployment/gate". Voir [`.claude/rules/deployment.md`](.claude/rules/deployment.md) pour le glossary canon complet (matrice machine × port × tag) + ADR-075 vault pour la décision gouvernance.
+
+---
+
 ## Démarrage de session — lire `log.md` pour contexte récent
 
 Au début de chaque session Claude Code, lire les ~20 dernières entrées de
