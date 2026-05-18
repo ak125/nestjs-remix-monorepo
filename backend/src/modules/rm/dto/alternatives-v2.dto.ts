@@ -62,4 +62,6 @@ export const AlternativesV2ResponseSchema = z.object({
   alternativeGammes: z.array(AlternativeGammeSchema),
   relatedModels: z.array(RelatedModelSchema),
 });
-export type AlternativesV2Response = z.infer<typeof AlternativesV2ResponseSchema>;
+export type AlternativesV2Response = z.infer<
+  typeof AlternativesV2ResponseSchema
+>;

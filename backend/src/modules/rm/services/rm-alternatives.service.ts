@@ -51,7 +51,11 @@ export class RmAlternativesService {
     private readonly cache: CacheService,
   ) {}
 
-  async compute(type_id: number, pg_id: number, limit: number): Promise<AlternativesV2Response> {
+  async compute(
+    type_id: number,
+    pg_id: number,
+    limit: number,
+  ): Promise<AlternativesV2Response> {
     const cacheKey = `${CACHE_KEY_PREFIX}:${type_id}:${pg_id}:${CACHE_KEY_VERSION}`;
 
     const cached = await this.cache.get(cacheKey);
@@ -70,7 +74,10 @@ export class RmAlternativesService {
       this.fetchCompatibleGammes(type_id, pg_id, limit * 2),
     ]);
 
-    const gammes = this.rankGammes(gammeRows, pg_id).slice(0, Math.min(8, limit));
+    const gammes = this.rankGammes(gammeRows, pg_id).slice(
+      0,
+      Math.min(8, limit),
+    );
 
     if (!target) {
       const empty = this.buildResponse([], gammes, []);
@@ -83,8 +90,15 @@ export class RmAlternativesService {
       this.fetchRelatedModels(target, pg_id, 4),
     ]);
 
-    const vehicles = this.rankVehicles(vehicleCands, target).slice(0, Math.min(6, limit));
-    const models = await this.attachRepresentativeTypes(modelRows, pg_id, target);
+    const vehicles = this.rankVehicles(vehicleCands, target).slice(
+      0,
+      Math.min(6, limit),
+    );
+    const models = await this.attachRepresentativeTypes(
+      modelRows,
+      pg_id,
+      target,
+    );
 
     const response = this.buildResponse(vehicles, gammes, models);
     await this.cache.set(cacheKey, JSON.stringify(response), CACHE_TTL_SECONDS);
@@ -97,7 +111,11 @@ export class RmAlternativesService {
    * (as set up in tests) or `.supabase` (the actual protected property).
    */
   private getClient(): any {
-    return (this.supabase as any).client ?? (this.supabase as any).supabase ?? this.supabase;
+    return (
+      (this.supabase as any).client ??
+      (this.supabase as any).supabase ??
+      this.supabase
+    );
   }
 
   private async loadTarget(type_id: number): Promise<VehicleTarget | null> {
@@ -160,7 +178,9 @@ export class RmAlternativesService {
     );
     const { data: modeles } = await sb
       .from('auto_modele')
-      .select('modele_id, modele_name, modele_alias, modele_marque_id, modele_parent')
+      .select(
+        'modele_id, modele_name, modele_alias, modele_marque_id, modele_parent',
+      )
       .in('modele_id', modele_ids);
 
     const modele_index = new Map<number, any>(
@@ -174,7 +194,9 @@ export class RmAlternativesService {
       .single();
 
     return types
-      .filter((t: any) => parseInt(String(t.type_id_i), 10) !== target.target_type_id)
+      .filter(
+        (t: any) => parseInt(String(t.type_id_i), 10) !== target.target_type_id,
+      )
       .map((t: any) => {
         const m = modele_index.get(parseInt(String(t.type_modele_id), 10));
         if (!m) return null;
@@ -196,10 +218,15 @@ export class RmAlternativesService {
           power_ps_num: parseInt(String(t.type_power_ps), 10) || 0,
         } as VehicleCandidate;
       })
-      .filter((v: VehicleCandidate | null): v is VehicleCandidate => v !== null);
+      .filter(
+        (v: VehicleCandidate | null): v is VehicleCandidate => v !== null,
+      );
   }
 
-  rankVehicles(candidates: VehicleCandidate[], target: VehicleTarget): AlternativeVehicle[] {
+  rankVehicles(
+    candidates: VehicleCandidate[],
+    target: VehicleTarget,
+  ): AlternativeVehicle[] {
     const seen_modeles = new Set<number>();
     return candidates
       .map((c) => {
@@ -211,11 +238,14 @@ export class RmAlternativesService {
               ? 2
               : 3;
         const power_proximity =
-          1 - Math.min(1, Math.abs(c.power_ps_num - target.target_power_ps) / 500);
+          1 -
+          Math.min(1, Math.abs(c.power_ps_num - target.target_power_ps) / 500);
         const score = TIER_WEIGHT[tier] * Math.max(0.1, power_proximity);
         return { c, tier, score };
       })
-      .sort((a, b) => b.score - a.score || a.c.type_id.localeCompare(b.c.type_id))
+      .sort(
+        (a, b) => b.score - a.score || a.c.type_id.localeCompare(b.c.type_id),
+      )
       .filter(({ c }) => {
         if (seen_modeles.has(c.modele_id)) return false;
         seen_modeles.add(c.modele_id);
@@ -327,7 +357,9 @@ export class RmAlternativesService {
     target: VehicleTarget,
     pg_id: number,
     limit: number,
-  ): Promise<Array<{ modele_id: number; modele_name: string; modele_alias: string }>> {
+  ): Promise<
+    Array<{ modele_id: number; modele_name: string; modele_alias: string }>
+  > {
     const sb = this.getClient();
     const { data: compat_types } = await sb
       .from('pieces_relation_type')
@@ -371,7 +403,11 @@ export class RmAlternativesService {
   }
 
   private async attachRepresentativeTypes(
-    modeles: Array<{ modele_id: number; modele_name: string; modele_alias: string }>,
+    modeles: Array<{
+      modele_id: number;
+      modele_name: string;
+      modele_alias: string;
+    }>,
     pg_id: number,
     target: VehicleTarget,
   ): Promise<RelatedModel[]> {
@@ -413,8 +449,12 @@ export class RmAlternativesService {
           return acc;
         }, new Map<number, number>());
       if (reliable.size === 0) continue;
-      const best = [...reliable.entries()].sort((a, b) => b[1] - a[1] || a[0] - b[0])[0];
-      const rep = types.find((t: any) => parseInt(String(t.type_id), 10) === best[0]);
+      const best = [...reliable.entries()].sort(
+        (a, b) => b[1] - a[1] || a[0] - b[0],
+      )[0];
+      const rep = types.find(
+        (t: any) => parseInt(String(t.type_id), 10) === best[0],
+      );
       if (!rep) continue;
       result.push({
         modele_id: m.modele_id,
@@ -431,14 +471,17 @@ export class RmAlternativesService {
   }
 
   canonicalize(input: unknown): string {
-    if (input === null || typeof input !== 'object') return JSON.stringify(input);
+    if (input === null || typeof input !== 'object')
+      return JSON.stringify(input);
     if (Array.isArray(input))
       return '[' + input.map((v) => this.canonicalize(v)).join(',') + ']';
     const keys = Object.keys(input as Record<string, unknown>).sort();
     return (
       '{' +
       keys
-        .map((k) => JSON.stringify(k) + ':' + this.canonicalize((input as any)[k]))
+        .map(
+          (k) => JSON.stringify(k) + ':' + this.canonicalize((input as any)[k]),
+        )
         .join(',') +
       '}'
     );
@@ -455,7 +498,8 @@ export class RmAlternativesService {
       relatedModels: models,
     };
     const etag =
-      'sha256-' + createHash('sha256').update(this.canonicalize(payload)).digest('hex');
+      'sha256-' +
+      createHash('sha256').update(this.canonicalize(payload)).digest('hex');
     return {
       success: true,
       version: 'v2',

@@ -4,8 +4,10 @@ import { CacheService } from '@cache/cache.service';
 
 export type UaClass = 'bot' | 'browser' | 'unknown';
 
-const BOT_PATTERNS = /(Googlebot|bingbot|YandexBot|DuckDuckBot|Baiduspider|Slurp|AhrefsBot|SemrushBot|FacebookExternalHit|Twitterbot|LinkedInBot)/i;
-const BROWSER_PATTERNS = /(Chrome|Safari|Firefox|Edge|Opera|Mozilla\/5\.0).+(AppleWebKit|Gecko|Trident)/i;
+const BOT_PATTERNS =
+  /(Googlebot|bingbot|YandexBot|DuckDuckBot|Baiduspider|Slurp|AhrefsBot|SemrushBot|FacebookExternalHit|Twitterbot|LinkedInBot)/i;
+const BROWSER_PATTERNS =
+  /(Chrome|Safari|Firefox|Edge|Opera|Mozilla\/5\.0).+(AppleWebKit|Gecko|Trident)/i;
 
 @Injectable()
 export class RmSoft404TrackerService {
@@ -24,12 +26,20 @@ export class RmSoft404TrackerService {
   }
 
   private getClient() {
-    return (this.supabase as any).client ?? (this.supabase as any).supabase ?? this.supabase;
+    return (
+      (this.supabase as any).client ??
+      (this.supabase as any).supabase ??
+      this.supabase
+    );
   }
 
   async track(
     body: { pg_id: number; type_id: number },
-    ctx: { sessionId: string | null; ua: string | null; referrer: string | null },
+    ctx: {
+      sessionId: string | null;
+      ua: string | null;
+      referrer: string | null;
+    },
   ): Promise<void> {
     const sessionId = ctx.sessionId ?? `anon-${body.type_id}-${body.pg_id}`;
     const throttleKey = `track-soft-404:${sessionId}`;

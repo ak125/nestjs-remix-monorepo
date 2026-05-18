@@ -1,5 +1,12 @@
 import { Link } from "@remix-run/react";
-import { Search, ArrowRight, Car, Package, GitBranch, MessageSquare } from "lucide-react";
+import {
+  Search,
+  ArrowRight,
+  Car,
+  Package,
+  GitBranch,
+  MessageSquare,
+} from "lucide-react";
 import { memo } from "react";
 import { ErrorSearchBar } from "~/components/errors/ErrorSearchBar";
 import { PopularCategories } from "~/components/errors/PopularCategories";
@@ -96,7 +103,7 @@ export const NoProductsAlternatives = memo(function NoProductsAlternatives({
 }) {
   const gammeUrl = `/pieces/${data.gammeAlias}-${data.gammeId}.html`;
   const contactUrl = `/contact?ref=soft-404&gamme=${data.gammeId}&type=${
-    data.alternativeVehicles[0]?.type_id ?? ''
+    data.alternativeVehicles[0]?.type_id ?? ""
   }`;
   const ctx = data.vehicleContext;
   const vehicleH1 = `${data.gammeName} — non référencé pour votre ${ctx.marqueName} ${ctx.modeleName} ${ctx.typeName}`;
@@ -110,9 +117,12 @@ export const NoProductsAlternatives = memo(function NoProductsAlternatives({
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-100 mb-4">
               <Package className="w-8 h-8 text-amber-600" />
             </div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{vehicleH1}</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+              {vehicleH1}
+            </h1>
             <p className="text-lg text-gray-600 mb-4">
-              Cette pièce n&apos;est pas référencée pour votre véhicule. Découvrez les alternatives compatibles ci-dessous.
+              Cette pièce n&apos;est pas référencée pour votre véhicule.
+              Découvrez les alternatives compatibles ci-dessous.
             </p>
             <Link
               to={gammeUrl}
@@ -133,13 +143,17 @@ export const NoProductsAlternatives = memo(function NoProductsAlternatives({
             <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                 <Car className="w-5 h-5 mr-2 text-blue-500" />
-                D&apos;autres motorisations de la {ctx.marqueName} {ctx.modeleName} ont ce {data.gammeName.toLowerCase()}
+                D&apos;autres motorisations de la {ctx.marqueName}{" "}
+                {ctx.modeleName} ont ce {data.gammeName.toLowerCase()}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {data.alternativeVehicles.map((v) => (
                   <Link
                     key={v.type_id}
-                    to={buildGammeVehicleUrl({ pg_alias: data.gammeAlias, pg_id: data.gammeId }, v)}
+                    to={buildGammeVehicleUrl(
+                      { pg_alias: data.gammeAlias, pg_id: data.gammeId },
+                      v,
+                    )}
                     className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-blue-50 hover:shadow-sm transition-all group"
                   >
                     <div>
@@ -162,7 +176,10 @@ export const NoProductsAlternatives = memo(function NoProductsAlternatives({
             <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                 <Search className="w-5 h-5 mr-2 text-green-500" />
-                D&apos;autres pièces compatibles avec votre {ctx.marqueName} {ctx.modeleName} {ctx.typeName}
+                D&apos;autres pièces compatibles avec votre {
+                  ctx.marqueName
+                }{" "}
+                {ctx.modeleName} {ctx.typeName}
               </h2>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                 {data.alternativeGammes.map((g) => (
@@ -195,13 +212,17 @@ export const NoProductsAlternatives = memo(function NoProductsAlternatives({
             <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                 <GitBranch className="w-5 h-5 mr-2 text-purple-500" />
-                Autres générations qui proposent ce {data.gammeName.toLowerCase()}
+                Autres générations qui proposent ce{" "}
+                {data.gammeName.toLowerCase()}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {data.relatedModels.map((m) => (
                   <Link
                     key={m.modele_id}
-                    to={buildRelatedModelUrl({ pg_alias: data.gammeAlias, pg_id: data.gammeId }, m)}
+                    to={buildRelatedModelUrl(
+                      { pg_alias: data.gammeAlias, pg_id: data.gammeId },
+                      m,
+                    )}
                     className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-purple-50 hover:shadow-sm transition-all group"
                   >
                     <span className="text-sm font-medium text-gray-800 group-hover:text-purple-700">
@@ -218,7 +239,8 @@ export const NoProductsAlternatives = memo(function NoProductsAlternatives({
           <div className="bg-blue-50 rounded-lg border border-blue-200 p-6 mb-6 text-center">
             <MessageSquare className="w-8 h-8 mx-auto text-blue-500 mb-2" />
             <p className="text-sm text-gray-700 mb-3">
-              Vous cherchez précisément un {data.gammeName.toLowerCase()} pour votre {ctx.marqueName} {ctx.modeleName} {ctx.typeName} ?
+              Vous cherchez précisément un {data.gammeName.toLowerCase()} pour
+              votre {ctx.marqueName} {ctx.modeleName} {ctx.typeName} ?
             </p>
             <Link
               to={contactUrl}

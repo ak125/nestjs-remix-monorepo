@@ -19,25 +19,26 @@ export interface GammeCluster {
   readonly member_pg_ids: readonly number[];
 }
 
-export const GAMME_CLUSTERS: Readonly<Record<string, GammeCluster>> = Object.freeze({
-  // Cluster freinage arrière (pg_id 3859 confirmé : Kit de freins arrière)
-  'freinage-arriere': {
-    parent_pg_id: null, // à confirmer pre-merge (gamme "système freinage" si existe)
-    member_pg_ids: [3859],
-  },
-  // Cluster freinage avant
-  'freinage-avant': {
-    parent_pg_id: null,
-    member_pg_ids: [],
-  },
-  // Autres clusters macro à valider pre-merge :
-  'allumage': { parent_pg_id: null, member_pg_ids: [] },
-  'distribution': { parent_pg_id: null, member_pg_ids: [] },
-  'filtration': { parent_pg_id: null, member_pg_ids: [] },
-  'refroidissement': { parent_pg_id: null, member_pg_ids: [] },
-  'suspension': { parent_pg_id: null, member_pg_ids: [] },
-  'transmission': { parent_pg_id: null, member_pg_ids: [] },
-});
+export const GAMME_CLUSTERS: Readonly<Record<string, GammeCluster>> =
+  Object.freeze({
+    // Cluster freinage arrière (pg_id 3859 confirmé : Kit de freins arrière)
+    'freinage-arriere': {
+      parent_pg_id: null, // à confirmer pre-merge (gamme "système freinage" si existe)
+      member_pg_ids: [3859],
+    },
+    // Cluster freinage avant
+    'freinage-avant': {
+      parent_pg_id: null,
+      member_pg_ids: [],
+    },
+    // Autres clusters macro à valider pre-merge :
+    allumage: { parent_pg_id: null, member_pg_ids: [] },
+    distribution: { parent_pg_id: null, member_pg_ids: [] },
+    filtration: { parent_pg_id: null, member_pg_ids: [] },
+    refroidissement: { parent_pg_id: null, member_pg_ids: [] },
+    suspension: { parent_pg_id: null, member_pg_ids: [] },
+    transmission: { parent_pg_id: null, member_pg_ids: [] },
+  });
 
 /**
  * Renvoie le cluster auquel appartient un pg_id, ou null si aucun match.

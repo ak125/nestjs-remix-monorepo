@@ -21,20 +21,18 @@ function buildSoft404Meta(data: NoProductsData): MetaDescriptor[] {
       ? `${ctx.yearFrom}-${ctx.yearTo}`
       : ctx.yearFrom || ctx.yearTo;
   const vehicleSuffix =
-    `${ctx.marqueName} ${ctx.modeleName} ${ctx.typeName}${years ? ` (${years})` : ""}`.replace(
-      /\s+/g,
-      " ",
-    ).trim();
+    `${ctx.marqueName} ${ctx.modeleName} ${ctx.typeName}${years ? ` (${years})` : ""}`
+      .replace(/\s+/g, " ")
+      .trim();
 
   const title = `${data.gammeName} non référencé pour ${vehicleSuffix} — Alternatives | ${SITE}`;
 
   const ps = ctx.typePowerPs ? `${ctx.typePowerPs}ch ` : "";
   const fuel = ctx.typeFuel ? `${ctx.typeFuel} ` : "";
   const description =
-    `Le ${data.gammeName.toLowerCase()} n'est pas référencé pour la ${ctx.marqueName} ${ctx.modeleName} ${ctx.typeName} ${ps}${fuel}${years ? `(${years})` : ""}. Découvrez les alternatives compatibles et les autres motorisations qui disposent de ce produit.`.replace(
-      /\s+/g,
-      " ",
-    ).trim();
+    `Le ${data.gammeName.toLowerCase()} n'est pas référencé pour la ${ctx.marqueName} ${ctx.modeleName} ${ctx.typeName} ${ps}${fuel}${years ? `(${years})` : ""}. Découvrez les alternatives compatibles et les autres motorisations qui disposent de ce produit.`
+      .replace(/\s+/g, " ")
+      .trim();
 
   const itemList: Array<{
     "@type": "ListItem";

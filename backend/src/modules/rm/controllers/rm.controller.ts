@@ -20,7 +20,7 @@ import {
 import { RmBuilderService } from '../services/rm-builder.service';
 import { RmAlternativesService } from '../services/rm-alternatives.service';
 import { RmSoft404TrackerService } from '../services/rm-soft404-tracker.service';
-import { TrackSoft404BodySchema, type TrackSoft404Body } from '../dto/alternatives-v2.dto';
+import { TrackSoft404BodySchema } from '../dto/alternatives-v2.dto';
 
 /**
  * 🏗️ RM Controller
@@ -314,11 +314,14 @@ export class RmController {
     if (!parsed.success) return; // fire-and-forget : silent reject on invalid body
 
     const sessionId = (req as any)?.session?.id ?? null;
-    await this.rmTracker.track(parsed.data as { pg_id: number; type_id: number }, {
-      sessionId,
-      ua: ua ?? null,
-      referrer: referer ?? null,
-    });
+    await this.rmTracker.track(
+      parsed.data as { pg_id: number; type_id: number },
+      {
+        sessionId,
+        ua: ua ?? null,
+        referrer: referer ?? null,
+      },
+    );
   }
 
   /**
