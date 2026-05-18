@@ -801,3 +801,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-cp-cf-rum-collector`
 - **Décision** : feat(seo-cp): pr-2a-2.5 cloudflare rum collector (web vitals edge ingestion)
 - **Sortie** : PR #583 | commits 24fdf7367
+
+## 2026-05-18 — chore/impeccable-cli-devdep (auto)
+
+- **Branche** : `chore/impeccable-cli-devdep`
+- **Décision** : chore(frontend): add impeccable@2.1.9 CLI for design anti-pattern detection
+- **Sortie** : PR #597 | commits 54afbb9d8
