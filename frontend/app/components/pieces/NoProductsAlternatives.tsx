@@ -4,23 +4,51 @@ import { memo } from "react";
 import { ErrorSearchBar } from "~/components/errors/ErrorSearchBar";
 import { PopularCategories } from "~/components/errors/PopularCategories";
 
-interface AlternativeGamme {
+export interface VehicleContext {
+  marqueName: string;
+  modeleName: string;
+  typeName: string;
+  typeFuel: string;
+  typePowerPs: string;
+  yearFrom: string;
+  yearTo: string;
+}
+
+export interface RelatedModel {
+  modele_id: number;
+  modele_name: string;
+  modele_alias: string;
+  marque_id: number;
+  marque_name: string;
+  marque_alias: string;
+  representative_type_id: string;
+  representative_type_alias: string;
+}
+
+export interface AlternativeGamme {
   pg_id: number;
   pg_name: string;
   pg_alias: string;
   pg_pic: string | null;
+  piece_count: number;
+  tier: 1 | 2 | 3;
 }
 
-interface AlternativeVehicle {
+export interface AlternativeVehicle {
   type_id: string;
   type_name: string;
   type_alias: string | null;
+  type_fuel: string;
+  type_power_ps: string;
+  type_year_from: string;
+  type_year_to: string;
+  modele_id: number;
   modele_name: string;
   modele_alias: string;
-  modele_id: number;
+  marque_id: number;
   marque_name: string;
   marque_alias: string;
-  marque_id: number;
+  tier: 1 | 2 | 3;
 }
 
 export interface NoProductsData {
@@ -29,8 +57,10 @@ export interface NoProductsData {
   gammeAlias: string;
   gammeName: string;
   vehicleLabel: string;
+  vehicleContext: VehicleContext;
   alternativeGammes: AlternativeGamme[];
   alternativeVehicles: AlternativeVehicle[];
+  relatedModels: RelatedModel[];
 }
 
 function buildGammeVehicleUrl(
