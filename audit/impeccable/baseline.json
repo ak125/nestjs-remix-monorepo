@@ -1,13 +1,13 @@
 {
   "$schema": "https://raw.githubusercontent.com/ak125/nestjs-remix-monorepo/main/audit/impeccable/baseline.schema.json",
   "note": "Decremental baseline for impeccable design anti-pattern ratchet (see audit/impeccable/README.md). Regenerate via scripts/audit/impeccable-baseline-write.mjs.",
-  "generatedAt": "2026-05-18T17:09:15.139Z",
-  "computedFrom": "git@36fb31498f4d4d5205b70634ed29ff4f52f3a957",
-  "total": 248,
+  "generatedAt": "2026-05-18T17:26:58.227Z",
+  "computedFrom": "git@0f2e9fd8a84e881233ab01c3e7b7de1045405948",
+  "total": 240,
   "byCategory": {
     "ai-color-palette": 115,
     "border-accent-on-rounded": 10,
-    "bounce-easing": 11,
+    "bounce-easing": 3,
     "gradient-text": 7,
     "gray-on-color": 27,
     "overused-font": 2,
@@ -23,7 +23,7 @@
     "frontend/app/components/blog/CompactBlogHeader.tsx": 1,
     "frontend/app/components/blog/conseil/section-config.tsx": 2,
     "frontend/app/components/blog/IntentHero.tsx": 1,
-    "frontend/app/components/blog/NewsletterCTA.tsx": 3,
+    "frontend/app/components/blog/NewsletterCTA.tsx": 2,
     "frontend/app/components/cart/AddToCartButton.tsx": 1,
     "frontend/app/components/cart/CartItemRow.tsx": 1,
     "frontend/app/components/catalog/PiecesCatalogGrid.tsx": 2,
@@ -32,7 +32,6 @@
     "frontend/app/components/ecommerce/ProductCard.tsx": 1,
     "frontend/app/components/ecommerce/QuickCartDrawer.tsx": 1,
     "frontend/app/components/ecommerce/SmartHeader.tsx": 2,
-    "frontend/app/components/expert/CompatibilityResolverModal.tsx": 1,
     "frontend/app/components/filters/FilterPresets.tsx": 1,
     "frontend/app/components/gamme/GammeMotorizations.tsx": 1,
     "frontend/app/components/gamme/GammeQuickNav.tsx": 1,
@@ -45,10 +44,9 @@
     "frontend/app/components/home/PopularSearches.tsx": 1,
     "frontend/app/components/layout/GlobalSearch.tsx": 2,
     "frontend/app/components/layout/templates/Gallery.tsx": 1,
-    "frontend/app/components/navbar/CartSidebarSimple.tsx": 1,
     "frontend/app/components/navbar/UserDropdownMenu.tsx": 3,
     "frontend/app/components/orders/OrderEditForm.tsx": 1,
-    "frontend/app/components/pieces/ai-predictions/AIPredictionsPanel.tsx": 13,
+    "frontend/app/components/pieces/ai-predictions/AIPredictionsPanel.tsx": 12,
     "frontend/app/components/pieces/GuideSection.tsx": 1,
     "frontend/app/components/pieces/InformationsSection.tsx": 1,
     "frontend/app/components/pieces/MotorisationsSection.tsx": 1,
@@ -57,7 +55,7 @@
     "frontend/app/components/pieces/PiecesBuyingGuide.tsx": 2,
     "frontend/app/components/pieces/PiecesCompatibilityInfo.tsx": 3,
     "frontend/app/components/pieces/PiecesGrid.tsx": 1,
-    "frontend/app/components/pieces/PiecesGridView.tsx": 2,
+    "frontend/app/components/pieces/PiecesGridView.tsx": 1,
     "frontend/app/components/pieces/PiecesHeader.tsx": 1,
     "frontend/app/components/pieces/PiecesStatistics.tsx": 6,
     "frontend/app/components/pieces/PiecesVehicleContent.tsx": 1,
@@ -132,6 +130,6 @@
     "frontend/app/routes/reviews.create.tsx": 1,
     "frontend/app/routes/staff._index.tsx": 1,
     "frontend/app/routes/support.ai.tsx": 6,
-    "frontend/app/styles/animations.css": 5
+    "frontend/app/styles/animations.css": 2
   }
 }

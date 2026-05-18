@@ -89,7 +89,7 @@ export const CartSidebarSimple = memo(function CartSidebarSimple({
         >
           {subtotal >= FREE_SHIPPING_THRESHOLD ? (
             <div className="flex items-center gap-3">
-              <span className="text-2xl animate-bounce">🎉</span>
+              <span className="text-2xl animate-pulse">🎉</span>
               <div>
                 <p className="font-bold text-lg">Livraison OFFERTE !</p>
                 <p className="text-xs opacity-90">Vous économisez 9,90€</p>

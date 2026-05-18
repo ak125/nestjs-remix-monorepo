@@ -1872,14 +1872,14 @@
       "declaredIn": [
         "frontend/package.json"
       ],
-      "id": "npm:@vitest/browser@^4.1.5",
+      "id": "npm:@vitest/browser@^4.1.6",
       "name": "@vitest/browser",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^4.1.5",
+      "version": "^4.1.6",
       "workspaces": [
         "@fafa/frontend"
       ]

@@ -278,7 +278,7 @@ const AIFooter: React.FC<{
       <div className="flex items-center gap-4">
         <div className="relative">
           <div className="w-12 h-12 bg-gradient-to-r from-violet-500 via-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center shadow-lg">
-            <span className="text-white text-lg animate-bounce">🤖</span>
+            <span className="text-white text-lg animate-pulse">🤖</span>
           </div>
           <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white animate-pulse" />
         </div>

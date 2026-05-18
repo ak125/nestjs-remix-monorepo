@@ -132,8 +132,8 @@ function VehicleResultCard({
         {/* Celebration sparkles */}
         {showCelebration && isCompatible && (
           <>
-            <Sparkles className="absolute -top-2 -right-2 h-6 w-6 text-amber-400 animate-bounce" />
-            <Sparkles className="absolute -top-1 -left-1 h-4 w-4 text-amber-400 animate-bounce delay-100" />
+            <Sparkles className="absolute -top-2 -right-2 h-6 w-6 text-amber-400 animate-pulse" />
+            <Sparkles className="absolute -top-1 -left-1 h-4 w-4 text-amber-400 animate-pulse delay-100" />
           </>
         )}
 
