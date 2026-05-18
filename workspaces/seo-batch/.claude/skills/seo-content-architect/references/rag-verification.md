@@ -69,10 +69,10 @@ Interroger la section correspondant au rôle de page cible :
 ```bash
 # Recherche complementaire avec role targeting (v2.5)
 # Enrichir la query avec des mots-cles de section selon le role cible :
-# R3 Blog/guide → "guide achat choix selection" (+ injecter template de conseils-role.md §7)
-# R3 Blog/conseils → "entretien remplacement etapes" (+ injecter template de conseils-role.md §7)
-# R4 Reference  → "definition technique composants" (+ injecter concepts partages de r4-reference-role.md §8)
-# R5 Diagnostic → "symptomes diagnostic panne"
+# R6_GUIDE_ACHAT → "guide achat choix selection" (+ injecter template de guide-achat-role.md §7)
+# R3_CONSEILS    → "entretien remplacement etapes" (+ injecter template de conseils-role.md §7)
+# R4_REFERENCE   → "definition technique composants" (+ injecter concepts partages de r4-reference-role.md §8)
+# R5_DIAGNOSTIC  → "symptomes diagnostic panne"
 curl -s -X POST http://localhost:3000/api/rag/search \
   -H "Content-Type: application/json" \
   -d '{"query": "{nom_piece} {section_keywords}", "limit": 5, "routing": {"target_role": "{ROLE}"}}' \
