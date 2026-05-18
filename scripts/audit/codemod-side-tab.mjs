@@ -27,10 +27,11 @@
 //   node scripts/audit/codemod-side-tab.mjs --apply    # write changes
 //   node scripts/audit/codemod-side-tab.mjs --files <file1> <file2> --apply
 
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdtempSync, rmSync } from "node:fs";
 import { argv, exit, stderr, stdout } from "node:process";
-import { execSync } from "node:child_process";
-import { resolve, relative } from "node:path";
+import { execSync, spawnSync } from "node:child_process";
+import { resolve, relative, join } from "node:path";
+import { tmpdir } from "node:os";
 
 const SIDE_BORDER_RE = /\bborder-(?:l|r)-(?:2|4|8)\b/g;
 const TAILWIND_COLOR_SHADE_RE =
@@ -145,18 +146,24 @@ function processFile(path) {
 
 function unifiedDiff(before, after, path) {
   // Use the system `diff -u` since we have it and don't want a JS diff library.
-  const tmp1 = `/tmp/cm-side-tab-before-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-  const tmp2 = `${tmp1}-after`;
+  // Use `mkdtempSync` for unpredictable tmp dir (CodeQL js/insecure-temporary-file)
+  // and `spawnSync` with array args (CodeQL js/indirect-command-line-injection).
+  const dir = mkdtempSync(join(tmpdir(), "cm-side-tab-"));
+  const tmp1 = join(dir, "before");
+  const tmp2 = join(dir, "after");
   try {
     writeFileSync(tmp1, before);
     writeFileSync(tmp2, after);
-    return execSync(
-      `diff -u "${tmp1}" "${tmp2}" --label "a/${path}" --label "b/${path}" || true`,
+    const r = spawnSync(
+      "diff",
+      ["-u", tmp1, tmp2, "--label", `a/${path}`, "--label", `b/${path}`],
       { encoding: "utf8" },
     );
+    // diff exits 1 when files differ (the normal case here) — we want the output.
+    return r.stdout ?? "";
   } finally {
     try {
-      execSync(`rm -f "${tmp1}" "${tmp2}"`);
+      rmSync(dir, { recursive: true, force: true });
     } catch {}
   }
 }

@@ -233,7 +233,7 @@ export default function CalendrierEntretienPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <Alert className="mb-6 bg-amber-50">
+              <Alert className="mb-6 border-amber-200 bg-amber-50">
                 <AlertTriangle className="w-4 h-4 text-amber-600" />
                 <AlertDescription className="text-amber-800">
                   Ces intervalles sont des moyennes. Consultez toujours le
@@ -418,10 +418,10 @@ export default function CalendrierEntretienPage() {
                   {calendar.alerts.map((palier) => (
                     <div
                       key={palier.milestone_km}
-                      className="pl-4"
+                      className="border-l-4 border-purple-300 pl-4"
                     >
                       <h3 className="font-semibold text-lg flex items-center gap-2 mb-2">
-                        <Badge className="bg-purple-100 text-purple-700 text-sm">
+                        <Badge className="bg-purple-100 text-purple-700 border-purple-200 text-sm">
                           {palier.milestone_km.toLocaleString("fr-FR")} km
                         </Badge>
                       </h3>
@@ -446,7 +446,7 @@ export default function CalendrierEntretienPage() {
 
         {/* ── Section 5 : CTA (statique éditorial) ── */}
         <section id="cta">
-          <Card className="bg-gradient-to-r from-orange-50 to-amber-50">
+          <Card className="bg-gradient-to-r from-orange-50 to-amber-50 border-orange-200">
             <CardContent className="py-8">
               <div className="text-center space-y-4">
                 <h2 className="text-2xl font-bold text-gray-900">
@@ -486,7 +486,7 @@ export default function CalendrierEntretienPage() {
         </section>
 
         {/* ── Disclaimer ── */}
-        <Alert className="">
+        <Alert className="border-gray-200">
           <AlertTriangle className="w-4 h-4" />
           <AlertDescription className="text-gray-600 text-sm">
             Ce calendrier est fourni a titre indicatif. Les intervalles

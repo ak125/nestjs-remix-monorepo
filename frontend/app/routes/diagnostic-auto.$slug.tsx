@@ -379,7 +379,7 @@ export default function DiagnosticAutoDetail() {
             {(() => {
               const symptomImg = getSectionImageConfig("diagnostic", "symptom");
               return (
-                <Card className="border-l-yellow-500">
+                <Card className="border-l-4 border-l-yellow-500">
                   <CardHeader>
                     <div className="flex items-center gap-3">
                       <HeartPulse className="h-6 w-6 text-yellow-600" />
@@ -425,7 +425,7 @@ export default function DiagnosticAutoDetail() {
                 "technicianCheck",
               );
               return (
-                <Card className="border-l-green-500">
+                <Card className="border-l-4 border-l-green-500">
                   <CardHeader>
                     <div className="flex items-center gap-3">
                       <Eye className="h-6 w-6 text-green-600" />
@@ -466,7 +466,7 @@ export default function DiagnosticAutoDetail() {
 
             {/* Section 3: DTC (95%) - Codes OBD associés */}
             {diagnostic.dtc_codes && diagnostic.dtc_codes.length > 0 && (
-              <Card className="border-l-cta">
+              <Card className="border-l-4 border-l-cta">
                 <CardHeader>
                   <div className="flex items-center gap-3">
                     <Cpu className="h-6 w-6 text-cta" />
@@ -628,7 +628,7 @@ export default function DiagnosticAutoDetail() {
             {/* Section 6: Comment différencier les causes */}
             {diagnostic.differentiation_checklist &&
               diagnostic.differentiation_checklist.length > 0 && (
-                <Card className="border-l-orange-500">
+                <Card className="border-l-4 border-l-orange-500">
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
                       <GitCompare className="h-5 w-5 text-orange-500" />
@@ -680,7 +680,7 @@ export default function DiagnosticAutoDetail() {
             {/* Section 7: Quand consulter un professionnel */}
             {diagnostic.consultation_triggers &&
               diagnostic.consultation_triggers.length > 0 && (
-                <Card className="border-l-red-500">
+                <Card className="border-l-4 border-l-red-500">
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
                       <Stethoscope className="h-5 w-5 text-red-500" />
@@ -877,7 +877,7 @@ export default function DiagnosticAutoDetail() {
             {/* Liens R1 Routeur - Trouver la pièce */}
             {diagnostic.related_gammes &&
               diagnostic.related_gammes.length > 0 && (
-                <Card className="bg-gradient-to-br from-green-50 to-emerald-50">
+                <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2 text-green-800">
                       <ShoppingCart className="h-5 w-5" />
@@ -906,7 +906,7 @@ export default function DiagnosticAutoDetail() {
               )}
 
             {/* Avertissement professionnel */}
-            <Card className="bg-gray-100">
+            <Card className="bg-gray-100 border-gray-300">
               <CardContent className="py-4">
                 <div className="flex items-start gap-3">
                   <Shield className="h-5 w-5 text-gray-600 flex-shrink-0 mt-0.5" />

@@ -808,7 +808,7 @@ export default function AdminDashboard() {
           {activeTab === "security" && (
             <div className="space-y-6">
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                <div className="bg-white rounded-lg shadow-md p-6">
+                <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
                   <div className="flex items-center gap-2 mb-4">
                     <Shield className="h-5 w-5 text-green-600" />
                     <h3 className="text-lg font-medium">Status Sécurité</h3>
@@ -837,7 +837,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                <div className="bg-white rounded-lg shadow-md p-6">
+                <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
                   <div className="flex items-center gap-2 mb-4">
                     <Users className="h-5 w-5 text-blue-600" />
                     <h3 className="text-lg font-medium">Authentification</h3>
@@ -860,7 +860,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                <div className="bg-white rounded-lg shadow-md p-6">
+                <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-purple-500">
                   <div className="flex items-center gap-2 mb-4">
                     <Database className="h-5 w-5 text-purple-600" />
                     <h3 className="text-lg font-medium">Sauvegardes</h3>
@@ -1159,7 +1159,7 @@ export default function AdminDashboard() {
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="hover:shadow-lg transition-all">
+          <Card className="border-green-200 hover:shadow-lg transition-all">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Pages Indexées
@@ -1176,7 +1176,7 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-all">
+          <Card className="border-blue-200 hover:shadow-lg transition-all">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Pages Optimisées
@@ -1191,7 +1191,7 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-all">
+          <Card className="border-purple-200 hover:shadow-lg transition-all">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Taux d'Optimisation
@@ -1206,7 +1206,7 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-all">
+          <Card className="border-orange-200 hover:shadow-lg transition-all">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Trafic Organique

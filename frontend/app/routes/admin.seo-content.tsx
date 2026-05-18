@@ -608,7 +608,7 @@ export default function AdminSeoContent() {
                           </div>
                         </AccordionTrigger>
                         <AccordionContent>
-                          <div className="divide-y pl-4 border-muted ml-2">
+                          <div className="divide-y pl-4 border-l-2 border-muted ml-2">
                             {drafts.map((draft) => (
                               <div
                                 key={draft.slug}

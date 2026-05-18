@@ -311,7 +311,11 @@ export default function AdminMessages() {
 
       {/* Indicateur de source */}
       <div
-        className={`mb-6 p-4 rounded-lg ${ fallbackMode ? "border-warning bg-warning/10" : "border-success bg-success/10" }`}
+        className={`mb-6 p-4 rounded-lg border-l-4 ${
+          fallbackMode
+            ? "border-warning bg-warning/10"
+            : "border-success bg-success/10"
+        }`}
       >
         <div className="flex items-center gap-2">
           {fallbackMode ? (

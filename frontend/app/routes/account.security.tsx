@@ -148,9 +148,9 @@ export const loader: LoaderFunction = async ({ request }) => {
 
 function SecurityScoreCard({ score }: { score: number }) {
   const getScoreColor = (score: number) => {
-    if (score >= 80) return "border-success bg-success/10";
-    if (score >= 60) return "border-warning bg-warning/10";
-    return "border-destructive bg-destructive/10";
+    if (score >= 80) return "border-l-4 border-success bg-success/10";
+    if (score >= 60) return "border-l-4 border-warning bg-warning/10";
+    return "border-l-4 border-destructive bg-destructive/10";
   };
 
   const getScoreIcon = (score: number) => {
