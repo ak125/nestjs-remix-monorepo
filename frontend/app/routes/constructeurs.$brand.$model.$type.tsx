@@ -1166,7 +1166,7 @@ export default function VehicleDetailPage() {
                   </button>
                   {openFaqIndex === index && (
                     <div className="px-5 pb-5 text-gray-600 animate-in slide-in-from-top-2 duration-200">
-                      <div className="pl-4 border-l-2 border-brand">
+                      <div className="pl-4 border-brand">
                         {item.answer}
                       </div>
                     </div>

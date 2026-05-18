@@ -235,11 +235,11 @@ export default function SystemConfigurationDashboard() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "healthy":
-        return "border-l-4 border-success bg-success/10";
+        return "border-success bg-success/10";
       case "warning":
-        return "border-l-4 border-warning bg-warning/10";
+        return "border-warning bg-warning/10";
       case "error":
-        return "border-l-4 border-destructive bg-destructive/10";
+        return "border-destructive bg-destructive/10";
       default:
         return "text-gray-600 bg-gray-50 border-gray-200";
     }
@@ -333,11 +333,7 @@ export default function SystemConfigurationDashboard() {
               {/* Vue d'ensemble */}
               <button
                 onClick={() => setActiveModule("overview")}
-                className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-md ${
-                  activeModule === "overview"
-                    ? "bg-primary/15 text-blue-700 border-r-2 border-blue-500"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-                }`}
+                className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-md ${ activeModule === "overview" ? "bg-primary/15 text-blue-700 " : "text-gray-600 hover:bg-gray-50 hover:text-gray-900" }`}
               >
                 <Activity className="mr-3 h-5 w-5" />
                 Vue d'ensemble
@@ -646,15 +642,7 @@ function OverviewPanel({
               </dt>
               <dd className="mt-1">
                 <span
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    overview.health.overall === "healthy"
-                      ? "text-success bg-success/10 border-green-200"
-                      : overview.health.overall === "warning"
-                        ? "text-warning bg-warning/10 border-yellow-200"
-                        : overview.health.overall === "error"
-                          ? "text-destructive bg-destructive/10 border-red-200"
-                          : "text-gray-600 bg-gray-50 border-gray-200"
-                  }`}
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${ overview.health.overall === "healthy" ? "text-success bg-success/10 " : overview.health.overall === "warning" ? "text-warning bg-warning/10 " : overview.health.overall === "error" ? "text-destructive bg-destructive/10 " : "text-gray-600 bg-gray-50 " }`}
                 >
                   {overview.health.overall}
                 </span>

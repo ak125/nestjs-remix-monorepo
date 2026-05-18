@@ -104,7 +104,7 @@ export function R6MediaSlotRenderer({
             return (
               <blockquote
                 key={slot.slot_id}
-                className="my-4 border-l-4 border-gray-300 pl-4 italic text-gray-600 text-sm"
+                className="my-4 pl-4 italic text-gray-600 text-sm"
               >
                 {slot.content_hint || alt}
                 {captionText && (

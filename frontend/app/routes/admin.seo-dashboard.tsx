@@ -503,7 +503,7 @@ function RecommendationCard({
   };
 
   return (
-    <div className={`bg-white rounded-lg p-4 border-l-4 ${colors[priority]}`}>
+    <div className={`bg-white rounded-lg p-4 ${colors[priority]}`}>
       <div className="flex items-center gap-2 mb-2">
         <span>{icons[priority]}</span>
         <h3 className="font-medium text-gray-900">{title}</h3>

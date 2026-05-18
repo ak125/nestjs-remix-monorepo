@@ -124,7 +124,7 @@ export default function SystemOverview() {
       {/* Métriques principales */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {/* Authentification */}
-        <div className="bg-white rounded-lg shadow-lg p-6 border-l-4 border-green-500">
+        <div className="bg-white rounded-lg shadow-lg p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <Shield className="h-8 w-8 text-green-600" />
@@ -166,7 +166,7 @@ export default function SystemOverview() {
         </div>
 
         {/* Permissions */}
-        <div className="bg-white rounded-lg shadow-lg p-6 border-l-4 border-blue-500">
+        <div className="bg-white rounded-lg shadow-lg p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <Users className="h-8 w-8 text-blue-600" />
@@ -206,7 +206,7 @@ export default function SystemOverview() {
         </div>
 
         {/* Performance */}
-        <div className="bg-white rounded-lg shadow-lg p-6 border-l-4 border-purple-500">
+        <div className="bg-white rounded-lg shadow-lg p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <Activity className="h-8 w-8 text-purple-600" />
@@ -251,7 +251,7 @@ export default function SystemOverview() {
         </div>
 
         {/* Routes */}
-        <div className="bg-white rounded-lg shadow-lg p-6 border-l-4 border-orange-500">
+        <div className="bg-white rounded-lg shadow-lg p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <Settings className="h-8 w-8 text-orange-600" />
