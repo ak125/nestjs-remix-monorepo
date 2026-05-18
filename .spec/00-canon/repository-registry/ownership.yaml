@@ -383,6 +383,11 @@ entries:
     owner: '@ak125'
     sourceConfidence: medium
     risk: low
+  - glob: policies/maintenance/**
+    domain: D16
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
   - glob: scripts/**
     domain: D13
     owner: '@ak125'
