@@ -764,6 +764,7 @@ export class VehicleFilteredCatalogV4HybridService
   /**
    * 🔄 PRÉ-CALCUL BACKGROUND DES VÉHICULES POPULAIRES
    */
+  // INERT-OK-NO-SCHEDULER — TODO: migrer vers BullMQ repeatable, cf. PR #487
   @Cron('0 */6 * * *') // Toutes les 6 heures
   async precomputePopularCatalogs(): Promise<void> {
     this.logger.log('🔄 [PRECOMPUTE] Début pré-calcul véhicules populaires...');

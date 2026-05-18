@@ -230,6 +230,62 @@ export class SeoMonitoringController {
     return { from: dateFrom, to: dateTo, rows: data ?? [] };
   }
 
+  /**
+   * Read CrUX field history (ADR-063).
+   * Returns weekly p75 LCP/INP/CLS/TTFB/FCP rows from `__seo_crux_field_history`.
+   *
+   * Query params (mutually exclusive origin XOR url) :
+   *  - days       : lookback window in days (default 180)
+   *  - origin     : origin URL (default https://www.automecanik.com)
+   *  - url        : URL-level lookup (origin-level if omitted)
+   *  - formFactor : PHONE (default) | DESKTOP | TABLET | ALL_FORM_FACTORS
+   */
+  @Get('timeseries/crux')
+  async timeseriesCrux(
+    @Query('days') days?: string,
+    @Query('origin') origin?: string,
+    @Query('url') url?: string,
+    @Query('formFactor') formFactor?: string,
+  ) {
+    const dayCount = Math.min(parseInt(days ?? '180', 10) || 180, 365);
+    const dateTo = new Date().toISOString().slice(0, 10);
+    const dateFrom = new Date(Date.now() - dayCount * 86_400_000)
+      .toISOString()
+      .slice(0, 10);
+    const ff = (formFactor ?? 'PHONE').toUpperCase();
+    const originResolved = origin ?? 'https://www.automecanik.com';
+
+    let query = this.supabase
+      .from('__seo_crux_field_history')
+      .select(
+        'origin, url, form_factor, collection_period_start_date, collection_period_end_date, p75_lcp_ms, p75_inp_ms, p75_cls, p75_ttfb_ms, p75_fcp_ms, fetched_at, source_api',
+      )
+      .gte('collection_period_end_date', dateFrom)
+      .lte('collection_period_end_date', dateTo)
+      .eq('form_factor', ff)
+      .eq('origin', originResolved);
+
+    if (url) {
+      query = query.eq('url', url);
+    } else {
+      query = query.is('url', null);
+    }
+
+    const { data, error } = await query
+      .order('collection_period_end_date', { ascending: false })
+      .limit(500);
+    if (error) return { error: error.message, rows: [] };
+
+    return {
+      from: dateFrom,
+      to: dateTo,
+      origin: originResolved,
+      url: url ?? null,
+      form_factor: ff,
+      rows: data ?? [],
+    };
+  }
+
   @Get('runs')
   async runs(@Query('limit') limit?: string) {
     const max = Math.min(parseInt(limit ?? '50', 10), 500);

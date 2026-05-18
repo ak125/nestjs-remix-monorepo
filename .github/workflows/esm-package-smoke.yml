@@ -1,0 +1,105 @@
+name: 🧪 ESM Package Smoke
+
+# Catches the bug class that broke 10 consecutive `🚀 Deploy` runs on main
+# (resolved by PR #570, 2026-05-16): ESM-emitting workspace packages whose
+# dist cannot be loaded by Node 22 due to extensionless relative imports,
+# missing `"type": "module"`, or other runtime-only configuration drift.
+#
+# `tsc` (typecheck) and `eslint` (lint) cannot catch these because they are
+# emit-time / Node-resolver issues. Only a real dynamic `import()` does.
+#
+# Runs on every PR and main push that touches `packages/**` — fast (~2 min)
+# and decisive: any internal package declaring `"type": "module"` must load
+# its `dist/index.js` cleanly under the production Node version.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'packages/**'
+      - '.github/workflows/esm-package-smoke.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'packages/**'
+      - '.github/workflows/esm-package-smoke.yml'
+
+jobs:
+  esm-smoke:
+    name: 🧪 ESM dist dynamic import
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: ⬇️ Checkout
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node 22 (matches Docker preprod image node:22-alpine)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: 🏗️ Build all internal packages
+        run: npx turbo run build --filter='./packages/*'
+
+      - name: 🧪 Dynamic-import every ESM package's dist
+        run: |
+          set -uo pipefail
+          failed=()
+          smoked=0
+
+          for pkg_dir in packages/*/; do
+            pkg=$(basename "$pkg_dir")
+            pkg_json="${pkg_dir}package.json"
+            [ -f "$pkg_json" ] || continue
+
+            # Only smoke packages that declare themselves as ESM
+            if ! grep -qE '"type":[[:space:]]*"module"' "$pkg_json"; then
+              echo "⏭️  $pkg — not type:module, skipped"
+              continue
+            fi
+
+            entry="${pkg_dir}dist/index.js"
+            if [ ! -f "$entry" ]; then
+              echo "⚠️  $pkg — no dist/index.js after build, skipped"
+              continue
+            fi
+
+            echo ""
+            echo "🧪 $pkg → $entry"
+            if node --input-type=module -e "
+              import('./$entry').then(m => {
+                const keys = Object.keys(m).length;
+                if (keys === 0) throw new Error('zero exports');
+                console.log('  ✅ keys=' + keys);
+              }).catch(e => {
+                console.error('  ❌ ' + (e.code || e.message));
+                process.exit(1);
+              });
+            "; then
+              smoked=$((smoked + 1))
+            else
+              failed+=("$pkg")
+            fi
+          done
+
+          echo ""
+          echo "─── Summary ───"
+          echo "Smoked: $smoked package(s)"
+          if [ ${#failed[@]} -gt 0 ]; then
+            echo "❌ FAILED: ${failed[*]}"
+            echo ""
+            echo "Each failing package must load via:"
+            echo "  node --input-type=module -e \"import('./packages/<name>/dist/index.js')\""
+            echo ""
+            echo "Common causes:"
+            echo "  • Extensionless relative imports in src/ (require .js for NodeNext)"
+            echo "  • Missing \"type\": \"module\" when emitting ESM syntax"
+            echo "  • tsconfig moduleResolution still 'bundler' instead of 'NodeNext'"
+            exit 1
+          fi
+
+          echo "✅ All ESM packages load cleanly under Node 22"

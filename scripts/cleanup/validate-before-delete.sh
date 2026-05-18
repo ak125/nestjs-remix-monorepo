@@ -110,7 +110,22 @@ done
 RUNTIME_JSON="$REPO_ROOT/audit/runtime-entrypoints.json"
 DYN_JSON="$REPO_ROOT/audit/dynamic-import-edges.json"
 if [[ -f "$RUNTIME_JSON" ]] && command -v node >/dev/null 2>&1; then
-  if node -e 'const j=require(process.argv[1]); process.exit((j.runtime_files||[]).includes(process.argv[2])?0:1)' "$RUNTIME_JSON" "$REL"; then
+  # The runtime_files list is broad and includes files of NestJS modules that
+  # are NOT reachable from app.module.ts (the entrypoints.nestjs_unreachable_modules
+  # list). For Step B drops of those subtrees, the runtime-entrypoint check must
+  # not blanket-reject — by definition, an unreachable module file is not runtime.
+  if node -e '
+    const j = require(process.argv[1]);
+    const rel = process.argv[2];
+    const runtime = j.runtime_files || [];
+    if (!runtime.includes(rel)) process.exit(1);
+    const unreachable = (j.entrypoints && j.entrypoints.nestjs_unreachable_modules) || [];
+    const subtreeDirs = unreachable
+      .filter((p) => p.startsWith("backend/src/modules/"))
+      .map((p) => p.replace(/[^/]+\.module\.ts$/, ""));
+    if (subtreeDirs.some((d) => rel.startsWith(d))) process.exit(1);
+    process.exit(0);
+  ' "$RUNTIME_JSON" "$REL"; then
     report_hit "[RUNTIME-ENTRYPOINT] '$REL' is listed in audit/runtime-entrypoints.json — DO NOT delete."
   fi
 fi
@@ -156,6 +171,51 @@ if [[ -n "$STRING_HITS" ]]; then
   while IFS= read -r f; do
     report_hit "[STRING-REF] path/basename appears as string in: ${f#"$REPO_ROOT"/}"
   done <<< "$STRING_HITS"
+fi
+
+# ---- 4b. HTTP route callers (catch frontend HTTP edges that TS imports miss) ----
+# Lesson canari PR-3b-1 substitution (PR #466 closed 2026-05-13): a NestJS module can
+# be "unreachable from app.module.ts" yet still serve live HTTP traffic via a sibling
+# *.controller.ts that the frontend calls with `fetch('/api/...')`. TS does not see
+# this edge — build green, but 404 prod on every page hitting the route.
+#
+# For any file under `backend/src/modules/<subtree>/<dir>/...`, extract
+# `@Controller('<path>')` strings from `*.controller.ts` files in the subtree, then
+# grep that path across frontend/app, packages, scripts, e2e, tests. Any hit means
+# the subtree exposes a live HTTP edge — dropping any of its files breaks the route.
+#
+# Scope: only modules whose *.controller.ts uses a string-arg @Controller decorator.
+# `@Controller({ path: '...' })` object-form is not parsed (rare in this codebase).
+SUBTREE_DIR=""
+if [[ "$REL" =~ ^(backend/src/modules/[^/]+)/ ]]; then
+  SUBTREE_DIR="${BASH_REMATCH[1]}/"
+fi
+
+if [[ -n "$SUBTREE_DIR" && -d "$REPO_ROOT/$SUBTREE_DIR" ]]; then
+  # Extract route paths from @Controller('<path>') string-arg decorators in the subtree.
+  CONTROLLER_PATHS=$(grep -rhE "@Controller\s*\(\s*['\"\`]" "$REPO_ROOT/$SUBTREE_DIR" 2>/dev/null \
+    | sed -nE "s/.*@Controller\s*\(\s*['\"\`]([^'\"\`]+)['\"\`].*/\1/p" \
+    | sort -u || true)
+  if [[ -n "$CONTROLLER_PATHS" ]]; then
+    # Resolve the search dirs that actually exist (e2e/ and tests/ are optional).
+    HTTP_SEARCH_DIRS=()
+    for d in frontend/app packages scripts e2e tests; do
+      [[ -d "$REPO_ROOT/$d" ]] && HTTP_SEARCH_DIRS+=("$REPO_ROOT/$d")
+    done
+    if [[ ${#HTTP_SEARCH_DIRS[@]} -gt 0 ]]; then
+      while IFS= read -r ROUTE_PATH; do
+        [[ -z "$ROUTE_PATH" ]] && continue
+        ROUTE_HITS=$(grep -rln --include='*.ts' --include='*.tsx' --include='*.js' --include='*.mjs' --include='*.cjs' \
+          -F "$ROUTE_PATH" \
+          "${HTTP_SEARCH_DIRS[@]}" 2>/dev/null | grep -v "^$ABS$" || true)
+        if [[ -n "$ROUTE_HITS" ]]; then
+          while IFS= read -r f; do
+            report_hit "[HTTP-ROUTE-CALLER] @Controller('$ROUTE_PATH') consumed by: ${f#"$REPO_ROOT"/}"
+          done <<< "$ROUTE_HITS"
+        fi
+      done <<< "$CONTROLLER_PATHS"
+    fi
+  fi
 fi
 
 # ---- 5. CI / npm scripts / git hooks (path or basename in workflows, package.json, husky) ----

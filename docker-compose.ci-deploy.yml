@@ -38,6 +38,10 @@ services:
       - RAG_SERVICE_URL=http://rag-api:8000
       - RAG_API_KEY=856528eb83bd8b36867bc0bbf8ead7796f69de30fa6888a6876b54f4d98be08a
       - INTERNAL_API_KEY=${INTERNAL_API_KEY}
+      # Sitemap regen legacy kill-switch (Phase 5 = true → Phase 10 = remove).
+      # All other OIDC validation invariants hardcoded in GithubOidcService
+      # (Phase 0.6 paradigm — class static readonly constants).
+      - SITEMAP_LEGACY_INTERNAL_KEY_ENABLED=${SITEMAP_LEGACY_INTERNAL_KEY_ENABLED:-true}
       # Video Render
       - VIDEO_RENDER_ENABLED=true
       - VIDEO_CANARY_ENABLED=true

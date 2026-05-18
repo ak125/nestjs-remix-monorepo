@@ -29,6 +29,10 @@ services:
       - SENTRY_RELEASE
       - SENTRY_SEND_PII
       - SENTRY_ALLOW_DEBUG_ENDPOINT
+      # 🎯 CrUX API — ADR-063 (Accepted 2026-05-14) — CWV field monitoring
+      # Variable name only = inherit from host env (loaded via env_file: .env).
+      # Backend-only secret, jamais exposé frontend.
+      - CRUX_API_KEY
 
     container_name: nestjs-remix-monorepo-preprod
     image: massdoc/nestjs-remix-monorepo:preprod

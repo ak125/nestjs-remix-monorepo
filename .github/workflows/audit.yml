@@ -24,6 +24,9 @@ on:
       - "package-lock.json"
       - "audit-reports/phase0-baseline.json"
       - ".github/workflows/audit.yml"
+      - ".spec/00-canon/repository-registry/architecture.yaml"
+      - ".spec/00-canon/repository-registry/db.yaml"
+      - ".dependency-cruiser.generated.cjs"
 
 permissions:
   contents: read
@@ -61,6 +64,83 @@ jobs:
         if: always()
         continue-on-error: true
         run: npm run audit:madge
+
+      - name: 🏛️ Architecture contract — regenerate artifacts
+        if: always()
+        run: npm run architecture:build
+
+      - name: 🗄️ DB contract — regenerate IDE schema mirror (PR-3a)
+        # Mirror of architecture:build pattern. Pure regen — if Zod parse
+        # throws, that surfaces a real bug in db.yaml. No committed artifact
+        # in PR-3a; PR-3b will add the artifact + freshness gate.
+        if: always()
+        run: npm run db-contract:build
+
+      - name: 🚦 Runtime contract — regenerate IDE schema mirror (PR-5)
+        # Mirror of architecture:build / db-contract:build pattern. Pure regen
+        # of .spec/00-canon/_schema/runtime-topology.schema.json (gitignored).
+        # If Zod parse / cross-contract test fails, surfaces a real bug in
+        # runtime-topology.yaml. No committed artifact; no freshness gate yet
+        # — PR-5b will introduce the projection layer + freshness gate.
+        # The @repo/registry test step below (warn-only via PR-W3 #512) picks
+        # up the new runtime-contract.test.ts cases automatically.
+        if: always()
+        run: npm run runtime-contract:build
+
+      - name: 📦 Dep governance — regenerate IDE schema mirror (PR-D)
+        # Mirror of runtime-contract:build pattern. Pure regen of
+        # .spec/00-canon/_schema/dep-governance.schema.json (gitignored).
+        # If Zod parse / cross-contract test fails, surfaces a real bug in
+        # dep-governance.yaml. No committed artifact; no freshness gate yet
+        # — V2 may add a license/version-policy contract + gate.
+        # The @repo/registry test step below (warn-only via PR-W3 #512) picks
+        # up the new dep-governance-contract.test.ts cases automatically.
+        if: always()
+        run: npm run dep-governance:build
+
+      - name: 🔌 RPC contract — regenerate IDE schema mirror (PR-R)
+        # Mirror of dep-governance:build pattern. Pure regen of
+        # .spec/00-canon/_schema/rpc.schema.json (gitignored). If Zod parse /
+        # cross-contract test fails, surfaces a real bug in rpc.yaml. No
+        # committed artifact; no freshness gate yet — V2 may add SECURITY
+        # DEFINER deep audit + signature contract + gate.
+        # The @repo/registry test step below (warn-only via PR-W3 #512) picks
+        # up the new rpc-contract.test.ts cases automatically.
+        if: always()
+        run: npm run rpc-contract:build
+
+      # PROMOTED to BLOCKING gate by PR-W3b (2026-05-14).
+      # Trigger satisfied: 27 green PR audit.yml runs since PR-W3 #512 wired this
+      # step (2026-05-14T13:06), 0 flaky observed across 5 contracts shipped today
+      # (PR-2 #507 architecture, PR-3a #511 db, PR-5 #519 runtime, PR-D #523
+      # dep-governance, PR-R #526 rpc). 76 test cases total — all proven stable.
+      #
+      # If a future PR breaks any registry contract test → CI fails red → PR
+      # blocked until fix. Industry-standard CI ratchet pattern (warm-up → blocking).
+      - name: 📋 @repo/registry contract tests (5 contracts, BLOCKING)
+        if: always()
+        run: npm -w @repo/registry test
+
+      # PROMOTED to BLOCKING gate by PR-3b (2026-05-14).
+      # Trigger satisfied: 27+ green PR audit.yml runs since PR-2 #507 wired
+      # architecture.yaml + .dependency-cruiser.generated.cjs (architecture
+      # contract has been stable, no drift observed across 5 contracts shipped
+      # this week + 7 recent SEO/RPC PRs touching audit.yml). Mirror PR-W3b
+      # ratchet pattern shipped in #530 (commit 1435f836).
+      #
+      # If a future PR modifies architecture.yaml without rebuilding +
+      # committing .dependency-cruiser.generated.cjs → CI fails red → PR
+      # blocked until fix. Industry-standard "commit-the-generated-artifact"
+      # pattern.
+      - name: 🏛️ Architecture contract — freshness gate (BLOCKING)
+        if: always()
+        run: |
+          # Drift detection: .dependency-cruiser.generated.cjs is tracked
+          # (architecture.schema.json is gitignored, regenerated each run).
+          if ! git diff --exit-code .dependency-cruiser.generated.cjs; then
+            echo "::error::.dependency-cruiser.generated.cjs is stale. Run 'npm run architecture:build' and commit."
+            exit 1
+          fi
 
       - name: 🏛️ dependency-cruiser — architectural rules (informational)
         if: always()

@@ -184,8 +184,8 @@
         "backend/src/modules/config/services",
         "backend/src/modules/config/validators"
       ],
-      "files_count": 98,
-      "loc_total": 24716,
+      "files_count": 92,
+      "loc_total": 23113,
       "has_barrel": true
     },
     "customers": {
@@ -577,7 +577,7 @@
         "scripts/ui-governance"
       ],
       "files_count": 58,
-      "loc_total": 11115,
+      "loc_total": 11208,
       "has_barrel": true
     },
     "search": {
@@ -644,8 +644,8 @@
         "backend/src/modules/seo-monitoring/processors",
         "backend/src/modules/seo-monitoring/services"
       ],
-      "files_count": 13,
-      "loc_total": 2685,
+      "files_count": 14,
+      "loc_total": 2865,
       "has_barrel": false
     },
     "seo-shadow-observatory": {

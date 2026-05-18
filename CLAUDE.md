@@ -62,25 +62,35 @@ mémoire `feedback_no_hardcoded_infra_in_agentsmd.md` pour les règles
 
 ---
 
-## Mémoire codebase — lire `.claude/knowledge/` avant exploration
+## Mémoire codebase — lire le registry AVANT toute exploration
 
 **Avant** tout `Grep` / `Glob` / lecture en rafale pour répondre à une question
 sur le code applicatif (modules NestJS, tables DB, intégrations externes,
-routes Remix critiques), **lire d'abord** :
+routes Remix critiques), **lire dans cet ordre** :
 
-1. [`.claude/knowledge/README.md`](.claude/knowledge/README.md) — index racine + règles de navigation
-2. Le ou les fichiers pertinents sous `.claude/knowledge/{modules,db,integrations,routes}/`
+0. **[`audit/registry/canonical.json`](audit/registry/canonical.json)** — Source of Truth machine-readable du Repository Control Plane (ADR-058). Index unifié files/db/rpc/runtime/deps par domaine D1..D15 + ownership. Query via `jq` (ex. `jq '.files[] | select(.path | contains("payments"))' audit/registry/canonical.json`).
 
-Ce dossier est le **miroir structuré du codebase** — il remplace le grep pour
-l'orientation. Le bloc `<!-- AUTO-GENERATED -->` est rafraîchi par
-`scripts/knowledge/refresh-knowledge.py` au pre-commit. Les sections prose
-("Pourquoi", "Gotchas", "Références") sont éditées à la main par les humains.
+1. **[`.claude/knowledge/REPO_MAP.md`](.claude/knowledge/REPO_MAP.md)** — projection humaine du canonical (généré, ~6KB). Statistiques par domaine, owners principaux, liens vers modules prose.
+
+2. [`.claude/knowledge/README.md`](.claude/knowledge/README.md) — index navigation prose détaillée
+
+3. Le ou les fichiers pertinents sous `.claude/knowledge/{modules,db,integrations,routes}/`
+
+Le registry (`audit/registry/`) est généré depuis `Layer 1` (code AST via
+`scripts/audit/build-deep-inventory.js` + `build-db-usage-map.js`) et `Layer 2`
+(overlay manuel `.spec/00-canon/repository-registry/*.yaml`). SoT = couple
+des deux. `canonical.json` = projection canonique générée — JAMAIS l'éditer.
+
+Le bloc `<!-- AUTO-GENERATED -->` dans `.claude/knowledge/modules/*.md` est
+rafraîchi par `scripts/knowledge/refresh-knowledge.py` au pre-commit. Les
+sections prose ("Pourquoi", "Gotchas", "Références") sont éditées à la
+main par les humains.
 
 **Grep reste légitime pour** : debugging ciblé (pattern précis), strings
-dans le code, cas non couverts par le knowledge, cross-refs larges.
+dans le code, cas non couverts par le registry/knowledge, cross-refs larges.
 
 La gouvernance canon vit au vault (voir ci-dessous) — `.claude/knowledge/`
-ne la duplique pas, il la référence.
+et `audit/registry/` ne la dupliquent pas, ils la référencent.
 
 ---
 

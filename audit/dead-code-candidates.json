@@ -1,10 +1,10 @@
 {
   "_generated_by": "scripts/audit/build-deep-inventory.js",
   "note": "Candidates only. Deletion requires the full conditions (#0–#8) incl. validate-before-delete.sh + build/tests + human review.",
-  "count": 339,
+  "count": 333,
   "by_confidence": {
-    "high": 23,
-    "medium": 222,
+    "high": 22,
+    "medium": 217,
     "low": 94
   },
   "candidates": [
@@ -192,40 +192,6 @@
       "reason": "knip unused"
     },
     {
-      "path": "backend/src/config/brand-role-map.schema.ts",
-      "domain": "config",
-      "kind": "schema",
-      "confidence": "medium",
-      "derived_from": [
-        "knip",
-        "depcruise-no-dependents"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": true,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "backend/src/config/duplicate-gate.schema.ts",
-      "domain": "config",
-      "kind": "schema",
-      "confidence": "medium",
-      "derived_from": [
-        "knip",
-        "depcruise-no-dependents"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": true,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
       "path": "backend/src/config/execution-plan-resolver.service.ts",
       "domain": "config",
       "kind": "service",
@@ -246,40 +212,6 @@
       "path": "backend/src/config/index.ts",
       "domain": "config",
       "kind": "other",
-      "confidence": "medium",
-      "derived_from": [
-        "knip",
-        "depcruise-no-dependents"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": true,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "backend/src/config/page-contract-hub.schema.ts",
-      "domain": "config",
-      "kind": "schema",
-      "confidence": "medium",
-      "derived_from": [
-        "knip",
-        "depcruise-no-dependents"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": true,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "backend/src/config/page-contract-r4-media.schema.ts",
-      "domain": "config",
-      "kind": "schema",
       "confidence": "medium",
       "derived_from": [
         "knip",
@@ -326,24 +258,6 @@
         "c3_zero_runtime_use": true
       },
       "reason": "knip unused"
-    },
-    {
-      "path": "backend/src/config/r0-page-contract.constants.ts",
-      "domain": "config",
-      "kind": "config",
-      "confidence": "high",
-      "derived_from": [
-        "knip",
-        "depcruise-orphan",
-        "depcruise-no-dependents"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": true,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused + depcruise orphan"
     },
     {
       "path": "backend/src/config/r2-content-contract.defaults.ts",
@@ -469,23 +383,6 @@
       "precheck_verdict": {
         "c0_not_never_auto_delete": true,
         "c1_zero_static_import": false,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "backend/src/config/surface-metrics.schema.ts",
-      "domain": "config",
-      "kind": "schema",
-      "confidence": "medium",
-      "derived_from": [
-        "knip",
-        "depcruise-no-dependents"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": true,
         "c2_zero_dynamic_import": true,
         "c3_zero_runtime_use": true
       },

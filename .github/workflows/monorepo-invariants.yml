@@ -1,0 +1,29 @@
+name: Monorepo Invariants
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'workspaces/**'
+      - 'scripts/check-workspace-mini-monorepo.sh'
+      - '.github/workflows/monorepo-invariants.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'workspaces/**'
+      - 'scripts/check-workspace-mini-monorepo.sh'
+
+permissions:
+  contents: read
+
+jobs:
+  workspace-mini-monorepo:
+    name: "No Mini-Monorepo (ADR-061 §6)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check workspaces ne sont pas mini-monorepos
+        run: |
+          chmod +x scripts/check-workspace-mini-monorepo.sh
+          ./scripts/check-workspace-mini-monorepo.sh

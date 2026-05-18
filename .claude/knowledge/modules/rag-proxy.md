@@ -2,7 +2,7 @@
 module: rag-proxy
 sources:
 - backend/src/modules/rag-proxy
-last_scan: '2026-05-13'
+last_scan: '2026-05-17'
 primary_files:
 - backend/src/modules/rag-proxy/dto/chat.dto.ts
 - backend/src/modules/rag-proxy/dto/manual-ingest.dto.ts

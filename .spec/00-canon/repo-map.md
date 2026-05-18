@@ -1,7 +1,7 @@
 # Repo Map - AutoMecanik Monorepo
 
-> **Source de verite** - Structure reelle du code au 2026-03-08
-> **Version**: 2.0.0 | **Status**: CANON
+> **Source de verite** - Structure reelle du code au 2026-05-13
+> **Version**: 2.0.1 | **Status**: CANON
 
 ---
 
@@ -9,9 +9,9 @@
 
 ```
 /opt/automecanik/app/
-├── backend/          # NestJS API (40 modules)
-├── frontend/         # Remix SSR (158 routes)
-├── packages/         # 9 packages partages
+├── backend/          # NestJS API (47 modules)
+├── frontend/         # Remix SSR (233 fichiers routes top-level)
+├── packages/         # 8 packages partages
 ├── .spec/            # Documentation technique
 ├── scripts/          # Scripts utilitaires
 └── docs/             # Documentation publique
@@ -24,38 +24,48 @@
 ## Backend - NestJS API
 
 **Chemin**: `backend/src/modules/`
-**Total**: 40 modules
+**Total**: 47 modules
 
 ### Modules par domaine
 
 | Domaine | Modules |
 |---------|---------|
-| **Core** | `config`, `health`, `system`, `errors`, `cache` |
+| **Core** | `config`, `health`, `system`, `errors` |
 | **Auth** | `auth`, `users`, `staff` |
-| **Catalog** | `products`, `catalog`, `vehicles`, `gamme-rest` |
+| **Catalog** | `products`, `catalog`, `vehicles`, `gamme-rest`, `substitution` |
 | **Commerce** | `cart`, `orders`, `payments`, `invoices`, `promo`, `commercial` |
 | **Logistics** | `shipping`, `suppliers`, `customers` |
-| **Content** | `blog`, `blog-metadata`, `seo`, `seo-logs`, `ai-content` |
+| **Content** | `blog`, `blog-metadata`, `ai-content`, `marketing` |
+| **SEO** | `seo`, `seo-logs`, `seo-monitoring`, `seo-shadow-observatory` |
 | **Support** | `messages`, `support` |
 | **Analytics** | `analytics`, `dashboard` |
-| **Search** | `search`, `knowledge-graph`, `rag-proxy` |
+| **Search/RAG** | `search`, `knowledge-graph`, `rag-proxy`, `rag-knowledge-bootstrap` |
+| **AI/Diagnostic** | `agentic-engine`, `diagnostic-engine`, `mcp-validation` |
+| **Security** | `bot-guard` |
 | **Media** | `upload`, `metadata` |
 | **Navigation** | `navigation`, `layout` |
 | **Admin** | `admin` |
+| **Legacy/DEV** | `rm` (DEV uniquement — cf. CLAUDE.md backend.md) |
 
 ### Liste complete
 
 ```
-admin          ai-content     analytics      auth
-blog           blog-metadata  cache          cart
-catalog        commercial     config         customers
-dashboard      errors         gamme-rest     health
-invoices       knowledge-graph layout        messages
-metadata       navigation     orders         payments
-products       promo          rag-proxy      search
-seo            seo-logs       shipping       staff
-suppliers      support        system         upload
-users          vehicles
+admin               agentic-engine      ai-content
+analytics           auth                blog
+blog-metadata       bot-guard           cart
+catalog             commercial          config
+customers           dashboard           diagnostic-engine
+errors              gamme-rest          health
+invoices            knowledge-graph     layout
+marketing           mcp-validation      messages
+metadata            navigation          orders
+payments            products            promo
+rag-knowledge-bootstrap                 rag-proxy
+rm                  search              seo
+seo-logs            seo-monitoring      seo-shadow-observatory
+shipping            staff               substitution
+suppliers           support             system
+upload              users               vehicles
 ```
 
 ---
@@ -63,13 +73,13 @@ users          vehicles
 ## Frontend - Remix SSR
 
 **Chemin**: `frontend/app/`
-**Routes**: 158 fichiers
+**Routes**: 233 fichiers top-level (.ts/.tsx, hors sous-dossiers)
 
 ### Structure
 
 ```
 frontend/app/
-├── routes/           # 158 routes Remix (flat routes)
+├── routes/           # 233 fichiers top-level (flat routes)
 ├── components/       # Composants React
 │   ├── ui/          # shadcn/ui components
 │   └── ...          # Composants metier
@@ -95,19 +105,18 @@ frontend/app/
 ## Packages partages
 
 **Chemin**: `packages/`
-**Total**: 9 packages
+**Total**: 8 packages
 
 | Package | Description |
 |---------|-------------|
 | `@repo/database-types` | Types Supabase generes |
-| `@monorepo/shared-types` | Types TypeScript + Zod schemas |
-| `@fafa/ui` | Composants React (Radix + Tailwind) |
 | `@fafa/design-tokens` | Design system tokens |
 | `@fafa/typescript-config` | tsconfig partage |
 | `@fafa/eslint-config` | ESLint rules partagees |
-| `theme-admin` | Theme admin dashboard |
-| `theme-vitrine` | Theme vitrine publique |
-| `patterns` | Patterns reutilisables |
+| `@repo/seo-role-contracts` | Contrats Zod R0-R8 (ADR-038/039) |
+| `@repo/seo-roles` | Canon RoleId R0-R8 + normalisation |
+| `@repo/seo-types` | Types partages SEO |
+| `@repo/registry` | Schemas Zod Repository Control Plane (ADR-058 V1) |
 
 ---
 
@@ -125,13 +134,16 @@ frontend/app/
 
 ### Docker Compose disponibles
 
-- `docker-compose.prod.yml` - Production
-- `docker-compose.dev.yml` - Developpement
-- `docker-compose.caddy.yml` - Reverse proxy
-- `docker-compose.redis.yml` - Cache Redis
+- `docker-compose.prod.yml` - Production (image production)
+- `docker-compose.preprod.yml` - Preprod DEV (image preprod)
+- `docker-compose.dev.yml` - Developpement local
+- `docker-compose.ci-deploy.yml` - Deploiement CI
+- `docker-compose.caddy.yml` - Reverse proxy Caddy
+- `docker-compose.redis.yml` - Cache Redis (sessions)
 - `docker-compose.meilisearch.yml` - Search engine
 - `docker-compose.vector.yml` - Vector DB
-- `docker-compose.worker.yml` - Workers
+- `docker-compose.worker.yml` - Workers async
+- `docker-compose.imgproxy.yml` - Image proxy
 
 ---
 
@@ -139,10 +151,10 @@ frontend/app/
 
 | Metrique | Valeur |
 |----------|--------|
-| Backend modules | 40 |
-| Frontend routes | 158 |
-| Shared packages | 9 |
-| Docker configs | 7 |
+| Backend modules | 48 |
+| Frontend routes | 233 |
+| Shared packages | 8 |
+| Docker configs | 10 |
 | Produits DB | 4M+ |
 | Utilisateurs | 59k+ |
 | Categories | 9k+ |
@@ -156,7 +168,7 @@ backend/src/main.ts              # Bootstrap NestJS
 backend/src/app.module.ts        # Root module
 frontend/app/root.tsx            # Remix root
 frontend/app/routes/_index.tsx   # Homepage
-packages/shared-types/src/       # Types partages
+packages/seo-roles/src/          # Canon RoleId R0-R8
 ```
 
 ---
@@ -170,5 +182,5 @@ Voir `.spec/bmad/output/rag_diagnosis.md` pour details.
 
 ---
 
-_Derniere mise a jour: 2026-01-06_
+_Derniere mise a jour: 2026-05-13_
 _Status: CANON - Source de verite_

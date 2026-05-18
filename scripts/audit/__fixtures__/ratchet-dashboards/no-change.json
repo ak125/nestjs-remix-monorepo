@@ -1,0 +1,30 @@
+{
+  "generatedAt": "2026-05-15T00:00:00.000Z",
+  "schemaVersion": "v1",
+  "contracts": [
+    {
+      "name": "architecture",
+      "file": "audit/registry/files.json",
+      "status": "ok",
+      "entries": 100,
+      "sha256": "deadbeefdeadbeef"
+    }
+  ],
+  "fingerprint": {
+    "canonical": {
+      "stale": false,
+      "staleReason": null,
+      "sotFingerprint": "fp1",
+      "generatedAt": null,
+      "mtimeAgeHours": 0.1,
+      "sectionSizes": { "files": 100 }
+    },
+    "depCruiserGenerated": { "mtime": null, "ageHours": null }
+  },
+  "ownership": {
+    "gapCount": 2,
+    "sample": ["fixtures/legacy-a.ts", "fixtures/legacy-b.ts"],
+    "orphans": ["fixtures/legacy-a.ts", "fixtures/legacy-b.ts"]
+  },
+  "coverage": {}
+}
