@@ -499,3 +499,11 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: high
+  # VehicleContext cookie shared schema + JWS helpers (PR-B, OPTION A locked).
+  # Cross-imported by backend (middleware D4) and frontend (Remix loader). Schema
+  # version bumps require an L4 ADR per `vehicle-context-option-a-locked` canon.
+  - glob: packages/registry/src/vehicle-context/**
+    domain: D4
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high

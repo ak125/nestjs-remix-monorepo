@@ -135,3 +135,48 @@ events:
       - { name: has_draft, type: boolean, required: true, description: "localStorage draft kept for resume" }
     status: stable
     since: v1
+
+  # ── VehicleContext cookie lifecycle (PR-B, OPTION A locked) ──
+  # Canon `feedback_vehicle_context_option_a_locked.md` line 39 :
+  # set/invalid/consumed counters are MANDATORY. Emitted from
+  # backend/src/modules/vehicle/middleware/ and Remix loaders.
+  - name: vehicle_ctx_set
+    domain: vehicle
+    description: |
+      Signed JWS cookie `vehicle_ctx` was written on the response. Tracks
+      acquisition source (diagnostic completion, manual selector, GSC
+      deep-link). Funnel-as-truth : compare against `vehicle_ctx_consumed`
+      to detect set-but-never-used signal.
+    fields:
+      - { name: source, type: string, required: true, description: "diagnostic | manual | gsc" }
+      - { name: type_id_present, type: boolean, required: true, description: "true if numeric vehicle type_id resolved" }
+    status: stable
+    since: v1
+    l1_metric: vehicle_ctx_set_total
+
+  - name: vehicle_ctx_invalid
+    domain: vehicle
+    description: |
+      A `vehicle_ctx` cookie was present on the request but failed JWS
+      signature verification, schema parse, or version check. NOT a 401 —
+      middleware silently drops the context and continues. Spike on this
+      counter = secret rotation event OR cross-environment cookie leak OR
+      schema drift attempt — page oncall (canon STOP-at-V1 alerting).
+    fields:
+      - { name: reason, type: string, required: true, description: "bad_signature | bad_schema | unknown_version | empty" }
+    status: stable
+    since: v1
+    l1_metric: vehicle_ctx_invalid_total
+
+  - name: vehicle_ctx_consumed
+    domain: vehicle
+    description: |
+      A valid `vehicle_ctx` cookie was read and surfaced to the request /
+      loader, with at least one consumer downstream using a field from it
+      (e.g. R1 catalog filtered by type_id, R5 wizard prefilling brand).
+      Primary funnel-handoff success signal.
+    fields:
+      - { name: route, type: string, required: true, description: "consumer route slug (e.g. R1, R5)" }
+    status: stable
+    since: v1
+    l1_metric: vehicle_ctx_consumed_total
