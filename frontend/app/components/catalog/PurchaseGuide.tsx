@@ -83,7 +83,7 @@ export function PurchaseGuide({
                   </p>
                   
                   {/* Highlight box avec icône */}
-                  <div className="bg-gradient-to-r from-blue-100 to-blue-50 border-l-4 border-blue-600 p-4 rounded-r-lg mb-5 shadow-sm">
+                  <div className="bg-gradient-to-r from-blue-100 to-blue-50 p-4 rounded-r-lg mb-5 shadow-sm">
                     <div className="flex items-center gap-3">
                       <Shield className="w-6 h-6 text-blue-600 flex-shrink-0" />
                       <p className="text-sm md:text-base font-semibold text-blue-900">
@@ -135,7 +135,7 @@ export function PurchaseGuide({
                     </p>
                     
                     {/* Highlight box avec icône */}
-                    <div className="bg-gradient-to-r from-green-100 to-green-50 border-l-4 border-green-600 p-4 rounded-r-lg shadow-sm">
+                    <div className="bg-gradient-to-r from-green-100 to-green-50 p-4 rounded-r-lg shadow-sm">
                       <div className="flex items-center gap-3">
                         <CheckCircle2 className="w-6 h-6 text-green-600 flex-shrink-0" />
                         <p className="text-sm md:text-base font-semibold text-green-900">

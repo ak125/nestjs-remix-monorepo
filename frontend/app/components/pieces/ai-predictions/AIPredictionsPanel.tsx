@@ -132,7 +132,7 @@ const RiskItem: React.FC<{ risk: RiskAnalysis }> = ({ risk }) => {
 
   return (
     <div
-      className={`relative p-4 rounded-xl border-l-4 bg-gradient-to-r transition-all duration-300 hover:scale-[1.02] ${getRiskStyles(risk.level)} shadow-lg`}
+      className={`relative p-4 rounded-xl bg-gradient-to-r transition-all duration-300 hover:scale-[1.02] ${getRiskStyles(risk.level)} shadow-lg`}
     >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
