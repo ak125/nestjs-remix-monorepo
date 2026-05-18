@@ -2,7 +2,7 @@
 module: errors
 sources:
 - backend/src/modules/errors
-last_scan: '2026-05-17'
+last_scan: '2026-05-18'
 primary_files:
 - backend/src/modules/errors/controllers/error.controller.ts
 - backend/src/modules/errors/controllers/internal-error-log.controller.ts
