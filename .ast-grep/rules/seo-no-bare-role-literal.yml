@@ -1,6 +1,6 @@
 id: seo-no-bare-role-literal
 language: typescript
-severity: warning
+severity: error
 message: |
   Bare SEO role literal in OUTPUT context. Use canonical full name
   (R3_CONSEILS, R6_GUIDE_ACHAT, R6_SUPPORT, etc.) or call normalizeRoleId()
@@ -11,14 +11,24 @@ message: |
   packages/seo-roles/README.md.
 
   If this is a legacy DB filter, test fixture, or mapping reference, add
-  the file to the `files` exclusion list below with a comment explaining why.
+  the file to the `ignores:` list below with a comment explaining why.
 note: |
   Replace  '"R3"'  with  PageRole.R3_CONSEILS  (frontend)
        or  RoleId.R3_CONSEILS  (backend)
        or  normalizeRoleId(input)  if input is dynamic.
 
-  PR-3a (this rule) is `severity: warning` initially. Promotion to `error`
-  happens in PR-3b after 7 days of clean observation.
+  PR-3a shipped this rule with `severity: warning` (observe-only,
+  commit 0a792dcc, 2026-05-05).
+  PR-3b 2026-05-14 promoted to `severity: error` after empirical
+  clean observation : `ast-grep scan` returned 0 findings on the full
+  corpus for the bare-form patterns below. No code change needed
+  beyond this severity flip.
+
+  Note : the eslint `no-restricted-syntax` selector that catches the
+  *suffixed* legacy forms (R3_BLOG, R6_BUYING_GUIDE, …) remains at
+  `warn` deliberately. Promoting it would surface 11 files with mixed
+  legitimate / debt patterns (canon-defining Zod enums, INPUT switch
+  handlers, legacy DTOs) — audit work tracked as separate PR-3c.
 files:
   # ── Apply to frontend + backend TypeScript ──
   - backend/src/**/*.ts

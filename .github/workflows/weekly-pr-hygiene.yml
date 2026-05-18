@@ -1,0 +1,52 @@
+name: 📊 Weekly PR hygiene & sprint recommendation
+
+# Monday morning digest published as a GitHub issue assigned to @ak125.
+# Owner (subscribed to repo) receives the email automatically.
+#
+# Replaces Claude Desktop routine `trig_01N7BCAuPai8ZRwX88ytNU3i` (disabled
+# 2026-05-17) — self-hosted in repo, audit-trail via git history.
+#
+# Cron: 07:00 UTC Monday = 09:00 Europe/Paris (CEST).
+on:
+  schedule:
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: read
+  actions: read
+  contents: read
+
+concurrency:
+  group: weekly-pr-hygiene
+  cancel-in-progress: false
+
+jobs:
+  hygiene:
+    name: Inventory open PRs + recommend sprint focus
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout (shallow)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run hygiene digest script
+        id: collect
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: bash .github/scripts/weekly-pr-hygiene.sh
+
+      - name: Create hygiene digest issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh issue create \
+            --repo "$REPO" \
+            --title "${{ steps.collect.outputs.title }}" \
+            --body-file "${{ steps.collect.outputs.body_path }}" \
+            --assignee ak125

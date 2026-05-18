@@ -2,7 +2,7 @@
 module: seo
 sources:
 - backend/src/modules/seo
-last_scan: '2026-05-14'
+last_scan: '2026-05-17'
 primary_files:
 - backend/src/modules/seo/__tests__/dynamic-seo-v4-via-chain.test.ts
 - backend/src/modules/seo/config/hreflang.config.ts
@@ -18,6 +18,7 @@ depends_on:
 - WorkerModule
 - CatalogModule
 - AiContentModule
+- R2V2Module
 - NestCacheModule
 ---
 

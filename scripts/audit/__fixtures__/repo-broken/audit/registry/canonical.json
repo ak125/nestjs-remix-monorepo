@@ -1,0 +1,102 @@
+{
+  "schemaVersion": "1.0.0",
+  "files": [
+    {
+      "id": "backend/src/app.ts",
+      "path": "backend/src/app.ts",
+      "kind": "service",
+      "domain": "D14",
+      "owner": "platform",
+      "deletePolicy": "FREE",
+      "derivedFrom": ["manual"],
+      "importedBy": [],
+      "imports": [],
+      "loc": 100,
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE"
+    }
+  ],
+  "db": {
+    "tables": [
+      {
+        "id": "fixture_table_one",
+        "name": "fixture_table_one",
+        "schema": "public",
+        "domain": "D1",
+        "status": "LIVE",
+        "owner": "platform",
+        "sourceConfidence": "high",
+        "columns": [],
+        "indexes": [],
+        "rlsEnabled": false,
+        "usedBy": [],
+        "inMigrations": [],
+        "deletePolicy": "FREE",
+        "risk": "low",
+        "schemaVersion": "1.0.0"
+      }
+    ],
+    "rpc": [
+      {
+        "id": "public.fixture_rpc#sig:abc123",
+        "name": "fixture_rpc",
+        "schema": "public",
+        "domain": "D1",
+        "status": "LIVE",
+        "owner": "platform",
+        "sourceConfidence": "high",
+        "parseMode": "parsed",
+        "args": [],
+        "returnType": "void",
+        "language": "plpgsql",
+        "securityDefiner": false,
+        "searchPath": ["public"],
+        "definedInMigrations": ["20260101_fixture.sql"],
+        "usedBy": [],
+        "parseWarnings": [],
+        "schemaVersion": "1.0.0"
+      }
+    ]
+  },
+  "deps": [
+    {
+      "id": "npm:zod@^3.25.76",
+      "name": "zod",
+      "version": "^3.25.76",
+      "source": "npm",
+      "workspaces": ["@fafa/backend"],
+      "declaredIn": ["backend/package.json"],
+      "status": "LIVE",
+      "owner": "platform",
+      "sourceConfidence": "high",
+      "schemaVersion": "1.0.0"
+    }
+  ],
+  "runtime": [
+    {
+      "id": "backend:AppModule",
+      "path": "backend/src/app.module.ts",
+      "kind": "nestjs-module",
+      "status": "LIVE",
+      "sourceConfidence": "high",
+      "dependsOn": [],
+      "schemaVersion": "1.0.0"
+    }
+  ],
+  "meta": {
+    "generatedAt": "1970-01-01T00:00:00.000Z",
+    "generatorVersion": "1.0.0",
+    "inputHashes": {
+      "audit/registry/files.json": "fixture-hash-files",
+      "audit/registry/db.json": "fixture-hash-db",
+      "audit/registry/deps.json": "fixture-hash-deps",
+      "audit/registry/rpc.json": "fixture-hash-rpc",
+      "audit/registry/runtime.json": "fixture-hash-runtime",
+      ".spec/00-canon/repository-registry/ownership.yaml": "fixture-hash-ownership"
+    },
+    "sotFingerprint": "FIXTUREok0000"
+  }
+}
