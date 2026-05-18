@@ -521,7 +521,7 @@ export const AdminSidebar = memo(function AdminSidebar({
       {/* Overlay mobile */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          className="fixed inset-0 z-40 bg-neutral-900/50 lg:hidden"
           onClick={() => setIsOpen(false)}
         />
       )}

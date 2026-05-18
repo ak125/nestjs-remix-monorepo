@@ -468,7 +468,7 @@ export function SmartHeader({
       */}
       {isMobileMenuOpen && (
         <div
-          className="lg:hidden fixed inset-0 z-40 bg-black/50"
+          className="lg:hidden fixed inset-0 z-40 bg-neutral-900/50"
           onClick={() => setIsMobileMenuOpen(false)}
         >
           <div
@@ -533,7 +533,7 @@ export function SmartHeader({
       */}
       {isVehicleModalOpen && (
         <div
-          className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-md"
+          className="fixed inset-0 z-50 bg-neutral-900/50 flex items-center justify-center p-md"
           onClick={() => setIsVehicleModalOpen(false)}
         >
           <div
