@@ -158,6 +158,7 @@ import { SeoRoleTemplateSelector } from './services/chain/seo-role-template-sele
 // ═══════════════════════════════════════════════════════════════════════════
 import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
 import { PageRoleValidationInterceptor } from './interceptors/page-role-validation.interceptor';
+import { R2V2Module } from './r2/r2-v2.module';
 
 @Module({
   imports: [
@@ -168,6 +169,9 @@ import { PageRoleValidationInterceptor } from './interceptors/page-role-validati
     WorkerModule,
     forwardRef(() => CatalogModule),
     forwardRef(() => AiContentModule),
+
+    // ADR-066 — R2 Content Composition v2 (foundation PR 1)
+    R2V2Module,
 
     // Cache in-memory pour SEO V4 Ultimate
     NestCacheModule.register({

@@ -1,0 +1,1356 @@
+schemaVersion: "1.0.0"
+
+# Member lists below were enumerated from audit/registry/deps.json on 2026-05-17
+# (origin/main f22062e4e). Refresh by re-running the jq queries in PR-9a's
+# Task 3 if deps.json drifts before merge.
+
+families:
+  # ====================================================================
+  # PR-assigned (PR-9b..9g)
+  # ====================================================================
+  - family: tooling-typescript-eslint
+    blast_radius: tooling
+    target_major: "locked-at-execution"
+    pr_assignment: pr-9b
+    source_url: https://github.com/microsoft/TypeScript/releases
+    upgrade_strategy: in-place
+    runtime_criticality: low
+    requires_staging_soak: false
+    node_runtime_requirement: ">=20"
+    peer_dependency_cluster:
+      - typescript
+      - eslint
+      - "@typescript-eslint/*"
+      - "eslint-plugin-*"
+      - eslint-config-prettier
+    production_approved: true
+    rollback_complexity: trivial
+    migration_blockers:
+      - Node20Required
+    observability_requirements: []
+    data_migration_required: false
+    supports_dual_runtime: none
+    rollback_rto_minutes: 30
+    upgrade_owner_domain:
+      - platform-tooling
+    requires_perf_baseline: false
+    rollback_runbook_required: false
+    expected_user_impact:
+      - none
+    perf_baseline_metrics: []
+    estimated_recovery_sequence:
+      - revert-pr
+      - regenerate-types
+    stateful_surface:
+      - none
+    rollback_validation_checks:
+      - none
+    canary_abort_conditions: []
+    runtime_state_coupling:
+      - none
+    safe_parallel_window_minutes: 0
+    rollback_data_loss_risk: none
+    runtime_entrypoints:
+      - build-only
+    operational_owner: platform-tooling-team
+    estimated_canary_duration_minutes: 0
+    rollback_requires_human_approval: false
+    rollback_tested_at: null
+    rollback_drill_commit: null
+    known_incompatible_families: []
+    upgrade_cost_estimate:
+      estimated_engineer_days: 5
+      estimated_review_load: medium
+    runtime_slo_impact: []
+    runtime_dependency_edges:
+      depends_on_runtime: []
+    rollback_preconditions: []
+    observability_sli_queries: {}
+    state_schema_version: n/a
+    rollback_blast_scope:
+      - none
+    runtime_capabilities:
+      - none
+    failure_domain:
+      - tooling
+    rollback_confidence_level: theoretical
+    state_transition_strategy: none
+    incident_comm_protocol:
+      - none
+    compatibility_contracts:
+      - typescript-v5
+    runtime_freeze_window: null
+    orchestrator_policy:
+      rollback_mode: manual-only
+      deploy_mode: atomic
+    dependency_lineage:
+      supersedes: []
+    state_compatibility_window_minutes: 0
+    runtime_budget_constraints: {}
+    state_reconciliation_strategy:
+      duplicate_resolution: n/a
+    orchestrator_lock_scope: []
+    rollback_observability_grace_period_minutes: 0
+    runtime_contract_expiry: null
+    notes: >
+      Bundle typescript + @typescript-eslint/* + eslint together — typed-lint
+      breakage couples them. ESLint 9 flat config tracked in same PR if scope
+      stays manageable, else extracted to PR-9b.2. target_major is intentionally
+      "locked-at-execution" because TS6/TS7-Go ETAs drift faster than this doc.
+    members:
+      - typescript
+      - eslint
+      - eslint-config-prettier
+      - eslint-plugin-import
+      - eslint-plugin-jsx-a11y
+      - eslint-plugin-prettier
+      - eslint-plugin-react
+      - eslint-plugin-react-hooks
+      - eslint-plugin-storybook
+      - "@typescript-eslint/eslint-plugin"
+      - "@typescript-eslint/parser"
+
+  - family: validation-zod
+    blast_radius: validation
+    target_major: "4.x"
+    pr_assignment: pr-9c
+    source_url: https://github.com/colinhacks/zod/releases
+    upgrade_strategy: staged-rollout
+    runtime_criticality: high
+    requires_staging_soak: true
+    staging_soak_hours: 24
+    node_runtime_requirement: ">=20"
+    peer_dependency_cluster:
+      - zod
+      - zod-to-json-schema
+    deployment_sequence:
+      - api-second
+      - canary
+      - full-rollout
+    production_approved: true
+    rollback_complexity: moderate
+    migration_blockers:
+      - Node20Required
+      - TypeScript5xRequired
+    observability_requirements:
+      - sentry
+      - structured-logs
+    data_migration_required: false
+    supports_dual_runtime: none
+    rollback_rto_minutes: 15
+    upgrade_owner_domain:
+      - platform-validation
+      - backend-runtime
+    requires_perf_baseline: false
+    rollback_runbook_required: false
+    expected_user_impact:
+      - short-api-restart
+    perf_baseline_metrics: []
+    estimated_recovery_sequence:
+      - disable-canary
+      - rollback-api
+      - redeploy
+      - verify-form-submit-smoke
+    stateful_surface:
+      - none
+    rollback_validation_checks:
+      - form-submit-smoke
+      - no-sentry-spike
+    canary_abort_conditions:
+      - sentry-error-rate-spike
+      - p99-regression-15pct
+    runtime_state_coupling:
+      - none
+    safe_parallel_window_minutes: 0
+    rollback_data_loss_risk: none
+    runtime_entrypoints:
+      - api
+      - workers
+      - ssr
+    operational_owner: platform-validation-team
+    estimated_canary_duration_minutes: 60
+    rollback_requires_human_approval: false
+    rollback_tested_at: null
+    rollback_drill_commit: null
+    known_incompatible_families: []
+    upgrade_cost_estimate:
+      estimated_engineer_days: 10
+      estimated_review_load: high
+    runtime_slo_impact:
+      - api-p99
+    runtime_dependency_edges:
+      depends_on_runtime: []
+    rollback_preconditions:
+      - canary-disabled
+    observability_sli_queries:
+      api-p99: "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))"
+    state_schema_version: n/a
+    rollback_blast_scope:
+      - api
+      - workers
+      - ssr
+    runtime_capabilities:
+      - supports-canary
+    failure_domain:
+      - api-runtime
+    rollback_confidence_level: theoretical
+    state_transition_strategy: none
+    incident_comm_protocol:
+      - status-page
+    compatibility_contracts:
+      - zod-v3
+    runtime_freeze_window: null
+    orchestrator_policy:
+      rollback_mode: auto-allowed
+      deploy_mode: staged
+    dependency_lineage:
+      supersedes: []
+    state_compatibility_window_minutes: 0
+    runtime_budget_constraints: {}
+    state_reconciliation_strategy:
+      duplicate_resolution: n/a
+    orchestrator_lock_scope:
+      - validation
+    rollback_observability_grace_period_minutes: 5
+    runtime_contract_expiry: null
+    notes: >
+      Zod 4 ships breaking parser changes (z.string() defaults, error API).
+      Must touch every consumer schema in shared/ + backend/ + frontend/. 24h
+      DEV preprod soak required — forms/DTOs are user-facing surface.
+    members:
+      - zod
+      - zod-to-json-schema
+
+  - family: queues-bullmq
+    blast_radius: queues
+    target_major: "5.x"
+    pr_assignment: pr-9d
+    source_url: https://github.com/taskforcesh/bullmq/releases
+    upgrade_strategy: staged-rollout
+    runtime_criticality: high
+    requires_staging_soak: true
+    staging_soak_hours: 48
+    node_runtime_requirement: ">=20"
+    peer_dependency_cluster:
+      - bullmq
+      - "@nestjs/bullmq"
+      - "@nestjs/bull"
+      - bull
+      - ioredis
+    deployment_sequence:
+      - workers-first
+      - api-second
+      - full-rollout
+    production_approved: true
+    rollback_complexity: dangerous
+    migration_blockers:
+      - Node20Required
+      - RedisServerCompatibilityVerified
+    observability_requirements:
+      - queue-metrics
+      - structured-logs
+      - sentry
+    data_migration_required: true
+    supports_dual_runtime: partial
+    rollback_rto_minutes: 60
+    upgrade_owner_domain:
+      - queues
+      - backend-runtime
+    requires_perf_baseline: false
+    rollback_runbook_required: true
+    expected_user_impact:
+      - queue-delay
+    perf_baseline_metrics: []
+    estimated_recovery_sequence:
+      - disable-canary
+      - rollback-workers
+      - drain-v5-queue
+      - re-emit-repeatables
+      - rollback-api
+      - verify-queue-metrics
+    stateful_surface:
+      - repeatable-jobs
+      - redis-cache
+    rollback_validation_checks:
+      - queue-depth-stable
+      - no-sentry-spike
+      - health-endpoint-ok
+    canary_abort_conditions:
+      - queue-backlog-growth
+      - sentry-error-rate-spike
+      - p99-regression-20pct
+    runtime_state_coupling:
+      - redis
+      - queue-ids
+    safe_parallel_window_minutes: 60
+    rollback_data_loss_risk: replayable
+    runtime_entrypoints:
+      - workers
+      - cron
+    operational_owner: queues-team
+    estimated_canary_duration_minutes: 0
+    rollback_requires_human_approval: true
+    rollback_tested_at: null
+    rollback_drill_commit: null
+    known_incompatible_families:
+      - runtime-backend-nest
+    upgrade_cost_estimate:
+      estimated_engineer_days: 7
+      estimated_review_load: high
+    runtime_slo_impact:
+      - queue-latency
+      - queue-throughput
+    runtime_dependency_edges:
+      depends_on_runtime: []
+    rollback_preconditions:
+      - queue-drained
+      - no-active-migrations
+      - canary-disabled
+    observability_sli_queries:
+      queue-latency: "histogram_quantile(0.99, sum(rate(bullmq_job_duration_seconds_bucket[5m])) by (le))"
+      queue-throughput: "sum(rate(bullmq_job_completed_total[5m]))"
+    state_schema_version: bullmq-v4
+    rollback_blast_scope:
+      - workers
+      - queue
+      - api
+    runtime_capabilities:
+      - supports-feature-flag
+    failure_domain:
+      - queues
+    rollback_confidence_level: theoretical
+    state_transition_strategy: replay
+    incident_comm_protocol:
+      - status-page
+      - support-ticket-tag
+    compatibility_contracts:
+      - bullmq-jobid-v4
+      - ioredis-v5
+    runtime_freeze_window:
+      start: "22:00"
+      end: "06:00"
+    orchestrator_policy:
+      rollback_mode: manual-only
+      deploy_mode: staged
+    dependency_lineage:
+      supersedes: []
+    state_compatibility_window_minutes: 120
+    runtime_budget_constraints: {}
+    state_reconciliation_strategy:
+      duplicate_resolution: latest-write-wins
+    orchestrator_lock_scope:
+      - queues
+      - workers
+    rollback_observability_grace_period_minutes: 15
+    runtime_contract_expiry: "2026-12-31"
+    notes: >
+      BullMQ 5 changes Worker concurrency semantics + repeatable job ID format.
+      Existing repeatable jobs need re-emit. Workers MUST deploy before API
+      (deployment_sequence: workers-first). Rollback runbook MUST cover
+      repeatable-job re-emission in v4 format.
+    members:
+      - bullmq
+      - "@nestjs/bullmq"
+      - "@nestjs/bull"
+      - bull
+      - ioredis
+
+  - family: auth-session-passport
+    blast_radius: auth
+    target_major: "see source_url"
+    pr_assignment: pr-9e
+    source_url: https://github.com/jaredhanson/passport/releases
+    upgrade_strategy: abstraction-first
+    runtime_criticality: critical
+    requires_staging_soak: true
+    staging_soak_hours: 48
+    node_runtime_requirement: ">=20"
+    peer_dependency_cluster:
+      - passport
+      - "@nestjs/passport"
+      - passport-local
+      - passport-jwt
+      - express-session
+      - connect-redis
+      - "@nestjs/jwt"
+    deployment_sequence:
+      - dual-runtime
+      - canary
+      - full-rollout
+    production_approved: true
+    rollback_complexity: dangerous
+    migration_blockers:
+      - Node20Required
+      - ConnectRedisV8RedisClientV4Required
+      - AuthServiceAbstractionMerged
+    observability_requirements:
+      - sentry
+      - session-roundtrip
+      - structured-logs
+    data_migration_required: true
+    supports_dual_runtime: full
+    rollback_rto_minutes: 30
+    upgrade_owner_domain:
+      - auth
+      - backend-runtime
+    requires_perf_baseline: false
+    rollback_runbook_required: true
+    expected_user_impact:
+      - forced-signout
+      - banner-display
+    perf_baseline_metrics: []
+    estimated_recovery_sequence:
+      - deploy-banner
+      - disable-canary
+      - rollback-api
+      - invalidate-new-format-cookies
+      - verify-session-roundtrip
+    stateful_surface:
+      - redis-sessions
+      - cookies
+    rollback_validation_checks:
+      - session-roundtrip
+      - no-sentry-spike
+      - health-endpoint-ok
+    canary_abort_conditions:
+      - sentry-error-rate-spike
+      - session-roundtrip-fail
+      - p99-regression-20pct
+    runtime_state_coupling:
+      - redis
+      - cookies
+    safe_parallel_window_minutes: 1440
+    rollback_data_loss_risk: partial-loss
+    runtime_entrypoints:
+      - api
+      - ssr
+    operational_owner: auth-team
+    estimated_canary_duration_minutes: 120
+    rollback_requires_human_approval: true
+    rollback_tested_at: null
+    rollback_drill_commit: null
+    known_incompatible_families:
+      - data-supabase
+    upgrade_cost_estimate:
+      estimated_engineer_days: 14
+      estimated_review_load: extreme
+    runtime_slo_impact:
+      - auth-success-rate
+      - api-p99
+    runtime_dependency_edges:
+      depends_on_runtime: []
+    rollback_preconditions:
+      - banner-deployed
+      - dual-runtime-active
+      - canary-disabled
+    observability_sli_queries:
+      auth-success-rate: "sum(rate(auth_login_success_total[5m])) / sum(rate(auth_login_attempt_total[5m]))"
+      api-p99: "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))"
+    state_schema_version: session-v7
+    rollback_blast_scope:
+      - api
+      - sessions
+    runtime_capabilities:
+      - supports-canary
+      - supports-dual-write
+    failure_domain:
+      - authentication
+    rollback_confidence_level: theoretical
+    state_transition_strategy: dual-write
+    incident_comm_protocol:
+      - status-page
+      - banner
+      - email-notification
+    compatibility_contracts:
+      - session-cookie-v7
+      - connect-redis-v7
+    runtime_freeze_window:
+      start: "22:00"
+      end: "06:00"
+    orchestrator_policy:
+      rollback_mode: manual-only
+      deploy_mode: canary-only
+    dependency_lineage:
+      supersedes: []
+    state_compatibility_window_minutes: 1440
+    runtime_budget_constraints: {}
+    state_reconciliation_strategy:
+      duplicate_resolution: latest-write-wins
+    orchestrator_lock_scope:
+      - sessions-table
+      - auth
+    rollback_observability_grace_period_minutes: 30
+    runtime_contract_expiry: "2026-12-31"
+    notes: >
+      Abstraction layer first (split AuthService from session middleware),
+      then upgrade. connect-redis v7→v8 changes cookie format ⇒ forced sign-out
+      at deploy boundary. PROD banner mandatory. dual-runtime allows
+      old+new session cookies to coexist during the canary window.
+    members:
+      - passport
+      - "@nestjs/passport"
+      - passport-local
+      - passport-jwt
+      - express-session
+      - connect-redis
+      - bcrypt
+      - "@nestjs/jwt"
+
+  - family: runtime-backend-nest
+    blast_radius: runtime-backend
+    target_major: "11.x"
+    pr_assignment: pr-9f
+    source_url: https://github.com/nestjs/nest/releases
+    upgrade_strategy: staged-rollout
+    runtime_criticality: critical
+    requires_staging_soak: true
+    staging_soak_hours: 72
+    node_runtime_requirement: ">=20"
+    peer_dependency_cluster:
+      - "@nestjs/*"
+      - rxjs
+      - reflect-metadata
+      - body-parser
+    deployment_sequence:
+      - canary
+      - full-rollout
+    production_approved: true
+    rollback_complexity: dangerous
+    migration_blockers:
+      - Node20Required
+      - Express5CompatibilityAuditPassed
+      - RxJS7Required
+      - PR9eMerged
+    observability_requirements:
+      - sentry
+      - structured-logs
+      - health-endpoint
+      - traces
+    data_migration_required: false
+    supports_dual_runtime: none
+    rollback_rto_minutes: 60
+    upgrade_owner_domain:
+      - backend-runtime
+      - platform-tooling
+    requires_perf_baseline: true
+    rollback_runbook_required: true
+    expected_user_impact:
+      - short-api-restart
+    perf_baseline_metrics:
+      - cold-start
+      - p99
+      - memory
+    estimated_recovery_sequence:
+      - disable-canary
+      - rollback-api
+      - prepare-express-ratchet-pr
+      - prepare-rxjs-ratchet-pr
+      - verify-health-endpoint
+      - verify-traces-continuity
+    stateful_surface:
+      - none
+    rollback_validation_checks:
+      - health-endpoint-ok
+      - traces-continuity
+      - no-sentry-spike
+    canary_abort_conditions:
+      - p99-regression-20pct
+      - cold-start-regression-30pct
+      - sentry-error-rate-spike
+      - health-endpoint-fail
+    runtime_state_coupling:
+      - none
+    safe_parallel_window_minutes: 0
+    rollback_data_loss_risk: none
+    runtime_entrypoints:
+      - api
+      - workers
+      - cron
+      - ssr
+    operational_owner: backend-runtime-team
+    estimated_canary_duration_minutes: 60
+    rollback_requires_human_approval: true
+    rollback_tested_at: null
+    rollback_drill_commit: null
+    known_incompatible_families:
+      - runtime-backend-platform-fastify
+      - queues-bullmq
+    upgrade_cost_estimate:
+      estimated_engineer_days: 12
+      estimated_review_load: extreme
+    runtime_slo_impact:
+      - api-p99
+      - cold-start
+      - container-startup
+    runtime_dependency_edges:
+      depends_on_runtime:
+        - auth-session-passport
+        - validation-zod
+        - queues-bullmq
+    rollback_preconditions:
+      - canary-disabled
+      - express-ratchet-pr-ready
+      - rxjs-ratchet-pr-ready
+    observability_sli_queries:
+      api-p99: "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))"
+      cold-start: "histogram_quantile(0.95, sum(rate(container_startup_seconds_bucket[5m])) by (le))"
+      container-startup: "avg(container_health_ready_seconds)"
+    state_schema_version: n/a
+    rollback_blast_scope:
+      - api
+      - workers
+      - sessions
+      - ssr
+    runtime_capabilities:
+      - supports-canary
+    failure_domain:
+      - api-runtime
+    rollback_confidence_level: theoretical
+    state_transition_strategy: none
+    incident_comm_protocol:
+      - status-page
+      - slack-channel
+    compatibility_contracts:
+      - nestjs-v10
+      - express-v4
+      - rxjs-v6
+    runtime_freeze_window:
+      start: "22:00"
+      end: "06:00"
+    orchestrator_policy:
+      rollback_mode: manual-only
+      deploy_mode: canary-only
+    dependency_lineage:
+      supersedes: []
+    state_compatibility_window_minutes: 0
+    runtime_budget_constraints:
+      max_p99_regression_pct: 10
+      max_memory_growth_pct: 15
+      max_cold_start_regression_pct: 20
+    state_reconciliation_strategy:
+      duplicate_resolution: n/a
+    orchestrator_lock_scope:
+      - backend-runtime
+    rollback_observability_grace_period_minutes: 20
+    runtime_contract_expiry: "2027-06-30"
+    notes: >
+      Nest 11 requires Node 20+, Express 5, RxJS 7.x. Must follow PR-9b/c/d/e —
+      upgrade order matters for peer-dep resolution. 72h DEV preprod soak
+      (every module loads through Nest — widest blast radius of PR-9 series).
+      Real risk is Express 5 cascade (Passport / sessions / middleware) — see PR-9f.0.
+    members:
+      - "@nestjs/core"
+      - "@nestjs/common"
+      - "@nestjs/platform-express"
+      - "@nestjs/config"
+      - "@nestjs/swagger"
+      - "@nestjs/schedule"
+      - "@nestjs/cache-manager"
+      - "@nestjs/event-emitter"
+      - "@nestjs/throttler"
+      - "@nestjs/websockets"
+      - "@nestjs/platform-socket.io"
+      - "@nestjs/testing"
+      - "@nestjs/cli"
+      - "@nestjs/schematics"
+      - reflect-metadata
+      - rxjs
+      - body-parser
+
+  - family: runtime-backend-platform-fastify
+    blast_radius: runtime-backend
+    target_major: "fastify-5.x"
+    pr_assignment: pr-9g
+    source_url: https://github.com/nestjs/nest/tree/master/packages/platform-fastify
+    upgrade_strategy: spike-only
+    runtime_criticality: medium
+    requires_staging_soak: false
+    node_runtime_requirement: ">=20"
+    peer_dependency_cluster:
+      - "@nestjs/platform-fastify"
+    production_approved: false
+    rollback_complexity: trivial
+    migration_blockers:
+      - PR9fMerged
+    observability_requirements:
+      - structured-logs
+    data_migration_required: false
+    supports_dual_runtime: full
+    rollback_rto_minutes: 5
+    upgrade_owner_domain:
+      - backend-runtime
+    requires_perf_baseline: true
+    rollback_runbook_required: false
+    expected_user_impact:
+      - none
+    perf_baseline_metrics:
+      - cold-start
+      - p99
+      - memory
+    estimated_recovery_sequence:
+      - revert-spike-branch
+    stateful_surface:
+      - none
+    rollback_validation_checks:
+      - none
+    canary_abort_conditions: []
+    runtime_state_coupling:
+      - none
+    safe_parallel_window_minutes: 1440
+    rollback_data_loss_risk: none
+    runtime_entrypoints:
+      - api
+    operational_owner: backend-runtime-team
+    estimated_canary_duration_minutes: 0
+    rollback_requires_human_approval: false
+    rollback_tested_at: null
+    rollback_drill_commit: null
+    known_incompatible_families:
+      - runtime-backend-nest
+    upgrade_cost_estimate:
+      estimated_engineer_days: 5
+      estimated_review_load: medium
+    runtime_slo_impact: []
+    runtime_dependency_edges:
+      depends_on_runtime:
+        - runtime-backend-nest
+    rollback_preconditions: []
+    observability_sli_queries: {}
+    state_schema_version: n/a
+    rollback_blast_scope:
+      - none
+    runtime_capabilities:
+      - supports-shadow
+    failure_domain:
+      - api-runtime
+    rollback_confidence_level: theoretical
+    state_transition_strategy: none
+    incident_comm_protocol:
+      - none
+    compatibility_contracts:
+      - nestjs-platform-fastify-v0
+    runtime_freeze_window: null
+    orchestrator_policy:
+      rollback_mode: manual-only
+      deploy_mode: staged
+    dependency_lineage:
+      supersedes: []
+    state_compatibility_window_minutes: 0
+    runtime_budget_constraints: {}
+    state_reconciliation_strategy:
+      duplicate_resolution: n/a
+    orchestrator_lock_scope: []
+    rollback_observability_grace_period_minutes: 0
+    runtime_contract_expiry: null
+    notes: >
+      Spike: parallel platform-fastify branch. NO removal of platform-express.
+      Compare cold-start + p99 latency on /api/_perf endpoint. Blast radius
+      analysis showed Fastify migration would cascade across Passport, sessions,
+      connect-redis, Express middleware, legacy Nest adapters, SEO routes —
+      larger than Nest 11 itself. Spike informs a future PR-9h decision, NOT a
+      production swap. Empty runtime_budget_constraints is intentional: spike
+      MEASURES perf without GATING (invariant #50 exempts production_approved=false).
+    members:
+      - "@nestjs/platform-fastify"
+
+  # ====================================================================
+  # Deferred (roadmap-approved, visibility only)
+  # ====================================================================
+  - family: runtime-frontend-remix-vite
+    blast_radius: runtime-frontend
+    target_major: "see source_url"
+    pr_assignment: deferred
+    source_url: https://github.com/remix-run/remix/releases
+    upgrade_strategy: staged-rollout
+    runtime_criticality: critical
+    requires_staging_soak: true
+    staging_soak_hours: 72
+    node_runtime_requirement: ">=20"
+    peer_dependency_cluster:
+      - "@remix-run/*"
+      - react
+      - react-dom
+      - vite
+    production_approved: true
+    rollback_complexity: dangerous
+    migration_blockers:
+      - React19Stable
+      - Vite6EcosystemReady
+      - Node20Required
+    observability_requirements:
+      - sentry
+      - structured-logs
+      - synthetic-crawler
+    data_migration_required: false
+    supports_dual_runtime: none
+    rollback_rto_minutes: 60
+    upgrade_owner_domain:
+      - frontend-runtime
+    requires_perf_baseline: true
+    rollback_runbook_required: true
+    expected_user_impact:
+      - page-reload-required
+      - cdn-cache-flush
+    perf_baseline_metrics:
+      - hydration-time
+      - lcp
+      - bundle-size
+    estimated_recovery_sequence:
+      - revert-pr
+      - cdn-flush
+      - redeploy
+      - verify-synthetic-crawler
+    stateful_surface:
+      - hydration-cache
+    rollback_validation_checks:
+      - synthetic-crawler-green
+      - no-sentry-spike
+    canary_abort_conditions: []
+    runtime_state_coupling:
+      - cdn
+      - dom
+    safe_parallel_window_minutes: 0
+    rollback_data_loss_risk: none
+    runtime_entrypoints:
+      - ssr
+      - edge
+    operational_owner: frontend-runtime-team
+    estimated_canary_duration_minutes: 0
+    rollback_requires_human_approval: true
+    rollback_tested_at: null
+    rollback_drill_commit: null
+    known_incompatible_families: []
+    upgrade_cost_estimate:
+      estimated_engineer_days: 21
+      estimated_review_load: extreme
+    runtime_slo_impact:
+      - lcp
+      - hydration-time
+    runtime_dependency_edges:
+      depends_on_runtime: []
+    rollback_preconditions:
+      - cdn-purge-ready
+      - canary-disabled
+    observability_sli_queries:
+      lcp: "avg(web_vitals_lcp_ms)"
+      hydration-time: "avg(react_hydration_duration_ms)"
+    state_schema_version: n/a
+    rollback_blast_scope:
+      - ssr
+      - cdn
+    runtime_capabilities:
+      - supports-canary
+    failure_domain:
+      - seo-rendering
+      - frontend-ssr
+    rollback_confidence_level: theoretical
+    state_transition_strategy: hard-cut
+    incident_comm_protocol:
+      - status-page
+      - banner
+    compatibility_contracts:
+      - remix-v2
+      - vite-v5
+      - react-v18
+    runtime_freeze_window:
+      start: "22:00"
+      end: "06:00"
+    orchestrator_policy:
+      rollback_mode: manual-only
+      deploy_mode: atomic
+    dependency_lineage:
+      supersedes: []
+    state_compatibility_window_minutes: 0
+    runtime_budget_constraints:
+      max_lcp_regression_pct: 15
+      max_p99_regression_pct: 10
+    state_reconciliation_strategy:
+      duplicate_resolution: n/a
+    orchestrator_lock_scope:
+      - frontend-runtime
+      - cdn-cache
+    rollback_observability_grace_period_minutes: 30
+    runtime_contract_expiry: null
+    notes: >
+      Remix v2 → Vite 6 → React 19 chain. Deferred until React 19 stable +
+      Vite 6 ecosystem caught up. Not in PR-9 scope.
+    members:
+      - "@remix-run/dev"
+      - "@remix-run/eslint-config"
+      - "@remix-run/express"
+      - "@remix-run/node"
+      - "@remix-run/react"
+      - "@remix-run/serve"
+      - "@remix-run/server-runtime"
+      - react
+      - react-dom
+      - vite
+
+  - family: observability-otel
+    blast_radius: observability
+    target_major: "see source_url"
+    pr_assignment: deferred
+    source_url: https://github.com/open-telemetry/opentelemetry-js/releases
+    upgrade_strategy: in-place
+    runtime_criticality: medium
+    requires_staging_soak: false
+    node_runtime_requirement: ">=20"
+    peer_dependency_cluster:
+      - pino
+      - pino-pretty
+    production_approved: true
+    rollback_complexity: moderate
+    migration_blockers:
+      - Node20Required
+    observability_requirements:
+      - structured-logs
+      - traces
+    data_migration_required: false
+    supports_dual_runtime: full
+    rollback_rto_minutes: 15
+    upgrade_owner_domain:
+      - observability
+    requires_perf_baseline: false
+    rollback_runbook_required: false
+    expected_user_impact:
+      - none
+    perf_baseline_metrics: []
+    estimated_recovery_sequence:
+      - revert-pr
+      - verify-log-format
+    stateful_surface:
+      - none
+    rollback_validation_checks:
+      - traces-continuity
+    canary_abort_conditions: []
+    runtime_state_coupling:
+      - none
+    safe_parallel_window_minutes: 1440
+    rollback_data_loss_risk: none
+    runtime_entrypoints:
+      - api
+      - workers
+    operational_owner: observability-team
+    estimated_canary_duration_minutes: 0
+    rollback_requires_human_approval: false
+    rollback_tested_at: null
+    rollback_drill_commit: null
+    known_incompatible_families: []
+    upgrade_cost_estimate:
+      estimated_engineer_days: 3
+      estimated_review_load: low
+    runtime_slo_impact: []
+    runtime_dependency_edges:
+      depends_on_runtime: []
+    rollback_preconditions: []
+    observability_sli_queries: {}
+    state_schema_version: n/a
+    rollback_blast_scope:
+      - none
+    runtime_capabilities:
+      - none
+    failure_domain:
+      - observability
+    rollback_confidence_level: theoretical
+    state_transition_strategy: none
+    incident_comm_protocol:
+      - none
+    compatibility_contracts:
+      - pino-v8
+    runtime_freeze_window: null
+    orchestrator_policy:
+      rollback_mode: auto-allowed
+      deploy_mode: staged
+    dependency_lineage:
+      supersedes: []
+    state_compatibility_window_minutes: 1440
+    runtime_budget_constraints: {}
+    state_reconciliation_strategy:
+      duplicate_resolution: n/a
+    orchestrator_lock_scope: []
+    rollback_observability_grace_period_minutes: 5
+    runtime_contract_expiry: null
+    notes: >
+      OTel SDK + pino logger track. Deferred until Node 22 alignment.
+      observability is meta — touches log volume, not user-visible SLOs.
+    members:
+      - pino
+      - pino-pretty
+
+  - family: data-supabase
+    blast_radius: data
+    target_major: "see source_url"
+    pr_assignment: deferred
+    source_url: https://github.com/supabase/supabase-js/releases
+    upgrade_strategy: staged-rollout
+    runtime_criticality: critical
+    requires_staging_soak: true
+    staging_soak_hours: 72
+    node_runtime_requirement: ">=20"
+    peer_dependency_cluster:
+      - "@supabase/supabase-js"
+    deployment_sequence:
+      - canary
+      - full-rollout
+    production_approved: true
+    rollback_complexity: dangerous
+    migration_blockers:
+      - Node20Required
+      - SupabaseRealtimeV2Compatible
+    observability_requirements:
+      - sentry
+      - structured-logs
+      - health-endpoint
+    data_migration_required: true
+    supports_dual_runtime: partial
+    rollback_rto_minutes: 30
+    upgrade_owner_domain:
+      - data
+      - backend-runtime
+    requires_perf_baseline: false
+    rollback_runbook_required: true
+    expected_user_impact:
+      - short-api-restart
+    perf_baseline_metrics: []
+    estimated_recovery_sequence:
+      - disable-canary
+      - rollback-api
+      - supabase-realtime-channel-rollback
+      - verify-health-endpoint
+    stateful_surface:
+      - realtime-channels
+    rollback_validation_checks:
+      - health-endpoint-ok
+      - no-sentry-spike
+    canary_abort_conditions:
+      - sentry-error-rate-spike
+      - p99-regression-20pct
+      - health-endpoint-fail
+    runtime_state_coupling:
+      - realtime-channels
+    safe_parallel_window_minutes: 120
+    rollback_data_loss_risk: partial-loss
+    runtime_entrypoints:
+      - api
+      - workers
+    operational_owner: data-team
+    estimated_canary_duration_minutes: 60
+    rollback_requires_human_approval: true
+    rollback_tested_at: null
+    rollback_drill_commit: null
+    known_incompatible_families:
+      - auth-session-passport
+    upgrade_cost_estimate:
+      estimated_engineer_days: 7
+      estimated_review_load: high
+    runtime_slo_impact:
+      - api-p99
+      - realtime-latency
+    runtime_dependency_edges:
+      depends_on_runtime:
+        - auth-session-passport
+    rollback_preconditions:
+      - no-realtime-active
+      - canary-disabled
+    observability_sli_queries:
+      api-p99: "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))"
+      realtime-latency: "histogram_quantile(0.95, sum(rate(supabase_realtime_message_latency_seconds_bucket[5m])) by (le))"
+    state_schema_version: supabase-v2
+    rollback_blast_scope:
+      - api
+      - workers
+      - realtime
+    runtime_capabilities:
+      - supports-canary
+    failure_domain:
+      - data-layer
+    rollback_confidence_level: theoretical
+    state_transition_strategy: lazy-migration
+    incident_comm_protocol:
+      - status-page
+    compatibility_contracts:
+      - supabase-v2
+    runtime_freeze_window:
+      start: "22:00"
+      end: "06:00"
+    orchestrator_policy:
+      rollback_mode: manual-only
+      deploy_mode: staged
+    dependency_lineage:
+      supersedes: []
+    state_compatibility_window_minutes: 120
+    runtime_budget_constraints: {}
+    state_reconciliation_strategy:
+      duplicate_resolution: latest-write-wins
+    orchestrator_lock_scope:
+      - realtime-channels
+      - data-layer
+    rollback_observability_grace_period_minutes: 30
+    runtime_contract_expiry: "2027-06-30"
+    notes: >
+      supabase-js v2 stable. Watch for Realtime v2 transition.
+    members:
+      - "@supabase/supabase-js"
+
+  - family: tooling-prettier-husky
+    blast_radius: tooling
+    target_major: "see source_url"
+    pr_assignment: deferred
+    source_url: https://github.com/prettier/prettier/releases
+    upgrade_strategy: in-place
+    runtime_criticality: low
+    requires_staging_soak: false
+    node_runtime_requirement: ">=20"
+    production_approved: true
+    rollback_complexity: trivial
+    migration_blockers: []
+    observability_requirements: []
+    data_migration_required: false
+    supports_dual_runtime: none
+    rollback_rto_minutes: 5
+    upgrade_owner_domain:
+      - platform-tooling
+    requires_perf_baseline: false
+    rollback_runbook_required: false
+    expected_user_impact:
+      - none
+    perf_baseline_metrics: []
+    estimated_recovery_sequence:
+      - revert-pr
+    stateful_surface:
+      - none
+    rollback_validation_checks:
+      - none
+    canary_abort_conditions: []
+    runtime_state_coupling:
+      - none
+    safe_parallel_window_minutes: 0
+    rollback_data_loss_risk: none
+    runtime_entrypoints:
+      - build-only
+    operational_owner: platform-tooling-team
+    estimated_canary_duration_minutes: 0
+    rollback_requires_human_approval: false
+    rollback_tested_at: null
+    rollback_drill_commit: null
+    known_incompatible_families: []
+    upgrade_cost_estimate:
+      estimated_engineer_days: 2
+      estimated_review_load: low
+    runtime_slo_impact: []
+    runtime_dependency_edges:
+      depends_on_runtime: []
+    rollback_preconditions: []
+    observability_sli_queries: {}
+    state_schema_version: n/a
+    rollback_blast_scope:
+      - none
+    runtime_capabilities:
+      - none
+    failure_domain:
+      - tooling
+    rollback_confidence_level: theoretical
+    state_transition_strategy: none
+    incident_comm_protocol:
+      - none
+    compatibility_contracts:
+      - prettier-v3
+    runtime_freeze_window: null
+    orchestrator_policy:
+      rollback_mode: auto-allowed
+      deploy_mode: atomic
+    dependency_lineage:
+      supersedes: []
+    state_compatibility_window_minutes: 0
+    runtime_budget_constraints: {}
+    state_reconciliation_strategy:
+      duplicate_resolution: n/a
+    orchestrator_lock_scope: []
+    rollback_observability_grace_period_minutes: 0
+    runtime_contract_expiry: null
+    notes: Low-risk catch-up batch — defer to a v1.5 sweep.
+    members:
+      - prettier
+      - husky
+      - lint-staged
+      - tsx
+      - ts-node
+
+  - family: internal-workspace
+    blast_radius: internal
+    target_major: workspace
+    pr_assignment: deferred
+    source_url: https://github.com/ak125/nestjs-remix-monorepo/tree/main/packages
+    upgrade_strategy: in-place
+    runtime_criticality: medium
+    requires_staging_soak: false
+    node_runtime_requirement: ">=20"
+    production_approved: true
+    rollback_complexity: moderate
+    migration_blockers: []
+    observability_requirements:
+      - structured-logs
+    data_migration_required: false
+    supports_dual_runtime: none
+    rollback_rto_minutes: 15
+    upgrade_owner_domain:
+      - platform-tooling
+    requires_perf_baseline: false
+    rollback_runbook_required: false
+    expected_user_impact:
+      - none
+    perf_baseline_metrics: []
+    estimated_recovery_sequence:
+      - changeset-rollback
+      - rebuild
+    stateful_surface:
+      - none
+    rollback_validation_checks:
+      - none
+    canary_abort_conditions: []
+    runtime_state_coupling:
+      - none
+    safe_parallel_window_minutes: 0
+    rollback_data_loss_risk: none
+    runtime_entrypoints:
+      - build-only
+    operational_owner: platform-tooling-team
+    estimated_canary_duration_minutes: 0
+    rollback_requires_human_approval: false
+    rollback_tested_at: null
+    rollback_drill_commit: null
+    known_incompatible_families: []
+    upgrade_cost_estimate:
+      estimated_engineer_days: 1
+      estimated_review_load: low
+    runtime_slo_impact: []
+    runtime_dependency_edges:
+      depends_on_runtime: []
+    rollback_preconditions: []
+    observability_sli_queries: {}
+    state_schema_version: n/a
+    rollback_blast_scope:
+      - none
+    runtime_capabilities:
+      - supports-feature-flag
+    failure_domain:
+      - tooling
+    rollback_confidence_level: theoretical
+    state_transition_strategy: none
+    incident_comm_protocol:
+      - none
+    compatibility_contracts: []
+    runtime_freeze_window: null
+    orchestrator_policy:
+      rollback_mode: auto-allowed
+      deploy_mode: staged
+    dependency_lineage:
+      supersedes: []
+    state_compatibility_window_minutes: 0
+    runtime_budget_constraints: {}
+    state_reconciliation_strategy:
+      duplicate_resolution: n/a
+    orchestrator_lock_scope: []
+    rollback_observability_grace_period_minutes: 0
+    runtime_contract_expiry: null
+    notes: >
+      `workspace:*` protocol packages — managed by changesets, not PR-9.
+    members:
+      - "@repo/database-types"
+      - "@repo/seo-role-contracts"
+      - "@repo/seo-roles"
+      - "@fafa/design-tokens"
+      - "@fafa/eslint-config"
+      - "@fafa/frontend"
+      - "@fafa/typescript-config"
+
+  # ====================================================================
+  # Experimental (NOT roadmap-approved)
+  # ====================================================================
+  - family: tooling-typescript-go
+    blast_radius: tooling
+    target_major: "tsc-go-preview"
+    pr_assignment: deferred
+    source_url: https://devblogs.microsoft.com/typescript/typescript-native-port
+    upgrade_strategy: benchmark-only
+    runtime_criticality: low
+    requires_staging_soak: false
+    node_runtime_requirement: ">=20"
+    production_approved: false
+    rollback_complexity: trivial
+    migration_blockers:
+      - NotProductionReady
+    observability_requirements: []
+    data_migration_required: false
+    supports_dual_runtime: full
+    rollback_rto_minutes: 5
+    upgrade_owner_domain:
+      - platform-tooling
+    requires_perf_baseline: true
+    rollback_runbook_required: false
+    expected_user_impact:
+      - none
+    perf_baseline_metrics:
+      - build-time
+      - memory
+    estimated_recovery_sequence:
+      - revert-benchmark-branch
+    stateful_surface:
+      - none
+    rollback_validation_checks:
+      - none
+    canary_abort_conditions: []
+    runtime_state_coupling:
+      - none
+    safe_parallel_window_minutes: 1440
+    rollback_data_loss_risk: none
+    runtime_entrypoints:
+      - build-only
+    operational_owner: platform-tooling-team
+    estimated_canary_duration_minutes: 0
+    rollback_requires_human_approval: false
+    rollback_tested_at: null
+    rollback_drill_commit: null
+    known_incompatible_families: []
+    upgrade_cost_estimate:
+      estimated_engineer_days: 3
+      estimated_review_load: low
+    runtime_slo_impact: []
+    runtime_dependency_edges:
+      depends_on_runtime: []
+    rollback_preconditions: []
+    observability_sli_queries: {}
+    state_schema_version: n/a
+    rollback_blast_scope:
+      - none
+    runtime_capabilities:
+      - supports-shadow
+    failure_domain:
+      - tooling
+    rollback_confidence_level: theoretical
+    state_transition_strategy: none
+    incident_comm_protocol:
+      - none
+    compatibility_contracts: []
+    runtime_freeze_window: null
+    orchestrator_policy:
+      rollback_mode: auto-allowed
+      deploy_mode: staged
+    dependency_lineage:
+      supersedes: []
+    state_compatibility_window_minutes: 0
+    runtime_budget_constraints:
+      max_memory_growth_pct: 50
+    state_reconciliation_strategy:
+      duplicate_resolution: n/a
+    orchestrator_lock_scope: []
+    rollback_observability_grace_period_minutes: 0
+    runtime_contract_expiry: null
+    notes: >
+      TypeScript native (Go) port. Track ONLY for build-speed benchmarks on
+      the monorepo. NOT a production candidate. Do NOT conflate with
+      `tooling-typescript-eslint` PR-9b track — this is observation-only.
+      A future agent reading this overlay MUST treat production_approved=false
+      as a hard veto, regardless of CI signal.
+    members:
+      - "@typescript/native-preview"

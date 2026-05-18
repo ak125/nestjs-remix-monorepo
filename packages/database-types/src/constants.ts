@@ -4,7 +4,7 @@
  * Généré automatiquement - Évite les erreurs de typage
  */
 
-import type { TableName } from './types';
+import type { TableName } from './types.js';
 
 /**
  * ✅ NOMS DE TABLES - Source unique de vérité

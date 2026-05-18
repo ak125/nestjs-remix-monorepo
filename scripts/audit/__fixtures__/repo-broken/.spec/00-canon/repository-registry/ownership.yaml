@@ -1,0 +1,12 @@
+schemaVersion: 1.0.0
+entries:
+  - glob: backend/**
+    domain: D14
+    owner: platform
+    sourceConfidence: high
+    risk: low
+  - glob: frontend/**
+    domain: D8
+    owner: frontend
+    sourceConfidence: high
+    risk: low

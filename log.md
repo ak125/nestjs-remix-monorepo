@@ -735,3 +735,87 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-cp-runtime-logs-collector`
 - **Décision** : Revert "ci(migration-safety): grant pull-requests: write to job (fix squawk 403)" (+4 other commits)
 - **Sortie** : PR #524 | commits f3b660d6 ec89dff3 bc5d4e26 772436f5 106f6816
+
+## 2026-05-15 — feat/pr-3b-architecture-freshness-blocking (auto)
+
+- **Branche** : `feat/pr-3b-architecture-freshness-blocking`
+- **Décision** : ci(audit): promote architecture freshness gate to BLOCKING (PR-3b)
+- **Sortie** : PR #531 | commits 0589ed20
+
+## 2026-05-15 — feat/pr-3b-architecture-freshness-blocking (auto)
+
+- **Branche** : `feat/pr-3b-architecture-freshness-blocking`
+- **Décision** : chore(architecture): regenerate .dependency-cruiser.generated.cjs (PR-3b ratchet self-hosting fix) (+2 other commits)
+- **Sortie** : PR #531 | commits 035327f5 caee5a3c 0589ed20
+
+## 2026-05-15 — feat/pr-6-contract-drift-observatory (auto)
+
+- **Branche** : `feat/pr-6-contract-drift-observatory`
+- **Décision** : test(observatory): empty commit to validate PR-comment upsert (PR-6) (+4 other commits)
+- **Sortie** : PR #540 | commits ef4d8815a da0694748 7193c7082 27d794048 8cd5d6463
+
+## 2026-05-15 — feat/seo-r2-composition-v2-foundation (auto)
+
+- **Branche** : `feat/seo-r2-composition-v2-foundation`
+- **Décision** : chore(registry): add seo_r2_v2 migration glob to ownership.yaml (ADR-066) (+3 other commits)
+- **Sortie** : PR #543 | commits 6ab4fe6e2 40102ed6b 3441fd143 a08d62eb9
+
+## 2026-05-15 — feat/seo-r2-composition-v2-foundation (auto)
+
+- **Branche** : `feat/seo-r2-composition-v2-foundation`
+- **Décision** : fix(seo-r2): ci failures - class-validator removal, bigint ids, opa require cast (+5 other commits)
+- **Sortie** : PR #543 | commits 694945cf7 4f626d0e3 6ab4fe6e2 40102ed6b 3441fd143 a08d62eb9
+
+## 2026-05-16 — feat/seo-sitemap-auth-phase-0-foundation (auto)
+
+- **Branche** : `feat/seo-sitemap-auth-phase-0-foundation`
+- **Décision** : chore(auth): add jose + cron-parser + ioredis-mock deps for sitemap OIDC auth
+- **Sortie** : PR aucune | commits d650eada2
+
+## 2026-05-16 — chore/pr-8a-controlled-cleanup-inventory (auto)
+
+- **Branche** : `chore/pr-8a-controlled-cleanup-inventory`
+- **Décision** : feat(audit): markdown projection for cleanup-candidates inventory (+4 other commits)
+- **Sortie** : PR aucune | commits a82d25b49 191914803 72f191f3f bb7b22f00 dcc71f3cf
+
+## 2026-05-16 — chore/pr-8a-controlled-cleanup-inventory (auto)
+
+- **Branche** : `chore/pr-8a-controlled-cleanup-inventory`
+- **Décision** : feat(audit): emit PR-8 controlled cleanup inventory (333 candidates, deterministic) (+6 other commits)
+- **Sortie** : PR aucune | commits e13df3ff0 31da20001 a82d25b49 191914803 72f191f3f bb7b22f00 dcc71f3cf
+
+## 2026-05-16 — chore/pr-8a-controlled-cleanup-inventory (auto)
+
+- **Branche** : `chore/pr-8a-controlled-cleanup-inventory`
+- **Décision** : chore(registry): add ownership entry for audit/cleanup/** (PR-8a prerequisite) (+8 other commits)
+- **Sortie** : PR #567 | commits 05771dff2 8c900c13c e13df3ff0 31da20001 a82d25b49 191914803 72f191f3f bb7b22f00 dcc71f3cf
+
+## 2026-05-16 — fix/vehicles-strict-numeric-pipe (auto)
+
+- **Branche** : `fix/vehicles-strict-numeric-pipe`
+- **Décision** : chore(ownership): register backend/src/common/{pipes/params,schemas} (+1 other commit)
+- **Sortie** : PR #553 | commits 6f0030af8 08159f793
+
+## 2026-05-16 — chore/turbo-dev-depends-on-build (auto)
+
+- **Branche** : `chore/turbo-dev-depends-on-build`
+- **Décision** : chore(turbo): dev task depends on workspace builds
+- **Sortie** : PR #573 | commits 3c67dc79a
+
+## 2026-05-15 — feat/pr-7a-contract-drift-ratchet (auto)
+
+- **Branche** : `feat/pr-7a-contract-drift-ratchet`
+- **Décision** : chore(canon): cover audit/baselines/** in ownership.yaml (D15/@ak125) (+4 other commits)
+- **Sortie** : PR #545 | commits 48766b587 3402aee3f 347f4bcf5 0923c3217 18263e997
+
+## 2026-05-15 — feat/pr-7a-contract-drift-ratchet (auto)
+
+- **Branche** : `feat/pr-7a-contract-drift-ratchet`
+- **Décision** : fix(ci): bypass npm banner in ratchet json output (workflow surgical fix) (+6 other commits)
+- **Sortie** : PR #545 | commits af746ad61 f539f83e4 48766b587 3402aee3f 347f4bcf5 0923c3217 18263e997
+
+## 2026-05-17 — feat/seo-cp-cf-rum-collector (auto)
+
+- **Branche** : `feat/seo-cp-cf-rum-collector`
+- **Décision** : feat(seo-cp): pr-2a-2.5 cloudflare rum collector (web vitals edge ingestion)
+- **Sortie** : PR #583 | commits 24fdf7367

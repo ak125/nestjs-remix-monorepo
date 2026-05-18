@@ -9,8 +9,13 @@ import { AuthSessionController } from './controllers/auth-session.controller';
 import { AuthPermissionsController } from './controllers/auth-permissions.controller';
 import { AuthTokenController } from './controllers/auth-token.controller';
 import { ProfileController } from './profile.controller';
+import { AdminSessionGuard } from './admin-session.guard';
 import { CookieSerializer } from './cookie-serializer';
+import { GithubOidcGuard } from './github-oidc.guard';
+import { GithubOidcService } from './github-oidc.service';
+import { InternalApiKeyGuard } from './internal-api-key.guard';
 import { IsAdminGuard } from './is-admin.guard';
+import { LegacyInternalKeyGuard } from './legacy-internal-key.guard';
 import { LocalAuthGuard } from './local-auth.guard';
 import { LocalStrategy } from './local.strategy';
 import { PermissionsService } from './permissions.service';
@@ -45,7 +50,21 @@ import { PermissionsGuard } from './guards/permissions.guard';
     IsAdminGuard,
     PermissionsService,
     PermissionsGuard,
+    GithubOidcService,
+    AdminSessionGuard,
+    GithubOidcGuard,
+    InternalApiKeyGuard,
+    LegacyInternalKeyGuard,
   ],
-  exports: [AuthService, PermissionsService, PermissionsGuard],
+  exports: [
+    AuthService,
+    PermissionsService,
+    PermissionsGuard,
+    GithubOidcService,
+    AdminSessionGuard,
+    GithubOidcGuard,
+    InternalApiKeyGuard,
+    LegacyInternalKeyGuard,
+  ],
 })
 export class AuthModule {}

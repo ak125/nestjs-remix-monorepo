@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedBy": "fixture-pr6-observatory",
+  "entries": [
+    {
+      "id": "backend/src/app.ts",
+      "path": "backend/src/app.ts",
+      "kind": "service",
+      "domain": "D14",
+      "owner": "platform",
+      "deletePolicy": "FREE",
+      "derivedFrom": ["manual"],
+      "importedBy": [],
+      "imports": [],
+      "loc": 100,
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE"
+    },
+    {
+      "id": "frontend/app/root.tsx",
+      "path": "frontend/app/root.tsx",
+      "kind": "route",
+      "domain": "D8",
+      "owner": "frontend",
+      "deletePolicy": "FREE",
+      "derivedFrom": ["manual"],
+      "importedBy": [],
+      "imports": [],
+      "loc": 80,
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE"
+    }
+  ]
+}

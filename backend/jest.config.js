@@ -11,6 +11,10 @@ module.exports = {
   testEnvironment: 'node',
   roots: ['<rootDir>/src/', '<rootDir>/tests/'],
   moduleNameMapper: {
+    // Strip `.js` from relative imports so ts-jest can resolve them to `.ts` source.
+    // Required because @repo/seo-types and @repo/database-types use NodeNext-style
+    // ESM imports (canonical `.js` extension on relative paths) in their src/.
+    '^(\\.{1,2}/.*)\\.js$': '$1',
     '^@auth/(.*)$': '<rootDir>/src/auth/$1',
     '^@cache/(.*)$': '<rootDir>/src/cache/$1',
     '^@common/(.*)$': '<rootDir>/src/common/$1',

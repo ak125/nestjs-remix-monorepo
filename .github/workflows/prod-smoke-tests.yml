@@ -24,6 +24,20 @@ jobs:
     timeout-minutes: 5
 
     steps:
+      - name: ⬇️ Checkout repo
+        # Required by the long-tail step which executes
+        # `scripts/ci/sample-smoke-urls.ts`. PR #510 added that step without
+        # checkout/setup-node, breaking the workflow on every schedule since
+        # 2026-05-14.
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js 22
+        # Self-hosted runner has no node/npx in PATH by default. Matches the
+        # canonical pattern used by the other self-hosted jobs in ci.yml.
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
       - name: 🏥 Health endpoint
         id: health-check
         run: |
