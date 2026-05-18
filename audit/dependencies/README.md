@@ -4,13 +4,13 @@
 
 1. **No global latest upgrade.** One dependency family per PR. One rollback path. One CI proof. One runtime-risk analysis.
 2. **No cross-family upgrade PR allowed.** Touching packages in two distinct families = split the PR.
-3. **`requires_staging_soak: true` families** MUST observe `staging_soak_hours` on DEV preprod (46.224.118.55) before any prod tag.
+3. **`requires_staging_soak: true` families** MUST observe `staging_soak_hours` on the PREPROD container (49.12.233.2:3200) before any prod tag.
 4. **`production_approved: false` families** are benchmark / spike / experimental only — never reach prod regardless of CI green.
 5. **`node_runtime_requirement`** must be verified against the production Dockerfile + CI matrix **before** the family's upgrade PR opens.
 6. **`peer_dependency_cluster`** members upgrade **together** in the same PR — partial cluster upgrade is forbidden.
 7. **`migration_blockers`** MUST all be resolved before the family's upgrade PR opens. A blocker is a hard precondition.
 8. **`rollback_complexity: dangerous` families** REQUIRE a written rollback runbook in the PR description (not just `git revert`).
-9. **`observability_requirements`** MUST be live on DEV preprod before the family's prod tag (CI green ≠ runtime healthy).
+9. **`observability_requirements`** MUST be live on the PREPROD container before the family's prod tag (CI green ≠ runtime healthy).
 10. **`data_migration_required: true`** ⇒ rollback runbook MUST include data-migration rollback steps.
 11. **`supports_dual_runtime`** drives `deployment_sequence` choice: `full` ⇒ may use `dual-runtime`; `partial` ⇒ split via `workers-first` / feature flag; `none` ⇒ atomic swap + banner.
 12. **`rollback_rto_minutes`** is the operational RTO — rollback runbook MUST be drillable inside this window.
@@ -31,7 +31,7 @@
 27. **`operational_owner`** is the on-call team that gets paged — distinct from organisational `upgrade_owner_domain`.
 28. **`estimated_canary_duration_minutes`** is the canary observation window. Schema-enforced: `canary` in `deployment_sequence` ⇒ `> 0`. NOT the same as `safe_parallel_window_minutes`.
 29. **`rollback_requires_human_approval: true`** blocks automated orchestrators from initiating rollback. Mandatory for `irreversible` data-loss; recommended for auth/queues/realtime.
-30. **`rollback_tested_at` + `rollback_drill_commit`** are the drill audit trail — runbook drilled on DEV preprod, commit SHA recorded. `dangerous` rollbacks without a drill = unverified runbook = blocked at prod gate.
+30. **`rollback_tested_at` + `rollback_drill_commit`** are the drill audit trail — runbook drilled on the PREPROD container, commit SHA recorded. `dangerous` rollbacks without a drill = unverified runbook = blocked at prod gate.
 31. **`known_incompatible_families`** declares cross-family conflicts orchestrators MUST NOT schedule in parallel (distinct from `migration_blockers`, which is sequential).
 32. **`artifact_immutability_hash`** is the replay-determinism witness — `sha256:` of input hashes (`deps.json` + overlay + lockfile). Identical inputs ⇒ identical hash.
 33. **`upgrade_cost_estimate`** declares `estimated_engineer_days` + `estimated_review_load` for roadmap prioritization + sprint planning.

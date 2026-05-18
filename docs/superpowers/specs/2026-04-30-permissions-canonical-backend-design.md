@@ -319,7 +319,7 @@ La PR est mergeable si **toutes** ces conditions sont remplies :
 
 La PR introduit du nouveau code et remplace 6 décorateurs sur `OrderActionsController`. En cas de régression :
 
-1. **Hot-fix immédiat** : `git revert <merge-commit>` sur `main` → redéploie DEV pré-prod en <10min.
+1. **Hot-fix immédiat** : `git revert <merge-commit>` sur `main` → redéploie le container PREPROD CI (`49.12.233.2:3200`) en <10min ; PROD attend ensuite un push tag git `v*`.
 2. **Données** : aucune migration DB, aucun changement de schéma. Les commandes annulées par commerciaux entre déploiement et rollback restent valides (statut 6, audit log, email envoyé). Pas de cleanup nécessaire.
 3. **Frontend** : `permissions.ts` nouvelle version contient un fallback (`BASE_USER_PERMISSIONS`) si l'endpoint répond 4xx/5xx → boutons grisés mais pas de crash.
 
