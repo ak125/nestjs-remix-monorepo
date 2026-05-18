@@ -1,5 +1,5 @@
 {
-  "artifact_immutability_hash": "sha256:a09b8a53cf642595b7be59c74922f9ed065b2454fa4ed4d275667fd59f82ecc5",
+  "artifact_immutability_hash": "sha256:b2574e39cf80fe65998055138661921c4b1be8cf0817f7eef27a87ad3570d0b9",
   "divergences": [
     {
       "kind": "specifier",
@@ -86,6 +86,49 @@
       "resolved_versions": [
         "1.18.2",
         "1.19.0"
+      ]
+    },
+    {
+      "kind": "specifier",
+      "name": "@types/js-yaml",
+      "occurrences": [
+        {
+          "declaredIn": "backend/package.json",
+          "specifier": "^4.0.9",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "declaredIn": "packages/registry/package.json",
+          "specifier": "4.0.9",
+          "workspace": "@repo/registry"
+        },
+        {
+          "declaredIn": "package.json",
+          "specifier": "^4.0.9",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
+      "resolved_versions": [
+        "4.0.9"
+      ]
+    },
+    {
+      "kind": "specifier",
+      "name": "@types/micromatch",
+      "occurrences": [
+        {
+          "declaredIn": "packages/registry/package.json",
+          "specifier": "^4.0.9",
+          "workspace": "@repo/registry"
+        },
+        {
+          "declaredIn": "package.json",
+          "specifier": "^4.0.10",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
+      "resolved_versions": [
+        "4.0.10"
       ]
     },
     {
@@ -202,6 +245,21 @@
         "2.1.9",
         "4.0.18",
         "4.1.5"
+      ]
+    },
+    {
+      "kind": "resolved",
+      "name": "ajv",
+      "occurrences": [
+        {
+          "declaredIn": "package.json",
+          "specifier": "^8.12.0",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
+      "resolved_versions": [
+        "6.14.0",
+        "8.12.0"
       ]
     },
     {
@@ -377,13 +435,23 @@
       ]
     },
     {
-      "kind": "resolved",
+      "kind": "specifier",
       "name": "js-yaml",
       "occurrences": [
         {
           "declaredIn": "backend/package.json",
           "specifier": "^4.1.1",
           "workspace": "@fafa/backend"
+        },
+        {
+          "declaredIn": "packages/registry/package.json",
+          "specifier": "4.1.1",
+          "workspace": "@repo/registry"
+        },
+        {
+          "declaredIn": "package.json",
+          "specifier": "^4.1.1",
+          "workspace": "nestjs-remix-monorepo"
         }
       ],
       "resolved_versions": [
@@ -771,13 +839,18 @@
       ]
     },
     {
-      "kind": "resolved",
+      "kind": "specifier",
       "name": "zod-to-json-schema",
       "occurrences": [
         {
           "declaredIn": "backend/package.json",
           "specifier": "^3.25.2",
           "workspace": "@fafa/backend"
+        },
+        {
+          "declaredIn": "packages/registry/package.json",
+          "specifier": "3.23.0",
+          "workspace": "@repo/registry"
         }
       ],
       "resolved_versions": [
@@ -3752,13 +3825,18 @@
         },
         {
           "divergent_resolved": true,
-          "divergent_specifiers": false,
+          "divergent_specifiers": true,
           "name": "zod-to-json-schema",
           "occurrences": [
             {
               "declaredIn": "backend/package.json",
               "specifier": "^3.25.2",
               "workspace": "@fafa/backend"
+            },
+            {
+              "declaredIn": "packages/registry/package.json",
+              "specifier": "3.23.0",
+              "workspace": "@repo/registry"
             }
           ],
           "resolved_versions": [
@@ -3836,7 +3914,7 @@
       ],
       "supports_dual_runtime": "none",
       "target_major": "4.x",
-      "total_occurrences": 9,
+      "total_occurrences": 10,
       "upgrade_cost_estimate": {
         "estimated_engineer_days": 10,
         "estimated_review_load": "high"
@@ -3850,7 +3928,7 @@
   ],
   "generatedFrom": {
     "deps_registry": "audit/registry/deps.json",
-    "deps_registry_sha": "sha256:0b01ca94e9a39e3e8b19f00152e9c4f4c71fa963048593734003e39a058c79af",
+    "deps_registry_sha": "sha256:b9916cacb9cd8cc5732c6827783f125af6157f2089420cf16cffcab9b20630ff",
     "lockfile": "package-lock.json",
     "lockfile_sha": "sha256:1ad44768980b5a52a74e4fd898994adf86ee48497c745ac5820853871a1e5e58",
     "overlay": "audit/dependencies/family-overlay.yaml",
@@ -3869,7 +3947,7 @@
       "runtime-backend": 17,
       "runtime-frontend": 10,
       "tooling": 16,
-      "unassigned": 140,
+      "unassigned": 153,
       "validation": 2
     },
     "by_pr_assignment": {
@@ -3881,11 +3959,11 @@
       "pr-9f": 17,
       "pr-9g": 0
     },
-    "divergent_packages_count": 38,
+    "divergent_packages_count": 41,
     "families_count": 12,
-    "total_occurrences": 285,
-    "total_packages": 208,
-    "unassigned_count": 140
+    "total_occurrences": 306,
+    "total_packages": 221,
+    "unassigned_count": 153
   },
   "unassigned_packages": [
     {
@@ -4312,6 +4390,36 @@
     {
       "divergent_resolved": false,
       "divergent_specifiers": false,
+      "name": "@repo/registry",
+      "occurrences": [
+        {
+          "declaredIn": "backend/package.json",
+          "specifier": "*",
+          "workspace": "@fafa/backend"
+        }
+      ],
+      "resolved_versions": [
+        "<unresolved>"
+      ]
+    },
+    {
+      "divergent_resolved": false,
+      "divergent_specifiers": false,
+      "name": "@repo/seo-types",
+      "occurrences": [
+        {
+          "declaredIn": "backend/package.json",
+          "specifier": "*",
+          "workspace": "@fafa/backend"
+        }
+      ],
+      "resolved_versions": [
+        "<unresolved>"
+      ]
+    },
+    {
+      "divergent_resolved": false,
+      "divergent_specifiers": false,
       "name": "@sentry/nestjs",
       "occurrences": [
         {
@@ -4337,6 +4445,21 @@
       ],
       "resolved_versions": [
         "10.51.0"
+      ]
+    },
+    {
+      "divergent_resolved": false,
+      "divergent_specifiers": false,
+      "name": "@size-limit/file",
+      "occurrences": [
+        {
+          "declaredIn": "frontend/package.json",
+          "specifier": "^12.1.0",
+          "workspace": "@fafa/frontend"
+        }
+      ],
+      "resolved_versions": [
+        "12.1.0"
       ]
     },
     {
@@ -4762,17 +4885,47 @@
     },
     {
       "divergent_resolved": false,
-      "divergent_specifiers": false,
+      "divergent_specifiers": true,
       "name": "@types/js-yaml",
       "occurrences": [
         {
           "declaredIn": "backend/package.json",
           "specifier": "^4.0.9",
           "workspace": "@fafa/backend"
+        },
+        {
+          "declaredIn": "packages/registry/package.json",
+          "specifier": "4.0.9",
+          "workspace": "@repo/registry"
+        },
+        {
+          "declaredIn": "package.json",
+          "specifier": "^4.0.9",
+          "workspace": "nestjs-remix-monorepo"
         }
       ],
       "resolved_versions": [
         "4.0.9"
+      ]
+    },
+    {
+      "divergent_resolved": false,
+      "divergent_specifiers": true,
+      "name": "@types/micromatch",
+      "occurrences": [
+        {
+          "declaredIn": "packages/registry/package.json",
+          "specifier": "^4.0.9",
+          "workspace": "@repo/registry"
+        },
+        {
+          "declaredIn": "package.json",
+          "specifier": "^4.0.10",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
+      "resolved_versions": [
+        "4.0.10"
       ]
     },
     {
@@ -5035,6 +5188,37 @@
       ]
     },
     {
+      "divergent_resolved": true,
+      "divergent_specifiers": false,
+      "name": "ajv",
+      "occurrences": [
+        {
+          "declaredIn": "package.json",
+          "specifier": "^8.12.0",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
+      "resolved_versions": [
+        "6.14.0",
+        "8.12.0"
+      ]
+    },
+    {
+      "divergent_resolved": false,
+      "divergent_specifiers": false,
+      "name": "ajv-formats",
+      "occurrences": [
+        {
+          "declaredIn": "package.json",
+          "specifier": "^2.1.1",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
+      "resolved_versions": [
+        "2.1.1"
+      ]
+    },
+    {
       "divergent_resolved": false,
       "divergent_specifiers": true,
       "name": "autoprefixer",
@@ -5185,6 +5369,21 @@
     {
       "divergent_resolved": false,
       "divergent_specifiers": false,
+      "name": "cron-parser",
+      "occurrences": [
+        {
+          "declaredIn": "backend/package.json",
+          "specifier": "^4.9.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
+      "resolved_versions": [
+        "4.9.0"
+      ]
+    },
+    {
+      "divergent_resolved": false,
+      "divergent_specifiers": false,
       "name": "dependency-cruiser",
       "occurrences": [
         {
@@ -5262,6 +5461,26 @@
       ],
       "resolved_versions": [
         "6.4.9"
+      ]
+    },
+    {
+      "divergent_resolved": false,
+      "divergent_specifiers": false,
+      "name": "fast-json-stable-stringify",
+      "occurrences": [
+        {
+          "declaredIn": "backend/package.json",
+          "specifier": "^2.1.0",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "declaredIn": "package.json",
+          "specifier": "^2.1.0",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
+      "resolved_versions": [
+        "2.1.0"
       ]
     },
     {
@@ -5358,6 +5577,21 @@
     {
       "divergent_resolved": false,
       "divergent_specifiers": false,
+      "name": "ioredis-mock",
+      "occurrences": [
+        {
+          "declaredIn": "backend/package.json",
+          "specifier": "^8.13.1",
+          "workspace": "@fafa/backend"
+        }
+      ],
+      "resolved_versions": [
+        "8.13.1"
+      ]
+    },
+    {
+      "divergent_resolved": false,
+      "divergent_specifiers": false,
       "name": "isbot",
       "occurrences": [
         {
@@ -5401,14 +5635,39 @@
       ]
     },
     {
-      "divergent_resolved": true,
+      "divergent_resolved": false,
       "divergent_specifiers": false,
+      "name": "jose",
+      "occurrences": [
+        {
+          "declaredIn": "backend/package.json",
+          "specifier": "^5.10.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
+      "resolved_versions": [
+        "5.10.0"
+      ]
+    },
+    {
+      "divergent_resolved": true,
+      "divergent_specifiers": true,
       "name": "js-yaml",
       "occurrences": [
         {
           "declaredIn": "backend/package.json",
           "specifier": "^4.1.1",
           "workspace": "@fafa/backend"
+        },
+        {
+          "declaredIn": "packages/registry/package.json",
+          "specifier": "4.1.1",
+          "workspace": "@repo/registry"
+        },
+        {
+          "declaredIn": "package.json",
+          "specifier": "^4.1.1",
+          "workspace": "nestjs-remix-monorepo"
         }
       ],
       "resolved_versions": [
@@ -5475,6 +5734,26 @@
       ],
       "resolved_versions": [
         "0.52.0"
+      ]
+    },
+    {
+      "divergent_resolved": false,
+      "divergent_specifiers": false,
+      "name": "micromatch",
+      "occurrences": [
+        {
+          "declaredIn": "package.json",
+          "specifier": "^4.0.8",
+          "workspace": "@repo/registry"
+        },
+        {
+          "declaredIn": "packages/registry/package.json",
+          "specifier": "^4.0.8",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
+      "resolved_versions": [
+        "4.0.8"
       ]
     },
     {
@@ -5755,6 +6034,21 @@
       ]
     },
     {
+      "divergent_resolved": false,
+      "divergent_specifiers": false,
+      "name": "size-limit",
+      "occurrences": [
+        {
+          "declaredIn": "frontend/package.json",
+          "specifier": "^12.1.0",
+          "workspace": "@fafa/frontend"
+        }
+      ],
+      "resolved_versions": [
+        "12.1.0"
+      ]
+    },
+    {
       "divergent_resolved": true,
       "divergent_specifiers": false,
       "name": "socket.io",
@@ -5799,6 +6093,21 @@
       "resolved_versions": [
         "0.5.13",
         "0.5.21"
+      ]
+    },
+    {
+      "divergent_resolved": false,
+      "divergent_specifiers": false,
+      "name": "squawk-cli",
+      "occurrences": [
+        {
+          "declaredIn": "package.json",
+          "specifier": "2.52.1",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
+      "resolved_versions": [
+        "2.52.1"
       ]
     },
     {
