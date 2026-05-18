@@ -22,7 +22,7 @@ export function NewsletterCTA() {
 
       <div className="container mx-auto px-4 text-center relative z-10">
         <div className="max-w-3xl mx-auto">
-          <Mail className="w-16 h-16 mx-auto mb-6 animate-bounce" />
+          <Mail className="w-16 h-16 mx-auto mb-6 animate-pulse" />
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
             Ne manquez aucun article !
           </h2>
