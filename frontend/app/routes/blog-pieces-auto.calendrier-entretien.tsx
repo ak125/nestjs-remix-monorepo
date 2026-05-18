@@ -485,6 +485,39 @@ export default function CalendrierEntretienPage() {
           </Card>
         </section>
 
+        {/* ── R8→R5 backlink (PR-B.5) ──
+            CTA pour retourner au diagnostic. Le cookie `vehicle_ctx`
+            HttpOnly suit le navigateur ; la page diagnostic-auto lit le
+            cookie côté SSR (voir frontend/app/server/vehicle-context.server.ts)
+            pour préfiller le sélecteur véhicule. Aucun query-param ne
+            transporte l'identité véhicule (canon r-seo-09 : pas d'URL
+            programmatique). */}
+        <section aria-labelledby="cta-diagnostic-heading" className="my-6">
+          <Card className="bg-blue-50/50 border-blue-200">
+            <CardContent className="p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <h2
+                  id="cta-diagnostic-heading"
+                  className="text-base font-semibold text-blue-900"
+                >
+                  Un nouveau symptôme à diagnostiquer ?
+                </h2>
+                <p className="text-sm text-blue-800/80">
+                  Reprenez le wizard avec votre véhicule déjà sélectionné.
+                </p>
+              </div>
+              <Link
+                to="/diagnostic-auto"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-sm font-medium transition-colors whitespace-nowrap"
+                prefetch="intent"
+              >
+                <Wrench className="w-3.5 h-3.5" />
+                Lancer le diagnostic
+              </Link>
+            </CardContent>
+          </Card>
+        </section>
+
         {/* ── Disclaimer ── */}
         <Alert className="border-gray-200">
           <AlertTriangle className="w-4 h-4" />
