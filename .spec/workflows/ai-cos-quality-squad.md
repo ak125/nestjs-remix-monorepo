@@ -1420,7 +1420,7 @@ const anonymize = (data: string): string => {
 
 **Workflow replay** :
 ```
-PR merge → CI trigger → Staging deploy → Replay 1000 requêtes
+PR merge → CI trigger → PREPROD deploy → Replay 1000 requêtes
                                               ↓
                               Comparaison responses prod vs staging
 ```
