@@ -213,7 +213,7 @@ export default function AdminSuppliersLayout() {
             <Link
               key={t.key}
               to={`/admin/suppliers?display=${t.key}`}
-              className={`bg-white rounded-lg shadow p-5 ${t.border} hover:shadow-md transition-shadow`}
+              className={`bg-white rounded-lg shadow p-5 border-l-4 ${t.border} hover:shadow-md transition-shadow`}
             >
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
@@ -243,7 +243,7 @@ export default function AdminSuppliersLayout() {
         })}
 
         {/* Total */}
-        <div className="bg-white rounded-lg shadow p-5">
+        <div className="bg-white rounded-lg shadow p-5 border-l-4 border-purple-500">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Users className="h-6 w-6 text-purple-600" />

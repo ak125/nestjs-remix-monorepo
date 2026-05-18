@@ -106,7 +106,7 @@ export default function AdminPaymentsLayout() {
       {/* Métriques principales */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {/* Revenus totaux */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="bg-white rounded-lg shadow-lg p-6 border-l-4 border-green-500">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <DollarSign className="h-8 w-8 text-green-600" />
@@ -124,7 +124,7 @@ export default function AdminPaymentsLayout() {
         </div>
 
         {/* Paiements en attente */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="bg-white rounded-lg shadow-lg p-6 border-l-4 border-orange-500">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <Clock className="h-8 w-8 text-orange-600" />
@@ -147,7 +147,7 @@ export default function AdminPaymentsLayout() {
         </div>
 
         {/* Paiements complétés */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="bg-white rounded-lg shadow-lg p-6 border-l-4 border-blue-500">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <CheckCircle className="h-8 w-8 text-blue-600" />
@@ -167,7 +167,7 @@ export default function AdminPaymentsLayout() {
         </div>
 
         {/* Échecs de paiements */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="bg-white rounded-lg shadow-lg p-6 border-l-4 border-red-500">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <AlertCircle className="h-8 w-8 text-red-600" />

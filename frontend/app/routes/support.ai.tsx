@@ -489,7 +489,7 @@ export default function AIDemoPage() {
               ) : analysis ? (
                 <div className="space-y-6">
                   {/* Sentiment */}
-                  <div className="pl-4">
+                  <div className="border-l-4 border-blue-500 pl-4">
                     <h3 className="font-semibold flex items-center gap-2 mb-2">
                       {getSentimentEmoji(analysis.analysis.sentiment.sentiment)}
                       Analyse de Sentiment
@@ -542,7 +542,7 @@ export default function AIDemoPage() {
                   </div>
 
                   {/* Catégorisation */}
-                  <div className="pl-4">
+                  <div className="border-l-4 border-green-500 pl-4">
                     <h3 className="font-semibold flex items-center gap-2 mb-2">
                       🏷️ Catégorisation Intelligente
                     </h3>
@@ -579,7 +579,7 @@ export default function AIDemoPage() {
                   </div>
 
                   {/* Prédiction d'escalation */}
-                  <div className="pl-4">
+                  <div className="border-l-4 border-orange-500 pl-4">
                     <h3 className="font-semibold flex items-center gap-2 mb-2">
                       ⚡ Prédiction d'Escalation
                     </h3>
@@ -626,7 +626,7 @@ export default function AIDemoPage() {
                   </div>
 
                   {/* Recommandations */}
-                  <div className="pl-4">
+                  <div className="border-l-4 border-purple-500 pl-4">
                     <h3 className="font-semibold flex items-center gap-2 mb-2">
                       💡 Recommandations IA
                     </h3>
@@ -674,7 +674,7 @@ export default function AIDemoPage() {
 
                   {/* Réponse suggérée */}
                   {analysis.analysis.smartResponse.response && (
-                    <div className="pl-4">
+                    <div className="border-l-4 border-indigo-500 pl-4">
                       <h3 className="font-semibold flex items-center gap-2 mb-2">
                         💬 Réponse Suggérée
                       </h3>

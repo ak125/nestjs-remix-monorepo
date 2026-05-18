@@ -764,7 +764,7 @@ export default function AdminGammesSeo() {
 
       {/* Panel Configuration des Seuils */}
       {showThresholdsPanel && (
-        <Card className="bg-gradient-to-r from-indigo-50 to-blue-50">
+        <Card className="border-indigo-200 bg-gradient-to-r from-indigo-50 to-blue-50">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm flex items-center gap-2">
@@ -819,7 +819,7 @@ export default function AdminGammesSeo() {
                       parseInt(e.target.value) || 0,
                     )
                   }
-                  className="mt-1"
+                  className="mt-1 border-indigo-200"
                 />
                 <span className="text-[10px] text-gray-500">Défaut: 50</span>
               </div>
@@ -838,7 +838,7 @@ export default function AdminGammesSeo() {
                       parseInt(e.target.value) || 0,
                     )
                   }
-                  className="mt-1"
+                  className="mt-1 border-indigo-200"
                 />
                 <span className="text-[10px] text-gray-500">Défaut: 20</span>
               </div>
@@ -857,7 +857,7 @@ export default function AdminGammesSeo() {
                       parseInt(e.target.value) || 0,
                     )
                   }
-                  className="mt-1"
+                  className="mt-1 border-indigo-200"
                 />
                 <span className="text-[10px] text-gray-500">Défaut: 75</span>
               </div>
@@ -876,7 +876,7 @@ export default function AdminGammesSeo() {
                       parseInt(e.target.value) || 0,
                     )
                   }
-                  className="mt-1"
+                  className="mt-1 border-indigo-200"
                 />
                 <span className="text-[10px] text-gray-500">Défaut: 45</span>
               </div>
@@ -916,7 +916,7 @@ export default function AdminGammesSeo() {
 
       {/* Panel Historique des Actions */}
       {showAuditPanel && (
-        <Card className="bg-gradient-to-r from-purple-50 to-pink-50">
+        <Card className="border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm flex items-center gap-2">
               <History className="h-4 w-4 text-purple-600" />
@@ -987,7 +987,7 @@ export default function AdminGammesSeo() {
       )}
 
       {/* Instructions / Légende - EN HAUT */}
-      <Card className="bg-slate-50">
+      <Card className="bg-slate-50 border-slate-200">
         <CardHeader className="py-3">
           <CardTitle className="text-sm flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 text-amber-500" />
@@ -1380,7 +1380,7 @@ export default function AdminGammesSeo() {
             </CardContent>
           </Card>
 
-          <Card className="bg-green-50">
+          <Card className="border-green-200 bg-green-50">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-green-600">INDEX</CardTitle>
             </CardHeader>
@@ -1391,7 +1391,7 @@ export default function AdminGammesSeo() {
             </CardContent>
           </Card>
 
-          <Card className="bg-red-50">
+          <Card className="border-red-200 bg-red-50">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-red-600">NOINDEX</CardTitle>
             </CardHeader>
@@ -1419,7 +1419,7 @@ export default function AdminGammesSeo() {
             </CardContent>
           </Card>
 
-          <Card className="bg-orange-50">
+          <Card className="border-orange-200 bg-orange-50">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-orange-600 flex items-center gap-1">
                 <AlertTriangle className="h-3 w-3" />A promouvoir
@@ -1449,7 +1449,7 @@ export default function AdminGammesSeo() {
       )}
 
       {/* Sitemap Regeneration Card */}
-      <Card className="bg-blue-50">
+      <Card className="border-blue-200 bg-blue-50">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <CardTitle className="text-sm flex items-center gap-2">
@@ -1460,7 +1460,7 @@ export default function AdminGammesSeo() {
               size="sm"
               onClick={handleRegenerateSitemap}
               disabled={isRegeneratingSitemap}
-              className="text-blue-600 hover:bg-blue-100"
+              className="text-blue-600 border-blue-300 hover:bg-blue-100"
             >
               {isRegeneratingSitemap ? (
                 <>
@@ -1496,7 +1496,7 @@ export default function AdminGammesSeo() {
       </Card>
 
       {/* Smart Actions KPIs - Click to filter */}
-      <Card className="bg-gradient-to-r from-indigo-50 to-purple-50">
+      <Card className="border-indigo-200 bg-gradient-to-r from-indigo-50 to-purple-50">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <CardTitle className="text-sm flex items-center gap-2">
@@ -1725,7 +1725,7 @@ export default function AdminGammesSeo() {
                   setSearchParams(params);
                 }}
               >
-                <SelectTrigger className="">
+                <SelectTrigger className="border-indigo-200">
                   <SelectValue placeholder="Toutes" />
                 </SelectTrigger>
                 <SelectContent>
@@ -1746,7 +1746,7 @@ export default function AdminGammesSeo() {
 
       {/* Batch Actions */}
       {selectedIds.length > 0 && (
-        <Card className="bg-blue-50">
+        <Card className="border-blue-200 bg-blue-50">
           <CardContent className="py-3">
             <div className="flex items-center justify-between">
               <span className="font-medium text-blue-700">
@@ -1911,7 +1911,17 @@ export default function AdminGammesSeo() {
                       )}
                       {/* Ligne de gamme - Highlighting basé sur Execution status */}
                       <tr
-                        className={`hover:bg-gray-100 transition-colors ${ gamme.pg_top === "1" ? "bg-emerald-50 border-l-emerald-500" : gamme.execution_status === "PASS" ? "bg-green-50 border-l-green-400" : gamme.execution_status === "WARN" ? "bg-amber-50 border-l-amber-400" : gamme.execution_status === "FAIL" ? "bg-red-50 border-l-red-400" : "" }`}
+                        className={`hover:bg-gray-100 transition-colors ${
+                          gamme.pg_top === "1"
+                            ? "bg-emerald-50 border-l-4 border-l-emerald-500"
+                            : gamme.execution_status === "PASS"
+                              ? "bg-green-50 border-l-4 border-l-green-400"
+                              : gamme.execution_status === "WARN"
+                                ? "bg-amber-50 border-l-4 border-l-amber-400"
+                                : gamme.execution_status === "FAIL"
+                                  ? "bg-red-50 border-l-4 border-l-red-400"
+                                  : ""
+                        }`}
                       >
                         <td className="px-2 py-3">
                           <Checkbox
