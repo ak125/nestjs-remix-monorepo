@@ -17,6 +17,11 @@
 
 schemaVersion: 1.0.0
 entries:
+  - glob: .claude/governance/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
   - glob: .claude/rules/**
     domain: D15
     owner: '@ak125'
@@ -211,6 +216,11 @@ entries:
     domain: D7
     owner: '@ak125'
     sourceConfidence: medium
+    risk: medium
+  - glob: backend/src/modules/maintenance/**
+    domain: D16
+    owner: '@ak125'
+    sourceConfidence: high
     risk: medium
   - glob: backend/src/modules/marketing/**
     domain: D12
