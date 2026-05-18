@@ -84,7 +84,7 @@ export class RmAlternativesService {
     ]);
 
     const vehicles = this.rankVehicles(vehicleCands, target).slice(0, Math.min(6, limit));
-    const models = await this.attachRepresentativeTypes(modelRows, pg_id);
+    const models = await this.attachRepresentativeTypes(modelRows, pg_id, target);
 
     const response = this.buildResponse(vehicles, gammes, models);
     await this.cache.set(cacheKey, JSON.stringify(response), CACHE_TTL_SECONDS);
@@ -372,9 +372,23 @@ export class RmAlternativesService {
   private async attachRepresentativeTypes(
     modeles: Array<{ modele_id: number; modele_name: string; modele_alias: string }>,
     pg_id: number,
+    target: VehicleTarget,
   ): Promise<RelatedModel[]> {
     if (modeles.length === 0) return [];
     const sb = this.getClient();
+
+    // Fetch marque once — all related models share the same target_marque_id
+    const { data: marque } = await sb
+      .from('auto_marque')
+      .select('marque_id, marque_name, marque_alias')
+      .eq('marque_id', target.target_marque_id)
+      .single();
+    const marqueInfo = {
+      marque_id: (marque as any)?.marque_id ?? target.target_marque_id,
+      marque_name: String((marque as any)?.marque_name ?? ''),
+      marque_alias: String((marque as any)?.marque_alias ?? ''),
+    };
+
     const result: RelatedModel[] = [];
     for (const m of modeles) {
       const { data: types } = await sb
@@ -404,9 +418,9 @@ export class RmAlternativesService {
         modele_id: m.modele_id,
         modele_name: m.modele_name,
         modele_alias: m.modele_alias,
-        marque_id: parseInt(String((rep as any).type_marque_id), 10),
-        marque_name: '',
-        marque_alias: '',
+        marque_id: marqueInfo.marque_id,
+        marque_name: marqueInfo.marque_name,
+        marque_alias: marqueInfo.marque_alias,
         representative_type_id: String((rep as any).type_id),
         representative_type_alias: String((rep as any).type_alias ?? ''),
       });
