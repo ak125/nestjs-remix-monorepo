@@ -19,3 +19,12 @@
 /scripts/agents/                                  @ak125
 /.github/workflows/agents-md-validation.yml       @ak125
 /.github/CODEOWNERS                               @ak125
+
+# Diagnostic Control Plane V1 (ADR-pending) — bounded contexts + governance.
+# Ports are stable contracts ; any signature change = L4 in
+# .claude/governance/guard-hierarchy.yaml and requires architecture review.
+/.claude/governance/                              @ak125
+/packages/registry/src/events/                    @ak125
+/policies/                                        @ak125
+/backend/src/modules/diagnostic-engine/ports/     @ak125
+/backend/src/modules/maintenance/                 @ak125

@@ -11,9 +11,14 @@ import { z } from "zod";
  * extending the enum is a pre-merge correction, not a Schema Evolution policy
  * minor bump (which applies after `accepted` status).
  *
- * D1..D15 = domaines identifiés par domain-map.md (variantes confiance C1/C2/C3).
- * 'UNKNOWN' réservé pour signal ambigu — JAMAIS forcer une assignation
- * (cf. invariant V1-3 ADR-058).
+ * D16 Maintenance added 2026-05-18 (Diagnostic Control Plane V1 — PR-A) to
+ * decouple preventive-maintenance engine from D4 (Vehicle) / D7 (KG-Diagnostic).
+ * Pre-merge correction (registry still `0.1.0` proposed) — no schema evolution
+ * minor bump required.
+ *
+ * D1..D16 = domaines identifiés (D1..D15 par domain-map.md v1.4.2, D16 ajout
+ * Diagnostic Control Plane V1). 'UNKNOWN' réservé pour signal ambigu — JAMAIS
+ * forcer une assignation (cf. invariant V1-3 ADR-058).
  */
 export const DomainIdSchema = z.enum([
   "D1",  // Catalog Core (P0, 75 GB, 22 tables)
@@ -31,6 +36,7 @@ export const DomainIdSchema = z.enum([
   "D13", // Config & System
   "D14", // Gamme Aggregates & V-Level (cross-cutting)
   "D15", // Security & Governance
+  "D16", // Maintenance (preventive : service interval, oil spec, schedule)
   "UNKNOWN", // signal ambigu — non résolu, à reviewer
 ]);
 
