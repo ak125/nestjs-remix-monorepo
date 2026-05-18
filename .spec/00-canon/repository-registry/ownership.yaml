@@ -22,6 +22,11 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: high
+  - glob: .claude/skills/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
   - glob: .spec/00-canon/repository-registry/**
     domain: D15
     owner: '@ak125'
