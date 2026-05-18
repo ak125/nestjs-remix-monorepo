@@ -11,7 +11,14 @@
  * - POST /api/sitemap/v10/ping             → Ping Google
  */
 
-import { Controller, Get, Post, Param, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  Logger,
+  UseGuards,
+} from '@nestjs/common';
 import {
   SitemapV10Service,
   TemperatureBucket,
@@ -19,6 +26,21 @@ import {
 import { SitemapV10ScoringService } from '../services/sitemap-v10-scoring.service';
 import { SitemapV10HubsService } from '../services/sitemap-v10-hubs.service';
 import { RateLimitSitemap } from '../../../common/decorators/rate-limit.decorator';
+import { IsAdminGuard } from '@auth/is-admin.guard';
+
+/**
+ * 🔒 Sécurité — tous les endpoints qui MUTENT (POST regenerate / refresh / hubs /
+ * ping) sont protégés par `IsAdminGuard`. Avant la PR de hardening de 2026-05-14
+ * ces endpoints étaient publics avec un simple rate-limit 3/min — exploitable
+ * par un attaquant pour saturer disk/CPU (chaque generate-all consomme ~14 s CPU
+ * + écrit ~100 fichiers XML, jusqu'à ~250k URLs). Le rate-limit ne suffit pas
+ * (multi-IP). L'endpoint GET /stats reste public, c'est de la donnée déjà
+ * exposée via les fichiers XML eux-mêmes.
+ *
+ * Le scheduler BullMQ (SitemapV10SchedulerService, PR #487) appelle
+ * `SitemapV10Service.generateAll()` directement via DI — il ne passe pas par
+ * ce controller HTTP, donc le guard ne le bloque pas.
+ */
 
 @RateLimitSitemap() // 🛡️ 3 req/min - Sitemaps are memory-intensive
 @Controller('api/sitemap/v10')
@@ -35,6 +57,7 @@ export class SitemapV10Controller {
    * POST /api/sitemap/v10/generate-all
    * Génère tous les sitemaps par température
    */
+  @UseGuards(IsAdminGuard)
   @Post('generate-all')
   async generateAll(): Promise<{
     success: boolean;
@@ -98,6 +121,7 @@ export class SitemapV10Controller {
    * POST /api/sitemap/v10/generate/:bucket
    * Génère le sitemap d'un bucket spécifique
    */
+  @UseGuards(IsAdminGuard)
   @Post('generate/:bucket')
   async generateBucket(@Param('bucket') bucket: string): Promise<{
     success: boolean;
@@ -150,6 +174,7 @@ export class SitemapV10Controller {
    * POST /api/sitemap/v10/refresh-scores
    * Recalcule les scores de toutes les pages
    */
+  @UseGuards(IsAdminGuard)
   @Post('refresh-scores')
   async refreshScores(): Promise<{
     success: boolean;
@@ -192,6 +217,7 @@ export class SitemapV10Controller {
    * POST /api/sitemap/v10/generate-hubs
    * Génère les hubs de crawl (version legacy - non paginée)
    */
+  @UseGuards(IsAdminGuard)
   @Post('generate-hubs')
   async generateHubs(): Promise<{
     success: boolean;
@@ -250,6 +276,7 @@ export class SitemapV10Controller {
    * - hot/money.html (top 2k)
    * - risk/weak-cluster.html (pages à risque)
    */
+  @UseGuards(IsAdminGuard)
   @Post('generate-hubs-robust')
   async generateHubsRobust(): Promise<{
     success: boolean;
@@ -360,6 +387,7 @@ export class SitemapV10Controller {
    * POST /api/sitemap/v10/ping
    * Ping Google pour le sitemap index
    */
+  @UseGuards(IsAdminGuard)
   @Post('ping')
   async pingGoogle(): Promise<{
     success: boolean;
@@ -392,6 +420,7 @@ export class SitemapV10Controller {
    * POST /api/sitemap/v10/ping/:bucket
    * Ping Google pour un bucket spécifique
    */
+  @UseGuards(IsAdminGuard)
   @Post('ping/:bucket')
   async pingGoogleBucket(@Param('bucket') bucket: string): Promise<{
     success: boolean;
