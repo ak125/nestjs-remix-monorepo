@@ -53,9 +53,9 @@ levels:
       - dep-cruiser:no-control-plane-business-logic # control-plane business logic
       - dep-cruiser:no-shared-kernel-fattening      # _kernel/ outward imports
       - eslint-boundaries:domain-isolation          # eslint-plugin-boundaries
-      - ast-grep:domain-port-method-cap             # ports ≤ 5 methods (PR-A.2)
+      - eslint:fafa-ports/port-method-cap           # ports ≤ 5 methods (eslint-plugin-fafa-ports, replaces buggy ast-grep dropped 2026-05-18)
       - ast-grep:domain-port-naming-intent          # anti get(All|Everything|Stuff|Bulk|Combined) (PR-A.2)
-      - ast-grep:domain-port-dto-shape              # ≤ 8 fields / ≤ 3 nesting (PR-A.5)
+      - eslint:fafa-ports/port-dto-shape            # ≤ 8 fields / ≤ 3 nesting (eslint-plugin-fafa-ports, replaces buggy ast-grep dropped 2026-05-18)
       - ast-grep:frontend-analytics-canonical-event # track* must reference event-taxonomy
       - ast-grep:control-plane-business-logic       # @Injectable() in control-plane/ allow-list only
 
