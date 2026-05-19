@@ -7,7 +7,12 @@ import type { AlternativesV2Response } from '../dto/alternatives-v2.dto';
 
 const CACHE_TTL_SECONDS = 300;
 const CACHE_KEY_PREFIX = 'alt';
-const CACHE_KEY_VERSION = 'v1';
+// v1 → v2 (2026-05-19) : v1 entries were populated with empty arrays during the
+// window where the service ran the direct `.from().select()` path under preprod's
+// anon key (PR #595→#618 timeline). Redis-preprod uses appendonly + named volume,
+// so those empty entries survive deploys and short-circuit the new RPC path.
+// Bumping the version forces a cache miss → RPC call → real data.
+const CACHE_KEY_VERSION = 'v2';
 const RPC_NAME = 'get_soft_404_alternatives';
 
 interface RpcPayload {
