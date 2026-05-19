@@ -46,7 +46,7 @@ describe('RmAlternativesService (RPC canon)', () => {
 
       const result = await service.compute(11836, 3859, 12);
 
-      expect(cacheMock.get).toHaveBeenCalledWith('alt:11836:3859:v2');
+      expect(cacheMock.get).toHaveBeenCalledWith('alt:11836:3859:v3');
       expect(callRpcMock).not.toHaveBeenCalled();
       expect(result).toEqual(cached);
     });
@@ -90,7 +90,7 @@ describe('RmAlternativesService (RPC canon)', () => {
       expect(cacheMock.set).toHaveBeenCalled();
     });
 
-    it('fallback gracieux sur RPC error (payload vide, cache OK)', async () => {
+    it('fallback gracieux sur RPC error : payload vide + cache short-TTL (anti-poisoning)', async () => {
       cacheMock.get!.mockResolvedValue(null);
       callRpcMock.mockResolvedValue({
         data: null,
@@ -103,7 +103,33 @@ describe('RmAlternativesService (RPC canon)', () => {
       expect(result.alternativeVehicles).toEqual([]);
       expect(result.alternativeGammes).toEqual([]);
       expect(result.relatedModels).toEqual([]);
-      expect(cacheMock.set).toHaveBeenCalled();
+      // Error path uses CACHE_TTL_ERROR_SECONDS=30, not 300, so a transient
+      // failure does not poison the cache for 5 min (regression 2026-05-19).
+      expect(cacheMock.set).toHaveBeenCalledWith(
+        'alt:11836:3859:v3',
+        expect.any(String),
+        30,
+      );
+    });
+
+    it('auth failure (Invalid API key) is logged at ERROR not WARN', async () => {
+      cacheMock.get!.mockResolvedValue(null);
+      callRpcMock.mockResolvedValue({
+        data: null,
+        error: { message: 'Invalid API key', name: 'SupabaseRpcError' },
+      });
+      const errorSpy = jest
+        .spyOn((service as any).logger, 'error')
+        .mockImplementation(() => {});
+      const warnSpy = jest
+        .spyOn((service as any).logger, 'warn')
+        .mockImplementation(() => {});
+
+      await service.compute(11836, 3859, 12);
+
+      expect(errorSpy).toHaveBeenCalledTimes(1);
+      expect(warnSpy).not.toHaveBeenCalled();
+      expect(errorSpy.mock.calls[0][0]).toMatch(/Invalid API key/);
     });
 
     it('propage le payload RPC (vehicles/gammes/relatedModels)', async () => {
