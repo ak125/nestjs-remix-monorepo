@@ -10,22 +10,20 @@ import { RmSoft404TrackerService } from '../rm-soft404-tracker.service';
 import type { CacheService } from '@cache/cache.service';
 
 /**
- * Pattern test : instanciation directe + Object.assign de `this.supabase`
- * (canon repo : 203 services `extends SupabaseBaseService`, cf.
- * rm-builder-seo-shadow.test.ts pour la référence).
+ * Pattern test : instanciation directe + mock `callRpc` (méthode héritée).
+ * Service refactor canon : insert via RPC `track_soft_404_event`
+ * (SECURITY DEFINER, bypass RLS — ADR-076).
  */
-describe('RmSoft404TrackerService', () => {
+describe('RmSoft404TrackerService (RPC canon)', () => {
   let service: RmSoft404TrackerService;
   let cache: jest.Mocked<Partial<CacheService>>;
-  let supabaseInsert: jest.Mock;
+  let callRpcMock: jest.Mock;
 
   beforeEach(() => {
     cache = { get: jest.fn(), set: jest.fn() };
-    supabaseInsert = jest.fn().mockResolvedValue({ error: null });
-
     service = new RmSoft404TrackerService(cache as unknown as CacheService);
-    // Override le client supabase hérité (protected readonly) en runtime
-    (service as any).supabase = { from: () => ({ insert: supabaseInsert }) };
+    callRpcMock = jest.fn().mockResolvedValue({ data: null, error: null });
+    (service as any).callRpc = callRpcMock;
   });
 
   it('classifie un UA Googlebot comme "bot"', () => {
@@ -54,10 +52,10 @@ describe('RmSoft404TrackerService', () => {
       { pg_id: 3859, type_id: 11836 },
       { sessionId: 's1', ua: 'Mozilla/5.0 ... Chrome/120', referrer: null },
     );
-    expect(supabaseInsert).not.toHaveBeenCalled();
+    expect(callRpcMock).not.toHaveBeenCalled();
   });
 
-  it('insère sinon, et pose le flag Redis 60s', async () => {
+  it('appelle la RPC track_soft_404_event sinon, et pose le flag Redis 60s', async () => {
     cache.get!.mockResolvedValue(null);
     await service.track(
       { pg_id: 3859, type_id: 11836 },
@@ -67,25 +65,46 @@ describe('RmSoft404TrackerService', () => {
         referrer: '/x',
       },
     );
-    expect(supabaseInsert).toHaveBeenCalledWith(
-      expect.objectContaining({
-        pg_id: 3859,
-        type_id: 11836,
-        ua_class: 'browser',
-        referrer: '/x',
-      }),
+    expect(callRpcMock).toHaveBeenCalledWith(
+      'track_soft_404_event',
+      {
+        p_pg_id: 3859,
+        p_type_id: 11836,
+        p_referrer: '/x',
+        p_ua_class: 'browser',
+      },
+      { source: 'api' },
     );
     expect(cache.set).toHaveBeenCalledWith('track-soft-404:s2', '1', 60);
   });
 
-  it('insère avec ua_class="bot" si UA Googlebot', async () => {
+  it('passe ua_class="bot" si UA Googlebot', async () => {
     cache.get!.mockResolvedValue(null);
     await service.track(
       { pg_id: 1, type_id: 2 },
       { sessionId: 'sb', ua: 'Googlebot/2.1', referrer: null },
     );
-    expect(supabaseInsert).toHaveBeenCalledWith(
-      expect.objectContaining({ ua_class: 'bot' }),
+    expect(callRpcMock).toHaveBeenCalledWith(
+      'track_soft_404_event',
+      expect.objectContaining({ p_ua_class: 'bot' }),
+      { source: 'api' },
     );
+  });
+
+  it('ne pose pas le flag Redis si la RPC échoue (retry possible plus tard)', async () => {
+    cache.get!.mockResolvedValue(null);
+    callRpcMock.mockResolvedValue({
+      data: null,
+      error: { message: 'boom', name: 'SupabaseRpcError' },
+    });
+    await service.track(
+      { pg_id: 1, type_id: 2 },
+      {
+        sessionId: 'sf',
+        ua: 'Mozilla/5.0 ... AppleWebKit Chrome',
+        referrer: null,
+      },
+    );
+    expect(cache.set).not.toHaveBeenCalled();
   });
 });
