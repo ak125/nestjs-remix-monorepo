@@ -36,7 +36,11 @@ export const PreprodEnvContractSchema = z
   .object({
     NODE_ENV: z.enum(['preprod']),
     SUPABASE_URL: z.string().url(),
-    SUPABASE_ANON_KEY: z.string().min(40),
+    // 20 chars covers both Supabase key formats :
+    //   - Legacy JWT anon : `eyJ...` ~200 chars (disabled in our project since 2025)
+    //   - Modern publishable : `sb_publishable_<32 random chars>` ~46 chars (currently active key for project cxpojprgwgubzjyqzmoq)
+    // Backend validation (app.config.ts:67) only requires truthy ; preflight remains stricter for protocol-floor + typo catch.
+    SUPABASE_ANON_KEY: z.string().min(20),
     JWT_SECRET: z
       .string()
       .min(32, 'JWT_SECRET must be >= 32 chars (HS256 / NIST 2026 guidance)'),
