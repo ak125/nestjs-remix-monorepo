@@ -819,3 +819,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/vehicle-context-cookie-jws`
 - **Décision** : Merge remote-tracking branch 'origin/main' into feat/vehicle-context-cookie-jws (+9 other commits)
 - **Sortie** : PR #606 | commits 4cfd22868 54aecaacd b99f9f80e 2fe8f2beb 6eb399a47 019b10d89 6dcfb20a5 6833edfae a51962447 ce57fa9d8
+
+## 2026-05-18 — refactor/impeccable-bounce-easing (auto)
+
+- **Branche** : `refactor/impeccable-bounce-easing`
+- **Décision** : refactor(frontend): smooth bounce-easing animations (-8, components-only)
+- **Sortie** : PR #610 | commits f260a8de4

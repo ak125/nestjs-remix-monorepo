@@ -74,7 +74,7 @@ const CatalogFamilyCard = memo(function CatalogFamilyCard({
             </span>
           )}
           {/* Gamme count chip */}
-          <span className="absolute bottom-2.5 right-2.5 text-[11px] font-semibold text-white/90 bg-black/30 backdrop-blur-sm px-2 py-0.5 rounded-md z-10">
+          <span className="absolute bottom-2.5 right-2.5 text-[11px] font-semibold text-white/90 bg-neutral-900/30 backdrop-blur-sm px-2 py-0.5 rounded-md z-10">
             {totalGammes} gammes
           </span>
         </div>

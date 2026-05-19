@@ -321,7 +321,7 @@ export const GlobalSearch = memo(function GlobalSearch({
   );
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-start justify-center pt-[10vh] animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 bg-neutral-900/50 backdrop-blur-sm flex items-start justify-center pt-[10vh] animate-in fade-in duration-200">
       {/* Overlay pour fermer */}
       <div className="absolute inset-0" onClick={onClose} />
 

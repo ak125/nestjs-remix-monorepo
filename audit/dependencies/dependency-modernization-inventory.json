@@ -1,5 +1,5 @@
 {
-  "artifact_immutability_hash": "sha256:82d6d92e21c645538ee833deafeb3648c287f9946a7e0904902fd104da53c723",
+  "artifact_immutability_hash": "sha256:ffaaba71d438c63e345e3a405fd546148c9d3a17c4cf189507c9405aeb191a02",
   "divergences": [
     {
       "kind": "specifier",
@@ -259,14 +259,14 @@
       "occurrences": [
         {
           "declaredIn": "frontend/package.json",
-          "specifier": "^4.1.5",
+          "specifier": "^4.1.6",
           "workspace": "@fafa/frontend"
         }
       ],
       "resolved_versions": [
         "2.1.9",
         "4.0.18",
-        "4.1.5"
+        "4.1.6"
       ]
     },
     {
@@ -539,7 +539,8 @@
         }
       ],
       "resolved_versions": [
-        "8.5.10"
+        "8.5.10",
+        "8.5.14"
       ]
     },
     {
@@ -797,7 +798,7 @@
       "resolved_versions": [
         "5.4.21",
         "7.3.1",
-        "8.0.10"
+        "8.0.13"
       ]
     },
     {
@@ -818,7 +819,7 @@
       "resolved_versions": [
         "2.1.9",
         "4.0.18",
-        "4.1.5"
+        "4.1.6"
       ]
     },
     {
@@ -2898,7 +2899,7 @@
           "resolved_versions": [
             "5.4.21",
             "7.3.1",
-            "8.0.10"
+            "8.0.13"
           ]
         }
       ],
@@ -3979,9 +3980,9 @@
   ],
   "generatedFrom": {
     "deps_registry": "audit/registry/deps.json",
-    "deps_registry_sha": "sha256:cfd21475017ed0dd6648be8bdb141b1ee25f560bf8be114eb61a257b4e917086",
+    "deps_registry_sha": "sha256:4b2f277253fbf1c80b75ebe6bdf7d42c3bf9e48ae99f656623d5c22294409a09",
     "lockfile": "package-lock.json",
-    "lockfile_sha": "sha256:f5907b486dde5b06dd6e600d5fdc05bdb173b3865bf647ac74154aa100248820",
+    "lockfile_sha": "sha256:7871e4b7a6ddecb12daa43cb7e569d1bd95f062478fa0d89b1680252000d0cbc",
     "overlay": "audit/dependencies/family-overlay.yaml",
     "overlay_sha": "sha256:c88cee03acf27840da9c5826c7a3edbcd086a70a58ee323d9c32d33ec33c1a57"
   },
@@ -5231,14 +5232,14 @@
       "occurrences": [
         {
           "declaredIn": "frontend/package.json",
-          "specifier": "^4.1.5",
+          "specifier": "^4.1.6",
           "workspace": "@fafa/frontend"
         }
       ],
       "resolved_versions": [
         "2.1.9",
         "4.0.18",
-        "4.1.5"
+        "4.1.6"
       ]
     },
     {
@@ -5253,7 +5254,7 @@
         }
       ],
       "resolved_versions": [
-        "4.1.5"
+        "4.1.6"
       ]
     },
     {
@@ -6014,7 +6015,7 @@
       ]
     },
     {
-      "divergent_resolved": false,
+      "divergent_resolved": true,
       "divergent_specifiers": true,
       "name": "postcss",
       "occurrences": [
@@ -6030,7 +6031,8 @@
         }
       ],
       "resolved_versions": [
-        "8.5.10"
+        "8.5.10",
+        "8.5.14"
       ]
     },
     {
@@ -6503,7 +6505,7 @@
       "resolved_versions": [
         "2.1.9",
         "4.0.18",
-        "4.1.5"
+        "4.1.6"
       ]
     },
     {
