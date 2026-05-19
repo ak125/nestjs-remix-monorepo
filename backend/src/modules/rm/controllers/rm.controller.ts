@@ -277,21 +277,22 @@ export class RmController {
     @Query('type_id', ParseIntPipe) type_id: number,
     @Query('limit', new DefaultValuePipe(12), ParseIntPipe) limit: number,
   ) {
+    const clampedLimit = Math.min(Math.max(limit, 1), 24);
     try {
-      const clampedLimit = Math.min(Math.max(limit, 1), 24);
       return await this.rmAlternatives.compute(type_id, gamme_id, clampedLimit);
     } catch (err) {
-      this.logger.warn(
-        `Alternatives v2 endpoint error gamme=${gamme_id} type=${type_id}: ${err instanceof Error ? err.message : err}`,
+      // No silent empty-fallback : the previous shape hid the
+      // get_soft_404_alternatives RPC failure path, masking the soft-404 R2
+      // smoke regression. Log with stack + propagate so operators see the real
+      // cause in container logs while the loader's fetchJsonOrNull turns 5xx
+      // into a graceful degrade (gamme-only page).
+      this.logger.error(
+        `Alternatives RPC failed gamme=${gamme_id} type=${type_id}: ${err instanceof Error ? err.message : err}`,
+        err instanceof Error ? err.stack : undefined,
       );
-      return {
-        success: true,
-        version: 'v2',
-        etag: 'sha256-empty',
-        alternativeVehicles: [],
-        alternativeGammes: [],
-        relatedModels: [],
-      };
+      throw new OperationFailedException({
+        message: `Failed to fetch alternatives for gamme_id=${gamme_id}, type_id=${type_id}`,
+      });
     }
   }
 
