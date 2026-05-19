@@ -333,6 +333,16 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: high
+  - glob: backend/src/modules/merchant-center/**
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
+  - glob: backend/supabase/migrations/*merchant_center_feed*
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
   - glob: backend/supabase/migrations/*seo_snapshot*
     domain: D3
     owner: '@ak125/seo-team'
