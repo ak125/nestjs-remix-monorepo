@@ -7,14 +7,14 @@ Votre système de paiement en production est **SystemPay/Lyra**, PAS Paybox.
 ### 📋 Configuration PHP actuelle (confirmée)
 
 ```php
-// Certificats SystemPay
-$CertificatTest = "9300172162563656";
-$CertificatProd = "9816635272016068";
+// Certificats SystemPay (valeurs réelles dans vault)
+$CertificatTest = "<REDACTED-rotate-via-systempay-portal>";
+$CertificatProd = "<REDACTED-rotate-via-systempay-portal>";
 $CertificatToUse = $CertificatProd;  // ✅ PRODUCTION ACTIVE
 
 // Identifiants marchands
-Site ID : 43962882
-Certificat PROD : 9816635272016068
+Site ID : <REDACTED>
+Certificat PROD : <REDACTED-rotate-via-systempay-portal>
 Mode : PRODUCTION
 URL API : https://paiement.systempay.fr/vads-payment/
 Méthode signature : SHA1
@@ -29,12 +29,12 @@ if (($ID_PAYMENT_OPTIONS == "CB") || ($ID_PAYMENT_OPTIONS == "PAYPAL"))
 ```bash
 # PAYMENT GATEWAY - SystemPay/Lyra (BNP Paribas)
 SYSTEMPAY_SITE_ID=43962882
-SYSTEMPAY_CERTIFICATE_PROD=9816635272016068
-SYSTEMPAY_CERTIFICATE_TEST=9300172162563656
+SYSTEMPAY_CERTIFICATE_PROD=<REDACTED-rotate-via-systempay-portal>
+SYSTEMPAY_CERTIFICATE_TEST=<REDACTED-rotate-via-systempay-portal>
 SYSTEMPAY_MODE=PRODUCTION
 SYSTEMPAY_API_URL=https://paiement.systempay.fr/vads-payment/
 SYSTEMPAY_SIGNATURE_METHOD=SHA1
-SYSTEMPAY_HMAC_KEY_TEST=7731B4225651B0C434189E2A13B963F91D8BBE78AEC97838E40925569E25357373C792E2FBE5A6B8C0CBC12ED27524CC2EE0C4653C93A14A39414AA42F85AEE5
+SYSTEMPAY_HMAC_KEY_TEST=<REDACTED-rotate-via-systempay-portal>
 ```
 
 ### ✅ Utilisation actuelle
@@ -62,7 +62,7 @@ Votre configuration Paybox utilisait **la clé HMAC de SystemPay** au lieu d'une
 
 ```bash
 # ❌ INCORRECTE - Clé SystemPay utilisée pour Paybox
-PAYBOX_HMAC_KEY=7731B4225651B0C434189E2A13B963F9...  # Clé SystemPay !
+PAYBOX_HMAC_KEY=<REDACTED>...  # Clé SystemPay !
 ```
 
 Cette clé appartient à **SystemPay/Lyra**, pas à **Paybox/Verifone**.
@@ -135,7 +135,7 @@ Dans ce cas, configurez correctement chaque système avec ses propres clés.
 ### SystemPay/Lyra (Groupe Lyra Network / BNP Paribas)
 
 - **Gateway** : https://paiement.systempay.fr/
-- **Certificats** : 16 caractères (ex: `9816635272016068`)
+- **Certificats** : 16 caractères numériques (valeur réelle dans vault)
 - **Clés HMAC** : 128 caractères hexadécimaux (pour signature HMAC-SHA256)
 - **Signature par défaut** : SHA1 (avec certificat)
 - **Documentation** : https://paiement.systempay.fr/doc/

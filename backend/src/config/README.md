@@ -64,9 +64,9 @@ this.logger.log(`Certificate: ${this.paymentConfig.cyberplus.certificat}`);
 ### Développement Local
 
 ```bash
-# backend/.env
-CYBERPLUS_SITE_ID=43962882
-CYBERPLUS_CERTIFICAT=9816635272016068
+# backend/.env (valeurs réelles dans vault — placeholders ici)
+CYBERPLUS_SITE_ID=<your-cyberplus-site-id>
+CYBERPLUS_CERTIFICAT=<rotate-via-systempay-portal>
 CYBERPLUS_MODE=TEST
 APP_URL=http://localhost:3000
 ```

@@ -87,7 +87,7 @@ PAYBOX_RANG=001
 PAYBOX_IDENTIFIANT=822188223
 
 # Certificat TEST (identique à l'ancien PHP)
-PAYBOX_HMAC_KEY=7731B4225651B0C434189E2A13B963F91D8BBE78AEC97838E40925569E25357373C792E2FBE5A6B8C0CBC12ED27524CC2EE0C4653C93A14A39414AA42F85AEE5
+PAYBOX_HMAC_KEY=<REDACTED-rotate-via-paybox-portal>
 
 # Mode et URL
 PAYBOX_MODE=PRODUCTION
@@ -255,5 +255,5 @@ En cas de problème :
 
 1. Vérifier les logs du serveur
 2. Tester avec `/api/paybox/callback-test`
-3. Vérifier la signature avec le script `compare-paybox-signatures.sh`
+3. Vérifier la signature en local (env vars + petit script `node -e` ou repro PHP — voir docs Paybox)
 4. Contacter le support Paybox si nécessaire
