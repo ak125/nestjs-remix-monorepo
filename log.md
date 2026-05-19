@@ -837,3 +837,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `chore/impeccable-husky-hardening`
 - **Décision** : chore(registry): regenerate after PR #606 (vehicle-context cookie devDep bump) (+2 other commits)
 - **Sortie** : PR #621 | commits 4d635fac7 8bd1c7c84 c7b056d68
+
+## 2026-05-19 — fix/preprod-env-contract-preflight (auto)
+
+- **Branche** : `fix/preprod-env-contract-preflight`
+- **Décision** : chore(registry): scope env-contract paths in ownership.yaml (D13) (+1 other commit)
+- **Sortie** : PR #632 | commits eacfdcbe3 fbc50be95
