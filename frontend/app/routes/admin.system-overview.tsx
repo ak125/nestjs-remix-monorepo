@@ -97,7 +97,7 @@ export default function SystemOverview() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg shadow-lg p-8 text-white mb-8">
+      <div className="bg-gradient-to-r from-blue-600 rounded-lg shadow-lg p-8 text-white mb-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <MonitorSpeaker className="h-12 w-12" />
@@ -124,7 +124,7 @@ export default function SystemOverview() {
       {/* Métriques principales */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {/* Authentification */}
-        <div className="bg-white rounded-lg shadow-lg p-6 border-l-4 border-green-500">
+        <div className="bg-white rounded-lg shadow-lg p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <Shield className="h-8 w-8 text-green-600" />
@@ -166,7 +166,7 @@ export default function SystemOverview() {
         </div>
 
         {/* Permissions */}
-        <div className="bg-white rounded-lg shadow-lg p-6 border-l-4 border-blue-500">
+        <div className="bg-white rounded-lg shadow-lg p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <Users className="h-8 w-8 text-blue-600" />
@@ -206,10 +206,10 @@ export default function SystemOverview() {
         </div>
 
         {/* Performance */}
-        <div className="bg-white rounded-lg shadow-lg p-6 border-l-4 border-purple-500">
+        <div className="bg-white rounded-lg shadow-lg p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <Activity className="h-8 w-8 text-purple-600" />
+              <Activity className="h-8 w-8 text-foreground" />
               <h2 className="text-lg font-semibold text-gray-900">
                 Performance
               </h2>
@@ -251,7 +251,7 @@ export default function SystemOverview() {
         </div>
 
         {/* Routes */}
-        <div className="bg-white rounded-lg shadow-lg p-6 border-l-4 border-orange-500">
+        <div className="bg-white rounded-lg shadow-lg p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <Settings className="h-8 w-8 text-orange-600" />
@@ -380,11 +380,11 @@ export default function SystemOverview() {
               </ul>
             </div>
 
-            <div className="bg-purple-50 p-4 rounded-lg">
-              <h3 className="font-medium text-purple-900 mb-2">
+            <div className="bg-muted p-4 rounded-lg">
+              <h3 className="font-medium text-foreground mb-2">
                 🎯 Routes Modernisées
               </h3>
-              <ul className="text-sm text-purple-700 space-y-1">
+              <ul className="text-sm text-foreground space-y-1">
                 <li>• _index.tsx - Landing e-commerce</li>
                 <li>• admin.checkout-ab-test - Analytics</li>
                 <li>• commercial.vehicles.advanced-search</li>
@@ -425,17 +425,17 @@ export default function SystemOverview() {
 
           <Alert className="p-4 rounded-lg" variant="default">
             <div className="flex items-center justify-between mb-2">
-              <span className="font-medium text-purple-900">
+              <span className="font-medium text-foreground">
                 User Permissions
               </span>
               <Badge className="px-2 py-1 rounded text-xs" variant="purple">
                 CACHED
               </Badge>
             </div>
-            <p className="text-sm text-purple-700">
+            <p className="text-sm text-foreground">
               GET /auth/user-permissions/:id
             </p>
-            <p className="text-xs text-purple-600 mt-1">Cache hit: 94.7%</p>
+            <p className="text-xs text-foreground mt-1">Cache hit: 94.7%</p>
           </Alert>
 
           <Alert className="p-4 rounded-lg" variant="warning">

@@ -148,9 +148,9 @@ export const loader: LoaderFunction = async ({ request }) => {
 
 function SecurityScoreCard({ score }: { score: number }) {
   const getScoreColor = (score: number) => {
-    if (score >= 80) return "border-l-4 border-success bg-success/10";
-    if (score >= 60) return "border-l-4 border-warning bg-warning/10";
-    return "border-l-4 border-destructive bg-destructive/10";
+    if (score >= 80) return "border-success bg-success/10";
+    if (score >= 60) return "border-warning bg-warning/10";
+    return "border-destructive bg-destructive/10";
   };
 
   const getScoreIcon = (score: number) => {
@@ -374,7 +374,7 @@ export default function AccountSecurity() {
           <CardContent className="p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2 bg-muted rounded-lg">
-                <Clock className="w-5 h-5 text-purple-600" />
+                <Clock className="w-5 h-5 text-foreground" />
               </div>
               <h3 className="font-semibold text-gray-900">
                 Sessions actives ({security.sessions.active})

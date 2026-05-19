@@ -87,7 +87,7 @@ export const PiecesHeader = memo(function PiecesHeader({
               {/* Header typographique optimisé - animations retirées pour LCP */}
               <header>
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black leading-tight mb-3 tracking-tight">
-                  <span className="bg-gradient-to-br from-white via-white to-white/90 bg-clip-text text-transparent drop-shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+                  <span className="text-foreground from-white via-white to-white/90 drop-shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
                     {gamme.name} {vehicle.marque?.toUpperCase()}{" "}
                     {vehicle.modele?.toUpperCase()}{" "}
                     {vehicle.typeName || vehicle.type} {finalText}

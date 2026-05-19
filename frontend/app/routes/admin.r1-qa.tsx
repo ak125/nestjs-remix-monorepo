@@ -191,7 +191,7 @@ function ScoreInput({
           className={`w-7 h-7 rounded text-xs font-bold transition-colors ${
             value === n
               ? "bg-blue-600 text-white"
-              : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+              : "bg-slate-100 text-white hover:bg-slate-200"
           }`}
         >
           {n}

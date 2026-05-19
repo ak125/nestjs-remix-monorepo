@@ -122,7 +122,7 @@ export default function SeoHubAudit() {
     if (actionType.includes("DEMOTE"))
       return "bg-red-100 text-red-700 border-red-200";
     if (actionType.includes("THRESHOLD"))
-      return "bg-indigo-100 text-indigo-700 border-indigo-200";
+      return "bg-muted text-foreground border-indigo-200";
     if (actionType.includes("SITEMAP"))
       return "bg-blue-100 text-blue-700 border-blue-200";
     if (actionType.includes("G1"))
@@ -240,7 +240,7 @@ export default function SeoHubAudit() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Settings className="h-5 w-5 text-purple-500" />
+                <Settings className="h-5 w-5 text-foreground" />
                 Par Type d'Action
               </CardTitle>
             </CardHeader>

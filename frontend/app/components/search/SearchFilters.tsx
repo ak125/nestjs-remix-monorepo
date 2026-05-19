@@ -558,7 +558,7 @@ export const SearchFilters = memo(function SearchFilters({
                           className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                             isSelected
                               ? "bg-emerald-500 text-white"
-                              : "bg-slate-100 text-slate-500"
+                              : "bg-slate-100 text-white"
                           }`}
                         >
                           <Layers className="w-4 h-4" />
@@ -572,7 +572,7 @@ export const SearchFilters = memo(function SearchFilters({
                           className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                             isSelected
                               ? "bg-emerald-500 text-white"
-                              : "bg-slate-100 text-slate-600"
+                              : "bg-slate-100 text-white"
                           }`}
                         >
                           {option.count}
@@ -803,7 +803,7 @@ export const SearchFilters = memo(function SearchFilters({
                             className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
                               isSelected
                                 ? "bg-blue-500 text-white"
-                                : "bg-slate-100 text-slate-600"
+                                : "bg-slate-100 text-white"
                             }`}
                           >
                             {option.count}

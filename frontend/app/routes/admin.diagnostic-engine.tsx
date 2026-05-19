@@ -98,7 +98,7 @@ export default function AdminDiagnosticEngine() {
           value={stats.systems_count}
         />
         <StatCard
-          icon={<Database className="w-4 h-4 text-purple-600" />}
+          icon={<Database className="w-4 h-4 text-foreground" />}
           label="Symptomes"
           value={stats.symptoms_count}
         />
@@ -113,7 +113,7 @@ export default function AdminDiagnosticEngine() {
           value={stats.safety_rules_count}
         />
         <StatCard
-          icon={<Brain className="w-4 h-4 text-indigo-600" />}
+          icon={<Brain className="w-4 h-4 text-foreground" />}
           label="Engines"
           value={6}
         />
@@ -226,11 +226,11 @@ export default function AdminDiagnosticEngine() {
           <div className="flex flex-wrap items-center gap-2 text-sm">
             {[
               { name: "Signal", color: "bg-blue-100 text-blue-700" },
-              { name: "Scoring", color: "bg-purple-100 text-purple-700" },
+              { name: "Scoring", color: "bg-muted text-foreground" },
               { name: "Securite", color: "bg-red-100 text-red-700" },
               { name: "Catalogue", color: "bg-green-100 text-green-700" },
               { name: "Entretien", color: "bg-orange-100 text-orange-700" },
-              { name: "RAG", color: "bg-indigo-100 text-indigo-700" },
+              { name: "RAG", color: "bg-muted text-foreground" },
             ].map((engine, i) => (
               <div key={engine.name} className="flex items-center gap-2">
                 <Badge className={engine.color}>{engine.name}</Badge>

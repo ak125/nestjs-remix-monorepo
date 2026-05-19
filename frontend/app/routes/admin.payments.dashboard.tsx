@@ -225,7 +225,7 @@ export default function AdminPaymentsDashboard() {
       [PaymentStatus.PROCESSING]: "bg-info/20 text-info",
       [PaymentStatus.FAILED]: "bg-destructive/20 text-destructive",
       [PaymentStatus.CANCELLED]: "bg-gray-100 text-gray-800",
-      [PaymentStatus.REFUNDED]: "bg-purple-100 text-purple-800",
+      [PaymentStatus.REFUNDED]: "bg-muted text-foreground",
     };
 
     return badges[status] || "bg-gray-100 text-gray-800";
@@ -316,8 +316,8 @@ export default function AdminPaymentsDashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Section Monitoring Paybox */}
         {(payboxMonitoring || payboxHealth) && (
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg shadow-lg mb-8 overflow-hidden border border-blue-200">
-            <div className="px-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-600">
+          <div className="bg-gradient-to-r from-blue-50 rounded-lg shadow-lg mb-8 overflow-hidden border border-blue-200">
+            <div className="px-6 py-4 bg-gradient-to-r from-blue-600">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="bg-white/20 rounded-lg p-2">
@@ -447,9 +447,9 @@ export default function AdminPaymentsDashboard() {
                           {formatPrice(payboxMonitoring.summary.averageAmount)}
                         </p>
                       </div>
-                      <div className="bg-purple-100 rounded-full p-3">
+                      <div className="bg-muted rounded-full p-3">
                         <svg
-                          className="h-6 w-6 text-purple-600"
+                          className="h-6 w-6 text-foreground"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -570,7 +570,7 @@ export default function AdminPaymentsDashboard() {
         )}
 
         {/* Bannière informative */}
-        <div className="bg-primary/5 border-l-4 border-blue-400 p-4 mb-6 rounded-r-lg">
+        <div className="bg-primary/5 p-4 mb-6 rounded-r-lg">
           <div className="flex">
             <div className="flex-shrink-0">
               <AlertTriangle className="h-5 w-5 text-blue-400" />

@@ -253,7 +253,7 @@ export default function CommercialVehiclesModelTypes() {
                       : "N/A"}
                   </p>
                 </div>
-                <Calendar className="h-8 w-8 text-purple-600" />
+                <Calendar className="h-8 w-8 text-foreground" />
               </div>
             </CardContent>
           </Card>

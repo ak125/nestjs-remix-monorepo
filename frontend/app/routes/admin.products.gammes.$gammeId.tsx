@@ -290,7 +290,7 @@ export default function AdminProductsGammeManagement() {
             Admin Level {user.level}
           </Badge>
           {enhanced && (
-            <Badge variant="outline" className="bg-purple-50">
+            <Badge variant="outline" className="bg-muted">
               Mode Avancé
             </Badge>
           )}
@@ -328,7 +328,7 @@ export default function AdminProductsGammeManagement() {
 
         <Card>
           <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-purple-600">
+            <div className="text-2xl font-bold text-foreground">
               {stats.with_images}
             </div>
             <div className="text-sm text-gray-600">Avec Images</div>

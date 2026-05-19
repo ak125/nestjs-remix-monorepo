@@ -32,7 +32,7 @@ export function CheckoutStepper({ current }: { current: Step }) {
                       ? "bg-emerald-500 border-emerald-500 text-white"
                       : isCurrent
                         ? "bg-blue-600 border-blue-600 text-white"
-                        : "bg-white border-slate-300 text-slate-400"
+                        : "bg-white border-slate-300 text-white"
                   }`}
                 >
                   {isCompleted ? (

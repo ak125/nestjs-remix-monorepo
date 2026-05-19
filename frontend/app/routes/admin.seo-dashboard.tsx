@@ -255,7 +255,7 @@ export default function SeoDashboard() {
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 selectedPeriod === period
                   ? "bg-blue-600 text-white"
-                  : "bg-white text-gray-700 hover:bg-gray-100"
+                  : "bg-white text-white hover:bg-gray-100"
               }`}
             >
               {period === "7d"
@@ -364,7 +364,7 @@ export default function SeoDashboard() {
         </div>
 
         {/* Recommandations SEO */}
-        <div className="mt-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6">
+        <div className="mt-6 bg-gradient-to-r from-blue-50 rounded-xl p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">
             💡 Recommandations
           </h2>
@@ -463,7 +463,7 @@ function LinkTypeRow({ metric }: { metric: LinkMetrics }) {
 function LinkTypeBadge({ type }: { type: string }) {
   const colors: Record<string, string> = {
     LinkGammeCar: "bg-blue-100 text-blue-800",
-    CrossSelling: "bg-purple-100 text-purple-800",
+    CrossSelling: "bg-muted text-foreground",
     VoirAussi: "bg-green-100 text-green-800",
     Footer: "bg-gray-100 text-gray-800",
     RelatedArticles: "bg-orange-100 text-orange-800",
@@ -503,7 +503,7 @@ function RecommendationCard({
   };
 
   return (
-    <div className={`bg-white rounded-lg p-4 border-l-4 ${colors[priority]}`}>
+    <div className={`bg-white rounded-lg p-4 ${colors[priority]}`}>
       <div className="flex items-center gap-2 mb-2">
         <span>{icons[priority]}</span>
         <h3 className="font-medium text-gray-900">{title}</h3>

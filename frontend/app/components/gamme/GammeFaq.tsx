@@ -48,7 +48,7 @@ export default function GammeFaq({ items, h2Override }: GammeFaqProps) {
                     className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
                       isOpen
                         ? "bg-blue-100 text-blue-600"
-                        : "bg-slate-100 text-slate-400"
+                        : "bg-slate-100 text-blue-900"
                     }`}
                   >
                     <Icon size={15} />

@@ -150,7 +150,7 @@ export default function AdminSeoHubLayout() {
         {/* Header */}
         <div className="p-4 border-b border-gray-200">
           <Link to="/admin/seo-hub" className="flex items-center gap-2">
-            <div className="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg">
+            <div className="p-2 bg-gradient-to-br rounded-lg">
               <Search className="h-5 w-5 text-white" />
             </div>
             <div>
@@ -199,7 +199,7 @@ export default function AdminSeoHubLayout() {
                   className={cn(
                     "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
                     active
-                      ? "bg-indigo-50 text-indigo-700 font-medium"
+                      ? "bg-muted text-foreground font-medium"
                       : "text-gray-700 hover:bg-gray-100",
                   )}
                 >
@@ -216,7 +216,7 @@ export default function AdminSeoHubLayout() {
                     </Badge>
                   )}
                   {active && (
-                    <ChevronRight className="h-4 w-4 text-indigo-400" />
+                    <ChevronRight className="h-4 w-4 text-foreground" />
                   )}
                 </Link>
 
@@ -230,7 +230,7 @@ export default function AdminSeoHubLayout() {
                         className={cn(
                           "block px-3 py-1.5 text-sm rounded-md transition-colors",
                           location.pathname === child.href
-                            ? "bg-indigo-100 text-indigo-700"
+                            ? "bg-muted text-foreground"
                             : "text-gray-600 hover:bg-gray-50",
                         )}
                       >
