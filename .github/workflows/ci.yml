@@ -617,6 +617,17 @@ jobs:
           # donc le fail-fast trigger ici. Source : audit-trail vault
           # 2026-05-07-pr339-deploy-regression.md.
           SESSION_SECRET: ${{ secrets.PREPROD_SESSION_SECRET }}
+          # JWT_SECRET propagation : depuis PR #606, VehicleContextService:37 fait
+          # `configService.getOrThrow<string>('JWT_SECRET')` au constructeur pour
+          # signer le VCP cookie (JWS HS256). Sans ce secret le bootstrap NestJS
+          # crash en boucle dans le container preprod (12 retries × 10s puis
+          # healthcheck fail → tous les deploys main bloqués depuis 2026-05-19
+          # 12:06 UTC, ex. run 26096588258). Fallback sur PREPROD_SESSION_SECRET
+          # si PREPROD_JWT_SECRET pas encore configuré (le repo a déjà
+          # PREPROD_SESSION_SECRET ≥32 chars ; clé partagée acceptable en
+          # preprod read-only où aucun token utilisateur sensible ne circule —
+          # mais idéalement séparé en prod, cf. canon key-rotation).
+          JWT_SECRET: ${{ secrets.PREPROD_JWT_SECRET || secrets.PREPROD_SESSION_SECRET }}
           # ADR-063 — CrUX API key for CWV field monitoring (backend-only, optional).
           # When unset, the CrUX fetcher logs a warning and skips runs (V1 graceful
           # degrade ; cron `seo-monitor` continues without CrUX step). Production
@@ -640,6 +651,9 @@ jobs:
           SUPABASE_URL=${SUPABASE_URL}
           SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
           SESSION_SECRET=${SESSION_SECRET}
+          # JWT_SECRET — required since PR #606 VehicleContextService.getOrThrow.
+          # See env block comment above for rationale.
+          JWT_SECRET=${JWT_SECRET}
           READ_ONLY=true
           # ADR-055 shadow activation: collect real preprod evidence before any
           # mode=on decision. Literal on remains blocked by backend boot guard.
