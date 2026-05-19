@@ -41,10 +41,16 @@ export class MerchantCenterFeedService extends SupabaseBaseService {
     offset: number,
     limit: number = MerchantCenterFeedService.PAGE_SIZE,
   ): Promise<MerchantCenterFeedRow[]> {
-    const result = await this.callRpc<MerchantCenterFeedRow[]>(
+    const { data, error } = await this.callRpc<MerchantCenterFeedRow[]>(
       'get_merchant_center_feed_v1',
       { p_limit: limit, p_offset: offset },
     );
-    return result ?? [];
+    if (error) {
+      this.logger.error(
+        `get_merchant_center_feed_v1 failed at offset=${offset}: ${error.message}`,
+      );
+      throw error;
+    }
+    return data ?? [];
   }
 }
