@@ -32,7 +32,7 @@ export function PurchaseGuide({
   familleName,
   productName,
   productAlias,
-  familleColor = 'from-blue-950 via-indigo-900 to-purple-900',
+  familleColor = 'from-blue-950',
   className = ''
 }: PurchaseGuideProps) {
   const [selectedRange, setSelectedRange] = useState<'economique' | 'qualite_plus' | 'premium'>('qualite_plus');

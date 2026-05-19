@@ -395,7 +395,7 @@ export const SearchResultsEnhanced = memo(function SearchResultsEnhanced({
     <div className={className}>
       {/* En-tête avec métriques */}
       {(isCached || executionTime) && (
-        <div className="mb-6 flex items-center justify-between bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
+        <div className="mb-6 flex items-center justify-between bg-gradient-to-r from-blue-50 p-4 rounded-lg border border-blue-200">
           <div className="flex items-center gap-4">
             <div className="text-sm text-gray-700">
               <span className="font-semibold">{items.length}</span> résultat

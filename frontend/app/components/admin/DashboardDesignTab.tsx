@@ -18,16 +18,16 @@ export function DashboardDesignTab() {
   return (
     <div className="space-y-6">
       {/* Header Design System */}
-      <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-6">
+      <div className="bg-gradient-to-r to-pink-50 border border-purple-200 rounded-xl p-6">
         <div className="flex items-center gap-3 mb-4">
-          <div className="bg-purple-100 p-3 rounded-lg">
-            <Palette className="h-8 w-8 text-purple-600" />
+          <div className="bg-muted p-3 rounded-lg">
+            <Palette className="h-8 w-8 text-foreground" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-purple-900">
+            <h2 className="text-2xl font-bold text-foreground">
               Design System Manager
             </h2>
-            <p className="text-purple-600">
+            <p className="text-foreground">
               Gestion centralisée des tokens, styles et composants
             </p>
           </div>
@@ -41,10 +41,10 @@ export function DashboardDesignTab() {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <div className="bg-white rounded-lg shadow-md p-6 border border-purple-200">
           <div className="flex items-center gap-2 mb-3">
-            <Palette className="h-5 w-5 text-purple-600" />
+            <Palette className="h-5 w-5 text-foreground" />
             <span className="font-medium">Couleurs</span>
           </div>
-          <div className="text-2xl font-bold text-purple-900">120+</div>
+          <div className="text-2xl font-bold text-foreground">120+</div>
           <div className="text-sm text-gray-600 mt-2">Tokens de couleur</div>
         </div>
 
@@ -138,10 +138,10 @@ export function DashboardDesignTab() {
                 );
                 toast.success("Commande copiée !", { duration: 2000 });
               }}
-              className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 border border-purple-200 rounded-lg transition-all group"
+              className="w-full flex items-center justify-between p-4 bg-gradient-to-r hover: hover: border border-purple-200 rounded-lg transition-all group"
             >
               <div className="flex items-center gap-3">
-                <div className="bg-purple-600 p-2 rounded-lg">
+                <div className="bg-primary p-2 rounded-lg">
                   <Code className="h-5 w-5 text-white" />
                 </div>
                 <div className="text-left">
@@ -197,7 +197,7 @@ export function DashboardDesignTab() {
               className="flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg border transition-colors"
             >
               <div className="flex items-center gap-3">
-                <Package className="h-4 w-4 text-purple-600" />
+                <Package className="h-4 w-4 text-foreground" />
                 <span className="font-medium text-gray-900">
                   Package README
                 </span>
@@ -219,7 +219,7 @@ export function DashboardDesignTab() {
       {/* Aperçu des Tokens */}
       <div className="bg-white rounded-lg shadow-md p-6">
         <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-          <Palette className="h-5 w-5 text-purple-600" />
+          <Palette className="h-5 w-5 text-foreground" />
           Palette de Couleurs
         </h3>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

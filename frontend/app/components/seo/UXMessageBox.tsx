@@ -27,7 +27,7 @@ export const UXMessageBox = memo(function UXMessageBox({
       )}
     >
       <div className="max-w-4xl mx-auto">
-        <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100 shadow-sm">
+        <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-blue-50 rounded-xl border border-blue-100 shadow-sm">
           <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-blue-100 text-blue-600">
             <Info className="w-5 h-5" />
           </div>

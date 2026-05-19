@@ -265,7 +265,7 @@ export function CheckoutOrderSummary({
           Paiement securise
         </span>
         <span className="flex items-center gap-1.5">
-          <CreditCard className="h-4 w-4 text-purple-600 flex-shrink-0" />
+          <CreditCard className="h-4 w-4 text-foreground flex-shrink-0" />
           3D Secure
         </span>
         <span className="flex items-center gap-1.5">

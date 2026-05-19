@@ -23,7 +23,7 @@ const buttonVariants = cva(
         red: "bg-red-600 text-white hover:bg-red-700",
         yellow: "bg-yellow-500 text-white hover:bg-yellow-600",
         orange: "bg-orange-600 text-white hover:bg-orange-700",
-        purple: "bg-purple-600 text-white hover:bg-purple-700",
+        purple: "bg-primary text-white hover:bg-primary",
         primary: "bg-primary text-primary-foreground hover:bg-primary/90",
         greenOutline: "border-2 border-green-600 bg-white text-green-600 hover:bg-green-50",
         blueOutline: "border-2 border-blue-600 bg-white text-blue-600 hover:bg-blue-50",

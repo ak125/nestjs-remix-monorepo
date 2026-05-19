@@ -41,7 +41,7 @@ export const R1KpiCoverage = memo(function R1KpiCoverage({
   // Modèles : seulement si > 3
   if (proofData.modelsCount > 3) {
     items.push({
-      icon: <Tag className="w-5 h-5 text-indigo-600" />,
+      icon: <Tag className="w-5 h-5 text-foreground" />,
       value: `${proofData.modelsCount}`,
       label: "modèles couverts",
     });

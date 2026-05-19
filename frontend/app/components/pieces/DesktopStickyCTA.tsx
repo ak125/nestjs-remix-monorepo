@@ -34,7 +34,7 @@ const DesktopStickyCTA = memo(function DesktopStickyCTA() {
       <button
         type="button"
         onClick={() => scrollTo("vehicle-selector")}
-        className="flex items-center gap-2.5 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all text-sm"
+        className="flex items-center gap-2.5 px-4 py-2.5 bg-gradient-to-r from-blue-600 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all text-sm"
       >
         <Car className="w-4 h-4" />
         Sélectionner mon véhicule

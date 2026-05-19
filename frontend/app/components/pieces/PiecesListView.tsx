@@ -296,11 +296,7 @@ export const PiecesListView = React.memo(
 
                   {/* Bouton panier - plus grand sur mobile */}
                   <button
-                    className={`w-12 h-12 sm:w-10 sm:h-10 rounded-xl sm:rounded-lg flex-shrink-0 flex items-center justify-center transition-all duration-200 ${
-                      hasStock && !loadingItems.has(piece.id)
-                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md hover:shadow-lg hover:scale-110"
-                        : "bg-slate-100 text-slate-400 cursor-not-allowed"
-                    }`}
+                    className={`w-12 h-12 sm:w-10 sm:h-10 rounded-xl sm:rounded-lg flex-shrink-0 flex items-center justify-center transition-all duration-200 ${ hasStock && !loadingItems.has(piece.id) ? "bg-gradient-to-r from-blue-600 hover:from-blue-700 hover: text-white shadow-md hover:shadow-lg hover:scale-110" : "bg-slate-100 text-slate-400 cursor-not-allowed" }`}
                     disabled={!hasStock || loadingItems.has(piece.id)}
                     onClick={() => hasStock && handleAddToCart(piece.id)}
                     title={hasStock ? "Ajouter au panier" : "Indisponible"}

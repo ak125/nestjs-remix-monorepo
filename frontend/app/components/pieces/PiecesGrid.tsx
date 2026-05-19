@@ -235,10 +235,10 @@ const PiecesStats: React.FC<{ pieces: Piece[] }> = ({ pieces }) => {
         <div className="text-sm text-green-800">Prix maximum</div>
       </Alert>
       <Alert className="rounded-lg p-4" variant="default">
-        <div className="text-2xl font-bold text-purple-600">
+        <div className="text-2xl font-bold text-foreground">
           {stats.avgPrice.toFixed(2)}€
         </div>
-        <div className="text-sm text-purple-800">Prix moyen</div>
+        <div className="text-sm text-foreground">Prix moyen</div>
       </Alert>
       <Alert className="rounded-lg p-4" variant="warning">
         <div className="text-2xl font-bold text-orange-600">
