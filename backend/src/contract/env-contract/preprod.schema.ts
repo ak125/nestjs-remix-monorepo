@@ -36,11 +36,22 @@ export const PreprodEnvContractSchema = z
   .object({
     NODE_ENV: z.enum(['preprod']),
     SUPABASE_URL: z.string().url(),
-    // 20 chars covers both Supabase key formats :
-    //   - Legacy JWT anon : `eyJ...` ~200 chars (disabled in our project since 2025)
-    //   - Modern publishable : `sb_publishable_<32 random chars>` ~46 chars (currently active key for project cxpojprgwgubzjyqzmoq)
-    // Backend validation (app.config.ts:67) only requires truthy ; preflight remains stricter for protocol-floor + typo catch.
-    SUPABASE_ANON_KEY: z.string().min(20),
+    // Modern Supabase publishable key only : `sb_publishable_<≥30 char body>`.
+    // The legacy JWT anon (`eyJ…` ~200 chars) is disabled on project
+    // cxpojprgwgubzjyqzmoq since 2025 (confirmed via Supabase MCP
+    // get_publishable_keys: legacy entry has disabled=true). Accepting the
+    // legacy shape was a silent failure mode — schema passed, deploy succeeded,
+    // every RPC then returned 'Invalid API key', and downstream caches poisoned
+    // with empty payloads (incident root cause for run 26104292014, fixed
+    // structurally by PR #637 + this regex).
+    // Backend validation (app.config.ts:67) only requires truthy at runtime ;
+    // preflight remains stricter — typo catch + key-rotation catch.
+    SUPABASE_ANON_KEY: z
+      .string()
+      .regex(
+        /^sb_publishable_[A-Za-z0-9_-]{30,}$/,
+        'SUPABASE_ANON_KEY must be a Supabase modern publishable key (prefix "sb_publishable_", ≥30 char body). Legacy JWT (eyJ…) format is disabled on project cxpojprgwgubzjyqzmoq — rotate via `gh secret set SUPABASE_ANON_KEY` with the value from Supabase Dashboard → Project Settings → API → Publishable API keys.',
+      ),
     JWT_SECRET: z
       .string()
       .min(32, 'JWT_SECRET must be >= 32 chars (HS256 / NIST 2026 guidance)'),
