@@ -52,7 +52,7 @@ describe('EnvValidation — ADR-028 Option D read-only baseline', () => {
     expect(isReadOnlyMode()).toBe(false);
   });
 
-  it('writeable baseline contains the 8 historical required vars', () => {
+  it('writeable baseline contains the 9 required vars (historical 8 + JWT_SECRET)', () => {
     const required = getRequiredEnvVars(false);
     expect(required).toEqual(
       expect.arrayContaining([
@@ -61,15 +61,16 @@ describe('EnvValidation — ADR-028 Option D read-only baseline', () => {
         'SUPABASE_SERVICE_ROLE_KEY',
         'REDIS_URL',
         'SESSION_SECRET',
+        'JWT_SECRET',
         'SYSTEMPAY_SITE_ID',
         'PAYBOX_SITE',
         'PAYBOX_HMAC_KEY',
       ]),
     );
-    expect(required).toHaveLength(8);
+    expect(required).toHaveLength(9);
   });
 
-  it('read-only baseline contains exactly NODE_ENV/SUPABASE_URL/SUPABASE_ANON_KEY/REDIS_URL', () => {
+  it('read-only baseline contains exactly NODE_ENV/SUPABASE_URL/SUPABASE_ANON_KEY/REDIS_URL/JWT_SECRET', () => {
     const required = getRequiredEnvVars(true);
     expect(required).toEqual(
       expect.arrayContaining([
@@ -77,9 +78,14 @@ describe('EnvValidation — ADR-028 Option D read-only baseline', () => {
         'SUPABASE_URL',
         'SUPABASE_ANON_KEY',
         'REDIS_URL',
+        'JWT_SECRET',
       ]),
     );
-    expect(required).toHaveLength(4);
+    expect(required).toHaveLength(5);
+  });
+
+  it('read-only baseline INCLUDES JWT_SECRET (PR #606 VehicleContextService.getOrThrow)', () => {
+    expect(getRequiredEnvVars(true)).toContain('JWT_SECRET');
   });
 
   it('read-only baseline EXCLUDES SUPABASE_SERVICE_ROLE_KEY (ADR-028 Option D)', () => {
@@ -99,12 +105,12 @@ describe('EnvValidation — ADR-028 Option D read-only baseline', () => {
 
   it('getRequiredEnvVars() with no arg follows current READ_ONLY env', () => {
     process.env.READ_ONLY = 'true';
-    expect(getRequiredEnvVars()).toHaveLength(4);
+    expect(getRequiredEnvVars()).toHaveLength(5);
 
     process.env.READ_ONLY = 'false';
-    expect(getRequiredEnvVars()).toHaveLength(8);
+    expect(getRequiredEnvVars()).toHaveLength(9);
 
     delete process.env.READ_ONLY;
-    expect(getRequiredEnvVars()).toHaveLength(8);
+    expect(getRequiredEnvVars()).toHaveLength(9);
   });
 });
