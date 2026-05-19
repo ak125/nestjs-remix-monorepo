@@ -41,7 +41,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Apply TTL policy
-        uses: actions/stale@v9
+        uses: actions/stale@v10
         with:
           # PR scope only — issues are governed elsewhere (weekly digest).
           days-before-issue-stale: -1
