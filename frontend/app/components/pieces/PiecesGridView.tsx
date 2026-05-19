@@ -232,7 +232,7 @@ const PieceCard = memo(function PieceCard({
         {piece.images && piece.images.length > 1 && (
           <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-white/95 backdrop-blur-sm text-slate-700 text-xs font-bold px-2 py-1 rounded-md shadow-md border border-slate-200 z-10">
             <svg
-              className="w-3.5 h-3.5 text-indigo-500"
+              className="w-3.5 h-3.5 text-foreground"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -258,11 +258,7 @@ const PieceCard = memo(function PieceCard({
                 : `Sélectionner ${piece.name}`
             }
             onClick={handleSelect}
-            className={`absolute top-2 left-2 w-6 h-6 rounded-md flex items-center justify-center transition-all duration-300 z-20 ${
-              isSelected
-                ? "bg-indigo-600 shadow-lg shadow-indigo-500/50 scale-110"
-                : "bg-white/90 backdrop-blur-sm border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50"
-            }`}
+            className={`absolute top-2 left-2 w-6 h-6 rounded-md flex items-center justify-center transition-all duration-300 z-20 ${ isSelected ? "bg-primary shadow-lg shadow-indigo-500/50 scale-110" : "bg-white/90 backdrop-blur-sm border border-slate-200 hover:border-indigo-400 hover:bg-muted" }`}
           >
             {isSelected ? (
               <svg
@@ -290,7 +286,7 @@ const PieceCard = memo(function PieceCard({
             {piece.brand}
           </span>
           <span className="text-slate-300 flex-shrink-0">|</span>
-          <code className="text-sm sm:text-base font-mono font-bold text-indigo-700 truncate">
+          <code className="text-sm sm:text-base font-mono font-bold text-foreground truncate">
             {piece.reference}
           </code>
         </div>
@@ -321,11 +317,7 @@ const PieceCard = memo(function PieceCard({
                 ? `Ajouter ${piece.name} au panier`
                 : `${piece.name} indisponible`
             }
-            className={`flex items-center justify-center gap-1.5 px-3 py-2.5 min-h-[44px] min-w-[44px] rounded-lg text-xs sm:text-sm font-bold transition-all duration-200 active:scale-95 ${
-              !isLoading
-                ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/30"
-                : "bg-indigo-300 text-white cursor-wait"
-            }`}
+            className={`flex items-center justify-center gap-1.5 px-3 py-2.5 min-h-[44px] min-w-[44px] rounded-lg text-xs sm:text-sm font-bold transition-all duration-200 active:scale-95 ${ !isLoading ? "bg-primary hover:bg-primary text-white shadow-md shadow-indigo-500/30" : "bg-primary text-white cursor-wait" }`}
             disabled={isLoading}
             onClick={handleAddToCart}
           >
@@ -386,7 +378,7 @@ const PieceCard = memo(function PieceCard({
       </div>
 
       {/* Barre couleur au hover */}
-      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300 rounded-b-xl" />
+      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r to-pink-500 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300 rounded-b-xl" />
 
       {/* Bordure subtile */}
       <div className="absolute inset-0 rounded-xl ring-1 ring-inset ring-slate-200/80 group-hover:ring-indigo-400/30 transition-all duration-300 pointer-events-none" />
@@ -472,7 +464,7 @@ export function PiecesGridView({
       <div className="text-center py-20 bg-gradient-to-br from-background via-muted/50 to-muted rounded-2xl border-2 border-dashed border-border relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDE0YzIuMiAwIDQgMS44IDQgNHMtMS44IDQtNCA0LTQtMS44LTQtNGMwLTIuMiAxLjgtNCA0LTR6bTAgNDBjMi4yIDAgNCAxLjggNCA0cy0xLjggNC00IDQtNC0xLjgtNC00YzAtMi4yIDEuOC00IDQtNHoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-40" />
         <div className="relative z-10 max-w-md mx-auto px-4">
-          <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 mb-6 animate-bounce-slow">
+          <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-blue-100 mb-6 animate-pulse-slow">
             <svg
               className="w-12 h-12 text-blue-500"
               fill="none"

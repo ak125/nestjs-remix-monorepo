@@ -279,14 +279,14 @@ export const ProductGallery = memo(function ProductGallery({
           </button>
         ))}
         {allImages.length > 5 && (
-          <div className="w-12 h-12 flex-shrink-0 rounded border-2 border-white/50 bg-black/50 flex items-center justify-center text-white text-xs font-bold shadow-lg">
+          <div className="w-12 h-12 flex-shrink-0 rounded border-2 border-white/50 bg-neutral-900/50 flex items-center justify-center text-white text-xs font-bold shadow-lg">
             +{allImages.length - 5}
           </div>
         )}
       </div>
 
       {/* Indicateur multi-images (visible quand pas hover, desktop only) */}
-      <div className="absolute bottom-3 right-3 bg-black/70 text-white text-xs px-2.5 py-1.5 rounded-lg opacity-100 group-hover/gallery:opacity-0 transition-opacity duration-300 pointer-events-none hidden sm:flex items-center gap-1.5 shadow-lg backdrop-blur-sm">
+      <div className="absolute bottom-3 right-3 bg-neutral-900/70 text-white text-xs px-2.5 py-1.5 rounded-lg opacity-100 group-hover/gallery:opacity-0 transition-opacity duration-300 pointer-events-none hidden sm:flex items-center gap-1.5 shadow-lg backdrop-blur-sm">
         <svg
           className="w-3.5 h-3.5"
           fill="none"

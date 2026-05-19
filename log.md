@@ -801,3 +801,39 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-cp-cf-rum-collector`
 - **Décision** : feat(seo-cp): pr-2a-2.5 cloudflare rum collector (web vitals edge ingestion)
 - **Sortie** : PR #583 | commits 24fdf7367
+
+## 2026-05-18 — feat/vehicle-context-cookie-jws (auto)
+
+- **Branche** : `feat/vehicle-context-cookie-jws`
+- **Décision** : fix(vehicle-context): PR-B.8 CI green (prettier + gitleaks + dep inventory) (+7 other commits)
+- **Sortie** : PR #606 | commits b99f9f80e 2fe8f2beb 6eb399a47 019b10d89 6dcfb20a5 6833edfae a51962447 ce57fa9d8
+
+## 2026-05-18 — chore/impeccable-cli-devdep (auto)
+
+- **Branche** : `chore/impeccable-cli-devdep`
+- **Décision** : chore(frontend): add impeccable@2.1.9 CLI for design anti-pattern detection
+- **Sortie** : PR #597 | commits 54afbb9d8
+
+## 2026-05-18 — feat/vehicle-context-cookie-jws (auto)
+
+- **Branche** : `feat/vehicle-context-cookie-jws`
+- **Décision** : Merge remote-tracking branch 'origin/main' into feat/vehicle-context-cookie-jws (+9 other commits)
+- **Sortie** : PR #606 | commits 4cfd22868 54aecaacd b99f9f80e 2fe8f2beb 6eb399a47 019b10d89 6dcfb20a5 6833edfae a51962447 ce57fa9d8
+
+## 2026-05-18 — refactor/impeccable-bounce-easing (auto)
+
+- **Branche** : `refactor/impeccable-bounce-easing`
+- **Décision** : refactor(frontend): smooth bounce-easing animations (-8, components-only)
+- **Sortie** : PR #610 | commits f260a8de4
+
+## 2026-05-19 — chore/impeccable-husky-hardening (auto)
+
+- **Branche** : `chore/impeccable-husky-hardening`
+- **Décision** : chore(husky): wire impeccable ratchet as warn-only pre-commit hook (PR 6)
+- **Sortie** : PR #621 | commits f977316a4
+
+## 2026-05-19 — chore/impeccable-husky-hardening (auto)
+
+- **Branche** : `chore/impeccable-husky-hardening`
+- **Décision** : chore(registry): regenerate after PR #606 (vehicle-context cookie devDep bump) (+2 other commits)
+- **Sortie** : PR #621 | commits 4d635fac7 8bd1c7c84 c7b056d68

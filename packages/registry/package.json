@@ -27,6 +27,7 @@
     "test": "tsx --test src/**/*.test.ts"
   },
   "dependencies": {
+    "jose": "^5.10.0",
     "js-yaml": "4.1.1",
     "micromatch": "^4.0.8",
     "zod": "^3.25.76",

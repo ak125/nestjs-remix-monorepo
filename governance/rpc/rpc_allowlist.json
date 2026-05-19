@@ -818,6 +818,16 @@
       "name": "validate_staging_brands",
       "volatility": "VOLATILE",
       "reason": "Validation only"
+    },
+    {
+      "name": "get_soft_404_alternatives",
+      "volatility": "STABLE",
+      "reason": "Soft-404 R2 ranking multi-tier (SECURITY DEFINER, ADR-076)"
+    },
+    {
+      "name": "track_soft_404_event",
+      "volatility": "VOLATILE",
+      "reason": "Soft-404 R2 telemetry beacon append-only (SECURITY DEFINER, ADR-076)"
     }
   ]
 }

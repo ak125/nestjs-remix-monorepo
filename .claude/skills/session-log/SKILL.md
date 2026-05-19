@@ -1,6 +1,19 @@
 ---
 name: session-log
-description: Append a 3-4 line curated entry to log.md at the monorepo root. Use when the current Claude Code session has produced commits or PRs and the user (or Stop hook) requests recording it. Format strict, no secrets, append-only. Trigger keywords - "log session", "/log-session", "record this work", or auto-suggested by Stop hook when git activity detected.
+description: Use when the current Claude Code session has produced commits or PRs and needs to be appended as a 3-4 line curated entry in log.md at the monorepo root. Format strict, no secrets, append-only. Triggers — "log session", "/log-session", "record this work", or auto-suggested by Stop hook when git activity is detected.
+type: technique
+status: stable
+owners: ['@ak125']
+domain: D15
+runtime_class: mutating
+llm_safe: true
+last_verified: '2026-05-18'
+license: Internal - Automecanik
+compatibility: Designed for Claude Code in the AutoMecanik monorepo. Append-only to log.md (no DDL, no infra).
+tags: [logging, session, audit-trail, stop-hook]
+metadata:
+  version: "1.0"
+  spec: agentskills.io/specification v1
 ---
 
 # session-log

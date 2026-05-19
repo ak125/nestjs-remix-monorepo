@@ -119,7 +119,7 @@ export const PiecesHeader = memo(function PiecesHeader({
                 {/* Badge Nombre de pièces */}
                 <div className="group bg-white/[0.14] backdrop-blur-none md:backdrop-blur-xl rounded-xl px-3.5 py-2.5 border border-white/30 shadow-lg hover:bg-white/[0.18] hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-default">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-lg flex items-center justify-center shadow-md group-hover:rotate-6 transition-transform duration-300">
+                    <div className="w-8 h-8 bg-gradient-to-br from-blue-400 rounded-lg flex items-center justify-center shadow-md group-hover:rotate-6 transition-transform duration-300">
                       <Package
                         className="w-4 h-4 text-white"
                         strokeWidth={2.5}
@@ -166,9 +166,9 @@ export const PiecesHeader = memo(function PiecesHeader({
 
                 {/* Badge Performance si disponible */}
                 {performance && (
-                  <div className="flex items-center gap-2 bg-purple-500/20 backdrop-blur-sm border border-purple-300/30 rounded-xl px-3 py-2">
+                  <div className="flex items-center gap-2 bg-primary/20 backdrop-blur-sm border border-purple-300/30 rounded-xl px-3 py-2">
                     <svg
-                      className="w-3.5 h-3.5 text-purple-300"
+                      className="w-3.5 h-3.5 text-foreground"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"

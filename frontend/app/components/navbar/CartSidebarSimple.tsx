@@ -84,12 +84,12 @@ export const CartSidebarSimple = memo(function CartSidebarSimple({
             "px-4 py-4 border-b",
             subtotal >= FREE_SHIPPING_THRESHOLD
               ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white"
-              : "bg-gradient-to-r from-blue-50 to-indigo-50",
+              : "bg-gradient-to-r from-blue-50",
           )}
         >
           {subtotal >= FREE_SHIPPING_THRESHOLD ? (
             <div className="flex items-center gap-3">
-              <span className="text-2xl animate-bounce">🎉</span>
+              <span className="text-2xl animate-pulse">🎉</span>
               <div>
                 <p className="font-bold text-lg">Livraison OFFERTE !</p>
                 <p className="text-xs opacity-90">Vous économisez 9,90€</p>

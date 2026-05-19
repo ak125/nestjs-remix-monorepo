@@ -90,9 +90,9 @@ export const PiecesFilterSidebar = memo(function PiecesFilterSidebar({
       {/* Card principale des filtres - Glassmorphism premium */}
       <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-900/10 border border-slate-200/80 overflow-hidden flex flex-col flex-1 min-h-0">
         {/* Header avec gradient premium dark */}
-        <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-900 px-5 py-4 relative overflow-hidden">
-          <div className="absolute -top-10 -right-10 w-32 h-32 bg-indigo-500/20 rounded-full blur-3xl"></div>
-          <div className="absolute -bottom-5 -left-5 w-20 h-20 bg-purple-500/20 rounded-full blur-2xl"></div>
+        <div className="bg-gradient-to-r from-slate-900 via-slate-800 px-5 py-4 relative overflow-hidden">
+          <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/20 rounded-full blur-3xl"></div>
+          <div className="absolute -bottom-5 -left-5 w-20 h-20 bg-primary/20 rounded-full blur-2xl"></div>
 
           <div className="relative z-10 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
@@ -160,11 +160,7 @@ export const PiecesFilterSidebar = memo(function PiecesFilterSidebar({
                       onClick={() =>
                         setActiveFilters({ ...activeFilters, position: pos })
                       }
-                      className={`px-3 py-2 rounded-lg text-[11px] font-bold transition-colors duration-200 ${
-                        activeFilters.position === pos
-                          ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-600/30"
-                          : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800"
-                      }`}
+                      className={`px-3 py-2 rounded-lg text-[11px] font-bold transition-colors duration-200 ${ activeFilters.position === pos ? "bg-gradient-to-r from-blue-600 text-white shadow-lg shadow-blue-600/30" : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800" }`}
                     >
                       {pos}
                     </button>
@@ -428,7 +424,7 @@ export const PiecesFilterSidebar = memo(function PiecesFilterSidebar({
                                 border: "border-blue-400",
                                 text: "text-blue-700",
                                 activeBg:
-                                  "bg-gradient-to-r from-blue-500 to-indigo-500",
+                                  "bg-gradient-to-r from-blue-500",
                                 shadow: "shadow-blue-400/50",
                               },
                       }))
@@ -455,7 +451,7 @@ export const PiecesFilterSidebar = memo(function PiecesFilterSidebar({
                             border: "border-blue-400",
                             text: "text-blue-700",
                             activeBg:
-                              "bg-gradient-to-r from-blue-500 to-indigo-500",
+                              "bg-gradient-to-r from-blue-500",
                             shadow: "shadow-blue-400/50",
                           },
                         },

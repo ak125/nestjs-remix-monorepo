@@ -68,7 +68,7 @@ export const PiecesToolbar = memo(function PiecesToolbar({
         {/* Ligne 1: Compteur + Tri dropdown */}
         <div className="flex items-center justify-between gap-2">
           {/* Badge nombre compact */}
-          <div className="flex items-center gap-1.5 bg-gradient-to-r from-blue-50 to-indigo-50 px-3 py-1.5 rounded-lg border border-blue-100">
+          <div className="flex items-center gap-1.5 bg-gradient-to-r from-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
             <Package className="w-4 h-4 text-blue-600" />
             <span className="text-sm font-bold text-blue-600">
               {filteredCount}
@@ -147,7 +147,7 @@ export const PiecesToolbar = memo(function PiecesToolbar({
         {/* Compteur de résultats */}
         <div className="flex items-center gap-3">
           {/* Badge nombre de pièces */}
-          <div className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-2 rounded-xl border border-blue-100">
+          <div className="flex items-center gap-2 bg-gradient-to-r from-blue-50 px-4 py-2 rounded-xl border border-blue-100">
             <Package className="w-4 h-4 text-blue-600" />
             <span className="text-sm font-semibold text-gray-900">
               <span className="text-blue-600">{filteredCount}</span> pièce
@@ -175,11 +175,7 @@ export const PiecesToolbar = memo(function PiecesToolbar({
             variant={viewMode === "grid" ? "blue" : "ghost"}
             size="sm"
             onClick={() => setViewMode("grid")}
-            className={`gap-2 ${
-              viewMode === "grid"
-                ? "bg-gradient-to-r from-blue-500 to-indigo-600 shadow-md"
-                : ""
-            }`}
+            className={`gap-2 ${ viewMode === "grid" ? "bg-gradient-to-r from-blue-500 shadow-md" : "" }`}
           >
             <LayoutGrid className="w-4 h-4" />
             Grille
@@ -189,11 +185,7 @@ export const PiecesToolbar = memo(function PiecesToolbar({
             variant={viewMode === "list" ? "blue" : "ghost"}
             size="sm"
             onClick={() => setViewMode("list")}
-            className={`gap-2 ${
-              viewMode === "list"
-                ? "bg-gradient-to-r from-blue-500 to-indigo-600 shadow-md"
-                : ""
-            }`}
+            className={`gap-2 ${ viewMode === "list" ? "bg-gradient-to-r from-blue-500 shadow-md" : "" }`}
           >
             <LayoutList className="w-4 h-4" />
             Liste
@@ -203,11 +195,7 @@ export const PiecesToolbar = memo(function PiecesToolbar({
             variant={viewMode === "comparison" ? "blue" : "ghost"}
             size="sm"
             onClick={() => setViewMode("comparison")}
-            className={`gap-2 relative ${
-              viewMode === "comparison"
-                ? "bg-gradient-to-r from-blue-500 to-indigo-600 shadow-md"
-                : ""
-            }`}
+            className={`gap-2 relative ${ viewMode === "comparison" ? "bg-gradient-to-r from-blue-500 shadow-md" : "" }`}
           >
             <ClipboardList className="w-4 h-4" />
             Comparer

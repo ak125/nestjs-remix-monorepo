@@ -88,15 +88,7 @@ export function TableOfContents({
               <button
                 key={section.anchor}
                 onClick={() => handleClick(section.anchor)}
-                className={`
-                  w-full text-left text-sm transition-all duration-200
-                  ${isH2 ? "font-medium text-gray-900" : "ml-4 text-gray-600"}
-                  ${
-                    isActive
-                      ? "text-primary font-semibold bg-primary/10 -ml-2 pl-2 py-1 rounded-r-lg border-l-2 border-primary"
-                      : "hover:text-blue-600 hover:bg-gray-50 -ml-2 pl-2 py-1 rounded-r-lg"
-                  }
-                `}
+                className={`w-full text-left text-sm transition-all duration-200 ${isH2 ? "font-medium text-gray-900" : "ml-4 text-gray-600"} ${ isActive ? "text-primary font-semibold bg-primary/10 -ml-2 pl-2 py-1 rounded-r-lg border-primary" : "hover:text-blue-600 hover:bg-gray-50 -ml-2 pl-2 py-1 rounded-r-lg" }`}
               >
                 <span className="flex items-center gap-2">
                   {isActive && (

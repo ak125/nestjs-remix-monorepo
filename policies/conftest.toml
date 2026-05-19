@@ -1,0 +1,10 @@
+# policies/conftest.toml
+#
+# Default conftest config for the Diagnostic Control Plane V1 policies.
+# Picks up automatically when running `conftest` from `policies/` or with
+# `--config policies/conftest.toml` from the repo root.
+
+policy = ["maintenance"]
+namespace = ["maintenance.no_programmatic_seo_pages"]
+all_namespaces = true
+output = "stdout"

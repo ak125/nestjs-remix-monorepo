@@ -24,15 +24,11 @@ export function R8EnrichedSection({ r8Content }: Props) {
       {blocks.map((block) => (
         <div
           key={block.id}
-          className={`rounded-2xl border p-6 ${
-            block.type === "variant_difference"
-              ? "bg-indigo-50 border-indigo-200"
-              : "bg-blue-50 border-blue-200"
-          }`}
+          className={`rounded-2xl border p-6 ${ block.type === "variant_difference" ? "bg-muted border-indigo-200" : "bg-blue-50 border-blue-200" }`}
         >
           <div className="flex items-start gap-3 mb-3">
             {block.type === "variant_difference" ? (
-              <Car size={24} className="text-indigo-600 flex-shrink-0 mt-0.5" />
+              <Car size={24} className="text-foreground flex-shrink-0 mt-0.5" />
             ) : (
               <Wrench
                 size={24}

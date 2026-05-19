@@ -1,9 +1,21 @@
 ---
 name: responsive-audit
-description: "Mobile-first responsive audit v1.1 : shadcn/ui compliance, touch targets WCAG, viewport units, fluid tokens, design consistency."
-argument-hint: "[/url-path or file-pattern]"
-allowed-tools: Read, Grep, Glob
-version: "1.1"
+description: Use when auditing a Remix route or component for mobile-first responsive compliance — checks shadcn/ui usage, WCAG touch targets (44×44 px), viewport units, fluid tokens, design consistency at 375 / 768 / 1024 / 1440 px breakpoints. Triggers — "audit responsive on /page", "check mobile compliance", "verify touch targets", or chained after /frontend-design.
+type: technique
+status: stable
+owners: ['@ak125']
+domain: D15
+runtime_class: read-only
+llm_safe: true
+last_verified: '2026-05-18'
+license: Internal - Automecanik
+compatibility: Designed for Claude Code in the AutoMecanik monorepo. Stack — Remix + shadcn/ui + Tailwind CSS. Read-only audit, no code mutations.
+allowed-tools: Read Grep Glob
+tags: [responsive, mobile-first, wcag, viewport, shadcn]
+metadata:
+  version: "1.1"
+  argument-hint: "[/url-path or file-pattern]"
+  spec: agentskills.io/specification v1
 ---
 
 # Responsive Audit Skill — v1.1

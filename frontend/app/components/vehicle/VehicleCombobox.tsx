@@ -278,11 +278,7 @@ const VehicleCombobox = memo(function VehicleCombobox({
                   <li key={option.id}>
                     <button
                       onClick={() => handleSelect(option)}
-                      className={`w-full px-4 py-3 text-left hover:bg-semantic-info/5 transition-colors border-l-4 ${
-                        index === highlightedIndex
-                          ? "bg-semantic-info/10 border-semantic-info"
-                          : "border-transparent"
-                      }`}
+                      className={`w-full px-4 py-3 text-left hover:bg-semantic-info/5 transition-colors ${ index === highlightedIndex ? "bg-semantic-info/10 border-semantic-info" : "border-transparent" }`}
                     >
                       <div className="flex items-center gap-3">
                         <Car className="w-4 h-4 text-neutral-400 flex-shrink-0" />

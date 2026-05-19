@@ -92,7 +92,7 @@ export function BlogPiecesAutoNavigation() {
             to="/blog-pieces-auto/conseils"
             className="flex items-center gap-3 group hover:scale-105 transition-transform"
           >
-            <div className="bg-gradient-to-br from-blue-600 to-purple-600 text-white rounded-xl p-2.5 shadow-lg">
+            <div className="bg-gradient-to-br from-blue-600 text-white rounded-xl p-2.5 shadow-lg">
               <Wrench className="w-6 h-6" />
             </div>
             <div>

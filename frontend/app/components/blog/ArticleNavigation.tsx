@@ -66,7 +66,7 @@ export function ArticleNavigation({ previous, next, className = '' }: ArticleNav
           {previous ? (
             <Link
               to={`/blog-pieces-auto/${previous.slug}`}
-              className="group relative flex flex-col p-6 bg-gradient-to-br from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-xl border border-blue-200 transition-all duration-300 hover:shadow-lg"
+              className="group relative flex flex-col p-6 bg-gradient-to-br from-blue-50 hover:from-blue-100 hover: rounded-xl border border-blue-200 transition-all duration-300 hover:shadow-lg"
             >
               {/* Direction indicator */}
               <div className="flex items-center gap-2 text-sm font-medium text-blue-600 mb-3">
@@ -116,10 +116,10 @@ export function ArticleNavigation({ previous, next, className = '' }: ArticleNav
           {next && (
             <Link
               to={`/blog-pieces-auto/${next.slug}`}
-              className="group relative flex flex-col p-6 bg-gradient-to-br from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 rounded-xl border border-purple-200 transition-all duration-300 hover:shadow-lg"
+              className="group relative flex flex-col p-6 bg-gradient-to-br to-pink-50 hover: hover:to-pink-100 rounded-xl border border-purple-200 transition-all duration-300 hover:shadow-lg"
             >
               {/* Direction indicator */}
-              <div className="flex items-center justify-end gap-2 text-sm font-medium text-purple-600 mb-3">
+              <div className="flex items-center justify-end gap-2 text-sm font-medium text-foreground mb-3">
                 <span>Article suivant</span>
                 <ChevronRight className="w-4 h-4" />
               </div>
@@ -136,7 +136,7 @@ export function ArticleNavigation({ previous, next, className = '' }: ArticleNav
               )}
 
               {/* Titre */}
-              <h3 className="text-lg font-bold text-gray-900 group-hover:text-purple-700 transition-colors line-clamp-2 mb-2 text-right">
+              <h3 className="text-lg font-bold text-gray-900 group-hover:text-foreground transition-colors line-clamp-2 mb-2 text-right">
                 {next.title}
               </h3>
 

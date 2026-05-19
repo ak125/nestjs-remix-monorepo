@@ -85,7 +85,7 @@ export const UserHoverCard = memo(function UserHoverCard({
           {/* Header avec Avatar */}
           <div className="flex items-start gap-4">
             {/* Avatar avec initiales */}
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-lg shadow-md">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 text-white font-bold text-lg shadow-md">
               {initials}
             </div>
 

@@ -95,7 +95,7 @@ export function R6QuizAssistant({
       anchor="quiz-assistant"
       icon={Search}
       label="Diagnostic interactif"
-      gradient="from-indigo-500 to-blue-500"
+      gradient="to-blue-500"
       border="border-indigo-200"
       labelColor="text-indigo-100"
       bodyBg="bg-indigo-50/30"
@@ -103,7 +103,7 @@ export function R6QuizAssistant({
       {/* Progress bar */}
       <div className="mb-4">
         <div className="flex items-center justify-between mb-1.5">
-          <span className="text-xs font-medium text-indigo-600">
+          <span className="text-xs font-medium text-foreground">
             {verdict
               ? "Resultat"
               : `Question ${currentIndex + 1}/${nodes.length}`}
@@ -166,7 +166,7 @@ export function R6QuizAssistant({
                 <Button
                   key={idx}
                   variant="outline"
-                  className="justify-start text-left h-auto py-3 px-4 whitespace-normal hover:bg-indigo-50 hover:border-indigo-300"
+                  className="justify-start text-left h-auto py-3 px-4 whitespace-normal hover:bg-muted hover:border-indigo-300"
                   onClick={() => handleOption(outcome)}
                 >
                   {labelText}

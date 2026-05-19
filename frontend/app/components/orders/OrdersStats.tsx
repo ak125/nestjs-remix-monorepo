@@ -46,7 +46,7 @@ export const OrdersStats = memo(function OrdersStats({
       <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
         <div className="flex items-center justify-between mb-4">
           <div className="p-3 bg-muted rounded-lg">
-            <CheckCircle className="w-6 h-6 text-purple-600" />
+            <CheckCircle className="w-6 h-6 text-foreground" />
           </div>
           <span className="text-sm font-medium text-gray-500">
             Panier moyen

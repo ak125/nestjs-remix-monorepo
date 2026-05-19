@@ -75,7 +75,7 @@ export function ContentTabs({
               </TabsList>
               <Link
                 to="/reference-auto"
-                className="hidden md:inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-colors"
+                className="hidden md:inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-foreground bg-muted hover:bg-muted transition-colors"
               >
                 <BookOpen className="w-4 h-4" />
                 Glossaire
@@ -263,9 +263,9 @@ export function ContentTabs({
                     className="hover:-translate-y-1 hover:scale-105 transition-all duration-200"
                   >
                     <Link to={`/blog-pieces-auto/category/${category.slug}`}>
-                      <Card className="group text-center h-full hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-gray-50 hover:from-blue-50 hover:to-purple-50">
+                      <Card className="group text-center h-full hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-gray-50 hover:from-blue-50 hover:">
                         <CardHeader>
-                          <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center text-white text-2xl font-bold group-hover:scale-110 transition-transform duration-300">
+                          <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-500 rounded-2xl flex items-center justify-center text-white text-2xl font-bold group-hover:scale-110 transition-transform duration-300">
                             {category.icon || category.name.charAt(0)}
                           </div>
                           <CardTitle className="text-xl group-hover:text-blue-600 transition-colors">

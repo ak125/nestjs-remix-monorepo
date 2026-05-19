@@ -150,7 +150,7 @@ export const SearchBar = memo(function SearchBar({
               newSuggestions.push({
                 type: "suggestion",
                 text,
-                icon: <Sparkles className="w-4 h-4 text-purple-500" />,
+                icon: <Sparkles className="w-4 h-4 text-foreground" />,
               });
             });
           }
@@ -417,7 +417,7 @@ export const SearchBar = memo(function SearchBar({
                   className={cn(
                     "p-1 rounded-full transition-colors",
                     enhancedMode
-                      ? "text-purple-600 bg-purple-100 hover:bg-purple-200"
+                      ? "text-foreground bg-muted hover:bg-muted"
                       : "text-gray-400 hover:text-gray-600 hover:bg-gray-100",
                   )}
                   title={

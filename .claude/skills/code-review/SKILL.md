@@ -1,9 +1,21 @@
 ---
 name: code-review
-description: "Systematic PR/code review: security, architecture, performance, business compliance. Checklist adapted to AutoMecanik monorepo."
-argument-hint: "[PR-number or file-path]"
-allowed-tools: Read, Grep, Glob, Bash
-version: "1.1"
+description: Use when reviewing a PR, diff, or recent changes for security, architecture, performance, and business compliance against AutoMecanik monorepo checklists (HMAC payment safety, RLS, RPC contracts, ADR adherence, no-bricolage). Triggers — "review PR #N", "code review this branch", "audit this diff for production readiness", or before merging any non-trivial PR.
+type: technique
+status: stable
+owners: ['@ak125']
+domain: D15
+runtime_class: read-only
+llm_safe: true
+last_verified: '2026-05-18'
+license: Internal - Automecanik
+compatibility: Designed for Claude Code in the AutoMecanik monorepo. Read-only audit + analysis. Does NOT mutate code.
+allowed-tools: Read Grep Glob Bash
+tags: [review, security, hmac, rls, governance, adr]
+metadata:
+  version: "1.1"
+  argument-hint: "[PR-number or file-path]"
+  spec: agentskills.io/specification v1
 ---
 
 # Code Review Skill

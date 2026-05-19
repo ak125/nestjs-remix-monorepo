@@ -179,11 +179,11 @@ export default function SystemBreadcrumb({
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'healthy':
-        return 'border-l-4 border-success bg-success/10';
+        return 'border-success bg-success/10';
       case 'warning':
-        return 'border-l-4 border-warning bg-warning/10';
+        return 'border-warning bg-warning/10';
       case 'error':
-        return 'border-l-4 border-destructive bg-destructive/10';
+        return 'border-destructive bg-destructive/10';
       default:
         return 'text-gray-600 bg-gray-50 border-gray-200';
     }

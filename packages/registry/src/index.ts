@@ -117,3 +117,15 @@ export {
   type TierId,
   type AlertingChannel,
 } from "./canonical/seo-criticality";
+
+// ── VehicleContext cookie (PR-B, OPTION A locked) ──
+export {
+  VehicleContextSchema,
+  VehicleContextPayloadSchema,
+  signVehicleContext,
+  verifyVehicleContext,
+  VEHICLE_CTX_COOKIE_NAME,
+  VEHICLE_CTX_COOKIE_MAX_AGE_SECONDS,
+  type VehicleContext,
+  type VehicleContextPayload,
+} from "./vehicle-context";

@@ -3,6 +3,8 @@ import { DatabaseModule } from '../../database/database.module';
 import { CatalogModule } from '../catalog/catalog.module';
 import { SeoShadowObservatoryModule } from '../seo-shadow-observatory/seo-shadow-observatory.module';
 import { RmBuilderService } from './services/rm-builder.service';
+import { RmAlternativesService } from './services/rm-alternatives.service';
+import { RmSoft404TrackerService } from './services/rm-soft404-tracker.service';
 import { RmController } from './controllers/rm.controller';
 
 /**
@@ -46,8 +48,8 @@ import { RmController } from './controllers/rm.controller';
     forwardRef(() => CatalogModule),
     SeoShadowObservatoryModule, // Retrofit ADR-055 — shadow R1_GAMME_VEHICLE_ROUTER
   ],
-  providers: [RmBuilderService],
+  providers: [RmBuilderService, RmAlternativesService, RmSoft404TrackerService],
   controllers: [RmController],
-  exports: [RmBuilderService],
+  exports: [RmBuilderService, RmAlternativesService, RmSoft404TrackerService],
 })
 export class RmModule {}

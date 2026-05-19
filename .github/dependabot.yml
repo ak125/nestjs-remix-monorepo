@@ -17,27 +17,51 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "@remix-run/*"
         update-types: ["version-update:semver-major"]
+      # Storybook major (9→10) = migration manuelle planifiée, jamais auto-PR
+      # (cf. cas #280 / PR #605 : addon-onboarding@10 émis seul casse storybook@9).
+      - dependency-name: "storybook"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@storybook/*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@chromatic-com/storybook"
+        update-types: ["version-update:semver-major"]
     groups:
-      dev-dependencies:
-        dependency-type: "development"
-        update-types: ["minor", "patch"]
-      # Ecosystem-coupling groups : forcent les bumps cohérents pour les
-      # familles qui doivent rester alignées sur le même major (sinon
-      # incompat runtime, cf. cas #280 storybook 9 vs addon-onboarding@10
-      # le 2026-05-04). Dependabot émettra une seule PR par écosystème
-      # plutôt que des PRs partielles.
+      # Ecosystem-coupling groups (déclarés EN PREMIER pour prendre précédence
+      # sur le groupe générique dev-dependencies). Dependabot évalue les groupes
+      # top-down ; sans cet ordre + sans exclude-patterns ci-dessous, un addon
+      # ecosystem version-bumped en minor matchait dev-dependencies en premier
+      # et bypassait son groupe ecosystem (cas #280 storybook 9 vs
+      # addon-onboarding@10 le 2026-05-04, re-fire sur PR #605 le 2026-05-18).
       storybook-ecosystem:
         patterns:
           - "storybook"
           - "@storybook/*"
+          - "@chromatic-com/storybook"
+        update-types: ["minor", "patch"]
       tiptap-ecosystem:
         patterns:
           - "@tiptap/*"
+        update-types: ["minor", "patch"]
       vite-ecosystem:
         patterns:
           - "vite"
           - "vitest"
           - "@vitejs/*"
+          - "@vitest/*"
+          - "vite-tsconfig-paths"
+        update-types: ["minor", "patch"]
+      dev-dependencies:
+        dependency-type: "development"
+        update-types: ["minor", "patch"]
+        exclude-patterns:
+          - "storybook"
+          - "@storybook/*"
+          - "@chromatic-com/storybook"
+          - "@tiptap/*"
+          - "vite"
+          - "vitest"
+          - "@vitejs/*"
+          - "@vitest/*"
           - "vite-tsconfig-paths"
 
   - package-ecosystem: "docker"

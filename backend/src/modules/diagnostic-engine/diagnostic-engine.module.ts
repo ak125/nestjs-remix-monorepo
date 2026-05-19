@@ -11,6 +11,10 @@ import { Module, Logger } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module';
 // Conditional import — RagProxyModule may not be loaded (RAG_ENABLED=false)
 import { RagProxyModule } from '../rag-proxy/rag-proxy.module';
+// PR-B.4 — depends on VehicleContextPort to persist the cookie on diagnostic
+// completion. Imported as a Module (not raw service) to keep the cross-domain
+// boundary explicit and symbol-token-mediated (canon ddd-bounded-contexts).
+import { VehicleContextModule } from '../vehicle-context/vehicle-context.module';
 import { DiagnosticEngineController } from './diagnostic-engine.controller';
 import { DiagnosticEngineOrchestrator } from './diagnostic-engine.orchestrator';
 import { DiagnosticEngineDataService } from './diagnostic-engine.data-service';
@@ -22,10 +26,12 @@ import { MaintenanceIntelligenceEngine } from './engines/maintenance-intelligenc
 import { RagEnrichmentEngine } from './engines/rag-enrichment.engine';
 import { MaintenanceCalculatorService } from './services/maintenance-calculator.service';
 import { DiagnosticContentService } from './services/diagnostic-content.service';
+import { KgShadowService } from './services/kg-shadow.service';
 
 @Module({
   imports: [
     DatabaseModule,
+    VehicleContextModule, // PR-B.4 — VEHICLE_CONTEXT_PORT for cookie persist on analyze
     ...(process.env.RAG_ENABLED === 'true' ? [RagProxyModule] : []),
   ],
   controllers: [DiagnosticEngineController],
@@ -40,6 +46,7 @@ import { DiagnosticContentService } from './services/diagnostic-content.service'
     RagEnrichmentEngine,
     MaintenanceCalculatorService,
     DiagnosticContentService,
+    KgShadowService, // PR-E — shadow KG comparison (fire-and-forget)
   ],
   exports: [
     DiagnosticEngineOrchestrator,

@@ -23,7 +23,7 @@
   --ease-out: cubic-bezier(0.0, 0, 0.2, 1); /* Decelerate (standard) */
   --ease-in: cubic-bezier(0.4, 0, 1, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1); /* Material emphasized — replaces former --ease-bounce */
   --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
@@ -90,7 +90,7 @@
 }
 
 .animate-scale-in {
-  animation: scaleIn var(--duration-normal) var(--ease-bounce);
+  animation: scaleIn var(--duration-normal) var(--ease-emphasized);
 }
 
 /* ========================================
@@ -219,6 +219,6 @@
   }
 }
 
-.animate-bounce-slow {
+.animate-pulse-slow {
   animation: bounce-slow 3s ease-in-out infinite;
 }
