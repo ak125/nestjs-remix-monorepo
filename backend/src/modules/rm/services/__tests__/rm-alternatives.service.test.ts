@@ -46,7 +46,7 @@ describe('RmAlternativesService (RPC canon)', () => {
 
       const result = await service.compute(11836, 3859, 12);
 
-      expect(cacheMock.get).toHaveBeenCalledWith('alt:11836:3859:v1');
+      expect(cacheMock.get).toHaveBeenCalledWith('alt:11836:3859:v2');
       expect(callRpcMock).not.toHaveBeenCalled();
       expect(result).toEqual(cached);
     });

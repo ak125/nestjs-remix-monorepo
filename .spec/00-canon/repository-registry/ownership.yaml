@@ -172,6 +172,11 @@ entries:
     owner: '@ak125'
     sourceConfidence: medium
     risk: medium
+  - glob: backend/src/contract/env-contract/**
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
   - glob: backend/src/modules/admin/**
     domain: D8
     owner: '@ak125/admin-team'

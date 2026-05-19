@@ -601,6 +601,22 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # Node.js + deps install required by the env-contract preflight step
+      # below: `scripts/ci/preflight-env-contract.ts` runs under tsx and
+      # imports the Zod schema from `backend/src/contract/env-contract/`.
+      # Without `npm ci` on this self-hosted runner, tsx is unavailable and
+      # the preflight cannot enforce the canonical SoT (no auto-install
+      # fallback — `npm install @latest` would be non-deterministic, see
+      # memory feedback_ci_no_dynamic_latest_install).
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: "npm"
+
+      - name: Install dependencies (required for env-contract preflight)
+        run: npm ci
+
       - name: 🧪 Deploy to PREPROD (read-only hardening — ADR-028 Option D)
         env:
           # ADR-028 Option D : couches 1+2 (privilege downgrade + anon key only).
@@ -617,6 +633,17 @@ jobs:
           # donc le fail-fast trigger ici. Source : audit-trail vault
           # 2026-05-07-pr339-deploy-regression.md.
           SESSION_SECRET: ${{ secrets.PREPROD_SESSION_SECRET }}
+          # JWT_SECRET propagation : depuis PR #606, VehicleContextService:37 fait
+          # `configService.getOrThrow<string>('JWT_SECRET')` au constructeur pour
+          # signer le VCP cookie (JWS HS256). Sans ce secret le bootstrap NestJS
+          # crash en boucle dans le container preprod (12 retries × 10s puis
+          # healthcheck fail → tous les deploys main bloqués depuis 2026-05-19
+          # 12:06 UTC, ex. run 26096588258). Fallback sur PREPROD_SESSION_SECRET
+          # si PREPROD_JWT_SECRET pas encore configuré (le repo a déjà
+          # PREPROD_SESSION_SECRET ≥32 chars ; clé partagée acceptable en
+          # preprod read-only où aucun token utilisateur sensible ne circule —
+          # mais idéalement séparé en prod, cf. canon key-rotation).
+          JWT_SECRET: ${{ secrets.PREPROD_JWT_SECRET || secrets.PREPROD_SESSION_SECRET }}
           # ADR-063 — CrUX API key for CWV field monitoring (backend-only, optional).
           # When unset, the CrUX fetcher logs a warning and skips runs (V1 graceful
           # degrade ; cron `seo-monitor` continues without CrUX step). Production
@@ -640,6 +667,9 @@ jobs:
           SUPABASE_URL=${SUPABASE_URL}
           SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
           SESSION_SECRET=${SESSION_SECRET}
+          # JWT_SECRET — required since PR #606 VehicleContextService.getOrThrow.
+          # See env block comment above for rationale.
+          JWT_SECRET=${JWT_SECRET}
           READ_ONLY=true
           # ADR-055 shadow activation: collect real preprod evidence before any
           # mode=on decision. Literal on remains blocked by backend boot guard.
@@ -683,6 +713,34 @@ jobs:
           # shellcheck disable=SC1091
           . "$PREPROD_DIR/.env"
           set +a
+
+          # 🛡️ Preflight env contract check — first projection of the canonical
+          # Zod SoT into CI (backend/src/contract/env-contract/preprod.schema.ts).
+          # Loads the REAL `.env.preprod` in an isolated subshell (not the
+          # ambient GHA env block) to validate EXACTLY what docker-compose
+          # injects into the container. Turns an opaque NestJS boot crash
+          # ("Configuration key X does not exist") into a CI fail immediately
+          # before `docker compose up`, with a structured diff.
+          #
+          # `set -euo pipefail` hardens the subshell against silent interpolation
+          # / sourcing failures (GHA `bash -e {0}` alone can let empty
+          # interpolations through). Determinism: tsx must be present via the
+          # `npm ci` step above — no dynamic `@latest` install (memory
+          # feedback_ci_no_dynamic_latest_install).
+          echo "🛡️ Preflight env contract check (loads real .env.preprod)..."
+          if ! (cd "$GITHUB_WORKSPACE" && npx --no-install tsx --version >/dev/null 2>&1); then
+            echo "::error::tsx not available — the 'Install dependencies' step above must run before this step (no auto-install fallback by design)."
+            exit 1
+          fi
+          (
+            set -euo pipefail
+            cd "$GITHUB_WORKSPACE"
+            set -o allexport
+            # shellcheck disable=SC1091
+            . "$PREPROD_DIR/.env"
+            set +o allexport
+            npx --no-install tsx scripts/ci/preflight-env-contract.ts
+          )
 
           # Arreter anciens conteneurs
           docker stop nestjs-remix-monorepo-preprod redis-preprod 2>/dev/null || true
