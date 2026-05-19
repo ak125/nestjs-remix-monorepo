@@ -28,3 +28,25 @@
 /policies/                                        @ak125
 /backend/src/modules/diagnostic-engine/ports/     @ak125
 /backend/src/modules/maintenance/                 @ak125
+
+# === EVIDENCE GATES — AUTO-MANAGED (do not edit; run scripts/audit/sync-codeowners-from-gates.ts --write) ===
+
+# Source : .spec/00-canon/repository-registry/evidence-gates.yaml
+# Canon  : https://github.com/ak125/governance-vault/blob/main/ledger/decisions/adr/ADR-077-diagnostic-cp-v1-evidence-gates.md
+# Frozen : 2026-05-19 (parent plan: project_diagnostic_control_plane_v1_plan)
+#
+# Each path below is blocked behind an evidence gate. Merge to these
+# paths requires @ak125 approval AND a referenced ADR-077 promotion
+# (gate trigger fired -> ADR L4 vault -> plan -> PR).
+
+# Gate G1 - engine-extraction-d6-d11-d16 (deferred per ADR-077)
+/backend/src/modules/diagnostic-engine/orchestrators/engines/maintenance-intelligence.engine.ts   @ak125
+/backend/src/modules/diagnostic-engine/orchestrators/engines/catalog-orientation.engine.ts        @ak125
+/backend/src/modules/diagnostic-engine/orchestrators/engines/rag-enrichment.engine.ts             @ak125
+
+# Gate G10 - vehicle-ctx-cookie-v2-schema-bump (deferred per ADR-077)
+/backend/src/modules/vehicle/context/cookie-schema.ts    @ak125
+/backend/src/modules/vehicle/context/cookie-encoder.ts   @ak125
+/backend/src/modules/vehicle/context/cookie-decoder.ts   @ak125
+
+# === END EVIDENCE GATES ===

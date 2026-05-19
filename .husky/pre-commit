@@ -139,6 +139,16 @@ if command -v npx >/dev/null 2>&1; then
   }
 fi
 
+# Evidence Gates CODEOWNERS sync drift check (ADR-077).
+# Fails the commit if .github/CODEOWNERS is out of sync with the canonical
+# .spec/00-canon/repository-registry/evidence-gates.yaml overlay.
+# Run-once trigger : only when overlay, sync script, or CODEOWNERS is staged.
+if git diff --cached --name-only --diff-filter=ACMR | grep -qE '^(\.spec/00-canon/repository-registry/evidence-gates\.yaml|\.github/CODEOWNERS|packages/registry/src/overlay/evidence-gates\.ts|scripts/audit/sync-codeowners-from-gates\.ts)$'; then
+  if command -v npx >/dev/null 2>&1 && [ -f scripts/audit/sync-codeowners-from-gates.ts ]; then
+    npx --no-install tsx scripts/audit/sync-codeowners-from-gates.ts --check || exit 1
+  fi
+fi
+
 # impeccable design ratchet (warn-only) — runs only if frontend/** or
 # the ratchet's own files are staged. Catches reintroductions of the
 # anti-patterns we've already eliminated (side-tab, pure-black-white,

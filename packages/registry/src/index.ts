@@ -77,6 +77,15 @@ export {
   type DeletePolicyEntry,
   type DeletePolicyOverlay,
 } from "./overlay/delete-policy";
+export {
+  EvidenceGateEntrySchema,
+  EvidenceGatesRegistrySchema,
+  GateTriggerSchema,
+  type EvidenceGateEntry,
+  type EvidenceGatesRegistry,
+  type GateTrigger,
+  type GateStatus,
+} from "./overlay/evidence-gates";
 
 // ── Layer 3 canonical projection (generated) ──
 export {
