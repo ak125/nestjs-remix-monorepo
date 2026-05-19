@@ -1,0 +1,240 @@
+# .spec/00-canon/repository-registry/evidence-gates.yaml
+#
+# Layer 2 overlay — Evidence Gates registry for Diagnostic Control Plane V1
+# deferral lock (ADR-077, ADR-058 pattern).
+#
+# Source of truth = ADR-077 in `governance-vault` :
+#   ledger/decisions/adr/ADR-077-diagnostic-cp-v1-evidence-gates.md
+#
+# Each entry represents a V1.5+ item explicitly deferred by Diagnostic CP V1
+# (PRs #606, #622, #625, #628 merged 2026-05-18→19). Trigger condition gates
+# re-evaluation. Promotion path is uniform : trigger fires → ADR L4 vault →
+# plan → PR. No shortcuts.
+#
+# Meta-discipline : this overlay must NOT itself violate any of the gates it
+# documents (auto-enforced by CI step `audit-evidence-gates-meta-discipline`).
+#
+# Schema source : packages/registry/src/overlay/evidence-gates.ts
+
+schemaVersion: "1.0.0"
+source_adr_url: https://github.com/ak125/governance-vault/blob/main/ledger/decisions/adr/ADR-077-diagnostic-cp-v1-evidence-gates.md
+canon_freeze_date: "2026-05-19"
+parent_plan: project_diagnostic_control_plane_v1_plan
+
+entries:
+  - id: G1
+    item: engine-extraction-d6-d11-d16
+    description: |
+      Extraire MaintenanceIntelligence / CatalogOrientation / RagEnrichment
+      engines de DiagnosticEngineOrchestrator vers leur module canon (D6 RAG,
+      D11 Commerce, D16 Maintenance). PR-D V1 a livré enforcement-only
+      (bash boundary check + audit.yml step + guard L2 + 1 grandfathered
+      exception rag-enrichment->rag-proxy). Vraie extraction = V1.5.
+    domain: D16
+    trigger:
+      type: auto
+      metric: pr_d_boundary_override_total_30d
+      source: /api/observability/metrics
+      condition: "== 0"
+      window_days: 30
+    blocked_paths:
+      - backend/src/modules/diagnostic-engine/orchestrators/engines/maintenance-intelligence.engine.ts
+      - backend/src/modules/diagnostic-engine/orchestrators/engines/catalog-orientation.engine.ts
+      - backend/src/modules/diagnostic-engine/orchestrators/engines/rag-enrichment.engine.ts
+    blocked_globs: []
+    promotion_path: "G1 fired -> ADR L4 vault -> plan -> PR"
+    source_adr: ADR-077
+    notes: |
+      PR-D mergé 2026-05-19T12:39Z. Fenêtre 30j ouverte.
+      Évaluation possible >= 2026-06-19. Voir
+      feedback-v1-first-dont-build-ultimate-engine-too-early.
+
+  - id: G2
+    item: dual-path-30d-divergence-check
+    description: |
+      Comparer ancien vs nouveau orchestrator pendant 30j divergence sustained
+      après extraction G1. Pas applicable tant que G1 GATED (pas de behavior
+      change à comparer).
+    domain: D7
+    trigger:
+      type: derived
+      depends_on:
+        - G1
+      condition: "G1 fired AND engine extraction PR merged"
+    blocked_paths: []
+    blocked_globs: []
+    promotion_path: "G1 must fire first -> ADR L4 vault -> dual-path infra plan -> PR"
+    source_adr: ADR-077
+
+  - id: G3
+    item: otel-spans-domain-attr
+    description: |
+      OTel spans avec attribut domain=diagnostic|commerce|maintenance|editorial
+      pour tracer cross-domain handoffs. STOP-at-V1 cut PR-C — prom-client
+      counters suffisent en V1.
+    domain: D10
+    trigger:
+      type: reactive
+      signal: explicit_tracing_request
+      requested_by: null
+      requested_at: null
+    blocked_paths: []
+    blocked_globs:
+      - "**/otel-instrumentation*.ts"
+      - "backend/src/observability/spans/**"
+    promotion_path: "tracing_request documented -> ADR L4 vault -> plan -> PR"
+    source_adr: ADR-077
+
+  - id: G4
+    item: grafana-dashboard-json
+    description: |
+      Dashboard JSON Grafana commit dans repo pour visualisation des counters
+      observability PR-C. STOP-at-V1 cut — endpoint /api/observability/metrics
+      Prometheus exposition format suffit.
+    domain: D10
+    trigger:
+      type: reactive
+      signal: alert_config_from_observation
+      threshold: ">=1 alert règle née de lecture preprod/prod counters"
+      requested_by: null
+      requested_at: null
+    blocked_paths: []
+    blocked_globs:
+      - "ops/grafana/**"
+      - "infrastructure/grafana/**"
+      - "monitoring/dashboards/**"
+    promotion_path: "1st alert config from observation -> ADR L4 -> plan -> PR"
+    source_adr: ADR-077
+
+  - id: G5
+    item: ga4-events-mirror
+    description: |
+      Mirror frontend GA4 events des prom-client counters vehicle_ctx (set,
+      invalid, consumed). Bloqué tant que consent conduit V2 + transport
+      pipeline pas validés (RGPD + ADR).
+    domain: D12
+    trigger:
+      type: reactive
+      signal: consent_conduit_and_transport_ready
+      threshold: "consent layer V2 shipped AND transport pipeline ADR approuvée"
+      requested_by: null
+      requested_at: null
+    blocked_paths: []
+    blocked_globs:
+      - "frontend/app/utils/analytics-domain-events*.ts"
+    promotion_path: "consent_conduit_ready -> ADR L4 vault -> plan -> PR"
+    source_adr: ADR-077
+
+  - id: G6
+    item: diag-kg-divergence-log-table
+    description: |
+      Table __diag_kg_divergence_log pour replay CLI + audit divergence
+      shadow vs primary KG. PR-E MVP V1 cut — prom-client counter
+      diagnostic_kg_shadow_diverged_total{reason,has_divergence} suffit en
+      V1. Promotion uniquement si replay explicitement demandé OU divergence
+      sustained > 5% (signal de pollution KG à investiguer).
+    domain: D7
+    trigger:
+      type: hybrid
+      auto_conditions:
+        - metric: diagnostic_kg_shadow_diverged_total_rate
+          source: /api/observability/metrics
+          condition: "> 0.05"
+          window_days: 7
+      reactive_conditions:
+        - signal: replay_cli_explicitly_requested
+          requested_by: null
+          requested_at: null
+    blocked_paths: []
+    blocked_globs:
+      - "backend/supabase/migrations/*__diag_kg_divergence_log*"
+      - "backend/src/modules/diagnostic-engine/services/kg-shadow-replay*.ts"
+      - "scripts/diagnostic/kg-shadow-replay*.ts"
+    promotion_path: "(divergence>5% sustained 7d OR replay_request) -> ADR L4 -> plan -> PR"
+    source_adr: ADR-077
+
+  - id: G7
+    item: golden-200-cohort
+    description: |
+      Cohorte golden 200 sessions diagnostic pour mesurer stabilité divergence
+      rate avec variance bornée. Pas applicable tant que G6 (log table)
+      GATED — pas de mécanisme de replay/comparaison stable.
+    domain: D7
+    trigger:
+      type: derived
+      depends_on:
+        - G6
+      condition: "G6 fired AND divergence rate variance < threshold mesurable"
+    blocked_paths: []
+    blocked_globs:
+      - "backend/src/modules/diagnostic-engine/golden-cohort/**"
+      - "scripts/diagnostic/golden-cohort*.ts"
+    promotion_path: "G6 must fire first -> ADR L4 vault -> cohort spec -> plan -> PR"
+    source_adr: ADR-077
+
+  - id: G8
+    item: admin-readonly-metrics-ui
+    description: |
+      Admin UI lecture-seule pour consulter les counters observability PR-C
+      directement depuis backoffice. STOP-at-V1 cut — endpoint
+      /api/observability/metrics + CLI suffisent. Promotion uniquement sur
+      preuve de friction ops (>=3 plaintes distinctes).
+    domain: D11
+    trigger:
+      type: reactive
+      signal: ops_complaints_on_reading_metrics
+      threshold: ">=3 plaintes distinctes équipe ops documentées"
+      requested_by: null
+      requested_at: null
+    blocked_paths: []
+    blocked_globs:
+      - "frontend/app/routes/admin.observability.*"
+      - "backend/src/modules/admin/observability/**"
+    promotion_path: "ops_complaints>=3 documented -> ADR L4 -> plan -> PR"
+    source_adr: ADR-077
+
+  - id: G9
+    item: wizard-prefill-profond
+    description: |
+      Pre-fill profond du wizard diagnostic à partir VehicleContext + historique
+      utilisateur. Bloqué tant que 6 critères evidence V1->V1.5 pas tous passés
+      (notamment funnel +30%) — sinon optimisation prématurée.
+    domain: D7
+    trigger:
+      type: auto
+      metric: diagnostic_to_commerce_funnel_ratio
+      source: /api/observability/metrics
+      condition: ">= 1.30"
+      window_days: 7
+    blocked_paths: []
+    blocked_globs:
+      - "frontend/app/routes/diagnostic.wizard.*"
+      - "frontend/app/components/diagnostic/wizard/prefill*.tsx"
+    promotion_path: "funnel+30% sustained 7d AND 6_criteria_v1_v15_pass -> ADR L4 -> plan -> PR"
+    source_adr: ADR-077
+    notes: |
+      Évaluation dépendante du baseline funnel pré-V1 (à snapshot une fois
+      counters PR-C stabilisés en prod). Cf. guard-hierarchy-stop-at-v1-funnel-truth.
+
+  - id: G10
+    item: vehicle-ctx-cookie-v2-schema-bump
+    description: |
+      Bump VehicleContext cookie schema v:1 -> v:2 pour ajouter un nouveau
+      champ. OPTION A figée par feedback-vehicle-context-option-a-locked :
+      schema v:1 ne change PAS sauf ADR L4 vault validant le nouveau champ
+      avec justification business explicite.
+    domain: D4
+    trigger:
+      type: reactive
+      signal: business_justified_new_field
+      threshold: "nouveau champ business-justifié AND ADR L4 vault accepté"
+      requested_by: null
+      requested_at: null
+    blocked_paths:
+      - backend/src/modules/vehicle/context/cookie-schema.ts
+      - backend/src/modules/vehicle/context/cookie-encoder.ts
+      - backend/src/modules/vehicle/context/cookie-decoder.ts
+    blocked_globs: []
+    promotion_path: "business_field_justified + ADR L4 vault accepted -> plan -> PR"
+    source_adr: ADR-077
+    canon_lock_reason: "feedback-vehicle-context-option-a-locked : schema v:1 figé OPTION A"

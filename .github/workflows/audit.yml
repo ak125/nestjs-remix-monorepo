@@ -149,6 +149,52 @@ jobs:
             exit 1
           fi
 
+      - name: 🛂 Evidence Gates — CODEOWNERS drift + meta-discipline (ADR-077, BLOCKING)
+        if: always()
+        run: |
+          # Drift gate : CODEOWNERS auto-managed section must match the canon
+          # .spec/00-canon/repository-registry/evidence-gates.yaml overlay.
+          npx --no-install tsx scripts/audit/sync-codeowners-from-gates.ts --check
+
+          # Meta-discipline gate : the PR (vs origin/main) must not touch any
+          # blocked_paths declared in the overlay. The registry that documents
+          # the gates is forbidden from violating them itself.
+          BASE="${{ github.base_ref || 'main' }}"
+          git fetch --depth=1 origin "$BASE"
+          CHANGED=$(git diff --name-only "origin/$BASE"...HEAD || true)
+          if [ -z "$CHANGED" ]; then
+            echo "No diff vs origin/$BASE — meta-discipline check skipped."
+            exit 0
+          fi
+          # Allow self-modification of the overlay/script (those entries are how
+          # the gates evolve), but flag anything else matching a blocked_path.
+          BLOCKED=$(npx --no-install tsx scripts/audit/sync-codeowners-from-gates.ts --dry-run \
+            | grep -oE '^/[^ ]+' | sed 's|^/||' || true)
+          OFFENDERS=""
+          for f in $CHANGED; do
+            case "$f" in
+              .spec/00-canon/repository-registry/evidence-gates.yaml) continue ;;
+              packages/registry/src/overlay/evidence-gates.ts) continue ;;
+              packages/registry/src/__tests__/evidence-gates.test.ts) continue ;;
+              scripts/audit/sync-codeowners-from-gates.ts) continue ;;
+              scripts/audit/evidence-gates-status.ts) continue ;;
+              scripts/audit/evidence-gates-status.test.ts) continue ;;
+              .github/CODEOWNERS) continue ;;
+            esac
+            for b in $BLOCKED; do
+              if [ "$f" = "$b" ]; then
+                OFFENDERS="$OFFENDERS $f"
+              fi
+            done
+          done
+          if [ -n "$OFFENDERS" ]; then
+            echo "::error::Evidence-gates meta-discipline violation: PR touches blocked_paths."
+            echo "  Files :$OFFENDERS"
+            echo "  Promote via ADR-077 path: gate fired -> new ADR L4 vault -> plan -> PR."
+            exit 1
+          fi
+          echo "Evidence Gates meta-discipline: clean (no blocked_paths touched)."
+
       - name: 🏛️ dependency-cruiser — architectural rules (informational)
         if: always()
         continue-on-error: true
