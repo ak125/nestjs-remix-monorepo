@@ -831,3 +831,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `chore/impeccable-husky-hardening`
 - **Décision** : chore(husky): wire impeccable ratchet as warn-only pre-commit hook (PR 6)
 - **Sortie** : PR #621 | commits f977316a4
+
+## 2026-05-19 — chore/impeccable-husky-hardening (auto)
+
+- **Branche** : `chore/impeccable-husky-hardening`
+- **Décision** : chore(registry): regenerate after PR #606 (vehicle-context cookie devDep bump) (+2 other commits)
+- **Sortie** : PR #621 | commits 4d635fac7 8bd1c7c84 c7b056d68
