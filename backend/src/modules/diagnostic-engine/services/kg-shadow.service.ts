@@ -133,7 +133,9 @@ export class KgShadowService extends SupabaseBaseService {
     vehicle_id: string | undefined,
     top_n: number,
   ): Promise<readonly KgFault[]> {
-    const { data, error } = await this.supabase.rpc(
+    // Canon : route via `callRpc()` (RPC Safety Gate) — never `this.supabase.rpc()`
+    // directly (see `🛡️ RPC Safety Gate` workflow + ADR-058 contract canon).
+    const { data, error } = await this.callRpc<Array<Record<string, unknown>>>(
       'kg_diagnose_vehicle_aware',
       {
         p_observable_ids: [...observable_ids],
@@ -143,7 +145,7 @@ export class KgShadowService extends SupabaseBaseService {
     );
     if (error) throw error;
     if (!data || !Array.isArray(data)) return [];
-    return (data as Array<Record<string, unknown>>)
+    return data
       .filter((row) => typeof row.fault_id === 'string')
       .map((row) => ({
         fault_id: row.fault_id as string,
