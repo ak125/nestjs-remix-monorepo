@@ -388,6 +388,11 @@ entries:
     owner: '@ak125/frontend-team'
     sourceConfidence: medium
     risk: medium
+  - glob: frontend/app/utils/**
+    domain: D8
+    owner: '@ak125/frontend-team'
+    sourceConfidence: medium
+    risk: medium
   - glob: frontend/app/routes/admin.**
     domain: D8
     owner: '@ak125/admin-team'
