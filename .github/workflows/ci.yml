@@ -901,31 +901,38 @@ jobs:
         if: failure()
         run: |
           set +e
-          echo "## 🐛 Soft-404 R2 smoke failure debug" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
+          # tee duplicates output to BOTH the workflow log (visible via gh run
+          # view --log) AND the GITHUB_STEP_SUMMARY markdown panel — covers the
+          # case where the summary-only redirect of the original step was empty
+          # in API responses (PR #636 run 26106977897). Logs now visible from
+          # the standard workflow output without needing the UI summary.
+          {
+            echo "## 🐛 Soft-404 R2 smoke failure debug"
+            echo ""
 
-          echo "### Backend container logs (last 200 lines, filtered)" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          docker logs nestjs-remix-monorepo-preprod --tail 200 2>&1 \
-            | grep -iE 'rmAlternatives|alternatives|callRpc|rpcGate|supabase|permission|denied|jwt|anon|error|warn' \
-            | tail -80 >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Backend container logs (last 200 lines, filtered)"
+            echo '```'
+            docker logs nestjs-remix-monorepo-preprod --tail 200 2>&1 \
+              | grep -iE 'rmAlternatives|alternatives|callRpc|rpcGate|supabase|permission|denied|jwt|anon|error|warn' \
+              | tail -80
+            echo '```'
+            echo ""
 
-          echo "### Direct probe of /api/rm/alternatives for fixture #1" >> $GITHUB_STEP_SUMMARY
-          echo '```json' >> $GITHUB_STEP_SUMMARY
-          curl -s --max-time 10 "http://localhost:3200/api/rm/alternatives?gamme_id=3859&type_id=11836&limit=12" \
-            | python3 -c 'import sys, json; d=json.loads(sys.stdin.read()); print(json.dumps({"alternativeVehicles": len(d.get("alternativeVehicles",[])), "alternativeGammes": len(d.get("alternativeGammes",[])), "relatedModels": len(d.get("relatedModels",[])), "etag": d.get("etag")}, indent=2))' \
-            >> $GITHUB_STEP_SUMMARY 2>&1
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Direct probe of /api/rm/alternatives for fixture #1"
+            echo '```json'
+            curl -s --max-time 10 "http://localhost:3200/api/rm/alternatives?gamme_id=3859&type_id=11836&limit=12" \
+              | python3 -c 'import sys, json; d=json.loads(sys.stdin.read()); print(json.dumps({"alternativeVehicles": len(d.get("alternativeVehicles",[])), "alternativeGammes": len(d.get("alternativeGammes",[])), "relatedModels": len(d.get("relatedModels",[])), "etag": d.get("etag")}, indent=2))' \
+              2>&1
+            echo '```'
+            echo ""
 
-          echo "### First 4-segment /pieces/.../.../...html links in rendered page (fixture #1)" >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          curl -s --max-time 15 "http://localhost:3200/pieces/kit-de-freins-arriere-3859/bmw-33/serie-5-f10-f18-33053/2-0-525-d-11836.html" \
-            | grep -oE 'href="/pieces/[^"]+\.html"' \
-            | sort -u | head -10 >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "### First 4-segment /pieces/.../.../...html links in rendered page (fixture #1)"
+            echo '```'
+            curl -s --max-time 15 "http://localhost:3200/pieces/kit-de-freins-arriere-3859/bmw-33/serie-5-f10-f18-33053/2-0-525-d-11836.html" \
+              | grep -oE 'href="/pieces/[^"]+\.html"' \
+              | sort -u | head -10
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: ⏱️ Response Time Baseline
         run: |
