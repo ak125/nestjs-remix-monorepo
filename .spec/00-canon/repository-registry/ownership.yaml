@@ -42,6 +42,11 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: high
+  - glob: scripts/governance/check-diagnostic-engine-boundary.sh
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
   - glob: scripts/governance/build-skills-registry.js
     domain: D15
     owner: '@ak125'
