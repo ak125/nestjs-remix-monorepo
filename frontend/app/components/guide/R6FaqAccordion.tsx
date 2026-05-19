@@ -28,7 +28,7 @@ export function R6FaqAccordion({ items }: R6FaqAccordionProps) {
       anchor="faq"
       icon={HelpCircle}
       label="FAQ"
-      gradient="from-violet-500 to-purple-500"
+      gradient=""
       border="border-violet-200"
       labelColor="text-violet-100"
       bodyBg="bg-violet-50/30"
@@ -40,13 +40,13 @@ export function R6FaqAccordion({ items }: R6FaqAccordionProps) {
             value={`faq-${idx}`}
             className="rounded-lg border border-violet-200 bg-white overflow-hidden"
           >
-            <AccordionTrigger className="px-4 py-3 text-sm font-medium text-gray-900 hover:bg-violet-50 transition-colors [&[data-state=open]]:bg-violet-50">
+            <AccordionTrigger className="px-4 py-3 text-sm font-medium text-gray-900 hover:bg-muted transition-colors [&[data-state=open]]:bg-muted">
               {item.question}
             </AccordionTrigger>
             <AccordionContent className="px-4 pb-4 pt-0 border-t border-violet-100">
               <HtmlContent
                 html={annotateGlossaryTerms(item.answer)}
-                className="text-sm text-gray-600 leading-relaxed [&_a]:text-violet-600 [&_a]:underline [&_a]:underline-offset-2 [&_strong]:font-semibold [&_strong]:text-gray-900"
+                className="text-sm text-gray-600 leading-relaxed [&_a]:text-foreground [&_a]:underline [&_a]:underline-offset-2 [&_strong]:font-semibold [&_strong]:text-gray-900"
               />
             </AccordionContent>
           </AccordionItem>

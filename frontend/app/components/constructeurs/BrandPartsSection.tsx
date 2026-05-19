@@ -30,7 +30,7 @@ export default function BrandPartsSection({
   return (
     <section className="bg-white rounded-2xl shadow-xl mb-8 overflow-hidden border border-gray-100">
       {/* Header avec gradient dynamique */}
-      <div className="relative bg-gradient-to-br from-blue-950 via-indigo-900 to-purple-900 p-6 md:p-8 overflow-hidden">
+      <div className="relative bg-gradient-to-br from-blue-950 p-6 md:p-8 overflow-hidden">
         {/* Effet de brillance animé */}
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-[shimmer_3s_ease-in-out_infinite]"></div>
 
@@ -80,14 +80,14 @@ function PartCard({ part }: { part: Part }) {
       className="group relative bg-white border-2 border-gray-200 rounded-xl overflow-hidden hover:border-transparent hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
     >
       {/* Bordure gradient au hover */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-950 via-indigo-900 to-purple-900 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 rounded-xl"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-950 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 rounded-xl"></div>
       <div className="absolute inset-0 bg-white m-0.5 rounded-lg group-hover:m-[3px] transition-all duration-300"></div>
 
       {/* Contenu */}
       <div className="relative p-4">
         {/* Image responsive avec srcset */}
         <div className="flex items-center justify-center h-24 mb-3 bg-gray-50 rounded-lg overflow-hidden relative">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-950 via-indigo-900 to-purple-900 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-950 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
           <PartImage
             src={part.image_url || "/images/default-part.png"}
             alt={part.pg_name}

@@ -52,7 +52,7 @@ function getActivityColor(type: ActivityItem["type"]) {
     case "order":
       return "text-success bg-success/10";
     case "profile_update":
-      return "text-purple-500 bg-purple-50";
+      return "text-foreground bg-muted";
     case "password_change":
       return "text-destructive bg-destructive/10";
     case "address_add":

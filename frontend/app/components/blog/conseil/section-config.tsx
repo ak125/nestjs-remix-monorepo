@@ -74,7 +74,7 @@ export const SECTION_STYLES: Record<
 > = {
   S1: {
     border: "border-blue-200",
-    headerBg: "bg-gradient-to-r from-blue-600 to-indigo-600",
+    headerBg: "bg-gradient-to-r from-blue-600",
     label: "Avant de commencer",
   },
   S2: {
@@ -114,7 +114,7 @@ export const SECTION_STYLES: Record<
   },
   S8: {
     border: "border-violet-200",
-    headerBg: "bg-gradient-to-r from-violet-500 to-purple-500",
+    headerBg: "bg-gradient-to-r",
     label: "FAQ",
   },
   META: {
@@ -129,7 +129,7 @@ export const SECTION_STYLES: Record<
   },
   S2_DIAG: {
     border: "border-violet-200",
-    headerBg: "bg-gradient-to-r from-violet-500 to-indigo-500",
+    headerBg: "bg-gradient-to-r",
     label: "Diagnostic rapide",
   },
 };

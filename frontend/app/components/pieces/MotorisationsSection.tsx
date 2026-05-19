@@ -46,7 +46,7 @@ const VISIBLE_LIMIT = 12;
 
 const MotorisationsSection = memo(function MotorisationsSection({
   motorisations,
-  familleColor = "from-blue-950 via-indigo-900 to-purple-900",
+  familleColor = "from-blue-950",
   familleName = "pièces",
   totalCount,
   compatibilitiesIntro,
@@ -242,7 +242,7 @@ const MotorisationsSection = memo(function MotorisationsSection({
                           ? sanitizeAdvice(motorisation.advice)
                           : null;
                         return cleanAdvice ? (
-                          <p className="text-xs text-indigo-700 bg-indigo-50 rounded px-2 py-1 mb-2 line-clamp-1">
+                          <p className="text-xs text-foreground bg-muted rounded px-2 py-1 mb-2 line-clamp-1">
                             Conseil : {cleanAdvice}
                           </p>
                         ) : null;

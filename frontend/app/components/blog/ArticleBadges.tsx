@@ -28,7 +28,7 @@ const BADGE_CONFIG: Record<
   "guide-complet": {
     label: "Guide complet",
     icon: Award,
-    className: "bg-purple-100 text-purple-800 border-purple-200",
+    className: "bg-muted text-foreground border-purple-200",
   },
 };
 

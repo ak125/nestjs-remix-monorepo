@@ -18,7 +18,7 @@ const TIER_COLORS: Record<string, string> = {
   oe: "border-emerald-300 bg-emerald-50",
   equiv_oe: "border-blue-300 bg-blue-50",
   adaptable: "border-amber-300 bg-amber-50",
-  reconditionne: "border-purple-300 bg-purple-50",
+  reconditionne: "border-purple-300 bg-muted",
   echange_standard: "border-teal-300 bg-teal-50",
 };
 
@@ -26,7 +26,7 @@ const TIER_BADGE_COLORS: Record<string, string> = {
   oe: "bg-emerald-100 text-emerald-800 border-emerald-300",
   equiv_oe: "bg-blue-100 text-blue-800 border-blue-300",
   adaptable: "bg-amber-100 text-amber-800 border-amber-300",
-  reconditionne: "bg-purple-100 text-purple-800 border-purple-300",
+  reconditionne: "bg-muted text-foreground border-purple-300",
   echange_standard: "bg-teal-100 text-teal-800 border-teal-300",
 };
 

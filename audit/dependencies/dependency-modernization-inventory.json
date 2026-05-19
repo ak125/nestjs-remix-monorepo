@@ -1,5 +1,5 @@
 {
-  "artifact_immutability_hash": "sha256:ffaaba71d438c63e345e3a405fd546148c9d3a17c4cf189507c9405aeb191a02",
+  "artifact_immutability_hash": "sha256:58c7704684c7a26b6c3123cafe2aab48c8eb5b445c5453a5b1be465a04dca8ef",
   "divergences": [
     {
       "kind": "specifier",
@@ -3980,7 +3980,7 @@
   ],
   "generatedFrom": {
     "deps_registry": "audit/registry/deps.json",
-    "deps_registry_sha": "sha256:4b2f277253fbf1c80b75ebe6bdf7d42c3bf9e48ae99f656623d5c22294409a09",
+    "deps_registry_sha": "sha256:d62e9b8155d405d8c4dab916ee31ccaabb577f15065ce0cb5cc16cec205f8022",
     "lockfile": "package-lock.json",
     "lockfile_sha": "sha256:7871e4b7a6ddecb12daa43cb7e569d1bd95f062478fa0d89b1680252000d0cbc",
     "overlay": "audit/dependencies/family-overlay.yaml",
@@ -4013,7 +4013,7 @@
     },
     "divergent_packages_count": 42,
     "families_count": 12,
-    "total_occurrences": 313,
+    "total_occurrences": 315,
     "total_packages": 225,
     "unassigned_count": 157
   },
@@ -4448,6 +4448,11 @@
           "declaredIn": "backend/package.json",
           "specifier": "*",
           "workspace": "@fafa/backend"
+        },
+        {
+          "declaredIn": "frontend/package.json",
+          "specifier": "*",
+          "workspace": "@fafa/frontend"
         }
       ],
       "resolved_versions": [
@@ -5759,6 +5764,11 @@
           "declaredIn": "backend/package.json",
           "specifier": "^5.10.0",
           "workspace": "@fafa/backend"
+        },
+        {
+          "declaredIn": "packages/registry/package.json",
+          "specifier": "^5.10.0",
+          "workspace": "@repo/registry"
         }
       ],
       "resolved_versions": [

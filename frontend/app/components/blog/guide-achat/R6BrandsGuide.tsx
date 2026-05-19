@@ -57,7 +57,7 @@ export function R6BrandsGuide({ brandsGuide, gammeName }: Props) {
           {brandsGuide.tiers!.map((tier, i) => (
             <div key={i} className="rounded-lg border border-gray-200 p-4">
               <h3 className="flex items-center gap-2 font-semibold text-gray-900 mb-3">
-                <Star className="w-4 h-4 text-purple-600" />
+                <Star className="w-4 h-4 text-foreground" />
                 {tier.label}
               </h3>
               {tier.recognized_brands && tier.recognized_brands.length > 0 && (
@@ -66,7 +66,7 @@ export function R6BrandsGuide({ brandsGuide, gammeName }: Props) {
                     <Badge
                       key={j}
                       variant="outline"
-                      className="bg-purple-50 text-purple-800 border-purple-300 px-3 py-1.5"
+                      className="bg-muted text-foreground border-purple-300 px-3 py-1.5"
                     >
                       {brand}
                     </Badge>
@@ -94,7 +94,7 @@ export function R6BrandsGuide({ brandsGuide, gammeName }: Props) {
         brandsGuide.recognized_brands.length > 0 && (
           <div className="mb-4">
             <h3 className="flex items-center gap-2 font-semibold text-gray-900 text-sm mb-3">
-              <Award className="w-4 h-4 text-purple-600" />
+              <Award className="w-4 h-4 text-foreground" />
               Marques reconnues
             </h3>
             <div className="flex flex-wrap gap-2">
@@ -102,11 +102,11 @@ export function R6BrandsGuide({ brandsGuide, gammeName }: Props) {
                 <Badge
                   key={i}
                   variant="outline"
-                  className="bg-purple-50 text-purple-800 border-purple-300 px-3 py-1.5"
+                  className="bg-muted text-foreground border-purple-300 px-3 py-1.5"
                 >
                   {brand.name}
                   {brand.speciality && (
-                    <span className="text-purple-500 ml-1">
+                    <span className="text-foreground ml-1">
                       — {brand.speciality}
                     </span>
                   )}

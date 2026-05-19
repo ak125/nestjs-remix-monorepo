@@ -19,7 +19,7 @@ function Badge({ className = "", variant = "default", size = "sm", icon, childre
     warning: "border-transparent bg-warning/20 text-warning hover:bg-warning/20/80",
     info: "border-transparent bg-info/20 text-info hover:bg-info/20/80",
     error: "border-transparent bg-destructive/20 text-destructive hover:bg-destructive/20/80",
-    purple: "border-transparent bg-purple-100 text-purple-800 hover:bg-purple-100/80",
+    purple: "border-transparent bg-muted text-foreground hover:bg-muted/80",
     orange: "border-transparent bg-orange-100 text-orange-800 hover:bg-orange-100/80",
     subtle: "border-transparent bg-muted text-muted-foreground",
   };

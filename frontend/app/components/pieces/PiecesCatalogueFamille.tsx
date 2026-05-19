@@ -59,7 +59,7 @@ export const PiecesCatalogueFamille = memo(function PiecesCatalogueFamille({
                 mf_name: catalogueMameFamille.family.mf_name,
                 mf_pic: catalogueMameFamille.family.mf_pic,
               } as any)
-            : "from-blue-950 via-indigo-900 to-purple-900";
+            : "from-blue-950";
 
           return (
             <div>

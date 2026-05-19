@@ -138,7 +138,7 @@ export default function OrdersManagement({
                   }).format(stats.averageCart || 0)}
                 </p>
               </div>
-              <Euro className="h-8 w-8 text-indigo-500" />
+              <Euro className="h-8 w-8 text-foreground" />
             </div>
           </CardContent>
         </Card>

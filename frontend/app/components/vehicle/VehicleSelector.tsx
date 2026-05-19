@@ -693,11 +693,7 @@ const VehicleSelector = memo(function VehicleSelector({
             </button>
             <button
               onClick={() => setSearchMode("mine")}
-              className={`flex-1 px-4 py-2.5 min-h-[44px] rounded-md text-sm font-medium transition-all duration-200 ${
-                searchMode === "mine"
-                  ? "bg-white text-purple-600 shadow-sm"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
+              className={`flex-1 px-4 py-2.5 min-h-[44px] rounded-md text-sm font-medium transition-all duration-200 ${ searchMode === "mine" ? "bg-white text-foreground shadow-sm" : "text-gray-600 hover:text-gray-900" }`}
             >
               <FileText className="w-4 h-4 inline mr-2" />
               Type Mine
@@ -873,17 +869,17 @@ const VehicleSelector = memo(function VehicleSelector({
           {searchMode === "mine" && enableTypeMineSearch && (
             <div className="space-y-4">
               {/* Aide */}
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+              <div className="bg-muted border border-purple-200 rounded-lg p-4">
                 <div className="flex items-start gap-3">
-                  <FileText className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
-                  <div className="text-sm text-purple-900">
+                  <FileText className="w-5 h-5 text-foreground mt-0.5 flex-shrink-0" />
+                  <div className="text-sm text-foreground">
                     <p className="font-medium mb-1">
                       Le Type Mine se trouve sur votre carte grise
                     </p>
-                    <p className="text-purple-700">
+                    <p className="text-foreground">
                       Champ D.2 • Format : 10 à 15 caractères alphanumériques
                     </p>
-                    <p className="text-purple-600 mt-2 font-mono text-xs">
+                    <p className="text-foreground mt-2 font-mono text-xs">
                       Exemple : M10RENAAG0D001
                     </p>
                   </div>
@@ -918,7 +914,7 @@ const VehicleSelector = memo(function VehicleSelector({
               <Button
                 onClick={handleMineSearch}
                 disabled={!mineCode || mineCode.length < 5}
-                className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white py-6 text-lg font-semibold disabled:from-gray-300 disabled:to-gray-300 disabled:cursor-not-allowed"
+                className="w-full bg-gradient-to-r hover: hover: text-white py-6 text-lg font-semibold disabled:from-gray-300 disabled:to-gray-300 disabled:cursor-not-allowed"
               >
                 <Search className="w-5 h-5 mr-2" />
                 Rechercher par Type Mine
