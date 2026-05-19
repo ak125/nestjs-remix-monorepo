@@ -2,7 +2,7 @@
   "version": "1.0.0",
   "generated_at": "2026-02-03T14:00:00Z",
   "description": "RPC READ_SAFE - Autorisees pour tous les roles",
-  "total": 176,
+  "total": 177,
   "functions": [
     {
       "name": "__gov_m1_table_sizes",
@@ -403,6 +403,11 @@
       "name": "get_mandatory_fields",
       "volatility": "STABLE",
       "reason": "SELECT only"
+    },
+    {
+      "name": "get_merchant_center_feed_v1",
+      "volatility": "STABLE",
+      "reason": "PR commerce-loop V1 step 5B — Google Shopping XML feed rows. STABLE pure SELECT joins pieces × price × gamme × marque × media_img. Called by MerchantCenterFeedService.fetchPage (pagination). GRANT EXECUTE service_role only."
     },
     {
       "name": "get_missing_v4_type_ids",
