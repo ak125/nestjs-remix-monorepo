@@ -48,7 +48,7 @@ jobs:
       # pas. Pattern "required-but-skippable" (cf. on.pull_request comment).
       - name: Detect frontend-relevant changes
         id: filter
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@v4
         with:
           filters: |
             frontend:
