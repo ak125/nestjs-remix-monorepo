@@ -546,7 +546,7 @@ export default function VehicleDetailPage() {
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-lg text-sm font-medium text-blue-700">
                 <FileText className="w-4 h-4" /> Vérif VIN / CNIT
               </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 border border-indigo-200 rounded-lg text-sm font-medium text-indigo-700">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-muted border border-indigo-200 rounded-lg text-sm font-medium text-foreground">
                 <Truck className="w-4 h-4" /> Livraison 24-48h
               </span>
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 border border-orange-200 rounded-lg text-sm font-medium text-orange-700">
@@ -597,7 +597,7 @@ export default function VehicleDetailPage() {
                     key={family.mf_id}
                     href="#catalogue"
                     onClick={() => setSearchQuery(family.mf_name)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-blue-50 hover:text-blue-700 rounded-lg text-sm font-medium text-gray-700 transition-colors"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-blue-50 hover:text-blue-700 rounded-lg text-sm font-medium text-blue-900 transition-colors"
                   >
                     {family.mf_name}
                   </a>
@@ -633,7 +633,7 @@ export default function VehicleDetailPage() {
                   <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-4 tracking-tight">
                     Catalogue de pieces auto
                   </h2>
-                  <div className="h-1 w-16 bg-gradient-to-r from-blue-500 to-indigo-600 mx-auto rounded mb-6"></div>
+                  <div className="h-1 w-16 bg-gradient-to-r from-blue-500 mx-auto rounded mb-6"></div>
                   <p className="text-xl text-gray-600 max-w-3xl mx-auto font-medium">
                     Trouvez la piece exacte pour votre{" "}
                     <span className="font-bold text-brand">
@@ -731,7 +731,7 @@ export default function VehicleDetailPage() {
                                 <a
                                   key={gamme.pg_id}
                                   href={`/pieces/${gamme.pg_alias}-${gamme.pg_id}/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.type_id}.html`}
-                                  className="flex items-center gap-2 text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-md px-2 py-1.5 transition-all duration-200 group/item"
+                                  className="flex items-center gap-2 text-sm text-blue-900 hover:text-blue-600 hover:bg-blue-50 rounded-md px-2 py-1.5 transition-all duration-200 group/item"
                                 >
                                   <span className="w-1 h-1 bg-gray-400 rounded-full group-hover/item:bg-blue-600 transition-colors" />
                                   <span className="font-medium line-clamp-1 flex-1">
@@ -823,7 +823,7 @@ export default function VehicleDetailPage() {
                             <a
                               key={gamme.pg_id}
                               href={`/pieces/${gamme.pg_alias}-${gamme.pg_id}/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.type_id}.html`}
-                              className="text-xs px-2.5 py-1 bg-gray-50 hover:bg-blue-50 hover:text-blue-700 rounded-md text-gray-700 transition-colors"
+                              className="text-xs px-2.5 py-1 bg-gray-50 hover:bg-blue-50 hover:text-blue-700 rounded-md text-blue-900 transition-colors"
                             >
                               {gamme.pg_name}
                             </a>
@@ -841,7 +841,7 @@ export default function VehicleDetailPage() {
         {popularParts.length > 0 && (
           <div className="mb-12" data-section="S_BESTSELLERS">
             {/* Header moderne avec gradient et stats */}
-            <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-2xl p-8 mb-8 border border-blue-100 shadow-sm">
+            <div className="bg-gradient-to-r from-blue-50 rounded-2xl p-8 mb-8 border border-blue-100 shadow-sm">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="flex items-center gap-4">
                   <div className="p-3 rounded-xl shadow-lg bg-brand">
@@ -1166,7 +1166,7 @@ export default function VehicleDetailPage() {
                   </button>
                   {openFaqIndex === index && (
                     <div className="px-5 pb-5 text-gray-600 animate-in slide-in-from-top-2 duration-200">
-                      <div className="pl-4 border-l-2 border-brand">
+                      <div className="pl-4 border-brand">
                         {item.answer}
                       </div>
                     </div>

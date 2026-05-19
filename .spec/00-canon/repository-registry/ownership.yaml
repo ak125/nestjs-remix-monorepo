@@ -491,6 +491,11 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: medium
+  - glob: docs/seo/**
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
   - glob: scripts/ops/**
     domain: D13
     owner: '@ak125'

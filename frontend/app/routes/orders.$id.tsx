@@ -278,7 +278,7 @@ export default function OrderDetailsReal() {
                 Retour
               </Button>
               <div className="flex items-center gap-3">
-                <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg">
+                <div className="p-3 bg-gradient-to-br from-blue-500 rounded-xl shadow-lg">
                   <Package className="w-7 h-7 text-white" />
                 </div>
                 <div>
@@ -326,7 +326,7 @@ export default function OrderDetailsReal() {
             <div>
               {order.customer ? (
                 <div className="space-y-4">
-                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
+                  <div className="bg-gradient-to-br from-blue-50 rounded-lg p-4 border border-blue-200">
                     <p className="font-semibold text-lg text-gray-900">
                       {order.customer.cst_fname} {order.customer.cst_name}
                     </p>
@@ -394,7 +394,7 @@ export default function OrderDetailsReal() {
           <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
             <div className="flex items-center gap-3 mb-5 pb-3 border-b border-gray-200">
               <div className="p-2 bg-muted rounded-lg">
-                <CreditCard className="w-5 h-5 text-purple-600" />
+                <CreditCard className="w-5 h-5 text-foreground" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900">
                 Adresse de facturation
@@ -402,7 +402,7 @@ export default function OrderDetailsReal() {
             </div>
             <div>
               {order.billingAddress ? (
-                <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-200 space-y-2">
+                <div className="bg-gradient-to-br to-pink-50 rounded-lg p-4 border border-purple-200 space-y-2">
                   <p className="font-semibold text-gray-900">
                     {order.billingAddress.cba_civility}{" "}
                     {order.billingAddress.cba_fname}{" "}
@@ -423,13 +423,13 @@ export default function OrderDetailsReal() {
                     <div className="pt-2 mt-2 border-t border-purple-200 space-y-1">
                       {order.billingAddress.cba_tel && (
                         <p className="text-gray-700 flex items-center gap-2 text-sm">
-                          <Phone className="w-4 h-4 text-purple-500" />
+                          <Phone className="w-4 h-4 text-foreground" />
                           {order.billingAddress.cba_tel}
                         </p>
                       )}
                       {order.billingAddress.cba_gsm && (
                         <p className="text-gray-700 flex items-center gap-2 text-sm">
-                          <Phone className="w-4 h-4 text-purple-500" />
+                          <Phone className="w-4 h-4 text-foreground" />
                           {order.billingAddress.cba_gsm}{" "}
                           <span className="text-xs text-gray-500">
                             (Mobile)
@@ -558,8 +558,8 @@ export default function OrderDetailsReal() {
         <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
           <div className="flex items-center justify-between mb-5 pb-3 border-b border-gray-200">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-indigo-100 rounded-lg">
-                <Package className="w-5 h-5 text-indigo-600" />
+              <div className="p-2 bg-muted rounded-lg">
+                <Package className="w-5 h-5 text-foreground" />
               </div>
               <h3 className="text-lg font-semibold text-gray-900">
                 Articles commandés
@@ -576,13 +576,13 @@ export default function OrderDetailsReal() {
                 {order.orderLines.map((line, index) => (
                   <div
                     key={line.orl_id}
-                    className="group border border-gray-200 rounded-xl p-5 hover:border-indigo-300 hover:bg-indigo-50/30 transition-all duration-200"
+                    className="group border border-gray-200 rounded-xl p-5 hover:border-indigo-300 hover:bg-muted/30 transition-all duration-200"
                   >
                     <div className="flex flex-col lg:flex-row justify-between items-start gap-4">
                       <div className="flex-1 space-y-2">
                         <div className="flex items-start gap-3">
-                          <div className="p-2 bg-indigo-100 rounded-lg group-hover:bg-indigo-200 transition-colors">
-                            <Package className="w-5 h-5 text-indigo-600" />
+                          <div className="p-2 bg-muted rounded-lg group-hover:bg-muted transition-colors">
+                            <Package className="w-5 h-5 text-foreground" />
                           </div>
                           <div>
                             <h4 className="font-semibold text-gray-900 text-lg">
@@ -622,7 +622,7 @@ export default function OrderDetailsReal() {
                             : "0.00"}{" "}
                           €
                         </p>
-                        <p className="text-2xl font-bold text-indigo-700">
+                        <p className="text-2xl font-bold text-foreground">
                           {line.orl_art_price_sell_ttc
                             ? parseFloat(line.orl_art_price_sell_ttc).toFixed(2)
                             : "0.00"}{" "}

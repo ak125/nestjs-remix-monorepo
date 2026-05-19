@@ -142,7 +142,7 @@ const TableOfContents = memo(function TableOfContents({
             key={item.id}
             href={`#${item.id}`}
             onClick={(e) => handleClick(e, item.id)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-full text-sm text-gray-700 hover:text-blue-700 transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 hover:bg-blue-50 border border-gray-200 hover:border-blue-300 rounded-full text-sm text-blue-900 hover:text-blue-700 transition-all whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1"
           >
             {item.icon}
             <span>{item.label}</span>

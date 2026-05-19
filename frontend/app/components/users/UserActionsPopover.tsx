@@ -113,7 +113,7 @@ export const UserActionsPopover = memo(function UserActionsPopover({
                 <Button
                   variant="ghost"
                   onClick={() => handleAction(onEdit)}
-                  className="flex w-full items-center justify-start gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700"
+                  className="flex w-full items-center justify-start gap-3 px-3 py-2 text-sm text-blue-900 hover:bg-blue-50 hover:text-blue-700"
                 >
                   <Edit className="h-4 w-4 text-blue-600" />
                   <span>Éditer</span>
@@ -135,7 +135,7 @@ export const UserActionsPopover = memo(function UserActionsPopover({
                 <Button
                   variant="ghost"
                   onClick={() => handleAction(onSendMessage)}
-                  className="flex w-full items-center justify-start gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700"
+                  className="flex w-full items-center justify-start gap-3 px-3 py-2 text-sm text-green-900 hover:bg-green-50 hover:text-green-700"
                 >
                   <Mail className="h-4 w-4 text-green-600" />
                   <span>Envoyer un message</span>
@@ -157,7 +157,7 @@ export const UserActionsPopover = memo(function UserActionsPopover({
                 <Button
                   variant="ghost"
                   onClick={() => handleAction(onToggleBlock)}
-                  className="flex w-full items-center justify-start gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-700"
+                  className="flex w-full items-center justify-start gap-3 px-3 py-2 text-sm text-orange-900 hover:bg-orange-50 hover:text-orange-700"
                 >
                   <Ban className="h-4 w-4 text-orange-600" />
                   <span>{user.isBlocked ? "Débloquer" : "Bloquer"}</span>

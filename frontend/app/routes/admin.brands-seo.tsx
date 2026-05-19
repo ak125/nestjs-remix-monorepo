@@ -547,9 +547,9 @@ export default function AdminBrandsSeo() {
                   </div>
                   <div className="text-xs text-gray-500">caractères</div>
                 </div>
-                <div className="p-3 bg-purple-50 rounded-lg">
+                <div className="p-3 bg-muted rounded-lg">
                   <div className="text-sm text-gray-600">Contenu HTML</div>
-                  <div className="text-2xl font-bold text-purple-600">
+                  <div className="text-2xl font-bold text-foreground">
                     {brand.seo.content?.length || 0}
                   </div>
                   <div className="text-xs text-gray-500">caractères</div>

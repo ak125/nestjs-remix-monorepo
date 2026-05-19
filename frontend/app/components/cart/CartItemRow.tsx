@@ -173,7 +173,7 @@ export function CartItemRow({ item }: { item: CartItemType }) {
             <button
               onClick={() => setShowConfirmDelete(true)}
               disabled={isUpdating || isRemoving}
-              className="min-h-[44px] min-w-[44px] flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-30"
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center text-red-900 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-30"
               aria-label="Supprimer cet article"
             >
               <Trash2 className="h-5 w-5" />

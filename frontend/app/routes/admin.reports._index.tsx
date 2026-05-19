@@ -280,7 +280,7 @@ export default function AdminReports() {
             <CardTitle className="text-sm font-medium">
               Emails Vérifiés
             </CardTitle>
-            <CheckCircle className="h-4 w-4 text-purple-500" />
+            <CheckCircle className="h-4 w-4 text-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -328,7 +328,7 @@ export default function AdminReports() {
                 <span>Emails Vérifiés</span>
                 <Badge
                   variant="default"
-                  className="bg-purple-100 text-purple-800"
+                  className="bg-muted text-foreground"
                 >
                   {reportData.users.verified}
                 </Badge>
@@ -369,7 +369,7 @@ export default function AdminReports() {
                 <span>Chiffre d'Affaires</span>
                 <Badge
                   variant="default"
-                  className="bg-purple-100 text-purple-800"
+                  className="bg-muted text-foreground"
                 >
                   {reportData.orders.revenue.toFixed(2)}€
                 </Badge>

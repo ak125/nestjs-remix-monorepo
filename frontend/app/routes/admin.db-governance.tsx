@@ -217,7 +217,7 @@ export default function AdminDbGovernance() {
           sub="Top tables par taille"
         />
         <KpiCard
-          icon={<Search className="h-5 w-5 text-purple-500" />}
+          icon={<Search className="h-5 w-5 text-foreground" />}
           label="Indexes"
           value={
             report?.metrics?.find((m) => m.metric_id === "M2")?.rows?.length ||

@@ -268,11 +268,11 @@ export default function ProductsBrands() {
                   <p className="text-sm font-medium text-gray-600">
                     Marques Vedettes
                   </p>
-                  <p className="text-2xl font-bold text-purple-600">
+                  <p className="text-2xl font-bold text-foreground">
                     {stats.featured}
                   </p>
                 </div>
-                <TrendingUp className="h-8 w-8 text-purple-600" />
+                <TrendingUp className="h-8 w-8 text-foreground" />
               </div>
             </CardContent>
           </Card>
@@ -408,7 +408,7 @@ export default function ProductsBrands() {
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
-                        className="bg-purple-500 h-2 rounded-full"
+                        className="bg-primary h-2 rounded-full"
                         style={{
                           width: `${(stats.featured / stats.total) * 100}%`,
                         }}

@@ -489,7 +489,7 @@ export default function BrandCatalogPage() {
           aria-hidden="true"
         ></div>
         <div
-          className="absolute -bottom-32 -left-32 w-[500px] h-[500px] bg-black/[0.08] rounded-full blur-3xl z-[1]"
+          className="absolute -bottom-32 -left-32 w-[500px] h-[500px] bg-neutral-900/[0.08] rounded-full blur-3xl z-[1]"
           aria-hidden="true"
         ></div>
 
@@ -497,7 +497,7 @@ export default function BrandCatalogPage() {
           {/* Titre H1 dynamique optimisé SEO - animation retirée pour LCP */}
           <div className="text-center mb-6 md:mb-8">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
-              <span className="bg-gradient-to-r from-white via-white to-white/90 bg-clip-text text-transparent drop-shadow-2xl">
+              <span className="text-foreground from-white via-white to-white/90 drop-shadow-2xl">
                 Catalogue pièces auto {manufacturer.marque_name}
               </span>
             </h1>
@@ -592,7 +592,7 @@ export default function BrandCatalogPage() {
               </span>
             </div>
             <div className="group flex items-center gap-2 px-3 md:px-4 py-2.5 bg-gradient-to-br from-white/15 to-white/10 rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
-              <Wrench className="w-4 h-4 text-purple-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
+              <Wrench className="w-4 h-4 text-foreground flex-shrink-0 group-hover:scale-110 transition-transform" />
               <span className="text-white text-sm md:text-base font-semibold whitespace-nowrap">
                 Paiement sécurisé
               </span>
@@ -793,7 +793,7 @@ export default function BrandCatalogPage() {
                       <Link
                         key={idx}
                         to={m[2]}
-                        className="flex items-center justify-between gap-2 px-4 py-3 bg-white border border-gray-200 hover:border-blue-400 hover:bg-blue-50 rounded-lg shadow-sm hover:shadow-md transition-all text-sm font-medium text-gray-800 hover:text-blue-700"
+                        className="flex items-center justify-between gap-2 px-4 py-3 bg-white border border-gray-200 hover:border-blue-400 hover:bg-blue-50 rounded-lg shadow-sm hover:shadow-md transition-all text-sm font-medium text-blue-900 hover:text-blue-700"
                       >
                         <span className="truncate">{m[1]}</span>
                         <ChevronRight className="w-4 h-4 flex-shrink-0 opacity-60" />
@@ -1085,15 +1085,7 @@ function VehicleCard({ vehicle }: { vehicle: PopularVehicle }) {
           {/* Badge carburant */}
           {fuelLabel && (
             <span
-              className={`px-2 py-0.5 rounded-full text-[10px] font-semibold shadow-md ${
-                fuelLabel === "Diesel"
-                  ? "bg-gray-800 text-white"
-                  : fuelLabel === "Essence"
-                    ? "bg-green-600 text-white"
-                    : fuelLabel === "Hybride"
-                      ? "bg-blue-500 text-white"
-                      : "bg-purple-600 text-white"
-              }`}
+              className={`px-2 py-0.5 rounded-full text-[10px] font-semibold shadow-md ${ fuelLabel === "Diesel" ? "bg-gray-800 text-white" : fuelLabel === "Essence" ? "bg-green-600 text-white" : fuelLabel === "Hybride" ? "bg-blue-500 text-white" : "bg-primary text-white" }`}
             >
               {fuelLabel}
             </span>
@@ -1160,14 +1152,14 @@ function ApiPartCard({
       className="group relative bg-white border-2 border-gray-200 rounded-xl overflow-hidden hover:border-transparent hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
     >
       {/* Bordure gradient au hover */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-950 via-indigo-900 to-purple-900 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 rounded-xl"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-950 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 rounded-xl"></div>
       <div className="absolute inset-0 bg-white m-0.5 rounded-lg group-hover:m-[3px] transition-all duration-300"></div>
 
       {/* Contenu - Layout original avec image en haut */}
       <div className="relative p-4">
         {/* 🖼️ Image centrée en haut - h-24 (96px) */}
         <div className="flex items-center justify-center h-24 mb-3 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg overflow-hidden relative">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-950 via-indigo-900 to-purple-900 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-950 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
           <PartImage
             src={part.image_url || "/images/default-part.png"}
             alt={`${part.pg_name} ${part.marque_name}`}

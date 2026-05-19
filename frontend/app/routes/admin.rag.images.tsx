@@ -79,11 +79,11 @@ function formatSize(bytes: number): string {
 
 const TYPE_COLORS: Record<string, string> = {
   product: "bg-blue-100 text-blue-800",
-  schema: "bg-purple-100 text-purple-800",
+  schema: "bg-muted text-foreground",
   diagnostic: "bg-orange-100 text-orange-800",
   montage: "bg-green-100 text-green-800",
   fixation: "bg-gray-100 text-gray-800",
-  hero: "bg-indigo-100 text-indigo-800",
+  hero: "bg-muted text-foreground",
   symptom: "bg-red-100 text-red-800",
 };
 

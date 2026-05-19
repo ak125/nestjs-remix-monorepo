@@ -294,11 +294,11 @@ export default function ReferenceIndexPage() {
             </div>
             <div className="flex gap-3 text-sm text-gray-500">
               <span className="inline-flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
+                <span className="w-1.5 h-1.5 rounded-full bg-primary" />
                 {total} définitions
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
+                <span className="w-1.5 h-1.5 rounded-full bg-primary" />
                 {gammeCategories.length} catégories
               </span>
             </div>
@@ -315,11 +315,7 @@ export default function ReferenceIndexPage() {
                 {/* Chip "Toutes" */}
                 <button
                   onClick={() => setActiveGamme(null)}
-                  className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                    activeGamme === null
-                      ? "bg-indigo-600 text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  }`}
+                  className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors ${ activeGamme === null ? "bg-primary text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200" }`}
                 >
                   Toutes ({total})
                 </button>
@@ -331,11 +327,7 @@ export default function ReferenceIndexPage() {
                       onClick={() =>
                         setActiveGamme(activeGamme === name ? null : name)
                       }
-                      className={`shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                        activeGamme === name
-                          ? "bg-indigo-600 text-white"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      }`}
+                      className={`shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${ activeGamme === name ? "bg-primary text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200" }`}
                     >
                       <span
                         className={`w-2 h-2 rounded-full ${activeGamme === name ? "bg-white" : color.dot}`}
@@ -358,7 +350,7 @@ export default function ReferenceIndexPage() {
                       setActiveGamme(null);
                       setSearchQuery("");
                     }}
-                    className="ml-2 text-indigo-600 hover:text-indigo-800 font-medium"
+                    className="ml-2 text-foreground hover:text-foreground font-medium"
                   >
                     Tout effacer
                   </button>
@@ -384,11 +376,7 @@ export default function ReferenceIndexPage() {
                     key={letter}
                     onClick={() => hasEntries && scrollToLetter(letter)}
                     disabled={!hasEntries}
-                    className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm font-semibold transition-colors ${
-                      hasEntries
-                        ? "text-indigo-600 hover:bg-indigo-100 cursor-pointer"
-                        : "text-gray-300 cursor-default"
-                    }`}
+                    className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm font-semibold transition-colors ${ hasEntries ? "text-foreground hover:bg-muted cursor-pointer" : "text-gray-300 cursor-default" }`}
                     aria-label={`Aller à la lettre ${letter}`}
                   >
                     {letter}
@@ -402,7 +390,7 @@ export default function ReferenceIndexPage() {
       </nav>
 
       {/* ═══ GRILLE DE CARTES ═══ */}
-      <section className="py-12 bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">
+      <section className="py-12 bg-gradient-to-br from-slate-50 via-white /30">
         <Container>
           {filteredReferences.length === 0 ? (
             <div className="text-center py-16">
@@ -442,7 +430,7 @@ export default function ReferenceIndexPage() {
                     <div className="w-12 h-12 rounded-xl bg-navy text-white flex items-center justify-center text-2xl font-bold">
                       {letter}
                     </div>
-                    <div className="flex-1 h-px bg-gradient-to-r from-indigo-200 to-transparent" />
+                    <div className="flex-1 h-px bg-gradient-to-r to-transparent" />
                     <span className="text-sm text-gray-500">
                       {refs.length} définition(s)
                     </span>
@@ -462,7 +450,7 @@ export default function ReferenceIndexPage() {
                             className={`h-full border-t-[3px] ${gammeColor.border} hover:shadow-lg hover:border-indigo-300 hover:-translate-y-0.5 transition-all duration-200`}
                           >
                             <CardContent className="p-5">
-                              <h3 className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors line-clamp-2 mb-2">
+                              <h3 className="font-semibold text-gray-900 group-hover:text-foreground transition-colors line-clamp-2 mb-2">
                                 {ref.title.replace(/ : Définition.*$/, "")}
                               </h3>
                               <p className="text-sm text-gray-500 line-clamp-2 mb-3">
@@ -479,7 +467,7 @@ export default function ReferenceIndexPage() {
                                 ) : (
                                   <span />
                                 )}
-                                <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-indigo-500 group-hover:translate-x-0.5 transition-all" />
+                                <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
                               </div>
                             </CardContent>
                           </Card>
@@ -517,7 +505,7 @@ export default function ReferenceIndexPage() {
               <Link to="/#catalogue">
                 <Button
                   size="lg"
-                  className="bg-indigo-500 hover:bg-indigo-600 text-white px-8 py-4 rounded-xl text-base font-semibold gap-2"
+                  className="bg-primary hover:bg-primary text-white px-8 py-4 rounded-xl text-base font-semibold gap-2"
                 >
                   <ShoppingCart className="w-5 h-5" />
                   Voir le catalogue
