@@ -47,9 +47,9 @@ export const PiecesOemRefsDisplay = memo(function PiecesOemRefsDisplay({
   const groupedRefs = groupRefsByPrefix(refsToDisplay);
 
   return (
-    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100 overflow-hidden">
+    <div className="bg-gradient-to-r from-blue-50 rounded-xl border border-blue-100 overflow-hidden">
       {/* En-tête */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4">
+      <div className="bg-gradient-to-r from-blue-600 px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="bg-white/20 p-2 rounded-lg">

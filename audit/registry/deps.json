@@ -2782,7 +2782,8 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend/package.json",
+        "packages/registry/package.json"
       ],
       "id": "npm:jose@^5.10.0",
       "name": "jose",
@@ -2793,7 +2794,8 @@
       "status": "LIVE",
       "version": "^5.10.0",
       "workspaces": [
-        "@fafa/backend"
+        "@fafa/backend",
+        "@repo/registry"
       ]
     },
     {
@@ -4098,7 +4100,8 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend/package.json",
+        "frontend/package.json"
       ],
       "id": "workspace:@repo/registry@*",
       "name": "@repo/registry",
@@ -4109,7 +4112,8 @@
       "status": "LIVE",
       "version": "*",
       "workspaces": [
-        "@fafa/backend"
+        "@fafa/backend",
+        "@fafa/frontend"
       ]
     },
     {

@@ -30,6 +30,7 @@ import { ApiModule } from './modules/api.module'; // ✅ NOUVEAU - API Legacy di
 import { DashboardModule } from './modules/dashboard/dashboard.module'; // ✅ NOUVEAU - Dashboard Stats !
 import { ProductsModule } from './modules/products/products.module'; // ✅ NOUVEAU - Module produits !
 import { VehiclesModule } from './modules/vehicles/vehicles.module'; // 🚗 MODULE VEHICLES - Pour sélecteur véhicule (inclut VehicleBrandsService)
+import { VehicleContextModule } from './modules/vehicle-context/vehicle-context.module'; // 🪪 PR-B.2 — VehicleContext JWS cookie middleware (OPTION A locked)
 import { InvoicesModule } from './modules/invoices/invoices.module'; // 🧾 NOUVEAU - Module factures !
 import { SeoModule } from './modules/seo/seo.module'; // 🔍 NOUVEAU - Module SEO avec services intégrés !
 import { SeoMonitoringModule } from './modules/seo-monitoring/seo-monitoring.module'; // 📊 Phase 1 — Observability GSC/GA4/CWV daily ingestion
@@ -190,6 +191,7 @@ import { DiagnosticEngineModule } from './modules/diagnostic-engine/diagnostic-e
     ProductsModule, // ✅ NOUVEAU - Module produits avec CRUD complet !
     // 🚗 MODULES VÉHICULES
     VehiclesModule, // Module vehicle principal pour sélecteur véhicule (inclut gestion marques via VehicleBrandsService)
+    VehicleContextModule, // PR-B.2 — JWS cookie middleware on /api/diagnostic/* + /api/v1/orientation/*
     InvoicesModule, // 🧾 NOUVEAU - Module factures avec cache et stats !
     SeoModule, // 🔍 NOUVEAU - Module SEO avec SeoService et SitemapService !
     SeoMonitoringModule, // 📊 Phase 1 — Observability GSC/GA4/CWV daily ingestion (cf. ADR-025)

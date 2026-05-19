@@ -43,7 +43,7 @@ export const OrderEditForm = memo(function OrderEditForm({
   const isSubmitting = fetcher.state === "submitting";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-900/50 backdrop-blur-sm">
       <div className="bg-white rounded-lg shadow-2xl w-full max-w-2xl m-4">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b">

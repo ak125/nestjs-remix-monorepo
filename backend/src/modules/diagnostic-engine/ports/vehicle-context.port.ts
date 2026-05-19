@@ -36,8 +36,15 @@ export interface VehicleContextPort {
   /** Read current context from request (cookie + middleware exposed). Returns null if absent/invalid. */
   get(req: Request): VehicleContext | null;
 
-  /** Persist context as signed cookie on response. PR-B implementation. */
-  persist(ctx: Omit<VehicleContext, 'v' | 'iat'>, res: Response): void;
+  /**
+   * Persist context as signed cookie on response. PR-B implementation.
+   * Async because HS256 signing (jose `SignJWT.sign()`) is Promise-based —
+   * callers MUST await before `res.send()` to guarantee the Set-Cookie
+   * header lands on the response. Pre-merge correction to PR-A.1 port
+   * (no consumers in main yet — signature widened from `void` to
+   * `Promise<void>` to surface the async nature).
+   */
+  persist(ctx: Omit<VehicleContext, 'v' | 'iat'>, res: Response): Promise<void>;
 
   /** Clear cookie (logout / reset). */
   clear(res: Response): void;

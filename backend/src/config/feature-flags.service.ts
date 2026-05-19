@@ -217,6 +217,19 @@ export class FeatureFlagsService {
     return this.bool('ABANDONED_CART_EMAIL_ENABLED', false);
   }
 
+  // ── VehicleContext cookie kill-switch (PR-B.6) ──
+
+  /**
+   * Master switch for the VehicleContext JWS cookie middleware (PR-B).
+   * Default `true` — the cookie path is on by default.
+   * Set `VEHICLE_CTX_ENABLED=false` to make the middleware a no-op
+   * pass-through. Cookies already stored in browsers are not cleared —
+   * they're simply ignored. Used for emergency rollback or A/B holdback.
+   */
+  get vehicleContextEnabled(): boolean {
+    return this.bool('VEHICLE_CTX_ENABLED', true);
+  }
+
   // ── Write Guard flags (P1.5) ──
 
   get writeGuardEnabled(): boolean {
@@ -288,6 +301,7 @@ export class FeatureFlagsService {
     'WRITE_GUARD_CANARY_ROLES',
     'WRITE_GUARD_CANARY_GROUPS',
     'RAG_VIRTUAL_MERGE_ENABLED',
+    'VEHICLE_CTX_ENABLED',
   ]);
 
   listFlags(): Record<

@@ -54,7 +54,7 @@ interface HeroSectionProps {
 
 // Gradients disponibles
 const GRADIENTS = {
-  blue: "bg-gradient-to-br from-blue-950 via-indigo-900 to-purple-900",
+  blue: "bg-gradient-to-br from-blue-950",
   dark: "bg-gradient-to-br from-slate-900 to-slate-800",
   light: "bg-gradient-to-br from-blue-50 to-white",
   none: "",
@@ -169,7 +169,7 @@ export const HeroSection = memo(function HeroSection({
           <div className={variant === "search" ? "" : ""}>
             {/* Icône (pour search) */}
             {icon && (
-              <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+              <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
                 {icon}
               </div>
             )}

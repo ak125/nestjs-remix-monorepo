@@ -6,9 +6,14 @@
  * Phase 0 — cf. docs/superpowers/plans/2026-05-16-sitemap-regen-auth-impl.md.
  * Each guard writes _authPath on success ; GithubOidcGuard also writes
  * _authClaims with the validated JWT payload.
+ *
+ * `vehicleContext` is hydrated by VehicleContextMiddleware (PR-B.2) on the
+ * narrow surfaces that need it. Always optional — anonymous browsing must
+ * keep working.
  */
 
 import 'express-session';
+import type { VehicleContext } from '@repo/registry';
 
 declare module 'express-session' {
   interface SessionData {
@@ -52,6 +57,7 @@ declare global {
       logOut(done: (err: any) => void): void;
       _authPath?: 'admin-session' | 'github-oidc' | 'internal-key-legacy';
       _authClaims?: GithubOidcClaimsLike;
+      vehicleContext?: VehicleContext;
     }
   }
 }

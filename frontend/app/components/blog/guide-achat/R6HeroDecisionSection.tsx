@@ -25,7 +25,7 @@ export function R6HeroDecisionSection({
   return (
     <section id="decision-achat" className="mb-8">
       <div className="rounded-xl border-2 border-blue-200 overflow-hidden shadow-lg">
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-5 text-white">
+        <div className="bg-gradient-to-r from-blue-600 px-6 py-5 text-white">
           <p className="text-sm font-medium text-blue-100 leading-relaxed">
             {heroDecision.promise}
           </p>

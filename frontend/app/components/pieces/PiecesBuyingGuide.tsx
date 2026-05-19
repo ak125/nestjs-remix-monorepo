@@ -21,7 +21,7 @@ export const PiecesBuyingGuide = memo(function PiecesBuyingGuide({
   return (
     <div className="relative overflow-hidden bg-white rounded-3xl shadow-2xl shadow-slate-900/10">
       {/* ✨ Effet de bordure gradient animé */}
-      <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 opacity-[0.03]"></div>
+      <div className="absolute inset-0 rounded-3xl bg-gradient-to-br to-pink-500 opacity-[0.03]"></div>
 
       {/* 📘 En-tête Premium */}
       <div className="relative overflow-hidden">
@@ -30,8 +30,8 @@ export const PiecesBuyingGuide = memo(function PiecesBuyingGuide({
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLW9wYWNpdHk9IjAuMDMiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')]"></div>
 
         {/* Cercles décoratifs */}
-        <div className="absolute -top-20 -right-20 w-60 h-60 bg-indigo-500/20 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-purple-500/20 rounded-full blur-2xl"></div>
+        <div className="absolute -top-20 -right-20 w-60 h-60 bg-primary/20 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-primary/20 rounded-full blur-2xl"></div>
 
         <div className="relative z-10 px-8 py-8">
           <div className="flex items-center gap-4">
@@ -67,7 +67,7 @@ export const PiecesBuyingGuide = memo(function PiecesBuyingGuide({
       <div className="p-8 space-y-8">
         {/* 📝 Contenu principal - Style magazine */}
         <div className="relative">
-          <div className="absolute -left-4 top-0 bottom-0 w-1 bg-gradient-to-b from-indigo-500 via-purple-500 to-pink-500 rounded-full"></div>
+          <div className="absolute -left-4 top-0 bottom-0 w-1 bg-gradient-to-b to-pink-500 rounded-full"></div>
           <p className="text-slate-700 leading-relaxed text-lg pl-6 font-medium">
             {guide.content}
           </p>
@@ -180,12 +180,12 @@ export const PiecesBuyingGuide = memo(function PiecesBuyingGuide({
         {/* 📞 CTA - Design conversion premium */}
         <div className="relative overflow-hidden rounded-2xl">
           {/* Background avec dégradé animé */}
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-indigo-900 to-purple-900"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-900"></div>
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0ic3RhcnMiIHdpZHRoPSI1MCIgaGVpZ2h0PSI1MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PGNpcmNsZSBjeD0iMjUiIGN5PSIyNSIgcj0iMSIgZmlsbD0id2hpdGUiIGZpbGwtb3BhY2l0eT0iMC4yIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI3N0YXJzKSIvPjwvc3ZnPg==')]"></div>
 
           {/* Effet de flou décoratif */}
-          <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-500/30 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-500/30 rounded-full blur-2xl"></div>
+          <div className="absolute top-0 right-0 w-40 h-40 bg-primary/30 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-primary/30 rounded-full blur-2xl"></div>
 
           <div className="relative z-10 p-8 text-center">
             <div className="w-16 h-16 mx-auto mb-4 bg-white/10 backdrop-blur-xl rounded-2xl flex items-center justify-center border border-white/20">

@@ -226,19 +226,19 @@ export const ErrorGeneric = memo(function ErrorGeneric({
               <div className="flex space-x-4 text-sm">
                 <button
                   onClick={() => window.history.back()}
-                  className="text-indigo-600 hover:text-indigo-500"
+                  className="text-foreground hover:text-foreground"
                 >
                   ← Page précédente
                 </button>
                 <Link
                   to="/contact"
-                  className="text-indigo-600 hover:text-indigo-500"
+                  className="text-foreground hover:text-foreground"
                 >
                   Signaler le problème
                 </Link>
                 <Link
                   to="/blog-pieces-auto"
-                  className="text-indigo-600 hover:text-indigo-500"
+                  className="text-foreground hover:text-foreground"
                 >
                   Guides et conseils
                 </Link>

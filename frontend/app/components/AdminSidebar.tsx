@@ -521,7 +521,7 @@ export const AdminSidebar = memo(function AdminSidebar({
       {/* Overlay mobile */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          className="fixed inset-0 z-40 bg-neutral-900/50 lg:hidden"
           onClick={() => setIsOpen(false)}
         />
       )}
@@ -540,7 +540,7 @@ export const AdminSidebar = memo(function AdminSidebar({
           {/* Header avec notification globale */}
           <div className="flex h-16 items-center border-b border-slate-700/50 px-6 bg-slate-800/50">
             <div className="flex items-center space-x-2 flex-1">
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center relative shadow-lg">
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 flex items-center justify-center relative shadow-lg">
                 <Shield className="h-4 w-4 text-white" />
                 {/* Indicateur de notifications actives */}
                 <div className="absolute -top-1 -right-1 h-3 w-3 bg-destructive rounded-full animate-pulse shadow-sm" />
@@ -573,7 +573,7 @@ export const AdminSidebar = memo(function AdminSidebar({
                       "flex items-center space-x-3 rounded-xl px-3 py-3 text-sm transition-all duration-200 relative group",
                       "hover:bg-slate-700/50 hover:shadow-md hover:scale-[1.02]",
                       isActive
-                        ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg scale-[1.02] border border-blue-500/30"
+                        ? "bg-gradient-to-r from-blue-600 text-white shadow-lg scale-[1.02] border border-blue-500/30"
                         : "text-slate-300 hover:text-white",
                     )}
                     onClick={() => {

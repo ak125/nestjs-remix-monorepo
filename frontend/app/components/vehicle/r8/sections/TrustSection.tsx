@@ -22,8 +22,8 @@ export function TrustSection() {
           <p className="text-sm text-gray-500 mt-1">Expédition rapide</p>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-5 text-center hover:shadow-lg transition-shadow">
-          <div className="inline-flex p-3 rounded-full bg-purple-100 mb-3">
-            <HeadphonesIcon size={28} className="text-purple-600" />
+          <div className="inline-flex p-3 rounded-full bg-muted mb-3">
+            <HeadphonesIcon size={28} className="text-foreground" />
           </div>
           <h3 className="font-bold text-gray-900">Conseil expert</h3>
           <p className="text-sm text-gray-500 mt-1">Service client dédié</p>

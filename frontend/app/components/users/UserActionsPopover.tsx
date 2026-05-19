@@ -124,9 +124,9 @@ export const UserActionsPopover = memo(function UserActionsPopover({
                 <Button
                   variant="ghost"
                   onClick={() => handleAction(onViewProfile)}
-                  className="flex w-full items-center justify-start gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700"
+                  className="flex w-full items-center justify-start gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-muted hover:text-foreground"
                 >
-                  <Eye className="h-4 w-4 text-purple-600" />
+                  <Eye className="h-4 w-4 text-foreground" />
                   <span>Voir profil</span>
                 </Button>
               )}

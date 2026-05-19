@@ -181,7 +181,7 @@ export function FilterAccordion({
   return (
     <div className={`space-y-4 ${className}`}>
       {/* Header avec compteur et reset */}
-      <div className="flex items-center justify-between rounded-lg bg-gradient-to-r from-blue-50 to-purple-50 p-4">
+      <div className="flex items-center justify-between rounded-lg bg-gradient-to-r from-blue-50 p-4">
         <div className="flex items-center gap-2">
           <Package className="h-5 w-5 text-blue-600" />
           <span className="text-sm font-semibold text-gray-900">Filtres</span>
@@ -278,11 +278,11 @@ export function FilterAccordion({
           >
             <AccordionTrigger className="py-4 hover:no-underline">
               <div className="flex items-center gap-2">
-                <Tag className="h-4 w-4 text-purple-600" />
+                <Tag className="h-4 w-4 text-foreground" />
                 <span className="font-medium text-gray-900">Marques</span>
                 {localFilters.brands.filter((b) => b.selected).length >
                   0 && (
-                  <span className="ml-2 flex h-5 w-5 items-center justify-center rounded-full bg-purple-100 text-xs font-semibold text-purple-600">
+                  <span className="ml-2 flex h-5 w-5 items-center justify-center rounded-full bg-muted text-xs font-semibold text-foreground">
                     {localFilters.brands.filter((b) => b.selected).length}
                   </span>
                 )}
@@ -296,11 +296,7 @@ export function FilterAccordion({
                     className="flex cursor-pointer items-center gap-3 rounded-md p-2 hover:bg-gray-50"
                   >
                     <div
-                      className={`flex h-5 w-5 items-center justify-center rounded border-2 transition-colors ${
-                        brand.selected
-                          ? "border-purple-600 bg-purple-600"
-                          : "border-gray-300"
-                      }`}
+                      className={`flex h-5 w-5 items-center justify-center rounded border-2 transition-colors ${ brand.selected ? "border-purple-600 bg-primary" : "border-gray-300" }`}
                     >
                       {brand.selected && (
                         <Check className="h-3 w-3 text-white" />
