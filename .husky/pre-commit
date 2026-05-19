@@ -138,3 +138,38 @@ if command -v npx >/dev/null 2>&1; then
     fi
   }
 fi
+
+# impeccable design ratchet (warn-only) — runs only if frontend/** or
+# the ratchet's own files are staged. Catches reintroductions of the
+# anti-patterns we've already eliminated (side-tab, pure-black-white,
+# bounce-easing, ai-color-palette) before they hit CI.
+#
+# - WARN-only (Phase 1): prints a notice on regression but does not
+#   block the commit. CI's `.github/workflows/impeccable-ratchet.yml`
+#   is the authoritative BLOCKING gate.
+# - Override: set `IMPECCABLE_HOOK=skip` to silence entirely.
+# - Promote to blocking: set `IMPECCABLE_HOOK=block` (planned for
+#   Phase 2 once the cascade closes; tracked in
+#   audit/impeccable/README.md).
+IMPECCABLE_HOOK="${IMPECCABLE_HOOK:-warn}"
+if [ "$IMPECCABLE_HOOK" != "skip" ]; then
+  FRONTEND_TOUCHED=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '^(frontend/|packages/design-tokens/|audit/impeccable/|scripts/audit/impeccable-|\.github/workflows/impeccable-ratchet\.yml)' || true)
+  if [ -n "$FRONTEND_TOUCHED" ] && [ -f scripts/audit/impeccable-ratchet-check.mjs ] && command -v npm >/dev/null 2>&1; then
+    if npm --workspace=@fafa/frontend run design:detect:json --silent 2>/dev/null \
+      | node scripts/audit/impeccable-ratchet-check.mjs >/tmp/impeccable-hook.log 2>&1; then
+      :  # green — silent
+    else
+      echo ""
+      echo "⚠️  impeccable ratchet (warn-only): frontend changes increased the design anti-pattern count."
+      echo "    See /tmp/impeccable-hook.log for the diff."
+      echo "    CI workflow .github/workflows/impeccable-ratchet.yml is the authoritative BLOCKING gate."
+      echo "    Set IMPECCABLE_HOOK=skip to silence this hook."
+      if [ "$IMPECCABLE_HOOK" = "block" ]; then
+        echo ""
+        echo "    IMPECCABLE_HOOK=block is set — refusing the commit."
+        cat /tmp/impeccable-hook.log
+        exit 1
+      fi
+    fi
+  fi
+fi

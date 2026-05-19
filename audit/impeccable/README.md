@@ -47,6 +47,17 @@ See `baseline.json` for current snapshot. The cascade ROADMAP (see [tout-fait-r-
 
 Residual categories (<11 each) are accepted in backlog; the ratchet prevents regrowth.
 
+## Local pre-commit hook (Phase 1: warn-only)
+
+A Husky pre-commit hook (`.husky/pre-commit`) runs the ratchet locally when a commit touches `frontend/**`, `packages/design-tokens/**`, `audit/impeccable/**`, or any of the ratchet's own files. It is **warn-only** in Phase 1 — it prints a notice if your change increases the count but does NOT block the commit. The CI workflow `.github/workflows/impeccable-ratchet.yml` is the authoritative BLOCKING gate.
+
+Hook env vars:
+- `IMPECCABLE_HOOK=skip` — silence the hook entirely (e.g., commits unrelated to design)
+- `IMPECCABLE_HOOK=block` — promote to blocking (planned default in Phase 2 once the cascade closes)
+- `IMPECCABLE_HOOK=warn` — default (print warning on regression)
+
+The hook fires impeccable in `--fast` mode (skip Chromium download via `.npmrc`), so cost is ≤ 5s on average for affected commits.
+
 ## Anti-bricolage discipline
 
 - **Never** raise the baseline to dodge a CI failure (use `--allow-increase` only at initial bootstrap).
