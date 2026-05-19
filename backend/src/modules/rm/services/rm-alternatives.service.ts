@@ -7,8 +7,12 @@ import type { AlternativesV2Response } from '../dto/alternatives-v2.dto';
 
 const CACHE_TTL_SECONDS = 300;
 const CACHE_KEY_PREFIX = 'alt';
-const CACHE_KEY_VERSION = 'v1';
-const RPC_NAME = 'get_soft_404_alternatives';
+// v1 → v2 (2026-05-19) : v1 entries were populated with empty arrays during the
+// window where the service ran the direct `.from().select()` path under preprod's
+// anon key (PR #595→#618 timeline). Redis-preprod uses appendonly + named volume,
+// so those empty entries survive deploys and short-circuit the new RPC path.
+// Bumping the version forces a cache miss → RPC call → real data.
+const CACHE_KEY_VERSION = 'v2';
 
 interface RpcPayload {
   alternativeVehicles: unknown[];
@@ -58,15 +62,18 @@ export class RmAlternativesService extends SupabaseBaseService {
       }
     }
 
+    // Inline literal (instead of const) so check-rpc-allowlist-coverage.sh's
+    // static parser picks it up — variable RPC names slip past the gate and
+    // only fail at runtime (incident root cause for run 26101726823).
     const { data, error } = await this.callRpc<RpcPayload>(
-      RPC_NAME,
+      'get_soft_404_alternatives',
       { p_type_id: type_id, p_pg_id: pg_id, p_limit: limit },
       { source: 'api' as const },
     );
 
     if (error || !data) {
       this.logger.warn(
-        `RPC ${RPC_NAME} failed for type=${type_id} pg=${pg_id}: ${
+        `RPC get_soft_404_alternatives failed for type=${type_id} pg=${pg_id}: ${
           error?.message ?? 'no data'
         }`,
       );
