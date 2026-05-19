@@ -563,3 +563,11 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: medium
+  # Observability module (PR-C) — Prometheus counters subscribed to NestJS
+  # events emitted by PR-B + scrape endpoint /api/observability/metrics.
+  # D10 (Quality / Monitoring / Observabilité) owns the surface.
+  - glob: backend/src/modules/observability/**
+    domain: D10
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
