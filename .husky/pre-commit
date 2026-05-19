@@ -1,3 +1,13 @@
+# Skip hooks during merge commits — git auto-stages files inherited from the
+# incoming branch, which can include pre-existing-on-main warnings that
+# `lint-staged --max-warnings=0` cannot distinguish from user-authored changes.
+# CI lint compares `git diff main..HEAD` and tolerates those warnings on
+# unchanged files. Aligned with husky community pattern (typicode/husky#188).
+if [ -e .git/MERGE_HEAD ] || [ -e .git/CHERRY_PICK_HEAD ] || [ -e .git/REVERT_HEAD ]; then
+  echo "[pre-commit] merge/cherry-pick/revert detected — hooks skipped (CI gates on diff vs base)."
+  exit 0
+fi
+
 # Block manual edits to canon mirrors (ADR-061 §3 — canon mirrors are READ-ONLY).
 # Canon mirrors (`.claude/canon-mirrors/<canon>.md` + workspaces) are synced by
 # cron VPS DEV (governance-vault/_scripts/cron-sync-canon-mirrors.sh). Manual edits
