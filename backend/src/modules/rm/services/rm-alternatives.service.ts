@@ -80,9 +80,10 @@ export class RmAlternativesService extends SupabaseBaseService {
       // Auth/permission failures get ERROR level — they signal infra config drift
       // (e.g. rotated key not synced to deployment secrets) and need pager-grade
       // visibility, not the same WARN as a benign empty result.
-      const isAuthFailure = /invalid api key|jwt|permission denied|unauthorized/i.test(
-        error?.message ?? '',
-      );
+      const isAuthFailure =
+        /invalid api key|jwt|permission denied|unauthorized/i.test(
+          error?.message ?? '',
+        );
       const logLevel = isAuthFailure ? 'error' : 'warn';
       this.logger[logLevel](
         `RPC get_soft_404_alternatives failed for type=${type_id} pg=${pg_id}: ${
