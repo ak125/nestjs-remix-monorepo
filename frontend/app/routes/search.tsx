@@ -565,7 +565,7 @@ export default function SearchPage() {
   }, [allPieces]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 relative">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 /50 relative">
       {/* Pattern d'arrière-plan */}
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDE0YzIuMiAwIDQgMS44IDQgNHMtMS44IDQtNCA0LTQtMS44LTQtNGMwLTIuMiAxLjgtNCA0LTR6bTAgNDBjMi4yIDAgNCAxLjggNCA0cy0xLjggNC00IDQtNC0xLjgtNC00YzAtMi4yIDEuOC00IDQtNHoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-40 pointer-events-none"></div>
 
@@ -577,7 +577,7 @@ export default function SearchPage() {
         <div className="mb-6 bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/50 p-5">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 rounded-xl flex items-center justify-center shadow-lg">
                 <SearchIcon className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -706,7 +706,7 @@ export default function SearchPage() {
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   {/* Compteur + Requête */}
                   <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-2 rounded-xl border border-blue-100">
+                    <div className="flex items-center gap-2 bg-gradient-to-r from-blue-50 px-4 py-2 rounded-xl border border-blue-100">
                       <Package className="w-4 h-4 text-blue-600" />
                       <span className="font-bold text-blue-700">
                         {filteredProducts.length}
@@ -754,7 +754,7 @@ export default function SearchPage() {
                         className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
                           viewMode === "grid"
                             ? "bg-blue-500 text-white shadow-md"
-                            : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
+                            : "bg-white text-white hover:bg-gray-50 border border-gray-200"
                         }`}
                         title="Vue grille"
                       >
@@ -765,7 +765,7 @@ export default function SearchPage() {
                         className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
                           viewMode === "list"
                             ? "bg-blue-500 text-white shadow-md"
-                            : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
+                            : "bg-white text-white hover:bg-gray-50 border border-gray-200"
                         }`}
                         title="Vue liste"
                       >
@@ -776,13 +776,13 @@ export default function SearchPage() {
                         className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all relative ${
                           viewMode === "comparison"
                             ? "bg-blue-500 text-white shadow-md"
-                            : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
+                            : "bg-white text-white hover:bg-gray-50 border border-gray-200"
                         }`}
                         title="Comparer"
                       >
                         <Scale className="w-5 h-5" />
                         {selectedPieces.length > 0 && (
-                          <span className="absolute -top-1 -right-1 w-4 h-4 bg-indigo-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                          <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                             {selectedPieces.length}
                           </span>
                         )}
@@ -796,7 +796,7 @@ export default function SearchPage() {
                         className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
                           sortBy === "name"
                             ? "bg-blue-500 text-white shadow-md"
-                            : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
+                            : "bg-white text-white hover:bg-gray-50 border border-gray-200"
                         }`}
                         title="Trier par nom (A→Z)"
                       >
@@ -807,7 +807,7 @@ export default function SearchPage() {
                         className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
                           sortBy === "price-asc"
                             ? "bg-emerald-500 text-white shadow-md"
-                            : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
+                            : "bg-white text-white hover:bg-gray-50 border border-gray-200"
                         }`}
                         title="Prix croissant"
                       >
@@ -818,7 +818,7 @@ export default function SearchPage() {
                         className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
                           sortBy === "price-desc"
                             ? "bg-rose-500 text-white shadow-md"
-                            : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
+                            : "bg-white text-white hover:bg-gray-50 border border-gray-200"
                         }`}
                         title="Prix décroissant"
                       >
@@ -826,11 +826,7 @@ export default function SearchPage() {
                       </button>
                       <button
                         onClick={() => setSortBy("brand")}
-                        className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
-                          sortBy === "brand"
-                            ? "bg-indigo-500 text-white shadow-md"
-                            : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"
-                        }`}
+                        className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${ sortBy === "brand" ? "bg-primary text-white shadow-md" : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200" }`}
                         title="Trier par marque"
                       >
                         <ArrowUpDown className="w-5 h-5" />
@@ -864,7 +860,7 @@ export default function SearchPage() {
                           <a
                             key={`${suggestion}-${index}`}
                             href={`?q=${encodeURIComponent(suggestion)}`}
-                            className="px-3 py-1.5 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-full text-sm font-medium text-blue-700 transition-all border border-blue-200 hover:border-blue-300"
+                            className="px-3 py-1.5 bg-gradient-to-r from-blue-50 hover:from-blue-100 hover: rounded-full text-sm font-medium text-blue-700 transition-all border border-blue-200 hover:border-blue-300"
                           >
                             {suggestion}
                           </a>
@@ -885,7 +881,7 @@ export default function SearchPage() {
                       className="space-y-4"
                     >
                       {/* En-tête groupe avec H2 SEO */}
-                      <div className="flex items-center gap-3 bg-gradient-to-r from-slate-800 via-slate-700 to-indigo-800 rounded-xl px-5 py-3.5 shadow-lg">
+                      <div className="flex items-center gap-3 bg-gradient-to-r from-slate-800 via-slate-700 rounded-xl px-5 py-3.5 shadow-lg">
                         <div className="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center">
                           <Package className="w-5 h-5 text-white" />
                         </div>
@@ -949,7 +945,7 @@ export default function SearchPage() {
               {viewMode === "comparison" && selectedPieces.length > 0 && (
                 <div className="mt-6 bg-white/90 backdrop-blur-md rounded-2xl shadow-lg border border-indigo-200 p-6">
                   <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <Scale className="w-5 h-5 text-indigo-600" />
+                    <Scale className="w-5 h-5 text-foreground" />
                     Comparaison ({selectedPieces.length} pièces)
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -972,7 +968,7 @@ export default function SearchPage() {
                           <div className="text-sm text-gray-600">
                             {piece.reference}
                           </div>
-                          <div className="text-lg font-bold text-indigo-600 mt-2">
+                          <div className="text-lg font-bold text-foreground mt-2">
                             {piece.priceFormatted}
                           </div>
                           {piece.stars && (
@@ -1012,7 +1008,7 @@ export default function SearchPage() {
                         params.set("page", (currentPage + 1).toString());
                         fetcher.load(`/search?${params.toString()}`);
                       }}
-                      className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-all"
+                      className="px-6 py-3 bg-gradient-to-r from-blue-500 text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-all"
                     >
                       Charger plus de résultats
                     </button>
@@ -1046,7 +1042,7 @@ export default function SearchPage() {
         {!query && !hasError && (
           <div className="text-center py-16">
             <div className="max-w-lg mx-auto bg-white/80 backdrop-blur-md rounded-3xl shadow-xl border border-gray-200/50 p-8">
-              <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+              <div className="w-20 h-20 bg-gradient-to-br from-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
                 <SearchIcon className="w-10 h-10 text-white" />
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-3">
@@ -1056,7 +1052,7 @@ export default function SearchPage() {
                 Utilisez la barre de recherche ci-dessus pour trouver des pièces
                 par référence, véhicule compatible, ou description.
               </p>
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100">
+              <div className="bg-gradient-to-r from-blue-50 rounded-xl p-4 border border-blue-100">
                 <p className="text-sm text-blue-800">
                   💡 <strong>Astuce :</strong> Essayez "filtre huile renault
                   clio" ou "WL7129"

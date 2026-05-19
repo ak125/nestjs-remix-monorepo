@@ -397,7 +397,7 @@ export default function AdvancedVehicleSearch() {
                 className={`px-4 py-2 text-sm font-medium rounded-lg border transition-all duration-200 flex items-center gap-2 ${
                   showFavorites
                     ? "bg-rose-50 text-rose-700 border-rose-300"
-                    : "text-gray-600 hover:text-gray-900 border-gray-300 hover:bg-gray-50"
+                    : "text-rose-900 hover:text-gray-900 border-gray-300 hover:bg-gray-50"
                 }`}
               >
                 <Heart
@@ -489,8 +489,8 @@ export default function AdvancedVehicleSearch() {
             </div>
             <div className="text-sm text-gray-600">Modèles</div>
           </div>
-          <div className="bg-purple-50 p-4 rounded-lg text-center">
-            <div className="text-2xl font-bold text-purple-600">
+          <div className="bg-muted p-4 rounded-lg text-center">
+            <div className="text-2xl font-bold text-foreground">
               {stats?.totalTypes?.toLocaleString() || 0}
             </div>
             <div className="text-sm text-gray-600">Motorisations</div>
@@ -701,7 +701,7 @@ export default function AdvancedVehicleSearch() {
                     className={`px-3 py-2 text-sm font-medium rounded-lg border transition-all duration-200 flex items-center gap-2 ${
                       showFavorites
                         ? "bg-rose-50 text-rose-700 border-rose-300"
-                        : "text-gray-600 hover:text-gray-900 border-gray-300 hover:bg-gray-50"
+                        : "text-rose-900 hover:text-gray-900 border-gray-300 hover:bg-gray-50"
                     }`}
                   >
                     <Heart

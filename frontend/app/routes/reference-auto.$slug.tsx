@@ -540,7 +540,7 @@ export default function ReferenceDetailPage() {
 
   return (
     <div
-      className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50"
+      className="min-h-screen bg-gradient-to-br from-slate-50 via-white"
       // Phase 5: Data attributes pour signaux SEO explicites
       data-page-role="R4"
       data-page-intent="definition"
@@ -610,7 +610,7 @@ export default function ReferenceDetailPage() {
         <div className="container mx-auto px-4">
           <Link
             to="/reference-auto"
-            className="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
+            className="inline-flex items-center gap-2 text-foreground hover:text-foreground font-medium transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Toutes les références
@@ -703,7 +703,7 @@ export default function ReferenceDetailPage() {
                       <li key={item.id}>
                         <a
                           href={`#${item.id}`}
-                          className="text-indigo-700 hover:underline"
+                          className="text-foreground hover:underline"
                         >
                           {item.label}
                         </a>
@@ -748,7 +748,7 @@ export default function ReferenceDetailPage() {
                 <ul className="space-y-2">
                   {reference.takeaways.map((item) => (
                     <li key={item} className="flex items-start gap-2">
-                      <span className="text-indigo-500 mt-1">•</span>
+                      <span className="text-foreground mt-1">•</span>
                       <span className="text-gray-700 font-medium">{item}</span>
                     </li>
                   ))}
@@ -1018,9 +1018,9 @@ export default function ReferenceDetailPage() {
                   {reference.reglesMetier.map((rule, index) => (
                     <li
                       key={rule}
-                      className="flex items-start gap-3 p-3 bg-purple-50 rounded-lg"
+                      className="flex items-start gap-3 p-3 bg-muted rounded-lg"
                     >
-                      <span className="w-6 h-6 rounded-full bg-purple-200 text-purple-700 flex items-center justify-center text-sm font-medium flex-shrink-0">
+                      <span className="w-6 h-6 rounded-full bg-muted text-foreground flex items-center justify-center text-sm font-medium flex-shrink-0">
                         {index + 1}
                       </span>
                       <span className="text-gray-700">{rule}</span>
@@ -1052,7 +1052,7 @@ export default function ReferenceDetailPage() {
                 <CardContent className="p-6">
                   <HtmlContent
                     html={reference.contentHtml}
-                    className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-h2:text-2xl prose-h2:font-bold prose-h2:mt-8 prose-h2:mb-4 prose-p:text-gray-700 prose-a:text-indigo-600"
+                    className="prose prose-lg max-w-none prose-headings:text-gray-900 prose-h2:text-2xl prose-h2:font-bold prose-h2:mt-8 prose-h2:mb-4 prose-p:text-gray-700 prose-a:text-foreground"
                     trackLinks={true}
                   />
                 </CardContent>
@@ -1064,13 +1064,13 @@ export default function ReferenceDetailPage() {
           <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start">
             {/* Lien vers Gamme (R1) */}
             {reference.gamme.url && (
-              <Card className="shadow-lg border-2 border-indigo-200 bg-gradient-to-br from-indigo-50 to-purple-50">
+              <Card className="shadow-lg border-2 border-indigo-200 bg-gradient-to-br">
                 <CardHeader>
-                  <CardTitle className="text-lg text-indigo-900 flex items-center gap-2">
+                  <CardTitle className="text-lg text-foreground flex items-center gap-2">
                     Trouver cette pièce
                     <Badge
                       variant="outline"
-                      className="text-xs text-indigo-600 border-indigo-200"
+                      className="text-xs text-foreground border-indigo-200"
                     >
                       Catalogue
                     </Badge>
@@ -1081,9 +1081,9 @@ export default function ReferenceDetailPage() {
                     to={reference.gamme.url}
                     className="flex items-center gap-3 p-4 bg-white rounded-lg border-2 border-indigo-200 hover:border-indigo-400 hover:shadow-md transition-all group"
                   >
-                    <ShoppingCart className="w-6 h-6 text-indigo-600" />
+                    <ShoppingCart className="w-6 h-6 text-foreground" />
                     <div className="flex-1">
-                      <span className="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">
+                      <span className="font-medium text-gray-900 group-hover:text-foreground transition-colors">
                         {reference.gamme.name || shortTitle}
                       </span>
                       <p className="text-sm text-gray-500">
@@ -1113,7 +1113,7 @@ export default function ReferenceDetailPage() {
                       <li key={slug}>
                         <Link
                           to={`/blog-pieces-auto/conseils/${slug}`}
-                          className="flex items-center gap-2 p-2 rounded hover:bg-green-50 text-gray-700 hover:text-green-700 transition-colors"
+                          className="flex items-center gap-2 p-2 rounded hover:bg-green-50 text-green-900 hover:text-green-700 transition-colors"
                         >
                           <Badge
                             variant="outline"
@@ -1150,7 +1150,7 @@ export default function ReferenceDetailPage() {
                         <li key={symptome}>
                           <Link
                             to={`/diagnostic-auto/${symptome}`}
-                            className="flex items-center gap-2 p-2 rounded hover:bg-orange-50 text-gray-700 hover:text-orange-700 transition-colors text-sm"
+                            className="flex items-center gap-2 p-2 rounded hover:bg-orange-50 text-orange-900 hover:text-orange-700 transition-colors text-sm"
                           >
                             <Badge
                               variant="outline"
@@ -1176,7 +1176,7 @@ export default function ReferenceDetailPage() {
               <Card className="shadow-lg">
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
-                    <Layers className="w-5 h-5 text-indigo-600" />
+                    <Layers className="w-5 h-5 text-foreground" />
                     Références liées
                   </CardTitle>
                 </CardHeader>
@@ -1186,11 +1186,11 @@ export default function ReferenceDetailPage() {
                       <li key={ref.slug}>
                         <Link
                           to={`/reference-auto/${ref.slug}`}
-                          className="flex items-center gap-2 p-2 rounded hover:bg-indigo-50 text-gray-700 hover:text-indigo-700 transition-colors text-sm"
+                          className="flex items-center gap-2 p-2 rounded hover:bg-muted text-gray-700 hover:text-foreground transition-colors text-sm"
                         >
                           <Badge
                             variant="outline"
-                            className="text-xs text-indigo-600 border-indigo-200 flex-shrink-0"
+                            className="text-xs text-foreground border-indigo-200 flex-shrink-0"
                           >
                             Réf.
                           </Badge>

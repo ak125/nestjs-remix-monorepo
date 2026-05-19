@@ -82,7 +82,7 @@ function highlightMatch(text: string, query: string): React.ReactNode {
 
   return parts.map((part, index) =>
     regex.test(part) ? (
-      <mark key={index} className="bg-yellow-200 text-gray-900 font-medium">
+      <mark key={index} className="bg-yellow-200 text-yellow-900 font-medium">
         {part}
       </mark>
     ) : (
@@ -370,7 +370,7 @@ export const GlobalSearch = memo(function GlobalSearch({
                   className={`flex items-center space-x-2 px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-all ${
                     selectedCategory === key
                       ? "bg-blue-600 text-white shadow-md scale-105"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      : "bg-gray-100 text-white hover:bg-gray-200"
                   }`}
                 >
                   <Icon className="w-4 h-4" />

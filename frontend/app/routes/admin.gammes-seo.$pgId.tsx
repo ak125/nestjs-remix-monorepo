@@ -550,10 +550,10 @@ export default function AdminGammeSeoDetail() {
                   </p>
                 </div>
                 <div
-                  className={`p-2 rounded-full ${detail.stats.vLevel_total_count > 0 ? "bg-purple-100" : "bg-gray-100"}`}
+                  className={`p-2 rounded-full ${detail.stats.vLevel_total_count > 0 ? "bg-muted" : "bg-gray-100"}`}
                 >
                   <TrendingUp
-                    className={`h-6 w-6 ${detail.stats.vLevel_total_count > 0 ? "text-purple-600" : "text-gray-400"}`}
+                    className={`h-6 w-6 ${detail.stats.vLevel_total_count > 0 ? "text-foreground" : "text-gray-400"}`}
                   />
                 </div>
               </div>
@@ -582,10 +582,10 @@ export default function AdminGammeSeoDetail() {
                   </p>
                 </div>
                 <div
-                  className={`p-2 rounded-full ${detail.stats.keyword_total > 0 ? "bg-indigo-100" : "bg-gray-100"}`}
+                  className={`p-2 rounded-full ${detail.stats.keyword_total > 0 ? "bg-muted" : "bg-gray-100"}`}
                 >
                   <Search
-                    className={`h-6 w-6 ${detail.stats.keyword_total > 0 ? "text-indigo-600" : "text-gray-400"}`}
+                    className={`h-6 w-6 ${detail.stats.keyword_total > 0 ? "text-foreground" : "text-gray-400"}`}
                   />
                 </div>
               </div>

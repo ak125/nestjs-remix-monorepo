@@ -198,7 +198,7 @@ export function StepSymptom({ state, dispatch }: Props) {
                 className={`gap-1.5 py-1.5 px-3 text-sm ${
                   i === 0
                     ? "bg-blue-50 border-blue-300 text-blue-700"
-                    : "bg-gray-50 border-gray-300 text-gray-700"
+                    : "bg-gray-50 border-gray-300 text-blue-900"
                 }`}
               >
                 {i === 0 && <CheckCircle2 className="w-3.5 h-3.5" />}

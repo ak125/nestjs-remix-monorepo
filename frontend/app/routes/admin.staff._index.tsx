@@ -327,12 +327,12 @@ export default function AdminStaff() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Super Admins</p>
-              <p className="text-2xl font-bold text-purple-600">
+              <p className="text-2xl font-bold text-foreground">
                 {data.stats.byLevel["9"] || 0}
               </p>
             </div>
             <div className="p-3 bg-muted rounded-full">
-              <span className="text-purple-600 text-xl">👑</span>
+              <span className="text-foreground text-xl">👑</span>
             </div>
           </div>
         </div>

@@ -344,7 +344,7 @@ export default function BrandModelTypes() {
                   {stats.fuelTypes.length}
                 </p>
               </div>
-              <Fuel className="h-8 w-8 text-purple-600" />
+              <Fuel className="h-8 w-8 text-foreground" />
             </div>
           </CardContent>
         </Card>

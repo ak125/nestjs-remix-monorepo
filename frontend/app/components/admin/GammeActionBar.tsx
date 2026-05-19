@@ -108,7 +108,7 @@ export function GammeActionBar({
               className={`text-[10px] px-1.5 py-0 ${
                 has
                   ? "bg-green-600 hover:bg-green-600 text-white"
-                  : "text-slate-400 border-slate-200"
+                  : "text-white border-slate-200"
               }`}
               title={
                 has ? `${r.label} : contenu présent` : `${r.label} : manquant`

@@ -365,7 +365,7 @@ export default function ProductsRangesAdvanced() {
         )}
 
         {user.role === "pro" && (
-          <Badge className="bg-gradient-to-r from-purple-500 to-pink-500">
+          <Badge className="bg-gradient-to-r to-pink-500">
             💎 PRO
           </Badge>
         )}
@@ -399,7 +399,7 @@ export default function ProductsRangesAdvanced() {
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-purple-600">
+            <div className="text-2xl font-bold text-foreground">
               {stats.totalProducts.toLocaleString()}
             </div>
             <p className="text-sm text-gray-600">Produits</p>

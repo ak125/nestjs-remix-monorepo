@@ -133,7 +133,7 @@ const INTENT_COLORS: Record<string, string> = {
   diagnostic: "bg-red-100 text-red-800",
   howto: "bg-blue-100 text-blue-800",
   buying: "bg-green-100 text-green-800",
-  reference: "bg-purple-100 text-purple-800",
+  reference: "bg-muted text-foreground",
   unknown: "bg-gray-100 text-gray-800",
 };
 

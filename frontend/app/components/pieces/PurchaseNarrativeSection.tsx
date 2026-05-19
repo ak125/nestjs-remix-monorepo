@@ -140,10 +140,10 @@ export const PurchaseNarrativeSection = memo(function PurchaseNarrativeSection({
           <div>
             <h3 className="font-semibold text-gray-900">{timing.title}</h3>
             <div className="mt-2 flex flex-wrap gap-3">
-              <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-50 border border-slate-200 rounded-lg text-sm font-medium text-slate-800">
+              <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-50 border border-slate-200 rounded-lg text-sm font-medium text-blue-900">
                 {timing.km}
               </span>
-              <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-50 border border-slate-200 rounded-lg text-sm font-medium text-slate-800">
+              <span className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-50 border border-slate-200 rounded-lg text-sm font-medium text-blue-900">
                 {timing.years}
               </span>
             </div>

@@ -143,7 +143,7 @@ export default function AdminSuppliersLayout() {
       color: "indigo",
       border: "border-indigo-500",
       iconColor: "text-indigo-600",
-      badgeColor: "bg-indigo-100 text-indigo-800",
+      badgeColor: "bg-muted text-foreground",
       barColor: "bg-indigo-500",
       stats: stats.tiers.principaux,
       pct: pctPrincipaux,
@@ -177,13 +177,13 @@ export default function AdminSuppliersLayout() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Header compact */}
-      <div className="bg-gradient-to-r from-indigo-600 to-blue-600 rounded-lg shadow-lg p-6 text-white mb-6">
+      <div className="bg-gradient-to-r to-blue-600 rounded-lg shadow-lg p-6 text-white mb-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Building2 className="h-10 w-10" />
             <div>
               <h1 className="text-3xl font-bold">Equipementiers</h1>
-              <p className="text-indigo-100 mt-0.5">
+              <p className="text-foreground mt-0.5">
                 {fmt(stats.totals.totalActive)} actifs &mdash;{" "}
                 {fmt(stats.totals.totalArticles)} articles
               </p>
@@ -191,7 +191,7 @@ export default function AdminSuppliersLayout() {
           </div>
           <div className="text-right">
             <div className="text-2xl font-bold">{activeRate}%</div>
-            <div className="text-xs text-indigo-200">
+            <div className="text-xs text-foreground">
               {fmt(stats.totals.totalWithArticles)} avec articles
             </div>
           </div>
@@ -213,7 +213,7 @@ export default function AdminSuppliersLayout() {
             <Link
               key={t.key}
               to={`/admin/suppliers?display=${t.key}`}
-              className={`bg-white rounded-lg shadow p-5 border-l-4 ${t.border} hover:shadow-md transition-shadow`}
+              className={`bg-white rounded-lg shadow p-5 ${t.border} hover:shadow-md transition-shadow`}
             >
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
@@ -243,13 +243,13 @@ export default function AdminSuppliersLayout() {
         })}
 
         {/* Total */}
-        <div className="bg-white rounded-lg shadow p-5 border-l-4 border-purple-500">
+        <div className="bg-white rounded-lg shadow p-5">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Users className="h-6 w-6 text-purple-600" />
+              <Users className="h-6 w-6 text-foreground" />
               <h2 className="font-semibold text-gray-900">Total Actifs</h2>
             </div>
-            <Badge className="bg-purple-100 text-purple-800 text-xs">
+            <Badge className="bg-muted text-foreground text-xs">
               {stats.totals.totalActive}
             </Badge>
           </div>

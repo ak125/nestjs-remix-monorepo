@@ -36,7 +36,7 @@ export default function PopularSearches() {
             <Link
               key={p.label}
               to={p.href}
-              className="inline-flex items-center min-h-[44px] rounded-full border border-slate-200 bg-white px-4 py-2.5 text-[13px] font-medium text-slate-600 hover:border-cta/30 hover:bg-orange-50 hover:text-cta transition-colors"
+              className="inline-flex items-center min-h-[44px] rounded-full border border-slate-200 bg-white px-4 py-2.5 text-[13px] font-medium text-orange-900 hover:border-cta/30 hover:bg-orange-50 hover:text-cta transition-colors"
             >
               {p.label}
             </Link>

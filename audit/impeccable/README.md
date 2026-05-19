@@ -33,28 +33,44 @@ node scripts/audit/impeccable-ratchet-check.mjs --json-file /tmp/cur.json
 node scripts/audit/impeccable-baseline-write.mjs --from /tmp/cur.json
 ```
 
-## Categories tracked (initial baseline)
+## Cascade history (264 → 20, -92%)
 
-See `baseline.json` for current snapshot. The cascade ROADMAP (see [tout-fait-r-cap plan](../../../.claude/plans/tout-fait-r-cap-wild-lollipop.md) at the repo root if present, or PR-history) eradicates them in order:
+| PR | Category | Delta | Cumulative |
+|----|----------|-------|------------|
+| #597 | (impeccable adoption + initial baseline 264) | — | 264 |
+| #602 | side-tab partial + ratchet infra | -16 | 248 |
+| #604 | side-tab full | -34 | 214 |
+| #610 | bounce-easing | -8 | 206 |
+| #608 | pure-black-white | -21 | 185 |
+| #620 | ai-color-palette | -57 | 128 |
+| #621 | husky warn-only (Phase 1 hook) | 0 | 128 |
+| (baseline drift / re-detection) | — | +34 | 162 |
+| #629 | R-SEO-09 Phase 2 AST diff (unblocks routes) | 0 | 162 |
+| #631 | cascade final routes-included + gray-on-color + low-priority sweep | -142 | 20 |
+| #633 (this PR) | husky block-default + schema maxByCategory | 0 | 20 |
 
-| Category | Initial | Target |
-|----------|---------|--------|
-| `ai-color-palette` | ~115 | 0 |
-| `side-tab` | ~50 | 0 |
-| `pure-black-white` | ~42 | 0 |
-| `gray-on-color` | ~27 | 0 |
-| `bounce-easing` | ~11 | 0 |
+## Categories — residual (closure state 2026-05)
 
-Residual categories (<11 each) are accepted in backlog; the ratchet prevents regrowth.
+| Category | Residual | Reason |
+|----------|----------|--------|
+| `pure-black-white` | 12 | 9 in `frontend/app/config/visual-intent.ts` (intentional config), 3 in shadcn UI primitives (`alert-dialog`, `dialog`, `sheet` — upstream `bg-black/80` overlay convention) |
+| `bounce-easing` | 3 | 2 in `frontend/app/styles/animations.css` (CSS surface), 1 false positive on `animate-bounce-success` |
+| `overused-font` | 2 | Both in `frontend/app/global.css` (CSS surface) |
+| `ai-color-palette` | 1 | Straggler in complex JSX |
+| `gradient-text` | 1 | Straggler in complex JSX |
+| `gray-on-color` | 1 | String-variable indirection (`const X = "..."`, referenced later by className) — out of AST scope without data-flow analysis |
+| **total** | **20** | |
 
-## Local pre-commit hook (Phase 1: warn-only)
+`byCategory` in the baseline already enforces "no growth per category" (the ratchet-check fails if any current count exceeds the baseline count for that category). Combined with `byFile` enforcing "no new files introduce issues", any regression in any dimension blocks the PR.
 
-A Husky pre-commit hook (`.husky/pre-commit`) runs the ratchet locally when a commit touches `frontend/**`, `packages/design-tokens/**`, `audit/impeccable/**`, or any of the ratchet's own files. It is **warn-only** in Phase 1 — it prints a notice if your change increases the count but does NOT block the commit. The CI workflow `.github/workflows/impeccable-ratchet.yml` is the authoritative BLOCKING gate.
+## Local pre-commit hook (Phase 2: block-by-default)
+
+The Husky pre-commit hook (`.husky/pre-commit`) runs the ratchet locally when a commit touches `frontend/**`, `packages/design-tokens/**`, `audit/impeccable/**`, or any of the ratchet's own files. As of Phase 2 closure (2026-05), the hook **blocks the commit by default** on regression — matching the CI workflow `.github/workflows/impeccable-ratchet.yml`.
 
 Hook env vars:
-- `IMPECCABLE_HOOK=skip` — silence the hook entirely (e.g., commits unrelated to design)
-- `IMPECCABLE_HOOK=block` — promote to blocking (planned default in Phase 2 once the cascade closes)
-- `IMPECCABLE_HOOK=warn` — default (print warning on regression)
+- `IMPECCABLE_HOOK=block` — **default** (blocks on regression)
+- `IMPECCABLE_HOOK=warn` — Phase 1 posture (print warning, do not block) — use for non-design commits where the cost of running impeccable would be wasted
+- `IMPECCABLE_HOOK=skip` — silence the hook entirely (emergency / unrelated commits only)
 
 The hook fires impeccable in `--fast` mode (skip Chromium download via `.npmrc`), so cost is ≤ 5s on average for affected commits.
 

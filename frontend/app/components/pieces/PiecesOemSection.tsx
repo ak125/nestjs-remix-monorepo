@@ -206,7 +206,7 @@ export const PiecesOemSection = memo(function PiecesOemSection({
                     {group.oemRefs!.map((ref, i) => (
                       <span
                         key={i}
-                        className={`px-2.5 py-1.5 bg-white border rounded-md text-xs font-mono text-gray-800 shadow-sm hover:shadow transition-all cursor-default ${
+                        className={`px-2.5 py-1.5 bg-white border rounded-md text-xs font-mono text-blue-900 shadow-sm hover:shadow transition-all cursor-default{
                           isAvant
                             ? "border-blue-200 hover:border-blue-400 hover:bg-blue-50"
                             : "border-orange-200 hover:border-orange-400 hover:bg-orange-50"
