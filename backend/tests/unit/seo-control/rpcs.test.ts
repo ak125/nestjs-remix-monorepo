@@ -22,8 +22,19 @@ const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const IS_PREPROD_DATASET = process.env.SUPABASE_TEST_DATASET === 'preprod';
 
-const describeIfDb =
-  SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY ? describe : describe.skip;
+// Skip when CI runs with mock placeholders (SUPABASE_URL=mock.supabase.co +
+// SUPABASE_SERVICE_ROLE_KEY=mock-key-for-ci per .github/workflows/ci.yml). The
+// rpc_seo_*_v1 tests are integration tests that need a real Supabase DB ;
+// when running against mock placeholders they hit `getaddrinfo ENOTFOUND`.
+// Real Supabase is wired only when CI sets SUPABASE_TEST_DATASET=preprod (or
+// running locally against a real project) — feedback_ci_smoke_neq_runtime_monitoring.
+const HAS_REAL_DB =
+  Boolean(SUPABASE_URL) &&
+  Boolean(SUPABASE_SERVICE_ROLE_KEY) &&
+  !SUPABASE_URL!.includes('mock') &&
+  SUPABASE_SERVICE_ROLE_KEY !== 'mock-key-for-ci';
+
+const describeIfDb = HAS_REAL_DB ? describe : describe.skip;
 
 const describeIfPreprod = IS_PREPROD_DATASET ? describe : describe.skip;
 
