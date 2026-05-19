@@ -230,6 +230,29 @@ export class FeatureFlagsService {
     return this.bool('VEHICLE_CTX_ENABLED', true);
   }
 
+  // ── Diagnostic KG shadow flags (PR-E) ──
+
+  /**
+   * Master switch for the KG shadow comparison (PR-E). Default `true` —
+   * the shadow path runs fire-and-forget alongside the canonical engines.
+   * Set `DIAGNOSTIC_KG_SHADOW_ENABLED=false` for emergency rollback.
+   * Disabled = no RPC call, no event emission, no metric.
+   */
+  get diagnosticKgShadowEnabled(): boolean {
+    return this.bool('DIAGNOSTIC_KG_SHADOW_ENABLED', true);
+  }
+
+  /**
+   * Whether the KG result is the canonical (primary) source of truth.
+   * Default `false` per canon `project_diagnostic_control_plane_v1_plan.md` :
+   * the KG only graduates to primary after V1.5 evidence gates pass
+   * (≥ 1000 golden cohort sessions with < 5 % divergence). Flipping early
+   * = production decision-bypassing-V1-evidence regression.
+   */
+  get diagnosticKgPrimaryEnabled(): boolean {
+    return this.bool('DIAGNOSTIC_KG_PRIMARY_ENABLED', false);
+  }
+
   // ── Write Guard flags (P1.5) ──
 
   get writeGuardEnabled(): boolean {
@@ -302,6 +325,8 @@ export class FeatureFlagsService {
     'WRITE_GUARD_CANARY_GROUPS',
     'RAG_VIRTUAL_MERGE_ENABLED',
     'VEHICLE_CTX_ENABLED',
+    'DIAGNOSTIC_KG_SHADOW_ENABLED',
+    'DIAGNOSTIC_KG_PRIMARY_ENABLED',
   ]);
 
   listFlags(): Record<

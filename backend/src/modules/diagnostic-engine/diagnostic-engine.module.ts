@@ -26,6 +26,7 @@ import { MaintenanceIntelligenceEngine } from './engines/maintenance-intelligenc
 import { RagEnrichmentEngine } from './engines/rag-enrichment.engine';
 import { MaintenanceCalculatorService } from './services/maintenance-calculator.service';
 import { DiagnosticContentService } from './services/diagnostic-content.service';
+import { KgShadowService } from './services/kg-shadow.service';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { DiagnosticContentService } from './services/diagnostic-content.service'
     RagEnrichmentEngine,
     MaintenanceCalculatorService,
     DiagnosticContentService,
+    KgShadowService, // PR-E — shadow KG comparison (fire-and-forget)
   ],
   exports: [
     DiagnosticEngineOrchestrator,

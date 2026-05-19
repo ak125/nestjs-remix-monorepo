@@ -12,3 +12,9 @@ export const VEHICLE_CONTEXT_COUNTERS = Symbol.for(
 export const PROMETHEUS_REGISTRY = Symbol.for(
   'Observability.PrometheusRegistry',
 );
+
+// PR-E — Diagnostic KG shadow counter (single counter, kept distinct from
+// the VehicleContext bundle so each module's listener can DI just what it needs).
+export const DIAGNOSTIC_KG_SHADOW_COUNTER = Symbol.for(
+  'Observability.DiagnosticKgShadowCounter',
+);

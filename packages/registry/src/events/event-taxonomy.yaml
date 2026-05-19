@@ -180,3 +180,22 @@ events:
     status: stable
     since: v1
     l1_metric: vehicle_ctx_consumed_total
+
+  # ── KG Engine shadow comparison (PR-E) ──
+  # Emitted fire-and-forget by KgShadowService after each canonical
+  # diagnostic. Feeds the V1.5 graduation gate : ≥ 1000 golden cohort
+  # sessions with < 5 % divergence.
+  - name: diagnostic_kg_shadow_diverged
+    domain: diagnostic
+    description: |
+      KG shadow comparison verdict. The KG RPC `kg_diagnose_vehicle_aware`
+      was called in parallel with the canonical scoring engine ; this event
+      reports whether top-N fault sets matched. NEVER affects the user-
+      visible diagnostic — shadow path only.
+    fields:
+      - { name: reason, type: string, required: true, description: "match | top1_diff | set_diff | kg_empty | kg_error" }
+      - { name: has_divergence, type: boolean, required: true, description: "false only when sets match exactly" }
+      - { name: jaccard_overlap, type: number, required: false, description: "0..1 overlap on top-N fault sets" }
+    status: stable
+    since: v1
+    l1_metric: diagnostic_kg_shadow_diverged_total

@@ -4,9 +4,12 @@ import { Registry, collectDefaultMetrics } from 'prom-client';
 import {
   PROMETHEUS_REGISTRY,
   VEHICLE_CONTEXT_COUNTERS,
+  DIAGNOSTIC_KG_SHADOW_COUNTER,
 } from './observability.tokens';
 import { buildVehicleContextCounters } from './vehicle-context.metrics';
 import { VehicleContextMetricsListener } from './vehicle-context-metrics.listener';
+import { buildDiagnosticKgShadowCounter } from './diagnostic-kg-shadow.metrics';
+import { DiagnosticKgShadowMetricsListener } from './diagnostic-kg-shadow-metrics.listener';
 import { PrometheusController } from './prometheus.controller';
 
 /**
@@ -42,8 +45,19 @@ import { PrometheusController } from './prometheus.controller';
       useFactory: (registry: Registry) => buildVehicleContextCounters(registry),
       inject: [PROMETHEUS_REGISTRY],
     },
+    {
+      provide: DIAGNOSTIC_KG_SHADOW_COUNTER,
+      useFactory: (registry: Registry) =>
+        buildDiagnosticKgShadowCounter(registry),
+      inject: [PROMETHEUS_REGISTRY],
+    },
     VehicleContextMetricsListener,
+    DiagnosticKgShadowMetricsListener, // PR-E — counts diagnostic_kg_shadow_diverged events
   ],
-  exports: [PROMETHEUS_REGISTRY, VEHICLE_CONTEXT_COUNTERS],
+  exports: [
+    PROMETHEUS_REGISTRY,
+    VEHICLE_CONTEXT_COUNTERS,
+    DIAGNOSTIC_KG_SHADOW_COUNTER,
+  ],
 })
 export class ObservabilityModule {}
