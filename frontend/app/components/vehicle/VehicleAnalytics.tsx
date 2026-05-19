@@ -1,6 +1,7 @@
 import { memo, useEffect, useCallback } from "react";
 import { type VehicleData } from "~/types/vehicle.types";
 import { logger } from "~/utils/logger";
+import { safeSessionStorage } from "~/utils/safe-storage";
 
 interface VehicleAnalyticsProps {
   vehicle: VehicleData;
@@ -77,15 +78,12 @@ export const VehicleAnalytics = memo(function VehicleAnalytics({
   );
 
   const getSessionId = (): string => {
-    // SSR-safe: sessionStorage only available on client
-    if (typeof window === "undefined") return "";
-
-    let sessionId = sessionStorage.getItem("analytics_session_id");
+    let sessionId = safeSessionStorage.getItem("analytics_session_id");
     if (!sessionId) {
       sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      sessionStorage.setItem("analytics_session_id", sessionId);
+      safeSessionStorage.setItem("analytics_session_id", sessionId);
     }
-    return sessionId;
+    return sessionId ?? "";
   };
 
   const sendAnalyticsEvent = async (event: AnalyticsEvent) => {
