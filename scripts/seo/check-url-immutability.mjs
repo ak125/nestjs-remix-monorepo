@@ -181,6 +181,16 @@ async function main() {
   }
 
   const baseRef = env.BASE_REF || "origin/main";
+  // Validate BASE_REF shape strictly before any use as a git argument.
+  // git ref names are restricted to a known character class ; this
+  // explicit allowlist prevents accidental shell-metacharacter exposure
+  // (defence in depth — we already use spawnSync with arg arrays, no
+  // shell, so injection is structurally impossible, but CodeQL flags
+  // the env-to-spawn flow without static proof).
+  if (!/^[A-Za-z0-9][A-Za-z0-9._\-/]{0,254}$/.test(baseRef) || baseRef.includes("..")) {
+    stderr.write(`::error:: BASE_REF '${baseRef}' is not a valid git ref name.\n`);
+    exit(2);
+  }
   const overrideActive = Boolean(env.R_SEO_09_OVERRIDE && env.R_SEO_09_OVERRIDE !== "0" && env.R_SEO_09_OVERRIDE !== "false");
 
   ensureBaseRef(baseRef);

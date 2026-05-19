@@ -6,8 +6,8 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { execFileSync, execSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -23,8 +23,10 @@ function git(cwd, ...args) {
 function setupRepo() {
   const root = mkdtempSync(join(tmpdir(), "r-seo-09-phase2-"));
   // Symlink node_modules so the CLI can resolve @typescript-eslint/parser
-  // without re-installing inside every tmpdir.
-  execSync(`ln -s ${JSON.stringify(NODE_MODULES)} ${JSON.stringify(join(root, "node_modules"))}`);
+  // without re-installing inside every tmpdir. Uses node:fs symlinkSync
+  // (no shell invocation) — CodeQL "shell command from uncontrolled path"
+  // false-positive otherwise.
+  symlinkSync(NODE_MODULES, join(root, "node_modules"));
   git(root, "init", "--quiet", "--initial-branch=main");
   git(root, "config", "user.email", "test@example.com");
   git(root, "config", "user.name", "Test");
