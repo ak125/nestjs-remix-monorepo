@@ -36,21 +36,25 @@ export const PreprodEnvContractSchema = z
   .object({
     NODE_ENV: z.enum(['preprod']),
     SUPABASE_URL: z.string().url(),
-    // Modern Supabase publishable key only : `sb_publishable_<≥30 char body>`.
+    // Modern Supabase publishable key. Documented format
+    // (https://supabase.com/docs/guides/api-keys) :
+    //   `sb_publishable_<22-char-random>_<8-char-checksum>`
+    // Body length is exactly 31 chars after the prefix (22 + 1 separator + 8).
     // The legacy JWT anon (`eyJ…` ~200 chars) is disabled on project
-    // cxpojprgwgubzjyqzmoq since 2025 (confirmed via Supabase MCP
-    // get_publishable_keys: legacy entry has disabled=true). Accepting the
-    // legacy shape was a silent failure mode — schema passed, deploy succeeded,
-    // every RPC then returned 'Invalid API key', and downstream caches poisoned
-    // with empty payloads (incident root cause for run 26104292014, fixed
-    // structurally by PR #637 + this regex).
-    // Backend validation (app.config.ts:67) only requires truthy at runtime ;
-    // preflight remains stricter — typo catch + key-rotation catch.
+    // cxpojprgwgubzjyqzmoq since 2025 (Supabase MCP get_publishable_keys
+    // confirms legacy entry has disabled=true). Accepting the legacy shape
+    // was the silent failure mode behind run 26104292014 — schema passed,
+    // deploy succeeded, every RPC returned 'Invalid API key', caches poisoned
+    // with empty payloads. Fixed structurally by PR #637 + this regex.
+    //
+    // Exact-length regex (not min) so Supabase format drift fails loud at
+    // preflight instead of silently. If Supabase ever publishes a longer
+    // key format, this is the canonical place to update.
     SUPABASE_ANON_KEY: z
       .string()
       .regex(
-        /^sb_publishable_[A-Za-z0-9_-]{30,}$/,
-        'SUPABASE_ANON_KEY must be a Supabase modern publishable key (prefix "sb_publishable_", ≥30 char body). Legacy JWT (eyJ…) format is disabled on project cxpojprgwgubzjyqzmoq — rotate via `gh secret set SUPABASE_ANON_KEY` with the value from Supabase Dashboard → Project Settings → API → Publishable API keys.',
+        /^sb_publishable_[A-Za-z0-9_-]{31}$/,
+        'SUPABASE_ANON_KEY must be a Supabase modern publishable key (`sb_publishable_<22-char-random>_<8-char-checksum>`, 46c total). Legacy JWT (eyJ…) is disabled on project cxpojprgwgubzjyqzmoq — rotate via Supabase Dashboard → Project Settings → API → Publishable API keys, then `gh secret set SUPABASE_ANON_KEY`.',
       ),
     JWT_SECRET: z
       .string()

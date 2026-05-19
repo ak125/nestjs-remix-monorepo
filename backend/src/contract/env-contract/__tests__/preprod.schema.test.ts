@@ -30,8 +30,26 @@ describe('PreprodEnvContractSchema — SUPABASE_ANON_KEY publishable-shape regex
     }
   });
 
-  it('rejects truncated/short publishable (right prefix but <30c body)', () => {
+  it('rejects truncated/short publishable (right prefix but body <31c)', () => {
     const env = { ...baseEnv, SUPABASE_ANON_KEY: 'sb_publishable_short' };
+    expect(PreprodEnvContractSchema.safeParse(env).success).toBe(false);
+  });
+
+  it('rejects oversized publishable (right prefix but body >31c — drift catch)', () => {
+    const env = {
+      ...baseEnv,
+      // 32-char body — one char too many vs documented spec
+      SUPABASE_ANON_KEY: 'sb_publishable_' + 'a'.repeat(32),
+    };
+    expect(PreprodEnvContractSchema.safeParse(env).success).toBe(false);
+  });
+
+  it('rejects body containing whitespace or invalid chars', () => {
+    const env = {
+      ...baseEnv,
+      // 31 chars total but contains a space
+      SUPABASE_ANON_KEY: 'sb_publishable_' + 'a'.repeat(15) + ' ' + 'b'.repeat(15),
+    };
     expect(PreprodEnvContractSchema.safeParse(env).success).toBe(false);
   });
 
