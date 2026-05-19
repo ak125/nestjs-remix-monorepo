@@ -9,6 +9,12 @@ import {
   type VehicleData,
 } from "../../types/pieces-route.types";
 import { ImageOptimizer } from "../image-optimizer";
+import {
+  DEFAULT_RETURN_POLICY_FR,
+  DEFAULT_SELLER,
+  DEFAULT_SHIPPING_DETAILS_FR,
+  computePriceValidUntil,
+} from "./pieces-schema-commerce.constants";
 
 // ✅ Migration /img/* : URLs absolues pour SEO schema JSON-LD
 const SITE_URL = "https://www.automecanik.com";
@@ -91,6 +97,7 @@ function buildProductSchema(
     name: `${gamme.name} ${vehicle.marque} ${vehicle.modele} ${vehicle.type}`,
     description: seo.description,
     url: canonicalUrl,
+    category: gamme.name,
     image: firstPiece.image
       ? normalizeImageUrl(
           firstPiece.image.startsWith("http")
@@ -113,11 +120,10 @@ function buildProductSchema(
       highPrice: maxPrice,
       offerCount: count,
       availability: "https://schema.org/InStock",
-      seller: {
-        "@type": "Organization",
-        name: "Automecanik",
-        url: "https://www.automecanik.com",
-      },
+      priceValidUntil: computePriceValidUntil(),
+      seller: DEFAULT_SELLER,
+      shippingDetails: DEFAULT_SHIPPING_DETAILS_FR,
+      hasMerchantReturnPolicy: DEFAULT_RETURN_POLICY_FR,
     },
     additionalProperty: [
       ...oemRefsArray.slice(0, 15).map((ref, i) => ({
