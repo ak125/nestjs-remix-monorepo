@@ -49,7 +49,7 @@
 //
 // Référence canon : R-SEO-09 (governance-vault/ledger/rules/rules-seo-pagerole.md)
 
-import { execSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import { readFileSync, existsSync } from "node:fs";
 import { resolve, basename } from "node:path";
 import { argv, env, exit, stderr, stdout } from "node:process";
@@ -90,20 +90,22 @@ Exit codes:
 `);
 }
 
-function tryRun(cmd) {
-  try {
-    return execSync(cmd, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
-  } catch {
-    return null;
-  }
+// Run git with positional args (no shell expansion). Returns stdout on success
+// or null on non-zero exit. Critical for handling paths containing shell
+// metacharacters (`$`, backticks, etc.) — common in Remix route filenames
+// like `admin.gammes-seo.$pgId.tsx` where `$pgId` is a route param marker.
+function tryRun(args) {
+  const r = spawnSync("git", args, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+  if (r.status !== 0) return null;
+  return r.stdout;
 }
 
 function ensureBaseRef(baseRef) {
   // Try local resolve first ; fall back to fetching the underlying remote ref.
-  if (tryRun(`git rev-parse --verify ${JSON.stringify(baseRef)}`) !== null) return;
+  if (tryRun(["rev-parse", "--verify", baseRef]) !== null) return;
   const local = baseRef.startsWith("origin/") ? baseRef.slice("origin/".length) : baseRef;
-  tryRun(`git fetch origin ${JSON.stringify(local)} --quiet`);
-  if (tryRun(`git rev-parse --verify ${JSON.stringify(baseRef)}`) === null) {
+  tryRun(["fetch", "origin", local, "--quiet"]);
+  if (tryRun(["rev-parse", "--verify", baseRef]) === null) {
     stderr.write(`::error:: BASE_REF '${baseRef}' not resolvable. Fetch failed or ref missing.\n`);
     exit(2);
   }
@@ -114,7 +116,7 @@ function listChangedFiles(baseRef) {
   // For renames (R100), `git diff` emits "R100\told\tnew" → emit both paths
   // marked respectively as DELETE-on-old / ADD-on-new so the AST diff catches
   // the filename change (canonical surface).
-  const raw = tryRun(`git diff --name-status ${JSON.stringify(baseRef)}...HEAD`);
+  const raw = tryRun(["diff", "--name-status", `${baseRef}...HEAD`]);
   if (raw === null) return [];
   const entries = [];
   for (const line of raw.split("\n")) {
@@ -133,7 +135,7 @@ function listChangedFiles(baseRef) {
 }
 
 function readBaseVersion(baseRef, path) {
-  return tryRun(`git show ${JSON.stringify(`${baseRef}:${path}`)}`);
+  return tryRun(["show", `${baseRef}:${path}`]);
 }
 
 function readHeadVersion(path) {

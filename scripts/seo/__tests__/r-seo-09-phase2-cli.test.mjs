@@ -157,6 +157,26 @@ test("CLI --audit mode never exits non-zero", () => {
   }
 });
 
+test("CLI handles filenames with `$` (Remix route param markers like admin.gammes-seo.$pgId.tsx)", () => {
+  // Regression : earlier shell-based exec mangled `$pgId` via variable
+  // expansion → base-surface returned null, false-positive HARD BLOCK.
+  // This test exercises a classic Remix dynamic route filename.
+  const root = setupRepo();
+  try {
+    commitFile(root, "README.md", "hi", "init");
+    commitFile(root, "frontend/app/routes/admin.gammes-seo.$pgId.tsx", BASE_ROUTE, "add dynamic route");
+    git(root, "branch", "feature");
+    git(root, "checkout", "--quiet", "feature");
+    const modified = BASE_ROUTE.replace("text-purple-600", "text-foreground");
+    commitFile(root, "frontend/app/routes/admin.gammes-seo.$pgId.tsx", modified, "classname swap");
+
+    const result = runCli(root, ["--pr"]);
+    assert.equal(result.code, 0, `dynamic-route className change must pass; got ${result.code}\nstdout: ${result.stdout}\nstderr: ${result.stderr}`);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("CLI blocks on route rename (filename = URL pattern)", () => {
   const root = setupRepo();
   try {
