@@ -58,6 +58,7 @@ levels:
       - eslint:fafa-ports/port-dto-shape            # ≤ 8 fields / ≤ 3 nesting (eslint-plugin-fafa-ports, replaces buggy ast-grep dropped 2026-05-18)
       - ast-grep:frontend-analytics-canonical-event # track* must reference event-taxonomy
       - ast-grep:control-plane-business-logic       # @Injectable() in control-plane/ allow-list only
+      - script:check-diagnostic-engine-boundary     # PR-D — engines/ may only cross-import via ports/
 
   L3:
     behavior: |
