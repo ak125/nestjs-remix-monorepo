@@ -60,6 +60,13 @@ jobs:
       - name: 🎯 ast-grep scan (rule-pattern guard — blocks on severity:error)
         run: npm run audit:ast
 
+      - name: 🪪 Diagnostic engine boundary (PR-D, BLOCKING)
+        # Engines under backend/src/modules/diagnostic-engine/engines/ must not
+        # cross-import sibling modules — only via ports/ (canon PR-A.1
+        # ddd-bounded-contexts-anti-god-engine). Allowlist for V1 grandfathered
+        # imports lives inline in the script.
+        run: bash scripts/governance/check-diagnostic-engine-boundary.sh
+
       - name: 🔁 madge — circular dependencies (informational)
         if: always()
         continue-on-error: true
