@@ -55,7 +55,9 @@ export class SeoControlRefresherService implements OnModuleInit {
   ) {}
 
   onModuleInit(): void {
-    this.logger.log('🚀 Init SeoControlRefresher — scheduling per-block SWR jobs');
+    this.logger.log(
+      '🚀 Init SeoControlRefresher — scheduling per-block SWR jobs',
+    );
     void this.scheduleAll();
   }
 

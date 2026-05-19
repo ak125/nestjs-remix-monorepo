@@ -18,7 +18,7 @@
  *   - packages/seo-types/src/control-dashboard.ts (Zod contract)
  *   - backend/supabase/migrations/20260518_seo_control_002_rpcs.sql (5 RPCs v1)
  */
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHash, randomUUID } from 'node:crypto';
 import stableStringify from 'fast-json-stable-stringify';

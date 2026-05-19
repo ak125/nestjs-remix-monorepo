@@ -47,7 +47,11 @@ export class SeoControlDecisionsService {
     if (row.position_delta > 2) {
       ruleIds.push('LOSER_RANK_DROP_V1');
       causes.push('ranking_drop');
-      actions.push('audit_canonical', 'check_competitor_serp', 'compare_top_queries_sample');
+      actions.push(
+        'audit_canonical',
+        'check_competitor_serp',
+        'compare_top_queries_sample',
+      );
     }
 
     // CTR drop at stable position : grosse perte clics, position quasi stable
@@ -59,7 +63,10 @@ export class SeoControlDecisionsService {
     ) {
       ruleIds.push('LOSER_CTR_DROP_STABLE_POS_V1');
       causes.push('ctr_drop_at_stable_position');
-      actions.push('audit_meta_title_description', 'check_serp_features_change');
+      actions.push(
+        'audit_meta_title_description',
+        'check_serp_features_change',
+      );
     }
 
     // Lost visibility : position basse mais encore vue

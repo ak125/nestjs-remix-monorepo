@@ -48,7 +48,9 @@ export class SeoControlRefreshProcessor {
 
   @OnQueueError()
   onError(err: Error): void {
-    this.logger.error(`Queue ${SEO_CONTROL_REFRESH_QUEUE} error: ${err.message}`);
+    this.logger.error(
+      `Queue ${SEO_CONTROL_REFRESH_QUEUE} error: ${err.message}`,
+    );
   }
 
   @OnQueueFailed()

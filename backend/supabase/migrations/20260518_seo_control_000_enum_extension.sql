@@ -16,7 +16,16 @@
 -- Postgres ≥ 12 supports `ALTER TYPE ... ADD VALUE IF NOT EXISTS` inside
 -- a transaction provided the new value is not used in the SAME transaction.
 -- This migration ONLY adds the value (no usage), so it is transaction-safe.
+--
+-- Squawk note : `require-enum-value-ordering` ignored — Postgres ENUM
+-- ordinality is irrelevant to the dashboard audit usage (`event_type='dashboard_view'`
+-- is compared by equality, never by sort). Appending is the canonical pattern.
 -- =====================================================
+
+-- squawk-ignore require-enum-value-ordering
+
+set lock_timeout = '2s';
+set statement_timeout = '5s';
 
 ALTER TYPE seo_event_type ADD VALUE IF NOT EXISTS 'dashboard_view';
 

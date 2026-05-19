@@ -44,7 +44,10 @@ export class SeoControlController {
   ) {}
 
   @Get('snapshot')
-  async snapshot(@Query('range') rangeRaw: string | undefined, @Req() req: any) {
+  async snapshot(
+    @Query('range') rangeRaw: string | undefined,
+    @Req() req: any,
+  ) {
     // Kill-switch silencieux : flag OFF → 404 (hide surface to non-admins).
     if (!this.featureFlags.seoControlDashboardEnabled) {
       throw new NotFoundException();

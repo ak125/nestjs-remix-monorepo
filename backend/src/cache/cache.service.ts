@@ -163,7 +163,11 @@ export class CacheService implements OnModuleInit {
    * @returns true if the key was set (first occurrence in window),
    *          false if the key already existed (deduped — skip side effects).
    */
-  async setNx(key: string, value: string, ttlSeconds: number): Promise<boolean> {
+  async setNx(
+    key: string,
+    value: string,
+    ttlSeconds: number,
+  ): Promise<boolean> {
     try {
       if (!this.redisClient || !this.redisReady) {
         this.logger.warn(`Redis not ready for SET NX ${key}`);

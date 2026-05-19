@@ -13,6 +13,9 @@
 -- All private (no GRANT). Accessed only through the v1 RPC wrappers.
 -- =====================================================
 
+set lock_timeout = '2s';
+set statement_timeout = '5s';
+
 -- ─── Helper 1 : URL → R-surface mapping ──────────────────────────
 -- VERSION: v1 (PR-SBD-1)
 -- Reference : docs/seo/legacy_to_monorepo_gap_matrix.md + frontend/app/routes/

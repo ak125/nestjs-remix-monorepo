@@ -21,6 +21,9 @@
 -- and future v2 scoring migration audit.
 -- =====================================================
 
+set lock_timeout = '2s';
+set statement_timeout = '5s';
+
 -- ─── RPC 1 : Traffic Window with delta vs previous ───────────────
 CREATE OR REPLACE FUNCTION rpc_seo_traffic_v1(
   p_window_days INT,

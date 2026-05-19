@@ -27,6 +27,14 @@
 -- 4 NEW indexes added below (not duplicated, complementary access paths) :
 -- =====================================================
 
+-- CONCURRENTLY index builds can take minutes on large tables (GSC daily has
+-- ~30M rows). lock_timeout protects against blocking concurrent writers ;
+-- statement_timeout is intentionally permissive (30min) — index build is the
+-- expected slow operation. This timeout pair applies to each CREATE INDEX
+-- below since they share the same session.
+set lock_timeout = '2s';
+set statement_timeout = '30min';
+
 -- Index 1 : (date, page) covering — for windowed scans grouped by page
 -- Complements existing (page, date DESC) by giving date-first access path
 -- Used by : rpc_seo_traffic_v1, rpc_seo_top_losers_v1, rpc_seo_low_ctr_v1
