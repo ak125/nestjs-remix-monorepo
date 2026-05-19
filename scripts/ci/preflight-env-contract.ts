@@ -14,23 +14,29 @@
  *
  * Usage: npx --no-install tsx scripts/ci/preflight-env-contract.ts
  */
-import { PreprodEnvContractSchema } from '../../backend/src/contract/env-contract/index.ts';
+import { PreprodEnvContractSchema } from "../../backend/src/contract/env-contract/index.ts";
 
 const result = PreprodEnvContractSchema.safeParse(process.env);
 
 if (!result.success) {
-  console.error('::error::Preflight env contract violation — backend boot would crash.');
-  console.error('');
-  console.error('Issues détectées :');
+  console.error(
+    "::error::Preflight env contract violation — backend boot would crash.",
+  );
+  console.error("");
+  console.error("Issues détectées :");
   for (const issue of result.error.issues) {
-    const path = issue.path.length > 0 ? String(issue.path[0]) : '(root)';
+    const path = issue.path.length > 0 ? String(issue.path[0]) : "(root)";
     console.error(`  ❌ ${path}: ${issue.message}`);
   }
-  console.error('');
-  console.error('SoT contrat : backend/src/contract/env-contract/preprod.schema.ts');
-  console.error('Fix : compléter le heredoc .env.preprod du step "🧪 Deploy to PREPROD".');
+  console.error("");
+  console.error(
+    "SoT contrat : backend/src/contract/env-contract/preprod.schema.ts",
+  );
+  console.error(
+    'Fix : compléter le heredoc .env.preprod du step "🧪 Deploy to PREPROD".',
+  );
   process.exit(1);
 }
 
-console.log('✓ Preflight env contract OK — PreprodEnvContractSchema validé');
+console.log("✓ Preflight env contract OK — PreprodEnvContractSchema validé");
 process.exit(0);

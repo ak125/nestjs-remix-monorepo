@@ -40,9 +40,7 @@ export const PreprodEnvContractSchema = z
     JWT_SECRET: z
       .string()
       .min(32, 'JWT_SECRET must be >= 32 chars (HS256 / NIST 2026 guidance)'),
-    SESSION_SECRET: z
-      .string()
-      .min(32, 'SESSION_SECRET must be >= 32 chars'),
+    SESSION_SECRET: z.string().min(32, 'SESSION_SECRET must be >= 32 chars'),
     READ_ONLY: z.literal('true'),
     REDIS_URL: z
       .string()
