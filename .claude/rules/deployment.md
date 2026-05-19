@@ -53,6 +53,14 @@ Toute occurrence des patterns ci-dessous dans un fichier `.md` du repo (hors err
 - `git tag v… && git push --tags` = **promotion `:preprod` → `:production` + redéploiement container PROD**.
 - Jamais annoncer "déployé en PROD" après un simple merge sur `main`.
 
+## Contrat env CI (preflight)
+
+Le `.env.preprod` heredoc-généré par le step `🧪 Deploy to PREPROD` (ci.yml) est validé **avant** `docker compose up` par `scripts/ci/preflight-env-contract.ts` contre le SoT Zod `backend/src/contract/env-contract/preprod.schema.ts`. Toute divergence entre les invariants runtime backend et l'env injecté = CI fail immédiat lisible (avec liste structurée des issues), plutôt qu'un crash boot NestJS opaque dans le container.
+
+Le schema PREPROD couvre les vars qui font crash le boot si absentes ou mal-formées : `NODE_ENV` (literal `preprod`), `SUPABASE_URL`, `SUPABASE_ANON_KEY` (anon only, ADR-028 Option D), `JWT_SECRET` (≥32c, HS256 VCP cookie depuis PR #606), `SESSION_SECRET` (≥32c, main.ts:102 fail-fast), `READ_ONLY=true` (literal, ADR-028), `REDIS_URL` (regex `^rediss?://`).
+
+`.passthrough()` Phase 1 — les vars hors-contrat (`SEO_CHAIN_*_MODE`, `APP_URL`, `RAG_*`, `CRUX_API_KEY`, etc.) passent. Premier pas vers Environment Contract Control Plane (ADR follow-up Phase 2 : convergence runtime/CI/schemas/env.example/deploy + ratchet new-var-without-schema-entry).
+
 ## Workflow nominal — Promote DEV (code) → PROD
 
 ```bash
