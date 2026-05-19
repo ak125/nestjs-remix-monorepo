@@ -285,7 +285,7 @@ export default function BrandsIndex() {
           </Card>
           <Card>
             <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-purple-600 mb-2">
+              <div className="text-3xl font-bold text-foreground mb-2">
                 {brands.reduce(
                   (sum, brand) => sum + (brand.models_count || 0),
                   0,

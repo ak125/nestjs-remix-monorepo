@@ -49,7 +49,7 @@ export const AIPredictionsPanel = memo(function AIPredictionsPanel({
 
       <div className="relative z-10">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-3xl font-bold bg-gradient-to-r to-cyan-600 bg-clip-text text-transparent flex items-center gap-3">
+          <h2 className="text-3xl font-bold text-foreground flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-r rounded-xl flex items-center justify-center animate-pulse">
               <span className="text-white text-lg">🤖</span>
             </div>
@@ -203,7 +203,7 @@ const CostOptimizationCard: React.FC<{
             </span>
           </div>
           <div className="text-right">
-            <div className="text-3xl font-black bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+            <div className="text-3xl font-black text-foreground">
               {optimization.potentialSavings}€
             </div>
             <div className="text-xs text-green-600 font-medium">
@@ -284,7 +284,7 @@ const AIFooter: React.FC<{
         </div>
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-lg font-bold bg-gradient-to-r bg-clip-text text-transparent">
+            <span className="text-lg font-bold text-foreground">
               Analyse IA V5.2 Ultimate
             </span>
             <div className="bg-gradient-to-r rounded-full px-2 py-1">
@@ -309,7 +309,7 @@ const AIFooter: React.FC<{
             <div className="w-[87%] h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full animate-pulse" />
           </div>
         </div>
-        <div className="text-2xl font-black bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+        <div className="text-2xl font-black text-foreground">
           87%
         </div>
         <div className="text-xs text-green-600 font-medium">Excellente</div>

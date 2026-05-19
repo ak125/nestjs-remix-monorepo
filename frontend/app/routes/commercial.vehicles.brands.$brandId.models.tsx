@@ -232,8 +232,8 @@ export default function CommercialVehiclesBrandModels() {
                     className="p-4 border border-gray-200 rounded-lg hover:border-purple-300 hover:shadow-sm transition-all cursor-pointer"
                   >
                     <div className="flex items-center justify-between mb-3">
-                      <div className="p-2 bg-purple-50 rounded-lg">
-                        <Car className="h-6 w-6 text-purple-600" />
+                      <div className="p-2 bg-muted rounded-lg">
+                        <Car className="h-6 w-6 text-foreground" />
                       </div>
                       <span className="text-xs text-gray-500">
                         #{model.modele_id}

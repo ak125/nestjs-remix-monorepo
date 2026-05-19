@@ -107,7 +107,7 @@ export default function CouleursConstructeursAdminPage() {
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-gradient-to-br from-purple-700 to-violet-800"></span>
+                <span className="w-3 h-3 rounded-full bg-gradient-to-br"></span>
                 <span>
                   <strong>Violet</strong> : DS, Rolls-Royce...
                 </span>

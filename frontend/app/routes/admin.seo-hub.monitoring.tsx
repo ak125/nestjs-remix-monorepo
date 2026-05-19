@@ -357,7 +357,7 @@ export default function SeoHubMonitoring() {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
-                <Eye className="h-5 w-5 text-purple-500" />
+                <Eye className="h-5 w-5 text-foreground" />
                 Changements d'Indexation
               </CardTitle>
               <CardDescription>
@@ -504,7 +504,7 @@ export default function SeoHubMonitoring() {
                                 ? "bg-red-100 text-red-700"
                                 : url.urgencyScore >= 50
                                   ? "bg-amber-100 text-amber-700"
-                                  : "bg-gray-100 text-gray-700",
+                                  : "bg-gray-100 text-red-900",
                             )}
                           >
                             {url.urgencyScore}%

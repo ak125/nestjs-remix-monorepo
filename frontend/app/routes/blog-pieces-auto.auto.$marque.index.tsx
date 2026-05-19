@@ -679,7 +679,7 @@ export default function BlogPiecesAutoMarque() {
                                           ? "bg-orange-100 text-orange-800 border-orange-300"
                                           : isEssence
                                             ? "bg-success/20 text-success border-green-300"
-                                            : "bg-gray-100 text-gray-800 border-gray-300"
+                                            : "bg-gray-100 text-orange-900 border-gray-300"
                                       }`}
                                     >
                                       <span>
@@ -838,7 +838,7 @@ export default function BlogPiecesAutoMarque() {
                 <CardContent className="p-6 text-center">
                   <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
                     <svg
-                      className="w-8 h-8 text-purple-600"
+                      className="w-8 h-8 text-foreground"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"

@@ -130,7 +130,7 @@ export const ProductSearch = memo(function ProductSearch({
           <div className="absolute z-50 w-full mt-2 bg-white rounded-lg shadow-2xl border border-gray-200 max-h-[500px] overflow-y-auto">
             {isLoading ? (
               <div className="p-8 text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                <div className="animate-spin rounded-full h-8 w-8 mx-auto"></div>
                 <p className="mt-2 text-gray-600">Recherche en cours...</p>
               </div>
             ) : results.length > 0 ? (

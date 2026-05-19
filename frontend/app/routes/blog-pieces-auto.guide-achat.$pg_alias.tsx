@@ -601,17 +601,17 @@ export default function R6GuidePage() {
 
                 {/* Fiche technique R4 (specifique) ou Glossaire (fallback) */}
                 {r4Reference ? (
-                  <Card className="border-indigo-200 bg-indigo-50/50">
+                  <Card className="border-indigo-200 bg-muted/50">
                     <div className="p-4">
                       <Link
                         to={`/reference-auto/${r4Reference.slug}`}
                         className="flex items-start gap-3 group"
                       >
-                        <div className="p-2 bg-indigo-100 rounded-lg shrink-0">
-                          <BookOpen className="w-4 h-4 text-indigo-600" />
+                        <div className="p-2 bg-muted rounded-lg shrink-0">
+                          <BookOpen className="w-4 h-4 text-foreground" />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">
+                          <p className="text-sm font-medium text-gray-900 group-hover:text-foreground transition-colors">
                             {r4Reference.title}
                           </p>
                           {r4Reference.roleMecanique && (
@@ -619,7 +619,7 @@ export default function R6GuidePage() {
                               {r4Reference.roleMecanique}
                             </p>
                           )}
-                          <p className="text-xs text-indigo-600 mt-1 font-medium">
+                          <p className="text-xs text-foreground mt-1 font-medium">
                             Voir la fiche technique
                           </p>
                         </div>
@@ -627,17 +627,17 @@ export default function R6GuidePage() {
                     </div>
                   </Card>
                 ) : (
-                  <Card className="border-indigo-200 bg-indigo-50/50">
+                  <Card className="border-indigo-200 bg-muted/50">
                     <div className="p-4">
                       <Link
                         to="/reference-auto"
                         className="flex items-center gap-3 group"
                       >
-                        <div className="p-2 bg-indigo-100 rounded-lg shrink-0">
-                          <BookOpen className="w-4 h-4 text-indigo-600" />
+                        <div className="p-2 bg-muted rounded-lg shrink-0">
+                          <BookOpen className="w-4 h-4 text-foreground" />
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">
+                          <p className="text-sm font-medium text-gray-900 group-hover:text-foreground transition-colors">
                             Glossaire pieces auto
                           </p>
                           <p className="text-xs text-gray-500">

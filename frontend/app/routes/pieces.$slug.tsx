@@ -769,7 +769,7 @@ export default function PiecesDetailPage() {
               Retours 30 jours
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+              <span className="w-1.5 h-1.5 rounded-full bg-primary" />
               Paiement sécurisé
             </span>
           </div>
@@ -798,7 +798,7 @@ export default function PiecesDetailPage() {
             </a>
             <a
               href="/reference-auto"
-              className="text-purple-600 hover:text-purple-800 transition-colors"
+              className="text-foreground hover:text-foreground transition-colors"
             >
               Fiche technique
             </a>

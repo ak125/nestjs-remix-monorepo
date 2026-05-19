@@ -488,7 +488,7 @@ const START_HERE = [
     fallbackExcerpt:
       "Comprendre les differences entre pieces d'origine (OEM), equipementier et adaptable pour faire le bon choix.",
     icon: Shield,
-    color: "from-blue-500 to-indigo-600",
+    color: "from-blue-500",
   },
   {
     slug: "_erreurs-achat",
@@ -592,7 +592,7 @@ function FaqSection() {
               <button
                 type="button"
                 onClick={() => setShowAll(true)}
-                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:border-green-400 hover:text-green-600 hover:bg-green-50 transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-green-900 bg-white border border-gray-200 rounded-lg hover:border-green-400 hover:text-green-600 hover:bg-green-50 transition-colors"
               >
                 <ChevronDown className="w-4 h-4" />
                 Voir {FAQ_ITEMS.length - 6} autres questions
@@ -859,7 +859,7 @@ export default function BlogGuidesIndex() {
                   label: "OEM vs equipementier",
                   sub: "Qualite, marques, garanties",
                   img: "/images/og/glossaire-reference.webp",
-                  color: "from-blue-600/80 to-indigo-700/80",
+                  color: "from-blue-600/80 /80",
                 },
                 {
                   href: "#methode",
@@ -1007,7 +1007,7 @@ export default function BlogGuidesIndex() {
 
       {/* ========== GUIDES PRATIQUES (outils transversaux) ========== */}
       {toolGuides.length > 0 && (
-        <section className="py-8 bg-gradient-to-r from-blue-50 to-indigo-50 border-y border-blue-100">
+        <section className="py-8 bg-gradient-to-r from-blue-50 border-y border-blue-100">
           <div className="container mx-auto px-4">
             <div className="max-w-5xl mx-auto">
               <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
@@ -1031,7 +1031,7 @@ export default function BlogGuidesIndex() {
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                             loading="lazy"
                           />
-                          <div className="absolute inset-0 bg-gradient-to-br from-blue-600/40 to-indigo-700/30" />
+                          <div className="absolute inset-0 bg-gradient-to-br from-blue-600/40 /30" />
                           <Wrench className="absolute bottom-2 right-2 w-5 h-5 text-white/80" />
                         </div>
                         <CardContent className="flex-1 p-4">
@@ -1250,7 +1250,7 @@ export default function BlogGuidesIndex() {
                     <button
                       type="button"
                       onClick={() => toggleFamily(family)}
-                      className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:border-green-400 hover:text-green-600 hover:bg-green-50 transition-colors"
+                      className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-green-900 bg-white border border-gray-200 rounded-lg hover:border-green-400 hover:text-green-600 hover:bg-green-50 transition-colors"
                     >
                       <ChevronDown className="w-4 h-4" />
                       Voir les {hiddenCount} autres guides
@@ -1349,7 +1349,7 @@ export default function BlogGuidesIndex() {
 
       {/* ========== CROSS-LINK CONSEILS ========== */}
       {relatedAdvice.length > 0 && (
-        <section className="py-12 bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+        <section className="py-12 bg-gradient-to-br from-blue-50 via-white">
           <div className="container mx-auto px-4">
             <div className="max-w-6xl mx-auto">
               <div className="flex items-center justify-between mb-8">
