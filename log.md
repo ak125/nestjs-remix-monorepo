@@ -825,3 +825,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `refactor/impeccable-bounce-easing`
 - **Décision** : refactor(frontend): smooth bounce-easing animations (-8, components-only)
 - **Sortie** : PR #610 | commits f260a8de4
+
+## 2026-05-19 — chore/impeccable-husky-hardening (auto)
+
+- **Branche** : `chore/impeccable-husky-hardening`
+- **Décision** : chore(husky): wire impeccable ratchet as warn-only pre-commit hook (PR 6)
+- **Sortie** : PR #621 | commits f977316a4
