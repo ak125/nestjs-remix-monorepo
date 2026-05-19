@@ -321,7 +321,7 @@ export default function AdminRagIngest() {
           className={
             row.type === "web"
               ? "bg-blue-100 text-blue-700 hover:bg-blue-100"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-100"
+              : "bg-gray-100 text-blue-900 hover:bg-gray-100"
           }
         >
           {row.type === "web" ? "URL" : "PDF"}
@@ -983,7 +983,7 @@ export default function AdminRagIngest() {
       <Card className="border-purple-200">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm font-medium">
-            <FlaskConical className="h-4 w-4 text-purple-600" />
+            <FlaskConical className="h-4 w-4 text-foreground" />
             PDF &rarr; RAG Merge
           </CardTitle>
         </CardHeader>
@@ -1066,7 +1066,7 @@ export default function AdminRagIngest() {
             <Button
               onClick={() => handleMerge("apply")}
               disabled={mergeSubmitting}
-              className="gap-1.5 bg-purple-600 hover:bg-purple-700"
+              className="gap-1.5 bg-primary hover:bg-primary"
             >
               {mergeSubmitting && mergeMode === "apply" ? (
                 <RefreshCw className="h-4 w-4 animate-spin" />
@@ -1080,7 +1080,7 @@ export default function AdminRagIngest() {
           {/* Merge result */}
           {mergeResult && (
             <div
-              className={`rounded-md border p-3 text-sm ${mergeResult.error ? "bg-red-50 border-red-200 text-red-800" : "bg-purple-50 border-purple-200 text-purple-900"}`}
+              className={`rounded-md border p-3 text-sm ${mergeResult.error ? "bg-red-50 border-red-200 text-red-800" : "bg-muted border-purple-200 text-foreground"}`}
             >
               {mergeResult.error ? (
                 <p>{mergeResult.error}</p>
@@ -1089,7 +1089,7 @@ export default function AdminRagIngest() {
                   <div className="flex flex-wrap gap-2">
                     <Badge
                       variant="secondary"
-                      className="bg-purple-100 text-purple-700"
+                      className="bg-muted text-foreground"
                     >
                       {mergeResult.status === "preview" ? "Preview" : "Applied"}
                     </Badge>
@@ -1119,7 +1119,7 @@ export default function AdminRagIngest() {
                   {mergeResult.mergedFile && (
                     <p className="text-xs">
                       Fichier merge :{" "}
-                      <code className="rounded bg-purple-100 px-1 py-0.5 font-mono text-xs">
+                      <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">
                         {mergeResult.mergedFile}
                       </code>
                     </p>
@@ -1139,7 +1139,7 @@ export default function AdminRagIngest() {
                     )}
                   {mergeResult.patch != null && (
                     <details className="mt-1">
-                      <summary className="cursor-pointer text-xs font-medium text-purple-700 hover:underline">
+                      <summary className="cursor-pointer text-xs font-medium text-foreground hover:underline">
                         Voir le patch YAML
                       </summary>
                       <pre className="mt-1 max-h-48 overflow-auto rounded bg-gray-900 p-2 text-xs text-green-300">

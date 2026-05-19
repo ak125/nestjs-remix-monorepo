@@ -6,9 +6,18 @@ import { CacheService } from '@cache/cache.service';
 import type { AlternativesV2Response } from '../dto/alternatives-v2.dto';
 
 const CACHE_TTL_SECONDS = 300;
+// Error-path TTL kept low so a transient RPC failure does not poison the cache
+// for 5 minutes. Long-TTL caching of empty responses was the amplifier behind
+// the soft-404 R2 smoke regression detected 2026-05-19 (stale anon publishable
+// key → 'Invalid API key' on every RPC → 300s cache of [] → 5min false-empty).
+const CACHE_TTL_ERROR_SECONDS = 30;
 const CACHE_KEY_PREFIX = 'alt';
-const CACHE_KEY_VERSION = 'v1';
-const RPC_NAME = 'get_soft_404_alternatives';
+// v1 → v2 (PR #633) : reset stale empty entries from the .from() RLS-bypass era.
+// v2 → v3 (2026-05-19) : reset stale empty entries from the rotated-publishable-key
+// era (preprod ANON_KEY rotated by Supabase but GitHub secret not synced — every RPC
+// returned 'Invalid API key', cached as empty for 5min). Pair with the short
+// CACHE_TTL_ERROR_SECONDS above to prevent the next rotation from repeating this.
+const CACHE_KEY_VERSION = 'v3';
 
 interface RpcPayload {
   alternativeVehicles: unknown[];
@@ -58,15 +67,26 @@ export class RmAlternativesService extends SupabaseBaseService {
       }
     }
 
+    // Inline literal (instead of const) so check-rpc-allowlist-coverage.sh's
+    // static parser picks it up — variable RPC names slip past the gate and
+    // only fail at runtime (incident root cause for run 26101726823).
     const { data, error } = await this.callRpc<RpcPayload>(
-      RPC_NAME,
+      'get_soft_404_alternatives',
       { p_type_id: type_id, p_pg_id: pg_id, p_limit: limit },
       { source: 'api' as const },
     );
 
     if (error || !data) {
-      this.logger.warn(
-        `RPC ${RPC_NAME} failed for type=${type_id} pg=${pg_id}: ${
+      // Auth/permission failures get ERROR level — they signal infra config drift
+      // (e.g. rotated key not synced to deployment secrets) and need pager-grade
+      // visibility, not the same WARN as a benign empty result.
+      const isAuthFailure =
+        /invalid api key|jwt|permission denied|unauthorized/i.test(
+          error?.message ?? '',
+        );
+      const logLevel = isAuthFailure ? 'error' : 'warn';
+      this.logger[logLevel](
+        `RPC get_soft_404_alternatives failed for type=${type_id} pg=${pg_id}: ${
           error?.message ?? 'no data'
         }`,
       );
@@ -75,7 +95,14 @@ export class RmAlternativesService extends SupabaseBaseService {
         alternativeGammes: [],
         relatedModels: [],
       });
-      await this.cache.set(cacheKey, JSON.stringify(empty), CACHE_TTL_SECONDS);
+      // Short TTL on error path: thundering-herd protection without long-window
+      // cache poisoning. If the underlying issue clears (key re-synced, RLS
+      // policy fixed, transient timeout), recovery is bounded to 30s.
+      await this.cache.set(
+        cacheKey,
+        JSON.stringify(empty),
+        CACHE_TTL_ERROR_SECONDS,
+      );
       return empty;
     }
 

@@ -404,7 +404,7 @@ export default function SupplierDetail() {
           </div>
 
           <div className="bg-white rounded-lg shadow-sm border p-4 text-center">
-            <div className="text-2xl text-purple-600 mb-2">💰</div>
+            <div className="text-2xl text-foreground mb-2">💰</div>
             <div className="text-lg font-semibold text-gray-900">CA Total</div>
             <div className="text-sm text-gray-600">À implémenter</div>
           </div>

@@ -144,7 +144,7 @@ export default function AdminPaymentDetail() {
       case PaymentStatus.CANCELLED:
         return <XCircle className="h-5 w-5 text-gray-600" />;
       case PaymentStatus.REFUNDED:
-        return <RefreshCw className="h-5 w-5 text-purple-600" />;
+        return <RefreshCw className="h-5 w-5 text-foreground" />;
       default:
         return <AlertTriangle className="h-5 w-5 text-gray-600" />;
     }
@@ -157,7 +157,7 @@ export default function AdminPaymentDetail() {
       [PaymentStatus.PROCESSING]: "bg-info/20 text-info",
       [PaymentStatus.FAILED]: "bg-destructive/20 text-destructive",
       [PaymentStatus.CANCELLED]: "bg-gray-100 text-gray-800",
-      [PaymentStatus.REFUNDED]: "bg-purple-100 text-purple-800",
+      [PaymentStatus.REFUNDED]: "bg-muted text-foreground",
     };
 
     return badges[status] || "bg-gray-100 text-gray-800";

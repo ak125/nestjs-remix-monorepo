@@ -22,7 +22,7 @@ export default function MarketingLayout() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <Megaphone className="h-8 w-8 text-purple-600" />
+        <Megaphone className="h-8 w-8 text-foreground" />
         <div>
           <h1 className="text-2xl font-bold">Marketing</h1>
           <p className="text-sm text-muted-foreground">
@@ -42,11 +42,7 @@ export default function MarketingLayout() {
             <Link
               key={tab.href}
               to={tab.href}
-              className={`flex items-center gap-2 px-4 py-2 rounded-t-lg text-sm font-medium transition-colors ${
-                isActive
-                  ? "bg-white border border-b-0 border-gray-200 text-purple-700"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-t-lg text-sm font-medium transition-colors ${ isActive ? "bg-white border border-b-0 border-gray-200 text-foreground" : "text-gray-500 hover:text-gray-700" }`}
             >
               <Icon className="h-4 w-4" />
               {tab.name}

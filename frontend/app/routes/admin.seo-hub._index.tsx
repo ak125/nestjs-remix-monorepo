@@ -393,36 +393,36 @@ export default function SeoHubDashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-indigo-500" />
+              <FileText className="h-5 w-5 text-foreground" />
               Statistiques Contenu
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-indigo-50 rounded-lg">
+              <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-indigo-100 rounded">
-                    <Eye className="h-4 w-4 text-indigo-600" />
+                  <div className="p-2 bg-muted rounded">
+                    <Eye className="h-4 w-4 text-foreground" />
                   </div>
-                  <span className="font-medium text-indigo-900">
+                  <span className="font-medium text-foreground">
                     R4 References
                   </span>
                 </div>
-                <Badge className="bg-indigo-600">
+                <Badge className="bg-primary">
                   {dashboard?.contentStats?.r4References || 0}
                 </Badge>
               </div>
 
-              <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
+              <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-purple-100 rounded">
-                    <Zap className="h-4 w-4 text-purple-600" />
+                  <div className="p-2 bg-muted rounded">
+                    <Zap className="h-4 w-4 text-foreground" />
                   </div>
-                  <span className="font-medium text-purple-900">
+                  <span className="font-medium text-foreground">
                     R5 Diagnostics
                   </span>
                 </div>
-                <Badge className="bg-purple-600">
+                <Badge className="bg-primary">
                   {dashboard?.contentStats?.r5Diagnostics || 0}
                 </Badge>
               </div>

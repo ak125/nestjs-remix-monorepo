@@ -64,7 +64,7 @@ export default function GammeChecklist({
             className={`text-[11px] font-semibold px-2.5 py-1 rounded-lg ${
               checked.length === total
                 ? "text-emerald-700 bg-emerald-50 border border-emerald-200"
-                : "text-slate-500 bg-slate-100"
+                : "text-emerald-900 bg-slate-100"
             }`}
           >
             {checked.length}/{total}

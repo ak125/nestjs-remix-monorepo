@@ -784,13 +784,13 @@ export default function AdminConfigIndexPage() {
             className="block p-6 bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow"
           >
             <div className="flex items-center mb-3">
-              <Activity className="h-6 w-6 text-purple-600 mr-3" />
+              <Activity className="h-6 w-6 text-foreground mr-3" />
               <h3 className="text-lg font-semibold text-gray-900">Analytics</h3>
             </div>
             <p className="text-gray-600">
               Paramétrer le tracking et les analytics
             </p>
-            <div className="text-sm text-purple-600 mt-2">
+            <div className="text-sm text-foreground mt-2">
               {stats?.configsByCategory?.analytics || 0} configuration
               {(stats?.configsByCategory?.analytics || 0) !== 1 ? "s" : ""}
             </div>

@@ -735,7 +735,7 @@ export default function AdminGammesSeo() {
             variant="outline"
             onClick={() => setShowThresholdsPanel(!showThresholdsPanel)}
             className={
-              showThresholdsPanel ? "bg-indigo-100 border-indigo-400" : ""
+              showThresholdsPanel ? "bg-muted border-indigo-400" : ""
             }
           >
             <Settings className="h-4 w-4 mr-2" />
@@ -744,7 +744,7 @@ export default function AdminGammesSeo() {
           <Button
             variant="outline"
             onClick={() => setShowAuditPanel(!showAuditPanel)}
-            className={showAuditPanel ? "bg-purple-100 border-purple-400" : ""}
+            className={showAuditPanel ? "bg-muted border-purple-400" : ""}
           >
             <History className="h-4 w-4 mr-2" />
             Historique
@@ -764,11 +764,11 @@ export default function AdminGammesSeo() {
 
       {/* Panel Configuration des Seuils */}
       {showThresholdsPanel && (
-        <Card className="border-indigo-200 bg-gradient-to-r from-indigo-50 to-blue-50">
+        <Card className="bg-gradient-to-r to-blue-50">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm flex items-center gap-2">
-                <Settings className="h-4 w-4 text-indigo-600" />
+                <Settings className="h-4 w-4 text-foreground" />
                 Configuration des Seuils Smart Action
               </CardTitle>
               <div className="flex gap-2">
@@ -786,7 +786,7 @@ export default function AdminGammesSeo() {
                   size="sm"
                   onClick={handleSaveThresholds}
                   disabled={!isThresholdsModified || isSavingThresholds}
-                  className="bg-indigo-600 hover:bg-indigo-700"
+                  className="bg-primary hover:bg-primary"
                 >
                   {isSavingThresholds ? (
                     <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
@@ -805,7 +805,7 @@ export default function AdminGammesSeo() {
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
-                <Label className="text-xs font-medium text-indigo-700">
+                <Label className="text-xs font-medium text-foreground">
                   Trends Élevé (INDEX)
                 </Label>
                 <Input
@@ -819,12 +819,12 @@ export default function AdminGammesSeo() {
                       parseInt(e.target.value) || 0,
                     )
                   }
-                  className="mt-1 border-indigo-200"
+                  className="mt-1"
                 />
                 <span className="text-[10px] text-gray-500">Défaut: 50</span>
               </div>
               <div>
-                <Label className="text-xs font-medium text-indigo-700">
+                <Label className="text-xs font-medium text-foreground">
                   Trends Moyen (OBSERVER)
                 </Label>
                 <Input
@@ -838,12 +838,12 @@ export default function AdminGammesSeo() {
                       parseInt(e.target.value) || 0,
                     )
                   }
-                  className="mt-1 border-indigo-200"
+                  className="mt-1"
                 />
                 <span className="text-[10px] text-gray-500">Défaut: 20</span>
               </div>
               <div>
-                <Label className="text-xs font-medium text-indigo-700">
+                <Label className="text-xs font-medium text-foreground">
                   SEO Excellent (G1)
                 </Label>
                 <Input
@@ -857,12 +857,12 @@ export default function AdminGammesSeo() {
                       parseInt(e.target.value) || 0,
                     )
                   }
-                  className="mt-1 border-indigo-200"
+                  className="mt-1"
                 />
                 <span className="text-[10px] text-gray-500">Défaut: 75</span>
               </div>
               <div>
-                <Label className="text-xs font-medium text-indigo-700">
+                <Label className="text-xs font-medium text-foreground">
                   SEO Bon (INDEX)
                 </Label>
                 <Input
@@ -876,7 +876,7 @@ export default function AdminGammesSeo() {
                       parseInt(e.target.value) || 0,
                     )
                   }
-                  className="mt-1 border-indigo-200"
+                  className="mt-1"
                 />
                 <span className="text-[10px] text-gray-500">Défaut: 45</span>
               </div>
@@ -884,7 +884,7 @@ export default function AdminGammesSeo() {
 
             {/* Aperçu de la matrice de décision */}
             <div className="mt-4 pt-4 border-t border-indigo-200">
-              <h4 className="text-xs font-semibold text-indigo-700 mb-2">
+              <h4 className="text-xs font-semibold text-foreground mb-2">
                 Matrice de décision actuelle:
               </h4>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
@@ -903,7 +903,7 @@ export default function AdminGammesSeo() {
                   {editThresholds.trends_high - 1} & SEO≥
                   {editThresholds.seo_excellent}
                 </div>
-                <div className="p-2 bg-violet-100 rounded">
+                <div className="p-2 bg-muted rounded">
                   <span className="font-bold">PARENT:</span> Trends&lt;
                   {editThresholds.trends_medium} & SEO≥
                   {editThresholds.seo_excellent}
@@ -916,10 +916,10 @@ export default function AdminGammesSeo() {
 
       {/* Panel Historique des Actions */}
       {showAuditPanel && (
-        <Card className="border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50">
+        <Card className="bg-gradient-to-r to-pink-50">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm flex items-center gap-2">
-              <History className="h-4 w-4 text-purple-600" />
+              <History className="h-4 w-4 text-foreground" />
               Historique des Actions (10 dernières)
             </CardTitle>
             <CardDescription className="text-xs">
@@ -934,7 +934,7 @@ export default function AdminGammesSeo() {
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
-                  <thead className="bg-purple-100 text-purple-800">
+                  <thead className="bg-muted text-foreground">
                     <tr>
                       <th className="px-3 py-2 text-left">Date</th>
                       <th className="px-3 py-2 text-left">Admin</th>
@@ -944,7 +944,7 @@ export default function AdminGammesSeo() {
                   </thead>
                   <tbody className="divide-y divide-purple-100">
                     {(auditHistory as AuditEntry[]).map((entry) => (
-                      <tr key={entry.id} className="hover:bg-purple-50">
+                      <tr key={entry.id} className="hover:bg-muted">
                         <td className="px-3 py-2 text-xs text-gray-600">
                           {new Date(entry.created_at).toLocaleString("fr-FR", {
                             day: "2-digit",
@@ -958,17 +958,7 @@ export default function AdminGammesSeo() {
                         </td>
                         <td className="px-3 py-2">
                           <Badge
-                            className={`text-xs ${
-                              entry.action_type.includes("THRESHOLD")
-                                ? "bg-indigo-100 text-indigo-700"
-                                : entry.action_type.includes("PROMOTE")
-                                  ? "bg-green-100 text-green-700"
-                                  : entry.action_type.includes("DEMOTE")
-                                    ? "bg-red-100 text-red-700"
-                                    : entry.action_type.includes("G1")
-                                      ? "bg-yellow-100 text-yellow-700"
-                                      : "bg-gray-100 text-gray-700"
-                            }`}
+                            className={`text-xs ${ entry.action_type.includes("THRESHOLD") ? "bg-muted text-foreground" : entry.action_type.includes("PROMOTE") ? "bg-green-100 text-green-700" : entry.action_type.includes("DEMOTE") ? "bg-red-100 text-red-700" : entry.action_type.includes("G1") ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-green-900" }`}
                           >
                             {entry.action_type.replace(/_/g, " ")}
                           </Badge>
@@ -987,7 +977,7 @@ export default function AdminGammesSeo() {
       )}
 
       {/* Instructions / Légende - EN HAUT */}
-      <Card className="bg-slate-50 border-slate-200">
+      <Card className="bg-slate-50">
         <CardHeader className="py-3">
           <CardTitle className="text-sm flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 text-amber-500" />
@@ -1077,7 +1067,7 @@ export default function AdminGammesSeo() {
                   <span className="text-xs">Transactionnel</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge className="bg-gradient-to-r from-violet-600 to-indigo-500 text-white text-xs">
+                  <Badge className="bg-gradient-to-r text-white text-xs">
                     🔍 Comparatif
                   </Badge>
                   <span className="text-xs">Investigation</span>
@@ -1258,7 +1248,7 @@ export default function AdminGammesSeo() {
                       Créer page, surveiller évolution trends
                     </td>
                   </tr>
-                  <tr className="bg-violet-50 hover:bg-violet-100">
+                  <tr className="bg-muted hover:bg-muted">
                     <td className="border border-slate-300 px-2 py-1">
                       &lt;{editThresholds.trends_medium}
                     </td>
@@ -1268,14 +1258,14 @@ export default function AdminGammesSeo() {
                     <td className="border border-slate-300 px-2 py-1">Any</td>
                     <td className="border border-slate-300 px-2 py-1">Any</td>
                     <td className="border border-slate-300 px-2 py-1 text-center">
-                      <Badge className="bg-violet-500 text-white text-xs">
+                      <Badge className="bg-primary text-white text-xs">
                         🔗 Parent
                       </Badge>
                     </td>
                     <td className="border border-slate-300 px-2 py-1 text-gray-600">
                       Bon SEO mais trop faible volume
                     </td>
-                    <td className="border border-slate-300 px-2 py-1 text-violet-700 font-medium">
+                    <td className="border border-slate-300 px-2 py-1 text-foreground font-medium">
                       NE PAS créer page, enrichir page parente
                     </td>
                   </tr>
@@ -1341,7 +1331,7 @@ export default function AdminGammesSeo() {
               <div className="p-2 bg-amber-100 rounded border border-amber-300">
                 <strong>🔍 Investiguer:</strong> Demande forte mais SEO faible
               </div>
-              <div className="p-2 bg-violet-100 rounded border border-violet-300">
+              <div className="p-2 bg-muted rounded border border-violet-300">
                 <strong>🔗 Parent:</strong> Enrichir page parente au lieu de
                 créer
               </div>
@@ -1380,7 +1370,7 @@ export default function AdminGammesSeo() {
             </CardContent>
           </Card>
 
-          <Card className="border-green-200 bg-green-50">
+          <Card className="bg-green-50">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-green-600">INDEX</CardTitle>
             </CardHeader>
@@ -1391,7 +1381,7 @@ export default function AdminGammesSeo() {
             </CardContent>
           </Card>
 
-          <Card className="border-red-200 bg-red-50">
+          <Card className="bg-red-50">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-red-600">NOINDEX</CardTitle>
             </CardHeader>
@@ -1419,7 +1409,7 @@ export default function AdminGammesSeo() {
             </CardContent>
           </Card>
 
-          <Card className="border-orange-200 bg-orange-50">
+          <Card className="bg-orange-50">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm text-orange-600 flex items-center gap-1">
                 <AlertTriangle className="h-3 w-3" />A promouvoir
@@ -1449,7 +1439,7 @@ export default function AdminGammesSeo() {
       )}
 
       {/* Sitemap Regeneration Card */}
-      <Card className="border-blue-200 bg-blue-50">
+      <Card className="bg-blue-50">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <CardTitle className="text-sm flex items-center gap-2">
@@ -1460,7 +1450,7 @@ export default function AdminGammesSeo() {
               size="sm"
               onClick={handleRegenerateSitemap}
               disabled={isRegeneratingSitemap}
-              className="text-blue-600 border-blue-300 hover:bg-blue-100"
+              className="text-blue-600 hover:bg-blue-100"
             >
               {isRegeneratingSitemap ? (
                 <>
@@ -1496,7 +1486,7 @@ export default function AdminGammesSeo() {
       </Card>
 
       {/* Smart Actions KPIs - Click to filter */}
-      <Card className="border-indigo-200 bg-gradient-to-r from-indigo-50 to-purple-50">
+      <Card className="bg-gradient-to-r">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <CardTitle className="text-sm flex items-center gap-2">
@@ -1507,13 +1497,13 @@ export default function AdminGammesSeo() {
                 variant="ghost"
                 size="sm"
                 onClick={() => handleSmartActionClick("all")}
-                className="text-xs text-indigo-600 hover:text-indigo-800"
+                className="text-xs text-foreground hover:text-foreground"
               >
                 ✕ Réinitialiser filtre
               </Button>
             )}
           </div>
-          <CardDescription className="text-xs text-indigo-600">
+          <CardDescription className="text-xs text-foreground">
             Cliquez sur un KPI pour filtrer par action
           </CardDescription>
         </CardHeader>
@@ -1562,12 +1552,12 @@ export default function AdminGammesSeo() {
             <button
               type="button"
               onClick={() => handleSmartActionClick("PARENT")}
-              className={`text-center p-2 bg-white rounded-lg shadow-sm border border-violet-200 hover:bg-violet-50 hover:border-violet-400 transition-all cursor-pointer ${smartActionFilter === "PARENT" ? "ring-2 ring-violet-500 bg-violet-50" : ""}`}
+              className={`text-center p-2 bg-white rounded-lg shadow-sm border border-violet-200 hover:bg-muted hover:border-violet-400 transition-all cursor-pointer ${smartActionFilter === "PARENT" ? "ring-2 ring-violet-500 bg-muted" : ""}`}
             >
-              <div className="text-xl font-bold text-violet-600">
+              <div className="text-xl font-bold text-foreground">
                 {smartActionStats.PARENT}
               </div>
-              <div className="text-[10px] text-violet-700">🔗 Parent</div>
+              <div className="text-[10px] text-foreground">🔗 Parent</div>
             </button>
             <button
               type="button"
@@ -1725,7 +1715,7 @@ export default function AdminGammesSeo() {
                   setSearchParams(params);
                 }}
               >
-                <SelectTrigger className="border-indigo-200">
+                <SelectTrigger className="">
                   <SelectValue placeholder="Toutes" />
                 </SelectTrigger>
                 <SelectContent>
@@ -1746,7 +1736,7 @@ export default function AdminGammesSeo() {
 
       {/* Batch Actions */}
       {selectedIds.length > 0 && (
-        <Card className="border-blue-200 bg-blue-50">
+        <Card className="bg-blue-50">
           <CardContent className="py-3">
             <div className="flex items-center justify-between">
               <span className="font-medium text-blue-700">
@@ -1813,14 +1803,14 @@ export default function AdminGammesSeo() {
             <CardTitle>
               {smartActionFilter ? (
                 <span>
-                  <span className="text-indigo-600">
+                  <span className="text-foreground">
                     {filteredGammes.length}
                   </span>
                   <span className="text-gray-400">
                     {" "}
                     / {gammes.length} gammes
                   </span>
-                  <Badge className="ml-2 bg-indigo-100 text-indigo-700 text-xs">
+                  <Badge className="ml-2 bg-muted text-foreground text-xs">
                     Filtre Smart Action
                   </Badge>
                 </span>
@@ -1911,17 +1901,7 @@ export default function AdminGammesSeo() {
                       )}
                       {/* Ligne de gamme - Highlighting basé sur Execution status */}
                       <tr
-                        className={`hover:bg-gray-100 transition-colors ${
-                          gamme.pg_top === "1"
-                            ? "bg-emerald-50 border-l-4 border-l-emerald-500"
-                            : gamme.execution_status === "PASS"
-                              ? "bg-green-50 border-l-4 border-l-green-400"
-                              : gamme.execution_status === "WARN"
-                                ? "bg-amber-50 border-l-4 border-l-amber-400"
-                                : gamme.execution_status === "FAIL"
-                                  ? "bg-red-50 border-l-4 border-l-red-400"
-                                  : ""
-                        }`}
+                        className={`hover:bg-gray-100 transition-colors ${ gamme.pg_top === "1" ? "bg-emerald-50 border-l-emerald-500" : gamme.execution_status === "PASS" ? "bg-green-50 border-l-green-400" : gamme.execution_status === "WARN" ? "bg-amber-50 border-l-amber-400" : gamme.execution_status === "FAIL" ? "bg-red-50 border-l-red-400" : "" }`}
                       >
                         <td className="px-2 py-3">
                           <Checkbox
@@ -2051,7 +2031,7 @@ export default function AdminGammesSeo() {
                                 ? "bg-green-100 text-green-700 border-green-300"
                                 : gamme.content_depth === "OK"
                                   ? "bg-blue-100 text-blue-700 border-blue-300"
-                                  : "bg-gray-100 text-gray-500"
+                                  : "bg-gray-100 text-green-900"
                             }
                           >
                             {gamme.content_depth || "THIN"}

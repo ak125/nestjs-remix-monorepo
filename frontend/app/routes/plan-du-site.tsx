@@ -362,7 +362,7 @@ export default function PlanDuSite() {
                 <Link
                   key={brand.marque_id}
                   to={`/constructeurs/${brand.marque_alias}-${brand.marque_id}.html`}
-                  className="group flex items-center justify-center gap-2 px-3 py-3 text-sm font-medium text-gray-700 bg-white border rounded-lg hover:border-amber-300 hover:bg-amber-50 hover:text-amber-800 transition-all text-center"
+                  className="group flex items-center justify-center gap-2 px-3 py-3 text-sm font-medium text-amber-900 bg-white border rounded-lg hover:border-amber-300 hover:bg-amber-50 hover:text-amber-800 transition-all text-center"
                 >
                   {brand.marque_name}
                 </Link>
@@ -387,13 +387,13 @@ export default function PlanDuSite() {
                   to={link.to}
                   className="group flex items-center gap-3 p-4 bg-white border rounded-lg hover:border-indigo-300 hover:shadow-sm transition-all"
                 >
-                  <div className="p-2 bg-indigo-50 rounded-lg shrink-0 group-hover:bg-indigo-100 transition-colors">
-                    <Icon className="w-4 h-4 text-indigo-500" />
+                  <div className="p-2 bg-muted rounded-lg shrink-0 group-hover:bg-muted transition-colors">
+                    <Icon className="w-4 h-4 text-foreground" />
                   </div>
-                  <p className="text-sm font-medium text-gray-700 group-hover:text-indigo-600 transition-colors">
+                  <p className="text-sm font-medium text-gray-700 group-hover:text-foreground transition-colors">
                     {link.label}
                   </p>
-                  <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-indigo-400 ml-auto transition-colors" />
+                  <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-foreground ml-auto transition-colors" />
                 </Link>
               );
             })}
@@ -414,12 +414,12 @@ export default function PlanDuSite() {
                 <Link
                   key={link.to}
                   to={link.to}
-                  className="group flex items-center justify-between px-4 py-3 hover:bg-purple-50 transition-colors first:rounded-t-xl last:rounded-b-xl"
+                  className="group flex items-center justify-between px-4 py-3 hover:bg-muted transition-colors first:rounded-t-xl last:rounded-b-xl"
                 >
-                  <span className="text-sm text-gray-700 group-hover:text-purple-700 transition-colors">
+                  <span className="text-sm text-gray-700 group-hover:text-foreground transition-colors">
                     {link.label}
                   </span>
-                  <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-purple-400 transition-colors" />
+                  <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-foreground transition-colors" />
                 </Link>
               ))}
             </div>

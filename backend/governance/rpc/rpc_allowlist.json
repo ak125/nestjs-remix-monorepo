@@ -2,7 +2,7 @@
   "version": "1.0.0",
   "generated_at": "2026-02-03T14:00:00Z",
   "description": "RPC READ_SAFE - Autorisees pour tous les roles",
-  "total": 175,
+  "total": 176,
   "functions": [
     {
       "name": "__gov_m1_table_sizes",
@@ -433,6 +433,11 @@
       "name": "get_pieces_for_type_gamme_v3",
       "volatility": "VOLATILE",
       "reason": "Read-only optimization (migrated from P2)"
+    },
+    {
+      "name": "get_soft_404_alternatives",
+      "volatility": "STABLE",
+      "reason": "Soft-404 R2 multi-tier ranking (SECURITY DEFINER, anon-grant). Called by RmAlternativesService.compute. ADR-soft-404-r2-strategy."
     },
     {
       "name": "get_seo_critical_alerts",

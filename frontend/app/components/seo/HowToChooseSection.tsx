@@ -116,7 +116,7 @@ export const HowToChooseSection = memo(function HowToChooseSection({
                                     opt.outcome === "continue" &&
                                       "border-green-300 text-green-700 bg-green-50",
                                     opt.outcome === "stop" &&
-                                      "border-gray-300 text-gray-700 bg-gray-50",
+                                      "border-gray-300 text-red-900 bg-gray-50",
                                   )}
                                 >
                                   {opt.outcome}

@@ -95,7 +95,7 @@ export function ResultCatalog({ catalogGuard }: Props) {
                           ? "bg-green-50 text-green-700"
                           : g.confidence === "medium"
                             ? "bg-amber-50 text-amber-700"
-                            : "bg-gray-50 text-gray-500"
+                            : "bg-gray-50 text-green-900"
                       }`}
                     >
                       {g.confidence}

@@ -88,7 +88,7 @@ const RISK_COLORS: Record<string, string> = {
 };
 
 const INPUT_TYPE_COLORS: Record<string, string> = {
-  dtc: "bg-purple-500 text-white",
+  dtc: "bg-primary text-white",
   sign: "bg-blue-500 text-white",
   symptom: "bg-amber-500 text-white",
 };
@@ -782,7 +782,7 @@ export default function AdminDiagnosticIndex() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <Activity className="h-8 w-8 text-purple-500" />
+              <Activity className="h-8 w-8 text-foreground" />
               <div>
                 <p className="text-2xl font-bold">
                   {Math.round((stats.avgConfidence || 0) * 100)}%

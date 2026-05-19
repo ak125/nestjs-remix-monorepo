@@ -297,7 +297,7 @@ export default function AdminBlogSimplePage() {
               </Link>
               <Link
                 to="/admin/performances"
-                className="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors"
+                className="inline-flex items-center px-4 py-2 bg-primary hover:bg-primary text-white font-medium rounded-lg transition-colors"
               >
                 <ChartBarIcon className="w-4 h-4 mr-2" />
                 Performances
@@ -386,7 +386,7 @@ export default function AdminBlogSimplePage() {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <ChartBarIcon className="h-8 w-8 text-purple-600" />
+                <ChartBarIcon className="h-8 w-8 text-foreground" />
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
@@ -456,11 +456,11 @@ export default function AdminBlogSimplePage() {
 
             <Link
               to="/blog-pieces-auto/glossaire"
-              className="flex items-center p-4 border border-gray-200 rounded-lg hover:border-purple-300 hover:bg-purple-50 transition-colors group"
+              className="flex items-center p-4 border border-gray-200 rounded-lg hover:border-purple-300 hover:bg-muted transition-colors group"
             >
-              <ChartBarIcon className="w-8 h-8 text-purple-600 mr-4" />
+              <ChartBarIcon className="w-8 h-8 text-foreground mr-4" />
               <div>
-                <h4 className="font-medium text-gray-900 group-hover:text-purple-700">
+                <h4 className="font-medium text-gray-900 group-hover:text-foreground">
                   Glossaire
                 </h4>
                 <p className="text-sm text-gray-600">6 termes techniques</p>

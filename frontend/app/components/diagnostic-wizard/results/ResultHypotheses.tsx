@@ -75,7 +75,7 @@ export function ResultHypotheses({ hypotheses }: Props) {
                   className={`flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold flex-shrink-0 ${
                     isTop
                       ? "bg-blue-600 text-white"
-                      : "bg-gray-100 text-gray-600 border border-gray-200"
+                      : "bg-gray-100 text-white border border-gray-200"
                   }`}
                 >
                   {i + 1}

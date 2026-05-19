@@ -601,6 +601,22 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # Node.js + deps install required by the env-contract preflight step
+      # below: `scripts/ci/preflight-env-contract.ts` runs under tsx and
+      # imports the Zod schema from `backend/src/contract/env-contract/`.
+      # Without `npm ci` on this self-hosted runner, tsx is unavailable and
+      # the preflight cannot enforce the canonical SoT (no auto-install
+      # fallback — `npm install @latest` would be non-deterministic, see
+      # memory feedback_ci_no_dynamic_latest_install).
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: "npm"
+
+      - name: Install dependencies (required for env-contract preflight)
+        run: npm ci
+
       - name: 🧪 Deploy to PREPROD (read-only hardening — ADR-028 Option D)
         env:
           # ADR-028 Option D : couches 1+2 (privilege downgrade + anon key only).
@@ -697,6 +713,34 @@ jobs:
           # shellcheck disable=SC1091
           . "$PREPROD_DIR/.env"
           set +a
+
+          # 🛡️ Preflight env contract check — first projection of the canonical
+          # Zod SoT into CI (backend/src/contract/env-contract/preprod.schema.ts).
+          # Loads the REAL `.env.preprod` in an isolated subshell (not the
+          # ambient GHA env block) to validate EXACTLY what docker-compose
+          # injects into the container. Turns an opaque NestJS boot crash
+          # ("Configuration key X does not exist") into a CI fail immediately
+          # before `docker compose up`, with a structured diff.
+          #
+          # `set -euo pipefail` hardens the subshell against silent interpolation
+          # / sourcing failures (GHA `bash -e {0}` alone can let empty
+          # interpolations through). Determinism: tsx must be present via the
+          # `npm ci` step above — no dynamic `@latest` install (memory
+          # feedback_ci_no_dynamic_latest_install).
+          echo "🛡️ Preflight env contract check (loads real .env.preprod)..."
+          if ! (cd "$GITHUB_WORKSPACE" && npx --no-install tsx --version >/dev/null 2>&1); then
+            echo "::error::tsx not available — the 'Install dependencies' step above must run before this step (no auto-install fallback by design)."
+            exit 1
+          fi
+          (
+            set -euo pipefail
+            cd "$GITHUB_WORKSPACE"
+            set -o allexport
+            # shellcheck disable=SC1091
+            . "$PREPROD_DIR/.env"
+            set +o allexport
+            npx --no-install tsx scripts/ci/preflight-env-contract.ts
+          )
 
           # Arreter anciens conteneurs
           docker stop nestjs-remix-monorepo-preprod redis-preprod 2>/dev/null || true
@@ -852,6 +896,43 @@ jobs:
             exit 1
           fi
           echo "✅ All soft-404 fixtures passed"
+
+      - name: 🐛 Dump container + rendered HTML on smoke failure (observability)
+        if: failure()
+        run: |
+          set +e
+          # tee duplicates output to BOTH the workflow log (visible via gh run
+          # view --log) AND the GITHUB_STEP_SUMMARY markdown panel — covers the
+          # case where the summary-only redirect of the original step was empty
+          # in API responses (PR #636 run 26106977897). Logs now visible from
+          # the standard workflow output without needing the UI summary.
+          {
+            echo "## 🐛 Soft-404 R2 smoke failure debug"
+            echo ""
+
+            echo "### Backend container logs (last 200 lines, filtered)"
+            echo '```'
+            docker logs nestjs-remix-monorepo-preprod --tail 200 2>&1 \
+              | grep -iE 'rmAlternatives|alternatives|callRpc|rpcGate|supabase|permission|denied|jwt|anon|error|warn' \
+              | tail -80
+            echo '```'
+            echo ""
+
+            echo "### Direct probe of /api/rm/alternatives for fixture #1"
+            echo '```json'
+            curl -s --max-time 10 "http://localhost:3200/api/rm/alternatives?gamme_id=3859&type_id=11836&limit=12" \
+              | python3 -c 'import sys, json; d=json.loads(sys.stdin.read()); print(json.dumps({"alternativeVehicles": len(d.get("alternativeVehicles",[])), "alternativeGammes": len(d.get("alternativeGammes",[])), "relatedModels": len(d.get("relatedModels",[])), "etag": d.get("etag")}, indent=2))' \
+              2>&1
+            echo '```'
+            echo ""
+
+            echo "### First 4-segment /pieces/.../.../...html links in rendered page (fixture #1)"
+            echo '```'
+            curl -s --max-time 15 "http://localhost:3200/pieces/kit-de-freins-arriere-3859/bmw-33/serie-5-f10-f18-33053/2-0-525-d-11836.html" \
+              | grep -oE 'href="/pieces/[^"]+\.html"' \
+              | sort -u | head -10
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: ⏱️ Response Time Baseline
         run: |
