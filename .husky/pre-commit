@@ -139,19 +139,20 @@ if command -v npx >/dev/null 2>&1; then
   }
 fi
 
-# impeccable design ratchet (warn-only) — runs only if frontend/** or
-# the ratchet's own files are staged. Catches reintroductions of the
-# anti-patterns we've already eliminated (side-tab, pure-black-white,
-# bounce-easing, ai-color-palette) before they hit CI.
+# impeccable design ratchet (Phase 2 — block-by-default) — runs only if
+# frontend/** or the ratchet's own files are staged. Catches reintroductions
+# of the anti-patterns the cascade eliminated (side-tab, pure-black-white,
+# bounce-easing, ai-color-palette, gray-on-color, low-priority sweep)
+# before they hit CI.
 #
-# - WARN-only (Phase 1): prints a notice on regression but does not
-#   block the commit. CI's `.github/workflows/impeccable-ratchet.yml`
-#   is the authoritative BLOCKING gate.
-# - Override: set `IMPECCABLE_HOOK=skip` to silence entirely.
-# - Promote to blocking: set `IMPECCABLE_HOOK=block` (planned for
-#   Phase 2 once the cascade closes; tracked in
-#   audit/impeccable/README.md).
-IMPECCABLE_HOOK="${IMPECCABLE_HOOK:-warn}"
+# - BLOCK by default (Phase 2 closure 2026-05) : refuses the commit on
+#   regression. CI's `.github/workflows/impeccable-ratchet.yml` remains
+#   the authoritative gate but the local hook now matches that posture.
+# - Override (urgence) : `IMPECCABLE_HOOK=skip` to silence entirely OR
+#   `IMPECCABLE_HOOK=warn` to keep Phase 1 posture for one commit.
+# - Baseline state at closure : 20 issues (162 → 20, -88%). All residue
+#   documented in audit/impeccable/README.md as legitimate.
+IMPECCABLE_HOOK="${IMPECCABLE_HOOK:-block}"
 if [ "$IMPECCABLE_HOOK" != "skip" ]; then
   FRONTEND_TOUCHED=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '^(frontend/|packages/design-tokens/|audit/impeccable/|scripts/audit/impeccable-|\.github/workflows/impeccable-ratchet\.yml)' || true)
   if [ -n "$FRONTEND_TOUCHED" ] && [ -f scripts/audit/impeccable-ratchet-check.mjs ] && command -v npm >/dev/null 2>&1; then
