@@ -24,9 +24,9 @@ describe('PreprodEnvContractSchema — SUPABASE_ANON_KEY publishable-shape regex
     const r = PreprodEnvContractSchema.safeParse(env);
     expect(r.success).toBe(false);
     if (!r.success) {
-      expect(
-        r.error.issues.some((i) => /publishable/i.test(i.message)),
-      ).toBe(true);
+      expect(r.error.issues.some((i) => /publishable/i.test(i.message))).toBe(
+        true,
+      );
     }
   });
 
@@ -41,7 +41,10 @@ describe('PreprodEnvContractSchema — SUPABASE_ANON_KEY publishable-shape regex
   });
 
   it('rejects unrelated free-form string', () => {
-    const env = { ...baseEnv, SUPABASE_ANON_KEY: 'some-random-token-without-prefix' };
+    const env = {
+      ...baseEnv,
+      SUPABASE_ANON_KEY: 'some-random-token-without-prefix',
+    };
     expect(PreprodEnvContractSchema.safeParse(env).success).toBe(false);
   });
 });
