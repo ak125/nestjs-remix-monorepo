@@ -849,3 +849,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/preprod-env-contract-preflight`
 - **Décision** : style(env-contract): apply prettier (CI lint fix) (+3 other commits)
 - **Sortie** : PR #632 | commits 22cd9867e 690c78525 eacfdcbe3 fbc50be95
+
+## 2026-05-19 — feat/env-contract-publishable-regex (auto)
+
+- **Branche** : `feat/env-contract-publishable-regex`
+- **Décision** : style(env-contract): prettier autofix on schema test (CI lint) (+1 other commit)
+- **Sortie** : PR #641 | commits 95ac8f099 c572bf94b
