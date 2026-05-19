@@ -36,6 +36,7 @@ import {
   type ReactNode,
 } from "react";
 import { logger } from "~/utils/logger";
+import { safeSessionStorage } from "~/utils/safe-storage";
 
 // ============================================================================
 // TYPES
@@ -177,18 +178,14 @@ export function useConversionTracking(
   // PERSISTANCE (LOCALSTORAGE)
   // ========================================
   useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    // Sauvegarder session
-    const saveSession = () => {
-      try {
-        sessionStorage.setItem("conversionSession", JSON.stringify(session));
-      } catch (err) {
-        if (debug) logger.error("Failed to save session:", err);
-      }
-    };
-
-    saveSession();
+    // Sauvegarder session — safeSessionStorage gère SSR, SecurityError, quota.
+    const ok = safeSessionStorage.setItem(
+      "conversionSession",
+      JSON.stringify(session),
+    );
+    if (!ok && debug) {
+      logger.warn("Failed to save session: storage unavailable");
+    }
   }, [session, debug]);
 
   // ========================================
@@ -540,7 +537,7 @@ export function useABTest(testName: string, variants: string[]): string {
 
   useEffect(() => {
     // Vérifier si variant déjà assigné
-    const stored = sessionStorage.getItem(`ab_test_${testName}`);
+    const stored = safeSessionStorage.getItem(`ab_test_${testName}`);
     if (stored && variants.includes(stored)) {
       setVariant(stored);
       return;
@@ -548,7 +545,7 @@ export function useABTest(testName: string, variants: string[]): string {
 
     // Assigner aléatoirement
     const randomVariant = variants[Math.floor(Math.random() * variants.length)];
-    sessionStorage.setItem(`ab_test_${testName}`, randomVariant);
+    safeSessionStorage.setItem(`ab_test_${testName}`, randomVariant);
     setVariant(randomVariant);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- variantsKey is derived from variants, using variants directly causes infinite loop
   }, [testName, variantsKey]);

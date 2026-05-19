@@ -23,6 +23,7 @@ import { useLocation } from "@remix-run/react";
 import { useCallback, useEffect, useRef } from "react";
 import { postJsonBeacon } from "~/utils/beacon";
 import { logger } from "~/utils/logger";
+import { safeSessionStorage } from "~/utils/safe-storage";
 
 // Types de liens supportés
 export type LinkType =
@@ -96,14 +97,12 @@ interface UseSeoLinkTrackingReturn {
 
 // Session ID unique pour le tracking
 function getSessionId(): string {
-  if (typeof window === "undefined") return "";
-
-  let sessionId = sessionStorage.getItem("seo_session_id");
+  let sessionId = safeSessionStorage.getItem("seo_session_id");
   if (!sessionId) {
     sessionId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    sessionStorage.setItem("seo_session_id", sessionId);
+    safeSessionStorage.setItem("seo_session_id", sessionId);
   }
-  return sessionId;
+  return sessionId ?? "";
 }
 
 // Detect device type
