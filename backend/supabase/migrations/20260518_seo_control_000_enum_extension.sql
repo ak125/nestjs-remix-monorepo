@@ -1,3 +1,4 @@
+-- squawk-ignore-file require-enum-value-ordering
 -- =====================================================
 -- PR-SBD-1 Task 1 Step 0 — Enum extension for dashboard audit log
 -- Date: 2026-05-18
@@ -21,8 +22,6 @@
 -- ordinality is irrelevant to the dashboard audit usage (`event_type='dashboard_view'`
 -- is compared by equality, never by sort). Appending is the canonical pattern.
 -- =====================================================
-
--- squawk-ignore require-enum-value-ordering
 
 set lock_timeout = '2s';
 set statement_timeout = '5s';

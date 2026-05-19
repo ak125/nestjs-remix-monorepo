@@ -129,8 +129,8 @@ CREATE OR REPLACE FUNCTION rpc_seo_top_losers_v1(
       COALESCE(ROUND(curr.position::NUMERIC, 2)::FLOAT8, NULL::FLOAT8) AS position_current,
       ROUND(COALESCE(curr.position - prev.position, 0)::NUMERIC, 2)::FLOAT8 AS position_delta,
       ROUND(
-        ABS(curr.clicks - COALESCE(prev.clicks, 0))::NUMERIC
-        * GREATEST(0, (11 - LEAST(COALESCE(curr.position, 50)::NUMERIC, 50))) / 10.0,
+        (ABS(curr.clicks - COALESCE(prev.clicks, 0))::NUMERIC
+        * GREATEST(0::NUMERIC, (11::NUMERIC - LEAST(COALESCE(curr.position, 50)::NUMERIC, 50::NUMERIC))) / 10.0::NUMERIC)::NUMERIC,
         2
       )::FLOAT8 AS business_impact_score,
       CASE
@@ -208,11 +208,11 @@ CREATE OR REPLACE FUNCTION rpc_seo_low_ctr_v1(
         WHEN avg_position <= 15 THEN 'top15'
         ELSE 'beyond' END AS position_band,
       ROUND(
-        impressions::NUMERIC
-        * GREATEST(0, (CASE
+        (impressions::NUMERIC
+        * GREATEST(0::NUMERIC, (CASE
             WHEN avg_position <= 5 THEN 0.05
             WHEN avg_position <= 15 THEN 0.02
-            ELSE 0.005 END) - ctr),
+            ELSE 0.005 END)::NUMERIC - ctr::NUMERIC))::NUMERIC,
         2
       )::FLOAT8 AS business_impact_score,
       CASE
@@ -302,12 +302,12 @@ CREATE OR REPLACE FUNCTION rpc_seo_alerts_v1(
       _seo_resolve_operational_domain(u.alert_type) AS operational_domain,
       _seo_resolve_surface_key(u.entity_url) AS surface_key,
       ROUND(
-        (CASE u.severity
+        ((CASE u.severity
           WHEN 'critical' THEN 10
           WHEN 'high' THEN 5
           WHEN 'medium' THEN 2
           ELSE 1 END)::NUMERIC
-        * (1 + COALESCE(LOG(GREATEST(1, COALESCE(gsc.clicks_7d, 0))), 0)),
+        * (1 + COALESCE(LOG(GREATEST(1, COALESCE(gsc.clicks_7d, 0))), 0))::NUMERIC)::NUMERIC,
         2
       )::FLOAT8 AS business_impact_score
     FROM unified u
@@ -394,8 +394,8 @@ CREATE OR REPLACE FUNCTION rpc_seo_conversion_v1(
            ELSE 0::FLOAT8 END AS conversion_rate,
       COALESCE(c.revenue, 0)::FLOAT8 AS revenue,
       ROUND(
-        t.sessions::NUMERIC
-        * GREATEST(0, 0.01 - (COALESCE(c.orders_count, 0)::NUMERIC / NULLIF(t.sessions, 0))),
+        (t.sessions::NUMERIC
+        * GREATEST(0::NUMERIC, 0.01::NUMERIC - (COALESCE(c.orders_count, 0)::NUMERIC / NULLIF(t.sessions, 0)::NUMERIC)))::NUMERIC,
         2
       )::FLOAT8 AS business_impact_score,
       CASE
