@@ -43,14 +43,14 @@ export const AIPredictionsPanel = memo(function AIPredictionsPanel({
   piecesCount,
 }: AIPredictionsPanelProps) {
   return (
-    <div className="relative bg-gradient-to-br from-violet-50 via-indigo-50 to-cyan-50 rounded-2xl shadow-xl border border-violet-100 p-8 mt-8 overflow-hidden group hover:shadow-2xl transition-all duration-500">
+    <div className="relative bg-gradient-to-br to-cyan-50 rounded-2xl shadow-xl border border-violet-100 p-8 mt-8 overflow-hidden group hover:shadow-2xl transition-all duration-500">
       {/* Animated background effect */}
-      <div className="absolute inset-0 bg-gradient-to-r from-violet-400/10 via-indigo-400/10 to-cyan-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+      <div className="absolute inset-0 bg-gradient-to-r /10 /10 to-cyan-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
       <div className="relative z-10">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-600 bg-clip-text text-transparent flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-violet-500 to-indigo-500 rounded-xl flex items-center justify-center animate-pulse">
+          <h2 className="text-3xl font-bold bg-gradient-to-r to-cyan-600 bg-clip-text text-transparent flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-r rounded-xl flex items-center justify-center animate-pulse">
               <span className="text-white text-lg">🤖</span>
             </div>
             Analyse Prédictive IA - {vehicle.marque} {vehicle.modele}
@@ -225,9 +225,9 @@ const CostOptimizationCard: React.FC<{
       </div>
 
       {/* Maintenance prédictive */}
-      <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-xl p-6 border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300">
+      <div className="bg-gradient-to-r from-blue-50 rounded-xl p-6 border border-blue-200 shadow-lg hover:shadow-xl transition-all duration-300">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center animate-pulse">
+          <div className="w-8 h-8 bg-gradient-to-r from-blue-500 rounded-lg flex items-center justify-center animate-pulse">
             <span className="text-white text-sm">🔧</span>
           </div>
           <h4 className="text-lg font-bold text-blue-800">
@@ -273,22 +273,22 @@ const AIFooter: React.FC<{
   vehicle: { marque: string; modele: string };
   piecesCount: number;
 }> = ({ vehicle, piecesCount }) => (
-  <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 border border-gradient-to-r from-violet-200 to-indigo-200 shadow-xl mt-8">
+  <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 border border-gradient-to-r shadow-xl mt-8">
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-4">
         <div className="relative">
-          <div className="w-12 h-12 bg-gradient-to-r from-violet-500 via-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center shadow-lg">
+          <div className="w-12 h-12 bg-gradient-to-r rounded-2xl flex items-center justify-center shadow-lg">
             <span className="text-white text-lg animate-pulse">🤖</span>
           </div>
           <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white animate-pulse" />
         </div>
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-lg font-bold bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
+            <span className="text-lg font-bold bg-gradient-to-r bg-clip-text text-transparent">
               Analyse IA V5.2 Ultimate
             </span>
-            <div className="bg-gradient-to-r from-violet-100 to-indigo-100 rounded-full px-2 py-1">
-              <span className="text-xs font-bold text-violet-700">PREMIUM</span>
+            <div className="bg-gradient-to-r rounded-full px-2 py-1">
+              <span className="text-xs font-bold text-foreground">PREMIUM</span>
             </div>
           </div>
           <p className="text-sm text-gray-600 flex items-center gap-2">

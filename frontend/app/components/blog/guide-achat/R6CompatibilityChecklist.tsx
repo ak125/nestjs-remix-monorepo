@@ -23,11 +23,11 @@ export function R6CompatibilityChecklist({ axes, gammeName }: Props) {
         {axes.map((axis, i) => (
           <div
             key={i}
-            className="rounded-lg border border-indigo-200 bg-indigo-50/50 p-4"
+            className="rounded-lg border border-indigo-200 bg-muted/50 p-4"
           >
             <div className="flex items-start gap-3">
-              <div className="p-1.5 bg-indigo-100 rounded-lg flex-shrink-0 mt-0.5">
-                <Search className="w-4 h-4 text-indigo-600" />
+              <div className="p-1.5 bg-muted rounded-lg flex-shrink-0 mt-0.5">
+                <Search className="w-4 h-4 text-foreground" />
               </div>
               <div className="flex-1">
                 <h3 className="font-semibold text-gray-900 text-sm mb-1">

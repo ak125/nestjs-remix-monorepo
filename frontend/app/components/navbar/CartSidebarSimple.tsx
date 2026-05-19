@@ -84,7 +84,7 @@ export const CartSidebarSimple = memo(function CartSidebarSimple({
             "px-4 py-4 border-b",
             subtotal >= FREE_SHIPPING_THRESHOLD
               ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white"
-              : "bg-gradient-to-r from-blue-50 to-indigo-50",
+              : "bg-gradient-to-r from-blue-50",
           )}
         >
           {subtotal >= FREE_SHIPPING_THRESHOLD ? (

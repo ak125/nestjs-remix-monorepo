@@ -109,7 +109,7 @@ export const VehicleInfo = memo(function VehicleInfo({
             <div className="text-sm text-gray-600">Livraison</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-purple-600">✓</div>
+            <div className="text-2xl font-bold text-foreground">✓</div>
             <div className="text-sm text-gray-600">Garantie</div>
           </div>
         </div>

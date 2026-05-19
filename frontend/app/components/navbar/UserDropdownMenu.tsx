@@ -63,10 +63,10 @@ export const UserDropdownMenu = memo(function UserDropdownMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        className={`group flex items-center gap-2.5 px-3 py-2 hover:bg-gradient-to-br hover:from-blue-50 hover:to-indigo-50 rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 hover:shadow-lg hover:scale-105 border border-transparent hover:border-blue-200 ${className}`}
+        className={`group flex items-center gap-2.5 px-3 py-2 hover:bg-gradient-to-br hover:from-blue-50 hover: rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 hover:shadow-lg hover:scale-105 border border-transparent hover:border-blue-200 ${className}`}
       >
         <div className="relative">
-          <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white font-bold shadow-md group-hover:shadow-lg transition-all duration-300 ring-2 ring-white group-hover:ring-blue-200">
+          <div className="w-9 h-9 bg-gradient-to-br from-blue-500 rounded-xl flex items-center justify-center text-white font-bold shadow-md group-hover:shadow-lg transition-all duration-300 ring-2 ring-white group-hover:ring-blue-200">
             {displayName.charAt(0).toUpperCase()}
           </div>
           {/* Online indicator */}
@@ -85,8 +85,8 @@ export const UserDropdownMenu = memo(function UserDropdownMenu({
       <DropdownMenuContent className="w-72 p-2" align="end" forceMount>
         {/* Header premium avec info utilisateur */}
         <DropdownMenuLabel className="font-normal p-3">
-          <div className="flex items-center gap-3 p-3 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg text-lg ring-2 ring-white">
+          <div className="flex items-center gap-3 p-3 bg-gradient-to-br from-blue-50 rounded-xl border border-blue-200">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 rounded-xl flex items-center justify-center text-white font-bold shadow-lg text-lg ring-2 ring-white">
               {displayName.charAt(0).toUpperCase()}
             </div>
             <div className="flex flex-col flex-1">
@@ -101,7 +101,7 @@ export const UserDropdownMenu = memo(function UserDropdownMenu({
               {isAdmin && (
                 <Badge
                   variant="secondary"
-                  className="w-fit mt-1.5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-0 shadow-sm"
+                  className="w-fit mt-1.5 bg-gradient-to-r from-blue-500 text-white border-0 shadow-sm"
                 >
                   <Shield className="w-3 h-3 mr-1" />
                   {isSuperAdmin ? "Super Admin" : "Admin"}
@@ -134,10 +134,10 @@ export const UserDropdownMenu = memo(function UserDropdownMenu({
           <DropdownMenuItem asChild>
             <Link
               to="/account/orders"
-              className="flex items-center gap-3 cursor-pointer px-3 py-2.5 rounded-lg hover:bg-purple-50 transition-all group"
+              className="flex items-center gap-3 cursor-pointer px-3 py-2.5 rounded-lg hover:bg-muted transition-all group"
             >
-              <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors">
-                <Package className="h-4 w-4 text-purple-600" />
+              <div className="w-8 h-8 bg-muted rounded-lg flex items-center justify-center group-hover:bg-muted transition-colors">
+                <Package className="h-4 w-4 text-foreground" />
               </div>
               <div className="flex flex-col">
                 <span className="font-semibold text-sm">Mes commandes</span>
@@ -200,16 +200,16 @@ export const UserDropdownMenu = memo(function UserDropdownMenu({
             <DropdownMenuItem asChild>
               <Link
                 to="/commercial"
-                className="flex items-center gap-3 cursor-pointer px-3 py-2.5 rounded-lg bg-gradient-to-r from-indigo-50 to-purple-50 hover:from-indigo-100 hover:to-purple-100 transition-all group border border-indigo-200"
+                className="flex items-center gap-3 cursor-pointer px-3 py-2.5 rounded-lg bg-gradient-to-r hover: hover: transition-all group border border-indigo-200"
               >
-                <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center shadow-md">
+                <div className="w-8 h-8 bg-gradient-to-br rounded-lg flex items-center justify-center shadow-md">
                   <Package className="h-4 w-4 text-white" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="font-bold text-sm text-indigo-700">
+                  <span className="font-bold text-sm text-foreground">
                     Espace Commercial
                   </span>
-                  <span className="text-xs text-indigo-600">
+                  <span className="text-xs text-foreground">
                     Commandes & expeditions
                   </span>
                 </div>
@@ -225,9 +225,9 @@ export const UserDropdownMenu = memo(function UserDropdownMenu({
             <DropdownMenuItem asChild>
               <Link
                 to="/admin"
-                className="flex items-center gap-3 cursor-pointer px-3 py-2.5 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition-all group border border-blue-200"
+                className="flex items-center gap-3 cursor-pointer px-3 py-2.5 rounded-lg bg-gradient-to-r from-blue-50 hover:from-blue-100 hover: transition-all group border border-blue-200"
               >
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-md">
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 rounded-lg flex items-center justify-center shadow-md">
                   <Shield className="h-4 w-4 text-white" />
                 </div>
                 <div className="flex flex-col">

@@ -10,7 +10,7 @@ interface CTAButtonProps {
 export default function CTAButton({ anchor, link, className = "" }: CTAButtonProps) {
   return (
     <div className={`flex justify-center my-8 ${className}`}>
-      <Card className="overflow-hidden border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 hover:shadow-2xl transition-all duration-300 max-w-2xl w-full">
+      <Card className="overflow-hidden border-2 border-blue-200 bg-gradient-to-r from-blue-50 hover:shadow-2xl transition-all duration-300 max-w-2xl w-full">
         <a
           href={link}
           target="_blank"
@@ -19,7 +19,7 @@ export default function CTAButton({ anchor, link, className = "" }: CTAButtonPro
         >
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-blue-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                 <ShoppingCart className="w-7 h-7 text-white" />
               </div>
               <div className="flex-1">

@@ -14,7 +14,7 @@ function getTagStyle(tag: string) {
     return { gradient: "from-blue-500 to-blue-400", Icon: ShoppingCart };
   if (tag.toLowerCase().includes("entretien"))
     return { gradient: "from-emerald-500 to-emerald-400", Icon: Wrench };
-  return { gradient: "from-purple-500 to-purple-400", Icon: BookOpen };
+  return { gradient: "", Icon: BookOpen };
 }
 
 /* ── Mobile: Featured large card (1st article) ── */

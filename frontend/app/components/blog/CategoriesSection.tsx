@@ -38,7 +38,7 @@ const CATEGORY_CARDS = [
     color: "blue",
     borderColor: "border-blue-200 hover:border-blue-400",
     bgGradient: "from-blue-50 to-white",
-    iconGradient: "from-blue-500 to-indigo-600",
+    iconGradient: "from-blue-500",
     badgeClass: "bg-info/20 text-info",
     badgeLabel: "35+ marques",
     bullets: [
@@ -71,9 +71,9 @@ const CATEGORY_CARDS = [
     icon: BookOpen,
     color: "indigo",
     borderColor: "border-indigo-200 hover:border-indigo-400",
-    bgGradient: "from-indigo-50 to-white",
-    iconGradient: "from-indigo-500 to-purple-600",
-    badgeClass: "bg-indigo-100 text-indigo-800",
+    bgGradient: "to-white",
+    iconGradient: "",
+    badgeClass: "bg-muted text-foreground",
     badgeLabel: "138 définitions",
     bullets: [
       "Rôles mécaniques",
@@ -109,7 +109,7 @@ export function CategoriesSection() {
     <section className="py-20 bg-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <Badge className="mb-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 text-lg">
+          <Badge className="mb-4 bg-gradient-to-r from-blue-600 text-white px-6 py-2 text-lg">
             <Hash className="w-4 h-4 mr-2" />
             Nos Catégories
           </Badge>
@@ -170,7 +170,7 @@ export function CategoriesSection() {
           <Link to="/blog-pieces-auto/conseils">
             <Button
               size="lg"
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 rounded-xl text-lg font-semibold group shadow-lg hover:shadow-xl transition-all"
+              className="bg-gradient-to-r from-blue-600 hover:from-blue-700 hover: text-white px-8 py-4 rounded-xl text-lg font-semibold group shadow-lg hover:shadow-xl transition-all"
             >
               <BookOpen className="w-5 h-5 mr-2" />
               Tous les conseils par catégorie

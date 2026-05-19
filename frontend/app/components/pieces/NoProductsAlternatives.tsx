@@ -211,7 +211,7 @@ export const NoProductsAlternatives = memo(function NoProductsAlternatives({
           {data.relatedModels.length > 0 && (
             <section className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <GitBranch className="w-5 h-5 mr-2 text-purple-500" />
+                <GitBranch className="w-5 h-5 mr-2 text-foreground" />
                 Autres générations qui proposent ce{" "}
                 {data.gammeName.toLowerCase()}
               </h2>
@@ -223,12 +223,12 @@ export const NoProductsAlternatives = memo(function NoProductsAlternatives({
                       { pg_alias: data.gammeAlias, pg_id: data.gammeId },
                       m,
                     )}
-                    className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-purple-50 hover:shadow-sm transition-all group"
+                    className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-muted hover:shadow-sm transition-all group"
                   >
-                    <span className="text-sm font-medium text-gray-800 group-hover:text-purple-700">
+                    <span className="text-sm font-medium text-gray-800 group-hover:text-foreground">
                       {m.marque_name} {m.modele_name}
                     </span>
-                    <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-purple-600 flex-shrink-0" />
+                    <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-foreground flex-shrink-0" />
                   </Link>
                 ))}
               </div>

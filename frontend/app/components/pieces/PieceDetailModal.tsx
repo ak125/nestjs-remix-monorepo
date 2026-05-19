@@ -400,7 +400,7 @@ export const PieceDetailModal = memo(function PieceDetailModal({
 
                   {/* Prix, disponibilite et bouton panier */}
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6">
+                    <div className="bg-gradient-to-r from-blue-50 rounded-xl p-6">
                       <div className="text-sm text-gray-600 mb-2">Prix TTC</div>
                       <div className="flex items-baseline gap-2">
                         <span className="text-4xl font-black text-blue-600">
@@ -429,7 +429,7 @@ export const PieceDetailModal = memo(function PieceDetailModal({
                     <button
                       onClick={handleAddToCart}
                       disabled={addingToCart}
-                      className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2"
+                      className="bg-gradient-to-r from-blue-600 hover:from-blue-700 hover: disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2"
                     >
                       {addingToCart ? (
                         <>
@@ -582,7 +582,7 @@ export const PieceDetailModal = memo(function PieceDetailModal({
                 <button
                   onClick={handleAddToCart}
                   disabled={addingToCart}
-                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-4 px-6 rounded-xl shadow-lg flex items-center justify-center gap-3 touch-target-lg"
+                  className="w-full bg-gradient-to-r from-blue-600 hover:from-blue-700 hover: disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-4 px-6 rounded-xl shadow-lg flex items-center justify-center gap-3 touch-target-lg"
                 >
                   {addingToCart ? (
                     <>

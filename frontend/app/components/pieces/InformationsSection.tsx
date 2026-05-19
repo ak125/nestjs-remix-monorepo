@@ -162,8 +162,8 @@ const THEME_CONFIG: Record<
       bg: "bg-indigo-50",
       border: "border-indigo-200",
       text: "text-indigo-800",
-      badge: "bg-indigo-200 text-indigo-800",
-      iconBg: "bg-indigo-100 text-indigo-600",
+      badge: "bg-muted text-foreground",
+      iconBg: "bg-muted text-foreground",
     },
   },
   general: {
@@ -245,7 +245,7 @@ function addGammeLinksToText(
       if (regex.test(result) && !linkedGammes.has(gamme.name)) {
         result = result.replace(regex, (match) => {
           linkedGammes.add(gamme.name);
-          return `<a href="${gammeUrl}" class="text-indigo-600 hover:text-indigo-800 underline decoration-dotted hover:decoration-solid font-medium" title="Voir nos ${gamme.name}">${match}</a>`;
+          return `<a href="${gammeUrl}" class="text-foreground hover:text-foreground underline decoration-dotted hover:decoration-solid font-medium" title="Voir nos ${gamme.name}">${match}</a>`;
         });
         break;
       }
@@ -422,14 +422,14 @@ const InformationsSection = memo(function InformationsSection({
   return (
     <section className="bg-white rounded-xl shadow-lg mb-8 overflow-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 p-6">
+      <div className="bg-gradient-to-r p-6">
         <h2 className="text-2xl font-bold text-white flex items-center gap-3">
           <Info className="w-7 h-7" />
           {pluralGammeName
             ? `Informations essentielles sur les ${pluralGammeName}`
             : informations.title}
         </h2>
-        <p className="text-indigo-100 text-sm mt-1">
+        <p className="text-foreground text-sm mt-1">
           {essentials.length} points clés
           {hasThemes ? ` + ${themeCount} thèmes experts` : ""}
         </p>

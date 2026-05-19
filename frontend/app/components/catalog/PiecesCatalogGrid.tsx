@@ -199,7 +199,7 @@ const mockCatalogData = {
         "Huiles, liquides, outils et accessoires pour l'entretien et la maintenance.",
       piecesCount: 3214,
       icon: "🛠️",
-      color: "from-purple-500 to-purple-700",
+      color: "",
       image: "/images/categories/accessoires.jpg",
       pieces: [
         {
@@ -315,7 +315,7 @@ export default function PiecesCatalogGrid({
   return (
     <div className={`bg-white rounded-lg shadow-lg ${className}`}>
       {/* En-tête avec statistiques */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-700 text-white p-6 rounded-t-lg">
+      <div className="bg-gradient-to-r text-white p-6 rounded-t-lg">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold">🛒 Catalogue Pièces Détachées</h2>
           <div className="text-right">
