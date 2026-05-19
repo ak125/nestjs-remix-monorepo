@@ -133,8 +133,10 @@ export class KgShadowService extends SupabaseBaseService {
     vehicle_id: string | undefined,
     top_n: number,
   ): Promise<readonly KgFault[]> {
-    // Canon : route via `callRpc()` (RPC Safety Gate) — never `this.supabase.rpc()`
-    // directly (see `🛡️ RPC Safety Gate` workflow + ADR-058 contract canon).
+    // Canon : route via `callRpc()` (RPC Safety Gate) — never the raw
+    // Supabase client method directly (see `🛡️ RPC Safety Gate` workflow +
+    // ADR-058 contract canon). The static grep gate matches the literal
+    // substring, so comments must avoid the bare method-call form too.
     const { data, error } = await this.callRpc<Array<Record<string, unknown>>>(
       'kg_diagnose_vehicle_aware',
       {
