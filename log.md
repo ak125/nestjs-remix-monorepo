@@ -843,3 +843,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/preprod-env-contract-preflight`
 - **Décision** : chore(registry): scope env-contract paths in ownership.yaml (D13) (+1 other commit)
 - **Sortie** : PR #632 | commits eacfdcbe3 fbc50be95
+
+## 2026-05-19 — fix/preprod-env-contract-preflight (auto)
+
+- **Branche** : `fix/preprod-env-contract-preflight`
+- **Décision** : style(env-contract): apply prettier (CI lint fix) (+3 other commits)
+- **Sortie** : PR #632 | commits 22cd9867e 690c78525 eacfdcbe3 fbc50be95
