@@ -98,7 +98,11 @@ export class RegistryReaderService {
   }
 
   private aggregateWip(planning: PlanningDoc | null): WipSummary {
-    if (!planning || planning.meta?.degraded || !Array.isArray(planning.entries)) {
+    if (
+      !planning ||
+      planning.meta?.degraded ||
+      !Array.isArray(planning.entries)
+    ) {
       return {
         degraded: true,
         generatedAt: planning?.meta?.generatedAt ?? null,
