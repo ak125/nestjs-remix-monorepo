@@ -1,5 +1,5 @@
 {
-  "artifact_immutability_hash": "sha256:688e5907e66a98e1aa0080cd2f927064469d98c7ce9776cda47cf3aed4d9b9f9",
+  "artifact_immutability_hash": "sha256:34b34f9dd21f83c7a09d461d0974129be270624f0861f13cff12cf4b0aa3d80a",
   "divergences": [
     {
       "kind": "specifier",
@@ -729,7 +729,8 @@
         }
       ],
       "resolved_versions": [
-        "4.22.2"
+        "4.22.2",
+        "4.22.3"
       ]
     },
     {
@@ -3084,7 +3085,7 @@
           ]
         },
         {
-          "divergent_resolved": false,
+          "divergent_resolved": true,
           "divergent_specifiers": true,
           "name": "tsx",
           "occurrences": [
@@ -3120,7 +3121,8 @@
             }
           ],
           "resolved_versions": [
-            "4.22.2"
+            "4.22.2",
+            "4.22.3"
           ]
         }
       ],
@@ -3947,7 +3949,7 @@
     "deps_registry": "audit/registry/deps.json",
     "deps_registry_sha": "sha256:d62e9b8155d405d8c4dab916ee31ccaabb577f15065ce0cb5cc16cec205f8022",
     "lockfile": "package-lock.json",
-    "lockfile_sha": "sha256:1a9d4a32f9e4be291d7d9714d82d6b8b9424b1f34626821d1952aae7361b7d23",
+    "lockfile_sha": "sha256:fd3b3909bd17c19c29f2c7b48ea73851198f4d7e015181724c8982204a042e0b",
     "overlay": "audit/dependencies/family-overlay.yaml",
     "overlay_sha": "sha256:c88cee03acf27840da9c5826c7a3edbcd086a70a58ee323d9c32d33ec33c1a57"
   },
@@ -5776,7 +5778,7 @@
         }
       ],
       "resolved_versions": [
-        "6.12.2"
+        "6.14.1"
       ]
     },
     {
@@ -6194,7 +6196,7 @@
         }
       ],
       "resolved_versions": [
-        "2.52.1"
+        "2.53.0"
       ]
     },
     {
@@ -6315,7 +6317,7 @@
         }
       ],
       "resolved_versions": [
-        "29.4.9"
+        "29.4.10"
       ]
     },
     {

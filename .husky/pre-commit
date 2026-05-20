@@ -1,9 +1,16 @@
-# Skip hooks during merge commits — git auto-stages files inherited from the
-# incoming branch, which can include pre-existing-on-main warnings that
-# `lint-staged --max-warnings=0` cannot distinguish from user-authored changes.
-# CI lint compares `git diff main..HEAD` and tolerates those warnings on
-# unchanged files. Aligned with husky community pattern (typicode/husky#188).
-if [ -e .git/MERGE_HEAD ] || [ -e .git/CHERRY_PICK_HEAD ] || [ -e .git/REVERT_HEAD ]; then
+# Skip hooks during merge/cherry-pick/revert — git auto-stages files inherited
+# from the incoming branch, which can include pre-existing-on-main warnings
+# that `lint-staged --max-warnings=0` cannot distinguish from user-authored
+# changes. CI lint compares `git diff main..HEAD` and tolerates those warnings.
+# Aligned with husky community pattern (typicode/husky#188).
+#
+# Worktree-safe : uses `git rev-parse --git-dir` because in worktrees `.git`
+# is a file (gitdir pointer), not a directory ; MERGE_HEAD lives in the
+# per-worktree gitdir `<repo>/.git/worktrees/<name>/`.
+GIT_DIR_RESOLVED=$(git rev-parse --git-dir 2>/dev/null || echo .git)
+if [ -e "$GIT_DIR_RESOLVED/MERGE_HEAD" ] \
+   || [ -e "$GIT_DIR_RESOLVED/CHERRY_PICK_HEAD" ] \
+   || [ -e "$GIT_DIR_RESOLVED/REVERT_HEAD" ]; then
   echo "[pre-commit] merge/cherry-pick/revert detected — hooks skipped (CI gates on diff vs base)."
   exit 0
 fi
