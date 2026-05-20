@@ -1,101 +1,57 @@
-# Vérification linguistique (grammaire / orthographe / conjugaison) des meta SEO générées
+# R2 description composition — well-formed French + safe keyword enrichment
 
-**Date** : 2026-05-20
-**Statut** : design (V1 = audit ; Phase 2 = gate)
-**Branche** : `feat/seo-linguistic-quality-audit`
-**Lié à** : PR #660 (résolution switches R2), plan `utiliser-superpower-strat-gie-immutable-donut` (PR-2 qualité), mémoire `feedback_verify_existing_first`, `feedback_no_auto_page_suppression_ever`, `feedback_no_questionnaire_propose_best`.
+**Date** : 2026-05-20 (révisé — pivot après findings empiriques)
+**Statut** : design validé, V1 en implémentation
+**Branche** : `feat/seo-linguistic-quality-audit` (PR nommée « R2 descrip composition »)
+**Lié à** : PR #660 (résolution switches R2), plan R-stack PR-2 (contenu R2), PR-6.4 (keywords). Mémoires `feedback_verify_existing_first`, `feedback_no_touch_meta_h1_if_optimized`, `feedback_no_questionnaire_propose_best`.
 
 ---
 
-## 1. Problème
+## 1. Problème (confirmé empiriquement)
 
-PR #660 a corrigé la **résolution** des switches (`#CompSwitch_X#` ne sont plus strippés à vide). Mais la **composition** du template produit du français bancal. Exemple réel (pg 402, descrip `#LinkGammeCar_402#, #CompSwitch_3_402#`) :
+La description R2 est 100 % pilotée par le template DB `sgc_descrip = #LinkGammeCar#, #CompSwitch#` →
+`[gamme marque modèle], [fragment infinitif]` = **phrase sans verbe**. Ex. réel :
 
 > « Plaquette de frein PEUGEOT 207, au meilleur rapport qualité-prix pour assurer le freinage par friction »
 
-= juxtaposition **sans verbe ni connecteur** (groupe nominal + virgule + complément). Grammaticalement incomplet.
+**118/118 descriptions** sont construites ainsi (mesuré). Ce n'est pas une page ratée, c'est le **mode de fabrication**.
 
-**Constat vérifié (verify-existing, 2026-05-20)** : aucun mécanisme de vérification grammaire/orthographe/conjugaison n'existe dans le monorepo.
-- `content-quality-gate.service.ts` = **denylists** (forbidden vocab + must-not-contain) par rôle R1/R3/R4/R6. Pas de grammaire.
-- `quality-scoring-engine.service.ts` / `conseil-quality-scorer.service.ts` = scoring **heuristique** par dimensions (seuil/poids). Pas de grammaire.
-- Aucune lib NLP/grammaire dans aucun `package.json` (pas de LanguageTool, hunspell, retext, grammalecte…).
+## 2. Findings qui cadrent la solution (pourquoi ni grammaire-checker, ni keyword brut)
 
-→ **Vrai gap.** Pas un checker à réparer ; une capacité à ajouter.
+- **LanguageTool (meilleur correcteur FR, self-hosted) ne détecte PAS le « sans verbe »** (testé, même mode `picky` → 0 match). Et sur les fragments bruts il donne ~95 % de fausses alertes (CASING, car fragments minuscules à encastrer). → un correcteur grammatical n'est PAS l'outil principal. Conteneur arrêté ; piste « contrôle ponctuel sur phrase finale » documentée mais non retenue en V1.
+- **`__seo_keywords` (10 344 kw, 19 gammes, volume) est contaminé** : pg 402 (plaquette) → top kw « disque de frein » (mauvais produit !) ; pg 424 → « filtre à habitacle » (faux). → le mot-clé brut **ne peut pas** servir de nom de produit.
 
-## 2. Objectif
+## 3. Solution (best-in-class, déterministe, sûre)
 
-Détecter, dans les meta SEO générées (titre/descrip/H1) **et** dans les fragments switch sources, les défauts : grammaire, conjugaison, accords, orthographe, **phrase incomplète/sans verbe**, ponctuation. **Report-first, zéro auto-correction** (cohérent doctrine `seo-qa` « ne corrige JAMAIS auto, analyse et rapporte »).
+Composer la description **en code** (pas en mutant les 118 templates DB), via un **composeur de phrase véhicule-aware** :
 
-**Non-objectifs (YAGNI)** : pas de réécriture auto, pas de gate runtime en V1, pas de nouvelle table, pas de modification d'URL/meta optimisées manuellement.
+- **Terme produit = `gamme_name` autoritaire** (DB `pg_name`, toujours correct). Jamais le keyword brut.
+- **Phrase complète avec verbe**, plusieurs **frames** grammaticalement valides, **tournés par `(type_id + pg_id)`** (anti-cannibalisation, comme `selectVariation`/`SEO_PRICE_VARIATIONS` existants).
+- **Slots** depuis données autoritaires : marque, modèle, motorisation, puissance, années, `count`, `min_price`. Clause omise proprement si donnée absente (jamais « dès €» ni placeholder résiduel).
+- **Enrichissement keyword GATÉ** : un modifieur issu de `__seo_keywords` n'est ajouté que si le keyword normalisé **contient les mots-cœur de la gamme** (ex. « filtre à huile » ✓ pour filtre-a-huile ; « disque de frein » ✗ pour plaquette). Sans gate → rejet. Couverture 19 gammes ; sinon pas de modifieur (fallback propre).
+- **Respect meta optimisées** : si `sgc_descrip` est de la vraie prose (contient un verbe / pas seulement des placeholders), on la garde. Aujourd'hui les 118 sont dégénérées → composeur actif.
 
-## 3. Approche retenue (best-in-class, pas de bricolage)
+### Exemple cible
+> « Trouvez votre **plaquette de frein** pour **PEUGEOT 207 1.4 HDI (68 ch)** : 24 références compatibles dès **9,00 €**. Livraison rapide. »
+(frame 2, type 57720) → « Besoin de **plaquettes de frein** pour **PEUGEOT 207 1.9 D** ? Comparez les références compatibles à partir de **10,00 €**. Expédition rapide. »
 
-**Moteur : LanguageTool FR auto-hébergé** (open-source, image Docker officielle `erikvl87/languagetool` ou équivalent, API REST `/v2/check`).
+## 4. Architecture (réutilise l'existant)
 
-Pourquoi ce choix vs alternatives :
-| Option | Verdict |
-|---|---|
-| **LanguageTool self-hosted** ✅ | Standard moderne FR (grammaire+orthographe+style), règles maintenues, **déterministe**, **0 coût/requête**, **self-hosted** (No Paid Render), API REST simple. **RETENU.** |
-| Regex/règles maison | ❌ Bricolage explicitement exclu. Ne couvre jamais la conjugaison/accords FR. |
-| API payante (Antidote, Grammarly) | ❌ Payant + non self-hostable. Viole No Paid Render. |
-| LLM (Claude) par item | ❌ Non-déterministe, coût par item, lent sur 6542 fragments + milliers de combos. Réservable plus tard à une revue éditoriale ciblée, pas au gate de masse. |
+1. **`VehicleAwareDescriptionComposer`** (pur, `backend/src/modules/catalog/services/`) — `compose(ctx): string`. Frames + rotation déterministe + gestion slots manquants. **Cœur testable isolément, 0 I/O.**
+2. **Gate keyword** : helper `pickGammeKeywordModifier(gammeCoreWords, keywords)` pur — filtre relevance, retourne un modifieur sûr ou `null`.
+3. **`SeoTemplateService`** : pour le champ `description`, si template dégénéré → utiliser le composeur ; sinon garder prose. (Détection « dégénéré » = après substitution, pas de verbe-frame / quasi vide.)
+4. **`RmBuilderService.getPageCompleteV2`** : injecte `gamme_keywords` dans `ctx` (comme `comp_switches` l.613), lus via une requête `__seo_keywords` par `pg_id` (cache, comme `loadCompSwitches`).
 
-**Intégration : extension du framework qualité existant**, pas de système parallèle (`feedback_verify_existing_first`). Le score linguistique deviendra (Phase 2) une **dimension** de `quality-scoring-engine`.
+## 5. Garde-fous
+- Déterministe, 0 LLM. Terme produit autoritaire (jamais keyword brut). Zéro nouvelle table. Zéro URL/route modifiée. Pas de placeholder résiduel. Meta optimisées intouchables. Branche dédiée + worktree.
 
-## 4. Architecture
+## 6. Hors V1 (différé)
+- Nettoyage du mapping keyword→gamme (`__seo_keywords` contaminé) → puis enrichissement keyword élargi.
+- Contrôle ponctuel LanguageTool sur phrase composée (optionnel, CI/audit).
+- Mesure GSC après recrawl PROD.
 
-### Composants (chacun une responsabilité claire, testable isolément)
-
-1. **Service LanguageTool (infra)** — `docker-compose.languagetool.yml` (suit le split per-service existant : `docker-compose.meilisearch.yml`, `…redis.yml`). Conteneur LT, langue `fr`. Exposé en local au backend.
-2. **`LanguageToolClientService`** (`backend/src/modules/seo/linguistic/`) — wrappe l'API REST `/v2/check`. Entrée : texte FR. Sortie : `LinguisticIssue[]` (typé : `ruleId`, `category`, `message`, `offset`, `length`, `badFragment`, `suggestions[]`, `severity`). URL via **`LANGUAGETOOL_URL`** (convention `*_URL` existante ; ajouté à `.env.example`). Timeout + fallback propre si LT indispo (l'audit reporte « moteur indisponible », ne crash pas).
-3. **`LinguisticAuditRunner`** (script/commande backend) — orchestration V1 :
-   - **Source A** : les 6542 fragments `__seo_gamme_car_switch` (par alias).
-   - **Source B** : échantillon représentatif de meta **rendues** — réutilise le **vrai** `SeoTemplateService.processTemplates` sur les templates `__seo_gamme_car` × N motorisations (multi-gammes), pour capter les défauts de **composition** (le cas « 207, au meilleur… »).
-   - Passe chaque texte dans `LanguageToolClientService`, agrège, classe par sévérité/catégorie.
-4. **Rapport** — `docs/seo/linguistic-audit/2026-..-r2-linguistic-audit.{md,json}`. Pas de DB, pas de table (cohérent garde-fou « zéro nouvelle table »).
-
-### Flux de données (V1)
-
-```
-__seo_gamme_car_switch (6542)  ┐
-                               ├─► LinguisticAuditRunner ─► LanguageToolClientService ─► LT(fr) ─► issues[]
-SeoTemplateService.render(...) ┘                                                                     │
-   (templates × motorisations)                                                                       ▼
-                                                          rapport .md + .json (sévérité, catégorie, texte, suggestion)
-```
-
-### Classification des défauts (couverts par LanguageTool FR)
-- `SPELLING` (orthographe)
-- `CONJUGATION`
-- `AGREEMENT` (accords)
-- `GRAMMAR`
-- `PUNCTUATION` / `TYPOGRAPHY`
-- `STYLE` (informatif, non bloquant)
-
-**Cas « phrase sans verbe » (ex. « 207, au meilleur rapport… »)** : LanguageTool FR ne garantit PAS la détection des fragments sans verbe. V1 **mesure empiriquement** si LT le capte (Task 7) ; si non → Phase 2 ajoute un contrôle de complétude de clause via un POS-tagger FR (spaCy `fr_core_news_sm` ou équivalent), **jamais** une regex maison. Pas de promesse non tenable en V1.
-
-## 5. Phase 2 (hors V1, après lecture de l'audit)
-- Dimension `linguistic` (score 0-100 dérivé de la densité d'issues bloquantes) ajoutée à `quality-scoring-engine` (profils seuil/poids existants).
-- **Gate** : un contenu/fragment avec issue bloquante (grammaire/conjugaison/phrase incomplète) ne ship pas avant correction humaine. Report-first maintenu (pas d'auto-fix).
-- Décision Phase 2 conditionnée aux chiffres de l'audit V1 (combien de fragments/combos réellement cassés).
-
-## 6. Gestion d'erreurs
-- LT indisponible/timeout → l'audit marque les items `engine_unavailable`, n'invente pas de verdict, exit code distinct. Jamais de faux « OK ».
-- Fragment vide / non-FR → ignoré proprement, compté à part.
-
-## 7. Tests
-- Unit `LanguageToolClientService` : LT mocké, mapping réponse→`LinguisticIssue[]` (cas grammaire, orthographe, vide, erreur réseau).
-- Unit classification : phrases FR connues bonnes/mauvaises (dont « groupe nominal, complément » sans verbe → `INCOMPLETE_SENTENCE`).
-- Le runner : testé sur un mini-échantillon fixture (pas d'appel réseau réel en CI ; LT mocké).
-
-## 8. Garde-fous respectés
-- Verify-existing : étend le framework qualité, conventions `*_URL` + `docker-compose.<svc>.yml`.
-- Zéro nouvelle table, zéro URL modifiée, zéro meta réécrite.
-- Report-first, zéro auto-correction.
-- Branche dédiée + worktree.
-- Déterministe (LT, pas LLM).
-
-## 9. Critères de succès V1
-- Rapport produit sur les 6542 fragments + échantillon meta rendues, avec décompte par catégorie/sévérité et exemples (texte fautif + suggestion).
-- Verdict empirique documenté sur le cas « 207, au meilleur rapport… » : LanguageTool le capte ou non → décision Phase 2 (POS-tagger) tranchée par ce chiffre.
-- Aucune écriture DB ; LT tourne en conteneur local self-hosted.
+## 7. Critères de succès V1
+- 2 motorisations d'un même modèle → descriptions **distinctes ET grammaticalement complètes** (verbe présent).
+- Aucun placeholder résiduel ; clause prix/count omise proprement si absente.
+- Terme produit = nom de gamme DB (jamais « disque » sur une page « plaquette »).
+- Tests unitaires composeur + gate keyword verts.
