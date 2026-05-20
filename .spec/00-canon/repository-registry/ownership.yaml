@@ -112,6 +112,11 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: high
+  - glob: log*.md
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
   - glob: agents/**
     domain: D15
     owner: '@ak125'
