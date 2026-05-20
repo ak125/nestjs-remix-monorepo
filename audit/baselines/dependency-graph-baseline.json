@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "v1",
+  "createdAt": "2026-05-20",
+  "createdOnCommit": null,
+  "sourcePr": null,
+  "mode": "block-new-only",
+  "maxStackDepthTarget": 2,
+  "findings": [
+    {
+      "kind": "stack_too_deep",
+      "id": "pr:456",
+      "depth": 3
+    }
+  ],
+  "notes": [
+    "Grandfathers existing deep stacks; only NEW stack_too_deep findings block.",
+    "Refresh downward as Étape 3 linearizes stacks (target: zero findings)."
+  ]
+}
