@@ -7,6 +7,7 @@ import {
   type SeoContext,
   type SeoTemplates,
 } from '../../catalog/services/seo-template.service';
+import { pickGammeKeywordModifier } from '../../catalog/services/vehicle-aware-description.composer';
 import { SeoShadowObservatory } from '../../seo-shadow-observatory/seo-shadow-observatory.service';
 import {
   RmProduct,
@@ -611,6 +612,13 @@ export class RmBuilderService extends SupabaseBaseService {
               // Fragments switch PAR GAMME (legacy) pour résoudre #CompSwitch_alias#
               // (sinon strippés à vide → meta dégénérée). Chargé caché.
               comp_switches: await this.loadCompSwitches(Number(seoCtx.pg_id)),
+              // Modifieur mot-clé GATÉ (ex. « avant ») depuis __seo_keywords —
+              // ajouté au terme produit dans la description composée. Gate
+              // anti-contamination (mot-clé doit contenir les mots-cœur gamme).
+              gamme_keyword_modifier: await this.loadGammeKeywordModifier(
+                Number(seoCtx.pg_id),
+                result.gamme?.pg_name || '',
+              ),
             };
 
             const processed = await this.seoTemplateService.processTemplates(
@@ -752,6 +760,44 @@ export class RmBuilderService extends SupabaseBaseService {
       .set(cacheKey, grouped, 86400)
       .catch(() => undefined);
     return grouped;
+  }
+
+  /**
+   * Choisit un modifieur mot-clé SÛR pour la gamme depuis `__seo_keywords`
+   * (gate anti-contamination : le mot-clé doit contenir les mots-cœur de la
+   * gamme — cf. `pickGammeKeywordModifier`). Caché 24h. Null si rien de sûr.
+   */
+  private async loadGammeKeywordModifier(
+    pgId: number,
+    gammeName: string,
+  ): Promise<string | null> {
+    if (!pgId || Number.isNaN(pgId) || !gammeName) return null;
+    const cacheKey = `seo:gamme_kw_modifier:${pgId}`;
+    const cached = await this.cacheService.get<string>(cacheKey);
+    if (cached !== undefined && cached !== null) return cached === '' ? null : cached;
+
+    let modifier: string | null = null;
+    try {
+      const { data, error } = await this.supabase
+        .from('__seo_keywords')
+        .select('keyword, volume')
+        .eq('pg_id', pgId);
+      if (!error && Array.isArray(data)) {
+        modifier = pickGammeKeywordModifier(
+          gammeName,
+          (data as Array<{ keyword: string | null; volume: number | null }>).map(
+            (r) => ({ keyword: r.keyword ?? '', volume: r.volume ?? 0 }),
+          ),
+        );
+      }
+    } catch (e) {
+      this.logger.warn(`loadGammeKeywordModifier(${pgId}) failed: ${String(e)}`);
+    }
+    // Cache la chaîne vide pour « null » (évite re-query). TTL 24h.
+    await this.cacheService
+      .set(cacheKey, modifier ?? '', 86400)
+      .catch(() => undefined);
+    return modifier;
   }
 
   /** Décode les entités HTML legacy les plus fréquentes dans les fragments switch. */
