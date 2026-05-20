@@ -43,6 +43,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
 import { SITE_ORIGIN } from './config/app.config';
+import { LandingAttributionMiddleware } from './modules/analytics/landing-attribution.middleware';
 
 import RedisStore from 'connect-redis';
 import session from 'express-session';
@@ -163,6 +164,15 @@ async function bootstrap() {
       }),
     );
     logger.log('Middleware de session initialisé');
+
+    // Landing attribution: first-touch source capture into the session.
+    // MUST run after express-session (needs req.session) and before route
+    // handlers. Stateless instance — no DI needed here.
+    const landingAttribution = new LandingAttributionMiddleware();
+    app.use((req: any, res: any, nextFn: any) =>
+      landingAttribution.use(req, res, nextFn),
+    );
+    logger.log("Middleware d'attribution landing initialisé");
 
     // Compression middleware MUST be registered BEFORE useStaticAssets : Express
     // applies middlewares in registration order, and the static-asset handler

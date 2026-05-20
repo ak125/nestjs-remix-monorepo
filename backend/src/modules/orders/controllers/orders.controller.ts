@@ -377,12 +377,18 @@ export class OrdersController {
           'completed',
         );
       }
-      if (gaClientId && orderId) {
+      // Persist GA4 client id + first-party landing attribution (Étape 0).
+      const landing = req.session?.landing;
+      if ((gaClientId || landing) && orderId) {
         const sb = this.ordersService.getSupabaseClient();
-        await sb
-          .from('___xtr_order')
-          .update({ ga_client_id: gaClientId })
-          .eq('ord_id', orderId);
+        const patch: Record<string, unknown> = {};
+        if (gaClientId) patch.ga_client_id = gaClientId;
+        if (landing) {
+          patch.landing_source = landing.source;
+          patch.landing_path = landing.path;
+          patch.landing_first_seen_at = landing.firstSeenAt;
+        }
+        await sb.from('___xtr_order').update(patch).eq('ord_id', orderId);
       }
       let resumeToken: string | undefined;
       if (orderId) {
@@ -556,13 +562,18 @@ export class OrdersController {
           'completed',
         );
       }
-      // Stocker ga_client_id
-      if (gaClientId && finalOrderId) {
+      // Stocker ga_client_id + first-party landing attribution (Étape 0)
+      const landing = req.session?.landing;
+      if ((gaClientId || landing) && finalOrderId) {
         const sb = this.ordersService.getSupabaseClient();
-        await sb
-          .from('___xtr_order')
-          .update({ ga_client_id: gaClientId })
-          .eq('ord_id', finalOrderId);
+        const patch: Record<string, unknown> = {};
+        if (gaClientId) patch.ga_client_id = gaClientId;
+        if (landing) {
+          patch.landing_source = landing.source;
+          patch.landing_path = landing.path;
+          patch.landing_first_seen_at = landing.firstSeenAt;
+        }
+        await sb.from('___xtr_order').update(patch).eq('ord_id', finalOrderId);
       }
       // Générer resume token
       let resumeToken: string | undefined;
