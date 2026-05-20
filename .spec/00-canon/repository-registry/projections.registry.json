@@ -35,7 +35,7 @@
       "projection_contract_version": "1.0.0",
       "rollout_flag": "growthbook:seo_projection_read_v1",
       "owner_pr": "PR-6",
-      "adr": "ADR-058"
+      "adr": "ADR-059"
     }
   ]
 }
