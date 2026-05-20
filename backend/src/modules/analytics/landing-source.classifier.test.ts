@@ -36,7 +36,10 @@ describe('classifyLandingSource', () => {
 
   it('classifies a Facebook referer as social', () => {
     expect(
-      classifyLandingSource({ referer: 'https://m.facebook.com/', selfHost: SELF }),
+      classifyLandingSource({
+        referer: 'https://m.facebook.com/',
+        selfHost: SELF,
+      }),
     ).toBe('social');
   });
 
@@ -64,13 +67,16 @@ describe('classifyLandingSource', () => {
 
   it('classifies an unknown utm_source as campaign', () => {
     expect(
-      classifyLandingSource({ query: { utm_source: 'partner-x' }, selfHost: SELF }),
+      classifyLandingSource({
+        query: { utm_source: 'partner-x' },
+        selfHost: SELF,
+      }),
     ).toBe('campaign');
   });
 
   it('is robust to a malformed referer (treats as direct)', () => {
-    expect(classifyLandingSource({ referer: 'not a url', selfHost: SELF })).toBe(
-      'direct',
-    );
+    expect(
+      classifyLandingSource({ referer: 'not a url', selfHost: SELF }),
+    ).toBe('direct');
   });
 });
