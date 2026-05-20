@@ -18,6 +18,8 @@ import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module';
 
 // Controllers - Stock consolidé ✅
+import { ControlPlaneController } from './controllers/control-plane.controller';
+import { RegistryReaderService } from './services/registry-reader.service';
 import { ConfigurationController } from './controllers/configuration.controller';
 import { StockController } from './controllers/stock.controller'; // 🔥 Controller consolidé unique
 import { AdminController } from './controllers/admin.controller';
@@ -160,6 +162,7 @@ import { SeoControlRefreshProcessor } from './processors/seo-control-refresh.pro
     BullModule.registerQueue({ name: SEO_CONTROL_REFRESH_QUEUE }), // 🚀 PR-SBD-1 SWR per-block refresh
   ],
   controllers: [
+    ControlPlaneController,
     ConfigurationController,
     StockController, // 🔥 Un seul controller stock consolidé (13 routes)
     // ❌ StockEnhancedController - SUPPRIMÉ
@@ -206,6 +209,7 @@ import { SeoControlRefreshProcessor } from './processors/seo-control-refresh.pro
     SeoControlController, // 📊 PR-SBD-1 — SEO Business Control Dashboard - /api/admin/seo-control/*
   ],
   providers: [
+    RegistryReaderService,
     ConfigurationService,
     StockManagementService, // ✅ Service principal stock
     WorkingStockService, // ✅ Service complémentaire (search, export, stats)

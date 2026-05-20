@@ -12,6 +12,11 @@ name: R-SEO-09 URL Immutability Gate
 
 on:
   pull_request:
+    # Include labeled/unlabeled so the `r-seo-09-override` escape hatch
+    # actually re-triggers the gate when the label is added/removed (default
+    # types are opened/synchronize/reopened only — the override was inert on
+    # label-add without this).
+    types: [opened, synchronize, reopened, labeled, unlabeled]
     paths:
       - 'frontend/app/routes/**'
       - 'backend/src/modules/seo/**'
