@@ -7,6 +7,7 @@ import {
   type SeoContext,
   type SeoTemplates,
 } from '../../catalog/services/seo-template.service';
+import { pickGammeKeywordModifier } from '../../catalog/services/vehicle-aware-description.composer';
 import { SeoShadowObservatory } from '../../seo-shadow-observatory/seo-shadow-observatory.service';
 import {
   RmProduct,
@@ -610,7 +611,10 @@ export class RmBuilderService extends SupabaseBaseService {
               power_ps: seoCtx.type_power_ps || '',
               // Fragments switch PAR GAMME (legacy) pour résoudre #CompSwitch_alias#
               // (sinon strippés à vide → meta dégénérée). Chargé caché.
-              comp_switches: await this.loadCompSwitches(Number(seoCtx.pg_id)),
+              ...(await this.loadSeoCtxSwitches(
+                Number(seoCtx.pg_id),
+                result.gamme?.pg_name || '',
+              )),
             };
 
             const processed = await this.seoTemplateService.processTemplates(
@@ -752,6 +756,68 @@ export class RmBuilderService extends SupabaseBaseService {
       .set(cacheKey, grouped, 86400)
       .catch(() => undefined);
     return grouped;
+  }
+
+  /**
+   * Charge en PARALLÈLE les deux sources switch du contexte SEO (fragments par
+   * gamme + modifieur mot-clé gaté) — requêtes indépendantes, évite la latence
+   * série sur le cold path de `getPageCompleteV2`.
+   */
+  private async loadSeoCtxSwitches(
+    pgId: number,
+    gammeName: string,
+  ): Promise<Pick<SeoContext, 'comp_switches' | 'gamme_keyword_modifier'>> {
+    const [comp_switches, gamme_keyword_modifier] = await Promise.all([
+      this.loadCompSwitches(pgId),
+      this.loadGammeKeywordModifier(pgId, gammeName),
+    ]);
+    return { comp_switches, gamme_keyword_modifier };
+  }
+
+  /**
+   * Choisit un modifieur mot-clé SÛR pour la gamme depuis `__seo_keywords`
+   * (gate anti-contamination : le mot-clé doit contenir les mots-cœur de la
+   * gamme — cf. `pickGammeKeywordModifier`). Null si rien de sûr.
+   * Le résultat n'est caché 24h QUE si la requête a réussi (succès, même null) ;
+   * sur erreur → pas de cache long TTL, réessai au prochain appel
+   * (`feedback_no_long_ttl_cache_on_error_paths`).
+   */
+  private async loadGammeKeywordModifier(
+    pgId: number,
+    gammeName: string,
+  ): Promise<string | null> {
+    if (!pgId || Number.isNaN(pgId) || !gammeName) return null;
+    const cacheKey = `seo:gamme_kw_modifier:${pgId}`;
+    const cached = await this.cacheService.get<string>(cacheKey);
+    if (cached !== undefined && cached !== null) return cached === '' ? null : cached;
+
+    let modifier: string | null = null;
+    let querySucceeded = false;
+    try {
+      const { data, error } = await this.supabase
+        .from('__seo_keywords')
+        .select('keyword, volume')
+        .eq('pg_id', pgId);
+      if (!error && Array.isArray(data)) {
+        querySucceeded = true;
+        modifier = pickGammeKeywordModifier(
+          gammeName,
+          (data as Array<{ keyword: string | null; volume: number | null }>).map(
+            (r) => ({ keyword: r.keyword ?? '', volume: r.volume ?? 0 }),
+          ),
+        );
+      }
+    } catch (e) {
+      this.logger.warn(`loadGammeKeywordModifier(${pgId}) failed: ${String(e)}`);
+    }
+    // Cache 24h UNIQUEMENT si succès (null légitime = pas de modifieur sûr).
+    // Sur erreur : pas de cache → réessai (pas de null figé 24h).
+    if (querySucceeded) {
+      await this.cacheService
+        .set(cacheKey, modifier ?? '', 86400)
+        .catch(() => undefined);
+    }
+    return modifier;
   }
 
   /** Décode les entités HTML legacy les plus fréquentes dans les fragments switch. */
