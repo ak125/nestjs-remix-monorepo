@@ -25,8 +25,10 @@ ALTER TABLE ___xtr_order
     ADD COLUMN IF NOT EXISTS landing_first_seen_at TIMESTAMPTZ;
 
 -- Closed-enum guard at the DB layer (defense in depth; app also validates).
--- NOT VALID skips the existing-row scan (all NULL right after ADD COLUMN);
--- VALIDATE then marks the constraint fully trusted. Allow NULL (unknown).
+-- NOT VALID skips the existing-row scan: every existing row has landing_source
+-- NULL (column just added) so there is nothing to validate, and the constraint
+-- still enforces the enum on all subsequent INSERT/UPDATE. No separate VALIDATE
+-- (would block reads if run in the same transaction — squawk). Allow NULL.
 ALTER TABLE ___xtr_order
     DROP CONSTRAINT IF EXISTS chk_xtr_order_landing_source;
 ALTER TABLE ___xtr_order
@@ -34,7 +36,6 @@ ALTER TABLE ___xtr_order
     CHECK (landing_source IS NULL OR landing_source IN
         ('organic','paid','social','email','referral','direct','campaign'))
     NOT VALID;
-ALTER TABLE ___xtr_order VALIDATE CONSTRAINT chk_xtr_order_landing_source;
 
 -- Partial index for dashboard cohort queries (WHERE landing_source = 'organic').
 CREATE INDEX IF NOT EXISTS idx_xtr_order_landing_source
