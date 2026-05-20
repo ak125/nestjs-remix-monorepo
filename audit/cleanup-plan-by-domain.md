@@ -27,7 +27,16 @@ knip does **not** flag `scripts/ui-audit/*` as unused (it's reachable via `knip.
 
 **Step A — make knip see NestJS DI.** Add a NestJS-aware `knip.json` config (plugin if available for knip 6.11, otherwise add `backend/src/**/*.module.ts` + `*.controller.ts` as entries / a targeted ignore) so `unused_files` lists only real backend dead code. Re-run `npm run audit:inventory` → `dead-code-candidates.json` shrinks.
 
-**Step B — decide the fate of the 6 unreachable module subtrees** (`runtime-entrypoints.json#nestjs_unreachable_modules`): `upload` (7 cand.), `agentic-engine` (5), `knowledge-graph` (5), `mcp-validation` (17 — 16 `low`), `substitution` (5), `blog-metadata` (2). For each: is the `*.module.ts` imported *anywhere*? If genuinely never imported → the whole subtree is dead → remove the module + its tree via conditions #0–#8. If lazy/dynamic/conditionally-registered → the candidates are false positives → add the module to a documented allowlist and move on. **Investigate before deleting.**
+**Step B — decide the fate of the 6 unreachable module subtrees** (`runtime-entrypoints.json#nestjs_unreachable_modules`). État post-arbitrage 2026-05-13/14 :
+
+- ~~`substitution` (5)~~ → **`http_live` retention** (canari PR #466 closed ; `@Controller('api/substitution')` consommé par `frontend/app/routes/pieces.$slug.tsx:206`). Triage : [`audit/unreachable-modules/substitution.md`](unreachable-modules/substitution.md).
+- ~~`upload` (7)~~ → **`partial` retention** (PR #476 ; `SupabaseStorageService` consommé par `rag-proxy/`). Triage : [`audit/unreachable-modules/upload.md`](unreachable-modules/upload.md).
+- ~~`agentic-engine` (5)~~ → **`partial` retention** (PR #477 ; 4 services + constants + types consommés par `workers/`). Triage : [`audit/unreachable-modules/agentic-engine.md`](unreachable-modules/agentic-engine.md).
+- `mcp-validation` (17 — 16 `low`) → seul candidat `dead_subtree` plausible restant. À triager.
+- `knowledge-graph` (5) → `decision pending` (delete vs promote, voir cleanup-targets.md).
+- `blog-metadata` (2) → traité via Section 3 (fusion `blog/metadata/`).
+
+Pour chaque candidat restant : conditions #0–#8 de `validate-before-delete.sh` à re-vérifier avant `git rm`. Le check 4b `[HTTP-ROUTE-CALLER]` (prereq-2 #469) fire automatiquement sur tout `@Controller(...)` consommé externe — un sous-arbre `http_live` ou `partial` détecté en triage = retention canonique, pas de drop file-by-file (sortirait du scope « delete module-entier clearly-dead »).
 
 **Step C — high-confidence backend candidates** (16; all pass `validate-before-delete.sh` SAFE per PR-0a snapshot — re-verify):
 `backend/src/database/services/{invoices,payment}.service.ts`, `database/types/database.types.ts`, `database/utils/supabase-type-helpers.ts`, `modules/admin/events/keyword-plan.events.ts`, `modules/catalog/interfaces/catalog-gamme.interface.ts`, `modules/config/interfaces/config.interfaces.ts`, `modules/products/types/product.types.ts`, `notifications/notifications-center.{controller,module}.ts`, `search/global-search.{controller,module}.ts`, `types/order.types.ts`, `config/r0-page-contract.constants.ts`, `modules/invoices.module.ts`, `modules/shipping/shipping-new.module.ts`.
