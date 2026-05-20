@@ -18,6 +18,18 @@ import type { VehicleContext } from '@repo/registry';
 declare module 'express-session' {
   interface SessionData {
     googleNonce?: string;
+    landing?: {
+      source:
+        | 'organic'
+        | 'paid'
+        | 'social'
+        | 'email'
+        | 'referral'
+        | 'direct'
+        | 'campaign';
+      path: string;
+      firstSeenAt: string;
+    };
   }
 }
 
