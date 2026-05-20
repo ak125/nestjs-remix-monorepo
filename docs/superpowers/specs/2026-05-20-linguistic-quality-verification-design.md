@@ -64,13 +64,15 @@ SeoTemplateService.render(...) ┘                                              
                                                           rapport .md + .json (sévérité, catégorie, texte, suggestion)
 ```
 
-### Classification des défauts
-- `INCOMPLETE_SENTENCE` (phrase sans verbe — cible #1)
-- `GRAMMAR` / `AGREEMENT` (accords)
-- `CONJUGATION`
+### Classification des défauts (couverts par LanguageTool FR)
 - `SPELLING` (orthographe)
+- `CONJUGATION`
+- `AGREEMENT` (accords)
+- `GRAMMAR`
 - `PUNCTUATION` / `TYPOGRAPHY`
 - `STYLE` (informatif, non bloquant)
+
+**Cas « phrase sans verbe » (ex. « 207, au meilleur rapport… »)** : LanguageTool FR ne garantit PAS la détection des fragments sans verbe. V1 **mesure empiriquement** si LT le capte (Task 7) ; si non → Phase 2 ajoute un contrôle de complétude de clause via un POS-tagger FR (spaCy `fr_core_news_sm` ou équivalent), **jamais** une regex maison. Pas de promesse non tenable en V1.
 
 ## 5. Phase 2 (hors V1, après lecture de l'audit)
 - Dimension `linguistic` (score 0-100 dérivé de la densité d'issues bloquantes) ajoutée à `quality-scoring-engine` (profils seuil/poids existants).
@@ -95,5 +97,5 @@ SeoTemplateService.render(...) ┘                                              
 
 ## 9. Critères de succès V1
 - Rapport produit sur les 6542 fragments + échantillon meta rendues, avec décompte par catégorie/sévérité et exemples (texte fautif + suggestion).
-- Le cas « 207, au meilleur rapport… » est détecté et classé `INCOMPLETE_SENTENCE`.
+- Verdict empirique documenté sur le cas « 207, au meilleur rapport… » : LanguageTool le capte ou non → décision Phase 2 (POS-tagger) tranchée par ce chiffre.
 - Aucune écriture DB ; LT tourne en conteneur local self-hosted.
