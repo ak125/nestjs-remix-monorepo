@@ -72,6 +72,11 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: critical
+  - glob: .github/PULL_REQUEST_TEMPLATE.md
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
   - glob: .github/workflows/**
     domain: D13
     owner: '@ak125'
