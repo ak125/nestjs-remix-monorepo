@@ -67,6 +67,11 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: medium
+  - glob: backend/tests/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
   - glob: .github/CODEOWNERS
     domain: D15
     owner: '@ak125'
