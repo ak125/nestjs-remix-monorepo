@@ -19,10 +19,13 @@ Formulations **interdites** par lint CI `scripts/lint/check-preprod-vocabulary.s
 
 ## Démarrage de session — lire `log.md` pour contexte récent
 
-Au début de chaque session Claude Code, lire les ~20 dernières entrées de
-[`log.md`](log.md) à la racine pour situer le travail récent (commits, PRs,
-décisions). Append-only, écrit par le skill `session-log` (déclenché auto par
-le hook `Stop` quand commits/PRs créés).
+Au début de chaque session Claude Code, lire le contexte récent **via commande
+bornée** : `tail -n 80 log.md` (≈ les 12-15 dernières entrées, ~2K tokens).
+**Ne jamais lire `log.md` en entier** — c'est append-only et la lecture
+intégrale gaspille des tokens. L'historique antérieur vit dans
+`log-archive-<année>.md` (jamais lu au démarrage). `log.md` est écrit par le
+skill `session-log` / le hook `Stop`, et borné automatiquement par
+`scripts/claude-hooks/rotate-log.sh` (rotation vers l'archive au-delà de 600 lignes).
 
 Délimitation explicite :
 
