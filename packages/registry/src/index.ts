@@ -59,6 +59,14 @@ export {
   type PlanningEntry,
   type PlanningRegistry,
 } from "./entries/planning-entry";
+export {
+  DependencyGraphSchema,
+  DepGraphNodeSchema,
+  DepGraphEdgeSchema,
+  type DependencyGraph,
+  type DepGraphNode,
+  type DepGraphEdge,
+} from "./entries/dependency-graph-entry";
 
 // ── Layer 2 overlay (manual) ──
 export {
