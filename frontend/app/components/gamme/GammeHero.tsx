@@ -12,6 +12,7 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import VehicleSelector from "~/components/vehicle/VehicleSelector";
 import { ImageOptimizer } from "~/utils/image-optimizer";
+import { imgPriority } from "~/utils/img-priority";
 
 interface GammeHeroProps {
   gammeName: string;
@@ -112,7 +113,7 @@ export default function GammeHero({
                         height={360}
                         className="block w-full h-full object-cover"
                         loading="eager"
-                        fetchPriority="high"
+                        {...imgPriority("high")}
                         onError={(e) => {
                           e.currentTarget.src =
                             "/images/categories/default.svg";

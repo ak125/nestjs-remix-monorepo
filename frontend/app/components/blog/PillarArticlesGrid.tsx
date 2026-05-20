@@ -14,6 +14,7 @@ import {
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { imgPriority } from "~/utils/img-priority";
 import { ArticleBadges } from "./ArticleBadges";
 import {
   type BlogArticle,
@@ -64,7 +65,7 @@ export function PillarArticlesGrid({ articles }: PillarArticlesGridProps) {
                       height={224}
                       loading={index === 0 ? "eager" : "lazy"}
                       decoding={index === 0 ? "sync" : "async"}
-                      fetchPriority={index === 0 ? "high" : undefined}
+                      {...imgPriority(index === 0 ? "high" : undefined)}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
                     <div className="absolute top-4 left-4">

@@ -4,6 +4,7 @@ import React, { useMemo, memo } from "react";
 import { Alert } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { ImageOptimizer } from "~/utils/image-optimizer";
+import { imgPriority } from "~/utils/img-priority";
 
 interface Piece {
   pie_id: number;
@@ -299,7 +300,7 @@ const PieceCard: React.FC<{ piece: Piece; isFirst?: boolean }> = ({
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           loading={isFirst ? "eager" : "lazy"}
           decoding="async"
-          {...(isFirst && { fetchPriority: "high" })}
+          {...imgPriority(isFirst ? "high" : undefined)}
         />
       ) : (
         <div className="w-full h-full flex items-center justify-center">

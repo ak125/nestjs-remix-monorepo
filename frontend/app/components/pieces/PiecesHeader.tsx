@@ -15,6 +15,7 @@ import {
   type VehicleData,
 } from "../../types/pieces-route.types";
 import { ImageOptimizer, isValidImagePath } from "../../utils/image-optimizer";
+import { imgPriority } from "../../utils/img-priority";
 
 interface PiecesHeaderProps {
   vehicle: VehicleData;
@@ -258,7 +259,7 @@ export const PiecesHeader = memo(function PiecesHeader({
                                   height={192}
                                   className={`w-full h-48 object-${objectFit} group-hover:scale-[1.05] transition-transform duration-500 ease-out`}
                                   loading="eager"
-                                  fetchPriority="high"
+                                  {...imgPriority("high")}
                                   decoding="async"
                                   onError={() => setImageError(true)}
                                 />

@@ -61,6 +61,7 @@ import {
   type R3GuidePage,
 } from "~/types/r3-guide.types";
 import { trackArticleView, trackReadingTime } from "~/utils/analytics";
+import { imgPriority } from "~/utils/img-priority";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { getOgImageUrl } from "~/utils/og-image.utils";
@@ -488,7 +489,7 @@ export default function R3GuidePage() {
                   className="w-full h-64 object-contain drop-shadow-lg"
                   loading="eager"
                   decoding="async"
-                  fetchPriority="high"
+                  {...imgPriority("high")}
                 />
               </div>
             </CardContent>

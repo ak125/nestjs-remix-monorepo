@@ -1,6 +1,7 @@
 import { Info, AlertTriangle, Lightbulb, Wallet } from "lucide-react";
 import { Alert } from "~/components/ui/alert";
 import { type R6MediaSlotFrontend } from "~/types/r6-guide.types";
+import { imgPriority } from "~/utils/img-priority";
 
 const CALLOUT_CONFIG: Record<string, { variant: string; icon: typeof Info }> = {
   info: { variant: "info", icon: Info },
@@ -68,9 +69,7 @@ export function R6MediaSlotRenderer({
                   src={slot.src || ""}
                   alt={alt}
                   loading={slot.loading || "lazy"}
-                  fetchPriority={
-                    slot.fetch_priority === "high" ? "high" : undefined
-                  }
+                  {...imgPriority(slot.fetch_priority === "high" ? "high" : undefined)}
                   width={slot.width}
                   height={slot.height}
                   className="w-full rounded-lg border border-gray-200"

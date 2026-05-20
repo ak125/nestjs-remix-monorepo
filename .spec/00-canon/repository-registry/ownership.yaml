@@ -438,6 +438,11 @@ entries:
     owner: '@ak125/admin-team'
     sourceConfidence: medium
     risk: medium
+  - glob: frontend/app/utils/img-priority.ts
+    domain: D3
+    owner: '@ak125/frontend-team'
+    sourceConfidence: high
+    risk: low
   - glob: packages/database-types/**
     domain: D13
     owner: '@ak125'
