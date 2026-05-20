@@ -393,6 +393,11 @@ entries:
     owner: '@ak125/admin-team'
     sourceConfidence: high
     risk: medium
+  - glob: backend/supabase/migrations/*order_landing_attribution*
+    domain: D11
+    owner: '@ak125/payments-team'
+    sourceConfidence: high
+    risk: medium
   - glob: docs/seo/audit-orders-cart-link.md
     domain: D8
     owner: '@ak125/admin-team'
