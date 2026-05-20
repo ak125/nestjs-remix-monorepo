@@ -50,6 +50,15 @@ export {
   type RuntimeEntry,
   type RuntimeKind,
 } from "./entries/runtime-entry";
+export {
+  PlanningEntrySchema,
+  PlanningRegistrySchema,
+  PlanningStatusSchema,
+  PlanningPrioritySchema,
+  PlanningWorkTypeSchema,
+  type PlanningEntry,
+  type PlanningRegistry,
+} from "./entries/planning-entry";
 
 // ── Layer 2 overlay (manual) ──
 export {
