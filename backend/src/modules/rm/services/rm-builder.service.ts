@@ -519,6 +519,18 @@ export class RmBuilderService extends SupabaseBaseService {
         this.logger.debug(
           `Cache HIT for ${cacheKey} (${cached.count} products) in ${cacheDuration}ms`,
         );
+        // PR-RM-1: structured cache-hit event for 48h aggregation (grep+jq).
+        // No TTL/prewarm/SQL changes — observation only.
+        this.logger.log(
+          `[RM_V2_CACHE] ${JSON.stringify({
+            event: 'hit',
+            gamme_id,
+            vehicle_id,
+            limit,
+            duration_ms: cacheDuration,
+            product_count: cached.count,
+          })}`,
+        );
         return { ...cached, cacheHit: true, duration_ms: cacheDuration };
       }
     } catch {
@@ -542,6 +554,20 @@ export class RmBuilderService extends SupabaseBaseService {
       );
 
       const duration_ms = Math.round(performance.now() - startTime);
+
+      // PR-RM-1: structured cache-miss event with RPC duration only.
+      // event=miss covers both RPC success and RPC error paths; success flag distinguishes.
+      // No TTL/prewarm/SQL changes — observation only.
+      this.logger.log(
+        `[RM_V2_CACHE] ${JSON.stringify({
+          event: 'miss',
+          gamme_id,
+          vehicle_id,
+          limit,
+          duration_ms,
+          rpc_success: !error,
+        })}`,
+      );
 
       if (error) {
         this.logger.error(`RPC v2 error: ${error.message}`);
@@ -671,6 +697,17 @@ export class RmBuilderService extends SupabaseBaseService {
       const duration_ms = Math.round(performance.now() - startTime);
       this.logger.error(
         `Exception v2: ${err instanceof Error ? err.message : 'Unknown error'}`,
+      );
+      // PR-RM-1: structured cache-miss event for unexpected exceptions (rare path).
+      this.logger.log(
+        `[RM_V2_CACHE] ${JSON.stringify({
+          event: 'miss_exception',
+          gamme_id,
+          vehicle_id,
+          limit,
+          duration_ms,
+          rpc_success: false,
+        })}`,
       );
       return {
         success: false,
