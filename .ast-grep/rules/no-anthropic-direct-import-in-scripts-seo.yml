@@ -1,0 +1,41 @@
+id: no-anthropic-direct-import-in-scripts-seo
+language: python
+# Phase 1 PR-B (ADR-046 § L4 GENERATORS + skills-first architecture).
+# Empêche l'import direct du SDK Anthropic dans `scripts/seo/`. Toute
+# génération LLM doit passer par un skill (canon `skills-first` —
+# memory `skills-first-architecture.md`). Les enrichers backend NestJS
+# sont 0-LLM ; le LLM vit côté skill (Claude Code) qui appelle les
+# scripts seo via CLI/HTTP, pas l'inverse.
+severity: error
+message: |
+  Import direct du SDK Anthropic interdit dans `scripts/seo/` (ADR-046
+  § L4 GENERATORS, skills-first architecture).
+
+  Architecture canon :
+
+    [Claude Code skill]                  ← LLM vit ici (Anthropic SDK)
+        ↓ CLI/HTTP
+    [scripts/seo/*.py]                   ← orchestration, pas LLM direct
+        ↓
+    [backend NestJS *-enricher.service]  ← 0-LLM, lit @repo/seo-role-contracts
+        ↓
+    [DB cache __seo_*]
+
+  Si vous avez besoin de génération LLM, créez un skill dans
+  `workspaces/seo-batch/.claude/skills/<skill-name>/` qui orchestre
+  le script. Pas l'inverse.
+
+  Mémoire référence : `skills-first-architecture.md` ("Anthropic seul,
+  enrichers 0-LLM"), `feedback_no_groq.md` (Anthropic uniquement, pas
+  d'autre fournisseur LLM en bypass).
+files:
+  - scripts/seo/**/*.py
+ignores:
+  # Tests / fixtures peuvent stub Anthropic SDK pour mock.
+  - scripts/**/test_*.py
+  - scripts/**/*_test.py
+rule:
+  any:
+    - pattern: import anthropic
+    - pattern: from anthropic import $$$
+    - pattern: from anthropic.$_ import $$$
