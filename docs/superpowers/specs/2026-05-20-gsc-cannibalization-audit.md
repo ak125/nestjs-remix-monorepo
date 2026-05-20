@@ -58,6 +58,30 @@ Exemple `support moteur 207` : 5 URLs `support-moteur-247/peugeot-128/207-128018
 
 ➡️ **Le bon fix n'est PAS 142 canonicals ad-hoc, mais UNE règle structurelle** : pour les 117 clusters `same_model_diff_motor`, les pages motorisation devraient déclarer un canonical vers la page niveau-modèle (si le contenu ne varie pas matériellement par motorisation). À valider + appliquer manuellement (règle, pas page par page).
 
+## Validation Google + best practices (vérifié web 2026-05-20)
+
+La solution (canonical des pages motorisation vers le niveau modèle) est **confirmée** par la doc officielle Google + best practice e-commerce variant.
+
+**Google Search Central — Consolidate duplicate URLs :**
+- `rel=canonical` recommandé pour « consolidate signals for similar or duplicate pages ».
+- Ordre de force : **redirects > rel=canonical > sitemap**.
+- ⚠️ `noindex` **bloque** la page de Search → préférer canonical pour consolider (ne PAS combiner noindex + canonical sur la même page).
+- Ne pas mixer méthodes de canonical contradictoires.
+
+**Best practice variant cannibalization (onwardSEO 7 rules) :**
+- Cible canonical = page parent « base product » OU variante dominante (selon distribution de la demande). → pour nous : **page niveau-modèle** (demande répartie sur motorisations) OU motorisation dominante si une rank nettement mieux.
+- **Tous les liens internes** (PLP, fil d'ariane, recommandations) doivent pointer la cible canonical, **pas seulement la balise** `rel=canonical`. ← raffinement clé.
+- Demande répartie → canonical vers parent ; une variante domine → canonical vers elle ; stock fluctuant → canonical parent, noindex seulement si discontinué définitivement.
+- Renfort requis : schema `url`, sitemap exclusif, ancres internes cohérentes — pas la balise canonical seule.
+
+### 2 raffinements intégrés au plan d'action
+
+1. **Cible canonical — fait structurel décisif** : vérification GSC = **1489 pages niveau-motorisation indexées, MAIS 0 page niveau-modèle** (ni niveau-marque). La cible canonical « parent base product » idéale **n'existe pas**. Deux chemins :
+   - **(A) Court terme, réversible, aucun changement d'URL** : canonical des motorisations → la motorisation **dominante** (mieux classée) du cluster, conforme onwardSEO « one variant dominates → canonical to that variant ». C'est le `winner` déjà identifié par l'audit. Applicable immédiatement après revue.
+   - **(B) Stratégique, structurel** : **créer des pages niveau-modèle** (`/pieces/{gamme}/{marque}/{modele}.html`) comme hub canonical — meilleure cible long terme (capte la requête modèle « support moteur 207 »), mais = nouveau pattern d'URL/route → décision utilisateur (garde `feedback_no_url_changes_ever`) + chantier dédié. **C'est probablement le vrai fix de fond** : la requête est au niveau modèle, il manque la page de ce niveau.
+2. **Congruence des liens internes** : appliquer le canonical ne suffit pas — fil d'ariane + PLP + recos doivent aussi pointer la cible. Sinon Google reçoit des signaux contradictoires (cf onwardSEO : canonical resout seul 55-70% du clustering).
+3. **noindex vs canonical** : les 31 `noindex_candidate` ne doivent PAS recevoir aussi un canonical (mutuellement exclusifs). Réservés aux pages sans valeur SEO, pas aux variants à consolider.
+
 ## ⚠️ Aucune action appliquée
 
 Toutes les recommandations sont `status='proposed'`. **Révision humaine obligatoire** avant tout changement canonical/noindex (gardes `feedback_no_url_changes_ever`, `feedback_no_auto_page_suppression_ever`). L'application des canonical/noindex est une étape SÉPARÉE, approuvée page par page (ou batch validé).
