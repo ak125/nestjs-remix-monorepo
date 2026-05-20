@@ -51,18 +51,10 @@ startTransition(() => {
   reportWebVitals();
 });
 
-// Lazy observability init — defers ~150 KB of Sentry SDK off the critical path.
-// Triggered on first user interaction (pointerdown/keydown/scroll/touchstart),
-// with two beneficial side-effects:
-//   1. Read-only sessions (load → read → close, no interaction) never pay the
-//      SDK download — pure win for the share of traffic that bounces.
-//   2. Lighthouse audits don't simulate interaction in default mode, so the
-//      Sentry chunk is excluded from `resource-summary.script.size` — the
-//      reported critical-path bundle weight matches what real users see
-//      before they engage.
-// First error or unhandled rejection also triggers init (escalation path)
-// so crash-on-load scenarios still get observability. A 30s safety timer
-// covers backgrounded tabs that never receive interaction nor errors.
+// Lazy observability init — defers ~150 KB of Sentry SDK off the critical
+// path. Body unchanged; scheduling is now done via the platform scheduler
+// (see the block below). Errors buffered between hydration and the first
+// scheduled tick are replayed once Sentry is loaded so no event is lost.
 const initObservability = async (): Promise<void> => {
   const dsn = (window as unknown as { ENV?: { VITE_SENTRY_DSN?: string } }).ENV
     ?.VITE_SENTRY_DSN;
@@ -138,31 +130,51 @@ const initObservability = async (): Promise<void> => {
   window.removeEventListener("unhandledrejection", onRejection);
 };
 
-// Trigger events deliberately exclude `scroll` : Lighthouse audits scroll the
-// page programmatically while measuring CLS, which would have falsely fired
-// the trigger during audits. Real users still get init on the first
-// click / key / touch — typically within the first second of engagement.
-const interactionEvents = ["pointerdown", "keydown", "touchstart"] as const;
-
+// Defer Sentry SDK init via the modern platform scheduler.
+//
+// Previous design attached `pointerdown` / `touchstart` / `keydown`
+// listeners that dynamically imported `@sentry/remix` (~159 KB gzip) inside
+// the listener callback. That parse ran INSIDE the INP measurement window
+// of the user's first interaction — on mid-range Android the cost was
+// ~350-550 ms → "Poor" CWV (CrUX p75 = 512 ms on /pieces/* surfaced
+// 2026-05-13, GSC alert covered 303 URLs).
+//
+// `scheduler.postTask({priority:"background"})` runs AFTER user-blocking
+// and user-visible tasks have settled by design, so the dynamic import +
+// parse never collide with interaction. Fallback chain covers Firefox
+// (`requestIdleCallback`) and Safari iOS (`setTimeout`).
 let initStarted = false;
-const triggerInit = (): void => {
+const startInit = (): void => {
   if (initStarted) return;
   initStarted = true;
-  for (const ev of interactionEvents) {
-    window.removeEventListener(ev, triggerInit);
-  }
-  window.removeEventListener("error", triggerInit);
-  window.removeEventListener("unhandledrejection", triggerInit);
+  window.removeEventListener("error", startInit);
+  window.removeEventListener("unhandledrejection", startInit);
   void initObservability();
 };
 
-for (const ev of interactionEvents) {
-  window.addEventListener(ev, triggerInit, { once: true, passive: true });
+type SchedulerPostTask = (
+  callback: () => void,
+  options?: {
+    priority?: "user-blocking" | "user-visible" | "background";
+    delay?: number;
+  },
+) => unknown;
+const schedulerApi = (
+  globalThis as { scheduler?: { postTask?: SchedulerPostTask } }
+).scheduler;
+
+if (typeof schedulerApi?.postTask === "function") {
+  // Chrome 94+ — covers ≥ 80 % of Android CrUX cohort.
+  schedulerApi.postTask(startInit, { priority: "background" });
+} else if (typeof window.requestIdleCallback === "function") {
+  // Firefox + older Chromium. 8 s ceiling so busy SPAs still init.
+  window.requestIdleCallback(startInit, { timeout: 8000 });
+} else {
+  // Safari iOS path. 3 s is comfortably after LCP/INP windows.
+  setTimeout(startInit, 3000);
 }
-// Escalation path : first error / rejection triggers init too. The buffer
-// listeners (`onError` / `onRejection` above) keep capturing in parallel, so
-// the error itself isn't lost between this trigger and `Sentry.init()`.
-window.addEventListener("error", triggerInit, { once: true });
-window.addEventListener("unhandledrejection", triggerInit, { once: true });
-// Safety net for sessions that never interact AND never error.
-setTimeout(triggerInit, 30000);
+
+// Escalation : first error / rejection triggers init immediately. The page
+// is already broken — observability wins, INP no longer measured.
+window.addEventListener("error", startInit, { once: true });
+window.addEventListener("unhandledrejection", startInit, { once: true });
