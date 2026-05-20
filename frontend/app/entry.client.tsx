@@ -79,12 +79,21 @@ const initObservability = async (): Promise<void> => {
     import("@remix-run/react"),
   ]);
 
+  // Same knob as backend/SSR (SENTRY_TRACES_SAMPLE_RATE), exposed via
+  // window.ENV in root.tsx. Empty string (env unset) falls back to 0.02 (2%);
+  // an explicit "0" is honoured so an operator can disable client tracing.
+  const envTracesSampleRate = (
+    window as unknown as { ENV?: { SENTRY_TRACES_SAMPLE_RATE?: string } }
+  ).ENV?.SENTRY_TRACES_SAMPLE_RATE;
+
   Sentry.init({
     dsn,
     environment:
       (window as unknown as { ENV?: { SENTRY_ENVIRONMENT?: string } }).ENV
         ?.SENTRY_ENVIRONMENT || "development",
-    tracesSampleRate: 0.1,
+    tracesSampleRate: envTracesSampleRate
+      ? Number(envTracesSampleRate)
+      : 0.02,
     replaysSessionSampleRate: 0,
     replaysOnErrorSampleRate: 0,
     // Ne remonter que les erreurs issues du JS qu'on a buildé (`/assets/*.js`).

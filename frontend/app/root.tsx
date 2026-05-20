@@ -145,6 +145,10 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
         process.env.APP_ENV ||
         process.env.NODE_ENV ||
         "development",
+      // Same knob as backend/SSR (SENTRY_TRACES_SAMPLE_RATE) so all three init
+      // sites share one governance point. Passed as the raw string; the client
+      // coerces with Number() and a 0.02 fallback (see entry.client.tsx).
+      SENTRY_TRACES_SAMPLE_RATE: process.env.SENTRY_TRACES_SAMPLE_RATE || "",
     },
   });
 };
