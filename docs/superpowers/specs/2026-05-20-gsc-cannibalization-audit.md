@@ -82,6 +82,19 @@ La solution (canonical des pages motorisation vers le niveau modèle) est **conf
 2. **Congruence des liens internes** : appliquer le canonical ne suffit pas — fil d'ariane + PLP + recos doivent aussi pointer la cible. Sinon Google reçoit des signaux contradictoires (cf onwardSEO : canonical resout seul 55-70% du clustering).
 3. **noindex vs canonical** : les 31 `noindex_candidate` ne doivent PAS recevoir aussi un canonical (mutuellement exclusifs). Réservés aux pages sans valeur SEO, pas aux variants à consolider.
 
+## ⚠️ Safety check du change-set — 30/142 seulement applicables
+
+En préparant le change-set, vérification critique : le « winner » (meilleure position GSC) est parfois un **produit différent** (gamme/modèle/moteur ≠). Canonicaliser vers lui = dire à Google « pages identiques » → mauvaise pièce servie → retour SAV. Classement par sécurité (`safety_flag`) :
+
+| safety_flag | Pages | Sens |
+|---|---|---|
+| `strict_safe_true_dup` | **30** | vrai doublon (même gamme+modèle+motorisation, type_id ≠) → SÛR à canonicaliser |
+| `needs_human_review_diff_product` | 112 | gamme/modèle/moteur ≠ → NE PAS auto-canonicaliser |
+
+Exemples de pièges écartés : `kit-d-embrayage`→`butée-d-embrayage` (gammes ≠), `207`→`208` (modèles ≠), `1-6-16v` essence→`1-6-hdi` diesel (moteurs ≠), `alternateur`→`maître-cylindre` (requête junk « gjk f »).
+
+➡️ Change-set sûr (30 paires) : voir `docs/superpowers/specs/2026-05-20-canonical-changeset-strict-safe.md`. Les 112 autres relèvent du fix structurel niveau-modèle (chemin B), pas du canonical page-à-page.
+
 ## ⚠️ Aucune action appliquée
 
 Toutes les recommandations sont `status='proposed'`. **Révision humaine obligatoire** avant tout changement canonical/noindex (gardes `feedback_no_url_changes_ever`, `feedback_no_auto_page_suppression_ever`). L'application des canonical/noindex est une étape SÉPARÉE, approuvée page par page (ou batch validé).
