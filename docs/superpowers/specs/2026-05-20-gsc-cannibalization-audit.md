@@ -44,6 +44,20 @@ L'hypothèse de départ était un duplicate **R8↔R2**. Le signal Google réel 
 
 Toutes ces requêtes : **0 clic** malgré des impressions — signal clair que la dispersion entre pages dilue le ranking.
 
+## Cause STRUCTURELLE (root-cause, pas symptôme)
+
+Analyse des URLs en concurrence : pattern `/pieces/{gamme}/{marque}/{modèle}/{motorisation}.html`. Les pages produit existent au niveau **motorisation** (type_id), mais les utilisateurs cherchent au niveau **modèle** (« support moteur 207 », pas « support moteur 207 1.6 hdi »). Google voit donc N pages motorisation quasi-identiques matcher la requête modèle → cannibalisation.
+
+| Forme du cluster | Clusters | Pages | Fix structurel |
+|---|---|---|---|
+| **same_model_diff_motor** (même gamme × même modèle, motorisations ≠) | 117 (48%) | 245 | canonical motorisation → page niveau-modèle |
+| same_gamme_diff_model (même gamme, modèles/générations ≠) | 104 (43%) | 271 | examiner : générations distinctes (garder) vs doublons |
+| diff_gamme (gammes ≠) | 22 (9%) | 51 | ambiguïté requête, souvent garder |
+
+Exemple `support moteur 207` : 5 URLs `support-moteur-247/peugeot-128/207-128018/{1-4-16v, 1-6-hdi×4}` → même gamme, même modèle 207, 5 motorisations.
+
+➡️ **Le bon fix n'est PAS 142 canonicals ad-hoc, mais UNE règle structurelle** : pour les 117 clusters `same_model_diff_motor`, les pages motorisation devraient déclarer un canonical vers la page niveau-modèle (si le contenu ne varie pas matériellement par motorisation). À valider + appliquer manuellement (règle, pas page par page).
+
 ## ⚠️ Aucune action appliquée
 
 Toutes les recommandations sont `status='proposed'`. **Révision humaine obligatoire** avant tout changement canonical/noindex (gardes `feedback_no_url_changes_ever`, `feedback_no_auto_page_suppression_ever`). L'application des canonical/noindex est une étape SÉPARÉE, approuvée page par page (ou batch validé).

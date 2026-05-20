@@ -20,6 +20,11 @@ CREATE TABLE IF NOT EXISTS __seo_cannibalization_recommendations (
   page_impressions int NOT NULL DEFAULT 0,
   page_clicks int NOT NULL DEFAULT 0,
   is_winner boolean NOT NULL DEFAULT false,
+  -- Forme structurelle du cluster (pour réviser par PATTERN, pas page par page) :
+  --   same_model_diff_motor  = même gamme × même modèle, motorisations différentes (fix canonical structurel)
+  --   same_gamme_diff_model  = même gamme, modèles/générations différents
+  --   diff_gamme             = gammes différentes (probable ambiguïté requête)
+  cluster_shape text NULL,
   -- Recommandation
   recommended_action text NOT NULL CHECK (recommended_action IN ('keep','differentiate','canonical_candidate','noindex_candidate')),
   confidence_level text NOT NULL CHECK (confidence_level IN ('HIGH','MEDIUM','LOW')),
