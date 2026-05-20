@@ -92,7 +92,7 @@ CREATE OR REPLACE FUNCTION get_merchant_center_feed_v1(
         || COALESCE(m.pm_name, '') || ' référence ' || p.piece_ref,
       5000
     ) AS description,
-    'https://www.automecanik.com/pieces/' || g.pg_alias || '-' || g.pg_id || '.html' AS link,
+    'https://www.automecanik.com/pieces/' || g.pg_alias || '-' || g.pg_id::TEXT || '.html' AS link,
     'https://www.automecanik.com/img/rack-images/'
       || pi.pmi_folder || '/' || pi.pmi_name AS image_link,
     CASE pe.pri_dispo
@@ -113,16 +113,16 @@ CREATE OR REPLACE FUNCTION get_merchant_center_feed_v1(
     'new'::TEXT AS condition
   FROM public.pieces p
   INNER JOIN public.pieces_gamme g
-    ON g.pg_id::TEXT = p.piece_pg_id
+    ON g.pg_id = p.piece_pg_id
     AND COALESCE(g.pg_display, '1') = '1'
   INNER JOIN public.pieces_marque m
-    ON m.pm_id::TEXT = p.piece_pm_id
+    ON m.pm_id = p.piece_pm_id
     AND COALESCE(m.pm_display, '1') = '1'
   INNER JOIN primary_image pi
-    ON pi.piece_id_i = p.piece_id::INT
+    ON pi.piece_id_i = p.piece_id
   INNER JOIN primary_ean pe
-    ON pe.piece_id_i = p.piece_id::INT
-  WHERE COALESCE(p.piece_display, '1') = '1'
+    ON pe.piece_id_i = p.piece_id
+  WHERE p.piece_display = true
   ORDER BY p.piece_id
   LIMIT p_limit
   OFFSET p_offset;
