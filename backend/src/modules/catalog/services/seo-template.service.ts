@@ -33,6 +33,18 @@ export interface SeoContext {
   fuel?: string;
   power_ps?: string;
   power_kw?: string;
+  /**
+   * Fragments switch PAR GAMME (`__seo_gamme_car_switch`), indexés par alias
+   * (« 1 », « 2 », « 3 »…). Résolus dans #CompSwitch_alias[_pgid]# par rotation
+   * déterministe (type_id + pg_id + alias). Chargés par l'appelant (rm-builder),
+   * cachés. Absent → le placeholder est stripté (fallback).
+   */
+  comp_switches?: Record<string, string[]>;
+  /**
+   * Fragments switch PAR VÉHICULE (`__seo_type_switch`, R8, gamme-agnostique),
+   * indexés par alias. Résolus dans #Switch_alias#.
+   */
+  type_switches?: Record<string, string[]>;
 }
 
 /**
@@ -291,18 +303,49 @@ export class SeoTemplateService {
       .replace(/#LinkGammeCar_\d+#/gi, linkGammeCar)
       .replace(/#LinkGammeCar#/gi, linkGammeCar)
 
-      // Supprimer les switches complexes non résolus
-      // Format: #CompSwitch_X# ou #CompSwitch_X_Y#
-      .replace(/#CompSwitch_\d+(_\d+)?#/gi, '')
+      // 🔄 RÉSOUDRE les switches DB (legacy) au lieu de les stripper.
+      // Format: #CompSwitch_X# ou #CompSwitch_X_Y# (X = alias, Y = pg_id facultatif).
+      // Rotation déterministe par (type_id + pg_id + alias) → chaque slot tourne
+      // indépendamment (offset = alias) = vraie divergence multi-slots.
+      // Fallback : strip si aucun fragment chargé pour cet alias (comportement d'avant).
+      .replace(/#CompSwitch_(\d+)(?:_\d+)?#/gi, (_match, aliasStr: string) => {
+        const variants = context.comp_switches?.[aliasStr];
+        if (variants && variants.length > 0) {
+          return selectVariation(
+            variants,
+            context.type_id,
+            context.pg_id,
+            Number(aliasStr),
+          );
+        }
+        return '';
+      })
 
-      // Format: #FamilySwitch_X#
+      // Format: #FamilySwitch_X# (non encore alimenté → strip)
       .replace(/#FamilySwitch_\d+#/gi, '')
 
-      // Format: #Switch_X#
-      .replace(/#Switch_\d+#/gi, '')
+      // Format: #Switch_X# (switch véhicule R8 ; résolu si fourni, sinon strip)
+      .replace(/#Switch_(\d+)#/gi, (_match, aliasStr: string) => {
+        const variants = context.type_switches?.[aliasStr];
+        if (variants && variants.length > 0) {
+          return selectVariation(
+            variants,
+            context.type_id,
+            0,
+            Number(aliasStr),
+          );
+        }
+        return '';
+      })
 
       // Autres liens non résolus
-      .replace(/#Link[A-Za-z]+(_\d+)?#/gi, '');
+      .replace(/#Link[A-Za-z]+(_\d+)?#/gi, '')
+
+      // Nettoyage : ponctuation orpheline laissée par un switch vide (ex. ", ," ou " .")
+      .replace(/,\s*,/g, ',')
+      .replace(/\s+([.,;:])/g, '$1')
+      .replace(/(^[\s,;:]+)|([\s,;:]+$)/g, '')
+      .trim();
 
     return result;
   }
