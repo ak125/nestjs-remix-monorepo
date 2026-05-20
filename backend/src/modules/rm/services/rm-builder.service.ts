@@ -608,6 +608,9 @@ export class RmBuilderService extends SupabaseBaseService {
               min_price: result.minPrice ?? undefined,
               count: result.count,
               power_ps: seoCtx.type_power_ps || '',
+              // Fragments switch PAR GAMME (legacy) pour résoudre #CompSwitch_alias#
+              // (sinon strippés à vide → meta dégénérée). Chargé caché.
+              comp_switches: await this.loadCompSwitches(Number(seoCtx.pg_id)),
             };
 
             const processed = await this.seoTemplateService.processTemplates(
@@ -704,6 +707,69 @@ export class RmBuilderService extends SupabaseBaseService {
         },
       };
     }
+  }
+
+  /**
+   * Charge les fragments switch PAR GAMME (`__seo_gamme_car_switch`) pour un
+   * pg_id, groupés par alias → résolus dans #CompSwitch_alias[_pgid]# par
+   * `SeoTemplateService` (sinon strippés à vide = meta dégénérée). Caché 24h
+   * (quasi-statique). Décode les entités HTML legacy (`&rsquo;` etc.).
+   */
+  private async loadCompSwitches(
+    pgId: number,
+  ): Promise<Record<string, string[]>> {
+    if (!pgId || Number.isNaN(pgId)) return {};
+    const cacheKey = `seo:comp_switches:${pgId}`;
+    const cached =
+      await this.cacheService.get<Record<string, string[]>>(cacheKey);
+    if (cached) return cached;
+
+    const grouped: Record<string, string[]> = {};
+    try {
+      const { data, error } = await this.supabase
+        .from('__seo_gamme_car_switch')
+        .select('sgcs_alias, sgcs_content')
+        .eq('sgcs_pg_id', String(pgId));
+      if (!error && Array.isArray(data)) {
+        for (const row of data as Array<{
+          sgcs_alias: string | null;
+          sgcs_content: string | null;
+        }>) {
+          const alias = (row.sgcs_alias ?? '').trim();
+          const content = this.decodeHtmlEntities(
+            (row.sgcs_content ?? '').trim(),
+          );
+          if (alias && content) {
+            (grouped[alias] ??= []).push(content);
+          }
+        }
+      }
+    } catch (e) {
+      this.logger.warn(`loadCompSwitches(${pgId}) failed: ${String(e)}`);
+    }
+    // Cache même si vide (évite re-query répétée). TTL 24h.
+    await this.cacheService
+      .set(cacheKey, grouped, 86400)
+      .catch(() => undefined);
+    return grouped;
+  }
+
+  /** Décode les entités HTML legacy les plus fréquentes dans les fragments switch. */
+  private decodeHtmlEntities(s: string): string {
+    if (!s) return s;
+    return s
+      .replace(/&rsquo;/g, '’')
+      .replace(/&lsquo;/g, '‘')
+      .replace(/&rdquo;/g, '”')
+      .replace(/&ldquo;/g, '“')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&eacute;/g, 'é')
+      .replace(/&egrave;/g, 'è')
+      .replace(/&agrave;/g, 'à')
+      .replace(/&ccedil;/g, 'ç')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/&amp;/g, '&');
   }
 
   // ────────────────────────────────────────────────────────────────────
