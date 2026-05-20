@@ -42,6 +42,13 @@ export interface VerdictResult {
 const NOINDEX_INVOLUNTARY_THRESHOLD = 50_000;
 const INTENT_MATCH_RATIO_THRESHOLD = 0.7;
 const SESSIONS_FUNNEL_THRESHOLD = 100;
+/**
+ * Seuil taux de conversion organic plancher (commandes / sessions).
+ * E-commerce auto-parts sain ≈ 1-3%. Sous 0.5% = funnel/UX/compat cassé,
+ * même avec quelques commandes. Découvert empiriquement run réel 2026-05-20 :
+ * 2308 sessions organic → 4 commandes = 0.17% (catastrophique).
+ */
+const CONVERSION_RATE_FLOOR = 0.005;
 
 /**
  * Calcule le verdict Reality Audit.
@@ -99,26 +106,36 @@ export function computeVerdict(inputs: VerdictInputs): VerdictResult {
     missing.push("intent (sample non capturé)");
   }
 
-  // 4. conversion_funnel — du trafic mais 0 commande
+  // 4. conversion_funnel — du trafic mais (0 commande OU taux de conversion plancher)
   if (inputs.organic_sessions_28d !== null && inputs.organic_orders_28d !== null) {
-    if (
-      inputs.organic_sessions_28d > SESSIONS_FUNNEL_THRESHOLD &&
-      inputs.organic_orders_28d === 0
-    ) {
-      return {
-        dominant_problem: "conversion_funnel",
-        notes: `organic_sessions_28d=${inputs.organic_sessions_28d} > ${SESSIONS_FUNNEL_THRESHOLD} ET organic_orders_28d=0 — pivoter Commerce-Loop V1 (le tunnel est cassé, pas le contenu).`,
-      };
+    if (inputs.organic_sessions_28d > SESSIONS_FUNNEL_THRESHOLD) {
+      const convRate = inputs.organic_orders_28d / inputs.organic_sessions_28d;
+      if (inputs.organic_orders_28d === 0) {
+        return {
+          dominant_problem: "conversion_funnel",
+          notes: `organic_sessions_28d=${inputs.organic_sessions_28d} > ${SESSIONS_FUNNEL_THRESHOLD} ET organic_orders_28d=0 — pivoter Commerce-Loop V1 (le tunnel est cassé, pas le contenu).`,
+        };
+      }
+      if (convRate < CONVERSION_RATE_FLOOR) {
+        return {
+          dominant_problem: "conversion_funnel",
+          notes: `conversion_rate=${(convRate * 100).toFixed(3)}% < ${(CONVERSION_RATE_FLOOR * 100).toFixed(1)}% (${inputs.organic_orders_28d} commandes / ${inputs.organic_sessions_28d} sessions) — taux catastrophique, pivoter Commerce-Loop V1 (funnel/UX/compat cassé, pas le contenu).`,
+        };
+      }
     }
   } else {
     missing.push("funnel (sessions/orders non capturés)");
   }
 
-  // 5. content_quality — par défaut si tout le reste passe + commandes > 0
-  if (inputs.organic_orders_28d !== null && inputs.organic_orders_28d > 0) {
+  // 5. content_quality — par défaut si tout le reste passe + conversion saine
+  if (
+    inputs.organic_orders_28d !== null &&
+    inputs.organic_orders_28d > 0 &&
+    inputs.organic_sessions_28d !== null
+  ) {
     return {
       dominant_problem: "content_quality",
-      notes: `Métriques saines (orders=${inputs.organic_orders_28d}) — le levier restant = qualité contenu. Ouvrir mini Evidence Guard V1.`,
+      notes: `Métriques saines (orders=${inputs.organic_orders_28d}, conv=${((inputs.organic_orders_28d / inputs.organic_sessions_28d) * 100).toFixed(2)}%) — le levier restant = qualité contenu. Ouvrir mini Evidence Guard V1.`,
     };
   }
 

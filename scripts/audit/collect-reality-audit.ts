@@ -107,11 +107,12 @@ async function collectFunnel(
   sb: SupabaseClient,
   pgAlias: string | null,
 ): Promise<FunnelStats> {
-  // GA4 daily organic
+  // GA4 daily organic — NB channel value réel = 'organic search' (PAS 'organic')
+  // confirmé run 2026-05-20 (eq('channel','organic') retournait 0 sessions)
   let q = sb
     .from("__seo_ga4_daily")
     .select("sessions, bounce_rate")
-    .eq("channel", "organic")
+    .ilike("channel", "organic%")
     .gte("date", isoDate(windowStart));
   if (pgAlias) q = q.like("page", `%${pgAlias}%`);
   const { data: gaRows, error: gaErr } = await q.limit(50_000);

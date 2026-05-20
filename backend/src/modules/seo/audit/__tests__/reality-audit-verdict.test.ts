@@ -58,10 +58,32 @@ describe('computeVerdict', () => {
     expect(result.notes).toContain('Commerce-Loop');
   });
 
-  it('returns content_quality by default when all signals healthy + orders > 0', () => {
+  it('returns content_quality by default when all signals healthy + conversion sain', () => {
+    // baseHealthy : 30 orders / 5000 sessions = 0.6% > 0.5% floor
     const result = computeVerdict(baseHealthy);
     expect(result.dominant_problem).toBe('content_quality');
     expect(result.notes).toContain('Evidence Guard');
+  });
+
+  it('returns conversion_funnel when conversion rate below floor (0.5%) despite orders > 0', () => {
+    // Cas réel run 2026-05-20 : 2308 sessions organic → 4 commandes = 0.17%
+    const result = computeVerdict({
+      ...baseHealthy,
+      organic_sessions_28d: 2308,
+      organic_orders_28d: 4,
+    });
+    expect(result.dominant_problem).toBe('conversion_funnel');
+    expect(result.notes).toContain('catastrophique');
+  });
+
+  it('conversion rate just above floor (0.5%) is content_quality not funnel', () => {
+    // 6 orders / 1000 sessions = 0.6% > 0.5%
+    const result = computeVerdict({
+      ...baseHealthy,
+      organic_sessions_28d: 1000,
+      organic_orders_28d: 6,
+    });
+    expect(result.dominant_problem).toBe('content_quality');
   });
 
   it('returns unknown when critical data missing (intent + funnel both null)', () => {
