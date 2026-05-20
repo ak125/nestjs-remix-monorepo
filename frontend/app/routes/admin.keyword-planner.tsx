@@ -290,12 +290,12 @@ export async function action({ request }: ActionFunctionArgs) {
 
 const ROLE_COLORS: Record<string, string> = {
   R1: "bg-blue-100 text-blue-800",
-  R2: "bg-purple-100 text-purple-800",
+  R2: "bg-muted text-foreground",
   R3: "bg-green-100 text-green-800",
   R4: "bg-gray-100 text-gray-800",
   R5: "bg-red-100 text-red-800",
   R6: "bg-amber-100 text-amber-800",
-  R7: "bg-indigo-100 text-indigo-800",
+  R7: "bg-muted text-foreground",
   R8: "bg-teal-100 text-teal-800",
 };
 
@@ -992,7 +992,7 @@ export default function KeywordPlannerPage() {
                         </div>
                         {contentResult && (
                           <div
-                            className={`mt-2 p-3 rounded text-sm space-y-2 ${contentResult.error ? "bg-red-50 text-red-700" : "bg-purple-50 text-purple-700"}`}
+                            className={`mt-2 p-3 rounded text-sm space-y-2 ${contentResult.error ? "bg-red-50 text-red-700" : "bg-muted text-foreground"}`}
                           >
                             {contentResult.error ? (
                               <p>{contentResult.error}</p>
@@ -1004,7 +1004,7 @@ export default function KeywordPlannerPage() {
                                 </p>
                                 {contentResult.command && (
                                   <div className="flex items-center gap-2">
-                                    <code className="bg-purple-100 px-2 py-1 rounded text-xs font-mono">
+                                    <code className="bg-muted px-2 py-1 rounded text-xs font-mono">
                                       {contentResult.command}
                                     </code>
                                     <Button
@@ -1495,10 +1495,10 @@ function FamilyOverview({
                         <TableHead className="py-1.5 px-1.5 text-center w-8">
                           R6
                         </TableHead>
-                        <TableHead className="py-1.5 px-1.5 text-center w-10 text-indigo-600">
+                        <TableHead className="py-1.5 px-1.5 text-center w-10 text-foreground">
                           RAG
                         </TableHead>
-                        <TableHead className="py-1.5 px-2 text-right w-10 text-violet-600">
+                        <TableHead className="py-1.5 px-2 text-right w-10 text-foreground">
                           KW
                         </TableHead>
                         <TableHead className="py-1.5 px-1 text-center w-8" />
@@ -1836,9 +1836,9 @@ function ContentGenButton({
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 px-3 py-2 bg-purple-50 border border-purple-200 rounded-lg">
-          <Zap className="h-4 w-4 text-purple-600" />
-          <code className="text-sm font-mono font-bold text-purple-800">
+        <div className="flex items-center gap-2 px-3 py-2 bg-muted border border-purple-200 rounded-lg">
+          <Zap className="h-4 w-4 text-foreground" />
+          <code className="text-sm font-mono font-bold text-foreground">
             {command}
           </code>
         </div>
@@ -1855,7 +1855,7 @@ function RagDot({ status, count }: { status: string; count: number }) {
     return (
       <Badge
         variant="secondary"
-        className="bg-indigo-100 text-indigo-700 text-[9px] px-1.5 py-0"
+        className="bg-muted text-foreground text-[9px] px-1.5 py-0"
         title={`RAG ingéré (${count} source${count > 1 ? "s" : ""})`}
       >
         {count}
@@ -1998,7 +1998,7 @@ function GammeAuditRow({
           {g.kw_count > 0 ? (
             <Badge
               variant="secondary"
-              className="bg-violet-100 text-violet-800"
+              className="bg-muted text-foreground"
             >
               {g.kw_count}
             </Badge>

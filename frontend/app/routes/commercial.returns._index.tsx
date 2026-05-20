@@ -236,7 +236,7 @@ function getStatusColor(status: string): string {
     case "approved":
       return "info";
     case "label_sent":
-      return "bg-indigo-100 text-indigo-800";
+      return "bg-muted text-foreground";
     case "in_transit":
       return "orange";
     case "received":
@@ -740,7 +740,7 @@ export default function ReturnsManagement() {
                         {returnReq.tracking.returnLabelUrl && (
                           <a
                             href={returnReq.tracking.returnLabelUrl}
-                            className="text-purple-600 hover:text-purple-800 p-1 rounded"
+                            className="text-foreground hover:text-foreground p-1 rounded"
                             title="Télécharger étiquette"
                           >
                             <Download className="w-4 h-4" />

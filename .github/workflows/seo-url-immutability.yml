@@ -1,7 +1,13 @@
 name: R-SEO-09 URL Immutability Gate
 
-# Phase 1 surface guard — détecte les modifications de la surface URL canonique
-# (Remix routes + canonical-url builders) et bloque la PR.
+# Phase 2 AST canonical surface diff — détecte les modifications de la surface URL
+# canonique (Remix routes filename, default export name, `meta`/`links`/`handle`
+# return shapes, loader canonical keys) et bloque la PR.
+#
+# Phase 1 path-based hard-block retiré dans cette PR (voir
+# docs/seo/r-seo-09-phase2.md). False positives sur codemods className-only
+# éliminés via AST diff structurel.
+#
 # Référence canon : governance-vault rules-seo-pagerole.md / R-SEO-09.
 
 on:
@@ -9,7 +15,8 @@ on:
     paths:
       - 'frontend/app/routes/**'
       - 'backend/src/modules/seo/**'
-      - 'scripts/seo/check-url-immutability.sh'
+      - 'scripts/seo/check-url-immutability.mjs'
+      - 'scripts/seo/lib/canonical-surface-extractor.mjs'
       - '.github/workflows/seo-url-immutability.yml'
 
 permissions:
@@ -24,8 +31,29 @@ jobs:
         with:
           fetch-depth: 0  # full history pour git diff vs base
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install root deps (only @typescript-eslint/parser needed)
+        run: npm ci --ignore-scripts --no-audit --no-fund
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
+
       - name: Set BASE_REF to PR base
         run: echo "BASE_REF=origin/${{ github.event.pull_request.base.ref }}" >> $GITHUB_ENV
 
-      - name: Run R-SEO-09 surface guard
-        run: bash scripts/seo/check-url-immutability.sh pr
+      - name: Detect r-seo-09-override label
+        id: override
+        run: |
+          if echo '${{ toJSON(github.event.pull_request.labels.*.name) }}' | grep -q 'r-seo-09-override'; then
+            echo "active=1" >> $GITHUB_OUTPUT
+            echo "::warning::r-seo-09-override label active — Phase 2 hard-blocks bypassed"
+          else
+            echo "active=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run R-SEO-09 Phase 2 AST canonical surface guard
+        env:
+          R_SEO_09_OVERRIDE: ${{ steps.override.outputs.active }}
+        run: node scripts/seo/check-url-immutability.mjs --pr

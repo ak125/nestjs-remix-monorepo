@@ -35,3 +35,4 @@ export * from "./intelligence.js";
 export * from "./geo-aeo.js";
 export * from "./content-ops.js";
 export * from "./crux.js";
+export * from "./control-dashboard.js";

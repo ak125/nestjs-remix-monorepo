@@ -126,11 +126,11 @@ export default function OptimizationSummaryPage() {
     : "0";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white">
       <div className="container mx-auto px-6 py-12">
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full mb-6">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-blue-600 rounded-full mb-6">
             <span className="text-3xl">🎉</span>
           </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
@@ -173,12 +173,12 @@ export default function OptimizationSummaryPage() {
               </div>
             </div>
 
-            <div className="bg-gradient-to-r from-purple-500 to-purple-600 p-6 rounded-xl text-white">
+            <div className="bg-gradient-to-r p-6 rounded-xl text-white">
               <div className="text-3xl font-bold">
                 €{stats ? stats.totalRevenue.toLocaleString() : "0"}
               </div>
-              <div className="text-purple-100">Chiffre d'Affaires</div>
-              <div className="text-sm text-purple-200 mt-2">Revenue actuel</div>
+              <div className="text-foreground">Chiffre d'Affaires</div>
+              <div className="text-sm text-foreground mt-2">Revenue actuel</div>
             </div>
 
             <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-6 rounded-xl text-white">
@@ -217,7 +217,7 @@ export default function OptimizationSummaryPage() {
                 <span className="text-green-600 font-bold">✅ Fonctionnel</span>
               </div>
 
-              <div className="flex justify-between items-center p-4 bg-purple-50 rounded-lg">
+              <div className="flex justify-between items-center p-4 bg-muted rounded-lg">
                 <span className="font-medium">Métriques Performance</span>
                 <span className="text-green-600 font-bold">✅ Collectées</span>
               </div>
@@ -268,7 +268,7 @@ export default function OptimizationSummaryPage() {
                 <span className="text-green-600 font-bold">✅ Configuré</span>
               </div>
 
-              <div className="flex justify-between items-center p-4 bg-purple-50 rounded-lg">
+              <div className="flex justify-between items-center p-4 bg-muted rounded-lg">
                 <span className="font-medium">Web Vitals</span>
                 <span className="text-green-600 font-bold">✅ Surveillés</span>
               </div>

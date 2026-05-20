@@ -217,6 +217,18 @@ export class FeatureFlagsService {
     return this.bool('ABANDONED_CART_EMAIL_ENABLED', false);
   }
 
+  // ── SEO Business Control Dashboard flag (PR-SBD-1 Task 7) ──
+
+  /**
+   * Controls visibility of /admin/seo-control dashboard route + endpoint.
+   * Default: false (Phase A rollout — only admin Fafa overrides ON).
+   * Kill-switch silencieux : OFF → endpoint returns 404 (not 503) to hide
+   * the surface entirely from non-admins.
+   */
+  get seoControlDashboardEnabled(): boolean {
+    return this.bool('SEO_CONTROL_DASHBOARD_ENABLED', false);
+  }
+
   // ── VehicleContext cookie kill-switch (PR-B.6) ──
 
   /**
@@ -324,6 +336,7 @@ export class FeatureFlagsService {
     'WRITE_GUARD_CANARY_ROLES',
     'WRITE_GUARD_CANARY_GROUPS',
     'RAG_VIRTUAL_MERGE_ENABLED',
+    'SEO_CONTROL_DASHBOARD_ENABLED',
     'VEHICLE_CTX_ENABLED',
     'DIAGNOSTIC_KG_SHADOW_ENABLED',
     'DIAGNOSTIC_KG_PRIMARY_ENABLED',

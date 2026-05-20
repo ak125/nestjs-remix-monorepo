@@ -1666,7 +1666,7 @@ export default function AdminRagCockpit() {
       <Card className="border-indigo-200">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm font-medium">
-            <Wrench className="h-4 w-4 text-indigo-600" />
+            <Wrench className="h-4 w-4 text-foreground" />
             Buying Guide Enrichment
           </CardTitle>
         </CardHeader>
@@ -1700,7 +1700,7 @@ export default function AdminRagCockpit() {
             </label>
             <Button
               disabled={enrichSubmitting || !enrichPgIds.trim()}
-              className="gap-1.5 bg-indigo-600 hover:bg-indigo-700"
+              className="gap-1.5 bg-primary hover:bg-primary"
               onClick={async () => {
                 const pgIds = enrichPgIds
                   .split(",")
@@ -1749,11 +1749,7 @@ export default function AdminRagCockpit() {
 
           {enrichResult && (
             <div
-              className={`rounded-md border p-3 text-sm ${
-                enrichResult.error
-                  ? "bg-red-50 border-red-200 text-red-800"
-                  : "bg-indigo-50 border-indigo-200 text-indigo-900"
-              }`}
+              className={`rounded-md border p-3 text-sm ${ enrichResult.error ? "bg-red-50 border-red-200 text-red-800" : "bg-muted border-indigo-200 text-foreground" }`}
             >
               {enrichResult.error ? (
                 <p>{enrichResult.error}</p>
@@ -1761,7 +1757,7 @@ export default function AdminRagCockpit() {
                 <div className="flex flex-wrap gap-2">
                   <Badge
                     variant="secondary"
-                    className="bg-indigo-100 text-indigo-700"
+                    className="bg-muted text-foreground"
                   >
                     {enrichResult.sectionsUpdated} sections mises a jour
                   </Badge>

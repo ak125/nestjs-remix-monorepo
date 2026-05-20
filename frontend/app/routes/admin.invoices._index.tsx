@@ -383,7 +383,7 @@ export default function InvoicesIndex() {
                         </Link>
                         <Link
                           to={`/admin/invoices/${invoice.inv_id}/edit`}
-                          className="text-indigo-600 hover:text-indigo-900"
+                          className="text-foreground hover:text-foreground"
                         >
                           Modifier
                         </Link>

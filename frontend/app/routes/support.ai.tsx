@@ -483,13 +483,13 @@ export default function AIDemoPage() {
             <div className="p-6">
               {loading ? (
                 <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                  <div className="animate-spin rounded-full h-8 w-8 mx-auto mb-4"></div>
                   <p className="text-gray-600">Analyse en cours...</p>
                 </div>
               ) : analysis ? (
                 <div className="space-y-6">
                   {/* Sentiment */}
-                  <div className="border-l-4 border-blue-500 pl-4">
+                  <div className="pl-4">
                     <h3 className="font-semibold flex items-center gap-2 mb-2">
                       {getSentimentEmoji(analysis.analysis.sentiment.sentiment)}
                       Analyse de Sentiment
@@ -542,7 +542,7 @@ export default function AIDemoPage() {
                   </div>
 
                   {/* Catégorisation */}
-                  <div className="border-l-4 border-green-500 pl-4">
+                  <div className="pl-4">
                     <h3 className="font-semibold flex items-center gap-2 mb-2">
                       🏷️ Catégorisation Intelligente
                     </h3>
@@ -579,7 +579,7 @@ export default function AIDemoPage() {
                   </div>
 
                   {/* Prédiction d'escalation */}
-                  <div className="border-l-4 border-orange-500 pl-4">
+                  <div className="pl-4">
                     <h3 className="font-semibold flex items-center gap-2 mb-2">
                       ⚡ Prédiction d'Escalation
                     </h3>
@@ -626,7 +626,7 @@ export default function AIDemoPage() {
                   </div>
 
                   {/* Recommandations */}
-                  <div className="border-l-4 border-purple-500 pl-4">
+                  <div className="pl-4">
                     <h3 className="font-semibold flex items-center gap-2 mb-2">
                       💡 Recommandations IA
                     </h3>
@@ -674,7 +674,7 @@ export default function AIDemoPage() {
 
                   {/* Réponse suggérée */}
                   {analysis.analysis.smartResponse.response && (
-                    <div className="border-l-4 border-indigo-500 pl-4">
+                    <div className="pl-4">
                       <h3 className="font-semibold flex items-center gap-2 mb-2">
                         💬 Réponse Suggérée
                       </h3>

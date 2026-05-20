@@ -329,7 +329,7 @@ export default function AdminReports() {
 
         <Card className="cursor-pointer hover:shadow-md transition-shadow">
           <CardHeader className="text-center">
-            <BarChart3 className="h-8 w-8 text-purple-500 mx-auto mb-2" />
+            <BarChart3 className="h-8 w-8 text-foreground mx-auto mb-2" />
             <CardTitle className="text-lg">Paiements</CardTitle>
             <CardDescription>Performance financière</CardDescription>
           </CardHeader>

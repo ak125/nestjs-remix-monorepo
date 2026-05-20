@@ -371,7 +371,7 @@ export function DiagnosticWizard() {
                       ? "bg-blue-600 text-white shadow-md shadow-blue-200"
                       : s.id < state.step
                         ? "bg-green-100 text-green-700 border border-green-300"
-                        : "bg-gray-100 text-gray-400 border border-gray-200"
+                        : "bg-gray-100 text-white border border-gray-200"
                   }`}
                   aria-current={s.id === state.step ? "step" : undefined}
                 >

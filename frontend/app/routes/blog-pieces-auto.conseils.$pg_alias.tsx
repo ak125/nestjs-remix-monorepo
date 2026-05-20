@@ -371,14 +371,14 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
 // ── R4 Fallback (glossaire générique) ──────────────────────
 function R4FallbackCard() {
   return (
-    <Card className="border-indigo-200 bg-indigo-50/50">
+    <Card className="border-indigo-200 bg-muted/50">
       <div className="p-4">
         <Link to="/reference-auto" className="flex items-center gap-3 group">
-          <div className="p-2 bg-indigo-100 rounded-lg shrink-0">
-            <BookOpen className="w-4 h-4 text-indigo-600" />
+          <div className="p-2 bg-muted rounded-lg shrink-0">
+            <BookOpen className="w-4 h-4 text-foreground" />
           </div>
           <div>
-            <p className="text-sm font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">
+            <p className="text-sm font-medium text-gray-900 group-hover:text-foreground transition-colors">
               Glossaire pieces auto
             </p>
             <p className="text-xs text-gray-500">138 definitions techniques</p>
@@ -536,7 +536,7 @@ export default function R3GuidePage() {
 
                   {/* CTA Catalogue R1 — maillage conseil → transaction */}
                   {sourceType === "conseil" && page.cta_link && (
-                    <div className="my-6 rounded-xl border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-5">
+                    <div className="my-6 rounded-xl border-2 border-blue-200 bg-gradient-to-r from-blue-50 p-5">
                       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                         <div className="flex-1">
                           <p className="font-semibold text-gray-900 text-lg">
@@ -708,13 +708,13 @@ export default function R3GuidePage() {
                 {/* Fiche technique R4 (spécifique) ou Glossaire (fallback) — streamed via defer */}
                 <Suspense
                   fallback={
-                    <Card className="border-indigo-200 bg-indigo-50/50">
+                    <Card className="border-indigo-200 bg-muted/50">
                       <div className="p-4 animate-pulse">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 bg-indigo-100 rounded-lg" />
+                          <div className="w-8 h-8 bg-muted rounded-lg" />
                           <div className="flex-1 space-y-1">
-                            <div className="h-4 bg-indigo-100 rounded w-3/4" />
-                            <div className="h-3 bg-indigo-50 rounded w-1/2" />
+                            <div className="h-4 bg-muted rounded w-3/4" />
+                            <div className="h-3 bg-muted rounded w-1/2" />
                           </div>
                         </div>
                       </div>
@@ -727,17 +727,17 @@ export default function R3GuidePage() {
                   >
                     {(resolvedR4) =>
                       resolvedR4 ? (
-                        <Card className="border-indigo-200 bg-indigo-50/50">
+                        <Card className="border-indigo-200 bg-muted/50">
                           <div className="p-4">
                             <Link
                               to={`/reference-auto/${resolvedR4.slug}`}
                               className="flex items-start gap-3 group"
                             >
-                              <div className="p-2 bg-indigo-100 rounded-lg shrink-0">
-                                <BookOpen className="w-4 h-4 text-indigo-600" />
+                              <div className="p-2 bg-muted rounded-lg shrink-0">
+                                <BookOpen className="w-4 h-4 text-foreground" />
                               </div>
                               <div className="min-w-0">
-                                <p className="text-sm font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">
+                                <p className="text-sm font-medium text-gray-900 group-hover:text-foreground transition-colors">
                                   {resolvedR4.title}
                                 </p>
                                 {resolvedR4.roleMecanique && (
@@ -745,7 +745,7 @@ export default function R3GuidePage() {
                                     {resolvedR4.roleMecanique}
                                   </p>
                                 )}
-                                <p className="text-xs text-indigo-600 mt-1 font-medium">
+                                <p className="text-xs text-foreground mt-1 font-medium">
                                   Voir la fiche technique
                                 </p>
                               </div>

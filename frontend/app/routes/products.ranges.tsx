@@ -285,7 +285,7 @@ export default function ProductsRanges() {
 
           <div>
             <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-              <Package className="h-8 w-8 text-purple-600" />
+              <Package className="h-8 w-8 text-foreground" />
               Gammes Produits {user.role === "pro" ? "Pro" : "Commercial"}
             </h1>
             <p className="text-gray-600 mt-2">
@@ -322,7 +322,7 @@ export default function ProductsRanges() {
                   {stats.total}
                 </p>
               </div>
-              <Package className="h-8 w-8 text-purple-600" />
+              <Package className="h-8 w-8 text-foreground" />
             </div>
           </CardContent>
         </Card>

@@ -480,7 +480,7 @@ export default function AdminUsersIndex() {
         <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg">
+              <div className="p-3 bg-gradient-to-br from-blue-500 rounded-xl shadow-lg">
                 <Users className="w-8 h-8 text-white" />
               </div>
               <div>
@@ -516,7 +516,7 @@ export default function AdminUsersIndex() {
               <Link to="new">
                 <Button
                   size="sm"
-                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-sm hover:shadow-md transition-all duration-200"
+                  className="bg-gradient-to-r from-blue-600 hover:from-blue-700 hover: text-white shadow-sm hover:shadow-md transition-all duration-200"
                 >
                   <UserPlus className="w-4 h-4 mr-2" />
                   Nouvel utilisateur
@@ -575,17 +575,17 @@ export default function AdminUsersIndex() {
 
           {/* Utilisateurs Pro */}
           <div className="group relative bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-all duration-200 overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+            <div className="absolute inset-0 bg-gradient-to-br /10 /5 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
             <div className="relative">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm font-medium text-gray-600">
                   Utilisateurs Pro
                 </span>
                 <div className="p-2 bg-muted rounded-lg">
-                  <Award className="h-4 w-4 text-purple-600" />
+                  <Award className="h-4 w-4 text-foreground" />
                 </div>
               </div>
-              <div className="text-2xl font-bold text-purple-700">
+              <div className="text-2xl font-bold text-foreground">
                 {formatNumber(stats.proUsers)}
               </div>
               <p className="text-xs text-gray-600 font-medium mt-1">
@@ -597,17 +597,17 @@ export default function AdminUsersIndex() {
 
           {/* Entreprises */}
           <div className="group relative bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-all duration-200 overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-indigo-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+            <div className="absolute inset-0 bg-gradient-to-br /10 /5 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
             <div className="relative">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm font-medium text-gray-600">
                   Entreprises
                 </span>
-                <div className="p-2 bg-indigo-100 rounded-lg">
-                  <Building className="h-4 w-4 text-indigo-600" />
+                <div className="p-2 bg-muted rounded-lg">
+                  <Building className="h-4 w-4 text-foreground" />
                 </div>
               </div>
-              <div className="text-2xl font-bold text-indigo-700">
+              <div className="text-2xl font-bold text-foreground">
                 {formatNumber(stats.companyUsers)}
               </div>
               <p className="text-xs text-gray-600 font-medium mt-1">

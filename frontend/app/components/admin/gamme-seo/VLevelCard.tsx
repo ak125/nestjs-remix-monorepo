@@ -233,7 +233,7 @@ function VehicleItem({
                   ? "bg-blue-100 text-blue-700"
                   : displayFuel.toLowerCase() === "essence"
                     ? "bg-green-100 text-green-700"
-                    : "bg-gray-100 text-gray-600"
+                    : "bg-gray-100 text-blue-900"
               }`}
             >
               {displayFuel}
@@ -255,7 +255,7 @@ function VehicleItem({
                 ? "bg-green-100 text-green-700"
                 : item.rank <= 7
                   ? "bg-yellow-100 text-yellow-700"
-                  : "bg-gray-100 text-gray-600"
+                  : "bg-gray-100 text-green-900"
             }`}
             title="Position Google Suggest"
           >

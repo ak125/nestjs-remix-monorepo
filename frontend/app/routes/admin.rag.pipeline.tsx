@@ -1915,7 +1915,7 @@ export default function AdminRagPipeline() {
                       </Badge>
                       <Badge
                         variant="outline"
-                        className="bg-purple-50 text-purple-700"
+                        className="bg-muted text-foreground"
                       >
                         {(qualityResult as { gammesAggregated?: number })
                           .gammesAggregated ?? 0}{" "}
