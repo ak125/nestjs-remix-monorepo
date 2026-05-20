@@ -61,9 +61,12 @@ if (dsn) {
     // against the correct source maps once they are uploaded post-deploy.
     release: process.env.SENTRY_RELEASE || process.env.GIT_SHA || undefined,
 
-    // 10 % traces sampled in DEV. Tune downward in PROD if volume becomes a
-    // cost issue (Sentry quota is event-based for performance monitoring).
-    tracesSampleRate: Number(process.env.SENTRY_TRACES_SAMPLE_RATE ?? 0.1),
+    // 2 % default — calibrated so monthly span volume stays under the Sentry
+    // Developer (free) 5M-span quota with month-long even coverage. At 10% the
+    // backend OTel http instrumentation alone projected ~15-20M spans/month,
+    // which burns the quota in ~10 days then goes blind. Override per-env via
+    // SENTRY_TRACES_SAMPLE_RATE. See backend/.env.example for the math.
+    tracesSampleRate: Number(process.env.SENTRY_TRACES_SAMPLE_RATE ?? 0.02),
 
     // RGPD-safe default — opt-in IP / cookie collection only when explicitly
     // requested by the operator. The Sentry NestJS wizard's default is `true`
