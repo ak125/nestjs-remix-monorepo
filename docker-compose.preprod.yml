@@ -39,6 +39,15 @@ services:
     restart: always
     ports:
       - "3200:3000"
+    volumes:
+      # Sitemap output directory — writable, isolated from PROD's /var/www/sitemaps.
+      # The path follows the canonical `/dev/volumes/nestjs-remix/preprod/*` pattern
+      # used by `redis_preprod.sessions`. Without this mount, the backend crashed
+      # with ENOENT on first POST /api/sitemap/v10/generate-all in preprod
+      # (discovered 2026-05-14 post PR #487 deploy). PROD uses /var/www/sitemaps;
+      # preprod is isolated so a faulty regen here cannot corrupt PROD's served files.
+      - /dev/volumes/nestjs-remix/preprod/sitemaps/:/var/www/sitemaps:rw
+      - /dev/volumes/nestjs-remix/preprod/crawl-hubs/:/var/www/crawl-hubs:rw
     networks:
       - automecanik-preprod
     healthcheck:
