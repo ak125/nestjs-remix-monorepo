@@ -25,6 +25,7 @@ import { RiskSafetyEngine } from './engines/risk-safety.engine';
 import { CatalogOrientationEngine } from './engines/catalog-orientation.engine';
 import { MaintenanceIntelligenceEngine } from './engines/maintenance-intelligence.engine';
 import { RagEnrichmentEngine } from './engines/rag-enrichment.engine';
+import { KgShadowService } from './services/kg-shadow.service';
 
 @Injectable()
 export class DiagnosticEngineOrchestrator {
@@ -38,6 +39,7 @@ export class DiagnosticEngineOrchestrator {
     private readonly catalogEngine: CatalogOrientationEngine,
     private readonly maintenanceEngine: MaintenanceIntelligenceEngine,
     private readonly ragEngine: RagEnrichmentEngine,
+    private readonly kgShadow: KgShadowService, // PR-E — fire-and-forget shadow
   ) {}
 
   /**
@@ -139,6 +141,27 @@ export class DiagnosticEngineOrchestrator {
         `risk=${risk.risk_level}, catalog=${catalog.ready_for_catalog}, ` +
         `rag_facts=${ragFacts.length}`,
     );
+
+    // ── 9b. KG shadow comparison (PR-E, fire-and-forget) ────
+    // Calls `kg_diagnose_vehicle_aware` in parallel with the canonical
+    // engines, compares top-N fault_ids, emits `diagnostic_kg_shadow_diverged`
+    // event. NEVER blocks the response ; failures are swallowed.
+    // Identifier-mapping note : signal.resolved_symptom_slugs are slugs,
+    // the RPC expects observable UUIDs. When the data layer can resolve
+    // slugs→UUIDs the shadow runs ; today it gracefully skips if the
+    // mapping is empty (the service guards on `observable_ids.length === 0`).
+    this.kgShadow.shadowCompare({
+      observable_ids: signal.resolved_symptom_slugs,
+      vehicle_id:
+        typeof (input.vehicle_context as { type_id?: number } | undefined)
+          ?.type_id === 'number'
+          ? String((input.vehicle_context as { type_id: number }).type_id)
+          : undefined,
+      canonical_hypotheses: hypotheses.map((h) => ({
+        cause_id: h.hypothesis_id,
+        confidence: h.total_score / 100,
+      })),
+    });
 
     // ── 10. Save session ───────────────────────────────
     const sessionId = await this.dataService.saveSession({

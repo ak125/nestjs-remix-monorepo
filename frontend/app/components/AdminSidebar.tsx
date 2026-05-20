@@ -512,7 +512,7 @@ export const AdminSidebar = memo(function AdminSidebar({
       <Button
         variant="outline"
         size="sm"
-        className="fixed top-4 left-4 z-50 lg:hidden h-10 w-10 bg-slate-800 border-slate-600 text-white hover:bg-slate-700 shadow-lg"
+        className="fixed top-4 left-4 z-50 lg:hidden h-10 w-10 bg-slate-800 text-white hover:bg-slate-700 shadow-lg"
         onClick={() => setIsOpen(!isOpen)}
       >
         {isOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
@@ -521,7 +521,7 @@ export const AdminSidebar = memo(function AdminSidebar({
       {/* Overlay mobile */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          className="fixed inset-0 z-40 bg-neutral-900/50 lg:hidden"
           onClick={() => setIsOpen(false)}
         />
       )}
@@ -540,7 +540,7 @@ export const AdminSidebar = memo(function AdminSidebar({
           {/* Header avec notification globale */}
           <div className="flex h-16 items-center border-b border-slate-700/50 px-6 bg-slate-800/50">
             <div className="flex items-center space-x-2 flex-1">
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center relative shadow-lg">
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 flex items-center justify-center relative shadow-lg">
                 <Shield className="h-4 w-4 text-white" />
                 {/* Indicateur de notifications actives */}
                 <div className="absolute -top-1 -right-1 h-3 w-3 bg-destructive rounded-full animate-pulse shadow-sm" />
@@ -573,7 +573,7 @@ export const AdminSidebar = memo(function AdminSidebar({
                       "flex items-center space-x-3 rounded-xl px-3 py-3 text-sm transition-all duration-200 relative group",
                       "hover:bg-slate-700/50 hover:shadow-md hover:scale-[1.02]",
                       isActive
-                        ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg scale-[1.02] border border-blue-500/30"
+                        ? "bg-gradient-to-r from-blue-600 text-white shadow-lg scale-[1.02] border border-blue-500/30"
                         : "text-slate-300 hover:text-white",
                     )}
                     onClick={() => {
@@ -629,7 +629,7 @@ export const AdminSidebar = memo(function AdminSidebar({
 
                   {/* Sous-menu */}
                   {(item as any).subItems && isExpanded && (
-                    <div className="ml-6 space-y-1 mt-1 border-l-2 border-slate-600 pl-3">
+                    <div className="ml-6 space-y-1 mt-1 pl-3">
                       {(item as any).subItems.map((subItem: any) => {
                         const SubIcon = subItem.icon;
                         const isSubActive = location.pathname === subItem.href;
@@ -641,7 +641,7 @@ export const AdminSidebar = memo(function AdminSidebar({
                               "flex items-center space-x-2 rounded-lg px-3 py-2 text-xs transition-all duration-200",
                               "hover:bg-slate-700/30 hover:text-green-300",
                               isSubActive
-                                ? "bg-success/20 text-green-300 border-l-2 border-green-400"
+                                ? "bg-success/20 text-green-300"
                                 : "text-slate-400 hover:text-slate-200",
                             )}
                           >
@@ -665,7 +665,7 @@ export const AdminSidebar = memo(function AdminSidebar({
           {/* Footer avec notifications et déconnexion */}
           <div className="border-t border-slate-700/50 p-4 space-y-3 bg-slate-800/30">
             {/* Zone de notifications récentes */}
-            <Card className="p-3 bg-gradient-to-r from-yellow-900/20 to-orange-900/20 border-yellow-600/30">
+            <Card className="p-3 bg-gradient-to-r from-yellow-900/20 to-orange-900/20 /30">
               <div className="flex items-center gap-2 text-yellow-300">
                 <div className="h-2 w-2 bg-warning/60 rounded-full animate-pulse" />
                 <p className="text-xs font-medium">
@@ -681,7 +681,7 @@ export const AdminSidebar = memo(function AdminSidebar({
             </Card>
 
             {/* Profil admin */}
-            <Card className="p-3 bg-slate-700/30 border-slate-600/50">
+            <Card className="p-3 bg-slate-700/30 /50">
               <div className="flex items-center space-x-3 mb-3">
                 <div className="h-9 w-9 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center shadow-md">
                   <Settings className="h-4 w-4 text-white" />
@@ -705,7 +705,7 @@ export const AdminSidebar = memo(function AdminSidebar({
                   type="submit"
                   variant="outline"
                   size="sm"
-                  className="w-full justify-start bg-slate-600/50 border-slate-500 text-slate-200 hover:bg-slate-500/50 hover:text-white transition-all"
+                  className="w-full justify-start bg-slate-600/50 text-slate-200 hover:bg-slate-500/50 hover:text-white transition-all"
                 >
                   <LogOut className="h-4 w-4 mr-2" />
                   Déconnexion

@@ -22,7 +22,7 @@ interface GuideChecklistProps {
 const CONFIG = {
   before: {
     icon: Info,
-    gradient: "from-blue-600 to-indigo-600",
+    gradient: "from-blue-600",
     border: "border-blue-200",
     labelColor: "text-blue-100",
     label: "Avant de commencer",

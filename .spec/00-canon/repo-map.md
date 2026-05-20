@@ -151,7 +151,7 @@ frontend/app/
 
 | Metrique | Valeur |
 |----------|--------|
-| Backend modules | 47 |
+| Backend modules | 48 |
 | Frontend routes | 233 |
 | Shared packages | 8 |
 | Docker configs | 10 |

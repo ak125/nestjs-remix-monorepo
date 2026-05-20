@@ -19,6 +19,7 @@ import {
   fetchSeoSwitches,
 } from "~/services/pieces/pieces-route.service";
 import { fetchJsonOrNull } from "~/utils/fetch.utils";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import {
   buildCataloguePromise,
@@ -42,6 +43,40 @@ import {
 } from "~/utils/url-builder.utils";
 
 const INITIAL_PRODUCTS_LIMIT = 200;
+
+// 📡 INC-2026-005 — Comble le blindspot __error_logs : notifie le backend avant
+// chaque throw 503 du loader. Fire-and-forget, jamais bloquant (timeout 500ms).
+// Pattern porté depuis frontend/app/routes/constructeurs.$brand.$model.$type.tsx
+// (INC-2026-007) — voir feedback_no_new_patterns_for_isolated_bugs.
+async function notify503ToErrorLog(
+  url: string,
+  subject: string,
+  message: string,
+  metadata?: Record<string, unknown>,
+): Promise<void> {
+  const internalKey = process.env.INTERNAL_API_KEY;
+  if (!internalKey) return;
+
+  try {
+    await fetch(`${getInternalApiUrl("")}/api/internal/error-log`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Internal-Key": internalKey,
+      },
+      body: JSON.stringify({
+        status: 503,
+        url,
+        subject,
+        message,
+        metadata,
+      }),
+      signal: AbortSignal.timeout(500),
+    }).catch(() => {});
+  } catch {
+    // best-effort, jamais bloquant
+  }
+}
 
 export async function piecesVehicleLoader({
   params,
@@ -221,22 +256,41 @@ export async function piecesVehicleLoader({
     // Fetch alternatives en parallele (autres gammes pour ce vehicule + autres vehicules pour cette gamme)
     const alternativesData = await fetchJsonOrNull<{
       success: boolean;
+      version?: 'v2';
+      etag?: string;
       alternativeGammes: Array<{
         pg_id: number;
         pg_name: string;
         pg_alias: string;
         pg_pic: string | null;
+        piece_count: number;
+        tier: 1 | 2 | 3;
       }>;
       alternativeVehicles: Array<{
         type_id: string;
         type_name: string;
         type_alias: string | null;
+        type_fuel: string;
+        type_power_ps: string;
+        type_year_from: string;
+        type_year_to: string;
+        modele_id: number;
         modele_name: string;
         modele_alias: string;
-        modele_id: number;
+        marque_id: number;
         marque_name: string;
         marque_alias: string;
+        tier: 1 | 2 | 3;
+      }>;
+      relatedModels: Array<{
+        modele_id: number;
+        modele_name: string;
+        modele_alias: string;
         marque_id: number;
+        marque_name: string;
+        marque_alias: string;
+        representative_type_id: string;
+        representative_type_alias: string;
       }>;
     }>(
       `http://127.0.0.1:3000/api/rm/alternatives?gamme_id=${gammeId}&type_id=${vehicleIds.typeId}&limit=12`,
@@ -249,6 +303,32 @@ export async function piecesVehicleLoader({
       .map((s) => s!.replace(/-\d+$/, "").replace(/-/g, " "))
       .join(" ");
 
+    // vehicleContext : données véhicule enrichies depuis rmV2Response.vehicleInfo
+    // (disponible même avec 0 produits) avec fallback URL params dégradé
+    const vi = rmV2Response?.vehicleInfo;
+    const vehicleContext = {
+      marqueName: vi?.marqueName ?? _marqueData.alias.replace(/-/g, " "),
+      modeleName: vi?.modeleName ?? _modeleData.alias.replace(/-/g, " "),
+      typeName: vi?.typeName ?? _typeData.alias.replace(/-/g, " "),
+      typeFuel: vi?.typeFuel ?? '',
+      typePowerPs: vi?.typePowerPs ?? '',
+      yearFrom: vi?.typeYearFrom ?? '',
+      yearTo: vi?.typeYearTo ?? '',
+    };
+
+    // Beacon télémétrie fire-and-forget (n'attend jamais)
+    void fetch('http://127.0.0.1:3000/api/rm/alternatives/track-soft-404', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'user-agent': request.headers.get('user-agent') ?? '',
+        referer: request.headers.get('referer') ?? '',
+      },
+      body: JSON.stringify({ pg_id: gammeId, type_id: vehicleIds.typeId }),
+    }).catch(() => {
+      /* swallow: jamais bloquant */
+    });
+
     return json(
       {
         noProducts: true as const,
@@ -257,8 +337,10 @@ export async function piecesVehicleLoader({
         gammeName:
           rmV2Response?.gamme?.pg_name || gammeData.alias.replace(/-/g, " "),
         vehicleLabel,
-        alternativeGammes: alternativesData?.alternativeGammes || [],
-        alternativeVehicles: alternativesData?.alternativeVehicles || [],
+        vehicleContext,
+        alternativeGammes: alternativesData?.alternativeGammes ?? [],
+        alternativeVehicles: alternativesData?.alternativeVehicles ?? [],
+        relatedModels: alternativesData?.relatedModels ?? [],
       } satisfies NoProductsData,
       {
         headers: {
@@ -288,6 +370,12 @@ export async function piecesVehicleLoader({
     logger.error(
       `❌ [LOADER] mapRmV2ToLoaderData failed for ${url.pathname}:`,
       mapErr instanceof Error ? mapErr.message : mapErr,
+    );
+    await notify503ToErrorLog(
+      url.pathname,
+      "LOADER_503_RPC_INVALID_PAYLOAD",
+      `mapRmV2ToLoaderData failed: ${mapErr instanceof Error ? mapErr.message : String(mapErr)}`,
+      { error_name: mapErr instanceof Error ? mapErr.name : "unknown" },
     );
     throw new Response("Service temporairement indisponible", {
       status: 503,
@@ -454,6 +542,12 @@ export async function piecesVehicleLoader({
     logger.error(
       `💥 [LOADER] Unhandled error building response for ${url.pathname}:`,
       renderErr instanceof Error ? renderErr.message : renderErr,
+    );
+    await notify503ToErrorLog(
+      url.pathname,
+      "LOADER_503_BACKEND_RPC_ERROR",
+      `Unhandled error building response: ${renderErr instanceof Error ? renderErr.message : String(renderErr)}`,
+      { error_name: renderErr instanceof Error ? renderErr.name : "unknown" },
     );
     throw new Response("Service temporairement indisponible", {
       status: 503,

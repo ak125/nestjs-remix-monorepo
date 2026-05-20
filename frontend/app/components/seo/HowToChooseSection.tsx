@@ -42,15 +42,15 @@ export const HowToChooseSection = memo(function HowToChooseSection({
       aria-labelledby="how-to-choose-title"
     >
       <div className="container mx-auto px-4">
-        <Card className="border-indigo-200 bg-indigo-50/50">
+        <Card className="border-indigo-200 bg-muted/50">
           <CardHeader className="pb-3">
             <div className="flex items-center gap-3">
-              <span className="flex items-center justify-center w-10 h-10 rounded-full bg-indigo-600 text-white text-xl">
+              <span className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-white text-xl">
                 🎯
               </span>
               <CardTitle
                 id="how-to-choose-title"
-                className="text-xl text-indigo-900"
+                className="text-xl text-foreground"
               >
                 Comment choisir les bonnes {pluralType} ?
               </CardTitle>
@@ -60,7 +60,7 @@ export const HowToChooseSection = memo(function HowToChooseSection({
             <div className="space-y-5">
               {inputs && (
                 <div>
-                  <p className="text-sm font-semibold text-indigo-900 mb-2">
+                  <p className="text-sm font-semibold text-foreground mb-2">
                     Donnees indispensables
                   </p>
                   <ul className="space-y-2">
@@ -82,7 +82,7 @@ export const HowToChooseSection = memo(function HowToChooseSection({
 
               {decisionTree.length > 0 && (
                 <div>
-                  <p className="text-sm font-semibold text-indigo-900 mb-2">
+                  <p className="text-sm font-semibold text-foreground mb-2">
                     Arbre de decision
                   </p>
                   <Accordion
@@ -95,7 +95,7 @@ export const HowToChooseSection = memo(function HowToChooseSection({
                         value={node.id}
                         className="border-indigo-200"
                       >
-                        <AccordionTrigger className="text-indigo-900 hover:no-underline text-sm">
+                        <AccordionTrigger className="text-foreground hover:no-underline text-sm">
                           {node.question}
                         </AccordionTrigger>
                         <AccordionContent>
@@ -116,7 +116,7 @@ export const HowToChooseSection = memo(function HowToChooseSection({
                                     opt.outcome === "continue" &&
                                       "border-green-300 text-green-700 bg-green-50",
                                     opt.outcome === "stop" &&
-                                      "border-gray-300 text-gray-700 bg-gray-50",
+                                      "border-gray-300 text-red-900 bg-gray-50",
                                   )}
                                 >
                                   {opt.outcome}
@@ -143,7 +143,7 @@ export const HowToChooseSection = memo(function HowToChooseSection({
 
               {criteria.length > 0 && (
                 <div>
-                  <p className="text-sm font-semibold text-indigo-900 mb-2">
+                  <p className="text-sm font-semibold text-foreground mb-2">
                     Criteres de selection
                   </p>
                   <ul className="space-y-2">
@@ -166,7 +166,7 @@ export const HowToChooseSection = memo(function HowToChooseSection({
 
               {useCases.length > 0 && (
                 <div>
-                  <p className="text-sm font-semibold text-indigo-900 mb-2">
+                  <p className="text-sm font-semibold text-foreground mb-2">
                     Cas d'usage
                   </p>
                   <ul className="space-y-2">
@@ -187,7 +187,7 @@ export const HowToChooseSection = memo(function HowToChooseSection({
 
               {output?.selectedSpec && (
                 <div>
-                  <p className="text-sm font-semibold text-indigo-900 mb-2">
+                  <p className="text-sm font-semibold text-foreground mb-2">
                     Resultat du choix
                   </p>
                   <div className="rounded-lg border border-indigo-200 bg-white p-3">

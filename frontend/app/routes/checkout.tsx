@@ -1138,7 +1138,7 @@ export default function CheckoutPage() {
                         className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold transition-all duration-300 ${
                           addressValidated
                             ? "bg-blue-600 text-white"
-                            : "bg-slate-200 text-slate-400"
+                            : "bg-slate-200 text-white"
                         }`}
                       >
                         2

@@ -182,9 +182,9 @@ export function ProductCatalog({
               </div>
             </div>
             
-            <div className="bg-purple-50 rounded-lg p-4">
+            <div className="bg-muted rounded-lg p-4">
               <div className="flex items-center">
-                <ShoppingCart className="h-8 w-8 text-purple-600 mr-3" />
+                <ShoppingCart className="h-8 w-8 text-foreground mr-3" />
                 <div>
                   <p className="text-sm font-medium text-gray-600">En stock</p>
                   <p className="text-xl font-bold text-gray-900">{stats.inStock}</p>

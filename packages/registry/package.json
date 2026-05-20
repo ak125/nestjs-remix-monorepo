@@ -1,29 +1,43 @@
 {
   "name": "@repo/registry",
   "version": "0.1.0",
-  "description": "Zod schemas for Repository Control Plane (ADR-058 V1). 3-layer registry : Layer 1 auto (audit/registry/*.json) + Layer 2 overlay manuel (.spec/00-canon/repository-registry/*.yaml) + Layer 3 projection canonique générée (canonical.json). Schema versioning SemVer, status UNKNOWN + sourceConfidence pour classification jamais forcée.",
+  "description": "Zod schemas for Repository Control Plane (ADR-058 V1). 3-layer registry : Layer 1 auto (audit/registry/*.json) + Layer 2 overlay manuel (.spec/00-canon/repository-registry/*.yaml) + Layer 3 projection canonique générée (canonical.json). Compiled package : `@repo/registry` resolves to dist/ via tsc --build cascade (Turbo ^build). tsx scripts in scripts/registry/ import the TypeScript source directly by relative path to avoid the build prerequisite.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.js"
+      "default": "./dist/index.js"
     }
   },
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
     "clean": "rm -rf dist *.tsbuildinfo",
+    "build:architecture": "tsx src/bin/build-architecture-artifacts.ts",
+    "build:db-contract": "tsx src/bin/build-db-contract-artifacts.ts",
+    "build:runtime-contract": "tsx src/bin/build-runtime-contract-artifacts.ts",
+    "build:dep-governance": "tsx src/bin/build-dep-governance-artifacts.ts",
+    "build:rpc-contract": "tsx src/bin/build-rpc-contract-artifacts.ts",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test src/**/*.test.ts"
   },
   "dependencies": {
-    "zod": "^3.25.76"
+    "jose": "^5.10.0",
+    "js-yaml": "4.1.1",
+    "micromatch": "^4.0.8",
+    "zod": "^3.25.76",
+    "zod-to-json-schema": "3.23.0"
   },
   "devDependencies": {
+    "@types/js-yaml": "4.0.9",
+    "@types/micromatch": "^4.0.9",
     "@types/node": "^20.0.0",
-    "tsx": "^4.7.0",
+    "tsx": "^4.22.3",
     "typescript": "^5.9.3"
   }
 }

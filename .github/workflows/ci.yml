@@ -56,6 +56,12 @@ jobs:
       - name: 🛡️ Cache-Control discipline (Remix routes)
         run: bash scripts/lint/check-no-zero-arg-headers-with-s-maxage.sh
 
+      # PR-1 INC-2026-005 closure : CACHE-HEADERS-OK exemptions must cite a
+      # traceable reference (#NNN | INC-YYYY-NNN | ADR-NNN) + reason. Sister
+      # to the ast-grep rule frontend-no-headers-bypass-buildCacheHeaders.yml.
+      - name: 🛡️ CACHE-HEADERS-OK exemptions traceable
+        run: bash scripts/lint/check-cache-headers-ok-references.sh
+
   typecheck:
     name: ʦ TypeScript
     runs-on: ubuntu-latest
@@ -97,107 +103,15 @@ jobs:
       - name: 🧪 URL Pattern Tests
         run: cd frontend && npm run test -- --run tests/unit/url-patterns.test.ts
 
-      - name: 📦 Bundle size check (gzip)
-        if: always()
-        run: |
-          ASSETS="frontend/build/client/assets"
-          if [ ! -d "$ASSETS" ]; then
-            echo "ℹ️ No frontend build output found (build may have been skipped)"
-            exit 0
-          fi
-
-          # --- Measure gzip sizes ---
-          JS_GZ=0
-          JS_RAW=0
-          for f in $(find "$ASSETS" -name '*.js'); do
-            raw=$(wc -c < "$f")
-            gz=$(gzip -c "$f" | wc -c)
-            JS_RAW=$((JS_RAW + raw))
-            JS_GZ=$((JS_GZ + gz))
-          done
-
-          CSS_GZ=0
-          CSS_RAW=0
-          for f in $(find "$ASSETS" -name '*.css'); do
-            raw=$(wc -c < "$f")
-            gz=$(gzip -c "$f" | wc -c)
-            CSS_RAW=$((CSS_RAW + raw))
-            CSS_GZ=$((CSS_GZ + gz))
-          done
-
-          JS_GZ_KB=$((JS_GZ / 1024))
-          CSS_GZ_KB=$((CSS_GZ / 1024))
-          JS_RAW_KB=$((JS_RAW / 1024))
-          CSS_RAW_KB=$((CSS_RAW / 1024))
-
-          # --- Initial load: framework chunks loaded on every page ---
-          INIT_GZ=0
-          for pattern in "react-vendor-*.js" "radix-vendor-*.js" "root-*.js" "entry.client-*.js"; do
-            for f in $ASSETS/$pattern; do
-              [ -f "$f" ] && INIT_GZ=$((INIT_GZ + $(gzip -c "$f" | wc -c)))
-            done
-          done
-          INIT_GZ_KB=$((INIT_GZ / 1024))
-
-          # --- Largest individual chunk ---
-          LARGEST_GZ=0
-          LARGEST_NAME=""
-          for f in $(find "$ASSETS" -name '*.js'); do
-            gz=$(gzip -c "$f" | wc -c)
-            if [ "$gz" -gt "$LARGEST_GZ" ]; then
-              LARGEST_GZ=$gz
-              LARGEST_NAME=$(basename "$f")
-            fi
-          done
-          LARGEST_GZ_KB=$((LARGEST_GZ / 1024))
-
-          # --- Budgets (gzip bytes) ---
-          JS_GZ_BUDGET=$((800 * 1024))       # 800 KB gzip
-          INIT_GZ_BUDGET=$((200 * 1024))      # 200 KB gzip
-          CHUNK_GZ_BUDGET=$((100 * 1024))     # 100 KB gzip per chunk
-
-          JS_STATUS="✅"
-          [ "$JS_GZ" -gt "$JS_GZ_BUDGET" ] && JS_STATUS="⚠️"
-          INIT_STATUS="✅"
-          [ "$INIT_GZ" -gt "$INIT_GZ_BUDGET" ] && INIT_STATUS="⚠️"
-          CHUNK_STATUS="✅"
-          [ "$LARGEST_GZ" -gt "$CHUNK_GZ_BUDGET" ] && CHUNK_STATUS="⚠️"
-
-          # --- Report ---
-          echo "## 📦 Bundle Size Report (gzip)" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Metric | Size | Budget | Status |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------|------|--------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| JS total (gzip) | ${JS_GZ_KB} KB | 800 KB | ${JS_STATUS} |" >> $GITHUB_STEP_SUMMARY
-          echo "| CSS total (gzip) | ${CSS_GZ_KB} KB | — | — |" >> $GITHUB_STEP_SUMMARY
-          echo "| Initial load (gzip) | ${INIT_GZ_KB} KB | 200 KB | ${INIT_STATUS} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Largest chunk | ${LARGEST_GZ_KB} KB | 100 KB | ${CHUNK_STATUS} |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "_Raw sizes: JS ${JS_RAW_KB} KB, CSS ${CSS_RAW_KB} KB_" >> $GITHUB_STEP_SUMMARY
-
-          # --- Top 5 chunks by gzip size ---
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Top 5 chunks (gzip)" >> $GITHUB_STEP_SUMMARY
-          echo "| Chunk | Raw | Gzip |" >> $GITHUB_STEP_SUMMARY
-          echo "|-------|-----|------|" >> $GITHUB_STEP_SUMMARY
-          for f in $(find "$ASSETS" -name '*.js'); do
-            raw=$(wc -c < "$f")
-            gz=$(gzip -c "$f" | wc -c)
-            echo "$gz $raw $(basename "$f")"
-          done | sort -rn | head -5 | while read gz raw name; do
-            echo "| ${name%.js} | $((raw / 1024)) KB | $((gz / 1024)) KB |" >> $GITHUB_STEP_SUMMARY
-          done
-
-          # --- CI warnings ---
-          if [ "$JS_GZ" -gt "$JS_GZ_BUDGET" ]; then
-            echo "::warning::JS bundle (${JS_GZ_KB} KB gzip) exceeds budget (800 KB)"
-          fi
-          if [ "$INIT_GZ" -gt "$INIT_GZ_BUDGET" ]; then
-            echo "::warning::Initial load (${INIT_GZ_KB} KB gzip) exceeds budget (200 KB)"
-          fi
-          if [ "$LARGEST_GZ" -gt "$CHUNK_GZ_BUDGET" ]; then
-            echo "::warning::Chunk '${LARGEST_NAME}' (${LARGEST_GZ_KB} KB gzip) exceeds 100 KB limit"
-          fi
+      # Bundle size : délégué à size-limit (source de vérité unique
+      # frontend/.size-limit.json, partagée avec perf-gates.yml). Standard
+      # industriel (Andrey Sitnik, adopté par React/Redux/MobX/Prettier).
+      # Voir frontend/size-limit.README.md pour philosophie et calibration.
+      # Ce step était auparavant 100 lignes bash inline en warn-only — non
+      # bloquant, source de vérité dupliquée vs perf-gates.yml, budgets
+      # hardcodés. Remplacé pour cohérence et vrai gate (exit non-zero).
+      - name: 📦 Bundle size gate (size-limit, gzip)
+        run: npm run size
 
   test:
     name: 🧪 Backend Tests
@@ -571,96 +485,64 @@ jobs:
           extra_args: --results=verified,unknown
 
   migration-safety:
+    # AST-based Postgres SQL linter (squawk, libpg_query) — replaces the
+    # legacy grep-based gate that produced false positives on prose comments
+    # containing the literal text "DROP TABLE". Governance trail : ADR-064.
     name: 🗄️ Migration Safety
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0   # Need history for git diff against base ref.
 
-      - name: 🗄️ Check new migrations for dangerous operations
+      - name: Identify changed SQL migrations
+        id: changed-sql
         run: |
-          echo "🗄️ Migration Safety Gate"
-          echo "========================"
-
-          # Get only NEW migration files in this commit/PR
-          NEW_MIGRATIONS=$(git diff --name-only --diff-filter=A HEAD~1 -- 'backend/supabase/migrations/*.sql' 2>/dev/null || true)
-
-          if [ -z "$NEW_MIGRATIONS" ]; then
-            echo "✅ No new migrations to check"
-            exit 0
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base="origin/${{ github.base_ref }}"
+            raw=$(git diff --name-only --diff-filter=ACM "$base"...HEAD -- 'backend/supabase/migrations/*.sql' || true)
+          else
+            raw=$(git diff --name-only --diff-filter=ACM HEAD~1 HEAD -- 'backend/supabase/migrations/*.sql' || true)
+          fi
+          # Pre-filter `.down.sql` here (defense-in-depth with `.squawk.toml`
+          # `excluded_paths`) because squawk hard-errors with "Failed to find
+          # files" if every explicit path is excluded by config.
+          files=$(printf '%s\n' "$raw" | grep -v '\.down\.sql$' || true)
+          files=$(printf '%s' "$files" | tr '\n' ' ' | sed 's/ *$//')
+          if [ -z "$files" ]; then
+            echo "✅ No lintable SQL migration changes — gate skipped."
+            echo "files=" >> "$GITHUB_OUTPUT"
+          else
+            echo "Changed SQL migrations to lint :"
+            printf '%s\n' "$files"
+            echo "files=$files" >> "$GITHUB_OUTPUT"
           fi
 
-          echo "New migrations found:"
-          echo "$NEW_MIGRATIONS"
-          echo ""
+      # Direct squawk binary invocation (industry-standard CI linter pattern :
+      # exit-code-driven, no third-party API side-effects). The previous
+      # `sbdchd/squawk-action@v2` wrapper called `upload-to-github`, which
+      # POSTs a PR comment and requires `pull-requests: write` — adding write
+      # scope to every pipeline just to render diagnostics is bricolage.
+      # Violations show up in the job log; squawk exits non-zero on violation,
+      # which fails the job. Same approach as eslint / tsc / ruff / clippy.
+      - name: Install squawk
+        if: steps.changed-sql.outputs.files != ''
+        env:
+          SQUAWK_VERSION: "2.52.1"
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/bin"
+          curl -fsSL \
+            "https://github.com/sbdchd/squawk/releases/download/v${SQUAWK_VERSION}/squawk-linux-x64" \
+            -o "$RUNNER_TEMP/bin/squawk"
+          chmod +x "$RUNNER_TEMP/bin/squawk"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/bin/squawk" --version
 
-          ERRORS=0
-          WARNINGS=0
-
-          for file in $NEW_MIGRATIONS; do
-            [ ! -f "$file" ] && continue
-            echo ""
-            echo "Checking: $file"
-
-            # P0 BLOCK: DROP TABLE without explicit approval
-            if grep -iE 'DROP\s+TABLE' "$file" | grep -v '\-\- APPROVED:' > /dev/null 2>&1; then
-              echo "  ❌ DROP TABLE detected without '-- APPROVED:' comment"
-              ERRORS=$((ERRORS+1))
-            fi
-
-            # P0 BLOCK: ALTER TABLE DROP COLUMN without explicit approval
-            if grep -iE 'ALTER\s+TABLE.*DROP\s+COLUMN' "$file" | grep -v '\-\- APPROVED:' > /dev/null 2>&1; then
-              echo "  ❌ DROP COLUMN detected without '-- APPROVED:' comment"
-              ERRORS=$((ERRORS+1))
-            fi
-
-            # P0 BLOCK: Disabling RLS
-            if grep -iE 'ALTER\s+TABLE.*DISABLE\s+ROW\s+LEVEL' "$file" | grep -v '\-\- APPROVED:' > /dev/null 2>&1; then
-              echo "  ❌ DISABLE ROW LEVEL SECURITY detected without '-- APPROVED:' comment"
-              ERRORS=$((ERRORS+1))
-            fi
-
-            # P0 BLOCK: DROP POLICY without explicit approval
-            if grep -iE 'DROP\s+POLICY' "$file" | grep -v '\-\- APPROVED:' > /dev/null 2>&1; then
-              echo "  ❌ DROP POLICY detected without '-- APPROVED:' comment"
-              ERRORS=$((ERRORS+1))
-            fi
-
-            # P1 WARN: TRUNCATE
-            if grep -iE 'TRUNCATE' "$file" > /dev/null 2>&1; then
-              echo "  ⚠️  TRUNCATE detected -- verify this is intentional"
-              WARNINGS=$((WARNINGS+1))
-            fi
-
-            # P1 WARN: DELETE without WHERE
-            if grep -iE 'DELETE\s+FROM' "$file" | grep -viE 'WHERE' > /dev/null 2>&1; then
-              echo "  ⚠️  DELETE without WHERE clause detected"
-              WARNINGS=$((WARNINGS+1))
-            fi
-
-            # P1 WARN: Grant to public
-            if grep -iE 'GRANT.*TO\s+public' "$file" > /dev/null 2>&1; then
-              echo "  ⚠️  GRANT TO public detected"
-              WARNINGS=$((WARNINGS+1))
-            fi
-          done
-
-          echo ""
-          echo "========================"
-          if [ "$WARNINGS" -gt 0 ]; then
-            echo "⚠️  $WARNINGS warning(s) (non-blocking)"
-          fi
-
-          if [ "$ERRORS" -gt 0 ]; then
-            echo "❌ $ERRORS dangerous operation(s) without '-- APPROVED:' comment"
-            echo ""
-            echo "To approve: add '-- APPROVED: <reason>' on the same line"
-            exit 1
-          fi
-
-          echo "✅ Migration safety check passed"
+      - name: Run squawk on changed migrations
+        if: steps.changed-sql.outputs.files != ''
+        run: squawk --config .squawk.toml ${{ steps.changed-sql.outputs.files }}
 
   build:
     name: 🐳 build
@@ -719,6 +601,22 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # Node.js + deps install required by the env-contract preflight step
+      # below: `scripts/ci/preflight-env-contract.ts` runs under tsx and
+      # imports the Zod schema from `backend/src/contract/env-contract/`.
+      # Without `npm ci` on this self-hosted runner, tsx is unavailable and
+      # the preflight cannot enforce the canonical SoT (no auto-install
+      # fallback — `npm install @latest` would be non-deterministic, see
+      # memory feedback_ci_no_dynamic_latest_install).
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: "npm"
+
+      - name: Install dependencies (required for env-contract preflight)
+        run: npm ci
+
       - name: 🧪 Deploy to PREPROD (read-only hardening — ADR-028 Option D)
         env:
           # ADR-028 Option D : couches 1+2 (privilege downgrade + anon key only).
@@ -735,6 +633,22 @@ jobs:
           # donc le fail-fast trigger ici. Source : audit-trail vault
           # 2026-05-07-pr339-deploy-regression.md.
           SESSION_SECRET: ${{ secrets.PREPROD_SESSION_SECRET }}
+          # JWT_SECRET propagation : depuis PR #606, VehicleContextService:37 fait
+          # `configService.getOrThrow<string>('JWT_SECRET')` au constructeur pour
+          # signer le VCP cookie (JWS HS256). Sans ce secret le bootstrap NestJS
+          # crash en boucle dans le container preprod (12 retries × 10s puis
+          # healthcheck fail → tous les deploys main bloqués depuis 2026-05-19
+          # 12:06 UTC, ex. run 26096588258). Fallback sur PREPROD_SESSION_SECRET
+          # si PREPROD_JWT_SECRET pas encore configuré (le repo a déjà
+          # PREPROD_SESSION_SECRET ≥32 chars ; clé partagée acceptable en
+          # preprod read-only où aucun token utilisateur sensible ne circule —
+          # mais idéalement séparé en prod, cf. canon key-rotation).
+          JWT_SECRET: ${{ secrets.PREPROD_JWT_SECRET || secrets.PREPROD_SESSION_SECRET }}
+          # ADR-063 — CrUX API key for CWV field monitoring (backend-only, optional).
+          # When unset, the CrUX fetcher logs a warning and skips runs (V1 graceful
+          # degrade ; cron `seo-monitor` continues without CrUX step). Production
+          # requires the GH secret `CRUX_API_KEY` to be set on the repository.
+          CRUX_API_KEY: ${{ secrets.CRUX_API_KEY }}
           READ_ONLY: "true"
         run: |
           docker pull massdoc/nestjs-remix-monorepo:preprod
@@ -753,6 +667,9 @@ jobs:
           SUPABASE_URL=${SUPABASE_URL}
           SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
           SESSION_SECRET=${SESSION_SECRET}
+          # JWT_SECRET — required since PR #606 VehicleContextService.getOrThrow.
+          # See env block comment above for rationale.
+          JWT_SECRET=${JWT_SECRET}
           READ_ONLY=true
           # ADR-055 shadow activation: collect real preprod evidence before any
           # mode=on decision. Literal on remains blocked by backend boot guard.
@@ -770,6 +687,13 @@ jobs:
           # cannot reach a real RAG instance from preprod read-only mode anyway.
           RAG_SERVICE_URL=http://disabled:8000
           RAG_API_KEY=disabled-preprod-readonly
+          # ADR-063 — CrUX API key (optional, blank-allowed = graceful degrade)
+          CRUX_API_KEY=${CRUX_API_KEY}
+          # (Phase 0.6) Sitemap OIDC validation invariants are hardcoded in
+          # GithubOidcService (cf. docs/superpowers/specs/2026-05-16-sitemap-regen-auth-design.md
+          # Components > GithubOidcService — class static readonly constants).
+          # Preprod heredoc has no OIDC config to propagate — preprod is an
+          # ephemeral CI container with no automatic Bearer-token caller.
           EOF
 
           cd $PREPROD_DIR
@@ -789,6 +713,34 @@ jobs:
           # shellcheck disable=SC1091
           . "$PREPROD_DIR/.env"
           set +a
+
+          # 🛡️ Preflight env contract check — first projection of the canonical
+          # Zod SoT into CI (backend/src/contract/env-contract/preprod.schema.ts).
+          # Loads the REAL `.env.preprod` in an isolated subshell (not the
+          # ambient GHA env block) to validate EXACTLY what docker-compose
+          # injects into the container. Turns an opaque NestJS boot crash
+          # ("Configuration key X does not exist") into a CI fail immediately
+          # before `docker compose up`, with a structured diff.
+          #
+          # `set -euo pipefail` hardens the subshell against silent interpolation
+          # / sourcing failures (GHA `bash -e {0}` alone can let empty
+          # interpolations through). Determinism: tsx must be present via the
+          # `npm ci` step above — no dynamic `@latest` install (memory
+          # feedback_ci_no_dynamic_latest_install).
+          echo "🛡️ Preflight env contract check (loads real .env.preprod)..."
+          if ! (cd "$GITHUB_WORKSPACE" && npx --no-install tsx --version >/dev/null 2>&1); then
+            echo "::error::tsx not available — the 'Install dependencies' step above must run before this step (no auto-install fallback by design)."
+            exit 1
+          fi
+          (
+            set -euo pipefail
+            cd "$GITHUB_WORKSPACE"
+            set -o allexport
+            # shellcheck disable=SC1091
+            . "$PREPROD_DIR/.env"
+            set +o allexport
+            npx --no-install tsx scripts/ci/preflight-env-contract.ts
+          )
 
           # Arreter anciens conteneurs
           docker stop nestjs-remix-monorepo-preprod redis-preprod 2>/dev/null || true
@@ -899,6 +851,88 @@ jobs:
           echo "- /health: ✅" >> $GITHUB_STEP_SUMMARY
           echo "- /api/catalog/families: ✅" >> $GITHUB_STEP_SUMMARY
           echo "- / (homepage): $STATUS" >> $GITHUB_STEP_SUMMARY
+
+      - name: 🩹 Soft-404 R2 smoke
+        # shell explicite : par défaut `bash -e {0}` (errexit). Or la capture
+        # `ASSERT_OUT=$(python3 ... )` propage l'exit code si le script exit 1
+        # → bash quitte AVANT d'imprimer le motif du FAIL. On force shell sans
+        # errexit pour collecter tous les FAILs + leurs raisons.
+        shell: bash {0}
+        run: |
+          BASE="http://localhost:3200"
+          FAILED=0
+          echo "## 🩹 Soft-404 R2 Smoke" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          while IFS= read -r url || [ -n "$url" ]; do
+            # skip blank lines + comments
+            [[ -z "${url// }" ]] && continue
+            case "$url" in \#*) continue ;; esac
+            echo "🔎 $url"
+            HTTP_OUT=$(curl -s -i --max-time 15 "$BASE$url")
+            CURL_RC=$?
+            if [ "$CURL_RC" != "0" ] || [ -z "$HTTP_OUT" ]; then
+              echo "❌ curl failed for $url (rc=$CURL_RC)"
+              echo "- $url: ❌ curl failed (rc=$CURL_RC)" >> $GITHUB_STEP_SUMMARY
+              FAILED=1
+              continue
+            fi
+            ASSERT_OUT=$(echo "$HTTP_OUT" | python3 scripts/ci/assert-soft-404.py 2>&1)
+            ASSERT_RC=$?
+            if [ "$ASSERT_RC" = "0" ]; then
+              echo "✅ $url"
+              echo "- $url: ✅" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "❌ $url"
+              echo "$ASSERT_OUT"
+              echo "- $url: ❌" >> $GITHUB_STEP_SUMMARY
+              echo "  \`\`\`" >> $GITHUB_STEP_SUMMARY
+              echo "$ASSERT_OUT" >> $GITHUB_STEP_SUMMARY
+              echo "  \`\`\`" >> $GITHUB_STEP_SUMMARY
+              FAILED=1
+            fi
+          done < scripts/ci/soft-404-fixtures.txt
+          if [ "$FAILED" = "1" ]; then
+            echo "::error::Soft-404 smoke assertions failed"
+            exit 1
+          fi
+          echo "✅ All soft-404 fixtures passed"
+
+      - name: 🐛 Dump container + rendered HTML on smoke failure (observability)
+        if: failure()
+        run: |
+          set +e
+          # tee duplicates output to BOTH the workflow log (visible via gh run
+          # view --log) AND the GITHUB_STEP_SUMMARY markdown panel — covers the
+          # case where the summary-only redirect of the original step was empty
+          # in API responses (PR #636 run 26106977897). Logs now visible from
+          # the standard workflow output without needing the UI summary.
+          {
+            echo "## 🐛 Soft-404 R2 smoke failure debug"
+            echo ""
+
+            echo "### Backend container logs (last 200 lines, filtered)"
+            echo '```'
+            docker logs nestjs-remix-monorepo-preprod --tail 200 2>&1 \
+              | grep -iE 'rmAlternatives|alternatives|callRpc|rpcGate|supabase|permission|denied|jwt|anon|error|warn' \
+              | tail -80
+            echo '```'
+            echo ""
+
+            echo "### Direct probe of /api/rm/alternatives for fixture #1"
+            echo '```json'
+            curl -s --max-time 10 "http://localhost:3200/api/rm/alternatives?gamme_id=3859&type_id=11836&limit=12" \
+              | python3 -c 'import sys, json; d=json.loads(sys.stdin.read()); print(json.dumps({"alternativeVehicles": len(d.get("alternativeVehicles",[])), "alternativeGammes": len(d.get("alternativeGammes",[])), "relatedModels": len(d.get("relatedModels",[])), "etag": d.get("etag")}, indent=2))' \
+              2>&1
+            echo '```'
+            echo ""
+
+            echo "### First 4-segment /pieces/.../.../...html links in rendered page (fixture #1)"
+            echo '```'
+            curl -s --max-time 15 "http://localhost:3200/pieces/kit-de-freins-arriere-3859/bmw-33/serie-5-f10-f18-33053/2-0-525-d-11836.html" \
+              | grep -oE 'href="/pieces/[^"]+\.html"' \
+              | sort -u | head -10
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: ⏱️ Response Time Baseline
         run: |
@@ -1055,9 +1089,20 @@ jobs:
           retention-days: 7
 
   # ============================================
-  # Lighthouse Performance Audit (post-deploy)
+  # Lighthouse Performance Audit (post-deploy, observe-only)
   # ============================================
-
+  # SCOPE : observabilité timing synthétique sur serveur PREPROD réel après
+  # deploy main. **Non-bloquant** (cf. step "Lighthouse summary"). Catch les
+  # régressions de TTFB / cold start / CDN / gzip serveur qu'un bundle scan
+  # statique ne voit pas.
+  #
+  # **N'est PAS un PR gate** : l'anti-régression bundle PR est dans
+  # perf-gates.yml via size-limit sur frontend/.size-limit.json (déterministe,
+  # gzip, bloquant). Voir frontend/size-limit.README.md.
+  #
+  # Budgets de timing : frontend/lighthouse-budget.json (timings only depuis
+  # 2026-05-14 ; les resourceSizes/resourceCounts ont migré vers .size-limit.json
+  # — source de vérité unique pour les budgets bundle).
   lighthouse:
     name: 🔦 Lighthouse Performance Audit
     runs-on: [self-hosted, Linux, X64]

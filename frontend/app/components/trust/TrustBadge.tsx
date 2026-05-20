@@ -72,7 +72,7 @@ const COLOR_VARIANTS = {
   green: "bg-green-50 text-green-700 border-green-200",
   emerald: "bg-emerald-50 text-emerald-700 border-emerald-200",
   orange: "bg-orange-50 text-orange-700 border-orange-200",
-  purple: "bg-purple-50 text-purple-700 border-purple-200",
+  purple: "bg-muted text-foreground border-purple-200",
   teal: "bg-teal-50 text-teal-700 border-teal-200",
 } as const;
 

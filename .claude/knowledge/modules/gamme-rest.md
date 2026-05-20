@@ -2,7 +2,7 @@
 module: gamme-rest
 sources:
 - backend/src/modules/gamme-rest
-last_scan: '2026-05-13'
+last_scan: '2026-05-19'
 primary_files:
 - backend/src/modules/gamme-rest/controllers/admin-gamme-cache.controller.ts
 - backend/src/modules/gamme-rest/controllers/admin-r1-related-blocks-cache.controller.ts

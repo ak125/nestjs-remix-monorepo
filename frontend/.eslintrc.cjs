@@ -48,6 +48,26 @@ module.exports = {
 				selector: "Literal[value=/^(R3_BLOG|R3_guide|R6_BUYING_GUIDE|R3_guide_achat|R3_guide_howto|R3_conseils|R1_pieces|R6_GUIDE)$/]",
 				message: '⚠️ Legacy SEO role literal in OUTPUT context. Use normalizeLegacyPageRole() / @repo/seo-roles canonical RoleId. (Legacy values OK in inputs, tests, fixtures.)',
 			},
+			// Safe-storage guard — Sentry issue 181aeb23 (SecurityError sur Chrome
+			// Mobile 148 / WebView in-app / cookies bloqués). `typeof window` ne
+			// suffit pas : window existe mais l'accès à window.sessionStorage
+			// throw. Toujours passer par ~/utils/safe-storage.
+			{
+				selector: "MemberExpression[object.name='sessionStorage']",
+				message: '⚠️ Use safeSessionStorage from ~/utils/safe-storage (sessionStorage.* throws SecurityError on Chrome Mobile WebView / blocked storage — Sentry 181aeb23).',
+			},
+			{
+				selector: "MemberExpression[object.type='MemberExpression'][object.object.name='window'][object.property.name='sessionStorage']",
+				message: '⚠️ Use safeSessionStorage from ~/utils/safe-storage (window.sessionStorage.* throws SecurityError on Chrome Mobile WebView / blocked storage — Sentry 181aeb23).',
+			},
+			{
+				selector: "MemberExpression[object.name='localStorage']",
+				message: '⚠️ Use safeLocalStorage from ~/utils/safe-storage (localStorage.* throws SecurityError on Chrome Mobile WebView / blocked storage — Sentry 181aeb23).',
+			},
+			{
+				selector: "MemberExpression[object.type='MemberExpression'][object.object.name='window'][object.property.name='localStorage']",
+				message: '⚠️ Use safeLocalStorage from ~/utils/safe-storage (window.localStorage.* throws SecurityError on Chrome Mobile WebView / blocked storage — Sentry 181aeb23).',
+			},
 		],
 	},
 
@@ -73,9 +93,14 @@ module.exports = {
 		// literals, etc.) — they MUST contain the literal forms. The legacy
 		// literal rule (Literal[value=/^(R3_BLOG|...)$/]) targets OUTPUT contexts,
 		// not type definitions. Mirrors backend/.eslintrc.js overrides.
+		//
+		// `app/utils/safe-storage.ts` est aussi exempt : c'est le wrapper canon
+		// qui DOIT accéder à window.sessionStorage / window.localStorage en
+		// direct (try/catch interne).
 		{
 			files: [
 				'app/utils/page-role.types.ts',
+				'app/utils/safe-storage.ts',
 				'app/types/r6-guide.types.ts',
 				'**/__tests__/**',
 				'**/__fixtures__/**',
@@ -83,6 +108,36 @@ module.exports = {
 			],
 			rules: {
 				'no-restricted-syntax': 'off',
+			},
+		},
+		// ── R-SEO-09 interplay : routes/** keep Tailwind + SEO literal checks,
+		//    storage selectors EXCLUDED until coupled Platform PR enables
+		//    R-SEO-09 Phase 2 AST override and lets us migrate legacy direct
+		//    sessionStorage/localStorage call sites in route files (e.g.
+		//    checkout-payment-return.tsx GA4 dedupe key). See PR #624 follow-up.
+		{
+			files: ['app/routes/**/*.{ts,tsx}'],
+			rules: {
+				'no-restricted-syntax': [
+					'warn',
+					{
+						selector: 'JSXAttribute[name.name="className"][value.value=/w-screen/]',
+						message: '❌ w-screen interdit - utiliser w-full (voir docs/layout.rules.md)',
+					},
+					{
+						selector: 'JSXAttribute[name.name="className"][value.value=/(?<!overflow-)(?<!sm:)(?<!md:)(?<!lg:)(?<!xl:)(?<!2xl:)hidden(?!.*(?:sm:|md:|lg:|xl:|2xl:))/]',
+						message: '⚠️ hidden sans breakpoint responsive - vérifier si intentionnel',
+					},
+					{
+						selector: "Literal[value=/^(R3_BLOG|R3_guide|R6_BUYING_GUIDE|R3_guide_achat|R3_guide_howto|R3_conseils|R1_pieces|R6_GUIDE)$/]",
+						message: '⚠️ Legacy SEO role literal in OUTPUT context. Use normalizeLegacyPageRole() / @repo/seo-roles canonical RoleId. (Legacy values OK in inputs, tests, fixtures.)',
+					},
+					// NOTE : storage selectors (sessionStorage.* / localStorage.*)
+					// intentionally OMITTED here. R-SEO-09 hard-blocks any route
+					// file edit, so eslint-disable comments cannot be added to
+					// legacy direct-access call sites. Migration deferred to a
+					// coupled Platform PR.
+				],
 			},
 		},
 	],

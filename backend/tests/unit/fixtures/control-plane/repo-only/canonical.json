@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "1.0.0",
+  "meta": { "sotFingerprint": "test-fingerprint-abc" },
+  "files": [
+    { "id": "a.ts", "domain": "D1", "owner": "@ak125/frontend-team" },
+    { "id": "b.ts", "domain": "D2", "owner": "__unassigned__" }
+  ],
+  "db": [{ "id": "t1", "domain": "D1", "owner": "@ak125/db-team" }],
+  "rpc": [],
+  "deps": [{ "id": "zod", "domain": "D3", "owner": "__unassigned__" }],
+  "runtime": [{ "id": "main", "domain": "D1", "owner": "@ak125/backend-team" }]
+}

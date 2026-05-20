@@ -232,7 +232,7 @@ export const SearchBarEnhancedHomepage = memo(
             <div
               className={cn(
                 "absolute inset-0 rounded-2xl opacity-0 blur-xl transition-opacity duration-300",
-                "bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400",
+                "bg-gradient-to-r from-blue-400 to-pink-400",
                 isFocused && "opacity-20",
               )}
             />
@@ -313,9 +313,9 @@ export const SearchBarEnhancedHomepage = memo(
                   type="submit"
                   className={cn(
                     "absolute right-5 top-1/2 transform -translate-y-1/2",
-                    "p-2 bg-gradient-to-r from-blue-500 to-purple-500",
+                    "p-2 bg-gradient-to-r from-blue-500",
                     "rounded-lg text-white",
-                    "hover:from-blue-600 hover:to-purple-600",
+                    "hover:from-blue-600 hover:",
                     "transition-all duration-200",
                     "hover:scale-110 hover:shadow-lg",
                   )}
@@ -378,7 +378,7 @@ export const SearchBarEnhancedHomepage = memo(
                           key={idx}
                           type="button"
                           onClick={() => handleSuggestionClick(popular.query)}
-                          className="w-full px-3 py-2.5 text-left rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all flex items-center gap-3 group"
+                          className="w-full px-3 py-2.5 text-left rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover: transition-all flex items-center gap-3 group"
                         >
                           <Icon className="w-4 h-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
                           <span className="text-gray-700 flex-1">
@@ -411,11 +411,11 @@ export const SearchBarEnhancedHomepage = memo(
                         className={cn(
                           "w-full px-3 py-2.5 text-left rounded-lg transition-all flex items-center gap-3 group",
                           selectedIndex === index
-                            ? "bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200"
+                            ? "bg-gradient-to-r from-blue-50 border border-blue-200"
                             : "hover:bg-gray-50",
                         )}
                       >
-                        <Tag className="w-4 h-4 text-purple-500 flex-shrink-0" />
+                        <Tag className="w-4 h-4 text-foreground flex-shrink-0" />
                         <span className="text-gray-900 font-medium">
                           {suggestion}
                         </span>
@@ -448,7 +448,7 @@ export const SearchBarEnhancedHomepage = memo(
                             `/search?q=${encodeURIComponent(item.reference || item.id)}`,
                           )
                         }
-                        className="w-full p-3 text-left rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all group border border-transparent hover:border-blue-200"
+                        className="w-full p-3 text-left rounded-lg hover:bg-gradient-to-r hover:from-blue-50 hover: transition-all group border border-transparent hover:border-blue-200"
                       >
                         <div className="flex items-start gap-3">
                           <div className="p-2 bg-gray-100 rounded-lg group-hover:bg-info/20 transition-colors">
@@ -472,7 +472,7 @@ export const SearchBarEnhancedHomepage = memo(
                   <button
                     type="button"
                     onClick={() => handleSearch()}
-                    className="w-full mt-3 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all font-medium flex items-center justify-center gap-2 group"
+                    className="w-full mt-3 px-4 py-2.5 bg-gradient-to-r from-blue-500 text-white rounded-lg hover:from-blue-600 hover: transition-all font-medium flex items-center justify-center gap-2 group"
                   >
                     <span>Voir tous les résultats</span>
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

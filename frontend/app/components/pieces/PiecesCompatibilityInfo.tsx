@@ -29,8 +29,8 @@ export const PiecesCompatibilityInfo = memo(function PiecesCompatibilityInfo({
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
       {/* En-tête */}
-      <div className="bg-gradient-to-r from-indigo-50 to-blue-50 px-6 py-4 border-b border-indigo-200">
-        <h2 className="text-2xl font-bold text-indigo-900 flex items-center gap-3">
+      <div className="bg-gradient-to-r to-blue-50 px-6 py-4 border-b border-indigo-200">
+        <h2 className="text-2xl font-bold text-foreground flex items-center gap-3">
           <svg
             className="w-7 h-7"
             fill="none"
@@ -46,7 +46,7 @@ export const PiecesCompatibilityInfo = memo(function PiecesCompatibilityInfo({
           </svg>
           Informations de compatibilité
         </h2>
-        <p className="text-sm text-indigo-700 mt-1">Pour {vehicleName}</p>
+        <p className="text-sm text-foreground mt-1">Pour {vehicleName}</p>
       </div>
 
       <div className="p-6 space-y-6">
@@ -64,9 +64,9 @@ export const PiecesCompatibilityInfo = memo(function PiecesCompatibilityInfo({
 
         {/* Années de production */}
         <div className="flex items-start gap-4">
-          <div className="flex-shrink-0 w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
+          <div className="flex-shrink-0 w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
             <svg
-              className="w-6 h-6 text-indigo-600"
+              className="w-6 h-6 text-foreground"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -181,7 +181,7 @@ export const PiecesCompatibilityInfo = memo(function PiecesCompatibilityInfo({
               {compatibility.engines.map((engine, index) => (
                 <div
                   key={index}
-                  className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-3 border border-blue-200 flex items-center gap-3"
+                  className="bg-gradient-to-br from-blue-50 rounded-lg p-3 border border-blue-200 flex items-center gap-3"
                 >
                   <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white text-xs font-bold">
                     {index + 1}
@@ -233,7 +233,7 @@ export const PiecesCompatibilityInfo = memo(function PiecesCompatibilityInfo({
         )}
 
         {/* CTA Vérification */}
-        <div className="bg-gradient-to-r from-indigo-600 to-blue-600 rounded-lg p-5 text-white">
+        <div className="bg-gradient-to-r to-blue-600 rounded-lg p-5 text-white">
           <div className="flex items-start justify-between gap-4">
             <div>
               <h4 className="font-semibold text-lg mb-1">
@@ -244,7 +244,7 @@ export const PiecesCompatibilityInfo = memo(function PiecesCompatibilityInfo({
                 véhicule
               </p>
             </div>
-            <button className="flex-shrink-0 bg-white text-indigo-600 px-4 py-2 rounded-lg font-medium hover:bg-info/20 transition-colors shadow-lg">
+            <button className="flex-shrink-0 bg-white text-foreground px-4 py-2 rounded-lg font-medium hover:bg-info/20 transition-colors shadow-lg">
               Vérifier
             </button>
           </div>

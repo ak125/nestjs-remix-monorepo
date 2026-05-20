@@ -304,7 +304,7 @@ export default function ContactPage() {
           {/* Breadcrumb */}
           <PublicBreadcrumb items={[{ label: "Contact" }]} />
 
-          <div className="bg-white rounded-lg shadow-lg p-8 text-center border-t-4 border-green-500">
+          <div className="bg-white rounded-lg shadow-lg p-8 text-center">
             <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-6">
               <svg
                 className="w-8 h-8 text-green-600"

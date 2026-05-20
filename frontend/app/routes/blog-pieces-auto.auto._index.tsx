@@ -271,7 +271,7 @@ export default function BlogPiecesAutoIndex() {
                       <Card className="h-full hover:shadow-2xl transition-all duration-500 border border-gray-200 hover:border-blue-400 bg-white overflow-hidden group-hover:-translate-y-2 group-hover:scale-105">
                         <CardContent className="p-8 flex flex-col items-center justify-center h-full min-h-[160px] relative">
                           {/* Gradient background on hover */}
-                          <div className="absolute inset-0 bg-gradient-to-br from-blue-50/0 to-indigo-50/0 group-hover:from-blue-50 group-hover:to-indigo-50 transition-all duration-500" />
+                          <div className="absolute inset-0 bg-gradient-to-br from-blue-50/0 /0 group-hover:from-blue-50 group-hover: transition-all duration-500" />
 
                           {/* Logo */}
                           {brand.logo ? (
@@ -320,7 +320,7 @@ export default function BlogPiecesAutoIndex() {
                     <Button
                       onClick={() => setVisibleBrands((prev) => prev + 12)}
                       size="lg"
-                      className="group bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-10 py-7 text-lg font-semibold rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105"
+                      className="group bg-gradient-to-r from-blue-600 hover:from-blue-700 hover: text-white px-10 py-7 text-lg font-semibold rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105"
                     >
                       <span>Voir plus de marques</span>
                       <ArrowRight className="w-5 h-5 ml-3 group-hover:translate-x-1 transition-transform" />
@@ -343,7 +343,7 @@ export default function BlogPiecesAutoIndex() {
       </section>
 
       {/* Section Chiffres Cles */}
-      <section className="py-8 md:py-12 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-y border-blue-100">
+      <section className="py-8 md:py-12 bg-gradient-to-br from-blue-50 border-y border-blue-100">
         <div className="container mx-auto px-4">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-10">
@@ -357,10 +357,10 @@ export default function BlogPiecesAutoIndex() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {/* Badge 1: Marques */}
               <div className="group relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-indigo-600 rounded-2xl blur-xl opacity-20 group-hover:opacity-30 transition-opacity"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-400 rounded-2xl blur-xl opacity-20 group-hover:opacity-30 transition-opacity"></div>
                 <div className="relative bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 border border-blue-100 hover:border-blue-300 hover:-translate-y-2">
                   <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
+                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 flex items-center justify-center shadow-lg">
                       <Factory className="w-7 h-7 text-white" />
                     </div>
                     <div className="flex-1">
@@ -425,10 +425,10 @@ export default function BlogPiecesAutoIndex() {
 
               {/* Badge 3: Compatibilité */}
               <div className="group relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-400 to-pink-600 rounded-2xl blur-xl opacity-20 group-hover:opacity-30 transition-opacity"></div>
+                <div className="absolute inset-0 bg-gradient-to-br to-pink-600 rounded-2xl blur-xl opacity-20 group-hover:opacity-30 transition-opacity"></div>
                 <div className="relative bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 border border-purple-100 hover:border-purple-300 hover:-translate-y-2">
                   <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center shadow-lg">
+                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br to-pink-600 flex items-center justify-center shadow-lg">
                       <svg
                         className="w-7 h-7 text-white"
                         fill="none"
@@ -681,12 +681,12 @@ export default function BlogPiecesAutoIndex() {
             </div>
 
             {/* Content Card */}
-            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 p-1 shadow-2xl">
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 p-1 shadow-2xl">
               <div className="relative bg-white rounded-3xl p-10 md:p-12">
                 <div className="grid md:grid-cols-2 gap-10">
                   {/* Left Column */}
                   <div>
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 mb-6 shadow-lg">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 mb-6 shadow-lg">
                       <Car className="w-8 h-8 text-white" />
                     </div>
 
@@ -766,7 +766,7 @@ export default function BlogPiecesAutoIndex() {
                         className="flex items-start gap-3 p-4 rounded-xl"
                         variant="default"
                       >
-                        <div className="w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0 mt-0.5">
                           <svg
                             className="w-3 h-3 text-white"
                             fill="currentColor"
@@ -793,9 +793,9 @@ export default function BlogPiecesAutoIndex() {
 
                   {/* Right Column */}
                   <div className="flex flex-col justify-center">
-                    <div className="relative rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-100 p-8 border-2 border-blue-200 shadow-inner">
+                    <div className="relative rounded-2xl bg-gradient-to-br from-blue-50 p-8 border-2 border-blue-200 shadow-inner">
                       <div className="absolute top-0 right-0 w-32 h-32 bg-primary/30/30 rounded-full blur-3xl" />
-                      <div className="absolute bottom-0 left-0 w-32 h-32 bg-indigo-200/30 rounded-full blur-3xl" />
+                      <div className="absolute bottom-0 left-0 w-32 h-32 bg-muted/30 rounded-full blur-3xl" />
 
                       <div className="relative">
                         <h4 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
@@ -819,13 +819,13 @@ export default function BlogPiecesAutoIndex() {
                             </span>
                           </div>
                           <div className="flex items-center gap-3">
-                            <div className="w-2 h-2 rounded-full bg-indigo-600" />
+                            <div className="w-2 h-2 rounded-full bg-primary" />
                             <span className="text-gray-700 font-medium">
                               Sélection par modèle
                             </span>
                           </div>
                           <div className="flex items-center gap-3">
-                            <div className="w-2 h-2 rounded-full bg-purple-600" />
+                            <div className="w-2 h-2 rounded-full bg-primary" />
                             <span className="text-gray-700 font-medium">
                               Filtrage par motorisation
                             </span>
@@ -857,10 +857,10 @@ export default function BlogPiecesAutoIndex() {
       </section>
 
       {/* CTA */}
-      <section className="relative py-24 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 text-white overflow-hidden">
+      <section className="relative py-24 bg-gradient-to-br from-blue-600 text-white overflow-hidden">
         <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:32px_32px]" />
         <div className="absolute top-0 left-0 w-96 h-96 bg-primary/60/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-purple-400/20 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
 
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">

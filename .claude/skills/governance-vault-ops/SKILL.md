@@ -1,3 +1,22 @@
+---
+name: governance-vault-ops
+description: Use when operating the Obsidian governance-vault as an auditable ledger — sync canon mirrors, check orphans, audit signatures, propose ADR/rule edits, never write directly. Triggers — "sync vault canon", "audit vault signatures", "open vault PR", "verify ADR-X", or any task touching governance-vault/ or .claude/canon-mirrors/.
+type: discipline
+status: stable
+owners: ['@ak125']
+domain: D15
+runtime_class: privileged
+llm_safe: false
+last_verified: '2026-05-18'
+license: Internal - Automecanik
+compatibility: Designed for Claude Code on the DEV VPS (single-write-point per ADR-015). Requires /opt/automecanik/governance-vault checkout, SSH signing configured, GOVERNANCE_VAULT_PATH env var. CI read-only enforced.
+tags: [governance, vault, adr-015, ssh-signing, ledger, audit]
+metadata:
+  version: "1.0"
+  spec: agentskills.io/specification v1
+  adr_references: "ADR-015, ADR-058, ADR-061"
+---
+
 # Skill: governance-vault-ops
 
 Objectif: opérer le vault Obsidian `governance-vault` comme un registre (ledger) auditable:

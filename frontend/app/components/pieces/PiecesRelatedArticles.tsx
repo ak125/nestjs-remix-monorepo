@@ -60,7 +60,7 @@ export const PiecesRelatedArticles = memo(function PiecesRelatedArticles({
   return (
     <section className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mt-8">
       {/* En-tête */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b border-blue-100">
+      <div className="bg-gradient-to-r from-blue-50 px-6 py-4 border-b border-blue-100">
         <h2 className="text-xl font-bold text-blue-900 flex items-center gap-3">
           <div className="p-2 bg-blue-100 rounded-lg">
             <BookOpen className="w-5 h-5 text-blue-600" />

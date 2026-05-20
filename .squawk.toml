@@ -1,0 +1,38 @@
+# squawk SQL linter config — replaces the legacy grep-based Migration Safety gate.
+# Governance trail : ADR-064 (governance-vault).
+# Docs            : https://github.com/sbdchd/squawk (v2.52.1)
+#
+# Rule policy
+# -----------
+# squawk enables every rule by default EXCEPT `require-table-schema` (the only
+# opt-in rule per crates/squawk_linter/src/lib.rs `Rule::is_opt_in()`). We
+# therefore do NOT declare an `included_rules` block — defaults already cover
+# every legacy P0 check (ban-drop-table, ban-drop-column, ban-drop-database,
+# disallowed-unique-constraint, ban-truncate-cascade) plus a substantial
+# library of modern best-practice rules (prefer-robust-stmts,
+# prefer-bigint-over-int, prefer-identity, prefer-timestamptz,
+# require-concurrent-index-creation, require-timeout-settings, …).
+#
+# Targets : Supabase managed PG 17 (confirmed via Supabase MCP get_project
+# 2026-05-14 — db.version = "17.4.1.042", postgres_engine = "17").
+
+assume_in_transaction = true
+pg_version            = "17.0"
+
+excluded_paths = [
+  "**/*.down.sql",                # Rollbacks invert intent : DROP/TRUNCATE legitimate by design.
+]
+
+[upload_to_github]
+fail_on_violations = true         # CI must hard-fail on any default-rule violation.
+
+# Legacy WARN rules NOT in squawk's stock set, captured separately :
+#   - DISABLE RLS / GRANT public : enforced by Supabase advisors + RPC Safety Gate
+#                                  (scripts/audit/rpc-safety-gate.js).
+#   - DELETE-no-WHERE            : runtime-relevant, not migration-shape ; out of scope.
+#   - DROP POLICY                : pattern is idempotent re-create within same migration
+#                                  — design-allowed, not a safety issue.
+#
+# No `excluded_rules` block initially. If a default rule produces noise on a
+# legitimate pattern, prefer per-file `-- squawk-ignore-file <rule>` (documented
+# in the migration itself) over global exclusion.

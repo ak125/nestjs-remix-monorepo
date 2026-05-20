@@ -885,6 +885,13 @@ export default function DiagnosticAutoIndex() {
             >
               Diagnostics électricité <ChevronRight className="h-4 w-4" />
             </Link>
+            <Link
+              to="/depannage"
+              className="inline-flex items-center gap-2 bg-red-500 hover:bg-red-400 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors border border-red-400"
+            >
+              <AlertTriangle className="h-4 w-4" />
+              Voir le guide complet de dépannage routier
+            </Link>
           </div>
         </Container>
       </section>
@@ -971,11 +978,11 @@ export default function DiagnosticAutoIndex() {
 
       {/* Cross-link glossaire */}
       <Container className="pb-12 flex items-center justify-center gap-2 text-sm text-gray-500">
-        <BookOpen className="w-4 h-4 text-indigo-500" />
+        <BookOpen className="w-4 h-4 text-foreground" />
         <span>Comprendre les pièces mentionnées ?</span>
         <Link
           to="/reference-auto"
-          className="text-indigo-600 hover:text-indigo-800 font-medium transition-colors"
+          className="text-foreground hover:text-foreground font-medium transition-colors"
         >
           Consulter le glossaire
         </Link>

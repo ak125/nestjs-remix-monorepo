@@ -39,9 +39,9 @@ const CARD_STYLES: Record<
     icon: <Wrench className="w-5 h-5 text-green-600" />,
   },
   reference: {
-    bg: "bg-indigo-50 border-indigo-200 hover:border-indigo-300",
+    bg: "bg-muted border-indigo-200 hover:border-indigo-300",
     text: "text-indigo-900",
-    icon: <FileText className="w-5 h-5 text-indigo-600" />,
+    icon: <FileText className="w-5 h-5 text-foreground" />,
   },
 };
 

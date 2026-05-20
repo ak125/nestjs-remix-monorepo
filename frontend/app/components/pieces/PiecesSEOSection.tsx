@@ -54,7 +54,7 @@ export const PiecesSEOSection = memo(function PiecesSEOSection({
         {content.h2Sections.length > 0 && (
           <div className="space-y-6">
             {content.h2Sections.map((section, index) => (
-              <div key={index} className="border-l-4 border-blue-500 pl-4">
+              <div key={index} className="pl-4">
                 <h2 className="text-xl font-semibold text-gray-900 mb-3">
                   {section}
                 </h2>

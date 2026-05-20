@@ -98,7 +98,7 @@ const CROSS_LINKS = [
     description:
       "193 diagnostics gratuits par symptôme, voyant ou code OBD. Pour identifier une panne sans urgence immédiate.",
     cta: "Lancer un diagnostic",
-    color: "from-blue-500 to-indigo-600",
+    color: "from-blue-500",
   },
   {
     href: "/pieces",
@@ -304,11 +304,11 @@ export default function DepannageHub() {
 
       {/* Cross-link glossaire */}
       <Container className="pb-12 flex items-center justify-center gap-2 text-sm text-gray-500">
-        <BookOpen className="w-4 h-4 text-indigo-500" />
+        <BookOpen className="w-4 h-4 text-foreground" />
         <span>Comprendre les pièces mentionnées ?</span>
         <Link
           to="/reference-auto"
-          className="text-indigo-600 hover:text-indigo-800 font-medium transition-colors"
+          className="text-foreground hover:text-foreground font-medium transition-colors"
         >
           Consulter le glossaire
         </Link>

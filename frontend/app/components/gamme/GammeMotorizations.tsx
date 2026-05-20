@@ -127,7 +127,7 @@ export default function GammeMotorizations({
         <Button
           variant="outline"
           onClick={() => setShowAll(true)}
-          className="w-full mt-3.5 py-3 h-auto rounded-xl text-[13px] font-semibold text-slate-600 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-200"
+          className="w-full mt-3.5 py-3 h-auto rounded-xl text-[13px] font-semibold text-blue-900 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-200"
         >
           Voir les {filtered.length - 4} autres compatibilités{" "}
           <ChevronDown size={14} className="ml-1" />

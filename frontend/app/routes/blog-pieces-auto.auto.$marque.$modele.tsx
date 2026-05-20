@@ -292,7 +292,7 @@ export default function BlogPiecesAutoMarqueModele() {
   }, [filteredModels]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white">
       {/* Navigation */}
       <BlogPiecesAutoNavigation />
 
@@ -460,10 +460,10 @@ export default function BlogPiecesAutoMarqueModele() {
                       </div>
 
                       {/* Motorisations */}
-                      <div className="flex items-start gap-2 bg-purple-50 rounded-lg p-3 border border-purple-200">
-                        <Gauge className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
+                      <div className="flex items-start gap-2 bg-muted rounded-lg p-3 border border-purple-200">
+                        <Gauge className="w-5 h-5 text-foreground mt-0.5 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <div className="text-xs text-purple-600 font-semibold mb-0.5">
+                          <div className="text-xs text-foreground font-semibold mb-0.5">
                             Motorisations
                           </div>
                           <div className="font-bold text-gray-900 text-xs leading-relaxed">
@@ -499,10 +499,10 @@ export default function BlogPiecesAutoMarqueModele() {
 
                     {/* Carrosseries */}
                     {modelGroup.body && (
-                      <div className="flex items-start gap-2 bg-indigo-50 rounded-lg p-3 border border-indigo-200">
-                        <Car className="w-5 h-5 text-indigo-600 mt-0.5 flex-shrink-0" />
+                      <div className="flex items-start gap-2 bg-muted rounded-lg p-3 border border-indigo-200">
+                        <Car className="w-5 h-5 text-foreground mt-0.5 flex-shrink-0" />
                         <div>
-                          <div className="text-xs text-indigo-600 font-semibold mb-0.5">
+                          <div className="text-xs text-foreground font-semibold mb-0.5">
                             Carrosseries
                           </div>
                           <div className="font-bold text-gray-900">
@@ -527,7 +527,7 @@ export default function BlogPiecesAutoMarqueModele() {
               <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <svg
-                    className="w-4 h-4 text-indigo-600"
+                    className="w-4 h-4 text-foreground"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -540,7 +540,7 @@ export default function BlogPiecesAutoMarqueModele() {
                     />
                   </svg>
                   <span className="text-sm font-semibold text-gray-900">
-                    <span className="text-indigo-600">{filteredCount}</span>/
+                    <span className="text-foreground">{filteredCount}</span>/
                     {totalTypes} motorisation{totalTypes > 1 ? "s" : ""}
                   </span>
                 </div>
@@ -550,11 +550,7 @@ export default function BlogPiecesAutoMarqueModele() {
                   <div className="flex flex-wrap gap-1.5">
                     <button
                       onClick={() => setSelectedFuel(null)}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
-                        selectedFuel === null
-                          ? "bg-indigo-600 text-white shadow-md scale-105 border-indigo-700"
-                          : "bg-white text-gray-700 hover:bg-gray-50 hover:scale-105 border-gray-300"
-                      }`}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${ selectedFuel === null ? "bg-primary text-white shadow-md scale-105 border-indigo-700" : "bg-white text-gray-700 hover:bg-gray-50 hover:scale-105 border-gray-300" }`}
                     >
                       <span>🔍</span>
                       <span>Tous</span>
@@ -582,7 +578,7 @@ export default function BlogPiecesAutoMarqueModele() {
                         if (isElectrique)
                           return "bg-primary text-white border-blue-600 shadow-md shadow-blue-200";
                         if (isHybride)
-                          return "bg-purple-500 text-white border-purple-600 shadow-md shadow-purple-200";
+                          return "bg-primary text-white border-purple-600 shadow-md shadow-purple-200";
                         return "bg-gray-600 text-white border-gray-700 shadow-md";
                       };
 
@@ -594,7 +590,7 @@ export default function BlogPiecesAutoMarqueModele() {
                         if (isElectrique)
                           return "bg-primary/5 text-blue-700 border-blue-300 hover:bg-info/20";
                         if (isHybride)
-                          return "bg-purple-50 text-purple-700 border-purple-300 hover:bg-purple-100";
+                          return "bg-muted text-foreground border-purple-300 hover:bg-muted";
                         return "bg-gray-50 text-gray-700 border-gray-300 hover:bg-gray-100";
                       };
 
@@ -627,11 +623,7 @@ export default function BlogPiecesAutoMarqueModele() {
                             selectedPowerRange === range.id ? null : range.id,
                           )
                         }
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
-                          selectedPowerRange === range.id
-                            ? "bg-gradient-to-r from-purple-500 to-indigo-600 text-white shadow-md shadow-purple-200 scale-105 border-purple-600"
-                            : "bg-purple-50 text-purple-700 border-purple-300 hover:bg-purple-100 hover:scale-105"
-                        }`}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${ selectedPowerRange === range.id ? "bg-gradient-to-r text-white shadow-md shadow-purple-200 scale-105 border-purple-600" : "bg-muted text-foreground border-purple-300 hover:bg-muted hover:scale-105" }`}
                       >
                         <Gauge className="w-3 h-3" />
                         <span>{range.label}</span>
@@ -676,7 +668,7 @@ export default function BlogPiecesAutoMarqueModele() {
                     } else if (fuelLower.includes("électrique")) {
                       return "bg-info/20 text-info border-blue-300";
                     } else if (fuelLower.includes("hybride")) {
-                      return "bg-purple-100 text-purple-800 border-purple-300";
+                      return "bg-muted text-foreground border-purple-300";
                     }
                     return "bg-gray-100 text-gray-800 border-gray-300";
                   };
@@ -732,7 +724,7 @@ export default function BlogPiecesAutoMarqueModele() {
                                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                                     {/* Titre principal */}
                                     <div className="flex-1">
-                                      <h3 className="text-base font-bold text-gray-900 group-hover:text-indigo-600 transition-colors mb-1">
+                                      <h3 className="text-base font-bold text-gray-900 group-hover:text-foreground transition-colors mb-1">
                                         {type.designation}
                                         {/* Code moteur : DÉSACTIVÉ - pas de liaison fiable entre auto_type et cars_engine */}
                                       </h3>
@@ -745,7 +737,7 @@ export default function BlogPiecesAutoMarqueModele() {
                                     <div className="flex flex-wrap items-center gap-4 text-sm">
                                       {/* Puissance */}
                                       <div className="flex items-center gap-1.5">
-                                        <Gauge className="w-4 h-4 text-indigo-600" />
+                                        <Gauge className="w-4 h-4 text-foreground" />
                                         <span className="font-semibold text-gray-900">
                                           {type.ch} ch
                                         </span>
@@ -767,7 +759,7 @@ export default function BlogPiecesAutoMarqueModele() {
                                       {/* Arrow icon */}
                                       <div className="ml-auto">
                                         <svg
-                                          className="w-5 h-5 text-gray-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all"
+                                          className="w-5 h-5 text-gray-400 group-hover:text-foreground group-hover:translate-x-1 transition-all"
                                           fill="none"
                                           stroke="currentColor"
                                           viewBox="0 0 24 24"
@@ -816,14 +808,14 @@ export default function BlogPiecesAutoMarqueModele() {
                         setSelectedFuel(null);
                         setSelectedPowerRange(null);
                       }}
-                      className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold shadow-lg"
+                      className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary transition-colors font-semibold shadow-lg"
                     >
                       Réinitialiser les filtres
                     </button>
                   )}
                   <Link
                     to={`/blog-pieces-auto/auto/${brand.alias}`}
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg hover:border-indigo-600 hover:text-indigo-600 transition-colors font-semibold"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg hover:border-indigo-600 hover:text-foreground transition-colors font-semibold"
                   >
                     <ArrowLeft className="w-5 h-5" />
                     Voir les autres modèles {brand.name}
@@ -862,8 +854,8 @@ export default function BlogPiecesAutoMarqueModele() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card className="border-2 border-indigo-100 hover:border-indigo-300 transition-colors">
                 <CardContent className="p-6 text-center">
-                  <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Calendar className="w-8 h-8 text-indigo-600" />
+                  <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Calendar className="w-8 h-8 text-foreground" />
                   </div>
                   <h3 className="text-lg font-bold text-gray-900 mb-2">
                     Années de production
@@ -877,7 +869,7 @@ export default function BlogPiecesAutoMarqueModele() {
               <Card className="border-2 border-purple-100 hover:border-purple-300 transition-colors">
                 <CardContent className="p-6 text-center">
                   <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Wrench className="w-8 h-8 text-purple-600" />
+                    <Wrench className="w-8 h-8 text-foreground" />
                   </div>
                   <h3 className="text-lg font-bold text-gray-900 mb-2">
                     Motorisations
@@ -932,7 +924,7 @@ export default function BlogPiecesAutoMarqueModele() {
           <div className="max-w-7xl mx-auto flex flex-col sm:flex-row gap-4 justify-between">
             <Link
               to={`/blog-pieces-auto/auto/${brand.alias}`}
-              className="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-semibold transition-colors"
+              className="inline-flex items-center gap-2 text-foreground hover:text-foreground font-semibold transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
               <span>Voir tous les modèles {brand.name}</span>

@@ -61,9 +61,9 @@ export const PiecesComparisonView = memo(function PiecesComparisonView({
       <div className="inline-block min-w-full align-middle">
         <div className="overflow-hidden border border-gray-200 rounded-xl shadow-sm">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gradient-to-r from-blue-50 to-indigo-50">
+            <thead className="bg-gradient-to-r from-blue-50">
               <tr>
-                <th className="sticky left-0 z-10 bg-gradient-to-r from-blue-50 to-indigo-50 px-4 py-4 text-left text-sm font-bold text-gray-900 border-r border-gray-200">
+                <th className="sticky left-0 z-10 bg-gradient-to-r from-blue-50 px-4 py-4 text-left text-sm font-bold text-gray-900 border-r border-gray-200">
                   Critères
                 </th>
                 {comparedPieces.map((piece) => (

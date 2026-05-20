@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedBy": "fixture-pr6-observatory",
+  "entries": [
+    {
+      "id": "fixture_table_one",
+      "name": "fixture_table_one",
+      "schema": "public",
+      "domain": "D1",
+      "status": "LIVE",
+      "owner": "platform",
+      "sourceConfidence": "high",
+      "columns": [],
+      "indexes": [],
+      "rlsEnabled": false,
+      "usedBy": [],
+      "inMigrations": [],
+      "deletePolicy": "FREE",
+      "risk": "low",
+      "schemaVersion": "1.0.0"
+    }
+  ]
+}

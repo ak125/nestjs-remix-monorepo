@@ -34,10 +34,10 @@ export function PillarArticlesGrid({ articles }: PillarArticlesGridProps) {
   if (!articles || articles.length === 0) return null;
 
   return (
-    <section className="py-20 bg-gradient-to-r from-blue-50 to-purple-50">
+    <section className="py-20 bg-gradient-to-r from-blue-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <Badge className="mb-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 text-lg">
+          <Badge className="mb-4 bg-gradient-to-r from-blue-600 text-white px-6 py-2 text-lg">
             <Star className="w-4 h-4 mr-2" />À la une
           </Badge>
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">

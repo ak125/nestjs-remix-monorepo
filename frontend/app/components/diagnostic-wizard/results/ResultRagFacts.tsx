@@ -77,10 +77,10 @@ export function ResultRagFacts({ facts }: Props) {
   const sources = [...new Set(facts.map((f) => f.source_file).filter(Boolean))];
 
   return (
-    <Card className="border-indigo-100 bg-indigo-50/30">
+    <Card className="border-indigo-100 bg-muted/30">
       <CardHeader className="pb-2">
         <CardTitle className="text-base flex items-center gap-2">
-          <BookOpen className="w-4 h-4 text-indigo-600" />
+          <BookOpen className="w-4 h-4 text-foreground" />
           Documentation technique
           <Badge variant="secondary" className="text-xs ml-auto">
             {facts.length} fait{facts.length > 1 ? "s" : ""} vérifié

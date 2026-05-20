@@ -30,7 +30,7 @@ const resources: ResourceCard[] = [
     description: "Équivalences par numéro OE ou constructeur",
     href: "/reference-auto",
     icon: Layers,
-    iconWrapperClassName: "bg-violet-50 text-violet-600 ring-1 ring-violet-100",
+    iconWrapperClassName: "bg-muted text-foreground ring-1 ring-violet-100",
   },
   {
     title: "Diagnostic assisté",

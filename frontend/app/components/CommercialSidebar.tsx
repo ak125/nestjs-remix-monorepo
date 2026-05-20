@@ -110,7 +110,7 @@ export const CommercialSidebar = memo(function CommercialSidebar({
       {/* Sidebar overlay for mobile */}
       {isOpen && (
         <div
-          className="lg:hidden fixed inset-0 z-40 bg-black bg-opacity-50"
+          className="lg:hidden fixed inset-0 z-40 bg-neutral-900 bg-opacity-50"
           onClick={() => setIsOpen(false)}
         />
       )}

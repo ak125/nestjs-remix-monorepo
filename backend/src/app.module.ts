@@ -30,9 +30,13 @@ import { ApiModule } from './modules/api.module'; // ✅ NOUVEAU - API Legacy di
 import { DashboardModule } from './modules/dashboard/dashboard.module'; // ✅ NOUVEAU - Dashboard Stats !
 import { ProductsModule } from './modules/products/products.module'; // ✅ NOUVEAU - Module produits !
 import { VehiclesModule } from './modules/vehicles/vehicles.module'; // 🚗 MODULE VEHICLES - Pour sélecteur véhicule (inclut VehicleBrandsService)
+import { VehicleContextModule } from './modules/vehicle-context/vehicle-context.module'; // 🪪 PR-B.2 — VehicleContext JWS cookie middleware (OPTION A locked)
+import { ObservabilityModule } from './modules/observability/observability.module'; // 📊 PR-C — Prometheus counters for vehicle_ctx_* events + /api/observability/metrics
 import { InvoicesModule } from './modules/invoices/invoices.module'; // 🧾 NOUVEAU - Module factures !
 import { SeoModule } from './modules/seo/seo.module'; // 🔍 NOUVEAU - Module SEO avec services intégrés !
 import { SeoMonitoringModule } from './modules/seo-monitoring/seo-monitoring.module'; // 📊 Phase 1 — Observability GSC/GA4/CWV daily ingestion
+import { SeoControlPlaneModule } from './modules/seo-control-plane/seo-control-plane.module'; // 🤖 ADR-064 — SEO Production Control Plane (L1 synthetic crawler q15min)
+import { MerchantCenterModule } from './modules/merchant-center/merchant-center.module'; // 🛒 PR commerce-loop V1 step 5B — Google Shopping XML feed
 import { SearchModule } from './modules/search/search.module'; // 🔍 NOUVEAU - Module de recherche optimisé v3.0 !
 import { SystemModule } from './modules/system/system.module'; // ⚡ NOUVEAU - Module system monitoring !
 import { BlogModule } from './modules/blog/blog.module'; // 📚 NOUVEAU - Module blog avec tables __blog_* intégrées !
@@ -189,9 +193,13 @@ import { DiagnosticEngineModule } from './modules/diagnostic-engine/diagnostic-e
     ProductsModule, // ✅ NOUVEAU - Module produits avec CRUD complet !
     // 🚗 MODULES VÉHICULES
     VehiclesModule, // Module vehicle principal pour sélecteur véhicule (inclut gestion marques via VehicleBrandsService)
+    VehicleContextModule, // PR-B.2 — JWS cookie middleware on /api/diagnostic/* + /api/v1/orientation/*
+    ObservabilityModule, // PR-C — prom-client counters subscribed to NestJS events + scrape endpoint
     InvoicesModule, // 🧾 NOUVEAU - Module factures avec cache et stats !
     SeoModule, // 🔍 NOUVEAU - Module SEO avec SeoService et SitemapService !
     SeoMonitoringModule, // 📊 Phase 1 — Observability GSC/GA4/CWV daily ingestion (cf. ADR-025)
+    SeoControlPlaneModule, // 🤖 ADR-064 — SEO Production Control Plane (L1 synthetic crawler q15min)
+    MerchantCenterModule, // 🛒 PR commerce-loop V1 step 5B — Google Shopping XML feed /api/feed/merchant-center.xml
     SearchModule, // 🔍 NOUVEAU - Module de recherche optimisé v3.0 avec Meilisearch !
     BlogModule, // 📚 NOUVEAU - Module blog avec conseils, guides et glossaire intégrés !
     SystemModule, // ⚡ NOUVEAU - Module system monitoring et métriques !

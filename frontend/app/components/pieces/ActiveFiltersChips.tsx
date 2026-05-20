@@ -142,10 +142,7 @@ export const ActiveFiltersChips = memo(function ActiveFiltersChips({
       {activeChips.length > 1 && (
         <button
           onClick={onClearAll}
-          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full
-                     text-gray-500 text-sm font-medium
-                     hover:text-red-600 hover:bg-red-50 transition-colors
-                     focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1"
+          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full text-red-900 text-sm font-medium hover:text-red-600 hover:bg-red-50 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1"
           aria-label="Effacer tous les filtres"
         >
           <RotateCcw className="w-3.5 h-3.5" />

@@ -285,22 +285,22 @@ export default function UnifiedAccountDashboard() {
             {user.level && user.level >= 3 && (
               <a
                 href="/commercial"
-                className="flex items-center justify-between p-4 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl hover:from-indigo-100 hover:to-purple-100 transition-colors group"
+                className="flex items-center justify-between p-4 bg-gradient-to-r border border-indigo-200 rounded-xl hover: hover: transition-colors group"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-md">
+                  <div className="w-10 h-10 bg-gradient-to-br rounded-xl flex items-center justify-center shadow-md">
                     <ShoppingBag className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <p className="font-bold text-indigo-800">
+                    <p className="font-bold text-foreground">
                       Espace Commercial
                     </p>
-                    <p className="text-sm text-indigo-600">
+                    <p className="text-sm text-foreground">
                       Gerer les commandes, expeditions et clients
                     </p>
                   </div>
                 </div>
-                <span className="text-indigo-500 group-hover:translate-x-1 transition-transform">
+                <span className="text-foreground group-hover:translate-x-1 transition-transform">
                   &rarr;
                 </span>
               </a>

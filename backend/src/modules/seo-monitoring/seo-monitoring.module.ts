@@ -17,6 +17,9 @@ import { GscDailyFetcherService } from './services/gsc-daily-fetcher.service';
 import { Ga4DailyFetcherService } from './services/ga4-daily-fetcher.service';
 import { CwvFetcherService } from './services/cwv-fetcher.service';
 import { GscLinksFetcherService } from './services/gsc-links-fetcher.service';
+import { CruxApiClient } from './services/crux-api-client.service';
+import { CruxFieldFetcherService } from './services/crux-field-fetcher.service';
+import { CruxAlerterService } from './services/crux-alerter.service';
 import { AuditFindingsService } from './services/audit-findings.service';
 import { RContentAuditorService } from './services/r-content-auditor.service';
 import { QualityHistorySnapshotService } from './services/quality-history-snapshot.service';
@@ -33,6 +36,9 @@ import { QualityHistoryController } from './controllers/quality-history.controll
     Ga4DailyFetcherService,
     CwvFetcherService,
     GscLinksFetcherService,
+    CruxApiClient, // ADR-063 PR-3 — dormant, wired to processor in PR-5
+    CruxFieldFetcherService, // ADR-063 PR-3 — dormant, wired to processor in PR-5
+    CruxAlerterService, // ADR-063 PR-4 — dormant, wired to processor in PR-5
     AuditFindingsService,
     RContentAuditorService,
     QualityHistorySnapshotService, // ADR-050 Phase 0 baseline
@@ -45,6 +51,9 @@ import { QualityHistoryController } from './controllers/quality-history.controll
     Ga4DailyFetcherService,
     CwvFetcherService,
     GscLinksFetcherService,
+    CruxApiClient, // ADR-063 PR-3 — dormant, wired to processor in PR-5
+    CruxFieldFetcherService, // ADR-063 PR-3 — dormant, wired to processor in PR-5
+    CruxAlerterService, // ADR-063 PR-4 — dormant, wired to processor in PR-5
     AuditFindingsService,
     RContentAuditorService,
     QualityHistorySnapshotService, // exposé pour PR-T (re-enrich pre/post snapshot)

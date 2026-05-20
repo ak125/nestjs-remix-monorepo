@@ -20,11 +20,13 @@ import { Job } from 'bull';
 import { getAppConfig } from '../../../config/app.config';
 import { getErrorMessage } from '../../../common/utils/error.utils';
 import { AdminJobHealthService } from '../../admin/services/admin-job-health.service';
+import { CruxAlerterService } from '../services/crux-alerter.service';
+import { CruxFieldFetcherService } from '../services/crux-field-fetcher.service';
 import { Ga4DailyFetcherService } from '../services/ga4-daily-fetcher.service';
 import { GscDailyFetcherService } from '../services/gsc-daily-fetcher.service';
 import { GscLinksFetcherService } from '../services/gsc-links-fetcher.service';
 
-export type DailyFetchTask = 'all' | 'gsc' | 'ga4' | 'gsc_links';
+export type DailyFetchTask = 'all' | 'gsc' | 'ga4' | 'gsc_links' | 'crux';
 
 export interface SeoDailyFetchJobData {
   /** Date à fetcher au format ISO (YYYY-MM-DD). Si absent, J-3 par défaut (latence GSC/GA4). */
@@ -43,7 +45,7 @@ export interface SeoDailyFetchJobData {
 }
 
 export interface SeoDailyFetchPerSourceResult {
-  source: 'gsc' | 'ga4' | 'gsc_links';
+  source: 'gsc' | 'ga4' | 'gsc_links' | 'crux';
   status: 'ok' | 'skipped' | 'failed';
   rowsInserted: number;
   durationSeconds: number;
@@ -71,6 +73,8 @@ export class SeoDailyFetchProcessor {
     private readonly gscFetcher: GscDailyFetcherService,
     private readonly ga4Fetcher: Ga4DailyFetcherService,
     private readonly gscLinksFetcher: GscLinksFetcherService,
+    private readonly cruxFetcher: CruxFieldFetcherService,
+    private readonly cruxAlerter: CruxAlerterService,
     private readonly jobHealth: AdminJobHealthService,
   ) {
     this.readOnly = getAppConfig().supabase.readOnly;
@@ -107,7 +111,7 @@ export class SeoDailyFetchProcessor {
 
     const perSource: SeoDailyFetchPerSourceResult[] = [];
     const tasks =
-      task === 'all' ? (['gsc', 'ga4', 'gsc_links'] as const) : [task];
+      task === 'all' ? (['gsc', 'ga4', 'gsc_links', 'crux'] as const) : [task];
 
     let progressBase = 0;
     const progressStep = Math.floor(100 / tasks.length);
@@ -150,6 +154,35 @@ export class SeoDailyFetchProcessor {
           ) {
             status = 'skipped';
             message = r.warnings.join(',');
+          }
+        } else if (t === 'crux') {
+          // ADR-063 — CrUX field ingestion + alerting daily
+          const r = await this.cruxFetcher.fetchAndPersist({});
+          rowsInserted = r.rowsInserted;
+          if (r.warnings.includes('crux_client_unavailable')) {
+            status = 'skipped';
+            message = 'crux_client_unavailable';
+          } else {
+            // Trigger alerter on latest period (origin + URLs)
+            const evalResult = await this.cruxAlerter.runDailyEvaluation();
+            const noteParts: string[] = [];
+            if (evalResult.evaluated > 0) {
+              noteParts.push(`evaluated=${evalResult.evaluated}`);
+            }
+            if (
+              evalResult.emittedOpen +
+                evalResult.emittedStillOpen +
+                evalResult.emittedResolved >
+              0
+            ) {
+              noteParts.push(
+                `alerts=open:${evalResult.emittedOpen}/still:${evalResult.emittedStillOpen}/resolved:${evalResult.emittedResolved}`,
+              );
+            }
+            if (evalResult.errors.length > 0) {
+              noteParts.push(`errors=${evalResult.errors.length}`);
+            }
+            message = noteParts.join(' ');
           }
         }
 

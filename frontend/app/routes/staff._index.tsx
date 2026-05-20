@@ -144,7 +144,7 @@ export default function StaffIndex() {
       return "bg-warning/20 text-warning border-yellow-200";
     if (role.includes("Admin")) return "bg-info/20 text-info border-blue-200";
     if (role.includes("Manager"))
-      return "bg-purple-100 text-purple-800 border-purple-200";
+      return "bg-muted text-foreground border-purple-200";
     return "bg-gray-100 text-gray-800 border-gray-200";
   };
 
@@ -222,12 +222,12 @@ export default function StaffIndex() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Départements</p>
-              <p className="text-2xl font-bold text-purple-600">
+              <p className="text-2xl font-bold text-foreground">
                 {statistics.departments}
               </p>
               <p className="text-xs text-gray-500">Services</p>
             </div>
-            <Crown className="h-8 w-8 text-purple-500" />
+            <Crown className="h-8 w-8 text-foreground" />
           </div>
         </div>
       </div>

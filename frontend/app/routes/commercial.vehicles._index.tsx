@@ -180,7 +180,7 @@ export default function VehiclesIndex() {
         </div>
       ) : (
         <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-8 w-8 mx-auto"></div>
           <p className="text-gray-500 mt-2">Chargement des statistiques...</p>
         </div>
       )}
@@ -228,7 +228,7 @@ export default function VehiclesIndex() {
             <CardContent className="p-6">
               <div className="flex items-center space-x-4">
                 <div className="bg-muted p-3 rounded-lg">
-                  <Car className="h-6 w-6 text-purple-600" />
+                  <Car className="h-6 w-6 text-foreground" />
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900">Marques</h3>

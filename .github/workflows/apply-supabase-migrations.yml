@@ -1,0 +1,123 @@
+name: 🗄️ Apply Supabase migrations (manual)
+
+# Mini migration engine driven by `scripts/ci/apply-supabase-migration.py`
+# (Flyway / Sqitch / dbmate forward-only pattern).
+#
+# Trigger : workflow_dispatch only.
+#
+# Defense in depth :
+#   1. workflow_dispatch only (no auto trigger)
+#   2. typed input `confirm=APPLY` required for the apply step
+#   3. `dry_run=true` default — lists pending without applying
+#   4. `status_only=true` mode runs the read-only state table + exits non-zero on drift
+#   5. `concurrency: single-flight` on the workflow level
+#   6. `pg_try_advisory_lock(88442211)` fail-fast on the Postgres side
+#   7. Migrations transactional by default; opt-out via header marker
+#      `-- @non_transactional`
+#   8. 3-state machine in `infra.schema_migrations` (applying / applied / failed)
+#   9. Checksum drift = HARD FAIL
+#  10. `infra.schema_migrations` append-only (column-scoped UPDATE, no DELETE)
+#
+# Secrets :
+#   DATABASE_URL  — reused from existing repo secrets (libpq URI).
+#
+# Required runner tooling : Python 3.10+, pip (preinstalled on ubuntu-latest).
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type APPLY to confirm migration push to the canonical Supabase project.'
+        required: true
+        default: ''
+      dry_run:
+        description: 'Dry-run only — list pending migrations without applying.'
+        required: true
+        type: boolean
+        default: true
+      status_only:
+        description: 'Print the migration status table and exit (read-only).'
+        required: true
+        type: boolean
+        default: false
+      limit:
+        description: 'Apply at most N migrations this run (blank = no limit).'
+        required: false
+        default: ''
+      baseline_only:
+        description: |
+          Mark every local migration as already-applied without running its SQL.
+          Use ONCE when adopting this engine on a project where migrations are
+          already deployed via another channel. Combine with `exclude_ids` to
+          keep specific files genuinely pending.
+        required: true
+        type: boolean
+        default: false
+      exclude_ids:
+        description: 'Comma-separated migration ids to keep pending during --baseline (e.g. "20260518_seo_admin_job_table").'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+concurrency:
+  group: apply-supabase-migrations
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    name: 🗄️ Mini migration engine
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: 🛑 Confirm token
+        if: ${{ !inputs.status_only && !inputs.dry_run && inputs.confirm != 'APPLY' }}
+        run: |
+          echo "::error::Mutating step requires confirm=APPLY (got '${{ inputs.confirm }}'). Re-run with confirm=APPLY, dry_run=true, or status_only=true."
+          exit 1
+
+      - name: 🛑 Reject mutually-exclusive modes
+        if: ${{ inputs.baseline_only && (inputs.status_only || inputs.dry_run || inputs.limit != '') }}
+        run: |
+          echo "::error::baseline_only cannot be combined with status_only / dry_run / limit. Pick one mode per run."
+          exit 1
+
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 📦 Install psycopg
+        run: pip install --quiet --no-cache-dir 'psycopg[binary]==3.2.*'
+
+      - name: 🧪 Self-test the migration engine
+        run: python3 scripts/ci/apply-supabase-migration.py --self-test
+
+      - name: 🚦 Run engine
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          ARGS=()
+          if [ "${{ inputs.baseline_only }}" = "true" ]; then
+            ARGS+=("--baseline")
+            if [ -n "${{ inputs.exclude_ids }}" ]; then
+              ARGS+=("--exclude" "${{ inputs.exclude_ids }}")
+            fi
+          elif [ "${{ inputs.status_only }}" = "true" ]; then
+            ARGS+=("--status")
+          else
+            if [ "${{ inputs.dry_run }}" = "true" ]; then
+              ARGS+=("--dry-run")
+            fi
+            if [ -n "${{ inputs.limit }}" ]; then
+              ARGS+=("--limit" "${{ inputs.limit }}")
+            fi
+          fi
+          python3 scripts/ci/apply-supabase-migration.py "${ARGS[@]}"

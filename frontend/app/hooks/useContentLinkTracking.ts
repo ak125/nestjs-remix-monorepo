@@ -19,9 +19,10 @@
  * ```
  */
 
-import { useLocation } from '@remix-run/react';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { postJsonBeacon } from '~/utils/beacon';
+import { useLocation } from "@remix-run/react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { postJsonBeacon } from "~/utils/beacon";
+import { safeSessionStorage } from "~/utils/safe-storage";
 
 // Types pour le tracking A/B
 export interface LinkFormula {
@@ -68,25 +69,23 @@ interface UseContentLinkTrackingReturn {
 
 // Session ID pour le tracking
 function getSessionId(): string {
-  if (typeof window === 'undefined') return '';
-
-  let sessionId = sessionStorage.getItem('seo_session_id');
+  let sessionId = safeSessionStorage.getItem("seo_session_id");
   if (!sessionId) {
     sessionId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    sessionStorage.setItem('seo_session_id', sessionId);
+    safeSessionStorage.setItem("seo_session_id", sessionId);
   }
-  return sessionId;
+  return sessionId ?? "";
 }
 
 // Detect device type
-function getDeviceType(): 'mobile' | 'desktop' | 'tablet' {
-  if (typeof window === 'undefined') return 'desktop';
+function getDeviceType(): "mobile" | "desktop" | "tablet" {
+  if (typeof window === "undefined") return "desktop";
 
   const ua = navigator.userAgent;
-  if (/tablet|ipad|playbook|silk/i.test(ua)) return 'tablet';
+  if (/tablet|ipad|playbook|silk/i.test(ua)) return "tablet";
   if (/mobile|iphone|ipod|android|blackberry|opera mini|iemobile/i.test(ua))
-    return 'mobile';
-  return 'desktop';
+    return "mobile";
+  return "desktop";
 }
 
 export function useContentLinkTracking(
@@ -95,7 +94,7 @@ export function useContentLinkTracking(
   const {
     onLinkClick,
     trackImpressions = true,
-    linkSelector = 'a.seo-internal-link, a[data-link-type]',
+    linkSelector = "a.seo-internal-link, a[data-link-type]",
   } = options;
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -107,28 +106,31 @@ export function useContentLinkTracking(
   /**
    * Parse les données d'un lien pour extraire les infos A/B testing
    */
-  const parseLinkData = useCallback((link: HTMLAnchorElement): LinkFormula | null => {
-    const formula = link.dataset.formula;
-    const targetGamme = link.dataset.targetGamme;
+  const parseLinkData = useCallback(
+    (link: HTMLAnchorElement): LinkFormula | null => {
+      const formula = link.dataset.formula;
+      const targetGamme = link.dataset.targetGamme;
 
-    if (!targetGamme) return null;
+      if (!targetGamme) return null;
 
-    let verbId: number | null = null;
-    let nounId: number | null = null;
+      let verbId: number | null = null;
+      let nounId: number | null = null;
 
-    if (formula && formula.includes(':')) {
-      const [v, n] = formula.split(':');
-      verbId = parseInt(v, 10) || null;
-      nounId = parseInt(n, 10) || null;
-    }
+      if (formula && formula.includes(":")) {
+        const [v, n] = formula.split(":");
+        verbId = parseInt(v, 10) || null;
+        nounId = parseInt(n, 10) || null;
+      }
 
-    return {
-      verbId,
-      nounId,
-      formula: formula || null,
-      targetGammeId: parseInt(targetGamme, 10),
-    };
-  }, []);
+      return {
+        verbId,
+        nounId,
+        formula: formula || null,
+        targetGammeId: parseInt(targetGamme, 10),
+      };
+    },
+    [],
+  );
 
   /**
    * Track un clic sur un lien interne
@@ -140,7 +142,7 @@ export function useContentLinkTracking(
       anchorText: string,
       formulaData: LinkFormula | null,
     ) => {
-      if (typeof window === 'undefined') return;
+      if (typeof window === "undefined") return;
 
       const sessionId = getSessionId();
       const sourceUrl = location.pathname;
@@ -148,15 +150,15 @@ export function useContentLinkTracking(
 
       try {
         // Fire and forget
-        fetch('/api/seo/track-click', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        fetch("/api/seo/track-click", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             linkType,
             sourceUrl,
             destinationUrl,
             anchorText,
-            linkPosition: 'content',
+            linkPosition: "content",
             sessionId,
             deviceType,
             // A/B Testing data
@@ -183,7 +185,7 @@ export function useContentLinkTracking(
    */
   const trackImpressionsBatch = useCallback(
     (links: HTMLAnchorElement[]) => {
-      if (typeof window === 'undefined' || !trackImpressions) return;
+      if (typeof window === "undefined" || !trackImpressions) return;
       if (links.length === 0) return;
 
       const sessionId = getSessionId();
@@ -192,13 +194,13 @@ export function useContentLinkTracking(
       // Grouper par type de lien
       const byType = new Map<string, number>();
       links.forEach((link) => {
-        const type = link.dataset.linkType || 'LinkGammeCar';
+        const type = link.dataset.linkType || "LinkGammeCar";
         byType.set(type, (byType.get(type) || 0) + 1);
       });
 
       // sendBeacon avec fallback fetch keepalive — voir frontend/app/utils/beacon.ts.
       for (const [linkType, count] of byType.entries()) {
-        postJsonBeacon('/api/seo/track-impression', {
+        postJsonBeacon("/api/seo/track-impression", {
           linkType,
           pageUrl,
           linkCount: count,
@@ -223,9 +225,9 @@ export function useContentLinkTracking(
       if (!link) return;
 
       // Extraire les données du lien
-      const linkType = link.dataset.linkType || 'LinkGammeCar';
-      const destinationUrl = link.getAttribute('href') || '';
-      const anchorText = link.textContent || '';
+      const linkType = link.dataset.linkType || "LinkGammeCar";
+      const destinationUrl = link.getAttribute("href") || "";
+      const anchorText = link.textContent || "";
       const formulaData = parseLinkData(link);
 
       // Track le clic
@@ -234,10 +236,10 @@ export function useContentLinkTracking(
       // Ne pas empêcher la navigation
     };
 
-    container.addEventListener('click', handleClick);
+    container.addEventListener("click", handleClick);
 
     return () => {
-      container.removeEventListener('click', handleClick);
+      container.removeEventListener("click", handleClick);
     };
   }, [linkSelector, parseLinkData, trackClick]);
 

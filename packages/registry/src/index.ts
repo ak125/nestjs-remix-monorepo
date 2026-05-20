@@ -27,6 +27,9 @@ export { FileKindSchema, type FileKind } from "./shared/kind";
 export { RiskSchema, type Risk } from "./shared/risk";
 export { DeletePolicySchema, type DeletePolicy } from "./shared/delete-policy";
 export { DerivedFromSchema, type DerivedFrom } from "./shared/derived-from";
+export { OwnerIdSchema, type OwnerId } from "./shared/owner";
+export { FamilyIdSchema, type FamilyId } from "./shared/family";
+export { AccessSurfaceSchema, type AccessSurface } from "./shared/access-surface";
 
 // ── Layer 1 entries (auto-generated) ──
 export { FileEntrySchema, type FileEntry } from "./entries/file-entry";
@@ -47,6 +50,23 @@ export {
   type RuntimeEntry,
   type RuntimeKind,
 } from "./entries/runtime-entry";
+export {
+  PlanningEntrySchema,
+  PlanningRegistrySchema,
+  PlanningStatusSchema,
+  PlanningPrioritySchema,
+  PlanningWorkTypeSchema,
+  type PlanningEntry,
+  type PlanningRegistry,
+} from "./entries/planning-entry";
+export {
+  DependencyGraphSchema,
+  DepGraphNodeSchema,
+  DepGraphEdgeSchema,
+  type DependencyGraph,
+  type DepGraphNode,
+  type DepGraphEdge,
+} from "./entries/dependency-graph-entry";
 
 // ── Layer 2 overlay (manual) ──
 export {
@@ -82,3 +102,47 @@ export {
   type CanonicalRegistry,
   type CanonicalMeta,
 } from "./canonical/canonical-registry";
+
+// ── Architecture contract (PR-2) ──
+export {
+  ArchitectureContractSchema,
+  BoundarySchema,
+  DepcruiseEmitSchema,
+  LayerSchema,
+  type ArchitectureContract,
+} from "./canonical/architecture-contract";
+
+// ── DB contract (PR-3a) ──
+// AccessSurfaceSchema PROMOTED to shared/access-surface.ts in PR-R — exported above.
+// OwnerSchema PROMOTED to shared/owner.ts in PR-5 — db-contract aliases it for back-compat.
+export {
+  DbContractSchema,
+  TableSchema,
+  CriticalitySchema,
+  OwnerSchema,
+  TableNameSchema,
+  type DbContract,
+} from "./canonical/db-contract";
+
+// ── SEO criticality tiers (PR-2D foundation, ADR-062 proposed) ──
+export {
+  SeoCriticalitySchema,
+  TierIdSchema,
+  AlertingChannelSchema,
+  classifyRoute,
+  type SeoCriticality,
+  type TierId,
+  type AlertingChannel,
+} from "./canonical/seo-criticality";
+
+// ── VehicleContext cookie (PR-B, OPTION A locked) ──
+export {
+  VehicleContextSchema,
+  VehicleContextPayloadSchema,
+  signVehicleContext,
+  verifyVehicleContext,
+  VEHICLE_CTX_COOKIE_NAME,
+  VEHICLE_CTX_COOKIE_MAX_AGE_SECONDS,
+  type VehicleContext,
+  type VehicleContextPayload,
+} from "./vehicle-context";

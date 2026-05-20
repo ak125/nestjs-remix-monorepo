@@ -29,8 +29,10 @@
  *   return json(GSCTimeseriesResponseSchema.parse(apiResponse));
  */
 
-export * from "./observability";
-export * from "./onpage";
-export * from "./intelligence";
-export * from "./geo-aeo";
-export * from "./content-ops";
+export * from "./observability.js";
+export * from "./onpage.js";
+export * from "./intelligence.js";
+export * from "./geo-aeo.js";
+export * from "./content-ops.js";
+export * from "./crux.js";
+export * from "./control-dashboard.js";

@@ -1,0 +1,10 @@
+# Soft-404 fixtures (chaque ligne : URL relative à tester via curl)
+# Format : /pieces/<gamme>/<marque>/<modele>/<type>.html
+# Confirmées via : NOT EXISTS pieces_relation_type pour le couple (type_id, pg_id).
+# Vérifié 2026-05-18 via Supabase MCP execute_sql.
+# Marques + gammes diversifiées pour couvrir BMW/Renault/Audi × freinage/alternateur/filtration.
+/pieces/kit-de-freins-arriere-3859/bmw-33/serie-5-f10-f18-33053/2-0-525-d-11836.html
+/pieces/alternateur-4/bmw-33/serie-5-e60-33052/530-i-phase-2-16023.html
+/pieces/filtre-a-huile-7/renault-140/sandero-stepway-140085/1-5-dci-11688.html
+/pieces/filtre-a-air-8/audi-22/a4-i-22038/1-8-26774.html
+/pieces/filtre-a-air-8/audi-22/a4-ii-22040/s4-2-7-quattro-35503.html

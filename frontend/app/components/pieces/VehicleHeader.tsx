@@ -137,7 +137,7 @@ export const VehicleHeader = memo(function VehicleHeader({
 
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 bg-muted rounded-lg flex items-center justify-center">
-                  <span className="text-purple-600 text-sm">🚚</span>
+                  <span className="text-foreground text-sm">🚚</span>
                 </div>
                 <div>
                   <div className="font-semibold text-gray-900">24-48h</div>

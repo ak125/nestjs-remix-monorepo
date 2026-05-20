@@ -82,7 +82,7 @@ function highlightMatch(text: string, query: string): React.ReactNode {
 
   return parts.map((part, index) =>
     regex.test(part) ? (
-      <mark key={index} className="bg-yellow-200 text-gray-900 font-medium">
+      <mark key={index} className="bg-yellow-200 text-yellow-900 font-medium">
         {part}
       </mark>
     ) : (
@@ -321,7 +321,7 @@ export const GlobalSearch = memo(function GlobalSearch({
   );
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-start justify-center pt-[10vh] animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 bg-neutral-900/50 backdrop-blur-sm flex items-start justify-center pt-[10vh] animate-in fade-in duration-200">
       {/* Overlay pour fermer */}
       <div className="absolute inset-0" onClick={onClose} />
 
@@ -370,7 +370,7 @@ export const GlobalSearch = memo(function GlobalSearch({
                   className={`flex items-center space-x-2 px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-all ${
                     selectedCategory === key
                       ? "bg-blue-600 text-white shadow-md scale-105"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      : "bg-gray-100 text-white hover:bg-gray-200"
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -497,11 +497,7 @@ export const GlobalSearch = memo(function GlobalSearch({
                           <div
                             key={result.id}
                             onClick={() => handleSelectResult(result)}
-                            className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all ${
-                              selectedIndex === globalIndex
-                                ? "bg-blue-50 border-l-4 border-blue-600 shadow-sm scale-[1.02]"
-                                : "hover:bg-gray-50 border-l-4 border-transparent"
-                            }`}
+                            className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all ${ selectedIndex === globalIndex ? "bg-blue-50 border-blue-600 shadow-sm scale-[1.02]" : "hover:bg-gray-50 border-transparent" }`}
                           >
                             <div className="flex items-center space-x-3 flex-1 min-w-0">
                               <Icon

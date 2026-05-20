@@ -214,8 +214,8 @@ export const DatePickerPopover = memo(function DatePickerPopover({
                       : today
                         ? "border-2 border-blue-600 bg-white font-semibold text-blue-600 hover:bg-blue-50"
                         : disabled
-                          ? "cursor-not-allowed text-gray-300"
-                          : "text-gray-700 hover:bg-gray-100"
+                          ? "cursor-not-allowed text-white"
+                          : "text-white hover:bg-gray-100"
                   }`}
                 >
                   {date.getDate()}

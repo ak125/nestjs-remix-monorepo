@@ -5,7 +5,7 @@ module.exports = {
     tsconfigRootDir: __dirname,
     sourceType: 'module',
   },
-  plugins: ['@typescript-eslint/eslint-plugin'],
+  plugins: ['@typescript-eslint/eslint-plugin', 'fafa-ports'],
   extends: [
     'plugin:@typescript-eslint/recommended',
     'plugin:prettier/recommended',
@@ -96,6 +96,39 @@ module.exports = {
       ],
       rules: {
         'no-restricted-syntax': 'off',
+      },
+    },
+
+    // ============================================
+    // Diagnostic Control Plane V1 — Port contract guards (L2 in
+    // .claude/governance/guard-hierarchy.yaml). Replaces the buggy ast-grep
+    // rules `domain-port-{method-cap,dto-shape}` which silently failed to fire
+    // on AST patterns with comments / whitespace edge cases.
+    //
+    // Scope : files under any `ports/` subdir of any module. Restricting via
+    // `overrides` keeps the rest of the backend immune to false positives if
+    // someone ever names an unrelated interface `XPort`.
+    // ============================================
+    {
+      files: ['src/**/ports/**/*.ts'],
+      rules: {
+        'fafa-ports/port-method-cap': 'error',
+        'fafa-ports/port-dto-shape': 'error',
+      },
+    },
+
+    // VehicleContext = OPTION A schema canon-locked at v:1 (9 fields including
+    // `v` + `iat` JWS housekeeping). Canon memory: `vehicle-context-option-a-locked`.
+    // Extension = nouveau domaine UserVehicleProfile, jamais bump du cap ici.
+    // Maximum raised to 9 for this single file with ADR-pending reference. Any
+    // future widening requires an L4 ADR vault entry (see guard-hierarchy.yaml).
+    {
+      files: ['src/**/ports/vehicle-context.port.ts'],
+      rules: {
+        'fafa-ports/port-dto-shape': [
+          'error',
+          { maxFields: 9, maxNesting: 3, portSuffix: 'Port' },
+        ],
       },
     },
   ],

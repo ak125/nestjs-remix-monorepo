@@ -14,12 +14,20 @@ import {
   Body,
   Query,
   Param,
+  Res,
+  Inject,
   Logger,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import { DiagnosticEngineOrchestrator } from './diagnostic-engine.orchestrator';
 import { DiagnosticEngineDataService } from './diagnostic-engine.data-service';
 import { MaintenanceCalculatorService } from './services/maintenance-calculator.service';
 import { DiagnosticContentService } from './services/diagnostic-content.service';
+import {
+  VEHICLE_CONTEXT_PORT,
+  type VehicleContextPort,
+} from './ports/vehicle-context.port';
+import { mapAnalyzeInputToVehicleContextPayload } from './vehicle-context-mapping';
 
 @Controller('api/diagnostic-engine')
 export class DiagnosticEngineController {
@@ -30,6 +38,8 @@ export class DiagnosticEngineController {
     private readonly dataService: DiagnosticEngineDataService,
     private readonly maintenanceCalculator: MaintenanceCalculatorService,
     private readonly diagnosticContent: DiagnosticContentService,
+    @Inject(VEHICLE_CONTEXT_PORT)
+    private readonly vehicleContext: VehicleContextPort,
   ) {}
 
   /**
@@ -138,10 +148,19 @@ export class DiagnosticEngineController {
   /**
    * POST /api/diagnostic-engine/analyze
    *
-   * Main endpoint — accepts AnalyzeDiagnosticInput, returns EvidencePack
+   * Main endpoint — accepts AnalyzeDiagnosticInput, returns EvidencePack.
+   *
+   * PR-B.4 : on success AND when the input carried vehicle identifiers
+   * (`type_id` OR `brand`+`model`), persists the canonical `vehicle_ctx`
+   * JWS cookie via VehicleContextPort. This is the R5→R1 funnel handoff
+   * canalisé — downstream commerce loaders read the cookie on the next
+   * navigation, no client-side mediation needed.
    */
   @Post('analyze')
-  async analyze(@Body() body: unknown) {
+  async analyze(
+    @Body() body: unknown,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     this.logger.log('POST /analyze');
 
     const result = await this.orchestrator.analyze(body);
@@ -154,11 +173,34 @@ export class DiagnosticEngineController {
       };
     }
 
+    await this.persistVehicleContextIfPresent(body, res);
+
     return {
       success: true,
       session_id: result.data!.session_id,
       ...result.data!.evidence,
     };
+  }
+
+  /**
+   * Maps the analyze input via the pure helper, then persists the JWS via
+   * the port. Silent : malformed / partial / missing data → no-op (never
+   * breaks the happy path of the diagnostic response).
+   */
+  private async persistVehicleContextIfPresent(
+    body: unknown,
+    res: Response,
+  ): Promise<void> {
+    const payload = mapAnalyzeInputToVehicleContextPayload(body);
+    if (payload === null) return;
+
+    try {
+      await this.vehicleContext.persist(payload, res);
+    } catch (err) {
+      this.logger.warn(
+        `vehicle_ctx persist skipped: ${(err as Error).message}`,
+      );
+    }
   }
 
   /**

@@ -32,22 +32,53 @@
  *   `.claude/rules/backend.md` § Non-blocking onModuleInit
  */
 
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleDestroy,
+  OnModuleInit,
+} from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
 import { ConfigService } from '@nestjs/config';
 import { Queue } from 'bull';
+import * as os from 'node:os';
 import { getErrorMessage } from '@common/utils/error.utils';
 
 export const SITEMAP_REGENERATE_JOB_NAME = 'sitemap-regenerate-all';
 export const SITEMAP_REGENERATE_JOB_ID = 'sitemap-v10-nightly-regeneration';
+
+/**
+ * Redis key prefix for per-process worker heartbeats (Phase 7 observability).
+ * Format : `worker:seo-monitor:heartbeat:<pid>`. TTL = 60s sliding (refreshed
+ * every 30s). Co-located with Bull's DB 0 since this is queue worker
+ * observability, namespaced separately from `bull:*` keys.
+ */
+export const HEARTBEAT_KEY_PREFIX = 'worker:seo-monitor:heartbeat:';
+export const HEARTBEAT_INTERVAL_MS = 30_000;
+export const HEARTBEAT_TTL_SECONDS = 60;
+
+export interface SitemapWorkerHeartbeat {
+  pid: number;
+  hostname: string;
+  queue: string;
+  bullVersion: string;
+  startedAt: string;
+  lastHeartbeatAt: string;
+  uptimeSec: number;
+}
 
 export interface SitemapRegenerateJobData {
   triggeredBy: 'scheduler' | 'api' | 'manual';
 }
 
 @Injectable()
-export class SitemapV10SchedulerService implements OnModuleInit {
+export class SitemapV10SchedulerService
+  implements OnModuleInit, OnModuleDestroy
+{
   private readonly logger = new Logger(SitemapV10SchedulerService.name);
+  private readonly heartbeatKey = `${HEARTBEAT_KEY_PREFIX}${process.pid}`;
+  private readonly startedAt = new Date();
+  private heartbeatTimer?: NodeJS.Timeout;
 
   constructor(
     @InjectQueue('seo-monitor') private readonly seoMonitorQueue: Queue,
@@ -57,6 +88,11 @@ export class SitemapV10SchedulerService implements OnModuleInit {
   /**
    * Init non-bloquant — fire-and-forget. Pattern canon backend.md.
    * Bloquer ici stallerait `app.listen()` (cf. PR #224 / run 25166916535).
+   *
+   * Phase 7 : starts the per-process heartbeat (Redis SET with TTL 60s
+   * refreshed every 30s) so the diagnostic endpoint (Phase 8) can detect
+   * worker liveness without depending on bull's `getWorkers()` (not in
+   * @types/bull v4.10.4).
    */
   onModuleInit(): void {
     if (!this.isEnabled()) {
@@ -65,7 +101,85 @@ export class SitemapV10SchedulerService implements OnModuleInit {
       );
       return;
     }
+    this.logger.log({
+      event: 'sitemap_scheduler_worker_online',
+      pid: process.pid,
+      hostname: os.hostname(),
+      queue: 'seo-monitor',
+      cron: this.getCron(),
+      timezone: 'UTC',
+      startedAt: this.startedAt.toISOString(),
+    });
     void this.configureRepeatableJob();
+    this.heartbeatTimer = setInterval(
+      () => void this.writeHeartbeat(),
+      HEARTBEAT_INTERVAL_MS,
+    );
+    void this.writeHeartbeat();
+  }
+
+  /**
+   * Phase 7 : symmetric shutdown — stop the interval, delete heartbeat key,
+   * emit lifecycle log. Permits the diagnostic endpoint to observe a clean
+   * worker shutdown vs a crash (silent disappearance of heartbeat key after
+   * TTL expiry).
+   */
+  async onModuleDestroy(): Promise<void> {
+    if (this.heartbeatTimer) {
+      clearInterval(this.heartbeatTimer);
+      this.heartbeatTimer = undefined;
+    }
+    const uptimeSec = Math.floor(
+      (Date.now() - this.startedAt.getTime()) / 1000,
+    );
+    this.logger.log({
+      event: 'sitemap_scheduler_worker_offline',
+      pid: process.pid,
+      hostname: os.hostname(),
+      queue: 'seo-monitor',
+      uptimeSec,
+      reason: 'shutdown',
+    });
+    try {
+      await this.seoMonitorQueue.client.del(this.heartbeatKey);
+    } catch (err) {
+      this.logger.warn(
+        `Failed to delete heartbeat key on shutdown: ${getErrorMessage(err)}`,
+      );
+    }
+  }
+
+  /**
+   * Write the current process's heartbeat to Redis. Idempotent + cheap
+   * (~1ms intra-VPS) — re-written every HEARTBEAT_INTERVAL_MS to refresh
+   * the TTL. If the worker crashes, the key expires after
+   * HEARTBEAT_TTL_SECONDS, disappearing from the diagnostic endpoint.
+   *
+   * Failure is non-fatal : logs a warning, does not crash the scheduler.
+   * The next interval tick will retry. The diagnostic endpoint will simply
+   * see a stale heartbeat (timestamp gap) or absent key.
+   */
+  private async writeHeartbeat(): Promise<void> {
+    const now = new Date();
+    const payload: SitemapWorkerHeartbeat = {
+      pid: process.pid,
+      hostname: os.hostname(),
+      queue: 'seo-monitor',
+      bullVersion: '4.16.5',
+      startedAt: this.startedAt.toISOString(),
+      lastHeartbeatAt: now.toISOString(),
+      uptimeSec: Math.floor((now.getTime() - this.startedAt.getTime()) / 1000),
+    };
+    try {
+      await this.seoMonitorQueue.client.set(
+        this.heartbeatKey,
+        JSON.stringify(payload),
+        'EX',
+        HEARTBEAT_TTL_SECONDS,
+      );
+    } catch (err) {
+      this.logger.warn(`Heartbeat write failed: ${getErrorMessage(err)}`);
+    }
   }
 
   private async configureRepeatableJob(): Promise<void> {

@@ -217,6 +217,54 @@ export class FeatureFlagsService {
     return this.bool('ABANDONED_CART_EMAIL_ENABLED', false);
   }
 
+  // ── SEO Business Control Dashboard flag (PR-SBD-1 Task 7) ──
+
+  /**
+   * Controls visibility of /admin/seo-control dashboard route + endpoint.
+   * Default: false (Phase A rollout — only admin Fafa overrides ON).
+   * Kill-switch silencieux : OFF → endpoint returns 404 (not 503) to hide
+   * the surface entirely from non-admins.
+   */
+  get seoControlDashboardEnabled(): boolean {
+    return this.bool('SEO_CONTROL_DASHBOARD_ENABLED', false);
+  }
+
+  // ── VehicleContext cookie kill-switch (PR-B.6) ──
+
+  /**
+   * Master switch for the VehicleContext JWS cookie middleware (PR-B).
+   * Default `true` — the cookie path is on by default.
+   * Set `VEHICLE_CTX_ENABLED=false` to make the middleware a no-op
+   * pass-through. Cookies already stored in browsers are not cleared —
+   * they're simply ignored. Used for emergency rollback or A/B holdback.
+   */
+  get vehicleContextEnabled(): boolean {
+    return this.bool('VEHICLE_CTX_ENABLED', true);
+  }
+
+  // ── Diagnostic KG shadow flags (PR-E) ──
+
+  /**
+   * Master switch for the KG shadow comparison (PR-E). Default `true` —
+   * the shadow path runs fire-and-forget alongside the canonical engines.
+   * Set `DIAGNOSTIC_KG_SHADOW_ENABLED=false` for emergency rollback.
+   * Disabled = no RPC call, no event emission, no metric.
+   */
+  get diagnosticKgShadowEnabled(): boolean {
+    return this.bool('DIAGNOSTIC_KG_SHADOW_ENABLED', true);
+  }
+
+  /**
+   * Whether the KG result is the canonical (primary) source of truth.
+   * Default `false` per canon `project_diagnostic_control_plane_v1_plan.md` :
+   * the KG only graduates to primary after V1.5 evidence gates pass
+   * (≥ 1000 golden cohort sessions with < 5 % divergence). Flipping early
+   * = production decision-bypassing-V1-evidence regression.
+   */
+  get diagnosticKgPrimaryEnabled(): boolean {
+    return this.bool('DIAGNOSTIC_KG_PRIMARY_ENABLED', false);
+  }
+
   // ── Write Guard flags (P1.5) ──
 
   get writeGuardEnabled(): boolean {
@@ -288,6 +336,10 @@ export class FeatureFlagsService {
     'WRITE_GUARD_CANARY_ROLES',
     'WRITE_GUARD_CANARY_GROUPS',
     'RAG_VIRTUAL_MERGE_ENABLED',
+    'SEO_CONTROL_DASHBOARD_ENABLED',
+    'VEHICLE_CTX_ENABLED',
+    'DIAGNOSTIC_KG_SHADOW_ENABLED',
+    'DIAGNOSTIC_KG_PRIMARY_ENABLED',
   ]);
 
   listFlags(): Record<

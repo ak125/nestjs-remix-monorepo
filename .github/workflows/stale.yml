@@ -1,0 +1,97 @@
+name: 🪦 PR TTL policy (stale labeller + auto-close)
+
+# Daily TTL enforcement for open Pull Requests.
+#
+# Policy:
+#   - Day 0-13:  PR is fresh, nothing happens.
+#   - Day 14:    Inactive PR gets the `stale` label + warning comment.
+#   - Day 21:    If still inactive after 7d of being stale, PR is closed.
+#                Branch is PRESERVED (no --delete-branch) — fully reversible.
+#
+# Why a TTL exists (canon):
+#   - Prevents "operational compression" cycles where 50+ stale PRs accumulate.
+#   - Couples directly with `weekly-pr-hygiene.yml` digest (read-only signal).
+#   - Aligns with canon `feedback_deletion_governance_scaling_discipline` and
+#     `closure-sequence-sitemap-auth-pr9a-20260517` (audit-trail close pattern).
+#
+# Phase 0 of "Operational Compression W21" rollout — runs in DRY-RUN mode for
+# the first 7 days (`debug-only: true`). After observation, flip to enforce by
+# opening a follow-up PR that sets `debug-only: false`. Two-step rollout
+# matches canon `feedback_two_pr_recovery_platform_for_ci_gate_replacement`.
+
+on:
+  schedule:
+    # Daily 02:00 UTC = 04:00 Europe/Paris (CEST). Off-hours by design.
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  pull-requests: write
+  issues: write
+  contents: read
+
+concurrency:
+  group: pr-ttl-stale
+  cancel-in-progress: false
+
+jobs:
+  stale:
+    name: Label & close stale PRs (dry-run during rollout)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Apply TTL policy
+        uses: actions/stale@v10
+        with:
+          # PR scope only — issues are governed elsewhere (weekly digest).
+          days-before-issue-stale: -1
+          days-before-issue-close: -1
+
+          # Thresholds (canon TTL):
+          days-before-pr-stale: 14
+          days-before-pr-close: 7
+
+          # Labels & exemptions.
+          stale-pr-label: stale
+          exempt-pr-labels: pinned,security,epic,wip,blocked-upstream,dependencies
+          exempt-draft-pr: true
+
+          # Warning comment at day 14.
+          stale-pr-message: |
+            👋 This PR has had no activity for 14 days and has been labelled `stale`.
+
+            **Why this label exists (TTL policy):**
+            - Prevents queue saturation (canon `closure-sequence-sitemap-auth-pr9a`)
+            - Forces explicit triage: rebase, ship, or close (canon Operational Compression W21)
+
+            **What happens next:**
+            - If no activity within 7 days, this PR will be **auto-closed** (branch preserved, fully reversible).
+            - To prevent closure: push a commit, leave a comment, or remove the `stale` label.
+            - For long-lived work, add one of the exempt labels: `pinned`, `security`, `epic`, `wip`, `blocked-upstream`.
+
+            If this PR is still wanted, please rebase on `main` and address review feedback.
+
+          # Closure comment at day 21 (14 + 7).
+          close-pr-message: |
+            🪦 Auto-closed after 21 days of inactivity.
+
+            **Branch is preserved** — to revive, reopen this PR or create a fresh one from the same branch.
+
+            Closing rationale: canon `feedback_pr_scope_recovery_vs_platform` — stale PRs accumulate review debt
+            and conflict surface; reopening is cheaper than rebasing 21+ day drift.
+
+            If this closure is unintended, please reopen and ping the maintainer.
+
+          # Reversibility: never delete branches.
+          delete-branch: false
+
+          # Process all eligible PRs each run (default 30 is too low for backfill).
+          operations-per-run: 100
+
+          # 🚨 ROLLOUT MODE — DRY-RUN ONLY (no labels added, no PRs closed).
+          # Flip to `false` via a follow-up PR after 7 days of observation
+          # (canon two-step platform rollout).
+          debug-only: true
+
+          # Sort oldest-first so backfill processes the deepest debt first.
+          ascending: true

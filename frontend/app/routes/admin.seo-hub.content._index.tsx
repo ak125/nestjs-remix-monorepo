@@ -130,11 +130,11 @@ export default function SeoHubContentIndex() {
         <Card className="border-indigo-200">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-indigo-700">
+              <CardTitle className="flex items-center gap-2 text-foreground">
                 <Eye className="h-5 w-5" />
                 R4 References
               </CardTitle>
-              <Badge className="bg-indigo-600">
+              <Badge className="bg-primary">
                 {stats?.r4References?.total || 0}
               </Badge>
             </div>
@@ -189,11 +189,11 @@ export default function SeoHubContentIndex() {
         <Card className="border-purple-200">
           <CardHeader className="pb-2">
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-purple-700">
+              <CardTitle className="flex items-center gap-2 text-foreground">
                 <Zap className="h-5 w-5" />
                 R5 Diagnostics
               </CardTitle>
-              <Badge className="bg-purple-600">
+              <Badge className="bg-primary">
                 {stats?.r5Diagnostics?.total || 0}
               </Badge>
             </div>

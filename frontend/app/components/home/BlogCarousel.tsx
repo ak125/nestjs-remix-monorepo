@@ -14,7 +14,7 @@ function getTagStyle(tag: string) {
     return { gradient: "from-blue-500 to-blue-400", Icon: ShoppingCart };
   if (tag.toLowerCase().includes("entretien"))
     return { gradient: "from-emerald-500 to-emerald-400", Icon: Wrench };
-  return { gradient: "from-purple-500 to-purple-400", Icon: BookOpen };
+  return { gradient: "", Icon: BookOpen };
 }
 
 /* ── Mobile: Featured large card (1st article) ── */
@@ -44,7 +44,7 @@ function FeaturedCard({ b }: { b: BlogArticle }) {
           <span className="absolute top-4 left-4 rounded-full bg-white/95 px-4 py-2 text-sm font-bold text-slate-700 shadow-sm">
             {b.tag}
           </span>
-          <span className="absolute top-4 right-4 px-2.5 py-1 bg-black/20 backdrop-blur rounded-full text-[10px] font-semibold text-white flex items-center gap-1">
+          <span className="absolute top-4 right-4 px-2.5 py-1 bg-neutral-900/20 backdrop-blur rounded-full text-[10px] font-semibold text-white flex items-center gap-1">
             <Clock size={9} /> 5 min
           </span>
         </div>
@@ -131,7 +131,7 @@ function DesktopCard({ b }: { b: BlogArticle }) {
           <span className="absolute top-3 left-3 px-2.5 py-1 bg-white/90 backdrop-blur rounded-lg text-[10px] font-bold text-slate-700 shadow-sm">
             {b.tag}
           </span>
-          <span className="absolute top-3 right-3 px-2 py-0.5 bg-black/20 backdrop-blur rounded text-[9px] font-semibold text-white flex items-center gap-1">
+          <span className="absolute top-3 right-3 px-2 py-0.5 bg-neutral-900/20 backdrop-blur rounded text-[9px] font-semibold text-white flex items-center gap-1">
             <Clock size={8} /> 5 min
           </span>
         </div>

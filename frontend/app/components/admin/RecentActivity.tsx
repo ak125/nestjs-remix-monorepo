@@ -309,7 +309,7 @@ function getActivityIconStyles(type: string, severity: string): string {
     case "PAYMENT_RECEIVED":
       return severity === "INFO" ? "bg-emerald-500 text-white" : baseStyles;
     case "PRODUCT_UPDATED":
-      return severity === "INFO" ? "bg-purple-500 text-white" : baseStyles;
+      return severity === "INFO" ? "bg-primary text-white" : baseStyles;
     case "ADMIN_ACTION":
       return severity === "INFO" ? "bg-gray-500 text-white" : baseStyles;
     default:

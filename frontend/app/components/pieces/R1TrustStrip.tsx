@@ -48,8 +48,8 @@ export const R1TrustStrip = memo(function R1TrustStrip() {
       </div>
 
       {/* 4. Paiement sécurisé */}
-      <div className="flex items-center gap-3 rounded-xl border border-gray-100 bg-purple-50 p-3 sm:p-4">
-        <Lock className="w-6 h-6 text-purple-600 flex-shrink-0" />
+      <div className="flex items-center gap-3 rounded-xl border border-gray-100 bg-muted p-3 sm:p-4">
+        <Lock className="w-6 h-6 text-foreground flex-shrink-0" />
         <div className="min-w-0">
           <p className="text-sm font-semibold text-gray-900 leading-tight">
             Paiement sécurisé

@@ -2,6 +2,7 @@
   "name": "@repo/database-types",
   "version": "1.0.0",
   "description": "Shared database types and schemas for the monorepo",
+  "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -39,7 +40,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
-    "tsx": "^4.7.0",
+    "tsx": "^4.22.3",
     "typescript": "^5.9.3"
   }
 }

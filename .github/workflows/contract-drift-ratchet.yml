@@ -1,0 +1,173 @@
+name: 🛡️ Contract Drift Ratchet (block-new, PR-7a)
+
+# Block-new gate — ADR-058 §23 (observe → ratchet → enforce, PR-7a = ratchet).
+# Builds on PR-6's observatory (audit-reports/contract-health.json — gitignored,
+# regenerated per run) + the orphans field landed in PR-6.1 (#544).
+# Fails iff NEW findings appear vs accepted baseline.
+# Reductions are always allowed; historical drift tolerated as ceiling.
+# CI MUST NEVER call --refresh; widening is human-only.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "audit/registry/**"
+      - "audit-reports/*-coverage-*.md"
+      - "packages/registry/**"
+      - ".spec/00-canon/repository-registry/**"
+      - "scripts/audit/build-drift-dashboard.ts"
+      - "scripts/audit/check-contract-drift-ratchet.ts"
+      - "scripts/audit/check-contract-drift-ratchet.test.ts"
+      - "scripts/audit/__fixtures__/**"
+      - "audit/baselines/contract-drift-baseline.json"
+      - ".github/workflows/contract-drift-ratchet.yml"
+  push:
+    branches: [main]
+    paths:
+      - "audit/registry/**"
+      - "audit-reports/*-coverage-*.md"
+      - "packages/registry/**"
+      - "scripts/audit/build-drift-dashboard.ts"
+      - "scripts/audit/check-contract-drift-ratchet.ts"
+      - "audit/baselines/contract-drift-baseline.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: contract-drift-ratchet-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ratchet:
+    name: Block new contract-drift findings
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Comparator unit tests (must pass)
+        run: npm run audit:contract-drift-ratchet:test
+
+      - name: Regenerate observatory dashboard
+        # PR-6 aggregator. Always exits 0 (warn-only observer), so we explicitly
+        # require the JSON output file to be present.
+        run: |
+          set -euo pipefail
+          npm run audit:drift-dashboard
+          test -f audit-reports/contract-health.json
+
+      - name: Run ratchet (BLOCKING)
+        id: ratchet
+        run: |
+          set -euo pipefail
+          # Bypass `npm run` to keep banner lines out of the JSON output —
+          # `npm run --silent` is not reliable across versions, and the
+          # downstream summary/comment steps need pristine JSON to parse.
+          ./node_modules/.bin/tsx scripts/audit/check-contract-drift-ratchet.ts --json \
+            > audit-reports/contract-drift-ratchet.json
+
+      - name: Append ratchet summary to step summary
+        if: always()
+        run: |
+          {
+            echo "# 🛡️ Contract Drift Ratchet (PR-7a)"
+            echo ""
+            echo "_Block-new only — reductions always allowed. ADR-058 §23 ratchet phase._"
+            echo ""
+            if [ -f audit-reports/contract-drift-ratchet.json ]; then
+              echo '```json'
+              jq '{ verdict: (if .counts.added == 0 then "pass" else "fail" end), mode, baselineCreatedAt, counts, summaryByKind, addedSample: (.added | .[0:10]), resolvedSample: (.removed | .[0:10]) }' audit-reports/contract-drift-ratchet.json
+              echo '```'
+            else
+              echo "⚠️ Ratchet JSON not produced — see job log."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload artifact (30d)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: contract-drift-ratchet
+          path: |
+            audit-reports/contract-drift-ratchet.json
+            audit-reports/contract-health.json
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Upsert PR comment (single, upsert via HTML marker)
+        if: always() && github.event_name == 'pull_request' && hashFiles('audit-reports/contract-drift-ratchet.json') != ''
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const fs = require('node:fs');
+            const MARKER = '<!-- contract-drift-ratchet-v1 -->';
+            try {
+              const r = JSON.parse(fs.readFileSync('audit-reports/contract-drift-ratchet.json', 'utf8'));
+              const verdict = r.counts.added === 0 ? '✅ pass' : `❌ ${r.counts.added} NEW finding(s)`;
+              const lines = [
+                MARKER,
+                '## 🛡️ Contract Drift Ratchet (PR-7a)',
+                '',
+                `**Verdict:** ${verdict}`,
+                `**Mode:** \`${r.mode}\``,
+                `**Baseline:** ${r.baselineCreatedAt} (${r.counts.baseline} accepted)`,
+                `**Current:** ${r.counts.current} findings`,
+                `**Resolved this PR:** ${r.counts.removed}`,
+                '',
+              ];
+              if (r.counts.added > 0) {
+                lines.push('### New findings (top 10)', '');
+                lines.push('| Kind | Id |', '|---|---|');
+                for (const f of r.added.slice(0, 10)) {
+                  lines.push(`| \`${f.kind}\` | \`${f.id}\` |`);
+                }
+                if (r.counts.added > 10) {
+                  lines.push(`| … | _and ${r.counts.added - 10} more_ |`);
+                }
+                lines.push(
+                  '',
+                  '> Fix the new findings, or (rarely) refresh manually:',
+                  '> `npm run audit:contract-drift-ratchet:refresh` (maintainer-only)',
+                );
+              }
+              const body = lines.join('\n');
+              const { data: comments } = await github.rest.issues.listComments({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                per_page: 100,
+              });
+              const existing = comments.find(
+                (c) => typeof c.body === 'string' && c.body.includes(MARKER),
+              );
+              if (existing) {
+                await github.rest.issues.updateComment({
+                  comment_id: existing.id,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body,
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body,
+                });
+              }
+            } catch (e) {
+              core.warning(`ratchet comment skipped: ${e.message}`);
+            }

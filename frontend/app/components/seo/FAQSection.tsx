@@ -62,13 +62,13 @@ export const FAQSection = memo(function FAQSection({
       )}
 
       <div className="container mx-auto px-4">
-        <Card className="border-purple-200 bg-purple-50/50">
+        <Card className="border-purple-200 bg-muted/50">
           <CardHeader className="pb-3">
             <div className="flex items-center gap-3">
-              <span className="flex items-center justify-center w-10 h-10 rounded-full bg-purple-600 text-white text-xl">
+              <span className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-white text-xl">
                 ❓
               </span>
-              <CardTitle id="faq-title" className="text-xl text-purple-900">
+              <CardTitle id="faq-title" className="text-xl text-foreground">
                 Questions frequentes sur les {pluralType}
               </CardTitle>
             </div>
@@ -81,7 +81,7 @@ export const FAQSection = memo(function FAQSection({
                   value={`faq-${index}`}
                   className="border-purple-200 bg-white rounded-lg mb-3 last:mb-0"
                 >
-                  <AccordionTrigger className="px-4 text-purple-900 hover:no-underline hover:bg-purple-50 rounded-t-lg">
+                  <AccordionTrigger className="px-4 text-foreground hover:no-underline hover:bg-muted rounded-t-lg">
                     {item.question}
                   </AccordionTrigger>
                   <AccordionContent className="px-4 border-t border-purple-100">

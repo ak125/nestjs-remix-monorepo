@@ -68,7 +68,7 @@ export const DecisionGridSection = memo(function DecisionGridSection({
       <div className="space-y-6">
         {/* Partie A : Table comparative use-cases */}
         {hasUseCases && (
-          <Card className="border-slate-200 bg-white">
+          <Card className="bg-white">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-3">
                 <span className="flex items-center justify-center w-10 h-10 rounded-full bg-navy text-white">
@@ -131,7 +131,7 @@ export const DecisionGridSection = memo(function DecisionGridSection({
 
         {/* Partie B : Arbre de decision */}
         {hasDecisionTree && (
-          <Card className="border-slate-200 bg-white">
+          <Card className="bg-white">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-3">
                 <span className="flex items-center justify-center w-10 h-10 rounded-full bg-navy text-white">
@@ -193,7 +193,7 @@ export const DecisionGridSection = memo(function DecisionGridSection({
 
                     {/* Separateur entre questions */}
                     {nodeIdx < decisionTree!.length - 1 && (
-                      <div className="ml-3 mt-3 mb-1 border-l-2 border-slate-200 h-4" />
+                      <div className="ml-3 mt-3 mb-1 h-4" />
                     )}
                   </div>
                 ))}

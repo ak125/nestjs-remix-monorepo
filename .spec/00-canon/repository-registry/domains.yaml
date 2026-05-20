@@ -185,3 +185,18 @@ entries:
       - "scripts/registry/**"
       - "scripts/agents/**"
     owner: "@ak125"
+
+  - id: D16
+    name: Maintenance
+    description: |
+      Preventive maintenance domain (Diagnostic Control Plane V1, ADR-pending).
+      Decoupled from D4 (Vehicle/Compatibility) and D7 (Knowledge Graph &
+      Diagnostic). Owns service intervals, oil specifications, maintenance
+      schedules per vehicle context. Distinct intent from D7 incident-centric :
+      D16 = preventive ("quoi faire à 120 000 km"), D7 = incident ("j'ai un
+      problème"). Carnet entretien (stateful SaaS user-history) explicitly NOT
+      in D16 — that becomes a separate domain when/if introduced post-V1.
+    criticality: P2
+    globs:
+      - "backend/src/modules/maintenance/**"
+    owner: "@ak125"
