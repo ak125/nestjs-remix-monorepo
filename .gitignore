@@ -254,3 +254,6 @@ audit/registry/planning.json
 .spec/00-canon/_schema/runtime-topology.schema.json
 .spec/00-canon/_schema/dep-governance.schema.json
 .spec/00-canon/_schema/rpc.schema.json
+
+# CI gate report artifacts (written by scripts/ci/*-gate.mjs, never committed)
+dod-gate-report.md
