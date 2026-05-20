@@ -1,0 +1,30 @@
+{
+  "version": "1.0.0",
+  "captured_at": "2026-05-19",
+  "domain": "pilote-filtration-freinage",
+  "description": "Liste figée 21 gammes pilote Reality Audit Phase 0.5 — 5 filtration + 16 freinage core (hors accessoires). pg_id confirmés via Supabase MCP 2026-05-19.",
+  "source_query": "SELECT pg_id, pg_alias FROM pieces_gamme WHERE pg_alias IN (...)",
+  "gammes": [
+    {"pg_alias": "filtre-a-air", "pg_id": 8, "domain": "filtration", "r_roles": ["R1","R3","R4","R6"]},
+    {"pg_alias": "filtre-a-huile", "pg_id": 7, "domain": "filtration", "r_roles": ["R1","R3","R4","R6"]},
+    {"pg_alias": "filtre-a-carburant", "pg_id": 9, "domain": "filtration", "r_roles": ["R1","R3","R4","R6"]},
+    {"pg_alias": "filtre-d-habitacle", "pg_id": 424, "domain": "filtration", "r_roles": ["R1","R3","R4","R6"]},
+    {"pg_alias": "filtre-de-boite-auto", "pg_id": 416, "domain": "filtration", "r_roles": ["R1","R3","R4","R6"]},
+    {"pg_alias": "plaquette-de-frein", "pg_id": 402, "domain": "freinage", "r_roles": ["R1","R3","R8"]},
+    {"pg_alias": "disque-de-frein", "pg_id": 82, "domain": "freinage", "r_roles": ["R1","R3","R8"]},
+    {"pg_alias": "tambour-de-frein", "pg_id": 123, "domain": "freinage", "r_roles": ["R1","R3","R8"]},
+    {"pg_alias": "machoires-de-frein", "pg_id": 70, "domain": "freinage", "r_roles": ["R1","R3","R8"]},
+    {"pg_alias": "etrier-de-frein", "pg_id": 78, "domain": "freinage", "r_roles": ["R1","R3","R8"]},
+    {"pg_alias": "cylindre-de-roue", "pg_id": 277, "domain": "freinage", "r_roles": ["R1","R3","R8"]},
+    {"pg_alias": "agregat-de-freinage", "pg_id": 415, "domain": "freinage", "r_roles": ["R1","R3","R8"]},
+    {"pg_alias": "kit-de-freins-arriere", "pg_id": 3859, "domain": "freinage", "r_roles": ["R1","R3","R8"]},
+    {"pg_alias": "flexible-de-frein", "pg_id": 83, "domain": "freinage", "r_roles": ["R1","R3","R8"]},
+    {"pg_alias": "cable-de-frein-a-main", "pg_id": 124, "domain": "freinage", "r_roles": ["R1","R3","R8"]},
+    {"pg_alias": "maitre-cylindre-de-frein", "pg_id": 258, "domain": "freinage", "r_roles": ["R1","R3","R8"]},
+    {"pg_alias": "servo-frein", "pg_id": 74, "domain": "freinage", "r_roles": ["R1","R3","R8"]},
+    {"pg_alias": "pompe-a-vide-de-freinage", "pg_id": 387, "domain": "freinage", "r_roles": ["R1","R3","R8"]},
+    {"pg_alias": "pompe-hydraulique-systeme-de-freinage", "pg_id": 1115, "domain": "freinage", "r_roles": ["R1","R3","R8"]},
+    {"pg_alias": "repartiteur-de-frein", "pg_id": 73, "domain": "freinage", "r_roles": ["R1","R3","R8"]},
+    {"pg_alias": "interrupteur-des-feux-de-freins", "pg_id": 806, "domain": "freinage", "r_roles": ["R1","R3","R8"]}
+  ]
+}
