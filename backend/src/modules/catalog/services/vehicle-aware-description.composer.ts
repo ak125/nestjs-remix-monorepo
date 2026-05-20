@@ -38,13 +38,18 @@ const STOP = new Set([
   'de', 'd', 'a', 'la', 'le', 'les', 'du', 'des', 'l', 'pour', 'et', 'au', 'aux',
 ]);
 
-/** Modifieurs génériques sûrs (position/côté) — pas de marque/modèle. */
-const SAFE_MODIFIERS = new Set([
-  'avant', 'arriere', 'arrieres', 'avants', 'gauche', 'droite', 'droit',
-]);
+/**
+ * Modifieurs génériques sûrs (position) — invariants en genre ET en nombre, donc
+ * grammaticalement corrects quel que soit le genre de la gamme (« plaquette avant »,
+ * « disque avant »). On EXCLUT « droite/droit » (accord en genre inconnu) et les
+ * pluriels non standards : sinon on émettrait du français faux sur certaines gammes.
+ */
+const SAFE_MODIFIERS = new Set(['avant', 'arriere', 'gauche']);
 
 function stripDiacritics(s: string): string {
-  return s.normalize('NFD').replace(/[̀-ͯ]/g, '');
+  // U+0300–U+036F = bloc Unicode "Combining Diacritical Marks" (échappements
+  // explicites, pas de caractères combinants littéraux dans le source).
+  return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 }
 
 function coreWords(s: string): string[] {
@@ -125,7 +130,7 @@ export function composeVehicleAwareDescription(
     `Découvrez votre ${g} pour ${V}${priceClause}. ${countPhraseCap}, expédition rapide.`,
     `Commandez votre ${g} pour ${V}${priceClause}. ${countPhraseCap}, paiement sécurisé.`,
     `Comparez et commandez votre ${g} pour ${V}${priceClause}. Livraison rapide.`,
-    `Équipez ${Vequip} : votre ${g} compatible${priceClause}, ${countPhrase}.`,
+    `Équipez ${Vequip} : votre ${g} compatible${priceClause}${hasCount ? `, ${countPhrase}` : ''}. Livraison rapide.`,
   ];
 
   const idx =

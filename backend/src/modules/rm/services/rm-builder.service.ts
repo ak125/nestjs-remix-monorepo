@@ -611,14 +611,10 @@ export class RmBuilderService extends SupabaseBaseService {
               power_ps: seoCtx.type_power_ps || '',
               // Fragments switch PAR GAMME (legacy) pour résoudre #CompSwitch_alias#
               // (sinon strippés à vide → meta dégénérée). Chargé caché.
-              comp_switches: await this.loadCompSwitches(Number(seoCtx.pg_id)),
-              // Modifieur mot-clé GATÉ (ex. « avant ») depuis __seo_keywords —
-              // ajouté au terme produit dans la description composée. Gate
-              // anti-contamination (mot-clé doit contenir les mots-cœur gamme).
-              gamme_keyword_modifier: await this.loadGammeKeywordModifier(
+              ...(await this.loadSeoCtxSwitches(
                 Number(seoCtx.pg_id),
                 result.gamme?.pg_name || '',
-              ),
+              )),
             };
 
             const processed = await this.seoTemplateService.processTemplates(
@@ -763,9 +759,28 @@ export class RmBuilderService extends SupabaseBaseService {
   }
 
   /**
+   * Charge en PARALLÈLE les deux sources switch du contexte SEO (fragments par
+   * gamme + modifieur mot-clé gaté) — requêtes indépendantes, évite la latence
+   * série sur le cold path de `getPageCompleteV2`.
+   */
+  private async loadSeoCtxSwitches(
+    pgId: number,
+    gammeName: string,
+  ): Promise<Pick<SeoContext, 'comp_switches' | 'gamme_keyword_modifier'>> {
+    const [comp_switches, gamme_keyword_modifier] = await Promise.all([
+      this.loadCompSwitches(pgId),
+      this.loadGammeKeywordModifier(pgId, gammeName),
+    ]);
+    return { comp_switches, gamme_keyword_modifier };
+  }
+
+  /**
    * Choisit un modifieur mot-clé SÛR pour la gamme depuis `__seo_keywords`
    * (gate anti-contamination : le mot-clé doit contenir les mots-cœur de la
-   * gamme — cf. `pickGammeKeywordModifier`). Caché 24h. Null si rien de sûr.
+   * gamme — cf. `pickGammeKeywordModifier`). Null si rien de sûr.
+   * Le résultat n'est caché 24h QUE si la requête a réussi (succès, même null) ;
+   * sur erreur → pas de cache long TTL, réessai au prochain appel
+   * (`feedback_no_long_ttl_cache_on_error_paths`).
    */
   private async loadGammeKeywordModifier(
     pgId: number,
@@ -777,12 +792,14 @@ export class RmBuilderService extends SupabaseBaseService {
     if (cached !== undefined && cached !== null) return cached === '' ? null : cached;
 
     let modifier: string | null = null;
+    let querySucceeded = false;
     try {
       const { data, error } = await this.supabase
         .from('__seo_keywords')
         .select('keyword, volume')
         .eq('pg_id', pgId);
       if (!error && Array.isArray(data)) {
+        querySucceeded = true;
         modifier = pickGammeKeywordModifier(
           gammeName,
           (data as Array<{ keyword: string | null; volume: number | null }>).map(
@@ -793,10 +810,13 @@ export class RmBuilderService extends SupabaseBaseService {
     } catch (e) {
       this.logger.warn(`loadGammeKeywordModifier(${pgId}) failed: ${String(e)}`);
     }
-    // Cache la chaîne vide pour « null » (évite re-query). TTL 24h.
-    await this.cacheService
-      .set(cacheKey, modifier ?? '', 86400)
-      .catch(() => undefined);
+    // Cache 24h UNIQUEMENT si succès (null légitime = pas de modifieur sûr).
+    // Sur erreur : pas de cache → réessai (pas de null figé 24h).
+    if (querySucceeded) {
+      await this.cacheService
+        .set(cacheKey, modifier ?? '', 86400)
+        .catch(() => undefined);
+    }
     return modifier;
   }
 

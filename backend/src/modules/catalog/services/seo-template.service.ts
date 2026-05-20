@@ -132,7 +132,9 @@ export class SeoTemplateService {
     context: SeoContext,
   ): Promise<ProcessedSeo> {
     const startTime = Date.now();
-    const cacheKey = `seo:processed:${context.pg_id}:${context.type_id}`;
+    // Le modifieur mot-clé fait partie de la clé : sinon une valeur null
+    // transitoire (erreur lookup) resterait figée 24h dans le résultat caché.
+    const cacheKey = `seo:processed:${context.pg_id}:${context.type_id}:${context.gamme_keyword_modifier ?? ''}`;
 
     try {
       // 1. Tentative lecture cache Redis
