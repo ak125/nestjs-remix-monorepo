@@ -10,7 +10,10 @@
 import { Logger } from '@nestjs/common';
 import { OnQueueError, OnQueueFailed, Process, Processor } from '@nestjs/bull';
 import { Job } from 'bull';
-import { SEO_CONTROL_REFRESH_QUEUE } from '../constants/seo-control.constants';
+import {
+  SEO_CONTROL_REFRESH_JOB,
+  SEO_CONTROL_REFRESH_QUEUE,
+} from '../constants/seo-control.constants';
 import {
   type SeoControlRefreshJobData,
   SeoControlRefresherService,
@@ -27,7 +30,7 @@ export class SeoControlRefreshProcessor {
     private readonly _refresher: SeoControlRefresherService,
   ) {}
 
-  @Process()
+  @Process(SEO_CONTROL_REFRESH_JOB)
   async handleRefresh(job: Job<SeoControlRefreshJobData>): Promise<void> {
     const { block, range } = job.data;
     const start = Date.now();
