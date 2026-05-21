@@ -23,6 +23,10 @@
 -- Additif uniquement. Idempotent (guard pg_enum, 1 bloc/label). Forward-only.
 -- =====================================================
 
+-- Garde-fous obligatoires (squawk require-timeout-settings, ADR-064).
+SET lock_timeout = '2s';
+SET statement_timeout = '60s';
+
 DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_enum WHERE enumlabel = 'diag_hub_view' AND enumtypid = 'seo_event_type'::regtype) THEN
         ALTER TYPE seo_event_type ADD VALUE 'diag_hub_view';
