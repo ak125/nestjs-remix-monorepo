@@ -510,11 +510,6 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
           `   🧹 Filtered out ${skippedOrphans.toLocaleString()} orphan type_ids for ${familyKey}`,
         );
       }
-      if (skippedMalformed > 0) {
-        this.logger.warn(
-          `   🧹 Skipped ${skippedMalformed.toLocaleString()} malformed URLs for ${familyKey}`,
-        );
-      }
 
       // 4. Construire les SitemapUrl
       const { urls, skipped } = this.pieceShardUrls(
@@ -523,6 +518,11 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
         'weekly',
       );
       skippedMalformed += skipped;
+      if (skippedMalformed > 0) {
+        this.logger.warn(
+          `   🧹 Skipped ${skippedMalformed.toLocaleString()} malformed URLs for ${familyKey}`,
+        );
+      }
 
       // 4.5 Dedupliquer inter-familles
       const processedUrlsCache = this.dataService.getProcessedUrlsCache();

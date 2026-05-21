@@ -60,8 +60,10 @@ export function detectMalformedSegment(seg: string): string | null {
   if (!seg) return "empty_segment";
   if (seg.includes(" ") || seg.includes("%20")) return "spaces_in_url";
   if (/^-\d/.test(seg)) return "missing_alias";
-  // alias token literally "null" — covers "null-55453" AND "null-55453-55453"
-  if (/^null(-|$)/i.test(seg)) return "null_in_url";
+  // alias token literally "null"/"undefined" — covers "null-55453",
+  // "null-55453-55453", "undefined-123" (leading token only, so valid slugs
+  // like "nullpunkt-123" are not flagged)
+  if (/^(null|undefined)(-|$)/i.test(seg)) return "null_in_url";
   if (/^type-\d+$/.test(seg)) return "type_prefix_fallback";
   const repeated = seg.match(/^(\d+)-(\d+)$/);
   if (repeated && repeated[1] === repeated[2]) return "repeated_id";
