@@ -488,6 +488,11 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: medium
     risk: medium
+  - glob: packages/seo-url-contract/**
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: high
   - glob: packages/typescript-config/**
     domain: D13
     owner: '@ak125'
