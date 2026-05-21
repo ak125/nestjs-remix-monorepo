@@ -1,7 +1,122 @@
 # CLAUDE.md — Monorepo `nestjs-remix-monorepo`
 
-> **Pointer unique** : ce fichier ne contient **aucune** règle de gouvernance.
-> La gouvernance réside dans un **repository séparé**, pas dans ce monorepo.
+> **Contrat d'exécution + pointer.** Ce fichier régit le **comportement de l'agent**
+> (comment analyser, décider, muter) et **pointe** vers le canon. Il ne contient
+> **aucune règle de gouvernance canon** (ADRs / rules / policies) — celles-ci
+> vivent dans un **repository séparé** (le vault, voir §Gouvernance).
+
+---
+
+## Contrat d'exécution (comportement de l'agent) `[CRITICAL]`
+
+Ce repo est **gouverné** : ADRs, contracts, registries déterministes, ratchets CI.
+L'assistant **ÉTEND** l'architecture existante — il ne crée **JAMAIS** de système
+parallèle, de source de vérité dupliquée, ni d'abstraction spéculative.
+
+`[CRITICAL]` **NEVER invent architecture already governed elsewhere** : si une
+convention / structure existe (vault, `.spec`, registry, `.claude/knowledge`),
+l'**étendre**, jamais en réinventer une locale (pattern de dérive #1 des agents).
+
+Objectif permanent : cohérence archi · entropie minimale · changements
+déterministes & revue-ables · périmètre minimal.
+
+### Mode par défaut = analyser AVANT muter `[CRITICAL]`
+
+Cartographie d'abord, mutation ensuite. Ordre de lecture obligatoire : voir
+§"Mémoire codebase" (registry → REPO_MAP → knowledge → ADR vault → patterns du
+bounded context → **grep en dernier recours**).
+
+- **NEVER** commencer par `Grep` / `Glob`. **NEVER** créer un fichier avant
+  cartographie. **NEVER** proposer avant audit.
+- Vérifier l'existant avant d'inventer : voir §dédiée (règle non-négociable).
+
+### Repository Control Plane — 3 couches `[HIGH]`
+
+ADR-058 / ADR-062. **L1** data auto (`audit/registry/*.json`) + **L2** overlay
+manuel (`.spec/00-canon/repository-registry/*.yaml`) = **SoT (le couple)**.
+**L3** projection canonique (`audit/registry/canonical.json`) = générée,
+**jamais éditée**. L'enforcement (ratchets / CI / ast-grep) **entoure** ces 3
+couches — ce **n'est pas** une 4ᵉ couche. Détail : `packages/registry/README.md`.
+
+`[CRITICAL]` **Generated artifacts are projections, never sources of truth** :
+ne jamais éditer un artefact généré (`canonical.json`, blocs
+`<!-- AUTO-GENERATED -->`, `REPO_MAP.md`, canon mirrors hash-lockés) — corriger
+L1+L2, puis rebuild.
+
+### Heuristiques de décision (en cas de doute) `[HIGH]`
+
+Dans l'ordre : 1) étendre l'existant · 2) préserver le déterminisme ·
+3) réduire l'entropie · 4) minimiser le blast radius · 5) préférer l'observabilité.
+
+### Discipline de périmètre `[HIGH]`
+
+Rester strictement dans le scope demandé. **INTERDIT** : refactor opportuniste,
+cleanup hors bounded-context, upgrade de dépendance sans accord explicite,
+reformatage de fichiers non touchés, réécriture archi, changement de comportement
+silencieux. Un seul « fais-le » = le scope nommé uniquement, jamais d'auto-escalade.
+Chaque changement préserve la rétro-compat sauf demande contraire et minimise le
+blast radius.
+
+### Anti-bricolage & patterns interdits `[CRITICAL]`
+
+Canon : vault `rules-engineering-quality.md` (Q1-Q4, solution structurelle vs
+bricolage) + `rules-ai-antipatterns.md` (AP-*).
+
+Patterns interdits : registry ad-hoc, cache caché, schéma dupliqué, magic
+constant, runtime guessing, filler SEO générique, feature flag non gouverné.
+
+- `[CRITICAL]` **No silent fallback** : tout repli (fail-open, fallback implicite,
+  cache / noindex / skip silencieux) est INTERDIT sauf explicitement gouverné ET
+  observable (cause directe de plusieurs incidents).
+- `[HIGH]` **Prefer extension over creation** : étendre un module / bounded-context
+  existant avant de créer un fichier. Avant toute création : équivalent inexistant ?
+  capacité non déjà fournie ? ownership + bounded-context définis ?
+
+Gardes mécaniques : `.ast-grep/rules/*.yml`, `.husky/pre-commit`,
+`scripts/agents/validate-agents-md.sh`.
+
+### Sécurité opérationnelle `[CRITICAL]`
+
+Mode par défaut = analyse en lecture seule.
+
+- **NEVER** : commande destructive (`DROP` / `TRUNCATE`), migration irréversible
+  sans validation, bypass de feature flag, désactivation d'observabilité,
+  suppression de guard / gate CI.
+- **NEVER** modifier le module `payments/` (Paybox / SystemPay / Cyberplus,
+  `PAYBOX_*` / `SYSTEMPAY_*`) sans demande explicite nominative — voir
+  `.claude/rules/payments.md`.
+- `[HIGH]` **Runtime-awareness** : toute mutation runtime DOIT évaluer
+  observabilité · rollout · impact cache · impact queues (BullMQ) · rollback ·
+  feature flags. Réutiliser l'observabilité interne existante (`rpc_*_alerts_v1`,
+  `__seo_event_log`, stack CWV / RUM) avant d'ajouter un canary externe.
+- Topologie deploy DEV / PREPROD / PROD : voir §Vocabulaire déploiement +
+  `.claude/rules/deployment.md`.
+
+### Connaissance : RAW → WIKI → exports → consumers `[HIGH]`
+
+ADR-031 (vault). `automecanik-raw` et `automecanik-wiki` sont des **repos externes**
+(comme le vault), pas des dossiers de ce monorepo. `raw` = donnée brute par défaut ;
+`wiki` = connaissance sourcée, lintée, validée humainement. **Aucun consommateur
+(RAG, SEO, blog, chatbot, diagnostic) ne lit `raw` directement.** RAG = couche
+**consommatrice**, jamais source de vérité.
+
+### Invariants SEO R* `[HIGH]`
+
+SoT des rôles : `.spec/00-canon/role-matrix.md` (v5 figée). Les rôles R* **ne sont
+pas** des générateurs de contenu génériques (R1 routage gamme / compatibilité,
+R2 transactionnel produit, R8 fiche véhicule).
+
+- Préserver : `catalog_signature` (ADR-066, gate structurel avant diversité texte),
+  génération structural-first, composition vehicle-aware, relations canoniques.
+- **NEVER** : filler SEO générique, amplification de duplicate-content, modification
+  de meta_title / desc / H1 optimisés sans autorisation, suppression auto de page,
+  usage du top-kw brut de `__seo_keywords` comme terme produit (mapping contaminé).
+
+### Format de sortie `[HIGH]`
+
+Contrat de sortie = `.claude/canon-mirrors/agent-exit-contract.md` (hash-locké,
+hors-contexte volontaire — **ne pas recopier**). Il porte l'anti-overclaim : verdict
+par défaut ≠ « COMPLETE » / « DONE », coverage manifest obligatoire.
 
 ---
 
@@ -178,5 +293,5 @@ Ce monorepo contient uniquement : `backend/`, `frontend/`, `shared/`, `scripts/`
 
 ---
 
-_Dernière mise à jour : 2026-05-03_
-_Ce fichier est un pointer — pour toute règle, voir le vault._
+_Dernière mise à jour : 2026-05-21_
+_Ce fichier est un contrat d'exécution + pointer — pour toute règle canon, voir le vault._
