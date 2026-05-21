@@ -27,11 +27,13 @@ function ctx(overrides: Partial<SeoContext> = {}): SeoContext {
   };
 }
 
-const tpl = (description: string): SeoTemplates => ({
+// La résolution des switches s'applique à tous les champs ; on la teste via
+// `content` (le champ `description` passe désormais par le composeur de phrase).
+const tpl = (text: string): SeoTemplates => ({
   h1: '',
   title: '',
-  description,
-  content: '',
+  description: '',
+  content: text,
   preview: '',
 });
 
@@ -46,8 +48,8 @@ describe('SeoTemplateService — résolution switch #CompSwitch#', () => {
       tpl('#CompSwitch_3#'),
       ctx({ comp_switches: { '3': ['alpha', 'beta', 'gamma'] } }),
     );
-    expect(['alpha', 'beta', 'gamma']).toContain(r.description);
-    expect(r.description).not.toContain('#CompSwitch');
+    expect(['alpha', 'beta', 'gamma']).toContain(r.content);
+    expect(r.content).not.toContain('#CompSwitch');
   });
 
   it('rotation déterministe : 2 type_id distincts → variantes différentes', async () => {
@@ -60,7 +62,7 @@ describe('SeoTemplateService — résolution switch #CompSwitch#', () => {
       tpl('#CompSwitch_3#'),
       ctx({ type_id: 2, comp_switches: sw }),
     );
-    expect(a.description).not.toEqual(b.description);
+    expect(a.content).not.toEqual(b.content);
   });
 
   it('déterministe : même contexte → même variante', async () => {
@@ -73,7 +75,7 @@ describe('SeoTemplateService — résolution switch #CompSwitch#', () => {
       tpl('#CompSwitch_3#'),
       ctx({ type_id: 5, comp_switches: sw }),
     );
-    expect(a.description).toEqual(b.description);
+    expect(a.content).toEqual(b.content);
   });
 
   it('fallback : sans comp_switches → strip propre (aucun # résiduel)', async () => {
@@ -81,8 +83,8 @@ describe('SeoTemplateService — résolution switch #CompSwitch#', () => {
       tpl('#LinkGammeCar_402#, #CompSwitch_3_402#'),
       ctx(),
     );
-    expect(r.description).not.toContain('#');
-    expect(r.description).toContain('Plaquette de frein');
+    expect(r.content).not.toContain('#');
+    expect(r.content).toContain('Plaquette de frein');
   });
 
   it('#CompSwitch_X_Y# (alias X + pg Y) résolu via alias X', async () => {
@@ -90,8 +92,8 @@ describe('SeoTemplateService — résolution switch #CompSwitch#', () => {
       tpl('#CompSwitch_2_402#'),
       ctx({ comp_switches: { '2': ['ralentir', 'freiner'] } }),
     );
-    expect(['ralentir', 'freiner']).toContain(r.description);
-    expect(r.description).not.toContain('#');
+    expect(['ralentir', 'freiner']).toContain(r.content);
+    expect(r.content).not.toContain('#');
   });
 
   it('slots indépendants : #CompSwitch_1# et #CompSwitch_2# tournent séparément', async () => {
@@ -102,8 +104,73 @@ describe('SeoTemplateService — résolution switch #CompSwitch#', () => {
         comp_switches: { '1': ['a1', 'a2', 'a3'], '2': ['b1', 'b2', 'b3'] },
       }),
     );
-    const [left, right] = r.description.split(' / ');
+    const [left, right] = r.content.split(' / ');
     expect(['a1', 'a2', 'a3']).toContain(left);
     expect(['b1', 'b2', 'b3']).toContain(right);
+  });
+});
+
+describe('SeoTemplateService — description composée (vraie phrase véhicule-aware)', () => {
+  let svc: SeoTemplateService;
+  beforeEach(() => {
+    svc = new SeoTemplateService(noCache);
+  });
+
+  const tplDesc = (description: string): SeoTemplates => ({
+    h1: '',
+    title: '',
+    description,
+    content: '',
+    preview: '',
+  });
+
+  it('compose une phrase complète quand le template description est dégénéré (placeholders only)', async () => {
+    const r = await svc.processTemplates(
+      tplDesc('#LinkGammeCar_402#, #CompSwitch_3_402#'),
+      ctx({
+        type_id: 19354,
+        type_name: '1.4 HDI',
+        power_ps: '68',
+        min_price: 9,
+        count: 24,
+      }),
+    );
+    expect(r.description).toMatch(
+      /Découvrez|Commandez|Trouvez|Comparez|Équipez/,
+    ); // verbe présent
+    expect(r.description).toContain('Peugeot 207 1.4 HDI');
+    expect(r.description).not.toMatch(/#|undefined|null/);
+  });
+
+  it('descriptions DISTINCTES pour 2 motorisations du même modèle', async () => {
+    const tplx = tplDesc('#LinkGammeCar_402#, #CompSwitch_3_402#');
+    const a = await svc.processTemplates(
+      tplx,
+      ctx({ type_id: 19354, type_name: '1.4 HDI', min_price: 9 }),
+    );
+    const b = await svc.processTemplates(
+      tplx,
+      ctx({ type_id: 57720, type_name: '1.9 D', min_price: 10 }),
+    );
+    expect(a.description).not.toEqual(b.description);
+  });
+
+  it('préserve une description rédigée à la main (prose avec verbe, non dégénérée)', async () => {
+    const prose =
+      'Comparez nos plaquettes de frein de qualité pour votre véhicule. Livraison rapide.';
+    const r = await svc.processTemplates(tplDesc(prose), ctx());
+    expect(r.description).toBe(prose);
+  });
+
+  it('ajoute le modifieur mot-clé validé au terme produit', async () => {
+    const r = await svc.processTemplates(
+      tplDesc('#LinkGammeCar_402#, #CompSwitch_3_402#'),
+      ctx({
+        type_id: 19354,
+        type_name: '1.4 HDI',
+        gamme_keyword_modifier: 'avant',
+      }),
+    );
+    expect(r.description.toLowerCase()).toContain('plaquette de frein avant');
   });
 });
