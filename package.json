@@ -70,6 +70,7 @@
     "registry:build:dependency-graph": "node scripts/registry/build-dependency-graph.js",
     "registry:test:rpc-parser": "tsx --test tests/registry/rpc-parser.test.ts",
     "registry:test:invariants": "tsx --test scripts/registry/validate-invariants.test.ts",
+    "registry:test:files-reachability": "tsx --test scripts/registry/build-files-registry.test.ts",
     "registry:test:planning": "tsx --test tests/registry/planning-builder.test.ts",
     "registry:test:dependency-graph": "tsx --test tests/registry/dependency-graph-builder.test.ts",
     "registry:validate:zod": "tsx scripts/registry/validate-zod-schemas.ts",
