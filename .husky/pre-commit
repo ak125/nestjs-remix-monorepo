@@ -101,6 +101,14 @@ if [ -n "$STAGED_MD" ]; then
   bash scripts/lint/check-preprod-vocabulary.sh $STAGED_MD || exit 1
 fi
 
+# Block markdown drift that positions RAG as a content/SEO source (ADR-031/046).
+# RAG = retrieval for the chatbot only; SEO consumes wiki exports, never the RAG.
+# See scripts/lint/check-rag-scope-vocabulary.sh for patterns + allowlist.
+if [ -n "$STAGED_MD" ]; then
+  # shellcheck disable=SC2086
+  bash scripts/lint/check-rag-scope-vocabulary.sh $STAGED_MD || exit 1
+fi
+
 # Refresh auto-generated YAML frontmatter + AUTO-GENERATED blocks in
 # .claude/knowledge/modules/*.md so last_scan + primary_files stay honest.
 # Only touches files when the module .ts changed; otherwise no-op.

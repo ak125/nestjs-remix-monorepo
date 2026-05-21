@@ -1,5 +1,7 @@
 # Procedure SEO Pipeline V4
 
+> ⚠️ **RAG = chatbot only — canon ADR-031 / ADR-046.** RAG est une couche de *retrieval pour le chatbot*, **jamais** une source de contenu/SEO. Le contenu SEO consomme les **exports wiki** (`automecanik-wiki/exports/`), n'écrit **jamais** dans le RAG. Les étapes ci-dessous « Vérifier la suffisance RAG » / « Enrichir le RAG » décrivent un workflow **legacy non-canonique** — superseded par ADR-031 (accepted 2026-04-28) et ADR-046 (2026-05-07). Ne pas les étendre. Détail canon : vault ADR-031, ADR-046.
+
 > Fichier de reference pour le workflow SEO. Ouvrir ce fichier au debut de chaque session Claude Code.
 
 ---

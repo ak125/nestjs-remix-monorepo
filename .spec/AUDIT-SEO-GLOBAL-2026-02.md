@@ -1,5 +1,7 @@
 # Audit SEO Global Multi-Roles — Rapport Complet
 
+> ⚠️ **RAG = chatbot only — canon ADR-031 / ADR-046.** Ce rapport (2026-02-17) est **antérieur** à la décision : RAG est une couche de *retrieval pour le chatbot*, **jamais** une source de contenu/SEO. Le contenu SEO consomme les **exports wiki**, n'écrit jamais dans le RAG. Les passages présentant le RAG comme « source » d'enrichissement à répliquer sont **superseded / non-canoniques** (ADR-031 accepted 2026-04-28, ADR-046 2026-05-07). Détail canon : vault ADR-031, ADR-046.
+
 > Date : 2026-02-17 | Auditeur : Claude Opus 4.6
 > Framework : content-audit R2D2 (Intent-First, Evidence-First, Decision-First)
 > Base : Supabase massdoc (cxpojprgwgubzjyqzmoq)

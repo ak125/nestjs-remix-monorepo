@@ -10,6 +10,8 @@ tags: [roadmap, seo, marketing, v-level, r4, r5, rag, backlinks]
 
 # Roadmap 2026 — AutoMecanik SEO & Marketing
 
+> ⚠️ **RAG = chatbot only — canon ADR-031 / ADR-046.** Ce document (2026-02-09) est **antérieur** à la décision de gouvernance : RAG est une couche de *retrieval pour le chatbot*, **jamais** une source de contenu/SEO. Le contenu SEO consomme les **exports wiki**, n'écrit jamais dans le RAG. Toute recommandation ci-dessous d'« exploiter le corpus RAG » / « mine d'or à enrichir » pour le SEO est **superseded / non-canonique** (ADR-031 accepted 2026-04-28, ADR-046 2026-05-07). Détail canon : vault ADR-031, ADR-046.
+
 > Basee sur l'audit Supabase du 9 fevrier 2026 (projet `cxpojprgwgubzjyqzmoq`)
 
 ---

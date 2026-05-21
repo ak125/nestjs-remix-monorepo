@@ -1,5 +1,7 @@
 # Module Marketing - Specification
 
+> ⚠️ **RAG = chatbot only — canon ADR-031 / ADR-046.** RAG est une couche de *retrieval pour le chatbot*, **jamais** une source de contenu/SEO. Le contenu/marketing consomme les **exports wiki**, n'écrit jamais dans le RAG. Les références ci-dessous au RAG comme source de planification de contenu sont **legacy / non-canoniques** (ADR-031 accepted 2026-04-28, ADR-046 2026-05-07). Détail canon : vault ADR-031, ADR-046.
+
 > Mis a jour le 9 fevrier 2026 suite a l'audit Supabase MCP
 
 ## Vue d'ensemble

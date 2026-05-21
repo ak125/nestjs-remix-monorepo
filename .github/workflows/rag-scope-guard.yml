@@ -1,0 +1,26 @@
+name: RAG scope guard
+
+# Block markdown that positions RAG as a content/SEO source.
+# Canon ADR-031 (Four-Layer Content Architecture) + ADR-046 (R-stack canonique):
+# RAG = retrieval for the chatbot ONLY — SEO content consumes the wiki exports,
+# never the RAG. This guard prevents future doc drift mechanically. The local
+# pre-commit hook runs the same check; CI is authoritative.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  no-rag-as-content-source:
+    name: Block RAG-as-content/SEO-source phrasing in .md
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lint RAG scope vocabulary (full repo)
+        run: bash scripts/lint/check-rag-scope-vocabulary.sh

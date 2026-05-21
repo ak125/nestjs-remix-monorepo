@@ -1,5 +1,7 @@
 # Schema brand.md v1 — Architecture RAG Constructeur
 
+> ⚠️ **RAG = chatbot only — canon ADR-031 / ADR-046.** RAG est une couche de *retrieval pour le chatbot*, **jamais** une source de contenu/SEO. Le contenu SEO (dont R7 brand) consomme les **exports wiki**, n'écrit jamais dans le RAG. L'architecture « brand.md → RAG → R7 » décrite ici est **legacy / non-canonique** — superseded par ADR-031 (accepted 2026-04-28) et ADR-046 (2026-05-07). Détail canon : vault ADR-031, ADR-046.
+
 > Source de verite pour la structure des fichiers `/opt/automecanik/rag/knowledge/constructeurs/*.md`
 >
 > Consommateurs : agent `r7-brand-rag-generator`, pipeline R7 (keyword planner + content batch)

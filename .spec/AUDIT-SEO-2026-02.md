@@ -9,6 +9,8 @@ tags: [audit, seo, marketing, supabase, database]
 
 # Audit SEO & Marketing — 9 Fevrier 2026
 
+> ⚠️ **RAG = chatbot only — canon ADR-031 / ADR-046.** Cet audit (2026-02-09) est **antérieur** à la décision : RAG est une couche de *retrieval pour le chatbot*, **jamais** une source de contenu/SEO. Le contenu SEO consomme les **exports wiki**, n'écrit jamais dans le RAG. Ses recommandations d'« exploiter le corpus RAG inexploité pour enrichir / remplir les champs vides » sont **superseded / non-canoniques** (ADR-031 accepted 2026-04-28, ADR-046 2026-05-07). Détail canon : vault ADR-031, ADR-046.
+
 > Audit complet realise via MCP Supabase sur le projet de production.
 
 ---

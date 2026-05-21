@@ -1,5 +1,7 @@
 # SEO Content Enrichment - Task Summary
 
+> ⚠️ **RAG = chatbot only — canon ADR-031 / ADR-046.** RAG est une couche de *retrieval pour le chatbot*, **jamais** une source de contenu/SEO. Le contenu SEO consomme les **exports wiki**, n'écrit jamais dans le RAG. Le travail décrit ci-dessous (R4/R5 enrichis depuis des fichiers RAG disque) est **legacy / non-canonique** — superseded par ADR-031 (accepted 2026-04-28) et ADR-046 (2026-05-07). Détail canon : vault ADR-031, ADR-046.
+
 ## Objective
 Enrich R4 Reference and R5 Diagnostic generators with real content from RAG knowledge files.
 
