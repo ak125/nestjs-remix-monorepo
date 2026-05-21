@@ -399,3 +399,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/preprod-env-contract-preflight`
 - **Décision** : style(env-contract): apply prettier (CI lint fix) (+3 other commits)
 - **Sortie** : PR #632 | commits 22cd9867e 690c78525 eacfdcbe3 fbc50be95
+
+## 2026-05-21 — worktree-commerce-loop-step4-funnel (auto)
+
+- **Branche** : `worktree-commerce-loop-step4-funnel`
+- **Décision** : feat(commerce-loop): funnel event tracking outil diagnostic (étape 4-A)
+- **Sortie** : PR #676 | commits 8d7652572
