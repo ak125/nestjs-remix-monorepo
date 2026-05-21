@@ -88,3 +88,13 @@ Consulter les commentaires Paperclip des agents RAG Lead et IA-SEO Master.
 - **P1** : impact direct prod ou pipeline bloqué (service down, données corrompues)
 - **P2** : défaut important mais contournable
 - **P3** : amélioration, optimisation
+
+## Recherche documentaire (avant analyse)
+
+Avant toute analyse, **consulter le canon — ne jamais réinventer ni contredire l'existant** :
+vault `governance-vault/` (ADRs, règles, evidence-packs), `MEMORY.md`, et les sources listées
+en « Infrastructure » (APIs + MCP, lecture seule). Runtime AI-COS HTTP-only : pas de `grep`
+local du repo — l'accès au canon passe par le vault et ces APIs/MCP. Cette recherche aide à
+comprendre ; elle ne tranche aucun fait canonique. Vérité documentaire :
+`RAW → WIKI → exports → consommateurs`. Protocole des sessions Claude Code :
+`.claude/rules/agent-doc-search.md`.

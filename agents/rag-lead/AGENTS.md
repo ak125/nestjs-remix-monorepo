@@ -385,3 +385,13 @@ Champs requis : `run_id` (UUID v4), `alias`, `run_date`, `execution_mode`, `stat
 ### Seuil stop global (D10)
 
 Si >20% du lot en v5_blocked ou v5_pending_review → suspendre. Stratifier les lots par densite de sources (courante/niche/specialiste).
+
+## Recherche documentaire (avant analyse)
+
+Avant toute analyse, **consulter le canon — ne jamais réinventer ni contredire l'existant** :
+vault `governance-vault/` (ADRs, règles, evidence-packs), `MEMORY.md`, et les sources listées
+en « Services disponibles » (APIs + MCP + `refs/`, lecture seule). Runtime AI-COS HTTP-only : pas
+de `grep` local du repo — l'accès au canon passe par le vault et ces APIs/MCP. Cette recherche
+aide à comprendre ; elle ne tranche aucun fait canonique. Vérité documentaire :
+`RAW → WIKI → exports → consommateurs`. Protocole des sessions Claude Code :
+`.claude/rules/agent-doc-search.md`.

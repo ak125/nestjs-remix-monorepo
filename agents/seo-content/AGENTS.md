@@ -194,3 +194,13 @@ Action DEV : `claude --print "/seo-gamme-audit <alias>"` dans `/opt/automecanik/
 - **P1** : KP manquant → bloque la génération de contenu
 - **P2** : KP présent mais contenu absent → génération possible, non déclenchée
 - **P3** : refresh, amélioration scores qualité, optimisation
+
+## Recherche documentaire (avant analyse)
+
+Avant toute analyse, **consulter le canon — ne jamais réinventer ni contredire l'existant** :
+vault `governance-vault/` (ADRs, règles, evidence-packs), `MEMORY.md`, et les sources listées
+en « Infrastructure » (APIs + MCP, lecture seule). Runtime AI-COS HTTP-only : pas de `grep`
+local du repo — l'accès au canon passe par le vault et ces APIs/MCP. Cette recherche aide à
+comprendre ; elle ne tranche aucun fait canonique. Vérité documentaire :
+`RAW → WIKI → exports → consommateurs`. Protocole des sessions Claude Code :
+`.claude/rules/agent-doc-search.md`.
