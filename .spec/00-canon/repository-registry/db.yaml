@@ -94,6 +94,18 @@ tables:
     notes: |
       V-Level classification keywords (T=keywords axis, ADR-027 derivative).
 
+  - name: public.__seo_keyword_results
+    domain: D3
+    owner: "@ak125/seo-team"
+    criticality: high
+    allowed_access_surfaces: [backend, rpc]
+    forbidden_access_surfaces: [frontend, anon, authenticated]
+    notes: |
+      Canonical role-classified keywords (R1..R8 + intent + vol HIGH/MED/LOW).
+      Written by scripts/seo/classify-keywords.ts via @repo/seo-roles canon
+      (classifyKeywordToRole — drift impossible by construction). Consumed by
+      content-gen. Schema formalized in 20260521_formalize_seo_keyword_results.sql.
+
   # ── D4 Vehicle / Compatibility (P0 TecDoc) ──
   - name: public.__vehicles
     domain: D4
