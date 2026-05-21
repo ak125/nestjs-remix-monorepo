@@ -9,6 +9,7 @@ import { useState, useCallback } from "react";
 
 import { useRootCart } from "../root";
 import { cartApi, formatPrice, getProductImageUrl } from "../services/cart.api";
+import { emitFunnel, getFunnelSessionId } from "~/utils/funnel-beacon";
 
 // Re-export les utilitaires
 export { formatPrice, getProductImageUrl };
@@ -56,6 +57,16 @@ export function useCart() {
         const result = await cartApi.addItem(productId, quantity, typeId);
         if (result.success) {
           emitCartUpdated();
+          // Commerce-Loop V1 étape 4-A — intention d'achat (funnel R2).
+          emitFunnel({
+            event_type: "r2_add_to_cart",
+            payload: {
+              session_id: getFunnelSessionId(),
+              product_id: String(productId),
+              quantity,
+              unit_price_cents: null,
+            },
+          });
           return true;
         } else {
           setError(result.error || "Erreur lors de l'ajout");
