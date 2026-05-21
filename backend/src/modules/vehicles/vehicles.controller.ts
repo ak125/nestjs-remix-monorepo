@@ -110,7 +110,9 @@ export class VehiclesController {
 
   @Get('models/:modelId/types')
   async getTypesByModel(
-    @Param('modelId', PositiveSmallIntParamPipe) modelId: number,
+    // modele_id est int4 (max DB 667022 ; ~82% des modèles > smallint 32767).
+    // Comme typeId/getMinesByModel — jamais le pipe smallint ici. Cf. log 400 #46021.
+    @Param('modelId', PositiveIntParamPipe) modelId: number,
     @Query() query: Record<string, string>,
   ) {
     const params = this.parseQueryParams(query);
