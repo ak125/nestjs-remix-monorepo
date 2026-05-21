@@ -22,6 +22,11 @@ import { IsAdminGuard } from '@auth/is-admin.guard';
 import { getEffectiveSupabaseKey } from '@common/utils';
 import { R1ContentFromRagService } from '../services/r1-content-from-rag.service';
 import { R1KeywordPlanBatchService } from '../services/r1-keyword-plan-batch.service';
+import {
+  classifyKeywordToRole,
+  getRoleShortLabel,
+  getRoleIntents,
+} from '@repo/seo-roles';
 
 interface CoverageRow {
   role: string;
@@ -1055,7 +1060,8 @@ export class AdminKeywordPlannerController {
     }
 
     // ── Pipeline de validation (5 étapes) ──
-    const validRoles = new Set([
+    const validVols = new Set(['HIGH', 'MED', 'LOW']);
+    const validShortRoles = new Set([
       'R1',
       'R2',
       'R3',
@@ -1065,7 +1071,7 @@ export class AdminKeywordPlannerController {
       'R7',
       'R8',
     ]);
-    const validVols = new Set(['HIGH', 'MED', 'LOW']);
+    let canonOverrides = 0; // count of caller roles overridden by the canon
     const errors: string[] = [];
     const rejected: Array<{ kw: string; reason: string }> = [];
     const warnings: Array<{ kw: string; reason: string }> = [];
@@ -1081,31 +1087,40 @@ export class AdminKeywordPlannerController {
         errors.push(`#${i}: kw manquant ou trop court`);
         return false;
       }
-      if (!validRoles.has(kw.role)) {
-        errors.push(`#${i}: role "${kw.role}" invalide`);
-        return false;
-      }
+      // role is NOT validated from caller input — it is derived from the
+      // @repo/seo-roles canon in Step 2 (drift fix). Caller kw.role is ignored.
       return true;
     });
 
-    // Step 2: Normalize (trim, lowercase for dedup, accent normalization)
-    const step2 = step1.map((kw) => {
+    // Step 2: Canonical classification + normalize.
+    // role AND intent are derived from the @repo/seo-roles canon \u2014 the
+    // caller-supplied kw.role / kw.intent are IGNORED. This was the drift door:
+    // the chrome-paste flow trusted them, collapsing transactional (R2) and
+    // diagnostic (R5) intent into R1. flatMap drops R0 (non-routable, would
+    // violate the __seo_keyword_results R1..R8 CHECK).
+    const step2 = step1.flatMap((kw) => {
       const pgId = kw.pg_id ?? globalPgId!;
-      return {
-        pg_id: pgId,
-        pg_alias: aliasMap.get(pgId) || globalAlias,
-        role: kw.role,
-        kw: kw.kw.trim(),
-        kw_normalized: kw.kw
-          .trim()
-          .toLowerCase()
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '') // strip accents
-          .replace(/['']/g, "'"),
-        intent: kw.intent || 'unknown',
-        vol: validVols.has(kw.vol ?? '') ? kw.vol! : 'MED',
-        source: 'claude_chrome',
-      };
+      const canonicalRole = classifyKeywordToRole(kw.kw).role;
+      const role = getRoleShortLabel(canonicalRole);
+      if (!validShortRoles.has(role)) return [];
+      if (kw.role && kw.role !== role) canonOverrides++;
+      return [
+        {
+          pg_id: pgId,
+          pg_alias: aliasMap.get(pgId) || globalAlias,
+          role,
+          kw: kw.kw.trim(),
+          kw_normalized: kw.kw
+            .trim()
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '') // strip accents
+            .replace(/['']/g, "'"),
+          intent: getRoleIntents(canonicalRole).primary,
+          vol: validVols.has(kw.vol ?? '') ? kw.vol! : 'MED',
+          source: 'claude_chrome',
+        },
+      ];
     });
 
     // Step 3: Reject competitors
@@ -1161,6 +1176,12 @@ export class AdminKeywordPlannerController {
 
     const clean = step5;
 
+    if (canonOverrides > 0) {
+      this.logger.log(
+        `canon reclassified ${canonOverrides} caller-supplied role(s) (@repo/seo-roles SoT)`,
+      );
+    }
+
     // Stats par gamme
     const byGamme = new Map<number, { roles: Set<string>; count: number }>();
     for (const k of clean) {
@@ -1194,6 +1215,7 @@ export class AdminKeywordPlannerController {
           after_intent_check: step5.length,
           reject_rate: Math.round((rejected.length / keywords.length) * 100),
           warning_rate: Math.round((warnings.length / keywords.length) * 100),
+          canon_overrides: canonOverrides,
         },
       };
     }
