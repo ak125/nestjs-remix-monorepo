@@ -405,3 +405,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `worktree-commerce-loop-step4-funnel`
 - **Décision** : feat(commerce-loop): funnel event tracking outil diagnostic (étape 4-A)
 - **Sortie** : PR #676 | commits 8d7652572
+
+## 2026-05-21 — worktree-commerce-loop-step4-funnel (auto)
+
+- **Branche** : `worktree-commerce-loop-step4-funnel`
+- **Décision** : fix(commerce-loop): squawk require-timeout-settings sur migration funnel (+4 other commits)
+- **Sortie** : PR #676 | commits af96bc122 367574432 a8b1dd059 93c0f8664 8d7652572
