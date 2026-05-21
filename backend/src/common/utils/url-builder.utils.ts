@@ -8,44 +8,22 @@
  * @version 1.0.0
  */
 
-/**
- * Normalise un alias pour l'URL
- * - Convertit en minuscules
- * - Remplace les espaces par des tirets
- * - Supprime les caractères spéciaux
- * - Gère les accents
- */
-export function normalizeAlias(alias: string): string {
-  if (!alias) return '';
+// Structural URL rules live in the shared SoT package (ADR-062 anti-parallel-truths).
+// Imported for local use by the builders below AND re-exported so existing callers
+// (`import { normalizeAlias } from '.../url-builder.utils'`) keep working unchanged.
+import {
+  normalizeAlias,
+  normalizeTypeAlias,
+  detectMalformedSegment,
+  isMalformedSeoUrl,
+} from '@repo/seo-url-contract';
 
-  return alias
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // Supprime les accents
-    .replace(/[^a-z0-9\s-]/g, '') // Garde lettres, chiffres, espaces, tirets
-    .replace(/\s+/g, '-') // Espaces -> tirets
-    .replace(/-+/g, '-') // Tirets multiples -> tiret unique
-    .replace(/^-|-$/g, '') // Supprime tirets début/fin
-    .trim();
-}
-
-/**
- * Normalise un type_alias pour la construction d'URLs.
- * Gère NULL, undefined, chaîne vide, "null" littéral, et fallback "type".
- * Utilise type_name (slugifié) comme fallback pour éviter les URLs "28495-28495.html".
- */
-export function normalizeTypeAlias(
-  alias: string | null | undefined,
-  typeName: string | null | undefined,
-): string {
-  if (!alias || alias.trim() === '' || alias === 'null' || alias === 'type') {
-    if (typeName && typeName.trim() !== '') {
-      return normalizeAlias(typeName);
-    }
-    return 'type';
-  }
-  return alias;
-}
+export {
+  normalizeAlias,
+  normalizeTypeAlias,
+  detectMalformedSegment,
+  isMalformedSeoUrl,
+};
 
 /**
  * Construit un segment d'URL pour un type véhicule: "{alias}-{id}"
@@ -57,7 +35,7 @@ export function buildTypeSlug(type: {
   type_name?: string | null;
   type_id: number | string;
 }): string {
-  const alias = normalizeTypeAlias(type.type_alias, type.type_name);
+  const alias = normalizeTypeAlias(type.type_alias, type.type_name, type.type_id);
   return `${alias}-${type.type_id}`;
 }
 
@@ -94,7 +72,7 @@ export function buildPieceVehicleUrl(
   typeId: number,
   typeName?: string | null,
 ): string {
-  return `/pieces/${normalizeAlias(gammeAlias)}-${gammeId}/${normalizeAlias(marqueAlias)}-${marqueId}/${normalizeAlias(modeleAlias)}-${modeleId}/${normalizeTypeAlias(typeAlias, typeName)}-${typeId}.html`;
+  return `/pieces/${normalizeAlias(gammeAlias)}-${gammeId}/${normalizeAlias(marqueAlias)}-${marqueId}/${normalizeAlias(modeleAlias)}-${modeleId}/${normalizeTypeAlias(typeAlias, typeName, typeId)}-${typeId}.html`;
 }
 
 /**
@@ -144,7 +122,7 @@ export function buildConstructeurTypeUrl(
   typeId: number,
   typeName?: string | null,
 ): string {
-  return `/constructeurs/${normalizeAlias(marqueAlias)}-${marqueId}/${normalizeAlias(modeleAlias)}-${modeleId}/${normalizeTypeAlias(typeAlias, typeName)}-${typeId}.html`;
+  return `/constructeurs/${normalizeAlias(marqueAlias)}-${marqueId}/${normalizeAlias(modeleAlias)}-${modeleId}/${normalizeTypeAlias(typeAlias, typeName, typeId)}-${typeId}.html`;
 }
 
 /**

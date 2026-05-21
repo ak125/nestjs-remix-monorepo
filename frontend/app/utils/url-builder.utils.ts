@@ -3,24 +3,10 @@
  * Fonctions pour construire des URLs cohérentes avec le backend
  */
 
-/**
- * Normalise un alias pour correspondre au format backend
- * Ex: "Alfa Roméo" → "alfa-romeo"
- * Ex: "Rolls-Royce" → "rolls-royce"
- * Ex: "BMW série 3" → "bmw-serie-3"
- */
-export function normalizeAlias(alias: string): string {
-  if (!alias) return "";
-  return alias
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "") // Supprime accents (é → e, à → a)
-    .replace(/[^a-z0-9\s-]/g, "") // Supprime caractères spéciaux
-    .replace(/\s+/g, "-") // Espaces → tirets
-    .replace(/-+/g, "-") // Tirets multiples → simple
-    .replace(/^-|-$/g, "") // Supprime tirets début/fin
-    .trim();
-}
+// Alias normalization is owned by the shared SoT package (ADR-062).
+// Imported for local use AND re-exported so existing callers keep working.
+import { normalizeAlias, normalizeTypeAlias } from "@repo/seo-url-contract";
+export { normalizeAlias, normalizeTypeAlias };
 
 /**
  * Interface pour les liens "Voir aussi"
@@ -46,30 +32,6 @@ export function isValidInternalUrl(url: string): boolean {
 }
 
 /**
- * Normalizes a type_alias for URL construction.
- * Handles null, undefined, empty strings, literal "null", and generic "type" fallbacks.
- * Uses type_name (slugified) as fallback, NOT the type_id (to avoid "28495-28495.html")
- *
- * @param alias - The raw type_alias from database
- * @param typeName - The type_name to use as fallback (will be slugified)
- * @returns A safe string for URL construction
- */
-export function normalizeTypeAlias(
-  alias: string | null | undefined,
-  typeName: string | null | undefined,
-): string {
-  // Handle null, undefined, empty, literal "null" string, or generic "type"
-  if (!alias || alias.trim() === "" || alias === "null" || alias === "type") {
-    // Fallback to slugified type_name
-    if (typeName && typeName.trim() !== "") {
-      return normalizeAlias(typeName);
-    }
-    return "type"; // Ultimate fallback
-  }
-  return alias;
-}
-
-/**
  * Constructs a vehicle type URL segment: "{alias}-{id}"
  * @example buildTypeSlug({ type_alias: null, type_name: "2.0 16V", type_id: 28495 }) => "2-0-16v-28495"
  * @example buildTypeSlug({ type_alias: "gti", type_id: 28495 }) => "gti-28495"
@@ -79,7 +41,7 @@ export function buildTypeSlug(type: {
   type_name?: string | null;
   type_id: number | string;
 }): string {
-  const alias = normalizeTypeAlias(type.type_alias, type.type_name);
+  const alias = normalizeTypeAlias(type.type_alias, type.type_name, type.type_id);
   return `${alias}-${type.type_id}`;
 }
 
