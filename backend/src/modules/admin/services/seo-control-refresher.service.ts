@@ -17,7 +17,10 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
-import { SEO_CONTROL_REFRESH_QUEUE } from '../constants/seo-control.constants';
+import {
+  SEO_CONTROL_REFRESH_JOB,
+  SEO_CONTROL_REFRESH_QUEUE,
+} from '../constants/seo-control.constants';
 
 export interface SeoControlRefreshJobData {
   block: 'traffic' | 'losers' | 'lowctr' | 'alerts' | 'conversion';
@@ -63,18 +66,27 @@ export class SeoControlRefresherService implements OnModuleInit {
 
   private async scheduleAll(): Promise<void> {
     try {
+      // Purge orphaned repeatables before re-registering (canon pattern, cf.
+      // seo-monitor-scheduler.service.ts). Removes stale entries left in Redis
+      // by prior code versions — e.g. the old per-block named jobs
+      // `refresh-<block>-<range>` that had no matching processor handler.
+      const stale = await this.queue.getRepeatableJobs();
+      for (const j of stale) {
+        await this.queue.removeRepeatableByKey(j.key);
+      }
+
       for (const { block, intervalMs } of REFRESH_SCHEDULE) {
         for (const range of ['7d', '28d'] as const) {
-          const jobName = `refresh-${block}-${range}`;
-          // Bull v3 signature : queue.add(name, data, opts)
+          // Single static job name (matches @Process(SEO_CONTROL_REFRESH_JOB) in
+          // the processor) ; block/range carried in data, idempotency via jobId.
           await this.queue.add(
-            jobName,
+            SEO_CONTROL_REFRESH_JOB,
             { block, range },
             {
               repeat: { every: intervalMs },
               removeOnComplete: 100,
               removeOnFail: 50,
-              jobId: jobName, // idempotent : 1 job per (block,range), survives restart
+              jobId: `refresh-${block}-${range}`, // 1 repeatable per (block,range), survives restart
             },
           );
         }
