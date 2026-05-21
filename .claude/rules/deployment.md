@@ -16,6 +16,28 @@
 
 **Conséquence importante** : DEV (`46.224.118.55`) **n'héberge PAS** de container `:preprod` ni `:production`. La machine DEV est uniquement un poste de travail SSH. PREPROD et PROD vivent tous les deux sur `49.12.233.2`, le second étant aussi le GitHub Actions self-hosted runner.
 
+## Sync du runtime DEV:3000 (où on teste/mesure)
+
+DEV:3000 = `npm run dev` (nodemon) servant **le working tree `/opt/automecanik/app/backend/dist`**.
+**Le merge `main` ne met PAS à jour DEV:3000** (il ne réécrit que le tag `:preprod`). Pour
+que DEV serve le code mergé, il faut le **resynchroniser** — automatisé par
+[`scripts/ops/sync-dev-runtime.sh`](../../scripts/ops/sync-dev-runtime.sh) (cron ~10 min).
+
+**Convention** : le checkout principal `/opt/automecanik/app` **reste sur `main`** ; tout
+travail feature/agent se fait en **worktree** (`.claude/worktrees/`). Ne jamais y laisser
+une branche feature (sinon DEV:3000 sert du code périmé).
+
+**4 axes de dérive** que le runtime DEV peut accumuler vs `main` (le script garde 1-2,
+alerte sur 3-4 — jamais d'action destructive auto) :
+
+1. **Git** : checkout sur main + ff-pull `origin/main`. (auto)
+2. **`.env`** : `backend/.env` doit avoir toutes les vars REQUIRED de `env-validation.ts`
+   (ex. `JWT_SECRET` depuis #606). Manquante → boot crash. (alerte via health-check KO)
+3. **Node** : doit matcher `.nvmrc`/`engines` (≥22). Node < 22 → crash `@supabase/realtime-js`.
+   Upgrade = manuel (`NodeSource setup_22.x`). (alerte)
+4. **Migrations DB** : les migrations mergées ne sont **pas auto-appliquées** à la DB
+   partagée. Appliquer l'additif réviewé à la main (`ADD VALUE IF NOT EXISTS`…). (alerte)
+
 ## Mécanique du tag Docker `:preprod` (alias flottant)
 
 - Le tag `:preprod` est **réécrit à chaque merge sur `main`** (workflow `ci.yml` → step `build`).
