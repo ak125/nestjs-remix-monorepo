@@ -1,1 +1,1 @@
-export * from './url-rules';
+export * from "./url-rules";

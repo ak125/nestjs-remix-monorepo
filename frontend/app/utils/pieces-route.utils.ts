@@ -3,8 +3,8 @@
  * Extrait de pieces.$gamme.$marque.$modele.$type[.]html.tsx
  */
 
-import { logger } from "~/utils/logger";
 import { detectMalformedSegment as detectSegment } from "@repo/seo-url-contract";
+import { logger } from "~/utils/logger";
 import {
   type VehicleData,
   type GammeData,

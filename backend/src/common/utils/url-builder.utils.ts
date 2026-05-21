@@ -35,7 +35,11 @@ export function buildTypeSlug(type: {
   type_name?: string | null;
   type_id: number | string;
 }): string {
-  const alias = normalizeTypeAlias(type.type_alias, type.type_name, type.type_id);
+  const alias = normalizeTypeAlias(
+    type.type_alias,
+    type.type_name,
+    type.type_id,
+  );
   return `${alias}-${type.type_id}`;
 }
 

@@ -464,7 +464,6 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
       let hasMore = true;
       let skippedOrphans = 0;
       let skippedMalformed = 0;
-    let skippedMalformed = 0;
 
       while (hasMore) {
         const { data: pieces, error: piecesError } = await this.supabase
