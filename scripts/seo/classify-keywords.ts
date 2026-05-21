@@ -9,11 +9,16 @@
  * already happened at import time in `import-gads-kp.py` (RAG must_not_contain
  * / confusion_with). Single filter point.
  *
+ * Safe by default: previews unless `--write` is passed. `--write` performs an
+ * idempotent rebuild — deletes the stale `google-ads-kp` projection for each
+ * target gamme, then re-inserts the freshly classified rows (no duplicates,
+ * re-runnable). Other sources (claude_chrome, keyword-engine) are never touched.
+ *
  * Usage:
- *   npx tsx scripts/seo/classify-keywords.ts --pg-id 7
+ *   npx tsx scripts/seo/classify-keywords.ts --all              # preview all
  *   npx tsx scripts/seo/classify-keywords.ts --pg-alias filtre-a-huile
- *   npx tsx scripts/seo/classify-keywords.ts --pg-id 7 --dry-run
- *   npx tsx scripts/seo/classify-keywords.ts --all          # every pg_id with raw KW
+ *   npx tsx scripts/seo/classify-keywords.ts --pg-id 7 --write  # commit one gamme
+ *   npx tsx scripts/seo/classify-keywords.ts --all --write      # commit all
  */
 import { readFileSync } from "node:fs";
 
@@ -107,10 +112,19 @@ async function resolveTargets(
   throw new Error("Usage: --pg-id N | --pg-alias slug | --all  [--dry-run]");
 }
 
+async function countExisting(pgId: number): Promise<number> {
+  const r = await rest(
+    `__seo_keyword_results?pg_id=eq.${pgId}&source=eq.${SOURCE}&select=id`,
+    { headers: { Prefer: "count=exact", Range: "0-0" } },
+  );
+  const cr = r.headers.get("content-range"); // "0-0/NNN"
+  return cr ? Number(cr.split("/")[1]) : 0;
+}
+
 async function classifyGamme(
   pgId: number,
   pgAlias: string,
-  dryRun: boolean,
+  write: boolean,
 ): Promise<void> {
   const raw = await restAll<RawKw>(
     `__seo_keywords?pg_id=eq.${pgId}&source=eq.${SOURCE}&select=keyword,volume`,
@@ -171,25 +185,40 @@ async function classifyGamme(
     .sort()
     .map((rrole) => `${rrole}:${dist[rrole]}`)
     .join(" ");
+  const before = await countExisting(pgId);
   console.log(
     `  pg_id=${pgId} (${pgAlias}): ${raw.length} raw → ${rows.length} classified ` +
-      `[${distStr}]` +
-      (dryRun ? " (DRY-RUN — no write)" : ""),
+      `[${distStr}] | existing ${SOURCE} rows: ${before}` +
+      (write ? "" : " (PREVIEW — no write)"),
   );
 
-  if (dryRun) return;
+  if (!write) return;
 
+  // Idempotent rebuild scoped to (pg_id, source): delete the stale canon
+  // projection for THIS gamme, then re-insert the freshly classified rows.
+  // Touches ONLY source='google-ads-kp' — claude_chrome / keyword-engine rows
+  // are never affected. Re-runnable: regenerates the exact same set.
+  const del = await rest(
+    `__seo_keyword_results?pg_id=eq.${pgId}&source=eq.${SOURCE}`,
+    { method: "DELETE", headers: { Prefer: "count=exact" } },
+  );
+  if (!del.ok) {
+    console.error(`  [ERR] delete pg_id=${pgId}: ${del.status} ${await del.text()}`);
+    return;
+  }
   for (let i = 0; i < rows.length; i += 500) {
     const batch = rows.slice(i, i + 500);
-    const resp = await rest(`__seo_keyword_results?on_conflict=pg_id,kw,role`, {
+    const resp = await rest(`__seo_keyword_results`, {
       method: "POST",
-      headers: { Prefer: "resolution=merge-duplicates" },
+      headers: { Prefer: "return=minimal" },
       body: JSON.stringify(batch),
     });
     if (!resp.ok) {
-      console.error(`  [ERR] batch ${i}: ${resp.status} ${await resp.text()}`);
+      console.error(`  [ERR] insert batch ${i} pg_id=${pgId}: ${resp.status} ${await resp.text()}`);
+      return;
     }
   }
+  console.log(`    ↳ rebuilt: -${before} stale, +${rows.length} canonical`);
 }
 
 async function main(): Promise<void> {
@@ -210,12 +239,15 @@ async function main(): Promise<void> {
   if (!SUPABASE_URL || !SUPABASE_KEY) {
     throw new Error("SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY required");
   }
-  const dryRun = args["dry-run"] !== undefined;
+  // Safe by default: writes ONLY with explicit --write. `--dry-run` kept as an
+  // explicit no-op alias for clarity.
+  const write = args["write"] !== undefined;
   const targets = await resolveTargets(args);
   console.log(
-    `Classifying ${targets.length} gamme(s) via @repo/seo-roles canon${dryRun ? " (dry-run)" : ""}`,
+    `Classifying ${targets.length} gamme(s) via @repo/seo-roles canon` +
+      (write ? " (WRITE — idempotent rebuild of google-ads-kp rows)" : " (preview)"),
   );
-  for (const t of targets) await classifyGamme(t.pgId, t.pgAlias, dryRun);
+  for (const t of targets) await classifyGamme(t.pgId, t.pgAlias, write);
   console.log("Done.");
 }
 
