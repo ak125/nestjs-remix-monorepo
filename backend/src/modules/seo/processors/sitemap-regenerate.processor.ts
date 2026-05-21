@@ -20,6 +20,7 @@ import { Job } from 'bull';
 import { getAppConfig } from '../../../config/app.config';
 import { getErrorMessage } from '../../../common/utils/error.utils';
 import { SitemapV10Service } from '../services/sitemap-v10.service';
+import { SitemapEventLogService } from '../services/sitemap-event-log.service';
 import {
   SITEMAP_REGENERATE_JOB_NAME,
   SitemapRegenerateJobData,
@@ -44,7 +45,10 @@ export class SitemapRegenerateProcessor {
   private readonly readOnly: boolean;
   private lastQueueErrorLog = 0;
 
-  constructor(private readonly sitemapService: SitemapV10Service) {
+  constructor(
+    private readonly sitemapService: SitemapV10Service,
+    private readonly eventLog: SitemapEventLogService,
+  ) {
     this.readOnly = getAppConfig().supabase.readOnly;
   }
 
@@ -89,6 +93,15 @@ export class SitemapRegenerateProcessor {
           `${result.totalUrls} URLs across ${result.totalFiles} files`,
       );
 
+      // Étape 2 — heartbeat dans __seo_event_log (alimente l'alerte SITEMAP_STALE_V1
+      // via rpc_seo_alerts_v1). Fire-and-forget : le service avale ses erreurs.
+      await this.eventLog.recordHeartbeat(result.success, {
+        totalUrls: result.totalUrls,
+        totalFiles: result.totalFiles,
+        durationMs,
+        triggeredBy,
+      });
+
       return {
         startedAt: startedAtIso,
         finishedAt: new Date().toISOString(),
@@ -105,6 +118,11 @@ export class SitemapRegenerateProcessor {
         `❌ Sitemap V10 regeneration threw: ${message}`,
         err instanceof Error ? err.stack : String(err),
       );
+      await this.eventLog.recordHeartbeat(false, {
+        durationMs: Date.now() - startedAtMs,
+        triggeredBy,
+        errorMessage: message,
+      });
       return {
         startedAt: startedAtIso,
         finishedAt: new Date().toISOString(),
