@@ -10,6 +10,7 @@
  * Le `session_id` (localStorage) stitche les marches du funnel pour un visiteur.
  */
 import type { FunnelEventInput } from "@repo/seo-types";
+import { safeLocalStorage } from "~/utils/safe-storage";
 
 const ENDPOINT = "/api/seo/funnel/event";
 const SID_KEY = "amk_funnel_sid";
@@ -17,18 +18,15 @@ const SID_KEY = "amk_funnel_sid";
 /** Identifiant de session funnel (persistant sur la visite). "" côté serveur. */
 export function getFunnelSessionId(): string {
   if (typeof window === "undefined") return "";
-  try {
-    let sid = window.localStorage.getItem(SID_KEY);
-    if (!sid) {
-      sid =
-        window.crypto?.randomUUID?.() ??
-        `s_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-      window.localStorage.setItem(SID_KEY, sid);
-    }
-    return sid;
-  } catch {
-    return "";
+  // safeLocalStorage : ne throw jamais (SecurityError WebView, mode privé…).
+  let sid = safeLocalStorage.getItem(SID_KEY);
+  if (!sid) {
+    sid =
+      window.crypto?.randomUUID?.() ??
+      `s_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    safeLocalStorage.setItem(SID_KEY, sid);
   }
+  return sid;
 }
 
 export type FunnelDevice = "mobile" | "desktop" | "tablet" | "unknown";

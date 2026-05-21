@@ -25,7 +25,9 @@ export class FunnelEventsController {
     if (!parsed.success) {
       // Beacon malformé : ignoré silencieusement (202) pour ne pas polluer les
       // logs ni casser le client. On trace en debug uniquement.
-      this.logger.debug(`funnel event rejected (schema): ${parsed.error.message}`);
+      this.logger.debug(
+        `funnel event rejected (schema): ${parsed.error.message}`,
+      );
       return { ok: false };
     }
     return this.funnelEvents.record(parsed.data);
