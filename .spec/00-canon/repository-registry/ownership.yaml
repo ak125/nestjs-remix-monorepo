@@ -339,6 +339,15 @@ entries:
     owner: '@ak125/rag-team'
     sourceConfidence: medium
     risk: high
+  # D6 RAG & AI Engine — generic Supabase-Storage + image-processing utility.
+  # Was genuinely unmapped (UNKNOWN/__unassigned__); its only runtime consumer
+  # is rag-proxy (D6), so mapped to its real consumer rather than guessed.
+  # Flagged for owner ratification (like the D14 D8→seo-team reassignment).
+  - glob: backend/src/modules/upload/**
+    domain: D6
+    owner: '@ak125/rag-team'
+    sourceConfidence: medium
+    risk: medium
   - glob: backend/src/modules/rm/**
     domain: D2
     owner: __unassigned__

@@ -124,7 +124,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 54,
+      "loc": 56,
       "owner": "__unassigned__",
       "path": "backend/jest.config.js",
       "risk": "low",
@@ -2716,7 +2716,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 181,
+      "loc": 163,
       "owner": "__unassigned__",
       "path": "backend/src/common/utils/url-builder.utils.ts",
       "risk": "low",
@@ -16230,8 +16230,7 @@
       "importedBy": [],
       "imports": [
         "backend/src/modules/observability/diagnostic-kg-shadow-metrics.listener.ts",
-        "backend/src/modules/observability/diagnostic-kg-shadow.metrics.ts",
-        "prom-client"
+        "backend/src/modules/observability/diagnostic-kg-shadow.metrics.ts"
       ],
       "kind": "test",
       "loc": 84,
@@ -16281,9 +16280,7 @@
         "backend/src/modules/observability/diagnostic-kg-shadow-metrics.listener.ts",
         "backend/src/modules/observability/observability.module.ts"
       ],
-      "imports": [
-        "prom-client"
-      ],
+      "imports": [],
       "kind": "service",
       "loc": 36,
       "owner": "__unassigned__",
@@ -16310,8 +16307,7 @@
         "backend/src/modules/observability/observability.tokens.ts",
         "backend/src/modules/observability/prometheus.controller.ts",
         "backend/src/modules/observability/vehicle-context-metrics.listener.ts",
-        "backend/src/modules/observability/vehicle-context.metrics.ts",
-        "prom-client"
+        "backend/src/modules/observability/vehicle-context.metrics.ts"
       ],
       "kind": "service",
       "loc": 64,
@@ -16359,8 +16355,7 @@
         "backend/src/modules/observability/observability.module.ts"
       ],
       "imports": [
-        "backend/src/modules/observability/observability.tokens.ts",
-        "prom-client"
+        "backend/src/modules/observability/observability.tokens.ts"
       ],
       "kind": "controller",
       "loc": 30,
@@ -16382,8 +16377,7 @@
       "importedBy": [],
       "imports": [
         "backend/src/modules/observability/vehicle-context-metrics.listener.ts",
-        "backend/src/modules/observability/vehicle-context.metrics.ts",
-        "prom-client"
+        "backend/src/modules/observability/vehicle-context.metrics.ts"
       ],
       "kind": "test",
       "loc": 153,
@@ -16433,9 +16427,7 @@
         "backend/src/modules/observability/vehicle-context-metrics.listener.test.ts",
         "backend/src/modules/observability/vehicle-context-metrics.listener.ts"
       ],
-      "imports": [
-        "prom-client"
-      ],
+      "imports": [],
       "kind": "service",
       "loc": 57,
       "owner": "__unassigned__",
@@ -19844,7 +19836,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "controller",
-      "loc": 363,
+      "loc": 374,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rm/controllers/rm.controller.ts",
       "risk": "low",
@@ -20037,6 +20029,25 @@
       "loc": 88,
       "owner": "__unassigned__",
       "path": "backend/src/modules/rm/services/rm-soft404-tracker.service.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/rm/utils/page-v2-response.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 21,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/rm/utils/page-v2-response.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -21420,6 +21431,30 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/modules/seo-monitoring/controllers/funnel-events.controller.ts",
+      "importedBy": [
+        "backend/src/modules/seo-monitoring/seo-monitoring.module.ts"
+      ],
+      "imports": [
+        "../../app/packages/seo-types/dist/index.d.ts",
+        "backend/src/modules/seo-monitoring/services/funnel-events.service.ts"
+      ],
+      "kind": "controller",
+      "loc": 36,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/seo-monitoring/controllers/funnel-events.controller.ts",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/modules/seo-monitoring/controllers/quality-history.controller.ts",
       "importedBy": [
         "backend/src/modules/seo-monitoring/seo-monitoring.module.ts"
@@ -21513,6 +21548,7 @@
         "backend/src/workers/worker.module.ts"
       ],
       "imports": [
+        "backend/src/modules/seo-monitoring/controllers/funnel-events.controller.ts",
         "backend/src/modules/seo-monitoring/controllers/quality-history.controller.ts",
         "backend/src/modules/seo-monitoring/controllers/seo-monitoring.controller.ts",
         "backend/src/modules/seo-monitoring/services/audit-findings.service.ts",
@@ -21520,6 +21556,7 @@
         "backend/src/modules/seo-monitoring/services/crux-api-client.service.ts",
         "backend/src/modules/seo-monitoring/services/crux-field-fetcher.service.ts",
         "backend/src/modules/seo-monitoring/services/cwv-fetcher.service.ts",
+        "backend/src/modules/seo-monitoring/services/funnel-events.service.ts",
         "backend/src/modules/seo-monitoring/services/ga4-daily-fetcher.service.ts",
         "backend/src/modules/seo-monitoring/services/google-credentials.service.ts",
         "backend/src/modules/seo-monitoring/services/gsc-daily-fetcher.service.ts",
@@ -21530,7 +21567,7 @@
         "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts"
       ],
       "kind": "service",
-      "loc": 64,
+      "loc": 71,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo-monitoring/seo-monitoring.module.ts",
       "risk": "low",
@@ -21711,6 +21748,52 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/seo-monitoring/services/funnel-events.service.ts",
+      "importedBy": [
+        "backend/src/modules/seo-monitoring/controllers/funnel-events.controller.ts",
+        "backend/src/modules/seo-monitoring/seo-monitoring.module.ts"
+      ],
+      "imports": [
+        "../../app/packages/seo-types/dist/index.d.ts",
+        "@database/services/supabase-base.service"
+      ],
+      "kind": "service",
+      "loc": 47,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/seo-monitoring/services/funnel-events.service.ts",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/modules/seo-monitoring/services/funnel-events.test.ts",
+      "importedBy": [],
+      "imports": [
+        "../../app/packages/seo-types/dist/index.d.ts"
+      ],
+      "kind": "test",
+      "loc": 62,
+      "owner": "__unassigned__",
+      "path": "backend/src/modules/seo-monitoring/services/funnel-events.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -25877,7 +25960,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 747,
+      "loc": 770,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/services/sitemap-v10-hubs-cluster.service.ts",
       "risk": "low",
@@ -25940,7 +26023,7 @@
         "path"
       ],
       "kind": "service",
-      "loc": 716,
+      "loc": 729,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/services/sitemap-v10-hubs-vehicle.service.ts",
       "risk": "low",
@@ -26032,7 +26115,7 @@
         "backend/src/modules/seo/services/sitemap-v10.types.ts"
       ],
       "kind": "service",
-      "loc": 548,
+      "loc": 601,
       "owner": "__unassigned__",
       "path": "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
       "risk": "low",
@@ -31554,6 +31637,25 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/tests/unit/rm/page-v2-response.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 16,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/rm/page-v2-response.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/tests/unit/sentry-sanitize-event.test.ts",
       "importedBy": [],
       "imports": [],
@@ -31846,6 +31948,25 @@
       "loc": 589,
       "owner": "__unassigned__",
       "path": "backend/tests/unit/seo/risk-flags-engine.service.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/tests/unit/seo/sitemap-malformed-guard.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 38,
+      "owner": "__unassigned__",
+      "path": "backend/tests/unit/seo/sitemap-malformed-guard.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -32248,12 +32369,7 @@
       "domain": "UNKNOWN",
       "id": "frontend/app/components/RichTextEditor.tsx",
       "importedBy": [],
-      "imports": [
-        "@tiptap/extension-bold",
-        "@tiptap/extension-italic",
-        "@tiptap/react",
-        "@tiptap/starter-kit"
-      ],
+      "imports": [],
       "kind": "config",
       "loc": 235,
       "owner": "__unassigned__",
@@ -43018,10 +43134,11 @@
       ],
       "imports": [
         "frontend/app/root.tsx",
-        "frontend/app/services/cart.api.ts"
+        "frontend/app/services/cart.api.ts",
+        "~/utils/funnel-beacon"
       ],
       "kind": "config",
-      "loc": 167,
+      "loc": 178,
       "owner": "__unassigned__",
       "path": "frontend/app/hooks/useCart.ts",
       "risk": "low",
@@ -48860,11 +48977,12 @@
         "~/components/ui/badge",
         "~/components/ui/input",
         "~/components/ui/separator",
+        "~/utils/funnel-beacon",
         "~/utils/logger",
         "~/utils/page-role.types"
       ],
       "kind": "route",
-      "loc": 1004,
+      "loc": 1017,
       "owner": "__unassigned__",
       "path": "frontend/app/routes/diagnostic-auto._index.tsx",
       "risk": "low",
@@ -51815,6 +51933,28 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "frontend/app/utils/funnel-beacon.ts",
+      "importedBy": [],
+      "imports": [
+        "../../app/packages/seo-types/dist/index.d.ts",
+        "~/utils/safe-storage"
+      ],
+      "kind": "service",
+      "loc": 85,
+      "owner": "__unassigned__",
+      "path": "frontend/app/utils/funnel-beacon.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "frontend/app/utils/gamme-page-contract.utils.ts",
       "importedBy": [],
       "imports": [
@@ -52193,11 +52333,12 @@
         "frontend/app/utils/pieces-loader.utils.ts"
       ],
       "imports": [
+        "../../app/packages/seo-url-contract/dist/index.d.ts",
         "frontend/app/types/pieces-route.types.ts",
         "~/utils/logger"
       ],
       "kind": "service",
-      "loc": 608,
+      "loc": 558,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/pieces-route.utils.ts",
       "risk": "low",
@@ -52740,7 +52881,7 @@
       ],
       "imports": [],
       "kind": "service",
-      "loc": 177,
+      "loc": 139,
       "owner": "__unassigned__",
       "path": "frontend/app/utils/url-builder.utils.ts",
       "risk": "low",
@@ -54381,7 +54522,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 139,
+      "loc": 153,
       "owner": "__unassigned__",
       "path": "packages/registry/src/__tests__/shared.test.ts",
       "risk": "low",
@@ -54932,7 +55073,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 20,
+      "loc": 21,
       "owner": "__unassigned__",
       "path": "packages/registry/src/shared/derived-from.ts",
       "risk": "low",
@@ -56167,7 +56308,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 202,
+      "loc": 402,
       "owner": "__unassigned__",
       "path": "packages/seo-types/src/intelligence.ts",
       "risk": "low",
@@ -56208,6 +56349,63 @@
       "loc": 165,
       "owner": "__unassigned__",
       "path": "packages/seo-types/src/onpage.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "packages/seo-url-contract/src/index.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 2,
+      "owner": "__unassigned__",
+      "path": "packages/seo-url-contract/src/index.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "packages/seo-url-contract/src/url-rules.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 67,
+      "owner": "__unassigned__",
+      "path": "packages/seo-url-contract/src/url-rules.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "packages/seo-url-contract/src/url-rules.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 105,
+      "owner": "__unassigned__",
+      "path": "packages/seo-url-contract/src/url-rules.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -57348,6 +57546,25 @@
       "loc": 188,
       "owner": "__unassigned__",
       "path": "scripts/registry/build-files-registry.js",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/registry/build-files-registry.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 68,
+      "owner": "__unassigned__",
+      "path": "scripts/registry/build-files-registry.test.ts",
       "risk": "low",
       "runtime": true,
       "schemaVersion": "1.0.0",
@@ -58507,6 +58724,25 @@
       "loc": 196,
       "owner": "__unassigned__",
       "path": "scripts/wiki/validate-proposal.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "scripts/wiki/verify-diag-canon-parse.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "script",
+      "loc": 40,
+      "owner": "__unassigned__",
+      "path": "scripts/wiki/verify-diag-canon-parse.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",

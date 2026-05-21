@@ -177,7 +177,7 @@
         "backend/src/common/utils"
       ],
       "files_count": 36,
-      "loc_total": 1535,
+      "loc_total": 1517,
       "has_barrel": true
     },
     "config": {
@@ -227,10 +227,11 @@
         "backend/src/modules/rm/controllers",
         "backend/src/modules/rm/dto",
         "backend/src/modules/rm/services",
-        "backend/src/modules/rm/services/__tests__"
+        "backend/src/modules/rm/services/__tests__",
+        "backend/src/modules/rm/utils"
       ],
-      "files_count": 11,
-      "loc_total": 2459,
+      "files_count": 12,
+      "loc_total": 2491,
       "has_barrel": false
     },
     "diagnostic-engine": {
@@ -264,7 +265,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 242,
-      "loc_total": 118480,
+      "loc_total": 118493,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -346,8 +347,8 @@
         "frontend/app/utils",
         "frontend/app/utils/seo"
       ],
-      "files_count": 601,
-      "loc_total": 115761,
+      "files_count": 602,
+      "loc_total": 115769,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -565,7 +566,7 @@
         "packages/registry/src/vehicle-context"
       ],
       "files_count": 53,
-      "loc_total": 5520,
+      "loc_total": 5535,
       "has_barrel": true
     },
     "pkg-seo-types": {
@@ -573,7 +574,15 @@
         "packages/seo-types/src"
       ],
       "files_count": 10,
-      "loc_total": 1724,
+      "loc_total": 1924,
+      "has_barrel": true
+    },
+    "pkg-seo-url-contract": {
+      "dirs": [
+        "packages/seo-url-contract/src"
+      ],
+      "files_count": 3,
+      "loc_total": 174,
       "has_barrel": true
     },
     "products": {
@@ -646,8 +655,8 @@
         "scripts/ui-audit/rules",
         "scripts/ui-governance"
       ],
-      "files_count": 113,
-      "loc_total": 22263,
+      "files_count": 114,
+      "loc_total": 22331,
       "has_barrel": true
     },
     "search": {
@@ -715,7 +724,7 @@
         "scripts/seo/lib"
       ],
       "files_count": 252,
-      "loc_total": 54823,
+      "loc_total": 54912,
       "has_barrel": true
     },
     "seo-control-plane": {
@@ -749,8 +758,8 @@
         "backend/src/modules/seo-monitoring/processors",
         "backend/src/modules/seo-monitoring/services"
       ],
-      "files_count": 19,
-      "loc_total": 4533,
+      "files_count": 22,
+      "loc_total": 4685,
       "has_barrel": false
     },
     "seo-shadow-observatory": {
@@ -838,6 +847,7 @@
         "backend/tests",
         "backend/tests/__mocks__/@repo",
         "backend/tests/unit",
+        "backend/tests/unit/rm",
         "backend/tests/unit/seo",
         "backend/tests/unit/seo-control",
         "backend/tests/unit/seo-monitoring",
@@ -861,8 +871,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 127,
-      "loc_total": 24302,
+      "files_count": 129,
+      "loc_total": 24358,
       "has_barrel": true
     },
     "upload": {
@@ -917,8 +927,8 @@
       "dirs": [
         "scripts/wiki"
       ],
-      "files_count": 2,
-      "loc_total": 216,
+      "files_count": 3,
+      "loc_total": 256,
       "has_barrel": false
     },
     "workers": {

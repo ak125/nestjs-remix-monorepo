@@ -1528,7 +1528,8 @@
         "packages/registry/package.json",
         "packages/seo-role-contracts/package.json",
         "packages/seo-roles/package.json",
-        "packages/seo-types/package.json"
+        "packages/seo-types/package.json",
+        "packages/seo-url-contract/package.json"
       ],
       "id": "npm:@types/node@^20.0.0",
       "name": "@types/node",
@@ -1543,7 +1544,8 @@
         "@repo/registry",
         "@repo/seo-role-contracts",
         "@repo/seo-roles",
-        "@repo/seo-types"
+        "@repo/seo-types",
+        "@repo/seo-url-contract"
       ]
     },
     {
@@ -3756,6 +3758,22 @@
     },
     {
       "declaredIn": [
+        "packages/seo-url-contract/package.json"
+      ],
+      "id": "npm:tsx@^4.7.0",
+      "name": "tsx",
+      "owner": "__unassigned__",
+      "schemaVersion": "1.0.0",
+      "source": "npm",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "version": "^4.7.0",
+      "workspaces": [
+        "@repo/seo-url-contract"
+      ]
+    },
+    {
+      "declaredIn": [
         "package.json"
       ],
       "id": "npm:turbo@^2.9.12",
@@ -3781,7 +3799,8 @@
         "packages/registry/package.json",
         "packages/seo-role-contracts/package.json",
         "packages/seo-roles/package.json",
-        "packages/seo-types/package.json"
+        "packages/seo-types/package.json",
+        "packages/seo-url-contract/package.json"
       ],
       "id": "npm:typescript@^5.9.3",
       "name": "typescript",
@@ -3801,6 +3820,7 @@
         "@repo/seo-role-contracts",
         "@repo/seo-roles",
         "@repo/seo-types",
+        "@repo/seo-url-contract",
         "nestjs-remix-monorepo"
       ]
     },
@@ -4138,6 +4158,24 @@
       "version": "*",
       "workspaces": [
         "@fafa/backend"
+      ]
+    },
+    {
+      "declaredIn": [
+        "backend/package.json",
+        "frontend/package.json"
+      ],
+      "id": "workspace:@repo/seo-url-contract@*",
+      "name": "@repo/seo-url-contract",
+      "owner": "__unassigned__",
+      "schemaVersion": "1.0.0",
+      "source": "workspace",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "version": "*",
+      "workspaces": [
+        "@fafa/backend",
+        "@fafa/frontend"
       ]
     },
     {

@@ -2467,6 +2467,17 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/modules/seo-monitoring/services/funnel-events.service.ts"
+      ],
+      "id": "runtime:backend/src/modules/seo-monitoring/controllers/funnel-events.controller.ts",
+      "kind": "nestjs-controller",
+      "path": "backend/src/modules/seo-monitoring/controllers/funnel-events.controller.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
         "runtime:backend/src/modules/seo-monitoring/services/quality-history-snapshot.service.ts"
       ],
       "id": "runtime:backend/src/modules/seo-monitoring/controllers/quality-history.controller.ts",
@@ -2478,12 +2489,14 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/modules/seo-monitoring/controllers/funnel-events.controller.ts",
         "runtime:backend/src/modules/seo-monitoring/controllers/quality-history.controller.ts",
         "runtime:backend/src/modules/seo-monitoring/services/audit-findings.service.ts",
         "runtime:backend/src/modules/seo-monitoring/services/crux-alerter.service.ts",
         "runtime:backend/src/modules/seo-monitoring/services/crux-api-client.service.ts",
         "runtime:backend/src/modules/seo-monitoring/services/crux-field-fetcher.service.ts",
         "runtime:backend/src/modules/seo-monitoring/services/cwv-fetcher.service.ts",
+        "runtime:backend/src/modules/seo-monitoring/services/funnel-events.service.ts",
         "runtime:backend/src/modules/seo-monitoring/services/ga4-daily-fetcher.service.ts",
         "runtime:backend/src/modules/seo-monitoring/services/google-credentials.service.ts",
         "runtime:backend/src/modules/seo-monitoring/services/gsc-daily-fetcher.service.ts",

@@ -4241,6 +4241,7 @@
       "usedBy": [
         "backend/src/modules/admin/services/seo-control.service.ts",
         "backend/src/modules/seo-monitoring/controllers/seo-monitoring.controller.ts",
+        "backend/src/modules/seo-monitoring/services/funnel-events.service.ts",
         "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts"
       ]
     },

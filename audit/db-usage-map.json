@@ -16,8 +16,8 @@
     "candidate_orphan_rpc": 159,
     "dynamic_from_callsites": 894,
     "dynamic_rpc_callsites": 3,
-    "migrations_scanned": 242,
-    "backend_files_scanned": 1154
+    "migrations_scanned": 243,
+    "backend_files_scanned": 1158
   },
   "tables": {
     "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7": {
@@ -915,9 +915,10 @@
       "used_by": [
         "backend/src/modules/admin/services/seo-control.service.ts",
         "backend/src/modules/seo-monitoring/controllers/seo-monitoring.controller.ts",
+        "backend/src/modules/seo-monitoring/services/funnel-events.service.ts",
         "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts"
       ],
-      "used_by_count": 3,
+      "used_by_count": 4,
       "in_migrations": [
         "20260425_seo_event_log.sql"
       ],
@@ -11042,7 +11043,7 @@
     },
     {
       "file": "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
-      "line": 210
+      "line": 214
     },
     {
       "file": "backend/src/modules/seo/services/sitemap-v10-static.service.ts",

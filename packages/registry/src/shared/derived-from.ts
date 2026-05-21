@@ -14,6 +14,7 @@ export const DerivedFromSchema = z.enum([
   "codeowners",  // .github/CODEOWNERS pattern match
   "heuristic",   // path-based naming convention
   "manual",      // explicit human entry in ownership.yaml or similar
+  "reachability",// transitive import-graph reachability (status=LIVE derivation)
 ]);
 
 export type DerivedFrom = z.infer<typeof DerivedFromSchema>;
