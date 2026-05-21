@@ -1,5 +1,5 @@
 {
-  "artifact_immutability_hash": "sha256:34b34f9dd21f83c7a09d461d0974129be270624f0861f13cff12cf4b0aa3d80a",
+  "artifact_immutability_hash": "sha256:77f1155cd05501794f42f978106f0bf55327d71d1eba1fec6a9625deb06f987e",
   "divergences": [
     {
       "kind": "specifier",
@@ -3949,7 +3949,7 @@
     "deps_registry": "audit/registry/deps.json",
     "deps_registry_sha": "sha256:d62e9b8155d405d8c4dab916ee31ccaabb577f15065ce0cb5cc16cec205f8022",
     "lockfile": "package-lock.json",
-    "lockfile_sha": "sha256:fd3b3909bd17c19c29f2c7b48ea73851198f4d7e015181724c8982204a042e0b",
+    "lockfile_sha": "sha256:b09ddc2ac722e9c2646af2a8696516a8cc76c6429ece38d5c01f5f8bc32a206c",
     "overlay": "audit/dependencies/family-overlay.yaml",
     "overlay_sha": "sha256:c88cee03acf27840da9c5826c7a3edbcd086a70a58ee323d9c32d33ec33c1a57"
   },
