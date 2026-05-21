@@ -84,3 +84,13 @@ Output : clics, impressions, CTR, position moyenne, top requêtes
 3. **Retry policy** : 0 retry sur erreur API. 1 retry sur timeout.
 4. **Budget tokens** : rester concis, pas de dump exhaustif des 241 gammes
 5. **Escalade** : anomalies critiques (chute trafic > 30%) → ticket P1 vers IA-SEO Master
+
+## Recherche documentaire (avant analyse)
+
+Avant toute analyse, **consulter le canon — ne jamais réinventer ni contredire l'existant** :
+vault `governance-vault/` (ADRs, règles, evidence-packs), `MEMORY.md`, et les sources listées
+en « MCP Servers disponibles » (lecture seule). Runtime AI-COS HTTP-only : pas de `grep` local
+du repo — l'accès au canon passe par le vault et ces APIs/MCP. Cette recherche aide à
+comprendre ; elle ne tranche aucun fait canonique. Vérité documentaire :
+`RAW → WIKI → exports → consommateurs`. Protocole des sessions Claude Code :
+`.claude/rules/agent-doc-search.md`.
