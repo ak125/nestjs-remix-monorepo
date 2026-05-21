@@ -14,7 +14,11 @@ import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 import { DatabaseException, ErrorCodes } from '@common/exceptions';
-import { normalizeAlias } from '../../../common/utils/url-builder.utils';
+import {
+  normalizeAlias,
+  normalizeTypeAlias,
+  isMalformedSeoUrl,
+} from '../../../common/utils/url-builder.utils';
 import { SitemapV10DataService } from './sitemap-v10-data.service';
 import { SitemapV10XmlService } from './sitemap-v10-xml.service';
 import { FAMILY_CLUSTERS } from './sitemap-v10-hubs.types';
@@ -222,6 +226,7 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
     let hasMore = true;
     let totalCount = 0;
     let skippedOrphans = 0;
+    let skippedMalformed = 0;
     const filePaths: string[] = [];
 
     this.logger.log(
@@ -267,13 +272,12 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
           const shardPieces = currentBatch.slice(0, SHARD_SIZE);
           currentBatch = currentBatch.slice(SHARD_SIZE);
 
-          const shardUrls: SitemapUrl[] = shardPieces.map((p) => ({
-            url: `/pieces/${normalizeAlias(p.map_pg_alias)}-${p.map_pg_id}/${normalizeAlias(p.map_marque_alias)}-${p.map_marque_id}/${normalizeAlias(p.map_modele_alias)}-${p.map_modele_id}/${normalizeAlias(p.map_type_alias)}-${p.map_type_id}.html`,
-            page_type: 'piece',
-            changefreq: config.changefreq,
-            priority: computePiecePriority(p.map_pg_id, p.map_marque_id),
-            last_modified_at: null,
-          }));
+          const { urls: shardUrls, skipped } = this.pieceShardUrls(
+            shardPieces,
+            'piece',
+            config.changefreq,
+          );
+          skippedMalformed += skipped;
 
           shardIndex++;
           const fileName = `sitemap-pieces-${shardIndex}.xml`;
@@ -302,13 +306,12 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
 
     // Ecrire le dernier shard partiel
     if (currentBatch.length > 0) {
-      const shardUrls: SitemapUrl[] = currentBatch.map((p) => ({
-        url: `/pieces/${normalizeAlias(p.map_pg_alias)}-${p.map_pg_id}/${normalizeAlias(p.map_marque_alias)}-${p.map_marque_id}/${normalizeAlias(p.map_modele_alias)}-${p.map_modele_id}/${normalizeAlias(p.map_type_alias)}-${p.map_type_id}.html`,
-        page_type: 'piece',
-        changefreq: config.changefreq,
-        priority: computePiecePriority(p.map_pg_id, p.map_marque_id),
-        last_modified_at: null,
-      }));
+      const { urls: shardUrls, skipped } = this.pieceShardUrls(
+        currentBatch,
+        'piece',
+        config.changefreq,
+      );
+      skippedMalformed += skipped;
 
       shardIndex++;
       const fileName =
@@ -340,8 +343,53 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
         `  🧹 Filtered out ${skippedOrphans.toLocaleString()} URLs with orphan type_ids (TecDoc V1 remap residue)`,
       );
     }
+    if (skippedMalformed > 0) {
+      this.logger.warn(
+        `  🧹 Skipped ${skippedMalformed.toLocaleString()} malformed URLs (null/type/repeated-id alias)`,
+      );
+    }
 
     return { filePaths, totalCount };
+  }
+
+  /**
+   * Construit l'URL relative d'une pièce-véhicule pour le sitemap. L'alias type
+   * passe par le SoT normalizeTypeAlias (null/"type"/alias==id -> "type") puis
+   * normalizeAlias : sortie identique à l'ancien code pour les lignes valides.
+   */
+  private buildPieceUrl(p: PieceV9): string {
+    const typeSeg = normalizeAlias(
+      normalizeTypeAlias(p.map_type_alias, null, p.map_type_id),
+    );
+    return `/pieces/${normalizeAlias(p.map_pg_alias)}-${p.map_pg_id}/${normalizeAlias(p.map_marque_alias)}-${p.map_marque_id}/${normalizeAlias(p.map_modele_alias)}-${p.map_modele_id}/${typeSeg}-${p.map_type_id}.html`;
+  }
+
+  /**
+   * Mappe des pièces en SitemapUrl en écartant (et comptant) toute URL mal
+   * formée — défense en profondeur (ADR-062).
+   */
+  private pieceShardUrls(
+    pieces: PieceV9[],
+    pageType: string,
+    changefreq: string,
+  ): { urls: SitemapUrl[]; skipped: number } {
+    const urls: SitemapUrl[] = [];
+    let skipped = 0;
+    for (const p of pieces) {
+      const url = this.buildPieceUrl(p);
+      if (isMalformedSeoUrl(url)) {
+        skipped++;
+        continue;
+      }
+      urls.push({
+        url,
+        page_type: pageType,
+        changefreq,
+        priority: computePiecePriority(p.map_pg_id, p.map_marque_id),
+        last_modified_at: null,
+      });
+    }
+    return { urls, skipped };
   }
 
   /**
@@ -415,6 +463,7 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
       let offset = 0;
       let hasMore = true;
       let skippedOrphans = 0;
+      let skippedMalformed = 0;
 
       while (hasMore) {
         const { data: pieces, error: piecesError } = await this.supabase
@@ -461,15 +510,19 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
           `   🧹 Filtered out ${skippedOrphans.toLocaleString()} orphan type_ids for ${familyKey}`,
         );
       }
+      if (skippedMalformed > 0) {
+        this.logger.warn(
+          `   🧹 Skipped ${skippedMalformed.toLocaleString()} malformed URLs for ${familyKey}`,
+        );
+      }
 
       // 4. Construire les SitemapUrl
-      const urls: SitemapUrl[] = allPieces.map((p) => ({
-        url: `/pieces/${normalizeAlias(p.map_pg_alias)}-${p.map_pg_id}/${normalizeAlias(p.map_marque_alias)}-${p.map_marque_id}/${normalizeAlias(p.map_modele_alias)}-${p.map_modele_id}/${normalizeAlias(p.map_type_alias)}-${p.map_type_id}.html`,
-        page_type: 'product',
-        changefreq: 'weekly',
-        priority: computePiecePriority(p.map_pg_id, p.map_marque_id),
-        last_modified_at: null,
-      }));
+      const { urls, skipped } = this.pieceShardUrls(
+        allPieces,
+        'product',
+        'weekly',
+      );
+      skippedMalformed += skipped;
 
       // 4.5 Dedupliquer inter-familles
       const processedUrlsCache = this.dataService.getProcessedUrlsCache();
