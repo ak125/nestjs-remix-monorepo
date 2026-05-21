@@ -11,7 +11,11 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
-import { normalizeAlias } from '../../../common/utils/url-builder.utils';
+import {
+  normalizeAlias,
+  normalizeTypeAlias,
+  isMalformedSeoUrl,
+} from '../../../common/utils/url-builder.utils';
 import { SITE_ORIGIN } from '../../../config/app.config';
 import { getValidTypeIds } from '../helpers/auto-type-valid-ids.helper';
 import {
@@ -154,10 +158,24 @@ export class HubsClusterService extends SupabaseBaseService {
           }
 
           // 3. Construire les URLs au format V10
-          const urls = allPieces.map(
-            (p) =>
-              `${this.BASE_URL}/pieces/${normalizeAlias(p.map_pg_alias)}-${p.map_pg_id}/${normalizeAlias(p.map_marque_alias)}-${p.map_marque_id}/${normalizeAlias(p.map_modele_alias)}-${p.map_modele_id}/${normalizeAlias(p.map_type_alias)}-${p.map_type_id}.html`,
-          );
+          const urls: string[] = [];
+          let skippedMalformed = 0;
+          for (const p of allPieces) {
+            const typeSeg = normalizeAlias(
+              normalizeTypeAlias(p.map_type_alias, null, p.map_type_id),
+            );
+            const url = `${this.BASE_URL}/pieces/${normalizeAlias(p.map_pg_alias)}-${p.map_pg_id}/${normalizeAlias(p.map_marque_alias)}-${p.map_marque_id}/${normalizeAlias(p.map_modele_alias)}-${p.map_modele_id}/${typeSeg}-${p.map_type_id}.html`;
+            if (isMalformedSeoUrl(url)) {
+              skippedMalformed++;
+              continue;
+            }
+            urls.push(url);
+          }
+          if (skippedMalformed > 0) {
+            this.logger.warn(
+              `   🧹 Skipped ${skippedMalformed.toLocaleString()} malformed cluster URLs`,
+            );
+          }
 
           if (urls.length > 0) {
             subcategoryData.push({
@@ -394,8 +412,13 @@ export class HubsClusterService extends SupabaseBaseService {
               ? parseInt(p.map_type_id, 10)
               : (p.map_type_id as number);
           if (!validTypeIds.has(typeIdNum)) continue;
+          const typeSeg = normalizeAlias(
+            normalizeTypeAlias(p.map_type_alias, null, p.map_type_id),
+          );
+          const url = `${this.BASE_URL}/pieces/${normalizeAlias(p.map_pg_alias)}-${p.map_pg_id}/${normalizeAlias(p.map_marque_alias)}-${p.map_marque_id}/${normalizeAlias(p.map_modele_alias)}-${p.map_modele_id}/${typeSeg}-${p.map_type_id}.html`;
+          if (isMalformedSeoUrl(url)) continue;
           allUrls.push({
-            url: `${this.BASE_URL}/pieces/${normalizeAlias(p.map_pg_alias)}-${p.map_pg_id}/${normalizeAlias(p.map_marque_alias)}-${p.map_marque_id}/${normalizeAlias(p.map_modele_alias)}-${p.map_modele_id}/${normalizeAlias(p.map_type_alias)}-${p.map_type_id}.html`,
+            url,
             subcategory: subcategory.name,
             hasItem: p.map_has_item || 0,
           });

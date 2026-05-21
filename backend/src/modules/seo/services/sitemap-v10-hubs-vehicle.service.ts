@@ -14,7 +14,11 @@ import * as path from 'path';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 import { SITE_ORIGIN } from '../../../config/app.config';
-import { normalizeAlias } from '../../../common/utils/url-builder.utils';
+import {
+  normalizeAlias,
+  normalizeTypeAlias,
+  isMalformedSeoUrl,
+} from '../../../common/utils/url-builder.utils';
 import { getValidTypeIds } from '../helpers/auto-type-valid-ids.helper';
 import {
   HubGenerationResult,
@@ -185,6 +189,7 @@ ${links}
       let offset = 0;
       let hasMore = true;
       let skippedOrphans = 0;
+      let skippedMalformed = 0;
       const seen = new Set<string>();
       const vehicleUrls: string[] = [];
 
@@ -225,9 +230,12 @@ ${links}
               seen.add(key);
               // ✅ FIX: Ajouter les IDs à chaque segment (vérifié 200 OK)
               // Format: /constructeurs/{marque}-{id}/{modele}-{id}/{type}-{id}.html
-              vehicleUrls.push(
-                `${this.BASE_URL}/constructeurs/${normalizeAlias(v.map_marque_alias)}-${v.map_marque_id}/${normalizeAlias(v.map_modele_alias)}-${v.map_modele_id}/${normalizeAlias(v.map_type_alias)}-${v.map_type_id}.html`,
-              );
+              const vehUrl = `${this.BASE_URL}/constructeurs/${normalizeAlias(v.map_marque_alias)}-${v.map_marque_id}/${normalizeAlias(v.map_modele_alias)}-${v.map_modele_id}/${normalizeAlias(normalizeTypeAlias(v.map_type_alias, null, v.map_type_id))}-${v.map_type_id}.html`;
+              if (isMalformedSeoUrl(vehUrl)) {
+                skippedMalformed++;
+              } else {
+                vehicleUrls.push(vehUrl);
+              }
             }
           }
           offset += PAGE_SIZE;
@@ -251,6 +259,11 @@ ${links}
       if (skippedOrphans > 0) {
         this.logger.warn(
           `   🧹 Filtered out ${skippedOrphans.toLocaleString()} orphan type_ids (TecDoc V1 remap residue)`,
+        );
+      }
+      if (skippedMalformed > 0) {
+        this.logger.warn(
+          `   🧹 Skipped ${skippedMalformed.toLocaleString()} malformed vehicle URLs`,
         );
       }
 

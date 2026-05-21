@@ -156,6 +156,101 @@
       "usedBy": []
     },
     {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_job_type",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_idempotency_key",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_input",
+          "type": "JSONB"
+        },
+        {
+          "mode": "IN",
+          "name": "p_actor",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_trace_id",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260518_seo_admin_job_table.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.__seo_admin_job_accept",
+      "language": "plpgsql",
+      "name": "__seo_admin_job_accept",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public"
+      ],
+      "securityDefiner": true,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_job_id",
+          "type": "UUID"
+        },
+        {
+          "mode": "IN",
+          "name": "p_new_status",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_result",
+          "type": "JSONB"
+        },
+        {
+          "mode": "IN",
+          "name": "p_error",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260518_seo_admin_job_table.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.__seo_admin_job_transition",
+      "language": "plpgsql",
+      "name": "__seo_admin_job_transition",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "public.__seo_admin_job",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public"
+      ],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
       "args": [],
       "definedInMigrations": [
         "20260420_seo_brand_editorial_table.sql"
@@ -198,6 +293,114 @@
       "usedBy": []
     },
     {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_limit",
+          "type": "INTEGER"
+        }
+      ],
+      "definedInMigrations": [
+        "20260517_seo_r2_v2_outbox_relay_rpc.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.__seo_outbox_claim_batch",
+      "language": "plpgsql",
+      "name": "__seo_outbox_claim_batch",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public"
+      ],
+      "securityDefiner": true,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260515_seo_r2_v2_foundation.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.__seo_r2_set_updated_at",
+      "language": "plpgsql",
+      "name": "__seo_r2_set_updated_at",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "TRIGGER",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_type_id",
+          "type": "BIGINT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_version_sha",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_disambiguation_signature",
+          "type": "JSONB"
+        },
+        {
+          "mode": "IN",
+          "name": "p_enrichment_status",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_source_lineage",
+          "type": "JSONB"
+        },
+        {
+          "mode": "IN",
+          "name": "p_event_reason",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260517_seo_r2_v2_outbox_relay_rpc.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.__seo_r8_publish_snapshot",
+      "language": "plpgsql",
+      "name": "__seo_r8_publish_snapshot",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public"
+      ],
+      "securityDefiner": true,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
       "args": [],
       "definedInMigrations": [
         "20260128_dco_v2_tables.sql"
@@ -210,6 +413,102 @@
       "parseMode": "parsed",
       "parseWarnings": [],
       "returnType": "TRIGGER",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_alert_type",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260518_seo_control_001_helpers.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public._seo_resolve_operational_domain",
+      "language": "sql",
+      "name": "_seo_resolve_operational_domain",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "TEXT",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_url",
+          "type": "TEXT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260518_seo_control_001_helpers.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public._seo_resolve_surface_key",
+      "language": "sql",
+      "name": "_seo_resolve_surface_key",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "TEXT",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_page",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_window_days",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_now",
+          "type": "TIMESTAMPTZ"
+        },
+        {
+          "mode": "IN",
+          "name": "p_limit",
+          "type": "INT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260518_seo_control_001_helpers.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public._seo_top_queries_for_page_jsonb",
+      "language": "sql",
+      "name": "_seo_top_queries_for_page_jsonb",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "JSONB",
       "schema": "public",
       "schemaVersion": "1.0.0",
       "searchPath": [],
@@ -1493,6 +1792,40 @@
       "args": [
         {
           "mode": "IN",
+          "name": "p_limit",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_offset",
+          "type": "INT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260519_merchant_center_feed_v1.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_merchant_center_feed_v1",
+      "language": "sql",
+      "name": "get_merchant_center_feed_v1",
+      "owner": "__unassigned__",
+      "parseMode": "partially_parsed",
+      "parseWarnings": [
+        "RETURNS clause not found in 1KB lookahead"
+      ],
+      "returnType": "",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
           "name": "p_piece_id",
           "type": "integer"
         }
@@ -1891,6 +2224,45 @@
       "searchPath": [],
       "securityDefiner": false,
       "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_type_id",
+          "type": "bigint"
+        },
+        {
+          "mode": "IN",
+          "name": "p_pg_id",
+          "type": "bigint"
+        },
+        {
+          "mode": "IN",
+          "name": "p_limit",
+          "type": "int"
+        }
+      ],
+      "definedInMigrations": [
+        "20260518180000_soft_404_rpcs.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_soft_404_alternatives",
+      "language": "plpgsql",
+      "name": "get_soft_404_alternatives",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "jsonb",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public"
+      ],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
       "status": "UNKNOWN",
       "usedBy": []
     },
@@ -5383,6 +5755,223 @@
       "args": [
         {
           "mode": "IN",
+          "name": "p_now",
+          "type": "TIMESTAMPTZ"
+        },
+        {
+          "mode": "IN",
+          "name": "p_limit",
+          "type": "INT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260518_seo_control_002_rpcs.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.rpc_seo_alerts_v1",
+      "language": "sql",
+      "name": "rpc_seo_alerts_v1",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "JSONB",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_range",
+          "type": "TEXT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_now",
+          "type": "TIMESTAMPTZ"
+        }
+      ],
+      "definedInMigrations": [
+        "20260518_seo_control_002_rpcs.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.rpc_seo_control_snapshot_v1",
+      "language": "plpgsql",
+      "name": "rpc_seo_control_snapshot_v1",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "JSONB",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_window_days",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_now",
+          "type": "TIMESTAMPTZ"
+        },
+        {
+          "mode": "IN",
+          "name": "p_limit",
+          "type": "INT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260518_seo_control_002_rpcs.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.rpc_seo_conversion_v1",
+      "language": "sql",
+      "name": "rpc_seo_conversion_v1",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "JSONB",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_window_days",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_now",
+          "type": "TIMESTAMPTZ"
+        },
+        {
+          "mode": "IN",
+          "name": "p_min_impressions",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_max_ctr",
+          "type": "NUMERIC"
+        },
+        {
+          "mode": "IN",
+          "name": "p_limit",
+          "type": "INT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260518_seo_control_002_rpcs.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.rpc_seo_low_ctr_v1",
+      "language": "sql",
+      "name": "rpc_seo_low_ctr_v1",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "JSONB",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_window_days",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_now",
+          "type": "TIMESTAMPTZ"
+        },
+        {
+          "mode": "IN",
+          "name": "p_limit",
+          "type": "INT"
+        }
+      ],
+      "definedInMigrations": [
+        "20260518_seo_control_002_rpcs.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.rpc_seo_top_losers_v1",
+      "language": "sql",
+      "name": "rpc_seo_top_losers_v1",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "JSONB",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_window_days",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_now",
+          "type": "TIMESTAMPTZ"
+        }
+      ],
+      "definedInMigrations": [
+        "20260518_seo_control_002_rpcs.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.rpc_seo_traffic_v1",
+      "language": "sql",
+      "name": "rpc_seo_traffic_v1",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "JSONB",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
           "name": "p_query",
           "type": "TEXT"
         },
@@ -5563,6 +6152,50 @@
       "schemaVersion": "1.0.0",
       "searchPath": [],
       "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_pg_id",
+          "type": "integer"
+        },
+        {
+          "mode": "IN",
+          "name": "p_type_id",
+          "type": "integer"
+        },
+        {
+          "mode": "IN",
+          "name": "p_referrer",
+          "type": "text"
+        },
+        {
+          "mode": "IN",
+          "name": "p_ua_class",
+          "type": "text"
+        }
+      ],
+      "definedInMigrations": [
+        "20260518180000_soft_404_rpcs.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.track_soft_404_event",
+      "language": "plpgsql",
+      "name": "track_soft_404_event",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "void",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public"
+      ],
+      "securityDefiner": true,
       "sourceConfidence": "high",
       "status": "UNKNOWN",
       "usedBy": []

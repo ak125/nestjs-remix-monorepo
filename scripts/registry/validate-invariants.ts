@@ -12,6 +12,16 @@
  *   I3. Aucun cycle dans `runtime.startup_order` (DAG must be acyclic).
  *       Confirms dep-cruiser's existing cycle check at the registry level.
  *   I4. Tout glob `ownership.yaml` résout ≥ 1 fichier réel (orphan-free).
+ *   I5. Cohérence domaine cross-source (domains.yaml ↔ ownership.yaml) :
+ *       a) tout domaine défini dans domains.yaml est mappé par ≥ 1 entrée
+ *          ownership.yaml, ou marqué `expectedEmpty: true` (error) ;
+ *       b) tout glob domains.yaml résout ≥ 1 fichier réel (error — backlog de
+ *          dérive documentaire désormais réconcilié ; garde domains.yaml fiable) ;
+ *       c) tout domaine référencé par ownership.yaml est défini dans
+ *          domains.yaml (error). → rend impossible un domaine orphelin/fantôme.
+ *   I6. Fraîcheur par empreinte : canonical.meta.inputHashes == hash réels des
+ *       inputs L1+L2 (error). → détecte le drift overlay→projection que le
+ *       `git diff` seul et le ratchet laissaient passer silencieusement.
  *
  * Plus extensive relational invariants (RefId URN resolution, cross-domain
  * edges, LOCKED ⇒ critical, deletePolicy/risk consistency) are V1.5+.
@@ -27,6 +37,7 @@
 import { readFileSync, existsSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { execSync } from "node:child_process";
+import { createHash } from "node:crypto";
 
 import micromatch from "micromatch";
 import yaml from "js-yaml";
@@ -47,13 +58,24 @@ interface Finding {
 
 const MONOREPO_ROOT = resolve(__dirname, "..", "..");
 const CANONICAL_PATH = join(MONOREPO_ROOT, "audit", "registry", "canonical.json");
-const OWNERSHIP_PATH = join(
+const OVERLAY_DIR = join(
   MONOREPO_ROOT,
   ".spec",
   "00-canon",
-  "repository-registry",
-  "ownership.yaml"
+  "repository-registry"
 );
+const OWNERSHIP_PATH = join(OVERLAY_DIR, "ownership.yaml");
+const DOMAINS_PATH = join(OVERLAY_DIR, "domains.yaml");
+
+interface DomainEntry {
+  id: string;
+  globs?: string[];
+  /** Set true when a domain is intentionally defined without any file mapping. */
+  expectedEmpty?: boolean;
+}
+interface DomainsRegistry {
+  entries: DomainEntry[];
+}
 
 const STRICT = process.argv.includes("--strict");
 const QUIET = process.argv.includes("--quiet");
@@ -74,6 +96,15 @@ function loadCanonical(): CanonicalRegistry {
 function loadOwnership(): OwnershipRegistry | null {
   if (!existsSync(OWNERSHIP_PATH)) return null;
   return yaml.load(readFileSync(OWNERSHIP_PATH, "utf8")) as OwnershipRegistry;
+}
+
+function loadDomains(): DomainsRegistry | null {
+  if (!existsSync(DOMAINS_PATH)) return null;
+  return yaml.load(readFileSync(DOMAINS_PATH, "utf8")) as DomainsRegistry;
+}
+
+function sha256OfFile(absPath: string): string {
+  return createHash("sha256").update(readFileSync(absPath)).digest("hex");
 }
 
 function gitLsFiles(): string[] {
@@ -217,16 +248,132 @@ function checkOwnershipOrphanFree(): Finding[] {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// I5 — Domain consistency cross-source (domains.yaml ↔ ownership.yaml)
+// Pure (inputs injected) so it is unit-testable without filesystem access.
+export function checkDomainConsistency(
+  domains: DomainsRegistry | null,
+  ownership: OwnershipRegistry | null,
+  realFiles: string[]
+): Finding[] {
+  const findings: Finding[] = [];
+  if (!domains || !ownership) {
+    findings.push({
+      invariant: "I5-domain-consistency",
+      severity: "warn",
+      message: "domains.yaml or ownership.yaml absent — skipping domain consistency",
+    });
+    return findings;
+  }
+
+  const definedIds = new Set(domains.entries.map((d) => d.id));
+  const expectedEmpty = new Set(
+    domains.entries.filter((d) => d.expectedEmpty).map((d) => d.id)
+  );
+  const mappedIds = new Set(
+    ownership.entries
+      .map((e) => e.domain)
+      .filter((d): d is string => Boolean(d) && d !== "UNKNOWN")
+  );
+
+  // I5a — every defined domain is mapped by ownership.yaml, or expectedEmpty.
+  for (const id of definedIds) {
+    if (!mappedIds.has(id) && !expectedEmpty.has(id)) {
+      findings.push({
+        invariant: "I5a-domain-mapped",
+        severity: "error",
+        message: `domain ${id} defined in domains.yaml but no ownership.yaml entry maps to it (add a glob, or set expectedEmpty: true if intentional)`,
+      });
+    }
+  }
+
+  // I5c — every domain referenced by ownership.yaml is defined in domains.yaml.
+  for (const id of mappedIds) {
+    if (!definedIds.has(id)) {
+      findings.push({
+        invariant: "I5c-domain-defined",
+        severity: "error",
+        message: `ownership.yaml references domain ${id} not defined in domains.yaml`,
+      });
+    }
+  }
+
+  // I5b — every domains.yaml glob resolves ≥ 1 file. The builder uses
+  // ownership.yaml for resolution, so these globs are domains.yaml-local
+  // documentation; keeping them truthful is what makes domains.yaml a reliable
+  // map. Now ERROR (the ghost-glob backlog was reconciled): a glob that stops
+  // resolving (module renamed/removed) must be updated in the same change.
+  for (const d of domains.entries) {
+    for (const glob of d.globs ?? []) {
+      if (micromatch(realFiles, glob).length === 0) {
+        findings.push({
+          invariant: "I5b-domain-glob-resolves",
+          severity: "error",
+          message: `domains.yaml ${d.id} glob "${glob}" matches 0 files (stale path — update to the real location)`,
+        });
+      }
+    }
+  }
+  return findings;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// I6 — canonical.json fresh vs its declared inputs (fingerprint integrity)
+// Pure : `resolveHash(rel)` returns the input's actual sha256, or null if the
+// declared input no longer exists. Injected so it is unit-testable.
+export function checkCanonicalFresh(
+  inputHashes: Record<string, string> | undefined,
+  resolveHash: (rel: string) => string | null
+): Finding[] {
+  const findings: Finding[] = [];
+  if (!inputHashes || Object.keys(inputHashes).length === 0) {
+    findings.push({
+      invariant: "I6-canonical-fresh",
+      severity: "warn",
+      message: "canonical.meta.inputHashes absent — cannot verify freshness",
+    });
+    return findings;
+  }
+  for (const [rel, expected] of Object.entries(inputHashes)) {
+    const actual = resolveHash(rel);
+    if (actual === null) {
+      findings.push({
+        invariant: "I6-canonical-fresh",
+        severity: "error",
+        message: `declared input "${rel}" missing — canonical.json references a nonexistent source`,
+      });
+      continue;
+    }
+    if (actual !== expected) {
+      findings.push({
+        invariant: "I6-canonical-fresh",
+        severity: "error",
+        message: `canonical.json STALE vs ${rel} (declared ${expected.slice(0, 12)}…, actual ${actual.slice(0, 12)}…). Run \`npm run registry\` and commit the result.`,
+      });
+    }
+  }
+  return findings;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 function main(): number {
   log("loading canonical.json");
   const canonical = loadCanonical();
 
-  log("running 4 invariants");
+  log("running 6 invariants");
+  const realFiles = gitLsFiles();
+  const inputHashes = (canonical as { meta?: { inputHashes?: Record<string, string> } })
+    .meta?.inputHashes;
+  const resolveHash = (rel: string): string | null => {
+    const abs = join(MONOREPO_ROOT, rel);
+    return existsSync(abs) ? sha256OfFile(abs) : null;
+  };
   const findings: Finding[] = [
     ...checkUniqueIds(canonical),
     ...checkArchivedNotRuntime(canonical),
     ...checkRuntimeAcyclic(canonical),
     ...checkOwnershipOrphanFree(),
+    ...checkDomainConsistency(loadDomains(), loadOwnership(), realFiles),
+    ...checkCanonicalFresh(inputHashes, resolveHash),
   ];
 
   const errors = findings.filter((f) => f.severity === "error");
@@ -252,7 +399,7 @@ function main(): number {
   if (errors.length > 0) return 1;
   if (STRICT && warnings.length > 0) return 1;
 
-  log(`✓ All 4 invariants PASS (I1, I2, I3, I4)`);
+  log(`✓ All 6 invariants PASS (I1, I2, I3, I4, I5, I6)`);
   return 0;
 }
 

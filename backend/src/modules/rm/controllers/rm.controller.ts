@@ -11,6 +11,7 @@ import {
   Post,
   Query,
   Req,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import type { Request } from 'express';
 import {
@@ -21,6 +22,7 @@ import { RmBuilderService } from '../services/rm-builder.service';
 import { RmAlternativesService } from '../services/rm-alternatives.service';
 import { RmSoft404TrackerService } from '../services/rm-soft404-tracker.service';
 import { TrackSoft404BodySchema } from '../dto/alternatives-v2.dto';
+import { classifyPageV2Result } from '../utils/page-v2-response';
 
 /**
  * 🏗️ RM Controller
@@ -161,13 +163,22 @@ export class RmController {
       result.duration_ms = Math.round(performance.now() - startTime);
     }
 
-    if (!result.success) {
-      throw new OperationFailedException({
-        message: `Failed to fetch page v2 data for gamme_id=${gamme_id}, vehicle_id=${vehicle_id}`,
-      });
+    switch (classifyPageV2Result(result)) {
+      case 'error': // real RPC/infra failure → 503 so crawlers retry
+        this.logger.error(
+          `page-v2 RPC failure gamme_id=${gamme_id} vehicle_id=${vehicle_id}`,
+        );
+        throw new ServiceUnavailableException({
+          message: `Upstream data temporarily unavailable for gamme_id=${gamme_id}, vehicle_id=${vehicle_id}`,
+        });
+      case 'empty': // valid combo, 0 products → 200; loader renders soft-404
+        this.logger.debug(
+          `page-v2 empty combo gamme_id=${gamme_id} vehicle_id=${vehicle_id} -> soft-404`,
+        );
+        return result;
+      default:
+        return result;
     }
-
-    return result;
   }
 
   /**

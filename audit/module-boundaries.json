@@ -4,18 +4,20 @@
     "admin": {
       "dirs": [
         "backend/src/modules/admin",
+        "backend/src/modules/admin/constants",
         "backend/src/modules/admin/controllers",
         "backend/src/modules/admin/decorators",
         "backend/src/modules/admin/dto",
         "backend/src/modules/admin/events",
+        "backend/src/modules/admin/processors",
         "backend/src/modules/admin/schemas",
         "backend/src/modules/admin/services",
         "backend/src/modules/admin/services/buying-guide",
         "backend/src/modules/admin/services/r1-image-prompt-builders",
         "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__"
       ],
-      "files_count": 117,
-      "loc_total": 39597,
+      "files_count": 125,
+      "loc_total": 40644,
       "has_barrel": true
     },
     "agentic-engine": {
@@ -49,8 +51,8 @@
         "backend/src/modules/analytics/controllers",
         "backend/src/modules/analytics/services"
       ],
-      "files_count": 3,
-      "loc_total": 865,
+      "files_count": 7,
+      "loc_total": 1162,
       "has_barrel": false
     },
     "api": {
@@ -70,14 +72,15 @@
         "backend/src/auth/guards",
         "backend/src/modules/auth/dto"
       ],
-      "files_count": 32,
-      "loc_total": 4008,
+      "files_count": 42,
+      "loc_total": 5345,
       "has_barrel": true
     },
     "backend-core": {
       "dirs": [
         "backend/src",
         "backend/src/api",
+        "backend/src/contract/env-contract",
         "backend/src/controllers",
         "backend/src/notifications",
         "backend/src/remix",
@@ -87,8 +90,8 @@
         "backend/src/types",
         "backend/src/utils"
       ],
-      "files_count": 33,
-      "loc_total": 5370,
+      "files_count": 35,
+      "loc_total": 5466,
       "has_barrel": true
     },
     "blog": {
@@ -124,7 +127,7 @@
         "backend/src/cache"
       ],
       "files_count": 2,
-      "loc_total": 435,
+      "loc_total": 466,
       "has_barrel": false
     },
     "cart": {
@@ -144,11 +147,12 @@
         "backend/src/modules/catalog/controllers",
         "backend/src/modules/catalog/interfaces",
         "backend/src/modules/catalog/services",
+        "backend/src/modules/catalog/services/__tests__",
         "backend/src/modules/catalog/types",
         "backend/src/modules/catalog/utils"
       ],
-      "files_count": 31,
-      "loc_total": 8622,
+      "files_count": 34,
+      "loc_total": 9202,
       "has_barrel": false
     },
     "commercial": {
@@ -167,10 +171,13 @@
         "backend/src/common/exceptions",
         "backend/src/common/interceptors",
         "backend/src/common/pipes",
+        "backend/src/common/pipes/params",
+        "backend/src/common/pipes/params/__tests__",
+        "backend/src/common/schemas",
         "backend/src/common/utils"
       ],
-      "files_count": 27,
-      "loc_total": 1168,
+      "files_count": 36,
+      "loc_total": 1517,
       "has_barrel": true
     },
     "config": {
@@ -185,7 +192,7 @@
         "backend/src/modules/config/validators"
       ],
       "files_count": 92,
-      "loc_total": 23113,
+      "loc_total": 23175,
       "has_barrel": true
     },
     "customers": {
@@ -208,22 +215,23 @@
       "dirs": [
         "backend/src/database",
         "backend/src/database/services",
-        "backend/src/database/types",
-        "backend/src/database/utils"
+        "backend/src/database/types"
       ],
-      "files_count": 13,
-      "loc_total": 21101,
+      "files_count": 12,
+      "loc_total": 20996,
       "has_barrel": true
     },
     "dev-only": {
       "dirs": [
         "backend/src/modules/rm",
         "backend/src/modules/rm/controllers",
+        "backend/src/modules/rm/dto",
         "backend/src/modules/rm/services",
-        "backend/src/modules/rm/services/__tests__"
+        "backend/src/modules/rm/services/__tests__",
+        "backend/src/modules/rm/utils"
       ],
-      "files_count": 5,
-      "loc_total": 1697,
+      "files_count": 12,
+      "loc_total": 2491,
       "has_barrel": false
     },
     "diagnostic-engine": {
@@ -231,11 +239,12 @@
         "backend/src/modules/diagnostic-engine",
         "backend/src/modules/diagnostic-engine/constants",
         "backend/src/modules/diagnostic-engine/engines",
+        "backend/src/modules/diagnostic-engine/ports",
         "backend/src/modules/diagnostic-engine/services",
         "backend/src/modules/diagnostic-engine/types"
       ],
-      "files_count": 17,
-      "loc_total": 3885,
+      "files_count": 25,
+      "loc_total": 4663,
       "has_barrel": false
     },
     "errors": {
@@ -255,8 +264,8 @@
         "frontend/app/routes",
         "frontend/app/routes/_public+"
       ],
-      "files_count": 240,
-      "loc_total": 118016,
+      "files_count": 242,
+      "loc_total": 118493,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -278,6 +287,7 @@
         "frontend/app/components/cart",
         "frontend/app/components/catalog",
         "frontend/app/components/checkout",
+        "frontend/app/components/commerce",
         "frontend/app/components/common",
         "frontend/app/components/constructeurs",
         "frontend/app/components/content",
@@ -337,8 +347,8 @@
         "frontend/app/utils",
         "frontend/app/utils/seo"
       ],
-      "files_count": 610,
-      "loc_total": 118784,
+      "files_count": 602,
+      "loc_total": 115769,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -390,6 +400,14 @@
       "loc_total": 2723,
       "has_barrel": true
     },
+    "maintenance": {
+      "dirs": [
+        "backend/src/modules/maintenance"
+      ],
+      "files_count": 1,
+      "loc_total": 32,
+      "has_barrel": false
+    },
     "marketing": {
       "dirs": [
         "backend/src/modules/marketing",
@@ -416,6 +434,16 @@
       "files_count": 19,
       "loc_total": 7381,
       "has_barrel": true
+    },
+    "merchant-center": {
+      "dirs": [
+        "backend/src/modules/merchant-center",
+        "backend/src/modules/merchant-center/controllers",
+        "backend/src/modules/merchant-center/services"
+      ],
+      "files_count": 3,
+      "loc_total": 184,
+      "has_barrel": false
     },
     "messages": {
       "dirs": [
@@ -446,6 +474,14 @@
       "loc_total": 1427,
       "has_barrel": false
     },
+    "observability": {
+      "dirs": [
+        "backend/src/modules/observability"
+      ],
+      "files_count": 9,
+      "loc_total": 551,
+      "has_barrel": false
+    },
     "orders": {
       "dirs": [
         "backend/src/modules/orders",
@@ -458,7 +494,7 @@
         "backend/src/modules/orders/types"
       ],
       "files_count": 22,
-      "loc_total": 6381,
+      "loc_total": 6394,
       "has_barrel": true
     },
     "payments": {
@@ -507,12 +543,46 @@
       "loc_total": 35,
       "has_barrel": false
     },
+    "pkg-eslint-plugin-fafa-ports": {
+      "dirs": [
+        "packages/eslint-plugin-fafa-ports",
+        "packages/eslint-plugin-fafa-ports/__tests__",
+        "packages/eslint-plugin-fafa-ports/rules"
+      ],
+      "files_count": 5,
+      "loc_total": 519,
+      "has_barrel": false
+    },
+    "pkg-registry": {
+      "dirs": [
+        "packages/registry/src",
+        "packages/registry/src/__tests__",
+        "packages/registry/src/bin",
+        "packages/registry/src/canonical",
+        "packages/registry/src/canonical/lib",
+        "packages/registry/src/entries",
+        "packages/registry/src/overlay",
+        "packages/registry/src/shared",
+        "packages/registry/src/vehicle-context"
+      ],
+      "files_count": 53,
+      "loc_total": 5535,
+      "has_barrel": true
+    },
     "pkg-seo-types": {
       "dirs": [
         "packages/seo-types/src"
       ],
-      "files_count": 6,
-      "loc_total": 730,
+      "files_count": 10,
+      "loc_total": 1924,
+      "has_barrel": true
+    },
+    "pkg-seo-url-contract": {
+      "dirs": [
+        "packages/seo-url-contract/src"
+      ],
+      "files_count": 3,
+      "loc_total": 174,
       "has_barrel": true
     },
     "products": {
@@ -564,10 +634,19 @@
         "backend/scripts/seo/audit/__tests__",
         "scripts",
         "scripts/audit",
+        "scripts/audit/__fixtures__/repo-broken",
+        "scripts/audit/__fixtures__/repo-ok",
+        "scripts/audit/__tests__",
+        "scripts/audit/lib",
+        "scripts/audit/utils",
+        "scripts/ci",
         "scripts/cleanup",
         "scripts/db",
+        "scripts/governance",
         "scripts/marketing",
         "scripts/mcp-server",
+        "scripts/registry",
+        "scripts/registry/lib",
         "scripts/testing",
         "scripts/ui-audit",
         "scripts/ui-audit/analyzer",
@@ -576,8 +655,8 @@
         "scripts/ui-audit/rules",
         "scripts/ui-governance"
       ],
-      "files_count": 58,
-      "loc_total": 11208,
+      "files_count": 114,
+      "loc_total": 22331,
       "has_barrel": true
     },
     "search": {
@@ -602,6 +681,16 @@
         "backend/src/modules/seo/infrastructure",
         "backend/src/modules/seo/interceptors",
         "backend/src/modules/seo/interfaces",
+        "backend/src/modules/seo/processors",
+        "backend/src/modules/seo/r2",
+        "backend/src/modules/seo/r2/constants",
+        "backend/src/modules/seo/r2/controllers",
+        "backend/src/modules/seo/r2/controllers/__tests__",
+        "backend/src/modules/seo/r2/dto",
+        "backend/src/modules/seo/r2/queues",
+        "backend/src/modules/seo/r2/schemas",
+        "backend/src/modules/seo/r2/services",
+        "backend/src/modules/seo/r2/services/__tests__",
         "backend/src/modules/seo/registries",
         "backend/src/modules/seo/registries/__tests__",
         "backend/src/modules/seo/schemas",
@@ -620,11 +709,36 @@
         "packages/seo-role-contracts/src/contracts",
         "packages/seo-roles/src",
         "packages/seo-roles/src/__tests__",
-        "scripts/seo"
+        "scripts/seo",
+        "scripts/seo/__tests__",
+        "scripts/seo/__tests__/fixtures/r-seo-09/negative/01-meta-canonical",
+        "scripts/seo/__tests__/fixtures/r-seo-09/negative/02-rename",
+        "scripts/seo/__tests__/fixtures/r-seo-09/negative/03-default-export-rename",
+        "scripts/seo/__tests__/fixtures/r-seo-09/negative/04-loader-canonical-key",
+        "scripts/seo/__tests__/fixtures/r-seo-09/negative/05-handle-sitemap",
+        "scripts/seo/__tests__/fixtures/r-seo-09/positive/01-classname-only",
+        "scripts/seo/__tests__/fixtures/r-seo-09/positive/02-link-internal",
+        "scripts/seo/__tests__/fixtures/r-seo-09/positive/03-jsx-restructure",
+        "scripts/seo/__tests__/fixtures/r-seo-09/positive/04-formatting",
+        "scripts/seo/__tests__/fixtures/r-seo-09/positive/05-loader-non-canonical",
+        "scripts/seo/lib"
       ],
-      "files_count": 171,
-      "loc_total": 44647,
+      "files_count": 252,
+      "loc_total": 54912,
       "has_barrel": true
+    },
+    "seo-control-plane": {
+      "dirs": [
+        "backend/src/modules/seo-control-plane",
+        "backend/src/modules/seo-control-plane/collectors/cf-analytics",
+        "backend/src/modules/seo-control-plane/collectors/cf-rum",
+        "backend/src/modules/seo-control-plane/collectors/runtime-logs",
+        "backend/src/modules/seo-control-plane/collectors/synthetic-crawler",
+        "backend/src/modules/seo-control-plane/services"
+      ],
+      "files_count": 23,
+      "loc_total": 4500,
+      "has_barrel": false
     },
     "seo-logs": {
       "dirs": [
@@ -644,8 +758,8 @@
         "backend/src/modules/seo-monitoring/processors",
         "backend/src/modules/seo-monitoring/services"
       ],
-      "files_count": 14,
-      "loc_total": 2865,
+      "files_count": 22,
+      "loc_total": 4685,
       "has_barrel": false
     },
     "seo-shadow-observatory": {
@@ -733,7 +847,9 @@
         "backend/tests",
         "backend/tests/__mocks__/@repo",
         "backend/tests/unit",
+        "backend/tests/unit/rm",
         "backend/tests/unit/seo",
+        "backend/tests/unit/seo-control",
         "backend/tests/unit/seo-monitoring",
         "frontend",
         "frontend/frontend/tests/e2e",
@@ -752,10 +868,11 @@
         "services/remotion-renderer/src/compositions/components",
         "services/remotion-renderer/src/lib",
         "services/remotion-renderer/src/routes",
-        "services/remotion-renderer/src/types"
+        "services/remotion-renderer/src/types",
+        "tests/registry"
       ],
-      "files_count": 108,
-      "loc_total": 21635,
+      "files_count": 129,
+      "loc_total": 24358,
       "has_barrel": true
     },
     "upload": {
@@ -780,6 +897,14 @@
       "loc_total": 5153,
       "has_barrel": true
     },
+    "vehicle-context": {
+      "dirs": [
+        "backend/src/modules/vehicle-context"
+      ],
+      "files_count": 4,
+      "loc_total": 436,
+      "has_barrel": false
+    },
     "vehicles": {
       "dirs": [
         "backend/src/modules/vehicles",
@@ -795,15 +920,15 @@
         "backend/src/modules/vehicles/types"
       ],
       "files_count": 28,
-      "loc_total": 8537,
+      "loc_total": 8576,
       "has_barrel": false
     },
     "wiki": {
       "dirs": [
         "scripts/wiki"
       ],
-      "files_count": 2,
-      "loc_total": 216,
+      "files_count": 3,
+      "loc_total": 256,
       "has_barrel": false
     },
     "workers": {
@@ -836,18 +961,23 @@
     },
     {
       "from": "admin",
+      "to": "cache",
+      "count": 2
+    },
+    {
+      "from": "admin",
       "to": "common",
-      "count": 7
+      "count": 9
     },
     {
       "from": "admin",
       "to": "config",
-      "count": 82
+      "count": 84
     },
     {
       "from": "admin",
       "to": "database",
-      "count": 1
+      "count": 2
     },
     {
       "from": "admin",
@@ -987,7 +1117,7 @@
     {
       "from": "backend-core",
       "to": "analytics",
-      "count": 1
+      "count": 2
     },
     {
       "from": "backend-core",
@@ -1086,12 +1216,22 @@
     },
     {
       "from": "backend-core",
+      "to": "merchant-center",
+      "count": 1
+    },
+    {
+      "from": "backend-core",
       "to": "messages",
       "count": 2
     },
     {
       "from": "backend-core",
       "to": "metadata",
+      "count": 1
+    },
+    {
+      "from": "backend-core",
+      "to": "observability",
       "count": 1
     },
     {
@@ -1136,6 +1276,11 @@
     },
     {
       "from": "backend-core",
+      "to": "seo-control-plane",
+      "count": 1
+    },
+    {
+      "from": "backend-core",
       "to": "seo-monitoring",
       "count": 1
     },
@@ -1168,6 +1313,11 @@
       "from": "backend-core",
       "to": "users",
       "count": 3
+    },
+    {
+      "from": "backend-core",
+      "to": "vehicle-context",
+      "count": 1
     },
     {
       "from": "backend-core",
@@ -1341,13 +1491,23 @@
     },
     {
       "from": "diagnostic-engine",
-      "to": "database",
+      "to": "config",
       "count": 1
+    },
+    {
+      "from": "diagnostic-engine",
+      "to": "database",
+      "count": 2
     },
     {
       "from": "diagnostic-engine",
       "to": "rag-proxy",
       "count": 2
+    },
+    {
+      "from": "diagnostic-engine",
+      "to": "vehicle-context",
+      "count": 1
     },
     {
       "from": "errors",
@@ -1357,7 +1517,7 @@
     {
       "from": "frontend-routes",
       "to": "frontend-shared",
-      "count": 345
+      "count": 346
     },
     {
       "from": "gamme-rest",
@@ -1417,6 +1577,11 @@
     {
       "from": "mcp-validation",
       "to": "backend-core",
+      "count": 2
+    },
+    {
+      "from": "merchant-center",
+      "to": "database",
       "count": 2
     },
     {
@@ -1562,22 +1727,37 @@
     {
       "from": "seo",
       "to": "common",
-      "count": 9
+      "count": 10
     },
     {
       "from": "seo",
       "to": "config",
-      "count": 39
+      "count": 45
     },
     {
       "from": "seo",
       "to": "database",
-      "count": 2
+      "count": 11
     },
     {
       "from": "seo",
       "to": "workers",
       "count": 2
+    },
+    {
+      "from": "seo-control-plane",
+      "to": "common",
+      "count": 4
+    },
+    {
+      "from": "seo-control-plane",
+      "to": "config",
+      "count": 4
+    },
+    {
+      "from": "seo-control-plane",
+      "to": "database",
+      "count": 5
     },
     {
       "from": "seo-logs",
@@ -1660,6 +1840,16 @@
       "count": 1
     },
     {
+      "from": "vehicle-context",
+      "to": "config",
+      "count": 2
+    },
+    {
+      "from": "vehicle-context",
+      "to": "diagnostic-engine",
+      "count": 2
+    },
+    {
       "from": "vehicles",
       "to": "catalog",
       "count": 6
@@ -1667,7 +1857,7 @@
     {
       "from": "vehicles",
       "to": "common",
-      "count": 3
+      "count": 5
     },
     {
       "from": "vehicles",
@@ -2104,6 +2294,16 @@
     {
       "from": "backend/src/modules/shipping/shipping.service.ts",
       "to": "backend/src/modules/cart/services/shipping-calculator.service.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/vehicle-context/vehicle-context.module.ts",
+      "to": "backend/src/modules/diagnostic-engine/ports/vehicle-context.port.ts",
+      "rule": "no-deep-module-access"
+    },
+    {
+      "from": "backend/src/modules/vehicle-context/vehicle-context.service.ts",
+      "to": "backend/src/modules/diagnostic-engine/ports/vehicle-context.port.ts",
       "rule": "no-deep-module-access"
     },
     {

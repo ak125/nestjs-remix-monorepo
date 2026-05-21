@@ -3,6 +3,7 @@
  * Extrait de pieces.$gamme.$marque.$modele.$type[.]html.tsx
  */
 
+import { detectMalformedSegment as detectSegment } from "@repo/seo-url-contract";
 import { logger } from "~/utils/logger";
 import {
   type VehicleData,
@@ -114,64 +115,13 @@ export function validateVehicleIds(params: {
  * - Accents : caractères accentués dans les segments
  */
 export function detectMalformedSegment(...segments: string[]): string | null {
+  // Delegates to the shared SoT detector (ADR-062). Preserves skip-empty behavior
+  // and the variadic signature used by the route loaders.
   for (const seg of segments) {
     if (!seg) continue;
-
-    // null ou undefined littéral
-    if (/\bnull\b/i.test(seg) || /\bundefined\b/i.test(seg)) {
-      return "null_in_url";
-    }
-
-    // Segment commence par - (alias manquant)
-    if (/^-\d/.test(seg)) {
-      return "missing_alias";
-    }
-
-    // Espaces (non encodés ou encodés %20)
-    if (seg.includes(" ") || seg.includes("%20")) {
-      return "spaces_in_url";
-    }
-
-    // Accents détectés (devrait être normalisé)
-    try {
-      const decoded = decodeURIComponent(seg);
-      const normalized = decoded
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "");
-      if (normalized !== decoded) {
-        return "accented_chars";
-      }
-    } catch {
-      // decodeURIComponent peut échouer — ignorer
-    }
-
-    // ID répété : "23231-23231" (alias est juste le même nombre que l'id)
-    // Appliqué à TOUS les segments (gamme, marque, modele, type)
-    const idMatch = seg.match(/^(\d+)-(\d+)$/);
-    if (idMatch && idMatch[1] === idMatch[2]) {
-      return "repeated_id";
-    }
-
-    // IDs multiples répétés : "23231-23231-23231" (3+ fois le même nombre)
-    const parts = seg.split("-");
-    if (
-      parts.length >= 3 &&
-      parts.every((p) => /^\d+$/.test(p)) &&
-      new Set(parts).size === 1
-    ) {
-      return "repeated_id_multi";
-    }
+    const reason = detectSegment(seg);
+    if (reason) return reason;
   }
-
-  // Vérification spécifique au segment type (dernier segment)
-  const typeSeg = segments[segments.length - 1];
-  if (typeSeg) {
-    // type-{id} fallback
-    if (/^type-\d+$/.test(typeSeg)) {
-      return "type_prefix_fallback";
-    }
-  }
-
   return null;
 }
 

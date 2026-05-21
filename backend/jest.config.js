@@ -28,12 +28,14 @@ module.exports = {
     '^@repo/database-types/(.*)$': '<rootDir>/tests/__mocks__/@repo/database-types.ts',
     '^@repo/seo-types$': '<rootDir>/../packages/seo-types/src/index.ts',
     '^@repo/seo-types/(.*)$': '<rootDir>/../packages/seo-types/src/$1.ts',
+    '^@repo/seo-url-contract$': '<rootDir>/../packages/seo-url-contract/src/index.ts',
+    '^@repo/seo-url-contract/(.*)$': '<rootDir>/../packages/seo-url-contract/src/$1.ts',
   },
   // Ignore dist and node_modules
   testPathIgnorePatterns: ['/node_modules/', '/dist/'],
   // Transform ESM packages from monorepo workspaces
   transformIgnorePatterns: [
-    '/node_modules/(?!(@repo/database-types|@repo/seo-types|@monorepo/shared-types)/)',
+    '/node_modules/(?!(@repo/database-types|@repo/seo-types|@repo/seo-url-contract|@monorepo/shared-types)/)',
   ],
   // Setup files - load .env.test for Supabase credentials
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
