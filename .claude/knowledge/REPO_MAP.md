@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: d0531fadb5fc20bbdc20971527d7c037d2edaf9c9f8edc0a66b05363e7df68b4
+source_sha256: c47a148e78339a1385849e827c3afc136b0d8b601389cf46eb87d8719d4d5be9
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 2412 |
+| Files (Layer 1) | 2413 |
 | DB tables (Layer 1) | 257 |
 | DB RPC (Layer 1) | 197 |
 | Dependencies (Layer 1) | 252 |
 | Runtime entrypoints (Layer 1) | 487 |
 
-Source sotFingerprint: `a20ad5fd89a3`.
+Source sotFingerprint: `4c240ebc48ad`.
 
 ## Comment l'utiliser
 
@@ -147,9 +147,9 @@ Source sotFingerprint: `a20ad5fd89a3`.
 
 ### D15 — Security & Governance
 
-- **Files**: 161 (test=81, service=39, script=39, config=2)
-- **Top owners**: @ak125 (161)
-- **Status**: LIVE=29, UNKNOWN=132
+- **Files**: 162 (test=82, service=39, script=39, config=2)
+- **Top owners**: @ak125 (162)
+- **Status**: LIVE=30, UNKNOWN=132
 
 ### UNKNOWN — Unknown (overlay non résolu)
 

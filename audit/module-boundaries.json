@@ -646,8 +646,8 @@
         "scripts/ui-audit/rules",
         "scripts/ui-governance"
       ],
-      "files_count": 112,
-      "loc_total": 22115,
+      "files_count": 113,
+      "loc_total": 22215,
       "has_barrel": true
     },
     "search": {

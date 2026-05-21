@@ -48,16 +48,25 @@ test("I5c: ownership.yaml references a domain absent from domains.yaml → error
   );
 });
 
-// ── I5b — ghost glob in domains.yaml → WARN (never error) ────────────────────
-test("I5b: domains.yaml glob matching 0 files → warn, not error", () => {
+// ── I5b — ghost glob in domains.yaml → ERROR (reconciled backlog) ────────────
+test("I5b: domains.yaml glob matching 0 files → error", () => {
   const domains = { entries: [{ id: "D1", globs: ["does/not/exist/**"] }] } as any;
   const ownership = { entries: [own("D1")] } as any;
   const findings = checkDomainConsistency(domains, ownership, ["x/a.ts"]);
-  assert.equal(findings.filter((f) => f.severity === "error").length, 0);
   assert.ok(
     findings.some(
-      (f) => f.invariant === "I5b-domain-glob-resolves" && f.severity === "warn"
+      (f) => f.invariant === "I5b-domain-glob-resolves" && f.severity === "error"
     )
+  );
+});
+
+test("I5b: domains.yaml glob that resolves → no I5b finding", () => {
+  const domains = { entries: [{ id: "D1", globs: ["x/**"] }] } as any;
+  const ownership = { entries: [own("D1")] } as any;
+  const findings = checkDomainConsistency(domains, ownership, ["x/a.ts"]);
+  assert.equal(
+    findings.filter((f) => f.invariant === "I5b-domain-glob-resolves").length,
+    0
   );
 });
 

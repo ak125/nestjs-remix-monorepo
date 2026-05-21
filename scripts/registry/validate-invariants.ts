@@ -15,8 +15,8 @@
  *   I5. Cohérence domaine cross-source (domains.yaml ↔ ownership.yaml) :
  *       a) tout domaine défini dans domains.yaml est mappé par ≥ 1 entrée
  *          ownership.yaml, ou marqué `expectedEmpty: true` (error) ;
- *       b) tout glob domains.yaml résout ≥ 1 fichier réel (warn — backlog de
- *          dérive documentaire, le builder n'utilise que ownership.yaml) ;
+ *       b) tout glob domains.yaml résout ≥ 1 fichier réel (error — backlog de
+ *          dérive documentaire désormais réconcilié ; garde domains.yaml fiable) ;
  *       c) tout domaine référencé par ownership.yaml est défini dans
  *          domains.yaml (error). → rend impossible un domaine orphelin/fantôme.
  *   I6. Fraîcheur par empreinte : canonical.meta.inputHashes == hash réels des
@@ -297,16 +297,18 @@ export function checkDomainConsistency(
     }
   }
 
-  // I5b — every domains.yaml glob resolves ≥ 1 file. WARN: the builder uses
-  // ownership.yaml only, so domains.yaml ghost globs are documentation drift
-  // (backlog), not a functional defect. Surfaced for cleanup, not blocking.
+  // I5b — every domains.yaml glob resolves ≥ 1 file. The builder uses
+  // ownership.yaml for resolution, so these globs are domains.yaml-local
+  // documentation; keeping them truthful is what makes domains.yaml a reliable
+  // map. Now ERROR (the ghost-glob backlog was reconciled): a glob that stops
+  // resolving (module renamed/removed) must be updated in the same change.
   for (const d of domains.entries) {
     for (const glob of d.globs ?? []) {
       if (micromatch(realFiles, glob).length === 0) {
         findings.push({
           invariant: "I5b-domain-glob-resolves",
-          severity: "warn",
-          message: `domains.yaml ${d.id} glob "${glob}" matches 0 files (ghost/doc-drift)`,
+          severity: "error",
+          message: `domains.yaml ${d.id} glob "${glob}" matches 0 files (stale path — update to the real location)`,
         });
       }
     }

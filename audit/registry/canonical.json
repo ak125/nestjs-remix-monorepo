@@ -81356,11 +81356,31 @@
         "manual"
       ],
       "domain": "D15",
+      "id": "scripts/registry/validate-invariants.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 98,
+      "owner": "@ak125",
+      "path": "scripts/registry/validate-invariants.test.ts",
+      "risk": "high",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D15",
       "id": "scripts/registry/validate-invariants.ts",
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 414,
+      "loc": 416,
       "owner": "@ak125",
       "path": "scripts/registry/validate-invariants.ts",
       "risk": "high",
@@ -82819,16 +82839,16 @@
     "generatorVersion": "1.0.0",
     "inputHashes": {
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
-      ".spec/00-canon/repository-registry/domains.yaml": "b36274babcff06f3072722f4ef5a0bdf47c15c1e14dc3517ade250146d357614",
+      ".spec/00-canon/repository-registry/domains.yaml": "94cd4cc3f8a6142d4f104ed3b1ed7d77b9e6b30e284f8074f30da27f7750499d",
       ".spec/00-canon/repository-registry/ownership.yaml": "c7b3a523e0e8feef5c11385151bf3ea21fac73f4ce67f12e30fa3a36b39d555e",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "2c2b242959bc161c264321dfe057a10d14aa6fd74619758aecc8d784d8ae3f63",
       "audit/registry/deps.json": "b99fd9fbad290ccd21c6d002332c1eed595fb60de25e6bbb02a2126277af2332",
-      "audit/registry/files.json": "77ce52028eb1b8ce47bee1a31943915e85d50a5031fd24c0257230d966e1ef6f",
+      "audit/registry/files.json": "cc3af7a701dd931e63e11498327076476a2821b3fae77348f7dfad1bf6e02e74",
       "audit/registry/rpc.json": "060dcddb4975db912336e4a0d10bff470e6295f6e5b03d2e76a26ee7ceafdfa4",
       "audit/registry/runtime.json": "2901e171856e4a0fff94e5beadbb23a473982c898e626ec74060a53ada6223d5"
     },
-    "sotFingerprint": "a20ad5fd89a3"
+    "sotFingerprint": "4c240ebc48ad"
   },
   "runtime": [
     {

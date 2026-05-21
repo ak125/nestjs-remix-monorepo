@@ -57086,11 +57086,30 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "scripts/registry/validate-invariants.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 98,
+      "owner": "__unassigned__",
+      "path": "scripts/registry/validate-invariants.test.ts",
+      "risk": "low",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "scripts/registry/validate-invariants.ts",
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 414,
+      "loc": 416,
       "owner": "__unassigned__",
       "path": "scripts/registry/validate-invariants.ts",
       "risk": "low",

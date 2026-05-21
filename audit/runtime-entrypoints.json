@@ -2525,6 +2525,7 @@
       "scripts/registry/build-runtime-registry.js",
       "scripts/registry/check-new-files.js",
       "scripts/registry/seed-ownership.js",
+      "scripts/registry/validate-invariants.test.ts",
       "scripts/registry/validate-invariants.ts",
       "scripts/registry/validate-overlay.ts",
       "scripts/registry/validate-zod-schemas.ts",
@@ -2538,7 +2539,7 @@
       "tests/registry/rpc-parser.test.ts"
     ]
   },
-  "runtime_files_count": 1265,
+  "runtime_files_count": 1266,
   "runtime_files": [
     ".dependency-cruiser.cjs",
     ".github/workflows/agent-exit-contract-hash.yml",
@@ -3793,6 +3794,7 @@
     "scripts/registry/build-runtime-registry.js",
     "scripts/registry/check-new-files.js",
     "scripts/registry/seed-ownership.js",
+    "scripts/registry/validate-invariants.test.ts",
     "scripts/registry/validate-invariants.ts",
     "scripts/registry/validate-overlay.ts",
     "scripts/registry/validate-zod-schemas.ts",
