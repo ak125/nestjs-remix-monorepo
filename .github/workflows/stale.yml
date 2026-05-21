@@ -14,10 +14,15 @@ name: 🪦 PR TTL policy (stale labeller + auto-close)
 #   - Aligns with canon `feedback_deletion_governance_scaling_discipline` and
 #     `closure-sequence-sitemap-auth-pr9a-20260517` (audit-trail close pattern).
 #
-# Phase 0 of "Operational Compression W21" rollout — runs in DRY-RUN mode for
-# the first 7 days (`debug-only: true`). After observation, flip to enforce by
-# opening a follow-up PR that sets `debug-only: false`. Two-step rollout
-# matches canon `feedback_two_pr_recovery_platform_for_ci_gate_replacement`.
+# Phase 1 of "Operational Compression W21" rollout — ENFORCING (`debug-only: false`),
+# graduated from the Phase 0 dry-run (#589) per the documented two-step rollout
+# (canon `feedback_two_pr_recovery_platform_for_ci_gate_replacement`).
+# Enforcement is gentle by construction: on the first scheduled run actions/stale
+# only *labels* stale PRs (≥14d inactive) and posts the warning comment; closure
+# happens only 7 days AFTER the stale label was applied. That 7-day window is the
+# live observation period — authors get a warning + grace, exempt labels
+# (pinned/security/epic/wip/blocked-upstream/dependencies) and drafts are skipped,
+# and branches are preserved (fully reversible).
 
 on:
   schedule:
@@ -36,7 +41,7 @@ concurrency:
 
 jobs:
   stale:
-    name: Label & close stale PRs (dry-run during rollout)
+    name: Label & close stale PRs (enforcing — Phase 1)
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -88,10 +93,10 @@ jobs:
           # Process all eligible PRs each run (default 30 is too low for backfill).
           operations-per-run: 100
 
-          # 🚨 ROLLOUT MODE — DRY-RUN ONLY (no labels added, no PRs closed).
-          # Flip to `false` via a follow-up PR after 7 days of observation
-          # (canon two-step platform rollout).
-          debug-only: true
+          # ROLLOUT MODE — ENFORCING (Phase 1). Graduated from the Phase 0
+          # dry-run (#589). First run only labels (close clock starts then), so
+          # every author gets a 7-day warning window before any closure.
+          debug-only: false
 
           # Sort oldest-first so backfill processes the deepest debt first.
           ascending: true

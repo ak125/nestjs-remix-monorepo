@@ -38,7 +38,12 @@ import {
   BookOpen,
   type LucideIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import {
+  emitFunnel,
+  getFunnelDevice,
+  getFunnelSessionId,
+} from "~/utils/funnel-beacon";
 
 import { DiagnosticWizard } from "~/components/diagnostic-wizard/DiagnosticWizard";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
@@ -280,6 +285,14 @@ export default function DiagnosticAutoIndex() {
     useLoaderData<typeof loader>();
   const [searchQuery, setSearchQuery] = useState("");
   const [dtcCode, setDtcCode] = useState("");
+
+  // Commerce-Loop V1 étape 4-A — entrée du funnel outil diagnostic.
+  useEffect(() => {
+    emitFunnel({
+      event_type: "diag_hub_view",
+      payload: { session_id: getFunnelSessionId(), device: getFunnelDevice() },
+    });
+  }, []);
 
   const filteredClusters = clusters.filter(
     (c) =>
