@@ -1,27 +1,33 @@
--- @non_transactional
--- squawk-ignore-file ban-concurrent-index-creation-in-transaction
+-- squawk-ignore-file require-concurrent-index-creation
+-- Justification: every target table is empty or tiny at apply time
+-- (__seo_gsc_daily 0 rows, ___xtr_order_line ~2.5k, ___xtr_order ~1.7k). The
+-- index build holds its lock sub-millisecond, so an atomic in-transaction
+-- CREATE INDEX is preferred over CONCURRENTLY (no benefit at this scale, and
+-- CONCURRENTLY cannot run in a transaction). Same policy as 20260520_order_landing_attribution.
 -- =====================================================
--- PR-SBD-1 Task 1 Step 11 — Indexes CONCURRENTLY (non-transactional)
--- Date: 2026-05-18
+-- PR-SBD-1 Task 1 Step 11 — Indexes (transactional, plain CREATE INDEX)
+-- Date: 2026-05-18 (index strategy revised 2026-05-21)
 -- Refs: .claude/plans/verifier-existant-avant-et-ethereal-firefly.md
 --       docs/seo/audit-orders-cart-link.md
 --       docs/seo/explain-analyze-pr-sbd-1.md (gate merge)
 -- =====================================================
 --
--- Squawk directive : `ban-concurrent-index-creation-in-transaction` ignored
--- file-wide because this migration is EXPLICITLY non-transactional.
+-- Index strategy (revised 2026-05-21) : plain CREATE INDEX inside a transaction.
+-- The original draft used CREATE INDEX CONCURRENTLY assuming __seo_gsc_daily was
+-- already large (~30M rows). Empirically the target tables are empty or tiny at
+-- apply time — __seo_gsc_daily: 0 rows, ___xtr_order_line: ~2.5k rows,
+-- ___xtr_order: ~1.7k rows — so each build is sub-millisecond and a plain,
+-- atomic in-transaction CREATE INDEX is the correct, lowest-risk choice. Building
+-- on the (currently empty) GSC table now is ideal: instant, and the index is
+-- maintained as rows arrive. This mirrors the policy already documented in the
+-- sibling migration 20260520_order_landing_attribution.
 --
--- The canonical engine (scripts/ci/apply-supabase-migration.py) wraps every
--- migration in BEGIN/COMMIT UNLESS it finds the `-- @non_transactional` marker
--- in the first 20 lines (see is_non_transactional_header). The marker above is
--- REQUIRED here: without it the engine would run these statements inside a
--- transaction and CREATE INDEX CONCURRENTLY would raise SQLSTATE 25001. With
--- it, the engine runs in autocommit and each CONCURRENTLY build is standalone.
--- Cf. existing patterns 20260120_rm_expression_index.sql / 20260128_add_index_pieces_*.sql.
---
--- CREATE INDEX CONCURRENTLY cannot run inside a transaction block.
--- Apply each statement separately (psql \i or migration runner with
--- non-transactional support).
+-- If __seo_gsc_daily ever grows past ~1M rows AND needs a NEW index added while
+-- under concurrent write load, add a dedicated CONCURRENTLY migration then. Note
+-- the canonical engine (scripts/ci/apply-supabase-migration.py) currently runs a
+-- migration file as a single multi-statement execute, which Postgres treats as
+-- one implicit transaction even in autocommit — so a CONCURRENTLY migration must
+-- contain a SINGLE statement (one index) until the engine learns to split.
 --
 -- Existing indexes already covering Task 1 needs (kept, NOT recreated) :
 --   - idx_gsc_daily_page_date (page, date DESC)               ← 20260425
@@ -33,35 +39,30 @@
 -- 4 NEW indexes added below (not duplicated, complementary access paths) :
 -- =====================================================
 
--- CONCURRENTLY index builds can take minutes on large tables (GSC daily has
--- ~30M rows). lock_timeout protects against blocking concurrent writers ;
--- statement_timeout is intentionally permissive (30min) — index build is the
--- expected slow operation. This timeout pair applies to each CREATE INDEX
--- below since they share the same session.
-set lock_timeout = '2s';
-set statement_timeout = '30min';
+set lock_timeout = '5s';
+set statement_timeout = '60s';
 
 -- Index 1 : (date, page) covering — for windowed scans grouped by page
 -- Complements existing (page, date DESC) by giving date-first access path
 -- Used by : rpc_seo_traffic_v1, rpc_seo_top_losers_v1, rpc_seo_low_ctr_v1
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_gsc_daily_date_page
+CREATE INDEX IF NOT EXISTS idx_gsc_daily_date_page
   ON __seo_gsc_daily (date, page);
 
 -- Index 2 : query-level breakdown per page (LATERAL for top_queries_sample)
 -- Used by : _seo_top_queries_for_page_jsonb (LATERAL inside rpc_seo_top_losers_v1)
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_gsc_daily_page_query_date
+CREATE INDEX IF NOT EXISTS idx_gsc_daily_page_query_date
   ON __seo_gsc_daily (page, query, date)
   WHERE query IS NOT NULL;
 
 -- Index 3 : Conversion Gap JOIN — order lines by website URL filtered "real" entries
 -- Used by : rpc_seo_conversion_v1 (Bloc 4, conditional Phase A.6)
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_xtr_order_line_website_url_paid
+CREATE INDEX IF NOT EXISTS idx_xtr_order_line_website_url_paid
   ON ___xtr_order_line (orl_website_url)
   WHERE orl_website_url IS NOT NULL
     AND orl_website_url <> 'System';
 
 -- Index 4 : Conversion Gap JOIN — orders by date filtered paid
 -- Used by : rpc_seo_conversion_v1 (Bloc 4, conditional Phase A.6)
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_xtr_order_date_paid
+CREATE INDEX IF NOT EXISTS idx_xtr_order_date_paid
   ON ___xtr_order (ord_date)
   WHERE ord_is_pay = '1';
