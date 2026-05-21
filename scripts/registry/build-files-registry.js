@@ -11,7 +11,11 @@
  *     resolve to D1..D8 via glob match in PR-E canonical projection.
  *   - `owner: '__unassigned__'` by default — same cascade.
  *   - `sourceConfidence: 'medium'` (signal indirect : path + dep-cruiser).
- *   - `status: 'LIVE'` if the file is a runtime entrypoint, else `'UNKNOWN'`.
+ *   - `status: 'LIVE'` if the file is a runtime entrypoint OR transitively
+ *     reachable from one via the import graph, else `'UNKNOWN'`. Reachability
+ *     is a deterministic, unambiguous signal — V1-3 forbids forcing LEGACY /
+ *     ARCHIVED on weak signals, but a file pulled into the runtime graph is
+ *     unambiguously live. Unreached files stay UNKNOWN (never auto-LEGACY).
  *
  * Per ADR-058 invariant V1-2 : deterministic output, sorted by `id`.
  *
@@ -88,29 +92,73 @@ function buildRuntimeSet() {
   return set;
 }
 
+/**
+ * Transitive runtime reachability over the import graph.
+ *
+ * Seeds = the runtime entrypoints. Following each file's `imports` edges
+ * (repo-relative paths; non-file specifiers like `@common/*` or npm packages
+ * simply don't resolve to a node and are skipped), every file pulled into the
+ * graph is unambiguously live. Pure + deterministic (BFS, insertion order
+ * irrelevant to the resulting set). Exported for unit testing.
+ *
+ * @param {Array<{path:string, imports?:string[]}>} files
+ * @param {Set<string>} runtimeSet  direct entrypoints (BFS seeds)
+ * @returns {Set<string>} paths reachable from a runtime entrypoint (incl. seeds)
+ */
+function computeReachableSet(files, runtimeSet) {
+  const importsByPath = new Map();
+  for (const f of files) {
+    importsByPath.set(f.path, Array.isArray(f.imports) ? f.imports : []);
+  }
+  const reachable = new Set();
+  const queue = [];
+  for (const f of files) {
+    if (runtimeSet.has(f.path)) {
+      reachable.add(f.path);
+      queue.push(f.path);
+    }
+  }
+  while (queue.length > 0) {
+    const current = queue.shift();
+    for (const target of importsByPath.get(current) || []) {
+      if (importsByPath.has(target) && !reachable.has(target)) {
+        reachable.add(target);
+        queue.push(target);
+      }
+    }
+  }
+  return reachable;
+}
+
 function main() {
   const cache = loadInventoryCache();
   const files = cache.files || [];
   const runtimeSet = buildRuntimeSet();
+  const reachable = computeReachableSet(files, runtimeSet);
 
-  log(`transforming ${files.length} files`);
+  log(
+    `transforming ${files.length} files (${runtimeSet.size} entrypoints → ${reachable.size} reachable/LIVE)`
+  );
 
   const entries = files.map((f) => {
     const isRuntime = runtimeSet.has(f.path);
+    const isReachable = reachable.has(f.path);
     return {
       schemaVersion: SCHEMA_VERSION,
       id: fileIdFromPath(f.path),
       path: f.path,
       domain: DEFAULT_DOMAIN, // PR-D overlay resolves to D1..D8 via glob
       kind: mapKind(f.kind),
-      status: isRuntime ? "LIVE" : "UNKNOWN",
+      status: isReachable ? "LIVE" : "UNKNOWN",
       owner: DEFAULT_OWNER, // PR-D overlay resolves
       sourceConfidence: "medium", // dep-cruiser graph signal
       runtime: isRuntime,
       loc: typeof f.loc === "number" ? f.loc : 0,
       imports: Array.isArray(f.imports) ? [...f.imports].sort() : [],
       importedBy: Array.isArray(f.imported_by) ? [...f.imported_by].sort() : [],
-      derivedFrom: ["depcruise"],
+      // Provenance: entrypoints + graph; reachability adds the transitive signal.
+      derivedFrom:
+        isReachable && !isRuntime ? ["depcruise", "reachability"] : ["depcruise"],
       deletePolicy: "FREE",
       risk: "low",
     };
@@ -136,4 +184,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { main };
+module.exports = { main, computeReachableSet };

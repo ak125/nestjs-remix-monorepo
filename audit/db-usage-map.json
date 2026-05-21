@@ -2,22 +2,22 @@
   "_generated_by": "scripts/audit/build-db-usage-map.js",
   "note": "Candidates only — never a \"dead\" verdict. A real DROP table/function goes through the RPC Gate + a vault ADR, never from this map.",
   "important_caveats": [
-    "888 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
+    "894 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
     "Migration parsing is regex-based and tracks last CREATE vs last DROP per object (date-prefixed filenames ≈ chronological); re-create-after-drop edge cases may slip through.",
     "RLS-only / dashboard / external-cron / RPC-internal usage is invisible here — see per-candidate caveats."
   ],
   "summary": {
-    "tables_seen": 232,
-    "tables_with_callsites": 172,
-    "candidate_orphan_tables": 60,
-    "rpc_seen": 182,
-    "rpc_with_callsites": 15,
-    "trigger_functions": 26,
-    "candidate_orphan_rpc": 141,
-    "dynamic_from_callsites": 888,
+    "tables_seen": 257,
+    "tables_with_callsites": 184,
+    "candidate_orphan_tables": 73,
+    "rpc_seen": 199,
+    "rpc_with_callsites": 13,
+    "trigger_functions": 27,
+    "candidate_orphan_rpc": 159,
+    "dynamic_from_callsites": 894,
     "dynamic_rpc_callsites": 3,
-    "migrations_scanned": 216,
-    "backend_files_scanned": 1014
+    "migrations_scanned": 243,
+    "backend_files_scanned": 1158
   },
   "tables": {
     "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7": {
@@ -365,8 +365,10 @@
       "in_knowledge_db": false
     },
     "__error_logs": {
-      "used_by": [],
-      "used_by_count": 0,
+      "used_by": [
+        "backend/src/modules/seo-control-plane/collectors/runtime-logs/runtime-logs.service.ts"
+      ],
+      "used_by_count": 1,
       "in_migrations": [
         "20260420_error_logs_dedicated_table.sql"
       ],
@@ -702,6 +704,17 @@
       "rls_present": true,
       "in_knowledge_db": false
     },
+    "__seo_admin_job": {
+      "used_by": [
+        "backend/src/modules/seo/r2/services/r2-r8-seed-job-orchestrator.service.ts"
+      ],
+      "used_by_count": 1,
+      "in_migrations": [
+        "20260518_seo_admin_job_table.sql"
+      ],
+      "rls_present": true,
+      "in_knowledge_db": false
+    },
     "__seo_audit_findings": {
       "used_by": [
         "backend/src/modules/seo-monitoring/services/audit-findings.service.ts"
@@ -770,6 +783,57 @@
       "used_by_count": 2,
       "in_migrations": [
         "20260122_sitemap_v10_enterprise.sql"
+      ],
+      "rls_present": false,
+      "in_knowledge_db": false
+    },
+    "__seo_crux_alert_state": {
+      "used_by": [
+        "backend/src/modules/seo-monitoring/services/crux-alerter.service.ts"
+      ],
+      "used_by_count": 1,
+      "in_migrations": [
+        "20260514_seo_crux_field_history.sql"
+      ],
+      "rls_present": true,
+      "in_knowledge_db": false
+    },
+    "__seo_crux_field_history": {
+      "used_by": [
+        "backend/src/modules/seo-monitoring/controllers/seo-monitoring.controller.ts",
+        "backend/src/modules/seo-monitoring/services/crux-alerter.service.ts",
+        "backend/src/modules/seo-monitoring/services/crux-field-fetcher.service.ts"
+      ],
+      "used_by_count": 3,
+      "in_migrations": [
+        "20260514_seo_crux_field_history.sql"
+      ],
+      "rls_present": true,
+      "in_knowledge_db": false
+    },
+    "__seo_crux_field_history_2026_05": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260514_seo_crux_field_history.sql"
+      ],
+      "rls_present": false,
+      "in_knowledge_db": false
+    },
+    "__seo_crux_field_history_2026_06": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260514_seo_crux_field_history.sql"
+      ],
+      "rls_present": false,
+      "in_knowledge_db": false
+    },
+    "__seo_crux_field_history_2026_07": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260514_seo_crux_field_history.sql"
       ],
       "rls_present": false,
       "in_knowledge_db": false
@@ -849,10 +913,12 @@
     },
     "__seo_event_log": {
       "used_by": [
+        "backend/src/modules/admin/services/seo-control.service.ts",
         "backend/src/modules/seo-monitoring/controllers/seo-monitoring.controller.ts",
+        "backend/src/modules/seo-monitoring/services/funnel-events.service.ts",
         "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts"
       ],
-      "used_by_count": 2,
+      "used_by_count": 4,
       "in_migrations": [
         "20260425_seo_event_log.sql"
       ],
@@ -924,6 +990,15 @@
       "rls_present": true,
       "in_knowledge_db": false
     },
+    "__seo_gamme_car_switch": {
+      "used_by": [
+        "backend/src/modules/rm/services/rm-builder.service.ts"
+      ],
+      "used_by_count": 1,
+      "in_migrations": [],
+      "rls_present": true,
+      "in_knowledge_db": false
+    },
     "__seo_gamme_conseil": {
       "used_by": [
         "backend/src/modules/admin/controllers/internal-seo-audit.controller.ts",
@@ -934,9 +1009,10 @@
         "backend/src/modules/blog/services/blog-seo.service.ts",
         "backend/src/modules/marketing/services/marketing-data.service.ts",
         "backend/src/modules/seo-monitoring/services/r-content-auditor.service.ts",
+        "backend/src/modules/seo/r2/services/r1-gamme-completeness-audit.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts"
       ],
-      "used_by_count": 9,
+      "used_by_count": 10,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": true
@@ -996,9 +1072,10 @@
     "__seo_gsc_daily": {
       "used_by": [
         "backend/src/modules/seo-monitoring/controllers/seo-monitoring.controller.ts",
+        "backend/src/modules/seo-monitoring/services/crux-field-fetcher.service.ts",
         "backend/src/modules/seo-monitoring/services/gsc-daily-fetcher.service.ts"
       ],
-      "used_by_count": 2,
+      "used_by_count": 3,
       "in_migrations": [
         "20260425_seo_observability_timeseries.sql"
       ],
@@ -1129,9 +1206,10 @@
         "backend/src/modules/admin/services/brief-template.service.ts",
         "backend/src/modules/admin/services/gamme-detail-enricher.service.ts",
         "backend/src/modules/admin/services/gamme-vlevel.service.ts",
+        "backend/src/modules/rm/services/rm-builder.service.ts",
         "backend/src/modules/seo/services/keywords-dashboard.service.ts"
       ],
-      "used_by_count": 5,
+      "used_by_count": 6,
       "in_migrations": [
         "20260122_create_seo_keywords_table.sql"
       ],
@@ -1160,6 +1238,17 @@
       ],
       "used_by_count": 1,
       "in_migrations": [],
+      "rls_present": true,
+      "in_knowledge_db": false
+    },
+    "__seo_outbox_event": {
+      "used_by": [
+        "backend/src/modules/seo/r2/services/outbox-relay.service.ts"
+      ],
+      "used_by_count": 1,
+      "in_migrations": [
+        "20260516_seo_r2_v2_cqrs_snapshot.sql"
+      ],
       "rls_present": true,
       "in_knowledge_db": false
     },
@@ -1281,6 +1370,35 @@
       "rls_present": true,
       "in_knowledge_db": false
     },
+    "__seo_r2_composition_inputs": {
+      "used_by": [
+        "backend/src/modules/seo/r2/services/r2-composition-input-snapshot.service.ts"
+      ],
+      "used_by_count": 1,
+      "in_migrations": [
+        "20260515_seo_r2_v2_foundation.sql"
+      ],
+      "rls_present": true,
+      "in_knowledge_db": false
+    },
+    "__seo_r2_eligibility_log": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260515_seo_r2_v2_foundation.sql"
+      ],
+      "rls_present": true,
+      "in_knowledge_db": false
+    },
+    "__seo_r2_embeddings": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260515_seo_r2_v2_foundation.sql"
+      ],
+      "rls_present": true,
+      "in_knowledge_db": false
+    },
     "__seo_r2_keyword_plan": {
       "used_by": [
         "backend/src/modules/admin/services/r2-enricher.service.ts"
@@ -1289,6 +1407,78 @@
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": true
+    },
+    "__seo_r2_metrics": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260515_seo_r2_v2_foundation.sql"
+      ],
+      "rls_present": true,
+      "in_knowledge_db": false
+    },
+    "__seo_r2_page_content": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260515_seo_r2_v2_foundation.sql"
+      ],
+      "rls_present": true,
+      "in_knowledge_db": false
+    },
+    "__seo_r2_page_snapshot": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260516_seo_r2_v2_cqrs_snapshot.sql"
+      ],
+      "rls_present": true,
+      "in_knowledge_db": false
+    },
+    "__seo_r2_page_versions": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260515_seo_r2_v2_foundation.sql"
+      ],
+      "rls_present": true,
+      "in_knowledge_db": false
+    },
+    "__seo_r2_pages": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260515_seo_r2_v2_foundation.sql"
+      ],
+      "rls_present": true,
+      "in_knowledge_db": false
+    },
+    "__seo_r2_qa_reviews": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260515_seo_r2_v2_foundation.sql"
+      ],
+      "rls_present": true,
+      "in_knowledge_db": false
+    },
+    "__seo_r2_regeneration_queue": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260515_seo_r2_v2_foundation.sql"
+      ],
+      "rls_present": true,
+      "in_knowledge_db": false
+    },
+    "__seo_r2_signatures": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260515_seo_r2_v2_foundation.sql"
+      ],
+      "rls_present": true,
+      "in_knowledge_db": false
     },
     "__seo_r3_image_prompts": {
       "used_by": [
@@ -1364,10 +1554,23 @@
     },
     "__seo_r8_pages": {
       "used_by": [
+        "backend/src/modules/seo/r2/services/r2-r8-gate-status.service.ts",
+        "backend/src/modules/seo/r2/services/r8-snapshot-reader.service.ts",
         "backend/src/modules/vehicles/services/vehicle-rpc.service.ts"
       ],
-      "used_by_count": 1,
+      "used_by_count": 3,
       "in_migrations": [],
+      "rls_present": true,
+      "in_knowledge_db": false
+    },
+    "__seo_r8_snapshot_store": {
+      "used_by": [
+        "backend/src/modules/seo/r2/services/r2-r8-gate-status.service.ts"
+      ],
+      "used_by_count": 1,
+      "in_migrations": [
+        "20260516_seo_r2_v2_cqrs_snapshot.sql"
+      ],
       "rls_present": true,
       "in_knowledge_db": false
     },
@@ -1414,6 +1617,50 @@
         "20260122_sitemap_v10_enterprise.sql"
       ],
       "rls_present": false,
+      "in_knowledge_db": false
+    },
+    "__seo_snapshot_cf_analytics": {
+      "used_by": [
+        "backend/src/modules/seo-control-plane/collectors/cf-analytics/cf-analytics.service.ts"
+      ],
+      "used_by_count": 1,
+      "in_migrations": [
+        "20260514_seo_snapshot_cf_analytics.sql"
+      ],
+      "rls_present": true,
+      "in_knowledge_db": false
+    },
+    "__seo_snapshot_cf_rum": {
+      "used_by": [
+        "backend/src/modules/seo-control-plane/collectors/cf-rum/cf-rum.service.ts"
+      ],
+      "used_by_count": 1,
+      "in_migrations": [
+        "20260517_seo_snapshot_cf_rum.sql"
+      ],
+      "rls_present": true,
+      "in_knowledge_db": false
+    },
+    "__seo_snapshot_runtime_logs": {
+      "used_by": [
+        "backend/src/modules/seo-control-plane/collectors/runtime-logs/runtime-logs.service.ts"
+      ],
+      "used_by_count": 1,
+      "in_migrations": [
+        "20260514_seo_snapshot_runtime_logs.sql"
+      ],
+      "rls_present": true,
+      "in_knowledge_db": false
+    },
+    "__seo_snapshot_synthetic": {
+      "used_by": [
+        "backend/src/modules/seo-control-plane/collectors/synthetic-crawler/synthetic-crawler.service.ts"
+      ],
+      "used_by_count": 1,
+      "in_migrations": [
+        "20260514_seo_snapshot_synthetic.sql"
+      ],
+      "rls_present": true,
       "in_knowledge_db": false
     },
     "__seo_surface_duplicate_decisions": {
@@ -1490,6 +1737,15 @@
       ],
       "used_by_count": 1,
       "in_migrations": [],
+      "rls_present": false,
+      "in_knowledge_db": false
+    },
+    "__soft_404_events": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260518120000_soft_404_events.sql"
+      ],
       "rls_present": false,
       "in_knowledge_db": false
     },
@@ -1621,10 +1877,11 @@
         "backend/src/modules/admin/services/vehicle-rag-generator.service.ts",
         "backend/src/modules/catalog/services/compatibility.service.ts",
         "backend/src/modules/catalog/services/homepage-rpc.service.ts",
+        "backend/src/modules/seo/r2/services/r8-parent-enrichment.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-vehicle.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-static.service.ts"
       ],
-      "used_by_count": 7,
+      "used_by_count": 8,
       "in_migrations": [],
       "rls_present": false,
       "in_knowledge_db": false
@@ -1635,9 +1892,10 @@
         "backend/src/modules/admin/services/gamme-vlevel.service.ts",
         "backend/src/modules/admin/services/vehicle-rag-generator.service.ts",
         "backend/src/modules/catalog/controllers/vehicle-hierarchy.controller.ts",
-        "backend/src/modules/catalog/services/compatibility.service.ts"
+        "backend/src/modules/catalog/services/compatibility.service.ts",
+        "backend/src/modules/seo/r2/services/r8-parent-enrichment.service.ts"
       ],
-      "used_by_count": 5,
+      "used_by_count": 6,
       "in_migrations": [],
       "rls_present": false,
       "in_knowledge_db": false
@@ -1650,9 +1908,12 @@
         "backend/src/modules/catalog/controllers/pieces-diagnostic.controller.ts",
         "backend/src/modules/catalog/controllers/vehicle-hierarchy.controller.ts",
         "backend/src/modules/catalog/services/compatibility.service.ts",
-        "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.ts"
+        "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.ts",
+        "backend/src/modules/seo/r2/services/r2-r8-gate-status.service.ts",
+        "backend/src/modules/seo/r2/services/r8-parent-enrichment.service.ts",
+        "backend/src/modules/seo/r2/services/r8-snapshot-seed.service.ts"
       ],
-      "used_by_count": 7,
+      "used_by_count": 10,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false
@@ -2081,6 +2342,7 @@
         "backend/src/modules/rag-proxy/services/rag-knowledge.service.ts",
         "backend/src/modules/search/controllers/search-debug.controller.ts",
         "backend/src/modules/search/controllers/search-enhanced-existing.controller.ts",
+        "backend/src/modules/seo/r2/services/r1-gamme-completeness-audit.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-data.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-cluster.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-vehicle.service.ts",
@@ -2088,7 +2350,7 @@
         "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
         "backend/src/workers/services/rag-change-watcher.service.ts"
       ],
-      "used_by_count": 39,
+      "used_by_count": 40,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false
@@ -2486,6 +2748,22 @@
       ],
       "is_trigger_function": false
     },
+    "__seo_admin_job_accept": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260518_seo_admin_job_table.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "__seo_admin_job_transition": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260518_seo_admin_job_table.sql"
+      ],
+      "is_trigger_function": false
+    },
     "__seo_brand_editorial_set_updated_at": {
       "called_by": [],
       "called_by_count": 0,
@@ -2502,6 +2780,30 @@
       ],
       "is_trigger_function": true
     },
+    "__seo_outbox_claim_batch": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260517_seo_r2_v2_outbox_relay_rpc.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "__seo_r2_set_updated_at": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260515_seo_r2_v2_foundation.sql"
+      ],
+      "is_trigger_function": true
+    },
+    "__seo_r8_publish_snapshot": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260517_seo_r2_v2_outbox_relay_rpc.sql"
+      ],
+      "is_trigger_function": false
+    },
     "__ux_debt_updated_at": {
       "called_by": [],
       "called_by_count": 0,
@@ -2509,6 +2811,30 @@
         "20260128_dco_v2_tables.sql"
       ],
       "is_trigger_function": true
+    },
+    "_seo_resolve_operational_domain": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260518_seo_control_001_helpers.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "_seo_resolve_surface_key": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260518_seo_control_001_helpers.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "_seo_top_queries_for_page_jsonb": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260518_seo_control_001_helpers.sql"
+      ],
+      "is_trigger_function": false
     },
     "append_gamme_alias": {
       "called_by": [
@@ -2744,20 +3070,16 @@
       "is_trigger_function": false
     },
     "get_alternative_gammes_for_vehicle": {
-      "called_by": [
-        "backend/src/modules/rm/services/rm-builder.service.ts"
-      ],
-      "called_by_count": 1,
+      "called_by": [],
+      "called_by_count": 0,
       "defined_in_migrations": [
         "20260309_no_products_alternatives_rpcs.sql"
       ],
       "is_trigger_function": false
     },
     "get_alternative_vehicles_for_gamme": {
-      "called_by": [
-        "backend/src/modules/rm/services/rm-builder.service.ts"
-      ],
-      "called_by_count": 1,
+      "called_by": [],
+      "called_by_count": 0,
       "defined_in_migrations": [
         "20260309_no_products_alternatives_rpcs.sql",
         "20260421_adr017_rpc_pieces_cast_cleanup.sql"
@@ -2880,6 +3202,14 @@
       ],
       "is_trigger_function": false
     },
+    "get_merchant_center_feed_v1": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260519_merchant_center_feed_v1.sql"
+      ],
+      "is_trigger_function": false
+    },
     "get_piece_detail": {
       "called_by": [],
       "called_by_count": 0,
@@ -2973,6 +3303,14 @@
       "called_by_count": 0,
       "defined_in_migrations": [
         "20260122_sitemap_v10_enterprise.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "get_soft_404_alternatives": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260518180000_soft_404_rpcs.sql"
       ],
       "is_trigger_function": false
     },
@@ -3749,6 +4087,54 @@
       ],
       "is_trigger_function": false
     },
+    "rpc_seo_alerts_v1": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260518_seo_control_002_rpcs.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "rpc_seo_control_snapshot_v1": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260518_seo_control_002_rpcs.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "rpc_seo_conversion_v1": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260518_seo_control_002_rpcs.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "rpc_seo_low_ctr_v1": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260518_seo_control_002_rpcs.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "rpc_seo_top_losers_v1": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260518_seo_control_002_rpcs.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "rpc_seo_traffic_v1": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260518_seo_control_002_rpcs.sql"
+      ],
+      "is_trigger_function": false
+    },
     "search_rag_knowledge": {
       "called_by": [],
       "called_by_count": 0,
@@ -3802,6 +4188,14 @@
       "called_by_count": 0,
       "defined_in_migrations": [
         "20260122_sitemap_v10_enterprise.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "track_soft_404_event": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260518180000_soft_404_rpcs.sql"
       ],
       "is_trigger_function": false
     },
@@ -3929,6 +4323,12 @@
       "name": "__seo_observable_updated_at",
       "defined_in_migrations": [
         "20260126_create_seo_observable.sql"
+      ]
+    },
+    {
+      "name": "__seo_r2_set_updated_at",
+      "defined_in_migrations": [
+        "20260515_seo_r2_v2_foundation.sql"
       ]
     },
     {
@@ -4118,26 +4518,6 @@
       ]
     },
     {
-      "name": "__error_logs",
-      "confidence": "low",
-      "derived_from": [
-        "migrations",
-        "no-literal-from-callsite"
-      ],
-      "rls_present": true,
-      "in_migrations": [
-        "20260420_error_logs_dedicated_table.sql"
-      ],
-      "in_knowledge_db": false,
-      "caveats": [
-        "may be read/written by Supabase internals (auth, storage, realtime)",
-        "may be used by ad-hoc SQL / psql / dashboard",
-        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
-        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
-        "may be written by an external cron / ETL outside this repo"
-      ]
-    },
-    {
       "name": "__lighthouse_alerts",
       "confidence": "low",
       "derived_from": [
@@ -4267,6 +4647,66 @@
       "rls_present": false,
       "in_migrations": [
         "20260507_canonicalize_seo_r3_keyword_plan.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "__seo_crux_field_history_2026_05",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": false,
+      "in_migrations": [
+        "20260514_seo_crux_field_history.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "__seo_crux_field_history_2026_06",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": false,
+      "in_migrations": [
+        "20260514_seo_crux_field_history.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "__seo_crux_field_history_2026_07",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": false,
+      "in_migrations": [
+        "20260514_seo_crux_field_history.sql"
       ],
       "in_knowledge_db": false,
       "caveats": [
@@ -4598,6 +5038,206 @@
       ]
     },
     {
+      "name": "__seo_r2_eligibility_log",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": true,
+      "in_migrations": [
+        "20260515_seo_r2_v2_foundation.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "__seo_r2_embeddings",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": true,
+      "in_migrations": [
+        "20260515_seo_r2_v2_foundation.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "__seo_r2_metrics",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": true,
+      "in_migrations": [
+        "20260515_seo_r2_v2_foundation.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "__seo_r2_page_content",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": true,
+      "in_migrations": [
+        "20260515_seo_r2_v2_foundation.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "__seo_r2_page_snapshot",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": true,
+      "in_migrations": [
+        "20260516_seo_r2_v2_cqrs_snapshot.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "__seo_r2_page_versions",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": true,
+      "in_migrations": [
+        "20260515_seo_r2_v2_foundation.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "__seo_r2_pages",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": true,
+      "in_migrations": [
+        "20260515_seo_r2_v2_foundation.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "__seo_r2_qa_reviews",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": true,
+      "in_migrations": [
+        "20260515_seo_r2_v2_foundation.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "__seo_r2_regeneration_queue",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": true,
+      "in_migrations": [
+        "20260515_seo_r2_v2_foundation.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "__seo_r2_signatures",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": true,
+      "in_migrations": [
+        "20260515_seo_r2_v2_foundation.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
       "name": "__seo_r5_keyword_plan",
       "confidence": "low",
       "derived_from": [
@@ -4728,6 +5368,26 @@
       "rls_present": false,
       "in_migrations": [
         "20260315_duplicate_gate_tables.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "__soft_404_events",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": false,
+      "in_migrations": [
+        "20260518120000_soft_404_events.sql"
       ],
       "in_knowledge_db": false,
       "caveats": [
@@ -5383,6 +6043,118 @@
       ]
     },
     {
+      "name": "__seo_admin_job_accept",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260518_seo_admin_job_table.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "__seo_admin_job_transition",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260518_seo_admin_job_table.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "__seo_outbox_claim_batch",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260517_seo_r2_v2_outbox_relay_rpc.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "__seo_r8_publish_snapshot",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260517_seo_r2_v2_outbox_relay_rpc.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "_seo_resolve_operational_domain",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260518_seo_control_001_helpers.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "_seo_resolve_surface_key",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260518_seo_control_001_helpers.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "_seo_top_queries_for_page_jsonb",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260518_seo_control_001_helpers.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
       "name": "assign_page_role_from_url",
       "confidence": "medium",
       "derived_from": [
@@ -5708,6 +6480,39 @@
       ]
     },
     {
+      "name": "get_alternative_gammes_for_vehicle",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260309_no_products_alternatives_rpcs.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "get_alternative_vehicles_for_gamme",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260309_no_products_alternatives_rpcs.sql",
+        "20260421_adr017_rpc_pieces_cast_cleanup.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
       "name": "get_auto_types_batch",
       "confidence": "medium",
       "derived_from": [
@@ -5880,6 +6685,22 @@
       ],
       "defined_in_migrations": [
         "20260120_rm_sql_function.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "get_merchant_center_feed_v1",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260519_merchant_center_feed_v1.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",
@@ -6072,6 +6893,22 @@
       ],
       "defined_in_migrations": [
         "20260122_sitemap_v10_enterprise.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "get_soft_404_alternatives",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260518180000_soft_404_rpcs.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",
@@ -7419,6 +8256,102 @@
       ]
     },
     {
+      "name": "rpc_seo_alerts_v1",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260518_seo_control_002_rpcs.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "rpc_seo_control_snapshot_v1",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260518_seo_control_002_rpcs.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "rpc_seo_conversion_v1",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260518_seo_control_002_rpcs.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "rpc_seo_low_ctr_v1",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260518_seo_control_002_rpcs.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "rpc_seo_top_losers_v1",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260518_seo_control_002_rpcs.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "rpc_seo_traffic_v1",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260518_seo_control_002_rpcs.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
       "name": "search_rag_knowledge",
       "confidence": "medium",
       "derived_from": [
@@ -7507,6 +8440,22 @@
       ],
       "defined_in_migrations": [
         "20260122_sitemap_v10_enterprise.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "track_soft_404_event",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260518180000_soft_404_rpcs.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",
@@ -8686,15 +9635,15 @@
     },
     {
       "file": "backend/src/modules/catalog/services/vehicle-filtered-catalog-v4-hybrid.service.ts",
-      "line": 773
+      "line": 774
     },
     {
       "file": "backend/src/modules/catalog/services/vehicle-filtered-catalog-v4-hybrid.service.ts",
-      "line": 822
+      "line": 823
     },
     {
       "file": "backend/src/modules/catalog/services/vehicle-filtered-catalog-v4-hybrid.service.ts",
-      "line": 826
+      "line": 827
     },
     {
       "file": "backend/src/modules/commercial/archives/archives.service.ts",
@@ -9937,8 +10886,16 @@
       "line": 158
     },
     {
+      "file": "backend/src/modules/seo-control-plane/collectors/synthetic-crawler/synthetic-crawler.service.ts",
+      "line": 237
+    },
+    {
       "file": "backend/src/modules/seo-logs/services/url-audit.service.ts",
       "line": 309
+    },
+    {
+      "file": "backend/src/modules/seo-monitoring/services/crux-field-fetcher.service.ts",
+      "line": 114
     },
     {
       "file": "backend/src/modules/seo-shadow-observatory/seo-shadow-event-sink.service.ts",
@@ -9967,6 +10924,22 @@
     {
       "file": "backend/src/modules/seo/internal-linking.service.ts",
       "line": 617
+    },
+    {
+      "file": "backend/src/modules/seo/r2/services/__tests__/r1-gamme-completeness-audit.test.ts",
+      "line": 139
+    },
+    {
+      "file": "backend/src/modules/seo/r2/services/__tests__/r1-gamme-completeness-audit.test.ts",
+      "line": 185
+    },
+    {
+      "file": "backend/src/modules/seo/r2/services/__tests__/r1-gamme-completeness-audit.test.ts",
+      "line": 241
+    },
+    {
+      "file": "backend/src/modules/seo/r2/services/r2-r8-gate-status.service.ts",
+      "line": 153
     },
     {
       "file": "backend/src/modules/seo/seo.service.ts",
@@ -10070,7 +11043,7 @@
     },
     {
       "file": "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
-      "line": 210
+      "line": 214
     },
     {
       "file": "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
@@ -10886,15 +11859,15 @@
     },
     {
       "file": "backend/src/modules/vehicles/services/data/vehicle-models.service.ts",
-      "line": 618
+      "line": 622
     },
     {
       "file": "backend/src/modules/vehicles/services/data/vehicle-models.service.ts",
-      "line": 678
+      "line": 683
     },
     {
       "file": "backend/src/modules/vehicles/services/data/vehicle-models.service.ts",
-      "line": 722
+      "line": 727
     },
     {
       "file": "backend/src/modules/vehicles/services/data/vehicle-types.service.ts",

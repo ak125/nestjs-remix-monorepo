@@ -105,25 +105,14 @@ jobs:
         # (e.g. a schema bump landed without bumping `version` literal),
         # this step fails before anything is committed to wiki.
         #
-        # Async IIFE wrapper : `tsx -e` compiles in CJS by default which
-        # forbids top-level await. The IIFE keeps dynamic import() which
-        # is robust with TS + esbuild + module interop.
+        # File-based tsx invocation (mirrors the schema-gen step above). A prior
+        # inline `tsx -e` dynamic import() regressed on 2026-05-20 — under the CI
+        # fresh-install layout the named export `DiagCanon` resolved to
+        # `undefined` (TypeError: reading 'safeParse'). The committed .ts script
+        # avoids that `tsx -e` / `.ts` interop edge entirely.
         run: |
           cd monorepo
-          npx tsx -e "
-            (async () => {
-              const { DiagCanon } = await import('./backend/src/config/diag-canon.schema.ts');
-              const fs = await import('node:fs');
-              const data = JSON.parse(fs.readFileSync('/tmp/canon/diag-canon.json', 'utf8'));
-              const result = DiagCanon.safeParse(data);
-              if (!result.success) {
-                console.error('ZOD PARSE FAIL — shape drift detected:');
-                console.error(JSON.stringify(result.error.format(), null, 2));
-                process.exit(1);
-              }
-              console.log('OK — diag-canon.json parses against Zod canon');
-            })();
-          "
+          npx tsx scripts/wiki/verify-diag-canon-parse.ts /tmp/canon/diag-canon.json
 
       - name: Checkout automecanik-wiki
         uses: actions/checkout@v4
