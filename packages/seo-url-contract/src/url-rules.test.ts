@@ -11,6 +11,7 @@ test("detectMalformedSegment flags real malformed forms", () => {
   const cases: Array<[string, string]> = [
     ["null-55453", "null_in_url"],
     ["null-55453-55453", "null_in_url"], // multi-id form seen in the GSC report
+    ["undefined-123", "null_in_url"], // legacy frontend parity (parseUrlParam)
     ["-30389", "missing_alias"],
     ["type-7379", "type_prefix_fallback"],
     ["122813-122813", "repeated_id"],
@@ -28,6 +29,7 @@ test("detectMalformedSegment passes valid segments (no faux-positives)", () => {
     "a6-iv-22057",
     "ds3-decapotable-46050",
     "nullpunkt-123",
+    "undefinedxyz-9",
     "x-type-99",
     "type-c-50",
   ]) {
