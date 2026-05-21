@@ -119,17 +119,31 @@ describe("DeletePolicySchema (3 levels)", () => {
 });
 
 describe("DerivedFromSchema covers all V1 source types", () => {
+  // Canonical set — must stay in lockstep with every value a builder may emit
+  // (build-files-registry.js emits "reachability" for transitively-reachable
+  // files). The lock test below fails if the schema and this set ever drift,
+  // which is exactly the bug class that shipped an unregistered "reachability".
+  const CANONICAL_SOURCES = [
+    "depcruise",
+    "madge",
+    "knip",
+    "codeowners",
+    "heuristic",
+    "manual",
+    "reachability",
+  ] as const;
+
   test("accepts each canonical source", () => {
-    for (const d of [
-      "depcruise",
-      "madge",
-      "knip",
-      "codeowners",
-      "heuristic",
-      "manual",
-    ]) {
+    for (const d of CANONICAL_SOURCES) {
       assert.equal(DerivedFromSchema.parse(d), d);
     }
+  });
+
+  test("schema options stay in lockstep with the canonical set", () => {
+    assert.deepEqual(
+      [...DerivedFromSchema.options].sort(),
+      [...CANONICAL_SOURCES].sort(),
+    );
   });
 
   test("rejects undeclared source types", () => {
