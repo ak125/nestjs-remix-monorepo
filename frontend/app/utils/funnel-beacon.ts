@@ -15,15 +15,30 @@ import { safeLocalStorage } from "~/utils/safe-storage";
 const ENDPOINT = "/api/seo/funnel/event";
 const SID_KEY = "amk_funnel_sid";
 
+/**
+ * Génère un id de session aléatoire. Crypto uniquement (jamais `Math.random`,
+ * cryptographiquement faible — CodeQL js/insecure-randomness, l'id sert de
+ * contexte de session).
+ */
+function generateSessionId(): string {
+  const c = typeof window !== "undefined" ? window.crypto : undefined;
+  if (c?.randomUUID) return c.randomUUID();
+  if (c?.getRandomValues) {
+    const bytes = new Uint8Array(16);
+    c.getRandomValues(bytes);
+    return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+  }
+  // Crypto indisponible (très vieux navigateur) : horodatage seul, pas d'aléa faible.
+  return `s_${Date.now()}`;
+}
+
 /** Identifiant de session funnel (persistant sur la visite). "" côté serveur. */
 export function getFunnelSessionId(): string {
   if (typeof window === "undefined") return "";
   // safeLocalStorage : ne throw jamais (SecurityError WebView, mode privé…).
   let sid = safeLocalStorage.getItem(SID_KEY);
   if (!sid) {
-    sid =
-      window.crypto?.randomUUID?.() ??
-      `s_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    sid = generateSessionId();
     safeLocalStorage.setItem(SID_KEY, sid);
   }
   return sid;
