@@ -179,10 +179,7 @@ export class SeoTemplateService {
    * rédigée à la main), on conserve le rendu du template tel quel
    * (`feedback_no_touch_meta_h1_if_optimized`).
    */
-  private composeDescription(
-    template: string,
-    context: SeoContext,
-  ): string {
+  private composeDescription(template: string, context: SeoContext): string {
     const rendered = this.processTemplate(template, context);
     if (!context.gamme_name) return rendered; // pas de terme produit fiable
     if (!this.isDegenerateDescriptionTemplate(template)) return rendered;

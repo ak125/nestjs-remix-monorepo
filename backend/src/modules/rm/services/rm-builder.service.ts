@@ -789,7 +789,8 @@ export class RmBuilderService extends SupabaseBaseService {
     if (!pgId || Number.isNaN(pgId) || !gammeName) return null;
     const cacheKey = `seo:gamme_kw_modifier:${pgId}`;
     const cached = await this.cacheService.get<string>(cacheKey);
-    if (cached !== undefined && cached !== null) return cached === '' ? null : cached;
+    if (cached !== undefined && cached !== null)
+      return cached === '' ? null : cached;
 
     let modifier: string | null = null;
     let querySucceeded = false;
@@ -802,13 +803,15 @@ export class RmBuilderService extends SupabaseBaseService {
         querySucceeded = true;
         modifier = pickGammeKeywordModifier(
           gammeName,
-          (data as Array<{ keyword: string | null; volume: number | null }>).map(
-            (r) => ({ keyword: r.keyword ?? '', volume: r.volume ?? 0 }),
-          ),
+          (
+            data as Array<{ keyword: string | null; volume: number | null }>
+          ).map((r) => ({ keyword: r.keyword ?? '', volume: r.volume ?? 0 })),
         );
       }
     } catch (e) {
-      this.logger.warn(`loadGammeKeywordModifier(${pgId}) failed: ${String(e)}`);
+      this.logger.warn(
+        `loadGammeKeywordModifier(${pgId}) failed: ${String(e)}`,
+      );
     }
     // Cache 24h UNIQUEMENT si succès (null légitime = pas de modifieur sûr).
     // Sur erreur : pas de cache → réessai (pas de null figé 24h).

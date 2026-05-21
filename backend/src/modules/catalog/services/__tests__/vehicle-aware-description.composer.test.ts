@@ -17,7 +17,8 @@ const base: DescriptionComposerInput = {
 };
 
 // crude FR finite-verb presence check for the test: each frame must carry a verb
-const FRAME_VERBS = /\b(Trouvez|Comparez|comparez|Commandez|sélectionnez|Besoin|Équipez|équipez|Découvrez|disponibles?)\b/;
+const FRAME_VERBS =
+  /\b(Trouvez|Comparez|comparez|Commandez|sélectionnez|Besoin|Équipez|équipez|Découvrez|disponibles?)\b/;
 
 describe('composeVehicleAwareDescription', () => {
   it('produces a complete sentence containing the authoritative gamme name and the vehicle', () => {
@@ -30,8 +31,17 @@ describe('composeVehicleAwareDescription', () => {
   });
 
   it('gives DISTINCT descriptions for two motorisations of the same model (anti-cannibalization)', () => {
-    const hdi = composeVehicleAwareDescription({ ...base, typeId: 19354, typeName: '1.4 HDI' });
-    const d19 = composeVehicleAwareDescription({ ...base, typeId: 57720, typeName: '1.9 D', minPrice: 10 });
+    const hdi = composeVehicleAwareDescription({
+      ...base,
+      typeId: 19354,
+      typeName: '1.4 HDI',
+    });
+    const d19 = composeVehicleAwareDescription({
+      ...base,
+      typeId: 57720,
+      typeName: '1.9 D',
+      minPrice: 10,
+    });
     expect(hdi).not.toEqual(d19);
     expect(d19).toMatch(FRAME_VERBS);
     expect(d19).toContain('1.9 D');
@@ -45,7 +55,12 @@ describe('composeVehicleAwareDescription', () => {
   });
 
   it('formats price in French (comma decimal + €)', () => {
-    const d = composeVehicleAwareDescription({ ...base, typeId: 1, pgId: 0, minPrice: 9.5 });
+    const d = composeVehicleAwareDescription({
+      ...base,
+      typeId: 1,
+      pgId: 0,
+      minPrice: 9.5,
+    });
     expect(d).toContain('9,50');
     expect(d).toContain('€');
   });
@@ -70,40 +85,58 @@ describe('composeVehicleAwareDescription', () => {
   });
 
   it('appends a validated keyword modifier to the gamme term when provided', () => {
-    const d = composeVehicleAwareDescription({ ...base, keywordModifier: 'avant' });
+    const d = composeVehicleAwareDescription({
+      ...base,
+      keywordModifier: 'avant',
+    });
     expect(d.toLowerCase()).toContain('plaquette de frein avant');
   });
 
   it('is deterministic: same input -> same output', () => {
-    expect(composeVehicleAwareDescription(base)).toEqual(composeVehicleAwareDescription(base));
+    expect(composeVehicleAwareDescription(base)).toEqual(
+      composeVehicleAwareDescription(base),
+    );
   });
 });
 
 describe('pickGammeKeywordModifier (anti-contamination gate)', () => {
-  const kws = (arr: Array<[string, number]>) => arr.map(([keyword, volume]) => ({ keyword, volume }));
+  const kws = (arr: Array<[string, number]>) =>
+    arr.map(([keyword, volume]) => ({ keyword, volume }));
 
   it('REJECTS a keyword that does not contain the gamme core words (disque vs plaquette)', () => {
-    const mod = pickGammeKeywordModifier('Plaquette de frein', kws([['disque de frein', 50000]]));
+    const mod = pickGammeKeywordModifier(
+      'Plaquette de frein',
+      kws([['disque de frein', 50000]]),
+    );
     expect(mod).toBeNull();
   });
 
   it('returns the extra modifier when the keyword contains the gamme core (+ a modifier)', () => {
     const mod = pickGammeKeywordModifier(
       'Plaquette de frein',
-      kws([['plaquette de frein avant', 500], ['disque de frein', 50000]]),
+      kws([
+        ['plaquette de frein avant', 500],
+        ['disque de frein', 50000],
+      ]),
     );
     expect(mod).toBe('avant');
   });
 
   it('returns null when the only matching keyword is the bare gamme term (no added modifier)', () => {
-    const mod = pickGammeKeywordModifier('Filtre à huile', kws([['filtre à huile', 5000]]));
+    const mod = pickGammeKeywordModifier(
+      'Filtre à huile',
+      kws([['filtre à huile', 5000]]),
+    );
     expect(mod).toBeNull();
   });
 
   it('ignores brand/model long-tail modifiers (keeps generic single-word modifiers only)', () => {
     const mod = pickGammeKeywordModifier(
       'Filtre à huile',
-      kws([['filtre à huile purflux', 500], ['filtre à huile c3', 500]]),
+      kws([
+        ['filtre à huile purflux', 500],
+        ['filtre à huile c3', 500],
+      ]),
     );
     // brand "purflux" / model "c3" are not generic position/qualifier modifiers -> null
     expect(mod).toBeNull();

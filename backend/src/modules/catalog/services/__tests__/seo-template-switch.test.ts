@@ -127,22 +127,37 @@ describe('SeoTemplateService — description composée (vraie phrase véhicule-a
   it('compose une phrase complète quand le template description est dégénéré (placeholders only)', async () => {
     const r = await svc.processTemplates(
       tplDesc('#LinkGammeCar_402#, #CompSwitch_3_402#'),
-      ctx({ type_id: 19354, type_name: '1.4 HDI', power_ps: '68', min_price: 9, count: 24 }),
+      ctx({
+        type_id: 19354,
+        type_name: '1.4 HDI',
+        power_ps: '68',
+        min_price: 9,
+        count: 24,
+      }),
     );
-    expect(r.description).toMatch(/Découvrez|Commandez|Trouvez|Comparez|Équipez/); // verbe présent
+    expect(r.description).toMatch(
+      /Découvrez|Commandez|Trouvez|Comparez|Équipez/,
+    ); // verbe présent
     expect(r.description).toContain('Peugeot 207 1.4 HDI');
     expect(r.description).not.toMatch(/#|undefined|null/);
   });
 
   it('descriptions DISTINCTES pour 2 motorisations du même modèle', async () => {
     const tplx = tplDesc('#LinkGammeCar_402#, #CompSwitch_3_402#');
-    const a = await svc.processTemplates(tplx, ctx({ type_id: 19354, type_name: '1.4 HDI', min_price: 9 }));
-    const b = await svc.processTemplates(tplx, ctx({ type_id: 57720, type_name: '1.9 D', min_price: 10 }));
+    const a = await svc.processTemplates(
+      tplx,
+      ctx({ type_id: 19354, type_name: '1.4 HDI', min_price: 9 }),
+    );
+    const b = await svc.processTemplates(
+      tplx,
+      ctx({ type_id: 57720, type_name: '1.9 D', min_price: 10 }),
+    );
     expect(a.description).not.toEqual(b.description);
   });
 
   it('préserve une description rédigée à la main (prose avec verbe, non dégénérée)', async () => {
-    const prose = 'Comparez nos plaquettes de frein de qualité pour votre véhicule. Livraison rapide.';
+    const prose =
+      'Comparez nos plaquettes de frein de qualité pour votre véhicule. Livraison rapide.';
     const r = await svc.processTemplates(tplDesc(prose), ctx());
     expect(r.description).toBe(prose);
   });
@@ -150,7 +165,11 @@ describe('SeoTemplateService — description composée (vraie phrase véhicule-a
   it('ajoute le modifieur mot-clé validé au terme produit', async () => {
     const r = await svc.processTemplates(
       tplDesc('#LinkGammeCar_402#, #CompSwitch_3_402#'),
-      ctx({ type_id: 19354, type_name: '1.4 HDI', gamme_keyword_modifier: 'avant' }),
+      ctx({
+        type_id: 19354,
+        type_name: '1.4 HDI',
+        gamme_keyword_modifier: 'avant',
+      }),
     );
     expect(r.description.toLowerCase()).toContain('plaquette de frein avant');
   });

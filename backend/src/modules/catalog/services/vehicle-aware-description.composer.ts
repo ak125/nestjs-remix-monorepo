@@ -35,7 +35,19 @@ export interface DescriptionComposerInput {
 }
 
 const STOP = new Set([
-  'de', 'd', 'a', 'la', 'le', 'les', 'du', 'des', 'l', 'pour', 'et', 'au', 'aux',
+  'de',
+  'd',
+  'a',
+  'la',
+  'le',
+  'les',
+  'du',
+  'des',
+  'l',
+  'pour',
+  'et',
+  'au',
+  'aux',
 ]);
 
 /**
@@ -81,7 +93,9 @@ export function pickGammeKeywordModifier(
   if (core.length === 0) return null;
   const coreSet = new Set(core);
 
-  const sorted = [...keywords].sort((a, b) => (b.volume ?? 0) - (a.volume ?? 0));
+  const sorted = [...keywords].sort(
+    (a, b) => (b.volume ?? 0) - (a.volume ?? 0),
+  );
   for (const { keyword } of sorted) {
     const kw = coreWords(keyword);
     const kwSet = new Set(kw);
@@ -115,7 +129,9 @@ export function composeVehicleAwareDescription(
   const Vequip = hasVehicle ? `votre ${veh}` : 'votre véhicule';
 
   const hasPrice = typeof input.minPrice === 'number' && input.minPrice > 0;
-  const priceClause = hasPrice ? ` dès ${formatEuro(input.minPrice as number)}` : '';
+  const priceClause = hasPrice
+    ? ` dès ${formatEuro(input.minPrice as number)}`
+    : '';
 
   const hasCount = typeof input.count === 'number' && input.count > 0;
   const countPhrase = hasCount
@@ -134,12 +150,16 @@ export function composeVehicleAwareDescription(
   ];
 
   const idx =
-    (((input.typeId ?? 0) + (input.pgId ?? 0)) % frames.length + frames.length) %
+    ((((input.typeId ?? 0) + (input.pgId ?? 0)) % frames.length) +
+      frames.length) %
     frames.length;
   let out = frames[idx];
 
   // Nettoyage : espaces multiples + espace avant ponctuation.
-  out = out.replace(/\s+/g, ' ').replace(/\s+([.,:?!])/g, '$1').trim();
+  out = out
+    .replace(/\s+/g, ' ')
+    .replace(/\s+([.,:?!])/g, '$1')
+    .trim();
   void G; // capitalisé dispo pour de futurs frames sentence-initial
   return out;
 }
