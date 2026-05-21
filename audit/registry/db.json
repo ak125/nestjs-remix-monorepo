@@ -1708,7 +1708,9 @@
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "usedBy": []
+      "usedBy": [
+        "backend/src/modules/seo-control-plane/collectors/runtime-logs/runtime-logs.service.ts"
+      ]
     },
     {
       "columns": [
@@ -3281,6 +3283,64 @@
       "columns": [
         {
           "hasDefault": true,
+          "name": "job_id",
+          "nullable": true,
+          "type": "UUID PRIMARY KEY"
+        },
+        {
+          "hasDefault": false,
+          "name": "job_type",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": true,
+          "name": "input",
+          "nullable": false,
+          "type": "JSONB"
+        },
+        {
+          "hasDefault": false,
+          "name": "result",
+          "nullable": true,
+          "type": "JSONB"
+        },
+        {
+          "hasDefault": false,
+          "name": "started_at",
+          "nullable": true,
+          "type": "TIMESTAMPTZ"
+        },
+        {
+          "hasDefault": false,
+          "name": "finished_at",
+          "nullable": true,
+          "type": "TIMESTAMPTZ"
+        }
+      ],
+      "deletePolicy": "ADR_REQUIRED",
+      "domain": "UNKNOWN",
+      "id": "__seo_admin_job",
+      "inMigrations": [
+        "20260518_seo_admin_job_table.sql"
+      ],
+      "indexes": [],
+      "name": "__seo_admin_job",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": true,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "usedBy": [
+        "backend/src/modules/seo/r2/services/r2-r8-seed-job-orchestrator.service.ts"
+      ]
+    },
+    {
+      "columns": [
+        {
+          "hasDefault": true,
           "name": "id",
           "nullable": true,
           "type": "UUID PRIMARY KEY"
@@ -3579,6 +3639,181 @@
         "backend/src/modules/seo/services/googlebot-detector.service.ts",
         "backend/src/modules/seo/services/risk-flags-engine.service.ts"
       ]
+    },
+    {
+      "columns": [
+        {
+          "hasDefault": false,
+          "name": "origin",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "url",
+          "nullable": true,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "opened_at",
+          "nullable": false,
+          "type": "TIMESTAMPTZ"
+        },
+        {
+          "hasDefault": false,
+          "name": "last_emitted_at",
+          "nullable": false,
+          "type": "TIMESTAMPTZ"
+        },
+        {
+          "hasDefault": false,
+          "name": "resolved_at",
+          "nullable": true,
+          "type": "TIMESTAMPTZ"
+        },
+        {
+          "hasDefault": false,
+          "name": "last_observed_value",
+          "nullable": true,
+          "type": "NUMERIC"
+        },
+        {
+          "hasDefault": false,
+          "name": "last_baseline_median",
+          "nullable": true,
+          "type": "NUMERIC"
+        },
+        {
+          "hasDefault": false,
+          "name": "last_delta_pct",
+          "nullable": true,
+          "type": "NUMERIC"
+        }
+      ],
+      "deletePolicy": "ADR_REQUIRED",
+      "domain": "UNKNOWN",
+      "id": "__seo_crux_alert_state",
+      "inMigrations": [
+        "20260514_seo_crux_field_history.sql"
+      ],
+      "indexes": [],
+      "name": "__seo_crux_alert_state",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": true,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "usedBy": [
+        "backend/src/modules/seo-monitoring/services/crux-alerter.service.ts"
+      ]
+    },
+    {
+      "columns": [
+        {
+          "hasDefault": false,
+          "name": "origin",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "url",
+          "nullable": true,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "collection_period_start_date",
+          "nullable": false,
+          "type": "DATE"
+        },
+        {
+          "hasDefault": false,
+          "name": "collection_period_end_date",
+          "nullable": false,
+          "type": "DATE"
+        }
+      ],
+      "deletePolicy": "ADR_REQUIRED",
+      "domain": "UNKNOWN",
+      "id": "__seo_crux_field_history",
+      "inMigrations": [
+        "20260514_seo_crux_field_history.sql"
+      ],
+      "indexes": [],
+      "name": "__seo_crux_field_history",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": true,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "usedBy": [
+        "backend/src/modules/seo-monitoring/controllers/seo-monitoring.controller.ts",
+        "backend/src/modules/seo-monitoring/services/crux-alerter.service.ts",
+        "backend/src/modules/seo-monitoring/services/crux-field-fetcher.service.ts"
+      ]
+    },
+    {
+      "columns": [],
+      "deletePolicy": "ADR_REQUIRED",
+      "domain": "UNKNOWN",
+      "id": "__seo_crux_field_history_2026_05",
+      "inMigrations": [
+        "20260514_seo_crux_field_history.sql"
+      ],
+      "indexes": [],
+      "name": "__seo_crux_field_history_2026_05",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": false,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE",
+      "usedBy": []
+    },
+    {
+      "columns": [],
+      "deletePolicy": "ADR_REQUIRED",
+      "domain": "UNKNOWN",
+      "id": "__seo_crux_field_history_2026_06",
+      "inMigrations": [
+        "20260514_seo_crux_field_history.sql"
+      ],
+      "indexes": [],
+      "name": "__seo_crux_field_history_2026_06",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": false,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE",
+      "usedBy": []
+    },
+    {
+      "columns": [],
+      "deletePolicy": "ADR_REQUIRED",
+      "domain": "UNKNOWN",
+      "id": "__seo_crux_field_history_2026_07",
+      "inMigrations": [
+        "20260514_seo_crux_field_history.sql"
+      ],
+      "indexes": [],
+      "name": "__seo_crux_field_history_2026_07",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": false,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE",
+      "usedBy": []
     },
     {
       "columns": [
@@ -4004,6 +4239,7 @@
       "sourceConfidence": "high",
       "status": "LIVE",
       "usedBy": [
+        "backend/src/modules/admin/services/seo-control.service.ts",
         "backend/src/modules/seo-monitoring/controllers/seo-monitoring.controller.ts",
         "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts"
       ]
@@ -4174,6 +4410,25 @@
       "columns": [],
       "deletePolicy": "ADR_REQUIRED",
       "domain": "UNKNOWN",
+      "id": "__seo_gamme_car_switch",
+      "inMigrations": [],
+      "indexes": [],
+      "name": "__seo_gamme_car_switch",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": true,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "low",
+      "status": "LIVE",
+      "usedBy": [
+        "backend/src/modules/rm/services/rm-builder.service.ts"
+      ]
+    },
+    {
+      "columns": [],
+      "deletePolicy": "ADR_REQUIRED",
+      "domain": "UNKNOWN",
       "id": "__seo_gamme_conseil",
       "inMigrations": [],
       "indexes": [],
@@ -4194,6 +4449,7 @@
         "backend/src/modules/blog/services/blog-seo.service.ts",
         "backend/src/modules/marketing/services/marketing-data.service.ts",
         "backend/src/modules/seo-monitoring/services/r-content-auditor.service.ts",
+        "backend/src/modules/seo/r2/services/r1-gamme-completeness-audit.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts"
       ]
     },
@@ -4545,6 +4801,7 @@
       "status": "LIVE",
       "usedBy": [
         "backend/src/modules/seo-monitoring/controllers/seo-monitoring.controller.ts",
+        "backend/src/modules/seo-monitoring/services/crux-field-fetcher.service.ts",
         "backend/src/modules/seo-monitoring/services/gsc-daily-fetcher.service.ts"
       ]
     },
@@ -5140,6 +5397,7 @@
         "backend/src/modules/admin/services/brief-template.service.ts",
         "backend/src/modules/admin/services/gamme-detail-enricher.service.ts",
         "backend/src/modules/admin/services/gamme-vlevel.service.ts",
+        "backend/src/modules/rm/services/rm-builder.service.ts",
         "backend/src/modules/seo/services/keywords-dashboard.service.ts"
       ]
     },
@@ -5259,6 +5517,64 @@
       "status": "LIVE",
       "usedBy": [
         "backend/src/modules/seo/validation/diagnostic.service.ts"
+      ]
+    },
+    {
+      "columns": [
+        {
+          "hasDefault": false,
+          "name": "id",
+          "nullable": true,
+          "type": "BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY"
+        },
+        {
+          "hasDefault": false,
+          "name": "aggregate_type",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "trace_id",
+          "nullable": true,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": true,
+          "name": "occurred_at",
+          "nullable": false,
+          "type": "TIMESTAMPTZ"
+        },
+        {
+          "hasDefault": false,
+          "name": "published_at",
+          "nullable": true,
+          "type": "TIMESTAMPTZ"
+        },
+        {
+          "hasDefault": false,
+          "name": "last_error",
+          "nullable": true,
+          "type": "TEXT"
+        }
+      ],
+      "deletePolicy": "ADR_REQUIRED",
+      "domain": "UNKNOWN",
+      "id": "__seo_outbox_event",
+      "inMigrations": [
+        "20260516_seo_r2_v2_cqrs_snapshot.sql"
+      ],
+      "indexes": [],
+      "name": "__seo_outbox_event",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": true,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "usedBy": [
+        "backend/src/modules/seo/r2/services/outbox-relay.service.ts"
       ]
     },
     {
@@ -5782,6 +6098,182 @@
       ]
     },
     {
+      "columns": [
+        {
+          "hasDefault": false,
+          "name": "pg_id",
+          "nullable": false,
+          "type": "BIGINT"
+        },
+        {
+          "hasDefault": false,
+          "name": "type_id",
+          "nullable": false,
+          "type": "BIGINT"
+        },
+        {
+          "hasDefault": false,
+          "name": "input_hash",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "r8_signals",
+          "nullable": false,
+          "type": "JSONB"
+        },
+        {
+          "hasDefault": false,
+          "name": "motor_delta",
+          "nullable": false,
+          "type": "JSONB"
+        },
+        {
+          "hasDefault": false,
+          "name": "cluster_key",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "catalog_signature",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": true,
+          "name": "captured_at",
+          "nullable": false,
+          "type": "TIMESTAMPTZ"
+        }
+      ],
+      "deletePolicy": "ADR_REQUIRED",
+      "domain": "UNKNOWN",
+      "id": "__seo_r2_composition_inputs",
+      "inMigrations": [
+        "20260515_seo_r2_v2_foundation.sql"
+      ],
+      "indexes": [],
+      "name": "__seo_r2_composition_inputs",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": true,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "usedBy": [
+        "backend/src/modules/seo/r2/services/r2-composition-input-snapshot.service.ts"
+      ]
+    },
+    {
+      "columns": [
+        {
+          "hasDefault": false,
+          "name": "id",
+          "nullable": true,
+          "type": "BIGINT GENERATED ALWAYS AS IDENTITY   PRIMARY KEY"
+        },
+        {
+          "hasDefault": false,
+          "name": "pg_id",
+          "nullable": false,
+          "type": "BIGINT"
+        },
+        {
+          "hasDefault": false,
+          "name": "type_id",
+          "nullable": false,
+          "type": "BIGINT"
+        },
+        {
+          "hasDefault": true,
+          "name": "attempt",
+          "nullable": false,
+          "type": "BIGINT"
+        },
+        {
+          "hasDefault": false,
+          "name": "subscores",
+          "nullable": false,
+          "type": "JSONB"
+        },
+        {
+          "hasDefault": false,
+          "name": "suppressed_target",
+          "nullable": true,
+          "type": "BIGINT"
+        },
+        {
+          "hasDefault": false,
+          "name": "sibling",
+          "nullable": true,
+          "type": "type_id\n  reason            TEXT"
+        },
+        {
+          "hasDefault": true,
+          "name": "evaluated_at",
+          "nullable": false,
+          "type": "TIMESTAMPTZ"
+        }
+      ],
+      "deletePolicy": "ADR_REQUIRED",
+      "domain": "UNKNOWN",
+      "id": "__seo_r2_eligibility_log",
+      "inMigrations": [
+        "20260515_seo_r2_v2_foundation.sql"
+      ],
+      "indexes": [],
+      "name": "__seo_r2_eligibility_log",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": true,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "usedBy": []
+    },
+    {
+      "columns": [
+        {
+          "hasDefault": false,
+          "name": "id",
+          "nullable": true,
+          "type": "BIGINT GENERATED ALWAYS AS IDENTITY   PRIMARY KEY"
+        },
+        {
+          "hasDefault": false,
+          "name": "content_hash",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "invalidation",
+          "nullable": false,
+          "type": "auto\n  embedding     vector(1536)"
+        }
+      ],
+      "deletePolicy": "ADR_REQUIRED",
+      "domain": "UNKNOWN",
+      "id": "__seo_r2_embeddings",
+      "inMigrations": [
+        "20260515_seo_r2_v2_foundation.sql"
+      ],
+      "indexes": [],
+      "name": "__seo_r2_embeddings",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": true,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "usedBy": []
+    },
+    {
       "columns": [],
       "deletePolicy": "ADR_REQUIRED",
       "domain": "UNKNOWN",
@@ -5799,6 +6291,442 @@
       "usedBy": [
         "backend/src/modules/admin/services/r2-enricher.service.ts"
       ]
+    },
+    {
+      "columns": [
+        {
+          "hasDefault": true,
+          "name": "computed_at",
+          "nullable": false,
+          "type": "TIMESTAMPTZ"
+        }
+      ],
+      "deletePolicy": "ADR_REQUIRED",
+      "domain": "UNKNOWN",
+      "id": "__seo_r2_metrics",
+      "inMigrations": [
+        "20260515_seo_r2_v2_foundation.sql"
+      ],
+      "indexes": [],
+      "name": "__seo_r2_metrics",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": true,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "usedBy": []
+    },
+    {
+      "columns": [
+        {
+          "hasDefault": false,
+          "name": "content",
+          "nullable": false,
+          "type": "JSONB"
+        },
+        {
+          "hasDefault": true,
+          "name": "updated_at",
+          "nullable": false,
+          "type": "TIMESTAMPTZ"
+        }
+      ],
+      "deletePolicy": "ADR_REQUIRED",
+      "domain": "UNKNOWN",
+      "id": "__seo_r2_page_content",
+      "inMigrations": [
+        "20260515_seo_r2_v2_foundation.sql"
+      ],
+      "indexes": [],
+      "name": "__seo_r2_page_content",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": true,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "usedBy": []
+    },
+    {
+      "columns": [
+        {
+          "hasDefault": false,
+          "name": "id",
+          "nullable": true,
+          "type": "BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY"
+        },
+        {
+          "hasDefault": false,
+          "name": "pg_id",
+          "nullable": false,
+          "type": "BIGINT"
+        },
+        {
+          "hasDefault": false,
+          "name": "type_id",
+          "nullable": false,
+          "type": "BIGINT"
+        },
+        {
+          "hasDefault": false,
+          "name": "version_sha",
+          "nullable": true,
+          "type": "TEXT NOT NULL UNIQUE"
+        },
+        {
+          "hasDefault": false,
+          "name": "r1_context_hash",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": true,
+          "name": "kg_fact_signatures",
+          "nullable": false,
+          "type": "TEXT[]"
+        },
+        {
+          "hasDefault": true,
+          "name": "wiki_evidence_signatures",
+          "nullable": false,
+          "type": "TEXT[]"
+        },
+        {
+          "hasDefault": false,
+          "name": "compose_run_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "hasDefault": false,
+          "name": "composed_by_worker_id",
+          "nullable": false,
+          "type": "TEXT"
+        }
+      ],
+      "deletePolicy": "ADR_REQUIRED",
+      "domain": "UNKNOWN",
+      "id": "__seo_r2_page_snapshot",
+      "inMigrations": [
+        "20260516_seo_r2_v2_cqrs_snapshot.sql"
+      ],
+      "indexes": [],
+      "name": "__seo_r2_page_snapshot",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": true,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "usedBy": []
+    },
+    {
+      "columns": [
+        {
+          "hasDefault": false,
+          "name": "id",
+          "nullable": true,
+          "type": "BIGINT GENERATED ALWAYS AS IDENTITY   PRIMARY KEY"
+        },
+        {
+          "hasDefault": false,
+          "name": "pg_id",
+          "nullable": false,
+          "type": "BIGINT"
+        },
+        {
+          "hasDefault": false,
+          "name": "type_id",
+          "nullable": false,
+          "type": "BIGINT"
+        },
+        {
+          "hasDefault": false,
+          "name": "version_sha",
+          "nullable": true,
+          "type": "TEXT        NOT NULL UNIQUE"
+        },
+        {
+          "hasDefault": false,
+          "name": "builder_version",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "extractor_version",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "runner_version",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": true,
+          "name": "created_at",
+          "nullable": false,
+          "type": "TIMESTAMPTZ"
+        }
+      ],
+      "deletePolicy": "ADR_REQUIRED",
+      "domain": "UNKNOWN",
+      "id": "__seo_r2_page_versions",
+      "inMigrations": [
+        "20260515_seo_r2_v2_foundation.sql"
+      ],
+      "indexes": [],
+      "name": "__seo_r2_page_versions",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": true,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "usedBy": []
+    },
+    {
+      "columns": [
+        {
+          "hasDefault": false,
+          "name": "id",
+          "nullable": true,
+          "type": "BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY"
+        },
+        {
+          "hasDefault": false,
+          "name": "pg_id",
+          "nullable": false,
+          "type": "BIGINT"
+        },
+        {
+          "hasDefault": false,
+          "name": "type_id",
+          "nullable": false,
+          "type": "BIGINT"
+        },
+        {
+          "hasDefault": false,
+          "name": "canonical_target_type_id",
+          "nullable": true,
+          "type": "BIGINT"
+        },
+        {
+          "hasDefault": true,
+          "name": "contract_version",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "content_hash",
+          "nullable": true,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": true,
+          "name": "generation_timestamp",
+          "nullable": false,
+          "type": "TIMESTAMPTZ"
+        },
+        {
+          "hasDefault": false,
+          "name": "published_at",
+          "nullable": true,
+          "type": "TIMESTAMPTZ"
+        },
+        {
+          "hasDefault": true,
+          "name": "created_at",
+          "nullable": false,
+          "type": "TIMESTAMPTZ"
+        },
+        {
+          "hasDefault": true,
+          "name": "updated_at",
+          "nullable": false,
+          "type": "TIMESTAMPTZ"
+        }
+      ],
+      "deletePolicy": "ADR_REQUIRED",
+      "domain": "UNKNOWN",
+      "id": "__seo_r2_pages",
+      "inMigrations": [
+        "20260515_seo_r2_v2_foundation.sql"
+      ],
+      "indexes": [],
+      "name": "__seo_r2_pages",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": true,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "usedBy": []
+    },
+    {
+      "columns": [
+        {
+          "hasDefault": false,
+          "name": "id",
+          "nullable": true,
+          "type": "BIGINT GENERATED ALWAYS AS IDENTITY   PRIMARY KEY"
+        },
+        {
+          "hasDefault": false,
+          "name": "pg_id",
+          "nullable": false,
+          "type": "BIGINT"
+        },
+        {
+          "hasDefault": false,
+          "name": "type_id",
+          "nullable": false,
+          "type": "BIGINT"
+        },
+        {
+          "hasDefault": true,
+          "name": "reasons",
+          "nullable": false,
+          "type": "TEXT[]"
+        }
+      ],
+      "deletePolicy": "ADR_REQUIRED",
+      "domain": "UNKNOWN",
+      "id": "__seo_r2_qa_reviews",
+      "inMigrations": [
+        "20260515_seo_r2_v2_foundation.sql"
+      ],
+      "indexes": [],
+      "name": "__seo_r2_qa_reviews",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": true,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "usedBy": []
+    },
+    {
+      "columns": [
+        {
+          "hasDefault": false,
+          "name": "id",
+          "nullable": true,
+          "type": "BIGINT GENERATED ALWAYS AS IDENTITY   PRIMARY KEY"
+        },
+        {
+          "hasDefault": false,
+          "name": "pg_id",
+          "nullable": false,
+          "type": "BIGINT"
+        },
+        {
+          "hasDefault": false,
+          "name": "type_id",
+          "nullable": false,
+          "type": "BIGINT"
+        },
+        {
+          "hasDefault": false,
+          "name": "reason",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": true,
+          "name": "retry_count",
+          "nullable": false,
+          "type": "BIGINT"
+        },
+        {
+          "hasDefault": true,
+          "name": "queued_at",
+          "nullable": false,
+          "type": "TIMESTAMPTZ"
+        },
+        {
+          "hasDefault": false,
+          "name": "processed_at",
+          "nullable": true,
+          "type": "TIMESTAMPTZ"
+        }
+      ],
+      "deletePolicy": "ADR_REQUIRED",
+      "domain": "UNKNOWN",
+      "id": "__seo_r2_regeneration_queue",
+      "inMigrations": [
+        "20260515_seo_r2_v2_foundation.sql"
+      ],
+      "indexes": [],
+      "name": "__seo_r2_regeneration_queue",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": true,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "usedBy": []
+    },
+    {
+      "columns": [
+        {
+          "hasDefault": false,
+          "name": "content_fingerprint",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "band_3",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "band_4",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "band_5",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": true,
+          "name": "computed_at",
+          "nullable": false,
+          "type": "TIMESTAMPTZ"
+        }
+      ],
+      "deletePolicy": "ADR_REQUIRED",
+      "domain": "UNKNOWN",
+      "id": "__seo_r2_signatures",
+      "inMigrations": [
+        "20260515_seo_r2_v2_foundation.sql"
+      ],
+      "indexes": [],
+      "name": "__seo_r2_signatures",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": true,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "usedBy": []
     },
     {
       "columns": [],
@@ -6019,7 +6947,55 @@
       "sourceConfidence": "low",
       "status": "LIVE",
       "usedBy": [
+        "backend/src/modules/seo/r2/services/r2-r8-gate-status.service.ts",
+        "backend/src/modules/seo/r2/services/r8-snapshot-reader.service.ts",
         "backend/src/modules/vehicles/services/vehicle-rpc.service.ts"
+      ]
+    },
+    {
+      "columns": [
+        {
+          "hasDefault": false,
+          "name": "id",
+          "nullable": true,
+          "type": "BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY"
+        },
+        {
+          "hasDefault": false,
+          "name": "type_id",
+          "nullable": false,
+          "type": "BIGINT"
+        },
+        {
+          "hasDefault": false,
+          "name": "version_sha",
+          "nullable": true,
+          "type": "TEXT NOT NULL UNIQUE"
+        },
+        {
+          "hasDefault": false,
+          "name": "source_lineage",
+          "nullable": true,
+          "type": "JSONB"
+        }
+      ],
+      "deletePolicy": "ADR_REQUIRED",
+      "domain": "UNKNOWN",
+      "id": "__seo_r8_snapshot_store",
+      "inMigrations": [
+        "20260516_seo_r2_v2_cqrs_snapshot.sql"
+      ],
+      "indexes": [],
+      "name": "__seo_r8_snapshot_store",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": true,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "usedBy": [
+        "backend/src/modules/seo/r2/services/r2-r8-gate-status.service.ts"
       ]
     },
     {
@@ -6254,6 +7230,406 @@
       "sourceConfidence": "high",
       "status": "LIVE",
       "usedBy": []
+    },
+    {
+      "columns": [
+        {
+          "hasDefault": false,
+          "name": "id",
+          "nullable": true,
+          "type": "BIGINT GENERATED ALWAYS AS IDENTITY"
+        },
+        {
+          "hasDefault": false,
+          "name": "bucket_start",
+          "nullable": false,
+          "type": "TIMESTAMPTZ"
+        },
+        {
+          "hasDefault": true,
+          "name": "cache_misses",
+          "nullable": false,
+          "type": "BIGINT"
+        },
+        {
+          "hasDefault": true,
+          "name": "bytes_served",
+          "nullable": false,
+          "type": "BIGINT"
+        },
+        {
+          "hasDefault": false,
+          "name": "origin_p95_ms",
+          "nullable": true,
+          "type": "BIGINT"
+        },
+        {
+          "hasDefault": false,
+          "name": "zone_tag",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": true,
+          "name": "fetched_at",
+          "nullable": false,
+          "type": "TIMESTAMPTZ"
+        },
+        {
+          "hasDefault": true,
+          "name": "created_at",
+          "nullable": false,
+          "type": "TIMESTAMPTZ"
+        }
+      ],
+      "deletePolicy": "ADR_REQUIRED",
+      "domain": "UNKNOWN",
+      "id": "__seo_snapshot_cf_analytics",
+      "inMigrations": [
+        "20260514_seo_snapshot_cf_analytics.sql"
+      ],
+      "indexes": [],
+      "name": "__seo_snapshot_cf_analytics",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": true,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "usedBy": [
+        "backend/src/modules/seo-control-plane/collectors/cf-analytics/cf-analytics.service.ts"
+      ]
+    },
+    {
+      "columns": [
+        {
+          "hasDefault": false,
+          "name": "id",
+          "nullable": true,
+          "type": "BIGINT      GENERATED ALWAYS AS IDENTITY"
+        },
+        {
+          "hasDefault": true,
+          "name": "pageview_count",
+          "nullable": false,
+          "type": "BIGINT"
+        },
+        {
+          "hasDefault": false,
+          "name": "lcp_p75_ms",
+          "nullable": true,
+          "type": "BIGINT"
+        },
+        {
+          "hasDefault": false,
+          "name": "lcp_p95_ms",
+          "nullable": true,
+          "type": "BIGINT"
+        },
+        {
+          "hasDefault": false,
+          "name": "cls_p50_milli",
+          "nullable": true,
+          "type": "BIGINT"
+        },
+        {
+          "hasDefault": false,
+          "name": "cls_p75_milli",
+          "nullable": true,
+          "type": "BIGINT"
+        },
+        {
+          "hasDefault": false,
+          "name": "cls_p95_milli",
+          "nullable": true,
+          "type": "BIGINT"
+        },
+        {
+          "hasDefault": false,
+          "name": "inp_p50_ms",
+          "nullable": true,
+          "type": "BIGINT"
+        },
+        {
+          "hasDefault": false,
+          "name": "inp_p75_ms",
+          "nullable": true,
+          "type": "BIGINT"
+        },
+        {
+          "hasDefault": false,
+          "name": "inp_p95_ms",
+          "nullable": true,
+          "type": "BIGINT"
+        },
+        {
+          "hasDefault": false,
+          "name": "fcp_p75_ms",
+          "nullable": true,
+          "type": "BIGINT"
+        },
+        {
+          "hasDefault": false,
+          "name": "ttfb_p75_ms",
+          "nullable": true,
+          "type": "BIGINT"
+        },
+        {
+          "hasDefault": false,
+          "name": "account_tag",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": true,
+          "name": "fetched_at",
+          "nullable": false,
+          "type": "TIMESTAMPTZ"
+        },
+        {
+          "hasDefault": true,
+          "name": "created_at",
+          "nullable": false,
+          "type": "TIMESTAMPTZ"
+        }
+      ],
+      "deletePolicy": "ADR_REQUIRED",
+      "domain": "UNKNOWN",
+      "id": "__seo_snapshot_cf_rum",
+      "inMigrations": [
+        "20260517_seo_snapshot_cf_rum.sql"
+      ],
+      "indexes": [],
+      "name": "__seo_snapshot_cf_rum",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": true,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "usedBy": [
+        "backend/src/modules/seo-control-plane/collectors/cf-rum/cf-rum.service.ts"
+      ]
+    },
+    {
+      "columns": [
+        {
+          "hasDefault": false,
+          "name": "id",
+          "nullable": true,
+          "type": "BIGINT GENERATED ALWAYS AS IDENTITY"
+        },
+        {
+          "hasDefault": false,
+          "name": "bucket_start",
+          "nullable": false,
+          "type": "TIMESTAMPTZ"
+        },
+        {
+          "hasDefault": true,
+          "name": "subjects_breakdown",
+          "nullable": false,
+          "type": "JSONB"
+        },
+        {
+          "hasDefault": false,
+          "name": "run_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "hasDefault": true,
+          "name": "fetched_at",
+          "nullable": false,
+          "type": "TIMESTAMPTZ"
+        },
+        {
+          "hasDefault": true,
+          "name": "created_at",
+          "nullable": false,
+          "type": "TIMESTAMPTZ"
+        }
+      ],
+      "deletePolicy": "ADR_REQUIRED",
+      "domain": "UNKNOWN",
+      "id": "__seo_snapshot_runtime_logs",
+      "inMigrations": [
+        "20260514_seo_snapshot_runtime_logs.sql"
+      ],
+      "indexes": [],
+      "name": "__seo_snapshot_runtime_logs",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": true,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "usedBy": [
+        "backend/src/modules/seo-control-plane/collectors/runtime-logs/runtime-logs.service.ts"
+      ]
+    },
+    {
+      "columns": [
+        {
+          "hasDefault": false,
+          "name": "id",
+          "nullable": true,
+          "type": "BIGINT GENERATED ALWAYS AS IDENTITY"
+        },
+        {
+          "hasDefault": false,
+          "name": "url",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "route_path",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "http_code",
+          "nullable": false,
+          "type": "INTEGER"
+        },
+        {
+          "hasDefault": false,
+          "name": "ttfb_ms",
+          "nullable": false,
+          "type": "INTEGER"
+        },
+        {
+          "hasDefault": false,
+          "name": "content_length",
+          "nullable": true,
+          "type": "INTEGER"
+        },
+        {
+          "hasDefault": false,
+          "name": "cache_control",
+          "nullable": true,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "cf_cache_status",
+          "nullable": true,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "cf_ray",
+          "nullable": true,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "age_seconds",
+          "nullable": true,
+          "type": "INTEGER"
+        },
+        {
+          "hasDefault": false,
+          "name": "has_title",
+          "nullable": true,
+          "type": "BOOLEAN"
+        },
+        {
+          "hasDefault": false,
+          "name": "title_text",
+          "nullable": true,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "has_h1",
+          "nullable": true,
+          "type": "BOOLEAN"
+        },
+        {
+          "hasDefault": false,
+          "name": "h1_text",
+          "nullable": true,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "has_canonical",
+          "nullable": true,
+          "type": "BOOLEAN"
+        },
+        {
+          "hasDefault": false,
+          "name": "canonical_url",
+          "nullable": true,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "robots_meta",
+          "nullable": true,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "x_robots_tag",
+          "nullable": true,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "error_kind",
+          "nullable": true,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "run_id",
+          "nullable": false,
+          "type": "UUID"
+        },
+        {
+          "hasDefault": false,
+          "name": "seed",
+          "nullable": false,
+          "type": "BIGINT"
+        },
+        {
+          "hasDefault": false,
+          "name": "user_agent",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": true,
+          "name": "created_at",
+          "nullable": false,
+          "type": "TIMESTAMPTZ"
+        }
+      ],
+      "deletePolicy": "ADR_REQUIRED",
+      "domain": "UNKNOWN",
+      "id": "__seo_snapshot_synthetic",
+      "inMigrations": [
+        "20260514_seo_snapshot_synthetic.sql"
+      ],
+      "indexes": [],
+      "name": "__seo_snapshot_synthetic",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": true,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "usedBy": [
+        "backend/src/modules/seo-control-plane/collectors/synthetic-crawler/synthetic-crawler.service.ts"
+      ]
     },
     {
       "columns": [
@@ -6654,6 +8030,56 @@
       "usedBy": [
         "backend/src/modules/seo/services/sitemap-v10-static.service.ts"
       ]
+    },
+    {
+      "columns": [
+        {
+          "hasDefault": true,
+          "name": "id",
+          "nullable": true,
+          "type": "bigint generated by"
+        },
+        {
+          "hasDefault": false,
+          "name": "pg_id",
+          "nullable": false,
+          "type": "bigint"
+        },
+        {
+          "hasDefault": false,
+          "name": "type_id",
+          "nullable": false,
+          "type": "bigint"
+        },
+        {
+          "hasDefault": true,
+          "name": "ts",
+          "nullable": false,
+          "type": "timestamptz"
+        },
+        {
+          "hasDefault": false,
+          "name": "referrer",
+          "nullable": true,
+          "type": "text"
+        }
+      ],
+      "deletePolicy": "FREE",
+      "domain": "UNKNOWN",
+      "id": "__soft_404_events",
+      "inMigrations": [
+        "20260518120000_soft_404_events.sql"
+      ],
+      "indexes": [],
+      "name": "__soft_404_events",
+      "owner": "__unassigned__",
+      "risk": "low",
+      "rlsEnabled": false,
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "usedBy": []
     },
     {
       "columns": [],
@@ -7324,6 +8750,7 @@
         "backend/src/modules/admin/services/vehicle-rag-generator.service.ts",
         "backend/src/modules/catalog/services/compatibility.service.ts",
         "backend/src/modules/catalog/services/homepage-rpc.service.ts",
+        "backend/src/modules/seo/r2/services/r8-parent-enrichment.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-vehicle.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-static.service.ts"
       ]
@@ -7348,7 +8775,8 @@
         "backend/src/modules/admin/services/gamme-vlevel.service.ts",
         "backend/src/modules/admin/services/vehicle-rag-generator.service.ts",
         "backend/src/modules/catalog/controllers/vehicle-hierarchy.controller.ts",
-        "backend/src/modules/catalog/services/compatibility.service.ts"
+        "backend/src/modules/catalog/services/compatibility.service.ts",
+        "backend/src/modules/seo/r2/services/r8-parent-enrichment.service.ts"
       ]
     },
     {
@@ -7373,7 +8801,10 @@
         "backend/src/modules/catalog/controllers/pieces-diagnostic.controller.ts",
         "backend/src/modules/catalog/controllers/vehicle-hierarchy.controller.ts",
         "backend/src/modules/catalog/services/compatibility.service.ts",
-        "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.ts"
+        "backend/src/modules/seo/helpers/auto-type-valid-ids.helper.ts",
+        "backend/src/modules/seo/r2/services/r2-r8-gate-status.service.ts",
+        "backend/src/modules/seo/r2/services/r8-parent-enrichment.service.ts",
+        "backend/src/modules/seo/r2/services/r8-snapshot-seed.service.ts"
       ]
     },
     {
@@ -9137,6 +10568,7 @@
         "backend/src/modules/rag-proxy/services/rag-knowledge.service.ts",
         "backend/src/modules/search/controllers/search-debug.controller.ts",
         "backend/src/modules/search/controllers/search-enhanced-existing.controller.ts",
+        "backend/src/modules/seo/r2/services/r1-gamme-completeness-audit.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-data.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-cluster.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-vehicle.service.ts",

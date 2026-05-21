@@ -166,7 +166,11 @@ entries:
       (V3=champion / V4/V5 sibling / V2 top10). Powers R1/R2/R8 indexability.
     criticality: P1
     globs:
-      - "backend/src/modules/gamme-aggregates/**"
+      # No dedicated gamme-aggregates module — these live physically under admin/.
+      # Authoritative file→domain mapping is ownership.yaml (longest-glob-wins);
+      # these globs are documentation and must resolve to real files (invariant I5b).
+      - "backend/src/modules/admin/services/gamme-{aggregator,vlevel}.service.ts"
+      - "backend/src/modules/admin/controllers/admin-gammes-seo-{aggregates,vlevel}.controller.ts"
     owner: "@ak125/seo-team"
 
   - id: D15

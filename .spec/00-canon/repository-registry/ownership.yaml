@@ -197,6 +197,28 @@ entries:
     owner: '@ak125/admin-team'
     sourceConfidence: medium
     risk: medium
+  # D14 Gamme Aggregates & V-Level — the aggregate/V-Level services & controllers
+  # live physically under admin/ (D8) but are SEO-critical (V-Level scoring powers
+  # R1/R2/R8 indexability). These globs are more specific than admin/** so
+  # longest-glob-wins routes them to D14 (seo-team). Only objectively-named
+  # aggregate/V-Level files are mapped; broader gamme-SEO tooling stays D8.
+  - glob: backend/src/modules/admin/services/gamme-{aggregator,vlevel}.service.ts
+    domain: D14
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: high
+  - glob: backend/src/modules/admin/controllers/admin-gammes-seo-{aggregates,vlevel}.controller.ts
+    domain: D14
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: high
+  # D9 Import / ETL / Normalisation — ETL workers. The glob is declared in
+  # domains.yaml but was missing here, leaving the 11 worker files UNKNOWN.
+  - glob: backend/src/workers/**
+    domain: D9
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
   - glob: backend/src/modules/agentic-engine/**
     domain: D6
     owner: '@ak125/rag-team'
