@@ -12,4 +12,26 @@ describe('classifyPageV2Result', () => {
   it('empty when success:false and no error (valid combo, 0 products)', () => {
     expect(classifyPageV2Result({ success: false })).toBe('empty');
   });
+  it('not_found for a deterministic missing vehicle/gamme (must map to 404, not 503)', () => {
+    expect(
+      classifyPageV2Result({
+        success: false,
+        error: { code: 'VEHICLE_NOT_FOUND', message: 'Vehicle not found' },
+      }),
+    ).toBe('not_found');
+    expect(
+      classifyPageV2Result({
+        success: false,
+        error: { code: 'GAMME_NOT_FOUND', message: 'Gamme not found' },
+      }),
+    ).toBe('not_found');
+  });
+  it('error (not not_found) for an error without a recognized not-found code', () => {
+    expect(classifyPageV2Result({ success: false, error: 'unexpected' })).toBe(
+      'error',
+    );
+    expect(
+      classifyPageV2Result({ success: false, error: { message: 'no code' } }),
+    ).toBe('error');
+  });
 });
