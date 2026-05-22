@@ -92,6 +92,7 @@ export class CartItemsController {
         addItemDto.custom_price,
         isReplace,
         addItemDto.type_id,
+        addItemDto.website_url, // F1 attribution : source d'ajout par-ligne
       );
 
       this.logger.log(

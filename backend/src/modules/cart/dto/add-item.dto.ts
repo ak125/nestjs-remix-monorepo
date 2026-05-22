@@ -48,6 +48,9 @@ export const AddItemSchema = z
       .optional(),
     metadata: z.record(z.string(), z.any()).optional(),
     type_id: z.number().int().positive().optional(),
+    // F1 attribution : URL/chemin de la page d'où l'article a été ajouté au panier
+    // (source d'ajout par-ligne). Threadé jusqu'à ___xtr_order_line.orl_website_url.
+    website_url: z.string().trim().max(2048).optional(),
   })
   .refine((data) => data.productId || data.product_id, {
     message: "Il faut fournir soit 'productId' soit 'product_id'",

@@ -54,7 +54,17 @@ export function useCart() {
       setError(null);
 
       try {
-        const result = await cartApi.addItem(productId, quantity, typeId);
+        // F1 attribution : capture la page d'où l'article est ajouté (source par-ligne).
+        const sourceUrl =
+          typeof window !== "undefined"
+            ? window.location.pathname + window.location.search
+            : undefined;
+        const result = await cartApi.addItem(
+          productId,
+          quantity,
+          typeId,
+          sourceUrl,
+        );
         if (result.success) {
           emitCartUpdated();
           // Commerce-Loop V1 étape 4-A — intention d'achat (funnel R2).

@@ -46,6 +46,7 @@ export interface CreateOrderData {
     discount?: number;
     consigne_unit?: number;
     has_consigne?: boolean;
+    website_url?: string; // F1 attribution : source d'ajout par-ligne → orl_website_url
   }>;
   billingAddress: OrderAddress;
   shippingAddress: OrderAddress;
@@ -374,6 +375,8 @@ export class OrdersService extends SupabaseBaseService {
             ),
             orl_art_deposit_unit_ttc: depositUnit,
             orl_art_deposit_ttc: depositTotal,
+            // F1 attribution : source d'ajout par-ligne (NULL si absente — rétro-compat RPC)
+            orl_website_url: line.website_url || null,
           };
         }),
       );
@@ -405,6 +408,12 @@ export class OrdersService extends SupabaseBaseService {
         customerId: String(orderData.customerId),
         totalTtc: totals.total,
         linesCount: orderLines.length,
+        // F1 attribution : propager la source d'ajout par-ligne (funnel/analytics)
+        lines: orderLines.map((l) => ({
+          lineId: l.orl_id,
+          productId: l.orl_pg_id,
+          websiteUrl: l.orl_website_url,
+        })),
         timestamp: new Date().toISOString(),
       } satisfies OrderCreatedEvent);
 
