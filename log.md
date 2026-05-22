@@ -417,3 +417,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `worktree-commerce-loop-step4-funnel`
 - **Décision** : fix(commerce-loop): eslint — prettier wrap + safeLocalStorage dans funnel (+5 other commits)
 - **Sortie** : PR #676 | commits 477564255 71198a3ab af96bc122 367574432 a8b1dd059 8d7652572
+
+## 2026-05-22 — fix/retire-smallint-id-param-pipe (auto)
+
+- **Branche** : `fix/retire-smallint-id-param-pipe`
+- **Décision** : fix(vehicles): retire smallint id param pipe (root-cause foot-gun) + ast-grep guard
+- **Sortie** : PR #689 | commits 196dade1c

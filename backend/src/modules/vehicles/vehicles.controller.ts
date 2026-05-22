@@ -11,10 +11,7 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { DomainNotFoundException } from '@common/exceptions';
-import {
-  PositiveIntParamPipe,
-  PositiveSmallIntParamPipe,
-} from '../../common/pipes/params';
+import { PositiveIntParamPipe } from '../../common/pipes/params';
 import { Request, Response } from 'express';
 import { VehiclesService } from './vehicles.service';
 import { VehiclePaginationDto } from './dto/vehicles.dto';
@@ -76,15 +73,13 @@ export class VehiclesController {
   }
 
   @Get('brands/:brandId')
-  async getBrandById(
-    @Param('brandId', PositiveSmallIntParamPipe) brandId: number,
-  ) {
+  async getBrandById(@Param('brandId', PositiveIntParamPipe) brandId: number) {
     return this.vehicleBrandsService.getBrandById(brandId);
   }
 
   @Get('brands/:brandId/models')
   async getModelsByBrand(
-    @Param('brandId', PositiveSmallIntParamPipe) brandId: number,
+    @Param('brandId', PositiveIntParamPipe) brandId: number,
     @Query() query: Record<string, string>,
     @Res({ passthrough: true }) res: Response,
   ) {
@@ -100,7 +95,7 @@ export class VehiclesController {
 
   @Get('brands/:brandId/years')
   async getYearsByBrand(
-    @Param('brandId', PositiveSmallIntParamPipe) brandId: number,
+    @Param('brandId', PositiveIntParamPipe) brandId: number,
     @Query() query: Record<string, string>,
   ) {
     const params = this.parseQueryParams(query);
@@ -110,8 +105,6 @@ export class VehiclesController {
 
   @Get('models/:modelId/types')
   async getTypesByModel(
-    // modele_id est int4 (max DB 667022 ; ~82% des modèles > smallint 32767).
-    // Comme typeId/getMinesByModel — jamais le pipe smallint ici. Cf. log 400 #46021.
     @Param('modelId', PositiveIntParamPipe) modelId: number,
     @Query() query: Record<string, string>,
   ) {
