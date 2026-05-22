@@ -53,13 +53,14 @@ async function buildService(
 const flush = (): Promise<void> => new Promise((r) => setImmediate(r));
 
 // TTL/2 cadence per block (see REFRESH_SCHEDULE in the service).
-const EXPECTED_INTERVAL_MS: Record<SeoControlRefreshJobData['block'], number> = {
-  alerts: 2 * 60 * 1000,
-  losers: 15 * 60 * 1000,
-  traffic: 30 * 60 * 1000,
-  lowctr: 30 * 60 * 1000,
-  conversion: 30 * 60 * 1000,
-};
+const EXPECTED_INTERVAL_MS: Record<SeoControlRefreshJobData['block'], number> =
+  {
+    alerts: 2 * 60 * 1000,
+    losers: 15 * 60 * 1000,
+    traffic: 30 * 60 * 1000,
+    lowctr: 30 * 60 * 1000,
+    conversion: 30 * 60 * 1000,
+  };
 
 describe('SeoControlRefresherService — SWR scheduling contract', () => {
   it('schedules on its own onModuleInit (no external trigger needed)', async () => {
