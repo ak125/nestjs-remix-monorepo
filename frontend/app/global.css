@@ -368,6 +368,20 @@
 
 /* Animations: définies dans animations.css, seules les classes utilitaires ici */
 @layer utilities {
+  /* INP: skip style/layout of OFF-SCREEN content. A forced reflow triggered
+     inside a click handler (notably opening a Radix Dialog/Sheet, which mutates
+     <body> for scroll-lock) otherwise recomputes style+layout for the ENTIRE
+     large /pieces/ document (~1250 nodes → ~120-270ms forced layout, scaling to
+     the 537ms mobile INP p75 on slow devices). Applied to below-the-fold section
+     wrappers so off-screen blocks are skipped. `auto` intrinsic-size remembers
+     the last rendered size to avoid scroll jumps. Validated on prod DOM
+     (menu-toggle INP 288→192ms @6x CPU). SEO-safe: content stays in the DOM and
+     content-visibility:auto is rendered/indexed when reached. */
+  .cv-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 700px;
+  }
+
   .animate-shimmer {
     animation: shimmer 3s ease-in-out infinite;
     will-change: transform;
