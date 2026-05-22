@@ -65,7 +65,8 @@ BEGIN
       batch_id, chunk_id, pri_piece_id_i, pri_type,
       old_gros_ht, new_gros_ht, old_remise, new_remise,
       old_achat_ht, new_achat_ht, old_marge, new_marge,
-      old_vente_ht, new_vente_ht, old_vente_ttc, new_vente_ttc
+      old_vente_ht, new_vente_ht, old_vente_ttc, new_vente_ttc,
+      old_dispo, new_dispo
     ) VALUES (
       p_batch_id, p_chunk_id, v_existing.pri_piece_id_i, v_existing.pri_type,
       v_existing.pri_gros_ht_n,  (v_row->>'gros_ht')::NUMERIC,
@@ -73,7 +74,8 @@ BEGIN
       v_existing.pri_achat_ht_n, (v_row->>'achat_ht')::NUMERIC,
       v_existing.pri_marge_n,    (v_row->>'marge')::NUMERIC,
       v_existing.pri_vente_ht_n, (v_row->>'vente_ht')::NUMERIC,
-      v_existing.pri_vente_ttc_n,(v_row->>'vente_ttc')::NUMERIC
+      v_existing.pri_vente_ttc_n,(v_row->>'vente_ttc')::NUMERIC,
+      v_existing.pri_dispo,      '1'   -- Step 1: a piece with a tariff is activated
     );
 
     UPDATE pieces_price SET
@@ -83,6 +85,7 @@ BEGIN
       pri_marge_n     = (v_row->>'marge')::NUMERIC,     pri_marge     = (v_row->>'marge'),
       pri_vente_ht_n  = (v_row->>'vente_ht')::NUMERIC,  pri_vente_ht  = (v_row->>'vente_ht'),
       pri_vente_ttc_n = (v_row->>'vente_ttc')::NUMERIC, pri_vente_ttc = (v_row->>'vente_ttc'),
+      pri_dispo = '1',  -- Step 1: activate the piece (it now has a valid tariff)
       pricing_updated_by = p_operator,
       pricing_updated_source = 'import:' || p_batch_id::text
     WHERE pri_piece_id_i = v_existing.pri_piece_id_i
@@ -142,6 +145,7 @@ BEGIN
       pri_marge_n     = v_h.old_marge,     pri_marge     = v_h.old_marge::text,
       pri_vente_ht_n  = v_h.old_vente_ht,  pri_vente_ht  = v_h.old_vente_ht::text,
       pri_vente_ttc_n = v_h.old_vente_ttc, pri_vente_ttc = v_h.old_vente_ttc::text,
+      pri_dispo       = coalesce(v_h.old_dispo, pri_dispo),  -- restore activation state
       pricing_updated_source = 'rollback:' || p_batch_id::text
     WHERE pri_piece_id_i = v_h.pri_piece_id_i
       AND pri_type IS NOT DISTINCT FROM v_h.pri_type;

@@ -12,6 +12,7 @@ const existing = (over: Partial<ExistingPriceRow> = {}): ExistingPriceRow => ({
   tvaRate: 0.2,
   pricingState: 'ACTIVE',
   qtySold12m: 10,
+  dispo: '1',
   ...over,
 });
 
@@ -86,6 +87,20 @@ describe('computeDryRun — L3 dry-run orchestration', () => {
     const r = computeDryRun([line({ parseError: 'missing column for grosHt' })], new Map());
     expect(r.rejectedCount).toBe(1);
     expect(r.rows[0].rejectReason).toContain('missing column');
+  });
+
+  it('activates priced-but-inactive pieces (pri_dispo≠1) — Step 1 rule', () => {
+    const map = new Map([['BP1', existing({ dispo: '0' })]]);
+    const r = computeDryRun([line()], map);
+    expect(r.rows[0].willActivate).toBe(true);
+    expect(r.activatedCount).toBe(1);
+  });
+
+  it('does not count activation for already-active rows', () => {
+    const map = new Map([['BP1', existing({ dispo: '1' })]]);
+    const r = computeDryRun([line()], map);
+    expect(r.rows[0].willActivate).toBe(false);
+    expect(r.activatedCount).toBe(0);
   });
 
   it('APPLY_GRID uses the resolved target marge (marginSource=grid)', () => {

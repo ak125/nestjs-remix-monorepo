@@ -57,6 +57,8 @@ export interface ExistingPriceRow {
   tvaRate: number;
   pricingState: string;
   qtySold12m: number;
+  /** pri_dispo ('1' = active/sellable). A tariff import activates inactive priced rows. */
+  dispo: string;
 }
 
 export interface DryRunRow {
@@ -75,6 +77,8 @@ export interface DryRunRow {
   newVenteTtcCents?: number;
   deltaVenteHtCents?: number;
   outlier?: boolean;
+  /** True when the piece had a tariff but was inactive (pri_dispo≠'1') and will be activated. */
+  willActivate?: boolean;
   rejected?: boolean;
   rejectReason?: string;
   skippedState?: string;
@@ -87,6 +91,8 @@ export interface DryRunReport {
   rejectedCount: number;
   outlierCount: number;
   skippedStateCount: number;
+  /** Matched, committable rows that were inactive (pri_dispo≠'1') and will be activated. */
+  activatedCount: number;
   unmatchedKeys: string[];
   totalDeltaVenteHtCents: number;
   /** Σ Δvente_TTC × qty_sold_12m — weighted revenue impact proxy. */
@@ -114,6 +120,7 @@ export function computeDryRun(
   let rejectedCount = 0;
   let outlierCount = 0;
   let skippedStateCount = 0;
+  let activatedCount = 0;
   let totalDeltaVenteHtCents = 0;
   let estimatedRevenueDeltaCents = 0;
   const unmatchedKeys: string[] = [];
@@ -199,6 +206,7 @@ export function computeDryRun(
       outlier,
     };
 
+    row.willActivate = existing.dispo !== '1';
     matchedCount++;
     if (outlier) outlierCount++;
     if (violations.length > 0) {
@@ -208,6 +216,7 @@ export function computeDryRun(
     } else {
       totalDeltaVenteHtCents += deltaVenteHtCents;
       estimatedRevenueDeltaCents += (newVenteTtcCents - existing.venteTtcCents) * existing.qtySold12m;
+      if (row.willActivate) activatedCount++;
     }
     rows.push(row);
   }
@@ -219,6 +228,7 @@ export function computeDryRun(
     rejectedCount,
     outlierCount,
     skippedStateCount,
+    activatedCount,
     unmatchedKeys,
     totalDeltaVenteHtCents,
     estimatedRevenueDeltaCents,

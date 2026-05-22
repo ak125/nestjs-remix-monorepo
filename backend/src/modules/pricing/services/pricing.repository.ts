@@ -185,7 +185,7 @@ export class PricingRepository extends SupabaseBaseService {
     const { data, error } = await this.supabase
       .from('pieces_price')
       .select(
-        'pri_piece_id_i, pri_type, pri_ref, pri_ean, pri_achat_ht_n, pri_marge_n, pri_vente_ht_n, pri_vente_ttc_n, pri_frais_port_ht_n, pri_frais_supp_ht_n, pri_tva_n, pricing_state',
+        'pri_piece_id_i, pri_type, pri_ref, pri_ean, pri_dispo, pri_achat_ht_n, pri_marge_n, pri_vente_ht_n, pri_vente_ttc_n, pri_frais_port_ht_n, pri_frais_supp_ht_n, pri_tva_n, pricing_state',
       )
       .eq('pri_pm_id', brandPmId)
       .eq('pri_type', '0');
@@ -204,6 +204,7 @@ export class PricingRepository extends SupabaseBaseService {
         tvaRate: Number(r.pri_tva_n) || 0.2,
         pricingState: r.pricing_state ?? 'ACTIVE',
         qtySold12m: 0, // populated from catalog_pricing_baseline once built
+        dispo: (r.pri_dispo ?? '0').toString(),
       };
       const ref = normalizeSupplierReference(r.pri_ref);
       if (ref) map.set(ref, row);

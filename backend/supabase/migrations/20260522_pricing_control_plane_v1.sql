@@ -144,6 +144,7 @@ CREATE TABLE IF NOT EXISTS pieces_price_history (
   old_marge      NUMERIC, new_marge      NUMERIC,
   old_vente_ht   NUMERIC, new_vente_ht   NUMERIC,
   old_vente_ttc  NUMERIC, new_vente_ttc  NUMERIC,
+  old_dispo      TEXT,    new_dispo      TEXT,    -- activation (pri_dispo) snapshot, Step 1
   created_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
   PRIMARY KEY (id, created_at)
 ) PARTITION BY RANGE (created_at);
