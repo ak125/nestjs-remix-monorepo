@@ -870,7 +870,7 @@ export default function PiecesDetailPage() {
            H2 #2 — Qualité, prix et marques
            Image PRICE, marques, fiche technique
            ═══════════════════════════════════════════════════════ */}
-      <section id="qualite-prix" className="py-10 px-4 sm:px-6 bg-slate-50">
+      <section id="qualite-prix" className="py-10 px-4 sm:px-6 bg-slate-50 cv-auto">
         <div className="max-w-[1280px] mx-auto">
           <h2 className="text-2xl font-bold text-slate-900 mb-6">
             Qualité, prix et marques
@@ -938,7 +938,7 @@ export default function PiecesDetailPage() {
            H2 #3 — Où se trouve et quand remplacer
            Image LOCATION, rôle, symptômes, entretien
            ═══════════════════════════════════════════════════════ */}
-      <section id="emplacement" className="py-10 px-4 sm:px-6 bg-white">
+      <section id="emplacement" className="py-10 px-4 sm:px-6 bg-white cv-auto">
         <div className="max-w-[1280px] mx-auto">
           <h2 className="text-2xl font-bold text-slate-900 mb-6">
             Où se trouve le {n} et quand le remplacer
@@ -993,7 +993,7 @@ export default function PiecesDetailPage() {
            H2 #4 — Trouver la bonne référence
            Compatibilités, motorisations, commande
            ═══════════════════════════════════════════════════════ */}
-      <section id="reference" className="py-10 px-4 sm:px-6 bg-slate-50">
+      <section id="reference" className="py-10 px-4 sm:px-6 bg-slate-50 cv-auto">
         <div className="max-w-[1280px] mx-auto">
           <h2 className="text-2xl font-bold text-slate-900 mb-6">
             Trouver la bonne référence pour votre véhicule
@@ -1036,7 +1036,7 @@ export default function PiecesDetailPage() {
       {/* ═══════════════════════════════════════════════════════
            H2 #5 — Questions fréquentes (UNE SEULE)
            ═══════════════════════════════════════════════════════ */}
-      <section id="faq" className="py-10 px-4 sm:px-6 bg-white">
+      <section id="faq" className="py-10 px-4 sm:px-6 bg-white cv-auto">
         <div className="max-w-[1280px] mx-auto">
           <GammeFaq
             items={mergedFaq}
@@ -1049,7 +1049,7 @@ export default function PiecesDetailPage() {
            H2 #6 — Aller plus loin
            Maillage, famille, guide CTA
            ═══════════════════════════════════════════════════════ */}
-      <section id="aller-plus-loin" className="py-10 px-4 sm:px-6 bg-slate-50">
+      <section id="aller-plus-loin" className="py-10 px-4 sm:px-6 bg-slate-50 cv-auto">
         <div className="max-w-[1280px] mx-auto">
           <h2 className="text-2xl font-bold text-slate-900 mb-6">
             Aller plus loin

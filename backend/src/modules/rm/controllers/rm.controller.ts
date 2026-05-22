@@ -164,6 +164,13 @@ export class RmController {
     }
 
     switch (classifyPageV2Result(result)) {
+      case 'not_found': // deterministic missing vehicle/gamme → 404, never a false 5xx
+        this.logger.debug(
+          `page-v2 not found gamme_id=${gamme_id} vehicle_id=${vehicle_id}`,
+        );
+        throw new DomainNotFoundException({
+          message: `No catalog data for gamme_id=${gamme_id}, vehicle_id=${vehicle_id}`,
+        });
       case 'error': // real RPC/infra failure → 503 so crawlers retry
         this.logger.error(
           `page-v2 RPC failure gamme_id=${gamme_id} vehicle_id=${vehicle_id}`,

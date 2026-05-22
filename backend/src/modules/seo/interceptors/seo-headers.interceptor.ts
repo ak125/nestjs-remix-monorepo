@@ -56,6 +56,12 @@ export class SeoHeadersInterceptor implements NestInterceptor {
       delete headers['X-Robots-Tag'];
       delete headers.Link;
     }
+    // Pages véhicule R8 (/constructeurs/...) : la route Remix possède robots via <meta>
+    // (succès = data.seo.robots, erreur = noindex). On supprime le X-Robots-Tag par défaut
+    // pour ne JAMAIS servir `index, follow` sur un 404/410/503 (cause GSC "Erreur serveur 5xx").
+    else if (path.startsWith('/constructeurs/')) {
+      delete headers['X-Robots-Tag'];
+    }
     // Blog
     else if (path.startsWith('/blog/') || path.startsWith('/conseils/')) {
       const canonical = `${SITE_ORIGIN}${path.split('?')[0]}`;

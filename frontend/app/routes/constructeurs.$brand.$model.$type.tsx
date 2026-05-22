@@ -61,6 +61,7 @@ import { brandColorsService } from "../services/brand-colors.service";
 import { isValidImagePath } from "../utils/image-optimizer";
 import { detectMalformedSegment } from "../utils/pieces-route.utils";
 import { normalizeTypeAlias } from "../utils/url-builder.utils";
+import { resolveVehiclePageError } from "../utils/vehicle-page-status";
 
 /**
  * Handle export pour propager le rôle SEO au root Layout
@@ -133,6 +134,37 @@ export function shouldRevalidate({
   return currentUrl.pathname !== nextUrl.pathname;
 }
 
+/**
+ * Build an error Response for the R8 vehicle page. Every non-200 carries an explicit
+ * X-Robots-Tag so a crawler never indexes an error page — the SeoHeadersInterceptor
+ * delegates robots ownership for /constructeurs/ to this route (like /pieces).
+ *
+ * Cache-Control is status-aware so we never long-cache a *recoverable* state:
+ *  - 503 → transient: no-cache + Retry-After.
+ *  - 404 → "vehicle not displayable right now" can flip back to displayable when
+ *          `type_display='1'` returns → short TTL (5 min) so recovery shows up fast.
+ *  - 410 → permanent gone (legacy URL without id) → long TTL.
+ *  - 400 → malformed request → no-cache.
+ */
+function seoError(
+  status: 400 | 404 | 410 | 503,
+  body: string,
+  robots = "noindex, follow",
+): Response {
+  const headers: Record<string, string> = { "X-Robots-Tag": robots };
+  if (status === 503) {
+    headers["Retry-After"] = "300";
+    headers["Cache-Control"] = "no-cache";
+  } else if (status === 404) {
+    headers["Cache-Control"] = "public, max-age=300";
+  } else if (status === 410) {
+    headers["Cache-Control"] = "public, max-age=86400";
+  } else {
+    headers["Cache-Control"] = "no-cache";
+  }
+  return new Response(body, { status, headers });
+}
+
 // 🚀 Loader optimisé avec RPC (remplace 4 appels API → 1 seul)
 export async function loader({ params }: LoaderFunctionArgs) {
   // 🔍 Vérifier le cache mémoire d'abord
@@ -150,7 +182,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
   if (!brand || !model || !type) {
     logger.error("❌ Paramètres manquants:", { brand, model, type });
-    throw new Response("Paramètres manquants", { status: 400 });
+    throw seoError(400, "Paramètres manquants");
   }
 
   // 🛑 SEO: URLs legacy sans ID (ex: /constructeurs/mazda/mazda-6/...) → 410 Gone
@@ -162,9 +194,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
       model,
       type,
     });
-    throw new Response("URL obsolète - format sans identifiant", {
-      status: 410,
-    });
+    throw seoError(410, "URL obsolète - format sans identifiant");
   }
 
   // 🛑 SEO: URLs mal formées (null, ID répété, espaces, accents) → 404
@@ -220,7 +250,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
   // ========================================
   logger.log(`⚡ [RPC] Appel page-data-rpc pour type_id=${type_id}`);
 
-  let rpcResponse: Response;
+  let rpcResponse: Response | undefined;
   let rpcResult: any;
 
   try {
@@ -231,78 +261,65 @@ export async function loader({ params }: LoaderFunctionArgs) {
         signal: AbortSignal.timeout(10000), // 10s timeout (augmenté de 5s pour fiabilité)
       },
     );
-
-    if (!rpcResponse.ok) {
-      logger.error(
-        `❌ [RPC] Erreur HTTP ${rpcResponse.status} pour type_id=${type_id}`,
-      );
-      // Mapper le code HTTP backend vers le bon status frontend
-      if (rpcResponse.status === 404) {
-        throw new Response("Véhicule non trouvé", { status: 404 });
-      }
-      if (rpcResponse.status === 410) {
-        throw new Response("Véhicule supprimé du catalogue", { status: 410 });
-      }
-      // Vrais erreurs serveur → 503 (Google réessaye) au lieu de 500
-      await notify503ToErrorLog(
-        `/constructeurs/${brand}/${model}/${type}`,
-        "LOADER_503_BACKEND_RPC_ERROR",
-        `Backend page-data-rpc returned HTTP ${rpcResponse.status} for type_id=${type_id}`,
-        { type_id, backend_status: rpcResponse.status },
-      );
-      throw new Response("Service temporairement indisponible", {
-        status: 503,
-      });
+    if (rpcResponse.ok) {
+      rpcResult = await rpcResponse.json();
     }
-
-    rpcResult = await rpcResponse.json();
   } catch (error) {
-    // Gestion spécifique des timeouts - retourne 503 pour que Google réessaye
-    if (
-      error instanceof Error &&
-      (error.name === "AbortError" || error.name === "TimeoutError")
-    ) {
-      logger.error(`⏱️ [RPC] Timeout 10s pour type_id=${type_id}`);
-      await notify503ToErrorLog(
-        `/constructeurs/${brand}/${model}/${type}`,
-        "LOADER_503_RPC_TIMEOUT",
-        `Backend page-data-rpc timeout (10s) for type_id=${type_id}`,
-        { type_id, timeout_ms: 10000 },
-      );
-      throw new Response("Service temporairement indisponible", {
-        status: 503,
-      });
-    }
-    // Re-throw Response errors (déjà formatés)
+    // Re-throw already-formatted Response errors.
     if (error instanceof Response) {
       throw error;
     }
-    // Autres erreurs → 503 (Google réessaye) au lieu de 500
-    logger.error(`❌ [RPC] Erreur fetch pour type_id=${type_id}:`, error);
+    // Timeout / network error happen before a response exists → genuine transient → 503.
+    const isTimeout =
+      error instanceof Error &&
+      (error.name === "AbortError" || error.name === "TimeoutError");
+    const code = isTimeout
+      ? "LOADER_503_RPC_TIMEOUT"
+      : "LOADER_503_RPC_FETCH_ERROR";
+    logger.error(`${isTimeout ? "⏱️" : "❌"} [RPC] ${code} type_id=${type_id}:`, error);
     await notify503ToErrorLog(
       `/constructeurs/${brand}/${model}/${type}`,
-      "LOADER_503_RPC_FETCH_ERROR",
-      `Backend page-data-rpc fetch failed for type_id=${type_id}: ${error instanceof Error ? error.message : String(error)}`,
+      code,
+      `Backend page-data-rpc ${isTimeout ? "timeout (10s)" : "fetch failed"} for type_id=${type_id}: ${error instanceof Error ? error.message : String(error)}`,
       { type_id, error_name: error instanceof Error ? error.name : "unknown" },
     );
-    throw new Response("Service temporairement indisponible", { status: 503 });
+    throw seoError(503, "Service temporairement indisponible", "noindex");
   }
 
-  if (!rpcResult.success || !rpcResult.data?.vehicle) {
-    logger.error("❌ [RPC] Données invalides:", rpcResult);
-    // 503 et non 410 : le véhicule peut exister mais le service a échoué.
-    // 410 causerait une désindexation Google permanente.
-    await notify503ToErrorLog(
-      `/constructeurs/${brand}/${model}/${type}`,
-      "LOADER_503_RPC_INVALID_PAYLOAD",
-      `Backend returned 200 but payload invalid for type_id=${type_id}`,
-      {
-        type_id,
-        payload_success: rpcResult.success,
-        has_vehicle: !!rpcResult.data?.vehicle,
-      },
-    );
-    throw new Response("Service temporairement indisponible", { status: 503 });
+  // ── HTTP verdict (single source of truth: vehicle-page-status.ts) ──
+  // A deterministic "vehicle not found / not displayable" (type_display != '1') is a 404,
+  // NOT a 503 — 503 made Google retry forever and flag the site for "Erreur serveur (5xx)".
+  const verdict = resolveVehiclePageError(
+    rpcResponse?.ok ?? false,
+    rpcResponse?.status ?? 0,
+    rpcResult ?? null,
+  );
+  if (verdict) {
+    if (verdict.isServerError) {
+      // Genuine transient failure → 503 + observability alert (crawlers retry).
+      logger.error(
+        `❌ [RPC] ${verdict.code} type_id=${type_id} (backend HTTP ${rpcResponse?.status ?? "n/a"})`,
+        rpcResult,
+      );
+      await notify503ToErrorLog(
+        `/constructeurs/${brand}/${model}/${type}`,
+        `LOADER_503_${verdict.code}`,
+        `page-data-rpc ${verdict.code} for type_id=${type_id} (backend HTTP ${rpcResponse?.status ?? "n/a"})`,
+        { type_id, backend_status: rpcResponse?.status ?? null },
+      );
+    } else {
+      // Expected not-found / gone → NOT an error: don't pollute the 503 alert log.
+      logger.log(
+        `🔁 [${verdict.status}] ${verdict.code} type_id=${type_id} (déterministe, ex-503 avant fix GSC 5xx)`,
+      );
+    }
+    const message =
+      verdict.status === 503
+        ? "Service temporairement indisponible"
+        : verdict.status === 410
+          ? "Véhicule supprimé du catalogue"
+          : "Véhicule non trouvé";
+    throw seoError(verdict.status, message, verdict.robots);
   }
 
   logger.log(

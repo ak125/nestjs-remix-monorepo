@@ -421,8 +421,8 @@ export function PiecesVehicleContent() {
                 vehicle={data.vehicle}
               />
 
-              {/* Sections SEO */}
-              <div className="space-y-6 mt-12">
+              {/* Sections SEO (below-fold → cv-auto: skip layout when off-screen) */}
+              <div className="space-y-6 mt-12 cv-auto">
                 <PiecesSEOSection
                   content={data.seoContent}
                   vehicleName={`${data.vehicle.marque} ${data.vehicle.modele} ${data.vehicle.type}`}
@@ -467,7 +467,7 @@ export function PiecesVehicleContent() {
 
         {/* Cross-selling - SSR pour maillage interne (5-12 liens) */}
         {data.crossSellingGammes.length > 0 && (
-          <div className="mt-12">
+          <div className="mt-12 cv-auto">
             <PiecesCrossSelling
               gammes={data.crossSellingGammes}
               vehicle={data.vehicle}
@@ -483,7 +483,7 @@ export function PiecesVehicleContent() {
                 (a): a is NonNullable<typeof a> => a !== null,
               );
               return validArticles.length > 0 ? (
-                <div className="container mx-auto px-4">
+                <div className="container mx-auto px-4 cv-auto">
                   <PiecesRelatedArticles
                     articles={validArticles}
                     gammeName={data.gamme.name}
@@ -496,12 +496,14 @@ export function PiecesVehicleContent() {
         </Suspense>
 
         {/* Section "Voir aussi" - Maillage interne SEO (composant extrait) */}
-        <PiecesVoirAussi
-          links={data.voirAussiLinks}
-          gamme={data.gamme}
-          vehicle={data.vehicle}
-          onLinkClick={handleVoirAussiClick}
-        />
+        <div className="cv-auto">
+          <PiecesVoirAussi
+            links={data.voirAussiLinks}
+            gamme={data.gamme}
+            vehicle={data.vehicle}
+            onLinkClick={handleVoirAussiClick}
+          />
+        </div>
       </div>
 
       {/* Bouton retour en haut */}

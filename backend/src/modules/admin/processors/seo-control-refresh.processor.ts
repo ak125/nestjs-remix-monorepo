@@ -14,21 +14,17 @@ import {
   SEO_CONTROL_REFRESH_JOB,
   SEO_CONTROL_REFRESH_QUEUE,
 } from '../constants/seo-control.constants';
-import {
-  type SeoControlRefreshJobData,
-  SeoControlRefresherService,
-} from '../services/seo-control-refresher.service';
+import { type SeoControlRefreshJobData } from '../services/seo-control-refresher.service';
 import { SeoControlService } from '../services/seo-control.service';
 
 @Processor(SEO_CONTROL_REFRESH_QUEUE)
 export class SeoControlRefreshProcessor {
   private readonly logger = new Logger(SeoControlRefreshProcessor.name);
 
-  constructor(
-    private readonly seoControlService: SeoControlService,
-    // Inject refresher to ensure DI graph includes scheduling on init
-    private readonly _refresher: SeoControlRefresherService,
-  ) {}
+  // NB: SeoControlRefresherService is a singleton provider in AdminModule, so
+  // Nest eagerly instantiates it and runs its onModuleInit scheduling on its
+  // own — the processor does not need to inject it. See its *.test.ts.
+  constructor(private readonly seoControlService: SeoControlService) {}
 
   @Process(SEO_CONTROL_REFRESH_JOB)
   async handleRefresh(job: Job<SeoControlRefreshJobData>): Promise<void> {
