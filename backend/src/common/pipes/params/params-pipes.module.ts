@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { PositiveSmallIntParamPipe } from './positive-smallint-param.pipe';
 import { PositiveIntParamPipe } from './positive-int-param.pipe';
 
 /**
@@ -12,7 +11,7 @@ import { PositiveIntParamPipe } from './positive-int-param.pipe';
  * si > 5 modules le consomment (mesure empirique post-merge).
  */
 @Module({
-  providers: [PositiveSmallIntParamPipe, PositiveIntParamPipe],
-  exports: [PositiveSmallIntParamPipe, PositiveIntParamPipe],
+  providers: [PositiveIntParamPipe],
+  exports: [PositiveIntParamPipe],
 })
 export class ParamsPipesModule {}

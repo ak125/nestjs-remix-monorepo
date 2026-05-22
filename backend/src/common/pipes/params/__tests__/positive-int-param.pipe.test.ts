@@ -27,7 +27,9 @@ describe('PositiveIntParamPipe (int4 range)', () => {
 
   it.each([
     ['1', 1],
+    ['32768', 32768], // 1er id au-dessus du smallint — régression #686
     ['83456', 83456], // typique type vehicle hors smallint
+    ['667022', 667022], // max réel auto_modele.modele_id (int4) — régression #686
     ['2147483647', 2147483647], // boundary max int4
   ])('accepts %s -> %d as number', (input, expected) => {
     const result = pipe.transform(input, meta);
