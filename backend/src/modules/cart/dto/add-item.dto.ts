@@ -36,16 +36,10 @@ export const AddItemSchema = z
         .transform(Number),
     ]),
     product_variant_id: z.string().uuid().optional(),
-    custom_price: z
-      .union([
-        z.number().positive().optional(),
-        z
-          .string()
-          .regex(/^\d+(\.\d+)?$/, 'Prix doit être numérique')
-          .transform(Number)
-          .optional(),
-      ])
-      .optional(),
+    // F5 autorité de prix : le prix de vente est autorité SERVEUR (catalogue).
+    // `custom_price` client volontairement RETIRÉ — un override de prix fourni par
+    // le client sur cet endpoint (OptionalAuthGuard, anonyme autorisé) = price-tampering.
+    // Toute clé custom_price/customPrice envoyée est ignorée (strip Zod) + loggée au boundary.
     metadata: z.record(z.string(), z.any()).optional(),
     type_id: z.number().int().positive().optional(),
     // F1 attribution : URL/chemin de la page d'où l'article a été ajouté au panier

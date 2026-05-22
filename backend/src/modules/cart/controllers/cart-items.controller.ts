@@ -82,6 +82,15 @@ export class CartItemsController {
 
       const isReplace = (body as Record<string, unknown>)?.replace === true;
 
+      // F5 autorité de prix : observabilité. Si le client tente un override de prix,
+      // on le LOGGE (jamais de drop silencieux) — il est ignoré (prix = catalogue serveur).
+      const rawBody = body as Record<string, unknown>;
+      if (rawBody?.custom_price != null || rawBody?.customPrice != null) {
+        this.logger.warn(
+          `🔒 Price override client ignoré (autorité serveur) — session: ${sessionId}, product: ${productIdNum}, valeur reçue: ${String(rawBody.custom_price ?? rawBody.customPrice)}`,
+        );
+      }
+
       // Forcer la persistance de la session pour les visiteurs non connectes
       ensureSessionPersisted(req);
 
@@ -89,7 +98,7 @@ export class CartItemsController {
         userIdForCart,
         productIdNum,
         addItemDto.quantity,
-        addItemDto.custom_price,
+        undefined, // F5 : prix = autorité serveur (catalogue), jamais un prix client
         isReplace,
         addItemDto.type_id,
         addItemDto.website_url, // F1 attribution : source d'ajout par-ligne

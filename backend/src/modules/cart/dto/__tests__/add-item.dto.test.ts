@@ -33,3 +33,24 @@ describe('AddItemDto — website_url (F1 attribution source d’ajout)', () => {
     ).toThrow();
   });
 });
+
+describe('AddItemDto — autorité de prix (F5, anti price-tampering)', () => {
+  it('ignore (strip) un custom_price fourni par le client', () => {
+    const dto = validateAddItem({
+      product_id: 12345,
+      quantity: 1,
+      custom_price: 0.01,
+    }) as Record<string, unknown>;
+    expect(dto.custom_price).toBeUndefined();
+  });
+
+  it('reste valide malgré un custom_price client (non rejeté, juste ignoré)', () => {
+    const dto = validateAddItem({
+      product_id: 12345,
+      quantity: 2,
+      custom_price: 999,
+    });
+    expect(dto.product_id).toBe(12345);
+    expect(dto.quantity).toBe(2);
+  });
+});
