@@ -54,7 +54,14 @@ export class OrderAuditListener extends SupabaseBaseService {
       event.orderId,
       event.customerId,
       undefined,
-      { totalTtc: event.totalTtc, linesCount: event.linesCount },
+      {
+        totalTtc: event.totalTtc,
+        linesCount: event.linesCount,
+        // F1 attribution : trace de la source d'ajout par-ligne (lignes avec source captée)
+        ...(event.lines?.some((l) => l.websiteUrl)
+          ? { lineSources: event.lines.filter((l) => l.websiteUrl) }
+          : {}),
+      },
       undefined,
       event.correlationId,
     );

@@ -60,6 +60,9 @@ export const cartItemSchema = z
     // Vehicle context (type_id du vehicule a l'ajout)
     type_id: z.number().optional(),
 
+    // F1 attribution : source d'ajout par-ligne (page d'où l'article a été ajouté) → orl_website_url
+    website_url: z.string().optional(),
+
     // Metadata flexible
     options: z.record(z.any()).optional(),
 

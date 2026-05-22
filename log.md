@@ -423,3 +423,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/retire-smallint-id-param-pipe`
 - **Décision** : fix(vehicles): retire smallint id param pipe (root-cause foot-gun) + ast-grep guard
 - **Sortie** : PR #689 | commits 196dade1c
+
+## 2026-05-22 — feat/cart-line-source-attribution (auto)
+
+- **Branche** : `feat/cart-line-source-attribution`
+- **Décision** : feat(cart): attribution source d'ajout par-ligne (orl_website_url)
+- **Sortie** : PR #695 | commits 30b25cc02
