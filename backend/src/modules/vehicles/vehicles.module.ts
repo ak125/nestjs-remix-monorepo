@@ -61,8 +61,8 @@ import { DatabaseModule } from '../../database/database.module';
 // PR-6 — observatory shadow R7/R8 (consommé par BrandRpcService + VehicleRpcService)
 import { SeoShadowObservatoryModule } from '../seo-shadow-observatory/seo-shadow-observatory.module';
 
-// Typed param pipes (PositiveSmallIntParamPipe, PositiveIntParamPipe) —
-// validation stricte des path params numériques avant DB (anti NaN smallint).
+// Typed param pipe (PositiveIntParamPipe) — validation stricte int4 des
+// path params d'id numériques avant DB (anti NaN / overflow / leading-zero).
 import { ParamsPipesModule } from '../../common/pipes/params';
 
 @Module({
