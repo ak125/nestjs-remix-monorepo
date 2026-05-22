@@ -1,11 +1,15 @@
 /**
  * VehiclesController param-validation e2e tests.
  *
- * Couvre tous les routes path-param numériques wirées sur
- * `PositiveSmallIntParamPipe` / `PositiveIntParamPipe`.
+ * Tous les path-params d'id numériques sont wirés sur le pipe canonique
+ * `PositiveIntParamPipe` (int4). Pas de pipe smallint — voir #689
+ * (`auto_marque.marque_id` / `auto_modele.modele_id` sont int4).
  *
  * Repro Sentry initiale : `GET /api/vehicles/brands/mini-f56/models`
- * doit retourner HTTP 400 (jamais 500 + NaN smallint crash Postgres).
+ * doit retourner HTTP 400 (jamais 500 + NaN crash Postgres).
+ *
+ * Régression #686/#689 : un id > smallint (32767) est VALIDE et doit
+ * atteindre la couche service (et non être rejeté en 400).
  *
  * @see backend/src/modules/vehicles/vehicles.controller.ts
  */
@@ -25,7 +29,6 @@ import { VehicleRpcService } from '../../src/modules/vehicles/services/vehicle-r
 import { BrandBestsellersService } from '../../src/modules/vehicles/services/brand-bestsellers.service';
 import { VehicleMotorCodesService } from '../../src/modules/vehicles/services/vehicle-motor-codes.service';
 import { VehicleProfileService } from '../../src/modules/vehicles/services/vehicle-profile.service';
-import { PositiveSmallIntParamPipe } from '../../src/common/pipes/params/positive-smallint-param.pipe';
 import { PositiveIntParamPipe } from '../../src/common/pipes/params/positive-int-param.pipe';
 
 describe('VehiclesController param validation (anti NaN smallint)', () => {
@@ -45,13 +48,18 @@ describe('VehiclesController param validation (anti NaN smallint)', () => {
     const moduleRef: TestingModule = await Test.createTestingModule({
       controllers: [VehiclesController],
       providers: [
-        PositiveSmallIntParamPipe,
         PositiveIntParamPipe,
-        { provide: VehiclesService, useValue: { searchAdvanced: jest.fn(), getVehicleStats: jest.fn() } },
+        {
+          provide: VehiclesService,
+          useValue: { searchAdvanced: jest.fn(), getVehicleStats: jest.fn() },
+        },
         { provide: VehicleBrandsService, useValue: stub },
         { provide: VehicleModelsService, useValue: stub },
         { provide: VehicleTypesService, useValue: stub },
-        { provide: VehicleSearchService, useValue: { searchByCnit: jest.fn() } },
+        {
+          provide: VehicleSearchService,
+          useValue: { searchByCnit: jest.fn() },
+        },
         { provide: VehicleMineService, useValue: stub },
         { provide: VehicleMetaService, useValue: stub },
         { provide: PopularGammesService, useValue: {} },
@@ -78,9 +86,9 @@ describe('VehiclesController param validation (anti NaN smallint)', () => {
     it.each([
       ['/api/vehicles/brands/mini-f56/models', 'Sentry repro: alpha slug'],
       ['/api/vehicles/brands/mini-f56', 'parent route, alpha slug'],
-      ['/api/vehicles/brands/0/models', 'boundary zero (smallint min violation)'],
+      ['/api/vehicles/brands/0/models', 'boundary zero (min violation)'],
       ['/api/vehicles/brands/00042/models', 'leading-zero canonical violation'],
-      ['/api/vehicles/brands/32768/models', 'boundary above smallint max'],
+      ['/api/vehicles/brands/2147483648/models', 'boundary above int4 max'],
       ['/api/vehicles/brands/-1/models', 'signed negative'],
       ['/api/vehicles/brands/abc', 'pure alpha brandId'],
       ['/api/vehicles/brands/abc/years', 'years sub-route alpha'],
@@ -99,14 +107,18 @@ describe('VehiclesController param validation (anti NaN smallint)', () => {
 
   describe('Positive cases must still reach service layer', () => {
     it('GET /api/vehicles/brands/42 → 200 + brandId=42 typed number', async () => {
-      const res = await request(app.getHttpServer()).get('/api/vehicles/brands/42');
+      const res = await request(app.getHttpServer()).get(
+        '/api/vehicles/brands/42',
+      );
       expect(res.status).toBe(200);
       expect(stub.getBrandById).toHaveBeenCalledWith(42);
       expect(typeof stub.getBrandById.mock.calls[0][0]).toBe('number');
     });
 
     it('GET /api/vehicles/brands/42/models → 200 + brandId=42 typed number', async () => {
-      const res = await request(app.getHttpServer()).get('/api/vehicles/brands/42/models');
+      const res = await request(app.getHttpServer()).get(
+        '/api/vehicles/brands/42/models',
+      );
       expect(res.status).toBe(200);
       expect(stub.getModelsByBrand).toHaveBeenCalled();
       expect(typeof stub.getModelsByBrand.mock.calls[0][0]).toBe('number');
@@ -114,9 +126,30 @@ describe('VehiclesController param validation (anti NaN smallint)', () => {
     });
 
     it('GET /api/vehicles/types/83456 → 200 + typeId int4 typed number', async () => {
-      const res = await request(app.getHttpServer()).get('/api/vehicles/types/83456');
+      const res = await request(app.getHttpServer()).get(
+        '/api/vehicles/types/83456',
+      );
       expect(res.status).toBe(200);
       expect(stub.getTypeById).toHaveBeenCalledWith(83456, true);
+    });
+
+    // Régression #689 : brandId > smallint (marque_id est int4) doit passer.
+    it('GET /api/vehicles/brands/40000/models → 200 (brandId > smallint, valide int4)', async () => {
+      const res = await request(app.getHttpServer()).get(
+        '/api/vehicles/brands/40000/models',
+      );
+      expect(res.status).toBe(200);
+      expect(stub.getModelsByBrand.mock.calls[0][0]).toBe(40000);
+    });
+
+    // Régression #686 : modelId > smallint (modele_id int4, max DB 667022)
+    // renvoyait 400 sur ~82% des modèles. Doit atteindre le service.
+    it('GET /api/vehicles/models/667022/types → 200 (modelId int4 max réel)', async () => {
+      const res = await request(app.getHttpServer()).get(
+        '/api/vehicles/models/667022/types',
+      );
+      expect(res.status).toBe(200);
+      expect(stub.getTypesByModel.mock.calls[0][0]).toBe(667022);
     });
   });
 });

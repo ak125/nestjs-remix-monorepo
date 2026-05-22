@@ -73,9 +73,7 @@ export class VehiclesController {
   }
 
   @Get('brands/:brandId')
-  async getBrandById(
-    @Param('brandId', PositiveIntParamPipe) brandId: number,
-  ) {
+  async getBrandById(@Param('brandId', PositiveIntParamPipe) brandId: number) {
     return this.vehicleBrandsService.getBrandById(brandId);
   }
 
