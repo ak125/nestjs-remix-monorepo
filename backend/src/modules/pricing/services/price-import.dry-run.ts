@@ -35,6 +35,9 @@ export interface ImportLine {
   achatHtCents: number;
   /** Present when the convention carries marge (MARGE_ON_NET) or APPLY_GRID resolved it. */
   margePct?: number;
+  /** Carried for persistence/audit when the convention provides them. */
+  grosHtCents?: number;
+  remisePct?: number;
   confidence: ParseConfidence;
   derivation: Derivation;
   /** Set if L0.5 rejected this row (e.g. missing column) — surfaced, never silently dropped. */
