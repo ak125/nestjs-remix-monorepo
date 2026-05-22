@@ -3,6 +3,10 @@ import { Injectable } from '@nestjs/common';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 import { DomainNotFoundException, ErrorCodes } from '@common/exceptions';
+import {
+  computeMargePct,
+  eurToCents,
+} from '../../pricing/services/pricing-formula.service';
 
 /**
  * Service pour l'interface commerciale et admin des produits :
@@ -336,15 +340,15 @@ export class ProductsAdminService extends SupabaseBaseService {
 
         const prixPublicTTC = Number(priceData.pri_vente_ttc_n) || 0;
         const prixProHT = Number(priceData.pri_vente_ht_n) || 0;
+        const prixAchatHT = Number(priceData.pri_achat_ht_n) || 0;
         const consigneTTC = Number(priceData.pri_consigne_ttc_n) || 0;
         const marge = Number(priceData.pri_marge_n) || 0;
 
+        // Marge = taux de marge (markup sur le coût d'achat), pas la part de TVA.
+        // L'ancien calcul (vente_TTC − vente_HT)/vente_TTC mesurait la TVA, pas la
+        // marge. SoT: PricingFormulaService.computeMargePct (Pricing Control Plane L1).
         const margeCalculee =
-          marge > 0
-            ? marge
-            : prixProHT > 0
-              ? ((prixPublicTTC - prixProHT) / prixPublicTTC) * 100
-              : 0;
+          marge > 0 ? marge : computeMargePct(eurToCents(prixAchatHT), eurToCents(prixProHT));
 
         const stock = parseInt(item.piece_qty_sale?.toString() || '0', 10);
 
