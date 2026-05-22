@@ -429,3 +429,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/cart-line-source-attribution`
 - **Décision** : feat(cart): attribution source d'ajout par-ligne (orl_website_url)
 - **Sortie** : PR #695 | commits 30b25cc02
+
+## 2026-05-22 — chore/remove-broken-order-status-duplicate (auto)
+
+- **Branche** : `chore/remove-broken-order-status-duplicate`
+- **Décision** : refactor(orders): retire le doublon cassé OrderStatusService/Controller (F3)
+- **Sortie** : PR #696 | commits 73fcefe71
