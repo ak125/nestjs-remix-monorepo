@@ -117,3 +117,20 @@ SELECT cron.schedule(
 WHERE NOT EXISTS (
   SELECT 1 FROM cron.job WHERE jobname = 'observability-partition-rotation'
 );
+
+-- __seo_quality_history (mensuel, RANGE sampled_at) a déjà sa fonction dédiée
+-- ensure_next_quality_history_partition() (20260507, ADR-050) — idempotente — mais
+-- AUCUN cron ne l'appelait → falaise 2026-08-01 (dernière partition = 2026-07).
+-- On RÉUTILISE cette fonction (pas de TTL : l'historique qualité se conserve
+-- volontairement) en lui ajoutant le cron quotidien manquant. « +1 mois »
+-- rafraîchi chaque jour garantit que le mois suivant existe toujours.
+SELECT public.ensure_next_quality_history_partition();
+
+SELECT cron.schedule(
+  'quality-history-partition-rotation',
+  '50 2 * * *',
+  $cron$SELECT public.ensure_next_quality_history_partition();$cron$
+)
+WHERE NOT EXISTS (
+  SELECT 1 FROM cron.job WHERE jobname = 'quality-history-partition-rotation'
+);
