@@ -12,6 +12,7 @@ import { PricingStrategyService } from './services/pricing-strategy.service';
 import { SupplierProfileService } from './services/supplier-profile.service';
 import { PricingRepository } from './services/pricing.repository';
 import { PriceImportService } from './services/price-import.service';
+import { PricingSimulationService } from './services/pricing-simulation.service';
 import { PricingImportController } from './controllers/pricing-import.controller';
 
 @Module({
@@ -23,6 +24,7 @@ import { PricingImportController } from './controllers/pricing-import.controller
     SupplierProfileService,
     PricingRepository,
     PriceImportService,
+    PricingSimulationService,
   ],
   exports: [
     PricingFormulaService,

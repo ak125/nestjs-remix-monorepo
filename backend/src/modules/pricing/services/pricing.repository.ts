@@ -11,6 +11,7 @@ import { normalizeSupplierReference } from '../utils/normalize-supplier-referenc
 import type { CatalogPiece, ExistingPriceRow } from './price-import.dry-run';
 import type { SupplierPriceProfile } from './supplier-profile.service';
 import type { PricingRule } from './pricing-strategy.service';
+import type { CostBucketAggregate } from './pricing-simulation.core';
 
 const PAGE = 1000; // supabase-js caps a single select at 1000 rows → paginate
 
@@ -244,5 +245,17 @@ export class PricingRepository extends SupabaseBaseService {
       if (batch.length < PAGE) break;
     }
     return map;
+  }
+
+  /** Read-only cost-bucket aggregates for the simulation (one server-side GROUP BY). */
+  async fetchCostBucketAggregates(): Promise<CostBucketAggregate[]> {
+    const { data, error } = await this.supabase.rpc('pricing_cost_bucket_aggregates');
+    if (error) throw error;
+    return (data ?? []).map((r: Record<string, unknown>) => ({
+      representativeCostCents: Number(r.representative_cost_cents),
+      pieceCount: Number(r.piece_count),
+      sumAchatXQtyCents: Number(r.sum_achat_x_qty_cents),
+      sumVenteTtcXQtyCents: Number(r.sum_vente_ttc_x_qty_cents),
+    }));
   }
 }
