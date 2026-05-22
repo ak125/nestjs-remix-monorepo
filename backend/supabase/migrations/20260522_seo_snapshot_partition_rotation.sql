@@ -22,8 +22,13 @@
 -- Pas de partition DEFAULT (best practice range-partitioning : une fois des rows
 -- dans DEFAULT, créer la partition réelle de cette plage échoue jusqu'à migration
 -- manuelle des rows → on s'appuie sur le premake, pas sur un fourre-tout).
+--
+-- Le runner (scripts/ci/apply-supabase-migration.py) wrappe déjà chaque fichier
+-- dans une transaction (squawk: assume_in_transaction) → pas de BEGIN/COMMIT
+-- explicite. Timeouts robustes avant DDL (require-timeout-settings).
 
-BEGIN;
+SET LOCAL lock_timeout = '5s';
+SET LOCAL statement_timeout = '60s';
 
 CREATE OR REPLACE FUNCTION public.maintain_snapshot_partitions(
   p_lookahead_days INT DEFAULT 14,
@@ -112,5 +117,3 @@ SELECT cron.schedule(
 WHERE NOT EXISTS (
   SELECT 1 FROM cron.job WHERE jobname = 'snapshot-partition-rotation'
 );
-
-COMMIT;
