@@ -23,7 +23,12 @@
 -- premake M+3 avec cron quotidien : maintient toujours 3 mois d'avance, survit à
 -- des dizaines de runs ratés. Pas de partition DEFAULT (best practice range).
 --
--- Le runner wrappe déjà chaque fichier dans une transaction : pas de BEGIN/COMMIT.
+-- Le runner (scripts/ci/apply-supabase-migration.py) wrappe déjà chaque fichier
+-- dans une transaction (squawk: assume_in_transaction) → pas de BEGIN/COMMIT
+-- explicite. Timeouts robustes avant DDL (require-timeout-settings).
+
+SET LOCAL lock_timeout = '5s';
+SET LOCAL statement_timeout = '60s';
 
 CREATE OR REPLACE FUNCTION public.maintain_observability_partitions(
   p_lookahead_months INT DEFAULT 3,
