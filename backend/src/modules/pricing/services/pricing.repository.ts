@@ -8,13 +8,17 @@ import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { eurToCents } from './pricing-formula.service';
 import { normalizeSupplierReference } from '../utils/normalize-supplier-reference';
-import type { ExistingPriceRow } from './price-import.dry-run';
+import type { CatalogPiece, ExistingPriceRow } from './price-import.dry-run';
 import type { SupplierPriceProfile } from './supplier-profile.service';
 import type { PricingRule } from './pricing-strategy.service';
+
+const PAGE = 1000; // supabase-js caps a single select at 1000 rows → paginate
 
 export interface CommitRowPayload {
   piece_id_i: number;
   pri_type: string;
+  operation: 'INSERT' | 'UPDATE';
+  pm_id: string;
   gros_ht: number;
   remise: number;
   achat_ht: number;
@@ -182,16 +186,19 @@ export class PricingRepository extends SupabaseBaseService {
    * EAN → single lookup map for the dry-run matcher.
    */
   async fetchExistingByBrand(brandPmId: string): Promise<Map<string, ExistingPriceRow>> {
-    const { data, error } = await this.supabase
-      .from('pieces_price')
-      .select(
-        'pri_piece_id_i, pri_type, pri_ref, pri_ean, pri_dispo, pri_achat_ht_n, pri_marge_n, pri_vente_ht_n, pri_vente_ttc_n, pri_frais_port_ht_n, pri_frais_supp_ht_n, pri_tva_n, pricing_state',
-      )
-      .eq('pri_pm_id', brandPmId)
-      .eq('pri_type', '0');
-    if (error) throw error;
     const map = new Map<string, ExistingPriceRow>();
-    for (const r of data ?? []) {
+    for (let from = 0; ; from += PAGE) {
+      const { data, error } = await this.supabase
+        .from('pieces_price')
+        .select(
+          'pri_piece_id_i, pri_type, pri_ref, pri_ean, pri_dispo, pri_achat_ht_n, pri_marge_n, pri_vente_ht_n, pri_vente_ttc_n, pri_frais_port_ht_n, pri_frais_supp_ht_n, pri_tva_n, pricing_state',
+        )
+        .eq('pri_pm_id', brandPmId)
+        .eq('pri_type', '0')
+        .range(from, from + PAGE - 1);
+      if (error) throw error;
+      const batch = data ?? [];
+      for (const r of batch) {
       const row: ExistingPriceRow = {
         priPieceIdI: r.pri_piece_id_i,
         priType: r.pri_type ?? '0',
@@ -210,6 +217,31 @@ export class PricingRepository extends SupabaseBaseService {
       if (ref) map.set(ref, row);
       const ean = (r.pri_ean ?? '').trim();
       if (ean) map.set(ean, row);
+      }
+      if (batch.length < PAGE) break;
+    }
+    return map;
+  }
+
+  /**
+   * Catalog pieces of a brand that may need a price (INSERT/recovery target),
+   * keyed by normalized piece_ref. Paginated (a brand can have 70K+ pieces).
+   */
+  async fetchCatalogByBrand(brandPmId: string): Promise<Map<string, CatalogPiece>> {
+    const map = new Map<string, CatalogPiece>();
+    for (let from = 0; ; from += PAGE) {
+      const { data, error } = await this.supabase
+        .from('pieces')
+        .select('piece_id, piece_ref')
+        .eq('piece_pm_id', Number(brandPmId))
+        .range(from, from + PAGE - 1);
+      if (error) throw error;
+      const batch = data ?? [];
+      for (const r of batch) {
+        const ref = normalizeSupplierReference(r.piece_ref);
+        if (ref) map.set(ref, { priPieceIdI: r.piece_id });
+      }
+      if (batch.length < PAGE) break;
     }
     return map;
   }

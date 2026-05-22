@@ -15,7 +15,14 @@ import {
   resolveProfile,
   ProfileError,
 } from './supplier-profile.service';
-import { computeDryRun, type DryRunOptions, type DryRunReport, type ImportLine } from './price-import.dry-run';
+import {
+  computeDryRun,
+  type CatalogPiece,
+  type DryRunOptions,
+  type DryRunReport,
+  type ImportLine,
+} from './price-import.dry-run';
+import { computeStrategyVenteHt, type PricingRule } from './pricing-strategy.service';
 import { PricingRepository, type CommitRowPayload } from './pricing.repository';
 
 const CHUNK_SIZE = 5000;
@@ -75,6 +82,36 @@ export class PriceImportService {
     });
   }
 
+  /** L4 grid resolver → floored/capped vente_HT for a cost, or null if no rule. */
+  private makeGridResolver(rules: PricingRule[]): (costCents: number) => number | null {
+    return (costCents: number) => {
+      const res = computeStrategyVenteHt(rules, { costCents, customerType: 'B2C' });
+      return res ? res.venteHtCents : null;
+    };
+  }
+
+  /**
+   * Match + compute the report. Fetches the brand catalog ONLY when some lines
+   * are not found among existing price rows (recovery/INSERT case) — avoids a
+   * 200K+ row catalog scan for a pure re-price (e.g. Bosch).
+   */
+  private async computeReport(
+    req: ImportRequest,
+    lines: ImportLine[],
+  ): Promise<DryRunReport> {
+    const existing = await this.repo.fetchExistingByBrand(req.brandPmId);
+    const needCatalog = lines.some((l) => !l.parseError && !existing.has(l.key));
+    const catalog: ReadonlyMap<string, CatalogPiece> = needCatalog
+      ? await this.repo.fetchCatalogByBrand(req.brandPmId)
+      : new Map();
+    const rules = await this.repo.fetchRules();
+    const opts: DryRunOptions = {
+      ...req.options,
+      resolveGridVenteHt: this.makeGridResolver(rules),
+    };
+    return computeDryRun(lines, existing, catalog, opts);
+  }
+
   /** Dry-run: persist RAW, open a batch, compute the report. No price writes. */
   async dryRun(req: ImportRequest): Promise<{ batchId: string; report: DryRunReport }> {
     const sourceHash = this.hashRows(req.fileRows);
@@ -93,32 +130,33 @@ export class PriceImportService {
       sourceFileHash: sourceHash,
       operator: req.operator ?? null,
     });
-    const existing = await this.repo.fetchExistingByBrand(req.brandPmId);
-    const report = computeDryRun(lines, existing, req.options);
+    const report = await this.computeReport(req, lines);
     await this.repo.setBatchStatus(batchId, 'DRY_RUN_OK', { checksum: sourceHash });
     this.logger.log(
       `[PRICING_IMPORT] dry-run batchId=${batchId} rawId=${rawId} matched=${report.matchedCount} ` +
-        `unmatched=${report.unmatchedCount} rejected=${report.rejectedCount} outliers=${report.outlierCount} ` +
+        `(insert=${report.insertedCount} update=${report.updatedCount}) unmatched=${report.unmatchedCount} ` +
+        `rejected=${report.rejectedCount} outliers=${report.outlierCount} activated=${report.activatedCount} ` +
         `ΔventeHT_cents=${report.totalDeltaVenteHtCents} ΔCA_cents=${report.estimatedRevenueDeltaCents}`,
     );
     return { batchId, report };
   }
 
-  /** Commit: chunked atomic writes under the COMMITTING mutex. Idempotent-ish. */
+  /** Commit: chunked atomic upsert under the COMMITTING mutex. */
   async commit(batchId: string, req: ImportRequest): Promise<{ committed: number; skipped: number; missing: number }> {
     const lines = await this.buildLines(req);
     const linesByKey = new Map(lines.map((l) => [l.key, l]));
-    const existing = await this.repo.fetchExistingByBrand(req.brandPmId);
-    const report = computeDryRun(lines, existing, req.options);
+    const report = await this.computeReport(req, lines);
 
     const payloads: CommitRowPayload[] = [];
     for (const r of report.rows) {
-      if (!r.matched || r.rejected || r.skippedState || r.newVenteHtCents == null) continue;
+      if (!r.matched || r.rejected || r.skippedState || r.newVenteHtCents == null || r.operation == null) continue;
       const line = linesByKey.get(r.key);
       if (!line || r.priPieceIdI == null) continue;
       payloads.push({
         piece_id_i: r.priPieceIdI,
         pri_type: '0',
+        operation: r.operation,
+        pm_id: req.brandPmId,
         gros_ht: centsToEur(line.grosHtCents ?? 0),
         remise: line.remisePct ?? 0,
         achat_ht: centsToEur(line.achatHtCents),

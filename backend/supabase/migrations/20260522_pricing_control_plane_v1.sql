@@ -138,6 +138,7 @@ CREATE TABLE IF NOT EXISTS pieces_price_history (
   chunk_id       UUID,
   pri_piece_id_i INTEGER     NOT NULL,
   pri_type       TEXT,
+  operation      TEXT        NOT NULL DEFAULT 'UPDATE' CHECK (operation IN ('INSERT','UPDATE')),
   old_gros_ht    NUMERIC, new_gros_ht    NUMERIC,
   old_remise     NUMERIC, new_remise     NUMERIC,
   old_achat_ht   NUMERIC, new_achat_ht   NUMERIC,
