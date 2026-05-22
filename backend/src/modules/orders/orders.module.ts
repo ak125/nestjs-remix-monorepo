@@ -10,7 +10,6 @@ import { AuthModule } from '../../auth/auth.module';
 import { OrdersController } from './controllers/orders.controller';
 
 // ✅ Contrôleurs spécialisés (à garder)
-import { OrderStatusController } from './controllers/order-status.controller';
 import { OrderArchiveController } from './controllers/order-archive.controller';
 import { TicketsController } from './controllers/tickets.controller';
 import { OrderActionsController } from './controllers/order-actions.controller';
@@ -43,9 +42,9 @@ import { OrderEmailListener } from './listeners/order-email.listener';
  *
  * Contrôleurs actifs:
  * 1. OrdersController: Routes principales (client + admin + legacy)
- * 2. OrderStatusController: Workflow statuts
- * 3. OrderArchiveController: Archivage
- * 4. TicketsController: SAV
+ * 2. OrderArchiveController: Archivage
+ * 3. TicketsController: SAV
+ * (statut ligne = OrderActionsController/OrderActionsService — SoT unique, F3 audit 2026-05-22)
  *
  * Services actifs:
  * 1. OrdersService: CRUD principal
@@ -68,7 +67,6 @@ import { OrderEmailListener } from './listeners/order-email.listener';
     OrdersController, // /api/orders/* (client + admin + legacy)
 
     // ✅ Contrôleurs spécialisés (gardés)
-    OrderStatusController, // /order-status/* (workflow statuts)
     OrderArchiveController, // /order-archive/* (archivage)
     TicketsController, // /api/tickets/* (SAV)
     OrderActionsController, // /api/admin/orders/* (ACTIONS BACKOFFICE)
