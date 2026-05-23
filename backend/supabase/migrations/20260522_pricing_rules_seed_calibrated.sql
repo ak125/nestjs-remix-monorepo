@@ -16,6 +16,9 @@
 -- NOT applied to the shared DB here — governed apply step.
 -- =====================================================
 
+set lock_timeout = '2s';
+set statement_timeout = '30s';
+
 DO $$
 DECLARE
   v_seed_reason CONSTANT TEXT := 'calibration-seed-v1 (legacy medians)';

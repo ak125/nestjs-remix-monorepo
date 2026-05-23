@@ -271,8 +271,9 @@ export class PricingRepository extends SupabaseBaseService {
 
   /** Read-only cost-bucket aggregates for the simulation (one server-side GROUP BY). */
   async fetchCostBucketAggregates(): Promise<CostBucketAggregate[]> {
-    const { data, error } = await this.callRpc(
+    const { data, error } = await this.callRpc<Array<Record<string, unknown>>>(
       'pricing_cost_bucket_aggregates',
+      {},
     );
     if (error) throw error;
     return (data ?? []).map((r: Record<string, unknown>) => ({

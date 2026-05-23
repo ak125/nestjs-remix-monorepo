@@ -4,6 +4,9 @@
 -- Refs: plan pricing-control-plane-v1 (hardenings H1 + H2 — post owner review)
 -- Type: ADDITIVE, append-only observatories. Read V1 = aucune (runtime unchanged).
 -- =====================================================
+
+set lock_timeout = '2s';
+set statement_timeout = '30s';
 --
 -- H1 — pricing_decision_snapshot : audit trace per pricing decision (commit,
 --      rollback, replay, qualifying dry-run, published simulation). Stores the
@@ -22,6 +25,9 @@
 -- "Aucune nouvelle couche runtime" : ni H1 ni H2 ne sont lues par le storefront
 -- ou par les services pricing au commit. Annexes lecture-zero-V1.
 -- =====================================================
+
+set lock_timeout = '2s';
+set statement_timeout = '30s';
 
 -- ----------------------------------------------------------------------------
 -- H1.a — Decision type enum (separates forensic by nature).

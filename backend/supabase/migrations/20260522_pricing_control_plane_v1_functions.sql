@@ -14,6 +14,9 @@
 -- shared DB here — governed apply step. SECURITY INVOKER (service-role caller).
 -- =====================================================
 
+set lock_timeout = '2s';
+set statement_timeout = '30s';
+
 -- ----------------------------------------------------------------------------
 -- pricing_commit_chunk: apply one chunk's rows atomically.
 --   p_rows : jsonb array of objects:

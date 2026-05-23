@@ -20,6 +20,9 @@
 -- limite moteur migration mono-statement).
 -- =====================================================
 
+set lock_timeout = '2s';
+set statement_timeout = '30s';
+
 -- ----------------------------------------------------------------------------
 -- L0 — RAW immutable (append-only). Replay / diff parser / forensic.
 -- ----------------------------------------------------------------------------
