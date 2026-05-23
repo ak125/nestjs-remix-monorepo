@@ -17,9 +17,6 @@
 set lock_timeout = '2s';
 set statement_timeout = '30s';
 
-set lock_timeout = '2s';
-set statement_timeout = '30s';
-
 CREATE OR REPLACE FUNCTION pricing_cost_bucket_aggregates()
 RETURNS TABLE (
   representative_cost_cents   BIGINT,
