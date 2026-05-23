@@ -1,0 +1,52 @@
+id: backend-no-parseint-query-param
+language: typescript
+severity: warning
+message: |
+  `parseInt` direct sur un accès `query.$X` / `req.query.$X` / `request.query.$X`
+  (où `query` est un `Record<string, string>` brut, non validé) — anti-pattern
+  qui propage `NaN` au SQL en cas de payload invalide.
+
+  Incident racine : Sentry 2026-05-23 — `GET /api/vehicles/brands/:brandId/models`
+  crashait `invalid input syntax for type smallint: "NaN"` (PROD) parce que
+  `parseInt(query.year, 10)` produisait `NaN` quand le client envoyait
+  `?year=NaN` ou `?year=abc`. NaN propageait jusqu'au cast
+  `marque_id::SMALLINT` côté Postgres (migration
+  `20260421_vehicle_page_cache_inline_and_drop_legacy.sql`).
+
+  Correctif canon : déclarer un schéma Zod typé pour le query (cf.
+  `backend/src/modules/vehicles/dto/vehicles-query.schema.ts`) et
+  l'appliquer via `StrictZodQueryValidationPipe` :
+
+      import { StrictZodQueryValidationPipe } from '@common/pipes/strict-zod-query-validation.pipe';
+      import { MyQuerySchema, type MyQueryDto } from './dto/my-query.schema';
+
+      const myQueryPipe = new StrictZodQueryValidationPipe(MyQuerySchema);
+
+      @Get('endpoint')
+      async handler(@Query(myQueryPipe) query: MyQueryDto) { ... }
+
+  Toute valeur non-conforme (NaN, hors borne, format invalide) → 400 Bad
+  Request, jamais propagée au SQL. Voir aussi
+  `feedback_param_pipe_bound_must_match_db_column_type.md` (famille des
+  incidents 2026-05-22 PR #686/#689 sur les path-params smallint).
+
+  Ship initial : `severity: warning` (observe-only, canon pattern PR-3a
+  `seo-no-bare-role-literal.yml`). Le scan révèle ~23 violations héritées
+  (orders, users-final, admin-staff, suppliers-modern, staff, gamme-rest,
+  vehicles-forms-simple — toutes hors-vehicles.controller.ts). Audit
+  complémentaire à fixer dans PRs de suivi par bounded-context. Une fois
+  le corpus à 0 finding, promouvoir à `severity: error`.
+files:
+  - backend/src/modules/**/*.controller.ts
+ignores:
+  - backend/src/**/__tests__/**
+  - backend/src/**/*.spec.ts
+  - backend/src/**/*.test.ts
+rule:
+  any:
+    - pattern: parseInt(query.$X, $$$ARGS)
+    - pattern: parseInt(query.$X)
+    - pattern: parseInt(req.query.$X, $$$ARGS)
+    - pattern: parseInt(req.query.$X)
+    - pattern: parseInt(request.query.$X, $$$ARGS)
+    - pattern: parseInt(request.query.$X)
