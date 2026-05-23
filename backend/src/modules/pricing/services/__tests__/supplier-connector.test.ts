@@ -1,10 +1,20 @@
 import { reconcile } from '../supplier-connector.contract';
 
-const computed = { ref: 'BP1', achatHtCents: 1215, margePct: 54.57, active: true };
+const computed = {
+  ref: 'BP1',
+  achatHtCents: 1215,
+  margePct: 54.57,
+  active: true,
+};
 
 describe('Step 2 — supplier reconciliation (generic contract)', () => {
   it('OK when price + margin + availability all match within tolerance', () => {
-    const r = reconcile(computed, { ref: 'BP1', achatHtCents: 1215, margePct: 54.6, available: true });
+    const r = reconcile(computed, {
+      ref: 'BP1',
+      achatHtCents: 1215,
+      margePct: 54.6,
+      available: true,
+    });
     expect(r.ok).toBe(true);
     expect(r.priceMatches).toBe(true);
     expect(r.marginUnchanged).toBe(true); // 54.57 vs 54.6 within 0.5pp

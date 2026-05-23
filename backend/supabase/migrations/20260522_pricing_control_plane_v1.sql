@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS supplier_import_raw (
   raw_payload        TEXT,                 -- bytes/texte brut du fichier
   normalized_payload JSONB,                -- lignes normalisées (post-parse)
   parsed_payload     JSONB,                -- entrées canoniques (post-L0.5)
-  row_count          INTEGER,
+  row_count          BIGINT,
   imported_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 COMMENT ON TABLE supplier_import_raw IS
@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS supplier_price_profiles (
   derivation     TEXT        NOT NULL CHECK (derivation IN ('DIRECT_NET','REMISE_ON_BRUT','REMISE_ON_PUBLIC','MARGE_ON_NET')),
   column_mapping JSONB       NOT NULL,
   key_field      TEXT        NOT NULL CHECK (key_field IN ('REF','EAN')),
-  version        INTEGER     NOT NULL DEFAULT 1,
+  version        BIGINT     NOT NULL DEFAULT 1,
   effective_from TIMESTAMPTZ,
   effective_to   TIMESTAMPTZ,
   active         BOOLEAN     NOT NULL DEFAULT TRUE,
@@ -78,12 +78,12 @@ CREATE TABLE IF NOT EXISTS pricing_rules (
   max_margin_rate        NUMERIC,                      -- cap %, NULL = aucun
   customer_type          TEXT        CHECK (customer_type IN ('B2C','PRO')),  -- NULL = tous
   supplier_pm_id         TEXT,                         -- NULL = tous
-  category_gamme_id      INTEGER,                      -- NULL = toutes
-  priority               INTEGER     NOT NULL DEFAULT 0,
+  category_gamme_id      BIGINT,                      -- NULL = toutes
+  priority               BIGINT     NOT NULL DEFAULT 0,
   active                 BOOLEAN     NOT NULL DEFAULT TRUE,
   effective_from         TIMESTAMPTZ,
   effective_to           TIMESTAMPTZ,
-  rule_version           INTEGER     NOT NULL DEFAULT 1,
+  rule_version           BIGINT     NOT NULL DEFAULT 1,
   created_by             TEXT,
   change_reason          TEXT,
   created_at             TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -104,8 +104,8 @@ CREATE TABLE IF NOT EXISTS price_import_batches (
   checksum         TEXT,
   started_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
   completed_at     TIMESTAMPTZ,
-  committed_rows   INTEGER     NOT NULL DEFAULT 0,
-  failed_rows      INTEGER     NOT NULL DEFAULT 0,
+  committed_rows   BIGINT     NOT NULL DEFAULT 0,
+  failed_rows      BIGINT     NOT NULL DEFAULT 0,
   operator         TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_price_import_batches_status   ON price_import_batches (status);
@@ -118,9 +118,9 @@ CREATE UNIQUE INDEX IF NOT EXISTS uniq_price_import_committing_per_supplier
 CREATE TABLE IF NOT EXISTS price_import_batch_chunks (
   chunk_id  UUID    PRIMARY KEY DEFAULT gen_random_uuid(),
   batch_id  UUID    NOT NULL REFERENCES price_import_batches (batch_id) ON DELETE CASCADE,
-  seq       INTEGER NOT NULL,
-  row_from  INTEGER,
-  row_to    INTEGER,
+  seq       BIGINT NOT NULL,
+  row_from  BIGINT,
+  row_to    BIGINT,
   checksum  TEXT,
   status    TEXT    NOT NULL DEFAULT 'PENDING'
             CHECK (status IN ('PENDING','COMMITTING','COMMITTED','FAILED','ROLLED_BACK'))
@@ -136,7 +136,7 @@ CREATE TABLE IF NOT EXISTS pieces_price_history (
   id             BIGINT      GENERATED ALWAYS AS IDENTITY,
   batch_id       UUID        NOT NULL,
   chunk_id       UUID,
-  pri_piece_id_i INTEGER     NOT NULL,
+  pri_piece_id_i BIGINT     NOT NULL,
   pri_type       TEXT,
   operation      TEXT        NOT NULL DEFAULT 'UPDATE' CHECK (operation IN ('INSERT','UPDATE')),
   old_gros_ht    NUMERIC, new_gros_ht    NUMERIC,
@@ -179,13 +179,13 @@ CREATE TABLE IF NOT EXISTS catalog_pricing_baseline_meta (
 
 CREATE TABLE IF NOT EXISTS catalog_pricing_baseline (
   baseline_version BIGINT  NOT NULL REFERENCES catalog_pricing_baseline_meta (baseline_version) ON DELETE CASCADE,
-  pri_piece_id_i   INTEGER NOT NULL,
+  pri_piece_id_i   BIGINT NOT NULL,
   achat_ht_cents   BIGINT,
   vente_ht_cents   BIGINT,
   vente_ttc_cents  BIGINT,
-  gamme_id         INTEGER,
+  gamme_id         BIGINT,
   pm_id            TEXT,
-  qty_sold_12m     INTEGER NOT NULL DEFAULT 0,   -- pondération impact CA (___xtr_order_line)
+  qty_sold_12m     BIGINT NOT NULL DEFAULT 0,   -- pondération impact CA (___xtr_order_line)
   PRIMARY KEY (baseline_version, pri_piece_id_i)
 );
 CREATE INDEX IF NOT EXISTS idx_baseline_version ON catalog_pricing_baseline (baseline_version);

@@ -22,7 +22,10 @@ import {
   type DryRunReport,
   type ImportLine,
 } from './price-import.dry-run';
-import { computeStrategyVenteHt, type PricingRule } from './pricing-strategy.service';
+import {
+  computeStrategyVenteHt,
+  type PricingRule,
+} from './pricing-strategy.service';
 import { PricingRepository, type CommitRowPayload } from './pricing.repository';
 
 const CHUNK_SIZE = 5000;
@@ -83,9 +86,14 @@ export class PriceImportService {
   }
 
   /** L4 grid resolver → floored/capped vente_HT for a cost, or null if no rule. */
-  private makeGridResolver(rules: PricingRule[]): (costCents: number) => number | null {
+  private makeGridResolver(
+    rules: PricingRule[],
+  ): (costCents: number) => number | null {
     return (costCents: number) => {
-      const res = computeStrategyVenteHt(rules, { costCents, customerType: 'B2C' });
+      const res = computeStrategyVenteHt(rules, {
+        costCents,
+        customerType: 'B2C',
+      });
       return res ? res.venteHtCents : null;
     };
   }
@@ -100,7 +108,9 @@ export class PriceImportService {
     lines: ImportLine[],
   ): Promise<DryRunReport> {
     const existing = await this.repo.fetchExistingByBrand(req.brandPmId);
-    const needCatalog = lines.some((l) => !l.parseError && !existing.has(l.key));
+    const needCatalog = lines.some(
+      (l) => !l.parseError && !existing.has(l.key),
+    );
     const catalog: ReadonlyMap<string, CatalogPiece> = needCatalog
       ? await this.repo.fetchCatalogByBrand(req.brandPmId)
       : new Map();
@@ -113,7 +123,9 @@ export class PriceImportService {
   }
 
   /** Dry-run: persist RAW, open a batch, compute the report. No price writes. */
-  async dryRun(req: ImportRequest): Promise<{ batchId: string; report: DryRunReport }> {
+  async dryRun(
+    req: ImportRequest,
+  ): Promise<{ batchId: string; report: DryRunReport }> {
     const sourceHash = this.hashRows(req.fileRows);
     const lines = await this.buildLines(req);
     const rawId = await this.repo.insertRaw({
@@ -131,7 +143,9 @@ export class PriceImportService {
       operator: req.operator ?? null,
     });
     const report = await this.computeReport(req, lines);
-    await this.repo.setBatchStatus(batchId, 'DRY_RUN_OK', { checksum: sourceHash });
+    await this.repo.setBatchStatus(batchId, 'DRY_RUN_OK', {
+      checksum: sourceHash,
+    });
     this.logger.log(
       `[PRICING_IMPORT] dry-run batchId=${batchId} rawId=${rawId} matched=${report.matchedCount} ` +
         `(insert=${report.insertedCount} update=${report.updatedCount}) unmatched=${report.unmatchedCount} ` +
@@ -142,14 +156,24 @@ export class PriceImportService {
   }
 
   /** Commit: chunked atomic upsert under the COMMITTING mutex. */
-  async commit(batchId: string, req: ImportRequest): Promise<{ committed: number; skipped: number; missing: number }> {
+  async commit(
+    batchId: string,
+    req: ImportRequest,
+  ): Promise<{ committed: number; skipped: number; missing: number }> {
     const lines = await this.buildLines(req);
     const linesByKey = new Map(lines.map((l) => [l.key, l]));
     const report = await this.computeReport(req, lines);
 
     const payloads: CommitRowPayload[] = [];
     for (const r of report.rows) {
-      if (!r.matched || r.rejected || r.skippedState || r.newVenteHtCents == null || r.operation == null) continue;
+      if (
+        !r.matched ||
+        r.rejected ||
+        r.skippedState ||
+        r.newVenteHtCents == null ||
+        r.operation == null
+      )
+        continue;
       const line = linesByKey.get(r.key);
       if (!line || r.priPieceIdI == null) continue;
       payloads.push({
@@ -172,7 +196,12 @@ export class PriceImportService {
     try {
       for (let seq = 0, i = 0; i < payloads.length; i += CHUNK_SIZE, seq++) {
         const slice = payloads.slice(i, i + CHUNK_SIZE);
-        const chunkId = await this.repo.createChunk(batchId, seq, i, i + slice.length);
+        const chunkId = await this.repo.createChunk(
+          batchId,
+          seq,
+          i,
+          i + slice.length,
+        );
         const res = await this.repo.commitChunk({
           batchId,
           chunkId,
@@ -192,14 +221,21 @@ export class PriceImportService {
         `[PRICING_IMPORT] commit batchId=${batchId} committed=${totals.committed} skipped=${totals.skipped} missing=${totals.missing}`,
       );
     } catch (e) {
-      await this.repo.setBatchStatus(batchId, 'FAILED', { completed_at: new Date().toISOString() });
-      this.logger.error(`[PRICING_IMPORT] commit FAILED batchId=${batchId}: ${(e as Error).message}`);
+      await this.repo.setBatchStatus(batchId, 'FAILED', {
+        completed_at: new Date().toISOString(),
+      });
+      this.logger.error(
+        `[PRICING_IMPORT] commit FAILED batchId=${batchId}: ${(e as Error).message}`,
+      );
       throw e;
     }
     return totals;
   }
 
-  async rollback(batchId: string, supplierId: string): Promise<{ restored: number; superseded: number }> {
+  async rollback(
+    batchId: string,
+    supplierId: string,
+  ): Promise<{ restored: number; superseded: number }> {
     const res = await this.repo.rollbackBatch(batchId, supplierId);
     this.logger.log(
       `[PRICING_ROLLBACK] batchId=${batchId} restored=${res.restored} superseded=${res.superseded}`,

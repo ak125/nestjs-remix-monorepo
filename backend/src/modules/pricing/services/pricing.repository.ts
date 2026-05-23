@@ -101,10 +101,21 @@ export class PricingRepository extends SupabaseBaseService {
     if (error) throw error;
   }
 
-  async createChunk(batchId: string, seq: number, rowFrom: number, rowTo: number): Promise<string> {
+  async createChunk(
+    batchId: string,
+    seq: number,
+    rowFrom: number,
+    rowTo: number,
+  ): Promise<string> {
     const { data, error } = await this.supabase
       .from('price_import_batch_chunks')
-      .insert({ batch_id: batchId, seq, row_from: rowFrom, row_to: rowTo, status: 'PENDING' })
+      .insert({
+        batch_id: batchId,
+        seq,
+        row_from: rowFrom,
+        row_to: rowTo,
+        status: 'PENDING',
+      })
       .select('chunk_id')
       .single();
     if (error) throw error;
@@ -119,7 +130,7 @@ export class PricingRepository extends SupabaseBaseService {
     operator: string | null;
     rows: CommitRowPayload[];
   }): Promise<{ committed: number; skipped: number; missing: number }> {
-    const { data, error } = await this.supabase.rpc('pricing_commit_chunk', {
+    const { data, error } = await this.callRpc('pricing_commit_chunk', {
       p_batch_id: input.batchId,
       p_chunk_id: input.chunkId,
       p_supplier: input.supplier,
@@ -130,8 +141,11 @@ export class PricingRepository extends SupabaseBaseService {
     return data as { committed: number; skipped: number; missing: number };
   }
 
-  async rollbackBatch(batchId: string, supplier: string): Promise<{ restored: number; superseded: number }> {
-    const { data, error } = await this.supabase.rpc('pricing_rollback_batch', {
+  async rollbackBatch(
+    batchId: string,
+    supplier: string,
+  ): Promise<{ restored: number; superseded: number }> {
+    const { data, error } = await this.callRpc('pricing_rollback_batch', {
       p_batch_id: batchId,
       p_supplier: supplier,
     });
@@ -163,7 +177,10 @@ export class PricingRepository extends SupabaseBaseService {
   }
 
   async fetchRules(): Promise<PricingRule[]> {
-    const { data, error } = await this.supabase.from('pricing_rules').select('*').eq('active', true);
+    const { data, error } = await this.supabase
+      .from('pricing_rules')
+      .select('*')
+      .eq('active', true);
     if (error) throw error;
     return (data ?? []).map((r) => ({
       id: r.id,
@@ -171,7 +188,8 @@ export class PricingRepository extends SupabaseBaseService {
       maxCostCents: r.max_cost_cents == null ? null : Number(r.max_cost_cents),
       marginRate: Number(r.margin_rate),
       minMarginAmountCents: Number(r.min_margin_amount_cents),
-      maxMarginRate: r.max_margin_rate == null ? null : Number(r.max_margin_rate),
+      maxMarginRate:
+        r.max_margin_rate == null ? null : Number(r.max_margin_rate),
       customerType: r.customer_type,
       supplierPmId: r.supplier_pm_id,
       categoryGammeId: r.category_gamme_id,
@@ -186,7 +204,9 @@ export class PricingRepository extends SupabaseBaseService {
    * Existing price rows for a brand (pri_pm_id), keyed by BOTH normalized ref and
    * EAN → single lookup map for the dry-run matcher.
    */
-  async fetchExistingByBrand(brandPmId: string): Promise<Map<string, ExistingPriceRow>> {
+  async fetchExistingByBrand(
+    brandPmId: string,
+  ): Promise<Map<string, ExistingPriceRow>> {
     const map = new Map<string, ExistingPriceRow>();
     for (let from = 0; ; from += PAGE) {
       const { data, error } = await this.supabase
@@ -200,24 +220,24 @@ export class PricingRepository extends SupabaseBaseService {
       if (error) throw error;
       const batch = data ?? [];
       for (const r of batch) {
-      const row: ExistingPriceRow = {
-        priPieceIdI: r.pri_piece_id_i,
-        priType: r.pri_type ?? '0',
-        achatHtCents: eurToCents(Number(r.pri_achat_ht_n) || 0),
-        margePct: Number(r.pri_marge_n) || 0,
-        venteHtCents: eurToCents(Number(r.pri_vente_ht_n) || 0),
-        venteTtcCents: eurToCents(Number(r.pri_vente_ttc_n) || 0),
-        fraisPortHtCents: eurToCents(Number(r.pri_frais_port_ht_n) || 0),
-        fraisSuppHtCents: eurToCents(Number(r.pri_frais_supp_ht_n) || 0),
-        tvaRate: Number(r.pri_tva_n) || 0.2,
-        pricingState: r.pricing_state ?? 'ACTIVE',
-        qtySold12m: 0, // populated from catalog_pricing_baseline once built
-        dispo: (r.pri_dispo ?? '0').toString(),
-      };
-      const ref = normalizeSupplierReference(r.pri_ref);
-      if (ref) map.set(ref, row);
-      const ean = (r.pri_ean ?? '').trim();
-      if (ean) map.set(ean, row);
+        const row: ExistingPriceRow = {
+          priPieceIdI: r.pri_piece_id_i,
+          priType: r.pri_type ?? '0',
+          achatHtCents: eurToCents(Number(r.pri_achat_ht_n) || 0),
+          margePct: Number(r.pri_marge_n) || 0,
+          venteHtCents: eurToCents(Number(r.pri_vente_ht_n) || 0),
+          venteTtcCents: eurToCents(Number(r.pri_vente_ttc_n) || 0),
+          fraisPortHtCents: eurToCents(Number(r.pri_frais_port_ht_n) || 0),
+          fraisSuppHtCents: eurToCents(Number(r.pri_frais_supp_ht_n) || 0),
+          tvaRate: Number(r.pri_tva_n) || 0.2,
+          pricingState: r.pricing_state ?? 'ACTIVE',
+          qtySold12m: 0, // populated from catalog_pricing_baseline once built
+          dispo: (r.pri_dispo ?? '0').toString(),
+        };
+        const ref = normalizeSupplierReference(r.pri_ref);
+        if (ref) map.set(ref, row);
+        const ean = (r.pri_ean ?? '').trim();
+        if (ean) map.set(ean, row);
       }
       if (batch.length < PAGE) break;
     }
@@ -228,7 +248,9 @@ export class PricingRepository extends SupabaseBaseService {
    * Catalog pieces of a brand that may need a price (INSERT/recovery target),
    * keyed by normalized piece_ref. Paginated (a brand can have 70K+ pieces).
    */
-  async fetchCatalogByBrand(brandPmId: string): Promise<Map<string, CatalogPiece>> {
+  async fetchCatalogByBrand(
+    brandPmId: string,
+  ): Promise<Map<string, CatalogPiece>> {
     const map = new Map<string, CatalogPiece>();
     for (let from = 0; ; from += PAGE) {
       const { data, error } = await this.supabase
@@ -249,7 +271,9 @@ export class PricingRepository extends SupabaseBaseService {
 
   /** Read-only cost-bucket aggregates for the simulation (one server-side GROUP BY). */
   async fetchCostBucketAggregates(): Promise<CostBucketAggregate[]> {
-    const { data, error } = await this.supabase.rpc('pricing_cost_bucket_aggregates');
+    const { data, error } = await this.callRpc(
+      'pricing_cost_bucket_aggregates',
+    );
     if (error) throw error;
     return (data ?? []).map((r: Record<string, unknown>) => ({
       representativeCostCents: Number(r.representative_cost_cents),

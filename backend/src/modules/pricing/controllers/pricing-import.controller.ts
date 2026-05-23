@@ -6,9 +6,15 @@
  */
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { IsAdminGuard } from '@auth/is-admin.guard';
-import { PriceImportService, type ImportRequest } from '../services/price-import.service';
+import {
+  PriceImportService,
+  type ImportRequest,
+} from '../services/price-import.service';
 import { PricingSimulationService } from '../services/pricing-simulation.service';
-import type { CustomerType, PricingRule } from '../services/pricing-strategy.service';
+import type {
+  CustomerType,
+  PricingRule,
+} from '../services/pricing-strategy.service';
 
 @Controller('api/admin/pricing')
 @UseGuards(IsAdminGuard)
@@ -20,7 +26,13 @@ export class PricingImportController {
 
   /** Read-only grid simulation (no write). */
   @Post('simulate')
-  simulate(@Body() body: { customerType?: CustomerType; candidateRules?: PricingRule[] }) {
+  simulate(
+    @Body()
+    body: {
+      customerType?: CustomerType;
+      candidateRules?: PricingRule[];
+    },
+  ) {
     return this.simulationService.simulate(body);
   }
 

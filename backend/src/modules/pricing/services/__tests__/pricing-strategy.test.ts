@@ -27,7 +27,9 @@ const rule = (over: Partial<PricingRule>): PricingRule => ({
   ...over,
 });
 
-const ctx = (over: Partial<PricingStrategyContext> = {}): PricingStrategyContext => ({
+const ctx = (
+  over: Partial<PricingStrategyContext> = {},
+): PricingStrategyContext => ({
   costCents: 1500,
   customerType: 'B2C',
   ...over,
@@ -46,9 +48,17 @@ describe('PricingStrategy — L4', () => {
     it('prefers a more specific rule (supplier+category) over a generic bucket', () => {
       const rules = [
         rule({ id: 1, marginRate: 50 }), // generic
-        rule({ id: 2, marginRate: 40, supplierPmId: 'BOSCH', categoryGammeId: 7 }),
+        rule({
+          id: 2,
+          marginRate: 40,
+          supplierPmId: 'BOSCH',
+          categoryGammeId: 7,
+        }),
       ];
-      expect(resolveRule(rules, ctx({ supplierPmId: 'BOSCH', categoryGammeId: 7 }))?.id).toBe(2);
+      expect(
+        resolveRule(rules, ctx({ supplierPmId: 'BOSCH', categoryGammeId: 7 }))
+          ?.id,
+      ).toBe(2);
     });
 
     it('respects customer_type', () => {
@@ -63,31 +73,44 @@ describe('PricingStrategy — L4', () => {
       const rules = [
         rule({ id: 1, effectiveFrom: '2999-01-01' }), // future → inactive
       ];
-      expect(resolveRule(rules, ctx({ at: new Date('2026-05-22') }))).toBeNull();
+      expect(
+        resolveRule(rules, ctx({ at: new Date('2026-05-22') })),
+      ).toBeNull();
     });
 
     it('returns null when nothing matches (explicit, no fallback)', () => {
-      expect(resolveRule([rule({ minCostCents: 10000 })], ctx({ costCents: 100 }))).toBeNull();
+      expect(
+        resolveRule([rule({ minCostCents: 10000 })], ctx({ costCents: 100 })),
+      ).toBeNull();
     });
   });
 
   describe('applyStrategy — floor & cap', () => {
     it('applies the rate when above the floor', () => {
       // cost 1500, +50% = 2250
-      const r = applyStrategy(1500, rule({ marginRate: 50, minMarginAmountCents: 100 }));
+      const r = applyStrategy(
+        1500,
+        rule({ marginRate: 50, minMarginAmountCents: 100 }),
+      );
       expect(r.venteHtCents).toBe(2250);
       expect(r.floorApplied).toBe(false);
     });
 
     it('applies the fixed floor on tiny cheap parts (the 0,15 € problem)', () => {
       // cost 300 (3€), +20% = 360 → only 0,60€ margin; floor 500c → vente 800
-      const r = applyStrategy(300, rule({ marginRate: 20, minMarginAmountCents: 500 }));
+      const r = applyStrategy(
+        300,
+        rule({ marginRate: 20, minMarginAmountCents: 500 }),
+      );
       expect(r.venteHtCents).toBe(800);
       expect(r.floorApplied).toBe(true);
     });
 
     it('caps the applied rate at max_margin_rate', () => {
-      const r = applyStrategy(1000, rule({ marginRate: 500, maxMarginRate: 100 }));
+      const r = applyStrategy(
+        1000,
+        rule({ marginRate: 500, maxMarginRate: 100 }),
+      );
       expect(r.appliedMarginRate).toBe(100);
       expect(r.capApplied).toBe(true);
       expect(r.venteHtCents).toBe(2000); // +100%
@@ -95,10 +118,17 @@ describe('PricingStrategy — L4', () => {
   });
 
   it('computeStrategyVenteHt resolves + applies, null when no match', () => {
-    const rules = [rule({ minCostCents: 1000, maxCostCents: 3000, marginRate: 53, minMarginAmountCents: 0 })];
-    expect(computeStrategyVenteHt(rules, ctx({ costCents: 1500 }))?.venteHtCents).toBe(
-      Math.round((1500 * 153) / 100),
-    );
+    const rules = [
+      rule({
+        minCostCents: 1000,
+        maxCostCents: 3000,
+        marginRate: 53,
+        minMarginAmountCents: 0,
+      }),
+    ];
+    expect(
+      computeStrategyVenteHt(rules, ctx({ costCents: 1500 }))?.venteHtCents,
+    ).toBe(Math.round((1500 * 153) / 100));
     expect(computeStrategyVenteHt(rules, ctx({ costCents: 100 }))).toBeNull();
   });
 
@@ -108,7 +138,13 @@ describe('PricingStrategy — L4', () => {
       const rules = [
         rule({ id: 1, minCostCents: 0, maxCostCents: 1000, marginRate: 60 }),
         rule({ id: 2, minCostCents: 1000, maxCostCents: 3000, marginRate: 53 }),
-        rule({ id: 3, minCostCents: 1000, maxCostCents: 3000, marginRate: 40, supplierPmId: 'CAL' }),
+        rule({
+          id: 3,
+          minCostCents: 1000,
+          maxCostCents: 3000,
+          marginRate: 40,
+          supplierPmId: 'CAL',
+        }),
       ];
       const c = ctx({ costCents: 1500, supplierPmId: 'CAL' });
       const fast = resolveRule(rules, c);
@@ -123,15 +159,26 @@ describe('PricingStrategy — L4', () => {
       const rules = [
         rule({ id: 1, minCostCents: 0, maxCostCents: 1000, marginRate: 60 }),
         rule({ id: 2, minCostCents: 1000, maxCostCents: 3000, marginRate: 53 }),
-        rule({ id: 3, minCostCents: 1000, maxCostCents: 3000, marginRate: 40, supplierPmId: 'OTHER' }),
+        rule({
+          id: 3,
+          minCostCents: 1000,
+          maxCostCents: 3000,
+          marginRate: 40,
+          supplierPmId: 'OTHER',
+        }),
         rule({ id: 4, minCostCents: 0, maxCostCents: 100, marginRate: 90 }),
         rule({ id: 5, active: false }),
       ];
-      const traced = resolveRuleWithTrace(rules, ctx({ costCents: 1500, supplierPmId: 'CAL' }));
+      const traced = resolveRuleWithTrace(
+        rules,
+        ctx({ costCents: 1500, supplierPmId: 'CAL' }),
+      );
       expect(traced.trace.selected_rule).toBe(2);
       // Only rule 2 is a candidate (no supplier match for 3, wrong bucket for 1/4, inactive for 5).
       expect(traced.trace.candidate_rules.map((c) => c.rule_id)).toEqual([2]);
-      const rejectedById = new Map(traced.trace.rejected_rules.map((r) => [r.rule_id, r.why_rejected]));
+      const rejectedById = new Map(
+        traced.trace.rejected_rules.map((r) => [r.rule_id, r.why_rejected]),
+      );
       expect(rejectedById.get(1)).toBe('wrong_bucket_max');
       expect(rejectedById.get(3)).toBe('wrong_supplier');
       expect(rejectedById.get(4)).toBe('wrong_bucket_max');
@@ -148,7 +195,12 @@ describe('PricingStrategy — L4', () => {
 
     it('measures resolution_duration_ms (>= 0, microsecond precision)', () => {
       const rules = Array.from({ length: 50 }, (_, i) =>
-        rule({ id: i + 1, minCostCents: i * 100, maxCostCents: (i + 1) * 100 + 1, marginRate: 50 - i / 2 }),
+        rule({
+          id: i + 1,
+          minCostCents: i * 100,
+          maxCostCents: (i + 1) * 100 + 1,
+          marginRate: 50 - i / 2,
+        }),
       );
       const traced = resolveRuleWithTrace(rules, ctx({ costCents: 1500 }));
       expect(traced.trace.resolution_duration_ms).toBeGreaterThanOrEqual(0);
@@ -156,8 +208,20 @@ describe('PricingStrategy — L4', () => {
     });
 
     it('detects priority_tie_break vs most_specific', () => {
-      const r1 = rule({ id: 1, minCostCents: 0, maxCostCents: 10000, marginRate: 50, priority: 10 });
-      const r2 = rule({ id: 2, minCostCents: 0, maxCostCents: 10000, marginRate: 40, priority: 5 });
+      const r1 = rule({
+        id: 1,
+        minCostCents: 0,
+        maxCostCents: 10000,
+        marginRate: 50,
+        priority: 10,
+      });
+      const r2 = rule({
+        id: 2,
+        minCostCents: 0,
+        maxCostCents: 10000,
+        marginRate: 40,
+        priority: 5,
+      });
       const traced = resolveRuleWithTrace([r1, r2], ctx({ costCents: 1500 }));
       expect(traced.trace.selected_rule).toBe(1);
       expect(traced.trace.selection_reason).toBe('priority_tie_break');
@@ -190,13 +254,21 @@ describe('PricingStrategy — L4', () => {
 
     it('changes when any field changes', () => {
       const base = {
-        piece_id_i: 42, supplier_id: 'CAL', achat_ht_cents: 1215,
-        applied_margin_pct: '54.60', rule_id: 7,
-        strategy_version: 'rules-v1.0.0', reasoning_schema_version: '1.0.0',
+        piece_id_i: 42,
+        supplier_id: 'CAL',
+        achat_ht_cents: 1215,
+        applied_margin_pct: '54.60',
+        rule_id: 7,
+        strategy_version: 'rules-v1.0.0',
+        reasoning_schema_version: '1.0.0',
       };
       const baseHash = canonicalJsonHash(base);
-      expect(canonicalJsonHash({ ...base, achat_ht_cents: 1216 })).not.toBe(baseHash);
-      expect(canonicalJsonHash({ ...base, applied_margin_pct: '54.61' })).not.toBe(baseHash);
+      expect(canonicalJsonHash({ ...base, achat_ht_cents: 1216 })).not.toBe(
+        baseHash,
+      );
+      expect(
+        canonicalJsonHash({ ...base, applied_margin_pct: '54.61' }),
+      ).not.toBe(baseHash);
       expect(canonicalJsonHash({ ...base, rule_id: 8 })).not.toBe(baseHash);
     });
 
@@ -230,11 +302,17 @@ describe('PricingStrategy — L4', () => {
       expect(() =>
         ReasoningJsonV1Schema.parse({
           schema_version: '0.9.0',
-          bucket: 'x', supplier: null, category: null, customer_type: 'B2C',
+          bucket: 'x',
+          supplier: null,
+          category: null,
+          customer_type: 'B2C',
           rule_match_reason: 'most_specific',
-          floor_applied: false, cap_applied: false,
-          candidates_count: 0, rejected_count: 0,
-          rule_resolution_duration_ms: 0, strategy_version: 'v1',
+          floor_applied: false,
+          cap_applied: false,
+          candidates_count: 0,
+          rejected_count: 0,
+          rule_resolution_duration_ms: 0,
+          strategy_version: 'v1',
         }),
       ).toThrow();
     });
@@ -243,11 +321,17 @@ describe('PricingStrategy — L4', () => {
       expect(() =>
         ReasoningJsonV1Schema.parse({
           schema_version: REASONING_JSON_SCHEMA_VERSION,
-          bucket: 'x', supplier: null, category: null, customer_type: 'B2C',
+          bucket: 'x',
+          supplier: null,
+          category: null,
+          customer_type: 'B2C',
           rule_match_reason: 'most_specific',
-          floor_applied: false, cap_applied: false,
-          candidates_count: 0, rejected_count: 0,
-          rule_resolution_duration_ms: 0, strategy_version: 'v1',
+          floor_applied: false,
+          cap_applied: false,
+          candidates_count: 0,
+          rejected_count: 0,
+          rule_resolution_duration_ms: 0,
+          strategy_version: 'v1',
           extra_field: 'nope',
         }),
       ).toThrow();
@@ -256,8 +340,12 @@ describe('PricingStrategy — L4', () => {
 
   describe('ruleToBucketLabel', () => {
     it('formats a rule cost band as "lo-hi€"', () => {
-      expect(ruleToBucketLabel(rule({ minCostCents: 3000, maxCostCents: 8000 }))).toBe('30-80€');
-      expect(ruleToBucketLabel(rule({ minCostCents: 30000, maxCostCents: null }))).toBe('300-∞€');
+      expect(
+        ruleToBucketLabel(rule({ minCostCents: 3000, maxCostCents: 8000 })),
+      ).toBe('30-80€');
+      expect(
+        ruleToBucketLabel(rule({ minCostCents: 30000, maxCostCents: null })),
+      ).toBe('300-∞€');
       expect(ruleToBucketLabel(null)).toBe('unmatched');
     });
   });

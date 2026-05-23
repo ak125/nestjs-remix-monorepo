@@ -18,7 +18,11 @@ import { computeAchatHtCents, eurToCents } from './pricing-formula.service';
 import { normalizeSupplierReference } from '../utils/normalize-supplier-reference';
 
 export type PriceBasis = 'NET' | 'BRUT' | 'PUBLIC' | 'NET_GROSSISTE';
-export type Derivation = 'DIRECT_NET' | 'REMISE_ON_BRUT' | 'REMISE_ON_PUBLIC' | 'MARGE_ON_NET';
+export type Derivation =
+  | 'DIRECT_NET'
+  | 'REMISE_ON_BRUT'
+  | 'REMISE_ON_PUBLIC'
+  | 'MARGE_ON_NET';
 export type ScopeLevel = 'SUPPLIER' | 'BRAND' | 'FAMILY' | 'SUBFAMILY';
 export type KeyField = 'REF' | 'EAN';
 export type ParseConfidence =
@@ -27,10 +31,22 @@ export type ParseConfidence =
   | 'FALLBACK_MATCH'
   | 'EAN_FALLBACK';
 
-export const PRIMITIVE_TRANSFORMS = ['none', 'trim', 'decimalComma', 'percent'] as const;
+export const PRIMITIVE_TRANSFORMS = [
+  'none',
+  'trim',
+  'decimalComma',
+  'percent',
+] as const;
 export type PrimitiveTransform = (typeof PRIMITIVE_TRANSFORMS)[number];
 
-export type CanonicalField = 'ref' | 'ean' | 'grosHt' | 'remise' | 'achatHt' | 'marge' | 'publicHt';
+export type CanonicalField =
+  | 'ref'
+  | 'ean'
+  | 'grosHt'
+  | 'remise'
+  | 'achatHt'
+  | 'marge'
+  | 'publicHt';
 
 export interface ColumnSpec {
   column: string;
@@ -81,9 +97,14 @@ const SCOPE_SPECIFICITY: Record<ScopeLevel, number> = {
 export function validateProfile(profile: SupplierPriceProfile): void {
   for (const [field, spec] of Object.entries(profile.columnMapping)) {
     if (!spec || typeof spec.column !== 'string' || spec.column.trim() === '') {
-      throw new ProfileError(`Profile ${profile.id}: field "${field}" has no column`);
+      throw new ProfileError(
+        `Profile ${profile.id}: field "${field}" has no column`,
+      );
     }
-    if (spec.transform != null && !PRIMITIVE_TRANSFORMS.includes(spec.transform)) {
+    if (
+      spec.transform != null &&
+      !PRIMITIVE_TRANSFORMS.includes(spec.transform)
+    ) {
       throw new ProfileError(
         `Profile ${profile.id}: field "${field}" uses non-whitelisted transform "${spec.transform}" (anti-DSL)`,
       );
@@ -91,7 +112,10 @@ export function validateProfile(profile: SupplierPriceProfile): void {
   }
 }
 
-function applyTransform(raw: string, transform: PrimitiveTransform = 'none'): string {
+function applyTransform(
+  raw: string,
+  transform: PrimitiveTransform = 'none',
+): string {
   switch (transform) {
     case 'trim':
       return raw.trim();
@@ -126,12 +150,18 @@ function readNumber(
   if (v == null || v === '') return undefined;
   const n = Number(v);
   if (!Number.isFinite(n)) {
-    throw new ProfileError(`Profile ${profile.id}: field "${field}" is not numeric ("${v}")`);
+    throw new ProfileError(
+      `Profile ${profile.id}: field "${field}" is not numeric ("${v}")`,
+    );
   }
   return n;
 }
 
-function requireField(value: number | undefined, profile: SupplierPriceProfile, field: string): number {
+function requireField(
+  value: number | undefined,
+  profile: SupplierPriceProfile,
+  field: string,
+): number {
   if (value == null) {
     throw new ProfileError(
       `Profile ${profile.id} (${profile.derivation}): missing required column for "${field}"`,
@@ -143,19 +173,27 @@ function requireField(value: number | undefined, profile: SupplierPriceProfile, 
 /** Resolve the most specific applicable profile (SUBFAMILY > FAMILY > BRAND > SUPPLIER). */
 export function resolveProfile(
   profiles: readonly SupplierPriceProfile[],
-  ctx: { supplierId: string; famCode?: string | null; sfamCode?: string | null; at?: Date },
+  ctx: {
+    supplierId: string;
+    famCode?: string | null;
+    sfamCode?: string | null;
+    at?: Date;
+  },
 ): SupplierPriceProfile | null {
   const at = (ctx.at ?? new Date()).getTime();
   const matches = profiles.filter((p) => {
     if (!p.active || p.supplierId !== ctx.supplierId) return false;
-    if (p.effectiveFrom && at < new Date(p.effectiveFrom).getTime()) return false;
+    if (p.effectiveFrom && at < new Date(p.effectiveFrom).getTime())
+      return false;
     if (p.effectiveTo && at >= new Date(p.effectiveTo).getTime()) return false;
     if (p.scopeLevel === 'SUBFAMILY') return p.scopeCode === ctx.sfamCode;
     if (p.scopeLevel === 'FAMILY') return p.scopeCode === ctx.famCode;
     return true; // SUPPLIER / BRAND
   });
   if (matches.length === 0) return null;
-  matches.sort((a, b) => SCOPE_SPECIFICITY[b.scopeLevel] - SCOPE_SPECIFICITY[a.scopeLevel]);
+  matches.sort(
+    (a, b) => SCOPE_SPECIFICITY[b.scopeLevel] - SCOPE_SPECIFICITY[a.scopeLevel],
+  );
   return matches[0];
 }
 
@@ -170,7 +208,10 @@ export function resolveCanonicalInputs(
   let confidence: ParseConfidence;
   if (profile.keyField === 'REF' && ref !== '') confidence = 'HIGH_CONFIDENCE';
   else if (ean !== '') confidence = 'EAN_FALLBACK';
-  else throw new ProfileError(`Profile ${profile.id}: row has neither usable ref nor EAN`);
+  else
+    throw new ProfileError(
+      `Profile ${profile.id}: row has neither usable ref nor EAN`,
+    );
 
   let achatHtCents: number;
   let margePct: number | undefined;
@@ -179,32 +220,66 @@ export function resolveCanonicalInputs(
 
   switch (profile.derivation) {
     case 'DIRECT_NET': {
-      achatHtCents = eurToCents(requireField(readNumber(row, profile, 'achatHt'), profile, 'achatHt'));
+      achatHtCents = eurToCents(
+        requireField(readNumber(row, profile, 'achatHt'), profile, 'achatHt'),
+      );
       break;
     }
     case 'REMISE_ON_BRUT': {
-      const gros = requireField(readNumber(row, profile, 'grosHt'), profile, 'grosHt');
-      remisePct = requireField(readNumber(row, profile, 'remise'), profile, 'remise');
+      const gros = requireField(
+        readNumber(row, profile, 'grosHt'),
+        profile,
+        'grosHt',
+      );
+      remisePct = requireField(
+        readNumber(row, profile, 'remise'),
+        profile,
+        'remise',
+      );
       grosHtCents = eurToCents(gros);
       achatHtCents = computeAchatHtCents(grosHtCents, remisePct);
       break;
     }
     case 'REMISE_ON_PUBLIC': {
-      const pub = requireField(readNumber(row, profile, 'publicHt'), profile, 'publicHt');
-      remisePct = requireField(readNumber(row, profile, 'remise'), profile, 'remise');
+      const pub = requireField(
+        readNumber(row, profile, 'publicHt'),
+        profile,
+        'publicHt',
+      );
+      remisePct = requireField(
+        readNumber(row, profile, 'remise'),
+        profile,
+        'remise',
+      );
       achatHtCents = computeAchatHtCents(eurToCents(pub), remisePct);
       break;
     }
     case 'MARGE_ON_NET': {
-      achatHtCents = eurToCents(requireField(readNumber(row, profile, 'achatHt'), profile, 'achatHt'));
-      margePct = requireField(readNumber(row, profile, 'marge'), profile, 'marge');
+      achatHtCents = eurToCents(
+        requireField(readNumber(row, profile, 'achatHt'), profile, 'achatHt'),
+      );
+      margePct = requireField(
+        readNumber(row, profile, 'marge'),
+        profile,
+        'marge',
+      );
       break;
     }
     default:
-      throw new ProfileError(`Profile ${profile.id}: unsupported derivation "${profile.derivation}"`);
+      throw new ProfileError(
+        `Profile ${profile.id}: unsupported derivation "${profile.derivation}"`,
+      );
   }
 
-  return { ref, ean, achatHtCents, margePct, grosHtCents, remisePct, confidence };
+  return {
+    ref,
+    ean,
+    achatHtCents,
+    margePct,
+    grosHtCents,
+    remisePct,
+    confidence,
+  };
 }
 
 @Injectable()

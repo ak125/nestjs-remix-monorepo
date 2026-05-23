@@ -26,7 +26,11 @@ describe('normalizeSupplierReference', () => {
   });
 
   it('applies alias map after normalization', () => {
-    expect(normalizeSupplierReference('old-ref-1', { OLDREF1: 'NEWREF1' })).toBe('NEWREF1');
-    expect(normalizeSupplierReference('keep-1', { OLDREF1: 'NEWREF1' })).toBe('KEEP1');
+    expect(
+      normalizeSupplierReference('old-ref-1', { OLDREF1: 'NEWREF1' }),
+    ).toBe('NEWREF1');
+    expect(normalizeSupplierReference('keep-1', { OLDREF1: 'NEWREF1' })).toBe(
+      'KEEP1',
+    );
   });
 });

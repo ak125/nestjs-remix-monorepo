@@ -64,19 +64,35 @@ export interface StrategyResult {
 
 function inEffectiveWindow(rule: PricingRule, at: Date): boolean {
   const t = at.getTime();
-  if (rule.effectiveFrom && t < new Date(rule.effectiveFrom).getTime()) return false;
-  if (rule.effectiveTo && t >= new Date(rule.effectiveTo).getTime()) return false;
+  if (rule.effectiveFrom && t < new Date(rule.effectiveFrom).getTime())
+    return false;
+  if (rule.effectiveTo && t >= new Date(rule.effectiveTo).getTime())
+    return false;
   return true;
 }
 
-function matchesContext(rule: PricingRule, ctx: PricingStrategyContext, at: Date): boolean {
+function matchesContext(
+  rule: PricingRule,
+  ctx: PricingStrategyContext,
+  at: Date,
+): boolean {
   if (!rule.active) return false;
   if (!inEffectiveWindow(rule, at)) return false;
   if (ctx.costCents < rule.minCostCents) return false;
-  if (rule.maxCostCents != null && ctx.costCents >= rule.maxCostCents) return false;
-  if (rule.customerType != null && rule.customerType !== ctx.customerType) return false;
-  if (rule.supplierPmId != null && rule.supplierPmId !== (ctx.supplierPmId ?? null)) return false;
-  if (rule.categoryGammeId != null && rule.categoryGammeId !== (ctx.categoryGammeId ?? null)) return false;
+  if (rule.maxCostCents != null && ctx.costCents >= rule.maxCostCents)
+    return false;
+  if (rule.customerType != null && rule.customerType !== ctx.customerType)
+    return false;
+  if (
+    rule.supplierPmId != null &&
+    rule.supplierPmId !== (ctx.supplierPmId ?? null)
+  )
+    return false;
+  if (
+    rule.categoryGammeId != null &&
+    rule.categoryGammeId !== (ctx.categoryGammeId ?? null)
+  )
+    return false;
   return true;
 }
 
@@ -110,9 +126,15 @@ export function resolveRule(
 }
 
 /** Apply a resolved rule: rate (capped) then floor. */
-export function applyStrategy(costCents: number, rule: PricingRule): StrategyResult {
-  const capApplied = rule.maxMarginRate != null && rule.marginRate > rule.maxMarginRate;
-  const appliedMarginRate = capApplied ? (rule.maxMarginRate as number) : rule.marginRate;
+export function applyStrategy(
+  costCents: number,
+  rule: PricingRule,
+): StrategyResult {
+  const capApplied =
+    rule.maxMarginRate != null && rule.marginRate > rule.maxMarginRate;
+  const appliedMarginRate = capApplied
+    ? (rule.maxMarginRate as number)
+    : rule.marginRate;
   const venteByRate = computeVenteHtCents(costCents, appliedMarginRate);
   const venteFloor = costCents + rule.minMarginAmountCents;
   const floorApplied = venteFloor > venteByRate;
@@ -175,7 +197,10 @@ export interface RuleResolutionResult {
   trace: RuleResolutionTrace;
 }
 
-function deriveWhyMatched(r: PricingRule, _ctx: PricingStrategyContext): string[] {
+function deriveWhyMatched(
+  r: PricingRule,
+  _ctx: PricingStrategyContext,
+): string[] {
   const why: string[] = [];
   const upper = r.maxCostCents == null ? '∞' : String(r.maxCostCents);
   why.push(`cost ∈ [${r.minCostCents}, ${upper}[`);
@@ -197,23 +222,45 @@ export function resolveRuleWithTrace(
   const t0 = performance.now();
   const at = ctx.at ?? new Date();
   const candidates: PricingRule[] = [];
-  const rejected: Array<{ rule_id: number; why_rejected: RuleRejectionReason }> = [];
+  const rejected: Array<{
+    rule_id: number;
+    why_rejected: RuleRejectionReason;
+  }> = [];
 
   for (const r of rules) {
-    if (!r.active) { rejected.push({ rule_id: r.id, why_rejected: 'inactive' }); continue; }
-    if (!inEffectiveWindow(r, at)) { rejected.push({ rule_id: r.id, why_rejected: 'out_of_window' }); continue; }
-    if (ctx.costCents < r.minCostCents) { rejected.push({ rule_id: r.id, why_rejected: 'wrong_bucket_min' }); continue; }
+    if (!r.active) {
+      rejected.push({ rule_id: r.id, why_rejected: 'inactive' });
+      continue;
+    }
+    if (!inEffectiveWindow(r, at)) {
+      rejected.push({ rule_id: r.id, why_rejected: 'out_of_window' });
+      continue;
+    }
+    if (ctx.costCents < r.minCostCents) {
+      rejected.push({ rule_id: r.id, why_rejected: 'wrong_bucket_min' });
+      continue;
+    }
     if (r.maxCostCents != null && ctx.costCents >= r.maxCostCents) {
-      rejected.push({ rule_id: r.id, why_rejected: 'wrong_bucket_max' }); continue;
+      rejected.push({ rule_id: r.id, why_rejected: 'wrong_bucket_max' });
+      continue;
     }
     if (r.customerType != null && r.customerType !== ctx.customerType) {
-      rejected.push({ rule_id: r.id, why_rejected: 'wrong_customer_type' }); continue;
+      rejected.push({ rule_id: r.id, why_rejected: 'wrong_customer_type' });
+      continue;
     }
-    if (r.supplierPmId != null && r.supplierPmId !== (ctx.supplierPmId ?? null)) {
-      rejected.push({ rule_id: r.id, why_rejected: 'wrong_supplier' }); continue;
+    if (
+      r.supplierPmId != null &&
+      r.supplierPmId !== (ctx.supplierPmId ?? null)
+    ) {
+      rejected.push({ rule_id: r.id, why_rejected: 'wrong_supplier' });
+      continue;
     }
-    if (r.categoryGammeId != null && r.categoryGammeId !== (ctx.categoryGammeId ?? null)) {
-      rejected.push({ rule_id: r.id, why_rejected: 'wrong_category' }); continue;
+    if (
+      r.categoryGammeId != null &&
+      r.categoryGammeId !== (ctx.categoryGammeId ?? null)
+    ) {
+      rejected.push({ rule_id: r.id, why_rejected: 'wrong_category' });
+      continue;
     }
     candidates.push(r);
   }
@@ -247,15 +294,20 @@ export function resolveRuleWithTrace(
     selection_reason = 'most_specific';
   } else {
     const second = candidates[1];
-    if (specificity(winner) > specificity(second)) selection_reason = 'most_specific';
-    else if (winner.priority !== second.priority) selection_reason = 'priority_tie_break';
+    if (specificity(winner) > specificity(second))
+      selection_reason = 'most_specific';
+    else if (winner.priority !== second.priority)
+      selection_reason = 'priority_tie_break';
     else selection_reason = 'narrower_band_tie_break';
   }
 
   return {
     rule: winner,
     trace: {
-      candidate_rules: candidates.map((c) => ({ rule_id: c.id, why_matched: deriveWhyMatched(c, ctx) })),
+      candidate_rules: candidates.map((c) => ({
+        rule_id: c.id,
+        why_matched: deriveWhyMatched(c, ctx),
+      })),
       rejected_rules: rejected,
       selected_rule: winner.id,
       selection_reason,
@@ -274,18 +326,25 @@ export function resolveRuleWithTrace(
 function canonicalize(value: unknown): string {
   if (value === null || value === undefined) return 'null';
   if (typeof value === 'number') {
-    if (!Number.isFinite(value)) throw new Error('canonicalize: non-finite number');
+    if (!Number.isFinite(value))
+      throw new Error('canonicalize: non-finite number');
     return JSON.stringify(value);
   }
   if (typeof value === 'boolean') return value ? 'true' : 'false';
   if (typeof value === 'string') return JSON.stringify(value);
-  if (Array.isArray(value)) return '[' + value.map(canonicalize).join(',') + ']';
+  if (Array.isArray(value))
+    return '[' + value.map(canonicalize).join(',') + ']';
   if (typeof value === 'object') {
     const keys = Object.keys(value as object).sort();
     return (
       '{' +
       keys
-        .map((k) => JSON.stringify(k) + ':' + canonicalize((value as Record<string, unknown>)[k]))
+        .map(
+          (k) =>
+            JSON.stringify(k) +
+            ':' +
+            canonicalize((value as Record<string, unknown>)[k]),
+        )
         .join(',') +
       '}'
     );
@@ -349,7 +408,8 @@ export type ReasoningJsonV1 = z.infer<typeof ReasoningJsonV1Schema>;
 export function ruleToBucketLabel(rule: PricingRule | null): string {
   if (!rule) return 'unmatched';
   const lo = (rule.minCostCents / 100).toFixed(0);
-  const hi = rule.maxCostCents == null ? '∞' : (rule.maxCostCents / 100).toFixed(0);
+  const hi =
+    rule.maxCostCents == null ? '∞' : (rule.maxCostCents / 100).toFixed(0);
   return `${lo}-${hi}€`;
 }
 

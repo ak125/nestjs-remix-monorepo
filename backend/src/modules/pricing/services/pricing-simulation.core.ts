@@ -12,8 +12,16 @@
  * sales-weighted achat aggregate (floor/cap effects are bucket-level, not
  * per-row). Exact per-row impact comes from the dry-run when a file is imported.
  */
-import { computeVenteHtCents, computeVenteTtcCents, DEFAULT_TVA_RATE } from './pricing-formula.service';
-import { resolveRule, type CustomerType, type PricingRule } from './pricing-strategy.service';
+import {
+  computeVenteHtCents,
+  computeVenteTtcCents,
+  DEFAULT_TVA_RATE,
+} from './pricing-formula.service';
+import {
+  resolveRule,
+  type CustomerType,
+  type PricingRule,
+} from './pricing-strategy.service';
 
 export interface CostBucketAggregate {
   /** Representative cost (cents) used to resolve the applicable rule (e.g. bucket min+1). */
@@ -56,7 +64,10 @@ export function computeGridSimulation(
   let unmatched = 0;
 
   for (const b of buckets) {
-    const rule = resolveRule(rules, { costCents: b.representativeCostCents, customerType });
+    const rule = resolveRule(rules, {
+      costCents: b.representativeCostCents,
+      customerType,
+    });
     const current = b.sumVenteTtcXQtyCents;
     let estimated = current;
     if (rule) {

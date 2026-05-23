@@ -21,7 +21,10 @@ import {
   computeMargePct,
   DEFAULT_TVA_RATE,
 } from './pricing-formula.service';
-import { validatePriceChain, type InvariantOptions } from './pricing-invariants.service';
+import {
+  validatePriceChain,
+  type InvariantOptions,
+} from './pricing-invariants.service';
 import type { Derivation, ParseConfidence } from './supplier-profile.service';
 
 export const PROTECTED_STATES = ['MANUAL_OVERRIDE', 'FROZEN'] as const;
@@ -136,7 +139,13 @@ export function computeDryRun(
   for (const line of lines) {
     if (line.parseError) {
       rejectedCount++;
-      rows.push({ key: line.key, matched: false, confidence: line.confidence, rejected: true, rejectReason: line.parseError });
+      rows.push({
+        key: line.key,
+        matched: false,
+        confidence: line.confidence,
+        rejected: true,
+        rejectReason: line.parseError,
+      });
       continue;
     }
 
@@ -151,9 +160,19 @@ export function computeDryRun(
     const operation: Operation = existing ? 'UPDATE' : 'INSERT';
     const priPieceIdI = existing ? existing.priPieceIdI : catalog!.priPieceIdI;
 
-    if (existing && (PROTECTED_STATES as readonly string[]).includes(existing.pricingState)) {
+    if (
+      existing &&
+      (PROTECTED_STATES as readonly string[]).includes(existing.pricingState)
+    ) {
       skippedStateCount++;
-      rows.push({ key: line.key, priPieceIdI, matched: true, operation, confidence: line.confidence, skippedState: existing.pricingState });
+      rows.push({
+        key: line.key,
+        priPieceIdI,
+        matched: true,
+        operation,
+        confidence: line.confidence,
+        skippedState: existing.pricingState,
+      });
       continue;
     }
 
@@ -170,15 +189,23 @@ export function computeDryRun(
     let newVenteHtCents: number;
     let appliedMargePct: number;
     let marginSource: DryRunRow['marginSource'];
-    const useGrid = marginMode === 'APPLY_GRID' || (operation === 'INSERT' && line.margePct == null);
+    const useGrid =
+      marginMode === 'APPLY_GRID' ||
+      (operation === 'INSERT' && line.margePct == null);
 
     if (useGrid) {
       const gridVente = opts.resolveGridVenteHt?.(line.achatHtCents) ?? null;
       if (gridVente == null) {
         rejectedCount++;
         rows.push({
-          key: line.key, priPieceIdI, matched: true, operation, confidence: line.confidence,
-          rejected: true, rejectReason: operation === 'INSERT' ? 'NO_MARGIN_FOR_INSERT' : 'NO_GRID_RULE',
+          key: line.key,
+          priPieceIdI,
+          matched: true,
+          operation,
+          confidence: line.confidence,
+          rejected: true,
+          rejectReason:
+            operation === 'INSERT' ? 'NO_MARGIN_FOR_INSERT' : 'NO_GRID_RULE',
         });
         continue;
       }
@@ -195,8 +222,15 @@ export function computeDryRun(
       newVenteHtCents = computeVenteHtCents(line.achatHtCents, appliedMargePct);
     }
 
-    const newVenteTtcCents = computeVenteTtcCents(newVenteHtCents, fraisPort, fraisSupp, tvaRate);
-    const deltaVenteHtCents = existing ? newVenteHtCents - existing.venteHtCents : newVenteHtCents;
+    const newVenteTtcCents = computeVenteTtcCents(
+      newVenteHtCents,
+      fraisPort,
+      fraisSupp,
+      tvaRate,
+    );
+    const deltaVenteHtCents = existing
+      ? newVenteHtCents - existing.venteHtCents
+      : newVenteHtCents;
 
     const violations = validatePriceChain(
       {
@@ -212,7 +246,8 @@ export function computeDryRun(
     );
 
     const outlier =
-      !!existing && existing.venteHtCents > 0 &&
+      !!existing &&
+      existing.venteHtCents > 0 &&
       (Math.abs(deltaVenteHtCents) / existing.venteHtCents) * 100 > outlierPct;
 
     const row: DryRunRow = {
@@ -245,7 +280,8 @@ export function computeDryRun(
       if (row.willActivate) activatedCount++;
       if (existing) {
         totalDeltaVenteHtCents += deltaVenteHtCents;
-        estimatedRevenueDeltaCents += (newVenteTtcCents - existing.venteTtcCents) * existing.qtySold12m;
+        estimatedRevenueDeltaCents +=
+          (newVenteTtcCents - existing.venteTtcCents) * existing.qtySold12m;
       }
     }
     rows.push(row);

@@ -55,7 +55,12 @@ export const DEFAULT_ACHAT_CENTS_TOLERANCE = 1;
  * but a missing quote entirely is an explicit issue (no silent pass).
  */
 export function reconcile(
-  computed: { ref: string; achatHtCents: number; margePct: number; active: boolean },
+  computed: {
+    ref: string;
+    achatHtCents: number;
+    margePct: number;
+    active: boolean;
+  },
   quote: SupplierQuote | null,
   tol: ReconcileTolerances = {},
 ): ReconcileResult {
@@ -69,9 +74,12 @@ export function reconcile(
 
   let priceMatches: boolean | undefined;
   if (quote.achatHtCents != null) {
-    priceMatches = Math.abs(computed.achatHtCents - quote.achatHtCents) <= achatTol;
+    priceMatches =
+      Math.abs(computed.achatHtCents - quote.achatHtCents) <= achatTol;
     if (!priceMatches) {
-      issues.push(`PRICE_MISMATCH (computed ${computed.achatHtCents}c vs supplier ${quote.achatHtCents}c)`);
+      issues.push(
+        `PRICE_MISMATCH (computed ${computed.achatHtCents}c vs supplier ${quote.achatHtCents}c)`,
+      );
     }
   }
 
@@ -79,7 +87,9 @@ export function reconcile(
   if (quote.margePct != null) {
     marginUnchanged = Math.abs(computed.margePct - quote.margePct) <= marginTol;
     if (!marginUnchanged) {
-      issues.push(`MARGIN_CHANGED (applied ${computed.margePct.toFixed(2)}% vs expected ${quote.margePct.toFixed(2)}%)`);
+      issues.push(
+        `MARGIN_CHANGED (applied ${computed.margePct.toFixed(2)}% vs expected ${quote.margePct.toFixed(2)}%)`,
+      );
     }
   }
 
@@ -87,7 +97,9 @@ export function reconcile(
   if (quote.available != null) {
     availabilityMatches = quote.available === computed.active;
     if (!availabilityMatches) {
-      issues.push(`AVAILABILITY_MISMATCH (active=${computed.active} vs supplier=${quote.available})`);
+      issues.push(
+        `AVAILABILITY_MISMATCH (active=${computed.active} vs supplier=${quote.available})`,
+      );
     }
   }
 

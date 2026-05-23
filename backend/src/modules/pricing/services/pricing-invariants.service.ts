@@ -53,7 +53,9 @@ export interface Violation {
 
 export class PricingInvariantError extends Error {
   constructor(public readonly violations: Violation[]) {
-    super(`Pricing invariants violated: ${violations.map((v) => v.code).join(', ')}`);
+    super(
+      `Pricing invariants violated: ${violations.map((v) => v.code).join(', ')}`,
+    );
     this.name = 'PricingInvariantError';
   }
 }
@@ -72,7 +74,11 @@ export function validatePriceChain(
   const deltaMax = opts.deltaMaxPct ?? DEFAULT_DELTA_MAX_PCT;
   const v: Violation[] = [];
 
-  const allCents = [chain.achatHtCents, chain.venteHtCents, chain.venteTtcCents];
+  const allCents = [
+    chain.achatHtCents,
+    chain.venteHtCents,
+    chain.venteTtcCents,
+  ];
   if (!allCents.every(isFiniteNumber) || allCents.some((c) => c < 0)) {
     v.push({
       code: 'NON_FINITE_OR_NEGATIVE',
@@ -83,7 +89,10 @@ export function validatePriceChain(
   }
 
   if (chain.achatHtCents <= 0) {
-    v.push({ code: 'ACHAT_NOT_POSITIVE', message: `achat_HT must be > 0 (got ${chain.achatHtCents}c)` });
+    v.push({
+      code: 'ACHAT_NOT_POSITIVE',
+      message: `achat_HT must be > 0 (got ${chain.achatHtCents}c)`,
+    });
   }
   if (chain.venteHtCents < chain.achatHtCents) {
     v.push({
@@ -104,7 +113,10 @@ export function validatePriceChain(
     });
   }
   if (chain.venteTtcCents <= 0) {
-    v.push({ code: 'TTC_NOT_POSITIVE', message: `vente_TTC must be > 0 (got ${chain.venteTtcCents}c)` });
+    v.push({
+      code: 'TTC_NOT_POSITIVE',
+      message: `vente_TTC must be > 0 (got ${chain.venteTtcCents}c)`,
+    });
   }
   if (
     !opts.allowDeltaOverride &&
@@ -112,7 +124,9 @@ export function validatePriceChain(
     chain.currentVenteHtCents > 0
   ) {
     const deltaPct =
-      (Math.abs(chain.venteHtCents - chain.currentVenteHtCents) / chain.currentVenteHtCents) * 100;
+      (Math.abs(chain.venteHtCents - chain.currentVenteHtCents) /
+        chain.currentVenteHtCents) *
+      100;
     if (deltaPct > deltaMax) {
       v.push({
         code: 'DELTA_EXCEEDS_MAX',

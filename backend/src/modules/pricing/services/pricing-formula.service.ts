@@ -64,12 +64,18 @@ export function centsToEur(cents: number): number {
 }
 
 /** achat_HT = gros_HT × (1 − remise/100), in cents. */
-export function computeAchatHtCents(grosHtCents: number, remisePct: number): number {
+export function computeAchatHtCents(
+  grosHtCents: number,
+  remisePct: number,
+): number {
   return roundCents((grosHtCents * (100 - remisePct)) / 100);
 }
 
 /** vente_HT = round(achat_HT × (1 + marge/100)), in cents. */
-export function computeVenteHtCents(achatHtCents: number, margePct: number): number {
+export function computeVenteHtCents(
+  achatHtCents: number,
+  margePct: number,
+): number {
   return roundCents((achatHtCents * (100 + margePct)) / 100);
 }
 
@@ -80,14 +86,19 @@ export function computeVenteTtcCents(
   fraisSuppHtCents = 0,
   tvaRate: number = DEFAULT_TVA_RATE,
 ): number {
-  return roundCents((venteHtCents + fraisPortHtCents + fraisSuppHtCents) * (1 + tvaRate));
+  return roundCents(
+    (venteHtCents + fraisPortHtCents + fraisSuppHtCents) * (1 + tvaRate),
+  );
 }
 
 /**
  * taux_de_marge (markup on cost) recomputed from the rounded chain, as a percent.
  * Used for display / back-fill of `pri_marge_n` — NOT taux de marque.
  */
-export function computeMargePct(achatHtCents: number, venteHtCents: number): number {
+export function computeMargePct(
+  achatHtCents: number,
+  venteHtCents: number,
+): number {
   if (achatHtCents <= 0) return 0;
   return ((venteHtCents - achatHtCents) / achatHtCents) * 100;
 }

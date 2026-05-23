@@ -33,9 +33,9 @@ AS $$
 DECLARE
   v_row        JSONB;
   v_existing   pieces_price%ROWTYPE;
-  v_committed  INTEGER := 0;
-  v_skipped    INTEGER := 0;
-  v_missing    INTEGER := 0;
+  v_committed  BIGINT := 0;
+  v_skipped    BIGINT := 0;
+  v_missing    BIGINT := 0;
 BEGIN
   -- Serialize concurrent chunk writes for the same supplier (released at tx end).
   PERFORM pg_advisory_xact_lock(hashtext(coalesce(p_supplier, 'pricing')));
@@ -46,7 +46,7 @@ BEGIN
   LOOP
     SELECT * INTO v_existing
     FROM pieces_price
-    WHERE pri_piece_id_i = (v_row->>'piece_id_i')::INTEGER
+    WHERE pri_piece_id_i = (v_row->>'piece_id_i')::BIGINT
       AND pri_type = coalesce(v_row->>'pri_type', '0')
     FOR UPDATE;
 
@@ -92,7 +92,7 @@ BEGIN
         batch_id, chunk_id, pri_piece_id_i, pri_type, operation,
         new_gros_ht, new_remise, new_achat_ht, new_marge, new_vente_ht, new_vente_ttc, new_dispo
       ) VALUES (
-        p_batch_id, p_chunk_id, (v_row->>'piece_id_i')::INTEGER, coalesce(v_row->>'pri_type','0'), 'INSERT',
+        p_batch_id, p_chunk_id, (v_row->>'piece_id_i')::BIGINT, coalesce(v_row->>'pri_type','0'), 'INSERT',
         (v_row->>'gros_ht')::NUMERIC, (v_row->>'remise')::NUMERIC, (v_row->>'achat_ht')::NUMERIC,
         (v_row->>'marge')::NUMERIC, (v_row->>'vente_ht')::NUMERIC, (v_row->>'vente_ttc')::NUMERIC, '1'
       );
@@ -104,7 +104,7 @@ BEGIN
         pri_vente_ht, pri_vente_ht_n, pri_vente_ttc, pri_vente_ttc_n,
         pri_dispo, pricing_state, pricing_updated_by, pricing_updated_source
       ) VALUES (
-        (v_row->>'piece_id_i'), (v_row->>'piece_id_i')::INTEGER, coalesce(v_row->>'pri_type','0'), (v_row->>'pm_id'),
+        (v_row->>'piece_id_i'), (v_row->>'piece_id_i')::BIGINT, coalesce(v_row->>'pri_type','0'), (v_row->>'pm_id'),
         (v_row->>'gros_ht'), (v_row->>'gros_ht')::NUMERIC, (v_row->>'remise'), (v_row->>'remise')::NUMERIC,
         (v_row->>'achat_ht'), (v_row->>'achat_ht')::NUMERIC, (v_row->>'marge'), (v_row->>'marge')::NUMERIC,
         (v_row->>'vente_ht'), (v_row->>'vente_ht')::NUMERIC, (v_row->>'vente_ttc'), (v_row->>'vente_ttc')::NUMERIC,
@@ -137,8 +137,8 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
   v_h          pieces_price_history%ROWTYPE;
-  v_restored   INTEGER := 0;
-  v_superseded INTEGER := 0;
+  v_restored   BIGINT := 0;
+  v_superseded BIGINT := 0;
   v_latest_id  BIGINT;
 BEGIN
   PERFORM pg_advisory_xact_lock(hashtext(coalesce(p_supplier, 'pricing')));

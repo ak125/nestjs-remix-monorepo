@@ -8,7 +8,10 @@
  */
 import { Injectable, Logger } from '@nestjs/common';
 import { PricingRepository } from './pricing.repository';
-import { computeGridSimulation, type SimulationReport } from './pricing-simulation.core';
+import {
+  computeGridSimulation,
+  type SimulationReport,
+} from './pricing-simulation.core';
 import type { CustomerType, PricingRule } from './pricing-strategy.service';
 
 @Injectable()

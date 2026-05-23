@@ -34,9 +34,14 @@ describe('PricingFormulaService — L1 canon formula (golden, real data)', () =>
       [25.81, 71, 7.48],
       [357, 50, 178.5],
       [32.21, 0, 32.21], // remise 0
-    ])('gros %s €, remise %s%% → achat %s €', (grosEur, remise, expectedEur) => {
-      expect(computeAchatHtCents(eurToCents(grosEur), remise)).toBe(eurToCents(expectedEur));
-    });
+    ])(
+      'gros %s €, remise %s%% → achat %s €',
+      (grosEur, remise, expectedEur) => {
+        expect(computeAchatHtCents(eurToCents(grosEur), remise)).toBe(
+          eurToCents(expectedEur),
+        );
+      },
+    );
   });
 
   describe('computeVenteHtCents — vente_HT = round(achat × (1 + marge/100))', () => {
@@ -49,9 +54,14 @@ describe('PricingFormulaService — L1 canon formula (golden, real data)', () =>
       [7.48, 61.95, 12.11],
       [178.5, 31.27, 234.32],
       [50, 0, 50], // marge 0
-    ])('achat %s €, marge %s%% → vente_HT %s €', (achatEur, marge, expectedEur) => {
-      expect(computeVenteHtCents(eurToCents(achatEur), marge)).toBe(eurToCents(expectedEur));
-    });
+    ])(
+      'achat %s €, marge %s%% → vente_HT %s €',
+      (achatEur, marge, expectedEur) => {
+        expect(computeVenteHtCents(eurToCents(achatEur), marge)).toBe(
+          eurToCents(expectedEur),
+        );
+      },
+    );
   });
 
   describe('computeVenteTtcCents — (vente_HT + frais) × (1 + tva)', () => {
@@ -76,7 +86,9 @@ describe('PricingFormulaService — L1 canon formula (golden, real data)', () =>
     );
 
     it('defaults tva to 0.2', () => {
-      expect(computeVenteTtcCents(eurToCents(90.97), eurToCents(1.45))).toBe(eurToCents(110.9));
+      expect(computeVenteTtcCents(eurToCents(90.97), eurToCents(1.45))).toBe(
+        eurToCents(110.9),
+      );
       expect(DEFAULT_TVA_RATE).toBe(0.2);
     });
   });
@@ -104,7 +116,9 @@ describe('PricingFormulaService — L1 canon formula (golden, real data)', () =>
         fraisPortHtCents: eurToCents(1.34),
       });
       expect(chain.venteHtCents).toBe(eurToCents(18.78));
-      expect(chain.venteTtcCents).toBe(computeVenteTtcCents(eurToCents(18.78), eurToCents(1.34)));
+      expect(chain.venteTtcCents).toBe(
+        computeVenteTtcCents(eurToCents(18.78), eurToCents(1.34)),
+      );
       expect(chain.margePct).toBeCloseTo(54.57, 2);
     });
   });
@@ -112,7 +126,9 @@ describe('PricingFormulaService — L1 canon formula (golden, real data)', () =>
   describe('PricingFormulaService DI wrapper delegates to pure fns', () => {
     const svc = new PricingFormulaService();
     it('exposes the same computation', () => {
-      expect(svc.computeVenteHtCents(eurToCents(274.51), 28.15)).toBe(eurToCents(351.78));
+      expect(svc.computeVenteHtCents(eurToCents(274.51), 28.15)).toBe(
+        eurToCents(351.78),
+      );
       expect(svc.defaultTvaRate).toBe(0.2);
     });
   });

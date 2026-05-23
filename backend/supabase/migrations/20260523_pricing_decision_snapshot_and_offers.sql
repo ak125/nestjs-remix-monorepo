@@ -45,7 +45,7 @@ END $$;
 CREATE TABLE IF NOT EXISTS pricing_decision_snapshot (
   decision_id              UUID NOT NULL DEFAULT gen_random_uuid(),
   decision_type            pricing_decision_type NOT NULL,
-  piece_id_i               INTEGER NOT NULL,
+  piece_id_i               BIGINT NOT NULL,
   supplier_id              TEXT NOT NULL,
   brand_pm_id              TEXT,
   -- SoT canonique du ruleset ; MIROIR strict dans reasoning_json.strategy_version
@@ -142,14 +142,14 @@ COMMENT ON FUNCTION maintain_pricing_decision_snapshot_partitions IS
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS supplier_offer_snapshot (
   offer_id            UUID NOT NULL DEFAULT gen_random_uuid(),
-  piece_id_i          INTEGER NOT NULL,
+  piece_id_i          BIGINT NOT NULL,
   supplier_id         TEXT NOT NULL,                                     -- 'CAL', 'DistriCash', 'NED', …
   supplier_ref        TEXT NOT NULL,                                     -- ref fournisseur (peut différer de piece_ref)
   public_ht_cents     BIGINT,
   remise_pct          NUMERIC(6,2),
   achat_ht_cents      BIGINT,
   available           BOOLEAN,
-  delay_days          INTEGER,
+  delay_days          BIGINT,
   parse_confidence    TEXT NOT NULL                                      -- HIGH_CONFIDENCE | AMBIGUOUS_MAPPING | EAN_FALLBACK | …
                       CHECK (parse_confidence IN ('HIGH_CONFIDENCE','AMBIGUOUS_MAPPING','FALLBACK_MATCH','EAN_FALLBACK','UNKNOWN')),
   source_verified_at  TIMESTAMPTZ,
