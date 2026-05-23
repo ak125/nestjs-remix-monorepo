@@ -207,6 +207,15 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: medium
+  # Shared Nest pipes directly under common/pipes/ (zod-query-validation,
+  # strict-zod-query-validation, zod-validation, …). Added 2026-05-23 with
+  # the smallint-NaN fix (Sentry PROD GET /api/vehicles/brands/:brandId/models)
+  # to formalize ownership of the StrictZodQueryValidationPipe.
+  - glob: backend/src/common/pipes/*.pipe.ts
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
   - glob: backend/src/common/schemas/**
     domain: D13
     owner: '@ak125'
@@ -703,6 +712,16 @@ entries:
   # service + jest spec ; narrow-route mounting on /api/diagnostic/* and
   # /api/v1/orientation/*. Owner D4 (Vehicle), risk high (cookie security).
   - glob: backend/src/modules/vehicle-context/**
+    domain: D4
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
+  # Vehicles module — controllers/services/DTOs for marque/modele/type lookup
+  # (auto_marque / auto_modele / auto_type — D4 Vehicle/Compatibility per
+  # .spec/00-canon/db-governance/domain-map.md). Source of truth for the
+  # /api/vehicles/* surface used by VehicleSelector + R8 vehicle-aware
+  # composition. Declared 2026-05-23 with the smallint-NaN fix.
+  - glob: backend/src/modules/vehicles/**
     domain: D4
     owner: '@ak125'
     sourceConfidence: high
