@@ -1,49 +1,86 @@
-import { Injectable } from '@nestjs/common';
-import { TABLES } from '@repo/database-types';
+import { Injectable, Logger } from '@nestjs/common';
+import { randomUUID } from 'crypto';
+import {
+  OrderEventType,
+  type OrderEventTypeCode,
+  type OrderStatusCode,
+  getOrderStatusLabel,
+  isOrderStatusCode,
+} from '@repo/domain-commerce';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 
 /**
- * Historique de statut commande.
+ * Order status / event history service.
  *
- * F3 (audit runtime-truth 2026-05-22, governance-vault PR #301) : ce service portait
- * un DOUBLON cassé de la machine d'état statut — enum modèle-colis faux
- * (SHIPPED/DELIVERED/RETURNED/REFUNDED) contredisant la vérité DB `___xtr_order_line_status`
- * (statut-pièce + workflow équivalence 91-94), et des méthodes lisant/écrivant des colonnes
- * inexistantes (`id`/`status`/`order_id` vs `orl_*`/`orl_orls_id`), insérant l'historique de
- * ligne dans une table de **lookup**. La SoT statut ligne réelle = `OrderActionsService`
- * (colonnes `orl_*`, events `ORDER_EVENTS.LINE_STATUS_CHANGED` + audit trail).
+ * F3 (Vault #301 audit, 2026-05-22) : ce service portait un DOUBLON cassé de
+ * la machine d'état statut — enum modèle-colis faux + INSERT sur table lookup
+ * `___xtr_order_status` (jamais une table history). PR #696 a retiré la
+ * state-machine cassée + l'enum faux ; cette PR-C (Vault #301 follow-up)
+ * rebranche `createStatusHistory` sur la RPC canonique `append_order_event`
+ * qui écrit dans la table `___xtr_order_history` (créée par migration
+ * 20260523_001_create_order_history).
  *
- * Le `OrderStatusController` (`/order-status/*`, non appelé par le front) et toute la
- * state-machine cassée + l'enum faux ont été RETIRÉS. Seul `createStatusHistory`
- * (consommé par `OrdersService`) subsiste.
+ * Canon : `.spec/00-canon/commerce-runtime/authority-graph.yaml#rpc_authority.rpcs.append_order_event`.
  */
+
+export interface AppendOrderEventInput {
+  ordId: string;
+  eventType: OrderEventTypeCode;
+  fromStatus: OrderStatusCode | null;
+  toStatus: OrderStatusCode | null;
+  payload?: Record<string, unknown>;
+  source?: string;
+  correlationId?: string;
+  userId?: number;
+}
+
 @Injectable()
 export class OrderStatusService extends SupabaseBaseService {
+  protected readonly logger = new Logger(OrderStatusService.name);
+
   constructor() {
     super();
   }
 
   /**
-   * Libellé d'un statut (pour le commentaire d'historique).
+   * Append a typed event to `___xtr_order_history` via canonical RPC.
+   *
+   * Single entry point for event-stream writes (alongside RPCs
+   * create_order_atomic / cancel_order_atomic which call it atomically
+   * inside their own transaction).
    */
-  private getStatusLabel(status: number): string {
-    const labels: Record<number, string> = {
-      1: 'En attente',
-      2: 'Confirmée',
-      3: 'En préparation',
-      4: 'Prête',
-      5: 'Expédiée',
-      6: 'Livrée',
-      91: 'Annulée client',
-      92: 'Annulée stock',
-      93: 'Retour',
-      94: 'Remboursée',
-    };
-    return labels[status] || 'Inconnu';
+  async appendOrderEvent(input: AppendOrderEventInput): Promise<void> {
+    const { error } = await this.callRpc(
+      'append_order_event',
+      {
+        p_ord_id: input.ordId,
+        p_event_type: input.eventType,
+        p_from_status: input.fromStatus ?? null,
+        p_to_status: input.toStatus ?? null,
+        p_payload: input.payload ?? {},
+        p_source: input.source ?? 'orders_service',
+        p_correlation_id: input.correlationId ?? randomUUID(),
+        p_user_id: input.userId ?? null,
+      },
+      { isServiceRole: true, source: 'internal' },
+    );
+
+    if (error) {
+      this.logger.error(
+        `append_order_event failed for ord_id=${input.ordId} event=${input.eventType}: ${error.message}`,
+      );
+      throw error;
+    }
   }
 
   /**
-   * Créer un historique de statut pour une commande.
+   * Backward-compatible status-history helper.
+   *
+   * Pre-PR-C signature kept for any remaining callers that did not migrate
+   * to typed `appendOrderEvent`. Converts the legacy `(orderId: number, status: number)`
+   * into the canonical RPC call. The numeric status is validated against the
+   * 5-value canon (1..5); non-canonical inputs are rejected loudly so silent
+   * data drift cannot recur.
    */
   async createStatusHistory(
     orderId: number,
@@ -51,17 +88,24 @@ export class OrderStatusService extends SupabaseBaseService {
     comment?: string,
     userId?: number,
   ): Promise<void> {
-    const { error } = await this.supabase.from(TABLES.xtr_order_status).insert({
-      order_id: orderId,
-      status: status,
-      comment: comment || `Statut changé vers ${this.getStatusLabel(status)}`,
-      user_id: userId || null,
-      created_at: new Date().toISOString(),
-    });
-
-    if (error) {
-      this.logger.error('Erreur création historique:', error);
-      throw error;
+    const ordId = String(orderId);
+    const statusCode = String(status);
+    if (!isOrderStatusCode(statusCode)) {
+      throw new Error(
+        `createStatusHistory: status '${status}' hors-canon (___xtr_order_status n'a que '1'..'5'). Vault #301 sentinel.`,
+      );
     }
+
+    await this.appendOrderEvent({
+      ordId,
+      eventType: OrderEventType.STATUS_CHANGED,
+      fromStatus: null,
+      toStatus: statusCode,
+      payload: {
+        comment:
+          comment ?? `Statut changé vers ${getOrderStatusLabel(statusCode)}`,
+      },
+      userId,
+    });
   }
 }
