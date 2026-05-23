@@ -1,8 +1,12 @@
 id: commerce-no-direct-supplier-read
 language: typescript
-# Severity = off in PR-A (this PR). Switched to "error" in PR-D once SuppliersService
-# scoring is removed and Supplier Truth V1 is canonical SoT.
-severity: off
+# PR-A introduced this rule as severity:off. PR-D removes SuppliersService scoring
+# fictif (createSupplier, linkSupplierToBrand, findBest/calculateSupplier,
+# findAlternativeSuppliers, autoAssignSuppliers) and switches to error here.
+# TODO V1.5+: extend pattern to also match `from(TABLES.xtr_supplier)` (TS alias);
+# current literal pattern catches new direct reads only — additional cleanup tracked
+# separately for getProductSuppliers / deactivateSupplier / generatePurchaseOrder.
+severity: error
 message: |
   Direct read of ___xtr_supplier is FORBIDDEN outside SupplierTruthModule.
   Canon: .spec/00-canon/commerce-runtime/authority-graph.yaml#reads.supplier_truth
