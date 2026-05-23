@@ -453,3 +453,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/commerce-loop-step-4b-v1a0`
 - **Décision** : feat(commerce-loop): step 4-B V1A.0 — Intent Resolution layer (+2 other commits)
 - **Sortie** : PR #711 | commits 8c073d34 8b1be041 a7865ebf
+
+## 2026-05-23 — feat/commerce-loop-step-4b-v1a0 (auto)
+
+- **Branche** : `feat/commerce-loop-step-4b-v1a0`
+- **Décision** : fix(commerce-loop): V1A.0 ESLint — import/order + type specifier style (+4 other commits)
+- **Sortie** : PR #711 | commits 0f7c6761 c0c8a928 8c073d34 8b1be041 a7865ebf
