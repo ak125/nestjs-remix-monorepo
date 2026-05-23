@@ -66,6 +66,16 @@
           }
         ]
       }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /opt/automecanik/app/scripts/claude-hooks/sessionstart-workspace-context.sh"
+          }
+        ]
+      }
     ]
   }
 }

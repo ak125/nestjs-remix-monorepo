@@ -110,6 +110,14 @@ fi
 ARCHIVE_FILE="${REPO_ROOT}/log-archive-$(date +%Y).md"
 bash "${REPO_ROOT}/scripts/claude-hooks/rotate-log.sh" "$LOG_FILE" "$ARCHIVE_FILE" 2>/dev/null || true
 
+# Stop hook companion : suggérer (stderr-only) une mise à jour CLAUDE.md /
+# MEMORY si la branche a accumulé des commits de correction. Hors du flow de
+# commit log — émet uniquement un message advisory. Idempotent, opt-out via
+# CLAUDE_HOOKS_DISABLE=1.
+if [ -x "${REPO_ROOT}/scripts/claude-hooks/stop-claude-md-suggest.sh" ]; then
+  bash "${REPO_ROOT}/scripts/claude-hooks/stop-claude-md-suggest.sh" 2>&1 >&2 || true
+fi
+
 # Stage log.md (+ the archive if rotation just touched it) and commit.
 git add -- "$LOG_FILE" 2>/dev/null
 [ -f "$ARCHIVE_FILE" ] && git add -- "$ARCHIVE_FILE" 2>/dev/null
