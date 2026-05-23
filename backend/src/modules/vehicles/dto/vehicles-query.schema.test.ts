@@ -109,15 +109,15 @@ describe('VehiclesQuerySchema', () => {
 
   describe('strict object — champs inconnus rejetés', () => {
     it('rejette un champ inconnu', () => {
-      expect(() =>
-        VehiclesQuerySchema.parse({ unknownField: 'foo' }),
-      ).toThrow(ZodError);
+      expect(() => VehiclesQuerySchema.parse({ unknownField: 'foo' })).toThrow(
+        ZodError,
+      );
     });
 
     it('rejette un typo de champ connu', () => {
-      expect(() =>
-        VehiclesQuerySchema.parse({ yeaR: '2024' }),
-      ).toThrow(ZodError);
+      expect(() => VehiclesQuerySchema.parse({ yeaR: '2024' })).toThrow(
+        ZodError,
+      );
     });
   });
 

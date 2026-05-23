@@ -76,9 +76,7 @@ export class VehiclesController {
   }
 
   @Get('brands')
-  async getAllBrands(
-    @Query(vehiclesQueryPipe) query: VehiclesQueryDto,
-  ) {
+  async getAllBrands(@Query(vehiclesQueryPipe) query: VehiclesQueryDto) {
     const params = this.toPaginationDto(query);
     return this.vehicleBrandsService.getBrands(params);
   }
