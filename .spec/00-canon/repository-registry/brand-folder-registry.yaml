@@ -1,0 +1,278 @@
+# Brand → image folder(s) registry — pieces_media_img
+#
+# Source of truth for the canonical folder(s) of each piece brand (pmi_pm_id)
+# in the Supabase `rack-images` bucket. URL pattern (legacy convention preserved
+# by imgproxy rewrite on www.automecanik.com):
+#     rack-images/{pmi_folder}/{pmi_name}
+#
+# Generated 2026-05-23 from well-formed rows of pieces_media_img
+# (pmi_folder set + pmi_name with extension).
+# Source query:
+#   SELECT pmi_pm_id::int, pmi_folder::int, count(*)
+#   FROM pieces_media_img
+#   WHERE coalesce(pmi_folder,'')<>'' AND pmi_folder ~ '^[0-9]+$'
+#   GROUP BY 1,2 ORDER BY 1, count(*) DESC;
+#
+# Recovery context: post-TecDoc-import corruption left ~4.76M rows with
+# pmi_folder=''. This registry is used by:
+#   1. Tier A relink (Phase 3 of recovery plan) — validate folder before INSERT.
+#   2. Tier B TecDoc image importer extension — assign canonical folder per brand.
+#   3. Nightly audit ratchet — flag any pmi_display='1' row with folder not in
+#      this registry for its brand.
+#
+# Plan: .claude/plans/utiliser-superpower-je-tiens-vivid-feather.md
+# ADR: (vault) Recovery pieces_media_img corruption post-TecDoc 2026
+
+metadata:
+  generated_at: "2026-05-23"
+  total_brands: 231
+  multi_folder_brands: 18
+  data_source_table: pieces_media_img
+  data_source_filter: "pmi_display arbitrary, pmi_folder set, name with extension"
+
+# Entries ordered by pm_id ascending. primary_folder = highest-row-count folder.
+# alt_folders = additional folders observed for the same brand (legacy multi-imports
+# or sub-brands). rows = total well-formed rows observed across all folders.
+brands:
+  - { pm_id:    20, name: "3K",                       primary_folder:  328, alt_folders: [],                       rows:     69 }
+  - { pm_id:   110, name: "AE",                       primary_folder:  141, alt_folders: [],                       rows:   2803 }
+  - { pm_id:   150, name: "AIRTEX",                   primary_folder:  220, alt_folders: [],                       rows:   1254 }
+  - { pm_id:   160, name: "AISIN",                    primary_folder:  166, alt_folders: [],                       rows:  15476 }
+  - { pm_id:   190, name: "AL-KO",                    primary_folder:   96, alt_folders: [],                       rows:   1498 }
+  - { pm_id:   220, name: "ALKAR",                    primary_folder:  362, alt_folders: [],                       rows:  18871 }
+  - { pm_id:   360, name: "ASSO",                     primary_folder:  298, alt_folders: [],                       rows:  17317 }
+  - { pm_id:   380, name: "ATE",                      primary_folder:    3, alt_folders: [4835],                   rows:  16096 }
+  - { pm_id:   460, name: "AUTOGAMMA",                primary_folder: 4688, alt_folders: [],                       rows:  11529 }
+  - { pm_id:   510, name: "AVA QUALITY COOLING",      primary_folder:  247, alt_folders: [],                       rows:  12101 }
+  - { pm_id:   580, name: "BENDIX",                   primary_folder: 4825, alt_folders: [4373],                   rows:   8567 }
+  - { pm_id:   620, name: "BERU",                     primary_folder: 6441, alt_folders: [11],                     rows:   5674 }
+  - { pm_id:   640, name: "BILSTEIN",                 primary_folder:   16, alt_folders: [],                       rows:   9412 }
+  - { pm_id:   660, name: "BLIC",                     primary_folder: 4555, alt_folders: [],                       rows:  50106 }
+  - { pm_id:   670, name: "BLUE PRINT",               primary_folder:  350, alt_folders: [],                       rows:  49098 }
+  - { pm_id:   680, name: "BM CATALYSTS",             primary_folder:  406, alt_folders: [],                       rows:   7999 }
+  - { pm_id:   700, name: "BORG & BECK",              primary_folder:  475, alt_folders: [],                       rows:  49841 }
+  - { pm_id:   710, name: "BORG WARNER",              primary_folder:  327, alt_folders: [],                       rows:    317 }
+  - { pm_id:   720, name: "BOSAL",                    primary_folder:   41, alt_folders: [6102],                   rows:  40803 }
+  - { pm_id:   730, name: "BOSCH",                    primary_folder:   30, alt_folders: [],                       rows: 208773 }
+  - { pm_id:   760, name: "BOUGICORD",                primary_folder:  211, alt_folders: [],                       rows:   3166 }
+  - { pm_id:   810, name: "BREMBO",                   primary_folder:   65, alt_folders: [],                       rows:  30214 }
+  - { pm_id:   890, name: "BUDWEG CALIPER",           primary_folder:  114, alt_folders: [],                       rows:   7178 }
+  - { pm_id:   900, name: "BUGATTI",                  primary_folder:  109, alt_folders: [],                       rows:   2758 }
+  - { pm_id:   920, name: "CABOR",                    primary_folder:  473, alt_folders: [],                       rows:   3901 }
+  - { pm_id:   950, name: "CALORSTAT BY VERNET",      primary_folder:  215, alt_folders: [],                       rows:   3651 }
+  - { pm_id:  1020, name: "CASCO",                    primary_folder:  484, alt_folders: [],                       rows:  30953 }
+  - { pm_id:  1030, name: "CASTROL",                  primary_folder:  207, alt_folders: [],                       rows:    682 }
+  - { pm_id:  1080, name: "CEVAM",                    primary_folder:  393, alt_folders: [],                       rows:  38640 }
+  - { pm_id:  1090, name: "CHAMPION",                 primary_folder:   43, alt_folders: [],                       rows:  10307 }
+  - { pm_id:  1120, name: "CLEAN FILTERS",            primary_folder:  163, alt_folders: [],                       rows:   2441 }
+  - { pm_id:  1170, name: "CONTITECH",                primary_folder:   31, alt_folders: [4434, 4706, 6020, 6513], rows:  12745 }
+  - { pm_id:  1180, name: "COOPERS FIAAM",            primary_folder:  437, alt_folders: [],                       rows:   2058 }
+  - { pm_id:  1190, name: "CORTECO",                  primary_folder:  140, alt_folders: [],                       rows:  30117 }
+  - { pm_id:  1230, name: "DA SILVA",                 primary_folder:  332, alt_folders: [],                       rows:  82593 }
+  - { pm_id:  1240, name: "DAYCO",                    primary_folder:   42, alt_folders: [],                       rows:  10863 }
+  - { pm_id:  1270, name: "DELPHI",                   primary_folder:   89, alt_folders: [],                       rows:  52983 }
+  - { pm_id:  1290, name: "DENSO",                    primary_folder:   66, alt_folders: [4760],                   rows:  19896 }
+  - { pm_id:  1320, name: "DIEDERICHS",               primary_folder:  253, alt_folders: [],                       rows:  44623 }
+  - { pm_id:  1380, name: "DOLZ",                     primary_folder:  154, alt_folders: [],                       rows:   2792 }
+  - { pm_id:  1410, name: "DRI",                      primary_folder:  460, alt_folders: [],                       rows:  23912 }
+  - { pm_id:  1460, name: "EAI",                      primary_folder:  391, alt_folders: [],                       rows:  17662 }
+  - { pm_id:  1560, name: "ELRING",                   primary_folder:   10, alt_folders: [],                       rows:  19628 }
+  - { pm_id:  1570, name: "ELSTOCK",                  primary_folder:  226, alt_folders: [],                       rows:  23938 }
+  - { pm_id:  1600, name: "EQUAL QUALITY",            primary_folder:  435, alt_folders: [],                       rows:  38531 }
+  - { pm_id:  1610, name: "ERA",                      primary_folder:  234, alt_folders: [224],                    rows:  41130 }
+  - { pm_id:  1690, name: "EXEDY",                    primary_folder:  399, alt_folders: [],                       rows:   1405 }
+  - { pm_id:  1700, name: "EXIDE",                    primary_folder:   24, alt_folders: [],                       rows:    632 }
+  - { pm_id:  1710, name: "EYQUEM",                   primary_folder:  246, alt_folders: [],                       rows:    509 }
+  - { pm_id:  1730, name: "FACET",                    primary_folder:  159, alt_folders: [],                       rows:   4973 }
+  - { pm_id:  1740, name: "FAE",                      primary_folder:  240, alt_folders: [],                       rows:   4847 }
+  - { pm_id:  1750, name: "FAG",                      primary_folder:  192, alt_folders: [],                       rows:   9548 }
+  - { pm_id:  1780, name: "FEBI",                     primary_folder:  101, alt_folders: [],                       rows:  72272 }
+  - { pm_id:  1810, name: "FERODO",                   primary_folder:   62, alt_folders: [4986],                   rows:  30790 }
+  - { pm_id:  1910, name: "FRAM",                     primary_folder:   59, alt_folders: [],                       rows:   2375 }
+  - { pm_id:  1920, name: "FRAP",                     primary_folder:  486, alt_folders: [],                       rows:   4516 }
+  - { pm_id:  1980, name: "FRIGAIR",                  primary_folder:  313, alt_folders: [],                       rows:  13044 }
+  - { pm_id:  1990, name: "FTE",                      primary_folder:   54, alt_folders: [],                       rows:  22511 }
+  - { pm_id:  2000, name: "FULMEN",                   primary_folder:  241, alt_folders: [],                       rows:    453 }
+  - { pm_id:  2010, name: "GABRIEL",                  primary_folder:   71, alt_folders: [],                       rows:   2892 }
+  - { pm_id:  2030, name: "GARRETT",                  primary_folder: 4615, alt_folders: [],                       rows:   8504 }
+  - { pm_id:  2040, name: "GATES",                    primary_folder:   33, alt_folders: [4812, 6346, 6350, 6665], rows:  64865 }
+  - { pm_id:  2050, name: "GENERAL RICAMBI",          primary_folder:  316, alt_folders: [],                       rows:   4203 }
+  - { pm_id:  2070, name: "GIRLING",                  primary_folder:  279, alt_folders: [],                       rows:  10576 }
+  - { pm_id:  2110, name: "GLYCO",                    primary_folder:  202, alt_folders: [],                       rows:   1911 }
+  - { pm_id:  2130, name: "GOETZE",                   primary_folder:  385, alt_folders: [],                       rows:   4852 }
+  - { pm_id:  2170, name: "GRAF",                     primary_folder:  310, alt_folders: [],                       rows:   2605 }
+  - { pm_id:  2220, name: "HELLA",                    primary_folder:    2, alt_folders: [],                       rows:  80758 }
+  - { pm_id:  2240, name: "HELLA PAGID",              primary_folder: 4625, alt_folders: [],                       rows:  21213 }
+  - { pm_id:  2250, name: "HENGST FILTER",            primary_folder:   81, alt_folders: [],                       rows:   4100 }
+  - { pm_id:  2260, name: "HEPU",                     primary_folder:  178, alt_folders: [],                       rows:   6383 }
+  - { pm_id:  2270, name: "HERTH+BUSS ELPARTS",       primary_folder:   72, alt_folders: [],                       rows:  23568 }
+  - { pm_id:  2280, name: "HERTH+BUSS JAKOPARTS",     primary_folder:   55, alt_folders: [],                       rows:  25945 }
+  - { pm_id:  2290, name: "HIDRIA",                   primary_folder: 4523, alt_folders: [],                       rows:    198 }
+  - { pm_id:  2340, name: "HUTCHINSON",               primary_folder:  239, alt_folders: [],                       rows:   8745 }
+  - { pm_id:  2360, name: "IMASAF",                   primary_folder:  191, alt_folders: [],                       rows:  16543 }
+  - { pm_id:  2370, name: "INA",                      primary_folder:  204, alt_folders: [],                       rows:   8487 }
+  - { pm_id:  2430, name: "JAPANPARTS",               primary_folder:  156, alt_folders: [],                       rows:  77546 }
+  - { pm_id:  2440, name: "JAPKO",                    primary_folder:  481, alt_folders: [],                       rows:  70434 }
+  - { pm_id:  2480, name: "JURID",                    primary_folder:   48, alt_folders: [],                       rows:  14289 }
+  - { pm_id:  2490, name: "K&N FILTERS",              primary_folder:  305, alt_folders: [],                       rows:   3578 }
+  - { pm_id:  2540, name: "KAVO PARTS",               primary_folder:  201, alt_folders: [],                       rows:  48069 }
+  - { pm_id:  2550, name: "KAWE",                     primary_folder:  286, alt_folders: [],                       rows:  56321 }
+  - { pm_id:  2580, name: "KLARIUS",                  primary_folder:  445, alt_folders: [],                       rows:  50720 }
+  - { pm_id:  2590, name: "KLAXCAR",                  primary_folder:  387, alt_folders: [],                       rows:   7751 }
+  - { pm_id:  2630, name: "KNECHT",                   primary_folder:   34, alt_folders: [],                       rows:   5785 }
+  - { pm_id:  2640, name: "KOLBENSCHMIDT",            primary_folder:  432, alt_folders: [],                       rows:  14107 }
+  - { pm_id:  2700, name: "KYB",                      primary_folder:   85, alt_folders: [],                       rows:  12447 }
+  - { pm_id:  2720, name: "LEMFORDER",                primary_folder:   35, alt_folders: [],                       rows:  20953 }
+  - { pm_id:  2740, name: "LESJOFORS",                primary_folder:  175, alt_folders: [],                       rows:   7894 }
+  - { pm_id:  2790, name: "LIZARTE",                  primary_folder:  292, alt_folders: [],                       rows:   8079 }
+  - { pm_id:  2800, name: "LOBRO",                    primary_folder:   56, alt_folders: [],                       rows:  10604 }
+  - { pm_id:  2820, name: "LPR",                      primary_folder:  197, alt_folders: [],                       rows:  12503 }
+  - { pm_id:  2850, name: "LUCAS",                    primary_folder: 4501, alt_folders: [4973],                   rows:  35418 }
+  - { pm_id:  2860, name: "LUK",                      primary_folder:    6, alt_folders: [],                       rows:  12616 }
+  - { pm_id:  2910, name: "MAGNETI MARELLI",          primary_folder:   95, alt_folders: [4723],                   rows:  60353 }
+  - { pm_id:  2930, name: "MAHLE",                    primary_folder:  287, alt_folders: [],                       rows:  90595 }
+  - { pm_id:  2950, name: "MANN FILTER",              primary_folder:    4, alt_folders: [],                       rows:   6017 }
+  - { pm_id:  2960, name: "MAPA",                     primary_folder:  470, alt_folders: [],                       rows:   4277 }
+  - { pm_id:  2980, name: "MASTER SPORT",             primary_folder:  358, alt_folders: [],                       rows:  33341 }
+  - { pm_id:  2990, name: "MAURICE LECOY",            primary_folder: 4572, alt_folders: [],                       rows:   6078 }
+  - { pm_id:  3030, name: "MEAT & DORIA",             primary_folder:  244, alt_folders: [],                       rows:  34053 }
+  - { pm_id:  3040, name: "MECAFILTER",               primary_folder:  218, alt_folders: [],                       rows:   6383 }
+  - { pm_id:  3050, name: "MECARM",                   primary_folder: 4559, alt_folders: [],                       rows:   1093 }
+  - { pm_id:  3080, name: "METALCAUCHO",              primary_folder: 4664, alt_folders: [],                       rows:  29878 }
+  - { pm_id:  3090, name: "METELLI",                  primary_folder:  121, alt_folders: [],                       rows:  13953 }
+  - { pm_id:  3110, name: "MEYLE",                    primary_folder:  144, alt_folders: [],                       rows:  30978 }
+  - { pm_id:  3130, name: "MGA",                      primary_folder:  249, alt_folders: [],                       rows:  30376 }
+  - { pm_id:  3140, name: "MINTEX",                   primary_folder:   73, alt_folders: [],                       rows:   8695 }
+  - { pm_id:  3150, name: "MIRAGLIO",                 primary_folder: 4721, alt_folders: [],                       rows:   5693 }
+  - { pm_id:  3160, name: "MISFAT",                   primary_folder: 4470, alt_folders: [],                       rows:   5507 }
+  - { pm_id:  3180, name: "MOBILETRON",               primary_folder: 4705, alt_folders: [],                       rows:   8822 }
+  - { pm_id:  3200, name: "MONROE",                   primary_folder:   37, alt_folders: [4752],                   rows:  66134 }
+  - { pm_id:  3220, name: "MOOG",                     primary_folder:  134, alt_folders: [],                       rows:  17467 }
+  - { pm_id:  3290, name: "MTS",                      primary_folder:  193, alt_folders: [],                       rows:  29141 }
+  - { pm_id:  3320, name: "NARVA",                    primary_folder:  485, alt_folders: [],                       rows:    359 }
+  - { pm_id:  3330, name: "NATIONAL",                 primary_folder:  190, alt_folders: [],                       rows:   5006 }
+  - { pm_id:  3340, name: "NECTO",                    primary_folder:  242, alt_folders: [],                       rows:   2707 }
+  - { pm_id:  3350, name: "NEOLUX",                   primary_folder: 4671, alt_folders: [],                       rows:    303 }
+  - { pm_id:  3370, name: "NGK",                      primary_folder:   15, alt_folders: [],                       rows:   6295 }
+  - { pm_id:  3390, name: "NIPPARTS",                 primary_folder:  248, alt_folders: [],                       rows:  18581 }
+  - { pm_id:  3400, name: "NISSENS",                  primary_folder:  123, alt_folders: [],                       rows:  44070 }
+  - { pm_id:  3410, name: "NK",                       primary_folder:  127, alt_folders: [],                       rows:  50456 }
+  - { pm_id:  3420, name: "NPS",                      primary_folder:  440, alt_folders: [],                       rows:  40912 }
+  - { pm_id:  3430, name: "NRF",                      primary_folder:  205, alt_folders: [],                       rows:  32301 }
+  - { pm_id:  3440, name: "NURAL",                    primary_folder:  216, alt_folders: [],                       rows:   1930 }
+  - { pm_id:  3500, name: "OPTIBELT",                 primary_folder:   64, alt_folders: [],                       rows:   5328 }
+  - { pm_id:  3510, name: "OPTIMAL",                  primary_folder:  129, alt_folders: [],                       rows:  64742 }
+  - { pm_id:  3530, name: "OSRAM",                    primary_folder:   67, alt_folders: [6938],                   rows:   2390 }
+  - { pm_id:  3540, name: "OSSCA",                    primary_folder: 4683, alt_folders: [],                       rows:  41786 }
+  - { pm_id:  3570, name: "PAGID",                    primary_folder:   12, alt_folders: [],                       rows:   7475 }
+  - { pm_id:  3610, name: "PAYEN",                    primary_folder:  113, alt_folders: [],                       rows:   5786 }
+  - { pm_id:  3660, name: "PHILIPS",                  primary_folder:   75, alt_folders: [4745],                   rows:   1458 }
+  - { pm_id:  3670, name: "PHIRA",                    primary_folder: 4505, alt_folders: [],                       rows:   7387 }
+  - { pm_id:  3680, name: "PIERBURG",                 primary_folder:    5, alt_folders: [],                       rows:   4171 }
+  - { pm_id:  3700, name: "PILKINGTON",               primary_folder:  447, alt_folders: [],                       rows:     12 }
+  - { pm_id:  3760, name: "PRASCO",                   primary_folder:  340, alt_folders: [],                       rows:  47225 }
+  - { pm_id:  3780, name: "PRESTOLITE ELECTRIC",      primary_folder:  396, alt_folders: [],                       rows:  11136 }
+  - { pm_id:  3790, name: "PROCODIS",                 primary_folder: 4655, alt_folders: [],                       rows:   6295 }
+  - { pm_id:  3820, name: "PURFLUX",                  primary_folder:   38, alt_folders: [],                       rows:   2519 }
+  - { pm_id:  3850, name: "QUINTON HAZELL",           primary_folder:   57, alt_folders: [],                       rows:  48250 }
+  - { pm_id:  3860, name: "RAICAM",                   primary_folder:  400, alt_folders: [],                       rows:   7145 }
+  - { pm_id:  3900, name: "RCA",                      primary_folder:  492, alt_folders: [],                       rows:   2898 }
+  - { pm_id:  3910, name: "RECORD",                   primary_folder:  273, alt_folders: [],                       rows:    898 }
+  - { pm_id:  3920, name: "VICTOR REINZ",             primary_folder:    9, alt_folders: [],                       rows:  15606 }
+  - { pm_id:  3940, name: "REMSA",                    primary_folder:  153, alt_folders: [],                       rows:   8513 }
+  - { pm_id:  3960, name: "ROADHOUSE",                primary_folder:  152, alt_folders: [],                       rows:   7140 }
+  - { pm_id:  4020, name: "RTS",                      primary_folder:  430, alt_folders: [],                       rows:   5156 }
+  - { pm_id:  4030, name: "RUVILLE",                  primary_folder:   23, alt_folders: [],                       rows:  11563 }
+  - { pm_id:  4050, name: "SACHS",                    primary_folder:   32, alt_folders: [294],                    rows:  29031 }
+  - { pm_id:  4080, name: "SALERI",                   primary_folder:  245, alt_folders: [],                       rows:   2775 }
+  - { pm_id:  4120, name: "SASIC",                    primary_folder:  260, alt_folders: [],                       rows:  15836 }
+  - { pm_id:  4150, name: "SBS",                      primary_folder:  297, alt_folders: [],                       rows:  13216 }
+  - { pm_id:  4170, name: "SCHLUTTER TURBOLADER",     primary_folder:  182, alt_folders: [],                       rows:  15822 }
+  - { pm_id:  4180, name: "SCHWITZER",                primary_folder:  326, alt_folders: [],                       rows:     22 }
+  - { pm_id:  4200, name: "SEIM",                     primary_folder:  263, alt_folders: [],                       rows:  15350 }
+  - { pm_id:  4250, name: "SIDAT",                    primary_folder:   27, alt_folders: [],                       rows:  33526 }
+  - { pm_id:  4260, name: "SIDEM",                    primary_folder:  135, alt_folders: [],                       rows:   9700 }
+  - { pm_id:  4290, name: "SKF",                      primary_folder:   50, alt_folders: [],                       rows:  28635 }
+  - { pm_id:  4300, name: "SNR",                      primary_folder:  110, alt_folders: [],                       rows:   7683 }
+  - { pm_id:  4310, name: "SNRA",                     primary_folder:  408, alt_folders: [],                       rows:  17579 }
+  - { pm_id:  4330, name: "SOGEFIPRO",                primary_folder:   92, alt_folders: [],                       rows:    898 }
+  - { pm_id:  4370, name: "SPIDAN",                   primary_folder:    1, alt_folders: [6363],                   rows:  34009 }
+  - { pm_id:  4380, name: "SPILU",                    primary_folder: 4680, alt_folders: [],                       rows:  13721 }
+  - { pm_id:  4390, name: "SPJ",                      primary_folder: 4582, alt_folders: [],                       rows:   6088 }
+  - { pm_id:  4400, name: "STABILUS",                 primary_folder:  126, alt_folders: [],                       rows:   2698 }
+  - { pm_id:  4440, name: "STC",                      primary_folder: 4667, alt_folders: [],                       rows:  29868 }
+  - { pm_id:  4470, name: "SUPLEX",                   primary_folder:  390, alt_folders: [],                       rows:   5931 }
+  - { pm_id:  4480, name: "SWAG",                     primary_folder:  151, alt_folders: [],                       rows:  44086 }
+  - { pm_id:  4490, name: "SWF",                      primary_folder:   19, alt_folders: [],                       rows:   1865 }
+  - { pm_id:  4540, name: "TEXTAR",                   primary_folder:   39, alt_folders: [],                       rows:  18880 }
+  - { pm_id:  4580, name: "TOPRAN",                   primary_folder:  301, alt_folders: [],                       rows:  21820 }
+  - { pm_id:  4610, name: "TRISCAN",                  primary_folder:  108, alt_folders: [],                       rows:  85536 }
+  - { pm_id:  4660, name: "TRUSTING",                 primary_folder:  199, alt_folders: [],                       rows:   6830 }
+  - { pm_id:  4670, name: "TRW",                      primary_folder:  161, alt_folders: [347],                    rows:  54780 }
+  - { pm_id:  4690, name: "TUDOR",                    primary_folder:  212, alt_folders: [],                       rows:    487 }
+  - { pm_id:  4700, name: "TURBO S HOET",             primary_folder:  382, alt_folders: [],                       rows:   7930 }
+  - { pm_id:  4720, name: "TYC",                      primary_folder:   61, alt_folders: [],                       rows:  11392 }
+  - { pm_id:  4730, name: "UFI",                      primary_folder:  137, alt_folders: [],                       rows:   3955 }
+  - { pm_id:  4810, name: "VAICO",                    primary_folder:  162, alt_folders: [],                       rows:  59462 }
+  - { pm_id:  4820, name: "VALEO",                    primary_folder:   21, alt_folders: [],                       rows:  78624 }
+  - { pm_id:  4840, name: "VARTA",                    primary_folder:   26, alt_folders: [],                       rows:    363 }
+  - { pm_id:  4860, name: "VDO",                      primary_folder:   83, alt_folders: [],                       rows:   1441 }
+  - { pm_id:  4870, name: "VEGE",                     primary_folder: 4739, alt_folders: [],                       rows:   3536 }
+  - { pm_id:  4890, name: "VEMO",                     primary_folder:  183, alt_folders: [],                       rows:  50692 }
+  - { pm_id:  4900, name: "VENEPORTE",                primary_folder:  357, alt_folders: [],                       rows:  23804 }
+  - { pm_id:  4940, name: "WAECO",                    primary_folder:   97, alt_folders: [],                       rows:   1632 }
+  - { pm_id:  4950, name: "WAGNER",                   primary_folder: 4498, alt_folders: [],                       rows:   1265 }
+  - { pm_id:  4960, name: "WAHLER",                   primary_folder:   79, alt_folders: [],                       rows:   1801 }
+  - { pm_id:  4970, name: "WAI",                      primary_folder: 4627, alt_folders: [],                       rows:  38609 }
+  - { pm_id:  4980, name: "WALKER",                   primary_folder:   13, alt_folders: [303],                    rows:  99380 }
+  - { pm_id:  5040, name: "WIX FILTERS",              primary_folder:  324, alt_folders: [],                       rows:   3992 }
+  - { pm_id:  5050, name: "WOKING",                   primary_folder:  366, alt_folders: [],                       rows:   7131 }
+  - { pm_id:  5120, name: "ZF",                       primary_folder:   68, alt_folders: [],                       rows:   3529 }
+  - { pm_id:  5130, name: "ZIMMERMANN",               primary_folder:   86, alt_folders: [],                       rows:   4090 }
+  - { pm_id:  5150, name: "AC ROLCAR",                primary_folder: 4849, alt_folders: [],                       rows:   4858 }
+  - { pm_id:  5170, name: "AES",                      primary_folder: 4886, alt_folders: [],                       rows:  35106 }
+  - { pm_id:  5180, name: "AHE",                      primary_folder:  422, alt_folders: [],                       rows:   7068 }
+  - { pm_id:  5210, name: "AS PL",                    primary_folder: 4843, alt_folders: [],                       rows: 102548 }
+  - { pm_id:  5290, name: "BORSEHUNG",                primary_folder: 4815, alt_folders: [],                       rows:   2559 }
+  - { pm_id:  5450, name: "DURER",                    primary_folder: 4813, alt_folders: [],                       rows:   2495 }
+  - { pm_id:  5490, name: "FARE SA",                  primary_folder: 4834, alt_folders: [],                       rows:  29471 }
+  - { pm_id:  5510, name: "FERSA",                    primary_folder: 4818, alt_folders: [],                       rows:   3374 }
+  - { pm_id:  5630, name: "HC CARGO",                 primary_folder: 4819, alt_folders: [],                       rows:  34566 }
+  - { pm_id:  5640, name: "HELLA GUTMANN",            primary_folder: 4734, alt_folders: [],                       rows:     63 }
+  - { pm_id:  5720, name: "KALE",                     primary_folder:  469, alt_folders: [6207],                   rows:   4491 }
+  - { pm_id:  5870, name: "NSK",                      primary_folder: 4728, alt_folders: [],                       rows:   1524 }
+  - { pm_id:  5980, name: "RYMEC",                    primary_folder: 4828, alt_folders: [],                       rows:    814 }
+  - { pm_id:  6070, name: "TRICLO",                   primary_folder: 4970, alt_folders: [],                       rows:  17368 }
+  - { pm_id:  6080, name: "TURBO BY INTEC",           primary_folder: 4885, alt_folders: [],                       rows:    543 }
+  - { pm_id:  6280, name: "ABAKUS",                   primary_folder: 4657, alt_folders: [],                       rows:  48601 }
+  - { pm_id:  6350, name: "ARNOTT",                   primary_folder: 4539, alt_folders: [],                       rows:   3797 }
+  - { pm_id:  6580, name: "DPA",                      primary_folder: 4353, alt_folders: [],                       rows:   5599 }
+  - { pm_id:  6740, name: "GEBA",                     primary_folder: 6305, alt_folders: [],                       rows:    695 }
+  - { pm_id:  6750, name: "GEBE",                     primary_folder: 4379, alt_folders: [],                       rows:   4937 }
+  - { pm_id:  6840, name: "HITACHI",                  primary_folder:  449, alt_folders: [],                       rows:   8261 }
+  - { pm_id:  6870, name: "INTFRADIS",                primary_folder: 6277, alt_folders: [],                       rows:   1172 }
+  - { pm_id:  7190, name: "QUICK STEER",              primary_folder: 4368, alt_folders: [],                       rows:    866 }
+  - { pm_id:  7420, name: "TURBO MOT",                primary_folder: 4362, alt_folders: [],                       rows:  21232 }
+  - { pm_id:  7440, name: "URO",                      primary_folder: 4999, alt_folders: [],                       rows:  15903 }
+  - { pm_id:  7470, name: "VIKA",                     primary_folder: 4346, alt_folders: [],                       rows:  12615 }
+  - { pm_id:  7480, name: "VITAL SUSPENSIONS",        primary_folder: 6003, alt_folders: [],                       rows:   4734 }
+  - { pm_id:  7600, name: "FERRON",                   primary_folder: 4940, alt_folders: [],                       rows:   4306 }
+  - { pm_id:  7610, name: "JUMASA",                   primary_folder: 4965, alt_folders: [],                       rows:  59143 }
+  - { pm_id:  7980, name: "Azumi",                    primary_folder: 6932, alt_folders: [],                       rows:   4205 }
+  - { pm_id:  8050, name: "BorgWarner (AWD)",         primary_folder: 6444, alt_folders: [],                       rows:    141 }
+  - { pm_id:  8060, name: "BOTTO RICAMBI",            primary_folder: 6371, alt_folders: [],                       rows:   1504 }
+  - { pm_id:  8120, name: "C.E.I.",                   primary_folder: 4390, alt_folders: [],                       rows:   8565 }
+  - { pm_id:  8220, name: "COGEFA France",            primary_folder: 6411, alt_folders: [],                       rows:   2314 }
+  - { pm_id:  8690, name: "GKN",                      primary_folder: 6306, alt_folders: [],                       rows:    457 }
+  - { pm_id:  8880, name: "HITACHI-MX",               primary_folder: 6404, alt_folders: [],                       rows:    169 }
+  - { pm_id:  8930, name: "INTER-TURBO",              primary_folder: 6475, alt_folders: [],                       rows:   4362 }
+  - { pm_id:  8980, name: "IZUMI",                    primary_folder: 5254, alt_folders: [],                       rows:   1138 }
+  - { pm_id:  9100, name: "KRAW",                     primary_folder: 5314, alt_folders: [],                       rows:   2103 }
+  - { pm_id:  9360, name: "METAL LEVE",               primary_folder: 4677, alt_folders: [],                       rows:   7376 }
+  - { pm_id:  9470, name: "MTR",                      primary_folder: 6896, alt_folders: [],                       rows:  10432 }
+  - { pm_id:  9520, name: "NAPA",                     primary_folder: 6473, alt_folders: [],                       rows:  14589 }
+  - { pm_id:  9550, name: "NTY",                      primary_folder: 6355, alt_folders: [],                       rows: 103306 }
+  - { pm_id:  9880, name: "RIDEX",                    primary_folder: 6358, alt_folders: [],                       rows:  58077 }
+  - { pm_id:  9970, name: "SIAAM",                    primary_folder: 6322, alt_folders: [],                       rows:   2940 }
+  - { pm_id: 10330, name: "VDO",                      primary_folder: 4836, alt_folders: [],                       rows:    437 }
+  - { pm_id: 10350, name: "VITALE",                   primary_folder: 6313, alt_folders: [],                       rows:   8160 }

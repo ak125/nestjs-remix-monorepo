@@ -274,6 +274,12 @@ export const PieceDetailModal = memo(function PieceDetailModal({
                             className="w-full h-full object-contain hover:scale-110 transition-transform duration-300"
                             loading="lazy"
                             decoding="async"
+                            // Defense-in-depth (INC-2026-015 / ADR-078) — see PiecesGrid.tsx
+                            onError={(e) => {
+                              const img = e.currentTarget;
+                              if (img.src.endsWith('/images/no.png')) return;
+                              img.src = '/images/no.png';
+                            }}
                           />
                         </div>
                       </div>
@@ -298,6 +304,12 @@ export const PieceDetailModal = memo(function PieceDetailModal({
                                 className="w-full h-full object-contain"
                                 loading="lazy"
                                 decoding="async"
+                                // Defense-in-depth (INC-2026-015 / ADR-078)
+                                onError={(e) => {
+                                  const t = e.currentTarget;
+                                  if (t.src.endsWith('/images/no.png')) return;
+                                  t.src = '/images/no.png';
+                                }}
                               />
                             </button>
                           ))}

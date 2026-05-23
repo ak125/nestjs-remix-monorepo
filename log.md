@@ -435,3 +435,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `chore/remove-broken-order-status-duplicate`
 - **Décision** : refactor(orders): retire le doublon cassé OrderStatusService/Controller (F3)
 - **Sortie** : PR #696 | commits 73fcefe71
+
+## 2026-05-23 — recovery/pieces-media-img-corruption-20260523 (auto)
+
+- **Branche** : `recovery/pieces-media-img-corruption-20260523`
+- **Décision** : fix(catalog): pieces_media_img recovery — Tier C soft-hide + structural guards (ADR-078)
+- **Sortie** : PR #699 | commits a44deeb9d
