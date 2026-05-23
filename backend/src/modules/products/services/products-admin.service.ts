@@ -348,7 +348,9 @@ export class ProductsAdminService extends SupabaseBaseService {
         // L'ancien calcul (vente_TTC − vente_HT)/vente_TTC mesurait la TVA, pas la
         // marge. SoT: PricingFormulaService.computeMargePct (Pricing Control Plane L1).
         const margeCalculee =
-          marge > 0 ? marge : computeMargePct(eurToCents(prixAchatHT), eurToCents(prixProHT));
+          marge > 0
+            ? marge
+            : computeMargePct(eurToCents(prixAchatHT), eurToCents(prixProHT));
 
         const stock = parseInt(item.piece_qty_sale?.toString() || '0', 10);
 
