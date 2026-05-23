@@ -441,3 +441,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `recovery/pieces-media-img-corruption-20260523`
 - **Décision** : Soft-hide 1.1M lignes malformées (357K pièces affichées, 103 marques) → fallback no.png ; Tier B (vraies images) différé car files absents de toute l'infra ; 4 gardes structurelles installées (audit nightly + ast-grep paginate + brand-folder registry canon L2 + spot-fix shipping).
 - **Sortie** : PR #699 + vault PR #302 (ADR-078 / INC-2026-015) | commits a44deeb9d + 2ee8c3c (vault) | fichiers `.spec/00-canon/repository-registry/brand-folder-registry.yaml`, `scripts/audit/audit-pieces-media-img-invariants.sh`, `.ast-grep/rules/supabase-js-bulk-select-paginate.yml`, `scripts/recovery/tier-c-softhide-malformed-p1.sql`, `backend/src/modules/cart/services/shipping-calculator.service.ts`
+
+## 2026-05-23 — audit/diagnostic-engine-reality-2026-05-23 (auto)
+
+- **Branche** : `audit/diagnostic-engine-reality-2026-05-23`
+- **Décision** : audit(diag): reality audit V1 Block A — verdict PIVOT + golden dataset seed
+- **Sortie** : PR aucune | commits a7865ebf
