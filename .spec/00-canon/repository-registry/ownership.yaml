@@ -52,6 +52,21 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: high
+  - glob: packages/domain-commerce/**
+    domain: D11
+    owner: '@ak125/payments-team'
+    sourceConfidence: high
+    risk: medium
+  - glob: backend/supabase/migrations/*order_history*
+    domain: D11
+    owner: '@ak125/payments-team'
+    sourceConfidence: high
+    risk: high
+  - glob: backend/supabase/migrations/*cancel_order_atomic*
+    domain: D11
+    owner: '@ak125/payments-team'
+    sourceConfidence: high
+    risk: high
   - glob: scripts/governance/validate-authority-graph.js
     domain: D15
     owner: '@ak125'
