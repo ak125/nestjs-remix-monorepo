@@ -358,6 +358,20 @@ entries:
     owner: '@ak125/payments-team'
     sourceConfidence: high
     risk: critical
+  # Pricing Control Plane V1 (PR pricing-control-plane-v1, branch
+  # feat/pricing-control-plane-v1). L0/L0.5/L1/L2/L3/L4/L5a layers,
+  # supplier connector, decision snapshot, observability. Doctrine
+  # canonique : docs/pricing/economic-governance-system.md.
+  - glob: backend/src/modules/pricing/**
+    domain: D11
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
+  - glob: backend/supabase/migrations/2026*_pricing_*.sql
+    domain: D11
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
   - glob: backend/src/modules/products/**
     domain: D1
     owner: '@ak125/catalog-team'

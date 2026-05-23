@@ -29,6 +29,7 @@ import { AdminModule } from './modules/admin/admin.module'; // ✅ NOUVEAU - Mod
 import { ApiModule } from './modules/api.module'; // ✅ NOUVEAU - API Legacy directe !
 import { DashboardModule } from './modules/dashboard/dashboard.module'; // ✅ NOUVEAU - Dashboard Stats !
 import { ProductsModule } from './modules/products/products.module'; // ✅ NOUVEAU - Module produits !
+import { PricingModule } from './modules/pricing/pricing.module'; // 💶 Pricing Control Plane V1
 import { VehiclesModule } from './modules/vehicles/vehicles.module'; // 🚗 MODULE VEHICLES - Pour sélecteur véhicule (inclut VehicleBrandsService)
 import { VehicleContextModule } from './modules/vehicle-context/vehicle-context.module'; // 🪪 PR-B.2 — VehicleContext JWS cookie middleware (OPTION A locked)
 import { ObservabilityModule } from './modules/observability/observability.module'; // 📊 PR-C — Prometheus counters for vehicle_ctx_* events + /api/observability/metrics
@@ -191,6 +192,7 @@ import { DiagnosticEngineModule } from './modules/diagnostic-engine/diagnostic-e
     ApiModule, // ✅ NOUVEAU - API Legacy directe connectée aux vraies tables !
     DashboardModule, // ✅ NOUVEAU - Dashboard Stats pour admin panel !
     ProductsModule, // ✅ NOUVEAU - Module produits avec CRUD complet !
+    PricingModule, // 💶 Pricing Control Plane V1 — import fournisseur + moteur de prix canonique
     // 🚗 MODULES VÉHICULES
     VehiclesModule, // Module vehicle principal pour sélecteur véhicule (inclut gestion marques via VehicleBrandsService)
     VehicleContextModule, // PR-B.2 — JWS cookie middleware on /api/diagnostic/* + /api/v1/orientation/*
