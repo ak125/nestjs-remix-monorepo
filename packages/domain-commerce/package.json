@@ -1,0 +1,26 @@
+{
+  "name": "@repo/domain-commerce",
+  "version": "0.1.0",
+  "description": "Single source of truth for commerce domain enums (order status, order line status) + canonical transitions + event types. Consumed by backend services, admin frontend, BullMQ workers, and analytics. ADR-079.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist *.tsbuildinfo",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test src/**/*.test.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.9.3"
+  }
+}
