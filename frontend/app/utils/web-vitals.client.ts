@@ -100,7 +100,7 @@ function attributionFields(
       };
     case "LCP":
       return {
-        attr_element: truncate(metric.attribution.element ?? ""),
+        attr_element: truncate(metric.attribution.target ?? ""),
         attr_ttfb: Math.round(metric.attribution.timeToFirstByte),
         attr_resource_load_delay: Math.round(
           metric.attribution.resourceLoadDelay,
