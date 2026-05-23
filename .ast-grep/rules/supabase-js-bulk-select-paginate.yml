@@ -1,6 +1,13 @@
 id: supabase-js-bulk-select-paginate
 language: typescript
-severity: error
+# Phase 1 = warn-only (matches repo convention for newly-introduced rules :
+# « Aggregate contract drift signals (warn-only) », « Registry freshness
+# warn-only Phase 1 »). 11 pre-existing offenders identified at introduction
+# (2026-05-23, INC-2026-015), captured in audit-reports/phase0-baseline.json
+# warnings count. Triage and fix tracked separately ; ratchet to severity:error
+# after baseline drops back to ≤1 (the chunked-loop false-positive in
+# shipping-calculator).
+severity: warning
 message: |
   Bulk `supabase.from(<large_table>).select(...)` without `.range()` pagination
   silently caps results at 1000 rows (PostgREST default). When this read drives
