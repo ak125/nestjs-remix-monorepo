@@ -1,0 +1,64 @@
+id: supabase-js-bulk-select-paginate
+language: typescript
+severity: error
+message: |
+  Bulk `supabase.from(<large_table>).select(...)` without `.range()` pagination
+  silently caps results at 1000 rows (PostgREST default). When this read drives
+  a subsequent write (delete / insert / upsert / update), rows beyond 1000 are
+  dropped → data loss.
+
+  Confirmed incident (2026-05-23) : ~4,76 M malformed rows in `pieces_media_img`
+  created by an import that read capped + rewrote — VALEO/SKF/MAGNETI displayed
+  products lost all images. Plan: .claude/plans/utiliser-superpower-je-tiens-vivid-feather.md
+  Memory: feedback_supabase_js_1000_row_cap_data_loss.md (CRITICAL).
+
+  Required pattern when targeting `pieces`, `pieces_price`, `pieces_media_img` :
+
+      // paginated read, all rows (see existing helper patterns)
+      const PAGE_SIZE = 1000;
+      const all = [];
+      for (let from = 0; ; from += PAGE_SIZE) {
+        const { data, error } = await supabase.from('pieces_media_img')
+          .select('...').range(from, from + PAGE_SIZE - 1);
+        if (error) throw error;
+        if (!data?.length) break;
+        all.push(...data);
+        if (data.length < PAGE_SIZE) break;
+      }
+
+  Reference helpers already in the repo:
+   - backend/src/modules/seo/r2/services/r1-gamme-completeness-audit.service.ts
+     (fetchAllGammes — canonical pattern)
+   - backend/src/modules/seo/helpers/auto-type-valid-ids.helper.ts
+     (getValidTypeIds — cached + paginated)
+   - backend/src/modules/seo/services/sitemap-v10-pieces.service.ts (PAGE_SIZE loop)
+
+  If you only need a bounded subset, add an explicit `.limit(N)` (N ≤ 1000) so
+  intent is clear and the rule passes.
+files:
+  - backend/src/**/*.ts
+  - scripts/**/*.ts
+ignores:
+  - backend/src/**/*.spec.ts
+  - backend/src/**/*.e2e-spec.ts
+  - backend/src/**/test-*.ts
+  - scripts/**/*.test.ts
+rule:
+  any:
+    # .from('pieces_media_img' | 'pieces' | 'pieces_price').select(...) chain
+    # without a sibling .range(...) or .limit(...) — i.e., the raw filter chain
+    # that PostgREST will silently cap at 1000.
+    - all:
+        - pattern: $X.from($TBL).select($$$)
+        - has:
+            stopBy: end
+            kind: string_fragment
+            regex: '^(pieces_media_img|pieces|pieces_price)$'
+        - not:
+            inside:
+              stopBy: end
+              any:
+                - pattern: $$$.range($$$)
+                - pattern: $$$.limit($$$)
+                - pattern: $$$.single($$$)
+                - pattern: $$$.maybeSingle($$$)
