@@ -1,0 +1,27 @@
+id: commerce-no-server-cart-read-in-createorder
+language: typescript
+severity: error
+message: |
+  Reading server-side cart inside OrdersService.createOrder is FORBIDDEN.
+  Canon: .spec/00-canon/commerce-runtime/authority-graph.yaml#authorities.cart
+  createOrder is snapshot/CQRS: it consumes orderData.orderLines posted by the front.
+  Re-reading session cart would reintroduce the Vault #301 F2 race the snapshot avoids.
+note: |
+  This materializes the F2 invariant (Vault #301 ligne 22-23). The snapshot pattern makes
+  a Redis lock structurally useless — adding cart re-read here would justify one, which
+  would be bricolage (cf. feedback_v1_first_dont_build_ultimate_engine_too_early).
+files:
+  - backend/src/modules/orders/services/orders.service.ts
+rule:
+  all:
+    - any:
+        - pattern: $X.cartService.$$$
+        - pattern: $X.cartRepository.$$$
+        - pattern: this.cartService.$$$
+        - pattern: this.cartRepository.$$$
+    - inside:
+        kind: method_definition
+        has:
+          regex: '^createOrder$'
+          field: name
+        stopBy: end

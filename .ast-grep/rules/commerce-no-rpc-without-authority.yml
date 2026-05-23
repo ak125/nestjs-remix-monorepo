@@ -1,0 +1,34 @@
+id: commerce-no-rpc-without-authority
+language: typescript
+severity: error
+message: |
+  Calls to commerce RPCs (create_order_*, cancel_order_*, update_order_*, append_order_*)
+  are restricted to declared owners only.
+  Canon: .spec/00-canon/commerce-runtime/authority-graph.yaml#rpc_authority.rpcs
+  Prevents RPC drift from TS → SQL (a second hidden API layer).
+note: |
+  Owner files for V1 RPCs:
+    - create_order_atomic / cancel_order_atomic → orders.service.ts
+    - append_order_event                        → order-status.service.ts
+  If you need a new RPC, declare it in authority-graph.yaml first (owner + tests + telemetry + audit_trail).
+files:
+  - backend/src/**/*.ts
+ignores:
+  - backend/src/modules/orders/services/orders.service.ts
+  - backend/src/modules/orders/services/order-status.service.ts
+  - backend/src/**/*.test.ts
+  - backend/src/**/*.spec.ts
+rule:
+  any:
+    - pattern: $X.callRpc('create_order_atomic', $$$)
+    - pattern: $X.callRpc("create_order_atomic", $$$)
+    - pattern: $X.callRpc('cancel_order_atomic', $$$)
+    - pattern: $X.callRpc("cancel_order_atomic", $$$)
+    - pattern: $X.callRpc('append_order_event', $$$)
+    - pattern: $X.callRpc("append_order_event", $$$)
+    - pattern: $X.rpc('create_order_atomic', $$$)
+    - pattern: $X.rpc("create_order_atomic", $$$)
+    - pattern: $X.rpc('cancel_order_atomic', $$$)
+    - pattern: $X.rpc("cancel_order_atomic", $$$)
+    - pattern: $X.rpc('append_order_event', $$$)
+    - pattern: $X.rpc("append_order_event", $$$)

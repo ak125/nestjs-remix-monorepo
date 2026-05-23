@@ -1,0 +1,212 @@
+# Commerce Runtime Authority Graph (L2 canon, overlay manuel)
+#
+# Scope V1 : finds Vault #301 résidus (F2 / F4 / OrdersService).
+# Anti-inflation : voir governance.* ci-dessous (hard caps enforcés par validator).
+#
+# Source canon : ce fichier (L2). Aucun outil ne le génère automatiquement.
+# Validator : scripts/governance/validate-authority-graph.js (pre-commit + CI).
+# ADR vault associé : ak125/governance-vault · ADR-079 (à créer, PR séparée).
+#
+# Plan associé : /home/deploy/.claude/plans/utiliser-superpower-p0-modular-brooks.md
+
+schemaVersion: 1.0.0
+domain: commerce
+generated: false
+
+governance:
+  max_lines: 250
+  max_domains: 8
+  review_cadence: quarterly
+  prose_max_lines_per_field: 3
+  removal_policy: >-
+    Invariant non-violé 6 mois ET ast-grep correspondante 0 régression → candidat retrait.
+
+authorities:
+
+  order_lifecycle:
+    creation:
+      handler: OrdersService.createOrder
+      rpc: create_order_atomic
+      writes:
+        - ord_id
+        - ord_cst_id
+        - ord_ords_id
+        - ord_date
+        - ord_amount_ttc
+        - ord_total_ttc
+        - ord_info
+        - ord_billing_snapshot
+        - ord_shipping_snapshot
+        - ord_cba_id
+        - ord_cda_id
+      event_emitted: ORDER_CREATED
+
+    update:
+      handler: OrdersService.updateOrder
+      writes:
+        - ord_info
+        - ord_billing_snapshot
+        - ord_shipping_snapshot
+        - ord_ords_id
+        - ord_updated_at
+      event_emitted: STATUS_CHANGED | NOTE_UPDATED | ADDRESS_UPDATED
+
+    cancellation:
+      handler: OrdersService.cancelOrder
+      rpc: cancel_order_atomic
+      writes:
+        - "ord_ords_id ('2')"
+        - ord_cancel_date
+        - ord_cancel_reason
+        - ord_updated_at
+      event_emitted: ORDER_CANCELLED
+
+    status_column: ord_ords_id
+    status_writes_allowed_in:
+      - backend/src/modules/orders/services/orders.service.ts
+      - backend/supabase/migrations/**/*.sql
+    status_canon: "___xtr_order_status (lookup, 5 valeurs : '1'..'5')"
+
+  order_line_lifecycle:
+    handler: OrderActionsService
+    status_column: orl_orls_id
+    status_writes_allowed_in:
+      - backend/src/modules/orders/services/order-actions.service.ts
+      - backend/supabase/migrations/**/*.sql
+    status_canon: "___xtr_order_line_status (lookup, 10 valeurs : '1'..'6','91'..'94')"
+    attribution_writes_allowed_in:
+      - backend/src/modules/orders/services/orders.service.ts
+
+  payment:
+    handler: PayboxCallbackController + PaymentCoreController
+    writes:
+      - ord_is_pay
+      - ord_date_pay
+      - payment_confirmed
+    allowed_in:
+      - backend/src/modules/payments/controllers/paybox-callback.controller.ts
+      - backend/src/modules/payments/services/paybox-callback-gate.service.ts
+    forbidden_outside: true
+    note: STRICT. Voir feedback_no_payment_module_changes_ever.
+
+  cart:
+    snapshot: frontend (window.location + form state)
+    server_read_at_order_creation: forbidden
+    persistence: Redis (TTL only)
+    invariant: >-
+      createOrder consomme orderData.orderLines (snapshot posté par front).
+      Aucune relecture serveur du panier session. CQRS-like.
+
+  attribution:
+    order_level:
+      writes:
+        - ga_client_id
+        - landing_source
+        - landing_path
+        - landing_first_seen_at
+      handler: OrdersService.createOrder
+    line_level:
+      writes:
+        - orl_website_url
+      handler: OrdersService.createOrder
+    canon: "PR #695 + PR #676"
+
+reads:
+
+  supplier_truth:
+    canonical_projection: SupplierTruthProjection
+    stale_tolerance: 24h
+    cache_policy: "Redis short-TTL <=5min via projection uniquement"
+    forbidden_sources:
+      - "direct from('___xtr_supplier') hors backend/src/modules/supplier-truth/**"
+      - scraping 3rd-party bypassant le connector framework
+      - cache long-TTL (>5min) côté consumer
+    consumers_v1:
+      - admin UI (lecture truth, jamais brut)
+      - OrderAvailabilityListener (event-driven post create)
+    note: Remplace SuppliersService scoring fictif (F4).
+
+  payment_truth:
+    canonical_projection: "ord_is_pay + ord_date_pay + payment_confirmed (cols DB)"
+    source_of_truth: Paybox/SystemPay callbacks HMAC-verified
+    stale_tolerance: 0
+    cache_policy: no cache
+    forbidden_sources:
+      - "frontend assumant ord_is_pay='1' avant callback HMAC-verified"
+      - admin override de payment_confirmed sans HMAC trail
+      - lecture cache Redis pour décision business
+    consumers_v1:
+      - PayboxCallbackController (verify+update)
+      - OrdersService.getOrderById (lecture admin/user)
+
+  order_status_truth:
+    canonical_projection: "ord_ords_id (via OrdersService.getOrderById) + event stream ___xtr_order_history"
+    stale_tolerance: 5s
+    cache_policy: >-
+      Status raw : pas de cache. Snapshot complet admin (ord+lines+history) :
+      Redis OK <=30s avec invalidation event-driven.
+    forbidden_sources:
+      - frontend lisant ord_ords_id depuis un cache non-canonique
+      - worker calculant statut depuis raw events sans lookup ___xtr_order_status
+      - admin lisant statut depuis __seo_event_log
+    consumers_v1:
+      - admin UI (commande détail)
+      - user UI (mes commandes)
+      - PayboxCallbackController (verify before transition)
+
+degraded_modes:
+
+  supplier_truth:
+    trigger: stale > 24h OR truth_score < confidence_threshold OR connector_failure
+    action: >-
+      Front: retirer 'Livré 24-48h'. JSON-LD: omettre Offer.availability.
+      Admin: badge 'supplier degraded' + alert __seo_event_log.
+    fallback: never silent — reject toute promesse 'in stock'
+    observability: __commerce_drift_signals + alert rpc_seo_alerts_v1
+
+  payment_truth:
+    trigger: callback HMAC mismatch OR ord_is_pay/payment_confirmed divergence
+    action: >-
+      Suspendre transition auto vers ord_ords_id='5'. Bloquer downstream events.
+      Push manual reconciliation queue + alert payment-team.
+    fallback: never silent — manual review only
+    observability: __commerce_drift_signals + Sentry critical
+
+  order_status_truth:
+    trigger: "event stream divergence ord_ords_id <> last event to_status"
+    action: >-
+      Marquer 'drift_detected'. Read API renvoie canonical + warning flag.
+      Bloquer writes (read-only per order) jusqu'à reconciliation.
+    fallback: ord_ords_id wins (DB column = ultime SoT), event stream replay required
+    observability: __commerce_drift_signals + admin badge
+
+rpc_authority:
+  contract: >-
+    Toute RPC commerce DOIT déclarer (validé par validator) :
+    owner, invariant_ref, tests, telemetry, audit_trail.
+    Sinon le drift migre du TS vers SQL.
+
+  rpcs:
+    create_order_atomic:
+      owner: OrdersService.createOrder
+      invariant_ref: order_lifecycle.creation
+      tests:
+        - backend/src/modules/orders/services/__tests__/orders.service.test.ts
+      telemetry: "log { rpc, ord_id, source, latency_ms, success/error }"
+      audit_trail: "INSERT ___xtr_order_history (event_type='ORDER_CREATED')"
+
+    cancel_order_atomic:
+      owner: OrdersService.cancelOrder
+      invariant_ref: order_lifecycle.cancellation
+      tests:
+        - backend/src/modules/orders/services/__tests__/orders.service.test.ts
+      telemetry: "log { rpc, ord_id, from_status, source, latency_ms, success/error }"
+      audit_trail: "INSERT ___xtr_order_history (event_type='ORDER_CANCELLED', from_status, to_status='2')"
+
+    append_order_event:
+      owner: OrderStatusService.createStatusHistory
+      invariant_ref: event-stream append-only
+      tests:
+        - backend/src/modules/orders/services/__tests__/order-status.service.test.ts
+      telemetry: "log { rpc, ord_id, event_type, source, latency_ms }"
+      audit_trail: self (la RPC EST l'audit)

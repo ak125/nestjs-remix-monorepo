@@ -1,0 +1,32 @@
+id: commerce-correlation-id-required-on-mutations
+language: typescript
+# Severity = warning in PR-A (rule introduced before the RPC plumbing exists in PR-B/PR-C).
+# Promoted to "error" once create_order_atomic / cancel_order_atomic / append_order_event
+# RPCs are deployed with p_correlation_id NOT NULL.
+severity: warning
+message: |
+  Calls to commerce mutation RPCs MUST provide p_correlation_id.
+  Canon: .spec/00-canon/commerce-runtime/authority-graph.yaml#rpc_authority
+  Causality preserved from day 1 enables event lineage / replay / Operational Knowledge Graph
+  without retroactive backfill (which is impossible if not captured at origin).
+note: |
+  The RPCs (PR-B) declare p_correlation_id DEFAULT gen_random_uuid() for back-compat, but
+  callers should pass an explicit UUID tied to the request context whenever available.
+files:
+  - backend/src/**/*.ts
+ignores:
+  - backend/src/**/*.test.ts
+  - backend/src/**/*.spec.ts
+rule:
+  all:
+    - any:
+        - pattern: $X.callRpc('create_order_atomic', $ARG)
+        - pattern: $X.callRpc("create_order_atomic", $ARG)
+        - pattern: $X.callRpc('cancel_order_atomic', $ARG)
+        - pattern: $X.callRpc("cancel_order_atomic", $ARG)
+        - pattern: $X.callRpc('append_order_event', $ARG)
+        - pattern: $X.callRpc("append_order_event", $ARG)
+    - not:
+        has:
+          regex: 'p_correlation_id'
+          stopBy: end

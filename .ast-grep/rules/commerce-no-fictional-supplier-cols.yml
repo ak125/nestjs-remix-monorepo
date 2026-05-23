@@ -1,0 +1,30 @@
+id: commerce-no-fictional-supplier-cols
+language: typescript
+# Severity = off in PR-A (legacy SuppliersService still references these 15 times,
+# which would push ast_grep.warnings past the deterministic-gates baseline threshold).
+# Promoted to "error" within PR-D in the same commit that removes the scoring.
+severity: off
+message: |
+  References to fictional supplier columns (discount_rate, delivery_delay, is_preferred,
+  supplier_id) are FORBIDDEN. These columns NEVER existed in ___xtr_supplier or
+  ___xtr_supplier_link_pm (verified DB live + legacy PHP ak125/php).
+  Canon: .spec/00-canon/commerce-runtime/authority-graph.yaml#reads.supplier_truth
+  See Vault #301 F4 finding. Real columns: spl_id, spl_name, spl_alias, spl_display, spl_sort.
+note: |
+  Regression sentinel for the SuppliersService scoring fictif removed in PR-D.
+files:
+  - backend/src/**/*.ts
+ignores:
+  - backend/src/**/*.test.ts
+  - backend/src/**/*.spec.ts
+rule:
+  any:
+    - pattern: $X.discount_rate
+    - pattern: $X.delivery_delay
+    - pattern: $X.is_preferred
+    - pattern: $X['discount_rate']
+    - pattern: $X['delivery_delay']
+    - pattern: $X['is_preferred']
+    - pattern: $X["discount_rate"]
+    - pattern: $X["delivery_delay"]
+    - pattern: $X["is_preferred"]
