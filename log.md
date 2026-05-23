@@ -447,3 +447,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `audit/diagnostic-engine-reality-2026-05-23`
 - **Décision** : audit(diag): reality audit V1 Block A — verdict PIVOT + golden dataset seed
 - **Sortie** : PR aucune | commits a7865ebf
+
+## 2026-05-23 — feat/commerce-loop-step-4b-v1a0 (auto)
+
+- **Branche** : `feat/commerce-loop-step-4b-v1a0`
+- **Décision** : feat(commerce-loop): step 4-B V1A.0 — Intent Resolution layer (+2 other commits)
+- **Sortie** : PR #711 | commits 8c073d34 8b1be041 a7865ebf
