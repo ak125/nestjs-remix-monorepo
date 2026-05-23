@@ -1,9 +1,9 @@
 id: commerce-no-hardcoded-status-99
 language: typescript
-# Severity = off in PR-A (OrdersService.cancelOrder still hardcodes 99, which would
-# add to ast_grep.warnings past the deterministic-gates baseline threshold).
-# Promoted to "error" within PR-C in the same commit that removes the 99.
-severity: off
+# PR-A introduced this rule as severity:off (legacy cancelOrder hardcoded 99).
+# PR-C (Vault #301) replaces that path with cancel_order_atomic RPC (canonical '2')
+# in the same commit that promotes severity to error.
+severity: error
 message: |
   Order status '99' does NOT exist in ___xtr_order_status lookup (only '1'..'5').
   Vault #301 — OrdersService.cancelOrder previously hardcoded 99 and failed silently.
