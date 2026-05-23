@@ -44,8 +44,20 @@ services:
 
       # Cache headers pour navigateur/CDN (Cloudflare cache 1 an)
       IMGPROXY_CACHE_CONTROL_PASSTHROUGH: "false"
-      IMGPROXY_TTL: "31536000"               # 1 an en secondes
+      IMGPROXY_TTL: "31536000"               # 1 an en secondes (SUCCESS uniquement)
       IMGPROXY_SET_CANONICAL_HEADER: "true"
+
+      # ═══════════════════════════════════════════════════════════════
+      # 🛡️ Anti cache-poisoning sur upstream failure (INC-2026-015 / ADR-078)
+      # ═══════════════════════════════════════════════════════════════
+      # Avant ce fix : un upstream Supabase 400 (« Source image is unreachable »)
+      # était renvoyé HTTP 200 + cache-control max-age=1an + immutable. Conséquence :
+      # quand Tier B-rev livre enfin les vraies images, le placeholder cached 1 an
+      # gagne tant qu'aucune purge manuelle. Fix : fallback explicite, court-cached
+      # (60s), avec status code de l'upstream (404 si Supabase 404, etc.).
+      IMGPROXY_FALLBACK_IMAGE_URL: "https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/no.png"
+      IMGPROXY_FALLBACK_IMAGE_TTL: "60"      # 60 secondes (vs 1 an success)
+      IMGPROXY_FALLBACK_IMAGE_HTTP_CODE: "0" # 0 = passthrough upstream code
 
       # Performance
       IMGPROXY_CONCURRENCY: "4"
