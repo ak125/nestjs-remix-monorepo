@@ -15,6 +15,8 @@ import { ResultMissing } from "./ResultMissing";
 import { ResultRagFacts } from "./ResultRagFacts";
 import { ResultSafety } from "./ResultSafety";
 import { ResultSummary } from "./ResultSummary";
+// V1A.0 — Intent Resolution renderer (additif, conditionné par présence des champs)
+import { IntentResolutionBlock } from "./IntentResolutionBlock";
 
 interface Props {
   state: WizardState;
@@ -100,6 +102,18 @@ export function DiagnosticResults({
         signalQuality={ep.signal_quality}
         hypothesesCount={ep.candidate_hypotheses.length}
       />
+
+      {/* V1A.0 — Intent Resolution Block (additif, présent si backend feature flag ON) */}
+      {state.result?.intent &&
+        state.result?.recommended_actions &&
+        state.result?.human_escalation && (
+          <IntentResolutionBlock
+            sessionId={state.result.session_id ?? null}
+            intent={state.result.intent}
+            recommendedActions={state.result.recommended_actions}
+            humanEscalation={state.result.human_escalation}
+          />
+        )}
 
       {/* Block 3: Hypotheses */}
       {ep.candidate_hypotheses.length > 0 && (

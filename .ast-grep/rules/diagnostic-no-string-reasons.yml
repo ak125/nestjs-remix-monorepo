@@ -1,0 +1,32 @@
+id: diagnostic-no-string-reasons
+language: typescript
+severity: error
+message: |
+  V1A.0 — Reason codes MUST come from `DiagnosticReasonCodeEnum`.
+  Unsafe `as DiagnosticReasonCode` casts or freeform `DR_*` string literals
+  bypass the enum cap (14 codes V1A.0). They lead to taxonomy drift +
+  analytics breakage.
+
+  Pattern interdit :
+    reason_codes: ['DR_FOO_BAR' as DiagnosticReasonCode]
+    intent.reason_codes.push('DR_NEW_CODE_INVENTED')
+
+  Solution : ajouter la valeur à l'enum via ADR amendment + bump
+  `diagnostic-reason-code.ts`, JAMAIS de string libre.
+note: |
+  Cf. ADR vault "Diagnostic Reason Code Governance" (V1A.0).
+  Catégories : DR_INTENT_*, DR_SAFETY_*, DR_OVERRIDE_*, DR_HANDOFF_*.
+  Cap V1A.0 = 14 codes total. Ajout = PR dédiée + ADR amendment.
+files:
+  - backend/src/**/*.ts
+ignores:
+  # ── SoT canon : ce fichier DÉFINIT l'enum, doit contenir littéraux ──
+  - "**/diagnostic-reason-code.ts"
+  # ── Tests : assertions sur valeurs spécifiques OK ──
+  - "**/*.spec.ts"
+  - "**/*.test.ts"
+  - "**/__tests__/**"
+rule:
+  any:
+    # Unsafe cast pattern
+    - pattern: '$X as DiagnosticReasonCode'

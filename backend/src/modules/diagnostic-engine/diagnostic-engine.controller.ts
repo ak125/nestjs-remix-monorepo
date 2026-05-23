@@ -28,6 +28,16 @@ import {
   type VehicleContextPort,
 } from './ports/vehicle-context.port';
 import { mapAnalyzeInputToVehicleContextPayload } from './vehicle-context-mapping';
+// V1A.0 — Intent Resolution layer
+import { DiagnosticResolutionPipelineService } from './services/diagnostic-resolution-pipeline.service';
+import { OutcomeEmitterService } from './services/outcome-emitter.service';
+import { PIPELINE_VERSION } from './services/version-registry';
+import { getConfidenceBucket } from './services/confidence-policy';
+import {
+  HandoffInputSchema,
+  type AnalyzeResponseV1A0,
+} from './types/analyze-response.schema';
+import type { EvidencePack } from './types/evidence-pack.schema';
 
 @Controller('api/diagnostic-engine')
 export class DiagnosticEngineController {
@@ -40,7 +50,18 @@ export class DiagnosticEngineController {
     private readonly diagnosticContent: DiagnosticContentService,
     @Inject(VEHICLE_CONTEXT_PORT)
     private readonly vehicleContext: VehicleContextPort,
+    // V1A.0 — Intent Resolution layer (composition pure)
+    private readonly intentPipeline: DiagnosticResolutionPipelineService,
+    private readonly outcomeEmitter: OutcomeEmitterService,
   ) {}
+
+  /**
+   * V1A.0 feature flag check (env var). Default false = rollout gated.
+   * Frontend reçoit le payload enrichi uniquement si flag ON.
+   */
+  private isIntentLayerEnabled(): boolean {
+    return process.env.DIAGNOSTIC_PIPELINE_V1_ENABLED === 'true';
+  }
 
   /**
    * GET /api/diagnostic-engine/wizard-steps
@@ -175,11 +196,113 @@ export class DiagnosticEngineController {
 
     await this.persistVehicleContextIfPresent(body, res);
 
-    return {
+    const baseResponse = {
       success: true,
       session_id: result.data!.session_id,
       ...result.data!.evidence,
     };
+
+    // V1A.0 — Intent Resolution layer (additif, feature-flag gated)
+    if (this.isIntentLayerEnabled()) {
+      const intentLayer = await this.computeIntentLayer(
+        body,
+        result.data!.session_id,
+        result.data!.evidence,
+      );
+      if (intentLayer) {
+        return { ...baseResponse, ...intentLayer };
+      }
+    }
+
+    return baseResponse;
+  }
+
+  /**
+   * V1A.0 — compose AnalyzeResponseV1A0 fields depuis EvidencePack.
+   * Fire-and-forget : si pipeline throw (invariant violation), log + skip enrichment.
+   */
+  private async computeIntentLayer(
+    body: unknown,
+    sessionId: string | null,
+    evidence: EvidencePack,
+  ): Promise<Omit<AnalyzeResponseV1A0, 'session_id'> | null> {
+    const vehicleContext = this.extractVehicleContext(body);
+    const vehicleContextPresent = vehicleContext !== null;
+    const symptomSlug = this.extractSymptomSlug(body);
+
+    try {
+      const response = await this.intentPipeline.resolve({
+        sessionId,
+        pack: evidence.evidence_pack,
+        vehicleContextPresent,
+        symptomSlug,
+      });
+      return {
+        mode: response.mode,
+        versions: response.versions,
+        intent: response.intent,
+        recommended_actions: response.recommended_actions,
+        human_escalation: response.human_escalation,
+      };
+    } catch (err) {
+      this.logger.warn(
+        `Intent pipeline skipped: ${(err as Error).message}`,
+      );
+      return null;
+    }
+  }
+
+  private extractVehicleContext(body: unknown): Record<string, unknown> | null {
+    if (!body || typeof body !== 'object') return null;
+    const vc = (body as Record<string, unknown>).vehicle_context;
+    if (!vc || typeof vc !== 'object') return null;
+    const obj = vc as Record<string, unknown>;
+    const hasContent = Object.values(obj).some(
+      (v) => v !== null && v !== undefined && v !== '',
+    );
+    return hasContent ? obj : null;
+  }
+
+  private extractSymptomSlug(body: unknown): string | undefined {
+    if (!body || typeof body !== 'object') return undefined;
+    const si = (body as Record<string, unknown>).signal_input as
+      | Record<string, unknown>
+      | undefined;
+    const primary = si?.primary_signal;
+    return typeof primary === 'string' ? primary : undefined;
+  }
+
+  /**
+   * POST /api/diagnostic-engine/handoff
+   *
+   * V1A.0 — Émet canonical event `diagnostic_resolution_outcome`
+   * avec `outcome_type='action_clicked'` tagué `target_role`.
+   *
+   * Anti double-truth : pas d'event séparé `to_commerce` ou `to_human`,
+   * dérivations runtime via `payload->>'target_role'`.
+   */
+  @Post('handoff')
+  async handoff(@Body() body: unknown) {
+    const parse = HandoffInputSchema.safeParse(body);
+    if (!parse.success) {
+      return {
+        success: false,
+        error: `Validation error: ${parse.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join(', ')}`,
+      };
+    }
+    const input = parse.data;
+
+    await this.outcomeEmitter.emitActionClicked({
+      sessionId: input.session_id,
+      actionType: input.action_type,
+      targetRole: input.target_role,
+      intent: input.intent,
+      confidence: input.confidence,
+      confidenceBucket: getConfidenceBucket(input.confidence),
+      pipelineVersion: PIPELINE_VERSION,
+    });
+
+    return { success: true };
   }
 
   /**

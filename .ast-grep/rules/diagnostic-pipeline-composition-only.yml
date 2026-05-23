@@ -1,0 +1,29 @@
+id: diagnostic-pipeline-composition-only
+language: typescript
+severity: error
+message: |
+  V1A.0 — `DiagnosticResolutionPipelineService.resolve()` doit rester
+  COMPOSITION PURE STRICTE (≤50 LOC, aucune règle métier inline).
+
+  Délègue à services dédiés (IntentClassifier, ActionRecommender,
+  HumanEscalationBuilder, InvariantAsserter, OutcomeEmitter).
+  Tout `if` / `switch` / `for` dans ce fichier viole le contrat.
+
+  Si tu as besoin de logique conditionnelle :
+    - ajoute-la au service dédié (classifier/recommender/etc.)
+    - jamais dans le pipeline
+
+  Source de vérité : ADR vault "Pipeline Composition-Only Principle".
+note: |
+  Anti-meta-god-service : le pipeline est un point de composition,
+  pas un orchestrateur géant. Les invariants vivent dans `InvariantAsserter`,
+  la logique métier dans les services purs en amont.
+files:
+  - backend/src/modules/diagnostic-engine/services/diagnostic-resolution-pipeline.service.ts
+rule:
+  any:
+    - pattern: 'if ($_) { $$$ }'
+    - pattern: 'switch ($_) { $$$ }'
+    - pattern: 'for (let $_ of $_) { $$$ }'
+    - pattern: 'for (const $_ of $_) { $$$ }'
+    - pattern: 'while ($_) { $$$ }'
