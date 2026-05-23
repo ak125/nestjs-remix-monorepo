@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "captured_at": "2026-05-16",
-  "captured_on_commit": "95403c7d3",
+  "captured_at": "2026-05-23",
+  "captured_on_commit": "795cb4ea",
   "thresholds": {
     "unused_files_delta": 5,
     "unused_exports_delta": 10,
@@ -15,13 +15,13 @@
     "ast_grep_errors_delta": 0
   },
   "knip": {
-    "unused_files": 328,
-    "unused_exports": 238,
-    "unused_types": 214,
+    "unused_files": 334,
+    "unused_exports": 243,
+    "unused_types": 225,
     "unused_dependencies": 4,
-    "unused_dev_dependencies": 4,
-    "unlisted_dependencies": 37,
-    "unlisted_binaries": 5,
+    "unused_dev_dependencies": 5,
+    "unlisted_dependencies": 11,
+    "unlisted_binaries": 6,
     "duplicate_exports": 41
   },
   "madge": {
@@ -30,15 +30,15 @@
     "frontend_cycles": 1
   },
   "depcruise": {
-    "violations": 144,
+    "violations": 147,
     "errors": 0,
     "modules_cruised": 2101,
     "dependencies_cruised": 8425,
-    "warnings": 144
+    "warnings": 147
   },
   "ast_grep": {
     "warnings": 11,
-    "errors": 0
+    "errors": 5
   },
   "notes": [
     "Thresholds are UPPER bounds for +delta; going DOWN (negative delta) is always allowed.",
