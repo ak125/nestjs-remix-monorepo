@@ -162,7 +162,11 @@ describe('ActionRecommender V1A.0', () => {
   });
 
   test('target_role tags piece=R2, appel=human, guide=R3', () => {
-    const result = svc.recommend(mkIntent({ value: 'urgence' }), mkPack(), true);
+    const result = svc.recommend(
+      mkIntent({ value: 'urgence' }),
+      mkPack(),
+      true,
+    );
     const appel = result.find((a) => a.type === 'appel');
     expect(appel?.target_role).toBe('human');
 

@@ -5,8 +5,6 @@
  * lit `type`/`label_key`/`target`/`target_role`, render, log click via handoff API.
  */
 import { Link } from "@remix-run/react";
-import { Card } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
 import {
   PhoneCall,
   Wrench,
@@ -18,12 +16,14 @@ import {
   Stethoscope,
   UserRound,
 } from "lucide-react";
-import type {
-  ActionType,
-  RecommendedAction,
-  DiagnosticIntent,
-} from "./v1a-intent-types";
+import { Button } from "~/components/ui/button";
+import { Card } from "~/components/ui/card";
 import { emitHandoff } from "./v1a-handoff-client";
+import  {
+  type ActionType,
+  type RecommendedAction,
+  type DiagnosticIntent,
+} from "./v1a-intent-types";
 
 const ICONS: Record<ActionType, React.ComponentType<{ className?: string }>> = {
   piece: ShoppingCart,

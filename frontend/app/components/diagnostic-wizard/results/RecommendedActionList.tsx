@@ -6,11 +6,11 @@
  *
  * Backend = single source of truth.
  */
-import type {
-  RecommendedAction,
-  DiagnosticIntent,
-} from "./v1a-intent-types";
 import { ActionCard } from "./ActionCard";
+import  {
+  type RecommendedAction,
+  type DiagnosticIntent,
+} from "./v1a-intent-types";
 
 interface Props {
   actions: RecommendedAction[];

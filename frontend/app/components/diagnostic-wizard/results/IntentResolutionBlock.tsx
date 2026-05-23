@@ -6,13 +6,13 @@
  *
  * Composé par DiagnosticResults.tsx quand le payload backend contient les champs V1A.0.
  */
-import type {
-  IntentLayer,
-  RecommendedAction,
-  HumanEscalation,
-} from "./v1a-intent-types";
-import { RecommendedActionList } from "./RecommendedActionList";
 import { HumanEscalationCard } from "./HumanEscalationCard";
+import { RecommendedActionList } from "./RecommendedActionList";
+import  {
+  type IntentLayer,
+  type RecommendedAction,
+  type HumanEscalation,
+} from "./v1a-intent-types";
 
 interface Props {
   sessionId: string | null;

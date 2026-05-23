@@ -7,6 +7,7 @@
 import { Loader2, RefreshCw } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { type WizardState, type WizardAction } from "../types";
+import { IntentResolutionBlock } from "./IntentResolutionBlock";
 import { ResultCatalog } from "./ResultCatalog";
 import { ResultDisclaimer } from "./ResultDisclaimer";
 import { ResultHypotheses } from "./ResultHypotheses";
@@ -16,7 +17,6 @@ import { ResultRagFacts } from "./ResultRagFacts";
 import { ResultSafety } from "./ResultSafety";
 import { ResultSummary } from "./ResultSummary";
 // V1A.0 — Intent Resolution renderer (additif, conditionné par présence des champs)
-import { IntentResolutionBlock } from "./IntentResolutionBlock";
 
 interface Props {
   state: WizardState;

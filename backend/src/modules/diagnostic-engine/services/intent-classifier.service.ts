@@ -22,10 +22,7 @@ import type {
   ConfidenceBucket,
 } from '../types/diagnostic-intent';
 import type { DiagnosticReasonCode } from '../types/diagnostic-reason-code';
-import {
-  getConfidenceBucket,
-  SAFETY_RAIL_THRESHOLD,
-} from './confidence-policy';
+import { getConfidenceBucket } from './confidence-policy';
 
 export type IntentResult = {
   value: DiagnosticIntent;
@@ -84,10 +81,7 @@ export class IntentClassifierService {
       pack.catalog_guard.allowed_output_mode === 'none' ||
       !pack.catalog_guard.ready_for_catalog;
     if (catalogClosed && multiSystem) {
-      const confidence = Math.min(
-        0.9,
-        0.5 + 0.1 * pack.system_suspects.length,
-      );
+      const confidence = Math.min(0.9, 0.5 + 0.1 * pack.system_suspects.length);
       return {
         value: 'garage',
         confidence,
@@ -113,8 +107,7 @@ export class IntentClassifierService {
     const catalogReady =
       pack.catalog_guard.ready_for_catalog &&
       pack.catalog_guard.confidence_before_purchase !== 'low';
-    const hasGamme =
-      (pack.catalog_guard.suggested_gammes?.length ?? 0) > 0;
+    const hasGamme = (pack.catalog_guard.suggested_gammes?.length ?? 0) > 0;
     if (catalogReady && hasGamme && vehicleContextPresent) {
       const confidenceMap = {
         high: 0.9,

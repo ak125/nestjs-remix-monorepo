@@ -44,10 +44,7 @@ describe('IntentClassifier V1A.0', () => {
   });
 
   test('safety_rail: low diagnostic_confidence triggers safety', () => {
-    const result = svc.classify(
-      mkPack({ diagnostic_confidence: 20 }),
-      true,
-    );
+    const result = svc.classify(mkPack({ diagnostic_confidence: 20 }), true);
     expect(result.safety_rail).toBe(true);
     expect(result.reason_codes).toContain(
       'DR_SAFETY_HYPOTHESIS_CONFIDENCE_INSUFFICIENT',
@@ -55,25 +52,18 @@ describe('IntentClassifier V1A.0', () => {
   });
 
   test('urgence: risk_level critical → DR_INTENT_SAFETY_URGENCY_CRITICAL', () => {
-    const result = svc.classify(
-      mkPack({ risk_level: 'critical' }),
-      true,
-    );
+    const result = svc.classify(mkPack({ risk_level: 'critical' }), true);
     expect(result.value).toBe('urgence');
     expect(result.safety_rail).toBe(false);
     expect(result.confidence).toBe(1.0);
-    expect(result.reason_codes).toEqual([
-      'DR_INTENT_SAFETY_URGENCY_CRITICAL',
-    ]);
+    expect(result.reason_codes).toEqual(['DR_INTENT_SAFETY_URGENCY_CRITICAL']);
   });
 
   test('urgence: risk_level high → DR_INTENT_SAFETY_URGENCY_IMMINENT', () => {
     const result = svc.classify(mkPack({ risk_level: 'high' }), true);
     expect(result.value).toBe('urgence');
     expect(result.confidence).toBeCloseTo(0.85, 2);
-    expect(result.reason_codes).toEqual([
-      'DR_INTENT_SAFETY_URGENCY_IMMINENT',
-    ]);
+    expect(result.reason_codes).toEqual(['DR_INTENT_SAFETY_URGENCY_IMMINENT']);
   });
 
   test('garage: multi-system + catalog closed', () => {
@@ -109,9 +99,7 @@ describe('IntentClassifier V1A.0', () => {
     expect(result.value).toBe('commerce');
     expect(result.confidence).toBe(0.7);
     expect(result.confidence_bucket).toBe('strong');
-    expect(result.reason_codes).toContain(
-      'DR_INTENT_HIGH_CONFIDENCE_COMMERCE',
-    );
+    expect(result.reason_codes).toContain('DR_INTENT_HIGH_CONFIDENCE_COMMERCE');
   });
 
   test('commerce: high confidence → very_strong bucket', () => {

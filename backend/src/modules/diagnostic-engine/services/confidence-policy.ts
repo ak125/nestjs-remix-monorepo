@@ -20,9 +20,7 @@ export const SAFETY_RAIL_THRESHOLD = 0.5;
 
 export function getConfidenceBucket(score: number): ConfidenceBucket {
   if (!Number.isFinite(score) || score < 0 || score > 1) {
-    throw new RangeError(
-      `Confidence score must be in [0,1], got ${score}`,
-    );
+    throw new RangeError(`Confidence score must be in [0,1], got ${score}`);
   }
   if (score < 0.3) return 'weak';
   if (score < 0.5) return 'ambiguous';

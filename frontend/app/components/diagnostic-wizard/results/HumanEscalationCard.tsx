@@ -7,14 +7,14 @@
  *   - false : rendue en SECONDAIRE (au-dessous, anti-cannibalisation)
  */
 import { Link } from "@remix-run/react";
-import { Card } from "~/components/ui/card";
-import { Button } from "~/components/ui/button";
 import { UserRound, AlertCircle } from "lucide-react";
-import type {
-  HumanEscalation,
-  DiagnosticIntent,
-} from "./v1a-intent-types";
+import { Button } from "~/components/ui/button";
+import { Card } from "~/components/ui/card";
 import { emitHandoff } from "./v1a-handoff-client";
+import  {
+  type HumanEscalation,
+  type DiagnosticIntent,
+} from "./v1a-intent-types";
 
 interface Props {
   escalation: HumanEscalation;

@@ -20,10 +20,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { ConfigService } from '@nestjs/config';
 import type { AnalyzeResponseV1A0 } from '../types/analyze-response.schema';
-import type {
-  ActionType,
-  TargetRole,
-} from '../types/recommended-action';
+import type { ActionType, TargetRole } from '../types/recommended-action';
 import type { DiagnosticIntent } from '../types/diagnostic-intent';
 import type { DiagnosticReasonCode } from '../types/diagnostic-reason-code';
 
@@ -86,8 +83,7 @@ export class OutcomeEmitterService extends SupabaseBaseService {
       reason_codes: response.intent.reason_codes,
       safety_rail: response.intent.safety_rail,
       vehicle_ctx_present: vehicleContextPresent,
-      human_escalation_priority_boost:
-        response.human_escalation.priority_boost,
+      human_escalation_priority_boost: response.human_escalation.priority_boost,
       pipeline_version: response.versions.pipeline_version,
       mode: response.mode,
     };
@@ -117,8 +113,7 @@ export class OutcomeEmitterService extends SupabaseBaseService {
       reason_codes: ['DR_HANDOFF_TO_COMMERCE'], // top-level handoff marker; refined V1A.1
       safety_rail: false,
       vehicle_ctx_present: true, // handoff implies session context exists
-      human_escalation_priority_boost:
-        params.targetRole === 'human',
+      human_escalation_priority_boost: params.targetRole === 'human',
       pipeline_version: params.pipelineVersion,
       mode: 'reactive',
       action_type: params.actionType,

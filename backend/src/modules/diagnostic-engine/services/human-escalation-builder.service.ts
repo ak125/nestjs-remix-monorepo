@@ -37,9 +37,7 @@ export class HumanEscalationBuilderService {
     };
   }
 
-  private buildBoostReasonCodes(
-    intent: IntentResult,
-  ): DiagnosticReasonCode[] {
+  private buildBoostReasonCodes(intent: IntentResult): DiagnosticReasonCode[] {
     const codes: DiagnosticReasonCode[] = [];
 
     if (intent.value === 'urgence') {

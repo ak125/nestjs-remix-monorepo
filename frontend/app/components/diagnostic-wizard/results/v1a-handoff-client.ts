@@ -4,10 +4,10 @@
  * Émet canonical event `action_clicked` tagué target_role.
  * Fire-and-forget : si l'event échoue, la navigation user n'est pas bloquée.
  */
-import type {
-  ActionType,
-  DiagnosticIntent,
-  TargetRole,
+import  {
+  type ActionType,
+  type DiagnosticIntent,
+  type TargetRole,
 } from './v1a-intent-types';
 
 export interface HandoffPayload {

@@ -41,12 +41,7 @@ const SEQUENCES: Record<DiagnosticIntent | 'safety_rail', ActionType[]> = {
   devis: ['devis', 'piece', 'garage', 'appel'],
   education: ['assistant_diagnostic', 'faq', 'guide', 'devis'],
   reassurance: ['faq', 'guide', 'entretien_pack', 'piece'],
-  safety_rail: [
-    'human_resolution',
-    'assistant_diagnostic',
-    'appel',
-    'faq',
-  ],
+  safety_rail: ['human_resolution', 'assistant_diagnostic', 'appel', 'faq'],
 };
 
 const TYPE_TO_TARGET_ROLE: Record<ActionType, TargetRole> = {
@@ -85,9 +80,7 @@ export class ActionRecommenderService {
     pack: EvidencePackInner,
     vehicleContextPresent: boolean,
   ): RecommendedAction[] {
-    const sequenceKey = intent.safety_rail
-      ? 'safety_rail'
-      : intent.value;
+    const sequenceKey = intent.safety_rail ? 'safety_rail' : intent.value;
     let sequence = [...SEQUENCES[sequenceKey]];
 
     // Override #1 : si vehicle absent, déplacer `piece` après `assistant_diagnostic`

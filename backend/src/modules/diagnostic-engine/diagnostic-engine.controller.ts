@@ -245,9 +245,7 @@ export class DiagnosticEngineController {
         human_escalation: response.human_escalation,
       };
     } catch (err) {
-      this.logger.warn(
-        `Intent pipeline skipped: ${(err as Error).message}`,
-      );
+      this.logger.warn(`Intent pipeline skipped: ${(err as Error).message}`);
       return null;
     }
   }

@@ -35,10 +35,7 @@ export class InvariantAsserterService {
   /**
    * Assert tous les invariants V1A.0. Throw au premier échec.
    */
-  assert(
-    response: AnalyzeResponseV1A0,
-    vehicleContextPresent: boolean,
-  ): void {
+  assert(response: AnalyzeResponseV1A0, vehicleContextPresent: boolean): void {
     this.assertPrioritiesAscending(response);
     this.assertSafetyRailTopAction(response);
     this.assertNoPieceTopWhenVehicleAbsent(response, vehicleContextPresent);
@@ -121,9 +118,7 @@ export class InvariantAsserterService {
   }
 
   // ── Invariant #5 ────────────────────────────────────────────
-  private assertConfidenceAndEscalation(
-    response: AnalyzeResponseV1A0,
-  ): void {
+  private assertConfidenceAndEscalation(response: AnalyzeResponseV1A0): void {
     const conf = response.intent.confidence;
     if (!Number.isFinite(conf) || conf < 0 || conf > 1) {
       throw new ResolutionInvariantViolationError(
