@@ -37,6 +37,11 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: low
+  - glob: .claude/top-priorities.md
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
   - glob: .spec/00-canon/ai-registry/**
     domain: D15
     owner: '@ak125'

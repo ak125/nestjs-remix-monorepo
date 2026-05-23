@@ -1,6 +1,6 @@
 {
-  "compliantCount": 8,
-  "generatedAt": "2026-05-18T14:37:29.046Z",
+  "compliantCount": 10,
+  "generatedAt": "2026-05-23T10:26:42.241Z",
   "issues": [],
   "schemaPath": ".spec/00-canon/ai-registry/skill.schema.json",
   "schemaVersion": "1.0.0",
@@ -148,6 +148,33 @@
       "type": "technique"
     },
     {
+      "checksum": "sha256:b1ad11e3dc7ce67295c359e5aac80f61019034b91bf27193c99abaf52480f641",
+      "domain": "D15",
+      "last_verified": "2026-05-23",
+      "llm_safe": true,
+      "metadata": {
+        "argument-hint": "[check-name or 'all']",
+        "spec": "agentskills.io/specification v1",
+        "version": "0.1"
+      },
+      "name": "runtime-truth-audit",
+      "owners": [
+        "@ak125"
+      ],
+      "path": ".claude/skills/runtime-truth-audit/SKILL.md",
+      "runtime_class": "read-only",
+      "spec_compliant": true,
+      "status": "experimental",
+      "tags": [
+        "adr-058",
+        "audit",
+        "governance",
+        "prevention",
+        "runtime"
+      ],
+      "type": "technique"
+    },
+    {
       "checksum": "sha256:2635f7fee262729b9670f8bd2777a707f26b1bceb4131652b0a08102f37be7d5",
       "domain": "D15",
       "last_verified": "2026-05-18",
@@ -228,7 +255,37 @@
         "vlevel"
       ],
       "type": "technique"
+    },
+    {
+      "checksum": "sha256:9a60e7fb172ba81dca3f2c11e37a6374788f1e4f2ed647a07cfc065bac45eba4",
+      "domain": "D3",
+      "last_verified": "2026-05-23",
+      "llm_safe": true,
+      "metadata": {
+        "argument-hint": "[check-name or 'all']",
+        "spec": "agentskills.io/specification v1",
+        "version": "0.1"
+      },
+      "name": "web-vitals-audit",
+      "owners": [
+        "@ak125"
+      ],
+      "path": ".claude/skills/web-vitals-audit/SKILL.md",
+      "runtime_class": "read-only",
+      "spec_compliant": true,
+      "status": "experimental",
+      "tags": [
+        "audit",
+        "cls",
+        "frontend",
+        "inp",
+        "lcp",
+        "performance",
+        "remix",
+        "web-vitals"
+      ],
+      "type": "technique"
     }
   ],
-  "totalSkills": 8
+  "totalSkills": 10
 }
