@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ak125/nestjs-remix-monorepo/.spec/00-canon/commerce-runtime/authority-graph.schema.json",
+  "title": "Commerce Runtime Authority Graph",
+  "description": "L2 canon overlay for commerce-runtime authorities, reads, degraded modes, and RPC contracts. Plan: /home/deploy/.claude/plans/utiliser-superpower-p0-modular-brooks.md",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "domain", "generated", "governance", "authorities", "reads", "degraded_modes", "rpc_authority"],
+  "properties": {
+    "schemaVersion": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "domain": { "type": "string", "enum": ["commerce"] },
+    "generated": { "type": "boolean", "const": false },
+
+    "governance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_lines", "max_domains", "review_cadence", "prose_max_lines_per_field", "removal_policy"],
+      "properties": {
+        "max_lines": { "type": "integer", "minimum": 50, "maximum": 250 },
+        "max_domains": { "type": "integer", "minimum": 1, "maximum": 8 },
+        "review_cadence": { "type": "string", "enum": ["quarterly"] },
+        "prose_max_lines_per_field": { "type": "integer", "minimum": 1, "maximum": 5 },
+        "removal_policy": { "type": "string", "minLength": 20 }
+      }
+    },
+
+    "authorities": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object"
+      }
+    },
+
+    "reads": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": ["canonical_projection", "stale_tolerance", "cache_policy", "forbidden_sources"],
+        "properties": {
+          "canonical_projection": { "type": "string", "minLength": 3 },
+          "stale_tolerance": { "type": ["string", "integer"] },
+          "cache_policy": { "type": "string", "minLength": 3 },
+          "forbidden_sources": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 3 }
+          },
+          "consumers_v1": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "source_of_truth": { "type": "string" },
+          "note": { "type": "string" }
+        }
+      }
+    },
+
+    "degraded_modes": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": ["trigger", "action", "fallback", "observability"],
+        "properties": {
+          "trigger": { "type": "string", "minLength": 5 },
+          "action": { "type": "string", "minLength": 5 },
+          "fallback": { "type": "string", "minLength": 5 },
+          "observability": { "type": "string", "minLength": 3 }
+        }
+      }
+    },
+
+    "rpc_authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract", "rpcs"],
+      "properties": {
+        "contract": { "type": "string", "minLength": 20 },
+        "rpcs": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["owner", "invariant_ref", "tests", "telemetry", "audit_trail"],
+            "properties": {
+              "owner": { "type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_]*(\\.[A-Za-z][A-Za-z0-9_]*)+$" },
+              "invariant_ref": { "type": "string", "minLength": 3 },
+              "tests": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "type": "string", "pattern": "^(backend|frontend|packages|scripts)/" }
+              },
+              "telemetry": { "type": "string", "minLength": 10 },
+              "audit_trail": { "type": "string", "minLength": 3 }
+            }
+          }
+        }
+      }
+    }
+  }
+}

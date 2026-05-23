@@ -1,0 +1,22 @@
+id: commerce-no-direct-supplier-read
+language: typescript
+# Severity = off in PR-A (this PR). Switched to "error" in PR-D once SuppliersService
+# scoring is removed and Supplier Truth V1 is canonical SoT.
+severity: off
+message: |
+  Direct read of ___xtr_supplier is FORBIDDEN outside SupplierTruthModule.
+  Canon: .spec/00-canon/commerce-runtime/authority-graph.yaml#reads.supplier_truth
+  Use SupplierTruthProjection (read API) instead.
+note: |
+  Activated post-cleanup of SuppliersService scoring fictif (F4, Vault #301).
+  Override allowed for migrations and audit scripts (// AUTHORITY-OVERRIDE: <reason>).
+files:
+  - backend/src/**/*.ts
+ignores:
+  - backend/src/modules/supplier-truth/**
+  - backend/supabase/migrations/**
+  - scripts/audit/**
+rule:
+  any:
+    - pattern: $X.from('___xtr_supplier').$$$
+    - pattern: $X.from("___xtr_supplier").$$$

@@ -1,0 +1,64 @@
+name: Commerce Runtime canon gate (PR-A, hard-fail)
+
+# Commerce Runtime Authority canon validator.
+#
+# Validates `.spec/00-canon/commerce-runtime/authority-graph.yaml` against:
+#   1. JSON Schema (authority-graph.schema.json)
+#   2. Anti-inflation hard caps (max_lines <= 250, max_domains <= 8, prose_max <= 3)
+#   3. RPC owner files exist (warn-only — V1 PRs ship incrementally)
+#   4. `*_allowed_in` paths exist (warn-only)
+#
+# Unlike skills-canon-gate (which is Phase 0 warn-only), this gate is hard-fail
+# from day 1: the canon is small and authoritative, errors must be fixed before
+# merge.
+#
+# Trigger : PRs touching the canon, schema, validator, or this workflow itself.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".spec/00-canon/commerce-runtime/**"
+      - "scripts/governance/validate-authority-graph.js"
+      - ".github/workflows/commerce-runtime-canon-gate.yml"
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  commerce-runtime-canon-gate:
+    name: Commerce Runtime canon (schema + anti-inflation, hard-fail)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install
+        run: npm ci
+
+      - name: Validate authority-graph (JSON output)
+        id: gate
+        run: |
+          set -e
+          node scripts/governance/validate-authority-graph.js --json > /tmp/authority-graph-report.json
+          cat /tmp/authority-graph-report.json | jq -c '{file, lineCount, schemaOk, summary}'
+
+      - name: Surface findings
+        if: always()
+        run: |
+          if [ -f /tmp/authority-graph-report.json ]; then
+            echo "## Commerce Runtime canon report" >> $GITHUB_STEP_SUMMARY
+            echo '```json' >> $GITHUB_STEP_SUMMARY
+            cat /tmp/authority-graph-report.json >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi

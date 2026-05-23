@@ -1,0 +1,23 @@
+id: commerce-no-hardcoded-status-99
+language: typescript
+# Severity = off in PR-A (OrdersService.cancelOrder still hardcodes 99, which would
+# add to ast_grep.warnings past the deterministic-gates baseline threshold).
+# Promoted to "error" within PR-C in the same commit that removes the 99.
+severity: off
+message: |
+  Order status '99' does NOT exist in ___xtr_order_status lookup (only '1'..'5').
+  Vault #301 — OrdersService.cancelOrder previously hardcoded 99 and failed silently.
+  Cancel = '2' (canon). Use OrderStatus.CANCELLED from @repo/domain-commerce.
+note: |
+  Regression sentinel for the cancelOrder bug fixed in PR-C.
+  Real cancel value = '2' ("Commande annulée") per ___xtr_order_status lookup.
+files:
+  - backend/src/modules/orders/**/*.ts
+ignores:
+  - backend/src/modules/orders/**/*.test.ts
+  - backend/src/modules/orders/**/*.spec.ts
+rule:
+  any:
+    - pattern: "{ status: 99 }"
+    - pattern: "{ ord_ords_id: '99' }"
+    - pattern: '{ ord_ords_id: "99" }'
