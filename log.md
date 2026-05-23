@@ -418,26 +418,26 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Décision** : fix(commerce-loop): eslint — prettier wrap + safeLocalStorage dans funnel (+5 other commits)
 - **Sortie** : PR #676 | commits 477564255 71198a3ab af96bc122 367574432 a8b1dd059 8d7652572
 
-## 2026-05-22 — fix/retire-smallint-id-param-pipe (auto)
+## 2026-05-22 — fix param id véhicule int4 + retrait foot-gun smallint
 
-- **Branche** : `fix/retire-smallint-id-param-pipe`
-- **Décision** : fix(vehicles): retire smallint id param pipe (root-cause foot-gun) + ast-grep guard
-- **Sortie** : PR #689 | commits 196dade1c
+- **Branche** : `fix/vehicle-modelid-int4-pipe` + `fix/retire-smallint-id-param-pipe` (mergées, supprimées)
+- **Décision** : modelId/brandId validés en int4 (type réel colonne, max 667022) — `PositiveSmallIntParamPipe` rejetait 400 sur ~82% des modèles ; pipe smallint supprimé (foot-gun), garde ast-grep `.max(32767)` + test régression controller ajoutés.
+- **Sortie** : PRs #686 (live prod, tag v2026.05.21-vehicle-modelid-int4) #689 (mergé main, prod via prochaine release) | fichiers `backend/src/modules/vehicles/vehicles.controller.ts`, `backend/src/common/{schemas/numeric-param.schema.ts,pipes/params/}`, `.ast-grep/rules/backend-no-subint4-ceiling-on-id-param.yml`
 
-## 2026-05-22 — feat/cart-line-source-attribution (auto)
+## 2026-05-22 — INP /pieces/ mobile : root cause + déploiement PROD
 
-- **Branche** : `feat/cart-line-source-attribution`
-- **Décision** : feat(cart): attribution source d'ajout par-ligne (orl_website_url)
-- **Sortie** : PR #695 | commits 30b25cc02
+- **Branche** : `perf/inp-pieces-content-visibility` (+ `perf/inp-attribution-instrumentation`)
+- **Décision** : INP 537ms p75 mobile = ouverture Radix Sheet (menu + panier, header partagé) forçant un reflow full-document ; corrigé par `content-visibility` sur blocs below-fold (−25% mesuré live PROD), attribution web-vitals livrée pour le diagnostic terrain.
+- **Sortie** : PRs #692 #694 (merged) | tag PROD `v2026.05.22-inp-pieces-content-visibility` | fichiers `frontend/app/utils/web-vitals.client.ts`, `frontend/app/global.css`, `frontend/app/components/pieces/PiecesVehicleContent.tsx`
 
-## 2026-05-22 — chore/remove-broken-order-status-duplicate (auto)
+## 2026-05-22 — Rotation partitions SEO (snapshot daily + mensuel)
 
-- **Branche** : `chore/remove-broken-order-status-duplicate`
-- **Décision** : refactor(orders): retire le doublon cassé OrderStatusService/Controller (F3)
-- **Sortie** : PR #696 | commits 73fcefe71
+- **Branche** : `fix/seo-observability-partition-rotation`
+- **Décision** : revue de la migration rotation snapshot daily (sûre, ajout `.down.sql`) ; livré la rotation mensuelle observability (gsc/ga4/cwv premake+3 TTL 18mo) + quality_history (réutilise `ensure_next_quality_history_partition`) pour éviter les falaises d'épuisement de partitions 2026-07-01 / 2026-08-01.
+- **Sortie** : PR #698 (open) | fichiers `backend/supabase/migrations/20260522_seo_observability_partition_rotation.sql` (+`.down.sql`)
 
-## 2026-05-23 — recovery/pieces-media-img-corruption-20260523 (auto)
+## 2026-05-23 — pieces_media_img recovery Tier C + gardes (ADR-078)
 
 - **Branche** : `recovery/pieces-media-img-corruption-20260523`
-- **Décision** : fix(catalog): pieces_media_img recovery — Tier C soft-hide + structural guards (ADR-078)
-- **Sortie** : PR #699 | commits a44deeb9d
+- **Décision** : Soft-hide 1.1M lignes malformées (357K pièces affichées, 103 marques) → fallback no.png ; Tier B (vraies images) différé car files absents de toute l'infra ; 4 gardes structurelles installées (audit nightly + ast-grep paginate + brand-folder registry canon L2 + spot-fix shipping).
+- **Sortie** : PR #699 + vault PR #302 (ADR-078 / INC-2026-015) | commits a44deeb9d + 2ee8c3c (vault) | fichiers `.spec/00-canon/repository-registry/brand-folder-registry.yaml`, `scripts/audit/audit-pieces-media-img-invariants.sh`, `.ast-grep/rules/supabase-js-bulk-select-paginate.yml`, `scripts/recovery/tier-c-softhide-malformed-p1.sql`, `backend/src/modules/cart/services/shipping-calculator.service.ts`
