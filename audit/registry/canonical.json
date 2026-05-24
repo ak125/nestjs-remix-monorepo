@@ -20069,6 +20069,7 @@
     {
       "declaredIn": [
         "packages/database-types/package.json",
+        "packages/domain-commerce/package.json",
         "packages/registry/package.json",
         "packages/seo-role-contracts/package.json",
         "packages/seo-roles/package.json",
@@ -20085,6 +20086,7 @@
       "version": "^20.0.0",
       "workspaces": [
         "@repo/database-types",
+        "@repo/domain-commerce",
         "@repo/registry",
         "@repo/seo-role-contracts",
         "@repo/seo-roles",
@@ -20286,114 +20288,58 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
-      ],
-      "id": "npm:@typescript-eslint/eslint-plugin@^6.7.4",
-      "name": "@typescript-eslint/eslint-plugin",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^6.7.4",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
-    },
-    {
-      "declaredIn": [
+        "backend/package.json",
+        "frontend/package.json",
         "packages/eslint-config/package.json"
       ],
-      "id": "npm:@typescript-eslint/eslint-plugin@^7.2.0",
+      "id": "npm:@typescript-eslint/eslint-plugin@^8.59.4",
       "name": "@typescript-eslint/eslint-plugin",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^7.2.0",
+      "version": "^8.59.4",
       "workspaces": [
-        "@fafa/eslint-config"
-      ]
-    },
-    {
-      "declaredIn": [
-        "backend/package.json"
-      ],
-      "id": "npm:@typescript-eslint/eslint-plugin@^8.0.0",
-      "name": "@typescript-eslint/eslint-plugin",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^8.0.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
-    },
-    {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
-      "id": "npm:@typescript-eslint/parser@^6.7.4",
-      "name": "@typescript-eslint/parser",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^6.7.4",
-      "workspaces": [
+        "@fafa/backend",
+        "@fafa/eslint-config",
         "@fafa/frontend"
       ]
     },
     {
       "declaredIn": [
+        "backend/package.json",
+        "frontend/package.json",
         "packages/eslint-config/package.json",
         "packages/eslint-plugin-fafa-ports/package.json"
       ],
-      "id": "npm:@typescript-eslint/parser@^7.2.0",
+      "id": "npm:@typescript-eslint/parser@^8.59.4",
       "name": "@typescript-eslint/parser",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^7.2.0",
+      "version": "^8.59.4",
       "workspaces": [
+        "@fafa/backend",
         "@fafa/eslint-config",
+        "@fafa/frontend",
         "eslint-plugin-fafa-ports"
       ]
     },
     {
       "declaredIn": [
-        "backend/package.json"
-      ],
-      "id": "npm:@typescript-eslint/parser@^8.0.0",
-      "name": "@typescript-eslint/parser",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^8.0.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
-    },
-    {
-      "declaredIn": [
         "packages/eslint-plugin-fafa-ports/package.json"
       ],
-      "id": "npm:@typescript-eslint/rule-tester@^7.2.0",
+      "id": "npm:@typescript-eslint/rule-tester@^8.0.0",
       "name": "@typescript-eslint/rule-tester",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^7.2.0",
+      "version": "^8.0.0",
       "workspaces": [
         "eslint-plugin-fafa-ports"
       ]
@@ -20402,14 +20348,14 @@
       "declaredIn": [
         "packages/eslint-plugin-fafa-ports/package.json"
       ],
-      "id": "npm:@typescript-eslint/utils@^7.2.0",
+      "id": "npm:@typescript-eslint/utils@^8.59.4",
       "name": "@typescript-eslint/utils",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^7.2.0",
+      "version": "^8.59.4",
       "workspaces": [
         "eslint-plugin-fafa-ports"
       ]
@@ -20826,81 +20772,53 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend/package.json",
+        "packages/eslint-config/package.json"
       ],
-      "id": "npm:eslint-plugin-import@^2.28.1",
+      "id": "npm:eslint-plugin-import@^2.32.0",
       "name": "eslint-plugin-import",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^2.28.1",
+      "version": "^2.32.0",
       "workspaces": [
+        "@fafa/eslint-config",
         "@fafa/frontend"
       ]
     },
     {
       "declaredIn": [
-        "packages/eslint-config/package.json"
-      ],
-      "id": "npm:eslint-plugin-import@^2.29.1",
-      "name": "eslint-plugin-import",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^2.29.1",
-      "workspaces": [
-        "@fafa/eslint-config"
-      ]
-    },
-    {
-      "declaredIn": [
         "frontend/package.json"
       ],
-      "id": "npm:eslint-plugin-jsx-a11y@^6.7.1",
+      "id": "npm:eslint-plugin-jsx-a11y@^6.10.2",
       "name": "eslint-plugin-jsx-a11y",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^6.7.1",
+      "version": "^6.10.2",
       "workspaces": [
         "@fafa/frontend"
       ]
     },
     {
       "declaredIn": [
+        "package.json",
         "packages/eslint-config/package.json"
       ],
-      "id": "npm:eslint-plugin-prettier@^5.1.3",
+      "id": "npm:eslint-plugin-prettier@^5.5.5",
       "name": "eslint-plugin-prettier",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^5.1.3",
+      "version": "^5.5.5",
       "workspaces": [
-        "@fafa/eslint-config"
-      ]
-    },
-    {
-      "declaredIn": [
-        "package.json"
-      ],
-      "id": "npm:eslint-plugin-prettier@^5.2.1",
-      "name": "eslint-plugin-prettier",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^5.2.1",
-      "workspaces": [
+        "@fafa/eslint-config",
         "nestjs-remix-monorepo"
       ]
     },
@@ -20908,14 +20826,14 @@
       "declaredIn": [
         "frontend/package.json"
       ],
-      "id": "npm:eslint-plugin-react-hooks@^4.6.0",
+      "id": "npm:eslint-plugin-react-hooks@^4.6.2",
       "name": "eslint-plugin-react-hooks",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^4.6.0",
+      "version": "^4.6.2",
       "workspaces": [
         "@fafa/frontend"
       ]
@@ -20924,14 +20842,14 @@
       "declaredIn": [
         "frontend/package.json"
       ],
-      "id": "npm:eslint-plugin-react@^7.33.2",
+      "id": "npm:eslint-plugin-react@^7.37.5",
       "name": "eslint-plugin-react",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^7.33.2",
+      "version": "^7.37.5",
       "workspaces": [
         "@fafa/frontend"
       ]
@@ -20954,56 +20872,6 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
-      ],
-      "id": "npm:eslint@^8.0.0",
-      "name": "eslint",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^8.0.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
-    },
-    {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
-      "id": "npm:eslint@^8.38.0",
-      "name": "eslint",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^8.38.0",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
-    },
-    {
-      "declaredIn": [
-        "packages/eslint-config/package.json",
-        "packages/eslint-plugin-fafa-ports/package.json"
-      ],
-      "id": "npm:eslint@^8.57.0",
-      "name": "eslint",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^8.57.0",
-      "workspaces": [
-        "@fafa/eslint-config",
-        "eslint-plugin-fafa-ports"
-      ]
-    },
-    {
-      "declaredIn": [
         "packages/eslint-plugin-fafa-ports/package.json"
       ],
       "id": "npm:eslint@^8.57.0 || ^9.0.0",
@@ -21020,8 +20888,12 @@
     },
     {
       "declaredIn": [
+        "backend/package.json",
+        "frontend/package.json",
         "package.json",
-        "packages/design-tokens/package.json"
+        "packages/design-tokens/package.json",
+        "packages/eslint-config/package.json",
+        "packages/eslint-plugin-fafa-ports/package.json"
       ],
       "id": "npm:eslint@^8.57.1",
       "name": "eslint",
@@ -21032,7 +20904,11 @@
       "status": "LIVE",
       "version": "^8.57.1",
       "workspaces": [
+        "@fafa/backend",
         "@fafa/design-tokens",
+        "@fafa/eslint-config",
+        "@fafa/frontend",
+        "eslint-plugin-fafa-ports",
         "nestjs-remix-monorepo"
       ]
     },
@@ -22302,6 +22178,7 @@
     },
     {
       "declaredIn": [
+        "packages/domain-commerce/package.json",
         "packages/seo-url-contract/package.json"
       ],
       "id": "npm:tsx@^4.7.0",
@@ -22313,6 +22190,7 @@
       "status": "LIVE",
       "version": "^4.7.0",
       "workspaces": [
+        "@repo/domain-commerce",
         "@repo/seo-url-contract"
       ]
     },
@@ -22339,6 +22217,7 @@
         "package.json",
         "packages/database-types/package.json",
         "packages/design-tokens/package.json",
+        "packages/domain-commerce/package.json",
         "packages/eslint-config/package.json",
         "packages/registry/package.json",
         "packages/seo-role-contracts/package.json",
@@ -22360,6 +22239,7 @@
         "@fafa/eslint-config",
         "@fafa/frontend",
         "@repo/database-types",
+        "@repo/domain-commerce",
         "@repo/registry",
         "@repo/seo-role-contracts",
         "@repo/seo-roles",
@@ -22486,14 +22366,14 @@
       "declaredIn": [
         "frontend/package.json"
       ],
-      "id": "npm:web-vitals@^4.2.4",
+      "id": "npm:web-vitals@^5.2.0",
       "name": "web-vitals",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^4.2.4",
+      "version": "^5.2.0",
       "workspaces": [
         "@fafa/frontend"
       ]
@@ -22630,6 +22510,22 @@
       "workspaces": [
         "@fafa/backend",
         "@fafa/frontend"
+      ]
+    },
+    {
+      "declaredIn": [
+        "backend/package.json"
+      ],
+      "id": "workspace:@repo/domain-commerce@*",
+      "name": "@repo/domain-commerce",
+      "owner": "__unassigned__",
+      "schemaVersion": "1.0.0",
+      "source": "workspace",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "version": "*",
+      "workspaces": [
+        "@fafa/backend"
       ]
     },
     {
@@ -83958,12 +83854,12 @@
       ".spec/00-canon/repository-registry/ownership.yaml": "5208b294edfcb907027bf57e59d015867a14e28bdd871854305499eedcd354bb",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "6f19f69404e59ab20ab973e34674dac54151082495abc10dd0518342c24d707a",
-      "audit/registry/deps.json": "0f7f54bef54b962cf4c85f2cf430c5bf05526092d9c1035539bcc05ae51b6278",
+      "audit/registry/deps.json": "ccfbd71d0225371602d43ce9d28f79f480111fc06d78eb98b63312212045edb3",
       "audit/registry/files.json": "cb3b1e1565a7d4b9666ab90d8578b72282deaacfecd7980faeee4118ddab3e4c",
       "audit/registry/rpc.json": "060dcddb4975db912336e4a0d10bff470e6295f6e5b03d2e76a26ee7ceafdfa4",
       "audit/registry/runtime.json": "f4c8cb010896763f77b477aeb7431f01a778323af80999ebc50b24e77a90e73c"
     },
-    "sotFingerprint": "6e792261164c"
+    "sotFingerprint": "8f2fc393634b"
   },
   "runtime": [
     {
