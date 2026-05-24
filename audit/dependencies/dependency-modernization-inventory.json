@@ -1,5 +1,5 @@
 {
-  "artifact_immutability_hash": "sha256:a52bdf5b4a5ef5c7c7bb3f5d85074d5b2e28c6ed8e64fefa27ca92c513aac1dd",
+  "artifact_immutability_hash": "sha256:c2d0899ec14b9ac6e34231523ad6964eddeca94567241b3b049b9ed5fbdca85c",
   "divergences": [
     {
       "kind": "specifier",
@@ -188,9 +188,6 @@
         }
       ],
       "resolved_versions": [
-        "5.62.0",
-        "6.21.0",
-        "7.18.0",
         "8.59.4"
       ]
     },
@@ -220,9 +217,6 @@
         }
       ],
       "resolved_versions": [
-        "5.62.0",
-        "6.21.0",
-        "7.18.0",
         "8.59.4"
       ]
     },
@@ -238,8 +232,6 @@
       ],
       "resolved_versions": [
         "5.62.0",
-        "6.21.0",
-        "7.18.0",
         "8.59.4"
       ]
     },
@@ -3241,7 +3233,7 @@
       },
       "packages": [
         {
-          "divergent_resolved": true,
+          "divergent_resolved": false,
           "divergent_specifiers": true,
           "name": "@typescript-eslint/eslint-plugin",
           "occurrences": [
@@ -3262,14 +3254,11 @@
             }
           ],
           "resolved_versions": [
-            "5.62.0",
-            "6.21.0",
-            "7.18.0",
             "8.59.4"
           ]
         },
         {
-          "divergent_resolved": true,
+          "divergent_resolved": false,
           "divergent_specifiers": true,
           "name": "@typescript-eslint/parser",
           "occurrences": [
@@ -3295,9 +3284,6 @@
             }
           ],
           "resolved_versions": [
-            "5.62.0",
-            "6.21.0",
-            "7.18.0",
             "8.59.4"
           ]
         },
@@ -3953,7 +3939,7 @@
     "deps_registry": "audit/registry/deps.json",
     "deps_registry_sha": "sha256:0f7f54bef54b962cf4c85f2cf430c5bf05526092d9c1035539bcc05ae51b6278",
     "lockfile": "package-lock.json",
-    "lockfile_sha": "sha256:8d90a9fb82a21ae4217f970994f1b27560a9cd0e5188a35b575e3441bd6c38b7",
+    "lockfile_sha": "sha256:8fdd2986d1a09086fa1079bee0509fe8368fa6a502e6a035c6181214f3887dbb",
     "overlay": "audit/dependencies/family-overlay.yaml",
     "overlay_sha": "sha256:c88cee03acf27840da9c5826c7a3edbcd086a70a58ee323d9c32d33ec33c1a57"
   },
@@ -5204,7 +5190,7 @@
         }
       ],
       "resolved_versions": [
-        "7.18.0"
+        "8.59.4"
       ]
     },
     {
@@ -5220,8 +5206,6 @@
       ],
       "resolved_versions": [
         "5.62.0",
-        "6.21.0",
-        "7.18.0",
         "8.59.4"
       ]
     },
