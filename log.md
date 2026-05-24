@@ -495,3 +495,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/automation-reality-registry`
 - **Décision** : feat(registry): automation-reality-registry V1 — observe gap intent↔execution
 - **Sortie** : PR #726 | commits 79dfa5792
+
+## 2026-05-24 — feat/automation-reality-registry (auto)
+
+- **Branche** : `feat/automation-reality-registry`
+- **Décision** : fix(registry): npm install --ignore-scripts in automation registry workflows (+2 other commits)
+- **Sortie** : PR #726 | commits d3cb777b6 3f2bfbba9 79dfa5792
