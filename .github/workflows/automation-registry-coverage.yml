@@ -47,7 +47,7 @@ jobs:
           cache: "npm"
 
       - name: 📦 Install minimal deps
-        run: npm install --no-audit --no-fund --prefer-offline -w @repo/registry
+        run: npm install --ignore-scripts --no-audit --no-fund --prefer-offline -w @repo/registry
 
       - name: 🔎 Compute added files vs base
         id: diff

@@ -46,7 +46,7 @@ jobs:
           cache: "npm"
 
       - name: 📦 Install registry workspace deps only
-        run: npm install --no-audit --no-fund --prefer-offline -w @repo/registry
+        run: npm install --ignore-scripts --no-audit --no-fund --prefer-offline -w @repo/registry
 
       - name: 🔍 Validate Zod schema + evidence paths + excerpt drift
         run: npx tsx scripts/registry/validate-automation-overlay.ts
