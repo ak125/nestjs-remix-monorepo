@@ -18,7 +18,7 @@
  */
 
 import { createHash } from "node:crypto";
-import { readdirSync, readFileSync, existsSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -52,8 +52,14 @@ interface Capture {
 
 function loadCaptures(engine: Engine): Capture[] {
   const dir = join(RAW_ROOT, engine);
-  if (!existsSync(dir)) return [];
-  const files = readdirSync(dir).filter((f) => f.endsWith(".json"));
+  // try-list pattern (anti CodeQL js/file-system-race) : single op, ENOENT = empty
+  let files: string[];
+  try {
+    files = readdirSync(dir).filter((f) => f.endsWith(".json"));
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException)?.code === "ENOENT") return [];
+    throw err;
+  }
   return files.map((f) => JSON.parse(readFileSync(join(dir, f), "utf8")) as Capture);
 }
 
@@ -276,9 +282,9 @@ function main() {
   console.log("**Section B2 (Operational Fulfillment Overlay) requise pour décision GO/STOP.** Cette section B1 = stats brutes uniquement.");
   console.log("");
 
-  // MANIFEST verification
+  // MANIFEST verification (try-read pattern, anti CodeQL js/file-system-race)
   const manifestPath = resolve(RAW_ROOT, "../MANIFEST.sha256");
-  if (existsSync(manifestPath)) {
+  try {
     const manifestContent = readFileSync(manifestPath, "utf8");
     const manifestSha = createHash("sha256").update(manifestContent).digest("hex");
     const lines = manifestContent.trim().split("\n").length;
@@ -287,6 +293,9 @@ function main() {
     console.log(`- Fichiers indexés : ${lines}`);
     console.log(`- SHA-256 du manifest : \`${manifestSha}\``);
     console.log("");
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException)?.code !== "ENOENT") throw err;
+    // MANIFEST not yet generated (capture still running) — skip silently
   }
 }
 

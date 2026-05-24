@@ -26,7 +26,7 @@
 import { query } from "@anthropic-ai/claude-agent-sdk";
 import { spawnSync, execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync, statSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse as parseYaml } from "yaml";
@@ -336,16 +336,24 @@ async function main() {
     for (const engine of ENGINES) {
       const outPath = join(RAW_ROOT, engine, `${promptHash}.json`);
 
-      // Skip if already captured (idempotent retry)
-      if (existsSync(outPath)) {
-        console.log(`  [${engine}] skip (already captured)`);
+      // Skip if already captured (idempotent retry).
+      // Try-read pattern (anti file-system race CodeQL js/file-system-race) :
+      // un seul appel readFileSync, throw → not cached, proceed.
+      try {
         const existing = JSON.parse(readFileSync(outPath, "utf8"));
+        console.log(`  [${engine}] skip (already captured)`);
         const stats = perEngineStats[engine]!;
         if (existing.ok) stats.ok++;
         else stats.ko++;
         totalCalls++;
         if (existing.ok) successCalls++;
         continue;
+      } catch (err) {
+        // ENOENT or parse error → not cached, proceed with capture
+        if ((err as NodeJS.ErrnoException)?.code !== "ENOENT") {
+          // unexpected error : log + re-capture
+          console.log(`  [${engine}] cache read failed (${(err as Error)?.message?.slice(0, 60)}), re-capturing`);
+        }
       }
 
       let result: CaptureResult;
@@ -400,13 +408,25 @@ async function main() {
   const manifestLines: string[] = [];
   for (const eng of ENGINES) {
     const dir = join(RAW_ROOT, eng);
-    if (!existsSync(dir)) continue;
-    const files = readdirSync(dir).filter((f) => f.endsWith(".json")).sort();
+    // try-list pattern (anti CodeQL js/file-system-race) : single op, throw OK
+    let files: string[];
+    try {
+      files = readdirSync(dir).filter((f) => f.endsWith(".json")).sort();
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException)?.code === "ENOENT") continue;
+      throw err;
+    }
     for (const f of files) {
       const fp = join(dir, f);
-      const content = readFileSync(fp);
-      const sha = createHash("sha256").update(content).digest("hex");
-      manifestLines.push(`${sha}  raw/${eng}/${f}`);
+      // try-read pattern : single op, propagate other errors
+      try {
+        const content = readFileSync(fp);
+        const sha = createHash("sha256").update(content).digest("hex");
+        manifestLines.push(`${sha}  raw/${eng}/${f}`);
+      } catch (err) {
+        if ((err as NodeJS.ErrnoException)?.code === "ENOENT") continue;
+        throw err;
+      }
     }
   }
   writeFileSync(MANIFEST_PATH, manifestLines.join("\n") + "\n", "utf8");
