@@ -104,6 +104,7 @@ async function buildService(): Promise<{
   service: R3GuideService;
   cache: InMemoryCacheServiceStub;
   dataService: ReturnType<typeof makeMocks>['dataService'];
+  relationService: ReturnType<typeof makeMocks>['relationService'];
 }> {
   const cache = new InMemoryCacheServiceStub();
   const mocks = makeMocks();
@@ -123,7 +124,12 @@ async function buildService(): Promise<{
   }).compile();
 
   const service = moduleRef.get(R3GuideService);
-  return { service, cache, dataService: mocks.dataService };
+  return {
+    service,
+    cache,
+    dataService: mocks.dataService,
+    relationService: mocks.relationService,
+  };
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -151,7 +157,23 @@ describe('R3GuideService — cache + single-flight + invalidation (PR-A)', () =>
       const result = await service.getR3GuidePayload('inconnu');
 
       expect(result).toBeNull();
-      expect(await cache.get('r3-guide:v1:inconnu')).toBeNull();
+      expect(await cache.get('r3-guide:v2:inconnu')).toBeNull();
+    });
+  });
+
+  describe('LCP payload cap (PR LCP-R3-PR1)', () => {
+    it('passes limit=24 to relationService.getCompatibleVehicles (anti-régression payload cap)', async () => {
+      const { service, relationService } = await buildService();
+
+      await service.getR3GuidePayload(PG_ALIAS);
+
+      // Régression : remettre 1000 (ou tout autre valeur > 24) ferait grossir le
+      // payload SSR de ~150 KB → LCP mobile +1-2s sur /blog-pieces-auto/conseils/*.
+      expect(relationService.getCompatibleVehicles).toHaveBeenCalledWith(
+        expect.any(Number),
+        24,
+        expect.any(String),
+      );
     });
   });
 

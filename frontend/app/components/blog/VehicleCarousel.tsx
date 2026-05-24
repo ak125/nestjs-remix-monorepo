@@ -87,10 +87,11 @@ const VehicleCarousel: React.FC<VehicleCarouselProps> = ({
             {dynamicTitle}
           </h2>
           <p className="text-sm text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mt-2">
+            Voici un échantillon de{" "}
             <strong className="text-gray-800">
               {vehicles.length} motorisations
             </strong>{" "}
-            identifiées d'après les données de compatibilité constructeur —
+            compatibles d'après les données de compatibilité constructeur —
             usure normale, usage spécifique ou kilométrage élevé.
           </p>
         </div>
