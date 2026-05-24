@@ -60,9 +60,9 @@ describe('computeProjectionFromSimulation — 7-axis scorecard', () => {
     ]);
     expect(proj.axes.filter((a) => a.confidence === 'HIGH')).toHaveLength(2);
     expect(proj.axes.filter((a) => a.confidence === 'MEDIUM')).toHaveLength(3);
-    expect(proj.axes.filter((a) => a.confidence === 'PENDING_DATA')).toHaveLength(
-      2,
-    );
+    expect(
+      proj.axes.filter((a) => a.confidence === 'PENDING_DATA'),
+    ).toHaveLength(2);
   });
 
   it('flags PENDING_DATA axes with null values + explicit reason (no silent fallback)', () => {
@@ -150,9 +150,9 @@ describe('computeProjectionFromSimulation — 7-axis scorecard', () => {
 
   it('throws on bucket / simulation length mismatch (no silent realignment)', () => {
     const sim = computeGridSimulation(buckets, calibratedRules, 'B2C');
-    expect(() =>
-      computeProjectionFromSimulation([buckets[0]], sim),
-    ).toThrow(/length mismatch/);
+    expect(() => computeProjectionFromSimulation([buckets[0]], sim)).toThrow(
+      /length mismatch/,
+    );
   });
 
   it('throws on bucket misalignment by representativeCostCents (no silent realignment)', () => {
@@ -182,11 +182,7 @@ describe('computeProjectionFromSimulation — 7-axis scorecard', () => {
       returnRate: 0, // sav_load = 0
     };
     const sim = computeGridSimulation(tinyBuckets, tinyRules, 'B2C');
-    const proj = computeProjectionFromSimulation(
-      tinyBuckets,
-      sim,
-      tinyInputs,
-    );
+    const proj = computeProjectionFromSimulation(tinyBuckets, sim, tinyInputs);
     // All MEDIUM axes are exactly 0 (no envelope crosses), HIGH axes are 0 too.
     // hasBorderlineAxis only flips when value≠0 yet envelope brackets 0 ; here all 0.
     expect(proj.hasBorderlineAxis).toBe(false);

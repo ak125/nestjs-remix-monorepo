@@ -215,8 +215,14 @@ export function computeProjectionFromSimulation(
     totalPieceCount * inputs.returnRate * inputs.returnCostPerLineCents,
   );
 
-  const cashEnv = sensitivityEnvelope(totalCashPressure, inputs.sensitivityBound);
-  const logisticsEnv = sensitivityEnvelope(logisticsLoad, inputs.sensitivityBound);
+  const cashEnv = sensitivityEnvelope(
+    totalCashPressure,
+    inputs.sensitivityBound,
+  );
+  const logisticsEnv = sensitivityEnvelope(
+    logisticsLoad,
+    inputs.sensitivityBound,
+  );
   const savEnv = sensitivityEnvelope(savLoad, inputs.sensitivityBound);
 
   const axes: ProjectionAxis[] = [
@@ -268,7 +274,7 @@ export function computeProjectionFromSimulation(
       highCents: null,
       confidence: 'PENDING_DATA',
       pendingReason:
-        "Requires per-SKU stock + sales velocity data not surfaced by cost-bucket aggregates. Available after Phase B owner data + per-SKU rotation snapshot.",
+        'Requires per-SKU stock + sales velocity data not surfaced by cost-bucket aggregates. Available after Phase B owner data + per-SKU rotation snapshot.',
     },
     {
       key: 'supplier_variance_risk',
@@ -278,7 +284,7 @@ export function computeProjectionFromSimulation(
       highCents: null,
       confidence: 'PENDING_DATA',
       pendingReason:
-        "Requires per-supplier rupture-frequency history not exposed by bucket aggregates. Will be computed once Phase C sentinel + supplier-offer observatory data lands.",
+        'Requires per-supplier rupture-frequency history not exposed by bucket aggregates. Will be computed once Phase C sentinel + supplier-offer observatory data lands.',
     },
   ];
 
