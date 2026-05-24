@@ -3,7 +3,16 @@ export function detectExtractableTldr(html: string): 0 | 1 {
   const head = html.slice(0, HEAD_WINDOW);
   const pMatch = head.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
   if (!pMatch) return 0;
-  const text = pMatch[1].replace(/<[^>]+>/g, '').trim();
+  // Strip nested tags safely (loop until stable). Single-pass `.replace`
+  // misses inputs like "<<script>script>" — flagged as
+  // js/incomplete-multi-character-sanitization by CodeQL.
+  let text = pMatch[1];
+  let prev: string;
+  do {
+    prev = text;
+    text = text.replace(/<[^>]+>/g, '');
+  } while (text !== prev);
+  text = text.trim();
   return text.length >= 50 && text.length <= 200 ? 1 : 0;
 }
 
