@@ -7,14 +7,17 @@
 
 const { describe, it, after } = require("node:test");
 const { RuleTester } = require("@typescript-eslint/rule-tester");
+const parser = require("@typescript-eslint/parser");
 const rule = require("../rules/port-dto-shape");
 
 RuleTester.describe = describe;
 RuleTester.it = it;
 RuleTester.afterAll = after;
 
+// tseslint 8 RuleTester API: `parser` constructor arg removed in favor of
+// `languageOptions.parser` (object reference, not require.resolve path).
 const ruleTester = new RuleTester({
-  parser: require.resolve("@typescript-eslint/parser"),
+  languageOptions: { parser },
 });
 
 ruleTester.run("port-dto-shape", rule, {
