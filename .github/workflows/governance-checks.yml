@@ -1,0 +1,42 @@
+name: governance-checks
+
+# Wire les scripts bash de gouvernance ADR-081 sur les PRs.
+# - validate-top-priorities.sh : sections / bornes / kebab-case (5 sections, dont EXPLORATION_BUDGET)
+# - validate-exploration-probe.sh : scope strict measurement-only si la PR est une probe G10
+#
+# check-verdict-expirations.sh = cron weekly, pas wired ici (follow-up dédié).
+
+on:
+  pull_request:
+    paths:
+      - '.claude/top-priorities.md'
+      - 'scripts/governance/**'
+      - 'docs/research/**'
+      - '.github/workflows/governance-checks.yml'
+  push:
+    branches: [main]
+    paths:
+      - '.claude/top-priorities.md'
+      - 'scripts/governance/**'
+
+permissions:
+  contents: read
+
+jobs:
+  validate-top-priorities:
+    name: validate-top-priorities.sh (ADR-081)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run validator
+        run: bash scripts/governance/validate-top-priorities.sh
+
+  validate-exploration-probe:
+    name: validate-exploration-probe.sh (ADR-081 G10)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Run probe scope linter (single check au PR final, anti over-governance creep)
+        run: bash scripts/governance/validate-exploration-probe.sh "origin/${{ github.base_ref }}"

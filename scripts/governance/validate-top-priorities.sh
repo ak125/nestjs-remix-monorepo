@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 # Valide .claude/top-priorities.md :
-#   - 4 sections obligatoires (TOP / DO_NOT_START / ACTIVE_INCIDENTS / STRUCTURAL_CONSTRAINTS)
-#   - bornes strictes (5 / 7 / 10 / 10) — anti-bloat mécanique
+#   - 5 sections obligatoires (TOP / DO_NOT_START / ACTIVE_INCIDENTS /
+#     STRUCTURAL_CONSTRAINTS / EXPLORATION_BUDGET)
+#   - bornes strictes (5 / 7 / 10 / 10 / 3) — anti-bloat mécanique
 #   - slugs kebab-case stricts (^[a-z][a-z0-9-]*$)
+#
+# EXPLORATION_BUDGET ajouté 2026-05-24 par ADR-081 G10 (vault PR #305).
 #
 # Usage : scripts/governance/validate-top-priorities.sh [path]
 # Exit 0 = OK, 1 = FAIL (au moins une violation)
@@ -19,7 +22,7 @@ fi
 ERRORS=0
 
 # 1. Sections obligatoires
-for section in TOP DO_NOT_START ACTIVE_INCIDENTS STRUCTURAL_CONSTRAINTS; do
+for section in TOP DO_NOT_START ACTIVE_INCIDENTS STRUCTURAL_CONSTRAINTS EXPLORATION_BUDGET; do
   if ! grep -qE "^## ${section}$" "$FILE"; then
     echo "FAIL: section ## $section manquante"
     ERRORS=$((ERRORS+1))
@@ -27,7 +30,7 @@ for section in TOP DO_NOT_START ACTIVE_INCIDENTS STRUCTURAL_CONSTRAINTS; do
 done
 
 # 2. Bornes (anti-bloat)
-declare -A LIMITS=([TOP]=5 [DO_NOT_START]=7 [ACTIVE_INCIDENTS]=10 [STRUCTURAL_CONSTRAINTS]=10)
+declare -A LIMITS=([TOP]=5 [DO_NOT_START]=7 [ACTIVE_INCIDENTS]=10 [STRUCTURAL_CONSTRAINTS]=10 [EXPLORATION_BUDGET]=3)
 for section in "${!LIMITS[@]}"; do
   count=$(awk -v s="## ${section}" '
     $0 == s { flag=1; next }
