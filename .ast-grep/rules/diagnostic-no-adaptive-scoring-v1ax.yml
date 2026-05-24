@@ -1,0 +1,66 @@
+id: diagnostic-no-adaptive-scoring-v1ax
+language: typescript
+severity: error
+message: |
+  V1A.0 — Scoring discipline (cf. ADR-080 §"Determinism guarantee V1A.x",
+  amendement 2026-05-24).
+
+  Le pipeline V1A.0 (IntentClassifier / ActionRecommender /
+  DiagnosticResolutionPipeline / HumanEscalationBuilder / InvariantAsserter)
+  doit rester **règles déterministes pures**.
+
+  INTERDIT en V1A.x :
+    - stochasticité runtime : Math.random / crypto.randomBytes / Date.now() % N
+    - adaptive scoring : learnedWeights, userAffinity, boostFactor, adaptiveScore
+    - online learning : onlineLearning, modèles auto-calibrés au runtime
+    - probabilistic feedback loops (boucle outcome → poids futurs)
+    - heuristique adaptative ("petit score dynamique", "boost comportemental")
+
+  Tout scoring V1A.x = règles déterministes pures. Si un score doit varier,
+  ce sont des constantes hardcodées (score += 2 pour règle X) dans des
+  branches déterministes.
+
+  Si tu as besoin d'adaptive scoring / ML / boucle outcome → c'est V1.5+
+  (gate-locked, ADR amendment requis cf. ADR-077 G9). Pas d'unlock anticipé.
+
+note: |
+  Le déterminisme V1A.x garantit :
+    1. Replayability V1.1 — output_hash = sha256(canonical(input + pipeline_version))
+    2. Debug auditable — même input ⇒ même output, traçable forensiquement
+    3. A/B comparaisons valides — pas de drift latent
+    4. Aucun comportement émergent non-traçable
+
+  Précédent canon :
+    - ADR-080 §"Determinism guarantee V1A.x" (amendement 2026-05-24)
+    - ADR-077 STOP-at-V1 G9 (10 gates V1.5+ deferral)
+    - memory feedback_v1_first_dont_build_ultimate_engine_too_early
+
+  Si false-positive légitime : ajouter le fichier à `ignores:` ci-dessus
+  avec commentaire expliquant pourquoi.
+
+files:
+  - backend/src/modules/diagnostic-engine/services/intent-classifier.service.ts
+  - backend/src/modules/diagnostic-engine/services/action-recommender.service.ts
+  - backend/src/modules/diagnostic-engine/services/diagnostic-resolution-pipeline.service.ts
+  - backend/src/modules/diagnostic-engine/services/human-escalation-builder.service.ts
+  - backend/src/modules/diagnostic-engine/services/invariant-asserter.service.ts
+
+ignores:
+  # Tests : fixtures aléatoires + jest seeded mocks autorisés
+  - "**/*.test.ts"
+  - "**/*.spec.ts"
+  - "**/__tests__/**"
+
+rule:
+  any:
+    # ── Stochasticité runtime ──
+    - pattern: Math.random()
+    - pattern: 'crypto.randomBytes($$$)'
+    - pattern: 'crypto.randomInt($$$)'
+    - pattern: 'Date.now() % $_'
+    # ── Adaptive scoring / online learning identifiers ──
+    - pattern: learnedWeights
+    - pattern: userAffinity
+    - pattern: adaptiveScore
+    - pattern: onlineLearning
+    - pattern: boostFactor

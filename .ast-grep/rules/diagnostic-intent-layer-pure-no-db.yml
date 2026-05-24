@@ -1,0 +1,63 @@
+id: diagnostic-intent-layer-pure-no-db
+language: typescript
+severity: error
+message: |
+  V1A.0 — Intent Resolution layer = **pure**, aucun accès direct DB
+  (cf. ADR-080 §1 composition pure + §2 backend SoT + §3 boundary
+  non-indexabilité amendement 2026-05-24).
+
+  Les 5 services Intent (IntentClassifier / ActionRecommender /
+  DiagnosticResolutionPipeline / HumanEscalationBuilder / InvariantAsserter)
+  ne doivent JAMAIS appeler `.from()` directement sur Supabase.
+
+  Contrat V1A.0 :
+    INPUT  ← EvidencePack canonique (calculé par engines amont)
+    OUTPUT → OutcomeEmitter (un seul canonical event `diagnostic_resolution_outcome`,
+             hors scope cette règle, write légitime vers __seo_event_log)
+
+  Si tu as besoin de DB read : passe par EvidencePack ou ajoute le calcul à
+  un engine amont (signal-interpretation, hypothesis-scoring, etc.).
+  Si tu as besoin d'un write autre que le canonical event : c'est très
+  probablement une violation de doctrine (cardinality explosion, double-truth).
+
+note: |
+  Pourquoi Intent layer = pure :
+
+    1. **Composition pure pipeline ≤50 LOC** (ADR-080 §1) — un appel DB
+       force la logique métier dans le pipeline.
+    2. **Backend = SoT unique, frontend = renderer pur** (ADR-080 §2) —
+       les services Intent assemblent le payload depuis EvidencePack.
+    3. **Boundary non-indexabilité** (ADR-080 §3 amendement) — Intent layer
+       NE DOIT JAMAIS muter __seo_* (mute potentiellement le contenu
+       indexable → drift SEO-implicite). Le pattern "no .from()" couvre
+       cette interdiction par construction.
+    4. **Replayability V1.1** (ADR-080 V1.1 gate) — output_hash =
+       sha256(canonical(input + pipeline_version)) exige inputs immutables ;
+       un appel DB live introduit une dépendance externe non-replay.
+
+  Cette règle est plus stricte que l'amendement ADR-080 (qui parlait de
+  "track __seo_* mutations") mais cohérente avec la doctrine ADR-080
+  §1/§2/§3. Si un Intent service a besoin de DB, c'est un signal architectural
+  à challenger en review.
+
+  Si false-positive légitime : ajouter le fichier à `ignores:` avec
+  commentaire ADR-amendment.
+
+files:
+  - backend/src/modules/diagnostic-engine/services/intent-classifier.service.ts
+  - backend/src/modules/diagnostic-engine/services/action-recommender.service.ts
+  - backend/src/modules/diagnostic-engine/services/diagnostic-resolution-pipeline.service.ts
+  - backend/src/modules/diagnostic-engine/services/human-escalation-builder.service.ts
+  - backend/src/modules/diagnostic-engine/services/invariant-asserter.service.ts
+
+ignores:
+  # Tests : Supabase mock OK en test
+  - "**/*.test.ts"
+  - "**/*.spec.ts"
+  - "**/__tests__/**"
+
+rule:
+  any:
+    - pattern: $X.from($T)
+    - pattern: this.supabase.from($T)
+    - pattern: supabase.from($T)
