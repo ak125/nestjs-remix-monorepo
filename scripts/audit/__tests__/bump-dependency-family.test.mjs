@@ -89,7 +89,8 @@ test('expandWildcards passes through literal names even when not in lockfile', (
   assert.deepEqual(expanded, ['some-pkg']);
 });
 
-test('buildNcuArgs assembles deterministic argv for dry-run', () => {
+test('buildNcuArgs assembles deterministic argv for dry-run (no -u, no --dry-run)', () => {
+  // ncu's default IS dry-run; the flag does not exist in npm-check-updates.
   const args = buildNcuArgs({
     members: ['typescript', 'eslint'],
     target: 'latest',
@@ -100,8 +101,9 @@ test('buildNcuArgs assembles deterministic argv for dry-run', () => {
     '--filter', 'typescript,eslint',
     '--deep',
     '--errorLevel', '2',
-    '--dry-run',
   ]);
+  assert.ok(!args.includes('--dry-run'), 'ncu has no --dry-run flag — it is the default behaviour');
+  assert.ok(!args.includes('-u'), 'dry-run must NOT include -u (which would apply upgrades)');
 });
 
 test('buildNcuArgs uses -u (apply) when dryRun=false', () => {
