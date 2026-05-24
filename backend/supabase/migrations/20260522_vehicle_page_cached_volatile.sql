@@ -23,6 +23,13 @@
 --   rebuild_vehicle_page_cache() is already VOLATILE; build_vehicle_page_payload()
 --   stays STABLE (genuinely read-only). No other function references this one.
 --   Reversible via 20260522_vehicle_page_cached_volatile.down.sql.
+--
+-- Le runner (scripts/ci/apply-supabase-migration.py) wrappe déjà chaque fichier
+-- dans une transaction (squawk: assume_in_transaction) → pas de BEGIN/COMMIT
+-- explicite. Timeouts robustes avant DDL (require-timeout-settings).
+
+SET LOCAL lock_timeout = '5s';
+SET LOCAL statement_timeout = '15s';
 
 CREATE OR REPLACE FUNCTION public.get_vehicle_page_data_cached(p_type_id integer)
  RETURNS json
