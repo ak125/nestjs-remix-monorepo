@@ -25,9 +25,11 @@ import { RContentAuditorService } from './services/r-content-auditor.service';
 import { QualityHistorySnapshotService } from './services/quality-history-snapshot.service';
 import { RagMirrorFreshnessService } from './services/rag-mirror-freshness.service';
 import { FunnelEventsService } from './services/funnel-events.service';
+import { CwvBeaconService } from './services/cwv-beacon.service';
 import { SeoMonitoringController } from './controllers/seo-monitoring.controller';
 import { QualityHistoryController } from './controllers/quality-history.controller';
 import { FunnelEventsController } from './controllers/funnel-events.controller';
+import { CwvBeaconController } from './controllers/cwv-beacon.controller';
 
 @Module({
   imports: [ConfigModule],
@@ -46,11 +48,13 @@ import { FunnelEventsController } from './controllers/funnel-events.controller';
     QualityHistorySnapshotService, // ADR-050 Phase 0 baseline
     RagMirrorFreshnessService, // ADR-046 § L3 RAG MIRROR read-only — PR-E.2
     FunnelEventsService, // Commerce-Loop V1 étape 4-A — funnel outil diagnostic
+    CwvBeaconService, // CWV Runtime Observability bloc 3 — landing beacons web-vitals
   ],
   controllers: [
     SeoMonitoringController,
     QualityHistoryController,
     FunnelEventsController, // POST /api/seo/funnel/event (public beacon)
+    CwvBeaconController, // POST /api/seo/cwv/beacon (public beacon, bloc 3)
   ],
   exports: [
     GoogleCredentialsService,
