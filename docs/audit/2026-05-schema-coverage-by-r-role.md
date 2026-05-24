@@ -2,6 +2,10 @@
 
 Source : `backend/src/modules/seo/dynamic-seo-v4-ultimate.service.ts`
 
+> ⚠️ **Limitation V1 reconnue** : ce script scanne UNIQUEMENT le facade `dynamic-seo-v4-ultimate.service.ts` (393 lignes). Ce fichier ne contient PAS de génération `@type` inline — il délègue au pipeline chain (`SeoChainModule`) + composers per-role + `@repo/seo-roles`. Conséquence : le "Missing" 100% ci-dessous **NE signifie PAS** que les schemas sont absents du runtime SEO ; il signifie que cette analyse statique étroite n'a rien capté **dans ce fichier précis**.
+>
+> **Next iteration recommandée** : étendre l'audit à `backend/src/modules/seo/**` et à `@repo/seo-roles`, en clé sur `surfaceKey` enum values (`R2_PRODUCT`, `R5_*`, `R8_VEHICLE`, etc.) au lieu du token litéral `R2/R3/...`. Le présent rapport reste utile comme **signal de départ** : la facade n'est pas le lieu de génération.
+
 > Static analysis. Heuristique : fenêtre de ±1000 chars autour de chaque mention du rôle.
 > Note : faux positifs possibles si un `@type` apparaît dans un commentaire ou est partagé entre rôles.
 
