@@ -26,6 +26,7 @@ import { QualityHistorySnapshotService } from './services/quality-history-snapsh
 import { RagMirrorFreshnessService } from './services/rag-mirror-freshness.service';
 import { FunnelEventsService } from './services/funnel-events.service';
 import { CwvBeaconService } from './services/cwv-beacon.service';
+import { CwvAggregationService } from './services/cwv-aggregation.service';
 import { SeoMonitoringController } from './controllers/seo-monitoring.controller';
 import { QualityHistoryController } from './controllers/quality-history.controller';
 import { FunnelEventsController } from './controllers/funnel-events.controller';
@@ -49,6 +50,9 @@ import { CwvBeaconController } from './controllers/cwv-beacon.controller';
     RagMirrorFreshnessService, // ADR-046 § L3 RAG MIRROR read-only — PR-E.2
     FunnelEventsService, // Commerce-Loop V1 étape 4-A — funnel outil diagnostic
     CwvBeaconService, // CWV Runtime Observability bloc 3 — landing beacons web-vitals
+    CwvAggregationService, // CWV bloc 4 — RPCs aggregate_cwv_hourly/daily_rum
+    // CwvAggregationSchedulerService + CwvAggregationProcessor : wired in workers/worker.module.ts
+    // (queue 'seo-monitor' registered there ; pattern mirror SeoDailyFetchProcessor)
   ],
   controllers: [
     SeoMonitoringController,
@@ -69,6 +73,7 @@ import { CwvBeaconController } from './controllers/cwv-beacon.controller';
     RContentAuditorService,
     QualityHistorySnapshotService, // exposé pour PR-T (re-enrich pre/post snapshot)
     RagMirrorFreshnessService, // exposé pour cron health endpoint
+    CwvAggregationService, // exposé pour CwvAggregationProcessor (workers module)
   ],
 })
 export class SeoMonitoringModule {}
