@@ -1,0 +1,78 @@
+# Dynamic Weighted Sampling — révision v2 2026-05-24 après data discovery
+# Probe slot : geo-discovery-probe-2026-05 (G10 ADR-081)
+#
+# DATA AVAILABILITY (discovered 2026-05-24) :
+# - __seo_keywords : 8564 prompts éligibles (volume ≥ 50), 19 gammes
+# - Funnel events conversion par prompt : INACCESSIBLE (table __funnel_event_v1 attendue post-#676 mais non trouvée dans schema public)
+# - SAV frequency par prompt : INACCESSIBLE (aucune table SAV exposée)
+# - Marge moyenne par prompt : INACCESSIBLE directement (pricing tables non joignables à kw)
+# - Gamme strategic weight : pas de canonical weighting, uniform diversity bonus uniquement
+#
+# DÉCISION (anti-bricolage, ne pas pretendre avoir des signaux qu'on n'a pas) :
+# revenir à un sampling simple **stratified-by-gamme + volume-weighted intra-stratum**
+# qui :
+#   (a) garantit la diversité business (cap N par gamme)
+#   (b) ne survalorise pas les tops volume (sqrt compress)
+#   (c) reste reproductible (seed déterministe)
+#   (d) documente honnêtement les composantes signal manquantes
+
+version: 2
+measured_at: 2026-05-24
+
+# Composantes effectives (les autres restent en N/A documenté)
+effective_scoring:
+  strategy: "stratified-by-gamme + sqrt(volume) intra-stratum + seeded random tie-breaker"
+
+  cap_per_gamme: 8
+  rationale_cap: |
+    Permet de couvrir 12-13 gammes différentes minimum (100/8) sur les 19
+    disponibles, évite la concentration sur "filtre à huile" (1756 prompts)
+    qui sinon dominerait le sample par pur volume.
+
+  intra_stratum_weight: "sqrt(volume)"
+  rationale_intra: |
+    sqrt compress l'effet long-tail volume (50000 vs 50 = 31x au lieu de
+    1000x linéaire). Donne une chance équitable aux mid-tail prompts qui
+    sont souvent plus business-pertinents que les top brand-only.
+
+  seed: "sha256('2026-05-24:geo-discovery-probe')[:8]"
+  rationale_seed: "Reproductibilité — re-run du script doit produire le même sample"
+
+# Composantes documentées comme N/A (transparence)
+unavailable_signals:
+  funnel_conversion_rate:
+    expected_source: "__funnel_event_v1 (PR #676 step 4-A)"
+    actual_status: "Table non trouvée dans schema public au 2026-05-24"
+    flag: "Documenter dans rapport — la conversion par prompt n'est pas mesurable directement, on ne peut pas pondérer par valeur business prouvée"
+
+  sav_frequency:
+    expected_source: "__sav_* ou ___xtr_* (SAV tickets)"
+    actual_status: "Aucune table SAV exposée au schema public"
+    flag: "Documenter dans rapport — γ=0 comme prévu dans le plan"
+
+  marge_avg:
+    expected_source: "Pricing CP V1 par gamme via catalog_pricing_baseline JOIN __seo_keywords.pg_id"
+    actual_status: "Table pricing existe, jointure complexe (pricing par piece pas par keyword), non câblable sans transformation lourde"
+    flag: "Documenter dans rapport — δ via gamme-level marge approximation possible en V2"
+
+  r_role_classification:
+    expected_source: "__seo_keywords.content_type (R1/R2/R3/R5/R8 per @repo/seo-roles)"
+    actual_status: "97% des prompts ont content_type=NULL (251/8564 = 3% R1 only)"
+    flag: "Classification post-sampling impossible côté DB, à inférer par heuristique sur keyword text si besoin downstream"
+
+# Pool filter
+pool_filter:
+  min_volume: 50  # = ce que la DB retourne pour volume >= 10 (le min réel est 50)
+  exclude_brand_only_prompts: false  # finalement OK : on veut mesurer si LLM cite AutoMecanik vs concurrents sur prompts brand
+  exclude_navigational_intent: false  # idem
+  exclude_null_gamme: true  # nécessaire pour stratification
+
+# Output
+sample_size: 100
+expected_gamme_coverage: "12-19 sur 19 (selon distribution actuelle)"
+
+# Reproductibilité
+reproducibility:
+  random_seed_source: "sha256('2026-05-24:geo-discovery-probe')[:8]"
+  output_file: "prompts/dynamic-sample-2026-05-24.yaml"
+  output_sha256_locked: true
