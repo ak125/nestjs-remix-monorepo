@@ -513,3 +513,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `worktree-geo-discovery-probe-2026-05`
 - **Décision** : chore(gitignore): move scripts/research/ ignores to root (anti dotfile glob miss) (+8 other commits)
 - **Sortie** : PR aucune | commits 0531dd196 5b91d5c04 0752938b3 83ea8c742 b865913bb 77b3a3348 3206430dd 2449b7151 08b33518e
+
+## 2026-05-24 — worktree-geo-discovery-probe-2026-05 (auto)
+
+- **Branche** : `worktree-geo-discovery-probe-2026-05`
+- **Décision** : feat(research): geo-discovery-probe-2026-05 B1 closed — 288 captures + MANIFEST + report (+10 other commits)
+- **Sortie** : PR aucune | commits 5d42812f8 4738957d9 0531dd196 5b91d5c04 0752938b3 83ea8c742 b865913bb 77b3a3348 3206430dd 2449b7151 08b33518e
