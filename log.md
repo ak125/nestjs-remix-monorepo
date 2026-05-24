@@ -453,3 +453,39 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/pricing-control-plane-v1`
 - **Décision** : fix(pricing): dedupe squawk timeout settings in 2 migrations (+12 other commits)
 - **Sortie** : PR #709 | commits 289eb0c4 b3e3b9ec 656bf6dc 04754b37 b8c048bf d529c744 4c4fa7a6 ad027f11 5701a64e d135bb9b 227d3a4d 142a0218 c4f6ea33
+
+## 2026-05-24 — feat/ai-additive-layer-design-spec (auto)
+
+- **Branche** : `feat/ai-additive-layer-design-spec`
+- **Décision** : docs(superpowers): implementation plan Phase 0+1 — AI additive layer (+1 other commit)
+- **Sortie** : PR aucune | commits 90ac3b313 31fca3a81
+
+## 2026-05-24 — feat/ai-additive-layer-design-spec (auto)
+
+- **Branche** : `feat/ai-additive-layer-design-spec`
+- **Décision** : feat(trend-signals): module + rappels.gouv.fr fetcher + BullMQ monthly processor + migration additive (+11 other commits)
+- **Sortie** : PR #714 | commits 213d5db3e 04964ad3b cf61d176a f9e218531 cf5adb9dc 64a4c0a36 a380fbe25 4d61ee999 f9b05b52c 67958cfa7 0fc72ac1a 9b75889bd
+
+## 2026-05-24 — feat/ai-additive-layer-design-spec (auto)
+
+- **Branche** : `feat/ai-additive-layer-design-spec`
+- **Décision** : fix(ci): prettier + squawk migration timeouts (3 prettier errors, 2 squawk warnings on __trend_signals) (+13 other commits)
+- **Sortie** : PR #714 | commits d4121fd65 d9c67602a 213d5db3e 04964ad3b cf61d176a f9e218531 cf5adb9dc 64a4c0a36 a380fbe25 4d61ee999 f9b05b52c 67958cfa7 0fc72ac1a 9b75889bd
+
+## 2026-05-24 — feat/ai-additive-layer-design-spec (auto)
+
+- **Branche** : `feat/ai-additive-layer-design-spec`
+- **Décision** : fix(registry): add ownership overlays for AI additive layer files (5 globs covering 21 new files) (+15 other commits)
+- **Sortie** : PR #714 | commits 296343132 978c50bdf d4121fd65 d9c67602a 213d5db3e 04964ad3b cf61d176a f9e218531 cf5adb9dc 64a4c0a36 a380fbe25 4d61ee999 f9b05b52c 67958cfa7 0fc72ac1a 9b75889bd
+
+## 2026-05-24 — feat/ai-additive-layer-design-spec (auto)
+
+- **Branche** : `feat/ai-additive-layer-design-spec`
+- **Décision** : ci: empty commit to retrigger checks (CodeQL phantom stale from initial push) (+17 other commits)
+- **Sortie** : PR #714 | commits a9226d06d ec3cb6a92 296343132 978c50bdf d4121fd65 d9c67602a 213d5db3e 04964ad3b cf61d176a f9e218531 cf5adb9dc 64a4c0a36 a380fbe25 4d61ee999 f9b05b52c 67958cfa7 0fc72ac1a 9b75889bd
+
+## 2026-05-24 — feat/ai-additive-layer-design-spec (auto)
+
+- **Branche** : `feat/ai-additive-layer-design-spec`
+- **Décision** : fix(codeql): loop-until-stable HTML strip in detectExtractableTldr (resolves js/incomplete-multi-character-sanitization) (+19 other commits)
+- **Sortie** : PR #714 | commits 4c0250eca dcb25d4ae a9226d06d ec3cb6a92 296343132 978c50bdf d4121fd65 d9c67602a 213d5db3e 04964ad3b cf61d176a f9e218531 cf5adb9dc 64a4c0a36 a380fbe25 4d61ee999 f9b05b52c 67958cfa7 0fc72ac1a 9b75889bd

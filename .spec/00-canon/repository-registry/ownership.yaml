@@ -781,3 +781,31 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: medium
+  # AI additive layer (PR #714) — "AI Visibility = couche additive du Search
+  # Control Plane" doctrine. 6 livrables petits extending existing services.
+  # All under D3 (SEO) ownership.
+  - glob: backend/src/modules/trend-signals/**
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
+  - glob: backend/supabase/migrations/*trend_signals*
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
+  - glob: backend/scripts/seo/audit/**
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
+  - glob: workspaces/ai-probe/**
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
+  - glob: docs/audit/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low

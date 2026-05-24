@@ -14,6 +14,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
 
+import {
+  detectExtractableTldr,
+  detectFaqSchema,
+  detectVisibleSources,
+} from '../helpers/ai-readiness-detectors';
+
 export type SnapshotKind =
   | 'monthly_cron'
   | 'pre_batch'
@@ -146,6 +152,55 @@ export class QualityHistorySnapshotService {
     return (data as QualityOutlier[]) ?? [];
   }
 
+  /**
+   * Génère les 3 métriques AI readiness depuis un HTML rendu (ou fragment).
+   *
+   * Pattern EAV — émis comme 3 rows metric_name distincts dans __seo_quality_history,
+   * pas de nouvelle colonne, pas de migration DDL.
+   *
+   * V1 limitation : si appelé avec un fragment (ex. `r1s_micro_seo_block`), le
+   * détecteur FAQ schema retournera 0 (le JSON-LD vit dans le `<head>` rendu, pas
+   * dans le fragment). Real HTML fetching = PR-X1.1 follow-up.
+   *
+   * Cf. ADR "AI Visibility = couche additive du Search Control Plane".
+   */
+  extractAiReadinessRows(
+    roleId: string,
+    pgId: string,
+    html: string,
+    kind: SnapshotKind,
+    metadata: Record<string, unknown>,
+    ownHostname: string = 'www.automecanik.com',
+  ): QualityHistoryRow[] {
+    const baseMetadata = { ...metadata, layer: 'ai-additive' };
+    return [
+      {
+        pg_id: pgId,
+        role_id: roleId,
+        metric_name: 'ai_has_extractable_tldr',
+        metric_value: detectExtractableTldr(html),
+        snapshot_kind: kind,
+        metadata: baseMetadata,
+      },
+      {
+        pg_id: pgId,
+        role_id: roleId,
+        metric_name: 'ai_has_faq_schema',
+        metric_value: detectFaqSchema(html),
+        snapshot_kind: kind,
+        metadata: baseMetadata,
+      },
+      {
+        pg_id: pgId,
+        role_id: roleId,
+        metric_name: 'ai_has_visible_sources',
+        metric_value: detectVisibleSources(html, ownHostname),
+        snapshot_kind: kind,
+        metadata: baseMetadata,
+      },
+    ];
+  }
+
   // ─── private helpers ─────────────────────────────────────────────────────
 
   /**
@@ -239,6 +294,17 @@ export class QualityHistorySnapshotService {
             },
           });
         }
+        // AI readiness — émis depuis le fragment `r1s_micro_seo_block`.
+        // V1 : `ai_has_faq_schema` = 0 (schema en <head>, pas dans fragment).
+        rows.push(
+          ...this.extractAiReadinessRows(
+            roleId,
+            pgId,
+            r.r1s_micro_seo_block ?? '',
+            kind,
+            baseMetadata,
+          ),
+        );
       }
       return rows;
     }
@@ -260,6 +326,14 @@ export class QualityHistorySnapshotService {
           note: 'synthetic placeholder — PR-X1.1 follow-up will add real fetchers per role',
         },
       },
+      // AI readiness — synthetic placeholders : empty HTML yields 0 for all 3 detectors.
+      ...this.extractAiReadinessRows(
+        roleId,
+        '__synthetic_initial__',
+        '',
+        kind,
+        baseMetadata,
+      ),
     ];
   }
 }
