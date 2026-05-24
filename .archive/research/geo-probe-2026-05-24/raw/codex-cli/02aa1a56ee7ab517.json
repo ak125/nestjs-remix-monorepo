@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "filtre habitacle 407",
+  "prompt_normalized": "filtre habitacle 407",
+  "prompt_hash": "02aa1a56ee7ab517",
+  "gamme": "Filtre d'habitacle",
+  "volume": 500,
+  "captured_at": "2026-05-24T15:45:47.569Z",
+  "model_version": null,
+  "duration_ms": 14881,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour **“filtre habitacle 407”**, il s’agit très probablement du **filtre d’habitacle / filtre à pollen pour Peugeot 407**. Il filtre l’air qui entre dans l’habitacle via la ventilation : poussières, pollen, odeurs selon le type choisi.\n\nSur Peugeot 407, il existe généralement deux grands choix :\n\n- **Filtre habitacle standard** : suffisant contre poussières et pollen.\n- **Filtre à charbon actif** : préférable si tu roules en ville, près du trafic ou si tu veux réduire les odeurs et certains gaz d’échappement.\n\nPour choisir le bon modèle, le plus sûr est de vérifier avec :\n- l’**immatriculation** sur Oscaro, Mister-Auto, AutoDoc, Yakarouler ou Norauto ;\n- ou les infos véhicule : **Peugeot 407 berline/SW/coupé**, motorisation, année, climatisation.\n\nCôté marques fiables, tu peux regarder **Mann-Filter**, **Purflux**, **Bosch**, **Valeo**, **Mahle** ou **Febi Bilstein**. Pour une 407, le prix tourne souvent autour de **10 à 25 €**, selon marque et charbon actif.\n\nLe remplacement est normalement assez simple. Sur beaucoup de 407, le filtre se trouve côté passager, vers la baie de pare-brise / zone sous boîte à gants selon version. Il faut souvent retirer un cache plastique, sortir l’ancien filtre, bien noter le **sens du flux d’air** indiqué par une flèche, puis insérer le nouveau sans le plier.\n\nSymptômes d’un filtre à changer :\n- buée qui part mal ;\n- ventilation faible ;\n- mauvaise odeur au démarrage de la clim ;\n- allergies ou poussière dans l’habitacle.\n\nÀ faire idéalement **tous les 15 000 à 20 000 km**, ou une fois par an. Pour une Peugeot 407, je prendrais plutôt un **filtre habitacle charbon actif Purflux, Mann ou Bosch**, surtout si la voiture roule régulièrement en zone urbaine.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "machoir frein arriere",
+  "prompt_normalized": "machoir frein arriere",
+  "prompt_hash": "570f2336f02d87b1",
+  "gamme": "Mâchoires de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:32:36.896Z",
+  "model_version": null,
+  "duration_ms": 35326,
+  "ok": true,
+  "error": null,
+  "response_raw": "Les **mâchoires de frein arrière** équipent les véhicules à freins à tambour (encore courant sur l'essieu arrière de beaucoup de citadines et compactes : Clio, 208, C3, Sandero, Twingo, Fiesta, etc.). Elles sont composées d'une garniture (ferodo) collée ou rivetée sur un support métallique, et viennent frotter contre le tambour quand tu freines.\n\n**Symptômes d'usure** :\n- Frein à main qui « monte » de plus en plus haut sans mordre\n- Bruit de grattement ou couinement à l'arrière en freinant\n- Pédale de frein qui s'enfonce plus\n- Mauvais résultat de freinage arrière au contrôle technique\n- Distance de freinage rallongée\n\n**Durée de vie** : entre 60 000 et 120 000 km selon conduite et conditions. À contrôler en même temps que les plaquettes avant ou tous les 40 000 km.\n\n**À remplacer toujours par paire** (les deux côtés en même temps), et profite-en pour vérifier/changer :\n- Les **cylindres de roue** (souvent suintants au démontage)\n- Le **kit de ressorts et accessoires** (vendu avec ou séparément)\n- L'état du **tambour** (rainures, ovalisation — usinage ou remplacement si HS)\n\n**Marques fiables** : Bosch, TRW, Ferodo, ATE, Bendix, Valeo, Brembo, Delphi. Évite les kits no-name à 15€ sur marketplaces, c'est de la fausse économie (vibrations, usure rapide, freinage médiocre).\n\n**Où acheter en France** :\n- **Oscaro** et **Mister-Auto** : bon rapport prix/marques OEM\n- **Yakarouler**, **Autodoc**, **123piecesauto** : alternatives compétitives\n- **Norauto**, **Feu Vert**, **Speedy** : si tu veux la pose incluse\n- **Amazon** : OK seulement si tu vérifies marque + référence OEM\n\n**Prix indicatifs** :\n- Kit mâchoires seul : 25–60 €\n- Kit complet (mâchoires + cylindres + ressorts) : 60–130 €\n- Pose en garage : 80–150 € de main d'œuvre\n\n**DIY ?** Faisable avec un peu d'expérience (cric + chandelles obligatoires, jamais sous un cric seul), pince à ressorts de frein utile. Compte 1h30–2h par côté la première fois. Sinon Norauto ou un garage indépendant feront l'affaire — vérifie sur **iDGarages** ou **Vroomly** pour comparer les devis.\n\nDonne-moi la marque et le modèle si tu veux que je précise la référence exacte.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

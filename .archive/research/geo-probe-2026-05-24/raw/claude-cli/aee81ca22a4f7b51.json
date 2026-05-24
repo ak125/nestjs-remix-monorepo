@@ -1,0 +1,34 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "vidange filtre à huile prix",
+  "prompt_normalized": "vidange filtre a huile prix",
+  "prompt_hash": "aee81ca22a4f7b51",
+  "gamme": "Filtre à huile",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:07:40.902Z",
+  "model_version": null,
+  "duration_ms": 37956,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le prix d'une vidange avec filtre à huile dépend surtout de qui fait le travail et de la qualité de l'huile.\n\n**En centre auto ou garage**\n- Centres auto (Norauto, Feu Vert, Midas, Speedy, Point S) : **forfait 60 à 130 €** all-in (main d'œuvre + huile semi-synthèse ou synthèse 5W-30/5W-40 + filtre à huile + joint de bouchon). Les formules d'entrée se trouvent souvent autour de 69-89 €, et grimpent à 110-150 € avec une huile 100 % synthétique ou des spécifications constructeur strictes (LongLife, dexos, C3, etc.).\n- Garage indépendant : généralement **50 à 100 €**, souvent meilleur rapport qualité/prix qu'un centre auto si le garagiste fournit une huile correcte.\n- Concessionnaire : **120 à 220 €**, justifié uniquement si la voiture est sous garantie constructeur ou demande une huile très spécifique.\n\n**Si vous le faites vous-même**\nComptez environ **30 à 70 €** :\n- Huile moteur 5 L : 25-55 € selon marque et grade (Total Quartz, Elf Evolution, Castrol Magnatec/Edge, Motul, Mobil 1, Shell Helix).\n- Filtre à huile : 5-18 € en première monte (Mann-Filter, Bosch, Mahle, Purflux, Valeo).\n- Joint de bouchon de vidange (cuivre ou alu) : 1-3 €. À changer systématiquement.\n\nPour les pièces, les sites de référence sont **Oscaro**, **Mister-Auto**, **Yakarouler**, **Automecanik** ou **Piecesauto24** — ils demandent la plaque ou le code moteur et sortent la référence exacte. Vérifiez la viscosité (5W-30, 5W-40, 0W-20…) et la norme constructeur dans le carnet d'entretien ou la trappe à carburant, c'est plus fiable que le grade générique.\n\n**Points à vérifier**\n- Faire ressortir la **quantité d'huile** exacte sur le devis (un 3-cylindres essence prend 3,5 L, un V6 diesel peut monter à 7 L — la différence se chiffre).\n- Demander si le **filtre est inclus** (parfois facturé en plus dans les forfaits low-cost affichés à 39 €).\n- L'intervalle réel est plutôt **15 000 km ou 1 an** pour préserver le moteur, même si le constructeur autorise 30 000 km en LongLife.\n\nSur forum-auto.caradisiac.com vous trouverez des retours par modèle si vous voulez comparer les devis reçus.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "ces, les sites de référence sont **Oscaro**, **Mister-Auto**, **Yakarouler**, **Automecanik** ou **Piecesauto24** — ils demandent la plaque ou le code moteur et sortent la référence exacte. Vérifiez la viscosité (5W-30, 5W-40, 0W-20…) et la",
+    "competitors_mentioned": [
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "forum-auto.caradisiac.com",
+        "cluster": "forum_communautaire",
+        "matchedDomain": "forum-auto.caradisiac.com"
+      }
+    ]
+  }
+}

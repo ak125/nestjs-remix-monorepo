@@ -1,0 +1,49 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "etrier frein grippe",
+  "prompt_normalized": "etrier frein grippe",
+  "prompt_hash": "7532f39848d50c19",
+  "gamme": "Étrier de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:08:43.085Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 42910,
+  "ok": true,
+  "error": null,
+  "response_raw": "**Étrier de frein grippé — diagnostic et solutions**\n\nUn étrier grippé se manifeste par plusieurs signes : la voiture tire d'un côté au freinage, une jante anormalement chaude après quelques kilomètres (touchez prudemment), usure asymétrique des plaquettes (une face très usée, l'autre intacte), odeur de brûlé, surconsommation, ou bruit de frottement permanent.\n\n**Deux causes principales :**\n\n1. **Colonnettes (axes de guidage) grippées** — le cas le plus fréquent. Les soufflets caoutchouc se percent, l'eau entre, la graisse sèche, l'axe se bloque. L'étrier ne coulisse plus.\n2. **Piston grippé dans son alésage** — corrosion liée à un liquide de frein jamais purgé (il devient hygroscopique au-delà de 2 ans). Le piston ne recule plus, la plaquette frotte en permanence.\n\nPlus rare : flexible interne effondré (la pression passe mais ne redescend pas → étrier qui reste serré).\n\n**Réparation :**\n\n- **Colonnettes** : démontage, nettoyage à la toile émeri fine, graisse haute température cuivre ou céramique (jamais de graisse classique, elle fond). Kit colonnettes + soufflets ≈ 15-30 €.\n- **Piston grippé** : kit de réparation étrier (joints + soufflet piston, parfois piston neuf) ≈ 25-60 €, ou échange standard de l'étrier ≈ 80-180 €.\n- **Purge complète** du circuit obligatoire après intervention, avec DOT 4 neuf.\n\n**Marques fiables :** ATE, TRW, Bosch, Brembo, Ferodo, Lucas — éviter le no-name à 20 €.\n\n**Où acheter les pièces :** Oscaro, Mister-Auto, Yakarouler, Autodoc, Piecesauto24. Tapez votre immatriculation pour filtrer par motorisation.\n\n**Si vous faites faire :** comptez 150-300 € par étrier en garage indépendant (souvent moitié moins cher qu'en centre auto type Norauto/Feu Vert/Midas). Demandez systématiquement le remplacement par paire sur le même essieu, sinon vous aurez un freinage déséquilibré.\n\n**Si vous faites vous-même :** outillage nécessaire = cric + chandelles, clé à pipe, repousse-piston (à vis pour l'arrière si frein à main intégré, sinon simple G classique), clé de purge et tuyau transparent. Comptez 2-3 h pour un débutant.\n\n**Forums utiles pour votre modèle précis :** forum-auto.caradisiac.com, planete-citroen.com, planete-peugeot.com, audipassion.com selon la marque — souvent un tuto photo existe déjà pour votre véhicule.\n\nNe roulez pas longtemps avec un étrier grippé : risque de disque voilé par surchauffe (≈ 80 € pièce) et perte de freinage sur la roue opposée.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "forum-auto.caradisiac.com",
+        "cluster": "forum_communautaire",
+        "matchedDomain": "forum-auto.caradisiac.com"
+      },
+      {
+        "raw": "planete-citroen.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      },
+      {
+        "raw": "planete-peugeot.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      },
+      {
+        "raw": "audipassion.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

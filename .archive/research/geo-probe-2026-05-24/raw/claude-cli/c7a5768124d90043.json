@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "filtre a gasoil 308",
+  "prompt_normalized": "filtre a gasoil 308",
+  "prompt_hash": "c7a5768124d90043",
+  "gamme": "Filtre à carburant",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:19:32.267Z",
+  "model_version": null,
+  "duration_ms": 35879,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour un filtre à gasoil de Peugeot 308, le bon choix dépend de la motorisation et de l'année. Quelques repères concrets :\n\n**Identifier le modèle exact**\n- 308 I (2007-2013) 1.6 HDi 90/110 ch ou 2.0 HDi 136/150 ch\n- 308 II (2013-2021) 1.6 BlueHDi 100/120 ch ou 2.0 BlueHDi 150/180 ch\n- 308 III (depuis 2021) 1.5 BlueHDi 130 ch\n\nLe plus simple : prendre la carte grise et noter la version (champ D.2) + le code moteur, ou utiliser un sélecteur par immatriculation sur un site marchand.\n\n**Marques fiables (équipementiers d'origine)**\n- **Purflux** (français, monté d'origine sur PSA) — référence FCS745, FCS748 ou FCS762 selon la version\n- **Mann-Filter** — WK 853/21, WK 842/2\n- **Bosch** — série 1457434xxx\n- **Mahle/Knecht**, **Hengst**, **Valeo** sont également très bons\n\nÉvite les marques sans nom à 5-8 € : la cellulose est de moindre qualité, et un mauvais filtre peut endommager la pompe HP (facture à 4 chiffres).\n\n**Où acheter en France**\n- **Oscaro** et **Mister-Auto** : catalogue large, sélecteur par immat fiable, prix corrects (15-30 €)\n- **Yakarouler**, **Auto-Doc**, **Piecesauto24** : souvent les moins chers\n- **Carter-Cash**, **Norauto**, **Feu Vert** : utile si tu veux récupérer la pièce le jour même\n- Concession Peugeot ou **Distrigo** : référence d'origine, plus cher (~40 €)\n\n**Périodicité**\nPeugeot préconise tous les 60 000 km ou 2 ans sur les BlueHDi, 40 000 km sur les anciens HDi. Si tu fais beaucoup d'autoroute ou de gasoil B7/B10, raccourcis à 40 000 km.\n\n**Lors du remplacement**\n- Purger l'eau du décanteur avant dépose (si équipé)\n- Pré-remplir le nouveau filtre avec du gasoil propre (évite plusieurs cycles d'amorçage)\n- Sur BlueHDi, la procédure d'amorçage se fait avec la clé en position contact pendant ~10 secondes, à répéter 3-4 fois avant de démarrer\n- Couple de serrage du couvercle : généralement 25 Nm, à vérifier sur RTA ou forum **Planète 308** / **Forum-Peugeot**\n\nSi tu donnes la motorisation exacte, je peux te sortir la référence précise.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

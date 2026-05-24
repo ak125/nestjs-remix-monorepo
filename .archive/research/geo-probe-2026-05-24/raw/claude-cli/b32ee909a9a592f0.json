@@ -1,0 +1,28 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "tambour frein",
+  "prompt_normalized": "tambour frein",
+  "prompt_hash": "b32ee909a9a592f0",
+  "gamme": "Tambour de frein",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:36:45.095Z",
+  "model_version": null,
+  "duration_ms": 38750,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le tambour de frein, c'est la pièce cylindrique en fonte (parfois aluminium) qui équipe le freinage arrière des véhicules à frein à tambour — encore très répandu sur Clio, 208, C3, Sandero, Twingo, Fiat Panda, etc. À l'intérieur, les mâchoires viennent frotter contre la paroi interne du tambour pour ralentir la roue.\n\n**Quand le remplacer ?**\n- Cote mini dépassée (gravée sur le tambour, ex. « MAX 229 mm ») mesurée au pied à coulisse\n- Rayures profondes, ovalisation, fissures\n- Vibrations au freinage arrière, bruit métallique, frein à main qui ne tient plus\n- Toujours par paire (gauche + droite) et avec un kit mâchoires neuf + ressorts si l'ancien set est usé\n\n**Marques fiables** : Bosch, ATE, TRW, Brembo, Ferodo, Textar, Valeo, Delphi, Bendix. Pour de la première monte, regarde la marque d'origine constructeur (souvent indiquée sur le tambour démonté).\n\n**Où acheter en France** :\n- **Oscaro** et **Mister-Auto** : large catalogue avec recherche par immatriculation, livraison rapide, prix souvent les plus compétitifs\n- **Yakarouler**, **Auto-Doc**, **123pieces** : alternatives sérieuses\n- **Norauto**, **Feu Vert**, **Midas**, **Speedy** : si tu veux la pose incluse (compter 80–150 € de main-d'œuvre en plus)\n- **Carter-Cash** : intéressant en magasin pour comparer en direct\n\nPrix indicatif : 25–60 € le tambour selon le modèle, 40–80 € le kit mâchoires complet (cylindres de roue parfois à changer aussi, ~20–30 € pièce).\n\n**Conseils pratiques** :\n- Démonte les deux côtés en même temps, prends des photos avant de tout débrider (les ressorts sont vicieux à remonter)\n- Profite-en pour vérifier le **cylindre de roue** : s'il suinte, change-le, sinon il lâchera dans 6 mois\n- Purge du circuit de frein après remontage si tu as ouvert le cylindre\n- Réglage du frein à main à refaire après pose\n\nPour les tutos détaillés : **Tutoauto**, **Caroom**, la chaîne YouTube **GO Mécano**, et les forums **Forum-Auto** ou **Planète Renault** selon ton modèle. Revue Technique Auto (RTA) reste la référence papier si tu veux les couples de serrage exacts.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

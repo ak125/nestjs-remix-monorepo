@@ -1,0 +1,43 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "disque de frein clio 3",
+  "prompt_normalized": "disque de frein clio 3",
+  "prompt_hash": "8d6d997588d9d6fe",
+  "gamme": "disque de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:31:19.255Z",
+  "model_version": null,
+  "duration_ms": 35332,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour un disque de frein de Clio 3 (2005-2014), voici l'essentiel.\n\n**Dimensions selon ta motorisation**\n- Avant : 260 mm (versions 1.2 16V, 1.5 dCi 70/85 ch) ou 280 mm (1.5 dCi 105/106, 1.6 16V, 2.0 16V). Épaisseur neuve 22 mm, mini 20 mm.\n- Arrière : tambours sur la majorité des finitions. Disques uniquement sur RS (300 mm) et certaines GT/Initiale Paris.\n\nPour être sûr, regarde ta carte grise (champ D.2 pour le code moteur, V.7 pour la puissance) ou mesure le disque actuel. Les sites e-commerce demandent souvent le numéro VIN — c'est le moyen le plus fiable d'éviter de te tromper.\n\n**Marques recommandées (rapport qualité/prix)**\n- **Brembo** : référence, ~45-70 € le disque, durée de vie excellente.\n- **ATE** (Continental) : équipementier d'origine sur beaucoup de Renault, ~35-55 €.\n- **Bosch** : très bon compromis, ~30-50 €.\n- **TRW, Ferodo, Textar** : sérieux, autour de 30-45 €.\n- **Valeo** : OEM Renault, dispo facilement.\n- À éviter : les no-name à 12 € la paire, voilage rapide et freinage spongieux.\n\n**Où acheter**\n- **Oscaro.com** : catalogue par VIN, large stock, livraison rapide.\n- **Mister-Auto** : prix souvent un peu plus bas qu'Oscaro, propre à PSA mais bon sur Renault aussi.\n- **Yakarouler, AD.fr (Autodistribution), Piecesauto24, Autodoc** : alternatives sérieuses.\n- **Carter-Cash, Norauto, Feu Vert** : si tu veux pose incluse, plus cher mais garanti.\n\n**Conseil pose**\nChange toujours les disques **par paire** (essieu complet) et profite-en pour remplacer les **plaquettes** en même temps — sinon les neuves se polluent au contact d'un disque rainuré. Compte ~20-25 € la paire de plaquettes en plus. Côté outillage : clé dynamométrique (couple étrier ~30 Nm, vis de roue 100-110 Nm), repousse-piston, et un peu de graisse cuivrée sur les zones de glissement.\n\n**Forums utiles** pour les retours de propriétaires : Forum-Auto (section Renault), Planète-Renault, Renault-Clio.com.\n\nBudget total réaliste pour faire l'avant soi-même : **80 à 140 €** pièces, contre 250-350 € en garage.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Oscaro.com",
+        "cluster": "marchand",
+        "matchedDomain": "oscaro.com"
+      },
+      {
+        "raw": "AD.fr",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      },
+      {
+        "raw": "Renault-Clio.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

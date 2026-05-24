@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "clio 3 filtre a gasoil",
+  "prompt_normalized": "clio 3 filtre a gasoil",
+  "prompt_hash": "411a8881effd7479",
+  "gamme": "Filtre à carburant",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:14:59.560Z",
+  "model_version": null,
+  "duration_ms": 16904,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour une **Renault Clio 3 diesel**, le “filtre à gasoil” concerne surtout les moteurs **1.5 dCi**. Attention : il existe plusieurs montages selon l’année, la puissance et la présence d’un capteur d’eau. Le plus sûr est de chercher avec la plaque d’immatriculation ou le VIN sur **Renault**, **Oscaro**, **Mister-Auto**, **Autodoc** ou **Yakarouler**.\n\nSur Clio 3 1.5 dCi, le filtre est souvent situé **dans le passage de roue avant droit**, derrière le pare-boue, pas forcément bien visible depuis le compartiment moteur. Il peut être dans un boîtier métallique/plastique avec raccords rapides. On trouve souvent des références compatibles chez **Purflux**, **Bosch**, **Mann-Filter**, **Mahle/Knecht** ou **Hengst**. Des références Renault courantes existent comme **164000890R**, avec équivalents type **Purflux FCS751**, mais il faut confirmer avec ton moteur exact.\n\nSymptômes possibles d’un filtre à gasoil encrassé : démarrage difficile, trous à l’accélération, perte de puissance, moteur qui cale, voyant injection, ou désamorçage après remplacement. Sur un dCi, mieux vaut éviter les filtres bas de gamme : l’injection haute pression n’aime pas l’eau ni les impuretés.\n\nPour le remplacement : lever l’avant droit, déposer la roue ou braquer à fond, retirer le pare-boue, débrancher les durites en repérant bien leur position, remplacer le filtre, puis **réamorcer avec la poire d’amorçage** jusqu’à ce qu’elle devienne dure. Ensuite démarrer sans insister trop longtemps sur le démarreur. Vérifier qu’il n’y a aucune fuite aux raccords.\n\nEn entretien, on le remplace généralement autour de **40 000 à 60 000 km**, ou plus tôt si carburant douteux, démarrages difficiles ou historique inconnu. Pour une Clio 3 d’occasion, je le ferais avec la vidange si aucune facture récente ne le prouve.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "maitre cylindre de frein voiture",
+  "prompt_normalized": "maitre cylindre de frein voiture",
+  "prompt_hash": "55920fbd06d38716",
+  "gamme": "Maître cylindre de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:02:06.542Z",
+  "model_version": null,
+  "duration_ms": 37007,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le maître-cylindre de frein est la pièce qui transforme la pression de ta pédale en pression hydraulique envoyée aux étriers/cylindres de roue via le liquide de frein. Il est monté sur le servofrein (l'amplificateur), généralement dans le compartiment moteur, et coiffé du bocal de liquide de frein (DOT 4 le plus souvent).\n\n**Signes qu'il est HS :**\n- Pédale qui s'enfonce lentement quand tu maintiens l'appui (fuite interne au niveau des coupelles)\n- Pédale spongieuse ou course longue, sans fuite visible sur les étriers/flexibles\n- Niveau de liquide qui baisse sans fuite externe apparente\n- Liquide huileux/noirâtre autour du maître-cylindre ou sur le servofrein (mauvais signe : le liquide attaque la membrane)\n- Voyant frein qui s'allume par intermittence\n\n**Diagnostic rapide :** pompe la pédale moteur tournant. Si elle se durcit après quelques coups puis re-mollit en gardant le pied appuyé = fuite interne du maître-cylindre. Vérifie aussi qu'il n'y ait pas de liquide sous le tapis côté conducteur (cas rare mais ça arrive sur certains montages).\n\n**Marques sérieuses :** **ATE** (équipementier d'origine pour beaucoup de constructeurs allemands), **Bosch**, **TRW**, **LPR**, **FTE**, **Brembo** pour le sportif. Évite les marques no-name à 25 € sur les marketplaces — c'est un organe de sécurité, le rapport qualité/risque est mauvais.\n\n**Où acheter :** **Oscaro**, **Mister-Auto**, **Yakarouler**, **Piecesauto24**, **AutoMecanik** pour le neuf avec fiches techniques claires. **Carter-Cash** ou **Norauto** si tu veux retirer en magasin le jour même. Sur **Autodoc** les prix sont bas mais vérifie bien la référence OE constructeur avant de commander.\n\n**Budget :** 60–180 € la pièce selon le modèle. Comptez 1h–2h de main d'œuvre + une **purge complète du circuit obligatoire** après remplacement (sinon pédale au plancher). Si tu n'as pas d'outil de purge sous pression ou un valet, fais-le faire — c'est l'étape la plus critique. Forum-auto.com a des tutos modèle-par-modèle assez fiables si tu veux te lancer toi-même.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "Où acheter :** **Oscaro**, **Mister-Auto**, **Yakarouler**, **Piecesauto24**, **AutoMecanik** pour le neuf avec fiches techniques claires. **Carter-Cash** ou **Norauto** si tu veux retirer en magasin le jour même. Sur **Autodoc** les prix s",
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Forum-auto.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

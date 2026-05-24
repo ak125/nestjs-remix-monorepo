@@ -1,0 +1,28 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "cable de frein",
+  "prompt_normalized": "cable de frein",
+  "prompt_hash": "801257629d938f5f",
+  "gamme": "Câble de frein à main",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:06:16.421Z",
+  "model_version": null,
+  "duration_ms": 46248,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le « câble de frein » désigne presque toujours le **câble de frein à main** (frein de stationnement) — pièce d'usure classique qui finit par s'allonger, se gripper ou casser, surtout sur véhicules exposés au sel ou peu utilisés.\n\n**Symptômes typiques**\n- Levier qui remonte anormalement haut (8-12 crans au lieu de 3-5)\n- Frein à main qui ne tient plus la voiture en pente\n- Voyant frein à main allumé en permanence ou témoin d'usure\n- Bruit de frottement à l'arrière, roue qui chauffe d'un côté (câble grippé qui ne relâche pas)\n- Sur véhicules avec frein à main électrique (EPB), code défaut au valise\n\n**Choix de la pièce**\nLe câble est spécifique au modèle, à la motorisation et souvent au côté (gauche/droite). On les remplace **systématiquement par paire**, jamais un seul, sous peine de freinage déséquilibré. Marques fiables en aftermarket : **TRW, ATE, Cofle, Triscan, Quinton Hazell, A.B.S., Cabor, Adriauto**. Pour de l'OEM, passer par le constructeur reste l'option la plus sûre sur véhicules récents.\n\n**Où acheter en France**\n- **Oscaro**, **Mister-Auto**, **Yakarouler**, **Piecesauto24**, **Autodoc** : large catalogue, sélection par immatriculation/VIN, prix entre 15 et 60 € pour la majorité des modèles\n- **Norauto, Feu Vert, Speedy** : si vous voulez pose incluse (compter 80-150 € main d'œuvre)\n- **eBay** ou **Leboncoin** pour de l'occase ou du déstockage, mais vérifier la référence OEM\n\n**Pose**\n1-2h pour un bricoleur équipé : voiture sur chandelles, dépose roues arrière, parfois dépose du tambour ou de l'étrier, démontage du câble depuis le levier (console centrale) et le palonnier sous-caisse. **Étape critique** : la tension finale au palonnier — trop serré, les freins traînent ; trop lâche, ça ne tient pas. La RTA (Revue Technique Automobile) du modèle ou les tutos vidéo sur **Caradisiac**, **Forum-Auto** et YouTube (chaînes type *Vilebrequin Mécanique*, *Tonton Mécano*) donnent les couples de serrage et la procédure précise.\n\nSi vous me donnez la **marque/modèle/année** (ou mieux, l'immatriculation), je peux pointer la référence exacte et un ordre de grandeur prix.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

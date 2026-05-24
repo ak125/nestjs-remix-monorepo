@@ -1,0 +1,28 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "flexible frein avant",
+  "prompt_normalized": "flexible frein avant",
+  "prompt_hash": "4dbf34989bba9f5b",
+  "gamme": "Flexible de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:33:53.077Z",
+  "model_version": null,
+  "duration_ms": 33960,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Flexible de frein avant — l'essentiel\n\nLe flexible de frein avant relie la durite rigide (côté caisse) à l'étrier de frein. C'est une **pièce d'usure critique** : il subit flexion, vibrations, projections (sel, graviers) et chaleur. Durée de vie typique : **6 à 10 ans**, à remplacer impérativement par **paire (gauche + droite)** pour conserver un freinage équilibré.\n\n## Symptômes d'un flexible HS\n\n- Pédale spongieuse ou course allongée\n- Voiture qui tire d'un côté au freinage\n- Étrier qui ne desserre pas (frein qui chauffe, roue qui freine en roulant)\n- Fissures visibles, suintement, gonflement de la gaine au freinage\n- Contrôle technique : défaillance majeure quasi systématique\n\n## Choisir la bonne référence\n\nLe flexible est **spécifique au modèle/motorisation/équipement** (ABS, châssis sport, taille de disque). Donne toujours :\n- VIN ou type-mine + année\n- Côté (G/D) si asymétrique\n- Type d'étrier (Bosch, ATE, TRW, Lucas, Bendix…)\n\n## Marques fiables (OE et équivalent)\n\n- **OE / équipementiers** : ATE, TRW, Bosch, Brembo, Ferodo, Delphi, Bendix\n- **Renforcé inox (tuning / usage intensif)** : Goodridge, HEL Performance, Venhill — homologués TÜV, gain en feeling pédale\n- À éviter sur freinage : références \"no-name\" sans norme **DOT** ou **TÜV**\n\n## Où acheter\n\n- **Catalogues pièces auto en ligne** : Oscaro, Mister-Auto, Yakarouler, Piecesauto24, Autodoc — bonne couverture OEM avec recherche par immatriculation\n- **Réseau pro** : Norauto, Feu Vert, Speedy (achat + pose), ou concessionnaire pour l'origine constructeur\n- **Comparer** : sur Oscaro/Mister-Auto on trouve souvent l'équivalent ATE/TRW à 8-20 € pièce, contre 40-80 € en concession\n\n## Pose\n\nComptez **30-60 min** par côté en atelier. **Purge du circuit obligatoire** après remontage (DOT 4 standard, DOT 5.1 pour usage sportif). Tarif pose pro : 60-120 € la paire purge comprise.\n\nSi tu hésites sur la référence exacte, donne-moi la marque + modèle + année + motorisation, je t'oriente.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

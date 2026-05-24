@@ -1,0 +1,28 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "filtre habitacle",
+  "prompt_normalized": "filtre habitacle",
+  "prompt_hash": "e1b4b38a8fef73ec",
+  "gamme": "Filtre d'habitacle",
+  "volume": 50000,
+  "captured_at": "2026-05-24T15:07:13.886Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 27531,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le filtre d'habitacle (parfois appelé filtre pollen ou filtre anti-pollen) purifie l'air qui entre dans l'habitacle via la ventilation. C'est une pièce d'usure souvent oubliée, alors qu'elle protège vos voies respiratoires et l'efficacité de la clim.\n\n**Les deux grandes familles**\n\n- **Filtre pollen standard (papier plissé)** : retient poussières, pollens, particules > 0,3 µm. Le moins cher (8-15 €).\n- **Filtre à charbon actif** : ajoute une couche qui absorbe gaz d'échappement, ozone, odeurs. Recommandé en ville ou si vous êtes sensible. Compter 15-30 €.\n- **Filtre biofonctionnel / anti-allergène** (Mann-Filter FreciousPlus, Bosch FILTER+) : charbon actif + couche anti-bactérienne/anti-allergène. 25-45 €, vraie différence pour les allergiques.\n\n**Quand le changer**\n\nTous les 15 000-20 000 km ou **1 fois par an** (idéalement au printemps avant la saison des pollens). Signes d'usure : buée persistante, débit d'air faible, odeur de renfermé, allergies aggravées dans la voiture.\n\n**Marques fiables**\n\nMann-Filter, Bosch, Mahle, Valeo, Purflux, Hengst, Filtron. Évitez le no-name à 3 € sur marketplace — la qualité de filtration et le joint d'étanchéité font une vraie différence.\n\n**Où acheter**\n\n- **Spécialistes auto en ligne** : Oscaro, Mister-Auto, Yakarouler, AutoDoc, 1001Pièces — bonne dispo, sélection par plaque/VIN.\n- **Enseignes physiques** : Norauto, Feu Vert, Speedy si vous voulez la pose comprise (souvent 15-25 € de main d'œuvre alors que c'est faisable seul en 10 min).\n- **Constructeur** : concession pour les modèles récents avec filtres complexes (combiné HEPA sur certaines Tesla, Volvo, Mercedes haut de gamme).\n\n**Pose DIY**\n\nSur 90 % des voitures, le filtre est derrière la boîte à gants (à déclipser) ou sous l'auvent côté passager. Tutoriels précis sur **YouTube** (chercher \"filtre habitacle + modèle\") ou sur **Oscaro / Mister-Auto** qui fournissent des fiches montage par véhicule. Forum **Forum-Auto** et **Caradisiac** utiles pour les modèles capricieux (certaines Peugeot 308, Renault Scénic demandent de démonter plus).\n\n**Astuce** : profitez-en pour vaporiser un nettoyant clim dans la grille d'aération avant de remettre le filtre neuf.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

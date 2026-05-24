@@ -1,0 +1,28 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "filtre huile",
+  "prompt_normalized": "filtre huile",
+  "prompt_hash": "7284e0cf8f19ffa8",
+  "gamme": "Filtre à huile",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:18:49.462Z",
+  "model_version": null,
+  "duration_ms": 37705,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le filtre à huile est un consommable essentiel : il retient les particules métalliques, suies et débris en suspension dans l'huile moteur, évitant qu'ils ne circulent et n'abrasent les paliers, l'arbre à cames ou la pompe à huile. On le change **systématiquement avec la vidange** (en général tous les 10 000–15 000 km ou une fois par an selon le constructeur), jamais seul.\n\n### Types principaux\n\n- **Cartouche vissée (spin-on)** : boîtier métallique tout-en-un, à visser/dévisser. Majorité des moteurs essence anciens et beaucoup de diesels.\n- **Cartouche écologique (papier seul)** : insert en papier plissé qu'on glisse dans un boîtier permanent du moteur. Plus courant sur les moteurs récents (PSA, Renault, VAG, BMW).\n\nVérifier impérativement la référence OEM ou un équivalent constructeur — un filtre sous-dimensionné ou avec un mauvais clapet anti-retour peut provoquer une perte de pression d'huile au démarrage.\n\n### Marques fiables\n\n**Premium / OEM** : Mann-Filter, Mahle, Hengst, Bosch, Purflux (équipementier d'origine pour Renault, Peugeot, Citroën). **Bon rapport qualité/prix** : Valeo, Filtron, Champion, Hifi Filter. **À éviter** : les no-name à 2 € sur marketplaces, papier filtrant médiocre et joint qui durcit.\n\n### Où acheter\n\n- **AutoMecanik** : pratique pour identifier la bonne réf par véhicule (sélecteur marque/modèle/motorisation).\n- **Oscaro**, **Mister-Auto**, **Yakarouler**, **AutoDoc** : catalogues très larges, prix compétitifs, livraison rapide.\n- **Norauto / Feu Vert / Speedy** : si tu veux faire faire la vidange en même temps.\n- **Amazon** : pratique mais vérifier que le vendeur est l'équipementier officiel (Bosch, Mann) et pas un revendeur tiers.\n\n### Conseils pratiques\n\n- Toujours **enduire le joint d'huile propre** avant le montage, et serrer **à la main** + un quart de tour (jamais à la clé en force, sinon joint écrasé et fuite).\n- Sur cartouche papier, **remplacer aussi le joint torique** fourni dans la boîte.\n- Pour trouver la bonne référence : la carte grise (type-mine), ou des outils comme **Vroomly**, **Oscaro** ou le configurateur AutoMecanik à partir de l'immatriculation.\n\nSi tu me donnes la marque, modèle et motorisation de ta voiture, je peux pointer une référence précise.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "arketplaces, papier filtrant médiocre et joint qui durcit.\n\n### Où acheter\n\n- **AutoMecanik** : pratique pour identifier la bonne réf par véhicule (sélecteur marque/modèle/motorisation).\n- **Oscaro**, **Mister-Auto**, **Yakarouler**, **Auto",
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

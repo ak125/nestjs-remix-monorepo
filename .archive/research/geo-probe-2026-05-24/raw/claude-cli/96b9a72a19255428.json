@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "filtre à carburant",
+  "prompt_normalized": "filtre a carburant",
+  "prompt_hash": "96b9a72a19255428",
+  "gamme": "Filtre à carburant",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:27:31.551Z",
+  "model_version": null,
+  "duration_ms": 31804,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le filtre à carburant retient les impuretés (rouille, particules, eau) présentes dans le carburant avant qu'il n'atteigne le système d'injection. Un filtre encrassé provoque des pertes de puissance, à-coups à l'accélération, démarrages difficiles, voire un calage moteur. Sur diesel récent (HDi, TDI, dCi, CDI), il protège aussi la pompe haute pression et les injecteurs — des pièces qui coûtent plusieurs milliers d'euros si elles sont endommagées par des particules.\n\n**Intervalle de remplacement** : généralement 20 000 à 40 000 km pour un diesel, 60 000 à 80 000 km pour un essence. Vérifier le carnet d'entretien constructeur, car certains modèles (PSA BlueHDi, VAG TDI EA288) ont des préconisations spécifiques. Sur diesel, purger l'eau du décanteur tous les 10 000 km si le filtre en est équipé.\n\n**Marques fiables** : Bosch, Mann-Filter, Mahle, Hengst, Purflux et Valeo sont les références OEM utilisées en première monte par la plupart des constructeurs européens. Eviter les filtres no-name sur diesel common rail — la qualité de filtration (en microns) n'est souvent pas au niveau et peut endommager les injecteurs Delphi, Denso ou Bosch.\n\n**Où acheter** :\n- **Oscaro**, **Mister-Auto**, **Yakarouler**, **Auto Doc** pour les prix compétitifs en ligne (compter 10-40 € selon le véhicule)\n- **Norauto**, **Feu Vert**, **Midas** si vous voulez achat + pose\n- **Amazon** et **eBay** peuvent dépanner mais vérifiez la référence OEM exacte avec votre code moteur\n\n**Pour identifier la bonne référence** : utilisez votre numéro de châssis (VIN) sur les sites marchands, ou consultez le site **TecDoc** / **Oscaro** avec marque + modèle + motorisation + année. Le code moteur (sur la plaque constructeur ou la carte grise champ D.2) est plus fiable que le simple modèle.\n\n**Pose** : sur essence, c'est souvent simple (sous le véhicule ou dans le compartiment moteur, 30 min). Sur diesel, il faut purger le circuit après remplacement pour éviter le désamorçage — certains modèles ont une poire d'amorçage, d'autres nécessitent un cycle de démarrage spécifique. Forums utiles : **Forum-Auto**, **Caradisiac**, **Planète Citroën**, **TDI-Forum** pour les tutoriels par modèle.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "filtre d habitacle",
+  "prompt_normalized": "filtre d habitacle",
+  "prompt_hash": "5bde53c73eff9332",
+  "gamme": "Filtre d'habitacle",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:31:17.933Z",
+  "model_version": null,
+  "duration_ms": 29792,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le filtre d'habitacle (ou filtre pollen) purifie l'air entrant dans la cabine via le système de ventilation. Il retient poussières, pollens, suies diesel et, pour les versions à charbon actif, les odeurs et gaz polluants (NOx, ozone).\n\n**Quand le remplacer ?**\nTous les 15 000–20 000 km ou une fois par an, plus souvent en zone urbaine, pollinique ou poussiéreuse. Signes d'usure : vitres qui s'embuent vite, ventilation moins efficace, odeurs persistantes, allergies aggravées en voiture.\n\n**Deux types principaux :**\n- **Standard (papier/polyester)** : filtration particules ~PM10, le moins cher (8–15 €).\n- **Charbon actif** : absorbe en plus les odeurs et gaz, recommandé en ville (15–30 €). Certaines marques proposent du \"biofonctionnel\" (couche antiallergène/antibactérienne).\n\n**Marques fiables :**\nMann-Filter, Mahle, Bosch, Hengst, Valeo, Purflux, Filtron. Évite les références no-name à 3 €, la mousse d'étanchéité tient mal et l'air passe à côté du média filtrant.\n\n**Où acheter ?**\n- **Oscaro**, **Mister-Auto**, **Yakarouler**, **AutoDoc** pour les tarifs en ligne avec recherche par immatriculation.\n- **Norauto**, **Feu Vert**, **Midas** si tu veux la pose incluse (~15–25 € de main-d'œuvre, mais souvent faisable soi-même en 10 min).\n- **AutoMecanik.com** propose le catalogue référencé par véhicule avec compatibilités vérifiées.\n\n**Pose DIY :**\nSur la majorité des voitures, le filtre est derrière la boîte à gants (clips à déposer) ou sous le tableau de bord côté passager. Quelques modèles (certaines Renault, Peugeot) le placent sous le capot près du pare-brise. Sens de montage important : flèche orientée dans le sens du flux d'air (généralement vers le bas/l'habitacle). Un tuto YouTube spécifique à ton modèle (chaîne **Vid'Auto**, **WD Mécanique**) fait gagner du temps.\n\n**Astuce** : profite du changement pour aspirer le logement et vaporiser un nettoyant clim (type Wynn's ou Facom) dans l'aération — ça élimine les bactéries accumulées sur l'évaporateur, principale cause des odeurs.\n\nPour une référence exacte, donne-moi la marque, le modèle, l'année et la motorisation (ou le code moteur sur la carte grise, case D.2).",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "cluse (~15–25 € de main-d'œuvre, mais souvent faisable soi-même en 10 min).\n- **AutoMecanik.com** propose le catalogue référencé par véhicule avec compatibilités vérifiées.\n\n**Pose DIY :**\nSur la majorité des voitures, le filtre est derrièr",
+    "competitors_mentioned": [
+      "autodoc",
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "AutoMecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      }
+    ]
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "frein de tambour",
+  "prompt_normalized": "frein de tambour",
+  "prompt_hash": "12d6fa9d77d36ee0",
+  "gamme": "Tambour de frein",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:22:03.501Z",
+  "model_version": null,
+  "duration_ms": 39026,
+  "ok": true,
+  "error": null,
+  "response_raw": "## Frein à tambour — l'essentiel\n\nLe frein à tambour est un système de freinage où deux **mâchoires** (garnitures) viennent s'écarter contre la paroi intérieure d'un **tambour** solidaire de la roue. La pression est générée par un **cylindre de roue** hydraulique alimenté par le maître-cylindre. On le trouve principalement à l'**arrière** des véhicules d'entrée/milieu de gamme (Clio, 208, Sandero, Twingo, utilitaires légers…), souvent jusqu'aux années récentes pour des raisons de coût et parce qu'il intègre facilement le **frein de stationnement** mécanique.\n\n### Composants principaux\n- **Tambour** (le bol en fonte qui tourne avec la roue)\n- **Mâchoires** avec garnitures (l'équivalent des plaquettes)\n- **Cylindre de roue** (deux pistons opposés)\n- **Ressorts de rappel** et **ressort de maintien**\n- **Levier de rattrapage automatique** d'usure\n- **Câble de frein à main**\n\n### Symptômes d'usure ou défaut\n- Frein à main qui « descend » trop bas ou inefficace\n- Bruit de frottement métallique = garnitures HS\n- Fuite de liquide derrière le tambour = cylindre de roue à remplacer\n- Tirage au freinage = un côté grippé ou garniture vitrifiée\n- Tambour ovalisé = vibration au freinage arrière\n\n### Entretien\nÀ contrôler tous les **40 000 – 60 000 km**. Démontage : roue + tambour (parfois bloqué, dégripper sur les ergots). **Ne jamais souffler la poussière à l'air comprimé** (résidus potentiellement nocifs) — aspirateur + chiffon humide. Toujours remplacer **par paire** (gauche + droite).\n\n### Marques de pièces fiables\n**Bosch, ATE, TRW, Ferodo, Textar, Brembo, Valeo, Bendix, LPR, Delphi**. Éviter les kits no-name à 25 € l'essieu.\n\n### Où acheter en France\n- **Oscaro** et **Mister-Auto** : catalogue large, recherche par plaque\n- **Yakarouler**, **123Pneus / 1001Pneus** pour les promos\n- **Carter-Cash** si tu veux retirer en magasin\n- **Norauto / Feu Vert / Speedy** si tu fais poser\n- **Amazon** pour les marques OEM, attention aux vendeurs tiers\n\n### Tutos et entraide\n- **YouTube** : chaînes « Mecano-Mag », « AutoEntretien », « P'tit Bricolo »\n- **Forum-Auto.com** et **Caradisiac forums** pour les retours par modèle\n- **RTA (Revue Technique Automobile)** en PDF pour les couples de serrage et schémas\n\nCompte environ **80–150 €** de pièces par essieu (kit complet : mâchoires + cylindres + ressorts), **2 à 3 h** de main-d'œuvre en garage.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "1001pneus",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Forum-Auto.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

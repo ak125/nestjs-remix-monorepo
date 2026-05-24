@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "etrier de freins grippé",
+  "prompt_normalized": "etrier de freins grippe",
+  "prompt_hash": "054e6fb9868e4582",
+  "gamme": "Étrier de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:45:44.132Z",
+  "model_version": null,
+  "duration_ms": 18511,
+  "ok": true,
+  "error": null,
+  "response_raw": "Un **étrier de frein grippé** signifie généralement qu’un piston ou les coulisseaux de l’étrier ne reviennent plus correctement. Résultat : la plaquette reste en contact avec le disque, même quand tu ne freines plus.\n\nLes signes typiques :\n\n- voiture qui tire d’un côté au freinage ou même en roulant ;\n- jante anormalement chaude après quelques kilomètres ;\n- odeur de chaud/brûlé près d’une roue ;\n- consommation en hausse ;\n- freinage moins fluide, bruit de frottement ;\n- disque bleui, plaquette usée beaucoup plus vite d’un côté.\n\nÀ vérifier en priorité : les **colonnettes/coulisseaux**, souvent grippés par manque de graisse ou soufflets percés. Si ce sont eux, un démontage, nettoyage et graissage avec une graisse adaptée aux freins peut suffire. Si le **piston** est piqué, rouillé ou difficile à repousser, il faut souvent remplacer ou reconditionner l’étrier.\n\nÉvite de rouler longtemps comme ça : ça peut voiler le disque, détruire les plaquettes, faire bouillir le liquide de frein et, dans le pire cas, bloquer la roue ou provoquer une perte d’efficacité au freinage.\n\nEn réparation, tu as trois options :\n\n1. **Nettoyage/graissage des coulisseaux** si le problème est léger.\n2. **Kit de réparation d’étrier** : joints, soufflets, parfois piston. Intéressant si l’étrier est en bon état et que tu sais travailler proprement.\n3. **Étrier échange standard ou neuf** : souvent la solution la plus fiable, surtout sur une voiture ancienne ou si le piston est corrodé.\n\nSi tu changes un étrier, il faut généralement faire une **purge du circuit de freinage**. Et si les plaquettes ou disques ont chauffé, mieux vaut les remplacer par paire sur le même essieu.\n\nPour les pièces, Oscaro, Mister-Auto, Autodoc, Norauto ou Feu Vert permettent d’identifier l’étrier avec l’immatriculation, mais il faut comparer avec la pièce montée : côté gauche/droit, diamètre du piston, montage Bosch/TRW/ATE, frein de parking intégré ou non.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro"
+    ],
+    "sources_cited": []
+  }
+}

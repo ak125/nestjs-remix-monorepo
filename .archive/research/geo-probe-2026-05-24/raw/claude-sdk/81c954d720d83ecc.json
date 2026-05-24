@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "capteur feu stop",
+  "prompt_normalized": "capteur feu stop",
+  "prompt_hash": "81c954d720d83ecc",
+  "gamme": "Interrupteur des feux de freins",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:20:24.003Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 29407,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le **contacteur de feu stop** (souvent appelé \"capteur\" par abus de langage) est un petit interrupteur mécanique ou magnétique fixé au-dessus de la pédale de frein. Quand tu appuies sur la pédale, il ferme le circuit et allume les feux stop arrière. C'est une pièce d'usure courante : durée de vie typique 80 000–150 000 km.\n\n**Symptômes d'un contacteur HS**\n- Feux stop qui restent allumés en permanence (ressort cassé)\n- Feux stop qui ne s'allument plus du tout\n- Régulateur de vitesse qui se désactive aléatoirement (le calculateur lit le même signal)\n- Démarrage impossible sur boîte auto (sécurité shift-lock)\n- Voyant ESP/ABS ou code défaut type **P0504** (Brake Switch A/B Correlation)\n\n**Diagnostic rapide**\n1. Sors un multimètre en mode continuité, débranche le connecteur 2 ou 4 broches.\n2. Pédale relâchée : circuit ouvert. Pédale enfoncée : continuité.\n3. Si pas de variation propre → contacteur à remplacer. Avant ça, vérifie le fusible feux stop et l'ampoule (LED ou P21W).\n\n**Marques fiables**\n- **FAE**, **Febi Bilstein**, **Hella**, **Valeo**, **Bosch**, **Vemo**, **Metzger** pour l'équivalent OE. Évite les no-name à 4 €, le ressort lâche vite.\n- Sur VAG (Audi/VW/Skoda/Seat) le contacteur F (référence type **1J0945511** et évolutions) est connu pour casser : prends du Hella ou OE.\n\n**Où acheter**\n- **Oscaro**, **Mister-Auto**, **Yakarouler**, **Piecesauto24**, **Carter-Cash** pour comparer (référence par plaque ou VIN).\n- **Autodoc** souvent moins cher mais délais plus longs.\n- En concession pour les modèles récents si tu veux la pièce d'origine codée.\n\n**Remplacement**\n15–30 min en général. Il se déclipse sous le tableau de bord, au niveau de la pédale. Important : sur beaucoup de modèles il faut **tirer la pédale vers soi à fond** pendant l'installation pour que le piston s'auto-ajuste — sinon le contacteur reste enfoncé en permanence.\n\nPour aller plus loin sur ton modèle précis, dis-moi marque/année/motorisation et je te sors la référence exacte et le tuto adapté. Les forums **Forum-Auto**, **Planete-Citroen**, **Forum Audi Passion** ont souvent des fils détaillés avec photos.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

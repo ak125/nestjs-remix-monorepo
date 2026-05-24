@@ -1,0 +1,29 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "maitre cylindre voiture",
+  "prompt_normalized": "maitre cylindre voiture",
+  "prompt_hash": "134162e7dde6d5d2",
+  "gamme": "Maître cylindre de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:14:42.530Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 45647,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le maître-cylindre est l'élément central du circuit de freinage hydraulique. Quand tu appuies sur la pédale de frein, il convertit la force mécanique (amplifiée par le servo-frein) en pression hydraulique transmise via le liquide de frein (DOT 4 le plus souvent) jusqu'aux étriers et cylindres de roue.\n\n**Composants principaux**\n- Réservoir translucide avec repères mini/maxi\n- Corps en aluminium ou fonte\n- Pistons primaire et secondaire (double circuit obligatoire depuis les années 80 — norme ECE R13)\n- Cupules d'étanchéité, pièces d'usure typiques\n\n**Symptômes de défaillance**\n- Pédale spongieuse ou qui s'enfonce progressivement sous le pied maintenu\n- Baisse du niveau de liquide sans fuite visible aux roues (fuite interne)\n- Liquide qui suinte derrière le servo-frein (tache sombre sur le mastervac)\n- Freinage déséquilibré ou efficacité réduite à chaud\n\n**Marques fiables**\nTRW, ATE, Bosch, Brembo, Lucas/TRW, FTE, Bendix, FAG. À éviter : références sans marque ni homologation E-mark sur les sites discount.\n\n**Prix indicatifs**\n40–80 € pour une citadine, 80–150 € pour une berline/SUV, jusqu'à 200–300 € sur premium (Audi, BMW, Mercedes). Posé en garage indépendant : compter 200–400 € avec purge complète. Concession : x1,5 à x2.\n\n**Où acheter**\n- En ligne : Oscaro, Mister-Auto, Yakarouler, AutoDoc, 1001Pieces, Piecesauto24\n- Achat + pose : Norauto, Feu Vert, Speedy, Midas, ou garage indé via iDGarages / Vroomly\n- Occasion : Opisto, France Casse, Reparcar — déconseillé sur une pièce de sécurité\n\n**Diagnostic & retours communauté**\nForum-Auto, Caradisiac forums, Auto-Plus Communauté pour des retours par modèle. Tutos vidéo utiles : chaînes YouTube Vilebrequin, P0 Mécanique, Garage 13.\n\n**Remplacement**\nOpération technique : déconnexion des durites (clés à tuyauter indispensables, sinon tu mates les écrous), dépose, repose, **purge complète des 4 roues** dans l'ordre (la plus éloignée du maître-cylindre en premier — généralement arrière droit, puis arrière gauche, avant droit, avant gauche). Outil recommandé : Mityvac ou purgeur sous pression.\n\n**Sécurité**\nNe jamais rouler avec une pédale qui descend lentement. Avant remplacement, faire confirmer le diagnostic : la cause peut aussi être un étrier grippé, une durite gonflée, ou un servo-frein défectueux. Liquide de frein à changer tous les 2 ans quoi qu'il arrive (il est hygroscopique).",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

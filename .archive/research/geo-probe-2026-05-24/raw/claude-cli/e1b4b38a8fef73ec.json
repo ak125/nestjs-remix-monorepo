@@ -1,0 +1,28 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "filtre habitacle",
+  "prompt_normalized": "filtre habitacle",
+  "prompt_hash": "e1b4b38a8fef73ec",
+  "gamme": "Filtre d'habitacle",
+  "volume": 50000,
+  "captured_at": "2026-05-24T15:07:45.700Z",
+  "model_version": null,
+  "duration_ms": 31813,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le filtre d'habitacle (aussi appelé filtre à pollen ou filtre anti-pollution) est l'élément qui purifie l'air entrant dans l'habitacle via le système de ventilation/climatisation. Il retient poussières, pollens, suies diesel, spores et — pour les versions à charbon actif — une partie des COV et odeurs.\n\n**Quand le remplacer ?**\nEn général tous les 15 000 à 20 000 km, ou une fois par an (idéalement au printemps avant la saison des pollens). Symptômes d'un filtre saturé : odeur de renfermé, ventilation qui souffle moins fort, buée persistante au pare-brise, allergies aggravées en voiture.\n\n**Quel type choisir ?**\n- **Standard (papier plissé)** : filtre particules, le moins cher (8-15 €).\n- **Charbon actif** : ajoute l'absorption des gaz d'échappement et odeurs (15-30 €). Recommandé en ville ou si tu es sensible aux odeurs.\n- **Biofonctionnel / polyphénol** (Mann FreciousPlus, Bosch FILTER+) : neutralise allergènes et bactéries (25-40 €). Pertinent pour asthmatiques/allergiques.\n\n**Marques fiables**\nBosch, Mann-Filter, Mahle, Valeo, Purflux, Hengst, Filtron — toutes équipementiers d'origine. Évite les sous-marques no-name à 3 €, le média filtrant est souvent sous-dimensionné.\n\n**Où acheter ?**\n- **En ligne** : Oscaro, Mister-Auto, Autodoc, Yakarouler, AutoMecanik — comparer avec la référence OEM ou via la plaque d'immatriculation. Compter 30 à 50 % moins cher qu'en centre auto.\n- **Centres auto** : Norauto, Feu Vert, Midas — pratique si tu veux la pose incluse (15-25 € de main d'œuvre, parfois offerte avec révision).\n- **Concession** : prix x2 à x3 pour la même pièce.\n\n**Pose DIY**\nSur 80 % des voitures, c'est 10-15 minutes : le filtre est derrière la boîte à gants (Renault, Peugeot, Citroën, VW…) ou sous le capot côté pare-brise (certaines Ford, BMW anciennes). Tutos détaillés sur YouTube par modèle, ou sur les forums Forum-Auto et Caradisiac. Aucun outil spécial requis dans la majorité des cas — un tournevis cruciforme suffit.\n\nAstuce : note le sens du flux d'air (flèche imprimée sur le cadre) avant de retirer l'ancien, pour orienter le neuf correctement.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "é.\n\n**Où acheter ?**\n- **En ligne** : Oscaro, Mister-Auto, Autodoc, Yakarouler, AutoMecanik — comparer avec la référence OEM ou via la plaque d'immatriculation. Compter 30 à 50 % moins cher qu'en centre auto.\n- **Centres auto** : Norauto, F",
+    "competitors_mentioned": [
+      "autodoc",
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

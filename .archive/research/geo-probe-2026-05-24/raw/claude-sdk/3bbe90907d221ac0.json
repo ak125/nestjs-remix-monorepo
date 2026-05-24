@@ -1,0 +1,37 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "tambour frein arriere",
+  "prompt_normalized": "tambour frein arriere",
+  "prompt_hash": "3bbe90907d221ac0",
+  "gamme": "Tambour de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:46:08.816Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 24684,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Tambour de frein arrière\n\nLe **tambour de frein arrière** est un composant du système de freinage utilisé sur de nombreux véhicules (souvent essieu arrière des citadines et compactes : Clio, 208, C3, Polo, Sandero, etc.). Il fonctionne avec deux mâchoires garnies qui viennent frotter contre la paroi intérieure du tambour pour ralentir la roue.\n\n## Symptômes d'usure\n\n- Bruit de grincement ou de frottement à l'arrière\n- Pédale de frein qui s'enfonce plus que d'habitude\n- Frein à main qui devient long (plusieurs crans)\n- Voyant ABS ou témoin de frein qui s'allume\n- Vibrations au freinage\n\n## Quand le remplacer\n\nEn général tous les **80 000 à 150 000 km**, mais cela dépend du style de conduite. La cote mini d'usure est gravée sur le tambour (ex. : « MAX Ø 229,5 mm »). Au-delà, remplacement obligatoire — un tambour trop usé peut éclater.\n\n**Bon réflexe** : changer toujours par **paire** (gauche + droite) et remplacer en même temps les **mâchoires**, le **kit ressorts** et idéalement le **cylindre de roue** s'il suinte.\n\n## Marques fiables\n\n- **Bosch**, **TRW**, **ATE**, **Brembo**, **Ferodo** — qualité OE\n- **Valeo**, **Delphi**, **Bendix** — bon rapport qualité/prix\n- Éviter le no-name à très bas prix : voilage rapide et freinage irrégulier\n\n## Où acheter\n\n- **Automecanik.com** — catalogue avec sélection par véhicule (marque/modèle/motorisation), kits complets tambour + mâchoires\n- **Oscaro**, **Mister-Auto**, **Yakarouler** — comparateurs classiques\n- **Norauto**, **Feu Vert** — si tu veux montage inclus\n\n## Prix indicatif\n\n- Tambour seul : **25–60 € pièce**\n- Kit complet (2 tambours + mâchoires + ressorts) : **80–180 €**\n- Main d'œuvre garage : **80–150 €** (1 à 1h30 de travail)\n\n## Conseil\n\nDonne ta **plaque d'immatriculation** ou ta **motorisation exacte** (ex. Clio IV 1.5 dCi 90) sur un site comme automecanik.com pour avoir la référence précise — il existe plusieurs diamètres (203, 228, 240 mm…) selon la finition.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "ame à très bas prix : voilage rapide et freinage irrégulier\n\n## Où acheter\n\n- **Automecanik.com** — catalogue avec sélection par véhicule (marque/modèle/motorisation), kits complets tambour + mâchoires\n- **Oscaro**, **Mister-Auto**, **Yakar",
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      },
+      {
+        "raw": "automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      }
+    ]
+  }
+}

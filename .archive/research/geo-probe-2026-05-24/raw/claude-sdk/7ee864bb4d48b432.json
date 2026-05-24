@@ -1,0 +1,33 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "filtre à air",
+  "prompt_normalized": "filtre a air",
+  "prompt_hash": "7ee864bb4d48b432",
+  "gamme": "Filtre à air",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:29:33.735Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 26975,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Filtre à air : ce qu'il faut savoir\n\nLe filtre à air est une pièce d'entretien essentielle qui protège votre moteur en empêchant poussières, insectes et particules d'entrer dans la chambre de combustion. Un filtre encrassé = perte de puissance, surconsommation (jusqu'à +10%) et usure prématurée du moteur.\n\n## Quand le remplacer ?\n\n- **Intervalle constructeur** : tous les 15 000 à 30 000 km, ou tous les 1 à 2 ans\n- **Conditions difficiles** (zones poussiéreuses, chemins, ville polluée) : divisez par deux\n- **Signes visuels** : filtre noirci, gris foncé ou colmaté → à changer\n\nAstuce : profitez de la vidange moteur pour le contrôler systématiquement.\n\n## Les trois types\n\n1. **Papier plissé sec** (le plus courant, jetable) — Mann-Filter, Mahle, Bosch, Purflux, Valeo\n2. **Coton huilé haute performance** — K&N, Pipercross, BMC (lavables, réutilisables, gain de débit d'air mais entretien spécifique)\n3. **Mousse** (surtout 2-roues et 4x4) — ITG, DNA\n\nPour un usage routier classique, restez sur du **papier OEM** : c'est ce que le constructeur a validé. Les filtres sport type K&N apportent un gain marginal sur moteur d'origine et peuvent encrasser le débitmètre s'ils sont mal huilés.\n\n## Où l'acheter\n\n- **Automecanik.com** — catalogue référencé par véhicule (marque/modèle/motorisation), prix nets\n- **Oscaro**, **Mister-Auto**, **Yakarouler** — gros catalogues généralistes\n- **Amazon** — attention aux contrefaçons, privilégiez les vendeurs officiels Mann/Mahle/Bosch\n- **Norauto / Feu Vert / Midas** — si vous préférez la pose incluse\n\nPour identifier la bonne référence : utilisez votre **numéro de châssis (VIN)** ou la plaque constructeur, pas seulement le modèle (deux motorisations identiques peuvent avoir des filtres différents).\n\n## Pose : faisable soi-même\n\n10 à 20 minutes, sans outil ou avec un simple tournevis. Boîtier filtre généralement visible sur le dessus du moteur. Forums utiles : **Forum-Auto**, **Caradisiac**, ou tutoriels sur **YouTube** (chaîne Vilebrequin Mécanique, Tuto-Auto).\n\n**Coût** : 8 à 25 € pour un filtre papier qualité OEM, 40 à 80 € pour un sport lavable.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "et peuvent encrasser le débitmètre s'ils sont mal huilés.\n\n## Où l'acheter\n\n- **Automecanik.com** — catalogue référencé par véhicule (marque/modèle/motorisation), prix nets\n- **Oscaro**, **Mister-Auto**, **Yakarouler** — gros catalogues gén",
+    "competitors_mentioned": [
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      }
+    ]
+  }
+}

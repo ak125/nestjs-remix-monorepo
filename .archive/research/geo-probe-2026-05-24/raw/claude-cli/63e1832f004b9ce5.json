@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "contact pedale de frein",
+  "prompt_normalized": "contact pedale de frein",
+  "prompt_hash": "63e1832f004b9ce5",
+  "gamme": "Interrupteur des feux de freins",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:09:24.998Z",
+  "model_version": null,
+  "duration_ms": 36718,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le contacteur de pédale de frein (parfois appelé « contact stop » ou « brake light switch ») est un petit capteur situé juste au-dessus de la pédale, fixé sur une équerre dans l'habitacle. Il a un rôle bien plus large qu'on ne le croit : il allume les feux stop, mais surtout il envoie un signal au calculateur moteur pour désactiver le régulateur de vitesse, autoriser le passage hors « P » sur boîte auto (shift-lock), couper le Stop & Start, et il intervient dans la logique ABS/ESP.\n\n**Symptômes typiques d'un contacteur HS** :\n- Feux stop allumés en permanence ou inopérants (cause #1 de contre-visite au CT)\n- Régulateur/limiteur de vitesse qui se coupe ou refuse de s'enclencher\n- Voyant ESP/ABS qui s'allume aléatoirement\n- Boîte auto bloquée en « P » (impossible de sélectionner D)\n- Stop & Start qui ne fonctionne plus\n- Sur certaines Renault/Peugeot/Citroën : codes défaut P0504 (incohérence des deux contacts) ou P0703\n\n**Diagnostic rapide** : un OBD2 (Autel, Launch, ou même une valise type iCarsoft) sort le code. Sinon, multimètre sur les bornes du contacteur, pédale relâchée puis pressée — on doit voir l'état commuter.\n\n**Remplacement** : pièce peu coûteuse (8 à 25 €), 10-15 minutes de main d'œuvre. Le point critique est le **réglage de la course** : trop tiré, les feux restent allumés ; trop court, ils ne s'allument pas. Sur la plupart des modèles, on enfonce la pédale, on clipse, on relâche — le contacteur s'auto-règle au premier appui.\n\n**Marques fiables** : Valeo, Bosch, Hella, FAE, Facet, Vemo, Febi Bilstein, Meyle. Éviter les no-name sous 5 €, souvent en cause des rappels constructeurs (Renault notamment, plusieurs campagnes).\n\n**Où l'acheter** : Oscaro, Mister-Auto, Yakarouler, AutoDoc, Piecesauto24, Automecanik. Référence à donner : modèle exact + motorisation + année, car le connecteur varie (2, 4 ou 6 broches selon BVM/BVA/régulateur).\n\nPour aller plus loin sur un modèle précis (souvent c'est très spécifique aux Mégane II/III, 207, C3, Golf V…), les fils Forum-Auto et Planète Renault contiennent les retours d'expérience les plus utiles.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "s).\n\n**Où l'acheter** : Oscaro, Mister-Auto, Yakarouler, AutoDoc, Piecesauto24, Automecanik. Référence à donner : modèle exact + motorisation + année, car le connecteur varie (2, 4 ou 6 broches selon BVM/BVA/régulateur).\n\nPour aller plus lo",
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

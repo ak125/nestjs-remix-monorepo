@@ -1,0 +1,25 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "prix vidange filtre a huile",
+  "prompt_normalized": "prix vidange filtre a huile",
+  "prompt_hash": "1328c1b02ddfb055",
+  "gamme": "Filtre à huile",
+  "volume": 500,
+  "captured_at": "2026-05-24T15:58:54.632Z",
+  "model_version": null,
+  "duration_ms": 18009,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour une **vidange avec remplacement du filtre à huile**, compte en général :\n\n- **Centre auto type Norauto, Feu Vert, Speedy, Midas** : environ **60 à 120 €**\n- **Garage indépendant** : souvent **80 à 150 €**\n- **Concession constructeur** : plutôt **120 à 250 €**, parfois plus sur modèles premium\n- **À faire soi-même** : environ **45 à 90 €** de pièces et consommables, selon l’huile\n\nLes premiers prix existent : Norauto annonce des forfaits vidange avec filtre à huile à partir d’environ **59,95 €**, Feu Vert autour de **59,99 à 69,99 €** selon offre et véhicule. Mais le tarif réel dépend beaucoup de la voiture : quantité d’huile, norme constructeur, accessibilité du filtre, huile 5W30, 0W20, LongLife, ACEA C2/C3, etc.\n\nPour une citadine essence classique, un prix correct se situe souvent entre **70 et 100 €**. Pour un diesel récent avec huile spécifique ou une voiture qui prend 5 à 7 litres d’huile, **100 à 160 €** est plus réaliste. Au-delà de **180 €** pour une simple vidange + filtre à huile, il faut vérifier ce qui est inclus : filtre habitacle, filtre à air, diagnostic, remise à zéro entretien, contrôles, ou huile très spécifique.\n\nÀ demander avant de valider :\n- la **norme exacte de l’huile** prévue par le constructeur ;\n- si le **filtre à huile et le joint de bouchon** sont inclus ;\n- la **quantité d’huile facturée** ;\n- si la **remise à zéro du voyant entretien** est comprise.\n\nPour comparer vite, entre la plaque d’immatriculation sur Norauto, Feu Vert ou Speedy, puis demande aussi un devis à un garage indépendant local. Le meilleur choix n’est pas forcément le moins cher : mieux vaut payer 10 ou 20 € de plus pour la bonne huile et un travail propre.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "midas",
+      "norauto",
+      "speedy"
+    ],
+    "sources_cited": []
+  }
+}

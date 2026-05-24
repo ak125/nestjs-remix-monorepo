@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "tambour frein arriere",
+  "prompt_normalized": "tambour frein arriere",
+  "prompt_hash": "3bbe90907d221ac0",
+  "gamme": "Tambour de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:47:14.256Z",
+  "model_version": null,
+  "duration_ms": 19347,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour “tambour frein arrière”, il faut d’abord identifier le véhicule précisément : marque, modèle, année, motorisation, version, et idéalement immatriculation ou VIN. Les tambours arrière varient selon le diamètre, le nombre de trous, la présence d’ABS, le moyeu/roulement intégré, et le montage exact.\n\nSur une citadine ou berline française, le bon achat est souvent un **kit frein arrière complet** plutôt qu’un tambour seul : tambours, mâchoires/garnitures, ressorts, cylindres de roue et accessoires. C’est particulièrement recommandé si le tambour est rayé, ovalisé, grippé, si le frein à main tient mal, ou si une fuite de cylindre a contaminé les garnitures. Norauto indique d’ailleurs qu’en cas de tambour grippé ou endommagé, il vaut mieux remplacer le kit complet tambours-mâchoires-cylindre.\n\nSites fiables pour chercher la pièce : **Oscaro**, **Mister-Auto**, **Autodoc**, **Yakarouler**, **Norauto**, **Feu Vert**. Pour les marques, privilégie **Bosch, TRW, Valeo, Ferodo, Delphi, Febi Bilstein, ATE, Brembo** selon disponibilité. Évite de choisir uniquement au prix le plus bas : sur le freinage, la compatibilité exacte et la qualité comptent.\n\nSymptômes typiques d’un problème de tambour arrière : frein à main qui monte trop haut, freinage arrière faible au contrôle technique, bruit de frottement/grincement, roue arrière qui chauffe, pédale molle, déséquilibre gauche/droite, fuite de liquide derrière la roue.\n\nÀ vérifier avant commande :\n- diamètre intérieur du tambour ;\n- montage avec ou sans roulement ;\n- côté arrière gauche/droit ou paire ;\n- compatibilité ABS ;\n- kit prémonté ou à assembler ;\n- remplacement par paire sur le même essieu.\n\nSi l’objectif est une réparation, fais aussi prévoir une purge si les cylindres de roue sont changés. Pour une recherche pièce, la meilleure requête est : **“kit frein arrière tambour + immatriculation”** ou directement par immatriculation sur Oscaro/Norauto/Mister-Auto.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

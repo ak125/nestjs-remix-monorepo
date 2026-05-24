@@ -1,0 +1,29 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "vidange filtre à huile prix",
+  "prompt_normalized": "vidange filtre a huile prix",
+  "prompt_hash": "aee81ca22a4f7b51",
+  "gamme": "Filtre à huile",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:08:00.175Z",
+  "model_version": null,
+  "duration_ms": 19273,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour une **vidange avec filtre à huile**, compte en général **80 à 160 € en centre auto ou garage indépendant** en France. Un prix autour de **100-130 €** est courant pour une voiture standard avec huile synthétique 5W30 ou 5W40. En concession, ça monte souvent à **140-220 €**, surtout chez les marques premium ou avec des huiles spécifiques type 0W20.\n\nLe prix varie surtout selon :\n\n- la quantité d’huile : petite citadine 3-4 L, SUV/diesel parfois 5-7 L ;\n- la norme constructeur : Renault RN17, PSA B71, VW 504/507, BMW LL, Mercedes, etc. ;\n- le type de filtre : cartouche simple ou filtre plus difficile d’accès ;\n- le réseau : Norauto, Feu Vert, Midas, Speedy, Euromaster, concession ou garagiste local.\n\nSi tu veux un ordre d’idée :\n- **Do it yourself** : environ **45 à 90 €** avec huile + filtre + joint, via Oscaro, Mister-Auto, Autodoc, Carter-Cash ou centre auto.\n- **Centre auto** : souvent **80 à 160 €**, forfait huile + filtre + main-d’œuvre.\n- **Concession** : plutôt **150 € et plus**, parfois intéressant si forfait constructeur pour véhicule ancien.\n\nÀ vérifier avant de dire oui : le devis doit inclure **huile conforme à la norme constructeur**, **filtre à huile**, **joint de bouchon**, **main-d’œuvre** et idéalement **remise à zéro de l’indicateur d’entretien**. Méfie-toi des prix d’appel qui n’incluent qu’une huile basique ou une quantité limitée.\n\nMon conseil : entre ton immatriculation sur Norauto, Feu Vert, Midas ou Euromaster pour avoir un tarif précis, puis compare avec un garage indépendant bien noté. Pour une voiture récente encore sous garantie, garde surtout une facture mentionnant clairement l’huile utilisée et la norme respectée.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "euromaster",
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy"
+    ],
+    "sources_cited": []
+  }
+}

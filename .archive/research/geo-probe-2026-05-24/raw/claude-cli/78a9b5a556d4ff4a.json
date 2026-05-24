@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "cable frein a main",
+  "prompt_normalized": "cable frein a main",
+  "prompt_hash": "78a9b5a556d4ff4a",
+  "gamme": "Câble de frein à main",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:16:45.013Z",
+  "model_version": null,
+  "duration_ms": 36970,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le câble de frein à main relie le levier à l'intérieur de l'habitacle au mécanisme de freinage arrière (tambours ou étriers selon le véhicule). C'est une pièce d'usure classique : avec le temps, la gaine se fissure, l'eau s'infiltre et le câble rouille puis se grippe ou casse. Symptômes typiques : levier qui remonte trop haut, frein qui ne tient plus en pente, bruit de frottement, ou voyant ABS/frein qui s'allume sur certaines voitures récentes.\n\n**Où acheter**\n\nPour un câble neuf, les références en ligne les plus complètes en France sont **Oscaro**, **Mister-Auto** et **Yakarouler** — ils proposent un catalogue par immatriculation ou par marque/modèle/motorisation, ce qui évite les erreurs de référence (la longueur du câble varie souvent selon la finition, le type de frein arrière et l'année). **AutoDoc** est aussi très utilisé, prix souvent plus bas mais délais variables. **Amazon** dépanne pour les marques génériques. En boutique physique, **Carter-Cash**, **Norauto** et **Feu Vert** ont du stock courant, et **AutoMecanik** propose le catalogue piece par véhicule avec compatibilité vérifiée.\n\n**Marques fiables**\n\n- **TRW**, **ATE**, **Bosch**, **FTE**, **Brembo** : équipementiers d'origine, qualité OEM\n- **Cofle**, **Triscan**, **Cabor** : spécialistes câbles, très bon rapport qualité/prix\n- **Akron**, **Bendix** : alternatives correctes en milieu de gamme\n\nÉvitez les câbles no-name à 8-10€ — la gaine se dégrade vite et vous y revenez dans 18 mois.\n\n**Prix indicatif** : 15-40€ le câble selon le véhicule (souvent vendu à l'unité, parfois en kit gauche+droite). Comptez 1h-1h30 de main d'œuvre si vous faites changer (50-100€ chez un garage indépendant, plus cher en centre auto).\n\n**Côté DIY** : c'est faisable sur la plupart des véhicules avec un pont ou des chandelles, une clé à œil et de la patience pour décoincer les agrafes oxydées. Les tutos sur **Forum-Auto**, **Caradisiac** et **YouTube** (chaînes comme *Mecanique Mecanicien* ou *Vroumvroum*) couvrent la plupart des modèles courants. Pensez à dégripper généreusement (WD-40, Loctite 8040) avant de démonter, et à graisser les points de friction au remontage.\n\nSi vous donnez la marque/modèle/année exacte, je peux affiner la référence et la difficulté.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "ysique, **Carter-Cash**, **Norauto** et **Feu Vert** ont du stock courant, et **AutoMecanik** propose le catalogue piece par véhicule avec compatibilité vérifiée.\n\n**Marques fiables**\n\n- **TRW**, **ATE**, **Bosch**, **FTE**, **Brembo** : éq",
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

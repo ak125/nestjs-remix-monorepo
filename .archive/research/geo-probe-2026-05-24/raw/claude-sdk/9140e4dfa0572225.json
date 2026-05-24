@@ -1,0 +1,28 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "répartiteur de freinage",
+  "prompt_normalized": "repartiteur de freinage",
+  "prompt_hash": "9140e4dfa0572225",
+  "gamme": "Répartiteur de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:14:43.423Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 26797,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le **répartiteur de freinage** (aussi appelé compensateur ou limiteur de freinage) est une pièce mécanique ou électronique qui ajuste la pression de freinage envoyée aux roues arrière en fonction de la charge du véhicule et du transfert de masse lors du freinage. Sans lui, les roues arrière (moins chargées au freinage) se bloqueraient avant les avant, provoquant un tête-à-queue.\n\n### Les deux grandes familles\n\n1. **Répartiteur mécanique** (véhicules sans ABS, jusqu'aux années 2000 environ) : c'est un boîtier hydraulique fixé sur le train arrière, relié à la suspension par une biellette. Plus la voiture est chargée, plus il laisse passer de pression vers l'arrière. On le trouve sur les anciennes Renault (Clio I/II, Kangoo, Master), Peugeot 206/Partner, Citroën Berlingo, etc.\n\n2. **Répartition électronique (EBD/REF)** : sur tous les véhicules modernes équipés d'ABS, c'est le calculateur qui module la pression via les électrovannes du bloc hydraulique ABS. Il n'y a plus de pièce dédiée à remplacer.\n\n### Symptômes d'un répartiteur mécanique défaillant\n\n- Roues arrière qui se bloquent au freinage appuyé (surtout à vide)\n- Freinage arrière trop faible (pédale qui s'enfonce, distance allongée)\n- Fuite de liquide de frein au niveau du boîtier\n- Voyant frein allumé si le circuit perd de la pression\n- Grippage de la biellette de tarage (très fréquent sur utilitaires Berlingo/Partner/Kangoo)\n\n### Achat et prix\n\nComptez généralement **40 à 150 €** pour un répartiteur neuf selon le modèle. Marques de référence : **TRW, ATE, Bosch, Bendix, Brembo, Lucas, Delphi**.\n\nPour l'achat en France, vous pouvez comparer sur **Oscaro, Mister-Auto, Yakarouler, AutoDoc, Piecesauto24, 1001pieces**, ou en magasin chez **Norauto, Feu Vert, Speedy**. Sur AutoMecanik, la pièce est référencée par modèle/motorisation avec compatibilité véhicule.\n\n### Important\n\nLe tarage du répartiteur mécanique doit être **contrôlé sur banc** après remplacement (pression entrée/sortie selon la charge). Un mauvais réglage = contrôle technique défavorable au point **5.1.3 (déséquilibre du freinage)**. Si vous n'avez pas le matériel, faites-le faire en garage ou chez un spécialiste freinage.\n\nSur véhicule à ABS, si vous avez un défaut de répartition, c'est le **bloc ABS** ou un **capteur de vitesse roue** qu'il faut diagnostiquer (valise OBD obligatoire).",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "ecesauto24, 1001pieces**, ou en magasin chez **Norauto, Feu Vert, Speedy**. Sur AutoMecanik, la pièce est référencée par modèle/motorisation avec compatibilité véhicule.\n\n### Important\n\nLe tarage du répartiteur mécanique doit être **contrôl",
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

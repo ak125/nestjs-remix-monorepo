@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "contacteur de frein clio 3",
+  "prompt_normalized": "contacteur de frein clio 3",
+  "prompt_hash": "72a704b7ddaee93f",
+  "gamme": "Interrupteur des feux de freins",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:22:40.615Z",
+  "model_version": null,
+  "duration_ms": 15244,
+  "ok": true,
+  "error": null,
+  "response_raw": "Sur une Renault Clio 3, le “contacteur de frein” désigne généralement le contacteur de pédale de frein, aussi appelé interrupteur de feux stop. Il est fixé au niveau de la pédale de frein, sous le tableau de bord. Sa fonction est simple : allumer les feux stop quand tu appuies sur la pédale, et transmettre l’information au calculateur, régulateur/limiteur, ABS/ESP selon version.\n\nLes symptômes classiques d’un contacteur défectueux sont :\n\n- feux stop qui ne s’allument plus ;\n- feux stop qui restent allumés en permanence ;\n- voyant injection, ESP, ABS ou message “freinage” selon version ;\n- régulateur/limiteur qui ne fonctionne plus ;\n- démarrage impossible sur certaines versions si l’auto attend l’info frein ;\n- défaut à la valise du type “contacteur pédale de frein”.\n\nLa pièce coûte en général peu cher, souvent autour de 10 à 30 € selon marque et fournisseur. On en trouve chez Oscaro, Mister-Auto, Autodoc, Norauto, Feu Vert, ou directement chez Renault. Les marques courantes sont Valeo, Facet, Febi Bilstein, Hella ou Metzger. Le plus important est de choisir la bonne référence avec l’immatriculation ou le VIN, car il peut y avoir plusieurs modèles selon l’année, la motorisation et l’équipement.\n\nLe remplacement est souvent accessible : il faut se glisser sous le volant, repérer le contacteur au-dessus de la pédale de frein, débrancher la prise, tourner ou déclipser l’ancien contacteur, puis installer le nouveau. Sur certains modèles, il faut régler la course du poussoir : pédale relâchée, le contacteur doit être correctement appuyé, sans garder les feux stop allumés.\n\nAvant de remplacer, vérifie quand même les ampoules de stop, le fusible et la connectique. Si les feux restent allumés ou si le régulateur se coupe avec un défaut frein, le contacteur est une piste très probable sur Clio 3.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro"
+    ],
+    "sources_cited": []
+  }
+}

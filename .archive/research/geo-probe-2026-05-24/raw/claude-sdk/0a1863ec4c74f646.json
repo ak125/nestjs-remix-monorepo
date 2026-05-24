@@ -1,0 +1,25 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "temoin usure disque de frein",
+  "prompt_normalized": "temoin usure disque de frein",
+  "prompt_hash": "0a1863ec4c74f646",
+  "gamme": "Témoin d'usure",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:16:03.984Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 29376,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Témoin d'usure des disques de frein\n\nPetite précision utile dès le départ : le **témoin d'usure** sur le système de freinage surveille en réalité l'épaisseur des **plaquettes**, pas directement celle des disques. Les disques s'usent en parallèle, mais leur contrôle se fait au pied à coulisse ou par mesure de la gorge périphérique.\n\n## Les deux types de témoins\n\n**1. Témoin acoustique (mécanique)**\nUne petite lamelle métallique fixée sur la plaquette. Quand la garniture descend autour de 2-3 mm d'épaisseur restante, la lamelle frotte sur le disque et émet un **couinement strident**, surtout audible à basse vitesse fenêtre ouverte ou au desserrage de la pédale. C'est le système le plus répandu (Renault, Peugeot, Citroën, la plupart des japonaises).\n\n**2. Témoin électronique (capteur filaire)**\nUn fil noyé dans la garniture de plaquette. Quand l'usure atteint le fil, le circuit se coupe (ou se met à la masse selon le constructeur) et **allume un voyant orange au tableau de bord** — souvent un cercle entouré de pointillés. Standard sur la plupart des allemandes (VW, Audi, BMW, Mercedes) et de plus en plus généralisé.\n\n## Ce qu'il faut faire quand il se déclenche\n\n- **N'attendez pas.** Vous avez en général 500 à 2000 km de marge selon votre style de conduite, mais pas plus.\n- Faites contrôler **les 4 roues** : on remplace toujours par essieu (avant ensemble, arrière ensemble).\n- Profitez-en pour mesurer l'épaisseur des disques (mini constructeur gravé sur la tranche, en général entre 18 et 22 mm selon le modèle). Si le disque est en limite, on remplace plaquettes + disques + capteurs ensemble — c'est plus économique que de revenir 10 000 km plus tard.\n\n## Où s'approvisionner\n\nPour les pièces, **Oscaro**, **Mister-Auto**, **Yakarouler** ou **Automecanik** proposent des kits complets (plaquettes + disques + capteurs) en marques OEM : **Bosch**, **TRW**, **ATE**, **Brembo**, **Ferodo**, **Textar**. Comptez 80-180 € le kit avant par essieu selon le véhicule.\n\nCôté entretien, comptez 1 h de main d'œuvre par essieu chez un garage indépendant, ou faites-le vous-même si vous avez un cric, des chandelles et une clé dynamométrique.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "provisionner\n\nPour les pièces, **Oscaro**, **Mister-Auto**, **Yakarouler** ou **Automecanik** proposent des kits complets (plaquettes + disques + capteurs) en marques OEM : **Bosch**, **TRW**, **ATE**, **Brembo**, **Ferodo**, **Textar**. Co",
+    "competitors_mentioned": [
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

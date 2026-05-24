@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "cable frein a main trafic 2",
+  "prompt_normalized": "cable frein a main trafic 2",
+  "prompt_hash": "30538b9818485dd3",
+  "gamme": "Câble de frein à main",
+  "volume": 500,
+  "captured_at": "2026-05-24T15:52:43.378Z",
+  "model_version": null,
+  "duration_ms": 32850,
+  "ok": true,
+  "error": null,
+  "response_raw": "Sur Renault Trafic II (2001-2014, X83), le frein à main utilise généralement **deux câbles arrière** (gauche et droit) reliés à un compensateur, plus un **câble primaire** entre le levier et le compensateur. Selon les versions (court/long, L1/L2, traction/propulsion, simple/double cabine) les longueurs diffèrent — c'est le piège n°1 quand on commande.\n\n**Références OEM utiles** :\n- Câble arrière gauche : env. 36 53 002 80R / 8200277824\n- Câble arrière droit : env. 36 53 000 36R / 8200277823\n- Câble primaire : 36 41 001 60R selon millésime\n\nCes refs varient selon année et empattement — toujours vérifier avec ton **numéro VIN** sur les catalogues vendeurs.\n\n**Où commander** :\n- **Oscaro** et **Mister-Auto** : recherche par VIN fiable, livraison rapide, retours simples. Marques proposées : **Cofle** (souvent OE pour Renault), **TRW**, **ATE**, **Cabor**, **Triscan**.\n- **AutoDoc** : prix plus bas, mais vérifie bien les références.\n- **Yakarouler** et **Piecesauto24** : bons fallback si rupture ailleurs.\n- En physique : **Carter-Cash**, **Norauto** (souvent en commande sous 48h).\n- Concession **Renault** ou **MOPAR** (pour la version Opel Vivaro A équivalente) : prix plus élevé mais zéro doute sur la compatibilité.\n\nCompte **25-45 €** par câble en aftermarket qualité, **70-110 €** en OE.\n\n**Conseils pratiques** :\n1. Change les **deux câbles arrière en même temps** — ils s'usent symétriquement et c'est la même main-d'œuvre.\n2. Cause fréquente de panne : corrosion à la gaine côté roue, ou câble qui ne revient plus → frein qui reste serré.\n3. Profite-en pour vérifier les **mâchoires de frein de stationnement** dans le tambour (sur les versions avec disques arrière, c'est un mini-tambour intégré) et le **mécanisme de réglage automatique**.\n4. Après pose : **régler la tension** au niveau du compensateur, pas en tirant brutalement sur le levier.\n\nPour les retours d'expérience et tutos démontage, **Forum-Auto** (section Trafic/Vivaro) et **YouTube** (chercher \"câble frein à main Trafic 2\") couvrent bien le sujet. **RTA** (Revue Technique Automobile) Trafic II est aussi un bon investissement si tu fais souvent l'entretien toi-même.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

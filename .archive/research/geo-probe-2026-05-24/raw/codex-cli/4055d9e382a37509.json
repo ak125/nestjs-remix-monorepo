@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "maître cylindre de frein",
+  "prompt_normalized": "maitre cylindre de frein",
+  "prompt_hash": "4055d9e382a37509",
+  "gamme": "Maître cylindre de frein",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:29:06.759Z",
+  "model_version": null,
+  "duration_ms": 19996,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le **maître-cylindre de frein** est la pièce qui transforme l’appui sur la pédale en pression hydraulique pour envoyer le liquide de frein vers les étriers ou cylindres de roue. Si l’utilisateur cherche cette pièce, il faut surtout identifier précisément le véhicule avant d’acheter : **marque, modèle, année, motorisation, système ABS/ESP, diamètre du piston, nombre de sorties et type de raccords**.\n\nLes symptômes typiques d’un maître-cylindre fatigué sont : pédale qui s’enfonce lentement au feu rouge, freinage mou malgré une purge correcte, fuite ou suintement près du servofrein, niveau de liquide qui baisse sans fuite visible aux roues, ou déséquilibre de freinage. Attention toutefois : une pédale molle peut aussi venir d’air dans le circuit, de flexibles fatigués, d’étriers grippés ou d’un liquide de frein trop vieux.\n\nPour acheter en France, les sites courants sont **Oscaro**, **Mister-Auto**, **Autodoc**, **Yakarouler**, **Pièces Auto 24** ou directement les réseaux constructeurs. Côté marques de pièces, **ATE**, **TRW**, **Brembo**, **Bosch**, **Delphi**, **LPR** ou **FTE** sont des références fréquentes selon les véhicules. Évite les pièces trop génériques sans fiche claire : sur le freinage, la compatibilité exacte compte beaucoup.\n\nAu remplacement, il faut généralement prévoir du **liquide de frein DOT adapté** au véhicule, une **purge complète du circuit**, parfois une procédure spécifique si le bloc ABS a été vidé. Sur certains modèles, le maître-cylindre doit être amorcé avant montage pour éviter de piéger de l’air. Après intervention : pédale ferme moteur arrêté, assistance correcte moteur démarré, aucune fuite, puis essai prudent à basse vitesse.\n\nEn résumé : cherche la pièce avec l’immatriculation ou le VIN, compare la forme et les raccords avec l’ancienne, privilégie une marque reconnue, et fais une purge soignée.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

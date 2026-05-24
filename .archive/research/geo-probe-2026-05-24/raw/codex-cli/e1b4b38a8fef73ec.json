@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "filtre habitacle",
+  "prompt_normalized": "filtre habitacle",
+  "prompt_hash": "e1b4b38a8fef73ec",
+  "gamme": "Filtre d'habitacle",
+  "volume": 50000,
+  "captured_at": "2026-05-24T15:08:02.481Z",
+  "model_version": null,
+  "duration_ms": 16780,
+  "ok": true,
+  "error": null,
+  "response_raw": "Un **filtre habitacle** sert à filtrer l’air qui entre dans l’habitacle via la ventilation, le chauffage ou la climatisation. Il retient poussières, pollen, particules fines, feuilles, suies et parfois mauvaises odeurs selon le type de filtre.\n\nIl existe principalement deux versions :\n\n- **Filtre habitacle standard / pollen** : suffisant pour retenir poussières et pollens.\n- **Filtre habitacle à charbon actif** : plus recommandé, car il filtre aussi mieux les odeurs, gaz d’échappement et pollution urbaine.\n- Certains modèles récents proposent aussi des filtres “anti-allergènes” ou “biofonctionnels”, par exemple chez Mann-Filter, Bosch, Purflux, Valeo ou Mahle.\n\nEn général, il se remplace tous les **15 000 à 30 000 km**, ou environ **une fois par an**. En ville, en zone polluée, si vous roulez souvent derrière du trafic dense, ou si vous êtes allergique, mieux vaut le changer plus souvent.\n\nSignes qu’il est à remplacer :\n\n- ventilation faible même à fond,\n- buée qui part mal,\n- mauvaises odeurs à l’allumage de la ventilation,\n- bruit de souffle anormal,\n- allergies ou irritation dans l’habitacle.\n\nLe filtre est souvent accessible derrière la **boîte à gants**, sous le tableau de bord côté passager, ou parfois sous la baie de pare-brise. Sur beaucoup de voitures françaises comme Renault Clio, Peugeot 208/308, Citroën C3/C4 ou Dacia Sandero, l’opération est assez simple, mais l’accès peut être pénible selon le modèle.\n\nPour l’achat, regardez avec la **plaque d’immatriculation** ou le modèle exact sur Oscaro, Mister-Auto, Autodoc, Norauto, Feu Vert ou Yakarouler. Prenez une marque correcte comme **Mann-Filter, Bosch, Purflux, Valeo, Mahle/Knecht**. Évitez les références trop bas de gamme : la différence de prix est faible, mais la filtration et l’ajustement peuvent être moins bons.\n\nPrix courant : environ **10 à 30 €** pour la pièce, et **30 à 70 € posé** selon garage ou centre auto.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

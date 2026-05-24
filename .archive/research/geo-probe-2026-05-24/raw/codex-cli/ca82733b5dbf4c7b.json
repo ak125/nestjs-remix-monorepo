@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "filtre a gasoil megane 3",
+  "prompt_normalized": "filtre a gasoil megane 3",
+  "prompt_hash": "ca82733b5dbf4c7b",
+  "gamme": "Filtre à carburant",
+  "volume": 500,
+  "captured_at": "2026-05-24T15:48:45.883Z",
+  "model_version": null,
+  "duration_ms": 17199,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour une **Renault Mégane 3 diesel**, il te faut chercher un **filtre à gazole / filtre à gasoil**, mais la référence dépend surtout du moteur : **1.5 dCi, 1.6 dCi, 1.9 dCi ou 2.0 dCi**, de l’année et parfois du montage.\n\nPour les Mégane 3 les plus courantes en France, notamment **1.5 dCi**, on retrouve souvent des références Renault comme **164009384R**, **8201188493**, **8201046788**, **7701479305** ou équivalents selon montage. Côté marques fiables : **Purflux, Mann-Filter, Mahle/Knecht, Bosch, Mecafilter, Delphi, UFI**. Par exemple, des équivalences fréquentes vues pour Mégane III incluent **Purflux FCS770**, **Mahle KL 485/5D**, **Filtron PP988/2**, **Mecafilter ELG5400** selon version.\n\nLe plus sûr : entre ton immatriculation ou ton VIN sur **Oscaro, Mister-Auto, Autodoc, Yakarouler, Piecesauto24** ou directement chez **Renault / Motrio**. Ne commande pas uniquement avec “Mégane 3 1.5 dCi” : il existe plusieurs variantes de filtre, avec ou sans capteur/purge, formes et raccords différents.\n\nÀ remplacer en général tous les **40 000 à 60 000 km**, ou plus tôt si démarrages difficiles, à-coups, manque de puissance, eau dans le gazole ou entretien inconnu. Après remplacement, il faut bien **réamorcer le circuit** avec la poire d’amorçage si présente, jusqu’à ce qu’elle devienne dure. Sur certains modèles, un mauvais amorçage peut provoquer un démarrage long ou impossible.\n\nSi tu veux une réponse pratique : pour une **Mégane 3 1.5 dCi**, vise une marque type **Purflux/Mann/Mahle/Bosch**, vérifie avec l’immatriculation, et compare la pièce neuve avec l’ancienne avant montage.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

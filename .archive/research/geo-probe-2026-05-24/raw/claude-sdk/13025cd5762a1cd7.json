@@ -1,0 +1,37 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "plaquettes de frein bmw serie 1",
+  "prompt_normalized": "plaquettes de frein bmw serie 1",
+  "prompt_hash": "13025cd5762a1cd7",
+  "gamme": "disque de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:10:09.093Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 30681,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour des plaquettes de frein BMW Série 1, voici l'essentiel à savoir.\n\n**Identifier la bonne référence avant d'acheter**\nLa Série 1 existe en plusieurs générations (E81/E82/E87/E88, F20/F21, F40) avec des étriers différents selon la motorisation (116i, 118d, 120d, 125i, M135i…). Le plus fiable : se munir du **VIN (numéro de châssis)** ou du **type-mine** sur la carte grise, ou identifier visuellement l'étrier (simple piston, ATE, Brembo sur M Performance). Sur la M135i/M140i, les étriers avant sont plus gros — plaquettes spécifiques.\n\n**Marques recommandées (rapport qualité/prix)**\n- **Textar** et **Pagid** : équipementiers d'origine pour BMW, valeur sûre, freinage progressif, peu de poussière. C'est ce que je conseille en premier.\n- **ATE Ceramic** : très peu de poussière sur les jantes (utile sur jantes claires), bon mordant à froid.\n- **Brembo Xtra** ou **EBC Redstuff** : si conduite plus sportive, notamment sur 125i/M135i.\n- **Ferodo Premier** : alternative solide, souvent moins chère.\n- À éviter en entrée de gamme : marques no-name à 15 €/jeu, freinage spongieux et usure rapide des disques.\n\n**Où acheter**\n- **Automecanik.com**, **Oscaro**, **Mister-Auto**, **Yakarouler** : catalogues larges avec filtre par VIN, prix corrects.\n- **AM-Autoparts**, **Autodoc** : très compétitifs mais délais variables.\n- Concession BMW : pièces d'origine (Textar/Pagid rebrandés) au prix fort — utile si véhicule sous garantie.\n- Pour les avis et retours d'expérience : **forum-bmw.fr**, **bimmerforums** ou le subreddit **r/BMW**.\n\n**Conseils pratiques**\n- Changer les plaquettes **par essieu complet** (jamais une seule roue).\n- Contrôler l'**épaisseur des disques** en même temps — si proche de la cote mini (gravée sur le disque), changer les deux.\n- Sur les Série 1 récentes (F20/F40), pensez au **témoin d'usure électronique** : remplacer le capteur en même temps (~10 €).\n- Comptez **40-80 €** le jeu avant en marque équipementier, **60-120 €** à l'arrière. Main d'œuvre garage indé : ~80-120 € l'essieu.\n\nSi tu me donnes la motorisation et l'année, je peux affiner la référence.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "à 15 €/jeu, freinage spongieux et usure rapide des disques.\n\n**Où acheter**\n- **Automecanik.com**, **Oscaro**, **Mister-Auto**, **Yakarouler** : catalogues larges avec filtre par VIN, prix corrects.\n- **AM-Autoparts**, **Autodoc** : très co",
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      },
+      {
+        "raw": "forum-bmw.fr",
+        "cluster": "forum_communautaire",
+        "matchedDomain": "forum-bmw.fr"
+      }
+    ]
+  }
+}

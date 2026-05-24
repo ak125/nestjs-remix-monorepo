@@ -1,0 +1,31 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "disque clio 4",
+  "prompt_normalized": "disque clio 4",
+  "prompt_hash": "9a5c28a029a496d2",
+  "gamme": "disque de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:41:48.279Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 38445,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour une Clio 4 (2012-2019, phases 1 et 2), les disques de frein avant sont presque toujours **ventilés** et leur diamètre dépend de la motorisation :\n\n- **260 mm** sur les versions essence 1.2 16V 75 ch et diesel 1.5 dCi 75/90 ch (les plus courantes)\n- **280 mm** sur les 1.2 TCe 120, GT, et la plupart des finitions Intens/GT-Line\n- **320 mm** sur la RS Trophy\n\nÀ l'arrière, la majorité des Clio 4 ont des **tambours** (228 mm) — seules les RS, GT et certaines TCe 120 ont des disques arrière (260 mm pleins).\n\n**Côté usure**, l'épaisseur neuve à l'avant est de 22 mm, mini légal 20 mm. Les disques se changent **toujours par paire** (gauche + droite) et idéalement avec un jeu de plaquettes neuves — sinon le rodage est mauvais et tu perds en mordant.\n\n**Marques fiables**, du meilleur rapport qualité/prix au premium :\n- **Bosch, ATE, TRW, Ferodo** : valeurs sûres, monte d'origine équivalente, 50-90 € la paire\n- **Brembo** : premium, excellent dissipation thermique, ~90-130 €\n- **Valeo, Delphi** : OEM Renault rebadgé, fiables\n- À éviter : marques no-name sous 30 € la paire (voilage rapide, vibrations au freinage)\n\n**Où acheter en ligne** :\n- **Oscaro** et **Mister Auto** : catalogue très complet, filtres par VIN ou immat, livraison rapide\n- **Yakarouler**, **Auto-Doc**, **Piecesauto24** : souvent moins chers, délais variables\n- **automecanik.com** : pertinent si tu veux comparer marques compatibles avec ta motorisation exacte\n- **Carter-Cash** et **Norauto** si tu préfères retirer en magasin\n\n**Conseil pratique** : avant de commander, vérifie ton **code moteur** et ton **type mine** sur la carte grise (case D2), c'est plus fiable que \"Clio 4 essence\". Un kit complet **2 disques + 4 plaquettes avant** de marque correcte coûte 70-110 €. Compte 1h30 de main d'œuvre si tu fais appel à un garage (80-150 €), ou un samedi matin si tu le fais toi-même — clé dynamométrique obligatoire pour les étriers (28 Nm + serrage angulaire selon modèle).",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "r**, **Auto-Doc**, **Piecesauto24** : souvent moins chers, délais variables\n- **automecanik.com** : pertinent si tu veux comparer marques compatibles avec ta motorisation exacte\n- **Carter-Cash** et **Norauto** si tu préfères retirer en mag",
+    "competitors_mentioned": [
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      }
+    ]
+  }
+}

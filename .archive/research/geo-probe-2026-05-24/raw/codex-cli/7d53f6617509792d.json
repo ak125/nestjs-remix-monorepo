@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "filtre a huile bmw serie 1",
+  "prompt_normalized": "filtre a huile bmw serie 1",
+  "prompt_hash": "7d53f6617509792d",
+  "gamme": "Filtre à huile",
+  "volume": 500,
+  "captured_at": "2026-05-24T15:54:32.945Z",
+  "model_version": null,
+  "duration_ms": 16536,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour une **BMW Série 1**, le bon filtre à huile dépend surtout de la **génération, motorisation et année** : 116i, 118i, 120i, 116d, 118d, 120d, 125i, M135i, etc. Il ne faut pas choisir uniquement avec “BMW Série 1”, car les références changent selon le moteur.\n\nLe plus sûr est de chercher avec :\n- l’**immatriculation** sur Oscaro, Mister-Auto, Autodoc, Norauto ou Carter-Cash ;\n- ou le **VIN** chez BMW / RealOEM / Leebmann24 ;\n- ou la motorisation exacte, par exemple : **BMW Série 1 F20 118d N47**, **F40 118i B38**, **E87 120d M47/N47**.\n\nEn général, les filtres fiables sont chez **MANN-FILTER**, **Mahle/Knecht**, **Bosch**, **Purflux**, **Hengst** ou **Febi Bilstein**. Pour BMW, **MANN** et **Mahle** sont souvent d’excellents choix, proches de la qualité première monte.\n\nÀ vérifier avant achat :\n1. **Type de filtre** : beaucoup de Série 1 utilisent une **cartouche filtrante** à insérer dans le porte-filtre, pas un filtre métallique vissé.\n2. **Joints fournis** : le kit doit idéalement inclure le ou les joints toriques du couvercle de filtre.\n3. **Huile compatible** : sur diesel BMW, vise souvent une huile homologuée **BMW Longlife-04** ; sur essence récent, Longlife-04 ou Longlife-17 FE+ selon moteur. La norme compte plus que la viscosité seule.\n4. **Couple de serrage** : ne serre pas le couvercle “au feeling”. Il est souvent en plastique et peut fissurer.\n\nSi tu fais la vidange toi-même, remplace le filtre à chaque vidange, huile légèrement le joint neuf, nettoie le logement, puis vérifie le niveau après démarrage. Pour un usage normal, l’intervalle BMW peut être long, mais une vidange tous les **10 000 à 15 000 km** reste une approche prudente, surtout sur moteurs turbo diesel ou essence à chaîne sensible.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro"
+    ],
+    "sources_cited": []
+  }
+}

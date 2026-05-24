@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "flexible de frein avant",
+  "prompt_normalized": "flexible de frein avant",
+  "prompt_hash": "276bab51df56a71f",
+  "gamme": "Flexible de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:11:31.159Z",
+  "model_version": null,
+  "duration_ms": 38832,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour “flexible de frein avant”, il faut surtout identifier le véhicule exact : marque, modèle, année, motorisation, côté gauche/droit, et parfois numéro d’immatriculation ou VIN. Le flexible relie la canalisation rigide à l’étrier de frein avant ; il doit rester souple avec les mouvements de suspension et de direction.\n\nÀ remplacer sans attendre si tu vois : craquelures, hernie/gonflement, fuite de liquide, caoutchouc durci, raccord corrodé, pédale molle ou freinage qui tire d’un côté. En pratique, on remplace souvent les deux flexibles avant par paire, car l’usure est similaire gauche/droite. Norauto le recommande aussi sur ses fiches produits, et Oscaro/Mister-Auto rappellent qu’une purge du circuit est nécessaire après remplacement.\n\nPour acheter la bonne pièce, regarde chez Oscaro, Mister-Auto, Auto-Doc, Norauto ou Yakarouler avec l’immatriculation. Côté marques fiables : TRW, Bosch, Brembo, ATE, Ferodo, Delphi, Febi Bilstein. Évite les références génériques douteuses : sur le freinage, l’ajustement des raccords, la longueur et la qualité du sertissage comptent beaucoup.\n\nAprès montage, il faut refaire le niveau avec le bon liquide, généralement DOT 4 sur beaucoup de voitures modernes, puis purger correctement le circuit. Si le flexible est grippé sur la canalisation rigide, mieux vaut prévoir dégrippant, clé à tuyauter, voire remplacement d’un bout de canalisation si l’écrou s’arrondit. Pour un particulier, c’est faisable avec méthode, mais si tu n’es pas équipé pour purger proprement, un garage AD, Norauto, Feu Vert ou un petit garage indépendant fera l’intervention rapidement. Le prix dépend du modèle, mais la pièce seule est souvent modérée ; la main-d’œuvre et la purge font surtout varier la facture.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

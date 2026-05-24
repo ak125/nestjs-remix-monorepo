@@ -1,0 +1,29 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "mâchoires de frein",
+  "prompt_normalized": "machoires de frein",
+  "prompt_hash": "82e358b1f1cf0527",
+  "gamme": "Mâchoires de frein",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:10:28.115Z",
+  "model_version": null,
+  "duration_ms": 42434,
+  "ok": true,
+  "error": null,
+  "response_raw": "Les **mâchoires de frein** équipent les freins à tambour, presque toujours à l'arrière sur les véhicules qui en sont encore dotés (citadines, utilitaires, beaucoup de modèles Renault, Peugeot, Citroën, Dacia, Fiat). Ce sont deux pièces semi-circulaires en métal recouvertes d'une garniture en matériau de friction, qui sont poussées vers l'extérieur contre la paroi du tambour par un cylindre de roue hydraulique. Elles encaissent typiquement 30 à 40 % du freinage et la quasi-totalité du frein de parking.\n\n**Quand les remplacer ?** Durée de vie courante : 80 000 à 150 000 km, bien plus que des plaquettes disque. Signes d'usure : frein à main qui ne tient plus en pente même tendu à fond, bruit de grattement à l'arrière, pédale plus longue, voyant ABS qui s'allume (capteur encrassé par la poussière de garniture). On les remplace **toujours par paire d'essieu**, jamais une seule roue.\n\n**À acheter en même temps**, parce que démonter un tambour pour ne changer que les mâchoires est une fausse économie : ressorts de rappel, ressorts de maintien, parfois le cylindre de roue (fuite très fréquente sur tambour ancien), et le tambour lui-même s'il est rayé ou en sous-cote. Les **kits complets de frein arrière** (mâchoires + ressorts + cylindres) coûtent 60 à 120 € et évitent un deuxième démontage trois mois plus tard.\n\n**Marques fiables** : TRW, Ferodo, Bosch, ATE, Textar, Delphi pour le haut du panier ; LPR, Roadhouse, Brembo (sur certaines réfs), Bendix en intermédiaire. Éviter le no-name à 15 € la paire — la garniture s'écaille, le frein à main devient inutilisable au bout de 6 mois.\n\n**Où acheter en ligne** : **Oscaro**, **Mister-Auto**, **Yakarouler**, **AutoDoc**, **1001Pneus** pour l'auto. Comparer les références par code OEM ou immatriculation, pas par modèle générique — les diamètres de tambour varient (180, 203, 228 mm…) même au sein d'une même gamme.\n\n**Pose** : démontage tambour + recompression du cylindre + repositionnement des ressorts demandent un peu d'outillage (pince à ressorts de mâchoires, dégrippant, clé dynamo). Si vous n'avez jamais ouvert un tambour, atelier (Norauto, Speedy, Feu Vert, garagiste indépendant) : comptez 80 à 150 € de main d'œuvre par essieu.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "1001pneus",
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

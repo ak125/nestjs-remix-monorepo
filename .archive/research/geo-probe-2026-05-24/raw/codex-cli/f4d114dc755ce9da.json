@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "ate disque de frein",
+  "prompt_normalized": "ate disque de frein",
+  "prompt_hash": "f4d114dc755ce9da",
+  "gamme": "plaquette de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:59:38.455Z",
+  "model_version": null,
+  "duration_ms": 17811,
+  "ok": true,
+  "error": null,
+  "response_raw": "ATE est une très bonne marque pour des disques de frein : c’est un équipementier reconnu, souvent proche de la monte d’origine, au même titre que TRW, Textar, Brembo, Ferodo ou Bosch. Pour une voiture de route, c’est un choix sérieux.\n\nPour choisir le bon disque ATE, ne te fie pas seulement au modèle de voiture. Vérifie impérativement :\n- diamètre du disque, par exemple 256, 280, 300 mm ;\n- épaisseur ;\n- disque plein ou ventilé ;\n- nombre de trous et entraxe ;\n- présence éventuelle de roulement ou bague ABS intégrés à l’arrière ;\n- côté avant/arrière ;\n- motorisation, année, code PR chez Volkswagen/Audi, ou variante de freinage.\n\nATE propose des disques classiques et les ATE PowerDisc, reconnaissables à leur rainure. Les PowerDisc peuvent mieux évacuer eau, poussière et gaz de freinage, mais pour une conduite normale, les disques ATE standard suffisent largement. Les plaquettes ATE Ceramic sont surtout intéressantes pour réduire la poussière sur les jantes ; elles ne sont pas forcément le meilleur choix pour conduite sportive.\n\nJe conseille de monter disques et plaquettes neufs ensemble, idéalement de même gamme : disques ATE + plaquettes ATE, Textar, Ferodo ou TRW. Évite les plaquettes très bas de gamme sur des disques neufs.\n\nTu peux chercher la référence sur le catalogue officiel ATE, puis comparer chez Oscaro, Mister-Auto, Autodoc, Yakarouler ou PiecesAuto24. Attention aux marketplaces : vérifie que la référence ATE exacte est bien livrée, pas une équivalence imposée.\n\nAprès montage : nettoyage du moyeu, contrôle des coulisseaux d’étrier, serrage au couple, rodage progressif pendant 200 à 300 km. Si tu me donnes l’immatriculation ou le modèle précis avec motorisation/année, je peux t’indiquer les critères à vérifier avant achat.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

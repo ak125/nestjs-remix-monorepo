@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "filtre à gasoil fiat ducato",
+  "prompt_normalized": "filtre a gasoil fiat ducato",
+  "prompt_hash": "744423c21eec6384",
+  "gamme": "Filtre à carburant",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:28:53.325Z",
+  "model_version": null,
+  "duration_ms": 18785,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour un **filtre à gasoil de Fiat Ducato**, la bonne référence dépend surtout de **l’année, du moteur et du type exact** : Ducato 244, 250/290, 2.0, 2.2, 2.3 Multijet, 3.0 JTD, etc. Ne commandez pas seulement avec “Ducato” : il y a plusieurs montages.\n\nPour être sûr, utilisez idéalement :\n- l’**immatriculation** sur Oscaro, Mister-Auto, Autodoc ou Yakarouler ;\n- ou le **VIN** chez Fiat / Mopar ;\n- ou le catalogue fabricant : **MANN-FILTER**, **Purflux**, **Bosch**, **Mahle/Knecht**, **UFI**.\n\nSur Ducato, on trouve souvent soit une **cartouche filtrante** à mettre dans le porte-filtre, soit un ensemble plus complet selon génération. Par exemple, certains Ducato 2.3 JTD/Multijet utilisent des références de type **MANN PU 723 x** ou équivalents, mais ce n’est pas universel. Purflux propose aussi des références courantes pour Ducato, notamment selon versions 244/250.\n\nÀ l’achat, vérifiez ces points :\n- présence ou non d’un **chauffage de filtre** ;\n- présence d’un **capteur d’eau** ou emplacement prévu ;\n- dimensions et type de joint ;\n- compatibilité exacte avec moteur et année ;\n- équivalence OEM Fiat/Mopar.\n\nCôté marques, je privilégierais **MANN-FILTER, Purflux, Bosch, Mahle/Knecht ou UFI**. Évitez les premiers prix inconnus : sur un diesel common rail, un mauvais filtre peut causer prises d’air, mauvais démarrage, défaut injection ou usure prématurée.\n\nPour le remplacement : remplissez/amorçez correctement le circuit après montage, remplacez les joints fournis, nettoyez autour du porte-filtre avant ouverture, et surveillez toute fuite au premier démarrage. Si le Ducato démarre puis cale, c’est souvent une prise d’air ou un amorçage incomplet.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

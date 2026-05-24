@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "tambour frein arriere",
+  "prompt_normalized": "tambour frein arriere",
+  "prompt_hash": "3bbe90907d221ac0",
+  "gamme": "Tambour de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:46:54.908Z",
+  "model_version": null,
+  "duration_ms": 46092,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le tambour de frein arrière équipe la majorité des citadines et compactes (Clio, 208, C3, Sandero, Panda, Twingo, Fiesta…) sur l'essieu arrière. C'est une pièce d'usure : à changer généralement entre 80 000 et 150 000 km, **toujours par paire** (gauche + droite) pour garder un freinage symétrique, et idéalement avec le kit complet (mâchoires, ressorts, cylindre de roue si suintement).\n\n**Signes d'usure** : grincement métallique au freinage, vibrations dans la pédale, frein à main qui ne tient plus en pente, voyant ABS dans certains cas, ou diamètre intérieur supérieur à la cote max gravée sur le tambour (souvent 204,5 ou 230,5 mm selon le modèle).\n\n**Marques fiables** (par ordre de rapport qualité/prix) :\n- **Bosch**, **ATE**, **TRW** (Première monte / OE quality)\n- **Ferodo**, **Brembo** pour le sportif\n- **Valeo**, **Delphi**, **Bendix** en milieu de gamme\n- **Metelli**, **A.B.S.** en entrée de gamme correcte\nÀ éviter : les no-name à 15 € la paire, l'acier est souvent mal traité (voilage rapide, fissures).\n\n**Où acheter en France** :\n- **Oscaro** et **Mister-Auto** : catalogue le plus large, filtre par immatriculation fiable, livraison 24-48h\n- **Yakarouler** et **1001Pièces** : souvent moins chers, stock parfois aléatoire\n- **Piecesauto24** : compétitif sur les marques OE\n- **Norauto** / **Feu Vert** : pratique si tu veux le montage en centre, mais 30-50 % plus cher\n- **Amazon** : OK pour les marques connues, attention aux vendeurs tiers\nPour les comptables/pros, **Autodoc** et **Carter-Cash** sont aussi des options solides.\n\n**Budget réaliste** : 25-45 €/tambour seul, 60-120 € le kit complet (2 tambours + mâchoires + ressorts) selon le véhicule.\n\n**Côté pose** : à faire soi-même avec une clé dynamométrique, une pince à ressorts de frein (15 € chez Mecatechnic ou Norauto), et impérativement **purger ou au moins inspecter le cylindre de roue** pendant l'intervention. Tutos détaillés sur **Forum-auto**, **Caradisiac mécanique**, et la chaîne YouTube **Tuto Voiture** — toujours croiser deux sources, certaines manips diffèrent selon les générations.\n\nSi tu me donnes la marque, le modèle et l'année de ta voiture, je peux préciser la référence exacte et les pièges spécifiques (par ex. le Clio 4 phase 2 a un montage différent du phase 1).",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

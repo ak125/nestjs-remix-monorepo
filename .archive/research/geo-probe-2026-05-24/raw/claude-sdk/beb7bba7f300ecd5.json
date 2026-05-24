@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "prix d un etrier de frein",
+  "prompt_normalized": "prix d un etrier de frein",
+  "prompt_hash": "beb7bba7f300ecd5",
+  "gamme": "Étrier de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:04:15.763Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 25393,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Prix d'un étrier de frein : à quoi s'attendre\n\nLe prix d'un étrier de frein varie énormément selon le véhicule, la position (avant/arrière) et le type (neuf, échange standard, occasion).\n\n## Fourchettes de prix indicatives\n\n**Étrier neuf (aftermarket de qualité)**\n- Citadines / compactes (Clio, 208, Polo) : **60 à 130 €** pièce\n- Berlines / SUV compacts (308, Mégane, Golf, Qashqai) : **90 à 200 €** pièce\n- Premium (BMW, Audi, Mercedes) : **150 à 400 €** pièce\n- Étriers arrière avec frein de parking électrique : **200 à 600 €** (l'électronique fait grimper la note)\n\n**Étrier en échange standard (reconditionné avec consigne)**\n- Compter **40 à 150 €** + consigne (30 à 80 €) remboursée au retour de l'ancien\n- Excellent rapport qualité/prix, garantie souvent 2 ans\n\n**Étrier d'origine constructeur (OEM)**\n- Multiplier par 1,5 à 3 le prix aftermarket\n\n**Occasion (casse auto)**\n- 20 à 80 € selon modèle, mais risque de gripper rapidement — à éviter sauf véhicule de seconde main avec petit budget\n\n## Où acheter\n\n- **Oscaro**, **Mister-Auto**, **Yakarouler** : large catalogue, prix compétitifs, filtrage par immatriculation\n- **AutoDoc** : souvent le moins cher mais délais plus longs\n- **Norauto / Feu Vert** : pratique si pose incluse, plus cher\n- **Reparcar / Opisto** : pour l'occasion garantie (réseau de casses pros)\n\nMarques fiables en aftermarket : **TRW**, **ATE**, **Bosch**, **Brembo** (haut de gamme), **Bendix**, **Ferodo**.\n\n## Coût total pose comprise\n\nSi vous passez par un garage, ajoutez **80 à 180 €** de main-d'œuvre par étrier (purge du circuit incluse). Comptez donc **200 à 500 € tout compris** pour un étrier remplacé sur une voiture courante.\n\n## Conseils\n\n- Toujours remplacer **par paire** (gauche + droite du même essieu) pour un freinage équilibré\n- Profitez-en pour changer **plaquettes et disques** s'ils sont usés\n- Vérifiez si la **purge du liquide de frein** est incluse dans le devis\n- Sur véhicules avec frein de parking électrique, prévoir un **outil diag** (Launch, Autel, ou passage garage obligatoire)\n\nPour un prix précis, communiquez la marque, le modèle, l'année et la motorisation à un site comme Oscaro ou Mister-Auto — ils vous filtrent les références compatibles directement.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

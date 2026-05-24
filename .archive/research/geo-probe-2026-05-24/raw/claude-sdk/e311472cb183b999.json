@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "maitre cylindre",
+  "prompt_normalized": "maitre cylindre",
+  "prompt_hash": "e311472cb183b999",
+  "gamme": "Maître cylindre de frein",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:11:18.628Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 34029,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Le maître-cylindre : rôle, défaillances et remplacement\n\nLe **maître-cylindre de frein** est la pièce centrale du circuit hydraulique : quand tu appuies sur la pédale, il convertit la force mécanique en pression hydraulique qui pousse le liquide de frein (DOT 4 en général) vers les étriers et cylindres de roue. La plupart des véhicules modernes ont un maître-cylindre **tandem** (deux circuits indépendants) pour la sécurité, monté sur le servofrein (mastervac).\n\n## Symptômes d'un maître-cylindre fatigué\n\n- **Pédale qui s'enfonce lentement** au feu rouge, pied maintenu (joints internes qui fuient en interne — pas de fuite visible)\n- Pédale spongieuse même après purge correcte\n- Niveau de **liquide de frein qui baisse** sans fuite aux roues → souvent fuite arrière dans le servofrein\n- Freinage déséquilibré ou voyant ABS/frein allumé\n- Traces de liquide autour du bocal Lockheed ou sous le maître-cylindre\n\n## Marques et où acheter\n\nCôté équipementiers d'origine : **TRW (ZF), ATE, Bosch, Brembo, LPR, FTE, FAG, Metelli, Bendix**. Évite les sous-marques génériques à bas prix sur les véhicules récents avec ESP/ABS — la tolérance d'usinage compte.\n\nPour comparer prix/références :\n- **Oscaro, Mister-Auto, Yakarouler, Autodoc, Piecesauto24** pour le neuf\n- **Opisto, Reparcar, France-Casse** pour l'occasion (à éviter sur cette pièce de sécurité)\n- **RTA (Revue Technique Automobile)** ou **Technic-Achat** pour les couples de serrage et procédure\n\nPour identifier la bonne référence : OEM gravé sur le corps, ou via **TecDoc** (TecAlliance) avec ton type-mine / code moteur.\n\n## Remplacement\n\nCompte 1h30 à 3h selon l'accès. Étapes clés :\n1. Vider le bocal à la seringue\n2. Débrancher capteur niveau + canalisations (clé à tuyauter 11 mm, jamais clé plate — risque de mater l'écrou)\n3. 2 écrous de fixation sur le servofrein\n4. **Gaver** (bench-bleed) le maître-cylindre neuf hors voiture avant montage\n5. Purge complète des 4 roues dans l'ordre constructeur (souvent AR-droite → AR-gauche → AV-droite → AV-gauche)\n\nSur véhicules récents avec ABS/ESP, une **purge active via valise diag** (Delphi, Autocom, ou outil constructeur) est souvent nécessaire pour purger le bloc hydraulique ABS.\n\nSi tu me donnes la marque / modèle / motorisation / année, je peux t'orienter vers la référence exacte et les pièges spécifiques.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

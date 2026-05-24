@@ -1,0 +1,32 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "étrier de frein",
+  "prompt_normalized": "etrier de frein",
+  "prompt_hash": "74a2a675151d8ae9",
+  "gamme": "Étrier de frein",
+  "volume": 50000,
+  "captured_at": "2026-05-24T15:06:28.146Z",
+  "model_version": null,
+  "duration_ms": 28559,
+  "ok": true,
+  "error": null,
+  "response_raw": "# L'étrier de frein\n\nL'étrier (ou « caliper ») est la pièce qui enserre le disque de frein et pousse les plaquettes contre lui via un ou plusieurs pistons hydrauliques. C'est l'organe actif du freinage à disque : sans étrier fonctionnel, la pédale s'enfonce mais la voiture ne ralentit pas correctement.\n\n## Symptômes d'un étrier défaillant\n\n- **Freinage qui tire d'un côté** → piston grippé qui ne relâche pas, ou au contraire ne pousse plus\n- **Usure asymétrique** des plaquettes (intérieure très usée, extérieure neuve) → colonnettes de guidage bloquées\n- **Sifflement ou frottement continu** roue chaude après roulage → étrier qui ne se décolle pas\n- **Fuite de liquide de frein** au niveau de l'étrier → joint de piston HS\n- **Pédale spongieuse** → air ou fuite interne\n\n## Types et choix\n\n- **Étrier flottant** (le plus courant, 1 ou 2 pistons d'un seul côté) — économique, sur 90 % des véhicules\n- **Étrier fixe** (2, 4 ou 6 pistons opposés) — sportif, meilleure modulation, prix x3 à x10\n- **Échange standard** : on rend l'ancien étrier en consigne (50-150 €), pièce remise à neuf — bon compromis qualité/prix\n\n## Marques fiables\n\nATE, TRW, Brembo (premium), Bosch, Bendix, Ferodo en première monte ou équivalents OE. Éviter le no-name chinois à 35 € sur Amazon/eBay — joints qui lâchent en 6 mois.\n\n## Où acheter\n\n- **Oscaro, Mister-Auto, Yakarouler, Autodoc** : catalogue large, recherche par immatriculation, prix tirés\n- **AutoMecanik, 1001Pieces** : équivalents avec conseil\n- **Concessionnaire** : pièce OE garantie mais 2 à 4× plus cher\n- **Casse auto / Opisto** : occasion correcte pour véhicules anciens, vérifier l'état des pistons\n\n## Remplacement\n\nToujours **par paire sur le même essieu** (avant gauche + avant droit). Purger le circuit de frein après pose. Remplacer **plaquettes + disques** si plus de 50 % d'usure. Couple de serrage et type de liquide (DOT 4 le plus souvent) : voir la revue technique (RTA, Haynes, ETAI) ou Technique-Auto.net. Compter 150-400 € pièces + 1 à 2 h de main-d'œuvre.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "ler, Autodoc** : catalogue large, recherche par immatriculation, prix tirés\n- **AutoMecanik, 1001Pieces** : équivalents avec conseil\n- **Concessionnaire** : pièce OE garantie mais 2 à 4× plus cher\n- **Casse auto / Opisto** : occasion correc",
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Technique-Auto.net",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

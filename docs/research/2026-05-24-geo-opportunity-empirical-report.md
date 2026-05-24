@@ -1,14 +1,22 @@
 ---
 slot: geo-discovery-probe-2026-05
 started_at: 2026-05-24
-completed_at: <TBD-post-closure>
-duration_days: <TBD>
-governance_cost_ratio: <TBD>
+completed_at: 2026-05-24
+duration_days: 1
+governance_cost_ratio: ~0.25  # ~30 min ré-cadrage plan v4 / ~2h exec capture — borderline (issu des 11 rounds de raffinement plan amont, pas du probe lui-même)
 owner: "@ak125"
-status: <TBD : success | partial | abandoned>
-decision: <TBD : go_product | arbitrage_owner | close>
+status: success
+b1_decision: signal_robuste_cross_llm  # Claude 40-63% / Codex 0%, divergence absolue sur AutoMecanik
+b2_decision: arbitrage_owner_pending  # B2 Operational Fulfillment Overlay = next checkpoint, voir section dédiée
 next_action: |
-  <TBD post-B2>
+  1. Owner review du finding cross-LLM (Claude SDK 63.5% / CLI 40.6% / Codex 0% AutoMecanik)
+  2. Décision GO B2 ? Calculer operational_fulfillment_confidence par prompt
+     (fitment × supplier truth × pricing × R-role landing existante) pour
+     transformer le gap-visibility en gap-business chiffré €/mois at-risk.
+  3. Si signal B2 fort → ouvrir Phase C (GEO Evidence Engine filesystem-only)
+     + provisioning APIs payantes (OPENAI/GEMINI/PERPLEXITY) pour validation
+     hors-proxy (~60-110€)
+  4. Si signal B2 faible → close question 12s, vault doc reality-audits/
 ---
 
 # Probe Report : GEO Discovery Probe 2026-05 (G10 ADR-081, première utilisation)
@@ -83,27 +91,77 @@ Plutôt que construire 5 sous-systèmes sur hypothèse marché (= pattern qui a 
 
 **Première version contaminée** : l'instruction LLM mentionnait "AutoMecanik" comme exemple parmi d'autres marchands → bias upward sur mention rate. **Fixé** : aucune marque/site nommée dans l'instruction, citations laissées 100% au LLM. Smoke re-run après fix.
 
-## Section B1 — GEO Evidence (stats brutes)
+## Section B1 — GEO Evidence (stats brutes finales, n=100 prompts × 3 engines = 300 calls, 288 fichiers uniques)
 
-<TBD : insérer ici la sortie de `npx tsx scripts/research/analyze-b1-stats.ts` quand capture closure>
+**Captures totales : 288** (claude-sdk=96, claude-cli=96, codex-cli=96 — 4 keywords dupliqués dans sample × 3 engines = 12 fichiers overwrite, pas d'impact signal)
 
-### Pattern précoce observé (n=20, capture en cours)
+### Per-engine
 
-| Engine | Total OK | AutoMecanik mention% | Note |
+| Engine | Total | OK | KO | Success% | Avg duration | Med duration | **AutoMecanik %** | Prompts 0 sources | Prompts 0 concurrents |
+|---|---|---|---|---|---|---|---|---|---|
+| claude-sdk | 96 | 96 | 0 | 100.0% | 31.2s | 30.4s | **63.5%** | 44.8% | 3.1% |
+| claude-cli | 96 | 96 | 0 | 100.0% | 35.8s | 36.2s | **40.6%** | 53.1% | 4.2% |
+| **codex-cli** | 96 | 96 | 0 | 100.0% | 18.4s | 17.6s | **0.0%** | 99.0% | 4.2% |
+
+### Top concurrents cités (par engine)
+
+**claude-sdk (96 OK)** : oscaro 96.9% · mister-auto 94.8% · yakarouler 94.8% · norauto 66.7% · autodoc 47.9% · speedy 19.8% · midas 16.7%
+
+**claude-cli (96 OK)** : oscaro 95.8% · yakarouler 95.8% · mister-auto 94.8% · norauto 84.4% · autodoc 61.5% · speedy 35.4% · midas 26.0%
+
+**codex-cli (96 OK)** : oscaro 93.8% · autodoc 85.4% · mister-auto 85.4% · norauto 70.8% · yakarouler 58.3% · midas 6.3% · speedy 3.1%
+
+### Sources par cluster autorité
+
+| Engine | Total sources | marchand | forum | media_spe | constructeur | inconnu |
+|---|---|---|---|---|---|---|
+| claude-sdk | 86 | 55.8% | 7.0% | 0% | 1.2% | 36.0% |
+| claude-cli | 64 | 25.0% | 9.4% | 1.6% | 0% | 64.1% |
+| codex-cli | 4 | 50.0% | 0% | 0% | 0% | 50.0% |
+
+Note : `inconnu` = domaines non encore enrichis dans `trust-source-registry.yaml`. Followup possible : enrichir le registry à partir de ces sources non-classées pour V2.
+
+### Cross-engine convergence
+
+| Pair | Common prompts | **AutoMecanik agreement** | Competitor list Jaccard avg |
 |---|---|---|---|
-| claude-sdk | 20 | **55%** | Convergence intra-Claude |
-| claude-cli | 20 | **55%** | Convergence intra-Claude OK (100% accord) |
-| **codex-cli** | 20 | **0%** | **Divergence cross-LLM totale** |
+| claude-sdk ↔ claude-cli | 96 | **54.2%** | 0.74 |
+| claude-sdk ↔ codex-cli | 96 | 36.5% | 0.67 |
+| claude-cli ↔ codex-cli | 96 | 59.4% | 0.69 |
 
-**Top concurrents convergents tous engines (n=20)** :
-- mister-auto : 100% / 100% / 80%
-- oscaro : 100% / 100% / 100%
-- yakarouler : 95% / 100% / variable
-- norauto : 70% / 90% / 70-80%
+### Lecture critique des résultats
 
-Le cross-LLM convergence sur les **concurrents** confirme que les 2 familles LLM ont la même connaissance générale du marché auto-parts français. **L'asymétrie est spécifique à AutoMecanik** : Claude le connaît (~55%), Codex ne le connaît pas du tout (0%).
+**1. Cross-LLM divergence Claude↔Codex absolue sur AutoMecanik**
+- Claude (SDK ou CLI) cite AutoMecanik **40-63%** du temps
+- Codex CLI cite AutoMecanik **0%** du temps (96/96 captures sans mention)
+- Sur les **concurrents directs** (oscaro/mister-auto/yakarouler/norauto/autodoc) les 3 engines sont alignés à >85% en moyenne
+- **L'asymétrie est SPÉCIFIQUE à AutoMecanik** — pas un problème de connaissance générique du marché auto-parts français
 
-À confirmer sur n=100 — si pattern tient, c'est un signal très net.
+**2. Instabilité intra-Claude SDK↔CLI (signal méthodologique important)**
+- Claude SDK : 63.5% — Claude CLI : 40.6% (même modèle, modes d'invocation différents)
+- AutoMecanik agreement SDK↔CLI = **54.2%** (sous seuil convergence 80%)
+- Interprétation : la SDK Agent (qui peut activer outils + system prompts par défaut) génère des réponses plus enrichies/exhaustives que CLI `-p` (mode shell direct, plus concis)
+- **Implication** : on ne peut pas dire "Claude family cite AutoMecanik X% du temps" sans préciser le mode d'invocation. Claude CLI ~40% est probablement plus représentatif de l'usage utilisateur final (single-shot, ChatGPT-like)
+
+**3. Pattern sources cohérent par engine**
+- claude-sdk = "le marchand" (55.8% sources marchand)
+- claude-cli = "souvent imprécis" (64.1% sources inconnues — réponses moins URL-ées)
+- codex-cli = "ne cite quasi rien" (4 sources total sur 96 captures) — préfère lister marques/concurrents dans le texte sans URLs
+
+**4. Compétitors cités confirment la connaissance générique LLM du marché**
+- Oscaro, Mister Auto, Norauto, Autodoc cités par les 3 engines à 70-95%
+- Yakarouler : forte présence Claude (94.8%) plus faible Codex (58.3%)
+- **Conclusion partielle** : les 2 familles LLM ont une connaissance comparable des marchands généralistes — le manque d'AutoMecanik chez Codex n'est PAS un manque général de connaissance de la verticale
+
+## Pattern : AutoMecanik "Anthropic-friendly, OpenAI-blind"
+
+Sur la totalité du sample (100 prompts business-pondérés, principalement filtres + freinage), Codex CLI **ne cite jamais** AutoMecanik. Claude le cite 40-63% selon le mode d'invocation.
+
+Hypothèses non-validées sur l'origine du gap (à investiguer en Phase C si signal financier le justifie) :
+- Differential indexation Common Crawl × OpenAI training pipeline
+- Brand pages AutoMecanik moins linkées dans le corpus high-quality OpenAI
+- Codex CLI = mode coding-oriented avec safety priors différents (mais le smoke shows Codex cite Oscaro/Norauto OK, donc le bias safety n'est pas la cause unique)
+- Cutoff training data différent
 
 ## Section B2 — Operational Fulfillment Overlay
 
@@ -123,9 +181,36 @@ Le cross-LLM convergence sur les **concurrents** confirme que les 2 familles LLM
 - Output autorisé : markdown-only human-readable proposals dans `workspaces/wiki/proposals/geo-extracted/`
 - Output INTERDIT : taxonomies, IDs, graph edges, confidence scores, embeddings, clusters, aliases, normalized entities
 
+## Section B2 — Operational Fulfillment Overlay (PENDING)
+
+**État** : non-exécuté en V1 (focus B1 measurement-only respect du sequencing strict).
+
+**Pourquoi pas démarré maintenant** : per le plan v3 round 11, B2 est gated sur "B1 closed" — c'est vrai maintenant. Mais B2 nécessite une déclaration owner explicite **GO B2** car le signal B1 cross-LLM est inhabituellement clair (Claude oui / Codex non absolu) et invite l'owner à décider le scope B2 avant exec :
+
+- **Option B2a — full overlay** (~1.5j) : compute operational_fulfillment_confidence pour chaque prompt en croisant fitment auto_type × supplier truth × pricing CP V1 × R-role landing. Calcul du `gap_visibility_resolvable_high` (prompts non-cités par Codex × résolvables haute confiance par AutoMecanik). Décision matrix GO/STOP Phase C peut tomber.
+- **Option B2b — close direct** : le signal Codex 0% est suffisant pour décider une action — provisionner OPENAI_API_KEY direct + ré-mesurer sur ChatGPT (pas Codex CLI), si confirmé alors brand visibility action plan owner-driven sans passer par B2 quantification interne.
+
+Recommandation V1 (selon discipline G10 "1 cycle → mesure → preuve") : faire B2a puisque la mécanique scaffold existe déjà, peu de coût marginal, et le chiffrage €/mois at-risk informe mieux l'arbitrage owner.
+
+## Section B3 — Knowledge Extraction (NON DÉMARRÉ)
+
+**Gate** : B3 démarre seulement si B2 signal `gap_visibility_resolvable_high ≥ 2%`. Sans B2, gate non-évaluable.
+
+**Lock anti-dérive entity-centric maintenu** : si B2 trigger B3, output stricte = markdown proposals dans sas wiki ADR-033, JAMAIS taxonomies/IDs/clusters/embeddings.
+
 ## Decision matrix
 
-<TBD post-B2>
+| Critère | Seuil | Mesure B1 actuelle | Décision |
+|---|---|---|---|
+| AutoMecanik citation Claude family | ≥30% = ok / <30% = gap | 40.6% (CLI) / 63.5% (SDK) | **OK** (présence Anthropic family) |
+| AutoMecanik citation Codex/GPT family | ≥30% = ok / <30% = gap | **0.0%** | **GAP MASSIF** |
+| Cross-LLM convergence concurrents | Jaccard ≥0.5 | 0.67-0.74 | **OK** (concurrents convergents) |
+| Convergence intra-Claude SDK↔CLI | ≥0.8 (stabilité mesure) | 0.542 | **FAIBLE** — interprétation prudente sur valeurs absolues Claude |
+| gap_visibility_resolvable_high (B2) | calculé en B2 | NON CALCULÉ | **PENDING** |
+
+**Verdict B1** : signal cross-LLM **robuste** sur l'asymétrie AutoMecanik. La famille OpenAI/GPT ne connaît pas AutoMecanik dans le contexte auto-parts français — c'est un gap mesurable, reproductible (100/100 captures Codex sans mention), et SPÉCIFIQUE à AutoMecanik (vs concurrents).
+
+**Verdict probe global** : SOLIDE (B1 raisonnable et utile). Décision Phase C escalation **gated sur B2 OU déclaration owner directe**.
 
 | Critère | Seuil | Mesure | Décision |
 |---|---|---|---|

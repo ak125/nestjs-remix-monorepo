@@ -1,0 +1,37 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "interrupteur feux stop",
+  "prompt_normalized": "interrupteur feux stop",
+  "prompt_hash": "3e5d60b7f2ca2140",
+  "gamme": "Interrupteur des feux de freins",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:39:40.154Z",
+  "model_version": null,
+  "duration_ms": 36410,
+  "ok": true,
+  "error": null,
+  "response_raw": "L'**interrupteur de feux stop** (aussi appelé contacteur de pédale de frein, ou *brake light switch*) est une petite pièce électromécanique placée derrière la pédale de frein. Quand tu appuies sur la pédale, il ferme un circuit et allume les feux stop arrière. Sur les véhicules récents, il pilote aussi le régulateur de vitesse, l'ESP, le verrouillage du levier auto (shift-lock) et l'autorisation de démarrage (sur boîtes automatiques et la plupart des modèles depuis ~2005).\n\n**Symptômes typiques d'un interrupteur HS** :\n- Feux stop allumés en permanence ou qui ne s'allument plus\n- Voyant ABS/ESP qui s'allume sporadiquement\n- Régulateur de vitesse qui ne s'enclenche plus\n- Moteur qui refuse de démarrer (Start&Stop, boîte auto)\n- Code défaut OBD courant : P0504 (incohérence des deux contacts du switch), P0571, P0703\n\n**Marques fiables** : **FAE** (équipementier espagnol, OEM sur beaucoup de PSA/Renault), **Valeo**, **Hella**, **Vemo**, **Febi Bilstein**, **Bosch**, **Metzger**, **SWAG**, **Meyle**. Pour rester proche de l'origine, privilégier la référence OEM constructeur ou un équivalent FAE/Valeo selon le véhicule.\n\n**Où acheter** : \n- **Automecanik.com**, **Oscaro**, **Mister-Auto**, **Yakarouler**, **Piecesauto24**, **Auto-Doc** pour le e-commerce pièces auto\n- **Carter-Cash**, **Norauto**, **Feu Vert** en magasin physique\n- Concessions pour la référence d'origine\n\n**Prix indicatif** : entre **8 € et 25 €** pour la pièce seule, selon marque et modèle. La pose en garage tourne autour de 20-40 € (15 min de main d'œuvre).\n\n**Points à vérifier avant remplacement** :\n1. Confirmer le défaut au scan OBD (Torque, Carista, OBDeleven selon la marque)\n2. Vérifier le fusible des feux stop (souvent oublié)\n3. Contrôler l'état de la pédale et de son support — un mauvais réglage peut user prématurément le contacteur neuf\n\n**Pose** : généralement très accessible sous le tableau de bord, sans outillage spécifique. Sur certains modèles (BMW, Mercedes), il faut ré-initialiser le calculateur après remplacement. Forums utiles : **Forum-Auto.com**, **Caradisiac**, et les communautés spécifiques par marque (Planète Citroën, Forum-Peugeot, etc.).\n\nSi tu me donnes la marque, le modèle et l'année, je peux te donner la référence OEM et les équivalents aftermarket précis.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "nstructeur ou un équivalent FAE/Valeo selon le véhicule.\n\n**Où acheter** : \n- **Automecanik.com**, **Oscaro**, **Mister-Auto**, **Yakarouler**, **Piecesauto24**, **Auto-Doc** pour le e-commerce pièces auto\n- **Carter-Cash**, **Norauto**, **",
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      },
+      {
+        "raw": "Forum-Auto.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

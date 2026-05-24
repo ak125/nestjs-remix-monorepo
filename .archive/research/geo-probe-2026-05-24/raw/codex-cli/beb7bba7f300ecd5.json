@@ -1,0 +1,24 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "prix d un etrier de frein",
+  "prompt_normalized": "prix d un etrier de frein",
+  "prompt_hash": "beb7bba7f300ecd5",
+  "gamme": "Étrier de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:05:15.495Z",
+  "model_version": null,
+  "duration_ms": 30603,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour un **étrier de frein**, compte généralement :\n\n- **Pièce seule** : environ **50 à 200 €** pour un étrier standard en échange standard, parfois **250 à 400 €** sur véhicule plus gros, premium ou avec frein de parking électrique intégré.\n- **Pose en garage** : souvent **80 à 180 € de main-d’œuvre** par étrier, car il faut déposer l’ancien, remonter le nouveau, puis faire une **purge du liquide de frein**.\n- **Total posé** : le plus courant est autour de **200 à 500 € par étrier**, selon la voiture et le garage.\n\nSur des sites comme **Oscaro, Mister Auto, Auto-doc, Norauto ou Autodistribution**, on trouve beaucoup d’étriers en **échange standard** : tu paies une **consigne**, remboursée quand tu renvoies l’ancien étrier. C’est normal et ça peut faire varier le prix affiché.\n\nLe prix dépend surtout de :\n- avant ou arrière ;\n- marque/modèle du véhicule ;\n- étrier simple ou avec frein à main électrique ;\n- pièce neuve, reconditionnée ou origine constructeur ;\n- nécessité de changer aussi les **plaquettes**, **disques**, **flexibles** ou le **liquide de frein**.\n\nSi l’étrier est **grippé**, la voiture peut tirer d’un côté, une roue peut chauffer, ou les plaquettes s’user très vite. Dans ce cas, mieux vaut éviter de rouler longtemps : ça peut abîmer disque et plaquettes.\n\nOn peut parfois changer **un seul étrier**, surtout s’il fuit ou grippe isolément, mais sur un véhicule ancien ou si les deux côtés sont fatigués, le garage peut recommander de faire les deux du même essieu pour garder un freinage équilibré. Pour un devis fiable, le mieux est de chercher avec la plaque d’immatriculation chez Norauto, Feu Vert, Oscaro ou un garage indépendant.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "norauto",
+      "oscaro"
+    ],
+    "sources_cited": []
+  }
+}

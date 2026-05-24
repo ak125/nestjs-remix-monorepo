@@ -1,0 +1,44 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "maitre cylindre voiture",
+  "prompt_normalized": "maitre cylindre voiture",
+  "prompt_hash": "134162e7dde6d5d2",
+  "gamme": "Maître cylindre de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:15:18.925Z",
+  "model_version": null,
+  "duration_ms": 36394,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le maître-cylindre est le cœur hydraulique du système de freinage : situé sous le capot, fixé au servo-frein (mastervac), il transforme l'effort exercé sur la pédale en pression hydraulique envoyée aux étriers et cylindres de roue via le liquide de frein (DOT 4 le plus souvent).\n\n**Symptômes d'un maître-cylindre HS**\n- Pédale qui s'enfonce lentement sous le pied à l'arrêt (fuite interne entre les deux circuits).\n- Pédale spongieuse ou course trop longue malgré une purge récente.\n- Baisse du niveau dans le bocal de liquide de frein sans fuite visible aux roues (le liquide passe dans le mastervac).\n- Voyant frein ou ABS allumé, freinage déséquilibré.\n- Traces humides à la base du bocal ou sur le mastervac.\n\n**Diagnostic rapide**\nPompez la pédale moteur éteint puis démarrez : la pédale doit s'enfoncer d'environ 2 cm. Si elle continue de descendre lentement en maintien pied appuyé, c'est typiquement le maître-cylindre. Inspectez aussi le mastervac (s'il aspire du liquide, le maître-cylindre fuit côté arrière).\n\n**Tarifs indicatifs**\n- Pièce : 40 à 150 € pour une citadine/compacte, 150 à 350 € pour des modèles premium ou ESP intégré.\n- Main d'œuvre : 1 h à 1 h 30 + purge complète obligatoire (compter 80 à 180 € de pose).\n- Marques de référence : **ATE**, **TRW**, **Bosch**, **FTE**, **LPR**, **Brembo**, **Bendix**. Évitez les no-name premier prix sur un organe de sécurité.\n\n**Où acheter la pièce**\n- **Oscaro**, **Mister-Auto**, **Yakarouler**, **Auto-Doc**, **PiecesAuto.fr**, **AutoMecanik** : référencement par véhicule (marque/modèle/motorisation) fiable, retours sous 14 jours.\n- **Norauto**, **Feu Vert**, **Speedy**, **Midas** : pose + pièce si vous ne souhaitez pas intervenir vous-même.\n\n**Forums et entraide**\n- **forum-auto.com** et **caradisiac.com** pour les retours par modèle.\n- Tutos vidéo : chaînes YouTube **Vroumvroum**, **Le Mécano du Dimanche**, **Mecanik Garage**.\n\n**Important** : après remplacement, purge des 4 circuits dans l'ordre préconisé par le constructeur (généralement roue arrière droite → arrière gauche → avant droite → avant gauche), avec un outil type Mityvac ou un assistant. Sur véhicules avec ABS, certains modèles exigent une purge active via valise diagnostic (ESP/ABS).",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "**Oscaro**, **Mister-Auto**, **Yakarouler**, **Auto-Doc**, **PiecesAuto.fr**, **AutoMecanik** : référencement par véhicule (marque/modèle/motorisation) fiable, retours sous 14 jours.\n- **Norauto**, **Feu Vert**, **Speedy**, **Midas** : pose",
+    "competitors_mentioned": [
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "PiecesAuto.fr",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      },
+      {
+        "raw": "forum-auto.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      },
+      {
+        "raw": "caradisiac.com",
+        "cluster": "media_spe",
+        "matchedDomain": "caradisiac.com"
+      }
+    ]
+  }
+}

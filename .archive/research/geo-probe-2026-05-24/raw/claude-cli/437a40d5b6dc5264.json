@@ -1,0 +1,37 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "disque de frein rs6",
+  "prompt_normalized": "disque de frein rs6",
+  "prompt_hash": "437a40d5b6dc5264",
+  "gamme": "disque de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:48:30.935Z",
+  "model_version": null,
+  "duration_ms": 41180,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le disque de frein pour Audi RS6 dépend de la génération du véhicule, car les dimensions et les étriers ont beaucoup évolué :\n\n**Identifier la génération**\n- **RS6 C5 (2002-2004, V8 4.2 biturbo)** : disques avant 365 mm, étriers Brembo 8 pistons.\n- **RS6 C6 (2008-2010, V10 5.0 TFSI)** : 390 mm à l'avant, 356 mm à l'arrière.\n- **RS6 C7 (2013-2018, V8 4.0 TFSI)** : 390 mm avant / 356 mm arrière en acier, ou option carbone-céramique 420 mm.\n- **RS6 C8 (2019+)** : 420 mm avant avec étrier 10 pistons, ou 440 mm en carbone-céramique (RS Ceramic).\n\nSans la génération exacte (idéalement le code moteur ou le numéro de châssis VIN), impossible de commander la bonne référence — c'est l'erreur la plus fréquente sur ce modèle.\n\n**Marques fiables**\n- **OEM / équivalent OEM** : Brembo (fournisseur d'origine pour la RS6), Zimmermann, ATE, TRW. Brembo Xtra ou Zimmermann Sport (rainurés/percés) sont une bonne montée en gamme sans changer d'étrier.\n- **Performance / piste** : Girodisc, DBA (séries 4000/5000), Tarox, EBC BlueStuff. À réserver à un usage sportif, sinon bruit et usure accélérée des plaquettes.\n- **Carbone-céramique** : uniquement chez Audi ou via spécialistes (Surface Transforms en remplacement). Compter 8 000–15 000 € le train avant.\n\n**Où acheter en France**\n- **Oscaro** et **Mister-Auto** : large stock OEM/équivalent, filtrage par VIN fiable.\n- **AutoDoc** : tarifs souvent agressifs, vérifier la disponibilité réelle.\n- **Yakarouler** et **Piecesauto24** : bon rapport qualité/prix sur Zimmermann et ATE.\n- **Audi Tradition / concession** : pour pièces d'origine référencées, plus cher mais zéro risque de compatibilité.\n- Pour le sport/track : **Demon Tweeks**, **Design 911**, ou directement chez **APR**, **MTM**, **ABT**.\n\n**À ne pas négliger**\nChanger les disques sans les plaquettes (Pagid, Ferodo DS2500 pour usage mixte) est une fausse économie. Vérifier aussi l'état des étriers Brembo et des flexibles aviation si la voiture a roulé sur piste. Sur la C7/C8, le capteur d'usure et la vis de fixation Torx sont à remplacer systématiquement.\n\nForums utiles pour confirmer une référence : **Audizine**, **Audi-sport.net**, **Forum-Audi.com**.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Audi-sport.net",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      },
+      {
+        "raw": "Forum-Audi.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

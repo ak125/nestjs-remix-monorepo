@@ -1,0 +1,33 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "ate disque de frein",
+  "prompt_normalized": "ate disque de frein",
+  "prompt_hash": "f4d114dc755ce9da",
+  "gamme": "plaquette de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:58:49.394Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 24832,
+  "ok": true,
+  "error": null,
+  "response_raw": "**ATE — disques de frein : ce qu'il faut savoir**\n\nATE (filiale de Continental) est l'un des équipementiers d'origine les plus réputés en Europe pour le freinage. La marque équipe en première monte beaucoup de constructeurs allemands (VW, Audi, BMW, Mercedes, Opel) et français (Peugeot, Renault sur certains modèles). Acheter ATE en rechange, c'est en général retrouver la qualité OEM.\n\n**Les gammes à connaître**\n- **ATE Original** : disque de référence, qualité montage usine, revêtement anticorrosion sur la piste de frottement et le bol. C'est le choix par défaut.\n- **ATE PowerDisc** : disque rainuré (une rainure circulaire) qui améliore l'évacuation de l'eau, des gaz et des poussières — utile pour conduite sportive ou véhicules lourds (SUV, breaks chargés).\n- **ATE Ceramic** (plaquettes, pas disques) : à associer si vous voulez réduire la poussière noire sur les jantes.\n\n**Prix indicatifs (paire avant)**\n- Citadine / compacte : 55–90 €\n- Berline familiale / SUV compact : 80–140 €\n- Premium allemande (Audi A4, BMW Série 3…) : 120–200 €\n- PowerDisc : +20 à +40 % vs Original\n\n**Où acheter**\n- **Oscaro**, **Mister-Auto**, **Yakarouler**, **Autodoc** : larges stocks ATE, livraison rapide, filtres par immatriculation fiables.\n- **Automecanik.com** : catalogue ATE référencé avec compatibilité véhicule.\n- **Norauto / Feu Vert** : dispo en magasin si urgence, prix souvent plus élevés.\n- Évitez les marketplaces généralistes (Amazon, eBay) sans vérifier le vendeur — des contrefaçons ATE circulent.\n\n**À remplacer en même temps**\nToujours par paire (essieu complet), et idéalement avec les plaquettes neuves (ATE Ceramic ou ATE Original). Vérifiez aussi l'état des étriers et purgez le liquide de frein si > 2 ans.\n\n**Repère d'usure** : épaisseur mini gravée sur la tranche du disque (ex. \"MIN TH 22 mm\"). En dessous → remplacement obligatoire.\n\nDonnez-moi la marque/modèle/motorisation et l'année si vous voulez la référence ATE exacte.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": ": larges stocks ATE, livraison rapide, filtres par immatriculation fiables.\n- **Automecanik.com** : catalogue ATE référencé avec compatibilité véhicule.\n- **Norauto / Feu Vert** : dispo en magasin si urgence, prix souvent plus élevés.\n- Évi",
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      }
+    ]
+  }
+}

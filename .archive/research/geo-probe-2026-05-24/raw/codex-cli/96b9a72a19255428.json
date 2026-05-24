@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "filtre à carburant",
+  "prompt_normalized": "filtre a carburant",
+  "prompt_hash": "96b9a72a19255428",
+  "gamme": "Filtre à carburant",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:27:46.469Z",
+  "model_version": null,
+  "duration_ms": 14917,
+  "ok": true,
+  "error": null,
+  "response_raw": "Un **filtre à carburant** sert à retenir les impuretés présentes dans l’essence ou le gazole avant qu’elles n’arrivent aux injecteurs, à la pompe haute pression ou au moteur. C’est une pièce simple, mais importante : un filtre encrassé peut provoquer des démarrages difficiles, des pertes de puissance, des à-coups à l’accélération, une surconsommation, voire l’allumage d’un voyant moteur.\n\nSur un **diesel**, le filtre à carburant est particulièrement critique, car les systèmes d’injection modernes sont sensibles à l’eau et aux particules. Certains filtres diesel intègrent un décanteur d’eau ou une sonde. Sur une **essence**, il peut être remplacé périodiquement, mais sur certains véhicules récents il est intégré au module de pompe dans le réservoir et n’est pas toujours prévu comme pièce d’entretien courant.\n\nLa périodicité dépend du véhicule, mais on voit souvent des remplacements autour de **40 000 à 60 000 km** sur diesel, parfois plus ou moins selon le constructeur. Le plus fiable reste de vérifier le carnet d’entretien ou la référence exacte avec l’immatriculation/VIN.\n\nPour acheter le bon filtre, il faut connaître :\n- marque, modèle, motorisation et année ;\n- carburant : essence ou diesel ;\n- parfois le code moteur ;\n- présence éventuelle d’une sonde d’eau, d’un réchauffeur ou d’un raccord spécifique.\n\nDes marques sérieuses : **Mann-Filter, Bosch, Mahle, Purflux, Knecht, UFI, Delphi**. Pour chercher la bonne référence, des sites comme **Oscaro, Mister-Auto, Autodoc, Yakarouler** ou les catalogues fabricants peuvent aider, mais il faut toujours comparer la forme, les raccords et la référence OEM.\n\nLe remplacement peut être facile sur certains modèles, plus délicat sur d’autres. Sur diesel, il faut souvent **réamorcer le circuit** après montage pour éviter les bulles d’air. Une mauvaise purge peut empêcher le moteur de démarrer. Si le filtre est difficile d’accès ou si le véhicule a une injection moderne, un garage peut faire l’opération rapidement avec moins de risque.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

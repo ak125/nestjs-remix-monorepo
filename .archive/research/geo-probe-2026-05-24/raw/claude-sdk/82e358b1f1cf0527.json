@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "mâchoires de frein",
+  "prompt_normalized": "machoires de frein",
+  "prompt_hash": "82e358b1f1cf0527",
+  "gamme": "Mâchoires de frein",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:09:45.681Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 27297,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Mâchoires de frein : ce qu'il faut savoir\n\nLes **mâchoires de frein** sont les pièces courbes équipées de garnitures qui s'écartent à l'intérieur du tambour pour ralentir la roue. On les trouve presque exclusivement sur le **train arrière** des véhicules de tourisme (les freins avant sont à disques depuis longtemps). Sur certaines voitures, il existe aussi des mâchoires dédiées au **frein de stationnement** logées à l'intérieur du disque arrière (\"frein à tambour dans le disque\" — fréquent sur Mercedes, Audi récentes).\n\n## Quand les remplacer\n\n- Bruit de frottement ou grincement à l'arrière\n- Frein à main qui \"tire\" loin ou ne tient plus en pente\n- Garniture sous 1,5 mm (mini légal ~1 mm, sécurité 2 mm)\n- Tambour rayé, ovalisé ou hors-cote (à vérifier au pied à coulisse)\n\n**Durée de vie typique** : 80 000 à 150 000 km, mais très variable selon usage (ville/montagne).\n\n## Ce qu'on remplace ensemble\n\nNe jamais changer uniquement les mâchoires. Le **kit complet** comprend :\n- 2 mâchoires (toujours par essieu, jamais une seule roue)\n- Ressorts de rappel + ressorts de maintien\n- Souvent un kit cylindre de roue si fuite ou suintement\n- Tambour si hors-cote\n\nMarques fiables, par ordre de rapport qualité/prix : **Bosch**, **TRW**, **ATE**, **Ferodo**, **Textar**, **Brembo**. Évite les marques inconnues à 15 € le kit — la garniture s'use en quelques milliers de km.\n\n## Où acheter\n\n- **Oscaro**, **Mister-Auto**, **Yakarouler**, **Autodoc** pour le rapport prix/choix\n- **AD**, **Auto Distribution**, **Précisium** en réseau pro si tu veux passer par un garage\n- Référence à donner : marque + modèle + motorisation + année, ou mieux le **numéro VIN** pour éviter les erreurs (diamètre tambour 200/228/254 mm change tout)\n\n## Montage\n\nComptez **1 h à 1 h 30 par côté** pour un mécanicien aguerri. Outils spécifiques : pince à ressorts de mâchoires, clé dynamométrique, parfois extracteur de tambour. Si tu n'as jamais fait, c'est faisable mais **toujours par paire essieu**, et **purge du frein à main** ensuite si réglage par câble.\n\nBudget pièces : 40-90 € le kit deux roues en marque correcte. Main d'œuvre garage : 120-180 €.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

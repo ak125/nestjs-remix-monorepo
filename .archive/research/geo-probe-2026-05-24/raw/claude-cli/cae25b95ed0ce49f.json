@@ -1,0 +1,39 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "prix disque et plaquette de frein peugeot 208",
+  "prompt_normalized": "prix disque et plaquette de frein peugeot 208",
+  "prompt_hash": "cae25b95ed0ce49f",
+  "gamme": "plaquette de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:01:31.532Z",
+  "model_version": null,
+  "duration_ms": 36249,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour une Peugeot 208 (208 I 2012-2019 ou 208 II depuis 2019), les prix varient selon la motorisation, la qualité et le circuit d'achat. Voici les ordres de grandeur réalistes à fin 2026.\n\n**Disques de frein avant (paire)**\n- Premier prix : 35-55 € la paire (marques comme Metelli, Bosal, ABE)\n- Milieu de gamme : 60-90 € (Bosch, TRW, ATE, Ferodo)\n- Haut de gamme / OE : 100-160 € (Brembo, Textar, ou pièce d'origine Peugeot/Eurorepar)\n\n**Plaquettes avant (jeu de 4)**\n- Premier prix : 18-30 €\n- Milieu de gamme : 30-55 € (Bosch, TRW, Ferodo Premier, Valeo)\n- Brembo / Textar / pièce origine : 55-90 €\n\n**Arrière** : la plupart des 208 essence (1.0, 1.2 PureTech) ont des **tambours** à l'arrière, pas des disques. Comptez 40-70 € le kit mâchoires + cylindre si besoin. Les versions GT, GTi et certaines diesel ont des disques arrière (+ 40-80 € la paire + 25-45 € les plaquettes).\n\n**Où acheter en France**\n- **Oscaro**, **Mister-Auto**, **Yakarouler**, **Piecesauto24**, **1001Pieces** : catalogues larges, prix compétitifs, livraison rapide\n- **AutoDoc** : souvent moins cher mais délais et SAV variables\n- **Norauto**, **Feu Vert**, **Carter-Cash** : pratique si vous voulez retirer en magasin\n- **Peugeot Service Box** ou concessionnaire : pour la pièce d'origine, plus cher mais sans surprise de référence\n\nVérifiez bien votre **type-mine** (carte grise champ D.2) et le diamètre de disque (266 mm ou 283 mm selon motorisation) avant de commander — c'est la cause n°1 d'erreur de référence.\n\n**Main d'œuvre si vous ne le faites pas vous-même**\n- Garage indépendant : 80-130 € pour disques + plaquettes avant\n- Centre auto (Norauto, Feu Vert, Speedy) : 100-160 €\n- Concession Peugeot : 180-260 €\n\n**Budget total réaliste**\n- DIY pièces seules : 80-180 €\n- Tout compris garage indépendant : 180-300 €\n- Concession avec pièces d'origine : 350-500 €\n\nPour des retours d'expérience concrets sur les marques et les références qui passent bien sur 208, les forums **forum-peugeot.com** et **planete-peugeot.com** sont utiles.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "forum-peugeot.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      },
+      {
+        "raw": "planete-peugeot.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

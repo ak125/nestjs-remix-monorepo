@@ -1,0 +1,25 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "flexible frein",
+  "prompt_normalized": "flexible frein",
+  "prompt_hash": "bc5e06148d44e05a",
+  "gamme": "Flexible de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:57:31.413Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 33802,
+  "ok": true,
+  "error": null,
+  "response_raw": "Un flexible de frein (ou durite de frein) est la partie souple du circuit hydraulique qui relie la canalisation rigide à l'étrier. Il transmet la pression du liquide de frein tout en absorbant les mouvements de la suspension et de la direction. C'est une pièce de sécurité critique, à contrôler à chaque révision.\n\n**Symptômes d'usure à surveiller :**\n- Pédale spongieuse ou course plus longue qu'avant\n- Fuite visible (traces humides, baisse du niveau dans le bocal)\n- Craquelures, gonflement local sous pression, gaine effilochée\n- Freinage qui tire d'un côté (un flexible obstrué intérieurement peut faire \"ventouse\")\n- Contrôle technique : c'est une contre-visite quasi automatique en cas de défaut\n\n**Durée de vie indicative :** 6 à 10 ans selon l'exposition (sel, UV, projections). À remplacer systématiquement par paire sur un même essieu.\n\n**Choix de la pièce :**\n- *Origine caoutchouc* : suffisant pour un usage routier. Marques fiables : **ATE, TRW, Bosch, Ferodo, Brembo, Delphi**.\n- *Flexibles aviation (tresse inox + téflon)* : pédale plus ferme, gain de précision, durée de vie supérieure. Marques de référence : **Goodridge, HEL Performance, Stoptech**. Indispensable en usage piste, utile en routier sportif.\n\n**Où acheter en France :**\n- **Oscaro, Mister-Auto, Yakarouler, Piecesauto24, Automecanik** pour les pièces d'origine à prix corrects\n- **Demon Tweeks, Motors-Inn, OreilleCassée** pour les flexibles aviation\n- **iParts, RDM-Performance** souvent compétitifs sur Goodridge\n\n**Pose :**\nComptez 30 à 60 min par roue. Prévoyez impérativement une **purge complète du circuit** après remplacement (DOT 4 ou DOT 5.1 selon préconisation constructeur — jamais DOT 5 silicone sauf véhicule conçu pour). Clé à tuyauter (pas une clé plate classique) pour ne pas abîmer les écrous. Côté tarif : 8–25 € pièce en caoutchouc, 30–60 € en aviation, plus 60–120 € de main-d'œuvre + purge si garage.\n\nForums utiles pour retours d'expérience modèle par modèle : **Forum-Auto, Caradisiac, Planète Citroën, Forum-Peugeot, AudiPassion**.\n\nSi tu me donnes la marque/modèle/année de ton véhicule, je peux préciser la référence et les particularités (ABS, étrier spécifique, longueur).",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "**Où acheter en France :**\n- **Oscaro, Mister-Auto, Yakarouler, Piecesauto24, Automecanik** pour les pièces d'origine à prix corrects\n- **Demon Tweeks, Motors-Inn, OreilleCassée** pour les flexibles aviation\n- **iParts, RDM-Performance**",
+    "competitors_mentioned": [
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

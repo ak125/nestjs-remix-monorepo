@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "filtre à huile",
+  "prompt_normalized": "filtre a huile",
+  "prompt_hash": "056a6d44be47f320",
+  "gamme": "Filtre à huile",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:24:08.879Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 29323,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Filtre à huile : ce qu'il faut savoir\n\nLe filtre à huile retient les impuretés (particules métalliques, suies, résidus de combustion) en suspension dans l'huile moteur. Sans lui, ces saletés circuleraient dans le bloc et useraient prématurément les paliers, les coussinets et la pompe à huile.\n\n## Quand le remplacer\n\nSystématiquement à **chaque vidange** — jamais une vidange sans filtre neuf, même si le constructeur autorise parfois un intervalle plus long. En pratique :\n- **Essence** : tous les 15 000 km ou 1 an\n- **Diesel** : tous les 10 000–15 000 km ou 1 an\n- **Conduite urbaine / petits trajets** : raccourcir de 30 %\n\n## Les marques fiables\n\nEn première monte et rechange qualité OEM :\n- **Mann-Filter** (allemand, équipementier d'origine pour VAG, BMW, Mercedes)\n- **Mahle / Knecht** (souvent identique au filtre d'origine)\n- **Bosch** (gamme large, bon rapport qualité/prix)\n- **Purflux** (français, OEM PSA / Renault)\n- **Hengst** (premium allemand, Mercedes / BMW)\n- **Valeo** (correct, gamme intermédiaire)\n\nÀ éviter : les références no-name à 3 € sur AliExpress ou les marques distributeur bas de gamme — média filtrant médiocre, by-pass qui s'ouvre trop tôt.\n\n## Où l'acheter\n\n- **Oscaro** et **Mister-Auto** : catalogue large, recherche par immatriculation, prix corrects\n- **Yakarouler**, **1001pieces** : alternatives sérieuses\n- **Automecanik** : sélection par véhicule, gamme OEM\n- **Norauto / Feu Vert / Midas** : pratique si vous faites poser, plus cher\n- **Amazon** : possible mais vérifier que le vendeur est l'équipementier officiel (contrefaçons fréquentes sur Mann et Bosch)\n\nComptez **5 à 15 €** pour un filtre à visser (cartouche métallique), **8 à 20 €** pour un filtre à cartouche papier (boîtier réutilisable, courant sur diesels récents et moteurs PSA / BMW).\n\n## Astuce montage\n\nSur les filtres à visser : huiler légèrement le joint néoprène avant pose, serrer à la main + 3/4 de tour, jamais à la clé à filtre. Sur cartouche papier : remplacer aussi le joint torique du couvercle (souvent fourni dans la boîte) — c'est la fuite n°1 après vidange.\n\nPour identifier la bonne référence, donnez votre **plaque d'immatriculation** ou le **code moteur** (sur la carte grise, champ P.5) au site de pièces.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "on, prix corrects\n- **Yakarouler**, **1001pieces** : alternatives sérieuses\n- **Automecanik** : sélection par véhicule, gamme OEM\n- **Norauto / Feu Vert / Midas** : pratique si vous faites poser, plus cher\n- **Amazon** : possible mais vérif",
+    "competitors_mentioned": [
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

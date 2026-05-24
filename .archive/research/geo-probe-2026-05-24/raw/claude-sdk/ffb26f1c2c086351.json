@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "flexible de frein endommagé",
+  "prompt_normalized": "flexible de frein endommage",
+  "prompt_hash": "ffb26f1c2c086351",
+  "gamme": "Flexible de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:18:59.109Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 36027,
+  "ok": true,
+  "error": null,
+  "response_raw": "**Flexible de frein endommagé : ce qu'il faut savoir**\n\nUn flexible de frein abîmé (fissures, gonflement, suintement, frottement contre un élément de suspension) est une **panne critique de sécurité**. Le caoutchouc se dégrade avec l'âge (UV, ozone, sel de déneigement) et peut éclater sous pression lors d'un freinage appuyé — perte totale du circuit concerné.\n\n**Diagnostic rapide**\n- Inspection visuelle roues braquées : cherche craquelures, cloques, traces humides (liquide de frein = brillant, légèrement jaune, très agressif pour la peinture).\n- Pédale qui s'enfonce mollement ou voyant ABS/frein allumé = circuit compromis.\n- Freinage qui « tire » d'un côté : un flexible peut se boucher de l'intérieur (la gaine interne se délamine et fait clapet) — le piston d'étrier reste serré, disque qui chauffe et fume.\n\n**Réparation**\nUn flexible ne se répare jamais, **il se remplace**. Et toujours par **paire sur le même essieu** pour conserver l'équilibre de freinage. Comptez 30 min à 1 h par flexible + purge complète du circuit avec du DOT 4 (ou DOT 5.1 si préconisé constructeur — jamais DOT 5 silicone).\n\n**Pièces — où acheter**\n- **AutoMecanik**, **Oscaro**, **Mister-Auto**, **Yakarouler**, **Autodoc** pour les flexibles d'origine ou équivalents OE (TRW, ATE, Bosch, Febi, Triscan).\n- Pour un usage sportif ou un véhicule ancien, les **flexibles aviation tressés inox** (Goodridge, HEL Performance, Venhill) offrent une pédale plus ferme et une meilleure longévité — homologués route en France si certifiés TÜV.\n- Toujours vérifier la référence avec ton VIN ou via le sélecteur véhicule du site marchand : il existe souvent 2-3 longueurs différentes selon motorisation/ABS/finition.\n\n**Coût indicatif**\n- Flexible standard : 8-25 € pièce\n- Kit aviation 4 roues : 80-150 €\n- Main-d'œuvre garage : 60-120 € pour la paire avec purge\n\n**À ne pas faire**\nRouler « juste pour rentrer » avec un flexible qui suinte, réutiliser du liquide de frein purgé, ou mélanger DOT 4 et DOT 5 silicone. Si tu n'es pas équipé pour purger correctement (un Mityvac ou un kit pédale à deux), confie l'opération à un pro — un circuit mal purgé = pédale spongieuse et freinage dégradé.\n\nQuel est le véhicule concerné ? Je peux t'orienter sur la référence exacte.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "i préconisé constructeur — jamais DOT 5 silicone).\n\n**Pièces — où acheter**\n- **AutoMecanik**, **Oscaro**, **Mister-Auto**, **Yakarouler**, **Autodoc** pour les flexibles d'origine ou équivalents OE (TRW, ATE, Bosch, Febi, Triscan).\n- Pour",
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

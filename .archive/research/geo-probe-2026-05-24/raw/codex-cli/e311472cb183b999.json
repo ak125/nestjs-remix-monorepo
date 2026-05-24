@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "maitre cylindre",
+  "prompt_normalized": "maitre cylindre",
+  "prompt_hash": "e311472cb183b999",
+  "gamme": "Maître cylindre de frein",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:12:06.765Z",
+  "model_version": null,
+  "duration_ms": 17073,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le “maître-cylindre” désigne presque toujours le **maître-cylindre de frein** : c’est la pièce qui transforme l’appui sur la pédale de frein en pression hydraulique envoyée vers les étriers ou cylindres de roue. Il est fixé côté compartiment moteur, généralement devant le conducteur, sur le **servofrein**. Il alimente le circuit via le bocal de liquide de frein.\n\nSi vous cherchez cette pièce, il faut surtout identifier le véhicule avec précision : **marque, modèle, motorisation, année, type de freinage, ABS/ESP**, parfois le numéro VIN. Deux voitures visuellement identiques peuvent avoir des maîtres-cylindres différents selon le montage ATE, Bosch, TRW, Bendix, etc.\n\nSignes possibles d’un maître-cylindre défectueux :\n\n- pédale de frein qui s’enfonce lentement à l’arrêt ;\n- pédale spongieuse malgré une purge correcte ;\n- perte de liquide sans fuite évidente aux roues ;\n- freinage déséquilibré ou inefficace ;\n- liquide qui passe vers le servofrein, parfois avec fumée ou ralenti perturbé si le liquide est aspiré.\n\nAvant de le remplacer, il faut vérifier aussi les **durites**, étriers, cylindres de roue arrière, répartiteur, bloc ABS et l’état du liquide. Une simple présence d’air dans le circuit peut imiter une panne de maître-cylindre.\n\nPour l’achat, regardez des sites comme **Oscaro, Mister-Auto, Autodoc, Yakarouler**, ou un distributeur local type **AD, Carter-Cash, Norauto, Feu Vert**. Les marques fiables courantes sont **ATE, TRW, Bosch, LPR, Brembo, Delphi** selon disponibilité. Évitez les références très bas de gamme sur le freinage.\n\nAprès remplacement, il faut impérativement faire une **purge complète du circuit** avec le bon liquide, souvent **DOT 4**, sauf indication contraire du constructeur. Sur certaines voitures avec ABS, une purge classique ne suffit pas toujours : il peut falloir activer le bloc ABS avec une valise diagnostic.\n\nSi vous me donnez le modèle exact de la voiture, l’année et la motorisation, je peux vous aider à identifier le bon type de maître-cylindre et les points à vérifier avant achat.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "contacteur de feux stop",
+  "prompt_normalized": "contacteur de feux stop",
+  "prompt_hash": "b0dfdf76ec41d2f6",
+  "gamme": "Interrupteur des feux de freins",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:26:33.747Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 36491,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le **contacteur de feux stop** (aussi appelé interrupteur de stop ou capteur de pédale de frein) est une petite pièce électrique fixée sur le support de la pédale de frein. Il déclenche l'allumage des feux rouges arrière dès que tu appuies sur la pédale, et envoie aussi le signal au calculateur moteur, à l'ESP, au régulateur de vitesse et — sur boîte auto — au verrou du levier (Shiftlock).\n\n### Symptômes d'un contacteur HS\n- Feux stop qui ne s'allument plus (ou restent allumés en permanence → batterie à plat le matin).\n- Régulateur/limiteur qui se coupe seul ou refuse de s'activer.\n- Voyant ESP/ABS qui s'allume aléatoirement.\n- Boîte auto bloquée en P, ou démarrage sans clé (start/stop) qui refuse.\n- Codes défaut typiques : **P0504** (incohérence des deux contacts) ou **P0571**.\n\n### Choisir la bonne pièce\nVérifie surtout le **nombre de broches** (2, 4 ou 6 — souvent 4 sur Renault/Peugeot/Citroën modernes, 6 sur VAG/BMW) et le type de fixation (baïonnette quart-de-tour, vissé, ou clipsé). Le numéro OE gravé sur l'ancien est le moyen le plus fiable.\n\nMarques sérieuses, du plus économique au premium : **FAE**, **Facet**, **Metzger**, **Vemo**, **Febi Bilstein**, **Hella**, **Valeo**, **Bosch**. FAE et Facet sont souvent les fabricants d'origine pour les groupes français — rapport qualité/prix imbattable (8–20 €).\n\n### Où acheter\n- **Oscaro**, **Mister-Auto**, **Autodoc**, **Yakarouler**, **AutoMecanik** pour la VPC avec sélection par véhicule.\n- **Norauto**, **Feu Vert**, **Speedy** si tu veux la pose dans la foulée.\n- Concession ou Distrigo/Motrio pour la pièce OE constructeur.\n\n### Montage\nCompte 10–20 minutes, sans outillage spécifique sur la majorité des modèles. Sur les contacteurs « auto-ajustables » (type VAG), il faut **enfoncer la pédale à fond avant insertion** : il se règle tout seul au premier relâché. Débranche la batterie 5 min avant pour éviter de mémoriser un défaut.\n\nPour les tutos pas-à-pas par modèle, **Forum-Auto** et **Caradisiac** ont d'excellents fils, et la chaîne **Caroom** sur YouTube couvre bien les modèles courants.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": ".\n\n### Où acheter\n- **Oscaro**, **Mister-Auto**, **Autodoc**, **Yakarouler**, **AutoMecanik** pour la VPC avec sélection par véhicule.\n- **Norauto**, **Feu Vert**, **Speedy** si tu veux la pose dans la foulée.\n- Concession ou Distrigo/Motri",
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

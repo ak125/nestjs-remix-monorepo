@@ -1,0 +1,32 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "filtre habitacle clio 3",
+  "prompt_normalized": "filtre habitacle clio 3",
+  "prompt_hash": "0fe743896702dfab",
+  "gamme": "Filtre d'habitacle",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:32:10.387Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 33926,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour la **Clio 3** (phase 1 et 2, 2005-2014), le filtre d'habitacle se change facilement soi-même en 10-15 minutes.\n\n**Références constructeur Renault**\n- `7701062227` (origine, modèle standard)\n- `272775374R` (version plus récente, à charbon actif possible)\n\n**Équivalences aftermarket fiables** (toutes interchangeables)\n- **Mann-Filter** CU 1828 — référence qualité OEM, mon premier choix\n- **Mahle/Knecht** LA 230\n- **Bosch** 1987432163\n- **Valeo** 698688 (souvent dispo en grande surface auto)\n- **Purflux** AH202 — fabricant français, très bon rapport qualité/prix\n- Version charbon actif (anti-odeurs/pollens) : Mann CUK 1828, Mahle LAK 230 — +3-5 € mais nettement mieux si tu es en ville ou allergique\n\n**Prix indicatifs** : 5-8 € en standard, 10-15 € en charbon actif.\n\n**Où acheter**\n- **Oscaro**, **Mister-Auto**, **Yakarouler** — catalogues larges, recherche par immatriculation fiable\n- **Automecanik.com** — bon stock sur les filtres Clio 3 et livraison rapide France\n- **Amazon** — OK pour Mann/Bosch en marque, méfie-toi des sans-marque génériques\n- En physique : **Norauto**, **Feu Vert**, **Carter-Cash** (souvent du Valeo en rayon)\n\n**Montage**\nLe filtre se trouve **derrière la boîte à gants côté passager**. Tu vides la boîte à gants, tu appuies sur les deux butées latérales pour la faire basculer complètement vers le bas, et tu accèdes au volet du filtre (clip plastique ou 2 vis selon millésime). Attention au **sens de montage** : la flèche \"AIR FLOW\" doit pointer vers l'habitacle (vers le bas). Tutoriels clairs sur **Forum-Auto** (section Clio 3) et plusieurs vidéos sur YouTube — cherche \"filtre habitacle Clio 3 boîte à gants\".\n\n**Fréquence** : tous les 15 000-20 000 km ou une fois par an, plus souvent si tu roules en ville ou en zone pollinique.\n\nPetit conseil : profites-en pour passer un coup d'aspirateur dans le logement, il y a toujours des feuilles et poussières accumulées qui finissent par sentir.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "*, **Yakarouler** — catalogues larges, recherche par immatriculation fiable\n- **Automecanik.com** — bon stock sur les filtres Clio 3 et livraison rapide France\n- **Amazon** — OK pour Mann/Bosch en marque, méfie-toi des sans-marque générique",
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      }
+    ]
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "cable de frein",
+  "prompt_normalized": "cable de frein",
+  "prompt_hash": "801257629d938f5f",
+  "gamme": "Câble de frein à main",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:05:30.173Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 35734,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le **câble de frein** désigne presque toujours le câble de frein à main (frein de stationnement) — un câble Bowden gainé qui transmet la traction du levier vers les mâchoires arrière (tambour) ou l'étrier de parking (disque). Plus rarement, on parle de la durite hydraulique du circuit principal, mais celle-ci s'appelle \"flexible de frein\".\n\n**Symptômes typiques d'un câble HS** : course du levier anormalement longue, frein à main qui ne tient plus en pente, bruit de frottement à l'arrière, voyant frein à main allumé en roulant, ou à l'inverse câble grippé (roue qui reste freinée après desserrage — fréquent après un hiver humide). Sur les véhicules à frein de parking électrique (EPB), il n'y a plus de câble : c'est un moteur sur l'étrier, diagnostic différent.\n\n**Choix de la pièce** : il y a généralement un câble primaire (du levier vers le palonnier) et deux câbles secondaires (palonnier vers chaque roue) — vérifie bien la référence par côté gauche/droit et par motorisation, les longueurs changent souvent au sein d'un même modèle. Marques fiables : **TRW, ATE, Brembo, Cofle, Akron-Malò, Bosch, Ferodo, Triscan**. Cofle et Akron-Malò sont spécialistes du câble et souvent OEM d'origine pour les constructeurs européens.\n\n**Où acheter** : \n- **Oscaro**, **Mister-Auto**, **Yakarouler**, **Piecesauto24**, **Autodoc** pour le neuf à bon prix avec sélection par plaque/VIN.\n- **Automecanik.com** si tu veux un catalogue piloté par compatibilité véhicule avec stock français.\n- **Conrad / Norauto / Feu Vert** en dépannage, plus cher.\n- **eBay** pour les modèles anciens où la pièce est introuvable en circuit standard.\n\n**Pose** : compter 1h à 2h selon véhicule, pont nécessaire idéalement. Toujours remplacer par paire sur l'essieu et **régler la tension après montage** (généralement 5-8 crans au levier). Penser à graisser légèrement la gaine côté entrée pour éviter le re-grippage.\n\nPour la doc technique et les couples de serrage, **RTA (Revue Technique Automobile), Etai, Haynes** ou les forums **Forum-Auto**, **Planete-Citroen**, **Forum-Peugeot**, **Audi-Passion** sont d'excellentes ressources selon la marque.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "uto24**, **Autodoc** pour le neuf à bon prix avec sélection par plaque/VIN.\n- **Automecanik.com** si tu veux un catalogue piloté par compatibilité véhicule avec stock français.\n- **Conrad / Norauto / Feu Vert** en dépannage, plus cher.\n- **",
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      }
+    ]
+  }
+}

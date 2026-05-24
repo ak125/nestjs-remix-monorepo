@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "filtre à gasoil purflux",
+  "prompt_normalized": "filtre a gasoil purflux",
+  "prompt_hash": "a6f0be91afc28126",
+  "gamme": "Filtre à carburant",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:18:20.783Z",
+  "model_version": null,
+  "duration_ms": 16885,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour “filtre à gasoil Purflux”, le plus important est de trouver la **bonne référence exacte**, pas seulement la marque. Chez Purflux, les filtres diesel peuvent s’appeler **filtre à carburant**, **filtre à gazole/gasoil**, ou porter des références type **CS…**, **C…**, **FCS…** selon le montage.\n\nLe bon réflexe : va d’abord sur le **catalogue officiel Purflux**, qui est actualisé chaque semaine, et cherche avec l’immatriculation, le modèle, le moteur ou la référence d’origine constructeur. C’est plus fiable que de choisir uniquement via une photo ou une compatibilité approximative sur un site marchand.\n\nEnsuite, tu peux comparer les prix chez des vendeurs connus comme **Oscaro**, **Mister-Auto**, **Autodoc**, **Yakarouler**, **Piecesauto24**, **Norauto**, **Feu Vert** ou **Amazon**, mais vérifie toujours :\n- la référence Purflux exacte ;\n- la motorisation précise : 1.5 dCi, 1.6 HDi, 2.0 TDI, BlueHDi, etc. ;\n- l’année et parfois le mois de production ;\n- la présence éventuelle d’un **capteur d’eau**, d’un raccord rapide, ou d’un boîtier complet ;\n- la correspondance avec la référence OEM constructeur.\n\nPurflux est une marque sérieuse, très présente en première monte et en rechange, notamment sur beaucoup de véhicules français Renault, Peugeot, Citroën, Dacia. Pour un diesel moderne à injection haute pression, je resterais sur Purflux, Mann, Bosch, Mahle/Knecht ou une référence constructeur. Évite les filtres inconnus très bon marché : un mauvais filtre à gasoil peut provoquer des démarrages difficiles, prises d’air, défauts d’injection ou encrassement prématuré.\n\nSi tu remplaces toi-même le filtre, pense à bien **réamorcer le circuit de gasoil** après montage, soit avec la poire d’amorçage, soit via la procédure prévue par le véhicule. Sur certains modèles, il faut aussi purger l’eau ou respecter un sens de montage. Une référence Purflux correcte + montage propre, c’est généralement un très bon choix.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

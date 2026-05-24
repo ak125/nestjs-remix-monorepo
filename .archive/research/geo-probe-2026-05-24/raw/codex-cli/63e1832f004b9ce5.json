@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "contact pedale de frein",
+  "prompt_normalized": "contact pedale de frein",
+  "prompt_hash": "63e1832f004b9ce5",
+  "gamme": "Interrupteur des feux de freins",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:09:39.482Z",
+  "model_version": null,
+  "duration_ms": 14484,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le “contact pédale de frein” désigne généralement le **contacteur de feux stop**, aussi appelé **interrupteur de pédale de frein**. C’est une petite pièce fixée près de la pédale de frein, qui détecte quand tu appuies dessus.\n\nSon rôle principal est d’allumer les **feux stop**, mais il peut aussi servir à d’autres systèmes : régulateur/limiteur de vitesse, boîte automatique, ABS/ESP, aide au démarrage, ou calculateur moteur.\n\nSymptômes fréquents d’un contacteur de pédale de frein défectueux :\n\n- les feux stop ne s’allument plus ;\n- les feux stop restent allumés en permanence ;\n- voyant ESP/ABS ou défaut moteur ;\n- régulateur de vitesse qui ne fonctionne plus ;\n- boîte automatique bloquée en position P sur certains véhicules ;\n- message du type “défaut freinage”, “défaut ESP” ou “contacteur frein incohérent”.\n\nLa pièce n’est généralement pas très chère : souvent entre **10 et 40 €**, selon la marque et le modèle. On en trouve chez Oscaro, Autodoc, Mister-Auto, Norauto, Feu Vert, Yakarouler, ou directement chez le constructeur. Les marques courantes sont Valeo, Bosch, Febi Bilstein, Hella, Facet ou FAE.\n\nAvant d’acheter, il faut identifier précisément le véhicule : **marque, modèle, année, motorisation**, idéalement avec l’immatriculation ou le VIN. Il existe parfois plusieurs versions de contacteur pour un même modèle.\n\nLe remplacement est souvent simple : la pièce est clipsée ou vissée au-dessus de la pédale de frein. Sur certains véhicules, il faut la régler ou l’enclencher dans une position précise pour que la course de pédale soit bien détectée. Si les feux stop restent allumés après montage, c’est souvent un problème de réglage ou de mauvaise référence.\n\nÀ vérifier aussi : fusible des feux stop, ampoules, connecteur électrique, faisceau près de la pédale. Mais si plusieurs symptômes apparaissent en même temps, le contacteur de pédale de frein est clairement une piste prioritaire.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "disque de frein bosch",
+  "prompt_normalized": "disque de frein bosch",
+  "prompt_hash": "7af0643b125b9e4b",
+  "gamme": "plaquette de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:38:09.949Z",
+  "model_version": null,
+  "duration_ms": 31321,
+  "ok": true,
+  "error": null,
+  "response_raw": "Les disques de frein Bosch sont une référence solide sur le marché européen, avec une gamme structurée selon trois niveaux principaux à connaître pour bien choisir.\n\n**Les gammes Bosch**\n\n- **Bosch BD (standard)** : disques pleins ou ventilés, équivalents OE pour la plupart des véhicules de tourisme. Bon rapport qualité/prix, ~25-50€ pièce selon le modèle.\n- **Bosch BC (Coated)** : revêtement anti-corrosion sur les surfaces non-frottantes. Très répandus depuis 2020, conformes à la norme allemande qui impose ce traitement à l'immatriculation. Comptez 35-70€.\n- **Bosch HC (High Carbon)** : disques haute teneur en carbone pour véhicules sportifs ou lourds (SUV, breaks chargés), meilleure résistance thermique et moins de bruit. 60-120€.\n\n**Où acheter en France**\n\nPour comparer prix et disponibilité, les plateformes habituelles : **Oscaro**, **Mister-Auto**, **Yakarouler**, **Piecesauto24**, **Autodoc**. Sur ces sites, filtre par immatriculation ou code moteur — c'est crucial car un disque Bosch est lié à une référence OE précise (diamètre, épaisseur, nombre de trous, hauteur de chapeau). **iDgarages** ou **Vroomly** permettent de comparer si tu préfères passer par un garage avec montage inclus.\n\n**Points d'attention**\n\n- **Toujours remplacer par paire** (les deux disques de l'essieu), jamais un seul.\n- **Plaquettes neuves obligatoires** en même temps — Bosch propose des kits disques+plaquettes (référence commençant souvent par \"BD\" + suffixe) qui garantissent la compatibilité de friction.\n- Vérifie l'épaisseur mini gravée sur le disque actuel : si tu es proche du seuil, c'est le moment.\n- Pour les véhicules récents (à partir de ~2018), beaucoup de constructeurs (PSA, Renault, VW) montent du Bosch en première monte — donc remplacer par Bosch revient à garder l'équivalent OE.\n\n**Montage**\n\nComptez 80-150€ de main d'œuvre par essieu en garage indépendant, davantage en concession. Sur YouTube, les chaînes **Vilebrequin**, **AutoMoto** et des tutos garagistes couvrent bien le remplacement si tu veux le faire toi-même — outillage minimum : cric + chandelles, clé dynamométrique, et un repousse-piston d'étrier (souvent louable gratuitement chez Norauto ou Feu Vert via caution).\n\nDonne-moi la marque/modèle/année si tu veux que je t'oriente sur une référence précise.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

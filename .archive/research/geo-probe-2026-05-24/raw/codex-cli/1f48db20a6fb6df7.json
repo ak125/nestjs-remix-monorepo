@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "filtre a air c4 picasso",
+  "prompt_normalized": "filtre a air c4 picasso",
+  "prompt_hash": "1f48db20a6fb6df7",
+  "gamme": "Filtre à air",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:03:29.441Z",
+  "model_version": null,
+  "duration_ms": 14360,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour une **Citroën C4 Picasso**, le bon **filtre à air moteur** dépend surtout de trois infos : **année**, **motorisation** et parfois **génération**.\n\nLes moteurs fréquents sont par exemple :\n\n- **1.6 HDi / BlueHDi**\n- **2.0 HDi / BlueHDi**\n- **1.6 VTi / THP essence**\n- **PureTech essence** sur certains modèles plus récents\n\nLe plus sûr est de chercher avec la plaque d’immatriculation ou le VIN sur des sites comme **Oscaro**, **Mister-Auto**, **Autodoc**, **Norauto**, **Feu Vert** ou **Yakarouler**. Les marques fiables pour ce type de pièce sont **Mann-Filter**, **Mahle**, **Purflux**, **Bosch**, **Valeo** ou **UFI**. Pour Citroën/PSA, **Purflux** est souvent un très bon choix.\n\nÀ ne pas confondre :\n\n- **Filtre à air moteur** : filtre l’air qui entre dans le moteur.\n- **Filtre habitacle / pollen** : filtre l’air de la ventilation intérieure.\n\nPour l’entretien, le filtre à air se remplace généralement tous les **20 000 à 40 000 km**, ou plus souvent si tu roules beaucoup en ville, sur routes poussiéreuses ou si le moteur manque de reprise. Un filtre encrassé peut augmenter la consommation et rendre le moteur moins réactif.\n\nLe remplacement est souvent simple : boîtier de filtre dans le compartiment moteur, quelques vis ou clips, ancien filtre retiré, nouveau filtre posé dans le bon sens, puis fermeture du boîtier. Sur certains C4 Picasso diesel, l’accès peut être un peu moins pratique à cause des durites et caches moteur.\n\nSi tu veux acheter sans te tromper, cherche plutôt :  \n**“filtre à air Citroën C4 Picasso [année] [moteur]”**, par exemple **“filtre à air C4 Picasso 1.6 HDi 110 2012”**.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

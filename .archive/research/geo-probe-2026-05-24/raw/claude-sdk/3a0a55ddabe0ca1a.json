@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "cylindre de frein",
+  "prompt_normalized": "cylindre de frein",
+  "prompt_hash": "3a0a55ddabe0ca1a",
+  "gamme": "Maître cylindre de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:36:16.243Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 28858,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Cylindre de frein — l'essentiel\n\nLe **cylindre de frein** désigne deux pièces différentes selon le système :\n\n### 1. Cylindre de roue (frein à tambour)\nMonté sur les roues arrière de nombreuses citadines et utilitaires (Clio, 206/207, Kangoo, Berlingo, Twingo…). Quand tu appuies sur la pédale, le liquide de frein pousse deux pistons qui écartent les mâchoires contre le tambour. Symptômes de défaillance :\n- Fuite de liquide visible derrière le tambour (traces brunes sur le flasque)\n- Pédale qui s'enfonce ou devient spongieuse\n- Freinage déséquilibré, voiture qui tire d'un côté\n- Niveau de liquide qui baisse sans fuite apparente ailleurs\n\n### 2. Maître-cylindre (sous le capot)\nPièce centrale fixée sur le servofrein (mastervac), qui transforme l'effort sur la pédale en pression hydraulique. Symptômes :\n- Pédale qui descend lentement au plancher\n- Perte de pression progressive\n- Voyant ABS/ESP qui s'allume\n\n### Marques de référence\n**TRW, ATE, Bosch, Brembo, LPR, Bendix, Ferodo, Delphi** sont les références sérieuses. Évite les no-name à 8€ sur certaines marketplaces : le freinage n'est pas un poste où économiser.\n\n### Où acheter\n- **Oscaro, Mister-Auto, Yakarouler, Auto-doc, 1001Pieces** côté pure players\n- **Automecanik** si tu cherches une référence compatible avec ta motorisation (sélection par plaque)\n- **Norauto / Feu Vert / Speedy** si tu veux pose comprise\n\n### Prix indicatifs\n- Cylindre de roue : **15-40 €** pièce (souvent à remplacer par paire)\n- Maître-cylindre : **40-120 €** selon véhicule\n- Main d'œuvre : 1h à 2h, soit **60-150 €** chez un garagiste indépendant\n\n### Conseils pose\n- Toujours remplacer **par paire** sur le même essieu (équilibre de freinage)\n- **Purge complète** du circuit obligatoire après remplacement (DOT 4 le plus courant)\n- Vérifier l'état des **flexibles** et des **mâchoires/garnitures** pendant l'intervention — autant tout faire d'un coup\n- Si tu n'as pas l'outil de purge ou un assistant, passe par un pro : un circuit mal purgé = freinage dangereux\n\nDonne-moi la marque/modèle/motorisation si tu veux une référence précise ou un ordre de prix exact.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "**Oscaro, Mister-Auto, Yakarouler, Auto-doc, 1001Pieces** côté pure players\n- **Automecanik** si tu cherches une référence compatible avec ta motorisation (sélection par plaque)\n- **Norauto / Feu Vert / Speedy** si tu veux pose comprise\n\n##",
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

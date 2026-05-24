@@ -1,0 +1,31 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "étrier de frein",
+  "prompt_normalized": "etrier de frein",
+  "prompt_hash": "74a2a675151d8ae9",
+  "gamme": "Étrier de frein",
+  "volume": 50000,
+  "captured_at": "2026-05-24T15:05:59.585Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 29277,
+  "ok": true,
+  "error": null,
+  "response_raw": "L'étrier de frein est la pièce qui pince les plaquettes contre le disque pour ralentir la roue. Sur la grande majorité des voitures modernes, tu as un étrier flottant (un seul piston, le plus courant) ou un étrier fixe (2 à 6 pistons, sur véhicules sportifs ou lourds).\n\n**Symptômes qui doivent t'alerter :**\n- Freinage qui tire d'un côté → piston grippé\n- Bruit de frottement permanent → piston bloqué sorti, plaquette qui touche en continu\n- Fuite de liquide près de la roue → joint de piston ou flexible HS\n- Étrier brûlant après un trajet normal → grippage\n- Pédale spongieuse → air dans le circuit suite à fuite\n\n**Causes fréquentes :** colonnettes de guidage sèches ou rouillées (très courant, souvent réparable avec un kit de colonnettes + graisse cuivre), piston grippé par corrosion, joint de piston fendu, purgeur cassé.\n\n**Réparation vs remplacement :** si seules les colonnettes sont en cause, un kit à 15-25 € suffit. Si le piston est grippé ou fuit, on peut tenter un kit de réparation (joints + piston) autour de 30-50 €, mais en pratique sur véhicule de plus de 10 ans, on remplace l'étrier complet — c'est plus fiable.\n\n**Où acheter en France :**\n- **Automecanik.com**, **Oscaro**, **Mister-Auto**, **Yakarouler**, **123pieces** pour le neuf à prix compétitifs\n- **ATE**, **TRW**, **Bosch**, **Brembo**, **Ferodo**, **Delphi** sont les marques de référence (équipementiers d'origine pour beaucoup de constructeurs)\n- Étriers échange standard : **Budweg**, **Cifam**, **TRW** — comptent 60 à 150 € l'unité selon le véhicule, parfois avec consigne\n- Étriers neufs Brembo/ATE : 120 à 300 € l'unité\n\n**Conseils pratiques :**\n- Toujours remplacer **par paire** sur le même essieu\n- Changer les plaquettes en même temps, voire le disque si rayé\n- Purger le circuit après intervention (DOT 4 le plus souvent)\n- Couple de serrage des vis d'étrier à respecter impérativement — RTA ou notice constructeur\n\nPour identifier la bonne référence, donne la marque, le modèle, l'année et la motorisation, ou mieux le code moteur — les étriers diffèrent souvent entre versions essence/diesel et selon la taille de disque montée d'origine.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "remplace l'étrier complet — c'est plus fiable.\n\n**Où acheter en France :**\n- **Automecanik.com**, **Oscaro**, **Mister-Auto**, **Yakarouler**, **123pieces** pour le neuf à prix compétitifs\n- **ATE**, **TRW**, **Bosch**, **Brembo**, **Ferod",
+    "competitors_mentioned": [
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      }
+    ]
+  }
+}

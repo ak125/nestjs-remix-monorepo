@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "regulateur de frein",
+  "prompt_normalized": "regulateur de frein",
+  "prompt_hash": "2e9d846c767a6231",
+  "gamme": "Répartiteur de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:30:11.809Z",
+  "model_version": null,
+  "duration_ms": 15370,
+  "ok": true,
+  "error": null,
+  "response_raw": "Un **régulateur de frein** désigne le plus souvent le **répartiteur / compensateur de freinage**, aussi appelé parfois **limiteur de pression arrière**. Sa fonction est de doser la pression envoyée aux freins arrière pour éviter qu’ils ne bloquent avant les roues avant, surtout quand le véhicule est peu chargé.\n\nSur beaucoup de voitures anciennes ou utilitaires, il est placé près du train arrière et peut être relié à la suspension par une petite biellette : plus le véhicule est chargé, plus l’arrière s’abaisse, et plus le régulateur autorise de pression vers les freins arrière. On parle alors de **correcteur de freinage asservi à la charge**. Sur les véhicules récents, cette fonction est souvent gérée électroniquement par l’ABS/ESP, donc la pièce mécanique peut être absente.\n\nLes symptômes possibles d’un régulateur défectueux sont :  \n- roues arrière qui bloquent trop facilement ;  \n- freinage arrière faible ou déséquilibré ;  \n- véhicule recalé au contrôle technique pour déséquilibre de freinage ;  \n- fuite de liquide de frein au niveau du régulateur ;  \n- pédale de frein anormale après intervention sur le circuit.\n\nSi tu cherches la pièce, les bons mots-clés sont souvent : **répartiteur de freinage**, **correcteur de freinage**, **limiteur de pression de frein**, ou **régulateur de pression de freinage**, avec la marque, le modèle, l’année et la motorisation. On en trouve chez Oscaro, Mister-Auto, Autodoc, Yakarouler, Piecesauto24, ou directement chez le constructeur. Pour certaines voitures anciennes, les forums spécialisés par modèle sont très utiles, car les références peuvent varier selon l’essieu, l’ABS ou la version utilitaire.\n\nAttention au montage : toute intervention sur cette pièce implique généralement une **purge du circuit de freinage** et parfois un réglage de biellette selon la hauteur de caisse. Si le problème vient d’un déséquilibre au contrôle technique, il faut aussi vérifier les cylindres de roue, étriers, flexibles, mâchoires/plaquettes et tambours/disques avant d’accuser uniquement le régulateur.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

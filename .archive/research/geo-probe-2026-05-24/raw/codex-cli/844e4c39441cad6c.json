@@ -1,0 +1,25 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "vidange et filtre à huile prix",
+  "prompt_normalized": "vidange et filtre a huile prix",
+  "prompt_hash": "844e4c39441cad6c",
+  "gamme": "Filtre à huile",
+  "volume": 500,
+  "captured_at": "2026-05-24T15:44:25.396Z",
+  "model_version": null,
+  "duration_ms": 18704,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour une **vidange avec filtre à huile**, compte généralement :\n\n- **Centre auto type Norauto / Feu Vert** : environ **60 à 100 €** pour une vidange simple huile + filtre. Norauto affiche des forfaits dès **59,95 €**, Feu Vert dès **69,99 €**.\n- **Garage indépendant** : souvent **80 à 150 €**, selon l’huile et le temps de main-d’œuvre.\n- **Concession constructeur** : plutôt **150 à 250 €**, parfois plus sur moteur récent, premium ou avec huile spécifique.\n- **À faire soi-même** : environ **45 à 90 €** de pièces, avec 4 à 6 L d’huile + filtre + joint de bouchon, mais il faut récupérer l’huile usagée proprement en déchetterie ou centre auto.\n\nLe prix dépend surtout de **l’huile imposée par le constructeur** : une 10W40 semi-synthèse coûte moins cher qu’une 0W20, 0W30 ou 5W30 norme constructeur. Le volume compte aussi : une petite citadine peut prendre 3,5 L, un diesel ou SUV 5 à 7 L. Le filtre à huile seul vaut souvent **10 à 25 €**, mais la main-d’œuvre et l’huile font monter la facture.\n\nPour éviter une mauvaise surprise, demande un devis qui précise : **viscosité de l’huile**, **norme constructeur**, **quantité d’huile**, **filtre inclus**, **joint de vidange**, **remise à zéro de l’indicateur d’entretien**. Compare avec Vroomly, Norauto, Feu Vert, Midas ou Speedy en renseignant l’immatriculation.\n\nPrix correct en France aujourd’hui : **70 à 120 €** pour une vidange + filtre sur une voiture courante. Au-delà de **160 €**, ce n’est pas forcément une arnaque, mais il faut une justification claire : huile chère, grande quantité, accès compliqué, concession, ou contrôles inclus.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "midas",
+      "norauto",
+      "speedy"
+    ],
+    "sources_cited": []
+  }
+}

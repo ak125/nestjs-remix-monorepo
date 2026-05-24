@@ -1,0 +1,33 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "filtre à gasoil fiat ducato",
+  "prompt_normalized": "filtre a gasoil fiat ducato",
+  "prompt_hash": "744423c21eec6384",
+  "gamme": "Filtre à carburant",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:28:34.540Z",
+  "model_version": null,
+  "duration_ms": 37706,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour un filtre à gasoil de Fiat Ducato, la référence dépend surtout de la motorisation et de l'année :\n\n**Motorisations courantes** :\n- **2.3 Multijet** (120/130/140/150/160 ch) — Ducato III depuis 2006, le plus répandu (camping-cars Pilote, Bürstner, Chausson, Adria, etc.)\n- **2.0 Multijet** (115 ch) — Ducato III post-2011\n- **2.8 JTD / 2.8 IDTD** — Ducato II (1999-2006)\n- **3.0 Multijet** (157/177/180 ch) — versions lourdes / camping-cars haut PTAC\n\n**Références fiables (2.3 Multijet, le plus demandé)** :\n- OEM Fiat / Mopar : 77363804, 1606384580 (selon millésime, vérifier sur ePer ou via le VIN)\n- **UFI 26.069.00** — équipementier d'origine, c'est souvent littéralement le filtre monté en usine\n- **Mann-Filter WK 939** — qualité OE, très fiable\n- **Bosch F026402115** ou **F026402028** — excellent rapport qualité/prix\n- **Purflux CS760** — Made in France, bon en compatibilité\n- **Mahle KL 414/1D** — solide\n\n**Où acheter en France** :\n- **Oscaro** et **Mister-Auto** — catalogues bien filtrés par véhicule, livraison rapide, marques OE\n- **Yakarouler** — bon sur les références camping-car\n- **AutoMecanik** (automecanik.com) — recherche par plaque ou compatibilité véhicule, prix corrects sur Bosch / Mann / Purflux\n- **Autodoc** — large choix, attention aux délais\n- En physique : **Norauto**, **Feu Vert**, **Carter-Cash** ; le concessionnaire Fiat pour la pièce Mopar d'origine (plus cher)\n\n**Conseils pratiques** :\n- Le 2.3 Multijet a souvent un **détecteur d'eau** intégré au boîtier → bien commander le filtre **avec capteur** si la référence l'inclut, sinon il faut transférer l'ancien.\n- Intervalle recommandé : **30 000 à 40 000 km**, ou tous les 2 ans, à raccourcir si gasoil de qualité variable (camping-car en voyage).\n- Purger l'eau du décanteur régulièrement (vis de purge en bas du boîtier).\n- Après remplacement : **amorcer** avec la poire ou cycler le contact plusieurs fois avant de démarrer, sinon démarrage difficile.\n\nPour ne pas se tromper, le plus sûr est de saisir la **plaque d'immatriculation** sur Oscaro / Mister-Auto / AutoMecanik — le filtre proposé sera adapté à la version exacte.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "on rapide, marques OE\n- **Yakarouler** — bon sur les références camping-car\n- **AutoMecanik** (automecanik.com) — recherche par plaque ou compatibilité véhicule, prix corrects sur Bosch / Mann / Purflux\n- **Autodoc** — large choix, attentio",
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      }
+    ]
+  }
+}

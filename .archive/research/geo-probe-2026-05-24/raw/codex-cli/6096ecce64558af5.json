@@ -1,0 +1,21 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "filtre a air briggs stratton",
+  "prompt_normalized": "filtre a air briggs stratton",
+  "prompt_hash": "6096ecce64558af5",
+  "gamme": "Filtre à air",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:13:56.882Z",
+  "model_version": null,
+  "duration_ms": 20072,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour “filtre à air Briggs Stratton”, le point clé est la **référence moteur**, pas seulement la marque. Briggs & Stratton équipe beaucoup de tondeuses, autoportées et motoculteurs, avec des filtres très différents.\n\nPour une tondeuse poussée classique, la référence très courante est **Briggs & Stratton 491588S**. On la retrouve souvent sur moteurs Quantum / série 450-500-550-625, et elle remplace aussi selon les cas **491588**, **399959**, **491435S** ou **493537S**. Des marchands français comme **NHP Motoculture**, **Jardimax**, **Wolfswinkel**, **Autoportée Discount**, **Sodipieces**, **Castorama** ou **ManoMano** en proposent, en origine Briggs ou adaptable.\n\nMais vérifie avant achat :\n- le **numéro moteur Briggs & Stratton**, gravé sur le carter ou l’étiquette : souvent format `Model / Type / Code` ;\n- la forme du filtre : **cartouche papier plate**, **filtre mousse**, **cartouche cylindrique**, ou **filtre avec préfiltre mousse** ;\n- les dimensions et le système de fixation du capot.\n\nPour une autoportée ou un moteur Intek/V-Twin, les références fréquentes sont plutôt **499486S**, **698754**, **695667**, **792105**, **796031**, etc. Là, commander “491588S” au hasard risque d’être faux.\n\nSi le moteur démarre mal, fume noir, cale à l’accélération ou consomme trop, un filtre bouché est plausible. Remplace-le plutôt que de le souffler violemment au compresseur : ça peut abîmer le papier filtrant. Pour un filtre mousse, lavage doux, séchage complet, puis très légère huile spéciale filtre si le manuel le prévoit.\n\nLe plus sûr : cherche avec `filtre air Briggs Stratton + référence moteur` ou directement la référence imprimée sur l’ancien filtre.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [],
+    "sources_cited": []
+  }
+}

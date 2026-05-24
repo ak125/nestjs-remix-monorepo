@@ -1,0 +1,33 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "filtre a air scenic 3",
+  "prompt_normalized": "filtre a air scenic 3",
+  "prompt_hash": "fe34707392cc1888",
+  "gamme": "Filtre à air",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:49:23.616Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 33188,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour un Scénic 3 (2009-2016), le filtre à air dépend de la motorisation, mais l'essentiel des références converge :\n\n**Référence OEM Renault** : `8200985420` (couvre la majorité des 1.5 dCi, 1.6 dCi, 1.4/1.6/2.0 16V et TCe). Pour les 1.9 dCi F9Q, c'est plutôt `8200431051`.\n\n**Équivalents de marques fiables** (par ordre de préférence qualité/prix) :\n- **Mann-Filter** C 27 154 ou C 30 195 — la référence allemande, première monte sur beaucoup de Renault\n- **Mahle** LX 1566 — qualité OE, souvent au prix d'un milieu de gamme\n- **Purflux** A1278 — fabricant français, première monte Renault officielle, mon choix par défaut sur cette plateforme\n- **Bosch** S0042\n- **Filtron** AP 074/6 — bonne qualité polonaise, moins cher\n- **Valeo** 585067 — correct\n\nÉvite les sous-marques no-name à 3-4 € : le média filtrant se déforme et laisse passer de la poussière → usure du débitmètre (250-400 € à remplacer).\n\n**Où acheter** :\n- **Oscaro** et **Mister-Auto** : meilleur rapport prix/délai pour les marques ci-dessus (8-15 € selon promo)\n- **Yakarouler** et **Piecesauto.fr** : alternatives sérieuses\n- **AutoDoc** : moins cher mais délais plus longs et SAV plus capricieux\n- **Norauto / Feu Vert** : pratique si tu veux récupérer en magasin, mais 30-50 % plus cher\n- **Amazon** : OK uniquement si vendu et expédié par Mann, Mahle ou Purflux directement (sinon risque de contrefaçon avéré sur cette catégorie)\n\n**Remplacement** : 10 minutes, aucun outil ou juste un tournevis Torx selon le millésime. Le boîtier est sur le dessus du moteur (essence) ou côté gauche (dCi), 2 à 4 clips ou vis. Intervalle constructeur : 30 000 km ou 2 ans, à raccourcir à 20 000 km si tu roules beaucoup en ville ou sur chemins.\n\n**Astuce** : profites-en pour vérifier l'état du filtre habitacle (pollen) au passage, souvent négligé sur Scénic 3 et facile d'accès derrière la boîte à gants. Référence Purflux AHC233 par exemple.\n\nSi tu me donnes ta motorisation exacte (ex. 1.5 dCi 110, 1.6 16V 110…), je peux confirmer la référence précise.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Piecesauto.fr",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

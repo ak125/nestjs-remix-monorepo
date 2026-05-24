@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "temoin usure disque de frein",
+  "prompt_normalized": "temoin usure disque de frein",
+  "prompt_hash": "0a1863ec4c74f646",
+  "gamme": "Témoin d'usure",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:16:37.677Z",
+  "model_version": null,
+  "duration_ms": 33693,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le témoin d'usure des plaquettes de frein, c'est un dispositif qui t'alerte quand les plaquettes arrivent en fin de vie — généralement quand il reste **2 à 3 mm** de garniture (sur ~10-12 mm neufs). Il en existe deux types selon ton véhicule :\n\n**1. Témoin mécanique (acoustique)** — Le plus répandu. Une petite lamelle métallique fixée sur la plaquette frotte contre le disque quand l'usure devient critique, ce qui produit un **sifflement aigu** au freinage (parfois même à roue qui tourne). Bruit caractéristique, métallique, qui revient à chaque freinage : c'est le signal qu'il faut passer chez un garagiste rapidement.\n\n**2. Témoin électronique** — Présent sur la plupart des Audi, BMW, Mercedes, VW récents, certaines Peugeot/Renault haut de gamme. Un fil conducteur est noyé dans la plaquette ; quand l'usure l'atteint, le circuit se coupe et un **voyant orange** \"plaquettes de frein\" s'allume au tableau de bord (souvent un symbole rond pointillé avec un point d'exclamation, à ne pas confondre avec le voyant ABS ou frein à main).\n\n**Ce qu'il faut faire** : ne pas tarder. Tu as encore quelques centaines de kilomètres de marge, mais rouler usé bouffe le disque (métal sur métal = rayures profondes → remplacement disques + plaquettes au lieu des plaquettes seules, facture x2-x3).\n\n**Bon réflexe avant achat** : vérifier la **référence d'origine** (OEM) ou la référence équivalente sur ton modèle. Les marques fiables : **Bosch, Brembo, Ferodo, TRW, ATE, Textar, Pagid, Valeo**. Évite les no-name à 15€ le jeu, surtout sur l'essieu avant.\n\n**Où acheter** : pour comparer prix + dispo, **Oscaro, Mister-Auto, Yakarouler, Autodoc, AutoMecanik** sont les références en ligne. En physique : **Norauto, Feu Vert, Carter-Cash** (souvent moins cher que la concession). Pour la pose, un garage indépendant te facturera 60-100 € de main d'œuvre par essieu (vs 150-250 € en concession).\n\n**Astuce** : si seul un côté siffle, fais quand même remplacer les **deux plaquettes du même essieu** — c'est obligatoire pour un freinage équilibré.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "ter** : pour comparer prix + dispo, **Oscaro, Mister-Auto, Yakarouler, Autodoc, AutoMecanik** sont les références en ligne. En physique : **Norauto, Feu Vert, Carter-Cash** (souvent moins cher que la concession). Pour la pose, un garage ind",
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "contacteur de stop",
+  "prompt_normalized": "contacteur de stop",
+  "prompt_hash": "3cd2312ff71e6c88",
+  "gamme": "Interrupteur des feux de freins",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:25:57.256Z",
+  "model_version": null,
+  "duration_ms": 19174,
+  "ok": true,
+  "error": null,
+  "response_raw": "Un **contacteur de stop** est l’interrupteur qui allume les feux stop quand tu appuies sur la pédale de frein. On l’appelle aussi **contacteur de pédale de frein** ou **interrupteur de feu stop**.\n\nIl est généralement placé **au-dessus de la pédale de frein**, fixé sur le support de pédalier. Quand la pédale est relâchée, elle appuie sur le contacteur ; quand tu freines, le contacteur se détend et envoie l’information électrique aux feux stop, mais aussi parfois au calculateur moteur, à l’ABS/ESP, au régulateur de vitesse ou à la boîte automatique.\n\nSymptômes fréquents d’un contacteur de stop défectueux :\n\n- feux stop qui ne s’allument plus ;\n- feux stop qui restent allumés en permanence ;\n- voyant ESP/ABS allumé ;\n- régulateur de vitesse qui ne fonctionne plus ;\n- impossibilité de sortir le levier de boîte auto de la position P ;\n- message type “défaut freinage” ou “défaut ESP” selon la voiture.\n\nAvant de le remplacer, vérifie aussi les **ampoules**, le **fusible des feux stop** et le connecteur électrique. Sur beaucoup de voitures, la pièce coûte peu cher, souvent entre **10 et 40 €** en adaptable, parfois plus en origine constructeur. Tu peux en trouver chez **Oscaro**, **Mister Auto**, **Autodoc**, **Norauto**, **Feu Vert**, ou directement chez Peugeot, Renault, Citroën, Volkswagen, etc.\n\nLe remplacement est souvent simple : débrancher la prise, tourner ou déclipser l’ancien contacteur, installer le nouveau, puis régler sa position si nécessaire. Attention toutefois : sur certains modèles, le contacteur doit être monté pédale relâchée ou pédale enfoncée selon la procédure, sinon les feux stop peuvent rester allumés ou ne pas s’allumer du tout.\n\nPour commander la bonne pièce, le plus sûr est d’utiliser la **plaque d’immatriculation**, le **VIN**, ou la référence d’origine inscrite sur l’ancien contacteur.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "norauto",
+      "oscaro"
+    ],
+    "sources_cited": []
+  }
+}

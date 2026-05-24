@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "contacteur de frein clio 3",
+  "prompt_normalized": "contacteur de frein clio 3",
+  "prompt_hash": "72a704b7ddaee93f",
+  "gamme": "Interrupteur des feux de freins",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:22:25.370Z",
+  "model_version": null,
+  "duration_ms": 28976,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le contacteur de frein (aussi appelé contacteur de feux stop ou interrupteur de pédale de frein) sur Clio 3 est une petite pièce électrique fixée sur le support de la pédale de frein. Il commande l'allumage des feux stop, mais aussi des signaux envoyés au calculateur (désactivation régulateur, ESP, démarrage moteur sur boîte auto, etc.).\n\n**Symptômes typiques d'un contacteur HS sur Clio 3 :**\n- Feux stop qui restent allumés en permanence, ou qui ne s'allument plus\n- Voyant ESP / ABS qui s'allume\n- Régulateur de vitesse qui ne s'enclenche plus\n- Sur boîte EDC/auto : impossible de sortir du Park, ou démarrage refusé\n- Code défaut DF080 / DF099 fréquent au diag\n\n**Référence et compatibilité :**\nLa pièce d'origine Renault porte la référence **8200276361** (contacteur 4 broches, valable Clio 3, Modus, Mégane 2, Scénic 2, Kangoo 2, Twingo 2). Attention, il existe aussi des versions 2 broches sur premières séries — vérifie le connecteur avant de commander.\n\nÉquivalents OEM fiables : **FAE 24890**, **Valeo 255304**, **Hella 6DD 008 622-731**, **Facet 7.1182**. Évite les no-name à 3€ sur marketplaces, ils lâchent souvent en 6 mois.\n\n**Où acheter :**\n- **Oscaro** ou **Mister-Auto** : bon rapport qualité/prix, FAE ou Valeo autour de 8-15€\n- **Yakarouler** ou **Autodoc** : choix large, livraison rapide\n- **Renault Boutique** ou concession : pièce d'origine ~25-30€\n- En physique : **Norauto**, **Feu Vert**, casses auto pour de l'occasion propre\n\n**Remplacement :**\nC'est une opération de 10 minutes, sans outil spécifique. Sous le volant, débranche la batterie, retire le cache sous le tableau de bord, débranche le connecteur, tourne le contacteur d'un quart de tour pour le déclipser, monte le neuf, et **règle la course en enfonçant la pédale à fond avant de verrouiller** — c'est l'étape que les gens ratent et qui fait que les feux stop restent allumés.\n\nSi après remplacement le voyant ESP reste, un effacement défauts au valise (type Renault CAN Clip, ou un OBD2 compatible Renault comme **Delphi DS150** ou app **Car Scanner**) suffit en général.\n\nTuto détaillé avec photos dispo sur **Forum-Auto** section Clio 3, et plusieurs vidéos correctes sur YouTube en cherchant \"remplacement contacteur feux stop Clio 3\".",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

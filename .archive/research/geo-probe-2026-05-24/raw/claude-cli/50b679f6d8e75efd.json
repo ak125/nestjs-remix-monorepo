@@ -1,0 +1,52 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "maitre cylindre 2cv",
+  "prompt_normalized": "maitre cylindre 2cv",
+  "prompt_hash": "50b679f6d8e75efd",
+  "gamme": "Maître cylindre de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:00:41.541Z",
+  "model_version": null,
+  "duration_ms": 34358,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le maître-cylindre de 2CV est une pièce assez fréquemment remplacée — c'est l'un des points faibles connus, notamment à cause de la corrosion interne du réservoir et des fuites au niveau des raccords après quelques années d'inactivité.\n\n**Quelle version te faut-il ?**\nIl y a deux grandes familles selon l'année :\n- **Simple circuit** (avant 1981 environ) : un seul piston, raccord unique vers le répartiteur.\n- **Double circuit** (après 1981, obligatoire avec les freins à disques avant des AZKA/Charleston tardives) : deux sorties, sécurité en cas de fuite d'un circuit.\n\nVérifie sur ta voiture avant de commander, c'est l'erreur classique. Le numéro de châssis aide.\n\n**Où acheter (sérieux)**\n- **Mehari Club Cassis** (mehari-club-cassis.com) — la référence française, pièces neuves de qualité, fiches techniques propres. Compte 90-140 € pour un maître-cylindre neuf selon le modèle.\n- **Burton 2CV Parts** (NL, burton2cvparts.com) — gros stock, livraison rapide en France, souvent un peu moins cher.\n- **Der Franzose** (allemand, derfranzose.de) — catalogue très complet, qualité OEM.\n- **ECAS 4x4 / 2CV-Pieces.com** — alternatives FR correctes.\n- **Aux Pièces de France** et **Cassis Auto Pièces** dépannent bien aussi.\n\nÉvite les maîtres-cylindres no-name à 40 € sur eBay/Leboncoin — j'en ai vu plusieurs fuir à la première saison.\n\n**Marques OEM recommandées** : ATE, LPR, ou les pièces reconditionnées par MCC eux-mêmes. TRW se trouve aussi mais devient rare en référence 2CV.\n\n**Avant de remplacer**, vérifie quand même que le problème vient bien du maître-cylindre et pas du LHM/LHS… ah non, pardon, la 2CV est en **LHM uniquement sur les hydrauliques, mais les freins 2CV sont en DOT classique** (Lockheed). Donc liquide de frein standard DOT 4, pas d'hydropneumatique ici (à ne pas confondre avec DS/CX/GS).\n\n**Pour la pose**, prévois purge complète des 4 roues dans l'ordre : AR droite → AR gauche → AV droite → AV gauche. Et vérifie le répartiteur de freinage en même temps, c'est souvent lui qui est encrassé.\n\nCôté forums, **forum-2cv.net** et **planete2cv.com** ont des tutos détaillés avec photos si tu fais la pose toi-même.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [],
+    "sources_cited": [
+      {
+        "raw": "mehari-club-cassis.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      },
+      {
+        "raw": "burton2cvparts.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      },
+      {
+        "raw": "derfranzose.de",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      },
+      {
+        "raw": "2CV-Pieces.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      },
+      {
+        "raw": "forum-2cv.net",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      },
+      {
+        "raw": "planete2cv.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

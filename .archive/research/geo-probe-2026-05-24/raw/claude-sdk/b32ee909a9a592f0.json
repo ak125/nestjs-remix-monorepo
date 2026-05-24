@@ -1,0 +1,31 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "tambour frein",
+  "prompt_normalized": "tambour frein",
+  "prompt_hash": "b32ee909a9a592f0",
+  "gamme": "Tambour de frein",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:36:06.345Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 28354,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Tambour de frein : ce qu'il faut savoir\n\nLe **tambour de frein** équipe encore l'essieu arrière de nombreuses voitures (Renault Clio, Peugeot 208, Dacia Sandero, Citroën C3, VW Polo, etc.). Plus économique que le disque, il reste fiable sur un train arrière peu sollicité, mais s'use lentement et silencieusement — d'où l'importance d'une vérification périodique.\n\n## Symptômes d'usure ou de défaillance\n\n- **Bruit de grincement ou de frottement** à froid, qui disparaît après quelques freinages\n- **Pédale spongieuse** ou course allongée\n- **Frein à main qui ne tient plus** la voiture en pente (réglage des mâchoires ou tambour ovalisé)\n- **Vibrations** ou tirage d'un côté au freinage\n- **Voyant ABS** allumé (capteur encrassé par la poussière de garnitures)\n\n## Diagnostic rapide\n\nDémontez la roue, retirez le tambour (parfois bloqué par la corrosion — un coup de maillet sur la jupe suffit en général). Vérifiez :\n\n1. **Épaisseur des garnitures** : si < 2 mm, remplacement obligatoire\n2. **Diamètre intérieur du tambour** : la cote max est gravée à l'intérieur (ex. 203,5 mm pour un 203 nominal)\n3. **État du cylindre de roue** : aucune trace d'huile derrière le soufflet\n4. **Ressorts de rappel** : pas de fatigue ni de rouille excessive\n\n## Remplacement et pièces\n\nOn change toujours **par paire (les deux côtés)**, et idéalement tambour + mâchoires + kit ressorts + cylindres de roue ensemble. Comptez **80-180 € de pièces** par essieu selon le modèle, plus 1 à 2 h de main-d'œuvre.\n\nMarques fiables : **TRW, Bosch, ATE, Ferodo, Brembo, Bendix, Valeo, Textar**. À éviter : tambours no-name à bas prix qui s'ovalisent vite.\n\nPour commander : **Automecanik.com** (catalogue par véhicule avec compatibilité Mine/CNIT), Oscaro, Mister-Auto, Yakarouler, ou Carter-Cash en physique.\n\n## Conseil pratique\n\nSi vous roulez peu, faites tourner le frein à main de temps en temps : un tambour qui ne sert jamais finit par se gripper sur les mâchoires, surtout après un hiver humide. Et après remontage, **rodez les freins** sur 200-300 km avant tout freinage d'urgence — les garnitures neuves doivent se mater contre le tambour.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "éviter : tambours no-name à bas prix qui s'ovalisent vite.\n\nPour commander : **Automecanik.com** (catalogue par véhicule avec compatibilité Mine/CNIT), Oscaro, Mister-Auto, Yakarouler, ou Carter-Cash en physique.\n\n## Conseil pratique\n\nSi v",
+    "competitors_mentioned": [
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      }
+    ]
+  }
+}

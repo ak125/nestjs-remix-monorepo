@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "filtre a air clio 5",
+  "prompt_normalized": "filtre a air clio 5",
+  "prompt_hash": "0630f7ffda0a9bf6",
+  "gamme": "Filtre à air",
+  "volume": 500,
+  "captured_at": "2026-05-24T15:56:04.178Z",
+  "model_version": null,
+  "duration_ms": 20705,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour une **Renault Clio 5**, le bon **filtre à air moteur** dépend surtout de la motorisation : **1.0 SCe**, **1.0 TCe 90/100**, **1.3 TCe 130**, **E-Tech hybride**, ou **1.5 Blue dCi 85/100**. Ne commande pas seulement avec “Clio 5” : entre idéalement l’immatriculation ou le VIN sur Oscaro, Mister-Auto, Norauto, Yakarouler ou chez Renault.\n\nPour une Clio 5 courante en France :\n- **1.0 TCe 90 / 91 ch** : on trouve notamment des références type **Purflux A3010**, **Bosch F 026 400 625**, selon année exacte.\n- **1.5 Blue dCi 85/100** : références souvent différentes, par exemple **Purflux A3032** ou **Mann C 24 250** selon version.\n- **1.3 TCe 130** : encore une autre forme/référence, souvent listée chez Mann, Purflux, Bosch ou Mahle.\n\nMarques fiables : **Purflux**, **Mann-Filter**, **Mahle/Knecht**, **Bosch**. Évite les filtres premier prix inconnus : sur un moteur turbo comme le TCe, un filtre mal ajusté ou trop bas de gamme n’a aucun intérêt.\n\nPrix habituel : environ **10 à 25 €** pour la pièce seule. En centre auto ou garage avec pose, compte plutôt **35 à 70 €** suivant forfait. Le remplacement est généralement simple : boîte à air dans le compartiment moteur, quelques vis ou clips, on retire l’ancien filtre, on aspire les feuilles/poussières si besoin, puis on remet le nouveau dans le bon sens sans pincer le joint.\n\nIntervalle conseillé : souvent autour de **20 000 à 30 000 km**, mais plus tôt si tu roules en ville, poussière, campagne ou trajets courts. Un filtre encrassé peut donner une voiture moins réactive et une consommation légèrement plus élevée.\n\nLe plus sûr : donne la **motorisation exacte + année** ou utilise l’immatriculation sur un site de pièces, puis prends une marque équipementier.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

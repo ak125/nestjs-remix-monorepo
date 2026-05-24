@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "filtre a huile golf 6",
+  "prompt_normalized": "filtre a huile golf 6",
+  "prompt_hash": "c060962e985692c4",
+  "gamme": "Filtre à huile",
+  "volume": 500,
+  "captured_at": "2026-05-24T15:49:52.845Z",
+  "model_version": null,
+  "duration_ms": 40550,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le filtre à huile dépend du moteur exact de ta Golf 6 (2008-2013). Les principales motorisations et leurs filtres :\n\n**Moteurs Diesel**\n- **1.6 TDI (CAYC, 90/105 ch)** et **2.0 TDI (CBAB, CFFB, CFHC, 110/140/170 ch)** : filtre cartouche (élément seul à insérer dans le boîtier plastique en haut moteur). Réf OE **03L 115 562**.\n  - Équivalents fiables : **Mann-Filter HU 719/7 x**, **Mahle OX 188D**, **Hengst E340HD D229**, **Bosch F026407001**.\n\n**Moteurs Essence**\n- **1.4 TSI (CAXA 122 ch, CAVD 160 ch)** : cartouche, réf OE **03C 115 562**. Équivalents : Mann **HU 611/1 x**, Mahle **OX 360D**, Purflux **L342**.\n- **1.2 TSI (CBZA/CBZB 85/105 ch)** : même réf que le 1.4 TSI (**03C 115 562**).\n- **1.6 MPI (BSE/BSF/CCSA 102 ch)** : cartouche **06A 115 561 B** (style ancien EA113). Mann **W 712/52**, Mahle **OC 90**, Purflux **LS149**.\n- **2.0 TSI GTI (CCZB 210 ch)** : cartouche **06J 115 403 Q**. Mann **HU 6004 x**, Mahle **OX 401D**.\n\n**Où acheter**\nPour le rapport qualité/prix, **Oscaro**, **Mister-Auto** et **Auto-Doc** restent les références en France — tu y trouves les marques OEM (Mann, Mahle, Hengst sont littéralement les fournisseurs d'origine VW selon les périodes) à 4-9 €. **Yakarouler** et **Piecesauto24** sont compétitifs aussi. En physique : **Norauto** ou **Feu Vert** dépannent mais c'est 2-3× plus cher.\n\n**Conseils pratiques**\n- Identifie ton moteur via le code à 3 lettres sur l'étiquette dans le compartiment moteur ou la carte grise (champ P.3 ou plaque constructeur). Ne te fie pas qu'à la puissance, plusieurs blocs partagent la même cylindrée.\n- Sur les TSI/TDI à cartouche, change aussi le **joint torique** (généralement fourni avec le filtre — vérifie). Couple de serrage du couvercle : 25 Nm.\n- Évite les marques no-name à 2 € : sur un TDI moderne, un filtre bas de gamme peut by-passer et envoyer des particules dans le turbo.\n\nPour confirmer la réf exacte ou voir des retours d'expérience par moteur, le forum **Golfmania** et **Forum-Auto Caradisiac** ont des fils très complets par génération.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

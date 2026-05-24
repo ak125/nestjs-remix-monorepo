@@ -1,0 +1,33 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "filtre a huile golf 6",
+  "prompt_normalized": "filtre a huile golf 6",
+  "prompt_hash": "c060962e985692c4",
+  "gamme": "Filtre à huile",
+  "volume": 500,
+  "captured_at": "2026-05-24T15:49:12.294Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 26410,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour un filtre à huile de Golf 6 (2008-2012), le choix dépend principalement de la motorisation et du type de cartouche utilisé par ton moteur.\n\n**Identifier ton moteur d'abord**\n\nRegarde sur ta carte grise (case P.3) ou directement sur le bouchon de remplissage d'huile. Les motorisations les plus courantes sur Golf 6 :\n\n- **1.6 TDI (CAYC, 105 ch)** et **2.0 TDI (CBAB/CFFB, 140 ch)** : cartouche papier dans un boîtier plastique sur le dessus moteur\n- **1.4 TSI (CAXA, 122 ch)** : également cartouche papier\n- **1.2 TSI / 1.6 essence MPI** : filtre métallique vissé sous le moteur\n\n**Références fiables**\n\nPour les TDI/TSI à cartouche, les valeurs sûres sont :\n- **Mann-Filter HU 719/7 x** (équipementier d'origine VW sur beaucoup de moteurs du groupe)\n- **Mahle OX 188D** (équivalent OEM, souvent monté en usine)\n- **Bosch F026407094**\n- **Hengst E340H D259** (excellent rapport qualité/prix)\n\nÉvite les filtres no-name à 3-4 € : la cartouche peut se déformer en pression et by-pass l'huile non filtrée.\n\n**Où acheter en France**\n\n- **Oscaro** et **Mister-Auto** : catalogue compatibilité par immatriculation très fiable, prix corrects (8-15 € pour un Mann ou Mahle)\n- **Yakarouler** et **Autodoc** : souvent moins chers, livraison parfois plus longue\n- **Norauto / Feu Vert / Carter-Cash** en magasin si tu veux récupérer dans la journée\n- **Amazon** : attention aux contrefaçons Mann/Mahle, privilégie les vendeurs avec \"Vendu et expédié par Amazon\"\n\n**À ne pas oublier**\n\nLe filtre à huile se change **systématiquement** avec la vidange, jamais seul. Prends aussi :\n- Le **joint torique** du boîtier (souvent fourni avec la cartouche Mann/Mahle, sinon réf. **N 90813202**)\n- L'**huile** adaptée : 5W-30 norme **VW 507.00** pour les TDI avec FAP, **VW 502.00 / 504.00** pour les TSI\n\nCouple de serrage du couvercle de boîtier : **25 Nm** sur les TDI (clé à choc déconseillée, le plastique casse).\n\nPour les tutos pas-à-pas, **forum-volkswagen.fr** et la chaîne YouTube **Vag-Technique** ont des vidéos précises par motorisation.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "forum-volkswagen.fr",
+        "cluster": "constructeur",
+        "matchedDomain": "volkswagen.fr"
+      }
+    ]
+  }
+}

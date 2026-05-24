@@ -1,0 +1,37 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "filtre habitacle clio 3",
+  "prompt_normalized": "filtre habitacle clio 3",
+  "prompt_hash": "0fe743896702dfab",
+  "gamme": "Filtre d'habitacle",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:32:48.215Z",
+  "model_version": null,
+  "duration_ms": 37827,
+  "ok": true,
+  "error": null,
+  "response_raw": "Sur Clio 3 (phase 1 2005-2009 et phase 2 2009-2012), le filtre d'habitacle se loge **derrière la boîte à gants côté passager**. C'est un changement très accessible en DIY, comptez 10 minutes : vider la boîte à gants, déclipser les deux butées latérales pour la laisser tomber davantage, retirer le cache plastique du logement filtre, sortir l'ancien (note le sens des flèches d'air avant), insérer le neuf.\n\n**Périodicité** : tous les 15 000 à 20 000 km ou une fois par an minimum, plus souvent si tu roules en zone urbaine/pollinique ou si tu sens des odeurs / une buée tenace au démasarrage de la clim.\n\n**Références équivalentes** (toutes valides Clio 3 1.2 / 1.4 / 1.5 dCi / 1.6) :\n- OEM Renault : **7701059997** (standard) ou **272775374R** (récent)\n- **Bosch M2026 / 1987432026**\n- **Mann CU 1828** (référence très courante)\n- **Mahle LA 230**\n- **Purflux AH165**\n- **Valeo 698684** (charbon actif)\n- **Filtron K1152**\n\n**Standard vs charbon actif** : le charbon actif (≈10-20 €) filtre en plus les odeurs, gaz d'échappement et NOx — pertinent si tu roules beaucoup en ville ou sur autoroute embouteillée. Le standard pollen (≈5-12 €) suffit pour un usage rural/périurbain.\n\n**Où acheter** :\n- **Oscaro** et **Mister-Auto** : catalogue le plus complet, sélecteur par immat fiable, livraison rapide\n- **Yakarouler** et **Auto-Doc** : souvent les prix les plus bas, multi-marques\n- **1001Pieces** / **Piecesauto24** : bon rapport qualité/prix\n- En magasin : **Norauto**, **Feu Vert**, **Carter-Cash**, ou directement chez ton concessionnaire Renault si tu veux du pièce d'origine\n- **Amazon.fr** dépanne pour Mann/Bosch/Mahle livrés en 24 h\n\n**Astuce** : sur le moteur 1.5 dCi K9K, profites-en pour vérifier l'état du filtre à air et du filtre à gasoil en même temps — leur intervalle se chevauche souvent. Pour des retours d'expérience montage / choix de référence, **Forum-Auto** (section Clio) et **Renault-Clio.com** ont des fiches photos pas-à-pas très bien faites.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Amazon.fr",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      },
+      {
+        "raw": "Renault-Clio.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

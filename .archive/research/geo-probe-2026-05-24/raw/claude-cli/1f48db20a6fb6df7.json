@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "filtre a air c4 picasso",
+  "prompt_normalized": "filtre a air c4 picasso",
+  "prompt_hash": "1f48db20a6fb6df7",
+  "gamme": "Filtre à air",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:03:15.081Z",
+  "model_version": null,
+  "duration_ms": 37976,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour un filtre à air de C4 Picasso, la référence dépend du moteur et de la génération (Picasso I 2006-2013 ou Grand/Picasso II 2013-2018, devenu C4 SpaceTourer après 2018). Identifie ton moteur sur la carte grise (champ D.2 — code moteur type 9HZ, 9HP, EP6, etc.) ou via le VIN, c'est le seul moyen fiable d'avoir la bonne pièce.\n\n**Références courantes** :\n- **1.6 HDi (9HZ / DV6TED4)** : OE Citroën 1444.TT, équivalents Purflux A1257, Bosch F026400119, Mann C 30 005\n- **2.0 HDi (RHR / DW10BTED4)** : OE 1444.TF, Purflux A1112, Mann C 35 154\n- **1.6 THP / VTi essence (EP6)** : OE 1444.VK, Purflux A1356, Mann C 27 009\n- **1.2 PureTech (EB2)** : OE 1422.W0, Purflux A1426\n\n**Marques fiables** : Purflux est le fournisseur d'origine PSA, donc c'est généralement le meilleur rapport qualité/prix pour un Citroën. Mann-Filter, Mahle/Knecht, Bosch et Hengst sont aussi du niveau OE. Évite les sous-marques inconnues à 4€ sur marketplace — sur un HDi, un filtre mal foutu laisse passer des particules qui flinguent le débitmètre.\n\n**Où acheter** :\n- **Oscaro** et **Mister-Auto** : sélecteur par immatriculation, prix corrects, livraison rapide. Oscaro est généralement le plus fiable sur la compatibilité PSA.\n- **Yakarouler**, **Autodoc**, **Piecesauto24** : souvent moins cher, vérifie bien la référence avant validation.\n- **Norauto / Feu Vert / Carter-Cash** : pratique si tu veux poser tout de suite, mais comptez 30-50% plus cher.\n- **Concession Citroën** : seulement si tu veux du strict OE constructeur et que le prix te dérange pas.\n\nBudget réaliste : 8-15€ en ligne pour du Purflux/Mann, 20-30€ en centre auto.\n\n**Pose** : 5 minutes, boîtier en haut du moteur, 4 clips ou vis Torx selon la version. Profites-en pour vérifier le filtre d'habitacle en même temps, c'est souvent oublié et il s'encrasse vite en ville. Intervalle constructeur : 40 000 km ou 2 ans, mais sur HDi en ville je descendrais à 30 000.\n\nSi tu hésites entre deux références après avoir entré ta plaque, donne-moi ton code moteur (carte grise D.2) et je tranche.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "disque de frein brembo",
+  "prompt_normalized": "disque de frein brembo",
+  "prompt_hash": "3678a53ae9c64513",
+  "gamme": "plaquette de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:34:52.210Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 28818,
+  "ok": true,
+  "error": null,
+  "response_raw": "Les disques de frein Brembo sont une référence sur le marché : la marque italienne équipe en première monte de nombreux constructeurs (Alfa Romeo, BMW, Audi, Porsche, Ferrari…) et propose une gamme aftermarket très large, du véhicule citadin au sportif.\n\n**Les gammes à connaître**\n\n- **Brembo OE (disques pleins/ventilés noirs)** : qualité origine, parfait pour un remplacement standard. Excellent rapport qualité/prix.\n- **Brembo Max** : disques rainurés, idéaux pour une conduite dynamique ou un véhicule un peu chargé (SUV, break). Meilleure évacuation des gaz et de la poussière de plaquette.\n- **Brembo Xtra** : version percée, plutôt esthétique/sportive, mordant à froid amélioré mais usure plaquettes un peu plus rapide.\n- **Brembo Sport (TY3, T-Drive, 2-pièces)** : usage circuit/track-day, avec cloche aluminium pour les versions haut de gamme.\n- **Brembo Beyond EV** : gamme spécifique véhicules électriques, traitement anti-corrosion renforcé (les disques rouillent vite sur un VE qui freine peu en mécanique).\n\n**Conseils pratiques**\n\nToujours remplacer les disques **par paire** (essieu avant ou essieu arrière) et changer les plaquettes en même temps — idéalement des Brembo aussi pour garder la cohérence du couple disque/plaquette. Vérifiez la **référence exacte** via votre plaque constructeur ou votre numéro de série : un même modèle peut avoir 2-3 diamètres de disques selon la motorisation et la finition.\n\nCôté **prix indicatif** (paire avant) : 80-150 € en gamme OE, 150-250 € en Max, 250-400 € en Xtra, au-delà pour les Sport.\n\n**Où acheter**\n\n- **Oscaro**, **Mister-Auto**, **Yakarouler**, **AutoDoc** pour le grand public — bon stock, prix compétitifs.\n- **Automecanik.com** si vous voulez un catalogue orienté pièces avec recherche par véhicule.\n- **Brembo.com** (site officiel) pour vérifier la référence exacte via leur catalogue en ligne (très fiable).\n- Pour les versions Sport/track : **Demon Tweeks**, **Speed-Wiehl**, ou directement les revendeurs agréés Brembo Racing.\n\nÉvitez les marketplaces type eBay/Amazon sans vendeur identifié — les **contrefaçons Brembo** existent (boîtes refaites, qualité métal médiocre). Un disque Brembo authentique a un marquage laser net, une référence gravée et un emballage soigné.\n\nPour le montage : couple de serrage constructeur, rodage 200-300 km en freinages progressifs avant tout freinage appuyé.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "karouler**, **AutoDoc** pour le grand public — bon stock, prix compétitifs.\n- **Automecanik.com** si vous voulez un catalogue orienté pièces avec recherche par véhicule.\n- **Brembo.com** (site officiel) pour vérifier la référence exacte via",
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      },
+      {
+        "raw": "Brembo.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

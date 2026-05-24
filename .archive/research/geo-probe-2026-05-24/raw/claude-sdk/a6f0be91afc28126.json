@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "filtre à gasoil purflux",
+  "prompt_normalized": "filtre a gasoil purflux",
+  "prompt_hash": "a6f0be91afc28126",
+  "gamme": "Filtre à carburant",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:17:26.909Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 31745,
+  "ok": true,
+  "error": null,
+  "response_raw": "Purflux est un excellent choix pour un filtre à gasoil : la marque française (groupe Sogefi, usine historique à Châlons-en-Champagne) est en première monte sur Peugeot, Citroën, Renault, Dacia et beaucoup de Stellantis. La qualité est équivalente à du Mann-Filter ou Mahle, souvent à un prix plus doux.\n\n**Trouver la bonne référence**\n\nLe filtre à gasoil dépend strictement du moteur, pas uniquement du modèle. Les références Purflux les plus courantes :\n- **CS760B / CS761** – beaucoup de HDi PSA 1.6 et 2.0\n- **C518 / C518Y** – Renault 1.5 dCi K9K\n- **CS439** – Ford TDCi\n- **CS748A** – Dacia / Renault dCi récents\n\nLe plus fiable est de partir de votre **code moteur** (sur la carte grise champ D.2 + plaque constructeur) ou de votre **VIN**. Évitez de vous baser uniquement sur \"Clio 1.5 dCi 2012\" : il y a plusieurs variantes K9K avec filtres différents (avec ou sans réchauffeur, avec ou sans capteur d'eau).\n\n**Où acheter**\n\n- **Oscaro** et **Mister-Auto** : catalogue Purflux complet, recherche par immat fiable, livraison rapide, prix souvent 8–15 €.\n- **Yakarouler** et **Piecesauto24** : alternatives correctes, parfois moins chères sur les références courantes.\n- **Norauto / Feu Vert** en magasin si vous voulez repartir le jour même, mais ~30–50 % plus cher.\n- **Amazon** : attention aux vendeurs tiers, contrefaçons Purflux signalées sur les forums (boîtier mal serti, papier filtrant non conforme). Préférez \"vendu et expédié par Amazon\" ou un revendeur auto reconnu.\n\n**À surveiller au remplacement**\n\n- **Purge de l'eau** avant dépose si votre filtre a un bocal décanteur (vis en bas) — sinon eau dans le circuit.\n- **Amorçage** obligatoire après pose : poire d'amorçage manuelle ou contact mis sans démarrer pendant 20–30 sec, deux à trois fois. Démarrer à sec peut endommager la pompe HP (très cher sur common-rail).\n- **Joints toriques** : Purflux les fournit dans la boîte, utilisez-les systématiquement, ne réutilisez pas les anciens.\n- **Intervalle** : 30 000 km en usage normal, 20 000 km si vous prenez du gasoil en station inconnue ou faites beaucoup de petits trajets.\n\nSur les forums **Forum-Auto**, **Planète Citroën** et **Renault Forum**, Purflux fait quasi-consensus en remplacement OEM. Si vous donnez votre modèle exact + code moteur, je peux vous sortir la référence précise.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

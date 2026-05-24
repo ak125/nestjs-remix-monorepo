@@ -1,0 +1,33 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "disque de frein arriere",
+  "prompt_normalized": "disque de frein arriere",
+  "prompt_hash": "3fbab1d3a57b4ead",
+  "gamme": "Kit de freins arrière",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:23:20.454Z",
+  "model_version": null,
+  "duration_ms": 31709,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Disque de frein arrière — l'essentiel\n\nLe disque de frein arrière s'use moins vite que l'avant (l'avant encaisse ~70 % du freinage), mais il finit par voiler, se rayer ou descendre sous la cote mini gravée sur la tranche. On le change **toujours par paire** (gauche + droite) et systématiquement avec un jeu de **plaquettes neuves**, sinon la nouvelle surface s'abîme en quelques centaines de km.\n\n## Comment choisir le bon disque\n\n1. **Identifier précisément ton véhicule** : marque, modèle, motorisation, année, et surtout le **code moteur** + parfois le **numéro de châssis (VIN)**. Deux Clio IV de la même année peuvent avoir des disques arrière différents selon la finition (tambours vs disques, pleins vs ventilés).\n2. **Vérifier les cotes** : diamètre (ex. 260 mm, 280 mm), épaisseur, nombre de trous de fixation, présence d'un roulement intégré (fréquent sur Peugeot/Citroën/Renault récents).\n3. **Type** : plein (la majorité à l'arrière), ventilé (SUV, grosses berlines), ou percé/rainuré (usage sportif, peu utile en daily).\n\n## Marques fiables\n\n- **Premium OE** : Brembo, ATE, TRW, Textar, Ferodo, Bosch, Pagid — qualité équivalente à l'origine constructeur.\n- **Bon rapport qualité/prix** : Valeo, Delphi, Metzger, A.B.S.\n- **À éviter** : les premiers prix sans marque sur marketplaces génériques, souvent en fonte de qualité variable, voiles rapides.\n\n## Où acheter\n\n- **AutoMecanik.com**, Oscaro, Mister-Auto, Yakarouler, 1001Pieces, Piecesauto24 pour la vente en ligne avec recherche par véhicule.\n- **Norauto, Feu Vert, Midas** si tu veux acheter + faire poser le jour même.\n- **Concessionnaire** uniquement si véhicule sous garantie ou pièce introuvable ailleurs.\n\n## Budget réaliste\n\nCompte **40 à 120 €** la paire de disques arrière en qualité correcte pour une citadine/compacte, **80 à 200 €** pour une berline/SUV. Ajoute **25 à 60 €** pour les plaquettes. Pose en garage indépendant : **80 à 150 €** de main-d'œuvre.\n\n## Signes qu'il faut changer\n\nVibrations dans la pédale au freinage (disque voilé), sifflement métallique continu (plaquettes en fin de vie qui marquent le disque), gorge prononcée au bord du disque, ou contrôle technique qui pointe une cote sous le mini.\n\nSi tu me donnes ton véhicule exact, je peux t'orienter sur les références et fourchettes de prix précises.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "ques, souvent en fonte de qualité variable, voiles rapides.\n\n## Où acheter\n\n- **AutoMecanik.com**, Oscaro, Mister-Auto, Yakarouler, 1001Pieces, Piecesauto24 pour la vente en ligne avec recherche par véhicule.\n- **Norauto, Feu Vert, Midas**",
+    "competitors_mentioned": [
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "AutoMecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      }
+    ]
+  }
+}

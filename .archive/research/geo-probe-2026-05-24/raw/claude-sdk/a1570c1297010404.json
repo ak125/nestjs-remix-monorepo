@@ -1,0 +1,32 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "temoin d usure disque de frein",
+  "prompt_normalized": "temoin d usure disque de frein",
+  "prompt_hash": "a1570c1297010404",
+  "gamme": "Témoin d'usure",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:12:04.916Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 33756,
+  "ok": true,
+  "error": null,
+  "response_raw": "Petite précision utile d'abord : le **témoin d'usure** est presque toujours installé sur les **plaquettes de frein**, pas sur le disque lui-même. Le disque, lui, s'évalue à l'épaisseur (mesure au pied à coulisse vs. valeur mini gravée sur la tranche) et à l'état de surface (rainures profondes, rebord saillant, voile, fissures, bleuissement).\n\n**Deux types de témoins sur plaquettes :**\n\n1. **Témoin électrique** (la plupart des allemandes : Audi, BMW, Mercedes, VW, Volvo, certaines Peugeot/Renault récentes) : un fil noyé dans la garniture. Quand l'épaisseur restante atteint ~2-3 mm, le fil se sectionne au contact du disque et allume le voyant orange « plaquettes » au tableau de bord. Souvent une seule plaquette par essieu est équipée — pensez à la remettre côté correct au remontage, sinon le voyant ne s'allumera jamais.\n\n2. **Témoin sonore (squealer)** : une languette métallique qui frotte le disque en fin de vie et produit un sifflement aigu au freinage léger (qui disparaît parfois quand on appuie fort). Présent sur la majorité des japonaises, américaines et françaises d'entrée/milieu de gamme.\n\n**Quand changer :**\n- Plaquettes : à ≤ 3 mm de garniture restante, ou dès le voyant/sifflement.\n- Disques : en dessous de l'épaisseur mini (gravée type « MIN TH 22.0 »), ou si rebord > 1 mm, ou voile mesuré > 0,05 mm au comparateur. En général, on remplace les disques tous les 2 jeux de plaquettes.\n\n**Côté pièces**, les références sérieuses : **Brembo**, **ATE**, **TRW**, **Ferodo**, **Textar**, **Bosch**, **Pagid**, **Valeo** (origine sur beaucoup de PSA/Renault). Évitez le no-name à 15 € le kit complet — qualité de friction et tenue thermique aléatoires.\n\n**Où acheter en France** : **Automecanik**, **Oscaro**, **Mister-Auto**, **Yakarouler**, **Piecesauto24**, ou en réseau **Carter-Cash** / **Norauto** / **Feu Vert** si vous voulez la pose. Les forums **forum-auto.com** et **Caradisiac** sont utiles pour vérifier la référence exacte selon le millésime/motorisation avant commande — un capteur d'usure se décline souvent en 2-3 longueurs de câble pour un même modèle.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "ualité de friction et tenue thermique aléatoires.\n\n**Où acheter en France** : **Automecanik**, **Oscaro**, **Mister-Auto**, **Yakarouler**, **Piecesauto24**, ou en réseau **Carter-Cash** / **Norauto** / **Feu Vert** si vous voulez la pose.",
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "forum-auto.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

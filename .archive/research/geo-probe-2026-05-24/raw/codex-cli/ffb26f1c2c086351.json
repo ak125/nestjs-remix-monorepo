@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "flexible de frein endommagé",
+  "prompt_normalized": "flexible de frein endommage",
+  "prompt_hash": "ffb26f1c2c086351",
+  "gamme": "Flexible de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:19:44.951Z",
+  "model_version": null,
+  "duration_ms": 15197,
+  "ok": true,
+  "error": null,
+  "response_raw": "Un **flexible de frein endommagé** est un défaut à traiter rapidement, car il fait partie du circuit hydraulique de freinage. S’il est fissuré, craquelé, gonflé, pincé, frotté ou s’il suinte du liquide de frein, le risque est une **perte de pression au freinage**, voire une rupture du flexible.\n\nLes symptômes possibles : pédale de frein molle, freinage déséquilibré, voyant de frein allumé, baisse du niveau de liquide de frein, traces humides près d’une roue, ou véhicule qui tire d’un côté au freinage. Même si la voiture freine encore, il ne faut pas considérer ça comme bénin.\n\nLa bonne réparation consiste à **remplacer le flexible**, idéalement par paire sur le même essieu si l’autre est ancien ou dans un état proche. Après remplacement, il faut impérativement faire une **purge du circuit de freinage** avec le liquide adapté, souvent DOT 4 mais à vérifier selon le véhicule. Le flexible doit aussi être correctement positionné pour ne pas frotter contre la jante, l’amortisseur ou les éléments de suspension lorsque les roues braquent.\n\nPour les pièces, tu peux regarder des marques reconnues comme **ATE, TRW, Bosch, Brembo, Febi Bilstein, Delphi ou Ferodo**. Les sites comme **Oscaro, Mister-Auto, Autodoc, Yakarouler** ou les comptoirs de pièces type **AD, Norauto, Feu Vert** permettent d’identifier la bonne référence avec l’immatriculation ou le VIN. Attention aux variantes selon motorisation, année, ABS/ESP et type d’étrier.\n\nSi le flexible fuit ou semble très abîmé, évite de rouler : fais remorquer ou intervenir un garage. C’est une réparation généralement raisonnable en coût, mais critique pour la sécurité. Lors du contrôle technique, un flexible détérioré, craquelé ou présentant une fuite peut entraîner une **contre-visite**, voire une défaillance critique si la fuite est importante.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

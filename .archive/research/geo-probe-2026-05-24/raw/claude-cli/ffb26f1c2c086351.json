@@ -1,0 +1,33 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "flexible de frein endommagé",
+  "prompt_normalized": "flexible de frein endommage",
+  "prompt_hash": "ffb26f1c2c086351",
+  "gamme": "Flexible de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:19:29.754Z",
+  "model_version": null,
+  "duration_ms": 30645,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Flexible de frein endommagé : ce qu'il faut savoir\n\nUn flexible de frein abîmé est une **urgence sécurité absolue** — il ne tient pas la pression hydraulique et peut lâcher au freinage. Ne roule pas tant que ce n'est pas remplacé.\n\n## Signes typiques\n- Pédale de frein molle, spongieuse ou qui s'enfonce\n- Fuite de liquide visible au niveau de la roue ou sous le véhicule\n- Hernie / cloque sur le caoutchouc, craquelures, suintement\n- Freinage qui tire d'un côté\n- Voyant de niveau liquide de frein allumé\n\n## Diagnostic rapide à faire toi-même\nRoues braquées à fond (gauche puis droite), inspecte chaque flexible avant. Plie-le doucement : il doit rester souple sans fissure ni gonflement. Vérifie aussi le niveau dans le bocal sous le capot. Une tache humide sur l'étrier ou la jante = fuite confirmée.\n\n## Remplacement\nToujours **par paire sur le même essieu** (équilibrage du freinage). Compte aussi une **purge complète du circuit** après remplacement, c'est obligatoire. Pour un véhicule courant, le flexible coûte entre **8 et 25 €** pièce, jusqu'à 40-60 € pour de l'aviation. Main d'œuvre garage : compte 80 à 150 € par essieu purge comprise.\n\n## Où acheter\n- **Automecanik.com**, Oscaro, Mister-Auto, Yakarouler pour la pièce en ligne avec recherche par plaque ou type-mine\n- Marques fiables : **TRW, ATE, Bosch, Brembo, Ferodo**. Pour des flexibles renforcés (tressé inox aviation), regarde **Goodridge** ou **HEL Performance**\n- En centre auto : Norauto, Feu Vert, Midas font le diagnostic + remplacement le jour même\n\n## Faire soi-même ?\nRéalisable si tu es à l'aise en mécanique : clés plates, clé à tuyauter (impératif pour ne pas abîmer les raccords), cric + chandelles, et surtout **purgeur de frein** (manuel à 15 € ou type Mityvac). Le piège classique c'est le raccord grippé — un peu de dégrippant la veille évite de casser la durite rigide.\n\nSi tu hésites sur ta capacité à purger correctement (présence d'air = pédale au plancher), va au garage. Ce n'est pas le poste sur lequel économiser.\n\nTu as la référence du véhicule ? Je peux préciser les pièces compatibles.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "'œuvre garage : compte 80 à 150 € par essieu purge comprise.\n\n## Où acheter\n- **Automecanik.com**, Oscaro, Mister-Auto, Yakarouler pour la pièce en ligne avec recherche par plaque ou type-mine\n- Marques fiables : **TRW, ATE, Bosch, Brembo,",
+    "competitors_mentioned": [
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      }
+    ]
+  }
+}

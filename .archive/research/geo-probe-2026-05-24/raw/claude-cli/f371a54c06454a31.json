@@ -1,0 +1,32 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "filtre a air c4",
+  "prompt_normalized": "filtre a air c4",
+  "prompt_hash": "f371a54c06454a31",
+  "gamme": "Filtre à air",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:24:05.564Z",
+  "model_version": null,
+  "duration_ms": 46037,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour ton **Citroën C4**, le choix du filtre à air dépend d'abord de la motorisation et de la génération du véhicule :\n\n- **C4 I (2004-2010)** : 1.4 16V, 1.6 16V, 1.6 HDi, 2.0 HDi, 2.0 16V\n- **C4 II / Picasso (2010-2018)** : 1.2 PureTech, 1.6 VTi, 1.6 THP, 1.6 HDi/BlueHDi\n- **C4 III (depuis 2020)** : 1.2 PureTech, 1.5 BlueHDi, ë-C4 électrique (pas de filtre moteur)\n\nPour identifier le bon référencement, le plus fiable est de **partir de ton immatriculation** ou de ton **numéro VIN** sur les sites spécialisés — ça évite 90 % des erreurs de compatibilité.\n\n### Marques recommandées\n\n- **Purflux** (équipementier d'origine PSA, souvent monté en usine sur les C4)\n- **Mann-Filter** (référence allemande, qualité OE constante)\n- **Bosch** et **Mahle** (très bonnes alternatives premium)\n- **Valeo** (correct, souvent en promo)\n- À éviter : les no-name à 3 € sur marketplaces, le média filtrant est souvent en deçà des spécifications PSA.\n\n### Où acheter\n\n- **Oscaro** et **Mister-Auto** : sélecteur par immatriculation très fiable, prix entre 8 et 20 €\n- **Yakarouler** et **Auto-doc** : catalogue large, livraison rapide\n- **Carter-Cash**, **Norauto**, **Feu Vert** : pratique pour récupérer en magasin le jour même\n- **Amazon** : OK si tu vérifies bien la référence OEM (ex. Purflux A1274 pour beaucoup de 1.6 HDi)\n\n### Remplacement\n\nSur la plupart des C4, c'est une opération de **10-15 minutes** : 2 à 4 clips ou vis sur le boîtier d'admission, on retire l'ancien, on insère le neuf dans le bon sens (flèche du flux d'air vers le moteur). Préconisation constructeur : **tous les 30 000 km** ou tous les 2 ans, plus fréquent en milieu poussiéreux.\n\n### Ressources utiles\n\nPour des retours d'expérience par motorisation : **Forum-Auto** (section Citroën C4) et **Planete-Citroen.com** sont les plus actifs en français. Tu y trouveras les références exactes selon ton année et le retour des propriétaires sur tel ou tel équipementier.\n\nSi tu me donnes la motorisation et l'année, je peux te pointer la référence précise.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Planete-Citroen.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

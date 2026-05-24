@@ -1,0 +1,34 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "ate disque de frein",
+  "prompt_normalized": "ate disque de frein",
+  "prompt_hash": "f4d114dc755ce9da",
+  "gamme": "plaquette de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:59:20.644Z",
+  "model_version": null,
+  "duration_ms": 31249,
+  "ok": true,
+  "error": null,
+  "response_raw": "ATE (Alfred Teves, groupe Continental) est l'un des fabricants historiques de freinage en Europe — équipementier d'origine sur beaucoup de constructeurs allemands (VW, Audi, BMW, Mercedes) et largement utilisé en rechange.\n\n**Les gammes ATE de disques de frein**\n\n- **ATE Original** : la gamme standard, qualité OE, fonte revêtue côté chant pour limiter la corrosion visible.\n- **ATE PowerDisc** : disque rainuré (une rainure circonférentielle). Évacue mieux l'eau et la poussière de plaquette, et sert d'indicateur d'usure visuel — quand la rainure disparaît, le disque est en fin de vie.\n- **ATE Ceramic** (associé aux plaquettes du même nom) : conçu pour réduire la poussière noire sur les jantes.\n\n**Ce qu'il faut vérifier avant d'acheter**\n\nLe bon disque dépend du véhicule **précisément** : motorisation, année, parfois option freinage (sport, pack châssis). Les paramètres critiques sont :\n- diamètre extérieur (mm)\n- épaisseur neuve et épaisseur mini (gravée sur la tranche du disque d'origine)\n- nombre de trous, entraxe, alésage central\n- ventilé / plein\n\nUn disque ATE de 312 mm ne va pas sur un véhicule en 288 mm, même si tout le reste correspond.\n\n**Où acheter en France**\n\n- **Automecanik.com** — comparateur/marchand spécialisé pièces auto avec filtrage par véhicule, ATE référencé.\n- **Oscaro**, **Mister-Auto**, **Yakarouler**, **Piecesauto24** : les marketplaces classiques, prix souvent proches, stock variable.\n- **Autodoc** : très large catalogue, délais plus longs (expédition Allemagne).\n- En boutique physique : **Norauto**, **Feu Vert**, **Speedy** — plus cher mais montage immédiat.\n\n**Bon réflexe**\n\nToujours remplacer les disques **par paire sur le même essieu**, et changer les plaquettes en même temps (les anciennes plaquettes sont polies à la forme du disque usé et ne reprendront pas correctement). Couple de serrage des étriers et rodage 200-300 km en évitant les freinages brutaux.\n\nSi tu me donnes la marque/modèle/motorisation/année, je peux affiner sur la référence ATE exacte à chercher.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "ule en 288 mm, même si tout le reste correspond.\n\n**Où acheter en France**\n\n- **Automecanik.com** — comparateur/marchand spécialisé pièces auto avec filtrage par véhicule, ATE référencé.\n- **Oscaro**, **Mister-Auto**, **Yakarouler**, **Piec",
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      }
+    ]
+  }
+}

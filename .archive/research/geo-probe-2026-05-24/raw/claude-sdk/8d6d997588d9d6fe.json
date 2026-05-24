@@ -1,0 +1,28 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "disque de frein clio 3",
+  "prompt_normalized": "disque de frein clio 3",
+  "prompt_hash": "8d6d997588d9d6fe",
+  "gamme": "disque de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:30:43.923Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 32112,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour une Clio 3 (2005-2014), les disques de frein avant sont **ventilés** et leurs dimensions dépendent de la motorisation :\n\n- **1.2 16V / 1.2 TCe / 1.4 16V** → disques Ø **260 mm**, épaisseur 22 mm\n- **1.5 dCi 85/105 / 1.6 16V** → disques Ø **280 mm**, épaisseur 24 mm\n- **Clio 3 RS 2.0 16V** → disques Ø **312 mm** (Brembo d'origine)\n\nÀ l'arrière, la majorité des Clio 3 sont équipées de **tambours** (203 ou 228 mm). Seules les versions RS et certaines GT/Initiale ont des disques arrière pleins Ø 240 mm.\n\n**Marques fiables (par ordre de qualité/prix)** :\n- **Brembo** (premium, monte d'origine sur la RS) – ~55-80 € la paire avant\n- **ATE / Continental** – excellent rapport qualité/prix, ~40-60 €\n- **Bosch** – fiable, dispo partout, ~35-55 €\n- **TRW, Ferodo, Pagid** – équivalent OE\n- **Valeo** – OEM Renault, correct mais parfois usure plus rapide\n- À éviter : marques no-name premier prix (voilage rapide, vibrations au freinage)\n\n**Où acheter en ligne** :\n- **Oscaro** – référence française, filtre par VIN, livraison rapide\n- **Mister-Auto** (groupe PSA/Stellantis) – souvent moins cher qu'Oscaro\n- **Autodoc** – très large catalogue, prix agressifs mais délais variables\n- **Yakarouler**, **Piecesauto24**, **123pneus** pour comparer\n\n**Toujours changer par paire** (les deux disques avant ensemble) et **remplacer les plaquettes en même temps** — un disque neuf sur de vieilles plaquettes glace le disque. Compte 25-40 € la paire de plaquettes (Bosch, Ferodo, TRW).\n\n**Outillage** : clé de 13 et 17, clé Torx T40 (étrier), pompe à liquide ou pince à étrier pour repousser les pistons, dégrippant. Compte ~1h par côté en première fois.\n\nSi tu n'es pas à l'aise : **Norauto, Feu Vert ou Speedy** facturent la pose ~80-120 € (hors pièces). Pour un avis communautaire ou un retour d'expérience par motorisation, **Forum-Auto** (section Renault) et **Renault Forum** sont les plus actifs.\n\nDonne-moi la motorisation exacte et je te confirme la référence précise.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

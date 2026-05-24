@@ -1,0 +1,28 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "prix vidange filtre a huile",
+  "prompt_normalized": "prix vidange filtre a huile",
+  "prompt_hash": "1328c1b02ddfb055",
+  "gamme": "Filtre à huile",
+  "volume": 500,
+  "captured_at": "2026-05-24T15:57:58.686Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 31587,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le prix d'une vidange avec filtre à huile en France varie selon trois critères : le type d'huile, le volume du moteur, et l'endroit où tu la fais réaliser.\n\n**Tarifs moyens (forfait main d'œuvre + pièces) :**\n\n- **Centres auto** (Norauto, Feu Vert, Midas, Speedy, Roady) : entre **59 € et 130 €** selon la formule. Les forfaits \"éco\" (huile minérale/semi-synthèse, jusqu'à 4-5 L) tournent autour de **59-79 €**. Les forfaits \"premium\" avec huile 100 % synthèse 5W30 ou 5W40 montent à **99-129 €**.\n- **Garage indépendant** : souvent plus compétitif, **60-100 €** tout compris, surtout si tu apportes l'huile et le filtre.\n- **Concession** (Peugeot, Renault, VW, BMW…) : **130-250 €**, parfois plus sur les motorisations récentes nécessitant des huiles homologuées spécifiques (LongLife, ACEA C3, etc.).\n- **En DIY** : **25-50 €** seulement. Une bidon de 5 L d'huile de qualité (Total Quartz, Elf Evolution, Castrol Edge, Motul) coûte **25-40 €**, et le filtre (Mann-Filter, Purflux, Bosch, Mahle, Valeo) entre **5 et 15 €**.\n\n**Conseils pratiques :**\n\n1. **Vérifie la préconisation constructeur** dans ton carnet d'entretien (viscosité 5W30/5W40, norme ACEA, capacité moteur). Mettre la mauvaise huile peut coûter cher à long terme.\n2. **Compare avant de réserver** : les sites des centres auto affichent les forfaits en ligne avec ton immatriculation. Idroad, Vroomly ou iDGarages permettent aussi de comparer plusieurs garages près de chez toi.\n3. **Si tu fais l'achat des pièces toi-même** : Oscaro, Mister-Auto, Yakarouler ou Auto Doc proposent les filtres et l'huile à prix discount, souvent **30-40 % moins cher** qu'en centre.\n4. **Joint de bouchon de vidange** : pense à le changer (1-2 €), beaucoup l'oublient et ça finit en fuite.\n5. **Fréquence** : tous les **10 000 à 15 000 km** ou une fois par an, même si tu roules peu (l'huile vieillit aussi par oxydation).\n\nPour un budget moyen sur une citadine ou compacte essence/diesel, compte **80-100 €** dans un centre auto avec une huile correcte. C'est l'entretien le plus rentable pour la longévité du moteur.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

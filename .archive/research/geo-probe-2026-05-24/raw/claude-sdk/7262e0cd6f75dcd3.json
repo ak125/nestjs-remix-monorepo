@@ -1,0 +1,28 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "tambour de frein",
+  "prompt_normalized": "tambour de frein",
+  "prompt_hash": "7262e0cd6f75dcd3",
+  "gamme": "Tambour de frein",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:33:32.391Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 27849,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Tambour de frein\n\nLe tambour de frein est un composant cylindrique en fonte (parfois en aluminium avec piste fonte) qui équipe le système de freinage arrière de nombreux véhicules — citadines, utilitaires, et même certains SUV récents (Dacia Sandero, Renault Clio, Peugeot 208, Citroën C3, Twingo, Kangoo, Berlingo…). Les mâchoires viennent frotter contre sa paroi intérieure pour ralentir le véhicule.\n\n## Quand le remplacer\n\nPlusieurs signes doivent t'alerter :\n- **Bruits** : grincement, sifflement ou frottement métallique à basse vitesse\n- **Frein à main** qui ne tient plus correctement en pente\n- **Pédale spongieuse** ou freinage déséquilibré à l'arrière\n- **Voyant ABS** allumé (capteur encrassé par la poussière de garniture)\n- **Diamètre intérieur** dépassant la cote maxi gravée sur le tambour (ex. 203,5 mm pour un 203 mm d'origine)\n\nDurée de vie typique : **80 000 à 150 000 km**, mais ça dépend énormément de l'usage (ville vs autoroute).\n\n## Bonnes pratiques de remplacement\n\n- **Toujours par paire** (gauche + droite) pour conserver l'équilibre de freinage\n- Remplacer **systématiquement les mâchoires** en même temps, et idéalement le kit de ressorts/cylindre de roue si > 100 000 km\n- Vérifier l'état du **cylindre récepteur** (fuite de liquide = remplacement obligatoire)\n- Purger le circuit après intervention\n\n## Où acheter\n\nSur **Oscaro**, **Mister-Auto**, **Yakarouler** ou **Auto-Doc** tu trouves les références d'origine et équivalents qualité OE. Les marques de référence : **TRW**, **Bosch**, **ATE**, **Brembo**, **Ferodo**, **Valeo**, **Bendix**. Évite les tambours no-name à 15 € — la fonte est souvent mal trempée et tu auras des voilages thermiques rapidement.\n\nCompte **30 à 80 € le tambour** selon le véhicule, **20 à 50 €** le kit de mâchoires. Côté main d'œuvre, prévoir 1h à 1h30 par côté chez un garagiste indépendant ou un centre type **Speedy**, **Midas**, **Norauto** ou **Feu Vert** (souvent 90-150 €/h).\n\nPour identifier la bonne référence : ta carte grise (champ E = VIN) suffit sur la plupart des catalogues en ligne. Sur les forums **Forum-Auto** ou **Caradisiac**, tu trouveras des retours utilisateurs spécifiques à ton modèle.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

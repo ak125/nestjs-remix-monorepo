@@ -1,0 +1,25 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "temoin d usure des plaquettes de frein avant",
+  "prompt_normalized": "temoin d usure des plaquettes de frein avant",
+  "prompt_hash": "a86757a47d8ea141",
+  "gamme": "Témoin d'usure",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:17:28.231Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 25541,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Témoin d'usure des plaquettes de frein avant\n\nLe témoin d'usure t'alerte que les plaquettes arrivent en fin de vie. Il en existe deux types principaux :\n\n**1. Témoin acoustique (mécanique)**\nUne petite lame métallique fixée sur la plaquette. Quand la garniture descend sous ~3 mm, la lame frotte sur le disque et produit un **couinement aigu et continu au freinage** (et parfois même roue qui tourne). C'est le signal le plus courant sur les voitures françaises (Peugeot, Renault, Citroën).\n\n**2. Témoin électronique (filaire)**\nUn capteur avec un fil noyé dans la garniture. Quand l'usure atteint le fil, le circuit s'ouvre (ou se ferme selon le système) et **allume le voyant rouge \"plaquettes\" au tableau de bord** (symbole : cercle pointillé avec un point d'exclamation, ou pictogramme plaquette). Fréquent sur BMW, Mercedes, Audi, VW, et certaines Renault récentes.\n\n**Important** : sur la plupart des voitures, le capteur n'est monté **que sur une plaquette par essieu** (souvent côté conducteur à l'avant). Quand le voyant s'allume, tu remplaces **les 4 plaquettes de l'essieu avant** (jamais une seule) et tu changes **le capteur** en même temps — il est à usage unique une fois entamé.\n\n**Référence pièce**\nLe capteur se commande souvent séparément des plaquettes. Repère la référence d'origine (OEM) gravée sur l'ancien ou cherche par immatriculation/VIN sur :\n- **Oscaro**, **Mister-Auto**, **Yakarouler**, **1001pieces**, **Automecanik** pour le marché français\n- Marques fiables : **Bosch**, **ATE**, **TRW**, **Ferodo**, **Brembo**, **Textar**, **Valeo**\n\nCompte ~5 à 25 € le capteur, 30 à 90 € le jeu de plaquettes avant selon le véhicule.\n\n**Diagnostic rapide**\n- Couinement aigu qui disparaît quand tu freines fort → témoin acoustique, plaquettes à changer sous quelques centaines de km.\n- Voyant au tableau de bord → arrête de rouler dans les jours qui viennent, intervention immédiate.\n- Voyant qui reste allumé après remplacement → capteur non changé, mal clipsé, ou connecteur oxydé.\n\nSi tu me donnes la marque/modèle/année, je peux préciser le type de témoin et la référence du capteur.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "tion/VIN sur :\n- **Oscaro**, **Mister-Auto**, **Yakarouler**, **1001pieces**, **Automecanik** pour le marché français\n- Marques fiables : **Bosch**, **ATE**, **TRW**, **Ferodo**, **Brembo**, **Textar**, **Valeo**\n\nCompte ~5 à 25 € le capteu",
+    "competitors_mentioned": [
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

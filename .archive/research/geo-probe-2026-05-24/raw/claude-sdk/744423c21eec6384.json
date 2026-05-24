@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "filtre à gasoil fiat ducato",
+  "prompt_normalized": "filtre a gasoil fiat ducato",
+  "prompt_hash": "744423c21eec6384",
+  "gamme": "Filtre à carburant",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:27:56.833Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 29383,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Filtre à gasoil Fiat Ducato : guide d'achat\n\nLe filtre à gasoil sur le Ducato est une pièce d'entretien critique : il protège la pompe haute pression et les injecteurs (très coûteux à remplacer sur les blocs 2.3 MultiJet et 2.0/3.0 JTD). À changer **tous les 30 000 à 40 000 km**, ou tous les 2 ans.\n\n## Identifier la bonne référence\n\nAvant d'acheter, il te faut **trois infos** :\n- Génération du Ducato (II = 230/244 jusqu'à 2006, III = 250/290 depuis 2006)\n- Motorisation exacte : 2.0 JTD, 2.2 HDi (Ducato II), 2.3 MultiJet (100/120/130/140/150/160 ch), 3.0 MultiJet\n- Année et code moteur (sur la carte grise + plaque moteur)\n\nLes filtres ne sont **pas universels** entre 2.3 et 3.0 MultiJet, ni entre les phases.\n\n## Marques recommandées (par ordre de fiabilité)\n\n1. **UFI / Sofima** — équipementier d'origine pour FCA/Stellantis, le choix le plus sûr. Souvent identique à la pièce Fiat OEM.\n2. **Mann-Filter** — qualité allemande, excellente filtration, large couverture Ducato.\n3. **Mahle / Knecht** — équivalent Mann, très bon rapport qualité/prix.\n4. **Bosch** — fiable, dispo partout.\n5. **Purflux** — bon milieu de gamme français.\n\nÀ éviter : marques no-name à 5€ sur marketplaces — risque de relargage de particules dans le circuit HP.\n\n## Où acheter\n\n- **Oscaro** et **Mister-Auto** : catalogues bien filtrés par véhicule, livraison rapide, retours faciles.\n- **Yakarouler** et **Auto-Doc** : prix souvent agressifs, vérifier la marque réelle.\n- **Norauto / Feu Vert / Speedy** : pratique si tu veux la pose incluse.\n- Concession Fiat Professional : référence OEM garantie mais 30-50% plus cher.\n\nCompte **15-35 €** pour un filtre de qualité selon la version.\n\n## Points de vigilance au montage\n\n- Amorcer le circuit avec la poire (si présente) avant de redémarrer.\n- Vérifier le **capteur d'eau** en bas du filtre (souvent à transférer sur le neuf).\n- Purger l'eau accumulée régulièrement entre deux changements — surtout en hiver avec du gasoil B7/B10.\n\nSi tu me donnes ton **code moteur** ou ton **immatriculation**, je peux affiner la référence exacte.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

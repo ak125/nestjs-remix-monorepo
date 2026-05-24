@@ -1,0 +1,42 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "filtre habitacle 407",
+  "prompt_normalized": "filtre habitacle 407",
+  "prompt_hash": "02aa1a56ee7ab517",
+  "gamme": "Filtre d'habitacle",
+  "volume": 500,
+  "captured_at": "2026-05-24T15:44:59.941Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 34544,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour une Peugeot 407 (berline, SW ou coupé, 2004-2010), tu as deux choix :\n\n**Filtre standard (papier)** — filtre poussières et pollens. Référence OEM Peugeot **6447.KS** (ou **6447.XJ** selon millésime).\n\n**Filtre à charbon actif** — bloque en plus les odeurs, gaz d'échappement et particules fines. Référence OEM **6479.A6**. Recommandé si tu roules souvent en ville ou sur autoroute embouteillée. ~5-10€ de plus, ça vaut le coup.\n\n**Équivalences aftermarket fiables** :\n- **Mann-Filter** : CU 2532 (standard) / CUK 2532 (charbon) — référence du marché, qualité OEM\n- **Bosch** : M2104 (standard) / R2349 (charbon)\n- **Purflux** : AH215 / AHC215 — marque française, équipementier d'origine PSA, excellent rapport qualité-prix\n- **Valeo** : 698688 — aussi équipementier OEM PSA\n- **Mahle / Hengst / Champion** : très bien aussi\n\nÉvite les marques no-name à 3€ sur Amazon, l'étanchéité du cadre est souvent médiocre et l'air passe à côté du média filtrant.\n\n**Où acheter** :\n- **Oscaro** et **Mister-Auto** : meilleurs prix en ligne, large choix de marques, livraison rapide\n- **Yakarouler**, **Auto-Doc**, **Pieces-Auto.fr** : alternatives compétitives\n- **Norauto / Feu Vert / Carter-Cash** : pratique si tu veux le jour même, un peu plus cher\n- **AutoMecanik** : catalogue PSA bien fourni, filtrage par moteur\n\nCompte **8-15€** pour un standard de marque, **15-25€** pour un charbon actif.\n\n**Remplacement** : tous les 15 000 km ou 1 an (15 minutes, sans outil). Le filtre est **derrière la boîte à gants côté passager** : tu vides la boîte à gants, tu la déclipse (deux butées latérales à pincer), tu accèdes au cache du filtre, tu sors l'ancien en notant le sens des flèches d'écoulement d'air (vers le bas en général sur 407), et tu remets le neuf dans le même sens.\n\nTutos vidéo très clairs sur **YouTube** (cherche « filtre habitacle 407 ») et fiches détaillées sur **forum-peugeot.com** et **planete-peugeot.com** si tu veux les photos étape par étape.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "u Vert / Carter-Cash** : pratique si tu veux le jour même, un peu plus cher\n- **AutoMecanik** : catalogue PSA bien fourni, filtrage par moteur\n\nCompte **8-15€** pour un standard de marque, **15-25€** pour un charbon actif.\n\n**Remplacement**",
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Pieces-Auto.fr",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      },
+      {
+        "raw": "forum-peugeot.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      },
+      {
+        "raw": "planete-peugeot.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

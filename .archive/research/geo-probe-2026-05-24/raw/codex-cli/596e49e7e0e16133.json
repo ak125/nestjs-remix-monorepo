@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "étrier de frein voiture",
+  "prompt_normalized": "etrier de frein voiture",
+  "prompt_hash": "596e49e7e0e16133",
+  "gamme": "Étrier de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:41:09.833Z",
+  "model_version": null,
+  "duration_ms": 18037,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour “étrier de frein voiture”, il faut surtout identifier si vous cherchez une **pièce de remplacement**, un **diagnostic de panne** ou une **explication**.\n\nL’étrier de frein est la pièce qui serre les plaquettes contre le disque quand vous freinez. Il peut être **fixe** ou **flottant/coulissant** selon le véhicule. Les pannes fréquentes sont : étrier grippé, piston bloqué, soufflet déchiré, fuite de liquide de frein, colonnettes bloquées ou usure anormale des plaquettes.\n\nSignes typiques d’un étrier défectueux : voiture qui tire d’un côté au freinage, roue anormalement chaude après roulage, odeur de brûlé, freinage irrégulier, plaquettes usées beaucoup plus vite d’un côté, bruit de frottement permanent, ou pédale de frein molle en cas de fuite. Un étrier grippé peut aussi faire consommer davantage et abîmer rapidement disque et plaquettes.\n\nPour acheter la bonne pièce, utilisez idéalement la **plaque d’immatriculation** ou le **VIN** sur des sites comme Oscaro, Mister-Auto, Autodoc, Norauto, Feu Vert ou Piecesauto24. Vérifiez bien : côté gauche/droit, essieu avant/arrière, diamètre du disque, marque du système de freinage Bosch/TRW/ATE/Brembo, présence ou non du frein de parking électrique, et consigne éventuelle sur étrier reconditionné.\n\nEn remplacement, il est souvent préférable de changer ou contrôler aussi les **plaquettes**, les **disques**, les **flexibles**, les **colonnettes** et le **liquide de frein**. Après montage, une purge correcte est indispensable. Sur les véhicules avec frein de parking électrique, il faut parfois une valise diagnostic pour mettre l’étrier arrière en mode maintenance.\n\nSi l’étrier est seulement encrassé ou que les colonnettes coulissent mal, un nettoyage/graissage adapté peut suffire. Si le piston fuit ou reste bloqué, mieux vaut remplacer l’étrier. Pour un usage quotidien, des marques comme ATE, TRW, Bosch, Brembo, Budweg ou Bosch Exchange sont généralement des choix sérieux.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro"
+    ],
+    "sources_cited": []
+  }
+}

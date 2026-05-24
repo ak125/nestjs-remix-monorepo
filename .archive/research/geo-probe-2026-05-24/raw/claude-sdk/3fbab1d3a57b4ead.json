@@ -1,0 +1,39 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "disque de frein arriere",
+  "prompt_normalized": "disque de frein arriere",
+  "prompt_hash": "3fbab1d3a57b4ead",
+  "gamme": "Kit de freins arrière",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:22:48.745Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 29174,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Disque de frein arrière — l'essentiel pour bien choisir\n\n## Comprendre la pièce\n\nLe disque arrière travaille moins que l'avant (≈30 % du freinage) mais s'use souvent **par corrosion** plus que par friction, surtout sur les voitures qui roulent peu ou en ville. Durée de vie typique : **60 000 à 90 000 km**, à remplacer **toujours par paire** (gauche + droit) et idéalement avec les plaquettes assorties.\n\n## Les bons critères\n\n- **Référence exacte** : prends ta plaque d'immatriculation ou ton numéro VIN — le diamètre, l'épaisseur et le type (plein, ventilé, percé) varient selon la motorisation et la finition, même sur un modèle identique.\n- **Plein vs ventilé** : la plupart des compactes/citadines ont des disques **pleins** à l'arrière, les berlines et SUV plus lourds des **ventilés**.\n- **Capteur ABS / roulement intégré** : certains véhicules (Renault, Peugeot récents) ont le roulement de roue avec capteur ABS intégré au disque — vérifie bien.\n\n## Marques fiables (premium → bon rapport qualité/prix)\n\n- **Brembo, ATE, TRW, Ferodo, Bosch** : qualité OE, excellents.\n- **Textar, Mintex, Pagid** : très bon milieu de gamme.\n- **Valeo, Delphi, Bendix** : corrects, prix doux.\n- À éviter : les disques no-name à 15 €/pièce — voilage rapide et freinage moyen.\n\n## Où acheter en France\n\n- **Automecanik.com**, Oscaro, Mister-Auto, Yakarouler, Piecesauto24, Autodoc — pour comparer prix et compatibilité par plaque.\n- **Norauto / Feu Vert / Midas** si tu veux pose comprise.\n- **Concessionnaire** pour les véhicules récents sous garantie ou avec spécificité (capteur intégré).\n\n## Budget indicatif (la paire)\n\n- Citadine : **40–80 €**\n- Compacte / berline : **70–140 €**\n- SUV / premium : **120–250 €**\n- Pose : **60–120 €** la paire en garage indépendant.\n\n## Conseil pratique\n\nChange **plaquettes + disques ensemble** si les plaquettes dépassent 50 % d'usure — ça évite un deuxième passage atelier. Et après pose, fais un **rodage** de 200 km en freinages progressifs avant tout freinage appuyé. Pour les diagnostics ou avis croisés : **forum-auto.caradisiac.com** ou **Reddit r/MecanicAuto** sont utiles.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "à 15 €/pièce — voilage rapide et freinage moyen.\n\n## Où acheter en France\n\n- **Automecanik.com**, Oscaro, Mister-Auto, Yakarouler, Piecesauto24, Autodoc — pour comparer prix et compatibilité par plaque.\n- **Norauto / Feu Vert / Midas** si",
+    "competitors_mentioned": [
+      "autodoc",
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      },
+      {
+        "raw": "forum-auto.caradisiac.com",
+        "cluster": "forum_communautaire",
+        "matchedDomain": "forum-auto.caradisiac.com"
+      }
+    ]
+  }
+}

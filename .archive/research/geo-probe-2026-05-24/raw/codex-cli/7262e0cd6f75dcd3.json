@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "tambour de frein",
+  "prompt_normalized": "tambour de frein",
+  "prompt_hash": "7262e0cd6f75dcd3",
+  "gamme": "Tambour de frein",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:34:19.351Z",
+  "model_version": null,
+  "duration_ms": 16760,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le **tambour de frein** est une pièce du système de freinage, surtout présente à l’arrière sur beaucoup de citadines, compactes et utilitaires. Il fonctionne avec des **mâchoires de frein** : quand tu freines, les mâchoires s’écartent et frottent contre l’intérieur du tambour pour ralentir la roue.\n\nSi tu cherches à en acheter ou à diagnostiquer un problème, les points importants sont :\n\n- **Symptômes d’usure** : freinage moins efficace, bruit de frottement ou grincement, vibrations, frein à main qui serre mal, roue arrière qui chauffe, pédale de frein anormalement longue.\n- **Pièces souvent remplacées ensemble** : tambours, mâchoires, cylindres de roue, ressorts/kit de montage, parfois câble de frein à main et liquide de frein.\n- **Contrôle utile** : diamètre intérieur du tambour. S’il dépasse la cote maximale indiquée par le constructeur, il faut le remplacer.\n- **Marques fiables** : Bosch, Brembo, TRW, ATE, Ferodo, Delphi, Textar, Valeo. Pour une voiture courante, évite les pièces inconnues ultra-premier prix si tu veux un freinage durable et régulier.\n\nPour trouver le bon modèle, il faut idéalement la **plaque d’immatriculation**, le **VIN**, ou au minimum : marque, modèle, année, motorisation, diamètre du tambour et présence ou non de l’ABS selon véhicule. Des sites comme **Oscaro**, **Mister-Auto**, **Autodoc**, **Yakarouler** ou **Norauto** permettent de filtrer par véhicule, mais vérifie toujours les dimensions avant commande.\n\nCôté coût, un tambour seul peut souvent tourner autour de **30 à 100 € pièce** selon véhicule et marque. Un remplacement complet arrière avec mâchoires et cylindres peut vite monter, surtout avec la main-d’œuvre, car le réglage du frein à main et la purge éventuelle doivent être bien faits.\n\nSi le véhicule tire d’un côté ou si un cylindre fuit, il faut traiter les deux côtés de l’essieu arrière pour garder un freinage équilibré.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "frein tambour",
+  "prompt_normalized": "frein tambour",
+  "prompt_hash": "20864d61b0f86acc",
+  "gamme": "Tambour de frein",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:15:25.861Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 26300,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Frein à tambour : ce qu'il faut savoir\n\nLe frein à tambour équipe encore l'essieu arrière de nombreuses voitures (Clio, 208, Sandero, Twingo, C3, Fiesta…). Moins coûteux et plus durable qu'un disque sur un essieu peu sollicité, il reste pertinent malgré la généralisation des disques.\n\n## Composants principaux\n\n- **Tambour** : cloche en fonte fixée sur le moyeu\n- **Mâchoires** (segments) avec garnitures de friction\n- **Cylindre de roue** : pousse les mâchoires via la pression hydraulique\n- **Ressorts de rappel** et **rattrapeur automatique de jeu**\n- **Câble de frein de parking** (le frein à main agit ici)\n\n## Symptômes d'usure\n\n- Bruit de frottement métallique à l'arrière\n- Frein à main qui se serre trop haut\n- Pédale qui s'enfonce ou freinage déséquilibré\n- Suintement de liquide derrière le tambour = cylindre de roue HS (à remplacer impérativement)\n\n## Intervalle de remplacement\n\nGarnitures : généralement **80 000 à 150 000 km** selon usage. Le tambour lui-même se remplace quand il atteint le **diamètre maxi** gravé dessus (ex. 203,5 mm sur une Clio).\n\n## Choix des pièces\n\nMarques fiables : **Bosch, TRW, ATE, Ferodo, Brembo, Textar, Valeo, Delphi**. Évite le très bas de gamme générique — le freinage n'est pas le poste où économiser 15 €.\n\nPour comparer prix et références, **Oscaro, Mister-Auto, Yakarouler, Auto-doc, 1001Pièces** couvrent bien le marché français. Sur AutoMecanik, la sélection est filtrée par compatibilité véhicule (type-mine / motorisation) pour éviter les erreurs de référence.\n\n## Montage\n\nToujours remplacer **par paire** (les deux côtés). Kit complet recommandé : mâchoires + ressorts + cylindres de roue + éventuellement tambour. Compter **1h à 1h30 par côté** pour un mécanicien équipé. Outils utiles : pince à ressorts de frein, clé à tambour, purgeur (liquide de frein à refaire après remplacement du cylindre).\n\n⚠️ Après remontage, **roder progressivement** sur 200-300 km (freinages modérés) pour que les garnitures épousent le tambour. Vérifier le réglage du frein à main.\n\nPour un diagnostic précis, indique la marque/modèle/année — la procédure et les références varient sensiblement (Renault auto-ajustant vs Peugeot à came, par exemple).",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "-Auto, Yakarouler, Auto-doc, 1001Pièces** couvrent bien le marché français. Sur AutoMecanik, la sélection est filtrée par compatibilité véhicule (type-mine / motorisation) pour éviter les erreurs de référence.\n\n## Montage\n\nToujours remplace",
+    "competitors_mentioned": [
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

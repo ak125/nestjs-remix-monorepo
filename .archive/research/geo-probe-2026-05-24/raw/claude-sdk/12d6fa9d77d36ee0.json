@@ -1,0 +1,25 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "frein de tambour",
+  "prompt_normalized": "frein de tambour",
+  "prompt_hash": "12d6fa9d77d36ee0",
+  "gamme": "Tambour de frein",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:21:24.475Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 35171,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Frein à tambour — l'essentiel\n\nLe frein à tambour équipe encore l'essieu arrière de nombreuses citadines et utilitaires (Clio, 208, Sandero, Kangoo, Berlingo…). Moins performant que le disque, il reste choisi pour son coût, sa robustesse et l'intégration facile du frein de stationnement.\n\n## Comment ça marche\n\nUn **tambour** en fonte tourne avec la roue. À l'intérieur, deux **mâchoires** garnies de **garnitures** sont écartées par un **cylindre de roue** hydraulique quand tu appuies sur la pédale. Elles viennent frotter contre la paroi interne du tambour → freinage. Des ressorts de rappel les ramènent au repos. Un système de rattrapage automatique compense l'usure.\n\n## Symptômes d'usure ou de panne\n\n- **Bruit métallique strident** à l'arrière → garnitures en fin de vie (témoin d'usure qui touche le tambour).\n- **Pédale qui s'enfonce / freinage spongieux** → fuite d'un cylindre de roue (tu verras du liquide DOT 4 sur l'intérieur du pneu).\n- **Frein qui tire d'un côté** → un cylindre grippé ou une mâchoire qui colle.\n- **Frein à main inefficace** → câble détendu ou rattrapage HS.\n- **À-coups au freinage** → tambour ovalisé (à remplacer, pas à rectifier en général aujourd'hui).\n\n## Entretien et coûts\n\nContrôle visuel tous les **20 000 km** (dépose du tambour). Durée de vie typique des garnitures : **80 000 à 120 000 km**. À chaque remplacement, on change **kit complet** (mâchoires + ressorts + cylindres si suintement + tambour si rayé ou hors-cote).\n\n**Prix indicatifs** (kit pour un essieu) :\n- Pièces premium (**Bosch, TRW, ATE, Ferodo, Brembo**) : 80–180 €.\n- Main-d'œuvre garage : 1 à 1,5 h par côté, soit 120–250 € au total.\n\n## Où acheter\n\nPour les pièces en ligne : **Oscaro, Mister-Auto, Yakarouler, Auto-Doc**, ou évidemment **Automecanik** pour des références adaptées à ta motorisation. Évite les marques no-name : sur du freinage, c'est non négociable.\n\n## Conseil pratique\n\nTravaille **toujours essieu complet** (jamais un seul côté), purge le circuit si tu as ouvert un cylindre, et roule doucement les 200 premiers km pour le rodage des garnitures. Si tu n'es pas équipé (compresseur de ressorts, clé dynamométrique), confie l'opération à un pro — un frein arrière mal remonté peut bloquer une roue.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "ièces en ligne : **Oscaro, Mister-Auto, Yakarouler, Auto-Doc**, ou évidemment **Automecanik** pour des références adaptées à ta motorisation. Évite les marques no-name : sur du freinage, c'est non négociable.\n\n## Conseil pratique\n\nTravaille",
+    "competitors_mentioned": [
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

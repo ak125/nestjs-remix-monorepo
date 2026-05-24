@@ -1,0 +1,33 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "flexible frein avant",
+  "prompt_normalized": "flexible frein avant",
+  "prompt_hash": "4dbf34989bba9f5b",
+  "gamme": "Flexible de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:33:19.116Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 25921,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le flexible de frein avant est une pièce critique du circuit hydraulique : il relie la canalisation rigide (fixée au châssis) à l'étrier de frein, qui suit les mouvements de suspension et de direction. C'est donc une pièce d'usure qui travaille en flexion permanente sous haute pression (jusqu'à 150 bars).\n\n**Symptômes d'un flexible à remplacer :**\n- Pédale spongieuse ou qui s'enfonce\n- Gonflement visible du flexible lors du freinage (à inspecter pédale appuyée)\n- Craquelures, suintement, traces brunes d'huile DOT\n- Tirage d'un côté au freinage (flexible obstrué intérieurement)\n- Étrier qui reste serré après relâchement de la pédale\n\n**Durée de vie** : généralement 6 à 10 ans selon exposition (sel, UV, projections). Le contrôle technique français le sanctionne dès qu'il y a craquelure profonde ou suintement.\n\n**Choix de la pièce :**\n- **Origine constructeur (OEM)** : référence sûre, parfois cher\n- **Équipementiers reconnus** : ATE, TRW, Bosch, Ferodo, Brembo, Textar — qualité équivalente OE\n- **Aviation / inox tressé (Goodridge, Hel Performance)** : pédale plus ferme, gain en feeling pédale, homologués route ; intéressant si conduite sportive\n- À éviter : flexibles génériques no-name sur AliExpress / marketplaces sans marque\n\n**Où acheter en France :**\n- **Oscaro**, **Mister-Auto**, **Yakarouler**, **AutoDoc** pour le catalogue large avec référence par plaque/VIN\n- **Automecanik.com** si tu cherches une référence ciblée par véhicule\n- **Norauto / Feu Vert** si tu veux pose immédiate\n- Concessionnaire pour l'OEM strict\n\n**Pose** : remplacement par paire (gauche + droite) recommandé, purge complète du circuit obligatoire avec liquide DOT 4 neuf (ou DOT 5.1 selon préco constructeur). Comptez 1h à 1h30 atelier, ~60-120 € main d'œuvre + 15-40 €/flexible standard.\n\n**Astuce** : profite du remplacement pour contrôler plaquettes, disques et étriers (pistons grippés fréquents si flexible HS depuis longtemps). Pour une référence précise, donne-moi la marque, le modèle et l'année du véhicule.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "rouler**, **AutoDoc** pour le catalogue large avec référence par plaque/VIN\n- **Automecanik.com** si tu cherches une référence ciblée par véhicule\n- **Norauto / Feu Vert** si tu veux pose immédiate\n- Concessionnaire pour l'OEM strict\n\n**Pos",
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      }
+    ]
+  }
+}

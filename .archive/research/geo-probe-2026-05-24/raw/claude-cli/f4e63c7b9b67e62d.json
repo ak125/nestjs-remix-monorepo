@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "filtre a air polini",
+  "prompt_normalized": "filtre a air polini",
+  "prompt_hash": "f4e63c7b9b67e62d",
+  "gamme": "Filtre à air",
+  "volume": 500,
+  "captured_at": "2026-05-24T15:42:46.328Z",
+  "model_version": null,
+  "duration_ms": 43285,
+  "ok": true,
+  "error": null,
+  "response_raw": "Polini est une marque italienne (Bergame, depuis 1945) spécialisée dans la préparation moteur scooter et moto, surtout sur les blocs Piaggio, Minarelli et Peugeot. Côté filtration, ils proposent plusieurs familles bien distinctes — autant choisir en fonction de ton montage avant de commander.\n\n**Les principales gammes Polini :**\n\n- **Polini Original Air Box** : le filtre à mousse en remplacement de la cartouche d'origine, garde la boîte à air d'usine. Solution simple, pas besoin de re-jetter sérieusement le carbu. Idéal sur Piaggio Zip/Liberty, Vespa LX/Primavera, MBK Booster d'origine.\n- **Polini Filtre Cornet / Trompette** (souvent appelé \"filtre à air direct\") : se monte directement sur le carbu (PHBG, PHBN, Dell'Orto, Mikuni) après dépose de la boîte d'origine. Obligatoire avec un gros kit cylindre. Demande un regicleurage et souvent une remontée en gicleur principal de 5 à 15 points.\n- **Polini Box Air Filter** : la boîte à air sport semi-fermée, compromis bruit/perfs/pluie, populaire sur les prépas Stage 2-3.\n\n**Compatibilité — l'info à vérifier avant achat :** modèle + millésime du scooter, type de carbu (diamètre de pipe, généralement 17.5, 19, 21, 24 ou 28 mm), et si tu es en kit ou en origine. Sans ça tu peux te retrouver avec un filtre qui ne se fixe pas physiquement.\n\n**Où acheter en France :** Scoot-Center, Scoot-System, Streetbuzz, Tecnium, Motoblouz pour les pièces de prépa scooter. Pour comparer les prix Doctorshop.it (Italie, expédie en France) est souvent le moins cher sur le catalogue Polini complet. Amazon et eBay ont du Polini mais attention aux contrefaçons sur les filtres mousse — vérifier l'emballage holographique.\n\n**Concurrents directs à comparer :** Malossi (le rival historique, gamme équivalente), Top Performances, Stage6, Doppler — souvent intéressants si tu trouves le bon kit complet (filtre + admission + gicleurs).\n\n**Forums utiles pour les retours d'expérience** : Scooter-Station, Forum-Scooter, et le sous-forum scooter de Caradisiac. Cherche ton modèle exact + \"filtre Polini\" pour voir les réglages carbu rapportés par les autres préparateurs.\n\nSi tu me dis ton scooter et ton état moteur (origine / kit), je peux affiner la reco.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [],
+    "sources_cited": [
+      {
+        "raw": "Doctorshop.it",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

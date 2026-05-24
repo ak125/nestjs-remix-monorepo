@@ -1,0 +1,28 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "disque de frein clio 2",
+  "prompt_normalized": "disque de frein clio 2",
+  "prompt_hash": "df98f6c131b12d73",
+  "gamme": "plaquette de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:11:43.653Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 40020,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour une Clio 2 (phase 1, 2 ou 3 — 1998 à 2005/06 selon finition), les disques de frein varient selon la motorisation. Voici les références utiles avant d'acheter :\n\n**Dimensions courantes (avant, ventilés)**\n- 1.2 8v/16v, 1.4 8v, 1.5 dCi 65/80 : **238 mm** (épaisseur 20 mm)\n- 1.6 16v, 1.9 D/dTi, 1.5 dCi 100, 1.4 16v : **259 mm** (épaisseur 20,6 mm)\n- Clio 2 RS 172/182 : **280 mm** avant, et **disques arrière 238 mm** (au lieu de tambours)\n\nSur les versions non-RS, l'arrière est en **tambours**, pas en disques — beaucoup se trompent là-dessus.\n\n**Comment trouver la bonne référence**\nLe plus fiable : ta carte grise (champ D.2 = type-mine) + le code moteur. Sinon, mesure le diamètre du disque actuel après dépose de la roue. Attention aussi au type d'étrier (Bendix ou Bosch selon série) qui change parfois la fixation.\n\n**Marques recommandées**\n- Premium : **Brembo, ATE, TRW, Textar, Ferodo, Pagid**\n- Bon rapport qualité/prix : **Bosch, Valeo, Delphi, A.B.S.**\n- Entrée de gamme correcte : **STARK, Metzger, MAPCO**\n\nÉvite les disques no-name à 10€ pièce — voilage rapide et vibrations au freinage.\n\n**Où acheter**\n- **Oscaro, Mister-Auto, Yakarouler, Autodoc, Piecesauto24** pour les prix et le choix de marques\n- **Carter-Cash, Norauto, Feu Vert, Speedy** si tu veux récupérer en magasin ou faire poser\n- **AutoMecanik** pour le catalogue OE/aftermarket avec filtrage par motorisation\n- Casses auto type **Opisto** ou **France Casse** si tu cherches d'occasion (déconseillé pour des disques)\n\n**Budget**\nCompter **25–45 €** la paire en milieu de gamme, **50–80 €** en premium (Brembo/ATE). Ajoute les **plaquettes** (15–30 €) — toujours changer les deux ensemble, sinon usure inégale et freinage qui tire.\n\n**Conseils pose**\n- Toujours par paire (gauche + droite)\n- Nettoyer le moyeu (anti-vibration)\n- Rodage : 200 km sans freinage brutal\n- Vérifier l'état des **étriers** et **flexibles** pendant qu'on y est\n\nForums utiles si tu veux confirmer la réf : **Planète Renault, Forum-Auto (section Clio), Renault Clio Club**.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "Norauto, Feu Vert, Speedy** si tu veux récupérer en magasin ou faire poser\n- **AutoMecanik** pour le catalogue OE/aftermarket avec filtrage par motorisation\n- Casses auto type **Opisto** ou **France Casse** si tu cherches d'occasion (décon",
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

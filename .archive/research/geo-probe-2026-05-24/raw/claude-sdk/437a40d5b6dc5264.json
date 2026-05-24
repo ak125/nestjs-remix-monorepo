@@ -1,0 +1,32 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "disque de frein rs6",
+  "prompt_normalized": "disque de frein rs6",
+  "prompt_hash": "437a40d5b6dc5264",
+  "gamme": "disque de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:47:49.754Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 35498,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour un disque de frein RS6, il faut d'abord cadrer la génération — les dimensions et la fixation diffèrent fortement :\n\n- **C5 (2002-2004, 4.2 V8 biturbo)** : 365 mm avant, 335 mm arrière\n- **C6 (2008-2010, 5.0 V10 TFSI)** : 390 mm avant, 356 mm arrière (option céramique 420 mm)\n- **C7 (2013-2018, 4.0 V8 TFSI)** : 390 mm avant en acier, 420 mm en céramique optionnelle\n- **C8 (2020+, 4.0 V8 TFSI MHEV)** : 420 mm avant acier, 440 mm céramique optionnelle\n\nPour identifier précisément le tien, le plus fiable reste la plaque constructeur (code PR des freins, ex. 1LJ, 1LX, 2EA) ou directement le numéro de châssis (VIN) sur ETKA / des configurateurs comme **Oscaro** ou **Autodoc** qui filtrent par VIN.\n\n**Côté marques sérieuses en remplacement acier** :\n- **Brembo** (souvent OEM d'origine sur les RS, gamme Xtra percés/rainurés en aftermarket)\n- **Zimmermann** série *Sport Coat Z* ou *Formula Z* — très bon rapport qualité/prix, OE-équivalent\n- **ATE PowerDisc** — un compromis durable\n- **TRW**, **Textar**, **Pagid** — qualité OE classique\n- **EBC** (USR/GD) ou **DBA 4000/5000** si tu veux du plus typé piste\n\nÀ éviter : les disques no-name sub-200€ la paire avant — sur RS6 (poids + couple), tu auras voile thermique en quelques sessions appuyées.\n\n**Où acheter en France** :\n- **Oscaro**, **Mister-Auto**, **Autodoc**, **Yakarouler**, **Piecesauto24** pour le grand public\n- **Stoptech France** ou **RS-Direct** pour le haut de gamme/préparation\n- En occasion / pièces démontées : **Opisto**, ou les forums **Audipassion** et **Forum-Audi.com** (section petites annonces)\n\n**Important** : remplace toujours les disques par paire (essieu) et change les plaquettes en même temps, idéalement de la même marque pour cohérence du couple de friction. Sur C7/C8 céramique, ne mets *jamais* de plaquettes acier — le disque carbone-céramique coûte ~5 000 €/pièce et serait détruit en quelques freinages.\n\nDonne-moi l'année exacte et je t'oriente sur une référence précise.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Forum-Audi.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

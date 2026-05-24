@@ -1,0 +1,49 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "prix disque et plaquette de frein peugeot 3008",
+  "prompt_normalized": "prix disque et plaquette de frein peugeot 3008",
+  "prompt_hash": "7c07630258a9bc9f",
+  "gamme": "disque de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T15:41:30.873Z",
+  "model_version": null,
+  "duration_ms": 21291,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour une Peugeot 3008, compte en général :\n\n- **Plaquettes seules** : environ **30 à 90 €** le jeu en pièces, selon marque.\n- **2 disques + plaquettes avant** : environ **120 à 250 €** en pièces sur Oscaro, Autodoc, Mister-Auto, Yakarouler, etc.\n- **2 disques + plaquettes arrière** : souvent **110 à 230 €** en pièces, parfois plus si disques avec roulement/capteur ABS intégré selon version.\n- **Montage en garage** : ajoute souvent **100 à 200 € de main-d’oeuvre par essieu**.\n- **Prix posé, par essieu** : vise **250 à 450 €** chez un centre auto ou garage indépendant. En concession Peugeot, ça peut plutôt monter vers **400 à 650 €**.\n\nPour une demande “prix disque et plaquette de frein Peugeot 3008”, le devis réaliste à surveiller est donc : **environ 300-400 € pour l’avant posé**, et **300-500 € pour l’arrière posé** selon génération du 3008, motorisation et type de disques. Bolid donne par exemple un ordre de grandeur autour de **431 € par essieu** pour disques + plaquettes sur 3008, ce qui colle au marché actuel : https://www.bolid.be/interventions/changement-disques-de-frein/peugeot/3008\n\nPour comparer, regarde les pièces compatibles par immatriculation sur **Oscaro** ou **Autodoc**, puis demande un devis posé chez **Norauto**, **Feu Vert**, **Midas** ou un garage indépendant. Norauto liste aussi des références freinage pour 3008 : https://www.norauto.fr/c/48113-freinage/peugeot/3008-suv.html\n\nPoint important : on change presque toujours **les plaquettes avec les disques**, mais pas forcément les disques à chaque changement de plaquettes. Demande au garage l’épaisseur mesurée des disques et la cote minimale constructeur. Sans cette mesure, un devis “disques à remplacer” est moins convaincant.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "https://www.bolid.be/interventions/changement-disques-de-frein/peugeot/3008",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      },
+      {
+        "raw": "https://www.norauto.fr/c/48113-freinage/peugeot/3008-suv.html",
+        "cluster": "marchand",
+        "matchedDomain": "norauto.fr"
+      },
+      {
+        "raw": "www.bolid.be",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      },
+      {
+        "raw": "www.norauto.fr",
+        "cluster": "marchand",
+        "matchedDomain": "norauto.fr"
+      }
+    ]
+  }
+}

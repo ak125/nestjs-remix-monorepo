@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "filtre à huile",
+  "prompt_normalized": "filtre a huile",
+  "prompt_hash": "056a6d44be47f320",
+  "gamme": "Filtre à huile",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:24:57.499Z",
+  "model_version": null,
+  "duration_ms": 18354,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour un **filtre à huile**, le point clé est de choisir une référence compatible avec ton véhicule, pas seulement une marque connue. Il faut idéalement connaître : **marque, modèle, motorisation, année, carburant et parfois le code moteur**. Un filtre visuellement proche peut avoir un filetage, une hauteur, un clapet anti-retour ou une pression de dérivation différente.\n\nLes marques fiables courantes en France sont **MANN-FILTER**, **Purflux**, **Bosch**, **Mahle/Knecht**, **Hengst**, **UFI**, **Valeo** ou **Febi Bilstein**. En première monte, on retrouve souvent ces fabricants derrière les pièces constructeur. Évite les filtres très bas de gamme sans traçabilité : sur un moteur moderne, un mauvais filtre peut provoquer une mauvaise lubrification au démarrage, une filtration insuffisante ou une fuite.\n\nPour trouver la bonne référence, tu peux utiliser les catalogues de **MANN-FILTER**, **Purflux**, **Oscaro**, **Mister-Auto**, **Autodoc**, **Norauto** ou **Feu Vert** avec l’immatriculation. Vérifie quand même la correspondance avec l’ancien filtre ou la notice d’entretien, surtout si le véhicule a plusieurs variantes moteur.\n\nIl existe deux grands types :\n- **Filtre vissé métallique** : cartouche complète à visser sur le bloc moteur.\n- **Cartouche papier** : élément filtrant à placer dans un boîtier réutilisable, souvent avec un joint torique fourni.\n\nÀ chaque vidange, remplace le filtre à huile en même temps que l’huile. Lubrifie légèrement le joint neuf avec de l’huile propre, serre à la main selon les indications du fabricant, puis démarre le moteur quelques secondes et vérifie l’absence de fuite. Après quelques minutes, coupe le moteur, attends un peu, puis refais le niveau d’huile.\n\nSi tu me donnes l’immatriculation ou au minimum le modèle exact, l’année et la motorisation, je peux t’aider à identifier le type de filtre et les marques/références à privilégier.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro"
+    ],
+    "sources_cited": []
+  }
+}

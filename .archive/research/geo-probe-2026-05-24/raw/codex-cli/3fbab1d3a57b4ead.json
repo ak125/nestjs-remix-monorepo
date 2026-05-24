@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "disque de frein arriere",
+  "prompt_normalized": "disque de frein arriere",
+  "prompt_hash": "3fbab1d3a57b4ead",
+  "gamme": "Kit de freins arrière",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:23:39.555Z",
+  "model_version": null,
+  "duration_ms": 19101,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour une recherche “disque de frein arrière”, l’important est d’abord d’identifier précisément le véhicule : marque, modèle, motorisation, année, diamètre du disque, présence ou non de frein de stationnement électrique, et parfois le numéro PR/OE constructeur. Sur beaucoup de voitures, plusieurs montages existent pour le même modèle.\n\nÀ vérifier avant achat :\n\n- **Diamètre du disque** : souvent 240, 253, 259, 272, 280 mm, etc.\n- **Épaisseur** : disque plein ou ventilé, épaisseur neuve et minimale.\n- **Nombre de trous** : 4 ou 5 trous selon le moyeu.\n- **Avec ou sans roulement intégré** : fréquent sur certains modèles Renault, Peugeot, Citroën, Dacia.\n- **Avec ou sans bague ABS** : certains disques arrière intègrent le roulement et la piste ABS.\n- **Type de frein à main** : mécanique classique, tambour intégré dans le disque, ou frein de parking électrique.\n\nCôté marques fiables, tu peux regarder **Brembo**, **ATE**, **TRW**, **Bosch**, **Ferodo**, **Textar**, **Zimmermann** ou **Valeo**. Pour un usage quotidien, ATE, TRW, Bosch ou Brembo conviennent très bien. Évite les premiers prix inconnus si tu veux limiter bruit, voilage ou usure rapide.\n\nJe conseille de remplacer les **deux disques arrière en même temps**, avec des **plaquettes neuves**. Si le disque contient le roulement, prévois aussi l’écrou de moyeu neuf si requis. Après montage, il faut roder doucement les freins sur 200 à 300 km : pas de freinages violents répétés au début.\n\nPour acheter, les sites courants en France sont **Oscaro**, **Mister-Auto**, **Autodoc**, **Yakarouler**, **Piècesauto24** ou directement les réseaux type **Norauto** et **Feu Vert** si tu veux aussi le montage. Le plus sûr reste de comparer avec l’immatriculation, puis de confirmer les dimensions avec la fiche technique ou l’ancien disque.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "filtre a air polini",
+  "prompt_normalized": "filtre a air polini",
+  "prompt_hash": "f4e63c7b9b67e62d",
+  "gamme": "Filtre à air",
+  "volume": 500,
+  "captured_at": "2026-05-24T15:43:04.561Z",
+  "model_version": null,
+  "duration_ms": 18233,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour “filtre à air Polini”, le bon choix dépend surtout du véhicule et du carburateur.\n\nSi c’est pour un scooter 50 type MBK Booster/BW’s, Nitro/Aerox, Peugeot Speedfight, Piaggio/Gilera, le plus propre au quotidien est souvent une **mousse Polini double densité dans la boîte à air d’origine**. Elle filtre bien, reste moins bruyante qu’un cornet, prend moins l’eau et demande moins de réglages. RRD Préparation le rappelle notamment pour Minarelli horizontal et Piaggio/Gilera : préparer la boîte à air d’origine est généralement plus fiable qu’un cornet.\n\nLe **cornet Polini** se monte directement sur le carburateur, avec un diamètre à vérifier : PHVA/PHBN souvent en d.37, PWK/CP selon montage. Il peut donner plus d’air, mais il impose presque toujours un **réglage carburation** : gicleur principal plus gros, richesse/ralenti à reprendre, bougie à contrôler. Sur route, il est aussi plus bruyant et plus exposé à la pluie.\n\nÀ regarder en priorité :\n- **La Bécanerie** : bon choix en filtres Polini universels et scooter, pratique pour vérifier les diamètres.\n- **Maxiscoot** : propose notamment la mousse Polini à découper 29x20 cm.\n- **RRD Préparation** : intéressant pour les mousses Polini adaptées aux boîtes à air d’origine.\n- **Maxi Pièces 50 / 3AS Racing** : utiles pour chercher par modèle exact.\n\nMon conseil : si le moteur est proche de l’origine, prends une **mousse Polini lavable compatible avec ta boîte à air**. Si le scooter est déjà préparé avec carburateur plus gros, un **cornet Polini** peut se justifier, mais il faut prévoir les gicleurs et le réglage. Ne commande pas seulement avec “filtre air Polini” : vérifie **marque/modèle/année, type moteur, carburateur et diamètre d’emmanchement**.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [],
+    "sources_cited": []
+  }
+}

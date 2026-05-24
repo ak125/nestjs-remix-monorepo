@@ -1,0 +1,21 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "maitre cylindre brembo pr 19",
+  "prompt_normalized": "maitre cylindre brembo pr 19",
+  "prompt_hash": "fcfa8036f3c1cc84",
+  "gamme": "Maître cylindre de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:08:20.132Z",
+  "model_version": null,
+  "duration_ms": 21888,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le **Brembo PR 19 / 19RCS** est un maître-cylindre radial haut de gamme surtout destiné aux motos sportives avec **double disque avant** et étriers 4 pistons. C’est un très bon choix si l’utilisateur cherche plus de mordant, de constance au levier et un meilleur feeling qu’un maître-cylindre d’origine.\n\nÀ vérifier avant achat :  \n- **PR19 frein** ou **PR19 embrayage** : la requête peut désigner les deux. Pour frein avant, chercher “Brembo PR19 RCS frein”.  \n- **19x18 vs 19x20** : en général, **19x18** donne une attaque plus directe/sportive, souvent piste ; **19x20** est plus progressif, agréable route ou pluie.  \n- **RCS** : permet de passer de 19x18 à 19x20 sur le même maître-cylindre. C’est le plus polyvalent.  \n- **Corsa Corta** : version plus chère avec réglage supplémentaire de l’attaque du freinage, utile surtout pour piste ou conduite très sportive.\n\nPour acheter en France, je regarderais chez **La Bécanerie**, **3AS Racing**, **AccessBK**, **Ul’Team Bike**, **PK Road Parts**, **Gentlemen Riders**, **SBA France** ou **NMR Racing**. Les prix observés tournent souvent autour de **250-360 €** pour un PR19/RCS classique selon version et promo, et environ **450-460 €** pour un **19RCS Corsa Corta**.\n\nAttention aux accessoires : il faut souvent prévoir **bocal**, **durite de bocal**, **support**, éventuellement **banjo**, liquide **DOT 4**, et une purge sérieuse. Sur route, vérifier aussi la présence du **contacteur de feu stop**.\n\nConseil simple : pour une sportive route/piste en double disque, prends un **Brembo 19RCS**. Pour usage route majoritaire, commence en **19x20** ; pour piste ou freinage plus agressif, passe en **19x18**.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [],
+    "sources_cited": []
+  }
+}

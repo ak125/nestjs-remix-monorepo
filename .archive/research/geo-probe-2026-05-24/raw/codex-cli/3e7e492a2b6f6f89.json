@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "contacteur feux stop clio 3",
+  "prompt_normalized": "contacteur feux stop clio 3",
+  "prompt_hash": "3e7e492a2b6f6f89",
+  "gamme": "Interrupteur des feux de freins",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:00:31.112Z",
+  "model_version": null,
+  "duration_ms": 17895,
+  "ok": true,
+  "error": null,
+  "response_raw": "Sur une Renault Clio 3, le **contacteur de feux stop** est le petit interrupteur placé au niveau de la **pédale de frein**. Il commande l’allumage des feux stop et peut aussi envoyer une information au calculateur, à l’ABS/ESP ou au régulateur de vitesse selon version.\n\nLes symptômes typiques d’un contacteur défectueux sont :\n\n- feux stop qui ne s’allument plus ;\n- feux stop qui restent allumés en permanence ;\n- voyant injection, ESP/ABS ou message défaut freinage ;\n- régulateur/limiteur qui ne fonctionne plus ;\n- démarrage ou passage de vitesse perturbé sur certaines versions automatiques.\n\nSur Clio 3, la pièce est généralement peu chère : souvent autour de **10 à 25 €** selon la marque. Tu peux chercher sous les termes **“contacteur feux stop Clio 3”**, **“interrupteur pédale de frein Clio III”** ou avec l’immatriculation sur des sites comme **Oscaro**, **Mister-Auto**, **Autodoc**, **Yakarouler**, **Norauto** ou directement chez **Renault**. Les marques courantes sont **Valeo**, **Febi Bilstein**, **Metzger**, **Hella** ou **ERA**.\n\nLe remplacement est assez simple : le contacteur se trouve en haut de la pédale de frein, souvent fixé par un quart de tour. Il faut débrancher la prise, tourner l’ancien contacteur pour le sortir, remettre le nouveau, puis vérifier que les feux stop s’allument uniquement quand tu appuies sur la pédale. Sur certains modèles, il faut bien régler la tige du contacteur au montage : si elle est mal positionnée, les feux peuvent rester allumés ou ne pas s’allumer.\n\nAvant de remplacer, vérifie aussi les **ampoules**, le **fusible des feux stop** et l’état du connecteur. Mais si les trois feux stop dysfonctionnent en même temps, le contacteur de pédale est une cause très probable.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

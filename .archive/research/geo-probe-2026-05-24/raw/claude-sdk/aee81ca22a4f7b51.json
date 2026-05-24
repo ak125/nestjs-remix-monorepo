@@ -1,0 +1,28 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "vidange filtre à huile prix",
+  "prompt_normalized": "vidange filtre a huile prix",
+  "prompt_hash": "aee81ca22a4f7b51",
+  "gamme": "Filtre à huile",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:07:02.946Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 30139,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Vidange + filtre à huile : combien ça coûte vraiment en 2026\n\n## Prix en centre auto / garage\n\nPour une **berline essence ou diesel classique** (Clio, 308, Golf, Mégane…), comptez :\n\n- **Norauto / Feu Vert / Midas / Speedy** : **69 à 99 €** pour le forfait \"vidange + filtre à huile\" avec une huile semi-synthétique 10W40. Avec une huile 5W30 ou 5W40 full synthétique (obligatoire sur la plupart des moteurs récents), on passe à **89-130 €**.\n- **Garage indépendant** : souvent **60-95 €** main d'œuvre comprise, parfois moins en zone rurale.\n- **Concession** (Renault, Peugeot, VW…) : **130-220 €**, souvent avec contrôle multipoints inclus.\n- **Roulez-Jeunesse, Carter-Cash** : **autour de 70-90 €** avec huile correcte.\n\nSur un **diesel récent avec filtre + huile spécifique low-SAPS** (BMW, Mercedes, Audi), la facture grimpe vite à **150-250 €** car l'huile (Castrol Edge, Mobil 1, Total Quartz 9000) coûte 12-18 €/L et il en faut 5 à 7 litres.\n\n## Prix si vous le faites vous-même\n\nC'est là qu'on économise franchement :\n\n- **Huile moteur 5L** (Total, Elf, Motul, Castrol, Mobil) : **25-55 €** selon la viscosité et la norme constructeur (ACEA C3, VW 504/507, MB 229.5…).\n- **Filtre à huile** : **4-15 €** chez **Oscaro, Mister-Auto, Yakarouler, Auto Doc**, plus cher en marque OEM (Mann, Mahle, Bosch, Purflux).\n- **Joint de bouchon de vidange** : 0,50-2 €.\n- Total pièces : **30 à 70 €**, soit **60 % d'économie**.\n\nPrévoyez aussi un bac de récupération et un point de collecte (déchetterie ou centre auto, qui reprennent l'huile usagée gratuitement — c'est obligatoire).\n\n## Conseils pratiques\n\n- **Vérifiez la préconisation constructeur** (carnet d'entretien ou via Oscaro / Mister-Auto en saisissant votre immat) : mettre une 10W40 sur un moteur qui demande de la 0W20 abîme le moteur à terme.\n- **Périodicité** : 15 000 km ou 1 an pour l'essence, 20 000 km ou 1 an pour le diesel — moins si trajets courts.\n- Le **filtre à huile se change systématiquement** à chaque vidange, jamais \"une fois sur deux\".\n- Forums utiles pour votre modèle précis : **Forum-Auto, Planète Renault, Forum Peugeot, Audi Passion**.\n\nSi vous me donnez le modèle + l'année + le moteur, je peux vous donner une fourchette exacte.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

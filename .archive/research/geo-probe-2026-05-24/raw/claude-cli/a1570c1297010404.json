@@ -1,0 +1,33 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "temoin d usure disque de frein",
+  "prompt_normalized": "temoin d usure disque de frein",
+  "prompt_hash": "a1570c1297010404",
+  "gamme": "Témoin d'usure",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:12:33.638Z",
+  "model_version": null,
+  "duration_ms": 28720,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Témoin d'usure disque de frein\n\nLe témoin d'usure du disque (à ne pas confondre avec celui des plaquettes) se présente sous deux formes principales :\n\n**1. L'indicateur visuel mécanique (le plus courant)**\nLa plupart des disques ont une **gorge centrale d'usure** (un sillon circulaire usiné sur la piste de freinage). Quand cette gorge disparaît au toucher (le disque devient lisse), c'est que l'épaisseur mini est atteinte. Chaque disque a aussi une **épaisseur mini gravée sur la tranche** ou la cloche (ex. `MIN TH 22.0 mm`). On la mesure au pied à coulisse ou au micromètre : sous cette valeur → remplacement obligatoire, jamais de rectification en dessous.\n\n**2. Le témoin électronique au tableau de bord**\nLe voyant orange \"plaquettes/frein\" (forme de disque pointillé entouré de parenthèses) provient en réalité du **capteur d'usure des plaquettes**, pas du disque. Quand la plaquette s'use, un fil intégré (ou une lame métallique sur les systèmes acoustiques type **TRW, Bosch, Ferodo**) se sectionne ou frotte → voyant allumé ou couinement aigu au freinage. Sur Audi/VW/BMW/Mercedes récents, c'est un capteur filaire à clip ; sur PSA/Renault, souvent une simple lame qui crisse.\n\n**Symptômes annonciateurs côté disque :**\n- Vibration dans la pédale ou le volant au freinage (voile thermique)\n- Bord extérieur du disque avec une **lèvre marquée** > 1 mm (usure très avancée)\n- Rainures profondes, points bleus (surchauffe)\n- Bruit métallique grave (plaquette tapant sur le rivet)\n\n**Où acheter / vérifier :**\nPour les pièces, **Oscaro**, **Mister-Auto**, **Yakarouler** ou **Auto-Doc** couvrent bien les disques **Brembo, ATE, TRW, Ferodo, Bosch, Valeo** avec les cotes d'origine. Pour un diagnostic, **Norauto / Feu Vert / Midas** font le contrôle gratuit en 15 min. Côté forums, **Forum-Auto.com** et **Caradisiac** ont des fils utiles par modèle.\n\n**Règle simple** : disques et plaquettes se changent **par paire d'essieu** (les deux côtés ensemble). Couple plaquettes neuves + disques usés = freinage déséquilibré et usure prématurée.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Forum-Auto.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

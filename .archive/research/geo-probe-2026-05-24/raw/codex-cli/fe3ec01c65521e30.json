@@ -1,0 +1,25 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "filtre à habitacle",
+  "prompt_normalized": "filtre a habitacle",
+  "prompt_hash": "fe3ec01c65521e30",
+  "gamme": "Filtre d'habitacle",
+  "volume": 50000,
+  "captured_at": "2026-05-24T15:03:31.637Z",
+  "model_version": null,
+  "duration_ms": 19230,
+  "ok": true,
+  "error": null,
+  "response_raw": "Un **filtre à habitacle** sert à filtrer l’air qui entre dans l’habitacle via la ventilation, le chauffage ou la climatisation. On l’appelle aussi **filtre pollen** ou **filtre d’habitacle**. Si tu en cherches un, le point clé est de choisir le bon modèle selon ton véhicule : marque, modèle, motorisation, année et parfois numéro VIN.\n\nIl existe généralement trois types :\n\n- **Filtre standard / pollen** : retient poussières, pollens, feuilles fines. C’est le moins cher.\n- **Filtre à charbon actif** : filtre aussi une partie des odeurs, fumées et gaz d’échappement. C’est souvent le meilleur choix au quotidien.\n- **Filtre anti-allergènes / antibactérien** : plus haut de gamme, utile si tu es sensible aux pollens, particules fines ou mauvaises odeurs.\n\nPour une voiture utilisée en ville, je conseillerais plutôt un **filtre à charbon actif**, voire anti-allergènes si la différence de prix reste raisonnable. Des marques fiables : **Mann-Filter, Bosch, Purflux, Valeo, Mahle, Febi Bilstein**. Évite les filtres premier prix inconnus si l’écart n’est que de quelques euros.\n\nTu peux en trouver facilement sur **Oscaro, Mister Auto, Autodoc, Norauto, Feu Vert, Carter-Cash** ou directement chez le constructeur. Compare toujours la référence proposée avec celle indiquée pour ton véhicule.\n\nSymptômes d’un filtre à habitacle à remplacer : buée qui part mal, ventilation faible, mauvaise odeur au démarrage de la clim, allergies plus marquées, filtre visiblement noir ou chargé de feuilles. En général, on le remplace **tous les 15 000 à 30 000 km**, ou **une fois par an**.\n\nLa pose est souvent simple : derrière la boîte à gants, sous le pare-brise côté moteur, ou près des pédales selon le modèle. Attention au **sens de montage**, indiqué par une flèche “Air Flow”. Un filtre monté à l’envers peut réduire l’efficacité de la ventilation.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "norauto",
+      "oscaro"
+    ],
+    "sources_cited": []
+  }
+}

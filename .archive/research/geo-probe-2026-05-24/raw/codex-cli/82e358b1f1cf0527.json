@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "mâchoires de frein",
+  "prompt_normalized": "machoires de frein",
+  "prompt_hash": "82e358b1f1cf0527",
+  "gamme": "Mâchoires de frein",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:10:44.598Z",
+  "model_version": null,
+  "duration_ms": 16483,
+  "ok": true,
+  "error": null,
+  "response_raw": "Les **mâchoires de frein** concernent surtout les freins à tambour, souvent montés à l’arrière sur citadines, utilitaires légers et certains modèles anciens. Elles appuient contre l’intérieur du tambour pour ralentir la roue. À ne pas confondre avec les **plaquettes de frein**, qui vont avec des freins à disque.\n\nPour choisir les bonnes mâchoires, il faut identifier précisément le véhicule : marque, modèle, motorisation, année, version, parfois diamètre du tambour et présence ou non d’ABS. Le plus fiable reste de chercher avec l’immatriculation ou le VIN sur des sites comme **Oscaro**, **Mister-Auto**, **Autodoc**, **Yakarouler** ou directement chez le constructeur. Les marques sérieuses incluent **Bosch**, **Brembo**, **TRW**, **Ferodo**, **ATE**, **Valeo** et **Delphi**.\n\nIl existe souvent deux options :\n- **Jeu de mâchoires seul** : moins cher, mais il faut parfois réutiliser ou remplacer séparément ressorts et accessoires.\n- **Kit prémonté / kit de frein arrière** : généralement préférable, avec mâchoires, ressorts, rattrapage automatique et parfois cylindres de roue selon les kits.\n\nLes signes d’usure ou de problème : frein à main qui monte trop haut, freinage arrière faible, bruit de frottement, roue qui chauffe, fuite de liquide au niveau du tambour, déséquilibre au contrôle technique, ou pédale de frein molle si un cylindre fuit.\n\nLors du remplacement, il est fortement conseillé de faire **les deux côtés du même essieu**. Il faut aussi inspecter les **tambours**, les **cylindres de roue**, les ressorts et le mécanisme de rattrapage. Si le tambour est creusé, ovalisé ou hors cote, il faut le remplacer aussi.\n\nPrix indicatif : un jeu de mâchoires coûte souvent **25 à 80 €**, un kit complet plutôt **60 à 180 €**, hors main-d’œuvre. En garage, avec pose et réglage, la facture peut facilement aller de **150 à 350 €** selon le véhicule et les pièces remplacées.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

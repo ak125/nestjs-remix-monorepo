@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "disque de frein",
+  "prompt_normalized": "disque de frein",
+  "prompt_hash": "0d32f2243ea84937",
+  "gamme": "disque de frein",
+  "volume": 50000,
+  "captured_at": "2026-05-24T15:05:30.307Z",
+  "model_version": null,
+  "duration_ms": 15270,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour une recherche **“disque de frein”**, il faut surtout identifier le bon modèle pour ton véhicule, car les dimensions varient selon motorisation, année, finition et parfois même selon le système de freinage monté d’origine.\n\nLes critères importants :\n\n- **Essieu** : disque avant ou arrière. Les disques avant sont souvent ventilés, les arrière souvent pleins, mais pas toujours.\n- **Diamètre** : par exemple 247, 266, 280, 288, 300 mm, etc.\n- **Épaisseur** : épaisseur neuve et épaisseur minimale d’usure.\n- **Type** : plein, ventilé, perforé, rainuré. Pour un usage routier normal, un disque plein/ventilé standard de bonne marque suffit largement.\n- **Nombre de trous et entraxe** : doit correspondre au moyeu.\n- **Avec ou sans roulement / bague ABS intégrée** : fréquent sur certains disques arrière, notamment Renault, Peugeot, Citroën, Dacia, etc.\n\nMarques fiables : **Brembo, Bosch, TRW, ATE, Textar, Ferodo, Valeo, Zimmermann, Delphi**. Pour un usage quotidien, évite les disques “sport” bas de gamme : ils peuvent être bruyants, s’user vite ou voiler plus facilement si la qualité est médiocre.\n\nIl est fortement conseillé de remplacer les **plaquettes en même temps** que les disques. Monter des plaquettes usées sur des disques neufs peut provoquer bruit, mauvais rodage et freinage irrégulier. Après montage, il faut aussi faire un **rodage** : freinages progressifs pendant environ 200 à 300 km, sans gros freinage prolongé si possible.\n\nPour trouver la bonne référence, les sites comme **Oscaro, Mister-Auto, Autodoc, Yakarouler** ou les catalogues fabricants comme **Brembo Parts, ATE, Bosch Automotive** sont utiles, mais le plus sûr reste de vérifier avec la **plaque d’immatriculation**, le **VIN** ou les dimensions du disque déjà monté.\n\nSi tu me donnes la marque, le modèle, l’année, la motorisation et si c’est avant ou arrière, je peux t’aider à cibler le bon type de disque.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

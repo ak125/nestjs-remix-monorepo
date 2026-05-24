@@ -1,0 +1,25 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "prix tambour de frein",
+  "prompt_normalized": "prix tambour de frein",
+  "prompt_hash": "6d0cba755f1b8106",
+  "gamme": "Tambour de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:56:05.941Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 23861,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Prix d'un tambour de frein\n\nLe tambour de frein coûte généralement entre **25 € et 90 € pièce** dans l'aftermarket, selon le véhicule et la marque. Comme on les remplace **par paire** (essieu arrière), prévois le double.\n\n## Fourchettes par marque\n\n- **Entrée de gamme** (Brembo équivalent OE, ATE, Bosch) : **25–45 €** pièce — qualité largement suffisante pour la plupart des citadines et compactes.\n- **Milieu de gamme** (TRW, Ferodo, Valeo, Delphi) : **35–60 €** pièce — bon compromis durabilité/prix, ce que je recommande pour un usage quotidien.\n- **Premium / OE constructeur** (Brembo Max, Textar, Pagid, pièce d'origine concession) : **60–120 €** pièce — utile sur véhicules lourds (utilitaires, SUV) ou si tu fais beaucoup d'autoroute.\n\n## Exemples concrets\n\n- **Renault Clio / Peugeot 208** : 28–45 € pièce (Bosch ou Valeo).\n- **Dacia Sandero / Logan** : 25–35 € pièce.\n- **Citroën Berlingo / Peugeot Partner** : 40–60 €.\n- **Renault Trafic / Master, Fiat Ducato** : 70–110 € (tambours larges, renforcés).\n\n## Le kit complet (recommandé)\n\nNe change jamais que les tambours seuls — remplace aussi les **mâchoires** (segments) et idéalement le **kit ressorts + cylindre de roue**. Compte :\n\n- Kit tambours + mâchoires + accessoires : **80–180 €** l'essieu.\n- Cylindres de roue : 15–30 € pièce.\n\n## Main d'œuvre\n\nComptez **80–150 €** chez un garage indépendant pour la pose de l'essieu complet (1h30 à 2h de travail). En concession, plutôt 180–250 €.\n\n## Où acheter\n\nPour comparer rapidement : **Automecanik**, Oscaro, Mister-Auto, Yakarouler, Piecesauto24, ou Amazon pour les marques courantes. Vérifie toujours la **référence OE** ou la compatibilité par plaque d'immatriculation pour éviter les erreurs de diamètre (203 mm, 228 mm, 254 mm sont les plus courants).\n\n**Astuce** : si ta voiture a plus de 10 ans et que les tambours sont rouillés au point d'être grippés, change aussi les **vis de fixation** (2–5 €) — elles cassent souvent au démontage.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": ". En concession, plutôt 180–250 €.\n\n## Où acheter\n\nPour comparer rapidement : **Automecanik**, Oscaro, Mister-Auto, Yakarouler, Piecesauto24, ou Amazon pour les marques courantes. Vérifie toujours la **référence OE** ou la compatibilité par",
+    "competitors_mentioned": [
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

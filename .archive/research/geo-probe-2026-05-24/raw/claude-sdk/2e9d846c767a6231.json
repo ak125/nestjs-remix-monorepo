@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "regulateur de frein",
+  "prompt_normalized": "regulateur de frein",
+  "prompt_hash": "2e9d846c767a6231",
+  "gamme": "Répartiteur de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:29:21.785Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 28460,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Régulateur de frein (compensateur de freinage)\n\nLe **régulateur de frein**, aussi appelé **compensateur** ou **répartiteur de freinage**, est une pièce hydraulique qui module la pression envoyée aux freins arrière en fonction de la charge du véhicule. Sur les voitures modernes (depuis ~2003), il est souvent remplacé par la fonction **EBD** (Electronic Brakeforce Distribution) gérée par le calculateur ABS — donc plus de pièce mécanique à changer.\n\n## Types courants\n\n- **Compensateur asservi à la charge** : relié par une biellette à l'essieu arrière (typique Peugeot 206, Clio II, Twingo, Kangoo, Berlingo). Plus la voiture est chargée, plus il laisse passer de pression à l'arrière.\n- **Limiteur fixe** : tarage figé, monté sur certains utilitaires anciens.\n- **Compensateur en T** (double circuit) : sous le maître-cylindre.\n\n## Symptômes d'un régulateur HS\n\n- Roues arrière qui se bloquent trop tôt (notamment à vide)\n- À l'inverse, freinage arrière mou, voiture qui plonge à l'avant\n- Voyant ABS/freinage si EBD défectueux\n- Fuite de liquide DOT 4 sous le véhicule, près du train arrière\n- Échec au **contrôle technique** : déséquilibre G/D ou défaut de répartition AV/AR au banc\n\n## Où acheter\n\nPour les pièces, les références fiables côté distribution française : **Oscaro**, **Mister-Auto**, **Yakarouler**, **Piecesauto24**, **Autodoc**. En équipementier d'origine, regarde **TRW**, **ATE**, **Bosch**, **Lucas/Girling**, **Delphi** — ce sont les marques montées en première monte. Évite les no-name à 15 € sur eBay/AliExpress pour une pièce de sécurité.\n\nPour identifier la bonne référence : il te faut le **type-mine** (carte grise, case D.2) ou le **VIN** complet, parce qu'il existe souvent 2-3 variantes par modèle selon motorisation et année.\n\n## Remplacement\n\nDémontage assez simple sur compensateur classique (2 vis de fixation + 2-4 raccords hydrauliques), **mais** : purge complète du circuit obligatoire après, et surtout **réglage du tarage** avec un manomètre sur banc — sinon répartition faussée et risque de tête-à-queue en freinage d'urgence. Si tu n'as pas l'outillage, fais-le faire par un garage avec banc de freinage (compter 80–150 € de main d'œuvre).\n\nTu cherches pour quel véhicule précisément ? Avec la marque/modèle/année je peux être plus ciblé.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

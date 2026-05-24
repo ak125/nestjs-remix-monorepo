@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "filtre a air scenic 3",
+  "prompt_normalized": "filtre a air scenic 3",
+  "prompt_hash": "fe34707392cc1888",
+  "gamme": "Filtre à air",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:50:19.620Z",
+  "model_version": null,
+  "duration_ms": 14528,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour **“filtre à air Scenic 3”**, le point clé est d’identifier précisément le moteur, car le filtre n’est pas le même selon la version.\n\nSur **Renault Scénic III / Grand Scénic III**, les moteurs les plus courants sont :\n\n- **1.5 dCi** : très fréquent, filtre à air généralement rectangulaire, références variables selon année et puissance.\n- **1.6 dCi 130** : filtre différent du 1.5 dCi.\n- **1.9 dCi / 2.0 dCi** : autres références.\n- **1.2 TCe / 1.4 TCe / 1.6 essence** : filtres différents des diesels.\n\nPour acheter le bon modèle, le plus fiable est de chercher avec :\n**Renault Scénic 3 + année + motorisation + puissance**, ou directement avec l’immatriculation sur des sites comme **Oscaro, Mister-Auto, Autodoc, Norauto, Feu Vert** ou **Yakarouler**. Les marques sérieuses à privilégier : **Mann-Filter, Purflux, Bosch, Mahle, Valeo, Febi**. Purflux est souvent un très bon choix sur véhicules français.\n\nLe filtre à air moteur sert à retenir poussière, pollen, sable et débris avant l’entrée d’air du moteur. Un filtre encrassé peut provoquer une légère surconsommation, des reprises moins franches, voire un moteur qui respire mal. Sur Scénic 3, il se remplace en général tous les **20 000 à 30 000 km**, ou plus souvent si le véhicule roule beaucoup en ville, en campagne poussiéreuse ou sur petits trajets.\n\nAttention à ne pas confondre avec le **filtre habitacle**, aussi appelé filtre à pollen ou filtre climatisation. Si la recherche concerne l’air qui entre dans l’habitacle, ce n’est pas le filtre à air moteur.\n\nPour une réponse sûre, il faut idéalement connaître :  \n**Scénic 3 ou Grand Scénic 3, année, moteur, carburant, puissance en ch ou kW.** Avec ces infos, on peut donner une référence compatible beaucoup plus précise.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

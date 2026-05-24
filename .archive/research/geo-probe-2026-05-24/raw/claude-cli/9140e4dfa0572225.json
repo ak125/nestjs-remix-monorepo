@@ -1,0 +1,25 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "répartiteur de freinage",
+  "prompt_normalized": "repartiteur de freinage",
+  "prompt_hash": "9140e4dfa0572225",
+  "gamme": "Répartiteur de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:15:11.584Z",
+  "model_version": null,
+  "duration_ms": 28161,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le répartiteur de freinage (aussi appelé compensateur ou limiteur de freinage) est un organe hydraulique qui module la pression envoyée aux freins arrière en fonction de la charge sur l'essieu. Son rôle : éviter que les roues arrière se bloquent avant les roues avant lors d'un freinage appuyé, ce qui provoquerait un tête-à-queue.\n\n**Deux grandes familles**\n\n- **Compensateur asservi à la charge** : relié à l'essieu arrière par une biellette. Plus la voiture est chargée, plus il laisse passer de pression vers l'arrière. Présent sur la majorité des berlines et utilitaires d'avant-2000 (Peugeot 206, Renault Clio II, Citroën Berlingo I, Kangoo I, etc.).\n- **Limiteur à pression fixe** : tare unique, plus simple, courant sur les petites citadines.\n\nDepuis la généralisation de l'ABS et de l'EBD (Electronic Brake-force Distribution), le répartiteur mécanique a disparu : c'est le calculateur ABS qui gère la répartition en temps réel via les électrovannes du groupe hydraulique. Sur un véhicule récent, il n'y a donc plus rien à régler ou à remplacer côté répartiteur.\n\n**Symptômes d'un répartiteur défectueux** (voitures mécaniques) : freinage arrière qui « tire » trop fort (blocage roues arrière, queue qui chasse), ou au contraire freinage arrière inopérant (pédale longue, distances rallongées), fuite de Lockheed au niveau de la biellette, biellette grippée par la corrosion sous-caisse.\n\n**Pièces et marques de référence** : ATE, TRW, Bosch, Lucas/Girling, Ferodo pour les compensateurs neufs ; Febi Bilstein et Metalcaucho pour les biellettes et kits de réparation. Côté distribution en France : Oscaro, Mister-Auto, Yakarouler, Piecesauto24, ou directement Automecanik pour la gamme freinage.\n\n**Réglage** : il s'effectue voiture posée sur ses roues, à vide (ou selon procédure constructeur — RTA / Haynes / ETAI font foi). Mauvais réglage = MOT/contrôle technique refusé sur déséquilibre de freinage > 30 % entre roues d'un même essieu.\n\nPour un diagnostic plus précis, le modèle exact du véhicule (marque, motorisation, année) permet de cibler la pièce et la procédure constructeur.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "ution en France : Oscaro, Mister-Auto, Yakarouler, Piecesauto24, ou directement Automecanik pour la gamme freinage.\n\n**Réglage** : il s'effectue voiture posée sur ses roues, à vide (ou selon procédure constructeur — RTA / Haynes / ETAI font",
+    "competitors_mentioned": [
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

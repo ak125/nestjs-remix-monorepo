@@ -1,0 +1,38 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "contacteur feux stop 206",
+  "prompt_normalized": "contacteur feux stop 206",
+  "prompt_hash": "62d4b9dd7ddbc156",
+  "gamme": "Interrupteur des feux de freins",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:54:51.061Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 35381,
+  "ok": true,
+  "error": null,
+  "response_raw": "## Contacteur feux stop Peugeot 206\n\n**Symptômes typiques de défaillance** : feux stop allumés en permanence (ou jamais), témoin ESP/ABS qui s'allume, régulateur de vitesse qui se désactive tout seul, parfois refus de démarrage sur BVA (le calculateur attend l'info \"pédale enfoncée\"). Sur 206 le contacteur lâche souvent entre 80 000 et 150 000 km — c'est une panne classique, pas grave et très peu coûteuse à régler.\n\n**Localisation** : au-dessus de la pédale de frein, clipsé sur l'équerre métallique, avec un connecteur 4 broches (2 NO pour les feux stop, 2 NF pour cruise/ESP/BVA).\n\n**Références utiles** :\n- OEM Peugeot/Citroën : **453478** (ou 4534.78), parfois 4534.A4 selon millésime\n- Équivalents fiables : **Valeo 251521**, **FAE 24890**, **Facet 7.1186**, **Hella 6DD 008 622-XXX**, **Vemo V42-73-0003**, **Febi 26225**, **Bosch 0 986 345 712**\n\nCompter **8 à 20 €** selon la marque. Évite les no-name à 3 € sur les marketplaces, c'est souvent ce qui re-casse 6 mois après.\n\n**Où acheter** : Oscaro et Mister-Auto sont les plus fiables pour la dispo et la compat (saisis ton VIN ou type-mine). Yakarouler et Autodoc sont compétitifs. En physique : Norauto, Feu Vert, ou un grossiste local type Alliance Automotive. Sur AutoMecanik tu peux croiser la réf avec ton type-mine 206 pour éviter l'erreur de version.\n\n**Remplacement (5 minutes, sans outil ou tournevis plat)** :\n1. Pédale **enfoncée à fond** (sinon tu ne peux pas extraire le contacteur)\n2. Débrancher le connecteur (languette à pincer)\n3. Quart de tour anti-horaire, l'ancien sort\n4. Sur le neuf, tirer la tige blanche au maximum\n5. L'insérer enfoncé, relâcher doucement la pédale : il se cale tout seul à la bonne course (auto-calibration)\n6. Rebrancher, tester feux stop + ESP\n\n**Diagnostic avant achat** : un multimètre en continuité sur les 4 broches confirme la panne en 30 secondes — utile si tu as un doute entre contacteur HS et ampoules / fusible (F8 ou F12 selon BSI).\n\nPour le forum si tu coinces : **Forum-Peugeot.com** et **Planete206.com** ont des fils très détaillés avec photos.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "ysique : Norauto, Feu Vert, ou un grossiste local type Alliance Automotive. Sur AutoMecanik tu peux croiser la réf avec ton type-mine 206 pour éviter l'erreur de version.\n\n**Remplacement (5 minutes, sans outil ou tournevis plat)** :\n1. Péda",
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Forum-Peugeot.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      },
+      {
+        "raw": "Planete206.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

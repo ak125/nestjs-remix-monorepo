@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "capteur feu stop",
+  "prompt_normalized": "capteur feu stop",
+  "prompt_hash": "81c954d720d83ecc",
+  "gamme": "Interrupteur des feux de freins",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:21:00.621Z",
+  "model_version": null,
+  "duration_ms": 36618,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Capteur feu stop — l'essentiel\n\nLe **capteur de feu stop** (ou contacteur de pédale de frein, *brake light switch* en anglais) est un petit interrupteur fixé sur le support de la pédale de frein, sous le tableau de bord. Il détecte l'enfoncement de la pédale et envoie le signal au calculateur pour allumer les feux stop arrière, désactiver le régulateur de vitesse, autoriser le passage en D sur boîte auto, et informer l'ABS/ESP.\n\n## Symptômes typiques d'une panne\n\n- Feux stop allumés en permanence (ou ne s'allument plus du tout)\n- Régulateur de vitesse qui se coupe ou refuse de s'enclencher\n- Boîte auto bloquée en P (impossible de sortir sans appuyer fort)\n- Voyants ABS / ESP au tableau, code défaut OBD type **P0504** (cohérence capteur)\n- Coupure intempestive du Start & Stop\n\n## Marques de référence\n\n**Bosch**, **Valeo**, **Hella**, **FAE**, **Febi Bilstein**, **ERA**, **Facet**, **Vemo**, **Meyle**. Pour la plupart des modèles courants (Peugeot, Renault, VW, Audi, BMW, Opel), comptez **8 à 25 €** la pièce. Les références Bosch et Hella sont souvent le montage d'origine.\n\n## Où commander en France\n\n- **AutoMecanik** (catalogue par véhicule, livraison rapide)\n- **Oscaro**, **Mister-Auto**, **Yakarouler**, **Piecesauto24**, **Autodoc** pour comparer les prix\n- En concession pour la pièce origine si modèle récent sous garantie\n\n## Remplacement\n\nOpération simple, **10 à 20 minutes**, sans démontage lourd :\n\n1. Sous le volant, repérer le capteur sur la patte de pédale.\n2. Débrancher le connecteur électrique.\n3. Déclipser ou dévisser d'un quart de tour selon le modèle.\n4. Monter le neuf — sur certains capteurs (PSA, VAG), il faut **régler la course** en enfonçant la pédale au montage : la tige se positionne automatiquement.\n5. Sur véhicules récents : **effacer les codes défaut** avec une valise OBD (Delphi, Autel, ou app type **OBDeleven** sur VAG).\n\n## Pour aller plus loin\n\nLes forums **Forum-Auto**, **Caradisiac**, **ForumPeugeot**, **Planète Renault** et **Audi-Passion** regorgent de tutos illustrés par modèle. Tape la référence moteur + \"contacteur pédale frein\" pour tomber sur les retours d'expérience précis.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "sch et Hella sont souvent le montage d'origine.\n\n## Où commander en France\n\n- **AutoMecanik** (catalogue par véhicule, livraison rapide)\n- **Oscaro**, **Mister-Auto**, **Yakarouler**, **Piecesauto24**, **Autodoc** pour comparer les prix\n- E",
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "mâchoire de frein arrière",
+  "prompt_normalized": "machoire de frein arriere",
+  "prompt_hash": "d76cb81eed604ac0",
+  "gamme": "Mâchoires de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:06:41.880Z",
+  "model_version": null,
+  "duration_ms": 17417,
+  "ok": true,
+  "error": null,
+  "response_raw": "Une **mâchoire de frein arrière** concerne généralement un frein à tambour, fréquent à l’arrière sur beaucoup de citadines et compactes. La mâchoire porte une garniture qui vient frotter à l’intérieur du tambour quand tu freines. Sur la plupart des voitures, on ne remplace pas une seule mâchoire : on change le **jeu complet par essieu**, donc les deux côtés arrière.\n\nPour acheter la bonne pièce, il faut chercher avec l’immatriculation ou le VIN, car il existe souvent plusieurs diamètres de tambour pour un même modèle. Sur Oscaro, Mister Auto, AutoDoc, Norauto ou Yakarouler, privilégie les marques connues comme **Bosch, TRW, Ferodo, Valeo, Brembo, ATE, Delphi**. Le plus pratique est souvent un **kit de freins arrière prémonté** ou un kit complet avec mâchoires, ressorts et parfois cylindres de roue. Ça évite les erreurs de montage et les vieux ressorts fatigués.\n\nÀ remplacer si tu as : frein à main qui monte trop haut, freinage arrière faible au contrôle technique, bruit de frottement, à-coups au freinage, garnitures décollées, fuite de cylindre de roue ou tambour marqué. Si un cylindre fuit, les garnitures sont contaminées par le liquide de frein : il faut changer le kit, pas juste nettoyer.\n\nAprès montage, il faut régler le rattrapage, vérifier le frein à main, purger si les cylindres ont été remplacés, puis roder doucement les freins sur quelques dizaines de kilomètres. Pour un devis garage en France, compte souvent **150 à 350 €** selon modèle et selon si tambours/cylindres sont inclus. Pour la pièce seule, un jeu de mâchoires peut coûter environ **20 à 80 €**, un kit complet davantage.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

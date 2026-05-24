@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "etrier arriere gauche",
+  "prompt_normalized": "etrier arriere gauche",
+  "prompt_hash": "65326148c41b92b1",
+  "gamme": "Étrier de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T15:51:35.522Z",
+  "model_version": null,
+  "duration_ms": 15820,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour “étrier arrière gauche”, vous cherchez très probablement un **étrier de frein arrière côté conducteur** pour une voiture en conduite à gauche, comme en France. Attention : sur les sites de pièces, le “gauche” se définit généralement **assis au volant**, donc côté conducteur.\n\nAvant d’acheter, il faut identifier précisément le véhicule : **marque, modèle, année, motorisation, type de frein arrière**, et idéalement l’immatriculation ou le VIN. Sur une même voiture, il peut exister plusieurs montages selon Bosch, TRW, ATE, Lucas/Girling, diamètre de disque, frein de parking électrique ou manuel, etc.\n\nPoints à vérifier :\n\n- **Frein à main intégré** : beaucoup d’étriers arrière ont un mécanisme de frein de stationnement intégré. Si le levier est grippé ou ne revient pas, l’étrier est souvent à remplacer.\n- **Électrique ou câble** : avec frein de parking électrique, la référence est différente et la procédure de remplacement demande souvent un outil diagnostic.\n- **Consigne** : de nombreux étriers sont vendus en échange standard. Vous payez une consigne récupérable après retour de l’ancien étrier.\n- **Côté** : ne confondez pas arrière gauche et arrière droit ; ils ne sont généralement pas interchangeables à cause de la vis de purge, du raccord de flexible et du mécanisme de frein à main.\n\nMarques fiables à regarder : **TRW, ATE, Bosch, Brembo, Budweg, Textar, Ferodo**. Pour l’achat, vous pouvez comparer sur **Oscaro, Mister-Auto, Autodoc, Piecesauto24**, ou passer par un distributeur type **AD, Norauto, Feu Vert** si vous voulez limiter les erreurs de compatibilité.\n\nSi l’étrier est remplacé, prévoyez souvent aussi : **liquide de frein**, purge du circuit, contrôle du flexible, état des plaquettes et du disque. Si un côté a chauffé ou grippé, les plaquettes arrière doivent généralement être remplacées par paire, et les disques contrôlés des deux côtés.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro"
+    ],
+    "sources_cited": []
+  }
+}

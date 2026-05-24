@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "disque de frein brembo",
+  "prompt_normalized": "disque de frein brembo",
+  "prompt_hash": "3678a53ae9c64513",
+  "gamme": "plaquette de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:35:28.711Z",
+  "model_version": null,
+  "duration_ms": 36501,
+  "ok": true,
+  "error": null,
+  "response_raw": "Brembo est l'un des fabricants de référence sur le marché des disques de frein, fournisseur d'origine pour de nombreux constructeurs (Alfa Romeo, BMW M, Porsche, Ferrari, certains modèles Renault Sport) et acteur majeur du sport automobile. Pour un usage route, leurs gammes principales sont :\n\n- **Brembo Standard (UV)** : disques de remplacement OE avec revêtement anti-corrosion UV Coating sur toute la surface. Bon rapport qualité/prix, durée de vie comparable à l'origine.\n- **Brembo Xtra** (percés) et **Brembo Max** (rainurés) : meilleur dégazage et refroidissement, look sport. Adaptés à la conduite dynamique mais s'usent plus vite et peuvent générer un peu plus de bruit.\n- **Brembo Sport** (gamme TY3, anciennement HC) : pour usage circuit ou routier intensif, souvent à coupler avec des plaquettes Brembo Sport.\n\n**Où acheter** : pour comparer les prix et garantir l'authenticité, les références fiables en France sont **Oscaro**, **Mister-Auto**, **Yakarouler**, **Piecesauto24**, **Autodoc**, et **Norauto** pour le retrait en magasin. Sur le segment pro, **Doyen Auto** et **API** distribuent du Brembo OE. Méfie-toi des prix anormalement bas sur certaines marketplaces (Amazon, Cdiscount tiers vendeurs) : la contrefaçon existe, vérifie le code-barre sur le site officiel Brembo.\n\n**Vérifier la compatibilité** : entre le code moteur, la date de mise en circulation et le diamètre du disque (souvent 2 montages possibles selon options de freinage). Utilise la recherche par immatriculation sur Oscaro ou Mister-Auto, ou croise avec **Oscaro Pro / TecDoc** pour la référence exacte.\n\n**Bon réflexe** : changer disques **et** plaquettes en même temps (par essieu), et privilégier des plaquettes compatibles avec la gamme de disques choisie (Brembo plaquettes Xtra avec disques Xtra, par ex.). Compte environ 80-160 €/paire pour l'avant en gamme Standard, 150-280 € pour Xtra/Max selon le véhicule.\n\nPour des retours d'expérience par modèle, les forums **Forum-Auto**, **Caradisiac** et les groupes Facebook dédiés à ton véhicule donnent souvent des références précises éprouvées.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

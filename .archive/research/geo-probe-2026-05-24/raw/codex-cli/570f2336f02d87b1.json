@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "machoir frein arriere",
+  "prompt_normalized": "machoir frein arriere",
+  "prompt_hash": "570f2336f02d87b1",
+  "gamme": "Mâchoires de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:32:53.194Z",
+  "model_version": null,
+  "duration_ms": 16297,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour “mâchoire frein arrière”, vous cherchez très probablement des **mâchoires de frein arrière pour frein à tambour**. Elles sont montées à l’intérieur du tambour et assurent le freinage arrière, souvent aussi le frein de stationnement.\n\nLe point important : il faut choisir les mâchoires **selon le véhicule exact**, pas seulement avec une dimension approximative. Les critères utiles sont : marque, modèle, motorisation, année, type de frein arrière, diamètre du tambour, largeur des mâchoires, et parfois présence d’ABS ou type de montage. Avec l’immatriculation ou le VIN, des sites comme **Oscaro**, **Mister-Auto**, **Autodoc**, **Yakarouler**, **Norauto** ou **Feu Vert** permettent généralement de filtrer correctement.\n\nÀ remplacer si vous avez : frein à main faible, bruit de frottement/grincement à l’arrière, freinage déséquilibré, pédale longue, garniture usée, fuite de cylindre de roue, ou tambour marqué. Sur un frein tambour, il est souvent judicieux de contrôler en même temps les **tambours**, **cylindres de roue**, **ressorts/kit de montage** et le **liquide de frein**. Beaucoup de kits vendus incluent les mâchoires seules, mais pas toujours les ressorts ni les cylindres.\n\nMarques fiables courantes : **Bosch**, **Brembo**, **TRW**, **Ferodo**, **ATE**, **Valeo**, **Textar**, **Delphi**. Évitez les références trop bon marché sans marque claire, surtout pour un organe de sécurité.\n\nSi vous faites le remplacement vous-même, prenez des photos avant démontage : le positionnement des ressorts et rattrapages automatiques peut être piégeux. Après montage, il faut régler/laisser se régler le rattrapage, pomper doucement la pédale, tester le frein à main, puis faire un essai prudent. Si un cylindre de roue fuit, remplacez-le impérativement et purgez le circuit.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

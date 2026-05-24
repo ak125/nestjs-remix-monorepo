@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "filtre habitacle peugeot 207",
+  "prompt_normalized": "filtre habitacle peugeot 207",
+  "prompt_hash": "7c832d0575f7378a",
+  "gamme": "Filtre d'habitacle",
+  "volume": 500,
+  "captured_at": "2026-05-24T15:57:27.099Z",
+  "model_version": null,
+  "duration_ms": 16136,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour une **Peugeot 207**, le “filtre habitacle” correspond au **filtre de pollen / filtre d’habitacle**, parfois disponible en version **standard** ou **charbon actif**. Pour une 207, je recommande plutôt un **filtre à charbon actif** : il retient mieux les odeurs, gaz d’échappement et particules fines, surtout si la voiture roule en ville.\n\nLes marques fiables courantes sont **Mann-Filter**, **Bosch**, **Purflux**, **Valeo**, **Mecafilter** ou **Mahle**. Sur des sites comme **Oscaro**, **Mister-Auto**, **Autodoc**, **Yakarouler** ou chez **Norauto / Feu Vert**, entre idéalement l’**immatriculation** ou le **VIN** pour éviter les erreurs, car il peut y avoir des variantes selon année, motorisation et climatisation.\n\nSur Peugeot 207, le filtre est généralement situé **côté passager, sous la baie de pare-brise / au fond du compartiment moteur côté pare-brise**, derrière un cache plastique. Il n’est pas toujours dans la boîte à gants comme sur d’autres modèles. Le remplacement est normalement assez simple : retirer le cache, sortir l’ancien filtre, nettoyer rapidement le logement, puis insérer le nouveau dans le bon sens en respectant la flèche **AIR FLOW**.\n\nÀ remplacer environ **tous les 15 000 à 20 000 km**, ou une fois par an. Signes qu’il est temps de le changer : ventilation faible, buée persistante, mauvaise odeur au démarrage de la clim, allergies ou poussière dans l’habitacle.\n\nPrix indicatif : **8 à 15 €** pour un filtre standard, **12 à 25 €** pour un charbon actif. En garage ou centre auto, compte souvent **30 à 60 € posé**, selon l’enseigne.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

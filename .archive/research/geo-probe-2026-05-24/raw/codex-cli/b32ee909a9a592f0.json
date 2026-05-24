@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "tambour frein",
+  "prompt_normalized": "tambour frein",
+  "prompt_hash": "b32ee909a9a592f0",
+  "gamme": "Tambour de frein",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:37:02.480Z",
+  "model_version": null,
+  "duration_ms": 17384,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le **tambour de frein** est une pièce du système de freinage, souvent montée à l’arrière sur les citadines, compactes et utilitaires. Il fonctionne avec des **mâchoires de frein** qui viennent frotter à l’intérieur du tambour pour ralentir la roue. Pour une recherche “tambour frein”, il faut surtout distinguer la pièce seule du **kit de frein arrière complet**.\n\nSi vous avez un souci de freinage arrière, les pièces concernées peuvent être :\n- **tambours de frein** : la partie métallique circulaire ;\n- **mâchoires de frein** : les garnitures qui frottent dans le tambour ;\n- **cylindres de roue** : actionnent les mâchoires avec le liquide de frein ;\n- **ressorts / rattrapage automatique** : mécanisme interne ;\n- parfois les **roulements**, intégrés ou non selon le modèle.\n\nLes signes d’usure courants : frein à main qui monte trop haut, bruit de frottement ou grincement à l’arrière, vibrations au freinage, roue qui chauffe, freinage déséquilibré au contrôle technique, ou fuite de liquide près du tambour.\n\nPour acheter la bonne pièce, utilisez idéalement l’**immatriculation** ou le **VIN** sur des sites comme **Oscaro**, **Mister-Auto**, **Autodoc**, **Yakarouler**, **Norauto** ou **Feu Vert**. Vérifiez bien le diamètre du tambour, la présence ou non du roulement intégré, le nombre de trous, et la compatibilité avec ABS. Les marques fiables incluent **Bosch**, **TRW**, **ATE**, **Brembo**, **Ferodo**, **Delphi** et **Valeo**.\n\nEn pratique, on remplace rarement un seul élément au hasard. Si les tambours sont marqués, ovalisés ou hors cote, mieux vaut remplacer **tambours + mâchoires**, et souvent les **cylindres de roue** si leur âge est élevé. Après intervention, il faut régler ou vérifier le frein à main, purger si les cylindres ont été changés, puis roder doucement les freins sur les premiers kilomètres.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

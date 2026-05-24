@@ -1,0 +1,25 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "regulateur de frein",
+  "prompt_normalized": "regulateur de frein",
+  "prompt_hash": "2e9d846c767a6231",
+  "gamme": "Répartiteur de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:29:56.439Z",
+  "model_version": null,
+  "duration_ms": 34654,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le **régulateur de frein** (aussi appelé **compensateur** ou **limiteur de freinage**) est une pièce hydraulique placée sur le circuit arrière du système de freinage. Son rôle : doser la pression envoyée aux étriers/cylindres arrière en fonction de la charge sur l'essieu, pour éviter que les roues arrière ne se bloquent avant les avant lors d'un freinage appuyé. Sur les véhicules récents (post-2003 environ), cette fonction est gérée électroniquement par l'**EBD** (Electronic Brake-force Distribution), intégré au calculateur ABS — il n'y a plus de pièce mécanique séparée.\n\n**Deux familles à distinguer :**\n- **Compensateur asservi à la charge** : relié à l'essieu arrière par une biellette, ajuste la pression selon l'enfoncement de la suspension (utilitaires, anciens véhicules Renault, Peugeot, Citroën).\n- **Limiteur fixe** : tarage constant, plus simple, sur petits véhicules.\n\n**Symptômes d'un régulateur HS :** roues arrière qui bloquent au freinage, voiture qui tire d'un côté, pédale spongieuse, fuite de liquide DOT 4 visible sous la voiture côté essieu arrière, voyant ABS allumé (si intégré au bloc hydraulique).\n\n**Pour acheter la pièce :** sur **Oscaro**, **Mister-Auto**, **Yakarouler** ou **Auto-Doc**, tu trouves les références par immatriculation. Marques fiables : **TRW**, **ATE**, **Bosch**, **Lucas/Girling**, **FTE**. Compte 40 à 120 € pour un compensateur mécanique, davantage pour un bloc ABS complet. Sur des modèles anciens (Clio II, 206, Kangoo I, Berlingo I), la pièce neuve devient rare — regarde sur **Reparcar**, **France Casse** ou **OpisTo** pour de l'occasion contrôlée.\n\n**Côté entretien :** un purge complète du circuit avec liquide DOT 4 neuf après remplacement est obligatoire, idéal avec une valise diagnostic si EBD/ABS sur le véhicule. Pour le DIY, les tutos de **Caradisiac**, **Autobip** ou la chaîne YouTube **Vilebrequin** (rubrique mécanique) sont solides. Sur forums : **Forum-Auto**, **Planète Citroën**, **Forum Peugeot** pour des retours par modèle précis.\n\nSi tu me donnes ta marque/modèle/année, je peux préciser le type de régulateur monté et les références exactes à viser.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

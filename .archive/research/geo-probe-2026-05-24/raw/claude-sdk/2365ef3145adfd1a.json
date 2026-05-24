@@ -1,0 +1,47 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "etrier de frein peint",
+  "prompt_normalized": "etrier de frein peint",
+  "prompt_hash": "2365ef3145adfd1a",
+  "gamme": "Étrier de frein",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:19:52.183Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 26628,
+  "ok": true,
+  "error": null,
+  "response_raw": "Un étrier de frein peint, c'est à la fois esthétique (visible derrière les jantes ajourées) et fonctionnel (la peinture haute température protège contre la corrosion et la chaleur dégagée au freinage, qui peut dépasser 400°C en usage sportif).\n\n**Deux approches selon ton besoin :**\n\n**1. Kit de peinture à appliquer soi-même (le plus courant)**\n- **Foliatec** (allemand, référence du marché) : kit complet ~50-70€ avec dégraissant, peinture 2 composants, durcisseur, pinceau. Tient 5+ ans. Coloris : rouge, jaune, noir, bleu, vert, or, blanc.\n- **G2 Brake Caliper Paint** (USA) : qualité supérieure, finition très brillante, ~40-60€ sur Amazon ou eBay.\n- **Motip Dupli** : alternative bon marché en bombe (~15€), moins durable mais correct si bien préparé.\n- **Stardust** ou **Restom** : marques françaises trouvables sur Oscaro, Mister-Auto ou Norauto.\n\nLa clé du résultat : **démontage de la roue, nettoyage à fond (brosse métallique + dégraissant frein), masquage soigneux du disque et des durites, 2-3 couches fines**. Compte 2-3h par étrier bien fait. Tu peux peindre sans déposer l'étrier complètement.\n\n**2. Étriers déjà peints d'usine ou repeints en atelier**\n- **Brembo** propose des étriers d'origine en rouge, jaune, noir mat — souvent montés sur préparations sportives. Tu en trouves sur **autodoc.fr**, **mister-auto.com**, **oscaro.com** ou en occasion sur **leboncoin**.\n- Les préparateurs comme **BC Automobiles**, **Rallye Concept** ou les carrossiers spécialisés font la prestation pour 200-400€ les 4 étriers (dépose, sablage, peinture epoxy cuite au four — bien plus durable qu'un kit DIY).\n\n**Points de vigilance :**\n- Ne jamais peindre sur un étrier rouillé ou gras → décollement garanti en quelques mois.\n- Éviter la peinture standard : elle cloque dès la première grosse session de freinage.\n- Sur forum **forum-auto.caradisiac.com** et **r/Mecanique** (Reddit FR), tu trouveras des retours photos avec les kits Foliatec, qui restent le meilleur compromis prix/durabilité pour un particulier.\n\nSi tu me dis ta voiture et la couleur visée, je peux affiner.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro"
+    ],
+    "sources_cited": [
+      {
+        "raw": "autodoc.fr",
+        "cluster": "marchand",
+        "matchedDomain": "autodoc.fr"
+      },
+      {
+        "raw": "mister-auto.com",
+        "cluster": "marchand",
+        "matchedDomain": "mister-auto.com"
+      },
+      {
+        "raw": "oscaro.com",
+        "cluster": "marchand",
+        "matchedDomain": "oscaro.com"
+      },
+      {
+        "raw": "forum-auto.caradisiac.com",
+        "cluster": "forum_communautaire",
+        "matchedDomain": "forum-auto.caradisiac.com"
+      }
+    ]
+  }
+}

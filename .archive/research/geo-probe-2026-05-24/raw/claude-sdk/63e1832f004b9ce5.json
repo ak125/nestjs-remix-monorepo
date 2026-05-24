@@ -1,0 +1,29 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "contact pedale de frein",
+  "prompt_normalized": "contact pedale de frein",
+  "prompt_hash": "63e1832f004b9ce5",
+  "gamme": "Interrupteur des feux de freins",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:08:48.280Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 28147,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Contact de pédale de frein\n\nLe **contact de pédale de frein** (aussi appelé contacteur de feux stop, ou *brake light switch*) est un petit interrupteur électrique placé au-dessus de la pédale de frein, fixé sur le pédalier sous le tableau de bord. Quand tu appuies sur la pédale, le poussoir se libère et ferme le circuit.\n\n## À quoi il sert\n\nIl pilote bien plus que les feux stop sur les voitures récentes :\n- **Feux stop arrière** (fonction historique)\n- **Désactivation du régulateur de vitesse** dès que tu freines\n- **Autorisation de passer du P/N au D** sur boîte auto (shift-lock)\n- **Démarrage** sur véhicules à bouton start/stop (il faut appuyer sur le frein)\n- **ESP, ABS, freinage d'urgence** : info envoyée au calculateur via CAN\n\n## Symptômes d'un contacteur HS\n\n- Feux stop allumés en permanence ou jamais\n- Voyant ABS / ESP qui s'allume\n- Impossible de désactiver le régulateur ou de démarrer (start/stop)\n- Voiture bloquée en P sur boîte auto\n- Code défaut type **P0504** (incohérence des deux contacts), **P0571**, **C1288**\n\n## Diagnostic rapide\n\n1. Demande à quelqu'un d'appuyer sur la pédale, regarde les feux stop.\n2. Passe une valise OBD (genre **Autel**, **Launch**, ou un dongle **OBDLink** avec **Car Scanner**) → lis les codes et les *live data* du Brake Switch (souvent deux signaux redondants : NO et NC).\n3. Vérifie le réglage : sur la plupart des véhicules le contacteur se règle en le tournant d'un quart de tour pour ajuster la garde de la pédale.\n\n## Achat de la pièce\n\nPièce souvent peu chère (10–40 €). Sources fiables :\n- **Oscaro**, **Mister Auto**, **Auto Doc** pour le grand public\n- **automecanik.com** si tu cherches une référence par véhicule\n- **Bosch**, **Hella**, **Febi**, **Valeo**, **Vemo** côté équipementiers OE\n- Concession ou **Oscaro Pro / Apliauto** pour la pièce d'origine constructeur\n\n## Remplacement\n\nAccès sous le volant, dépose du cache inférieur, déconnexion du connecteur, quart de tour, remplacement, **calibration de la garde** (pédale relâchée, le poussoir doit revenir à fond). Sur certains modèles (PSA, VAG récents) un reset à la valise est nécessaire après remplacement.\n\nSi tu me donnes la **marque, modèle, motorisation et année**, je peux te pointer la référence exacte et la procédure spécifique.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "fiables :\n- **Oscaro**, **Mister Auto**, **Auto Doc** pour le grand public\n- **automecanik.com** si tu cherches une référence par véhicule\n- **Bosch**, **Hella**, **Febi**, **Valeo**, **Vemo** côté équipementiers OE\n- Concession ou **Oscar",
+    "competitors_mentioned": [
+      "oscaro"
+    ],
+    "sources_cited": [
+      {
+        "raw": "automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      }
+    ]
+  }
+}

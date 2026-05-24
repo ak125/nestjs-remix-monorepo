@@ -1,0 +1,33 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "temoin usure plaquette frein",
+  "prompt_normalized": "temoin usure plaquette frein",
+  "prompt_hash": "366ca8d269b406f6",
+  "gamme": "Témoin d'usure",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:52:03.851Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 25729,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le témoin d'usure de plaquette de frein est un voyant orange (parfois jaune) sur le tableau de bord, représentant un disque entouré de pointillés. Il s'allume quand les plaquettes atteignent leur seuil minimum d'épaisseur (environ 2-3 mm de garniture restante).\n\n**Deux systèmes de détection coexistent :**\n\n1. **Capteur électrique filaire** : un fil noyé dans la plaquette. Quand la garniture s'use suffisamment, le disque sectionne le fil, ce qui ferme un circuit et allume le voyant. C'est le système le plus fiable, monté en série sur la plupart des Renault, Peugeot, Citroën, Audi, BMW, Mercedes récentes.\n\n2. **Témoin sonore mécanique** : une languette métallique qui frotte contre le disque en fin de vie et émet un crissement aigu, surtout au freinage léger. Pas de voyant, juste le bruit. Fréquent sur les modèles asiatiques (Toyota, Honda, Mazda).\n\n**Que faire quand il s'allume ?**\n\nNe pas paniquer mais ne pas traîner non plus : il vous reste typiquement 500 à 1500 km avant que les plaquettes soient totalement HS et attaquent les disques (réparation qui passe de ~80€ à ~300€+ par essieu).\n\nVérifiez d'abord visuellement l'épaisseur à travers la jante (lampe torche), ou démontez la roue. En dessous de 3 mm de garniture, remplacement immédiat. Toujours remplacer **par essieu complet** (les deux côtés), jamais une seule plaquette.\n\n**Marques recommandées (rapport qualité/prix) :**\n- **Bosch, Brembo, ATE, TRW, Ferodo** : OEM ou équivalent, fiables\n- **Valeo, Bendix** : milieu de gamme correct\n- Évitez les plaquettes no-name sous 15€ le jeu : poussière noire excessive, freinage tiède, durée de vie divisée par 2\n\n**Où acheter en ligne :**\n- **Oscaro, Mister-Auto, Yakarouler, Auto-Doc** : catalogue large, livraison rapide, prix corrects\n- **Norauto, Feu Vert, Midas** : si vous voulez la pose incluse (~50-80€ MO en plus)\n- **Automecanik.com** : pour comparer références et compatibilité par véhicule\n\n**Astuce diagnostic** : si le voyant s'allume mais que les plaquettes ont l'air neuves, c'est souvent le **capteur lui-même qui est coupé ou oxydé** (10-15€ pièce). À vérifier avant de tout remplacer.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "to, Feu Vert, Midas** : si vous voulez la pose incluse (~50-80€ MO en plus)\n- **Automecanik.com** : pour comparer références et compatibilité par véhicule\n\n**Astuce diagnostic** : si le voyant s'allume mais que les plaquettes ont l'air neuv",
+    "competitors_mentioned": [
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      }
+    ]
+  }
+}

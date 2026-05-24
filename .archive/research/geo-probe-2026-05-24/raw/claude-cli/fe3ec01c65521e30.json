@@ -1,0 +1,34 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "filtre à habitacle",
+  "prompt_normalized": "filtre a habitacle",
+  "prompt_hash": "fe3ec01c65521e30",
+  "gamme": "Filtre d'habitacle",
+  "volume": 50000,
+  "captured_at": "2026-05-24T15:03:12.406Z",
+  "model_version": null,
+  "duration_ms": 26750,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Filtre à habitacle — l'essentiel\n\nLe filtre à habitacle (aussi appelé filtre pollen ou filtre d'air d'habitacle) filtre l'air qui entre dans l'habitacle via la ventilation/clim. Il retient pollens, poussières, particules fines, et — en version charbon actif — les gaz d'échappement et mauvaises odeurs.\n\n## Quand le changer\n\nTous les **15 000 à 20 000 km**, ou **1 fois par an** (plus souvent en ville ou si tu roules beaucoup en zone polluée). Signes qu'il est saturé : buée persistante sur le pare-brise, débit d'air faible même soufflerie à fond, odeur de renfermé à l'allumage de la clim, allergies dans la voiture.\n\n## Les deux types\n\n- **Pollen standard** (papier plissé) : 8–15 €. Suffit si tu n'as pas de problème particulier.\n- **Charbon actif** : 15–30 €. Recommandé en ville, pour les allergiques, ou si tu veux bloquer les odeurs de diesel devant toi dans les bouchons.\n\n## Marques fiables\n\n**Mann-Filter, Bosch, Mahle, Valeo, Purflux, Hengst, Filtron** — ce sont les équipementiers d'origine pour la plupart des constructeurs européens. Mann et Mahle sont souvent le premier montage. Évite les filtres no-name à 3 € sur Amazon, l'efficacité de filtration n'est pas garantie.\n\n## Où acheter\n\n- **Oscaro, Mister-Auto, Yakarouler, 1001Pièces, Automecanik.com** pour le neuf à prix correct avec référence par immatriculation.\n- **Norauto, Feu Vert, Speedy** si tu veux acheter et faire poser au même endroit.\n- **iParts, Autodoc** sont moins chers mais délais de livraison plus longs (entrepôts Allemagne/Pologne).\n\n## Pose toi-même\n\nSur 80% des voitures c'est **10 minutes sans outil ou avec un tournevis cruciforme**. Le filtre est généralement derrière la boîte à gants (à déclipser) côté passager, ou sous le capot près du pare-brise. Cherche un tuto YouTube avec le modèle exact de ta voiture — il y en a pour quasiment tous les véhicules. Attention au **sens de montage** : une flèche sur le filtre indique le sens du flux d'air, ne l'inverse pas.\n\nDonne-moi la marque/modèle/année de ta voiture si tu veux la référence exacte.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "pas garantie.\n\n## Où acheter\n\n- **Oscaro, Mister-Auto, Yakarouler, 1001Pièces, Automecanik.com** pour le neuf à prix correct avec référence par immatriculation.\n- **Norauto, Feu Vert, Speedy** si tu veux acheter et faire poser au même endr",
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      }
+    ]
+  }
+}

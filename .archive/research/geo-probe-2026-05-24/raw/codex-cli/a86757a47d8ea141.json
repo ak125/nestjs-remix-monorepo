@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "temoin d usure des plaquettes de frein avant",
+  "prompt_normalized": "temoin d usure des plaquettes de frein avant",
+  "prompt_hash": "a86757a47d8ea141",
+  "gamme": "Témoin d'usure",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:18:23.080Z",
+  "model_version": null,
+  "duration_ms": 15143,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le “témoin d’usure des plaquettes de frein avant” peut désigner deux choses selon la voiture :\n\n1. **Un témoin mécanique**\nUne petite languette métallique fixée sur la plaquette vient frotter le disque quand la garniture est trop fine. Résultat : un bruit aigu, souvent un grincement continu au freinage ou même en roulant légèrement. C’est un signal pour remplacer les plaquettes rapidement.\n\n2. **Un témoin électrique**\nSur beaucoup de voitures récentes, une plaquette avant reçoit un **capteur d’usure** avec un fil. Quand la plaquette arrive en fin de vie, le circuit se coupe ou se met à la masse, et un voyant s’allume au tableau de bord : souvent un symbole de frein, parfois un message du type **“plaquettes de frein usées”**.\n\nSi vous cherchez la pièce, les termes utiles sont :\n- **capteur d’usure plaquettes de frein avant**\n- **témoin d’usure plaquettes avant**\n- **contacteur d’usure plaquettes**\n- **faisceau témoin plaquette frein**\n\nSur des sites comme **Oscaro**, **Mister-Auto**, **Autodoc**, **Yakarouler** ou chez les réseaux constructeur, il faut entrer précisément l’immatriculation ou le modèle, car le capteur dépend souvent de la marque, de l’année, du montage de freinage et parfois du côté.\n\nÀ savoir : toutes les voitures n’ont pas un témoin sur chaque roue. Certaines ont un seul capteur à l’avant, parfois côté gauche, parfois côté droit. Sur certaines marques comme **BMW, Mercedes, Audi, Volkswagen, Peugeot, Renault ou Citroën**, le capteur est souvent à remplacer en même temps que les plaquettes si le voyant s’est allumé, car il a été entamé.\n\nSi le voyant est déjà affiché, il faut contrôler :\n- l’épaisseur des plaquettes avant ;\n- l’état des disques ;\n- le câble du capteur, parfois coupé ou mal branché ;\n- le niveau de liquide de frein, car certains voyants de frein peuvent aussi venir de là.\n\nEn pratique, si les plaquettes sont proches de 2-3 mm de garniture, il faut les remplacer sans attendre.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

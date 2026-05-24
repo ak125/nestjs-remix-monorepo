@@ -1,0 +1,28 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "flexible de frein",
+  "prompt_normalized": "flexible de frein",
+  "prompt_hash": "9dc1687823e26548",
+  "gamme": "Flexible de frein",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:37:37.901Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 35420,
+  "ok": true,
+  "error": null,
+  "response_raw": "**Flexible de frein** : c'est le tuyau souple en caoutchouc renforcé (souvent avec tresse textile, parfois aviation en inox tressé) qui relie la partie rigide du circuit (tube métallique fixé au châssis) à l'étrier de frein monté sur la roue. Il doit absorber les mouvements de la suspension et du braquage tout en supportant des pressions de 100-150 bars.\n\n**Quand le changer**\n- Craquelures, gonflements, suintements visibles à l'inspection\n- Pédale spongieuse ou course allongée (le flexible \"gonfle\" sous pression au lieu de transmettre)\n- Freinage qui tire d'un côté (flexible obstrué intérieurement, fait clapet)\n- Préventif : 6-10 ans selon usage, obligatoire au contrôle technique si défectueux\n\n**Marques fiables**\n- **ATE, TRW, Bosch, Brembo, Ferodo** pour de l'origine ou équivalent\n- **Goodridge, HEL Performance, Venhill** pour de l'aviation inox tressé (usage sportif ou véhicule lourdement préparé, pédale plus ferme)\n\n**Où acheter en France**\n- **Oscaro, Mister-Auto, Yakarouler, 1001Pièces** : généralistes, bons prix, dispo par immatriculation\n- **AutoDoc** : catalogue énorme mais SAV irrégulier\n- **AM-Autoparts, Piecesauto24** : alternatives correctes\n- En physique : **Norauto, Feu Vert, Speedy** dépannent mais marges importantes ; un garage indépendant achète chez **Autodistribution, Alliance Automotive, Doyen Auto**\n\nCompte **15 à 40 € pièce** pour un flexible OE classique, **50-90 €** pour de l'aviation. Il en faut généralement 2 (un par roue d'un même essieu) à changer simultanément.\n\n**Pose**\nOpération à la portée d'un bricoleur outillé mais **purge obligatoire** ensuite (Lockheed, méthode classique à deux ou avec un Mityvac). DOT 4 dans 95% des cas, vérifier le bouchon du bocal. Couple de serrage des banjos respecté (souvent 25-35 Nm) avec joints cuivre **neufs** des deux côtés du banjo — c'est l'erreur classique.\n\n**Forums utiles** pour cas spécifiques par modèle : **Forum-Auto, Caradisiac, Planète Citroën, Forum Peugeot, Audi Passion, BMW Passion**. Tutos vidéo : chaînes YouTube **Vroumvroum, Cory Le Mécano, AutoEntretien**.\n\nSi tu me donnes la marque/modèle/année, je peux préciser références exactes et particularités (certaines Renault ont des banjos coudés spécifiques, les BMW E9x ont parfois besoin de l'outil de purge iDrive, etc.).",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "maitre cylindre",
+  "prompt_normalized": "maitre cylindre",
+  "prompt_hash": "e311472cb183b999",
+  "gamme": "Maître cylindre de frein",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:11:49.692Z",
+  "model_version": null,
+  "duration_ms": 31063,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le maître-cylindre est la pièce centrale du circuit de freinage hydraulique : situé au-dessus de la pédale (souvent juste devant le servofrein), il convertit l'effort mécanique du pied en pression hydraulique transmise via le liquide de frein (DOT 4 le plus souvent) vers les étriers et cylindres de roue. Sur la quasi-totalité des voitures modernes, c'est un maître-cylindre **tandem** (deux circuits indépendants — diagonal X ou avant/arrière en II) pour conserver du freinage en cas de fuite sur un des circuits.\n\n**Symptômes typiques d'un maître-cylindre fatigué :**\n- Pédale qui s'enfonce lentement quand on la maintient appuyée à l'arrêt (signe le plus diagnostique — fuite interne des joints)\n- Course de pédale qui s'allonge sans fuite externe visible\n- Niveau de liquide qui baisse sans trace au sol ni sur les étriers (fuite interne vers le servofrein → tache d'huile dans le mastervac)\n- Freinage spongieux après purge correcte\n- Voyant ABS/freins qui s'allume si le pressostat détecte le déséquilibre des deux circuits\n\n**Diagnostic avant remplacement :** vérifier d'abord l'état du liquide (s'il est noir/marronnasse → purge complète et on revoit), l'absence de fuite étrier/flexible/cylindre de roue, et le servofrein (test moteur coupé puis démarrage — la pédale doit s'enfoncer). Beaucoup de maîtres-cylindres remplacés à tort sont en fait des flexibles HS ou un servofrein qui fuit.\n\n**Côté pièces et marques fiables :** ATE, TRW, Bosch, FTE, LPR, Brembo, Ferodo pour les références OE/OEM. À éviter : les no-names à 20 € sur les marketplaces, qui collent souvent en quelques mois.\n\n**Où commander en France :** Oscaro, Mister-Auto, Yakarouler, Piecesauto24, AutoDoc, et bien sûr Automecanik si la pièce correspond à ton modèle — toujours commander avec le **numéro OE** (gravé sur l'ancien MC) ou le code moteur + année + finition, parce que les variantes d'un même modèle sont nombreuses (ABS/non-ABS, diamètre 22,2 vs 23,8 mm, etc.).\n\nCôté budget : compte 60–180 € la pièce selon le véhicule, plus 1 à 2 h de main-d'œuvre + purge complète obligatoire (idéalement avec valise diag pour les circuits ABS modernes).",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "France :** Oscaro, Mister-Auto, Yakarouler, Piecesauto24, AutoDoc, et bien sûr Automecanik si la pièce correspond à ton modèle — toujours commander avec le **numéro OE** (gravé sur l'ancien MC) ou le code moteur + année + finition, parce q",
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

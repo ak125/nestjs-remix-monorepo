@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "interrupteur feux stop",
+  "prompt_normalized": "interrupteur feux stop",
+  "prompt_hash": "3e5d60b7f2ca2140",
+  "gamme": "Interrupteur des feux de freins",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:39:53.969Z",
+  "model_version": null,
+  "duration_ms": 13815,
+  "ok": true,
+  "error": null,
+  "response_raw": "Un **interrupteur de feux stop** est le contacteur qui allume les feux de freinage quand tu appuies sur la pédale de frein. Il est généralement placé **au-dessus ou derrière la pédale de frein**, fixé sur le pédalier ou son support.\n\nSi tu recherches cette pièce, les termes utiles sont aussi : **contacteur de stop**, **contacteur de pédale de frein**, **capteur de frein**, ou parfois **switch feu stop**.\n\nSymptômes fréquents d’un interrupteur de feux stop HS :\n\n- les feux stop ne s’allument plus ;\n- les feux stop restent allumés en permanence ;\n- voyant ESP/ABS allumé ;\n- régulateur de vitesse qui ne fonctionne plus ;\n- boîte automatique bloquée sur “P” ou difficulté à démarrer selon le véhicule ;\n- message type “défaut système freinage” ou “contrôle feux stop”.\n\nAvant de remplacer, vérifie aussi les **ampoules**, les **fusibles**, la connectique et l’état du faisceau. Si les deux ou trois feux stop sont concernés en même temps, le contacteur est une cause très probable.\n\nLa pièce coûte souvent entre **5 et 30 €**, parfois plus selon la marque. On en trouve chez **Oscaro**, **Mister-Auto**, **Autodoc**, **Norauto**, **Feu Vert**, ou directement en concession Renault, Peugeot, Citroën, Volkswagen, etc. Il faut idéalement chercher avec la **plaque d’immatriculation**, le **VIN**, ou au minimum marque/modèle/motorisation/année, car il existe plusieurs versions selon les véhicules.\n\nLe remplacement est souvent simple : débrancher la batterie si nécessaire, déposer éventuellement un cache sous le volant, tourner ou déclipser l’ancien contacteur, brancher le nouveau, puis l’ajuster si le modèle est réglable. Sur certains véhicules, il faut respecter une procédure de montage pour que la course du contacteur soit correctement calibrée. Après remplacement, teste bien les feux stop avant de rouler.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro"
+    ],
+    "sources_cited": []
+  }
+}

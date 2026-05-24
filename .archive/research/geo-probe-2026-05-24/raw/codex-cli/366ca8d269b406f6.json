@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "temoin usure plaquette frein",
+  "prompt_normalized": "temoin usure plaquette frein",
+  "prompt_hash": "366ca8d269b406f6",
+  "gamme": "Témoin d'usure",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:52:43.399Z",
+  "model_version": null,
+  "duration_ms": 16210,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le “témoin d’usure plaquette frein” désigne le système qui prévient que les plaquettes de frein arrivent en fin de vie.\n\nIl existe deux types principaux :\n\n1. **Témoin mécanique**\nC’est une petite lamelle métallique fixée sur la plaquette. Quand la garniture devient trop fine, elle frotte contre le disque et produit un bruit aigu, souvent un couinement métallique au freinage ou en roulant doucement. Si tu entends ce bruit, il faut contrôler rapidement les plaquettes.\n\n2. **Témoin électrique**\nSur beaucoup de voitures récentes, une plaquette possède un petit capteur relié au faisceau. Quand l’usure atteint la limite, un voyant s’allume au tableau de bord, souvent sous forme de cercle avec des pointillés autour, ou un message du type **“plaquettes de frein usées”**. Sur certaines marques comme BMW, Mercedes, Audi, Volkswagen ou Peugeot/Citroën, le capteur peut devoir être remplacé en même temps que les plaquettes.\n\nÀ retenir : si le témoin s’allume, ce n’est pas forcément une urgence absolue à la minute, mais il ne faut pas traîner. Les plaquettes sont proches de leur limite, et continuer trop longtemps peut abîmer les disques, ce qui coûte nettement plus cher.\n\nLors du remplacement, il faut généralement changer les plaquettes **par essieu complet** : les deux roues avant ou les deux roues arrière, jamais une seule roue isolée. On vérifie aussi l’état des disques : s’ils sont creusés, voilés, trop fins ou fortement rayés, il vaut mieux les remplacer avec les plaquettes.\n\nPour acheter les bonnes pièces, Oscaro, Mister-Auto, Norauto, Feu Vert, Autodoc ou directement le réseau constructeur peuvent convenir, mais il faut bien renseigner l’immatriculation ou le VIN. Attention aussi aux versions avec ou sans capteur d’usure : la même voiture peut avoir plusieurs montages selon motorisation, année ou finition.\n\nSi le voyant reste allumé après remplacement, les causes fréquentes sont : capteur non changé, mauvais branchement, câble coupé, ou remise à zéro nécessaire via l’ordinateur de bord/valise diagnostic.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro"
+    ],
+    "sources_cited": []
+  }
+}

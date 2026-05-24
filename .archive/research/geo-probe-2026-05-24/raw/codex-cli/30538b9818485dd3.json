@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "cable frein a main trafic 2",
+  "prompt_normalized": "cable frein a main trafic 2",
+  "prompt_hash": "30538b9818485dd3",
+  "gamme": "Câble de frein à main",
+  "volume": 500,
+  "captured_at": "2026-05-24T15:53:02.491Z",
+  "model_version": null,
+  "duration_ms": 19113,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour un **Renault Trafic 2**, le “câble de frein à main” dépend surtout de la version exacte : année, empattement **L1/L2**, carrosserie fourgon/combi, frein arrière à **tambours ou disques**, et parfois côté gauche/droit. Le Trafic II couvre environ **2001 à 2014**, avec équivalents **Opel Vivaro A** et **Nissan Primastar**, donc les pièces sont souvent communes.\n\nÀ vérifier avant commande :\n\n- Immatriculation ou VIN sur Oscaro, Autodoc, Mister-Auto, Yakarouler ou Piecesauto24.\n- Longueur du câble : plusieurs longueurs existent selon châssis et montage.\n- Position : câble avant/intermédiaire, câble arrière gauche, arrière droit, ou kit complet.\n- Type de frein arrière : tambour ou disque.\n- Marque correcte : ATE, TRW, Bosch, Febi Bilstein, A.B.S., Quinton Hazell, Triscan ou SEIM sont des choix courants.\n\nPour une recherche efficace, tape plutôt :  \n**“câble frein à main Renault Trafic II [année] [motorisation] L1/L2”**  \nExemple : **“câble frein à main Trafic 2 2.0 dCi 115 L2H1 2010”**.\n\nLe prix est généralement modéré : souvent autour de **15 à 40 € par câble**, davantage pour un kit complet ou une marque premium. Si le levier monte très haut, que le frein serre mal, ou qu’un côté reste bloqué, le câble peut être grippé, détendu ou effiloché. Mais il faut aussi contrôler les garnitures/mâchoires, étriers arrière ou mécanisme de rattrapage automatique, car un mauvais frein à main ne vient pas toujours du câble.\n\nMon conseil : commande avec l’immatriculation sur Oscaro ou Autodoc, puis compare la **longueur et les fixations** avec l’ancien câble avant montage. Pour éviter l’erreur, garde l’ancien câble démonté à côté : embouts, gaines, pattes et clips doivent être identiques.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

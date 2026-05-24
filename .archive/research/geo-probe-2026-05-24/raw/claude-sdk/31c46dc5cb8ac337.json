@@ -1,0 +1,78 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "frein etrier",
+  "prompt_normalized": "frein etrier",
+  "prompt_hash": "31c46dc5cb8ac337",
+  "gamme": "Étrier de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:50:52.074Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 32454,
+  "ok": true,
+  "error": null,
+  "response_raw": "L'étrier de frein, c'est la pièce qui serre les plaquettes contre le disque. Tu en as un par roue (avant et souvent arrière sur les voitures modernes). Deux grandes familles :\n\n- **Étrier flottant** (le plus courant) : un seul piston d'un côté, le corps coulisse sur des glissières. Simple, économique.\n- **Étrier fixe** : 2, 4 ou 6 pistons, corps rigide. Plus performant, plus cher — typique des sportives ou trains avant lourds.\n\n**Symptômes qui doivent t'alerter** : pédale qui tire d'un côté au freinage, jante chaude après quelques kilomètres (piston grippé), fuite de liquide DOT4 visible sur l'étrier ou la jante, sifflement métallique constant (plaquettes usées non glissantes à cause de l'étrier bloqué), volant qui vibre (souvent disque voilé par surchauffe d'un étrier grippé).\n\n**Causes classiques** : glissières (colonnettes) sèches ou rouillées — cause n°1 et souvent réparable avec un kit de glissières + graisse cuivrée (~15 €). Piston grippé par corrosion = échange standard ou neuf. Cache-poussière (soufflet) déchiré → le piston grippe à coup sûr dans les 6 mois.\n\n**Marques fiables** : ATE, TRW, Brembo, Bosch en première monte ou équivalent. À éviter sur les sans-marque très bas de gamme — c'est de la sécurité active.\n\n**Où acheter** : [Oscaro](https://www.oscaro.com), [Mister-Auto](https://www.mister-auto.com), [Yakarouler](https://www.yakarouler.com), [Automecanik](https://www.automecanik.com) pour le neuf. Un étrier remanufacturé (échange standard) coûte 60-150 € selon le modèle ; un neuf 100-300 €. Compte 1 à 2 h de main-d'œuvre + purge du circuit obligatoire.\n\n**Bon réflexe avant de remplacer** : démonte, nettoie les glissières, regraisse, change les soufflets. 70 % des cas se règlent comme ça. Si le piston ne rentre pas au repousse-piston (outil ~10 € chez Norauto/Feu Vert), là c'est l'étrier complet.\n\n**Pour creuser** : [Forum-Auto](https://www.forum-auto.caradisiac.com) et les tutos vidéo de **Vroomly** ou **AutoDoc Club** sont solides pour le diagnostic par modèle.\n\nTu as un véhicule précis en tête ou un symptôme particulier ? Je peux affiner.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "-Auto](https://www.mister-auto.com), [Yakarouler](https://www.yakarouler.com), [Automecanik](https://www.automecanik.com) pour le neuf. Un étrier remanufacturé (échange standard) coûte 60-150 € selon le modèle ; un neuf 100-300 €. Compte 1",
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "https://www.oscaro.com",
+        "cluster": "marchand",
+        "matchedDomain": "oscaro.com"
+      },
+      {
+        "raw": "https://www.mister-auto.com",
+        "cluster": "marchand",
+        "matchedDomain": "mister-auto.com"
+      },
+      {
+        "raw": "https://www.yakarouler.com",
+        "cluster": "marchand",
+        "matchedDomain": "yakarouler.com"
+      },
+      {
+        "raw": "https://www.automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      },
+      {
+        "raw": "https://www.forum-auto.caradisiac.com",
+        "cluster": "forum_communautaire",
+        "matchedDomain": "forum-auto.caradisiac.com"
+      },
+      {
+        "raw": "www.oscaro.com",
+        "cluster": "marchand",
+        "matchedDomain": "oscaro.com"
+      },
+      {
+        "raw": "www.mister-auto.com",
+        "cluster": "marchand",
+        "matchedDomain": "mister-auto.com"
+      },
+      {
+        "raw": "www.yakarouler.com",
+        "cluster": "marchand",
+        "matchedDomain": "yakarouler.com"
+      },
+      {
+        "raw": "www.automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      },
+      {
+        "raw": "www.forum-auto.caradisiac.com",
+        "cluster": "forum_communautaire",
+        "matchedDomain": "forum-auto.caradisiac.com"
+      }
+    ]
+  }
+}

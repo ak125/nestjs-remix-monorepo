@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "filtre à gasoil purflux",
+  "prompt_normalized": "filtre a gasoil purflux",
+  "prompt_hash": "a6f0be91afc28126",
+  "gamme": "Filtre à carburant",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:18:03.898Z",
+  "model_version": null,
+  "duration_ms": 36988,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le filtre à gasoil Purflux est une valeur sûre, surtout si tu roules en véhicule français. Purflux (groupe Sogefi, fabriqué notamment à Laval) est équipementier d'origine (OEM) pour PSA — Peugeot, Citroën, DS — et fournit aussi Renault, Dacia et plusieurs constructeurs européens. En clair : sur une 308, une C4 ou un Scénic diesel, tu remontes très souvent la même pièce qu'en sortie d'usine.\n\n**Choisir la bonne référence**\n\nIl te faut la référence exacte qui correspond à ton moteur, pas juste au modèle. Les plus courantes :\n- **CS703** / **CS703A** — beaucoup de HDi PSA et dCi Renault (1.5/1.6/2.0)\n- **C484** — anciens HDi (206, 307, Berlingo)\n- **CS760** — 1.6 BlueHDi récents\n- **C499** — 1.9 dCi, 2.0 dCi anciens\n\nPour être sûr, donne ta carte grise (codes D.2.1 et P.1/P.3) à un comparateur ou un vendeur. **Oscaro** et **Mister-Auto** ont les meilleurs sélecteurs par immatriculation, **Yakarouler** et **Piecesauto24** sont souvent compétitifs sur le prix. **AutoDoc** est correct mais attention aux délais. En réseau physique, **Carter-Cash**, **Norauto** et **Feu Vert** ont Purflux en rayon, parfois sous marque distributeur.\n\n**Prix indicatif** : 12 à 25 € selon la référence. En dessous de 8 €, méfiance — c'est souvent du contrefait sur Amazon ou eBay (le boîtier passe, mais le média filtrant n'est pas aux specs Purflux).\n\n**Concurrence sérieuse** : Mann-Filter (allemand, équivalent qualité), Bosch, Mahle, Hengst. À fuir sur diesel moderne : marques inconnues no-name — un filtre médiocre laisse passer de l'eau ou des particules qui flinguent la pompe HP et les injecteurs (réparation 1500–3000 €).\n\n**Intervalle de remplacement** : 20 000 à 40 000 km selon le constructeur, ou tous les 2 ans. Si tu fais du gasoil B7/B10 régulièrement, plutôt 20 000.\n\n**Astuce purge** : sur la plupart des HDi/dCi, il faut amorcer à la poire après remplacement (5–10 pressions jusqu'à dureté) avant de démarrer, sinon désamorçage et démarrages laborieux. Les forums **Forum-Auto** et **Planète Citroën** ont des tutos précis par modèle.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

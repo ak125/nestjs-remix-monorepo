@@ -1,0 +1,25 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "temoin d usure disque de frein",
+  "prompt_normalized": "temoin d usure disque de frein",
+  "prompt_hash": "a1570c1297010404",
+  "gamme": "Témoin d'usure",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:12:47.914Z",
+  "model_version": null,
+  "duration_ms": 14276,
+  "ok": true,
+  "error": null,
+  "response_raw": "Un **témoin d’usure de disque de frein** peut désigner deux choses, selon le contexte.\n\nLe plus courant, c’est le **témoin d’usure des plaquettes** : un petit capteur électrique ou une languette métallique qui signale que les plaquettes sont presque au minimum. Sur beaucoup de voitures, le voyant au tableau de bord concerne les **plaquettes**, pas directement le disque. Si le voyant s’allume, il faut contrôler rapidement les plaquettes et l’état des disques, car des plaquettes trop usées peuvent rayer ou creuser le disque.\n\nPour le **disque de frein lui-même**, il n’y a généralement pas de témoin lumineux dédié. L’usure se vérifie surtout par mesure : chaque disque a une **épaisseur minimale**, souvent gravée sur le bord du disque, par exemple “MIN TH 22 mm”. On mesure avec un pied à coulisse ou un micromètre. Si le disque est sous cette cote, il doit être remplacé.\n\nSignes d’un disque usé ou à contrôler :\n- rebord prononcé sur le bord du disque ;\n- vibrations au freinage, surtout dans le volant ;\n- bruit de frottement métallique ;\n- freinage moins régulier ;\n- disque rayé, fissuré, bleui ou très creusé ;\n- plaquettes neuves qui s’usent anormalement vite.\n\nEn pratique, quand on remplace les plaquettes, on inspecte toujours les disques. Si les disques sont proches de la cote mini, voilés, fortement marqués ou corrodés, mieux vaut les changer en même temps. Les marques fiables courantes sont **Brembo, ATE, Bosch, TRW, Textar, Ferodo** ou **Valeo**. Pour identifier la bonne référence, les sites comme **Oscaro, Mister-Auto, Autodoc** ou les catalogues constructeurs peuvent aider, mais il faut vérifier avec l’immatriculation, le diamètre du disque, l’essieu avant/arrière et parfois le type de freinage.\n\nÀ retenir : le voyant signale souvent les **plaquettes**, tandis que l’usure du **disque** se confirme par inspection et mesure de l’épaisseur minimale.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro"
+    ],
+    "sources_cited": []
+  }
+}
