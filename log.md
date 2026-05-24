@@ -495,3 +495,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `worktree-geo-discovery-probe-2026-05`
 - **Décision** : feat(research): add analyze-b1-stats.ts (B1 stats brutes pour rapport final) (+1 other commit)
 - **Sortie** : PR aucune | commits 2449b7151 08b33518e
+
+## 2026-05-24 — worktree-geo-discovery-probe-2026-05 (auto)
+
+- **Branche** : `worktree-geo-discovery-probe-2026-05`
+- **Décision** : chore(registry): register research/ paths in L2 ownership.yaml (ADR-058 + G10) (+4 other commits)
+- **Sortie** : PR aucune | commits b865913bb 77b3a3348 3206430dd 2449b7151 08b33518e
