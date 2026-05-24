@@ -46,6 +46,15 @@ teardown() { rm -rf "$TMPDIR_BATS"; }
   [ "$status" -eq 0 ]
 }
 
+@test "exit 0 when services/*/package.json changes" {
+  mkdir -p services/remotion-renderer services/another-service
+  echo '{}' > services/remotion-renderer/package.json
+  echo '{}' > services/another-service/package.json
+  git add . && git commit -q -m bump-services
+  run ./check.sh --base HEAD~1
+  [ "$status" -eq 0 ]
+}
+
 @test "exit 1 when backend/src code changes" {
   mkdir -p backend/src
   echo 'x' > backend/src/main.ts

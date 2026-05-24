@@ -27,6 +27,7 @@ ALLOWLIST=(
   '^backend/package\.json$'
   '^frontend/package\.json$'
   '^packages/[^/]+/package\.json$'
+  '^services/[^/]+/package\.json$'
   '^audit/registry/deps\.json$'
   '^audit/registry/canonical\.json$'
   '^audit/dependencies/dependency-modernization-inventory\.json$'
@@ -127,8 +128,19 @@ self_test() {
     return 1
   fi
 
+  # Case 5: services/* workspace bump — allowlisted (e.g. services/remotion-renderer)
+  git reset --hard HEAD~1 -q
+  mkdir -p services/example-service
+  echo '{}' > services/example-service/package.json
+  git add . && git commit -q -m services-clean
+  if ! bash "$script_path" --base HEAD~1 >/dev/null; then
+    echo "self-test FAILED: services/*/package.json rejected" >&2
+    rm -rf "$tmp"
+    return 1
+  fi
+
   rm -rf "$tmp"
-  echo "✅ self-test passed (4/4 cases)"
+  echo "✅ self-test passed (5/5 cases)"
 }
 
 case "${1:-}" in

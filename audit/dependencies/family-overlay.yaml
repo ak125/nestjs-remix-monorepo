@@ -106,9 +106,14 @@ families:
       - eslint-plugin-prettier
       - eslint-plugin-react
       - eslint-plugin-react-hooks
-      - eslint-plugin-storybook
       - "@typescript-eslint/eslint-plugin"
       - "@typescript-eslint/parser"
+      # eslint-plugin-storybook intentionally OUT of this family.
+      # Its major track is coupled to storybook itself (peer storybook@^X requires
+      # bumping storybook in lockstep), and storybook belongs to a frontend cluster.
+      # Bumping it here triggered ERESOLVE on 2026-05-24 (gh run #26366212645)
+      # while storybook stayed pinned at ^9.1.13. Move to a future frontend-storybook
+      # family.
 
   - family: validation-zod
     blast_radius: validation
