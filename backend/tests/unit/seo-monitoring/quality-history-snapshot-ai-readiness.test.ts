@@ -29,9 +29,9 @@ describe('QualityHistorySnapshotService — AI readiness rows', () => {
       true,
     );
     expect(rows.every((r) => r.snapshot_kind === 'on_demand')).toBe(true);
-    expect(
-      rows.every((r) => (r.metadata as any).layer === 'ai-additive'),
-    ).toBe(true);
+    expect(rows.every((r) => (r.metadata as any).layer === 'ai-additive')).toBe(
+      true,
+    );
   });
 
   it('emits all 3 rows with value 0 on empty HTML', () => {
@@ -45,9 +45,9 @@ describe('QualityHistorySnapshotService — AI readiness rows', () => {
     expect(rows.length).toBe(3);
     expect(rows.every((r) => r.metric_value === 0)).toBe(true);
     expect(rows.every((r) => (r.metadata as any).batch_id === 'X')).toBe(true);
-    expect(
-      rows.every((r) => (r.metadata as any).layer === 'ai-additive'),
-    ).toBe(true);
+    expect(rows.every((r) => (r.metadata as any).layer === 'ai-additive')).toBe(
+      true,
+    );
   });
 
   it('uses default ownHostname www.automecanik.com when not provided', () => {
@@ -59,7 +59,9 @@ describe('QualityHistorySnapshotService — AI readiness rows', () => {
       'on_demand',
       {},
     );
-    const sources = rows.find((r) => r.metric_name === 'ai_has_visible_sources');
+    const sources = rows.find(
+      (r) => r.metric_name === 'ai_has_visible_sources',
+    );
     expect(sources?.metric_value).toBe(0); // same hostname → not external
   });
 
@@ -72,7 +74,9 @@ describe('QualityHistorySnapshotService — AI readiness rows', () => {
       'on_demand',
       {},
     );
-    const sources = rows.find((r) => r.metric_name === 'ai_has_visible_sources');
+    const sources = rows.find(
+      (r) => r.metric_name === 'ai_has_visible_sources',
+    );
     expect(sources?.metric_value).toBe(1);
   });
 });

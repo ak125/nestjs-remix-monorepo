@@ -6,6 +6,10 @@
 -- Table additive simple (non partitionnée — volume <10k rows/an).
 -- =====================================================
 
+-- squawk safety: bound DDL latency before any blocking statement
+set lock_timeout = '1s';
+set statement_timeout = '5s';
+
 CREATE TABLE IF NOT EXISTS __trend_signals (
   id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   recorded_at  TIMESTAMPTZ NOT NULL DEFAULT now(),

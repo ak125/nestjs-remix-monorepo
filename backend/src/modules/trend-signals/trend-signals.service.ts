@@ -13,7 +13,10 @@
  */
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
-import { fetchRappelsGouvFr, TrendSignalRow } from './sources/rappels-gouv-fr.fetcher';
+import {
+  fetchRappelsGouvFr,
+  TrendSignalRow,
+} from './sources/rappels-gouv-fr.fetcher';
 
 @Injectable()
 export class TrendSignalsService extends SupabaseBaseService {

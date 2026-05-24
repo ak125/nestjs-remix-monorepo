@@ -8,7 +8,8 @@ export function detectExtractableTldr(html: string): 0 | 1 {
 }
 
 export function detectFaqSchema(html: string): 0 | 1 {
-  const ldRegex = /<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
+  const ldRegex =
+    /<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
   let match: RegExpExecArray | null;
   while ((match = ldRegex.exec(html)) !== null) {
     try {
@@ -32,7 +33,9 @@ function hasFaqPage(node: unknown): boolean {
 }
 
 export function detectVisibleSources(html: string, ownHostname: string): 0 | 1 {
-  const stripped = html.replace(/<nav[\s\S]*?<\/nav>/gi, '').replace(/<footer[\s\S]*?<\/footer>/gi, '');
+  const stripped = html
+    .replace(/<nav[\s\S]*?<\/nav>/gi, '')
+    .replace(/<footer[\s\S]*?<\/footer>/gi, '');
   const aRegex = /<a\s+[^>]*href=["']([^"']+)["'][^>]*>/gi;
   let match: RegExpExecArray | null;
   while ((match = aRegex.exec(stripped)) !== null) {
