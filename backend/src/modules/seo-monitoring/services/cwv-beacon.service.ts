@@ -37,7 +37,9 @@ export class CwvBeaconService extends SupabaseBaseService {
     return this.recordHuman(input);
   }
 
-  private async recordHuman(input: CwvBeaconServerInsert): Promise<{ ok: boolean }> {
+  private async recordHuman(
+    input: CwvBeaconServerInsert,
+  ): Promise<{ ok: boolean }> {
     const { error } = await this.supabase.from('__seo_cwv_raw').insert({
       session_id: input.session_id,
       surface: input.surface,
@@ -62,7 +64,9 @@ export class CwvBeaconService extends SupabaseBaseService {
     return { ok: true };
   }
 
-  private async recordBot(input: CwvBeaconServerInsert): Promise<{ ok: boolean }> {
+  private async recordBot(
+    input: CwvBeaconServerInsert,
+  ): Promise<{ ok: boolean }> {
     // Bots : event_log avec payload pour debug, jamais agrégé.
     const { error } = await this.supabase.from('__seo_event_log').insert({
       event_type: 'seo.runtime.bot_cwv_beacon',
