@@ -459,3 +459,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/ai-additive-layer-design-spec`
 - **Décision** : docs(superpowers): implementation plan Phase 0+1 — AI additive layer (+1 other commit)
 - **Sortie** : PR aucune | commits 90ac3b313 31fca3a81
+
+## 2026-05-24 — feat/ai-additive-layer-design-spec (auto)
+
+- **Branche** : `feat/ai-additive-layer-design-spec`
+- **Décision** : feat(trend-signals): module + rappels.gouv.fr fetcher + BullMQ monthly processor + migration additive (+11 other commits)
+- **Sortie** : PR #714 | commits 213d5db3e 04964ad3b cf61d176a f9e218531 cf5adb9dc 64a4c0a36 a380fbe25 4d61ee999 f9b05b52c 67958cfa7 0fc72ac1a 9b75889bd
