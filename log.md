@@ -513,3 +513,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/automation-reality-registry`
 - **Décision** : Merge remote-tracking branch 'origin/main' into feat/automation-reality-registry (+6 other commits)
 - **Sortie** : PR #726 | commits 220f8cf08 970c2c08d b9cb833df 522703395 d3cb777b6 3f2bfbba9 79dfa5792
+
+## 2026-05-25 — chore/ownership-yaml-audit-seo-glob (auto)
+
+- **Branche** : `chore/ownership-yaml-audit-seo-glob`
+- **Décision** : chore(registry): add audit/seo-*.md ownership glob (PR #736 follow-up)
+- **Sortie** : PR #740 | commits 080868ce8
