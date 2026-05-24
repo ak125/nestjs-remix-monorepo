@@ -59,7 +59,11 @@ export function expandWildcards(members, lockfile) {
 export function buildNcuArgs({ members, target, dryRun }) {
   // ncu's default mode IS dry-run (reports upgrades without writing). The -u
   // flag is what applies them. There is no --dry-run flag in npm-check-updates.
-  const args = ['--target', target, '--filter', members.join(','), '--deep', '--errorLevel', '2'];
+  //
+  // We intentionally do NOT pass --errorLevel 2 — it makes ncu exit 1 whenever
+  // upgrades are available, which is the entire reason we run this tool.
+  // Default --errorLevel 1 means exit 0 unless ncu itself errors.
+  const args = ['--target', target, '--filter', members.join(','), '--deep'];
   if (!dryRun) args.push('-u');
   return args;
 }

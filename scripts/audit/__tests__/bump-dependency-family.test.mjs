@@ -89,8 +89,10 @@ test('expandWildcards passes through literal names even when not in lockfile', (
   assert.deepEqual(expanded, ['some-pkg']);
 });
 
-test('buildNcuArgs assembles deterministic argv for dry-run (no -u, no --dry-run)', () => {
-  // ncu's default IS dry-run; the flag does not exist in npm-check-updates.
+test('buildNcuArgs assembles deterministic argv for dry-run (no -u, no --dry-run, no --errorLevel)', () => {
+  // ncu's default IS dry-run; the --dry-run flag does not exist in npm-check-updates.
+  // We omit --errorLevel because the default level 1 always exits 0; level 2 would
+  // exit 1 whenever upgrades exist (the entire reason we run the tool).
   const args = buildNcuArgs({
     members: ['typescript', 'eslint'],
     target: 'latest',
@@ -100,16 +102,17 @@ test('buildNcuArgs assembles deterministic argv for dry-run (no -u, no --dry-run
     '--target', 'latest',
     '--filter', 'typescript,eslint',
     '--deep',
-    '--errorLevel', '2',
   ]);
   assert.ok(!args.includes('--dry-run'), 'ncu has no --dry-run flag — it is the default behaviour');
   assert.ok(!args.includes('-u'), 'dry-run must NOT include -u (which would apply upgrades)');
+  assert.ok(!args.includes('--errorLevel'), '--errorLevel 2 would exit 1 when upgrades exist');
 });
 
 test('buildNcuArgs uses -u (apply) when dryRun=false', () => {
   const args = buildNcuArgs({ members: ['x'], target: 'minor', dryRun: false });
   assert.ok(!args.includes('--dry-run'));
   assert.ok(args.includes('-u'));
+  assert.ok(!args.includes('--errorLevel'));
   assert.ok(args.includes('--target') && args[args.indexOf('--target') + 1] === 'minor');
 });
 
