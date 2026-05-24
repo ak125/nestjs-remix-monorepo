@@ -57,7 +57,7 @@ describe("buildR8CanonicalUrls", () => {
   it("toutes les URLs sont absolues HTTPS", () => {
     const urls = buildR8CanonicalUrls(vehicleFixture);
     for (const url of Object.values(urls)) {
-      expect(url.startsWith("https://www.automecanik.com")).toBe(true);
+      expect(url.startsWith("https://www.automecanik.com/")).toBe(true);
     }
   });
 });
