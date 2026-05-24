@@ -2,10 +2,10 @@
 
 # Format strict — éditer 1 ligne = 1 slug kebab-case. Pas de prose.
 # Bornes (anti-bloat mécanique, enforced par validate-top-priorities.sh) :
-#   TOP ≤ 5, DO_NOT_START ≤ 7, ACTIVE_INCIDENTS ≤ 10, STRUCTURAL_CONSTRAINTS ≤ 10
+#   TOP ≤ 5, DO_NOT_START ≤ 7, ACTIVE_INCIDENTS ≤ 10, STRUCTURAL_CONSTRAINTS ≤ 10, EXPLORATION_BUDGET ≤ 3
 # Lecteurs : SessionStart hook, Stop hook, skills, CI dashboards, agents Paperclip
 # Mise à jour : édit manuel git tracké, max 1×/semaine (ou pivot business)
-# updated_at: 2026-05-23
+# updated_at: 2026-05-24
 
 ## TOP
 - commerce-loop-v1
@@ -29,3 +29,6 @@
 - postgrest-stable-function-write
 - dev-runtime-not-auto-updated-on-merge
 - node-22-required-for-architecture-build
+
+## EXPLORATION_BUDGET
+- geo-discovery-probe-2026-05

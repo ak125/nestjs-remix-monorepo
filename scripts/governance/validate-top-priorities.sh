@@ -18,7 +18,7 @@ fi
 
 ERRORS=0
 
-# 1. Sections obligatoires
+# 1. Sections obligatoires (EXPLORATION_BUDGET = optional G10 slot ADR-081)
 for section in TOP DO_NOT_START ACTIVE_INCIDENTS STRUCTURAL_CONSTRAINTS; do
   if ! grep -qE "^## ${section}$" "$FILE"; then
     echo "FAIL: section ## $section manquante"
@@ -26,8 +26,8 @@ for section in TOP DO_NOT_START ACTIVE_INCIDENTS STRUCTURAL_CONSTRAINTS; do
   fi
 done
 
-# 2. Bornes (anti-bloat)
-declare -A LIMITS=([TOP]=5 [DO_NOT_START]=7 [ACTIVE_INCIDENTS]=10 [STRUCTURAL_CONSTRAINTS]=10)
+# 2. Bornes (anti-bloat) — EXPLORATION_BUDGET ≤ 3 (G10 ADR-081)
+declare -A LIMITS=([TOP]=5 [DO_NOT_START]=7 [ACTIVE_INCIDENTS]=10 [STRUCTURAL_CONSTRAINTS]=10 [EXPLORATION_BUDGET]=3)
 for section in "${!LIMITS[@]}"; do
   count=$(awk -v s="## ${section}" '
     $0 == s { flag=1; next }

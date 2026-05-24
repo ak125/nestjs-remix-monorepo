@@ -67,6 +67,11 @@ jobs:
         # imports lives inline in the script.
         run: bash scripts/governance/check-diagnostic-engine-boundary.sh
 
+      - name: 📜 Top-priorities manifest validation (G10 ADR-081)
+        # Sections obligatoires + bornes anti-bloat + slugs kebab-case.
+        # EXPLORATION_BUDGET section ajoutée par G10 (ADR-081), borne 3 entrées max.
+        run: bash scripts/governance/validate-top-priorities.sh .claude/top-priorities.md
+
       - name: 🔁 madge — circular dependencies (informational)
         if: always()
         continue-on-error: true
