@@ -61,6 +61,9 @@ import {
   type R3GuidePage,
 } from "~/types/r3-guide.types";
 import { trackArticleView, trackReadingTime } from "~/utils/analytics";
+import ImageOptimizer, {
+  type PictureImageSet,
+} from "~/utils/image-optimizer";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { getOgImageUrl } from "~/utils/og-image.utils";
@@ -73,6 +76,36 @@ const RelatedArticlesSidebar = lazy(() =>
   })),
 );
 const VehicleCarousel = lazy(() => import("~/components/blog/VehicleCarousel"));
+
+// ── LCP optimization (PR LCP-R3-PR2) ────────────────────────
+// Featured image is the LCP candidate on R3 conseils (GSC report 4.8s mobile).
+// Apply imgproxy AVIF/WebP srcSet + responsive preload. Guard absolute URLs
+// (handled by browser as-is) — only relative Supabase paths get optimized.
+const HERO_WIDTHS = [400, 800, 1200];
+const HERO_SIZES = "(max-width: 640px) 100vw, 800px";
+const HERO_WIDTH = 800;
+const HERO_HEIGHT = 256;
+
+function buildHeroImageSet(
+  featuredImage: string | null | undefined,
+): PictureImageSet | null {
+  if (!featuredImage) return null;
+  // Skip imgproxy if absolute URL or already-proxied path — keep raw rendering
+  // (fallback to current behavior, no LCP optimization but no regression).
+  if (
+    featuredImage.startsWith("http") ||
+    featuredImage.startsWith("/img/") ||
+    featuredImage.startsWith("/imgproxy/")
+  ) {
+    return null;
+  }
+  return ImageOptimizer.getPictureImageSet(featuredImage, {
+    widths: HERO_WIDTHS,
+    sizes: HERO_SIZES,
+    width: HERO_WIDTH,
+    height: HERO_HEIGHT,
+  });
+}
 
 // Types
 
@@ -357,12 +390,29 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   ];
 
   if (page.featuredImage) {
-    result.push({
-      tagName: "link",
-      rel: "preload",
-      as: "image",
-      href: page.featuredImage,
-    });
+    const heroSet = buildHeroImageSet(page.featuredImage);
+    if (heroSet) {
+      // Responsive preload — browser picks the optimal AVIF variant matching
+      // its viewport via imagesrcset+imagesizes. fetchpriority=high signals LCP.
+      result.push({
+        tagName: "link",
+        rel: "preload",
+        as: "image",
+        href: heroSet.fallbackSrc,
+        imagesrcset: heroSet.avifSrcSet,
+        imagesizes: heroSet.sizes,
+        type: "image/avif",
+        fetchpriority: "high",
+      });
+    } else {
+      // Absolute URL or already-proxied — preload raw (current behavior).
+      result.push({
+        tagName: "link",
+        rel: "preload",
+        as: "image",
+        href: page.featuredImage,
+      });
+    }
   }
 
   return result;
@@ -402,6 +452,10 @@ export default function R3GuidePage() {
 
   // Hero badges from pre-computed metadata
   const heroBadges = buildHeroBadges(page);
+
+  // LCP optimization: imgproxy AVIF/WebP set for the featured image candidate.
+  // null = absolute URL / already-proxied → fallback to raw <img> below.
+  const heroImageSet = buildHeroImageSet(page.featuredImage);
 
   // Adapter sections → GammeConseil for legacy components
   const conseilForSnippet: GammeConseil[] | null =
@@ -474,22 +528,47 @@ export default function R3GuidePage() {
           <span className="font-medium text-gray-700">Retour au blog</span>
         </button>
 
-        {/* Featured Image */}
+        {/* Featured Image — LCP candidate, served via imgproxy AVIF/WebP when path is a relative Supabase asset. */}
         {page.featuredImage && (
           <Card className="mb-8 border shadow-lg overflow-hidden">
             <CardContent className="p-0">
               <div className="bg-gradient-to-br from-gray-50 via-white to-gray-100 p-6 flex items-center justify-center">
-                <img
-                  src={page.featuredImage}
-                  alt={page.title}
-                  width={800}
-                  height={256}
-                  sizes="(max-width: 640px) 100vw, 800px"
-                  className="w-full h-64 object-contain drop-shadow-lg"
-                  loading="eager"
-                  decoding="async"
-                  fetchPriority="high"
-                />
+                {heroImageSet ? (
+                  <picture>
+                    <source
+                      type="image/avif"
+                      srcSet={heroImageSet.avifSrcSet}
+                      sizes={heroImageSet.sizes}
+                    />
+                    <source
+                      type="image/webp"
+                      srcSet={heroImageSet.webpSrcSet}
+                      sizes={heroImageSet.sizes}
+                    />
+                    <img
+                      src={heroImageSet.fallbackSrc}
+                      alt={page.title}
+                      width={HERO_WIDTH}
+                      height={HERO_HEIGHT}
+                      className="w-full h-64 object-contain drop-shadow-lg"
+                      loading="eager"
+                      decoding="async"
+                      fetchPriority="high"
+                    />
+                  </picture>
+                ) : (
+                  <img
+                    src={page.featuredImage}
+                    alt={page.title}
+                    width={800}
+                    height={256}
+                    sizes="(max-width: 640px) 100vw, 800px"
+                    className="w-full h-64 object-contain drop-shadow-lg"
+                    loading="eager"
+                    decoding="async"
+                    fetchPriority="high"
+                  />
+                )}
               </div>
             </CardContent>
           </Card>
