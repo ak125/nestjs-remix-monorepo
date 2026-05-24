@@ -660,9 +660,9 @@ export default function R3GuidePage() {
               </Card>
             </article>
 
-            {/* Véhicules Compatibles */}
+            {/* Véhicules Compatibles — below-fold, content-visibility:auto skips paint until scrolled in. */}
             {guide.vehicles.length > 0 && (
-              <div className="lg:col-span-3 order-3">
+              <div className="lg:col-span-3 order-3 cv-auto">
                 <Suspense
                   fallback={
                     <div className="h-48 animate-pulse bg-gray-100 rounded-lg" />
@@ -760,24 +760,26 @@ export default function R3GuidePage() {
                 </Suspense>
                 {/* END R4 deferred block — was previously blocking TTFB by 200-400ms */}
 
-                {/* Articles Croisés */}
+                {/* Articles Croisés — below-fold, content-visibility:auto skips paint until visible. */}
                 {guide.related.length > 0 && (
-                  <Suspense
-                    fallback={
-                      <div className="h-32 animate-pulse bg-gray-100 rounded-lg" />
-                    }
-                  >
-                    <RelatedArticlesSidebar
-                      articles={guide.related as never[]}
-                    />
-                  </Suspense>
+                  <div className="cv-auto">
+                    <Suspense
+                      fallback={
+                        <div className="h-32 animate-pulse bg-gray-100 rounded-lg" />
+                      }
+                    >
+                      <RelatedArticlesSidebar
+                        articles={guide.related as never[]}
+                      />
+                    </Suspense>
+                  </div>
                 )}
               </div>
             </aside>
           </div>
 
-          {/* Navigation entre articles (précédent/suivant) */}
-          <div className="max-w-6xl mx-auto mt-8">
+          {/* Navigation entre articles (précédent/suivant) — below-fold, content-visibility:auto. */}
+          <div className="max-w-6xl mx-auto mt-8 cv-auto">
             <ArticleNavigation
               previous={guide.adjacent.previous as never}
               next={guide.adjacent.next as never}
