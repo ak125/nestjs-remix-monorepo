@@ -24,12 +24,17 @@
  */
 
 import { query } from "@anthropic-ai/claude-agent-sdk";
-import { spawnSync, execFileSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { config as loadEnv } from "dotenv";
+import OpenAI from "openai";
 import { parse as parseYaml } from "yaml";
+
+// Load env from monorepo backend/.env (for OPENAI_API_KEY)
+loadEnv({ path: "/opt/automecanik/app/backend/.env" });
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -44,8 +49,12 @@ const ARCHIVE_ROOT = resolve(WORKTREE_ROOT, ".archive/research/geo-probe-2026-05
 const RAW_ROOT = resolve(ARCHIVE_ROOT, "raw");
 const MANIFEST_PATH = resolve(ARCHIVE_ROOT, "MANIFEST.sha256");
 
-const ALL_ENGINES = ["claude-sdk", "claude-cli", "codex-cli"] as const;
+const ALL_ENGINES = ["claude-sdk", "claude-cli", "codex-cli", "chatgpt-api"] as const;
 type Engine = (typeof ALL_ENGINES)[number];
+
+// ChatGPT API model — gpt-4o = same model than ChatGPT Plus default 2026
+// Cost estimate : 100 prompts × ~1k tokens IO ≈ $1.25 (well under 30€ budget)
+const CHATGPT_MODEL = process.env.CHATGPT_MODEL || "gpt-4o";
 
 // ============================================================
 // CLI args
@@ -265,6 +274,49 @@ function callClaudeCLI(prompt: string): CaptureResult {
   }
 }
 
+// ChatGPT API adapter (gpt-4o by default, same model than ChatGPT Plus 2026).
+// Auth via OPENAI_API_KEY env. Fail-fast si absent.
+let openaiClient: OpenAI | null = null;
+function getOpenAI(): OpenAI {
+  if (!openaiClient) {
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      throw new Error("OPENAI_API_KEY missing in backend/.env — provision before running chatgpt-api engine");
+    }
+    openaiClient = new OpenAI({ apiKey });
+  }
+  return openaiClient;
+}
+
+async function callChatGPTAPI(prompt: string): Promise<CaptureResult> {
+  const t0 = Date.now();
+  try {
+    const client = getOpenAI();
+    const completion = await client.chat.completions.create({
+      model: CHATGPT_MODEL,
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.7,  // ChatGPT default
+      max_tokens: 1500,
+    });
+    const text = completion.choices[0]?.message?.content || "";
+    return {
+      ok: text.length > 0,
+      response_raw: text,
+      error: null,
+      model_version: completion.model || CHATGPT_MODEL,
+      duration_ms: Date.now() - t0,
+    };
+  } catch (err) {
+    return {
+      ok: false,
+      response_raw: "",
+      error: err instanceof Error ? err.message : String(err),
+      model_version: null,
+      duration_ms: Date.now() - t0,
+    };
+  }
+}
+
 function callCodexCLI(prompt: string): CaptureResult {
   const t0 = Date.now();
   try {
@@ -359,7 +411,8 @@ async function main() {
       let result: CaptureResult;
       if (engine === "claude-sdk") result = await callClaudeSDK(promptInstruction);
       else if (engine === "claude-cli") result = callClaudeCLI(promptInstruction);
-      else result = callCodexCLI(promptInstruction);
+      else if (engine === "codex-cli") result = callCodexCLI(promptInstruction);
+      else result = await callChatGPTAPI(promptInstruction);
 
       totalCalls++;
       const stats = perEngineStats[engine]!;
