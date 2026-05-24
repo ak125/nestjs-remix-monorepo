@@ -90,6 +90,15 @@ Expected: discover how the service obtains page HTML for scoring (SSR render, ca
 
 Append findings to `docs/superpowers/plans/2026-05-23-ai-additive-layer-phase-0-and-1.md` under a `## Task 1.1 findings` section so subsequent tasks reference the correct paths.
 
+### Task 1.1 findings (résolus par exploration en amont)
+
+- `QualityHistorySnapshotService` au chemin attendu : `backend/src/modules/seo-monitoring/services/quality-history-snapshot.service.ts`. Types exportés : `SnapshotKind`, `QualityHistoryRow`, `QualityOutlier`.
+- Table EAV `__seo_quality_history` (NOT `__seo_page_quality_history`) — schéma pivoted (metric_name TEXT + metric_value NUMERIC), partitionnée par `sampled_at`. **Pas de DDL nécessaire pour AI Citation Readiness** : ajouter 3 `metric_name` distincts (`ai_has_extractable_tldr`, `ai_has_faq_schema`, `ai_has_visible_sources`) au pattern existant.
+- `fetchMetricsForRole(roleId)` ligne 194 : R1 lit `__seo_r1_gamme_slots.r1s_micro_seo_block` (texte HTML-like, fragment de SEO bloc) ; **R0/R2/R3/R4/R6/R7/R8 émettent un placeholder synthétique** (note PR-X1.1 follow-up dans le code).
+- **Limitation V1 reconnue** : le service ne fetch pas le HTML complet de la page rendue. Conséquence pour Task 1.4 wiring : les détecteurs opèrent sur `r1s_micro_seo_block` pour R1 (le contenu structurel injecté dans la page). Pour R0/R2-R8, V1 = émettre les 3 métriques `ai_has_*` à `value=0` (synthetic placeholder cohérent avec pattern existant). Real HTML fetching pour tous rôles = PR-X1.1 follow-up séparée. Cette honnêteté V1 est canon (cf. spec §4 "premières versions resteront explicitement heuristiques").
+- HTML/DOM access : `r1s_micro_seo_block` content is sufficient for `detectExtractableTldr` et `detectVisibleSources` ; **`detectFaqSchema` retournera 0 sur les micro-blocks** car le schema JSON-LD vit dans le `<head>` rendu, pas dans le fragment. Acceptable V1 — documenté dans Task 1.4 wiring.
+- `DynamicSeoV4UltimateService` (chemin réel : `backend/src/modules/seo/dynamic-seo-v4-ultimate.service.ts`) génère le schema JSON-LD côté SSR. Task 1.5 audit-script lit ce fichier en statique pour produire le gap inventory.
+
 ### Task 1.2: AI Citation Readiness — failing tests for 3 detectors
 
 **Files:**
