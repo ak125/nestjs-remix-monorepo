@@ -94,6 +94,26 @@ export {
   type DeletePolicyEntry,
   type DeletePolicyOverlay,
 } from "./overlay/delete-policy";
+export {
+  AutomationEntrySchema,
+  AutomationRealitySchema,
+  AutomationModeEnum,
+  IntendedModeEnum,
+  AutomationExecutorEnum,
+  EvidenceRefSchema,
+  RuntimeEvidenceItemSchema,
+  RuntimeEvidenceSchema,
+  LastVerifiedMethodEnum,
+  type AutomationEntry,
+  type AutomationReality,
+  type AutomationMode,
+  type IntendedMode,
+  type AutomationExecutor,
+  type EvidenceRef,
+  type RuntimeEvidenceItem,
+  type RuntimeEvidence,
+  type LastVerifiedMethod,
+} from "./overlay/automation-reality";
 
 // ── Layer 3 canonical projection (generated) ──
 export {

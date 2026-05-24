@@ -1,0 +1,55 @@
+name: Automation Registry — validate (BLOCKING)
+
+# Validates `.spec/00-canon/repository-registry/automation-reality.yaml`
+# against the Zod schema + evidence path/excerpt drift checks.
+#
+# BLOCKING by design — same posture as `registry-new-file-gate.yml` (PR-G).
+# Pure local validation : zero network, no external API. Reads files + git
+# ls-files only. Cannot become flaky from rate limits or transient outages.
+
+on:
+  pull_request:
+    paths:
+      - ".spec/00-canon/repository-registry/automation-reality.yaml"
+      - "packages/registry/src/overlay/automation-reality.ts"
+      - "packages/registry/src/__tests__/automation-reality.test.ts"
+      - "scripts/registry/validate-automation-overlay.ts"
+      - ".github/workflows/automation-registry-validate.yml"
+  push:
+    branches: [main]
+    paths:
+      - ".spec/00-canon/repository-registry/automation-reality.yaml"
+      - "packages/registry/src/overlay/automation-reality.ts"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: automation-registry-validate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate automation-reality.yaml
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: 🟢 Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: 📦 Install deps (root + workspaces, --ignore-scripts to skip husky)
+        run: npm ci --ignore-scripts --no-audit --no-fund --prefer-offline
+
+      - name: 🔍 Validate Zod schema + evidence paths + excerpt drift
+        run: npx tsx scripts/registry/validate-automation-overlay.ts
+
+      - name: 🧪 Run automation-reality unit tests
+        run: npx tsx --test packages/registry/src/__tests__/automation-reality.test.ts

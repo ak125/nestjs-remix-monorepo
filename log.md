@@ -519,3 +519,27 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `worktree-geo-discovery-probe-2026-05`
 - **Décision** : feat(research): geo-discovery-probe-2026-05 B1 closed — 288 captures + MANIFEST + report (+10 other commits)
 - **Sortie** : PR aucune | commits 5d42812f8 4738957d9 0531dd196 5b91d5c04 0752938b3 83ea8c742 b865913bb 77b3a3348 3206430dd 2449b7151 08b33518e
+
+## 2026-05-24 — feat/automation-reality-registry (auto)
+
+- **Branche** : `feat/automation-reality-registry`
+- **Décision** : feat(registry): automation-reality-registry V1 — observe gap intent↔execution
+- **Sortie** : PR #726 | commits 79dfa5792
+
+## 2026-05-24 — feat/automation-reality-registry (auto)
+
+- **Branche** : `feat/automation-reality-registry`
+- **Décision** : fix(registry): npm install --ignore-scripts in automation registry workflows (+2 other commits)
+- **Sortie** : PR #726 | commits d3cb777b6 3f2bfbba9 79dfa5792
+
+## 2026-05-24 — feat/automation-reality-registry (auto)
+
+- **Branche** : `feat/automation-reality-registry`
+- **Décision** : fix(registry): use npm ci for automation registry workflows (tsx hoisting) (+4 other commits)
+- **Sortie** : PR #726 | commits b9cb833df 522703395 d3cb777b6 3f2bfbba9 79dfa5792
+
+## 2026-05-24 — feat/automation-reality-registry (auto)
+
+- **Branche** : `feat/automation-reality-registry`
+- **Décision** : Merge remote-tracking branch 'origin/main' into feat/automation-reality-registry (+6 other commits)
+- **Sortie** : PR #726 | commits 220f8cf08 970c2c08d b9cb833df 522703395 d3cb777b6 3f2bfbba9 79dfa5792

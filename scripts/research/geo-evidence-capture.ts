@@ -443,7 +443,15 @@ async function main() {
         analysis,
       };
 
-      writeFileSync(outPath, JSON.stringify(record, null, 2), "utf8");
+      // Atomic create — fails with EEXIST if a concurrent process wrote first.
+      // Closes the TOCTOU window flagged by CodeQL js/file-system-race.
+      try {
+        writeFileSync(outPath, JSON.stringify(record, null, 2), { encoding: "utf8", flag: "wx" });
+      } catch (err) {
+        if ((err as NodeJS.ErrnoException)?.code !== "EEXIST") throw err;
+        console.log(`  [${engine}] concurrent write detected, keeping existing capture`);
+        continue;
+      }
       console.log(`  [${engine}] ${result.ok ? "OK" : "FAIL"} (${result.duration_ms}ms${result.error ? ", err=" + result.error.slice(0, 80) : ""})`);
     }
   }

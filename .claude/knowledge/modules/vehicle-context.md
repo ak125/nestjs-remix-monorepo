@@ -2,7 +2,7 @@
 module: vehicle-context
 sources:
 - backend/src/modules/vehicle-context
-last_scan: '2026-05-21'
+last_scan: '2026-05-24'
 primary_files:
 - backend/src/modules/vehicle-context/vehicle-context.middleware.test.ts
 - backend/src/modules/vehicle-context/vehicle-context.middleware.ts

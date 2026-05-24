@@ -4,21 +4,21 @@
     "private": true,
     "license": "MIT",
     "files": [
-    "base.js"
+        "base.js"
     ],
     "devDependencies": {
-    "@remix-run/eslint-config": "^2.8.1",
-    "@types/eslint": "^8.56.5",
-    "@typescript-eslint/eslint-plugin": "^7.2.0",
-    "@typescript-eslint/parser": "^7.2.0",
-    "eslint": "^8.57.0",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-import": "^2.29.1",
-    "eslint-plugin-prettier": "^5.1.3",
-    "typescript": "^5.9.3"
+        "@remix-run/eslint-config": "^2.8.1",
+        "@types/eslint": "^8.56.5",
+        "@typescript-eslint/eslint-plugin": "^8.0.0",
+        "@typescript-eslint/parser": "^8.0.0",
+        "eslint": "^8.57.1",
+        "eslint-config-prettier": "^10.1.8",
+        "eslint-plugin-import": "^2.29.1",
+        "eslint-plugin-prettier": "^5.1.3",
+        "typescript": "^5.9.3"
     },
     "prettier": {},
     "scripts": {
-    "lint:parent": "cd ../../ && npm run lint"
+        "lint:parent": "cd ../../ && npm run lint"
     }
 }
