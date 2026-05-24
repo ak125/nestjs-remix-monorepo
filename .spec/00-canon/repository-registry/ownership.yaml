@@ -207,6 +207,11 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: low
+  - glob: audit/seo-*.md
+    domain: D3
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
   - glob: backend/src/auth/**
     domain: D11
     owner: '@ak125/auth-team'
