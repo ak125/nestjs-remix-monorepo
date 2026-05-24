@@ -206,11 +206,7 @@ export class R3GuideService {
       // Cap 24 = 2× safety margin → -150 KB payload SSR mobile vs 1000 véhicules (~80% du JSON).
       // Trade-off documenté : count "X motorisations" affiché reflète désormais le sample (24 max),
       // pas le total catalogue compat — accepté (les vehicle pages sont déjà dans sitemap.xml).
-      this.relationService.getCompatibleVehicles(
-        gammeData.pg_id,
-        24,
-        pg_alias,
-      ),
+      this.relationService.getCompatibleVehicles(gammeData.pg_id, 24, pg_alias),
       this.dataService.getAdjacentArticles(article.slug),
       this.seoService.getSeoBrief(gammeData.pg_id),
       this.seoService.hasPublishedR6Guide(gammeData.pg_id),
