@@ -27,11 +27,23 @@
  */
 "use strict";
 
-const { execSync } = require("child_process");
+const { execFileSync } = require("child_process");
 
 const actor = process.env.GITHUB_ACTOR || "";
-const baseSha = process.env.BASE_SHA || "";
-const headSha = process.env.HEAD_SHA || "HEAD";
+const baseShaRaw = process.env.BASE_SHA || "";
+const headShaRaw = process.env.HEAD_SHA || "HEAD";
+
+// Strict allowlist : SHA = 40 hex OR "HEAD" OR "HEAD~N" (N=1..99).
+// Prevents command injection via crafted env vars (CodeQL js/shell-command-injection).
+const SHA_RE = /^[0-9a-f]{7,40}$/;
+const SYMBOLIC_RE = /^HEAD(~\d{1,2})?$/;
+function sanitizeRef(ref) {
+  if (!ref) return null;
+  if (SHA_RE.test(ref) || SYMBOLIC_RE.test(ref)) return ref;
+  return null;
+}
+const baseSha = sanitizeRef(baseShaRaw);
+const headSha = sanitizeRef(headShaRaw) || "HEAD";
 
 const KNOWN_BOTS = ["dependabot[bot]", "renovate[bot]", "github-actions[bot]"];
 const isBot = actor.endsWith("[bot]") || KNOWN_BOTS.includes(actor);
@@ -47,11 +59,19 @@ if (!isBot) {
 }
 
 // Bot actor → check diff for last_verified_at bump
+// Use execFileSync with arg array (no shell interpolation) — refs are
+// already sanitized via SHA_RE/SYMBOLIC_RE allowlist above.
 let diff = "";
 try {
   const range = baseSha ? `${baseSha}..${headSha}` : "HEAD~1..HEAD";
-  diff = execSync(
-    `git diff ${range} -- .spec/00-canon/repository-registry/automation-reality.yaml`,
+  diff = execFileSync(
+    "git",
+    [
+      "diff",
+      range,
+      "--",
+      ".spec/00-canon/repository-registry/automation-reality.yaml",
+    ],
     { encoding: "utf8" },
   );
 } catch (err) {
