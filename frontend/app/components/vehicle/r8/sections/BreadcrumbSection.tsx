@@ -1,6 +1,7 @@
 // 🍞 R8 Vehicle — S_BREADCRUMB
 // Schema.org BreadcrumbList microdata (for Google rich snippets).
 
+import { buildR8CanonicalUrls } from "../r8-schema";
 import { type LoaderData } from "../r8.types";
 
 interface Props {
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export function BreadcrumbSection({ vehicle, breadcrumb }: Props) {
+  const urls = buildR8CanonicalUrls(vehicle);
   return (
     <nav
       className="bg-white border-b border-gray-200 py-3"
@@ -73,8 +75,15 @@ export function BreadcrumbSection({ vehicle, breadcrumb }: Props) {
             itemScope
             itemType="https://schema.org/ListItem"
           >
-            <span itemProp="name" className="text-gray-600">
-              {breadcrumb.model}
+            <span
+              itemProp="item"
+              itemScope
+              itemType="https://schema.org/WebPage"
+            >
+              <meta itemProp="url" content={urls.model} />
+              <span itemProp="name" className="text-gray-600">
+                {breadcrumb.model}
+              </span>
             </span>
             <meta itemProp="position" content="4" />
           </li>
@@ -86,8 +95,15 @@ export function BreadcrumbSection({ vehicle, breadcrumb }: Props) {
             itemScope
             itemType="https://schema.org/ListItem"
           >
-            <span itemProp="name" className="font-semibold text-gray-900">
-              {vehicle.type_name} {vehicle.type_power_ps} ch
+            <span
+              itemProp="item"
+              itemScope
+              itemType="https://schema.org/WebPage"
+            >
+              <meta itemProp="url" content={urls.type} />
+              <span itemProp="name" className="font-semibold text-gray-900">
+                {vehicle.type_name} {vehicle.type_power_ps} ch
+              </span>
             </span>
             <meta itemProp="position" content="5" />
           </li>
