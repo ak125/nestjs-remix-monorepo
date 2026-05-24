@@ -442,8 +442,14 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Décision** : Soft-hide 1.1M lignes malformées (357K pièces affichées, 103 marques) → fallback no.png ; Tier B (vraies images) différé car files absents de toute l'infra ; 4 gardes structurelles installées (audit nightly + ast-grep paginate + brand-folder registry canon L2 + spot-fix shipping).
 - **Sortie** : PR #699 + vault PR #302 (ADR-078 / INC-2026-015) | commits a44deeb9d + 2ee8c3c (vault) | fichiers `.spec/00-canon/repository-registry/brand-folder-registry.yaml`, `scripts/audit/audit-pieces-media-img-invariants.sh`, `.ast-grep/rules/supabase-js-bulk-select-paginate.yml`, `scripts/recovery/tier-c-softhide-malformed-p1.sql`, `backend/src/modules/cart/services/shipping-calculator.service.ts`
 
-## 2026-05-23 — audit/diagnostic-engine-reality-2026-05-23 (auto)
+## 2026-05-23 — feat/pricing-control-plane-v1 (auto)
 
-- **Branche** : `audit/diagnostic-engine-reality-2026-05-23`
-- **Décision** : audit(diag): reality audit V1 Block A — verdict PIVOT + golden dataset seed
-- **Sortie** : PR aucune | commits a7865ebf
+- **Branche** : `feat/pricing-control-plane-v1`
+- **Décision** : chore(registry): cover backend/src/modules/pricing/** and pricing migrations (+8 other commits)
+- **Sortie** : PR #709 | commits 252bb1b8 e22bf3c2 a65383cc e404171c 4000e00b 358da2dd 7d29d9b6 6641b556 667581d3
+
+## 2026-05-23 — feat/pricing-control-plane-v1 (auto)
+
+- **Branche** : `feat/pricing-control-plane-v1`
+- **Décision** : fix(pricing): dedupe squawk timeout settings in 2 migrations (+12 other commits)
+- **Sortie** : PR #709 | commits 289eb0c4 b3e3b9ec 656bf6dc 04754b37 b8c048bf d529c744 4c4fa7a6 ad027f11 5701a64e d135bb9b 227d3a4d 142a0218 c4f6ea33

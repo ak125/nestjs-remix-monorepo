@@ -1,8 +1,6 @@
 import {
   Controller,
   Get,
-  Post,
-  Body,
   Param,
   Query,
   NotFoundException,
@@ -10,13 +8,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { SuppliersService } from './suppliers.service';
-import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
-import {
-  CreateSupplierDto,
-  CreateSupplierSchema,
-  SupplierFilters,
-  validateSupplierFilters,
-} from './dto';
+import { SupplierFilters, validateSupplierFilters } from './dto';
 
 /**
  * SuppliersModernController - Controller moderne avec validation Zod
@@ -100,35 +92,6 @@ export class SuppliersModernController {
         throw error;
       }
 
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Erreur inconnue',
-        timestamp: new Date().toISOString(),
-      };
-    }
-  }
-
-  /**
-   * Créer un nouveau fournisseur avec validation Zod
-   */
-  @Post()
-  async create(
-    @Body(new ZodValidationPipe(CreateSupplierSchema))
-    createSupplierDto: CreateSupplierDto,
-  ) {
-    try {
-      // La validation est faite dans le service moderne
-      const supplier =
-        await this.suppliersService.createSupplier(createSupplierDto);
-
-      return {
-        success: true,
-        data: supplier,
-        message: 'Fournisseur créé avec succès',
-        timestamp: new Date().toISOString(),
-      };
-    } catch (error) {
-      this.logger.error('Erreur lors de la création du fournisseur:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Erreur inconnue',

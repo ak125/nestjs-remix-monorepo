@@ -1,9 +1,9 @@
 id: commerce-correlation-id-required-on-mutations
 language: typescript
-# Severity = warning in PR-A (rule introduced before the RPC plumbing exists in PR-B/PR-C).
-# Promoted to "error" once create_order_atomic / cancel_order_atomic / append_order_event
-# RPCs are deployed with p_correlation_id NOT NULL.
-severity: warning
+# PR-A introduced this rule as severity:warning (RPC plumbing not yet shipped).
+# PR-C (Vault #301) wires p_correlation_id through OrdersService.createOrder + cancelOrder
+# + OrderStatusService.appendOrderEvent, and promotes severity to error in the same commit.
+severity: error
 message: |
   Calls to commerce mutation RPCs MUST provide p_correlation_id.
   Canon: .spec/00-canon/commerce-runtime/authority-graph.yaml#rpc_authority
