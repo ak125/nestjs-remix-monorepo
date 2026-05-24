@@ -1,4 +1,372 @@
 {
+  "automation": [
+    {
+      "actual_mode": "ACTIVE",
+      "automation_id": "automation-registry-no-auto-bump",
+      "domain": "D15",
+      "evidence": [
+        {
+          "note": "blocking gate — refuses PR from bot actor that bumps last_verified_at",
+          "path": ".github/workflows/automation-registry-no-auto-bump.yml"
+        }
+      ],
+      "executor": "github-actions",
+      "intended_mode": "ACTIVE",
+      "last_verified_at": "2026-05-24",
+      "last_verified_by": "seed:fafa",
+      "last_verified_method": "seed-from-plan-review",
+      "risk": "low",
+      "runtime_evidence": {
+        "consumer": "no-consumer-by-design",
+        "output": {
+          "kind": "log",
+          "observed_at": "2026-05-24",
+          "source": "check-no-auto-bump.js exit code"
+        },
+        "trigger": {
+          "kind": "github_run",
+          "observed_at": "2026-05-24",
+          "source": "this PR's CI run"
+        }
+      }
+    },
+    {
+      "actual_mode": "ACTIVE",
+      "automation_id": "automation-registry-validate",
+      "domain": "D15",
+      "evidence": [
+        {
+          "note": "blocking validator — runs Zod + evidence-path + excerpt-drift checks",
+          "path": ".github/workflows/automation-registry-validate.yml"
+        }
+      ],
+      "executor": "github-actions",
+      "intended_mode": "ACTIVE",
+      "last_verified_at": "2026-05-24",
+      "last_verified_by": "seed:fafa",
+      "last_verified_method": "seed-from-plan-review",
+      "risk": "medium",
+      "runtime_evidence": {
+        "consumer": "no-consumer-by-design",
+        "output": {
+          "kind": "log",
+          "observed_at": "2026-05-24",
+          "source": "validate-automation-overlay.ts stderr"
+        },
+        "trigger": {
+          "kind": "github_run",
+          "observed_at": "2026-05-24",
+          "source": "this PR's CI run"
+        }
+      }
+    },
+    {
+      "actual_mode": "OBSERVE_ONLY",
+      "automation_id": "contract-drift-observatory",
+      "domain": "D15",
+      "drift_note": "user inventory flagged as 'warn-only' implying degraded ; this is observer by-design, NOT a gap",
+      "evidence": [
+        {
+          "excerpt": "Never blocks (continue-on-error + exit 0)",
+          "line": 5,
+          "note": "observer pattern : detect & report contract drift, never enforce",
+          "path": ".github/workflows/contract-drift-observatory.yml"
+        }
+      ],
+      "executor": "github-actions",
+      "intended_mode": "OBSERVE_ONLY",
+      "last_verified_at": "2026-05-24",
+      "last_verified_by": "seed:fafa",
+      "last_verified_method": "seed-from-plan-review",
+      "risk": "low"
+    },
+    {
+      "actual_mode": "INTENDED_PHASED",
+      "automation_id": "dependency-graph-ratchet",
+      "domain": "D15",
+      "evidence": [
+        {
+          "excerpt": "PHASE 1 (warn-only)",
+          "line": 8,
+          "note": "ratchet step continue-on-error, post comment only",
+          "path": ".github/workflows/dependency-graph-validate.yml"
+        }
+      ],
+      "executor": "github-actions",
+      "intended_mode": "ACTIVE",
+      "last_verified_at": "2026-05-24",
+      "last_verified_by": "seed:fafa",
+      "last_verified_method": "seed-from-plan-review",
+      "missing_step": "promote to blocking +14d signal vert (Etape 3 ADR-058)",
+      "owner_action": "ops decision after green signal window",
+      "risk": "low"
+    },
+    {
+      "actual_mode": "MANUAL",
+      "automation_id": "dependency-modernization-pr9-families",
+      "domain": "D15",
+      "drift_note": "user inventory flagged 'PR-9 dependencies : système de contrôle OK, exécution absente' ; verified : execution = human-owned by design, NOT a missing executor",
+      "evidence": [
+        {
+          "excerpt": "operational_owner",
+          "line": 31,
+          "note": "rule #27 — operational_owner kebab-case *-team slug routes the page",
+          "path": "audit/dependencies/pr-9-modernization-roadmap.md"
+        },
+        {
+          "excerpt": "package-ecosystem",
+          "line": 3,
+          "note": "dependabot covers minor/patch automatically ; majors per family = human-owned PR",
+          "path": ".github/dependabot.yml"
+        }
+      ],
+      "executor": "human-only",
+      "intended_mode": "MANUAL",
+      "last_verified_at": "2026-05-24",
+      "last_verified_by": "seed:fafa",
+      "last_verified_method": "seed-from-plan-review",
+      "risk": "low"
+    },
+    {
+      "actual_mode": "SCRIPT_ONLY",
+      "automation_id": "dev-runtime-sync",
+      "domain": "D13",
+      "evidence": [
+        {
+          "note": "script committed, no installation evidence in any tracked crontab",
+          "path": "scripts/ops/sync-dev-runtime.sh"
+        },
+        {
+          "note": "container Supercronic crontab — does NOT include sync-dev-runtime (VPS host crontab not in repo)",
+          "path": "config/cron/crontab"
+        }
+      ],
+      "executor": "cron-vps",
+      "intended_mode": "ACTIVE",
+      "last_verified_at": "2026-05-24",
+      "last_verified_by": "seed:fafa",
+      "last_verified_method": "seed-from-plan-review",
+      "missing_step": "owner installs script as DEV VPS crontab entry (every ~10min) and commits proof",
+      "owner_action": "decide : install cron on machine DEV (46.224.118.55) OR mark intended_mode=MANUAL",
+      "risk": "medium"
+    },
+    {
+      "actual_mode": "DRAFTED",
+      "automation_id": "pr-670-kw-canonical-classification",
+      "domain": "D3",
+      "evidence": [
+        {
+          "note": "existing @repo/seo-roles package ; PR #670 wires KW classifier to it (R1→R2/R5 separation), still OPEN",
+          "path": "packages/seo-roles/package.json"
+        }
+      ],
+      "executor": "github-actions",
+      "intended_mode": "ACTIVE",
+      "last_verified_at": "2026-05-24",
+      "last_verified_by": "seed:fafa",
+      "last_verified_method": "seed-from-plan-review",
+      "missing_step": "merge PR #670 (88% R1 → R2/R5 separated)",
+      "owner_action": "review + merge",
+      "related_pr": [
+        670
+      ],
+      "risk": "medium"
+    },
+    {
+      "actual_mode": "DRAFTED",
+      "automation_id": "pr-684-rag-canon-docs-reconcile",
+      "domain": "D6",
+      "evidence": [
+        {
+          "note": "existing canon doc-search rule ; PR #684 adds anti-drift guard for RAG references (still OPEN)",
+          "path": ".claude/rules/agent-doc-search.md"
+        }
+      ],
+      "executor": "github-actions",
+      "intended_mode": "ACTIVE",
+      "last_verified_at": "2026-05-24",
+      "last_verified_by": "seed:fafa",
+      "last_verified_method": "seed-from-plan-review",
+      "missing_step": "merge PR #684 (RAG canon reconcile + anti-drift guard)",
+      "owner_action": "review + merge",
+      "related_pr": [
+        684
+      ],
+      "risk": "low"
+    },
+    {
+      "actual_mode": "DRAFTED",
+      "automation_id": "pr-687-sitemap-freshness-alert",
+      "domain": "D3",
+      "evidence": [
+        {
+          "note": "existing sitemap workflow ; PR #687 adds heartbeat + SITEMAP_STALE_V1 alert step (still OPEN)",
+          "path": ".github/workflows/sitemap-daily-regen.yml"
+        }
+      ],
+      "executor": "github-actions-schedule",
+      "intended_mode": "ACTIVE",
+      "last_verified_at": "2026-05-24",
+      "last_verified_by": "seed:fafa",
+      "last_verified_method": "seed-from-plan-review",
+      "missing_step": "merge PR #687 (commerce-loop step 2 alert)",
+      "owner_action": "review + merge",
+      "related_pr": [
+        687
+      ],
+      "risk": "medium"
+    },
+    {
+      "actual_mode": "DRAFTED",
+      "automation_id": "pr-693-r8-503-vehicle-page-volatile",
+      "domain": "D3",
+      "evidence": [
+        {
+          "note": "PR #693 still OPEN — migration not yet applied to live DB ; runtime R8 still 503-prone",
+          "path": ".github/workflows/apply-supabase-migrations.yml"
+        }
+      ],
+      "executor": "github-actions",
+      "intended_mode": "ACTIVE",
+      "last_verified_at": "2026-05-24",
+      "last_verified_by": "seed:fafa",
+      "last_verified_method": "seed-from-plan-review",
+      "missing_step": "merge PR #693 + apply migration to live DB",
+      "owner_action": "review + merge — high risk (R8 SEO impact, GSC 5xx)",
+      "related_pr": [
+        693
+      ],
+      "risk": "high"
+    },
+    {
+      "actual_mode": "INTENDED_PHASED",
+      "automation_id": "pr-dod-gate",
+      "domain": "D15",
+      "evidence": [
+        {
+          "excerpt": "PROMOTION TO BLOCKING",
+          "line": 14,
+          "note": "Phase 1 warn-only, promotion to blocking planned at Etape 3",
+          "path": ".github/workflows/pr-dod-gate.yml"
+        }
+      ],
+      "executor": "github-actions",
+      "intended_mode": "ACTIVE",
+      "last_verified_at": "2026-05-24",
+      "last_verified_by": "seed:fafa",
+      "last_verified_method": "seed-from-plan-review",
+      "missing_step": "remove continue-on-error after +14d green signal + add to branch-protection required-status-checks",
+      "owner_action": "ops decision after green signal window",
+      "risk": "low"
+    },
+    {
+      "actual_mode": "INTENDED_PHASED",
+      "automation_id": "registry-freshness-warn",
+      "domain": "D15",
+      "evidence": [
+        {
+          "excerpt": "Registry freshness",
+          "line": 1,
+          "note": "warn-only Phase 1 until V2 block-all",
+          "path": ".github/workflows/registry-fresh.yml"
+        }
+      ],
+      "executor": "github-actions",
+      "intended_mode": "ACTIVE",
+      "last_verified_at": "2026-05-24",
+      "last_verified_by": "seed:fafa",
+      "last_verified_method": "seed-from-plan-review",
+      "missing_step": "V2 block-all promotion (ADR-058 §V2)",
+      "owner_action": "ops decision in V2 milestone",
+      "risk": "low"
+    },
+    {
+      "actual_mode": "INTENDED_PHASED",
+      "automation_id": "skills-canon-gate",
+      "domain": "D15",
+      "evidence": [
+        {
+          "excerpt": "Skills Canon gate",
+          "line": 1,
+          "note": "PR-V2 Phase 0 warn-only",
+          "path": ".github/workflows/skills-canon-gate.yml"
+        }
+      ],
+      "executor": "github-actions",
+      "intended_mode": "ACTIVE",
+      "last_verified_at": "2026-05-24",
+      "last_verified_by": "seed:fafa",
+      "last_verified_method": "seed-from-plan-review",
+      "missing_step": "PR-V2.5/V3 promotion (per workflow comment header)",
+      "owner_action": "AI governance Phase 0 → 1 transition",
+      "risk": "low"
+    },
+    {
+      "actual_mode": "ACTIVE",
+      "automation_id": "snapshot-partition-rotation",
+      "domain": "D3",
+      "drift_note": "user inventory flagged #698 as 'PR ouverte critique' ; verified MERGED 2026-05-22, cron live",
+      "evidence": [
+        {
+          "excerpt": "SELECT cron.schedule(",
+          "line": 112,
+          "note": "pg_cron schedule registered, idempotent WHERE NOT EXISTS",
+          "path": "backend/supabase/migrations/20260522_seo_snapshot_partition_rotation.sql"
+        }
+      ],
+      "executor": "pg_cron",
+      "intended_mode": "ACTIVE",
+      "last_verified_at": "2026-05-24",
+      "last_verified_by": "seed:fafa",
+      "last_verified_method": "seed-from-plan-review",
+      "related_pr": [
+        697,
+        698
+      ],
+      "risk": "high",
+      "runtime_evidence": {
+        "consumer": "no-consumer-by-design",
+        "output": {
+          "kind": "db_row",
+          "observed_at": "2026-05-24",
+          "query_or_url": "SELECT relname FROM pg_class WHERE relname ~ 'snapshot.*\\d{8}' AND relkind='r' ORDER BY relname DESC LIMIT 5",
+          "source": "pg_class"
+        },
+        "trigger": {
+          "kind": "db_row",
+          "observed_at": "2026-05-24",
+          "query_or_url": "SELECT jobname, schedule, active FROM cron.job WHERE jobname='snapshot-partition-rotation'",
+          "source": "cron.job"
+        }
+      }
+    },
+    {
+      "actual_mode": "SCRIPT_ONLY",
+      "automation_id": "worktree-prune-merged",
+      "domain": "D13",
+      "evidence": [
+        {
+          "note": "script committed (PR #680), --apply requires manual invocation",
+          "path": "scripts/cron/prune-merged-worktrees.sh"
+        },
+        {
+          "note": "container Supercronic crontab — does NOT include prune-merged-worktrees",
+          "path": "config/cron/crontab"
+        }
+      ],
+      "executor": "cron-vps",
+      "intended_mode": "ACTIVE",
+      "last_verified_at": "2026-05-24",
+      "last_verified_by": "seed:fafa",
+      "last_verified_method": "seed-from-plan-review",
+      "missing_step": "owner installs script as DEV VPS crontab entry (daily) and commits proof",
+      "owner_action": "decide : install cron OR keep as one-shot ops tool (mark intended_mode=SCRIPT_ONLY)",
+      "related_pr": [
+        680
+      ],
+      "risk": "low"
+    }
+  ],
   "db": {
     "rpc": [
       {
@@ -22756,229 +23124,241 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D3",
       "id": "backend/scripts/seo/audit/__tests__/diff-v4-vs-current.test.ts",
       "importedBy": [],
       "imports": [],
       "kind": "test",
       "loc": 37,
-      "owner": "__unassigned__",
+      "owner": "@ak125/seo-team",
       "path": "backend/scripts/seo/audit/__tests__/diff-v4-vs-current.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D3",
       "id": "backend/scripts/seo/audit/__tests__/gap-matrix-generator.test.ts",
       "importedBy": [],
       "imports": [],
       "kind": "test",
       "loc": 29,
-      "owner": "__unassigned__",
+      "owner": "@ak125/seo-team",
       "path": "backend/scripts/seo/audit/__tests__/gap-matrix-generator.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D3",
       "id": "backend/scripts/seo/audit/__tests__/inventory-services.test.ts",
       "importedBy": [],
       "imports": [],
       "kind": "test",
       "loc": 22,
-      "owner": "__unassigned__",
+      "owner": "@ak125/seo-team",
       "path": "backend/scripts/seo/audit/__tests__/inventory-services.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D3",
       "id": "backend/scripts/seo/audit/__tests__/r2-routes-audit.test.ts",
       "importedBy": [],
       "imports": [],
       "kind": "test",
       "loc": 23,
-      "owner": "__unassigned__",
+      "owner": "@ak125/seo-team",
       "path": "backend/scripts/seo/audit/__tests__/r2-routes-audit.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D3",
       "id": "backend/scripts/seo/audit/__tests__/types.test.ts",
       "importedBy": [],
       "imports": [],
       "kind": "test",
       "loc": 35,
-      "owner": "__unassigned__",
+      "owner": "@ak125/seo-team",
       "path": "backend/scripts/seo/audit/__tests__/types.test.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D3",
       "id": "backend/scripts/seo/audit/diff-v4-vs-current.ts",
       "importedBy": [],
       "imports": [],
       "kind": "script",
       "loc": 156,
-      "owner": "__unassigned__",
+      "owner": "@ak125/seo-team",
       "path": "backend/scripts/seo/audit/diff-v4-vs-current.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D3",
       "id": "backend/scripts/seo/audit/gap-matrix-generator.ts",
       "importedBy": [],
       "imports": [],
       "kind": "script",
       "loc": 279,
-      "owner": "__unassigned__",
+      "owner": "@ak125/seo-team",
       "path": "backend/scripts/seo/audit/gap-matrix-generator.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D3",
       "id": "backend/scripts/seo/audit/inventory-services.ts",
       "importedBy": [],
       "imports": [],
       "kind": "script",
       "loc": 144,
-      "owner": "__unassigned__",
+      "owner": "@ak125/seo-team",
       "path": "backend/scripts/seo/audit/inventory-services.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D3",
       "id": "backend/scripts/seo/audit/php-vs-remix-comparison.ts",
       "importedBy": [],
       "imports": [],
       "kind": "script",
       "loc": 27,
-      "owner": "__unassigned__",
+      "owner": "@ak125/seo-team",
       "path": "backend/scripts/seo/audit/php-vs-remix-comparison.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D3",
       "id": "backend/scripts/seo/audit/r2-routes-audit.ts",
       "importedBy": [],
       "imports": [],
       "kind": "script",
       "loc": 51,
-      "owner": "__unassigned__",
+      "owner": "@ak125/seo-team",
       "path": "backend/scripts/seo/audit/r2-routes-audit.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D3",
       "id": "backend/scripts/seo/audit/r2-volume-sample.ts",
       "importedBy": [],
       "imports": [],
       "kind": "script",
       "loc": 84,
-      "owner": "__unassigned__",
+      "owner": "@ak125/seo-team",
       "path": "backend/scripts/seo/audit/r2-volume-sample.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D3",
       "id": "backend/scripts/seo/audit/types.ts",
       "importedBy": [],
       "imports": [],
       "kind": "script",
       "loc": 102,
-      "owner": "__unassigned__",
+      "owner": "@ak125/seo-team",
       "path": "backend/scripts/seo/audit/types.ts",
       "risk": "low",
       "runtime": false,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "UNKNOWN"
     },
     {
@@ -24970,9 +25350,10 @@
       "deletePolicy": "FREE",
       "derivedFrom": [
         "depcruise",
+        "manual",
         "reachability"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D13",
       "id": "backend/src/common/pipes/zod-query-validation.pipe.ts",
       "importedBy": [
         "backend/src/common/pipes/index.ts",
@@ -24982,21 +25363,22 @@
       "imports": [],
       "kind": "service",
       "loc": 89,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "backend/src/common/pipes/zod-query-validation.pipe.ts",
-      "risk": "low",
+      "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
         "depcruise",
+        "manual",
         "reachability"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D13",
       "id": "backend/src/common/pipes/zod-validation.pipe.ts",
       "importedBy": [
         "backend/src/auth/controllers/auth-login.controller.ts",
@@ -25011,12 +25393,12 @@
       "imports": [],
       "kind": "service",
       "loc": 35,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "backend/src/common/pipes/zod-validation.pipe.ts",
-      "risk": "low",
+      "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "LIVE"
     },
     {
@@ -52569,9 +52951,10 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D4",
       "id": "backend/src/modules/vehicles/brands.controller.ts",
       "importedBy": [
         "backend/src/modules/vehicles/vehicles.module.ts"
@@ -52587,20 +52970,21 @@
       ],
       "kind": "controller",
       "loc": 502,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "backend/src/modules/vehicles/brands.controller.ts",
-      "risk": "low",
+      "risk": "high",
       "runtime": true,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D4",
       "id": "backend/src/modules/vehicles/controllers/admin-vehicle-cache.controller.ts",
       "importedBy": [
         "backend/src/modules/vehicles/vehicles.module.ts"
@@ -52615,20 +52999,21 @@
       ],
       "kind": "controller",
       "loc": 97,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "backend/src/modules/vehicles/controllers/admin-vehicle-cache.controller.ts",
-      "risk": "low",
+      "risk": "high",
       "runtime": true,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D4",
       "id": "backend/src/modules/vehicles/decorators/performance-monitoring.decorator.ts",
       "importedBy": [],
       "imports": [
@@ -52636,59 +53021,62 @@
       ],
       "kind": "service",
       "loc": 83,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "backend/src/modules/vehicles/decorators/performance-monitoring.decorator.ts",
-      "risk": "low",
+      "risk": "high",
       "runtime": false,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise"
-      ],
-      "domain": "UNKNOWN",
-      "id": "backend/src/modules/vehicles/dto/vehicles-simple-zod.dto.ts",
-      "importedBy": [],
-      "imports": [],
-      "kind": "service",
-      "loc": 53,
-      "owner": "__unassigned__",
-      "path": "backend/src/modules/vehicles/dto/vehicles-simple-zod.dto.ts",
-      "risk": "low",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN"
-    },
-    {
-      "deletePolicy": "FREE",
-      "derivedFrom": [
-        "depcruise"
-      ],
-      "domain": "UNKNOWN",
-      "id": "backend/src/modules/vehicles/dto/vehicles-zod.dto.ts",
-      "importedBy": [],
-      "imports": [],
-      "kind": "service",
-      "loc": 225,
-      "owner": "__unassigned__",
-      "path": "backend/src/modules/vehicles/dto/vehicles-zod.dto.ts",
-      "risk": "low",
-      "runtime": false,
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
         "depcruise",
+        "manual"
+      ],
+      "domain": "D4",
+      "id": "backend/src/modules/vehicles/dto/vehicles-simple-zod.dto.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 53,
+      "owner": "@ak125",
+      "path": "backend/src/modules/vehicles/dto/vehicles-simple-zod.dto.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D4",
+      "id": "backend/src/modules/vehicles/dto/vehicles-zod.dto.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 225,
+      "owner": "@ak125",
+      "path": "backend/src/modules/vehicles/dto/vehicles-zod.dto.ts",
+      "risk": "high",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual",
         "reachability"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D4",
       "id": "backend/src/modules/vehicles/dto/vehicles.dto.ts",
       "importedBy": [
         "backend/src/modules/vehicles/vehicles.controller.ts",
@@ -52697,39 +53085,41 @@
       "imports": [],
       "kind": "service",
       "loc": 139,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "backend/src/modules/vehicles/dto/vehicles.dto.ts",
-      "risk": "low",
+      "risk": "high",
       "runtime": false,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D4",
       "id": "backend/src/modules/vehicles/pipes/vehicle-validation.pipe.ts",
       "importedBy": [],
       "imports": [],
       "kind": "service",
       "loc": 31,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "backend/src/modules/vehicles/pipes/vehicle-validation.pipe.ts",
-      "risk": "low",
+      "risk": "high",
       "runtime": false,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D4",
       "id": "backend/src/modules/vehicles/services/brand-bestsellers.service.ts",
       "importedBy": [
         "backend/src/modules/vehicles/vehicles.controller.ts",
@@ -52746,20 +53136,21 @@
       ],
       "kind": "service",
       "loc": 453,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "backend/src/modules/vehicles/services/brand-bestsellers.service.ts",
-      "risk": "low",
+      "risk": "high",
       "runtime": true,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D4",
       "id": "backend/src/modules/vehicles/services/brand-rpc.service.ts",
       "importedBy": [
         "backend/src/modules/vehicles/brands.controller.ts",
@@ -52774,20 +53165,21 @@
       ],
       "kind": "service",
       "loc": 259,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "backend/src/modules/vehicles/services/brand-rpc.service.ts",
-      "risk": "low",
+      "risk": "high",
       "runtime": true,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D4",
       "id": "backend/src/modules/vehicles/services/core/vehicle-cache.service.ts",
       "importedBy": [
         "backend/src/modules/vehicles/services/core/vehicle-enrichment.service.ts",
@@ -52802,20 +53194,21 @@
       "imports": [],
       "kind": "service",
       "loc": 169,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "backend/src/modules/vehicles/services/core/vehicle-cache.service.ts",
-      "risk": "low",
+      "risk": "high",
       "runtime": true,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D4",
       "id": "backend/src/modules/vehicles/services/core/vehicle-enrichment.service.ts",
       "importedBy": [
         "backend/src/modules/vehicles/services/data/vehicle-types.service.ts",
@@ -52830,20 +53223,21 @@
       ],
       "kind": "service",
       "loc": 153,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "backend/src/modules/vehicles/services/core/vehicle-enrichment.service.ts",
-      "risk": "low",
+      "risk": "high",
       "runtime": true,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D4",
       "id": "backend/src/modules/vehicles/services/data/vehicle-brands.service.ts",
       "importedBy": [
         "backend/src/modules/vehicles/brands.controller.ts",
@@ -52859,20 +53253,21 @@
       ],
       "kind": "service",
       "loc": 662,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "backend/src/modules/vehicles/services/data/vehicle-brands.service.ts",
-      "risk": "low",
+      "risk": "high",
       "runtime": true,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D4",
       "id": "backend/src/modules/vehicles/services/data/vehicle-models.service.ts",
       "importedBy": [
         "backend/src/modules/vehicles/brands.controller.ts",
@@ -52888,20 +53283,21 @@
       ],
       "kind": "service",
       "loc": 774,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "backend/src/modules/vehicles/services/data/vehicle-models.service.ts",
-      "risk": "low",
+      "risk": "high",
       "runtime": true,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D4",
       "id": "backend/src/modules/vehicles/services/data/vehicle-types.service.ts",
       "importedBy": [
         "backend/src/modules/vehicles/brands.controller.ts",
@@ -52919,20 +53315,21 @@
       ],
       "kind": "service",
       "loc": 700,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "backend/src/modules/vehicles/services/data/vehicle-types.service.ts",
-      "risk": "low",
+      "risk": "high",
       "runtime": true,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D4",
       "id": "backend/src/modules/vehicles/services/enhanced-vehicle.service.ts",
       "importedBy": [
         "backend/src/modules/vehicles/vehicles.module.ts"
@@ -52949,20 +53346,21 @@
       ],
       "kind": "service",
       "loc": 444,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "backend/src/modules/vehicles/services/enhanced-vehicle.service.ts",
-      "risk": "low",
+      "risk": "high",
       "runtime": true,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D4",
       "id": "backend/src/modules/vehicles/services/search/vehicle-mine.service.ts",
       "importedBy": [
         "backend/src/modules/vehicles/services/enhanced-vehicle.service.ts",
@@ -52978,20 +53376,21 @@
       ],
       "kind": "service",
       "loc": 525,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "backend/src/modules/vehicles/services/search/vehicle-mine.service.ts",
-      "risk": "low",
+      "risk": "high",
       "runtime": true,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D4",
       "id": "backend/src/modules/vehicles/services/search/vehicle-search.service.ts",
       "importedBy": [
         "backend/src/modules/vehicles/services/enhanced-vehicle.service.ts",
@@ -53008,20 +53407,21 @@
       ],
       "kind": "service",
       "loc": 491,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "backend/src/modules/vehicles/services/search/vehicle-search.service.ts",
-      "risk": "low",
+      "risk": "high",
       "runtime": true,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D4",
       "id": "backend/src/modules/vehicles/services/seo/brand-seo.service.ts",
       "importedBy": [
         "backend/src/modules/vehicles/brands.controller.ts",
@@ -53034,20 +53434,21 @@
       ],
       "kind": "service",
       "loc": 298,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "backend/src/modules/vehicles/services/seo/brand-seo.service.ts",
-      "risk": "low",
+      "risk": "high",
       "runtime": true,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D4",
       "id": "backend/src/modules/vehicles/services/vehicle-meta.service.ts",
       "importedBy": [
         "backend/src/modules/vehicles/vehicles.controller.ts",
@@ -53058,20 +53459,21 @@
       ],
       "kind": "service",
       "loc": 74,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "backend/src/modules/vehicles/services/vehicle-meta.service.ts",
-      "risk": "low",
+      "risk": "high",
       "runtime": true,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D4",
       "id": "backend/src/modules/vehicles/services/vehicle-motor-codes.service.ts",
       "importedBy": [
         "backend/src/modules/vehicles/services/vehicle-profile.service.ts",
@@ -53085,20 +53487,21 @@
       ],
       "kind": "service",
       "loc": 347,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "backend/src/modules/vehicles/services/vehicle-motor-codes.service.ts",
-      "risk": "low",
+      "risk": "high",
       "runtime": true,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D4",
       "id": "backend/src/modules/vehicles/services/vehicle-profile.service.ts",
       "importedBy": [
         "backend/src/modules/vehicles/vehicles.controller.ts",
@@ -53114,20 +53517,21 @@
       ],
       "kind": "service",
       "loc": 329,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "backend/src/modules/vehicles/services/vehicle-profile.service.ts",
-      "risk": "low",
+      "risk": "high",
       "runtime": true,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D4",
       "id": "backend/src/modules/vehicles/services/vehicle-rpc.service.ts",
       "importedBy": [
         "backend/src/modules/admin/controllers/admin-vehicle-cache.controller.ts",
@@ -53144,20 +53548,21 @@
       ],
       "kind": "service",
       "loc": 355,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "backend/src/modules/vehicles/services/vehicle-rpc.service.ts",
-      "risk": "low",
+      "risk": "high",
       "runtime": true,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D4",
       "id": "backend/src/modules/vehicles/services/vehicles-performance.service.ts",
       "importedBy": [
         "backend/src/modules/vehicles/decorators/performance-monitoring.decorator.ts"
@@ -53165,21 +53570,22 @@
       "imports": [],
       "kind": "service",
       "loc": 210,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "backend/src/modules/vehicles/services/vehicles-performance.service.ts",
-      "risk": "low",
+      "risk": "high",
       "runtime": false,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
         "depcruise",
+        "manual",
         "reachability"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D4",
       "id": "backend/src/modules/vehicles/types/vehicle.types.ts",
       "importedBy": [
         "backend/src/modules/vehicles/services/data/vehicle-brands.service.ts",
@@ -53192,20 +53598,21 @@
       "imports": [],
       "kind": "config",
       "loc": 114,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "backend/src/modules/vehicles/types/vehicle.types.ts",
-      "risk": "low",
+      "risk": "high",
       "runtime": false,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D4",
       "id": "backend/src/modules/vehicles/vehicles-forms-simple.controller.ts",
       "importedBy": [
         "backend/src/modules/vehicles/vehicles.module.ts"
@@ -53218,20 +53625,21 @@
       ],
       "kind": "controller",
       "loc": 318,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "backend/src/modules/vehicles/vehicles-forms-simple.controller.ts",
-      "risk": "low",
+      "risk": "high",
       "runtime": true,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D4",
       "id": "backend/src/modules/vehicles/vehicles.controller.ts",
       "importedBy": [
         "backend/src/modules/vehicles/vehicles.module.ts"
@@ -53255,20 +53663,21 @@
       ],
       "kind": "controller",
       "loc": 438,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "backend/src/modules/vehicles/vehicles.controller.ts",
-      "risk": "low",
+      "risk": "high",
       "runtime": true,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D4",
       "id": "backend/src/modules/vehicles/vehicles.module.ts",
       "importedBy": [
         "backend/src/app.module.ts",
@@ -53302,20 +53711,21 @@
       ],
       "kind": "service",
       "loc": 149,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "backend/src/modules/vehicles/vehicles.module.ts",
-      "risk": "low",
+      "risk": "high",
       "runtime": true,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D4",
       "id": "backend/src/modules/vehicles/vehicles.service.ts",
       "importedBy": [
         "backend/src/modules/vehicles/vehicles-forms-simple.controller.ts",
@@ -53330,12 +53740,12 @@
       ],
       "kind": "service",
       "loc": 184,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "backend/src/modules/vehicles/vehicles.service.ts",
-      "risk": "low",
+      "risk": "high",
       "runtime": true,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "LIVE"
     },
     {
@@ -83542,9 +83952,10 @@
     "generatedAt": "1970-01-01T00:00:00.000Z",
     "generatorVersion": "1.0.0",
     "inputHashes": {
+      ".spec/00-canon/repository-registry/automation-reality.yaml": "351240bac221fed13bbf87f4ffb050a4f72dbbb25120c8bb50f1b9303b4fd2fe",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "94cd4cc3f8a6142d4f104ed3b1ed7d77b9e6b30e284f8074f30da27f7750499d",
-      ".spec/00-canon/repository-registry/ownership.yaml": "68ce3f90c780cb82eea297e201b5b0c9745072d0c2d035e9e80cc18e2b38b09d",
+      ".spec/00-canon/repository-registry/ownership.yaml": "5208b294edfcb907027bf57e59d015867a14e28bdd871854305499eedcd354bb",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "6f19f69404e59ab20ab973e34674dac54151082495abc10dd0518342c24d707a",
       "audit/registry/deps.json": "0f7f54bef54b962cf4c85f2cf430c5bf05526092d9c1035539bcc05ae51b6278",
@@ -83552,7 +83963,7 @@
       "audit/registry/rpc.json": "060dcddb4975db912336e4a0d10bff470e6295f6e5b03d2e76a26ee7ceafdfa4",
       "audit/registry/runtime.json": "f4c8cb010896763f77b477aeb7431f01a778323af80999ebc50b24e77a90e73c"
     },
-    "sotFingerprint": "0a64f6d422c7"
+    "sotFingerprint": "6e792261164c"
   },
   "runtime": [
     {

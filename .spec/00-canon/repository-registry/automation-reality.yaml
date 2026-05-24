@@ -1,0 +1,332 @@
+# .spec/00-canon/repository-registry/automation-reality.yaml
+#
+# Layer 2 overlay — Automation Reality Registry V1 (ADR-058 pattern).
+#
+# WHAT this registry IS :
+#   - Formal distinction between automation DESIGN (cabled : workflow, script,
+#     migration exists in repo) and automation REALITY (running : trigger fired,
+#     output produced, consumer observes).
+#   - First registry in the monorepo to model `intended_mode vs actual_mode`.
+#   - SoT for "what is REALLY automated here, vs claimed-but-not-running".
+#
+# WHAT this registry IS NOT :
+#   - NOT a CMDB inventory (we admit only automations where intent↔execution
+#     gap affects a real operation — see governance gravity defense in plan).
+#   - NOT a system to add new automation (it OBSERVES existing reality).
+#   - NOT for purely informative systems (audit/postmortem/doc) — those have
+#     no gap to track.
+#
+# HOW TO ADD AN ENTRY (post-merge V1, NOT during seed) :
+#   1. Fill all fields per AutomationEntrySchema (packages/registry/src/overlay/automation-reality.ts)
+#   2. evidence[] MUST have ≥1 design reference (path:line+excerpt or path-only)
+#   3. If actual_mode=ACTIVE → runtime_evidence MUST prove trigger+output+consumer ≤30j
+#   4. If intended_mode ≠ actual_mode → missing_step MUST describe convergence path
+#   5. last_verified_by = your @github-handle (NOT a bot) ; last_verified_method ≠ seed-from-plan-review
+#   6. Run `tsx scripts/registry/validate-automation-overlay.ts` then commit
+#
+# Soft cap V1 : ≤30 entries before re-evaluation. PR adding >5 entries at once
+# refused without justification. See plan §"Defense against governance gravity".
+
+schemaVersion: "1.0.0"
+
+entries:
+  # ──────────────────────────────────────────────────────────────────────────
+  # ACTIVE — pg_cron snapshot rotation (the one truly-running automation,
+  # pending consumer audit ; downgrade to SCRIPT_ONLY if no reader confirmed)
+  # ──────────────────────────────────────────────────────────────────────────
+  - automation_id: "snapshot-partition-rotation"
+    domain: "D3"
+    intended_mode: "ACTIVE"
+    actual_mode: "ACTIVE"
+    executor: "pg_cron"
+    evidence:
+      - path: "backend/supabase/migrations/20260522_seo_snapshot_partition_rotation.sql"
+        line: 112
+        excerpt: "SELECT cron.schedule("
+        note: "pg_cron schedule registered, idempotent WHERE NOT EXISTS"
+    runtime_evidence:
+      trigger:
+        kind: "db_row"
+        source: "cron.job"
+        observed_at: "2026-05-24"
+        query_or_url: "SELECT jobname, schedule, active FROM cron.job WHERE jobname='snapshot-partition-rotation'"
+      output:
+        kind: "db_row"
+        source: "pg_class"
+        observed_at: "2026-05-24"
+        query_or_url: "SELECT relname FROM pg_class WHERE relname ~ 'snapshot.*\\d{8}' AND relkind='r' ORDER BY relname DESC LIMIT 5"
+      consumer: "no-consumer-by-design"
+    last_verified_at: "2026-05-24"
+    last_verified_by: "seed:fafa"
+    last_verified_method: "seed-from-plan-review"
+    risk: "high"
+    related_pr: [697, 698]
+    drift_note: "user inventory flagged #698 as 'PR ouverte critique' ; verified MERGED 2026-05-22, cron live"
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # SCRIPT_ONLY — VPS crons documented but never installed in any crontab
+  # ──────────────────────────────────────────────────────────────────────────
+  - automation_id: "dev-runtime-sync"
+    domain: "D13"
+    intended_mode: "ACTIVE"
+    actual_mode: "SCRIPT_ONLY"
+    executor: "cron-vps"
+    evidence:
+      - path: "scripts/ops/sync-dev-runtime.sh"
+        note: "script committed, no installation evidence in any tracked crontab"
+      - path: "config/cron/crontab"
+        note: "container Supercronic crontab — does NOT include sync-dev-runtime (VPS host crontab not in repo)"
+    last_verified_at: "2026-05-24"
+    last_verified_by: "seed:fafa"
+    last_verified_method: "seed-from-plan-review"
+    missing_step: "owner installs script as DEV VPS crontab entry (every ~10min) and commits proof"
+    risk: "medium"
+    owner_action: "decide : install cron on machine DEV (46.224.118.55) OR mark intended_mode=MANUAL"
+
+  - automation_id: "worktree-prune-merged"
+    domain: "D13"
+    intended_mode: "ACTIVE"
+    actual_mode: "SCRIPT_ONLY"
+    executor: "cron-vps"
+    evidence:
+      - path: "scripts/cron/prune-merged-worktrees.sh"
+        note: "script committed (PR #680), --apply requires manual invocation"
+      - path: "config/cron/crontab"
+        note: "container Supercronic crontab — does NOT include prune-merged-worktrees"
+    last_verified_at: "2026-05-24"
+    last_verified_by: "seed:fafa"
+    last_verified_method: "seed-from-plan-review"
+    missing_step: "owner installs script as DEV VPS crontab entry (daily) and commits proof"
+    risk: "low"
+    related_pr: [680]
+    owner_action: "decide : install cron OR keep as one-shot ops tool (mark intended_mode=SCRIPT_ONLY)"
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # INTENDED_PHASED — warn-only by design, promotion to blocking planned
+  # ──────────────────────────────────────────────────────────────────────────
+  - automation_id: "pr-dod-gate"
+    domain: "D15"
+    intended_mode: "ACTIVE"
+    actual_mode: "INTENDED_PHASED"
+    executor: "github-actions"
+    evidence:
+      - path: ".github/workflows/pr-dod-gate.yml"
+        line: 14
+        excerpt: "PROMOTION TO BLOCKING"
+        note: "Phase 1 warn-only, promotion to blocking planned at Etape 3"
+    last_verified_at: "2026-05-24"
+    last_verified_by: "seed:fafa"
+    last_verified_method: "seed-from-plan-review"
+    missing_step: "remove continue-on-error after +14d green signal + add to branch-protection required-status-checks"
+    risk: "low"
+    owner_action: "ops decision after green signal window"
+
+  - automation_id: "dependency-graph-ratchet"
+    domain: "D15"
+    intended_mode: "ACTIVE"
+    actual_mode: "INTENDED_PHASED"
+    executor: "github-actions"
+    evidence:
+      - path: ".github/workflows/dependency-graph-validate.yml"
+        line: 8
+        excerpt: "PHASE 1 (warn-only)"
+        note: "ratchet step continue-on-error, post comment only"
+    last_verified_at: "2026-05-24"
+    last_verified_by: "seed:fafa"
+    last_verified_method: "seed-from-plan-review"
+    missing_step: "promote to blocking +14d signal vert (Etape 3 ADR-058)"
+    risk: "low"
+    owner_action: "ops decision after green signal window"
+
+  - automation_id: "registry-freshness-warn"
+    domain: "D15"
+    intended_mode: "ACTIVE"
+    actual_mode: "INTENDED_PHASED"
+    executor: "github-actions"
+    evidence:
+      - path: ".github/workflows/registry-fresh.yml"
+        line: 1
+        excerpt: "Registry freshness"
+        note: "warn-only Phase 1 until V2 block-all"
+    last_verified_at: "2026-05-24"
+    last_verified_by: "seed:fafa"
+    last_verified_method: "seed-from-plan-review"
+    missing_step: "V2 block-all promotion (ADR-058 §V2)"
+    risk: "low"
+    owner_action: "ops decision in V2 milestone"
+
+  - automation_id: "skills-canon-gate"
+    domain: "D15"
+    intended_mode: "ACTIVE"
+    actual_mode: "INTENDED_PHASED"
+    executor: "github-actions"
+    evidence:
+      - path: ".github/workflows/skills-canon-gate.yml"
+        line: 1
+        excerpt: "Skills Canon gate"
+        note: "PR-V2 Phase 0 warn-only"
+    last_verified_at: "2026-05-24"
+    last_verified_by: "seed:fafa"
+    last_verified_method: "seed-from-plan-review"
+    missing_step: "PR-V2.5/V3 promotion (per workflow comment header)"
+    risk: "low"
+    owner_action: "AI governance Phase 0 → 1 transition"
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # OBSERVE_ONLY — observer by-design, no blocking ever planned
+  # ──────────────────────────────────────────────────────────────────────────
+  - automation_id: "contract-drift-observatory"
+    domain: "D15"
+    intended_mode: "OBSERVE_ONLY"
+    actual_mode: "OBSERVE_ONLY"
+    executor: "github-actions"
+    evidence:
+      - path: ".github/workflows/contract-drift-observatory.yml"
+        line: 5
+        excerpt: "Never blocks (continue-on-error + exit 0)"
+        note: "observer pattern : detect & report contract drift, never enforce"
+    last_verified_at: "2026-05-24"
+    last_verified_by: "seed:fafa"
+    last_verified_method: "seed-from-plan-review"
+    risk: "low"
+    drift_note: "user inventory flagged as 'warn-only' implying degraded ; this is observer by-design, NOT a gap"
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # MANUAL — human-by-doctrine (PR-9 rule #27), intended=MANUAL → 0 gap
+  # First demonstration in repo : MANUAL is a valid design, not incomplete automation
+  # ──────────────────────────────────────────────────────────────────────────
+  - automation_id: "dependency-modernization-pr9-families"
+    domain: "D15"
+    intended_mode: "MANUAL"
+    actual_mode: "MANUAL"
+    executor: "human-only"
+    evidence:
+      - path: "audit/dependencies/pr-9-modernization-roadmap.md"
+        line: 31
+        excerpt: "operational_owner"
+        note: "rule #27 — operational_owner kebab-case *-team slug routes the page"
+      - path: ".github/dependabot.yml"
+        line: 3
+        excerpt: "package-ecosystem"
+        note: "dependabot covers minor/patch automatically ; majors per family = human-owned PR"
+    last_verified_at: "2026-05-24"
+    last_verified_by: "seed:fafa"
+    last_verified_method: "seed-from-plan-review"
+    risk: "low"
+    drift_note: "user inventory flagged 'PR-9 dependencies : système de contrôle OK, exécution absente' ; verified : execution = human-owned by design, NOT a missing executor"
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # DRAFTED — PRs ouvertes en stagnation (3-6j sans activité au 2026-05-24)
+  # ──────────────────────────────────────────────────────────────────────────
+  - automation_id: "pr-693-r8-503-vehicle-page-volatile"
+    domain: "D3"
+    intended_mode: "ACTIVE"
+    actual_mode: "DRAFTED"
+    executor: "github-actions"
+    evidence:
+      - path: ".github/workflows/apply-supabase-migrations.yml"
+        note: "PR #693 still OPEN — migration not yet applied to live DB ; runtime R8 still 503-prone"
+    last_verified_at: "2026-05-24"
+    last_verified_by: "seed:fafa"
+    last_verified_method: "seed-from-plan-review"
+    missing_step: "merge PR #693 + apply migration to live DB"
+    risk: "high"
+    related_pr: [693]
+    owner_action: "review + merge — high risk (R8 SEO impact, GSC 5xx)"
+
+  - automation_id: "pr-687-sitemap-freshness-alert"
+    domain: "D3"
+    intended_mode: "ACTIVE"
+    actual_mode: "DRAFTED"
+    executor: "github-actions-schedule"
+    evidence:
+      - path: ".github/workflows/sitemap-daily-regen.yml"
+        note: "existing sitemap workflow ; PR #687 adds heartbeat + SITEMAP_STALE_V1 alert step (still OPEN)"
+    last_verified_at: "2026-05-24"
+    last_verified_by: "seed:fafa"
+    last_verified_method: "seed-from-plan-review"
+    missing_step: "merge PR #687 (commerce-loop step 2 alert)"
+    risk: "medium"
+    related_pr: [687]
+    owner_action: "review + merge"
+
+  - automation_id: "pr-684-rag-canon-docs-reconcile"
+    domain: "D6"
+    intended_mode: "ACTIVE"
+    actual_mode: "DRAFTED"
+    executor: "github-actions"
+    evidence:
+      - path: ".claude/rules/agent-doc-search.md"
+        note: "existing canon doc-search rule ; PR #684 adds anti-drift guard for RAG references (still OPEN)"
+    last_verified_at: "2026-05-24"
+    last_verified_by: "seed:fafa"
+    last_verified_method: "seed-from-plan-review"
+    missing_step: "merge PR #684 (RAG canon reconcile + anti-drift guard)"
+    risk: "low"
+    related_pr: [684]
+    owner_action: "review + merge"
+
+  - automation_id: "pr-670-kw-canonical-classification"
+    domain: "D3"
+    intended_mode: "ACTIVE"
+    actual_mode: "DRAFTED"
+    executor: "github-actions"
+    evidence:
+      - path: "packages/seo-roles/package.json"
+        note: "existing @repo/seo-roles package ; PR #670 wires KW classifier to it (R1→R2/R5 separation), still OPEN"
+    last_verified_at: "2026-05-24"
+    last_verified_by: "seed:fafa"
+    last_verified_method: "seed-from-plan-review"
+    missing_step: "merge PR #670 (88% R1 → R2/R5 separated)"
+    risk: "medium"
+    related_pr: [670]
+    owner_action: "review + merge"
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Self-reference — this very PR's workflows
+  # ──────────────────────────────────────────────────────────────────────────
+  - automation_id: "automation-registry-validate"
+    domain: "D15"
+    intended_mode: "ACTIVE"
+    actual_mode: "ACTIVE"
+    executor: "github-actions"
+    evidence:
+      - path: ".github/workflows/automation-registry-validate.yml"
+        note: "blocking validator — runs Zod + evidence-path + excerpt-drift checks"
+    runtime_evidence:
+      trigger:
+        kind: "github_run"
+        source: "this PR's CI run"
+        observed_at: "2026-05-24"
+      output:
+        kind: "log"
+        source: "validate-automation-overlay.ts stderr"
+        observed_at: "2026-05-24"
+      consumer: "no-consumer-by-design"
+    last_verified_at: "2026-05-24"
+    last_verified_by: "seed:fafa"
+    last_verified_method: "seed-from-plan-review"
+    risk: "medium"
+
+  - automation_id: "automation-registry-no-auto-bump"
+    domain: "D15"
+    intended_mode: "ACTIVE"
+    actual_mode: "ACTIVE"
+    executor: "github-actions"
+    evidence:
+      - path: ".github/workflows/automation-registry-no-auto-bump.yml"
+        note: "blocking gate — refuses PR from bot actor that bumps last_verified_at"
+    runtime_evidence:
+      trigger:
+        kind: "github_run"
+        source: "this PR's CI run"
+        observed_at: "2026-05-24"
+      output:
+        kind: "log"
+        source: "check-no-auto-bump.js exit code"
+        observed_at: "2026-05-24"
+      consumer: "no-consumer-by-design"
+    last_verified_at: "2026-05-24"
+    last_verified_by: "seed:fafa"
+    last_verified_method: "seed-from-plan-review"
+    risk: "low"

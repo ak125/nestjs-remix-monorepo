@@ -1,0 +1,85 @@
+name: Automation Registry — coverage (Phase 1 warn-only)
+
+# Structural gate : when a PR adds a new workflow / cron script / migration
+# with `cron.schedule()`, an entry MUST be added to automation-reality.yaml
+# in the same PR.
+#
+# PHASE 1 (warn-only) : the gate posts a comment but does not block (mirrors
+# pr-dod-gate.yml / dependency-graph-validate.yml during ADR-058 Phase 1).
+#
+# PROMOTION TO BLOCKING (Phase 2, +14d signal vert, see plan §"Defense
+# against governance gravity") : remove `continue-on-error` AND require an
+# ADR `governance-vault/ledger/decisions/adr/ADR-NNN-automation-reality-registry.md`
+# mergé (gap doctrine reconnaissance).
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/**"
+      - "scripts/cron/**"
+      - "scripts/ops/**"
+      - "backend/supabase/migrations/**.sql"
+      - ".spec/00-canon/repository-registry/automation-reality.yaml"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: automation-registry-coverage-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  coverage:
+    name: Coverage check (warn-only Phase 1)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🟢 Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: 📦 Install minimal deps
+        run: npm install --no-audit --no-fund --prefer-offline -w @repo/registry
+
+      - name: 🔎 Compute added files vs base
+        id: diff
+        run: |
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          git fetch origin "$BASE_SHA" --depth=1 2>/dev/null || true
+          ADDED=$(git diff --name-only --diff-filter=A "$BASE_SHA" "$HEAD_SHA" || true)
+          echo "added<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$ADDED" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: 🚦 Coverage gate (warn-only Phase 1)
+        continue-on-error: true
+        run: |
+          ADDED='${{ steps.diff.outputs.added }}'
+          echo "$ADDED" | tr ' ' '\n' | while IFS= read -r file; do
+            [ -z "$file" ] && continue
+            node scripts/audit/check-automation-coverage.js --added-file "$file" || true
+          done
+
+      - name: 💬 Post warn comment on missing coverage (Phase 1)
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('node:fs');
+            try {
+              const yaml = fs.readFileSync('.spec/00-canon/repository-registry/automation-reality.yaml', 'utf8');
+              // light textual hint — full enforcement happens in --enforce mode
+              core.info(`coverage hint posted (warn-only Phase 1) ; registry size: ${(yaml.match(/automation_id:/g) || []).length} entries`);
+            } catch (err) {
+              core.warning(`coverage script could not read overlay: ${err.message}`);
+            }
