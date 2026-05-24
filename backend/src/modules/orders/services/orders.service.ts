@@ -1,5 +1,11 @@
-import { createHash } from 'crypto';
+import { createHash, randomUUID } from 'crypto';
 import { TABLES } from '@repo/database-types';
+import {
+  OrderStatus,
+  type OrderStatusCode,
+  isOrderStatusCode,
+  isValidTransition,
+} from '@repo/domain-commerce';
 import {
   Injectable,
   BadRequestException,
@@ -63,7 +69,12 @@ export interface UpdateOrderData {
   billingAddress?: OrderAddress;
   shippingAddress?: OrderAddress;
   customerNote?: string;
-  status?: number;
+  /** Canonical order status (1..5 per ___xtr_order_status lookup, validated by @repo/domain-commerce). */
+  status?: OrderStatusCode;
+  /** Optional correlation_id for event-stream lineage (defaults to randomUUID per call). */
+  correlationId?: string;
+  /** Optional user_id (admin acting on behalf of customer) for audit trail. */
+  userId?: number;
 }
 
 /**
@@ -129,7 +140,9 @@ export interface OrderWithDetails extends Record<string, unknown> {
   ord_date?: string;
   ord_total_ttc?: string;
   ord_ords_id?: string;
-  order_status?: number;
+  ord_cancel_date?: string | null;
+  ord_cancel_reason?: string | null;
+  ord_updated_at?: string | null;
   customer: Record<string, unknown> | null;
   lines: Record<string, unknown>[];
   statusHistory: Record<string, unknown>[];
@@ -199,7 +212,16 @@ export class OrdersService extends SupabaseBaseService {
   }
 
   /**
-   * Créer une commande complète
+   * Créer une commande complète.
+   *
+   * INVARIANT F2 (Vault #301, canon `commerce-runtime/authority-graph.yaml#authorities.cart`) :
+   * `createOrder` consomme EXCLUSIVEMENT `orderData.orderLines` (snapshot CQRS posté par
+   * le front). Aucune relecture serveur du panier session. Le panier n'est vidé qu'au
+   * callback paiement. Ce pattern snapshot/CQRS rend structurellement inutile le verrou
+   * legacy `verrouille` (PHP) — ajouter un Redis lock ici serait du bricolage.
+   *
+   * Garde mécanique : `.ast-grep/rules/commerce-no-server-cart-read-in-createorder.yml`
+   * interdit statiquement `cartService.get*` / `cartRepository.find*` dans ce scope.
    */
   async createOrder(
     orderData: CreateOrderData,
@@ -381,12 +403,17 @@ export class OrdersService extends SupabaseBaseService {
         }),
       );
 
-      // Atomic insert: order + lines in single DB transaction via RPC
+      // Atomic insert: order + lines + ORDER_CREATED event in single DB transaction via RPC.
+      // p_correlation_id is explicit (instead of relying on PG DEFAULT gen_random_uuid()) to
+      // satisfy ast-grep `commerce-correlation-id-required-on-mutations` and to preserve
+      // causality lineage from day 1 (Vault #301 canon, Operational Knowledge Graph prep).
+      const correlationId = orderData.idempotencyKey ?? randomUUID();
       const { error: rpcError } = await this.callRpc(
         'create_order_atomic',
         {
           p_order: orderToInsert,
           p_lines: orderLines,
+          p_correlation_id: correlationId,
         },
         { isServiceRole: true, source: 'internal' },
       );
@@ -596,56 +623,109 @@ export class OrdersService extends SupabaseBaseService {
     updateData: UpdateOrderData,
   ): Promise<OrderWithDetails> {
     try {
-      // Vérifier existence
       const existing = await this.getOrderById(orderId);
+      const fromStatus = existing.ord_ords_id;
 
-      // Vérifier statut (pas de MAJ si expédiée/livrée)
-      if (existing.order_status >= 4) {
+      // Guard: cancelled order is terminal (no further updates).
+      if (fromStatus === OrderStatus.CANCELLED) {
         throw new ConflictException(
-          'Impossible de modifier une commande expédiée/livrée',
+          'Commande déjà annulée — toute mise à jour est rejetée.',
         );
       }
 
+      // Guard: shipped orders (ord_date_ship is set) are read-only for fields below.
+      // Status changes still pass through isValidTransition canon below.
+      const correlationId = updateData.correlationId ?? randomUUID();
+
+      // Compose DB update using the REAL ord_* columns (Vault #301 fix).
       const dataToUpdate: Record<string, unknown> = {
-        updated_at: new Date().toISOString(),
+        ord_updated_at: new Date().toISOString(),
       };
 
-      if (updateData.billingAddress) {
-        dataToUpdate.billing_address = JSON.stringify(
-          updateData.billingAddress,
-        );
+      if (updateData.billingAddress !== undefined) {
+        dataToUpdate.ord_billing_snapshot = updateData.billingAddress;
       }
 
-      if (updateData.shippingAddress) {
-        dataToUpdate.shipping_address = JSON.stringify(
-          updateData.shippingAddress,
-        );
+      if (updateData.shippingAddress !== undefined) {
+        dataToUpdate.ord_shipping_snapshot = updateData.shippingAddress;
       }
 
       if (updateData.customerNote !== undefined) {
-        dataToUpdate.customer_note = updateData.customerNote;
+        dataToUpdate.ord_info = updateData.customerNote;
       }
 
       if (updateData.status !== undefined) {
-        dataToUpdate.order_status = updateData.status;
-        // Créer historique
-        await this.statusService.createStatusHistory(
-          parseInt(orderId, 10),
-          updateData.status,
-          'Statut mis à jour',
-        );
+        if (!isOrderStatusCode(updateData.status)) {
+          throw new BadRequestException(
+            `Statut '${updateData.status}' hors-canon (1..5 attendus per ___xtr_order_status).`,
+          );
+        }
+        if (
+          !isValidTransition(fromStatus as OrderStatusCode, updateData.status)
+        ) {
+          throw new ConflictException(
+            `Transition ${fromStatus} → ${updateData.status} invalide pour la commande ${orderId}.`,
+          );
+        }
+        dataToUpdate.ord_ords_id = updateData.status;
       }
 
       const { error } = await this.supabase
         .from(TABLES.xtr_order)
         .update(dataToUpdate)
-        .eq('order_id', orderId);
+        .eq('ord_id', orderId);
 
       if (error) {
         throw new BadRequestException(`Échec MAJ: ${error.message}`);
       }
 
-      this.logger.log(`Commande #${orderId} mise à jour`);
+      // Append audit event AFTER successful UPDATE (RPC validates correlation_id).
+      // Note: status changes during paid-order cancellation are blocked above by the
+      // `'2'` terminal guard + isValidTransition (5 → 2 forbidden in @repo/domain-commerce).
+      if (updateData.status !== undefined && updateData.status !== fromStatus) {
+        await this.statusService.appendOrderEvent({
+          ordId: orderId,
+          eventType: 'STATUS_CHANGED',
+          fromStatus: fromStatus as OrderStatusCode | null,
+          toStatus: updateData.status,
+          payload: { trigger: 'updateOrder', source: 'orders_service' },
+          correlationId,
+          userId: updateData.userId,
+        });
+      } else if (updateData.customerNote !== undefined) {
+        await this.statusService.appendOrderEvent({
+          ordId: orderId,
+          eventType: 'NOTE_UPDATED',
+          fromStatus: fromStatus as OrderStatusCode | null,
+          toStatus: fromStatus as OrderStatusCode | null,
+          payload: {
+            old_info: existing.ord_info,
+            new_info: updateData.customerNote,
+          },
+          correlationId,
+          userId: updateData.userId,
+        });
+      } else if (
+        updateData.billingAddress !== undefined ||
+        updateData.shippingAddress !== undefined
+      ) {
+        await this.statusService.appendOrderEvent({
+          ordId: orderId,
+          eventType: 'ADDRESS_UPDATED',
+          fromStatus: fromStatus as OrderStatusCode | null,
+          toStatus: fromStatus as OrderStatusCode | null,
+          payload: {
+            billing_changed: updateData.billingAddress !== undefined,
+            shipping_changed: updateData.shippingAddress !== undefined,
+          },
+          correlationId,
+          userId: updateData.userId,
+        });
+      }
+
+      this.logger.log(
+        `Commande #${orderId} mise à jour (correlation_id=${correlationId})`,
+      );
       return await this.getOrderById(orderId);
     } catch (error: unknown) {
       this.logger.error(`Erreur updateOrder(${orderId}):`, error);
@@ -654,75 +734,67 @@ export class OrdersService extends SupabaseBaseService {
   }
 
   /**
-   * Annuler une commande
+   * Annuler une commande via cancel_order_atomic RPC (Vault #301 fix).
+   *
+   * IMPORTANT V1: refuse HTTP 409 si commande payée (ord_ords_id='5') —
+   * annulation requiert workflow refund manuel (payments/ module off-limits,
+   * cf. feedback_no_payment_module_changes_ever). V1.7+: Human Override Authority
+   * permettra de réouvrir cette transition couplée à un refund manuel.
+   *
+   * La RPC est composite (UPDATE + append_order_event en une tx) — atomicité audit
+   * garantie côté DB. Reject mécaniquement enforced via canonical_transition_valid
+   * (matérialise ORDER_STATUS_TRANSITIONS de @repo/domain-commerce).
    */
   async cancelOrder(
     orderId: string,
     reason?: string,
+    userId?: number,
+    correlationId?: string,
   ): Promise<OrderOperationResult> {
     try {
-      const order = await this.getOrderById(orderId);
-
-      // Vérifier si annulation possible (avant expédition)
-      if (order.order_status >= 4) {
-        throw new ConflictException(
-          "Impossible d'annuler une commande expédiée/livrée",
-        );
-      }
-
-      // Statut annulée = 99
-      await this.updateOrder(orderId, { status: 99 });
-      await this.statusService.createStatusHistory(
-        parseInt(orderId, 10),
-        99,
-        reason || 'Commande annulée',
+      const { error: rpcError } = await this.callRpc(
+        'cancel_order_atomic',
+        {
+          p_ord_id: orderId,
+          p_reason: reason ?? 'Commande annulée',
+          p_user_id: userId ?? null,
+          p_correlation_id: correlationId ?? randomUUID(),
+        },
+        { isServiceRole: true, source: 'internal' },
       );
 
-      this.logger.log(`Commande #${orderId} annulée`);
-      return { success: true, message: 'Commande annulée' };
+      if (rpcError) {
+        const message = rpcError.message || '';
+        // Translate Postgres RAISE EXCEPTION messages to HTTP semantics.
+        if (
+          message.includes('refund workflow required') ||
+          message.includes('paid')
+        ) {
+          throw new ConflictException(
+            "Annulation d'une commande payée requiert un workflow remboursement séparé, contactez le support.",
+          );
+        }
+        if (message.includes('already cancelled')) {
+          throw new ConflictException(`Commande ${orderId} déjà annulée.`);
+        }
+        if (message.includes('not found')) {
+          throw new NotFoundException(`Commande ${orderId} introuvable.`);
+        }
+        throw new BadRequestException(`Échec annulation: ${message}`);
+      }
+
+      this.logger.log(`Commande #${orderId} annulée via cancel_order_atomic`);
+      return { success: true, message: 'Commande annulée', ord_id: orderId };
     } catch (error: unknown) {
       this.logger.error(`Erreur cancelOrder(${orderId}):`, error);
       throw error;
     }
   }
 
-  /**
-   * Supprimer une commande (soft delete)
-   */
-  async deleteOrder(orderId: string): Promise<OrderOperationResult> {
-    try {
-      const order = await this.getOrderById(orderId);
-
-      // Seules les commandes brouillon peuvent être supprimées
-      if (order.order_status !== 1) {
-        throw new ConflictException(
-          'Seules les commandes brouillon peuvent être supprimées',
-        );
-      }
-
-      // Supprimer lignes
-      await this.supabase
-        .from(TABLES.xtr_order_line)
-        .delete()
-        .eq('order_id', orderId);
-
-      // Supprimer commande
-      const { error } = await this.supabase
-        .from(TABLES.xtr_order)
-        .delete()
-        .eq('order_id', orderId);
-
-      if (error) {
-        throw new BadRequestException(`Échec suppression: ${error.message}`);
-      }
-
-      this.logger.log(`Commande #${orderId} supprimée`);
-      return { success: true, message: 'Commande supprimée' };
-    } catch (error: unknown) {
-      this.logger.error(`Erreur deleteOrder(${orderId}):`, error);
-      throw error;
-    }
-  }
+  // NOTE: deleteOrder method intentionally REMOVED (Vault #301 PR-C).
+  // Reason: hard-delete on commerce orders is never legitimate (audit légal, comptable).
+  // The `DELETE /orders/:id` controller route is mapped to cancelOrder (soft, status '2')
+  // in OrdersController.
 
   /**
    * Récupérer les commandes d'un client
