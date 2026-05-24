@@ -1,7 +1,7 @@
 {
   "version": 1,
   "captured_at": "2026-05-24",
-  "captured_on_commit": "475d5f581",
+  "captured_on_commit": "6eff76066",
   "thresholds": {
     "unused_files_delta": 5,
     "unused_exports_delta": 10,
@@ -16,8 +16,8 @@
   },
   "knip": {
     "unused_files": 334,
-    "unused_exports": 246,
-    "unused_types": 228,
+    "unused_exports": 247,
+    "unused_types": 231,
     "unused_dependencies": 4,
     "unused_dev_dependencies": 5,
     "unlisted_dependencies": 11,
