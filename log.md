@@ -453,3 +453,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/pricing-control-plane-v1`
 - **Décision** : fix(pricing): dedupe squawk timeout settings in 2 migrations (+12 other commits)
 - **Sortie** : PR #709 | commits 289eb0c4 b3e3b9ec 656bf6dc 04754b37 b8c048bf d529c744 4c4fa7a6 ad027f11 5701a64e d135bb9b 227d3a4d 142a0218 c4f6ea33
+
+## 2026-05-24 — feat/ai-additive-layer-design-spec (auto)
+
+- **Branche** : `feat/ai-additive-layer-design-spec`
+- **Décision** : docs(superpowers): implementation plan Phase 0+1 — AI additive layer (+1 other commit)
+- **Sortie** : PR aucune | commits 90ac3b313 31fca3a81
