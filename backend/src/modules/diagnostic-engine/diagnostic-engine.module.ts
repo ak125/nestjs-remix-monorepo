@@ -27,6 +27,13 @@ import { RagEnrichmentEngine } from './engines/rag-enrichment.engine';
 import { MaintenanceCalculatorService } from './services/maintenance-calculator.service';
 import { DiagnosticContentService } from './services/diagnostic-content.service';
 import { KgShadowService } from './services/kg-shadow.service';
+// V1A.0 — Intent Resolution layer (composition pure)
+import { IntentClassifierService } from './services/intent-classifier.service';
+import { ActionRecommenderService } from './services/action-recommender.service';
+import { HumanEscalationBuilderService } from './services/human-escalation-builder.service';
+import { InvariantAsserterService } from './services/invariant-asserter.service';
+import { OutcomeEmitterService } from './services/outcome-emitter.service';
+import { DiagnosticResolutionPipelineService } from './services/diagnostic-resolution-pipeline.service';
 
 @Module({
   imports: [
@@ -47,18 +54,30 @@ import { KgShadowService } from './services/kg-shadow.service';
     MaintenanceCalculatorService,
     DiagnosticContentService,
     KgShadowService, // PR-E — shadow KG comparison (fire-and-forget)
+    // V1A.0 — Intent Resolution layer
+    IntentClassifierService,
+    ActionRecommenderService,
+    HumanEscalationBuilderService,
+    InvariantAsserterService,
+    OutcomeEmitterService,
+    DiagnosticResolutionPipelineService,
   ],
   exports: [
     DiagnosticEngineOrchestrator,
     DiagnosticEngineDataService,
     MaintenanceCalculatorService,
     DiagnosticContentService,
+    // V1A.0 — pipeline + emitter exposés pour Controller + future modules
+    DiagnosticResolutionPipelineService,
+    OutcomeEmitterService,
   ],
 })
 export class DiagnosticEngineModule {
   private readonly logger = new Logger(DiagnosticEngineModule.name);
 
   constructor() {
-    this.logger.log('DiagnosticEngine Module actif (Slice 2+8 — 6 engines)');
+    this.logger.log(
+      'DiagnosticEngine Module actif (Slice 2+8 — 6 engines + V1A.0 Intent Resolution pipeline)',
+    );
   }
 }
