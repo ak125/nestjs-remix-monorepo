@@ -34,8 +34,9 @@ import {
 import { PRIX_PAS_CHER } from '../../seo/seo-v4.types';
 import { InternalLinkingService } from '../../seo/internal-linking.service';
 
-/** Cache key prefix versionnée — bump v1→v2 invalide tous les payloads. */
-const R3_CACHE_PREFIX = 'r3-guide:v1:';
+/** Cache key prefix versionnée — bump v1→v2 invalide tous les payloads.
+ *  v2 (2026-05-24) : compatible vehicles capped à 24 (LCP /blog-pieces-auto/conseils/* — voir PR LCP-R3-PR1). */
+const R3_CACHE_PREFIX = 'r3-guide:v2:';
 
 /** TTL fresh window (seconds) — CacheService utilise ioredis SETEX en secondes. */
 const R3_CACHE_TTL_SECONDS = 30 * 60;
@@ -201,11 +202,11 @@ export class R3GuideService {
       this.seoService.getGammeConseil(gammeData.pg_id),
       this.seoService.getSeoItemSwitches(gammeData.pg_id),
       this.dataService.getRelatedArticles(article.legacy_id),
-      this.relationService.getCompatibleVehicles(
-        gammeData.pg_id,
-        1000,
-        pg_alias,
-      ),
+      // LCP fix R3 conseils : carrousel affiche 12 par défaut (PAGE_SIZE), pagination locale +12.
+      // Cap 24 = 2× safety margin → -150 KB payload SSR mobile vs 1000 véhicules (~80% du JSON).
+      // Trade-off documenté : count "X motorisations" affiché reflète désormais le sample (24 max),
+      // pas le total catalogue compat — accepté (les vehicle pages sont déjà dans sitemap.xml).
+      this.relationService.getCompatibleVehicles(gammeData.pg_id, 24, pg_alias),
       this.dataService.getAdjacentArticles(article.slug),
       this.seoService.getSeoBrief(gammeData.pg_id),
       this.seoService.hasPublishedR6Guide(gammeData.pg_id),
