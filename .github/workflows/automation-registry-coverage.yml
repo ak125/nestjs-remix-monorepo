@@ -46,8 +46,8 @@ jobs:
           node-version: "22"
           cache: "npm"
 
-      - name: 📦 Install minimal deps
-        run: npm install --ignore-scripts --no-audit --no-fund --prefer-offline -w @repo/registry
+      - name: 📦 Install deps (root + workspaces, --ignore-scripts to skip husky)
+        run: npm ci --ignore-scripts --no-audit --no-fund --prefer-offline
 
       - name: 🔎 Compute added files vs base
         id: diff

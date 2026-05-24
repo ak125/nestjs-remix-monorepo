@@ -45,11 +45,11 @@ jobs:
           node-version: "22"
           cache: "npm"
 
-      - name: 📦 Install registry workspace deps only
-        run: npm install --ignore-scripts --no-audit --no-fund --prefer-offline -w @repo/registry
+      - name: 📦 Install deps (root + workspaces, --ignore-scripts to skip husky)
+        run: npm ci --ignore-scripts --no-audit --no-fund --prefer-offline
 
       - name: 🔍 Validate Zod schema + evidence paths + excerpt drift
         run: npx tsx scripts/registry/validate-automation-overlay.ts
 
       - name: 🧪 Run automation-reality unit tests
-        run: npm -w @repo/registry test -- packages/registry/src/__tests__/automation-reality.test.ts
+        run: npx tsx --test packages/registry/src/__tests__/automation-reality.test.ts
