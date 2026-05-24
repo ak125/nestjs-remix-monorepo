@@ -2,16 +2,16 @@
 module: orders
 sources:
 - backend/src/modules/orders
-last_scan: '2026-05-19'
+last_scan: '2026-05-24'
 primary_files:
 - backend/src/modules/orders/controllers/order-actions.controller.ts
 - backend/src/modules/orders/controllers/order-archive.controller.ts
-- backend/src/modules/orders/controllers/order-status.controller.ts
 - backend/src/modules/orders/controllers/orders.controller.ts
 - backend/src/modules/orders/controllers/tickets.controller.ts
 - backend/src/modules/orders/dto/automotive-orders.dto.ts
 - backend/src/modules/orders/dto/index.ts
 - backend/src/modules/orders/dto/orders-enhanced.dto.ts
+- backend/src/modules/orders/dto/ticket.dto.ts
 depends_on:
 - DatabaseModule
 - ShippingModule
