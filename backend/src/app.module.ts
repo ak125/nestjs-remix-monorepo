@@ -68,6 +68,7 @@ import { RmModule } from './modules/rm/rm.module'; // ✅ RÉACTIVÉ - Fix Docke
 import { MarketingModule } from './modules/marketing/marketing.module'; // 📊 NOUVEAU - Module marketing avec backlinks, content roadmap et KPIs !
 // MediaFactoryModule — SUPPRIMÉ 2026-04-10 (prototype P1, axios vuln critique, 0 usage prod)
 import { DiagnosticEngineModule } from './modules/diagnostic-engine/diagnostic-engine.module'; // 🔧 NOUVEAU - Moteur diagnostic mecanique MVP !
+import { TrendSignalsModule } from './modules/trend-signals/trend-signals.module'; // 📈 NOUVEAU - Middle-ground trend signals ingestion (Tasks 1.9-1.11 ai-additive-layer)
 
 /**
  * AppModule - Architecture Modulaire Restaurée
@@ -224,6 +225,7 @@ import { DiagnosticEngineModule } from './modules/diagnostic-engine/diagnostic-e
     MarketingModule, // 📊 ACTIVÉ - Module marketing avec backlinks, content roadmap et KPIs !
     // MediaFactoryModule — SUPPRIMÉ 2026-04-10
     DiagnosticEngineModule, // 🔧 ACTIVÉ - Moteur diagnostic mecanique MVP (Slice 1) !
+    TrendSignalsModule, // 📈 ACTIVÉ - Middle-ground trend signals ingestion (Tasks 1.9-1.11)
     // AgenticEngineModule — ARCHIVÉ 2026-04-02 (tables → _archive schema, remplacé par Paperclip)
 
     // 🔄 WORKERS & BACKGROUND JOBS
