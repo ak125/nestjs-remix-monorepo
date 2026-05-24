@@ -7,16 +7,19 @@ governance_cost_ratio: ~0.25  # ~30 min ré-cadrage plan v4 / ~2h exec capture �
 owner: "@ak125"
 status: success
 b1_decision: signal_robuste_cross_llm  # Claude 40-63% / Codex 0%, divergence absolue sur AutoMecanik
-b2_decision: arbitrage_owner_pending  # B2 Operational Fulfillment Overlay = next checkpoint, voir section dédiée
+b2_decision: skipped_v5  # B2 OF Overlay enterrée par correction doctrinale (cf. plan v5+ RAW→WIKI→consumer canonique)
+b3_decision: 0_proposals_wiki_bootstrap_priority  # 0 nouvelles proposals, 288 captures = RAW reservoir différé
+phase_d_status: not_applicable_until_wiki_bootstrap_promoted
 next_action: |
-  1. Owner review du finding cross-LLM (Claude SDK 63.5% / CLI 40.6% / Codex 0% AutoMecanik)
-  2. Décision GO B2 ? Calculer operational_fulfillment_confidence par prompt
-     (fitment × supplier truth × pricing × R-role landing existante) pour
-     transformer le gap-visibility en gap-business chiffré €/mois at-risk.
-  3. Si signal B2 fort → ouvrir Phase C (GEO Evidence Engine filesystem-only)
-     + provisioning APIs payantes (OPENAI/GEMINI/PERPLEXITY) pour validation
-     hors-proxy (~60-110€)
-  4. Si signal B2 faible → close question 12s, vault doc reality-audits/
+  1. Owner décide : valider/réviser les 6 proposals pilotes G6 ADR-033 actuels
+     (filtre-a-air, plaquette-de-frein, citroen-c3, dacia, ford-focus-3, peugeot-206,
+     renault-clio-3, renault-megane-3, volkswagen-golf-6) → promotion vers wiki/gamme/
+  2. Quand WIKI bootstrap promu + sync DB consumers vérifiée → mesurer Phase D
+     (delta CTR/conversion/résolution/SAV/fitment per K2 downstream impact required)
+  3. Si signal Phase D positif → revenir à .archive/research/geo-probe-2026-05-24/
+     comme RAW reservoir pour 2nd batch wiki proposals geo-extracted
+  4. Si signal Phase D nul → archiver tout le probe comme baseline historique GEO,
+     vault doc reality-audits/2026-Q2-geo-baseline.md, close question 12 semaines
 ---
 
 # Probe Report : GEO Discovery Probe 2026-05 (G10 ADR-081, première utilisation)
@@ -180,6 +183,52 @@ Hypothèses non-validées sur l'origine du gap (à investiguer en Phase C si sig
 - No canonical ontology creation in Phase B
 - Output autorisé : markdown-only human-readable proposals dans `workspaces/wiki/proposals/geo-extracted/`
 - Output INTERDIT : taxonomies, IDs, graph edges, confidence scores, embeddings, clusters, aliases, normalized entities
+
+## Section B3 — Knowledge Extraction (RÉSULTAT EMPIRIQUE 2026-05-24 round final)
+
+**Output effectif : 0 nouvelles wiki proposals créées.**
+
+### Pourquoi 0 ?
+
+Inventaire `automecanik-wiki` repo local au moment de Phase C :
+- `wiki/gamme/` (canon promu) = **VIDE** (0 fiche publiée)
+- `proposals/` (pending_review) = **6 pilotes G6 ADR-033 actifs** (filtre-a-air, plaquette-de-frein, citroen-c3, dacia, ford-focus-3, peugeot-206, renault-clio-3, renault-megane-3, volkswagen-golf-6) datés 2026-04-29, **non encore promus**
+
+Le WIKI canon gamme est en **bootstrap non-fini**. Les 6 pilotes G6 attendent encore validation humaine + promotion vers `wiki/gamme/`.
+
+### Application stricte des règles K2 + K3 + plan v11
+
+Le plan v11 (round 4 simplification) gravait explicitement :
+
+> "Tous proposals utiles mais WIKI base elle-même est encore en bootstrap → priority order = consolider d'abord WIKI bootstrap, puis revenir aux proposals B3 en second batch"
+
+- **K2 (downstream impact required)** : ajouter 3 nouvelles proposals geo-extracted maintenant = aucune hypothèse downstream mesurable possible car aucune fiche n'est encore consommée par les R-roles / pages SEO / outils
+- **K3 (doctrine subtractive)** : ajouter du flux secondaire avant de fermer le primaire = bureaucratie de connaissance, exactement le piège anti-pattern gravé
+- **Triade RAW→WIKI→consumer** : la matière RAW est là (288 captures), mais le maillon WIKI n'est pas encore opérationnel pour la transformer en consumer impact
+
+### Décision empirique honnête
+
+**Les 288 captures restent stockées comme RAW reservoir disponible** dans `.archive/research/geo-probe-2026-05-24/raw/` (MANIFEST.sha256 `57ce9a2c...` immutable). Quand l'owner aura :
+
+1. Validé les 6 proposals pilotes G6 → promotion vers `wiki/gamme/`
+2. Confirmé que la sync `automecanik-wiki → DB consumers` propage correctement
+3. Mesuré un signal downstream sur les fiches promues (Phase D K2)
+
+…alors et seulement alors, on peut revenir à ces 288 captures comme RAW à extraire pour un **second batch** de proposals. Pas avant.
+
+### Verdict B3 final
+
+| Métrique | Valeur |
+|---|---|
+| Captures B1 produites | 288 (sunk cost utile comme RAW reservoir) |
+| Wiki proposals B3 créées | **0** (knowledge inflation évitée) |
+| WIKI bootstrap statut | En attente promotion 6 pilotes G6 |
+| Phase D applicable maintenant | **NON** (gate "WIKI validée + consommée" non franchi) |
+| Phase B closure | **EFFECTIVE** — slot EXPLORATION_BUDGET libéré |
+
+C'est l'application la plus disciplinée possible des règles K2+K3+plan v11. Knowledge-first, not GEO-first.
+
+---
 
 ## Section B2 — Operational Fulfillment Overlay (PENDING)
 
