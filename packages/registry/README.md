@@ -23,8 +23,53 @@ Zod schemas + TypeScript types for the **Repository Control Plane V1** (ADR-058)
 - **Layer 1 entries** : `FileEntry`, `DbTableEntry`, `RpcEntry`, `DepEntry`,
   `RuntimeEntry`
 - **Layer 2 overlay** : `OwnershipEntry`/`OwnershipRegistry`, `DomainEntry`/`DomainsRegistry`,
-  `StatusOverrideEntry`/`StatusOverrides`, `DeletePolicyEntry`/`DeletePolicyOverlay`
+  `StatusOverrideEntry`/`StatusOverrides`, `DeletePolicyEntry`/`DeletePolicyOverlay`,
+  `AutomationEntry`/`AutomationReality` (+ `AutomationModeEnum`, `IntendedModeEnum`,
+  `RuntimeEvidence`, etc. — see `overlay/automation-reality.ts`)
 - **Layer 3 canonical** : `CanonicalRegistry`, `CanonicalMeta`
+
+## Automation Reality Registry
+
+`AutomationReality` (overlay file `.spec/00-canon/repository-registry/automation-reality.yaml`)
+formalises the distinction between automation **DESIGN** (cabled — workflow,
+script, migration exists) and automation **REALITY** (running — trigger fired,
+output produced, consumer observed). First registry in the monorepo to model
+this gap as `intended_mode` vs `actual_mode`.
+
+**Key rules (anti-fourre-tout)** :
+
+- `actual_mode: ACTIVE` requires `runtime_evidence` proving trigger + output +
+  consumer signals (or explicit `"no-consumer-by-design"` for audit-only systems).
+- `intended_mode = MANUAL` + `actual_mode = MANUAL` → 0 gap, no `missing_step`
+  required. MANUAL is a valid design (human-by-doctrine, e.g. PR-9 rule #27),
+  NOT incomplete automation.
+- `actual_mode: WARN_ONLY_DEGRADED` requires evidence with a note containing
+  `"regression"` (prevents the field becoming a catch-all bucket).
+- `last_verified_at` must NEVER be bumped by a bot. Three defenses : Zod regex
+  on `last_verified_by` (must be `@github-handle` or `seed:*`), CI gate
+  `automation-registry-no-auto-bump.yml`, README explicit norm.
+- When `evidence` references a `line:`, an `excerpt:` substring is REQUIRED
+  to detect silent drift after file edits.
+
+**How to add an entry** (post-merge V1) :
+
+```bash
+# 1. Edit overlay
+$EDITOR .spec/00-canon/repository-registry/automation-reality.yaml
+
+# 2. Validate locally before commit (Zod + evidence path + excerpt drift)
+npx tsx scripts/registry/validate-automation-overlay.ts
+
+# 3. Modifying the overlay requires regenerating the canonical projection :
+node scripts/registry/build-canonical-registry.js
+git add audit/registry/canonical.json .spec/00-canon/repository-registry/automation-reality.yaml
+```
+
+**Governance gravity defense** : the registry has a soft cap of ≤30 entries
+in V1 before pattern re-evaluation. Each `ACTIVE` entry maintains ≤3 runtime
+probes (trigger/output/consumer). PRs adding >5 entries at once require
+explicit justification. See `/home/deploy/.claude/plans/utiliser-superpower-oui-frolicking-bengio.md`
+§"Defense against governance gravity".
 
 ## Invariants V1
 

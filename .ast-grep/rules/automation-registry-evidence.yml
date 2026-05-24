@@ -1,0 +1,36 @@
+# .ast-grep/rules/automation-registry-evidence.yml
+#
+# Hint rule : warns (does not block) when a YAML entry under
+# .spec/00-canon/repository-registry/automation-reality.yaml is missing
+# an `evidence:` block.
+#
+# The authoritative check is in `scripts/registry/validate-automation-overlay.ts`
+# (Zod refine `.min(1)`). This ast-grep rule provides early feedback at
+# pre-commit time before the full validator runs.
+#
+# Severity = hint (informational only — no commit blocking).
+
+id: automation-registry-entry-needs-evidence
+language: yaml
+severity: hint
+message: |
+  automation-reality.yaml entries require an `evidence:` array with ≥1 reference.
+  Run `tsx scripts/registry/validate-automation-overlay.ts` for the authoritative
+  check (Zod-enforced).
+
+files:
+  - ".spec/00-canon/repository-registry/automation-reality.yaml"
+
+# ast-grep YAML matching is limited ; this rule is purely advisory and the
+# Zod validator is the source of truth.
+rule:
+  kind: block_mapping
+  has:
+    field: key
+    has:
+      regex: "^automation_id$"
+  not:
+    has:
+      field: key
+      has:
+        regex: "^evidence$"

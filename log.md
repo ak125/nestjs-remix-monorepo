@@ -489,3 +489,27 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/ai-additive-layer-design-spec`
 - **Décision** : fix(codeql): loop-until-stable HTML strip in detectExtractableTldr (resolves js/incomplete-multi-character-sanitization) (+19 other commits)
 - **Sortie** : PR #714 | commits 4c0250eca dcb25d4ae a9226d06d ec3cb6a92 296343132 978c50bdf d4121fd65 d9c67602a 213d5db3e 04964ad3b cf61d176a f9e218531 cf5adb9dc 64a4c0a36 a380fbe25 4d61ee999 f9b05b52c 67958cfa7 0fc72ac1a 9b75889bd
+
+## 2026-05-24 — feat/automation-reality-registry (auto)
+
+- **Branche** : `feat/automation-reality-registry`
+- **Décision** : feat(registry): automation-reality-registry V1 — observe gap intent↔execution
+- **Sortie** : PR #726 | commits 79dfa5792
+
+## 2026-05-24 — feat/automation-reality-registry (auto)
+
+- **Branche** : `feat/automation-reality-registry`
+- **Décision** : fix(registry): npm install --ignore-scripts in automation registry workflows (+2 other commits)
+- **Sortie** : PR #726 | commits d3cb777b6 3f2bfbba9 79dfa5792
+
+## 2026-05-24 — feat/automation-reality-registry (auto)
+
+- **Branche** : `feat/automation-reality-registry`
+- **Décision** : fix(registry): use npm ci for automation registry workflows (tsx hoisting) (+4 other commits)
+- **Sortie** : PR #726 | commits b9cb833df 522703395 d3cb777b6 3f2bfbba9 79dfa5792
+
+## 2026-05-24 — feat/automation-reality-registry (auto)
+
+- **Branche** : `feat/automation-reality-registry`
+- **Décision** : Merge remote-tracking branch 'origin/main' into feat/automation-reality-registry (+6 other commits)
+- **Sortie** : PR #726 | commits 220f8cf08 970c2c08d b9cb833df 522703395 d3cb777b6 3f2bfbba9 79dfa5792

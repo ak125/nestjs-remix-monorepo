@@ -238,11 +238,16 @@ function loadLayer2() {
       "Layer 2 incomplete in .spec/00-canon/repository-registry/. PR-D required."
     );
   }
+  const automation = loadYamlSafe(path.join(OVERLAY_DIR, "automation-reality.yaml")) || {
+    entries: [],
+  };
+
   return {
     ownership: ownership.entries || [],
     domains: domains.entries || [],
     statusOverrides: statusOverrides.entries || [],
     deletePolicy: deletePolicy.entries || [],
+    automation: automation.entries || [],
   };
 }
 
@@ -280,6 +285,9 @@ function main() {
     ".spec/00-canon/repository-registry/delete-policy.yaml": sha256OfFile(
       path.join(OVERLAY_DIR, "delete-policy.yaml")
     ),
+    ".spec/00-canon/repository-registry/automation-reality.yaml": sha256OfFile(
+      path.join(OVERLAY_DIR, "automation-reality.yaml")
+    ),
   };
 
   // generatedAt is derived from the SoT input hashes (deterministic anchor),
@@ -291,6 +299,12 @@ function main() {
     .digest("hex")
     .slice(0, 12);
 
+  // Automation reality is a flat list (no merge — overlay IS the SoT).
+  // Sort by automation_id for deterministic output.
+  const automationEntries = [...(overlay.automation || [])].sort((a, b) =>
+    a.automation_id < b.automation_id ? -1 : a.automation_id > b.automation_id ? 1 : 0,
+  );
+
   const output = {
     schemaVersion: SCHEMA_VERSION,
     files: sortById(mergedFiles),
@@ -300,6 +314,7 @@ function main() {
     },
     deps: sortById(mergedDeps),
     runtime: sortById(mergedRuntime),
+    automation: automationEntries,
     meta: {
       generatedAt: `1970-01-01T00:00:00.000Z`, // V1-2 deterministic placeholder
       generatorVersion: GENERATOR_VERSION,

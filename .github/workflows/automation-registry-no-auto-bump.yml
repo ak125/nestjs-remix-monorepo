@@ -1,0 +1,49 @@
+name: Automation Registry — no-auto-bump by bot (BLOCKING)
+
+# BLOCKING : refuses PRs from bot actors that modify `last_verified_at` in
+# automation-reality.yaml. If a bot bumps the field without re-verifying
+# evidence + runtime_evidence, the freshness ratchet becomes cosmetic (the
+# whole point of the registry is broken).
+#
+# Triple defense (see plan §"Règle anti-bot pour last_verified_at") :
+#   1. This workflow (CI gate)
+#   2. Zod schema requires `last_verified_by` matching `@handle` or `seed:*`
+#   3. README explicit norm
+#
+# Fail-safe : if github.actor is unavailable (rare), pass — never block on
+# missing signal (anti-flake).
+
+on:
+  pull_request:
+    paths:
+      - ".spec/00-canon/repository-registry/automation-reality.yaml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: automation-registry-no-auto-bump-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  no-auto-bump:
+    name: Refuse bot bump of last_verified_at
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🤖 Detect bot bump
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if [ -z "${GITHUB_ACTOR:-}" ]; then
+            echo "[no-auto-bump] github.actor unavailable — pass (anti-flake)"
+            exit 0
+          fi
+          node scripts/audit/check-no-auto-bump.js

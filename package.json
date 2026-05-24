@@ -70,6 +70,8 @@
     "registry:build": "npm run registry:build:files && npm run registry:build:runtime && npm run registry:build:deps && npm run registry:build:db && npm run registry:build:rpc",
     "registry:build:planning": "node scripts/registry/build-planning-registry.js",
     "registry:build:dependency-graph": "node scripts/registry/build-dependency-graph.js",
+    "registry:build:automation": "node scripts/audit/build-automation-inventory.js",
+    "registry:validate:automation": "tsx scripts/registry/validate-automation-overlay.ts",
     "registry:test:rpc-parser": "tsx --test tests/registry/rpc-parser.test.ts",
     "registry:test:invariants": "tsx --test scripts/registry/validate-invariants.test.ts",
     "registry:test:files-reachability": "tsx --test scripts/registry/build-files-registry.test.ts",

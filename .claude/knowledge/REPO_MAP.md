@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 6b4c9208541983ae58ac9434e123f41e8b8277424f06b7e9607902ab9bfb7143
+source_sha256: caf4d0046537c5bf877f75ddbdefbda1d00b06639085fd20513333ed7782aa76
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -24,7 +24,7 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 | Dependencies (Layer 1) | 254 |
 | Runtime entrypoints (Layer 1) | 488 |
 
-Source sotFingerprint: `0a64f6d422c7`.
+Source sotFingerprint: `6e792261164c`.
 
 ## Comment l'utiliser
 
@@ -53,19 +53,19 @@ Source sotFingerprint: `0a64f6d422c7`.
 
 ### D3 — SEO & Sitemap
 
-- **Files**: 335 (service=184, test=84, controller=31, config=26, script=10)
+- **Files**: 347 (service=184, test=89, controller=31, config=26, script=17)
 - **Runtime entrypoints**: 36
-- **Top owners**: @ak125/seo-team (335)
+- **Top owners**: @ak125/seo-team (347)
 - **Knowledge prose**: [`merchant-center`](modules/merchant-center.md), [`seo`](modules/seo.md), [`seo-control-plane`](modules/seo-control-plane.md), [`seo-logs`](modules/seo-logs.md), [`seo-monitoring`](modules/seo-monitoring.md), [`seo-shadow-observatory`](modules/seo-shadow-observatory.md)
-- **Status**: LIVE=190, UNKNOWN=145
+- **Status**: LIVE=190, UNKNOWN=157
 
 ### D4 — Vehicle / Compatibility
 
-- **Files**: 34 (service=24, config=5, test=4, controller=1)
-- **Runtime entrypoints**: 3
-- **Top owners**: @ak125/vehicle-team (25), @ak125 (9)
-- **Knowledge prose**: [`diagnostic-engine`](modules/diagnostic-engine.md), [`vehicle-context`](modules/vehicle-context.md)
-- **Status**: LIVE=22, UNKNOWN=12
+- **Files**: 62 (service=47, config=6, controller=5, test=4)
+- **Runtime entrypoints**: 8
+- **Top owners**: @ak125 (37), @ak125/vehicle-team (25)
+- **Knowledge prose**: [`diagnostic-engine`](modules/diagnostic-engine.md), [`vehicle-context`](modules/vehicle-context.md), [`vehicles`](modules/vehicles.md)
+- **Status**: LIVE=45, UNKNOWN=17
 
 ### D5 — Blog / Content
 
@@ -132,10 +132,10 @@ Source sotFingerprint: `0a64f6d422c7`.
 
 ### D13 — Config & System
 
-- **Files**: 154 (service=54, config=51, script=38, test=11)
+- **Files**: 156 (service=56, config=51, script=38, test=11)
 - **Runtime entrypoints**: 5
-- **Top owners**: @ak125 (154)
-- **Status**: LIVE=62, UNKNOWN=92
+- **Top owners**: @ak125 (156)
+- **Status**: LIVE=64, UNKNOWN=92
 
 ### D14 — Gamme Aggregates & V-Level
 
@@ -153,13 +153,13 @@ Source sotFingerprint: `0a64f6d422c7`.
 
 ### UNKNOWN — Unknown (overlay non résolu)
 
-- **Files**: 408 (service=246, config=94, controller=41, script=21, test=6)
+- **Files**: 366 (service=221, config=93, controller=37, script=14, test=1)
 - **DB tables**: 257
 - **DB RPC**: 197
-- **Runtime entrypoints**: 65
-- **Top owners**: __unassigned__ (408)
-- **Knowledge prose**: [`bot-guard`](modules/bot-guard.md), [`config`](modules/config.md), [`errors`](modules/errors.md), [`layout`](modules/layout.md), [`mcp-validation`](modules/mcp-validation.md), [`metadata`](modules/metadata.md), [`navigation`](modules/navigation.md), [`search`](modules/search.md), [`shipping`](modules/shipping.md), [`staff`](modules/staff.md), [`substitution`](modules/substitution.md), [`suppliers`](modules/suppliers.md), [`support`](modules/support.md), [`system`](modules/system.md), [`vehicles`](modules/vehicles.md)
-- **Status**: LIVE=229, UNKNOWN=179
+- **Runtime entrypoints**: 60
+- **Top owners**: __unassigned__ (366)
+- **Knowledge prose**: [`bot-guard`](modules/bot-guard.md), [`config`](modules/config.md), [`errors`](modules/errors.md), [`layout`](modules/layout.md), [`mcp-validation`](modules/mcp-validation.md), [`metadata`](modules/metadata.md), [`navigation`](modules/navigation.md), [`search`](modules/search.md), [`shipping`](modules/shipping.md), [`staff`](modules/staff.md), [`substitution`](modules/substitution.md), [`suppliers`](modules/suppliers.md), [`support`](modules/support.md), [`system`](modules/system.md)
+- **Status**: LIVE=204, UNKNOWN=162
 
 ## Voir aussi
 
