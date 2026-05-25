@@ -82,8 +82,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
   const priorityTier = url.searchParams.get("priority_tier");
 
-  const apiBase =
-    process.env.INTERNAL_API_BASE_URL ?? "http://localhost:3000";
+  const apiBase = process.env.INTERNAL_API_BASE_URL ?? "http://localhost:3000";
 
   // 3 fetches en parallèle. En cas d'erreur, on tombe en empty state.
   const cookie = request.headers.get("cookie") ?? "";
@@ -265,8 +264,8 @@ export default function CwvRuntimeObservability() {
         <CardContent>
           {data.dashboard.rows.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              Aucune donnée. Vérifier que le beacon `/api/seo/cwv/beacon`
-              reçoit du trafic et que les jobs hourly/daily tournent.
+              Aucune donnée. Vérifier que le beacon `/api/seo/cwv/beacon` reçoit
+              du trafic et que les jobs hourly/daily tournent.
             </p>
           ) : (
             <Table>

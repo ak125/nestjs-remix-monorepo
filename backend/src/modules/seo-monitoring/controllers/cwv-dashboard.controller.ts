@@ -45,7 +45,11 @@ export class CwvDashboardController {
   async getFunnelCorrelation(
     @Query('from_ts') fromTs: string | undefined,
     @Query('to_ts') toTs: string | undefined,
-  ): Promise<{ rows: CwvFunnelCorrelationRow[]; from_ts: string; to_ts: string }> {
+  ): Promise<{
+    rows: CwvFunnelCorrelationRow[];
+    from_ts: string;
+    to_ts: string;
+  }> {
     // Default window : 24h (raw TTL 48h, restons safe)
     const to = toTs ? new Date(toTs) : new Date();
     const from = fromTs
@@ -67,7 +71,10 @@ export class CwvDashboardController {
 
   // ── helpers ────────────────────────────────────────────────────────────────
 
-  private parseDateOrDefault(raw: string | undefined, daysOffset: number): string {
+  private parseDateOrDefault(
+    raw: string | undefined,
+    daysOffset: number,
+  ): string {
     if (raw && /^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
     const d = new Date();
     d.setUTCDate(d.getUTCDate() + daysOffset);
