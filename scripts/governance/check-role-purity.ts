@@ -32,7 +32,7 @@
  */
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { execSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import * as ts from "typescript";
 import {
   getForbiddenOverlap,
@@ -112,28 +112,55 @@ function collectFilesRecursive(dir: string, out: string[]): void {
   }
 }
 
-function gitDiffNames(cmd: string): string[] {
-  try {
-    const output = execSync(cmd, { cwd: REPO_ROOT, encoding: "utf8" });
-    return output.split("\n").filter(Boolean);
-  } catch {
-    return [];
-  }
+// Conservative git-ref validation : alphanumerics, `/`, `_`, `-`, `.` (1..255 chars).
+// Stricter than `git check-ref-format` on purpose — refuses leading dashes,
+// double-dots, `@{`, and any shell metacharacter. Defence-in-depth against
+// argv injection ; combined with spawnSync (no shell), this neutralises
+// CodeQL's "Indirect uncontrolled command line" finding.
+const SAFE_GIT_REF = /^(?!-)[A-Za-z0-9_./-]{1,255}$/;
+
+function gitDiffNames(args: readonly string[]): string[] {
+  // spawnSync with explicit `shell: false` (default) — argv is passed as an
+  // array, never concatenated into a shell command line. No injection surface.
+  const result = spawnSync("git", args, {
+    cwd: REPO_ROOT,
+    encoding: "utf8",
+  });
+  if (result.status !== 0 || typeof result.stdout !== "string") return [];
+  return result.stdout.split("\n").filter(Boolean);
 }
 
 function resolveCandidateFiles(argv: string[]): string[] {
   if (argv.includes("--staged")) {
-    return gitDiffNames(
-      "git diff --cached --name-only --diff-filter=ACMR -- '*.ts' '*.tsx'",
-    );
+    return gitDiffNames([
+      "diff",
+      "--cached",
+      "--name-only",
+      "--diff-filter=ACMR",
+      "--",
+      "*.ts",
+      "*.tsx",
+    ]);
   }
 
   const changedSinceFlag = argv.find((a) => a.startsWith("--changed-since="));
   if (changedSinceFlag) {
     const base = changedSinceFlag.slice("--changed-since=".length);
-    return gitDiffNames(
-      `git diff --name-only --diff-filter=ACMR ${base}...HEAD -- '*.ts' '*.tsx'`,
-    );
+    if (!SAFE_GIT_REF.test(base)) {
+      console.error(
+        `check-role-purity: --changed-since=<ref> rejected — '${base}' does not match safe git ref pattern (${SAFE_GIT_REF}).`,
+      );
+      process.exit(2);
+    }
+    return gitDiffNames([
+      "diff",
+      "--name-only",
+      "--diff-filter=ACMR",
+      `${base}...HEAD`,
+      "--",
+      "*.ts",
+      "*.tsx",
+    ]);
   }
 
   const explicit = argv.filter((a) => !a.startsWith("--"));
