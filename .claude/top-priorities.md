@@ -6,13 +6,14 @@
 #   EXPLORATION_BUDGET ≤ 3 (rolling, max 1 active — cf. ADR-081 G10)
 # Lecteurs : SessionStart hook, Stop hook, skills, CI dashboards, agents Paperclip
 # Mise à jour : édit manuel git tracké, max 1×/semaine (ou pivot business)
-# updated_at: 2026-05-24
+# updated_at: 2026-05-25
 
 ## TOP
 - commerce-loop-v1
 - runtime-truth-p0
 - runtime-truth-p1
 - web-vitals-attribution-ingestion
+- commerce-loop-execution-cycle-v1
 
 ## DO_NOT_START
 - r5-diagnostic-engine
@@ -20,6 +21,8 @@
 - new-control-plane
 - new-seo-platform
 - new-meta-architecture-adr
+- growth-content-system
+- auto-content-publishing
 
 ## ACTIVE_INCIDENTS
 - snapshot-partition-rotation-sensitive
@@ -30,6 +33,7 @@
 - postgrest-stable-function-write
 - dev-runtime-not-auto-updated-on-merge
 - node-22-required-for-architecture-build
+- evidence-window-locks-architecture-decisions
 
 ## EXPLORATION_BUDGET
 # Slot pré-autorisé pour probes empiriques stratégiques (ADR-081 G10).
