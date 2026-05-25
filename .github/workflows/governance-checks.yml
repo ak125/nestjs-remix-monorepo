@@ -3,6 +3,8 @@ name: governance-checks
 # Wire les scripts bash de gouvernance ADR-081 sur les PRs.
 # - validate-top-priorities.sh : sections / bornes / kebab-case (5 sections, dont EXPLORATION_BUDGET)
 # - validate-exploration-probe.sh : scope strict measurement-only si la PR est une probe G10
+# - check-cart-conversion-r-role.sh : invariant R-role classification panier/conversion
+#   (R8 ≠ cart-capable, canon .spec/00-canon/role-matrix.md)
 #
 # check-verdict-expirations.sh = cron weekly, pas wired ici (follow-up dédié).
 
@@ -10,14 +12,18 @@ on:
   pull_request:
     paths:
       - '.claude/top-priorities.md'
+      - '.spec/00-canon/role-matrix.md'
       - 'scripts/governance/**'
       - 'docs/research/**'
       - '.github/workflows/governance-checks.yml'
+      - '**/*.md'
   push:
     branches: [main]
     paths:
       - '.claude/top-priorities.md'
+      - '.spec/00-canon/role-matrix.md'
       - 'scripts/governance/**'
+      - '**/*.md'
 
 permissions:
   contents: read
@@ -40,3 +46,11 @@ jobs:
           fetch-depth: 0
       - name: Run probe scope linter (single check au PR final, anti over-governance creep)
         run: bash scripts/governance/validate-exploration-probe.sh "origin/${{ github.base_ref }}"
+
+  check-cart-conversion-r-role:
+    name: check-cart-conversion-r-role.sh (R-role invariant)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run R-role cart/conversion classification check
+        run: bash scripts/governance/check-cart-conversion-r-role.sh
