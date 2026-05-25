@@ -9,6 +9,7 @@ import { startTransition } from "react";
 import { hydrateRoot } from "react-dom/client";
 import { logger } from "~/utils/logger";
 import { reportWebVitals } from "~/utils/web-vitals.client";
+import { startRuntimeErrorReporter } from "~/utils/runtime-errors.client";
 
 // Service worker cleanup — sync, no Sentry dep
 if ("serviceWorker" in navigator) {
@@ -49,6 +50,11 @@ startTransition(() => {
   // fired are still observed. Sentry pipe is wired up later via
   // setSentryInstance() from initObservability().
   reportWebVitals();
+
+  // CWV Runtime Observability bloc 5 — hydration/longtask/chunk-load reporters.
+  // Captured BEFORE Sentry init for replay independence (canon
+  // feedback_no_external_canary_when_internal_observability_exists).
+  startRuntimeErrorReporter();
 });
 
 // Lazy observability init — defers ~150 KB of Sentry SDK off the critical
