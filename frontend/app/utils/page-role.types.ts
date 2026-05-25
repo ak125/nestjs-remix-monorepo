@@ -12,7 +12,7 @@ export enum PageRole {
   R0_HOME = "R0", // Accueil/Découverte
   R1_ROUTER = "R1", // Sélection/Navigation
   R2_PRODUCT = "R2", // Transaction/Achat
-  /** @deprecated Use R3_CONSEILS (blog/conseils) or R6_GUIDE_ACHAT (guide d'achat) */
+  /** @deprecated Prefer R3_CONSEILS for blog/conseils, or R6_GUIDE_ACHAT for purchase support */
   R3_BLOG = "R3", // Pédagogie/Expert — LEGACY, see R3_CONSEILS
   R3_CONSEILS = "R3_CONSEILS", // Conseils/Blog (canonical)
   R4_REFERENCE = "R4", // Référence métier
@@ -20,7 +20,7 @@ export enum PageRole {
   R6_SUPPORT = "R6", // Support/Légal
   R6_GUIDE_ACHAT = "R6_GUIDE", // Guide d'achat
   R7_BRAND = "R7", // Marque/Constructeur
-  R8_VEHICLE = "R8", // Véhicule (sélection pièces par véhicule spécifique)
+  R8_VEHICLE = "R8", // Fiche véhicule — no-cart. Voir @repo/seo-roles forbidden-overlap[R8_VEHICLE].
   RX_CHECKOUT = "RX_CHECKOUT", // Checkout/Paiement (funnel transactionnel)
 }
 
