@@ -1,17 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// Mock du logger pour éviter les I/O test
+import { loader } from "~/routes/$";
+
+// vi.mock is hoisted by Vitest's transformer (runs before imports at runtime),
+// safe to declare after the import for ESLint's `import/first` rule.
 vi.mock("~/utils/logger", () => ({
   logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() },
 }));
 
-// Mock fetch pour éviter l'appel API de logging 404
 const fetchMock = vi.fn(() =>
   Promise.resolve(new Response(JSON.stringify({ redirectUrl: null }))),
 );
-vi.stubGlobal("fetch", fetchMock);
-
-import { loader } from "~/routes/$";
 
 /**
  * Régression : SeoHeadersInterceptor (backend) applique
@@ -26,7 +25,11 @@ import { loader } from "~/routes/$";
  */
 describe("catch-all $.tsx — 404/410 X-Robots-Tag noindex,follow", () => {
   beforeEach(() => {
-    fetchMock.mockClear();
+    fetchMock.mockReset();
+    fetchMock.mockImplementation(() =>
+      Promise.resolve(new Response(JSON.stringify({ redirectUrl: null }))),
+    );
+    vi.stubGlobal("fetch", fetchMock);
   });
 
   it("404 catch-all émet X-Robots-Tag: noindex, follow", async () => {
