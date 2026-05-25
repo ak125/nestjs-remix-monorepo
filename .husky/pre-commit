@@ -191,3 +191,19 @@ if [ "$IMPECCABLE_HOOK" != "skip" ]; then
     fi
   fi
 fi
+
+# Role-vocabulary purity ratchet (comments in .ts/.tsx vs @repo/seo-roles SoT).
+# Detects role-vocabulary contamination in source comments — a comment mentioning
+# role X must not contain a term forbidden for role X per the canon
+# (packages/seo-roles/src/forbidden-overlap.ts). Complementary to
+# scripts/governance/check-cart-conversion-r-role.sh which scans .md files.
+#
+# Runs only when .ts/.tsx are staged. Use `// @role-purity-skip` in a file to
+# opt-out (apply sparingly — e.g. test fixtures already excluded by default).
+STAGED_TS=$(git diff --cached --name-only --diff-filter=ACMR \
+  | grep -E '\.(ts|tsx)$' || true)
+if [ -n "$STAGED_TS" ] && [ -f scripts/governance/check-role-purity.ts ]; then
+  if command -v npx >/dev/null 2>&1; then
+    npx --no-install tsx scripts/governance/check-role-purity.ts --staged || exit 1
+  fi
+fi

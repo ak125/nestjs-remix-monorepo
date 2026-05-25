@@ -1,10 +1,12 @@
 name: governance-checks
 
-# Wire les scripts bash de gouvernance ADR-081 sur les PRs.
+# Wire les scripts de gouvernance ADR-081 sur les PRs.
 # - validate-top-priorities.sh : sections / bornes / kebab-case (5 sections, dont EXPLORATION_BUDGET)
 # - validate-exploration-probe.sh : scope strict measurement-only si la PR est une probe G10
-# - check-cart-conversion-r-role.sh : invariant R-role classification panier/conversion
+# - check-cart-conversion-r-role.sh : invariant R-role classification panier/conversion (.md)
 #   (R8 ≠ cart-capable, canon .spec/00-canon/role-matrix.md)
+# - check-role-purity.ts : detecte contamination vocab role dans commentaires .ts/.tsx
+#   (consomme @repo/seo-roles forbidden-overlap.ts SoT)
 #
 # check-verdict-expirations.sh = cron weekly, pas wired ici (follow-up dédié).
 
@@ -13,17 +15,23 @@ on:
     paths:
       - '.claude/top-priorities.md'
       - '.spec/00-canon/role-matrix.md'
+      - 'packages/seo-roles/**'
       - 'scripts/governance/**'
       - 'docs/research/**'
       - '.github/workflows/governance-checks.yml'
       - '**/*.md'
+      - '**/*.ts'
+      - '**/*.tsx'
   push:
     branches: [main]
     paths:
       - '.claude/top-priorities.md'
       - '.spec/00-canon/role-matrix.md'
+      - 'packages/seo-roles/**'
       - 'scripts/governance/**'
       - '**/*.md'
+      - '**/*.ts'
+      - '**/*.tsx'
 
 permissions:
   contents: read
@@ -54,3 +62,25 @@ jobs:
       - uses: actions/checkout@v4
       - name: Run R-role cart/conversion classification check
         run: bash scripts/governance/check-cart-conversion-r-role.sh
+
+  check-role-purity:
+    name: check-role-purity.ts (role-vocabulary purity, source comments)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Build @repo/seo-roles (script imports the SoT)
+        run: npm run build --workspace=@repo/seo-roles
+      - name: Run script unit tests
+        run: npx tsx --test scripts/governance/__tests__/check-role-purity.test.ts
+      - name: Run role-purity scan on PR-changed .ts/.tsx files only
+        # Enforce on net-new contaminations only. The existing codebase has a
+        # legitimate baseline of cross-role documentation we accept as-is.
+        # Pre-commit hook handles the same scoping via --staged.
+        run: npx tsx scripts/governance/check-role-purity.ts --changed-since=origin/${{ github.base_ref || 'main' }}
