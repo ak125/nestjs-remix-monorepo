@@ -21,7 +21,14 @@ export interface AiTokenUsage {
 
 export interface AiProviderOptions {
   temperature?: number;
-  maxTokens?: number;
+  /**
+   * Required output-token budget per call. Callers must declare an explicit
+   * budget — there is no implicit default. Anthropic bills reserved capacity,
+   * so a silent fallback would either truncate (too low) or over-bill (too
+   * high). DTO layer enforces a Zod `.default(500)` upstream, so internal
+   * callers always have a number to pass.
+   */
+  maxTokens: number;
   model?: string;
 }
 
@@ -131,7 +138,7 @@ export class AnthropicProvider implements AIProvider {
 
       const message = await this.client.messages.create({
         model,
-        max_tokens: options.maxTokens || 4096,
+        max_tokens: options.maxTokens,
         temperature: options.temperature ?? 0.7,
         // Prompt cache on the system block: identical system prompts across
         // calls (templates, anti-hallucination rules, advisor escalation 2nd
