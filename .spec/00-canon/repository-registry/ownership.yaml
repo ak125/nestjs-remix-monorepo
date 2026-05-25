@@ -534,6 +534,11 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: medium
+  - glob: backend/supabase/migrations/*vehicle_page_cached*
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
   - glob: backend/supabase/migrations/*default_privileges*
     domain: D15
     owner: '@ak125'
