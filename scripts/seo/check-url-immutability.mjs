@@ -57,6 +57,11 @@ import { fileURLToPath } from "node:url";
 import { extractCanonicalSurface } from "./lib/canonical-surface-extractor.mjs";
 
 const ROUTE_RE = /^frontend\/app\/routes\/.+\.tsx$/;
+// Admin routes are auth-only, non-indexed, non-canonical SEO surfaces.
+// 102+ admin.* routes prove this is a canonical pattern. R-SEO-09 Phase 2
+// AST guard is designed for public SEO surfaces — exclude admin to avoid
+// requiring r-seo-09-override label on every admin-* PR.
+const ADMIN_RE = /^frontend\/app\/routes\/admin(\..+)?\.tsx$/;
 const WARN_RE = /^backend\/src\/modules\/seo\/.*(?:canonical|seo-canonical|sitemap|redirect).*\.ts$/;
 
 function parseArgs(args) {
@@ -210,6 +215,8 @@ async function main() {
       continue;
     }
     if (!ROUTE_RE.test(entry.path)) continue;
+    // Skip admin.* routes — auth-only, non-canonical, hors scope SEO public.
+    if (ADMIN_RE.test(entry.path)) continue;
 
     const baseSource = entry.status === "A" ? null : readBaseVersion(baseRef, entry.path);
     const headSource = entry.status === "D" ? null : readHeadVersion(entry.path);
