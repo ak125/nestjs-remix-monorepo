@@ -50,6 +50,13 @@ abort()  { alert "$1"; report "error" "{}" "$1"; exit 1; }
 # présents sur disque mais sans symlinks ni dist → MODULE_NOT_FOUND).
 # Sortie : exit 0 = sain · exit 1 = drift détecté (alerté avant retour).
 check_workspace_integrity() {
+  # Dépendance dure : `jq` est requis pour parser package.json sans heuristique
+  # fragile. Faute explicite (pas un skip silencieux) — canon no-silent-fallback.
+  command -v jq >/dev/null 2>&1 || {
+    alert "jq absent — check_workspace_integrity ne peut pas s'exécuter (apt install jq)"
+    return 2
+  }
+
   local missing_links=() missing_dist=()
   local pkgdir pkg_name main_field
 
