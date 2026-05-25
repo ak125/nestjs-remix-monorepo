@@ -46,6 +46,7 @@
     "@remix-run/react": "^2.17.4",
     "@remix-run/serve": "^2.17.4",
     "@remix-run/server-runtime": "^2.17.4",
+    "@repo/cwv-taxonomy": "*",
     "@repo/database-types": "*",
     "@repo/registry": "*",
     "@repo/seo-roles": "*",

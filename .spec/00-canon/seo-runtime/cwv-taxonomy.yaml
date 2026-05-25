@@ -1,0 +1,310 @@
+# CWV Runtime Taxonomy — canon L2 overlay
+#
+# Premier entry du dossier `seo-runtime/`. Canon `feedback_seo_runtime_must_integrate_repo_control_plane`
+# — chaque dimension utilisée par la chaîne d'ingestion CWV beacon DOIT être
+# déclarée ici. Le package `@repo/cwv-taxonomy` est la SoT technique runtime ;
+# ce fichier est la SoT humaine documentaire (review humaine sur changement).
+#
+# Discipline : enum strict (DB CHECK IN) — cardinalité bornée pour
+# requêtage SQL ; pas de string libre cross-couches.
+#
+# Sources de vérité associées :
+#   - Plan : /home/deploy/.claude/plans/automecanik-com-confidentialit-condition-abundant-adleman.md
+#   - Package TS : packages/cwv-taxonomy/src/
+#   - Migration consommatrices : 20260526_seo_cwv_raw.sql (bloc 3), 20260527_seo_cwv_hourly.sql (bloc 4)
+
+schemaVersion: 1.0.0
+domain: seo-runtime
+generated: false
+
+# =============================================================================
+# Surfaces — granularité métier (ce que vit l'utilisateur)
+# =============================================================================
+# Chaque surface est mappée à un funnel_step. Une surface = une intention business.
+
+surfaces:
+  R2_PRODUCT:
+    description: "Page produit pieces (fiche article unique)"
+    funnel_role: view_product
+  R2_GAMME_VEHICLE:
+    description: "Page gamme × véhicule (liste de pièces filtrée)"
+    funnel_role: view_listing
+  R3_GUIDE:
+    description: "Guide thématique / article éditorial"
+    funnel_role: view_guide
+  R5_DIAGNOSTIC:
+    description: "Page symptôme / diagnostic / réparation"
+    funnel_role: view_diagnostic
+  R8_VEHICLE:
+    description: "Fiche véhicule (constructeur/modèle/type)"
+    funnel_role: view_vehicle
+  SEARCH:
+    description: "Résultats de recherche / autocomplete"
+    funnel_role: view_search
+  HOME:
+    description: "Page d'accueil"
+    funnel_role: landing
+  CART:
+    description: "Panier (étape pré-checkout)"
+    funnel_role: checkout_entry
+  CHECKOUT:
+    description: "Étapes checkout (1..N)"
+    funnel_role: checkout_step
+  PAYMENT:
+    description: "Page paiement (Paybox / SystemPay redirect)"
+    funnel_role: payment
+  ACCOUNT:
+    description: "Espace client (commandes, profil)"
+    funnel_role: account
+  OTHER:
+    description: "Fallback toute route non classée"
+    funnel_role: other
+
+# =============================================================================
+# Route groups — granularité technique (pattern Remix)
+# =============================================================================
+# Map déterministe path → route_group → surface. Whitelist fermée.
+# Ajout d'une nouvelle route = PR explicite (anti-bricolage discovery).
+
+route_groups:
+  pieces_product:
+    surface: R2_PRODUCT
+    path_prefix: "/pieces/"
+    path_suffix: ".html"
+    remix_pattern: "/pieces/$gamme/$marque/$modele/$type/$product.html"
+    description: "Fiche pièce détaillée (URL canonique 5-segments + .html)"
+
+  pieces_gamme_vehicle:
+    surface: R2_GAMME_VEHICLE
+    path_prefix: "/pieces/"
+    remix_pattern: "/pieces/$gamme/$marque/$modele/$type"
+    description: "Listing gamme×véhicule (URL 4-segments, sans suffix)"
+
+  r3_guide:
+    surface: R3_GUIDE
+    path_prefix: "/conseils/"
+    remix_pattern: "/conseils/$slug"
+    description: "Guides R3 thématiques"
+
+  r5_diagnostic:
+    surface: R5_DIAGNOSTIC
+    path_prefix: "/diagnostic/"
+    remix_pattern: "/diagnostic/$symptom"
+    description: "Pages diagnostic R5 (V1A.0 actif)"
+
+  r8_vehicle:
+    surface: R8_VEHICLE
+    path_prefix: "/constructeurs/"
+    remix_pattern: "/constructeurs/$marque/$modele/$type.html"
+    description: "Fiches véhicule R8"
+
+  marques_listing:
+    surface: R2_GAMME_VEHICLE
+    path_prefix: "/marques/"
+    remix_pattern: "/marques/$brand"
+    description: "Listing par marque (équipementier)"
+
+  search:
+    surface: SEARCH
+    path_prefix: "/recherche"
+    remix_pattern: "/recherche"
+    description: "Résultats de recherche"
+
+  cart:
+    surface: CART
+    path_prefix: "/panier"
+    remix_pattern: "/panier"
+    description: "Panier"
+
+  checkout:
+    surface: CHECKOUT
+    path_prefix: "/checkout"
+    remix_pattern: "/checkout/*"
+    description: "Étapes checkout (1..N, normalisé en CHECKOUT_STEP_*)"
+
+  payment:
+    surface: PAYMENT
+    path_prefix: "/paiement"
+    remix_pattern: "/paiement"
+    description: "Redirect Paybox / SystemPay (très court time-on-page)"
+
+  account:
+    surface: ACCOUNT
+    path_prefix: "/compte"
+    remix_pattern: "/compte/*"
+    description: "Espace client authentifié"
+
+  home:
+    surface: HOME
+    path_prefix: "/"
+    remix_pattern: "/"
+    description: "Home page (exact match uniquement)"
+
+  other:
+    surface: OTHER
+    path_prefix: ""
+    remix_pattern: "*"
+    description: "Fallback fermé — tout path non classé"
+
+# =============================================================================
+# Priority tiers — pondération business pour alerting & dashboards
+# =============================================================================
+# CWV_P0 = surveillance stricte (alerts), CWV_P1 = monitoring standard,
+# CWV_P2 = best-effort. Mapping Surface → Tier.
+
+priority_tiers:
+  CWV_P0:
+    description: "Critiques business — alerts trend-divergence-sustained activables (bloc 6)"
+    surfaces:
+      - PAYMENT
+      - CHECKOUT
+      - CART
+      - R5_DIAGNOSTIC
+      - R2_PRODUCT
+  CWV_P1:
+    description: "Monitoring standard — dashboard mais pas d'alert auto"
+    surfaces:
+      - R2_GAMME_VEHICLE
+      - R8_VEHICLE
+      - SEARCH
+      - R3_GUIDE
+  CWV_P2:
+    description: "Best-effort — tracking sans alerte"
+    surfaces:
+      - HOME
+      - ACCOUNT
+      - OTHER
+
+# =============================================================================
+# Funnel steps — ordre canonique du parcours conversion
+# =============================================================================
+# Ordre strict. previous_funnel_step doit être <= funnel_step dans cet array.
+
+funnel_steps_order:
+  - landing
+  - view_listing
+  - view_product
+  - view_guide
+  - view_diagnostic
+  - view_vehicle
+  - view_search
+  - view_account
+  - view_other
+  - add_cart
+  - checkout_entry
+  - checkout_step
+  - payment
+  - completed
+
+# =============================================================================
+# User-Agent classification — ségrégation bot/human pour aggregation pure
+# =============================================================================
+# Canon : bots → __seo_event_log (debug), humans → __seo_cwv_raw (aggregation).
+# Liste maintenue, ajout d'un bot = PR explicite (anti-pollution p75 humains).
+
+user_agent_classes:
+  bot_search:
+    description: "Crawlers SEO classiques (indexation Google/Bing)"
+    patterns:
+      - Googlebot
+      - bingbot
+      - Bingbot
+      - DuckDuckBot
+      - YandexBot
+      - Baiduspider
+      - facebookexternalhit
+      - LinkedInBot
+      - Twitterbot
+      - Slackbot
+  bot_ai:
+    description: "Crawlers AI/LLM (training, search, retrieval)"
+    patterns:
+      - GPTBot
+      - ClaudeBot
+      - Claude-Web
+      - ChatGPT-User
+      - OAI-SearchBot
+      - PerplexityBot
+      - Perplexity-User
+      - anthropic-ai
+      - Bytespider
+      - Amazonbot
+      - Applebot
+      - Google-Extended
+      - CCBot
+      - Diffbot
+  bot_other:
+    description: "Bots de monitoring, archivage, scraping divers"
+    patterns:
+      - AhrefsBot
+      - SemrushBot
+      - DotBot
+      - MJ12bot
+      - PetalBot
+      - WebPageTest
+      - Pingdom
+      - UptimeRobot
+      - Lighthouse
+      - Chrome-Lighthouse
+      - SpeedCurve
+  human:
+    description: "Tout User-Agent ne matchant aucun pattern bot ci-dessus"
+    fallback: true
+
+# =============================================================================
+# Web Vitals metrics — bornes runtime (Zod validation backend)
+# =============================================================================
+
+metrics:
+  LCP:
+    unit: ms
+    min: 0
+    max: 60000        # 60s ceiling (au-delà = payload corrompu)
+    good_threshold: 2500
+    poor_threshold: 4000
+  INP:
+    unit: ms
+    min: 0
+    max: 60000
+    good_threshold: 200
+    poor_threshold: 500
+  CLS:
+    unit: ratio
+    min: 0
+    max: 5            # CLS >5 = aberrant, on rejette
+    good_threshold: 0.1
+    poor_threshold: 0.25
+  FCP:
+    unit: ms
+    min: 0
+    max: 60000
+    good_threshold: 1800
+    poor_threshold: 3000
+  TTFB:
+    unit: ms
+    min: 0
+    max: 60000
+    good_threshold: 800
+    poor_threshold: 1800
+
+# =============================================================================
+# Devices & navigation types — petits enums fermés
+# =============================================================================
+
+device_types: [mobile, desktop, tablet, unknown]
+nav_types: [navigate, reload, back_forward, prerender, restore, unknown]
+
+# =============================================================================
+# Discipline anti-bricolage
+# =============================================================================
+
+discipline:
+  - "Toutes les colonnes enum DB (surface, route_group, priority_tier, funnel_step,
+    metric, device, ua_class) DOIVENT avoir CHECK IN clause stricte (alignée sur
+    les enums TS via runtime test)."
+  - "Ajout d'une nouvelle surface ou route_group = PR explicite avec ADR si
+    sémantique business change."
+  - "Bots détectés → écrits dans __seo_event_log uniquement, JAMAIS dans
+    __seo_cwv_raw (canon cross-source anti-fusion)."
+  - "Le package @repo/cwv-taxonomy est CJS uniquement (convention monorepo,
+    cf. @repo/seo-roles, @repo/seo-url-contract)."
