@@ -27,6 +27,13 @@
 --   - Memory: feedback_supabase_grant_explicit_for_new_projects.md
 -- =============================================================================
 
+-- Timeout settings required by squawk `require-timeout-settings` (canon
+-- monorepo-wide). ALTER DEFAULT PRIVILEGES is catalog-only (no row scan, no
+-- relation lock), so these timeouts are protective only — they cap pathological
+-- lock contention on `pg_default_acl` during catalog write.
+SET lock_timeout = '1s';
+SET statement_timeout = '5s';
+
 -- Tables: backend (NestJS via service_role) gets full DML by default.
 ALTER DEFAULT PRIVILEGES IN SCHEMA public
   GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO service_role;
