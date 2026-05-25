@@ -12,7 +12,10 @@ import { Logger } from '@nestjs/common';
 import { Job } from 'bull';
 import { getAppConfig } from '../../../config/app.config';
 import { getErrorMessage } from '../../../common/utils/error.utils';
-import { CwvAggregationService, type AggregationResult } from '../services/cwv-aggregation.service';
+import {
+  CwvAggregationService,
+  type AggregationResult,
+} from '../services/cwv-aggregation.service';
 
 export const CWV_AGG_HOURLY_JOB = 'cwv-aggregation-hourly';
 export const CWV_AGG_DAILY_JOB = 'cwv-aggregation-daily';

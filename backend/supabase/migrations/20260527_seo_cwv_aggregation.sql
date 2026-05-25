@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS __seo_cwv_hourly (
   ua_class              TEXT NOT NULL DEFAULT 'human' CHECK (ua_class IN ('human', 'bot_search', 'bot_ai', 'bot_other')),
 
   -- Percentiles (mesurés via percentile_cont sur __seo_cwv_raw)
-  sample_count          INT NOT NULL,
+  sample_count          BIGINT NOT NULL,
   p50_value             REAL,
   p75_value             REAL,
   p95_value             REAL,
@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS __seo_cwv_daily_rum (
   metric                TEXT NOT NULL CHECK (metric IN ('LCP', 'INP', 'CLS', 'FCP', 'TTFB')),
   ua_class              TEXT NOT NULL DEFAULT 'human' CHECK (ua_class IN ('human', 'bot_search', 'bot_ai', 'bot_other')),
 
-  sample_count          INT NOT NULL,
+  sample_count          BIGINT NOT NULL,
   -- Approximation V1 : weighted-avg-by-sample sur les percentiles horaires.
   -- Pas mathématiquement exact sans la distribution raw (déjà droppé à 48h),
   -- acceptable pour top-N ranking et trend SLO. Documenté ici comme tradeoff.
@@ -114,7 +114,7 @@ BEGIN
       device,
       metric,
       ua_class,
-      count(*)::INT AS sample_count,
+      count(*)::BIGINT AS sample_count,
       percentile_cont(0.50) WITHIN GROUP (ORDER BY value)::REAL AS p50_value,
       percentile_cont(0.75) WITHIN GROUP (ORDER BY value)::REAL AS p75_value,
       percentile_cont(0.95) WITHIN GROUP (ORDER BY value)::REAL AS p95_value
@@ -173,7 +173,7 @@ BEGIN
       device,
       metric,
       ua_class,
-      sum(sample_count)::INT AS sample_count,
+      sum(sample_count)::BIGINT AS sample_count,
       (sum(p50_value * sample_count) / NULLIF(sum(sample_count), 0))::REAL AS p50_value,
       (sum(p75_value * sample_count) / NULLIF(sum(sample_count), 0))::REAL AS p75_value,
       (sum(p95_value * sample_count) / NULLIF(sum(sample_count), 0))::REAL AS p95_value
