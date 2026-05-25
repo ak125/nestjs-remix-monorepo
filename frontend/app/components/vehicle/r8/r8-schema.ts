@@ -4,13 +4,25 @@
 
 import { type LoaderData, type VehicleData } from "./r8.types";
 
+// 🌐 SoT des URLs canoniques R8 (réutilisé par BreadcrumbSection microdata)
+export function buildR8CanonicalUrls(vehicle: VehicleData) {
+  const baseUrl = "https://www.automecanik.com";
+  return {
+    home: `${baseUrl}/`,
+    constructeurs: `${baseUrl}/constructeurs`,
+    brand: `${baseUrl}/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}.html`,
+    model: `${baseUrl}/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}.html`,
+    type: `${baseUrl}/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.type_id}.html`,
+  };
+}
+
 // 🚗 Génère le schema @graph complet: Car + BreadcrumbList
 export function generateVehicleSchema(
   vehicle: VehicleData,
   breadcrumb: LoaderData["breadcrumb"],
 ) {
-  const baseUrl = "https://www.automecanik.com";
-  const canonicalUrl = `${baseUrl}/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.type_id}.html`;
+  const urls = buildR8CanonicalUrls(vehicle);
+  const canonicalUrl = urls.type;
 
   return {
     "@context": "https://schema.org",
@@ -67,30 +79,31 @@ export function generateVehicleSchema(
             "@type": "ListItem",
             position: 1,
             name: "Accueil",
-            item: `${baseUrl}/`,
+            item: urls.home,
           },
           {
             "@type": "ListItem",
             position: 2,
             name: "Constructeurs",
-            item: `${baseUrl}/constructeurs`,
+            item: urls.constructeurs,
           },
           {
             "@type": "ListItem",
             position: 3,
             name: breadcrumb.brand,
-            item: `${baseUrl}/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}.html`,
+            item: urls.brand,
           },
           {
             "@type": "ListItem",
             position: 4,
             name: breadcrumb.model,
-            item: `${baseUrl}/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}.html`,
+            item: urls.model,
           },
           {
             "@type": "ListItem",
             position: 5,
             name: `${breadcrumb.type} ${vehicle.type_power_ps} ch`,
+            item: urls.type,
           },
         ],
       },

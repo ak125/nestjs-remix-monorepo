@@ -212,6 +212,13 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: low
+  # Audits SEO empiriques (Ahrefs, sitemap V10, etc.) — verdicts read-only,
+  # rangés à plat sous audit/ par convention historique (cf. PR #736).
+  - glob: audit/seo-*.md
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
   - glob: backend/src/auth/**
     domain: D11
     owner: '@ak125/auth-team'

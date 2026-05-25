@@ -21,7 +21,14 @@ export interface AiTokenUsage {
 
 export interface AiProviderOptions {
   temperature?: number;
-  maxTokens?: number;
+  /**
+   * Required output-token budget per call. Callers must declare an explicit
+   * budget — there is no implicit default. Anthropic bills reserved capacity,
+   * so a silent fallback would either truncate (too low) or over-bill (too
+   * high). DTO layer enforces a Zod `.default(500)` upstream, so internal
+   * callers always have a number to pass.
+   */
+  maxTokens: number;
   model?: string;
 }
 
@@ -131,9 +138,20 @@ export class AnthropicProvider implements AIProvider {
 
       const message = await this.client.messages.create({
         model,
-        max_tokens: options.maxTokens || 4096,
+        max_tokens: options.maxTokens,
         temperature: options.temperature ?? 0.7,
-        system: systemPrompt,
+        // Prompt cache on the system block: identical system prompts across
+        // calls (templates, anti-hallucination rules, advisor escalation 2nd
+        // pass) are billed at ~0.1× after the first hit. Min-size threshold
+        // applies (Sonnet 4 / Opus 4 = 1024 tokens) — below it, the API
+        // silently skips caching, no error.
+        system: [
+          {
+            type: 'text',
+            text: systemPrompt,
+            cache_control: { type: 'ephemeral' },
+          },
+        ],
         messages: [
           {
             role: 'user',
@@ -159,8 +177,15 @@ export class AnthropicProvider implements AIProvider {
         cacheCreation: message.usage.cache_creation_input_tokens ?? undefined,
       };
 
+      // hit-rate = cacheRead / (cacheRead + input). High = cache is doing its
+      // job. Low after warm-up = ttl expiry or system prompt changing each call.
+      const cachedInput = usage.cacheRead ?? 0;
+      const hitRate =
+        cachedInput + usage.input > 0
+          ? Math.round((cachedInput / (cachedInput + usage.input)) * 100)
+          : 0;
       this.logger.log(
-        `Generated ${content.length} chars (in=${usage.input} out=${usage.output} tokens)`,
+        `Generated ${content.length} chars (in=${usage.input} out=${usage.output} cacheR=${cachedInput} cacheC=${usage.cacheCreation ?? 0} hit=${hitRate}%)`,
       );
 
       return { content, usage };
