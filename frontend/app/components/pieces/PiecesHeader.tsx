@@ -5,6 +5,7 @@
  * ⚠️ URLS PRÉSERVÉES - Breadcrumb et navigation inchangés
  */
 
+import { enrichTypeNameForHeadings } from "@repo/seo-types";
 import { Car, Package, Shield, Truck } from "lucide-react";
 import React, { useState, memo } from "react";
 
@@ -48,6 +49,17 @@ export const PiecesHeader = memo(function PiecesHeader({
   // Utiliser le texte dynamique ou fallback
   const finalText = prixPasCherText || "au meilleur prix";
 
+  // R2 H1/title disambiguation : enrichir `typeName` avec `powerPs`/`fuel`
+  // quand le type_name est ambigu (ex. "2.0 HDi" partagé par 140/163 ch).
+  // No-op si non-ambigu → byte-identique à l'actuel. Cause empirique :
+  // audit/seo-h1-meta-empirical-verification-2026-05-26.md (3 H1 + 1 title
+  // EXACT duplicates sur 100 paires LIVE PROD).
+  const enrichedTypeLabel = enrichTypeNameForHeadings({
+    typeName: vehicle.typeName || vehicle.type,
+    powerPs: vehicle.typePowerPs?.toString(),
+    fuel: vehicle.typeFuel,
+  }).value;
+
   // Récupérer le gradient de la marque du véhicule
   const brandGradient = vehicle.marqueAlias
     ? brandColorsService.getBrandGradient(vehicle.marqueAlias)
@@ -89,8 +101,8 @@ export const PiecesHeader = memo(function PiecesHeader({
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black leading-tight mb-3 tracking-tight">
                   <span className="text-foreground from-white via-white to-white/90 drop-shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
                     {gamme.name} {vehicle.marque?.toUpperCase()}{" "}
-                    {vehicle.modele?.toUpperCase()}{" "}
-                    {vehicle.typeName || vehicle.type} {finalText}
+                    {vehicle.modele?.toUpperCase()} {enrichedTypeLabel}{" "}
+                    {finalText}
                   </span>
                 </h1>
               </header>

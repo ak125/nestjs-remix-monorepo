@@ -11,6 +11,7 @@ import {
   redirect,
   type LoaderFunctionArgs,
 } from "@remix-run/node";
+import { enrichTypeNameForHeadings } from "@repo/seo-types";
 import { type NoProductsData } from "~/components/pieces/NoProductsAlternatives";
 import { type FiltersData } from "~/components/pieces/PiecesFilterSidebar";
 import { fetchRmPageV2 } from "~/services/api/rm-api.service";
@@ -503,7 +504,16 @@ export async function piecesVehicleLoader({
         seo: {
           title:
             rmV2Response.seo?.title ||
-            `${gamme.name} ${vehicle.marque} ${vehicle.modele} ${vehicle.type} | Pièces Auto`,
+            // R2 title fallback : enrichir `type_name` ambigu avec
+            // `powerPs`/`fuel` (audit 2026-05-26, H1+title duplicates).
+            // No-op si non-ambigu → byte-identique à l'actuel.
+            `${gamme.name} ${vehicle.marque} ${vehicle.modele} ${
+              enrichTypeNameForHeadings({
+                typeName: vehicle.typeName || vehicle.type,
+                powerPs: vehicle.typePowerPs?.toString(),
+                fuel: vehicle.typeFuel,
+              }).value
+            } | Pièces Auto`,
           h1: rmV2Response.seo?.h1 || loaderData.seoContent.h1,
           description: stripHtmlForMeta(
             rmV2Response.seo?.description ||

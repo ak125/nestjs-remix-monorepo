@@ -9,8 +9,8 @@ import {
   SEO_PROPOSE_VARIATIONS,
   selectVariation,
 } from '../../../config/seo-variations.config';
+import { enrichTypeNameForHeadings } from '@repo/seo-types';
 import { composeVehicleAwareDescription } from './vehicle-aware-description.composer';
-import { enrichTypeNameForHeadings } from './vehicle-aware-label.composer';
 
 /**
  * 📝 Contexte SEO pour le remplacement des variables

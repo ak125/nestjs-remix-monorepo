@@ -2,7 +2,7 @@ import {
   enrichTypeNameForHeadings,
   isTypeNameAmbiguousForSeo,
   type VehicleLabelInput,
-} from '../vehicle-aware-label.composer';
+} from '@repo/seo-types';
 
 describe('vehicle-aware-label.composer', () => {
   describe('FIXTURES audit 2026-05-26 (audit/seo-h1-meta-empirical-verification-2026-05-26.md)', () => {
