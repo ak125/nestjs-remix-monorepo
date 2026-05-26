@@ -10,6 +10,7 @@ import {
   selectVariation,
 } from '../../../config/seo-variations.config';
 import { composeVehicleAwareDescription } from './vehicle-aware-description.composer';
+import { enrichTypeNameForHeadings } from './vehicle-aware-label.composer';
 
 /**
  * 📝 Contexte SEO pour le remplacement des variables
@@ -147,10 +148,24 @@ export class SeoTemplateService {
       }
 
       // 2. Traitement des templates
+      // Enrichissement conditionnel `type_name` pour H1 + title uniquement
+      // (audit empirique 2026-05-26 : 3 duplicates R2 H1 + 1 EXACT title dûs
+      // à `type_name` ambigu — ex. "2.0 HDi" partagé par 140 ch et 163 ch).
+      // `description` (composer PR #665), `content`, `preview` reçoivent le
+      // context ORIGINAL (zero impact hors H1/title).
+      const enrichedTypeName = enrichTypeNameForHeadings({
+        typeName: context.type_name,
+        powerPs: context.power_ps,
+        fuel: context.fuel,
+      });
+      const headingContext: SeoContext = enrichedTypeName.isEnriched
+        ? { ...context, type_name: enrichedTypeName.value }
+        : context;
+
       const processed: ProcessedSeo = {
         success: true,
-        h1: this.processTemplate(templates.h1, context),
-        title: this.processTemplate(templates.title, context),
+        h1: this.processTemplate(templates.h1, headingContext),
+        title: this.processTemplate(templates.title, headingContext),
         description: this.composeDescription(templates.description, context),
         content: this.processTemplate(templates.content, context),
         preview: this.processTemplate(templates.preview, context),
