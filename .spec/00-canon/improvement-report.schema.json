@@ -1,0 +1,417 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "improvement-report.schema.json",
+  "title": "Improvement Report v1 (canon ADR-082)",
+  "description": "Schema canonique pour tout improvement-report.json produit par un pipeline / PR / audit AutoMecanik. Conforme à la doctrine d'amélioration continue globale (ADR-082 vault). Cohérent avec enrichment-report.schema.json (même path .spec/00-canon/, même style $id court relatif). 9 verdicts canon v12 enforced via enum. Cf .claude/skills/continuous-improvement-global/SKILL.md pour la méthode opérationnelle.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "$schema",
+    "status",
+    "tested_entity",
+    "scope",
+    "axis",
+    "regression_risk",
+    "anti_complexity_check",
+    "owner_required",
+    "decision"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Référence au schema canonique. Doit pointer vers ce fichier (path relatif ou file:// absolu)."
+    },
+    "doctrine_version": {
+      "type": "string",
+      "pattern": "^v[0-9]+(\\.[0-9]+)?$",
+      "description": "Version de la doctrine appliquée (v15.2 actuelle, peut évoluer)."
+    },
+    "produced_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 datetime UTC de production du verdict."
+    },
+    "produced_by": {
+      "type": "string",
+      "description": "Identifiant de l'auteur (agent ou humain) — ex. 'claude-code', '@fafa'."
+    },
+    "tested_entity": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Slug ou identifiant unique du sujet testé (ex. 'filtre-a-air', 'PR-742', 'pipeline-commerce-loop')."
+    },
+    "tested_entity_type": {
+      "type": "string",
+      "enum": [
+        "wiki_proposal_gamme",
+        "wiki_proposal_vehicle",
+        "wiki_proposal_constructeur",
+        "pipeline",
+        "pr",
+        "audit",
+        "schema_migration",
+        "skill",
+        "code_change",
+        "doctrine",
+        "other"
+      ]
+    },
+    "tested_entity_path": {
+      "type": "string",
+      "description": "Path absolu vers l'entité testée (filesystem ou repo URL)."
+    },
+    "scope": {
+      "type": "string",
+      "enum": ["global", "local", "scoped"],
+      "description": "Étendue du test. 'global' = transverse système. 'local' = un seul bounded-context. 'scoped' = un domaine ciblé."
+    },
+    "axis": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "business",
+          "seo",
+          "ranking",
+          "content",
+          "conversion",
+          "code",
+          "architecture",
+          "performance",
+          "security",
+          "simplification",
+          "observability",
+          "governance"
+        ]
+      },
+      "description": "Axes d'amélioration impactés (≥1)."
+    },
+    "severity_level": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 3,
+      "description": "Niveau de gravité v7 — 1=Critique (cash/paiement/SEO indexation/sécu), 2=Important (conversion/perf/contenu/CI), 3=Faible (nettoyage/confort)."
+    },
+    "severity_label": {
+      "type": "string",
+      "enum": ["Critique", "Important", "Faible"]
+    },
+    "priority_v12": {
+      "type": "string",
+      "enum": ["P1", "P2", "P3", "P4", "P5", "P6"],
+      "description": "Hiérarchie v12. P1 Survie business > P2 SEO > P3 Conversion > P4 Stabilité > P5 Simplification > P6 Gouvernance."
+    },
+    "score_v12": {
+      "type": "string",
+      "enum": [
+        "HIGH_VALUE",
+        "MEDIUM_VALUE",
+        "LOW_VALUE",
+        "DANGEROUS_COMPLEXITY",
+        "OWNER_DECISION"
+      ],
+      "description": "Score d'amélioration v12 (impact + risque réduit + simplification + urgence + preuve - coût - complexité - risque casse)."
+    },
+    "budget_v7": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "max_iterations": { "type": "integer", "minimum": 1 },
+        "iterations_used": { "type": "integer", "minimum": 0 },
+        "max_time_minutes": { "type": "integer", "minimum": 1 },
+        "time_used_minutes": { "type": "integer", "minimum": 0 },
+        "risk_residual_threshold_pct": { "type": "number", "minimum": 0, "maximum": 100 },
+        "expected_gain": { "type": "string" }
+      }
+    },
+    "filter_6_questions_v12": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ameliore_vraiment",
+        "mesurable",
+        "prioritaire",
+        "plus_simple",
+        "sur",
+        "rapproche_objectif_business"
+      ],
+      "properties": {
+        "ameliore_vraiment": { "type": "boolean" },
+        "mesurable": { "type": "boolean" },
+        "prioritaire": { "type": "boolean" },
+        "plus_simple": { "type": "boolean" },
+        "sur": { "type": "boolean" },
+        "rapproche_objectif_business": { "type": "boolean" }
+      },
+      "description": "Filtre 6 questions canon v12 — SOFT SIGNAL, pas hard gate (clarification owner 2026-05-27 via review PR #765 finding C5). Les 6 questions classifient le risque et la valeur, elles ne bloquent pas mécaniquement. Une action peut continuer avec des NO si justification + score_v12 + safe_level + ratio coût/gain restent acceptables. Majorité de NO + score LOW_VALUE + SAFE_3 → STOP. NO isolé + score MEDIUM/HIGH + SAFE_1/2 → PARTIAL_READY ou CONTINUE_LIMITED. Voir SKILL.md procédure étape 6 (verdict) pour calibration."
+    },
+    "evidence_before": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Liens / paths / SQL / commandes prouvant l'état AVANT."
+    },
+    "change": {
+      "type": "string",
+      "description": "Description courte du changement (1-3 lignes)."
+    },
+    "evidence_after": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": { "type": "string" },
+      "description": "Preuves par check (tests/logs/frontend/backend/seo/etc — valeurs : passed | failed | partial | skipped | missing)."
+    },
+    "failure_map": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["fm_id", "gate", "severity", "root_cause", "action", "retest_required"],
+        "properties": {
+          "fm_id": { "type": "string", "pattern": "^FM-[0-9]+$" },
+          "gate": { "type": "string" },
+          "severity": { "type": "string", "enum": ["critical", "major", "minor"] },
+          "root_cause": { "type": "string" },
+          "action": { "type": "string" },
+          "retest_required": { "type": "boolean" },
+          "auto_fixable": { "type": "boolean" },
+          "fixed": { "type": "boolean" },
+          "owner_action_id": { "type": "string", "pattern": "^OWNER-[A-Z0-9-]+$" }
+        }
+      }
+    },
+    "regression_risk": {
+      "type": "string",
+      "enum": ["near-zero", "low", "medium", "high", "critical"]
+    },
+    "safe_level": {
+      "type": "string",
+      "enum": ["SAFE_0", "SAFE_1", "SAFE_2", "SAFE_3"],
+      "description": "SAFE = dimension du score d'amélioration, PAS une nouvelle couche. SAFE_0 aucun risque runtime / SAFE_1 risque faible réversible / SAFE_2 risque moyen preuve ciblée nécessaire / SAFE_3 risque critique owner decision si rollback/proof insuffisant. Une action est ralentie seulement si surface critique + risque>gain + rollback absent OU preuve non-régression insuffisante. Sinon SAFE reste signal léger non-bloquant."
+    },
+    "safe_rationale": {
+      "type": "string",
+      "description": "Justification courte du niveau SAFE choisi (≤ 200 chars idéalement). Référence rollback path si SAFE_2+."
+    },
+    "execution_mode": {
+      "type": "string",
+      "enum": ["CONCEPTUAL", "DIAGNOSTIC", "CONTINUE_LIMITED", "STABLE", "SCALE"],
+      "description": "v15.3 — mode d'exécution dérivé du status (sémantique anti-blocage). CONCEPTUAL (CONCEPTUEL) = discuter/préparer/cadrer. DIAGNOSTIC (DIAGNOSTIC_READY) = mesurer/auditer/produire preuves. CONTINUE_LIMITED (PARTIAL_READY ou FIX_AND_RETEST) = avancer en mode prudent (PR/pilot/manual gate/observation autorisés ; bloque seulement scale/ratchet/automatisation large). STABLE (OPERATIONAL_READY) = utiliser comme processus stable. SCALE (SCALE_READY) = automatiser/généraliser/ratchet/CI bloquant. PARTIAL_READY n'est PAS un stop."
+    },
+    "anti_complexity_check": {
+      "type": "string",
+      "enum": ["passed", "simplification_applied", "new_layer_justified", "failed"],
+      "description": "v10. passed = aucune complexité ajoutée. simplification_applied = simplification effective. new_layer_justified = nouvelle couche ajoutée avec justification 6 questions anti-complexité. failed = complexité ajoutée sans justification."
+    },
+    "non_regression_9_v10": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tests_passent",
+        "build_passe",
+        "comportement_existant_stable",
+        "routes_critiques_fonctionnelles",
+        "donnees_non_degradees",
+        "seo_non_regresse",
+        "pipelines_existants_compatibles",
+        "rollback_possible",
+        "verifie_sur_cas_reel"
+      ],
+      "properties": {
+        "tests_passent": { "type": "boolean" },
+        "build_passe": { "type": "boolean" },
+        "comportement_existant_stable": { "type": "boolean" },
+        "routes_critiques_fonctionnelles": { "type": "boolean" },
+        "donnees_non_degradees": { "type": "boolean" },
+        "seo_non_regresse": { "type": "boolean" },
+        "pipelines_existants_compatibles": { "type": "boolean" },
+        "rollback_possible": { "type": "boolean" },
+        "verifie_sur_cas_reel": { "type": "boolean" }
+      }
+    },
+    "proof_minimal_v7": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "test_passed",
+        "log_verified",
+        "real_output_controlled",
+        "representative_case_executed",
+        "regression_absent",
+        "verdict_written"
+      ],
+      "properties": {
+        "test_passed": { "type": "boolean" },
+        "log_verified": { "type": "boolean" },
+        "real_output_controlled": { "type": "boolean" },
+        "representative_case_executed": { "type": "boolean" },
+        "regression_absent": { "type": "boolean" },
+        "verdict_written": { "type": "boolean" },
+        "score": { "type": "string", "pattern": "^[0-6]/6$" }
+      },
+      "description": "Preuve minimale v7 — 6 éléments obligatoires pour revendiquer OPERATIONAL_READY. Sans 6/6 = max PARTIAL_READY."
+    },
+    "owner_required": {
+      "type": "boolean",
+      "description": "true si action destructive / financière / stratégique requise (merge risqué, rollback prod, suppression, migration destructive, bulk SEO, pricing, activation pipeline grande échelle)."
+    },
+    "owner_actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["owner_action_id", "action", "qui", "effort"],
+        "properties": {
+          "owner_action_id": { "type": "string", "pattern": "^OWNER-[A-Z0-9-]+$" },
+          "action": { "type": "string" },
+          "qui": { "type": "string" },
+          "couche_bloquee": { "type": "string" },
+          "source_canon": { "type": "string" },
+          "effort": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH"] },
+          "precondition": { "type": "string" }
+        }
+      }
+    },
+    "can_scale": {
+      "type": "boolean",
+      "description": "true SEULEMENT si status=OPERATIONAL_READY OU SCALE_READY et evidence complète. Anti-scale-prematuré canon v6/v12."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "PASS",
+        "FIX_AND_RETEST",
+        "PARTIAL_READY",
+        "OPERATIONAL_READY",
+        "SCALE_READY",
+        "BLOCKED_OWNER",
+        "STOP_LOW_VALUE",
+        "STOP_TOO_COMPLEX",
+        "ROLLBACK_REQUIRED"
+      ],
+      "description": "9 verdicts terminaux canon v12 (source autoritative unique). Sémantique d'exécution v15.3 (correction owner) : PARTIAL_READY ≠ stop — c'est CONTINUE_LIMITED (avancer en mode prudent : PR autorisée, pilot autorisé, audit autorisé, manual gate autorisé, observation autorisée). OPERATIONAL_READY = STABLE (utilisable comme processus stable). SCALE_READY = généraliser/automatiser/ratchet/CI bloquant. Un statut < OPERATIONAL_READY ne bloque PAS le travail — il bloque seulement scale/ratchet/automatisation large/mutations irréversibles."
+    },
+    "decision": {
+      "type": "string",
+      "enum": [
+        "PASS",
+        "FIX_AND_RETEST",
+        "PARTIAL_READY",
+        "OPERATIONAL_READY",
+        "SCALE_READY",
+        "BLOCKED_OWNER",
+        "STOP_LOW_VALUE",
+        "STOP_TOO_COMPLEX",
+        "ROLLBACK_REQUIRED"
+      ],
+      "description": "Identique à status (harmonisé v12) — un des 9 verdicts terminaux. Champ conservé pour rétro-compat avec spec v8 owner."
+    },
+    "next_action": {
+      "type": "string",
+      "description": "Prochaine action concrète, courte, actionnable. Pour PARTIAL_READY = owner action principale. Pour BLOCKED_OWNER = décision attendue."
+    },
+    "improvements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["type", "avant", "action", "apres"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["Corrective", "Préventive", "Observabilité", "Business", "Gouvernance"]
+          },
+          "effect": {
+            "type": "string",
+            "enum": [
+              "plus de fiabilité",
+              "plus de sécurité",
+              "plus de performance",
+              "plus de conversion",
+              "meilleur SEO",
+              "moins de dette technique",
+              "moins d'erreurs humaines",
+              "meilleure observabilité",
+              "meilleure maintenabilité",
+              "meilleur temps d'exécution",
+              "qualité de décision"
+            ]
+          },
+          "avant": { "type": "object" },
+          "action": { "type": "object" },
+          "apres": { "type": "object" }
+        }
+      },
+      "description": "5 types d'amélioration v9 (Corrective/Préventive/Observabilité/Business/Gouvernance) + 11 effets valides."
+    },
+    "doctrine_compliance": {
+      "type": "object",
+      "additionalProperties": { "type": "boolean" },
+      "description": "Compliance check par version doctrine appliquée."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "status": { "const": "OPERATIONAL_READY" } },
+        "required": ["status"]
+      },
+      "then": {
+        "required": ["non_regression_9_v10", "evidence_after", "proof_minimal_v7"],
+        "description": "OPERATIONAL_READY exige non-régression complète + preuve après + 6/6 preuves minimales (canon v7)."
+      }
+    },
+    {
+      "if": {
+        "properties": { "status": { "const": "SCALE_READY" } },
+        "required": ["status"]
+      },
+      "then": {
+        "required": ["non_regression_9_v10", "evidence_after", "proof_minimal_v7"],
+        "properties": { "can_scale": { "const": true } }
+      }
+    },
+    {
+      "if": {
+        "properties": { "status": { "const": "BLOCKED_OWNER" } },
+        "required": ["status"]
+      },
+      "then": {
+        "properties": { "owner_required": { "const": true } },
+        "required": ["owner_actions"]
+      }
+    },
+    {
+      "if": {
+        "properties": { "status": { "const": "PARTIAL_READY" } },
+        "required": ["status"]
+      },
+      "then": {
+        "required": ["next_action"]
+      }
+    },
+    {
+      "if": {
+        "properties": { "status": { "const": "STOP_LOW_VALUE" } },
+        "required": ["status"]
+      },
+      "then": {
+        "required": ["filter_6_questions_v12"],
+        "description": "STOP_LOW_VALUE exige justification business explicite via les 6 questions filtre."
+      }
+    },
+    {
+      "if": {
+        "properties": { "status": { "const": "ROLLBACK_REQUIRED" } },
+        "required": ["status"]
+      },
+      "then": {
+        "required": ["failure_map"]
+      }
+    }
+  ]
+}

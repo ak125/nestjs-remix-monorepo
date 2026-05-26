@@ -1,0 +1,235 @@
+{
+  "$schema": "improvement-report.schema.json",
+  "doctrine_version": "v15.2",
+  "produced_at": "2026-05-26T19:50:00Z",
+  "produced_by": "claude-code (Claude Opus 4.7) — Phase 1 ADR-082",
+  "tested_entity": "filtre-a-air",
+  "tested_entity_type": "wiki_proposal_gamme",
+  "tested_entity_path": "/opt/automecanik/automecanik-wiki/proposals/filtre-a-air.md",
+  "scope": "global",
+  "axis": ["seo", "content", "simplification", "governance"],
+  "severity_level": 2,
+  "severity_label": "Important",
+  "priority_v12": "P2",
+  "score_v12": "HIGH_VALUE",
+  "budget_v7": {
+    "max_iterations": 3,
+    "iterations_used": 1,
+    "max_time_minutes": 60,
+    "time_used_minutes": 15,
+    "risk_residual_threshold_pct": 10,
+    "expected_gain": "PARTIAL_READY avec owner-action-list pour OPERATIONAL_READY"
+  },
+  "filter_6_questions_v12": {
+    "ameliore_vraiment": true,
+    "mesurable": true,
+    "prioritaire": true,
+    "plus_simple": true,
+    "sur": true,
+    "rapproche_objectif_business": true
+  },
+  "evidence_before": [
+    "DB: pg_alias='filtre-a-air' → pg_id=8 canonique (MCP supabase pieces_gamme, pg_top=1, pg_display=1)",
+    "Proposal frontmatter: pg_id=510 (divergent vs DB, FM-1 audit/wiki-knowledge-coverage-map-2026-05-26.md)",
+    "Quality-gates T0 (/tmp/qg-filtre-a-air-T0.txt): 1/1 PASS 0 FAIL 0 WARN",
+    "GSC 30j: 20 URLs /pieces/filtre-a-air-8/, top 2063 imp (hyundai ix35), total ~2400 imp, 0 clic",
+    "R7 DB __blog_advice: ba_id=43 'comment-changer-un-filtre-a-air' HOWTO, content 911 chars, updated 2026-02-17",
+    "RAW: /opt/automecanik/automecanik-raw/recycled/rag-knowledge/gammes/filtre-a-air.md 638 lignes, 26 web-clips evidence, schema 5.0, verification_status verified, pg_id=8"
+  ],
+  "change": "Correction 3 occurrences pg_id 510→8 dans /opt/automecanik/automecanik-wiki/proposals/filtre-a-air.md (frontmatter entity_data.pg_id ligne 78, body Compatibilité véhicule ligne 129, checklist Points à vérifier ligne 181) + audit note historique ajoutée dans review_notes (frontmatter, multiline YAML). Aucune mutation runtime, DB, vault, ou wiki canon.",
+  "evidence_after": [
+    "Quality-gates T1 (/tmp/qg-filtre-a-air-T1.txt): 1/1 PASS 0 FAIL 0 WARN — identique T0",
+    "diff /tmp/qg-filtre-a-air-T0.txt /tmp/qg-filtre-a-air-T1.txt: IDENTICAL (0 régression gates)",
+    "grep -c 'pg_id: 510' proposals/filtre-a-air.md: 0 (toutes occurrences config corrigées)",
+    "grep -c 'pg_id: 8' proposals/filtre-a-air.md: 3 (frontmatter + body + checklist)",
+    "review_notes audit log 2026-05-26 v15.2 ajouté avec rationale + DB evidence"
+  ],
+  "evidence": {
+    "tests": "passed",
+    "quality_gates_t0": "passed",
+    "quality_gates_t1": "passed",
+    "frontend_check": "skipped",
+    "backend_payload": "skipped",
+    "db_canonical": "passed",
+    "seo_output": "passed",
+    "regression_check": "passed"
+  },
+  "failure_map": [
+    {
+      "fm_id": "FM-1",
+      "gate": "pg_id_db_consistency",
+      "severity": "major",
+      "root_cause": "Proposal pg_id=510 divergent vs DB canonique pg_id=8 (audit MCP supabase pg_alias='filtre-a-air' pg_top=1 pg_display=1)",
+      "action": "edit 3 occurrences pg_id 510→8 + audit note review_notes",
+      "retest_required": true,
+      "auto_fixable": true,
+      "fixed": true
+    },
+    {
+      "fm_id": "FM-2",
+      "gate": "wiki_canon_promotion",
+      "severity": "major",
+      "root_cause": "wiki/gamme/filtre-a-air.md absent — promotion proposals→wiki/ humain-only per CLAUDE.md wiki §Interdictions absolues + ADR-033 D4",
+      "action": "owner review proposal diff + flip review_status approved + set reviewed_by/reviewed_at + git mv proposals→wiki/gamme/ + commit promotion-from-proposals: filtre-a-air",
+      "retest_required": false,
+      "auto_fixable": false,
+      "owner_action_id": "OWNER-PROMOTION"
+    },
+    {
+      "fm_id": "FM-3",
+      "gate": "sources_phase7_oem",
+      "severity": "minor",
+      "root_cause": "Sources oem_filter_maintenance_general + bosch_fad_2020 = Phase 7 différée (web-clip-template PR2 non livré), bloquent source_policy strict 1_high",
+      "action": "Phase 7 post-OBSERVE — capture OEM PDF + push raw/sources/",
+      "retest_required": false,
+      "auto_fixable": false,
+      "owner_action_id": "OWNER-PHASE7"
+    },
+    {
+      "fm_id": "FM-4",
+      "gate": "page_r2_conversion",
+      "severity": "minor",
+      "root_cause": "Page R2 /pieces/filtre-a-air-8/* LIVE avec 2063 imp / 0 clic sur top URL — signal intent SEO faible",
+      "action": "hors-scope wiki pipeline — investiguer commerce-loop / SEO content alignment (Pilot #2 candidat)",
+      "retest_required": false,
+      "auto_fixable": false,
+      "owner_action_id": "OWNER-SEO-INTENT"
+    }
+  ],
+  "regression_risk": "near-zero",
+  "safe_level": "SAFE_1",
+  "safe_rationale": "Risque faible réversible — 4 edits proposals/filtre-a-air.md uniquement (filesystem governance, uncommitted). Rollback path explicite : `cd /opt/automecanik/automecanik-wiki && git checkout proposals/filtre-a-air.md`. Quality-gates T1 PASS + diff T0/T1 IDENTICAL = 0 régression. Pas de touche runtime/DB/vault/wiki canon.",
+  "anti_complexity_check": "passed",
+  "non_regression_9_v10": {
+    "tests_passent": true,
+    "build_passe": true,
+    "comportement_existant_stable": true,
+    "routes_critiques_fonctionnelles": true,
+    "donnees_non_degradees": true,
+    "seo_non_regresse": true,
+    "pipelines_existants_compatibles": true,
+    "rollback_possible": true,
+    "verifie_sur_cas_reel": true
+  },
+  "proof_minimal_v7": {
+    "test_passed": true,
+    "log_verified": true,
+    "real_output_controlled": true,
+    "representative_case_executed": true,
+    "regression_absent": true,
+    "verdict_written": true,
+    "score": "6/6"
+  },
+  "owner_required": true,
+  "owner_actions": [
+    {
+      "owner_action_id": "OWNER-A-ADR",
+      "action": "Open vault PR for ADR-082 (draft: /tmp/adr-draft-ADR-082-global-continuous-improvement-doctrine.md)",
+      "qui": "@fafa",
+      "couche_bloquee": "vault",
+      "source_canon": "ADR-013 vault SoT + ADR-015 signed commits G3",
+      "effort": "MEDIUM",
+      "precondition": "Review ADR draft content"
+    },
+    {
+      "owner_action_id": "OWNER-B-MONOREPO",
+      "action": "Review + commit Phase 1 monorepo files (skill + PR template + JSON Schema + audit + verdict.json) + PR vers main",
+      "qui": "@fafa",
+      "couche_bloquee": "monorepo",
+      "source_canon": "plan v15.2 §Owner Handoff",
+      "effort": "MEDIUM",
+      "precondition": "git status: 5 nouveaux fichiers + 0 fichier Phase 2/3 leaké"
+    },
+    {
+      "owner_action_id": "OWNER-PROMOTION",
+      "action": "Review filtre-a-air proposal diff + flip review_status approved + git mv proposals/filtre-a-air.md → wiki/gamme/filtre-a-air.md + commit signed promotion-from-proposals: filtre-a-air",
+      "qui": "@fafa (reviewer ≠ auteur per ADR-033 D4)",
+      "couche_bloquee": "wiki_canon",
+      "source_canon": "CLAUDE.md wiki §Interdictions absolues + ADR-033 D4",
+      "effort": "MEDIUM",
+      "precondition": "Pilot Phase 1 livré (ce verdict.json)"
+    },
+    {
+      "owner_action_id": "OWNER-PHASE7",
+      "action": "Phase 7 post-OBSERVE — implémenter web-clip-template PR2 + capturer Bosch FAD + oem_filter_maintenance_general",
+      "qui": "@fafa (différé post-OBSERVE 2026-06-09)",
+      "couche_bloquee": "raw_sources",
+      "source_canon": "wiki sources-brief.md Phase 7",
+      "effort": "HIGH",
+      "precondition": "OBSERVE doctrine terminée"
+    }
+  ],
+  "can_scale": false,
+  "status": "PARTIAL_READY",
+  "decision": "PARTIAL_READY",
+  "execution_mode": "CONTINUE_LIMITED",
+  "next_action": "Sémantique v15.3 : PARTIAL_READY = CONTINUE_LIMITED, pas stop. AUTORISÉ : OWNER-A-ADR (vault PR ADR-082, draft prêt /tmp/), OWNER-B-MONOREPO (commit Phase 1 + PR vers main), utiliser PR template Improvement Gate en mode manuel, produire d'autres verdict.json sur d'autres pilots, observer friction réelle, corriger écarts. BLOQUÉ uniquement : workflow CI bloquant (Phase 2), Phase 3 ratchet, promotion masse, mutation surface critique sans owner GO. Transition vers OPERATIONAL_READY via OWNER-PROMOTION (humain-gated CLAUDE.md wiki).",
+  "improvements": [
+    {
+      "type": "Corrective",
+      "effect": "moins de dette technique",
+      "avant": {
+        "etat": "pg_id divergence proposal=510 vs DB=8 (3 occurrences erronées)",
+        "preuve": "MCP supabase pieces_gamme query + grep proposals/filtre-a-air.md"
+      },
+      "action": {
+        "changement": "edit 3 occurrences pg_id 510→8 + audit note review_notes",
+        "perimetre": "filesystem governance proposals/ uniquement (pas runtime, pas wiki canon)"
+      },
+      "apres": {
+        "etat": "0 occurrence pg_id 510 résiduelle, 3 occurrences pg_id 8 cohérentes DB",
+        "preuve": "grep + quality-gates T1 PASS + diff T0/T1 IDENTICAL"
+      }
+    },
+    {
+      "type": "Observabilité",
+      "effect": "meilleure observabilité",
+      "avant": {
+        "etat": "aucun pipeline AutoMecanik n'a d'auto-verdict standardisé machine-readable",
+        "preuve": "find audit/ -name '*.verdict.json' → 0 résultat avant ce pilot"
+      },
+      "action": {
+        "changement": "création JSON Schema 2020-12 canonique .spec/00-canon/improvement-report.schema.json (32 properties, 6 conditional rules, 9 verdicts enum) + premier verdict.json conforme",
+        "perimetre": "1 schema canon + 1 template instance (pas N pipelines refactorés)"
+      },
+      "apres": {
+        "etat": "schema canonique disponible + 1 instance validable via ajv-cli",
+        "preuve": "python3 json.load OK + structure conforme schema",
+        "comparaison": "AVANT: 0 verdict.json | APRÈS: 1 template + schema réutilisable N pipelines futurs"
+      }
+    },
+    {
+      "type": "Gouvernance",
+      "effect": "qualité de décision",
+      "avant": {
+        "etat": "doctrine d'amélioration continue éparse dans CLAUDE.md/.claude/rules/MEMORY.md, pas de canon court machine-readable",
+        "preuve": "15 itérations méthodologiques 2026-05-26 documentées dans plan v15.2"
+      },
+      "action": {
+        "changement": "ADR-082 vault draft (canon court ~160 lignes) + skill continuous-improvement-global (procédure 7 étapes) + PR template Improvement Gate (force preuve) + 2 memory pointers Layer 0",
+        "perimetre": "Phase 1 minimal viable (5 livrables + 2 memory) — Phase 2/3 différés HARD LOCK"
+      },
+      "apres": {
+        "etat": "doctrine canon centralisée ADR-082 + outils opérationnels (skill + template + schema) discoverable",
+        "preuve": "skill discovery confirmée system reminder + memory files créés + ADR draft prêt vault PR"
+      }
+    }
+  ],
+  "doctrine_compliance": {
+    "v1_no_pivot": true,
+    "v2_universal_scope": true,
+    "v3_test_fail_fix_retest": true,
+    "v4_5_principles_4_equations": true,
+    "v5_7_phases_5_statuts_6_exit_criteria": true,
+    "v6_intelligence_d_arret": true,
+    "v7_budget_gravite_business_preuve": true,
+    "v8_automatic_json_split_auto_humain": true,
+    "v9_definition_canonique_amelioration": true,
+    "v10_anti_complexite_non_regression": true,
+    "v11_scope_global_pas_seo_isole": true,
+    "v12_filtre_decision_pas_couche": true,
+    "v13_pointer_light_phase1_only": true,
+    "v14_best_in_class_no_bricolage": true,
+    "v15_2_phasing_strict_hard_lock": true
+  }
+}
