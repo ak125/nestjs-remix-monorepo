@@ -1,9 +1,9 @@
 ---
 name: continuous-improvement-global
-description: Filtre d'amélioration continue globale AutoMecanik à appliquer dès qu'une PR, un pipeline, un audit, un script ou un code-change est envisagé. Produit la section `## Improvement Gate` dans la PR et un `improvement-report.json` validé contre `.spec/00-canon/improvement-report.schema.json` (JSON Schema 2020-12, 9 verdicts canon). Utiliser systématiquement avant tout merge, déploiement, refacto, ajout de couche ou validation owner — même si l'utilisateur ne dit pas explicitement "validate" ou "improve". Triggers — "review PR", "audit this change", "validate before merge", "should I add this", "this looks ready", "ready to ship", ou toute demande qui touche code/archi/DB/contenu/SEO/conversion/pipeline. Doctrine canon = ADR-082 vault (Global Continuous Improvement Doctrine).
+description: Use when validating any PR, pipeline, audit, script, code-change or owner-action for AutoMecanik continuous improvement compliance — produces a `## Improvement Gate` section in the PR and an `improvement-report.json` validated against `.spec/00-canon/improvement-report.schema.json` (JSON Schema 2020-12 Draft, 9 canon verdicts enum). Apply systematically before any merge, deploy, refactor, layer-addition, or owner validation — even when the user doesn't explicitly say "validate" or "improve". Triggers — "review PR", "audit this change", "validate before merge", "should I add this layer", "this looks ready", "ready to ship", "ouvrir une PR", or any request that touches code/archi/DB/contenu/SEO/conversion/pipeline. Doctrine canon = ADR-082 vault (Global Continuous Improvement Doctrine).
 type: technique
 status: stable
-owners: ['@fafa']
+owners: ['@ak125']
 domain: D15
 runtime_class: read-only
 llm_safe: true
@@ -143,4 +143,14 @@ Le contrôle SAFE est **inclus dans le score d'amélioration et dans le filtre 6
 
 Ce skill = procédure courte. ADR = loi. Schema = format machine. PR template = enforcement.
 
-**Phase 1 v15.2** : ce skill est livré seul (pas de `_scripts/` ni `references/`). Phase 2 ajoutera wrapper validation + checklist détaillée si l'usage prouve leur utilité.
+**Phase 1 v15.3+v15.4** : ce skill est livré seul (pas de `_scripts/` ni `references/`).
+
+**Phase 2 v15.4 — découpée en micro-ajouts prouvés (owner-gated, jamais en bloc)** :
+- **2A** : wrapper `validate-improvement-report.sh` (ajv-cli) — éligible si validation JSON Schema déjà répétée ≥2× manuellement
+- **2B** : `references/checklist.md` (lazy-load) — éligible si SKILL.md sature context budget
+- **2C** : GitHub Action `improvement-gate.yml` informationnel non-bloquant — éligible après ≥1 PR réelle utilisant Improvement Gate
+- **2D conditionnel** : vault policy séparée — éligible si ADR jugée insuffisante
+
+Phase 3 ratchet bloquant nécessite 5 critères cumulatifs (≥3-5 PRs + <10 min friction + 0 false blocker + ≥1 vraie erreur captée + owner GO).
+
+**Phrase canon v15.4** : *« Deux pilots suffisent pour confirmer que la doctrine est non biaisée. Mais ils ne suffisent pas pour rendre le gate bloquant. On peut continuer à l'utiliser. On ne doit pas encore l'imposer. »*
