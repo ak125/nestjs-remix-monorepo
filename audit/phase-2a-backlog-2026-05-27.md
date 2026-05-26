@@ -45,7 +45,7 @@ C'est-à-dire : la rhétorique de la doctrine ("preuve obligatoire", "no documen
 
 Pour activer 1 item de la queue :
 
-1. **Preuve d'usage** : ≥1 cas réel où l'absence de la règle a permis un verdict.json incoherent en pratique (pas en théorie)
+1. **Preuve d'usage falsifiable** (révisée 2026-05-27, review PR #765 finding NEW-S2) : ≥1 verdict.json MERGED en production avec l'incohérence ciblée caught par review ou ajv post-hoc (link PR + commit SHA requis), OU ≥1 owner-flagged drift sur un verdict.json existant (link issue/comment requis). Les 8 findings silent-failure-hunter du 2026-05-26 sont théoriques (ajv-cli sur artefacts synthétiques) — ils ne comptent PAS comme "preuve d'usage" — c'est exactement le sens "pas en théorie".
 2. **Test local** : ajv-cli valide schema modifié + tous verdict.json existants restent valid
 3. **Anti-régression** : 0 verdict.json historique cassé par la nouvelle règle (sinon → migration plan séparé)
 4. **Owner GO explicite** : pas auto-activation, pas batch — un item à la fois

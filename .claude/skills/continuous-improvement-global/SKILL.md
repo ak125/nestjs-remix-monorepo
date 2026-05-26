@@ -126,7 +126,7 @@ Le contrôle SAFE est **inclus dans le score d'amélioration et dans le filtre 6
 
 **Règle canon :** *« SAFE n'est pas un frein. SAFE est le calcul intelligent du risque dans le score d'amélioration. »*
 
-## Filtre 6 questions : soft signal, pas hard gate (clarification v15.5 — owner decision 2026-05-27, review PR #765 finding C5)
+## Filtre 6 questions : soft signal, pas hard gate (clarification v15.4 — owner decision 2026-05-27, review PR #765 finding C5)
 
 > *« Les 6 questions filtre ne sont pas un blocage mécanique. Elles servent à classifier le risque et la valeur. Une action peut continuer avec des NO si la justification, le score, le SAFE level et le coût/gain restent acceptables. »*
 
@@ -139,7 +139,7 @@ Calibration :
 | 2-3/6 OUI + score LOW + SAFE_2/3 | challenge fort, justification owner ou défer |
 | 0-1/6 OUI ou score DANGEROUS_COMPLEXITY ou SAFE_3 sans preuve | STOP_LOW_VALUE / STOP_TOO_COMPLEX / BLOCKED_OWNER |
 
-Le filtre n'est jamais un blocage automatique d'un seul NON. Il informe le verdict (étape 6 de la procédure), il ne le décide pas seul. Cf application empirique Pilot #2 (2 NOs `prioritaire`+`rapproche_business` mais score MEDIUM + SAFE_1 → PARTIAL_READY justifié).
+Le filtre n'est jamais un blocage automatique d'un seul NON. Il informe le verdict (étape 6 de la procédure), il ne le décide pas seul. Cf application empirique Pilot #2 (2 NOs `prioritaire`+`rapproche_business` mais score MEDIUM + SAFE_2 → PARTIAL_READY justifié — SAFE level post-correction finding C4, recovery via replay/backup, pas git rollback).
 
 ## Anti-patterns à bloquer
 
@@ -168,4 +168,4 @@ Ce skill = procédure courte. ADR = loi. Schema = format machine. PR template = 
 
 Phase 3 ratchet bloquant nécessite 5 critères cumulatifs (≥3-5 PRs + <10 min friction + 0 false blocker + ≥1 vraie erreur captée + owner GO).
 
-**Phrase canon v15.4** : *« Deux pilots suffisent pour confirmer que la doctrine est non biaisée. Mais ils ne suffisent pas pour rendre le gate bloquant. On peut continuer à l'utiliser. On ne doit pas encore l'imposer. »*
+**Phrase canon v15.4 (révisée 2026-05-27, review PR #765 finding I6+NEW-I3)** : *« Deux pilots ont survécu sans casser la doctrine. Cela ne prouve pas l'absence de biais (N=2 ≠ preuve statistique — promotion vers `DOCTRINE_NON_BIASED_CONFIRMED` requiert N≥5 cross-domain + tests falsification définis, cf `audit/doctrine-v15-3-cross-validation-2026-05-26.md`). Mais c'est suffisant pour continuer à l'utiliser ; pas suffisant pour rendre le gate bloquant. »*
