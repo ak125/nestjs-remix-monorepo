@@ -1,5 +1,8 @@
 /**
- * 🚗 Vehicle-aware label composer for R2 SEO headings (H1 + meta_title)
+ * 🚗 Vehicle-aware label helper for R2 SEO headings (H1 + meta_title)
+ *
+ * Shared between backend (`seo-template.service.ts:processTemplates`) and
+ * frontend (`PiecesHeader.tsx`, `pieces-vehicle.loader.server.ts`).
  *
  * Enrichit conditionnellement `type_name` avec `power_ps` (et `fuel` si non
  * implicite) quand `type_name` est ambigu — deux `type_ids` peuvent partager
@@ -10,17 +13,20 @@
  * duplicates R2 H1 + 1 duplicate R2 title (1 EXACT lev=0) sur 100 paires
  * intra-gamme.
  *
- * Strategy : enrichissement appliqué AVANT `processTemplate(templates.h1/title)`
- * dans `seo-template.service.ts`. Les templates DB `__seo_gamme_car` (SGC_H1,
- * SGC_TITLE) restent intacts ; `composeVehicleAwareDescription` (PR #665) reste
- * intact ; switches `__seo_item_switch` / `__seo_gamme_car_switch` préservés.
+ * GATE 1 doctrine — empirical implementation path proven 2026-05-26 :
+ * - Backend `seo-template.service.ts` couvre <title> HEAD pour les ~118
+ *   pg_ids avec template DB existant (~1.2% du catalogue), via Redis cache
+ *   `seo:processed:{pg_id}:{type_id}:{modifier}` TTL 24h.
+ * - Frontend `PiecesHeader.tsx` couvre le `<h1>` visible utilisateur + le
+ *   `<title>` HEAD pour les pg_ids sans template DB (fallback dans
+ *   `pieces-vehicle.loader.server.ts`).
  *
  * Invariants critiques :
  * - **Idempotent** : si `type_name` contient déjà `${powerPs} ch`, no-op.
  * - **Normalisation `powerPs`** : `"140 ch"` accepté en input → strip suffixe
  *   → pas de `"140 ch ch"`.
- * - **Conditionnel strict** : si `isAmbiguous === false` → no-op exact
- *   (référence identique au context), zero régression sur 97% des paires.
+ * - **Conditionnel strict** : si `isAmbiguous === false` → no-op exact, zero
+ *   régression sur 97% des paires non-ambiguës.
  * - **Fallback safe** : si `power_ps` absent, type_name vide, ou pattern
  *   non-match → no-op.
  */
@@ -58,21 +64,21 @@ const FUEL_IMPLICIT_PATTERN =
   /\b(HDI|HDi|TDI|TDi|DCI|dCi|CDI|JTD|TDCI|CRDI|D)\b/i;
 
 function normalizePowerPs(powerPs?: string): string {
-  return (powerPs ?? '').replace(/\s*ch\s*$/i, '').trim();
+  return (powerPs ?? "").replace(/\s*ch\s*$/i, "").trim();
 }
 
 function alreadyContainsPower(typeName: string, powerPs?: string): boolean {
   const power = normalizePowerPs(powerPs);
   if (!power) return false;
-  const escaped = power.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return new RegExp(`\\b${escaped}\\s*ch\\b`, 'i').test(typeName);
+  const escaped = power.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`\\b${escaped}\\s*ch\\b`, "i").test(typeName);
 }
 
 export function isTypeNameAmbiguousForSeo(
   typeName?: string,
   powerPs?: string,
 ): boolean {
-  const baseName = (typeName ?? '').trim();
+  const baseName = (typeName ?? "").trim();
   const power = normalizePowerPs(powerPs);
   if (!baseName || !power) return false;
   if (alreadyContainsPower(baseName, power)) return false;
@@ -82,7 +88,7 @@ export function isTypeNameAmbiguousForSeo(
 export function enrichTypeNameForHeadings(
   input: VehicleLabelInput,
 ): EnrichedTypeName {
-  const baseName = (input.typeName ?? '').trim();
+  const baseName = (input.typeName ?? "").trim();
   const power = normalizePowerPs(input.powerPs);
 
   if (!isTypeNameAmbiguousForSeo(baseName, power)) {
@@ -90,11 +96,11 @@ export function enrichTypeNameForHeadings(
   }
 
   const fuelImplicit = FUEL_IMPLICIT_PATTERN.test(baseName);
-  const fuel = (input.fuel ?? '').trim();
+  const fuel = (input.fuel ?? "").trim();
   const suffix = !fuelImplicit && fuel ? `${fuel} ${power} ch` : `${power} ch`;
 
   return {
-    value: `${baseName} ${suffix}`.replace(/\s+/g, ' ').trim(),
+    value: `${baseName} ${suffix}`.replace(/\s+/g, " ").trim(),
     isEnriched: true,
   };
 }
