@@ -235,6 +235,7 @@ export function PiecesVehicleContent() {
           gamme={data.gamme}
           count={data.count}
           performance={data.performance}
+          compSwitch2={data.seo?.compSwitch2}
         />
       </div>
 
