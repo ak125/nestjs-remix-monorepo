@@ -27,11 +27,15 @@ export interface ContextKeys {
  * Strip trailing punctuation + collapse whitespace. Defensive vs DB content
  * quirks (legacy `sgcs_content` parfois avec ponctuation finale ou double
  * espaces). Backend `loadCompSwitches` décode déjà HTML entities.
+ *
+ * Bounded quantifiers `{1,N}` pour éviter ReDoS (js/polynomial-redos) — les
+ * inputs réels (DB `sgcs_content`) sont bornés à ~100 chars practically,
+ * 50 espaces/dots max couvre tous les cas avec marge.
  */
 function normalizeSuffix(s: string): string {
   return s
-    .replace(/\s+/g, " ")
-    .replace(/[.。]+$/g, "")
+    .replace(/\s{1,50}/g, " ")
+    .replace(/[.。]{1,10}$/g, "")
     .trim();
 }
 
