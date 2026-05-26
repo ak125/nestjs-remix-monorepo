@@ -1,9 +1,13 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, afterEach } from "vitest";
+import { render, cleanup } from "@testing-library/react";
 import {
   buildR8CanonicalUrls,
   generateVehicleSchema,
 } from "~/components/vehicle/r8/r8-schema";
-import  { type LoaderData, type VehicleData } from "~/components/vehicle/r8/r8.types";
+import { BreadcrumbSection } from "~/components/vehicle/r8/sections/BreadcrumbSection";
+import { type LoaderData, type VehicleData } from "~/components/vehicle/r8/r8.types";
+
+afterEach(() => cleanup());
 
 // Fixture = Renault Safrane I 2.1 TD (URL réelle remontée par GSC le 2026-05-23)
 const vehicleFixture: VehicleData = {
@@ -105,5 +109,41 @@ describe("generateVehicleSchema — BreadcrumbList", () => {
     expect(items[2].startsWith(items[1])).toBe(true);
     expect(items[3].startsWith(items[2].replace(/\.html$/, ""))).toBe(true);
     expect(items[4].startsWith(items[3].replace(/\.html$/, ""))).toBe(true);
+  });
+});
+
+describe("BreadcrumbSection — structural guard (single SoT, JSON-LD only)", () => {
+  it("le DOM ne contient AUCUN attribut microdata Schema.org (BreadcrumbList = JSON-LD only)", () => {
+    const { container } = render(
+      <BreadcrumbSection
+        vehicle={vehicleFixture}
+        breadcrumb={breadcrumbFixture}
+      />,
+    );
+
+    // Garde anti-régression : interdit le retour de la dual-surface qui a causé
+    // les incidents GSC 2026-05-23 et 2026-05-26 (PR #729 + alert suivante).
+    // Le BreadcrumbList structuré est émis EXCLUSIVEMENT via JSON-LD
+    // (generateVehicleSchema → Remix meta script:ld+json).
+    expect(container.querySelectorAll("[itemscope]")).toHaveLength(0);
+    expect(container.querySelectorAll("[itemtype]")).toHaveLength(0);
+    expect(container.querySelectorAll("[itemprop]")).toHaveLength(0);
+  });
+
+  it("le rendu visuel reste intact : 5 niveaux navigables, page courante mise en évidence", () => {
+    const { container, getByText } = render(
+      <BreadcrumbSection
+        vehicle={vehicleFixture}
+        breadcrumb={breadcrumbFixture}
+      />,
+    );
+
+    // 4 liens cliquables (Accueil, Constructeurs, Renault, Safrane I) + 1 page courante non-clickable
+    expect(container.querySelectorAll("a")).toHaveLength(4);
+
+    // Page courante = type, non clickable, en gras
+    const current = getByText(/2\.1 TD\s*88\s*ch/);
+    expect(current.closest("a")).toBeNull();
+    expect(current.className).toContain("font-semibold");
   });
 });
