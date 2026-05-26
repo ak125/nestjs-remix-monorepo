@@ -126,6 +126,21 @@ Le contrôle SAFE est **inclus dans le score d'amélioration et dans le filtre 6
 
 **Règle canon :** *« SAFE n'est pas un frein. SAFE est le calcul intelligent du risque dans le score d'amélioration. »*
 
+## Filtre 6 questions : soft signal, pas hard gate (clarification v15.5 — owner decision 2026-05-27, review PR #765 finding C5)
+
+> *« Les 6 questions filtre ne sont pas un blocage mécanique. Elles servent à classifier le risque et la valeur. Une action peut continuer avec des NO si la justification, le score, le SAFE level et le coût/gain restent acceptables. »*
+
+Calibration :
+
+| Pattern | Décision |
+|---|---|
+| 6/6 OUI + score HIGH_VALUE + SAFE_0/1 | go vert clair, PASS ou OPERATIONAL_READY si preuves |
+| 4-5/6 OUI + score MEDIUM/HIGH + SAFE_1/2 | go prudent, PARTIAL_READY / CONTINUE_LIMITED |
+| 2-3/6 OUI + score LOW + SAFE_2/3 | challenge fort, justification owner ou défer |
+| 0-1/6 OUI ou score DANGEROUS_COMPLEXITY ou SAFE_3 sans preuve | STOP_LOW_VALUE / STOP_TOO_COMPLEX / BLOCKED_OWNER |
+
+Le filtre n'est jamais un blocage automatique d'un seul NON. Il informe le verdict (étape 6 de la procédure), il ne le décide pas seul. Cf application empirique Pilot #2 (2 NOs `prioritaire`+`rapproche_business` mais score MEDIUM + SAFE_1 → PARTIAL_READY justifié).
+
 ## Anti-patterns à bloquer
 
 - **Pivot pour éviter un blocker** — si filtre-a-air échoue, ne pas dire "essayons capteur-abs"

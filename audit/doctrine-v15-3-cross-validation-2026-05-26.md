@@ -2,8 +2,8 @@
 
 > **Anti-bias check Task A6 ADR-082** — vérifier que la doctrine d'amélioration continue globale n'est pas biaisée par filtre-a-air en l'appliquant à un sujet radicalement différent.
 
-**Date** : 2026-05-26
-**Verdict cross-validation** : `DOCTRINE_NON_BIAISÉE` — doctrine ADR-082 s'applique sans modification sur les 2 pilots, verdicts identiques `PARTIAL_READY / CONTINUE_LIMITED`, sémantique 9 verdicts + filtre 6 questions + SAFE intégré + hiérarchie P1-P6 utilisée sur les 2 cas.
+**Date** : 2026-05-26 (label downgraded 2026-05-27)
+**Verdict cross-validation** : `DOCTRINE_SURVIVED_2_PILOTS` (downgrade owner-decision 2026-05-27, review PR #765 finding I6 : `DOCTRINE_NON_BIAISÉE` était trop fort à N=2 dont 1 pilot avec rollback claim corrigé via finding C4) — doctrine ADR-082 s'applique sans modification sur les 2 pilots, verdicts identiques `PARTIAL_READY / CONTINUE_LIMITED`, sémantique 9 verdicts + filtre 6 questions (soft signal cf C5) + SAFE intégré + hiérarchie P1-P6 utilisée sur les 2 cas. **Limite explicite** : N=2 ne constitue PAS preuve statistique d'absence de biais — c'est la preuve que la doctrine n'a pas cassé sur 2 domaines différents. Promotion vers `DOCTRINE_NON_BIASED_CONFIRMED` nécessiterait N ≥ 5 pilots cross-domain + tests de falsification définis.
 
 ---
 
@@ -88,7 +88,7 @@ Pilot #1 et Pilot #2 ont DES différences — c'est sain :
 
 Ces différences sont **causées par le sujet, pas par la doctrine**. La doctrine fournit les axes pour exprimer ces différences sans les forcer.
 
-## Conclusion : DOCTRINE_NON_BIAISÉE
+## Conclusion : DOCTRINE_SURVIVED_2_PILOTS (downgrade 2026-05-27)
 
 La doctrine ADR-082 (Phase 1 v15.3) a passé l'anti-bias check :
 
@@ -98,7 +98,7 @@ La doctrine ADR-082 (Phase 1 v15.3) a passé l'anti-bias check :
 4. ✅ Doctrine v15.3 (PARTIAL_READY = CONTINUE_LIMITED) cohérente sur 2 verdicts identiques
 5. ✅ Différences entre pilots = causées par les sujets, pas par défaut doctrine
 
-**Décision Phase 2 — owner-gated** : critères Phase 2 v15.2 §File Structure remplis (Pilot #1 + #2 PASS/PARTIAL_READY + cross-validation = DOCTRINE_NON_BIAISÉE). Owner peut décider d'activer Phase 2 (wrapper validate-improvement-report.sh + references/checklist.md + workflow improvement-gate.yml informationnel). Phase 3 ratchet bloquant reste différée (5 critères cumulatifs : ≥3-5 PRs réelles + <10 min friction + 0 false blocker + ≥1 vraie erreur captée + owner GO explicite).
+**Décision Phase 2 — owner-gated** : critères Phase 2 v15.2 §File Structure remplis (Pilot #1 + #2 PASS/PARTIAL_READY + cross-validation = DOCTRINE_SURVIVED_2_PILOTS). Owner Phase 2A eligibility = CONFIRMED via review PR #765 (8 schema gaps validés empiriquement), mais activation = OWNER-GATED — pas auto-activation. Backlog Phase 2A documenté dans `audit/phase-2a-backlog-2026-05-27.md` (8 items schema hardening). Phase 3 ratchet bloquant reste différée (5 critères cumulatifs : ≥3-5 PRs réelles + <10 min friction + 0 false blocker + ≥1 vraie erreur captée + owner GO explicite).
 
 ---
 

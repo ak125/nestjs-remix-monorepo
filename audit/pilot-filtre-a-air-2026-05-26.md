@@ -2,7 +2,8 @@
 
 > **Phase 1 ADR-082 — Première application empirique de la doctrine d'amélioration continue globale et anti-complexité.**
 > Application des doctrines [[feedback_no_proof_no_pipeline_doctrine]] (8 éléments contrat) et [[feedback_pilot_fix_loop_not_documentation]] (filtre opérationnel v15.2).
-> OBSERVE doctrine active jusqu'au 2026-06-08 — dérogation owner-autorisée par 15 directives (plan `utiliser-superpower-un-compiled-wilkinson.md` v15.2).
+>
+> **OBSERVE compatibility (clarification owner 2026-05-27, review PR #765 finding C6) :** ce Pilot #1 est strictement limité à (a) correction cohérence `pg_id` (proposal frontmatter 510→8 + 2 occurrences body/checklist), (b) production verdict governance (improvement-report.json conforme JSON Schema canon), et (c) validation du mécanisme Improvement Gate sur cas réel. **Il ne constitue PAS** : une promotion wiki (proposals/→wiki/gamme/ reste humain-only per CLAUDE.md wiki §Interdictions absolues), un enrichissement coverage content, ni une mutation canon de contenu. Le scope respecte donc le HARD LOCK OBSERVE canon ([[feedback_audit_2026-05-25_observe_dont_build]]) qui interdit l'enrichissement wiki coverage filtre-a-air pre-2026-06-08. Cohérent avec le statut `PARTIAL_READY / CONTINUE_LIMITED` (governance/schema fix, pas content scale).
 
 **Pipeline :** automecanik-content-pipeline (RAW → wiki proposal → wiki canon → page R2 + R7 conseils)
 **Fixture testée :** filtre-a-air (pg_id canonique = **8**, résolu via MCP supabase)

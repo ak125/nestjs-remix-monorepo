@@ -145,7 +145,7 @@
         "sur": { "type": "boolean" },
         "rapproche_objectif_business": { "type": "boolean" }
       },
-      "description": "Filtre 6 questions canon v12 — si une réponse NON, on ne fait pas (cf SKILL.md)."
+      "description": "Filtre 6 questions canon v12 — SOFT SIGNAL, pas hard gate (clarification owner 2026-05-27 via review PR #765 finding C5). Les 6 questions classifient le risque et la valeur, elles ne bloquent pas mécaniquement. Une action peut continuer avec des NO si justification + score_v12 + safe_level + ratio coût/gain restent acceptables. Majorité de NO + score LOW_VALUE + SAFE_3 → STOP. NO isolé + score MEDIUM/HIGH + SAFE_1/2 → PARTIAL_READY ou CONTINUE_LIMITED. Voir SKILL.md procédure étape 6 (verdict) pour calibration."
     },
     "evidence_before": {
       "type": "array",
