@@ -77,8 +77,8 @@
     }
   ],
   "regression_risk": "near-zero",
-  "safe_level": "SAFE_1",
-  "safe_rationale": "SAFE_1 risque faible réversible — 16 edits descriptions MEMORY.md (memory privée), 0 entrée supprimée, 0 slug modifié, 0 canon date supprimée. Rollback path explicite : `cd /home/deploy/.claude/projects/-opt-automecanik-app/memory && git checkout MEMORY.md` (uncommitted). Pas de touche runtime/DB/vault/wiki.",
+  "safe_level": "SAFE_2",
+  "safe_rationale": "SAFE_2 (corrigé v15.4 review auto, finding C4 silent-failure-hunter) — 16 edits descriptions MEMORY.md (memory privée Claude Code). 0 entrée supprimée, 0 slug modifié, 0 canon date supprimée. ATTENTION : /home/deploy/.claude/projects/-opt-automecanik-app/memory/ n'EST PAS un git working tree (vérifié empiriquement : 'fatal: not a git repository'). Donc PAS de `git checkout` rollback automatique. Recovery réel = (a) replay inverse manuel via historique conversation, OU (b) restore backup système si configuré. Changements sémantique-only + lossless par design (préservation slug+canon date+concept clé) → rollback de facto non-nécessaire. Pas de touche runtime/DB/vault/wiki canon.",
   "anti_complexity_check": "simplification_applied",
   "non_regression_9_v10": {
     "tests_passent": true,
