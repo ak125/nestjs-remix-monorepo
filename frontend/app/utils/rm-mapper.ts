@@ -174,6 +174,7 @@ function mapSeoInfo(rmV2: RmPageV2Response): SEOInfo {
     title: seo.title || "",
     h1: seo.h1 || "",
     description: seo.description || "",
+    compSwitch2: seo.compSwitch2 ?? [],
   };
 }
 

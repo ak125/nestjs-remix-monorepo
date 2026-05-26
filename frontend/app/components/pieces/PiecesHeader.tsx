@@ -5,7 +5,11 @@
  * ⚠️ URLS PRÉSERVÉES - Breadcrumb et navigation inchangés
  */
 
-import { enrichTypeNameForHeadings } from "@repo/seo-types";
+import {
+  enrichTypeNameForHeadings,
+  pickH1Suffix,
+  SEO_PRICE_VARIATIONS,
+} from "@repo/seo-types";
 import { Car, Package, Shield, Truck } from "lucide-react";
 import React, { useState, memo } from "react";
 
@@ -22,7 +26,12 @@ interface PiecesHeaderProps {
   gamme: GammeData;
   count: number;
   minPrice?: number;
-  prixPasCherText?: string; // Texte dynamique "pas cher"
+  prixPasCherText?: string; // Texte dynamique "pas cher" (legacy override)
+  /** Per-pg_id technique variations (__seo_gamme_car_switch.sgcs_alias=2) :
+   * pool de suffixes H1 gamme-specific (ex. "synchroniser les soupapes" pour
+   * pg_id=307 kit-distribution). Rotation déterministe par (typeId+pgId)
+   * via @repo/seo-types pickH1Suffix. Vide → fallback SEO_PRICE_VARIATIONS. */
+  compSwitch2?: readonly string[];
   performance?: PerformanceInfo;
 }
 
@@ -36,18 +45,22 @@ export const PiecesHeader = memo(function PiecesHeader({
   count,
   minPrice,
   prixPasCherText,
+  compSwitch2,
   performance,
 }: PiecesHeaderProps) {
   const [imageError, setImageError] = useState(false);
 
-  // Formater le prix et le texte "pas cher"
-  const _priceText =
-    minPrice && minPrice > 0
-      ? `à partir de ${minPrice.toFixed(2)} €`
-      : "au meilleur prix";
-
-  // Utiliser le texte dynamique ou fallback
-  const finalText = prixPasCherText || "au meilleur prix";
+  // Suffix H1 R2 rotation : compSwitch2 per-gamme primary (pattern legacy PHP
+  // #CompSwitch_2#), fallback SEO_PRICE_VARIATIONS 7 variantes prix, fallback
+  // ultime literal "au meilleur prix" (compatibilité legacy prixPasCherText).
+  // Cause : audit 2026-05-26 montre `au meilleur prix` figé 4/4 fixtures car
+  // prop n'était jamais passée. Restauration pattern legacy via #763 follow-up.
+  const finalText = pickH1Suffix({
+    compSwitch2,
+    priceVariations: SEO_PRICE_VARIATIONS,
+    ctx: { typeId: vehicle.typeId, pgId: gamme.id },
+    literalFallback: prixPasCherText ?? "au meilleur prix",
+  });
 
   // R2 H1/title disambiguation : enrichir `typeName` avec `powerPs`/`fuel`
   // quand le type_name est ambigu (ex. "2.0 HDi" partagé par 140/163 ch).

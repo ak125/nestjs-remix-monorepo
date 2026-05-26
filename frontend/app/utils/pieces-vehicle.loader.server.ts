@@ -519,6 +519,10 @@ export async function piecesVehicleLoader({
             rmV2Response.seo?.description ||
               loaderData.seoContent.longDescription,
           ),
+          // Per-pg_id technique variations (sgcs_alias=2) pour rotation H1
+          // suffix côté PiecesHeader (audit 2026-05-26 : "au meilleur prix"
+          // figé partout, restaurer le pattern legacy PHP #CompSwitch_2#).
+          compSwitch2: rmV2Response.seo?.compSwitch2 ?? [],
         },
         performance: {
           loadTime,
