@@ -46,8 +46,7 @@ export interface EnrichedTypeName {
  *   - "1.4 HDI 16V" (3 parties) — pattern accepte 1 abbrev max
  *   - "GTI", "Dynamique Cuir", "Hybrid Touring" — pas de displacement initial
  */
-const AMBIGUOUS_TYPE_NAME_PATTERN =
-  /^\d+([.,]\d+)?(\s+[A-Za-z0-9]{1,5})?$/i;
+const AMBIGUOUS_TYPE_NAME_PATTERN = /^\d+([.,]\d+)?(\s+[A-Za-z0-9]{1,5})?$/i;
 
 /**
  * Carburants implicites dans les abréviations communes (Ford TDCI, Hyundai/Kia

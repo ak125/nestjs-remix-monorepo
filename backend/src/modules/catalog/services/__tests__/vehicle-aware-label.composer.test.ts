@@ -146,7 +146,10 @@ describe('vehicle-aware-label.composer', () => {
         enrichTypeNameForHeadings({ typeName: 'GTI', powerPs: '180' }),
       ).toEqual({ value: 'GTI', isEnriched: false });
       expect(
-        enrichTypeNameForHeadings({ typeName: 'Hybrid Touring', powerPs: '180' }),
+        enrichTypeNameForHeadings({
+          typeName: 'Hybrid Touring',
+          powerPs: '180',
+        }),
       ).toEqual({ value: 'Hybrid Touring', isEnriched: false });
       expect(
         enrichTypeNameForHeadings({ typeName: '4x4 Limited', powerPs: '180' }),
