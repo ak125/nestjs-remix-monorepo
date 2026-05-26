@@ -63,15 +63,19 @@ const AMBIGUOUS_TYPE_NAME_PATTERN = /^\d+([.,]\d+)?(\s+[A-Za-z0-9]{1,5})?$/i;
 const FUEL_IMPLICIT_PATTERN =
   /\b(HDI|HDi|TDI|TDi|DCI|dCi|CDI|JTD|TDCI|CRDI|D)\b/i;
 
+// Quantifiers bornés pour éviter ReDoS (js/polynomial-redos) — les inputs
+// réels (DB `auto_type.type_name`, `type_power_ps`) sont contraints (motorisation
+// standard, puissance ≤4 chiffres) ; 0-3 espaces suffisent pour matcher les
+// formes canoniques "140 ch", "140  ch", "140ch".
 function normalizePowerPs(powerPs?: string): string {
-  return (powerPs ?? "").replace(/\s*ch\s*$/i, "").trim();
+  return (powerPs ?? "").replace(/\s{0,3}ch\s{0,3}$/i, "").trim();
 }
 
 function alreadyContainsPower(typeName: string, powerPs?: string): boolean {
   const power = normalizePowerPs(powerPs);
   if (!power) return false;
   const escaped = power.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return new RegExp(`\\b${escaped}\\s*ch\\b`, "i").test(typeName);
+  return new RegExp(`\\b${escaped}\\s{0,3}ch\\b`, "i").test(typeName);
 }
 
 export function isTypeNameAmbiguousForSeo(
