@@ -1,8 +1,9 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "improvement-report.schema.json",
-  "title": "Improvement Report v1 (canon ADR-082)",
-  "description": "Schema canonique pour tout improvement-report.json produit par un pipeline / PR / audit AutoMecanik. Conforme à la doctrine d'amélioration continue globale (ADR-082 vault). Cohérent avec enrichment-report.schema.json (même path .spec/00-canon/, même style $id court relatif). 9 verdicts canon v12 enforced via enum. Cf .claude/skills/continuous-improvement-global/SKILL.md pour la méthode opérationnelle.",
+  "$comment": "EXPERIMENTAL — ADR-082 not yet ratified in governance-vault main (only draft branch adr/082-continuous-improvement-doctrine exists). See vault incident INC-2026-016. Per ADR-060 (vault decides, monorepo executes), this schema is advisory until G3-signed vault PR merges ADR-082. DO NOT treat verdicts as blocking.",
+  "title": "Improvement Report v1 (proposed ADR-082 — draft, vault pending)",
+  "description": "Schema proposé pour tout improvement-report.json produit par un pipeline / PR / audit AutoMecanik. **Advisory only** tant que ADR-082 reste en draft vault (branche adr/082-continuous-improvement-doctrine). Conformément à ADR-060, le monorepo n'a pas autorité pour déclarer un schéma 'canon' sans backing vault. Voir vault incident INC-2026-016. Cohérent avec enrichment-report.schema.json (même path .spec/00-canon/, même style $id court relatif). 9 verdicts currently represented via enum; normative status pending ADR-082 vault ratification. Cf .claude/skills/continuous-improvement-global/SKILL.md pour la méthode opérationnelle.",
   "type": "object",
   "additionalProperties": true,
   "required": [

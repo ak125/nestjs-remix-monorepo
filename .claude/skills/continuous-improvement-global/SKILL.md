@@ -1,18 +1,30 @@
 ---
 name: continuous-improvement-global
-description: Use when validating any PR, pipeline, audit, script, code-change or owner-action for AutoMecanik continuous improvement compliance — produces a `## Improvement Gate` section in the PR and an `improvement-report.json` validated against `.spec/00-canon/improvement-report.schema.json` (JSON Schema 2020-12 Draft, 9 canon verdicts enum). Apply systematically before any merge, deploy, refactor, layer-addition, or owner validation — even when the user doesn't explicitly say "validate" or "improve". Triggers — "review PR", "audit this change", "validate before merge", "should I add this layer", "this looks ready", "ready to ship", "ouvrir une PR", or any request that touches code/archi/DB/contenu/SEO/conversion/pipeline. Doctrine canon = ADR-082 vault (Global Continuous Improvement Doctrine).
+description: Use when validating any PR, pipeline, audit, script, code-change or owner-action for AutoMecanik continuous improvement compliance — produces a `## Improvement Gate` section in the PR and an `improvement-report.json` validated against `.spec/00-canon/improvement-report.schema.json` (JSON Schema 2020-12 Draft, 9 verdicts enum). Apply systematically before any merge, deploy, refactor, layer-addition, or owner validation — even when the user doesn't explicitly say "validate" or "improve". Triggers — "review PR", "audit this change", "validate before merge", "should I add this layer", "this looks ready", "ready to ship", "ouvrir une PR", or any request that touches code/archi/DB/contenu/SEO/conversion/pipeline. Proposed doctrine (ADR-082 draft, vault ratification pending — see INC-2026-016).
 type: technique
-status: stable
+status: experimental
 owners: ['@ak125']
 domain: D15
 runtime_class: read-only
 llm_safe: true
-last_verified: '2026-05-26'
+last_verified: '2026-05-27'
+metadata:
+  vault_ratification: pending
+  vault_adr_ref: "ADR-082 draft, branch adr/082-continuous-improvement-doctrine, NOT in vault main"
+  vault_incident_ref: "INC-2026-016"
 ---
 
 # Skill : continuous-improvement-global
 
-> **Filtre** opérationnel — pas un nouveau système. Doctrine canon = ADR-082 vault.
+> ⚠️ **EXPERIMENTAL — DO NOT TREAT AS CANON**
+>
+> Ce skill applique une **doctrine proposée** (ADR-082) actuellement en **draft non-ratifié** dans le vault (branche `adr/082-continuous-improvement-doctrine`, pas en `main`). Conformément à [ADR-060](https://github.com/ak125/governance-vault/blob/main/ledger/decisions/adr/ADR-060-repository-roles-doctrine.md) (vault décide → monorepo exécute), ce skill **n'a pas autorité de canon** tant que la PR vault ADR-082 n'est pas mergée G3.
+>
+> Usage advisory only. Aucun verdict de ce skill ne doit être traité comme bloquant.
+>
+> Status tracking : vault incident **INC-2026-016** (pending owner G3 PR — lien `main` sera ajouté une fois l'incident mergé dans vault).
+
+> **Filtre** opérationnel — pas un nouveau système. Doctrine proposée (ADR-082 draft, vault pending).
 > Ce skill est court par design (cf v15.2 "doctrine = filtre léger, pas couche").
 
 ## Quand utiliser
@@ -55,11 +67,11 @@ Pour chaque changement, produire **les 7 sorties suivantes** dans l'ordre. Si un
 
 7. **Donner la next action** — courte, concrète, owner-actionable si bloquant. Format suggéré : `[OWNER-X]` ou `[AUTO]` selon qui doit agir. Pourquoi : sans next action, la boucle s'arrête et le sujet pourrit dans le backlog.
 
-## Output canonique : `improvement-report.json`
+## Output (format proposé) : `improvement-report.json`
 
 Sortie machine-readable obligatoire pour toute application de ce skill sur un sujet réel (pas pour une exploration informelle). Path conventionné : `audit/<sujet>-<date>.verdict.json` ou inline dans la PR description.
 
-**Schema canonique (SoT unique)** : `.spec/00-canon/improvement-report.schema.json`
+**Schema proposé (advisory until vault ratifies ADR-082)** : `.spec/00-canon/improvement-report.schema.json`
 
 Tout output DOIT déclarer `"$schema": "improvement-report.schema.json"` pour validation auto via `ajv-cli` (Phase 2) + auto-completion VSCode.
 
@@ -93,7 +105,7 @@ Pour toute PR importante, ajouter cette section dans la description (copier depu
 
 ```markdown
 <!-- IMPROVEMENT_GATE_BEGIN -->
-## Improvement Gate (canon ADR-082)
+## Improvement Gate (proposed ADR-082 — draft, vault pending)
 - Problème mesuré :
 - Preuve avant :
 - Axe amélioré : (≥ 1 parmi business/seo/ranking/content/conversion/code/architecture/performance/security/simplification/observability/governance)
@@ -150,10 +162,10 @@ Le filtre n'est jamais un blocage automatique d'un seul NON. Il informe le verdi
 - **Ajout de couche quand simplification possible** — relire les 6 questions anti-complexité
 - **Isolation SEO seule** — le ranking est conséquence d'un système global sain, pas d'une machine SEO
 
-## Référence canon
+## Références
 
 - **ADR-082 vault** `governance-vault/ledger/decisions/adr/ADR-082-global-continuous-improvement-doctrine.md` — loi complète (5 types d'amélioration / 11 effets valides / 6 questions filtre / hiérarchie P1-P6 / formule AVANT/ACTION/APRÈS / 9 critères non-régression / règle d'or "utile, mesurable, bornée — sinon dette")
-- **JSON Schema** `.spec/00-canon/improvement-report.schema.json` — format machine canonique (Draft 2020-12, source autoritative pour l'enum 9 verdicts)
+- **JSON Schema** `.spec/00-canon/improvement-report.schema.json` — format machine proposé (Draft 2020-12, enum 9 verdicts ; statut normatif pending ADR-082 vault ratification)
 - **PR template** `.github/PULL_REQUEST_TEMPLATE.md` — section `## Improvement Gate` à remplir
 
 Ce skill = procédure courte. ADR = loi. Schema = format machine. PR template = enforcement.
