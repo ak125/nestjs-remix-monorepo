@@ -404,3 +404,80 @@ def test_parse_frontmatter_mapped_gammes_array():
     result = promote.parse_frontmatter(content)
     assert result is not None
     assert result["frontmatter"]["mapped_gammes"] == ["vanne-egr", "electrovanne"]
+
+
+# === B1.2 tests : web relation extractor (gammes + vehicles + NO_VEHICLE_EVIDENCE) ===
+
+def test_extract_web_relations_vanne_egr_real():
+    """Real vanne-egr web files (Hella + NGK) — gammes present, no vehicles → NO_VEHICLE_EVIDENCE."""
+    web = promote.aggregate_web_corpus_by_slug(promote.WEB_DIR, "vanne-egr")
+    assert len(web) >= 2  # Hella + NGK
+    for w in web:
+        relations = promote.extract_web_relations(w)
+        assert "gammes" in relations
+        assert "vehicles" in relations
+        assert "relation_status" in relations
+        assert "vanne-egr" in relations["gammes"]
+        # No vehicle data in Hella/NGK frontmatter → explicit NO_VEHICLE_EVIDENCE
+        assert relations["vehicles"] == []
+        assert relations["relation_status"] == "NO_VEHICLE_EVIDENCE"
+
+
+def test_extract_web_relations_with_vehicles():
+    """If frontmatter has vehicles array, extract them."""
+    fake_web = {
+        "slug_gamme": "vanne-egr",
+        "source_uri": "https://example.com",
+        "source_domain": "example.com",
+        "body": "body",
+        "title": "test",
+        "path": "/tmp/fake.md",
+        "frontmatter_extra": {
+            "vehicles": [
+                {"marque": "Renault", "modele": "Clio 4", "motorisation": "1.5 dCi"},
+                {"marque": "Peugeot", "modele": "308", "motorisation": "2.0 HDi"},
+            ],
+        },
+    }
+    relations = promote.extract_web_relations(fake_web)
+    assert len(relations["vehicles"]) == 2
+    assert relations["vehicles"][0]["marque"].lower() == "renault"
+    assert relations["relation_status"] == "VEHICLE_EVIDENCE_PRESENT"
+
+
+def test_extract_web_relations_never_invents_vehicle():
+    """Body mentioning Renault/Peugeot must NOT auto-create vehicle relations.
+
+    Canon doctrine 2026-05-27 : ne jamais inventer compatibilité véhicule.
+    Vehicle relations come from EXPLICIT frontmatter (vehicles array) only.
+    """
+    fake_web = {
+        "slug_gamme": "vanne-egr",
+        "source_uri": "https://example.com",
+        "source_domain": "example.com",
+        "body": "Cette vanne EGR équipe les Renault Clio 4 1.5 dCi et Peugeot 308 2.0 HDi diesel.",
+        "title": "test",
+        "path": "/tmp/fake.md",
+    }
+    relations = promote.extract_web_relations(fake_web)
+    # Body mentions vehicles but NO explicit frontmatter → no invention
+    assert relations["vehicles"] == []
+    assert relations["relation_status"] == "NO_VEHICLE_EVIDENCE"
+
+
+def test_extract_web_relations_gamme_from_mapped_gammes_array():
+    """Convention B (Hella/NGK) : mapped_gammes is an array."""
+    fake_web = {
+        "slug_gamme": "vanne-egr",  # set by aggregate after matching
+        "matched_kind": "mapped_gammes",
+        "all_mapped_gammes": ["vanne-egr", "electrovanne"],
+        "source_uri": "https://hella.com/...",
+        "source_domain": "hella.com",
+        "body": "body",
+        "title": "test",
+        "path": "/tmp/fake.md",
+    }
+    relations = promote.extract_web_relations(fake_web)
+    assert "vanne-egr" in relations["gammes"]
+    assert "electrovanne" in relations["gammes"]  # other gamme in mapped array
+    assert relations["matched_kind"] == "mapped_gammes"

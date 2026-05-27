@@ -188,10 +188,13 @@ def aggregate_web_corpus_by_slug(web_dir, slug):
                 continue  # Guard : web source sans URL traçable = REFUS
             # B1.2 : detect mapped_gammes (Convention B) for matched_kind metadata
             matched_kind = "slug_gamme" if fm.get("slug_gamme") == slug else "mapped_gammes"
+            all_mapped = fm.get("mapped_gammes") if isinstance(fm.get("mapped_gammes"), list) else None
+            if not all_mapped and fm.get("slug_gamme"):
+                all_mapped = [fm.get("slug_gamme")]
             results.append({
                 "slug_gamme": slug,
                 "matched_kind": matched_kind,
-                "all_mapped_gammes": fm.get("mapped_gammes") or [fm.get("slug_gamme")] if fm.get("slug_gamme") else [],
+                "all_mapped_gammes": all_mapped or [],
                 "source_uri": source_uri,
                 "source_domain": fm.get("source_domain"),
                 "title": fm.get("title"),
@@ -199,11 +202,56 @@ def aggregate_web_corpus_by_slug(web_dir, slug):
                 "content_hash": fm.get("content_hash"),
                 "truth_level": fm.get("truth_level"),
                 "ingested_by": fm.get("ingested_by"),
+                # B1.2 : capture vehicles from explicit frontmatter (NEVER body-inferred)
+                "frontmatter_vehicles": fm.get("vehicles") if isinstance(fm.get("vehicles"), list) else None,
+                "frontmatter_extra": {k: v for k, v in fm.items() if k in ("vehicles", "compatibility", "motorisations")},
                 "path": str(f),
             })
         except (OSError, yaml.YAMLError):
             continue
     return results
+
+
+def extract_web_relations(web_entry):
+    """B1.2 — Extract relations (gammes + vehicles) from a web corpus entry.
+
+    Canon doctrine 2026-05-27 :
+    - gammes: from slug_gamme scalar OR mapped_gammes array (Convention A vs B)
+    - vehicles: ONLY from EXPLICIT frontmatter `vehicles:` field (NEVER body-inferred)
+    - relation_status: NO_VEHICLE_EVIDENCE explicit if no vehicles in frontmatter
+    - source_uri: required (already filtered by aggregate)
+    """
+    gammes = list(web_entry.get("all_mapped_gammes") or [])
+    if not gammes and web_entry.get("slug_gamme"):
+        gammes = [web_entry["slug_gamme"]]
+    # Vehicles : ONLY from explicit frontmatter, never inferred from body
+    fm_vehicles = web_entry.get("frontmatter_vehicles") or (
+        (web_entry.get("frontmatter_extra") or {}).get("vehicles")
+    )
+    if isinstance(fm_vehicles, list) and fm_vehicles:
+        vehicles = [
+            {
+                "marque": (v.get("marque") or v.get("brand") or "").strip(),
+                "modele": (v.get("modele") or v.get("model") or "").strip(),
+                "motorisation": (v.get("motorisation") or v.get("engine") or "").strip(),
+                "carburant": (v.get("carburant") or v.get("fuel") or "").strip(),
+                "annees": v.get("annees") or v.get("years") or [],
+            }
+            for v in fm_vehicles
+            if isinstance(v, dict)
+        ]
+        relation_status = "VEHICLE_EVIDENCE_PRESENT"
+    else:
+        vehicles = []
+        relation_status = "NO_VEHICLE_EVIDENCE"
+    return {
+        "gammes": gammes,
+        "vehicles": vehicles,
+        "relation_status": relation_status,
+        "matched_kind": web_entry.get("matched_kind"),
+        "source_uri": web_entry.get("source_uri"),
+        "source_domain": web_entry.get("source_domain"),
+    }
 
 
 # === Task 4 : source tier classifier + 9 dimensions extraction (candidate/confirmed parallel) ===
@@ -395,6 +443,9 @@ def extract_dimensions(raw, web_corpus):
             "vérification humaine de la différence technique requise"
         )
 
+    # B1.2 : extract web_relations per source (gammes + vehicles + relation_status)
+    web_relations = [extract_web_relations(w) for w in web_corpus]
+
     return {
         "function": function,
         "source_refs": refs,
@@ -406,6 +457,7 @@ def extract_dimensions(raw, web_corpus):
         "oem_references": oem_refs,
         "fuel_engine_differences": fuel_diff,
         "rag_candidate_present": is_cand,
+        "web_relations": web_relations,
     }
 # === Task 5 : variant-readiness gate + anti-filler + content_hash ===
 
@@ -603,6 +655,24 @@ def _build_body_markdown(raw, dimensions):
                      + "\n".join(f"- [{r.get('tier', 'unknown')}] {r.get('source_domain', '')} — {r.get('source_uri', '')}"
                                  for r in oem_web_refs[:10]))
 
+    # B1.2 : Web relations section (gammes + vehicles + NO_VEHICLE_EVIDENCE explicit)
+    web_relations = dimensions.get("web_relations") or []
+    if web_relations:
+        rel_lines = ["## Relations web (B1.2 — gammes + véhicules)\n"]
+        for rel in web_relations:
+            rel_lines.append(f"### Source : {rel['source_domain']}")
+            rel_lines.append(f"- gammes liées : {', '.join(rel['gammes']) if rel['gammes'] else '(none)'}")
+            rel_lines.append(f"- relation_status : `{rel['relation_status']}`")
+            if rel["vehicles"]:
+                rel_lines.append("- véhicules prouvés :")
+                for v in rel["vehicles"]:
+                    rel_lines.append(f"  - {v['marque']} {v['modele']} {v['motorisation']}".rstrip())
+            else:
+                rel_lines.append("- véhicules : **(NO_VEHICLE_EVIDENCE)** — aucune relation véhicule explicite dans frontmatter source. **Jamais inventée** (canon doctrine 2026-05-27).")
+            rel_lines.append(f"- source_uri : {rel['source_uri']}")
+            rel_lines.append("")
+        parts.append("\n".join(rel_lines))
+
     # Provenance & cross-check summary
     rag_refs = [r for r in dimensions.get("source_refs", []) if r.get("tier") == "rag_recycled_candidate"]
     if rag_refs:
@@ -795,6 +865,11 @@ def main():
             "schema_errors": sv.get("errors", []),
             "anti_filler": af,
             "variant_readiness": vr,
+            "web_relations": dims.get("web_relations", []),
+            "web_with_vehicle_evidence": sum(1 for rel in dims.get("web_relations", [])
+                                             if rel.get("relation_status") == "VEHICLE_EVIDENCE_PRESENT"),
+            "web_no_vehicle_evidence": sum(1 for rel in dims.get("web_relations", [])
+                                           if rel.get("relation_status") == "NO_VEHICLE_EVIDENCE"),
         }],
     }
     print("\nRUN LOG:")
