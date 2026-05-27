@@ -1,4 +1,4 @@
-<!-- Template PR AutoMecanik — créé en Phase 1 v15.2 (ADR-082 vault) -->
+<!-- Template PR AutoMecanik — créé en Phase 1 v15.2 (ADR-082 draft, advisory only). See vault incident INC-2026-016 — ADR-082 not yet ratified in governance-vault main. -->
 
 ## Summary
 
@@ -18,11 +18,12 @@
 
 ---
 
-<!-- IMPROVEMENT_GATE_BEGIN — canon ADR-082 vault, marqueurs requis pour validation auto Phase 2 (improvement-gate.yml). Ne pas modifier les marqueurs. -->
+<details>
+<summary><strong>[OPTIONAL — EXPERIMENTAL]</strong> Improvement Gate (proposed ADR-082 — draft, vault pending)</summary>
 
-## Improvement Gate (canon ADR-082)
+<!-- IMPROVEMENT_GATE_BEGIN — EXPERIMENTAL: ADR-082 not yet ratified in governance-vault main (only draft branch adr/082-continuous-improvement-doctrine). See vault incident INC-2026-016. Per ADR-060, this section is advisory only. Remplir uniquement si la PR souhaite documenter son rapport d'amélioration au format ADR-082-proposed. Markers preserved for future workflow if/when ratified. -->
 
-Pour toute PR importante (code / archi / pipeline / contenu / SEO / DB / migration / config), répondre aux 7 questions du filtre canon. Le skill `continuous-improvement-global` (`.claude/skills/continuous-improvement-global/SKILL.md`) peut générer un `improvement-report.json` validé contre `.spec/00-canon/improvement-report.schema.json` (JSON Schema 2020-12). Pour PR triviale (typo, doc), indiquer **Verdict : PASS** et ignorer les autres champs.
+Pour toute PR importante (code / archi / pipeline / contenu / SEO / DB / migration / config), répondre aux 7 questions du filtre. Le skill `continuous-improvement-global` (`.claude/skills/continuous-improvement-global/SKILL.md`) peut générer un `improvement-report.json` validé contre `.spec/00-canon/improvement-report.schema.json` (JSON Schema 2020-12). Pour PR triviale (typo, doc), indiquer **Verdict : PASS** et ignorer les autres champs.
 
 - **Problème mesuré :**
 - **Preuve avant :** <!-- log / metric / SQL / screenshot — sinon CONCEPTUEL au mieux -->
@@ -37,6 +38,8 @@ Pour toute PR importante (code / archi / pipeline / contenu / SEO / DB / migrati
 - **Next action :** <!-- courte, owner-actionable si bloquant -->
 
 <!-- IMPROVEMENT_GATE_END -->
+
+</details>
 
 ---
 
