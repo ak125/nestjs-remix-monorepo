@@ -1,6 +1,7 @@
 # Security-Hooks — pré-filtre advisory, zéro autorité
 
-Plugin marketplace `anthropics/security-hooks` installé en **mode advisory-only**.
+Plugin marketplace `security-guidance@claude-plugins-official` (alias affichage
+« Security Hooks / Sécurité Conseils ») installé en **mode advisory-only**.
 Il scanne `Write`/`Edit`/`MultiEdit` avant application et avertit sur patterns
 dangereux (`exec`, `eval`, `innerHTML`, `dangerouslySetInnerHTML`, `os.system`,
 `pickle`, GitHub Actions injection).
