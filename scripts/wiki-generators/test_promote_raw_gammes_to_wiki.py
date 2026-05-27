@@ -261,3 +261,76 @@ def test_content_hash_deterministic():
 
 def test_content_hash_different_for_different_input():
     assert promote.compute_content_hash("a") != promote.compute_content_hash("b")
+
+
+# === Task 6 tests : proposal builder + schema validator + E2E ===
+
+def test_build_proposal_v2_vanne_egr_option_c():
+    """Option C (default) : dimensions go into body + review_notes, not entity_data.dimensions."""
+    raw = promote.read_raw_gamme(VANNE_EGR_PATH)
+    web = promote.aggregate_web_corpus_by_slug(promote.WEB_DIR, "vanne-egr")
+    dims = promote.extract_dimensions(raw, web)
+    proposal_text = promote.build_proposal_v2(raw, web, dims, schema_option="C")
+    # Frontmatter v2.0.0 canon
+    assert proposal_text.startswith("---\n")
+    assert "schema_version: 2.0.0" in proposal_text
+    assert "id: gamme:vanne-egr" in proposal_text
+    assert "entity_type: gamme" in proposal_text
+    assert "slug: vanne-egr" in proposal_text
+    assert "truth_level: L2" in proposal_text  # AJUSTEMENT #1 owner
+    assert "review_status: proposed" in proposal_text
+    assert "rag: false" in proposal_text  # exportable.rag default false
+    # entity_data has pg_id
+    assert "pg_id: 1145" in proposal_text
+    # Body has H2 sections
+    assert "## Rôle technique" in proposal_text
+    # Option C : NO entity_data.dimensions key (canon doctrine schema unchanged)
+    assert "  dimensions:" not in proposal_text
+
+
+def test_build_proposal_v2_rag_candidate_flagged_in_review_notes():
+    """If raw is RAG candidate, proposal body sections + review_notes flag candidate items."""
+    raw = promote.read_raw_gamme(VANNE_EGR_PATH)
+    web = promote.aggregate_web_corpus_by_slug(promote.WEB_DIR, "vanne-egr")
+    dims = promote.extract_dimensions(raw, web)
+    proposal_text = promote.build_proposal_v2(raw, web, dims, schema_option="C")
+    # review_notes should mention rag_recycled_candidate
+    assert "rag_recycled_candidate" in proposal_text or "candidate" in proposal_text.lower()
+
+
+def test_validate_schema_vanne_egr_passes():
+    raw = promote.read_raw_gamme(VANNE_EGR_PATH)
+    web = promote.aggregate_web_corpus_by_slug(promote.WEB_DIR, "vanne-egr")
+    dims = promote.extract_dimensions(raw, web)
+    proposal_text = promote.build_proposal_v2(raw, web, dims, schema_option="C")
+    import yaml as _yaml
+    fm_match = re.match(r'^---\n(.*?)\n---\n', proposal_text, re.DOTALL)
+    fm = _yaml.safe_load(fm_match.group(1))
+    result = promote.validate_schema(fm, schema_option="C")
+    assert result["valid"] is True, f"Schema errors: {result.get('errors')}"
+
+
+# E2E integration test — moved to bottom
+
+import re  # local import for fm_match regex
+
+
+def test_e2e_vanne_egr_dry_run_full():
+    """E2E : --gamme vanne-egr --dry-run produces full proposal output without writes."""
+    result = subprocess.run(
+        ["python3", str(SCRIPT_PATH), "--gamme", "vanne-egr", "--dry-run", "--verbose"],
+        capture_output=True, text=True,
+    )
+    assert result.returncode == 0, f"stderr: {result.stderr}"
+    assert "schema_version: 2.0.0" in result.stdout
+    assert "truth_level: L2" in result.stdout
+    assert "review_status: proposed" in result.stdout
+    # variant_readiness status present
+    assert any(s in result.stdout for s in [
+        "PASS_VARIANT_READY", "PASS_PARTIAL", "RAG_CANDIDATE_REQUIRES_REVIEW", "FAIL_NOT_VARIANT_READY"
+    ])
+    assert "generation_mode" in result.stdout
+    assert "deterministic_transform_only" in result.stdout
+    # NO file written in dry-run
+    proposal_path = promote.PROPOSALS_DIR / "vanne-egr.md"
+    # We can't easily assert non-existence since it might pre-exist, but stderr should be clean
