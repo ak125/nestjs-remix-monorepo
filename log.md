@@ -458,3 +458,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/wiki-bootstrap-promote-raw-gammes-2026-05-27`
 - **Décision** : feat(wiki-bootstrap): b5 db-rich dimensions + 6/6 pass_variant_ready (+31 other commits)
 - **Sortie** : PR aucune | commits 9d87217aa 87c79fc12 90570029b 015693307 093cffc84 646233835 28fb0cf80 ed0099749 8915a4a9a 442032613 859f505d3 2523c02f2 bd090b8e3 3b206ce6c 97bf40745 d1fb809e7 59307118f 11f3ea73b de9a3057c 4385979f2 d3707b8d1 f6f936e2c e60b929e6 cb1f64b60 3d77fd76b 22eb283c9 1ea6d8bfb 9f5822d3b e25d9c160 6f1de06ef c913037e4 4e1478cbd
+
+## 2026-05-27 — feat/wiki-bootstrap-promote-raw-gammes-2026-05-27 (auto)
+
+- **Branche** : `feat/wiki-bootstrap-promote-raw-gammes-2026-05-27`
+- **Décision** : feat(wiki-bootstrap): option a injects entity_data.dimensions (task 8b) (+33 other commits)
+- **Sortie** : PR aucune | commits 619fe93d9 30f1cb89c 9d87217aa 87c79fc12 90570029b 015693307 093cffc84 646233835 28fb0cf80 ed0099749 8915a4a9a 442032613 859f505d3 2523c02f2 bd090b8e3 3b206ce6c 97bf40745 d1fb809e7 59307118f 11f3ea73b de9a3057c 4385979f2 d3707b8d1 f6f936e2c e60b929e6 cb1f64b60 3d77fd76b 22eb283c9 1ea6d8bfb 9f5822d3b e25d9c160 6f1de06ef c913037e4 4e1478cbd
