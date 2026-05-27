@@ -325,12 +325,38 @@ def test_e2e_vanne_egr_dry_run_full():
     assert "schema_version: 2.0.0" in result.stdout
     assert "truth_level: L2" in result.stdout
     assert "review_status: proposed" in result.stdout
-    # variant_readiness status present
     assert any(s in result.stdout for s in [
         "PASS_VARIANT_READY", "PASS_PARTIAL", "RAG_CANDIDATE_REQUIRES_REVIEW", "FAIL_NOT_VARIANT_READY"
     ])
     assert "generation_mode" in result.stdout
     assert "deterministic_transform_only" in result.stdout
-    # NO file written in dry-run
-    proposal_path = promote.PROPOSALS_DIR / "vanne-egr.md"
-    # We can't easily assert non-existence since it might pre-exist, but stderr should be clean
+
+
+# === Task 7 tests : run log writer + idempotence ===
+
+def test_write_run_log_creates_file(tmp_path, monkeypatch):
+    monkeypatch.setattr(promote, "RUN_LOG_DIR", tmp_path)
+    run_data = {"run_id": "test-uuid-task7", "scope_input": "vanne-egr", "scope": "gamme"}
+    path = promote.write_run_log(run_data)
+    assert path.exists()
+    import json as _json
+    loaded = _json.loads(path.read_text())
+    assert loaded["run_id"] == "test-uuid-task7"
+    assert loaded["scope_input"] == "vanne-egr"
+
+
+def test_write_run_log_includes_traceable_metadata(tmp_path, monkeypatch):
+    monkeypatch.setattr(promote, "RUN_LOG_DIR", tmp_path)
+    run_data = {
+        "run_id": "test-trace",
+        "scope_input": "vanne-egr",
+        "generation_mode": "deterministic_transform_only",
+        "llm_used": False,
+        "paraphrase_used": False,
+    }
+    path = promote.write_run_log(run_data)
+    import json as _json
+    loaded = _json.loads(path.read_text())
+    assert loaded["generation_mode"] == "deterministic_transform_only"
+    assert loaded["llm_used"] is False
+    assert loaded["paraphrase_used"] is False

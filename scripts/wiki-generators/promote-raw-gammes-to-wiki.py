@@ -650,7 +650,15 @@ def validate_schema(frontmatter, schema_option):
         return {"valid": True, "errors": []}
     except jsonschema.ValidationError as e:
         return {"valid": False, "errors": [str(e.message)]}
-def write_run_log(run_data): raise NotImplementedError("Task 7")
+# === Task 7 : structured run log writer ===
+
+def write_run_log(run_data):
+    """Write structured JSON run log to audit/wiki-bootstrap-runs/<run_id>.json."""
+    RUN_LOG_DIR.mkdir(parents=True, exist_ok=True)
+    run_id = run_data.get("run_id") or str(uuid.uuid4())
+    path = RUN_LOG_DIR / f"{run_id}.json"
+    path.write_text(json.dumps(run_data, indent=2, ensure_ascii=False), encoding="utf-8")
+    return path
 
 
 def main():
