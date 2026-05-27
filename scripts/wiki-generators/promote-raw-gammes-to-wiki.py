@@ -51,10 +51,40 @@ RUN_LOG_DIR = Path("/opt/automecanik/app/audit/wiki-bootstrap-runs")
 
 SCHEMA_OPTION_DEFAULT = "C"  # safe : dimensions in body + review_notes, schema unchanged
 
-# === Task 3 : RAW reader + RAG candidate guard + web corpus aggregator ===
+# === Task 3 + B1.1 : RAW reader + RAG candidate guard + tolerant frontmatter parser ===
 
 # Taxonomic frontmatter fields toujours safe (structural metadata, pas prose RAG-generated)
 TAXONOMIC_SAFE_FIELDS = {"slug", "title", "pg_id", "category", "intent_targets", "business_priority"}
+
+# B1.1 : tolerant frontmatter regex — handles Convention A (indented 8 spaces) + B (non-indented).
+# Convention A : 418 web files have "        ---" (8 spaces + ---) instead of "---".
+FRONTMATTER_RE = re.compile(r'^([ \t]*)---\n(.*?)\n\1---\n(.*)$', re.DOTALL)
+
+
+def parse_frontmatter(content):
+    """Parse YAML frontmatter (Convention A indented OR B non-indented).
+
+    Returns {"frontmatter": dict, "body": str, "indent": int} or None if no frontmatter.
+    No silent fallback : if YAML invalid raises yaml.YAMLError.
+    """
+    m = FRONTMATTER_RE.match(content)
+    if not m:
+        return None
+    indent = m.group(1)
+    fm_text = m.group(2)
+    body = m.group(3)
+    # If indented, strip leading indent from each line of frontmatter
+    if indent:
+        fm_lines = [line[len(indent):] if line.startswith(indent) else line
+                    for line in fm_text.split("\n")]
+        fm_text = "\n".join(fm_lines)
+        body_lines = [line[len(indent):] if line.startswith(indent) else line
+                      for line in body.split("\n")]
+        body = "\n".join(body_lines)
+    fm = yaml.safe_load(fm_text)
+    if not isinstance(fm, dict):
+        return None
+    return {"frontmatter": fm, "body": body.strip(), "indent": len(indent)}
 
 
 def is_rag_recycled_candidate(frontmatter):
@@ -105,15 +135,15 @@ def read_raw_gamme(path):
     if not path.exists():
         raise FileNotFoundError(f"RAW gamme not found: {path}")
     content = path.read_text(encoding="utf-8")
-    m = re.match(r'^---\n(.*?)\n---\n(.*)$', content, re.DOTALL)
-    if not m:
+    parsed = parse_frontmatter(content)
+    if parsed is None:
         raise ValueError(f"No YAML frontmatter in {path}")
-    fm_full = yaml.safe_load(m.group(1))
+    fm_full = parsed["frontmatter"]
     is_cand = is_rag_recycled_candidate(fm_full)
     return {
         "frontmatter_full": fm_full,
         "safe_taxonomic_fields": _build_safe_taxonomic_fields(fm_full),
-        "body": m.group(2).strip(),
+        "body": parsed["body"],
         "is_rag_candidate": is_cand,
         "candidate_status": "rag_recycled_candidate" if is_cand else "ssot_confirmed",
         "requires_review": is_cand,
@@ -121,30 +151,54 @@ def read_raw_gamme(path):
     }
 
 
+def _web_file_matches_slug(fm, slug):
+    """Check if a web file frontmatter matches the gamme slug.
+
+    B1.2 : support 2 conventions :
+      - Convention A (418 files) : slug_gamme scalar
+      - Convention B (Hella/NGK) : mapped_gammes array
+    """
+    if fm.get("slug_gamme") == slug:
+        return True
+    mapped = fm.get("mapped_gammes")
+    if isinstance(mapped, list) and slug in mapped:
+        return True
+    return False
+
+
 def aggregate_web_corpus_by_slug(web_dir, slug):
-    """Read web/*.md OEM-scraped corpus, return entries with slug_gamme==slug + source_uri."""
+    """Read web/*.md OEM-scraped corpus, return entries with slug_gamme==slug + source_uri.
+
+    Tolerant parser supports Convention A (indented frontmatter) + B (non-indented + mapped_gammes).
+    """
     results = []
     if not web_dir.exists():
         return results
     for f in sorted(web_dir.glob("*.md")):
         try:
             content = f.read_text(encoding="utf-8")
-            m = re.match(r'^---\n(.*?)\n---\n(.*)$', content, re.DOTALL)
-            if not m:
+            parsed = parse_frontmatter(content)
+            if parsed is None:
                 continue
-            fm = yaml.safe_load(m.group(1))
-            if not isinstance(fm, dict) or fm.get("slug_gamme") != slug:
+            fm = parsed["frontmatter"]
+            if not _web_file_matches_slug(fm, slug):
                 continue
             source_uri = fm.get("source_uri") or fm.get("source_url")
             if not source_uri:
                 continue  # Guard : web source sans URL traçable = REFUS
+            # B1.2 : detect mapped_gammes (Convention B) for matched_kind metadata
+            matched_kind = "slug_gamme" if fm.get("slug_gamme") == slug else "mapped_gammes"
             results.append({
-                "slug_gamme": fm.get("slug_gamme"),
+                "slug_gamme": slug,
+                "matched_kind": matched_kind,
+                "all_mapped_gammes": fm.get("mapped_gammes") or [fm.get("slug_gamme")] if fm.get("slug_gamme") else [],
                 "source_uri": source_uri,
                 "source_domain": fm.get("source_domain"),
                 "title": fm.get("title"),
-                "body": m.group(2).strip(),
+                "body": parsed["body"],
                 "content_hash": fm.get("content_hash"),
+                "truth_level": fm.get("truth_level"),
+                "ingested_by": fm.get("ingested_by"),
                 "path": str(f),
             })
         except (OSError, yaml.YAMLError):

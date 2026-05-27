@@ -360,3 +360,47 @@ def test_write_run_log_includes_traceable_metadata(tmp_path, monkeypatch):
     assert loaded["generation_mode"] == "deterministic_transform_only"
     assert loaded["llm_used"] is False
     assert loaded["paraphrase_used"] is False
+
+
+# === B1.1 tests : tolerant frontmatter parser (indented 8 spaces + non-indented) ===
+
+def test_parse_frontmatter_non_indented():
+    """Standard YAML frontmatter (Convention B : Hella/NGK)."""
+    content = "---\ntitle: foo\nslug_gamme: vanne-egr\n---\n\n# Body"
+    result = promote.parse_frontmatter(content)
+    assert result is not None
+    assert result["frontmatter"]["title"] == "foo"
+    assert result["frontmatter"]["slug_gamme"] == "vanne-egr"
+    assert result["body"] == "# Body"
+
+
+def test_parse_frontmatter_indented_8_spaces():
+    """Convention A : frontmatter indented 8 spaces (418 web files)."""
+    content = "        ---\n        title: foo\n        slug_gamme: vanne-egr\n        ---\n\n        # Body"
+    result = promote.parse_frontmatter(content)
+    assert result is not None
+    assert result["frontmatter"]["title"] == "foo"
+    assert result["frontmatter"]["slug_gamme"] == "vanne-egr"
+
+
+def test_parse_frontmatter_indented_real_file():
+    """Parse a real indented Convention A file from web corpus."""
+    real_path = promote.WEB_DIR / "00f80f83f08f-s001.md"
+    if real_path.exists():
+        content = real_path.read_text(encoding="utf-8")
+        result = promote.parse_frontmatter(content)
+        assert result is not None, "Tolerant parser must handle indented frontmatter"
+        assert result["frontmatter"].get("slug_gamme") == "capteur-d-arbre-a-cames"
+
+
+def test_parse_frontmatter_missing_returns_none():
+    """No frontmatter delimiters → return None (no silent fallback)."""
+    assert promote.parse_frontmatter("# Just a body, no frontmatter") is None
+
+
+def test_parse_frontmatter_mapped_gammes_array():
+    """Convention B with mapped_gammes (array, not scalar)."""
+    content = "---\ntitle: foo\nmapped_gammes:\n- vanne-egr\n- electrovanne\n---\n\n# Body"
+    result = promote.parse_frontmatter(content)
+    assert result is not None
+    assert result["frontmatter"]["mapped_gammes"] == ["vanne-egr", "electrovanne"]
