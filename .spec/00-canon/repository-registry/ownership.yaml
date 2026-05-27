@@ -219,6 +219,19 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: low
+  # WIKI bootstrap runs (Phase A promote-raw-gammes-to-wiki) — run logs JSON
+  # produits par scripts/wiki-generators/promote-raw-gammes-to-wiki.py.
+  - glob: audit/wiki-bootstrap-runs/**
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
+  # Scripts wiki-generators (Phase 1 WIKI bootstrap + content generation canon).
+  - glob: scripts/wiki-generators/**
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
   - glob: backend/src/auth/**
     domain: D11
     owner: '@ak125/auth-team'
