@@ -163,6 +163,101 @@ def test_extract_dimensions_empty_corpus():
     raw = promote.read_raw_gamme(VANNE_EGR_PATH)
     dims = promote.extract_dimensions(raw, [])
     func = dims["function"]
-    # Either RAG_ONLY (if candidate present) or NEITHER
     assert func["cross_check_status"] in ("RAG_ONLY", "NEITHER")
     assert not func["confirmed_value"]
+
+
+# === Task 5 tests : variant-readiness + anti-filler + content_hash ===
+
+def test_variant_readiness_pass_variant_ready():
+    """Web-confirmed dimensions + compatibility_factors → PASS_VARIANT_READY."""
+    dims = {
+        "function": {"candidate_value": "x", "confirmed_value": "x web", "cross_check_status": "WEB_CONFIRMS_RAG"},
+        "source_refs": [{"tier": "rag_recycled_candidate"}, {"tier": "tier1", "trust": "confirmed"}],
+        "compatibility_factors": {"motorisation": ["1.5 dCi"]},
+        "symptoms": {"candidate_value": ["a"], "confirmed_value": ["a web"], "cross_check_status": "WEB_CONFIRMS_RAG"},
+        "selection_criteria": {"candidate_value": ["b"], "confirmed_value": ["b web"], "cross_check_status": "WEB_CONFIRMS_RAG"},
+        "related_parts": ["c"], "maintenance_context": {"periodicite_km": 80000},
+        "oem_references": [], "fuel_engine_differences": {},
+    }
+    r = promote.evaluate_variant_readiness(dims, is_r2_sensitive=True)
+    assert r["status"] == "PASS_VARIANT_READY"
+    assert r["has_oem_web_source"] is True
+
+
+def test_variant_readiness_pass_partial_r2_blocked():
+    """5+ dimensions confirmed but no compatibility_factors + R2-sensitive → PASS_PARTIAL_R2_BLOCKED."""
+    dims = {
+        "function": {"candidate_value": "x", "confirmed_value": "x web", "cross_check_status": "WEB_CONFIRMS_RAG"},
+        "source_refs": [{"tier": "tier1", "trust": "confirmed"}],
+        "symptoms": {"candidate_value": ["a"], "confirmed_value": ["a web"], "cross_check_status": "WEB_CONFIRMS_RAG"},
+        "selection_criteria": {"candidate_value": ["b"], "confirmed_value": ["b web"], "cross_check_status": "WEB_CONFIRMS_RAG"},
+        "related_parts": ["c"], "maintenance_context": {"periodicite_km": 80000},
+        "oem_references": [], "fuel_engine_differences": {},
+    }
+    r = promote.evaluate_variant_readiness(dims, is_r2_sensitive=True)
+    assert r["status"] == "PASS_PARTIAL_R2_BLOCKED"
+
+
+def test_variant_readiness_rag_candidate_requires_review():
+    """Dimensions majoritairement candidate sans confirmation web + no OEM → REQUIRES_REVIEW."""
+    dims = {
+        "function": {"candidate_value": "x", "confirmed_value": "", "cross_check_status": "RAG_ONLY"},
+        "source_refs": [{"tier": "rag_recycled_candidate", "trust": "candidate", "requires_review": True}],
+        "symptoms": {"candidate_value": ["a"], "confirmed_value": [], "cross_check_status": "RAG_ONLY"},
+        "selection_criteria": {"candidate_value": ["b"], "confirmed_value": [], "cross_check_status": "RAG_ONLY"},
+        "related_parts": ["c"], "maintenance_context": {"risques_erreur": ["x"]},
+        "compatibility_factors": {}, "oem_references": [], "fuel_engine_differences": {},
+    }
+    r = promote.evaluate_variant_readiness(dims, is_r2_sensitive=True)
+    assert r["status"] == "RAG_CANDIDATE_REQUIRES_REVIEW"
+    assert r["requires_human_review"] is True
+
+
+def test_variant_readiness_fail_not_ready():
+    dims = {
+        "function": {"candidate_value": "x", "confirmed_value": "", "cross_check_status": "RAG_ONLY"},
+        "source_refs": [{"tier": "tier1"}],
+    }
+    r = promote.evaluate_variant_readiness(dims, is_r2_sensitive=False)
+    assert r["status"] == "FAIL_NOT_VARIANT_READY"
+
+
+def test_variant_readiness_no_function_fail():
+    """Missing function → FAIL_NOT_VARIANT_READY."""
+    dims = {
+        "function": {"candidate_value": "", "confirmed_value": "", "cross_check_status": "NEITHER"},
+        "source_refs": [{"tier": "tier1"}],
+        "symptoms": {"candidate_value": ["a"], "confirmed_value": [], "cross_check_status": "RAG_ONLY"},
+    }
+    r = promote.evaluate_variant_readiness(dims, is_r2_sensitive=False)
+    assert r["status"] == "FAIL_NOT_VARIANT_READY"
+
+
+def test_anti_filler_passes_clean_body():
+    body = "## Rôle technique\n\nLa vanne EGR recycle les gaz d'échappement."
+    result = promote.validate_anti_filler(body)
+    assert result["pass"] is True
+    assert result["generation_mode"] == "deterministic_transform_only"
+    assert result["llm_used"] is False
+    assert result["paraphrase_used"] is False
+
+
+def test_anti_filler_fails_on_placeholder():
+    result = promote.validate_anti_filler("Some content TODO complete this section")
+    assert result["pass"] is False
+    assert "TODO" in result["reason"]
+
+
+def test_anti_filler_fails_on_template_literal():
+    result = promote.validate_anti_filler("Le nom est <%title%>.")
+    assert result["pass"] is False
+
+
+def test_content_hash_deterministic():
+    body = "same content"
+    assert promote.compute_content_hash(body) == promote.compute_content_hash(body)
+
+
+def test_content_hash_different_for_different_input():
+    assert promote.compute_content_hash("a") != promote.compute_content_hash("b")

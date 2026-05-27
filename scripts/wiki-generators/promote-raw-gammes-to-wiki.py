@@ -353,9 +353,107 @@ def extract_dimensions(raw, web_corpus):
         "fuel_engine_differences": fuel_diff,
         "rag_candidate_present": is_cand,
     }
-def evaluate_variant_readiness(dimensions, is_r2_sensitive): raise NotImplementedError("Task 5")
-def validate_anti_filler(body): raise NotImplementedError("Task 5")
-def compute_content_hash(body): raise NotImplementedError("Task 5")
+# === Task 5 : variant-readiness gate + anti-filler + content_hash ===
+
+# DIMENSION_KEYS exclut source_refs (metadata provenance, pas dimension de contenu)
+DIMENSION_KEYS = [
+    "function", "symptoms", "selection_criteria",
+    "compatibility_factors", "related_parts", "maintenance_context",
+    "oem_references", "fuel_engine_differences",
+]
+
+
+def _dim_is_populated(v):
+    """True if dimension has value (handles candidate/confirmed dict and raw types)."""
+    if v in (None, [], {}, ""):
+        return False
+    if isinstance(v, dict):
+        if "candidate_value" in v or "confirmed_value" in v:
+            return bool(v.get("candidate_value") or v.get("confirmed_value"))
+        return bool(v)
+    return True
+
+
+def _dim_has_confirmed(v):
+    """True if dimension has OEM-confirmed value (not just candidate)."""
+    if not isinstance(v, dict):
+        return bool(v)
+    if "confirmed_value" in v:
+        return bool(v.get("confirmed_value"))
+    return bool(v)
+
+
+def evaluate_variant_readiness(dimensions, is_r2_sensitive):
+    """Evaluate variant-readiness per canon doctrine 2026-05-27 (candidate/confirmed pattern)."""
+    present = [k for k in DIMENSION_KEYS if _dim_is_populated(dimensions.get(k))]
+    confirmed = [k for k in DIMENSION_KEYS if _dim_has_confirmed(dimensions.get(k))]
+    missing = [k for k in DIMENSION_KEYS if k not in present]
+    count = len(present)
+    count_confirmed = len(confirmed)
+    compat_present = "compatibility_factors" in present
+    refs = dimensions.get("source_refs", [])
+    has_src = bool(refs)
+    has_fn = _dim_is_populated(dimensions.get("function"))
+
+    has_rag_candidate = any(r.get("tier") == "rag_recycled_candidate" for r in refs)
+    has_oem_web = any(r.get("tier") in ("tier1", "tier2") for r in refs)
+
+    rag_only_majority = has_rag_candidate and count > 0 and (count_confirmed < count / 2)
+
+    if not has_src or not has_fn:
+        status = "FAIL_NOT_VARIANT_READY"
+    elif count < 3:
+        status = "FAIL_NOT_VARIANT_READY"
+    elif rag_only_majority and not has_oem_web:
+        status = "RAG_CANDIDATE_REQUIRES_REVIEW"
+    elif count >= 5 and is_r2_sensitive and not compat_present:
+        status = "PASS_PARTIAL_R2_BLOCKED"
+    elif count >= 5:
+        status = "PASS_VARIANT_READY"
+    else:
+        status = "PASS_PARTIAL"
+
+    return {
+        "status": status,
+        "dimensions_present": present,
+        "dimensions_missing": missing,
+        "dimensions_count": count,
+        "dimensions_confirmed_count": count_confirmed,
+        "is_r2_sensitive": is_r2_sensitive,
+        "compatibility_factors_present": compat_present,
+        "has_rag_candidate_source": has_rag_candidate,
+        "has_oem_web_source": has_oem_web,
+        "requires_human_review": status == "RAG_CANDIDATE_REQUIRES_REVIEW" or has_rag_candidate,
+    }
+
+
+PLACEHOLDER_RE = re.compile(r'\b(TODO|TBD|FIXME)\b|<%|\{\{')
+
+
+def validate_anti_filler(body):
+    """Anti-filler gate : detect placeholders + stamp generation_mode metadata."""
+    m = PLACEHOLDER_RE.search(body)
+    if m:
+        return {
+            "pass": False,
+            "reason": f"placeholder found: {m.group()}",
+            "generation_mode": "deterministic_transform_only",
+            "llm_used": False,
+            "paraphrase_used": False,
+        }
+    return {
+        "pass": True,
+        "reason": "deterministic_transform_only",
+        "generation_mode": "deterministic_transform_only",
+        "llm_used": False,
+        "paraphrase_used": False,
+        "sources_only": True,
+    }
+
+
+def compute_content_hash(body):
+    """SHA256 hex of body for idempotence content_hash check."""
+    return hashlib.sha256(body.encode("utf-8")).hexdigest()
 def build_proposal_v2(raw, web_corpus, dimensions, schema_option): raise NotImplementedError("Task 6")
 def validate_schema(frontmatter, schema_option): raise NotImplementedError("Task 6")
 def write_run_log(run_data): raise NotImplementedError("Task 7")
