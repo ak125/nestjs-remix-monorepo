@@ -9,8 +9,20 @@ name: Vault Canon Exists
 # Promotion vers blocking (continue-on-error: false) = PR 2 lignes après vault
 # ratifie le premier ADR via ce mécanisme (preuve qu'il accepte la résolution).
 #
+# V1.1 (2026-05-28) — scope extension additive : ajout audit/** + docs/**
+# pour couvrir les artefacts dérivés du repo (verdicts, audits, rapports,
+# proposals), conformément au canon lexical fresh 2026-05-28
+# feedback_canon_vs_reference_post_inc_2026_016 : "Artefacts dérivés
+# (audit/docs/rapports/verdicts) éviter 'Schema canon'/'Skill canon',
+# préférer 'de référence'". Reste warn-only, aucune logique de scan modifiée.
+#
+# Limitation V1 connue (résolue en V2 ast-grep) : pattern regex `canon` peut
+# faussement matcher des chemins comme `.spec/00-canon/...` (folder name
+# canonique du projet, non doctrinal). V2 utilisera ast-grep markdown-aware.
+#
 # Refs : ADR-060 (repository roles), INC-2026-016 (authority drift PR #765),
-# feedback_no_canon_claim_without_vault_adr (mémoire Layer 0).
+# feedback_no_canon_claim_without_vault_adr (mémoire Layer 0),
+# feedback_canon_vs_reference_post_inc_2026_016 (mémoire Layer 0 fresh 05-28).
 
 on:
   pull_request:
@@ -19,6 +31,9 @@ on:
       - '.spec/**'
       - '.github/**'
       - 'CLAUDE.md'
+      # V1.1 — extension scope artefacts dérivés (2026-05-28)
+      - 'audit/**'
+      - 'docs/**'
 
 permissions:
   contents: read
@@ -57,7 +72,8 @@ jobs:
         run: |
           set -euo pipefail
           changed=$(git diff --name-only "origin/${{ github.base_ref }}...HEAD" \
-            -- '.claude/**' '.spec/**' '.github/**' 'CLAUDE.md' 2>/dev/null || true)
+            -- '.claude/**' '.spec/**' '.github/**' 'CLAUDE.md' \
+               'audit/**' 'docs/**' 2>/dev/null || true)
           if [ -z "$changed" ]; then
             echo "no_changed=true" >> "$GITHUB_OUTPUT"
             echo "ℹ️ No changed files in scoped paths." >> "$GITHUB_STEP_SUMMARY"
