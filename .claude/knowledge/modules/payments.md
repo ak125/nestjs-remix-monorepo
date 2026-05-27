@@ -2,7 +2,7 @@
 module: payments
 sources:
 - backend/src/modules/payments
-last_scan: '2026-05-24'
+last_scan: '2026-05-27'
 primary_files:
 - backend/src/modules/payments/controllers/paybox-callback.controller.ts
 - backend/src/modules/payments/controllers/paybox-monitoring.controller.ts

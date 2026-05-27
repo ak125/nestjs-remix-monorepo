@@ -2,7 +2,7 @@
 module: maintenance
 sources:
 - backend/src/modules/maintenance
-last_scan: '2026-05-24'
+last_scan: '2026-05-27'
 primary_files:
 - backend/src/modules/maintenance/maintenance.module.ts
 depends_on: []
