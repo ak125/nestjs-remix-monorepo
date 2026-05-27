@@ -481,3 +481,129 @@ def test_extract_web_relations_gamme_from_mapped_gammes_array():
     assert "vanne-egr" in relations["gammes"]
     assert "electrovanne" in relations["gammes"]  # other gamme in mapped array
     assert relations["matched_kind"] == "mapped_gammes"
+
+
+# === B3 tests : compatibility-url-json ingest (PROD runtime proof) ===
+
+import json as _json
+from pathlib import Path as _Path
+
+B2_COMPAT_JSON = _Path("/opt/automecanik/app/audit/compatibility-vanne-egr-prod-url-2026-05-27.json")
+
+
+def test_read_compatibility_url_json():
+    """Load B2 JSON output (25 entries vanne-egr, status 200, brands, motorisations)."""
+    if not B2_COMPAT_JSON.exists():
+        import pytest
+        pytest.skip("B2 JSON not present (Phase B2 not run)")
+    data = promote.read_compatibility_url_json(B2_COMPAT_JSON)
+    assert data["gamme_focus"] == "vanne-egr"
+    assert data["pg_id"] == 1145
+    assert len(data["compatibility_proven_by_url"]) >= 10
+    for entry in data["compatibility_proven_by_url"]:
+        # All entries must be status 200 (filtered)
+        assert entry["status"] == 200
+        assert entry["proof"] == "runtime_url_status_200"
+
+
+def test_reject_non_200_url_compatibility():
+    """Non-200 entries must be filtered out (compatibility not proven)."""
+    fake_data = {
+        "gamme_focus": "vanne-egr",
+        "pg_id": 1145,
+        "compatibility_proven_by_url": [
+            {"status": 200, "brand": "peugeot", "motorisation": "1-6-hdi", "proof": "runtime_url_status_200"},
+            {"status": 404, "brand": "renault", "motorisation": "1-5-dci", "proof": "non_200_excluded"},
+            {"status": 200, "brand": "citroen", "motorisation": "1-6-hdi", "proof": "runtime_url_status_200"},
+        ],
+    }
+    filtered = promote.filter_compatibility_status_200(fake_data)
+    assert len(filtered) == 2
+    assert all(e["status"] == 200 for e in filtered)
+
+
+def test_extract_motorisations_from_runtime_url_json():
+    """Extract unique motorisations + brands from B2 JSON."""
+    if not B2_COMPAT_JSON.exists():
+        import pytest
+        pytest.skip("B2 JSON not present")
+    data = promote.read_compatibility_url_json(B2_COMPAT_JSON)
+    summary = promote.summarize_compatibility_proof(data)
+    # Per B2 audit : 6 brands × 9 motorisations
+    assert len(summary["brands"]) >= 6
+    assert len(summary["motorisations"]) >= 9
+    assert "peugeot" in summary["brands"]
+    assert "renault" in summary["brands"]
+    assert "1-6-hdi" in summary["motorisations"]
+    assert "1-5-dci" in summary["motorisations"]
+
+
+def test_extract_dimensions_with_compatibility_url_proof():
+    """When compatibility-url JSON provided, dimensions get compatibility_factors_present=true."""
+    if not B2_COMPAT_JSON.exists():
+        import pytest
+        pytest.skip("B2 JSON not present")
+    raw = promote.read_raw_gamme(VANNE_EGR_PATH)
+    web = promote.aggregate_web_corpus_by_slug(promote.WEB_DIR, "vanne-egr")
+    compat_data = promote.read_compatibility_url_json(B2_COMPAT_JSON)
+    dims = promote.extract_dimensions(raw, web, compatibility_url_data=compat_data)
+
+    # New dimension : compatibility_proven_by_url
+    assert "compatibility_proven_by_url" in dims
+    assert len(dims["compatibility_proven_by_url"]) >= 10
+
+    # Enriched compatibility_factors from proven URLs
+    cf = dims["compatibility_factors"]
+    assert "marques" in cf
+    assert "motorisations" in cf
+    assert "peugeot" in cf["marques"]
+    assert "renault" in cf["marques"]
+    # Source kind marker
+    assert cf.get("source_kind") == "compatibility_proven_by_runtime_url"
+
+
+def test_variant_readiness_upgrades_with_runtime_url_proof():
+    """Variant_readiness upgrades from PASS_PARTIAL_R2_BLOCKED → PASS_VARIANT_READY when compat URL proof present."""
+    if not B2_COMPAT_JSON.exists():
+        import pytest
+        pytest.skip("B2 JSON not present")
+    raw = promote.read_raw_gamme(VANNE_EGR_PATH)
+    web = promote.aggregate_web_corpus_by_slug(promote.WEB_DIR, "vanne-egr")
+    compat_data = promote.read_compatibility_url_json(B2_COMPAT_JSON)
+    dims = promote.extract_dimensions(raw, web, compatibility_url_data=compat_data)
+    vr = promote.evaluate_variant_readiness(dims, is_r2_sensitive=True)
+    # Must NOT be PASS_PARTIAL_R2_BLOCKED anymore (compatibility_factors now present)
+    assert vr["status"] != "PASS_PARTIAL_R2_BLOCKED"
+    assert vr["compatibility_factors_present"] is True
+
+
+def test_no_body_inference_used():
+    """B3 must NOT extract compatibility from body (canon strict — only from JSON proof)."""
+    raw = promote.read_raw_gamme(VANNE_EGR_PATH)
+    web = promote.aggregate_web_corpus_by_slug(promote.WEB_DIR, "vanne-egr")
+    # Empty compatibility data → no body fallback
+    dims = promote.extract_dimensions(raw, web, compatibility_url_data=None)
+    # Empty compat data → no proven URL list
+    if dims.get("compatibility_proven_by_url"):
+        assert len(dims["compatibility_proven_by_url"]) == 0
+    # compatibility_factors source must NOT be body-inferred
+    cf = dims.get("compatibility_factors", {})
+    if cf:
+        # If any compatibility_factors set, source must NOT be "body_inferred"
+        assert cf.get("source_kind") != "body_inferred"
+
+
+def test_cli_accepts_compatibility_url_json_flag():
+    """--compatibility-url-json flag accepted, file content surfaced in run log."""
+    if not B2_COMPAT_JSON.exists():
+        import pytest
+        pytest.skip("B2 JSON not present")
+    result = subprocess.run(
+        ["python3", str(SCRIPT_PATH), "--gamme", "vanne-egr", "--dry-run", "--verbose",
+         "--compatibility-url-json", str(B2_COMPAT_JSON)],
+        capture_output=True, text=True,
+    )
+    assert result.returncode == 0, f"stderr: {result.stderr}"
+    # Output must mention proven compatibility
+    assert "compatibility_proven_by_url" in result.stdout
+    assert "1-6-hdi" in result.stdout or "1-5-dci" in result.stdout

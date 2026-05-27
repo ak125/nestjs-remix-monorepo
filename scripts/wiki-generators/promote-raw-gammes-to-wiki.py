@@ -212,6 +212,52 @@ def aggregate_web_corpus_by_slug(web_dir, slug):
     return results
 
 
+# === B3 : compatibility-url-json ingest (PROD runtime proof source) ===
+
+def read_compatibility_url_json(path):
+    """B3 — Read B2 audit JSON (compatibility-vanne-egr-prod-url-*.json).
+
+    Returns dict with gamme_focus, pg_id, compatibility_proven_by_url (filtered status 200).
+    Canon : non-200 entries are EXCLUDED (compatibility not proven).
+    """
+    if not path.exists():
+        raise FileNotFoundError(f"Compatibility URL JSON not found: {path}")
+    data = json.loads(path.read_text(encoding="utf-8"))
+    # Filter status 200 only (defensive — JSON may already be filtered)
+    filtered = filter_compatibility_status_200(data)
+    return {
+        "gamme_focus": data.get("gamme_focus"),
+        "pg_id": data.get("pg_id"),
+        "audit_id": data.get("audit_id"),
+        "audit_date": data.get("audit_date"),
+        "compatibility_proven_by_url": filtered,
+        "url_count": len(filtered),
+        "url_count_total_input": len(data.get("compatibility_proven_by_url", [])),
+    }
+
+
+def filter_compatibility_status_200(data):
+    """Filter entries to keep only status 200 (compatibility proven by runtime URL)."""
+    entries = data.get("compatibility_proven_by_url", []) if isinstance(data, dict) else data
+    return [e for e in entries if e.get("status") == 200]
+
+
+def summarize_compatibility_proof(compat_data):
+    """Extract distinct brands + motorisations + model count from proven entries."""
+    entries = compat_data.get("compatibility_proven_by_url", [])
+    brands = sorted({e["brand"] for e in entries if e.get("brand")})
+    motorisations = sorted({e["motorisation"] for e in entries if e.get("motorisation")})
+    models = sorted({(e["brand"], e["model"]) for e in entries if e.get("model")})
+    brand_moto = sorted({(e["brand"], e["motorisation"]) for e in entries})
+    return {
+        "brands": brands,
+        "motorisations": motorisations,
+        "model_count": len(models),
+        "brand_motorisation_pairs": [{"brand": b, "motorisation": m} for b, m in brand_moto],
+        "total_proven_urls": len(entries),
+    }
+
+
 def extract_web_relations(web_entry):
     """B1.2 — Extract relations (gammes + vehicles) from a web corpus entry.
 
@@ -324,8 +370,13 @@ def _dim_with_status(candidate_val, confirmed_val, is_rag_candidate, confirmed_s
     }
 
 
-def extract_dimensions(raw, web_corpus):
-    """Extract dimensions via candidate/confirmed parallel pattern (canon doctrine 2026-05-27)."""
+def extract_dimensions(raw, web_corpus, compatibility_url_data=None):
+    """Extract dimensions via candidate/confirmed parallel pattern (canon doctrine 2026-05-27).
+
+    B3 : compatibility_url_data (optional, B2 JSON) = runtime URL proven tuples.
+    When provided, enriches compatibility_factors with proven brands/motorisations
+    (source_kind: compatibility_proven_by_runtime_url). NEVER body-inferred.
+    """
     fm_full = raw["frontmatter_full"]
     safe_tax = raw["safe_taxonomic_fields"]
     dom = fm_full.get("domain", {}) or {}
@@ -403,7 +454,7 @@ def extract_dimensions(raw, web_corpus):
     # related_parts : taxonomic, always safe (slugs only)
     related_parts = list(safe_tax.get("related_parts", []) or [])
 
-    # compatibility_factors : web extraction only (factuel motorisation)
+    # compatibility_factors : web extraction (factuel motorisation) + B3 URL-proven enrichment
     compat = {}
     motos = sorted(set(re.findall(
         r'\b(\d\.\d\s*(?:dCi|HDi|TDI|TCe|HDI|JTDM|CRDi))\b', all_web_body, re.IGNORECASE
@@ -413,6 +464,22 @@ def extract_dimensions(raw, web_corpus):
     eu = sorted(set(re.findall(r'(?i)\bEuro\s*(\d)\b', all_web_body)))
     if eu:
         compat["norme_euro"] = [f"Euro {e}" for e in eu]
+
+    # B3 enrichment : compatibility_proven_by_runtime_url (NEVER body-inferred)
+    compatibility_proven_by_url = []
+    if compatibility_url_data:
+        compat_entries = compatibility_url_data.get("compatibility_proven_by_url", [])
+        # Only status 200 proven entries (defensive — already filtered by read_compatibility_url_json)
+        compatibility_proven_by_url = [e for e in compat_entries if e.get("status") == 200]
+        if compatibility_proven_by_url:
+            summary = summarize_compatibility_proof(compatibility_url_data)
+            # Merge into compat dict (enrichment, not replacement)
+            compat["marques"] = summary["brands"]
+            compat["motorisations"] = summary["motorisations"]
+            compat["brand_motorisation_pairs"] = summary["brand_motorisation_pairs"]
+            compat["model_count_distinct"] = summary["model_count"]
+            compat["source_kind"] = "compatibility_proven_by_runtime_url"
+            compat["proven_url_count"] = summary["total_proven_urls"]
 
     # maintenance_context : web km + safe taxonomic must_not_contain
     km_matches = KM_RE.findall(all_web_body)
@@ -458,6 +525,7 @@ def extract_dimensions(raw, web_corpus):
         "fuel_engine_differences": fuel_diff,
         "rag_candidate_present": is_cand,
         "web_relations": web_relations,
+        "compatibility_proven_by_url": compatibility_proven_by_url,
     }
 # === Task 5 : variant-readiness gate + anti-filler + content_hash ===
 
@@ -795,6 +863,8 @@ def main():
     parser.add_argument("--verbose", action="store_true", help="Per-step trace")
     parser.add_argument("--owner-go", action="store_true",
                         help="Explicit owner unlock for non-dry-run write (Task 8 only)")
+    parser.add_argument("--compatibility-url-json", type=str, default=None,
+                        help="B3 — Path to B2 audit JSON with compatibility_proven_by_url entries")
     args = parser.parse_args()
 
     schema_option = os.getenv("SCHEMA_OPTION", SCHEMA_OPTION_DEFAULT)
@@ -808,12 +878,23 @@ def main():
     # Read RAW + aggregate web corpus
     raw = read_raw_gamme(raw_path)
     web = aggregate_web_corpus_by_slug(WEB_DIR, args.gamme)
+
+    # B3 : optional compatibility-url-json ingest (PROD runtime proof)
+    compat_data = None
+    if args.compatibility_url_json:
+        compat_path = Path(args.compatibility_url_json)
+        compat_data = read_compatibility_url_json(compat_path)
+        if args.verbose:
+            sys.stderr.write(f"[promote] compatibility_url_json loaded: "
+                             f"{compat_data['url_count']} proven URLs "
+                             f"(filtered status 200 from {compat_data['url_count_total_input']})\n")
+
     if args.verbose:
         sys.stderr.write(f"[promote] is_rag_candidate={raw['is_rag_candidate']} "
                          f"web_corpus_files={len(web)}\n")
 
     # Extract dimensions + evaluate gates
-    dims = extract_dimensions(raw, web)
+    dims = extract_dimensions(raw, web, compatibility_url_data=compat_data)
     vr = evaluate_variant_readiness(dims, is_r2_sensitive=True)
     if args.verbose:
         sys.stderr.write(f"[promote] variant_readiness={vr['status']} "
@@ -870,6 +951,8 @@ def main():
                                              if rel.get("relation_status") == "VEHICLE_EVIDENCE_PRESENT"),
             "web_no_vehicle_evidence": sum(1 for rel in dims.get("web_relations", [])
                                            if rel.get("relation_status") == "NO_VEHICLE_EVIDENCE"),
+            "compatibility_proven_by_url_count": len(dims.get("compatibility_proven_by_url", [])),
+            "compatibility_factors_source_kind": dims.get("compatibility_factors", {}).get("source_kind"),
         }],
     }
     print("\nRUN LOG:")
