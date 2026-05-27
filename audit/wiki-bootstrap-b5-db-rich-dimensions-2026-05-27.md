@@ -109,7 +109,7 @@ Conformément au canon strict :
 
 ## Décisions possibles owner suivantes
 
-**(Task 8 write réel vanne-egr)** — schema Option A maintenant clairement justifié : compatibility_factors prouvée 2 niveaux × motorisation_profiles[] rich → entity_data.dimensions vaut la modif schema. Path canon ADR-033 sas wiki workflow.
+**(Task 8 write réel vanne-egr)** — schema Option A maintenant clairement justifié : compatibility_factors prouvée 2 niveaux × motorisation_profiles[] rich → entity_data.dimensions vaut la modif schema. Path de référence ADR-033 (vault status: proposed, sas wiki workflow).
 
 **(B6 extension multi-gammes)** — appliquer B2→B3→B4→B5 sur top R2 FR suivantes (injecteur, kit-de-distribution, pompe-a-eau, alternateur, sonde-lambda). Matrice étendue.
 
