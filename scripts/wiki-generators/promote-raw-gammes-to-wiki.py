@@ -152,10 +152,207 @@ def aggregate_web_corpus_by_slug(web_dir, slug):
     return results
 
 
-# === Function stubs populated by Tasks 4-7 via TDD ===
+# === Task 4 : source tier classifier + 9 dimensions extraction (candidate/confirmed parallel) ===
 
-def classify_source_tier(domain, frontmatter=None): raise NotImplementedError("Task 4")
-def extract_dimensions(raw, web_corpus): raise NotImplementedError("Task 4")
+TIER1_OEM = {
+    "bremboparts.com", "textar.com", "gates.com", "monroe.com", "bilstein.com",
+    "valeo.com", "boschaftermarket.com", "bosch-mobility.com", "mahle-aftermarket.com",
+    "sachs.de", "meyle.com", "zf.com", "aftermarket.zf.com",
+    "continental-aftermarket.com", "kyb-europe.com", "ngkntk.com", "bosal.com",
+}
+TIER2 = {"fr.wikipedia.org", "en.wikipedia.org"}
+
+SYMPTOMS_RE = re.compile(
+    r'(?i)(symptôme|panne|dysfonctionnement|défaillance|encrassé|fumée|'
+    r'perte de puissance|voyant|ralenti)'
+)
+SELECTION_RE = re.compile(
+    r"(?i)(critère|vérifier|choisir|sélection|attention au|s'assurer|important de)"
+)
+KM_RE = re.compile(r'\b(\d{2,3})\s*000\s*km\b', re.IGNORECASE)
+OEM_REF_RE = re.compile(r'\b[A-Z]?\d{5,10}[A-Z]?\b')
+FUNCTION_HINT_RE = re.compile(
+    r'(?i)^(.*?(?:permet|sert à|assure|régule|recycle|filtre|alimente|charge|protège|réduit|améliore).{20,200})'
+)
+
+
+def classify_source_tier(domain, frontmatter=None):
+    """Classify source tier. RAG-recycled-candidate acceptable but requires_review."""
+    if frontmatter and is_rag_recycled_candidate(frontmatter):
+        return "rag_recycled_candidate"
+    if not domain:
+        return "unknown"
+    n = domain.lstrip("www.").lower()
+    if n in TIER1_OEM or domain.lower() in TIER1_OEM:
+        return "tier1"
+    if n in TIER2 or domain.lower() in TIER2:
+        return "tier2"
+    return "unknown"
+
+
+def _cross_check(candidate, confirmed):
+    """Determine cross_check_status between RAG candidate and OEM-confirmed value."""
+    cand_present = bool(candidate) and (str(candidate).strip() if not isinstance(candidate, list) else len(candidate) > 0)
+    conf_present = bool(confirmed) and (str(confirmed).strip() if not isinstance(confirmed, list) else len(confirmed) > 0)
+    if not cand_present and not conf_present:
+        return "NEITHER"
+    if not cand_present and conf_present:
+        return "WEB_ONLY"
+    if cand_present and not conf_present:
+        return "RAG_ONLY"
+    # Both present : substring overlap heuristic
+    c_low = " ".join(map(str, candidate)).lower() if isinstance(candidate, list) else str(candidate).lower()
+    w_low = " ".join(map(str, confirmed)).lower() if isinstance(confirmed, list) else str(confirmed).lower()
+    overlap = len(set(c_low.split()) & set(w_low.split()))
+    if overlap >= 3:
+        return "WEB_CONFIRMS_RAG"
+    return "WEB_DIFFERS_FROM_RAG"
+
+
+def _dim_with_status(candidate_val, confirmed_val, is_rag_candidate, confirmed_source_uri=None):
+    """Build a dimension dict with candidate/confirmed/cross_check_status structure."""
+    return {
+        "candidate_value": candidate_val,
+        "candidate_source_kind": "rag_recycled_candidate" if is_rag_candidate else "ssot",
+        "candidate_requires_review": is_rag_candidate and bool(candidate_val),
+        "confirmed_value": confirmed_val,
+        "confirmed_source_kind": "confirmed_by_web" if confirmed_val else None,
+        "confirmed_source_uri": confirmed_source_uri,
+        "cross_check_status": _cross_check(candidate_val, confirmed_val),
+    }
+
+
+def extract_dimensions(raw, web_corpus):
+    """Extract dimensions via candidate/confirmed parallel pattern (canon doctrine 2026-05-27)."""
+    fm_full = raw["frontmatter_full"]
+    safe_tax = raw["safe_taxonomic_fields"]
+    dom = fm_full.get("domain", {}) or {}
+    sel = fm_full.get("selection", {}) or {}
+    is_cand = raw["is_rag_candidate"]
+    today = datetime.now().date().isoformat()
+
+    # source_refs : RAG file flagged candidate (requires_review), web sources tier-classified
+    refs = []
+    if is_cand:
+        refs.append({
+            "kind": "rag_recycled_candidate",
+            "origin_repo": "automecanik-raw",
+            "origin_path": raw["source_path"].replace(str(RAW_REPO) + "/", ""),
+            "tier": "rag_recycled_candidate",
+            "trust": "candidate",
+            "requires_review": True,
+            "allowed_for": ["proposal_review", "candidate_fact_extraction"],
+            "forbidden_for": ["wiki_accepted_auto", "runtime_direct"],
+        })
+    else:
+        refs.append({
+            "kind": "recycled",
+            "origin_repo": "automecanik-raw",
+            "origin_path": raw["source_path"].replace(str(RAW_REPO) + "/", ""),
+            "captured_at": fm_full.get("updated_at") or today,
+            "tier": "ssot",
+            "trust": "confirmed",
+            "requires_review": False,
+        })
+    for w in web_corpus:
+        refs.append({
+            "kind": "oem_web",
+            "source_uri": w.get("source_uri", ""),
+            "source_domain": w.get("source_domain", ""),
+            "content_hash": w.get("content_hash"),
+            "tier": classify_source_tier(w.get("source_domain", "")),
+            "trust": "confirmed",
+            "requires_review": False,
+        })
+
+    all_web_body = "\n".join(w.get("body", "") for w in web_corpus)
+
+    # function : candidate from RAG domain.role + confirmed from OEM web FUNCTION_HINT_RE
+    rag_function = (dom.get("role") or "").strip()
+    web_function, web_function_uri = "", None
+    for w in web_corpus:
+        m = FUNCTION_HINT_RE.search(w.get("body", "")[:2000])
+        if m:
+            web_function = m.group(1).strip()[:280]
+            web_function_uri = w.get("source_uri")
+            break
+    function = _dim_with_status(rag_function, web_function, is_cand, web_function_uri)
+
+    # selection_criteria : candidate from RAG selection.criteria + confirmed from OEM web
+    rag_sel = list(sel.get("criteria", []) or [])
+    web_sel = []
+    for line in all_web_body.split("\n"):
+        if SELECTION_RE.search(line) and 30 < len(line) < 200 and line not in web_sel:
+            web_sel.append(line.strip())
+        if len(web_sel) >= 8:
+            break
+    selection_criteria = _dim_with_status(rag_sel, web_sel, is_cand)
+
+    # symptoms : candidate from RAG domain.confusion_with + confirmed from OEM web
+    rag_sym = [c.get("difference", "") for c in (dom.get("confusion_with", []) or []) if c.get("difference")]
+    web_sym = []
+    for line in all_web_body.split("\n"):
+        if SYMPTOMS_RE.search(line) and len(line) > 15 and line not in web_sym:
+            web_sym.append(line.strip())
+        if len(web_sym) >= 10:
+            break
+    symptoms = _dim_with_status(rag_sym, web_sym, is_cand)
+
+    # related_parts : taxonomic, always safe (slugs only)
+    related_parts = list(safe_tax.get("related_parts", []) or [])
+
+    # compatibility_factors : web extraction only (factuel motorisation)
+    compat = {}
+    motos = sorted(set(re.findall(
+        r'\b(\d\.\d\s*(?:dCi|HDi|TDI|TCe|HDI|JTDM|CRDi))\b', all_web_body, re.IGNORECASE
+    )))
+    if motos:
+        compat["motorisation"] = motos[:20]
+    eu = sorted(set(re.findall(r'(?i)\bEuro\s*(\d)\b', all_web_body)))
+    if eu:
+        compat["norme_euro"] = [f"Euro {e}" for e in eu]
+
+    # maintenance_context : web km + safe taxonomic must_not_contain
+    km_matches = KM_RE.findall(all_web_body)
+    maint = {}
+    if km_matches:
+        kms = sorted(int(k) for k in km_matches)
+        maint["periodicite_km"] = kms[len(kms) // 2] * 1000
+    must_not = dom.get("must_not_contain", []) or []
+    if must_not:
+        maint["risques_erreur"] = list(must_not)[:5]
+        maint["risques_erreur_source"] = "rag_recycled_candidate" if is_cand else "ssot"
+
+    # oem_references : web body extraction only
+    oem_refs = []
+    seen = set()
+    for ref in OEM_REF_RE.findall(all_web_body)[:50]:
+        if ref not in seen and len(ref) >= 6:
+            oem_refs.append({"ref": ref})
+            seen.add(ref)
+        if len(oem_refs) >= 20:
+            break
+
+    # fuel_engine_differences : web body detection
+    fuel_diff = {}
+    if re.search(r'(?i)diesel', all_web_body) and re.search(r'(?i)essence', all_web_body):
+        fuel_diff["note"] = (
+            "diesel et essence mentionnés dans sources OEM — "
+            "vérification humaine de la différence technique requise"
+        )
+
+    return {
+        "function": function,
+        "source_refs": refs,
+        "related_parts": related_parts,
+        "selection_criteria": selection_criteria,
+        "symptoms": symptoms,
+        "compatibility_factors": compat,
+        "maintenance_context": maint,
+        "oem_references": oem_refs,
+        "fuel_engine_differences": fuel_diff,
+        "rag_candidate_present": is_cand,
+    }
 def evaluate_variant_readiness(dimensions, is_r2_sensitive): raise NotImplementedError("Task 5")
 def validate_anti_filler(body): raise NotImplementedError("Task 5")
 def compute_content_hash(body): raise NotImplementedError("Task 5")

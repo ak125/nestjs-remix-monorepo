@@ -94,3 +94,75 @@ def test_aggregate_web_corpus_vanne_egr():
 def test_aggregate_web_corpus_unknown_slug():
     files = promote.aggregate_web_corpus_by_slug(promote.WEB_DIR, "this-slug-doesnt-exist-12345")
     assert files == []
+
+
+# === Task 4 tests : source tier classifier + dimensions extraction candidate/confirmed ===
+
+def test_classify_source_tier_tier1():
+    assert promote.classify_source_tier("bremboparts.com") == "tier1"
+    assert promote.classify_source_tier("www.gates.com") == "tier1"
+    assert promote.classify_source_tier("boschaftermarket.com") == "tier1"
+    assert promote.classify_source_tier("aftermarket.zf.com") == "tier1"
+
+
+def test_classify_source_tier_tier2():
+    assert promote.classify_source_tier("fr.wikipedia.org") == "tier2"
+    assert promote.classify_source_tier("en.wikipedia.org") == "tier2"
+
+
+def test_classify_source_tier_unknown_and_empty():
+    assert promote.classify_source_tier("random-blog.com") == "unknown"
+    assert promote.classify_source_tier("") == "unknown"
+
+
+def test_classify_source_tier_rag_candidate():
+    """RAG-recycled frontmatter → tier rag_recycled_candidate (acceptable mais requires_review)."""
+    rag_fm = {"lifecycle": {"last_enriched_by": "script:rag-enrich-from-web-corpus"}}
+    assert promote.classify_source_tier("internal", frontmatter=rag_fm) == "rag_recycled_candidate"
+
+
+def test_extract_dimensions_vanne_egr_candidate_confirmed():
+    """Per canon doctrine 2026-05-27 : candidate (RAG) + confirmed (OEM web) parallel."""
+    raw = promote.read_raw_gamme(VANNE_EGR_PATH)
+    web = promote.aggregate_web_corpus_by_slug(promote.WEB_DIR, "vanne-egr")
+    dims = promote.extract_dimensions(raw, web)
+    # 9 dimensions keys must exist
+    for key in ["function", "source_refs", "related_parts", "selection_criteria", "symptoms",
+                "compatibility_factors", "maintenance_context", "oem_references", "fuel_engine_differences"]:
+        assert key in dims, f"Missing dimension {key}"
+
+    # function : candidate/confirmed/cross_check_status structure
+    func = dims["function"]
+    assert isinstance(func, dict)
+    assert "candidate_value" in func
+    assert "candidate_source_kind" in func
+    assert "confirmed_value" in func
+    assert "cross_check_status" in func
+    assert func["cross_check_status"] in (
+        "WEB_CONFIRMS_RAG", "WEB_DIFFERS_FROM_RAG", "RAG_ONLY", "WEB_ONLY", "NEITHER"
+    )
+
+    # If RAG candidate, marked requires_review
+    if raw["is_rag_candidate"] and func["candidate_value"]:
+        assert func["candidate_requires_review"] is True
+
+    # source_refs : RAG candidate flagged
+    rag_refs = [r for r in dims["source_refs"] if r.get("tier") == "rag_recycled_candidate"]
+    if raw["is_rag_candidate"]:
+        assert len(rag_refs) >= 1
+        assert rag_refs[0]["trust"] == "candidate"
+        assert rag_refs[0]["requires_review"] is True
+        assert "wiki_accepted_auto" in rag_refs[0]["forbidden_for"]
+
+    # related_parts taxonomic safe (slug list)
+    assert isinstance(dims["related_parts"], list)
+
+
+def test_extract_dimensions_empty_corpus():
+    """No web corpus → confirmed_value empty, candidate from RAG only."""
+    raw = promote.read_raw_gamme(VANNE_EGR_PATH)
+    dims = promote.extract_dimensions(raw, [])
+    func = dims["function"]
+    # Either RAG_ONLY (if candidate present) or NEITHER
+    assert func["cross_check_status"] in ("RAG_ONLY", "NEITHER")
+    assert not func["confirmed_value"]
