@@ -876,6 +876,24 @@ def build_proposal_v2(raw, web_corpus, dimensions, schema_option):
         "references": [],
     }
 
+    # Task 8a/8b — Option A : inject entity_data.dimensions when schema v2.1.0 accepts it
+    if schema_option in ("A", "B"):
+        ed_dimensions = {}
+        cf = dimensions.get("compatibility_factors") or {}
+        if cf:
+            # Filter only schema-allowed keys (v2.1.0 additive set)
+            allowed_cf_keys = {"source_kind", "marques", "motorisations", "fuels",
+                               "norme_euro", "motorisation", "brand_motorisation_pairs",
+                               "model_count_distinct", "type_ids", "power_ps_range",
+                               "year_range", "proven_url_count", "db_aligned_count", "stale_count"}
+            ed_dimensions["compatibility_factors"] = {k: v for k, v in cf.items() if k in allowed_cf_keys}
+        mp = dimensions.get("motorisation_profiles") or []
+        if mp:
+            # Schema requires brand, model, type_id, source_url, db_status (all per-entry)
+            ed_dimensions["motorisation_profiles"] = mp
+        if ed_dimensions:
+            entity_data["dimensions"] = ed_dimensions
+
     proposal_fm = {
         "schema_version": "2.0.0",
         "id": f"gamme:{safe_tax['slug']}",
@@ -909,7 +927,11 @@ def build_proposal_v2(raw, web_corpus, dimensions, schema_option):
 
 
 def validate_schema(frontmatter, schema_option):
-    """Validate entity_data subtree vs gamme.schema.json (Option C strips dimensions key)."""
+    """Validate entity_data subtree vs gamme.schema.json.
+
+    Option C (legacy default) : strips `dimensions` key before validation (schema v2.0.0).
+    Option A/B (Task 8a additive) : keeps `dimensions` key, validates against schema v2.1.0.
+    """
     try:
         with open(SCHEMA_PATH) as f:
             schema = json.load(f)
@@ -917,9 +939,10 @@ def validate_schema(frontmatter, schema_option):
         return {"valid": False, "errors": [f"schema_load_failed: {e}"]}
     ed = frontmatter.get("entity_data", {}) or {}
     if schema_option == "C":
-        # Strip dimensions from entity_data before validation (not expected by schema)
+        # Strip dimensions from entity_data before validation (v2.0.0 schema doesn't accept it)
         ed_to_validate = {k: v for k, v in ed.items() if k != "dimensions"}
     else:
+        # Option A/B : v2.1.0 schema accepts dimensions natively
         ed_to_validate = ed
     try:
         jsonschema.validate(ed_to_validate, schema)
