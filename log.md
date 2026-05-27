@@ -422,3 +422,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/wiki-bootstrap-promote-raw-gammes-2026-05-27`
 - **Décision** : chore(registry): add globs for wiki-bootstrap audit + cluster reports (+16 other commits)
 - **Sortie** : PR aucune | commits d1fb809e7 59307118f 11f3ea73b de9a3057c 4385979f2 d3707b8d1 f6f936e2c e60b929e6 cb1f64b60 3d77fd76b 22eb283c9 1ea6d8bfb 9f5822d3b e25d9c160 6f1de06ef c913037e4 4e1478cbd
+
+## 2026-05-27 — feat/wiki-bootstrap-promote-raw-gammes-2026-05-27 (auto)
+
+- **Branche** : `feat/wiki-bootstrap-promote-raw-gammes-2026-05-27`
+- **Décision** : chore(registry): add globs for compatibility audit reports (+19 other commits)
+- **Sortie** : PR aucune | commits bd090b8e3 3b206ce6c 97bf40745 d1fb809e7 59307118f 11f3ea73b de9a3057c 4385979f2 d3707b8d1 f6f936e2c e60b929e6 cb1f64b60 3d77fd76b 22eb283c9 1ea6d8bfb 9f5822d3b e25d9c160 6f1de06ef c913037e4 4e1478cbd
