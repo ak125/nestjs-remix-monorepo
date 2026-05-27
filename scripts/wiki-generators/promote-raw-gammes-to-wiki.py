@@ -215,21 +215,49 @@ def aggregate_web_corpus_by_slug(web_dir, slug):
 # === B3 : compatibility-url-json ingest (PROD runtime proof source) ===
 
 def read_compatibility_url_json(path):
-    """B3 — Read B2 audit JSON (compatibility-vanne-egr-prod-url-*.json).
+    """B3+B5 — Read B2 audit JSON OR B4 cross-check JSON (auto-detect format).
 
-    Returns dict with gamme_focus, pg_id, compatibility_proven_by_url (filtered status 200).
-    Canon : non-200 entries are EXCLUDED (compatibility not proven).
+    Returns dict with gamme_focus, pg_id, compatibility_proven_by_url (filtered status 200 + PASS_DB_ALIGNED).
+    Canon :
+      - non-200 entries are EXCLUDED (compatibility not proven by runtime URL)
+      - STALE_URL_DB_MISSING entries are EXCLUDED from confirmed dimensions (B5)
     """
     if not path.exists():
         raise FileNotFoundError(f"Compatibility URL JSON not found: {path}")
     data = json.loads(path.read_text(encoding="utf-8"))
-    # Filter status 200 only (defensive — JSON may already be filtered)
+
+    # B5 — Auto-detect B4 cross-check format (has 'results' array + 'classifications')
+    is_b4_format = "results" in data and "classifications" in data
+    if is_b4_format:
+        # B4 JSON : filter to PASS_DB_ALIGNED only (STALE_URL_DB_MISSING excluded from confirmed)
+        all_results = data.get("results", [])
+        filtered = [e for e in all_results if e.get("classification") == "PASS_DB_ALIGNED"]
+        stale = [e for e in all_results if e.get("classification") == "STALE_URL_DB_MISSING"]
+        # Ensure status field (B4 entries don't have status from B2, defaults to 200 since they came from B2 proven set)
+        for entry in filtered:
+            if "status" not in entry:
+                entry["status"] = 200
+        return {
+            "gamme_focus": data.get("gamme_focus", "multi-gammes"),
+            "audit_id": data.get("audit_id"),
+            "audit_date": data.get("audit_date"),
+            "format": "b4_db_crosscheck",
+            "compatibility_proven_by_url": filtered,
+            "url_count": len(filtered),
+            "stale_db_missing_count": len(stale),
+            "stale_urls": [{"source_url": e.get("source_url"), "classification": e.get("classification"),
+                            "issues": e.get("issues", [])} for e in stale],
+            "url_count_total_input": len(all_results),
+        }
+
+    # B2 format : filter status 200 only
     filtered = filter_compatibility_status_200(data)
     return {
         "gamme_focus": data.get("gamme_focus"),
         "pg_id": data.get("pg_id"),
         "audit_id": data.get("audit_id"),
         "audit_date": data.get("audit_date"),
+        "format": "b2_url_audit",
         "compatibility_proven_by_url": filtered,
         "url_count": len(filtered),
         "url_count_total_input": len(data.get("compatibility_proven_by_url", [])),
@@ -465,21 +493,76 @@ def extract_dimensions(raw, web_corpus, compatibility_url_data=None):
     if eu:
         compat["norme_euro"] = [f"Euro {e}" for e in eu]
 
-    # B3 enrichment : compatibility_proven_by_runtime_url (NEVER body-inferred)
+    # B3+B5 enrichment : compatibility_proven_by_runtime_url (NEVER body-inferred)
     compatibility_proven_by_url = []
+    motorisation_profiles = []
     if compatibility_url_data:
         compat_entries = compatibility_url_data.get("compatibility_proven_by_url", [])
         # Only status 200 proven entries (defensive — already filtered by read_compatibility_url_json)
-        compatibility_proven_by_url = [e for e in compat_entries if e.get("status") == 200]
+        all_filtered = [e for e in compat_entries if e.get("status") == 200]
+        # B5 : if multi-gamme JSON (B4 cross-check), filter by current gamme slug
+        current_gamme_slug = safe_tax.get("slug")
+        compatibility_proven_by_url = [e for e in all_filtered
+                                       if e.get("gamme") == current_gamme_slug or not e.get("gamme")]
+        # If filter yields none, use all (B2 single-gamme JSON)
+        if not compatibility_proven_by_url and all_filtered:
+            compatibility_proven_by_url = all_filtered
+
         if compatibility_proven_by_url:
-            summary = summarize_compatibility_proof(compatibility_url_data)
-            # Merge into compat dict (enrichment, not replacement)
+            summary = summarize_compatibility_proof({"compatibility_proven_by_url": compatibility_proven_by_url})
             compat["marques"] = summary["brands"]
             compat["motorisations"] = summary["motorisations"]
             compat["brand_motorisation_pairs"] = summary["brand_motorisation_pairs"]
             compat["model_count_distinct"] = summary["model_count"]
-            compat["source_kind"] = "compatibility_proven_by_runtime_url"
             compat["proven_url_count"] = summary["total_proven_urls"]
+
+            # B5 — detect DB-rich enrichment (presence of db_type_name/db_type_fuel)
+            is_db_rich = any("db_type_name" in e or "db_type_fuel" in e
+                             for e in compatibility_proven_by_url)
+            if is_db_rich:
+                # B5 enriched dimensions from DB labels
+                fuels = sorted({(e.get("db_type_fuel") or "").strip()
+                                for e in compatibility_proven_by_url
+                                if e.get("db_type_fuel")})
+                power_ps_values = [int(e["db_type_power_ps"]) for e in compatibility_proven_by_url
+                                   if e.get("db_type_power_ps") and str(e["db_type_power_ps"]).isdigit()]
+                year_from_values = [e["db_type_year_from"] for e in compatibility_proven_by_url
+                                    if isinstance(e.get("db_type_year_from"), int)]
+                year_to_values = [e["db_type_year_to"] for e in compatibility_proven_by_url
+                                  if isinstance(e.get("db_type_year_to"), int)]
+                compat["fuels"] = list(fuels)
+                if power_ps_values:
+                    compat["power_ps_range"] = {"min": min(power_ps_values),
+                                                "max": max(power_ps_values),
+                                                "count": len(power_ps_values)}
+                if year_from_values and year_to_values:
+                    compat["year_range"] = {"min": min(year_from_values),
+                                            "max": max(y for y in year_to_values if y)}
+                compat["type_ids"] = sorted({e.get("type_id") for e in compatibility_proven_by_url
+                                              if e.get("type_id")})
+                compat["db_aligned_count"] = len(compatibility_proven_by_url)
+                compat["stale_count"] = compatibility_url_data.get("stale_db_missing_count", 0)
+                compat["source_kind"] = "compatibility_proven_by_runtime_url_and_db"
+
+                # Build motorisation_profiles[] (rich tuples per vehicle-motorisation)
+                for e in compatibility_proven_by_url:
+                    motorisation_profiles.append({
+                        "brand": e.get("brand"),
+                        "model": e.get("model"),
+                        "type_id": e.get("type_id"),
+                        "type_name": e.get("db_type_name"),
+                        "fuel": e.get("db_type_fuel"),
+                        "power_ps": e.get("db_type_power_ps"),
+                        "year_from": e.get("db_type_year_from"),
+                        "year_to": e.get("db_type_year_to"),
+                        "model_name": e.get("db_model_name"),
+                        "brand_name": e.get("db_brand_name"),
+                        "source_url": e.get("source_url"),
+                        "db_status": "PASS_DB_ALIGNED",
+                    })
+            else:
+                # B3 only (no DB enrichment)
+                compat["source_kind"] = "compatibility_proven_by_runtime_url"
 
     # maintenance_context : web km + safe taxonomic must_not_contain
     km_matches = KM_RE.findall(all_web_body)
@@ -526,6 +609,7 @@ def extract_dimensions(raw, web_corpus, compatibility_url_data=None):
         "rag_candidate_present": is_cand,
         "web_relations": web_relations,
         "compatibility_proven_by_url": compatibility_proven_by_url,
+        "motorisation_profiles": motorisation_profiles,
     }
 # === Task 5 : variant-readiness gate + anti-filler + content_hash ===
 

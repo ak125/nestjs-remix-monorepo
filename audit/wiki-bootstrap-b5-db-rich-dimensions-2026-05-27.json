@@ -1,0 +1,96 @@
+{
+  "audit_id": "wiki-bootstrap-b5-db-rich-dimensions-2026-05-27",
+  "audit_date": "2026-05-27",
+  "scope": "B5 DB-rich dimensions ingest — rerun 6 gammes with B4 cross-check JSON (--compatibility-url-json)",
+  "input_b4_json": "/opt/automecanik/app/audit/compatibility-top-r2-db-crosscheck-2026-05-27.json",
+  "gammes_tested": [
+    "vanne-egr",
+    "filtre-a-huile",
+    "plaquette-de-frein",
+    "support-moteur",
+    "courroie-d-accessoire",
+    "thermostat"
+  ],
+  "per_gamme_results": {
+    "vanne-egr": {
+      "slug": "vanne-egr",
+      "status": "PASS_VARIANT_READY",
+      "schema_valid": true,
+      "anti_filler_pass": true,
+      "anti_filler_paraphrase_used": false,
+      "compatibility_proven_by_url_count": 25,
+      "compatibility_factors_source_kind": "compatibility_proven_by_runtime_url_and_db",
+      "compatibility_factors_present": true,
+      "dimensions_count": 7,
+      "dimensions_confirmed_count": 6
+    },
+    "filtre-a-huile": {
+      "slug": "filtre-a-huile",
+      "status": "PASS_VARIANT_READY",
+      "schema_valid": true,
+      "anti_filler_pass": true,
+      "anti_filler_paraphrase_used": false,
+      "compatibility_proven_by_url_count": 9,
+      "compatibility_factors_source_kind": "compatibility_proven_by_runtime_url_and_db",
+      "compatibility_factors_present": true,
+      "dimensions_count": 6,
+      "dimensions_confirmed_count": 3
+    },
+    "plaquette-de-frein": {
+      "slug": "plaquette-de-frein",
+      "status": "PASS_VARIANT_READY",
+      "schema_valid": false,
+      "anti_filler_pass": true,
+      "anti_filler_paraphrase_used": false,
+      "compatibility_proven_by_url_count": 12,
+      "compatibility_factors_source_kind": "compatibility_proven_by_runtime_url_and_db",
+      "compatibility_factors_present": true,
+      "dimensions_count": 6,
+      "dimensions_confirmed_count": 3
+    },
+    "support-moteur": {
+      "slug": "support-moteur",
+      "status": "PASS_VARIANT_READY",
+      "schema_valid": false,
+      "anti_filler_pass": true,
+      "anti_filler_paraphrase_used": false,
+      "compatibility_proven_by_url_count": 61,
+      "compatibility_factors_source_kind": "compatibility_proven_by_runtime_url_and_db",
+      "compatibility_factors_present": true,
+      "dimensions_count": 6,
+      "dimensions_confirmed_count": 3
+    },
+    "courroie-d-accessoire": {
+      "slug": "courroie-d-accessoire",
+      "status": "PASS_VARIANT_READY",
+      "schema_valid": true,
+      "anti_filler_pass": true,
+      "anti_filler_paraphrase_used": false,
+      "compatibility_proven_by_url_count": 50,
+      "compatibility_factors_source_kind": "compatibility_proven_by_runtime_url_and_db",
+      "compatibility_factors_present": true,
+      "dimensions_count": 6,
+      "dimensions_confirmed_count": 3
+    },
+    "thermostat": {
+      "slug": "thermostat",
+      "status": "PASS_VARIANT_READY",
+      "schema_valid": true,
+      "anti_filler_pass": true,
+      "anti_filler_paraphrase_used": false,
+      "compatibility_proven_by_url_count": 62,
+      "compatibility_factors_source_kind": "compatibility_proven_by_runtime_url_and_db",
+      "compatibility_factors_present": true,
+      "dimensions_count": 6,
+      "dimensions_confirmed_count": 4
+    }
+  },
+  "anti_patterns_respected": [
+    "0 body inference (anti_filler_paraphrase_used checked)",
+    "0 DB query (B5 consumes B4 JSON, never queries Supabase directly)",
+    "0 write wiki",
+    "0 schema modif (Option C maintained)",
+    "0 runtime mutation",
+    "STALE_URL_DB_MISSING excluded from confirmed dimensions"
+  ]
+}

@@ -607,3 +607,108 @@ def test_cli_accepts_compatibility_url_json_flag():
     # Output must mention proven compatibility
     assert "compatibility_proven_by_url" in result.stdout
     assert "1-6-hdi" in result.stdout or "1-5-dci" in result.stdout
+
+
+# === B5 tests : DB-rich dimensions ingest from B4 cross-check JSON ===
+
+B4_CROSSCHECK_JSON = _Path("/opt/automecanik/app/audit/compatibility-top-r2-db-crosscheck-2026-05-27.json")
+
+
+def test_read_db_crosscheck_json_detection():
+    """Detect B4 JSON format (has 'results' + 'classifications', not 'compatibility_proven_by_url')."""
+    if not B4_CROSSCHECK_JSON.exists():
+        import pytest
+        pytest.skip("B4 JSON not present")
+    data = promote.read_compatibility_url_json(B4_CROSSCHECK_JSON)
+    # Must auto-detect B4 format and convert to compatibility_proven_by_url[]
+    assert data["url_count"] > 0
+    # Each entry must keep DB fields if present
+    sample = data["compatibility_proven_by_url"][0]
+    assert "source_url" in sample
+    assert "status" in sample
+
+
+def test_reject_stale_db_missing_from_confirmed_dimensions():
+    """STALE_URL_DB_MISSING entries must be EXCLUDED from confirmed compatibility_proven_by_url."""
+    if not B4_CROSSCHECK_JSON.exists():
+        import pytest
+        pytest.skip("B4 JSON not present")
+    data = promote.read_compatibility_url_json(B4_CROSSCHECK_JSON)
+    # B4 JSON has 222 entries total, 219 PASS_DB_ALIGNED, 3 STALE
+    # After filtering, only PASS_DB_ALIGNED entries should remain
+    for entry in data["compatibility_proven_by_url"]:
+        # If B4 format, classification field present and must be PASS_DB_ALIGNED
+        if "classification" in entry:
+            assert entry["classification"] == "PASS_DB_ALIGNED"
+    # Should have 219 entries (B4 PASS_DB_ALIGNED count), not 222
+    assert data["url_count"] == 219, f"Expected 219 PASS_DB_ALIGNED, got {data['url_count']}"
+
+
+def test_db_aligned_tuple_enriches_motorisation_profile():
+    """Each PASS_DB_ALIGNED entry should provide DB-rich fields (type_name, fuel, power_ps, years)."""
+    if not B4_CROSSCHECK_JSON.exists():
+        import pytest
+        pytest.skip("B4 JSON not present")
+    data = promote.read_compatibility_url_json(B4_CROSSCHECK_JSON)
+    # Filter to vanne-egr only
+    vanne_entries = [e for e in data["compatibility_proven_by_url"] if e.get("gamme") == "vanne-egr"]
+    assert len(vanne_entries) > 0
+    sample = vanne_entries[0]
+    # DB-rich fields available
+    assert "db_type_name" in sample or "db_type_fuel" in sample
+
+
+def test_fuel_power_years_added_to_compatibility_factors():
+    """When B4 JSON provided, compatibility_factors gets fuels, power_ps_range, year_range."""
+    if not B4_CROSSCHECK_JSON.exists():
+        import pytest
+        pytest.skip("B4 JSON not present")
+    raw = promote.read_raw_gamme(VANNE_EGR_PATH)
+    web = promote.aggregate_web_corpus_by_slug(promote.WEB_DIR, "vanne-egr")
+    compat_data = promote.read_compatibility_url_json(B4_CROSSCHECK_JSON)
+    dims = promote.extract_dimensions(raw, web, compatibility_url_data=compat_data)
+    cf = dims["compatibility_factors"]
+    # DB-rich enrichment
+    assert "fuels" in cf
+    assert isinstance(cf["fuels"], list)
+    assert len(cf["fuels"]) > 0
+    # source_kind upgraded to runtime_url_and_db
+    assert cf["source_kind"] == "compatibility_proven_by_runtime_url_and_db"
+
+
+def test_source_kind_runtime_url_and_db():
+    if not B4_CROSSCHECK_JSON.exists():
+        import pytest
+        pytest.skip("B4 JSON not present")
+    raw = promote.read_raw_gamme(VANNE_EGR_PATH)
+    web = promote.aggregate_web_corpus_by_slug(promote.WEB_DIR, "vanne-egr")
+    compat_data = promote.read_compatibility_url_json(B4_CROSSCHECK_JSON)
+    dims = promote.extract_dimensions(raw, web, compatibility_url_data=compat_data)
+    assert dims["compatibility_factors"]["source_kind"] == "compatibility_proven_by_runtime_url_and_db"
+
+
+def test_variant_readiness_still_passes_after_db_enrichment():
+    if not B4_CROSSCHECK_JSON.exists():
+        import pytest
+        pytest.skip("B4 JSON not present")
+    raw = promote.read_raw_gamme(VANNE_EGR_PATH)
+    web = promote.aggregate_web_corpus_by_slug(promote.WEB_DIR, "vanne-egr")
+    compat_data = promote.read_compatibility_url_json(B4_CROSSCHECK_JSON)
+    dims = promote.extract_dimensions(raw, web, compatibility_url_data=compat_data)
+    vr = promote.evaluate_variant_readiness(dims, is_r2_sensitive=True)
+    assert vr["status"] == "PASS_VARIANT_READY"
+
+
+def test_no_db_query_in_b5_dry_run():
+    """B5 must NOT make any network calls to Supabase during read_compatibility_url_json."""
+    # Set a fake SUPABASE_URL to ensure no real call is made
+    import os
+    original_url = os.environ.get("SUPABASE_URL")
+    os.environ["SUPABASE_URL"] = "https://fake-must-not-be-called.invalid"
+    try:
+        if B4_CROSSCHECK_JSON.exists():
+            data = promote.read_compatibility_url_json(B4_CROSSCHECK_JSON)
+            assert data["url_count"] > 0  # Loaded without network
+    finally:
+        if original_url:
+            os.environ["SUPABASE_URL"] = original_url

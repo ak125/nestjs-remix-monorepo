@@ -257,6 +257,16 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: low
+  - glob: audit/wiki-bootstrap-b5-*.md
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
+  - glob: audit/wiki-bootstrap-b5-*.json
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
   # `.gitkeep` n'est pas matché par `**` sous micromatch dot-handling (cf. PR-6).
   - glob: audit/wiki-bootstrap-runs/**/.*
     domain: D3
