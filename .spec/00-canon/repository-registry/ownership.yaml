@@ -244,13 +244,10 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: low
-  - glob: audit/wiki-bootstrap-runs/**
-    domain: D3
-    owner: '@ak125/seo-team'
-    sourceConfidence: high
-    risk: low
   # `.gitkeep` n'est pas matché par `**` sous micromatch dot-handling (cf. PR-6).
-  - glob: audit/wiki-bootstrap-runs/**/.*
+  # Le glob `audit/wiki-bootstrap-runs/**` sera ajouté quand de vrais run logs (non-dotfiles)
+  # seront committés ; pour l'instant seul `.gitkeep` existe, donc seul le dotfile-glob.
+  - glob: audit/wiki-bootstrap-runs/.*
     domain: D3
     owner: '@ak125/seo-team'
     sourceConfidence: high
