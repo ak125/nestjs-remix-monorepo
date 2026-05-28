@@ -1,8 +1,8 @@
 ---
 name: continuous-improvement-global
-description: Use as the priority operational filter for AutoMecanik PRs, audits, scripts, pipelines, owner-actions and code changes. It checks whether the action improves a real measured problem with evidence, controlled risk, tests, and a clear next action. Non-blocking by default; proportional to risk. Triggers — "review PR", "audit this change", "validate before merge", "should I add this layer", "this looks ready", "ready to ship", "ouvrir une PR", or any request that touches code/archi/DB/contenu/SEO/conversion/pipeline.
+description: Use when reviewing any AutoMecanik PR, audit, script, pipeline, owner-action or code change as the priority operational filter — checks whether the action improves a real measured problem with evidence, controlled risk, tests, and a clear next action. Non-blocking by default; proportional to risk. Triggers — "review PR", "audit this change", "validate before merge", "should I add this layer", "this looks ready", "ready to ship", "ouvrir une PR", or any request that touches code/archi/DB/contenu/SEO/conversion/pipeline.
 type: technique
-status: active
+status: stable
 owners: ['@ak125']
 domain: D15
 runtime_class: read-only
