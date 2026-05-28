@@ -420,7 +420,7 @@ export function ErrorBoundary() {
   if (isRouteErrorResponse(error)) {
     return (
       <ErrorGeneric
-        title={`Erreur ${error.status}`}
+        status={error.status}
         message={
           typeof error.data === "object" && error.data && "error" in error.data
             ? String((error.data as { error: unknown }).error)
@@ -429,10 +429,5 @@ export function ErrorBoundary() {
       />
     );
   }
-  return (
-    <ErrorGeneric
-      title="Erreur"
-      message="Une erreur inattendue est survenue."
-    />
-  );
+  return <ErrorGeneric message="Une erreur inattendue est survenue." />;
 }

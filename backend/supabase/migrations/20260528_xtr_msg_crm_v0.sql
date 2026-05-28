@@ -1,3 +1,13 @@
+-- squawk-ignore-file require-concurrent-index-creation
+--   Justification : les 2 indexes ci-dessous sont partiels (excluent NULL legacy
+--   et statuts terminaux won/lost), construits sur un sous-ensemble réduit des
+--   lignes de ___xtr_msg. Le lock SHARE acquis pendant le build est court.
+--   Surface admin-only, hors hot-path SEO/funnel. CREATE INDEX CONCURRENTLY
+--   exigerait de sortir du transaction wrapper Supabase (assume_in_transaction
+--   = true dans .squawk.toml) et d'avoir 2 fichiers séparés — trade-off non
+--   justifié pour V0 sur cette taille de données. Cf. précédent
+--   20260120_rm_expression_index.sql qui suit le même choix.
+
 -- Migration: 20260528_xtr_msg_crm_v0
 -- Mini-CRM V0 — extension additive de ___xtr_msg pour suivi commercial des contacts.
 --

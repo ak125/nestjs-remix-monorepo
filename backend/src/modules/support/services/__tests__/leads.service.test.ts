@@ -101,7 +101,11 @@ describe('LeadsService', () => {
         },
       });
 
-      const result = await service.updateLeadStatus('42', 'contacted', 'user-1');
+      const result = await service.updateLeadStatus(
+        '42',
+        'contacted',
+        'user-1',
+      );
       expect(result.msg_crm_status).toBe('contacted');
       expect(stub.update).toHaveBeenCalledWith({ msg_crm_status: 'contacted' });
     });
@@ -161,7 +165,11 @@ describe('LeadsService', () => {
           error: null,
         },
         single: {
-          data: { msg_id: '42', msg_crm_status: 'new', msg_crm_internal_note: 'foo' },
+          data: {
+            msg_id: '42',
+            msg_crm_status: 'new',
+            msg_crm_internal_note: 'foo',
+          },
           error: null,
         },
       });
