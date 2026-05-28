@@ -544,3 +544,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/fafa-media-factory-v1-foundation`
 - **Décision** : feat(media-factory): V1 Foundation scaffold
 - **Sortie** : PR #789 | commits a194a241e
+
+## 2026-05-28 — feat/fafa-media-factory-v1-foundation (auto)
+
+- **Branche** : `feat/fafa-media-factory-v1-foundation`
+- **Décision** : fix(media-factory): close parser-validator differential bypass in 2 schemas (+2 other commits)
+- **Sortie** : PR #789 | commits 3d228cd34 c3c8a304e a194a241e
