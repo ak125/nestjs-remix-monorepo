@@ -611,6 +611,147 @@ def extract_dimensions(raw, web_corpus, compatibility_url_data=None):
         "compatibility_proven_by_url": compatibility_proven_by_url,
         "motorisation_profiles": motorisation_profiles,
     }
+# === Task 8c (2026-05-28, additive) : decision_brief projection (post-extraction) ===
+
+# Cross-check status priority (mirrors _cross_check return values, descending confidence).
+# Used to compute min(input statuses) for the derived decision_brief.
+_CROSS_CHECK_PRIORITY = {
+    "WEB_CONFIRMS_RAG": 4,
+    "WEB_ONLY": 3,
+    "RAG_ONLY": 2,
+    "WEB_DIFFERS_FROM_RAG": 1,
+    "NEITHER": 0,
+}
+
+
+def _min_cross_check_status(statuses):
+    """Return the cross_check_status with lowest confidence (worst case) among inputs."""
+    valid = [s for s in statuses if s in _CROSS_CHECK_PRIORITY]
+    if not valid:
+        return "NEITHER"
+    return min(valid, key=lambda s: _CROSS_CHECK_PRIORITY[s])
+
+
+def _shorten_at_word(text, max_chars):
+    """Truncate text at max_chars, respecting word boundary, with ellipsis if truncated."""
+    if not text:
+        return text
+    text = " ".join(text.split())  # normalize whitespace
+    if len(text) <= max_chars:
+        return text
+    cut = text[: max_chars - 1].rsplit(" ", 1)[0]
+    return cut + "…"
+
+
+def _compose_compatibility_summary(compat):
+    """Compose a deterministic FR phrase from compatibility_factors structured fields.
+
+    No technical separators (no pipe, no slash). Future-renderable côté R2/R8 telle quelle.
+    Fallback générique si données structurées absentes.
+    """
+    base = "Vérifier la compatibilité"
+    fragments = []
+
+    fuels = compat.get("fuels") or []
+    if fuels:
+        fuels_phrase = " et ".join(f.lower() for f in fuels[:4])
+        fragments.append(f" selon le carburant ({fuels_phrase})")
+
+    motos_count = compat.get("model_count_distinct")
+    if isinstance(motos_count, int) and motos_count > 0:
+        plural = "s" if motos_count > 1 else ""
+        unit = "motorisation" + plural
+        fragments.append(f", {motos_count} {unit} référencée{plural}")
+
+    marques = compat.get("marques") or []
+    if marques:
+        top = marques[:3]
+        if len(top) == 1:
+            mq_phrase = top[0]
+        elif len(top) == 2:
+            mq_phrase = f"{top[0]} et {top[1]}"
+        else:
+            mq_phrase = f"{', '.join(top[:-1])} et {top[-1]}"
+        fragments.append(f", marques principales {mq_phrase}")
+
+    if not fragments:
+        return "Vérifier la compatibilité véhicule, motorisation et référence OEM."
+
+    summary = base + "".join(fragments) + "."
+    return _shorten_at_word(summary, max_chars=160)
+
+
+def derive_decision_brief(dimensions):
+    """Project structured decision facets from already-extracted dimensions (post-processor).
+
+    Aucun texte généré stocké : juste des projections déterministes des champs déjà
+    sourcés (function, selection_criteria, compatibility_factors). Anti-templated par
+    construction. Capte les signaux Google AI Mode Decide/Summarize sans toucher
+    R2/R8 runtime pendant la fenêtre OBSERVE.
+
+    Returns dict matching gamme.schema.json v2.2.0 entity_data.decision_brief, or
+    None si minimal inputs (function + selection_criteria) absents → no-op silencieux.
+    """
+    func_dim = dimensions.get("function") or {}
+    sel_dim = dimensions.get("selection_criteria") or {}
+    compat = dimensions.get("compatibility_factors") or {}
+
+    # function_oneliner : confirmed preferred, candidate fallback ; min 20 / max 140
+    func_value = (func_dim.get("confirmed_value") or func_dim.get("candidate_value") or "").strip()
+    function_oneliner = _shorten_at_word(func_value, max_chars=140)
+    if len(function_oneliner) < 20:
+        return None  # too short to be meaningful → no decision_brief emitted
+
+    # selection_criteria_top : confirmed preferred, candidate fallback ; 1..3 items, 5..80 chars each
+    sel_raw = sel_dim.get("confirmed_value") or sel_dim.get("candidate_value") or []
+    if not isinstance(sel_raw, list):
+        sel_raw = []
+    selection_criteria_top = []
+    for s in sel_raw:
+        if not isinstance(s, str):
+            continue
+        item = _shorten_at_word(s.strip(), max_chars=80)
+        if len(item) >= 5:
+            selection_criteria_top.append(item)
+        if len(selection_criteria_top) >= 3:
+            break
+    if not selection_criteria_top:
+        return None  # no usable selection criteria → no decision_brief emitted
+
+    # compatibility_summary : deterministic FR phrase from structured fields ; max 160
+    compatibility_summary = _compose_compatibility_summary(compat)
+
+    # cross_check_status : min priority of input dimension statuses
+    func_status = func_dim.get("cross_check_status")
+    sel_status = sel_dim.get("cross_check_status")
+    # compatibility_factors doesn't expose cross_check_status directly ; infer from presence/source_kind
+    compat_kind = compat.get("source_kind") or ""
+    if compat_kind:  # URL-proven (with or without DB) → OEM web confirmed
+        compat_status = "WEB_ONLY"
+    elif compat:  # has structured data without explicit source_kind → at least body-confirmed
+        compat_status = "WEB_ONLY"
+    else:
+        compat_status = "NEITHER"
+
+    cross_check_status = _min_cross_check_status([func_status, sel_status, compat_status])
+
+    # source_kind : deterministic_transform iff all non-None input statuses ∈ {WEB_CONFIRMS_RAG, WEB_ONLY}
+    GOOD = {"WEB_CONFIRMS_RAG", "WEB_ONLY"}
+    input_statuses = [s for s in (func_status, sel_status, compat_status) if s]
+    if input_statuses and all(s in GOOD for s in input_statuses):
+        source_kind = "deterministic_transform"
+    else:
+        source_kind = "rag_candidate"
+
+    return {
+        "function_oneliner": function_oneliner,
+        "selection_criteria_top": selection_criteria_top,
+        "compatibility_summary": compatibility_summary,
+        "source_kind": source_kind,
+        "cross_check_status": cross_check_status,
+    }
+
+
 # === Task 5 : variant-readiness gate + anti-filler + content_hash ===
 
 # DIMENSION_KEYS exclut source_refs (metadata provenance, pas dimension de contenu)
@@ -741,6 +882,13 @@ def _build_review_notes(raw, dimensions, vr_result, schema_option):
         dim = dimensions.get(dim_key)
         if isinstance(dim, dict) and "cross_check_status" in dim:
             parts.append(f"  - {dim_key}: {dim['cross_check_status']}")
+    # Task 8c — decision_brief projection trace
+    db_block = dimensions.get("decision_brief")
+    if db_block:
+        parts.append(f"  - decision_brief (projected): {db_block['cross_check_status']} "
+                     f"({db_block['source_kind']})")
+    else:
+        parts.append("  - decision_brief: NOT_PROJECTED (insufficient function or selection_criteria inputs)")
 
     # Symptoms guard rails (canon repo)
     parts.append("")
@@ -764,6 +912,24 @@ def _build_body_markdown(raw, dimensions):
     elif func.get("candidate_value"):
         prefix = "[CANDIDATE — requires_review] " if is_cand else ""
         parts.append(f"## Rôle technique\n\n{prefix}{func['candidate_value']}")
+
+    # Task 8c (2026-05-28) — En bref (facettes décisionnelles) : présent si derive_decision_brief()
+    # a renvoyé un dict. Aucun texte généré stocké : juste les facettes structurées rendues en
+    # markdown lisible pour review humain. Capte les signaux Google AI Mode Decide/Summarize.
+    db_block = dimensions.get("decision_brief")
+    if db_block:
+        db_lines = ["## En bref (facettes décisionnelles)", ""]
+        db_lines.append(f"- **Fonction** : {db_block['function_oneliner']}")
+        db_lines.append("- **Critères de choix prioritaires** :")
+        for c in db_block["selection_criteria_top"]:
+            db_lines.append(f"  - {c}")
+        db_lines.append(f"- **Compatibilité** : {db_block['compatibility_summary']}")
+        db_lines.append(
+            f"- _Status : `{db_block['cross_check_status']}` ; "
+            f"source : `{db_block['source_kind']}` "
+            f"(anti-templated, aucun texte généré stocké, projection déterministe depuis dimensions)_"
+        )
+        parts.append("\n".join(db_lines))
 
     sel = dimensions.get("selection_criteria") or {}
     sel_items = sel.get("confirmed_value") or sel.get("candidate_value") or []
@@ -898,6 +1064,12 @@ def build_proposal_v2(raw, web_corpus, dimensions, schema_option):
         if ed_dimensions:
             entity_data["dimensions"] = ed_dimensions
 
+    # Task 8c (2026-05-28, additive) — Option A/B : inject entity_data.decision_brief when schema v2.2.0 accepts it
+    if schema_option in ("A", "B"):
+        db_block = dimensions.get("decision_brief")
+        if db_block:
+            entity_data["decision_brief"] = db_block
+
     proposal_fm = {
         "schema_version": "2.0.0",
         "id": f"gamme:{safe_tax['slug']}",
@@ -943,10 +1115,10 @@ def validate_schema(frontmatter, schema_option):
         return {"valid": False, "errors": [f"schema_load_failed: {e}"]}
     ed = frontmatter.get("entity_data", {}) or {}
     if schema_option == "C":
-        # Strip dimensions from entity_data before validation (v2.0.0 schema doesn't accept it)
-        ed_to_validate = {k: v for k, v in ed.items() if k != "dimensions"}
+        # Strip dimensions + decision_brief from entity_data before validation (v2.0.0 baseline path)
+        ed_to_validate = {k: v for k, v in ed.items() if k not in ("dimensions", "decision_brief")}
     else:
-        # Option A/B : v2.1.0 schema accepts dimensions natively
+        # Option A/B : v2.2.0 schema accepts both dimensions (v2.1.0) and decision_brief (v2.2.0) natively
         ed_to_validate = ed
     try:
         jsonschema.validate(ed_to_validate, schema)
@@ -1004,8 +1176,11 @@ def main():
         sys.stderr.write(f"[promote] is_rag_candidate={raw['is_rag_candidate']} "
                          f"web_corpus_files={len(web)}\n")
 
-    # Extract dimensions + evaluate gates
+    # Extract dimensions + post-extraction projection (decision_brief facets) + evaluate gates
     dims = extract_dimensions(raw, web, compatibility_url_data=compat_data)
+    # Task 8c (2026-05-28, additive) — project decision_brief from extracted dimensions.
+    # Post-processor : reads from already-extracted dimensions, does NOT touch RAW. None-safe.
+    dims["decision_brief"] = derive_decision_brief(dims)
     vr = evaluate_variant_readiness(dims, is_r2_sensitive=True)
     if args.verbose:
         sys.stderr.write(f"[promote] variant_readiness={vr['status']} "
@@ -1064,6 +1239,9 @@ def main():
                                            if rel.get("relation_status") == "NO_VEHICLE_EVIDENCE"),
             "compatibility_proven_by_url_count": len(dims.get("compatibility_proven_by_url", [])),
             "compatibility_factors_source_kind": dims.get("compatibility_factors", {}).get("source_kind"),
+            "decision_brief_present": bool(dims.get("decision_brief")),
+            "decision_brief_source_kind": (dims.get("decision_brief") or {}).get("source_kind"),
+            "decision_brief_cross_check_status": (dims.get("decision_brief") or {}).get("cross_check_status"),
         }],
     }
     print("\nRUN LOG:")
