@@ -543,6 +543,19 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: medium
+  # Support module — customer contact / quote requests / claims / FAQ / legal.
+  # Mini-CRM V0 (PR support-crm-v0-mini-module-2026-05-28) extends ___xtr_msg
+  # with msg_crm_* columns and the /api/admin/leads admin surface.
+  - glob: backend/src/modules/support/**
+    domain: D11
+    owner: '@ak125'
+    sourceConfidence: medium
+    risk: medium
+  - glob: backend/supabase/migrations/*xtr_msg_crm*
+    domain: D11
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
   - glob: backend/src/modules/users/**
     domain: D11
     owner: '@ak125/auth-team'
