@@ -2,7 +2,7 @@
 module: merchant-center
 sources:
 - backend/src/modules/merchant-center
-last_scan: '2026-05-27'
+last_scan: '2026-05-28'
 primary_files:
 - backend/src/modules/merchant-center/controllers/merchant-center.controller.ts
 - backend/src/modules/merchant-center/merchant-center.module.ts

@@ -2,7 +2,7 @@
 module: seo-monitoring
 sources:
 - backend/src/modules/seo-monitoring
-last_scan: '2026-05-27'
+last_scan: '2026-05-28'
 primary_files:
 - backend/src/modules/seo-monitoring/controllers/cwv-beacon.controller.ts
 - backend/src/modules/seo-monitoring/controllers/cwv-dashboard.controller.ts
