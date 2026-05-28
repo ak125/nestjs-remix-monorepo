@@ -350,6 +350,21 @@ OEM_REF_RE = re.compile(r'\b[A-Z]?\d{5,10}[A-Z]?\b')
 FUNCTION_HINT_RE = re.compile(
     r'(?i)^(.*?(?:permet|sert à|assure|régule|recycle|filtre|alimente|charge|protège|réduit|améliore).{20,200})'
 )
+# Issue 1 fix : preamble marketing rejection. The OEM web corpus often opens with
+# generic catalog/marketing blurbs (cf. ngk-*.md "Notre catalogue 2025-2026...
+# qui vous permet de trouver vos références") that match FUNCTION_HINT_RE on
+# "permet" but describe the e-commerce experience, not the part function. Lines
+# matching this blocklist are skipped when scanning for the function statement.
+FUNCTION_MARKETING_BLOCKLIST_RE = re.compile(
+    r'(?i)(catalogue|découvrez|promo|soldes|boutique|achat\s+en\s+ligne|'
+    r'version\s+digitale|simplifier la vie|fonctionnalités conçues|en\s+ligne\.|'
+    r'votre\s+sélection)'
+)
+# Issue 2 fix : RAW frontmatter slug-pattern enforcement. Some RAW files put
+# free-text in related_parts (e.g. plaquette-de-frein has
+# "Disques de frein (a controler systematiquement...)" instead of "disques-de-frein").
+# The wiki schema requires `^[a-z0-9][a-z0-9-]*[a-z0-9]$`. Defensive filter.
+SLUG_RE = re.compile(r'^[a-z0-9][a-z0-9-]*[a-z0-9]$')
 
 
 def classify_source_tier(domain, frontmatter=None):
@@ -448,14 +463,28 @@ def extract_dimensions(raw, web_corpus, compatibility_url_data=None):
 
     all_web_body = "\n".join(w.get("body", "") for w in web_corpus)
 
-    # function : candidate from RAG domain.role + confirmed from OEM web FUNCTION_HINT_RE
+    # function : candidate from RAG domain.role + confirmed from OEM web FUNCTION_HINT_RE.
+    # Issue 1 fix (2026-05-28) : line-by-line scan with marketing-preamble rejection.
+    # Some OEM corpus pages (e.g. ngk-*.md for vanne-egr) open with catalog blurbs that
+    # match FUNCTION_HINT_RE on "permet" but describe e-commerce, not part function.
+    # We now scan body line-by-line, skip lines matching FUNCTION_MARKETING_BLOCKLIST_RE,
+    # and take the first non-marketing line that matches FUNCTION_HINT_RE.
     rag_function = (dom.get("role") or "").strip()
     web_function, web_function_uri = "", None
     for w in web_corpus:
-        m = FUNCTION_HINT_RE.search(w.get("body", "")[:2000])
-        if m:
-            web_function = m.group(1).strip()[:280]
-            web_function_uri = w.get("source_uri")
+        body = w.get("body", "")[:2000]
+        for line in body.split("\n"):
+            line = line.strip()
+            if len(line) < 30:
+                continue
+            if FUNCTION_MARKETING_BLOCKLIST_RE.search(line):
+                continue  # marketing preamble, skip
+            m = FUNCTION_HINT_RE.search(line)
+            if m:
+                web_function = m.group(1).strip()[:280]
+                web_function_uri = w.get("source_uri")
+                break
+        if web_function:
             break
     function = _dim_with_status(rag_function, web_function, is_cand, web_function_uri)
 
@@ -479,8 +508,16 @@ def extract_dimensions(raw, web_corpus, compatibility_url_data=None):
             break
     symptoms = _dim_with_status(rag_sym, web_sym, is_cand)
 
-    # related_parts : taxonomic, always safe (slugs only)
-    related_parts = list(safe_tax.get("related_parts", []) or [])
+    # related_parts : taxonomic, always safe (slugs only).
+    # Issue 2 fix (2026-05-28) : defensive filter against RAW frontmatter quality issues.
+    # Some RAW files put human-readable free-text (e.g. plaquette-de-frein has
+    # "Disques de frein (a controler systematiquement...)") instead of slugs. The wiki
+    # schema requires pattern `^[a-z0-9][a-z0-9-]*[a-z0-9]$`. We filter out non-slugs
+    # to avoid schema validation failures downstream. Upstream RAW frontmatter should
+    # be fixed separately (out of scope here).
+    related_parts_raw = list(safe_tax.get("related_parts", []) or [])
+    related_parts = [s for s in related_parts_raw if isinstance(s, str) and SLUG_RE.fullmatch(s)]
+    related_parts_filtered_count = len(related_parts_raw) - len(related_parts)
 
     # compatibility_factors : web extraction (factuel motorisation) + B3 URL-proven enrichment
     compat = {}
@@ -610,6 +647,8 @@ def extract_dimensions(raw, web_corpus, compatibility_url_data=None):
         "web_relations": web_relations,
         "compatibility_proven_by_url": compatibility_proven_by_url,
         "motorisation_profiles": motorisation_profiles,
+        # Issue 2 trace : count of related_parts entries filtered out as non-slug
+        "related_parts_filtered_count": related_parts_filtered_count,
     }
 # === Task 8c (2026-05-28, additive) : decision_brief projection (post-extraction) ===
 
@@ -1242,6 +1281,17 @@ def main():
             "decision_brief_present": bool(dims.get("decision_brief")),
             "decision_brief_source_kind": (dims.get("decision_brief") or {}).get("source_kind"),
             "decision_brief_cross_check_status": (dims.get("decision_brief") or {}).get("cross_check_status"),
+            # Issue 3 fix (2026-05-28) : explicit quality verdict for downstream consumers
+            # (wiki sas reviewers + future batch aggregators). Maps source_kind 1:1 :
+            #   deterministic_transform -> STRONG (all facets from CONFIRMED dimensions)
+            #   rag_candidate           -> DATA_WEAK (requires_review humain, NOT a FAIL)
+            #   no decision_brief       -> NOT_APPLICABLE (insufficient inputs)
+            "decision_brief_quality_verdict": (
+                "STRONG" if (dims.get("decision_brief") or {}).get("source_kind") == "deterministic_transform"
+                else "DATA_WEAK" if (dims.get("decision_brief") or {}).get("source_kind") == "rag_candidate"
+                else "NOT_APPLICABLE"
+            ),
+            "related_parts_filtered_count": dims.get("related_parts_filtered_count", 0),
         }],
     }
     print("\nRUN LOG:")
