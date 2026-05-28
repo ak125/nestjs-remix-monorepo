@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://automecanik.com/schema/fafa-media-factory/disclaimer-plan.schema.json",
+  "title": "Disclaimer Plan",
+  "description": "Artefact #4 (P0 video-governance) — disclaimers obligatoires (type, texte, position). Mode SOCLE: intro+outro requis. Mode SHORT: overlay suffisant. Mode GAMME: oui.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["video_id", "disclaimers"],
+  "properties": {
+    "video_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "disclaimers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Disclaimer"
+      },
+      "minItems": 1
+    }
+  },
+  "$defs": {
+    "Disclaimer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["disclaimer_id", "type", "text", "position"],
+      "properties": {
+        "disclaimer_id": {
+          "type": "string",
+          "pattern": "^disclaimer-[0-9]+$"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "informational",
+            "safety_advisory",
+            "compatibility_check_required",
+            "diagnostic_uncertainty",
+            "ai_generated_notice"
+          ]
+        },
+        "text": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 200,
+          "description": "Texte court, lisible 9:16, exemple: 'Conseil informatif. Diagnostic à confirmer selon véhicule.'"
+        },
+        "position": {
+          "type": "string",
+          "enum": ["intro", "outro", "overlay_continuous", "overlay_segment"]
+        },
+        "timestamp_start_sec": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "description": "Si overlay_segment, début en secondes"
+        },
+        "timestamp_end_sec": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "description": "Si overlay_segment, fin en secondes"
+        },
+        "linked_claim_id": {
+          "type": ["string", "null"],
+          "pattern": "^claim-[0-9]+$",
+          "description": "Si disclaimer attaché à un claim spécifique (G2 Safety = safety_advisory obligatoire)"
+        }
+      }
+    }
+  }
+}

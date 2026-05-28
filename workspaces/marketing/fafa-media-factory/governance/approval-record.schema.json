@@ -1,0 +1,154 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://automecanik.com/schema/fafa-media-factory/approval-record.schema.json",
+  "title": "Approval Record",
+  "description": "Artefact #5 (P0 video-governance) — historique approbation par stage. V1 utilise 3 flags discriminés (content_approved / render_approved / publish_approved) au lieu d'un seul can_publish ambigu.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["video_id", "approval", "gate_results", "history"],
+  "properties": {
+    "video_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "approval": {
+      "$ref": "#/$defs/ApprovalFlags"
+    },
+    "gate_results": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/GateResult"
+      },
+      "minItems": 7,
+      "maxItems": 7,
+      "description": "Exactement 7 gates G1-G7 (P0 video-governance)."
+    },
+    "history": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/HistoryEntry"
+      },
+      "minItems": 1,
+      "description": "Trace audit chronologique des changements de status / flags."
+    }
+  },
+  "$defs": {
+    "ApprovalFlags": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["content_approved", "render_approved", "publish_approved"],
+      "properties": {
+        "content_approved": {
+          "type": "boolean",
+          "description": "Script + claims + evidence + disclaimer valides (Skill fafa-brand-safety-reviewer verdict)."
+        },
+        "content_approved_by": {
+          "type": ["string", "null"]
+        },
+        "content_approved_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "render_approved": {
+          "type": "boolean",
+          "description": "Owner a inspecté le .mp4 rendu (qualité visuelle/audio conforme)."
+        },
+        "render_approved_by": {
+          "type": ["string", "null"]
+        },
+        "render_approved_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "publish_approved": {
+          "type": "boolean",
+          "description": "Owner geste explicite séparé pour autoriser publication. STRICT V1: false par défaut, jamais auto-true."
+        },
+        "publish_approved_by": {
+          "type": ["string", "null"]
+        },
+        "publish_approved_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        }
+      }
+    },
+    "GateResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["gate", "verdict", "measured"],
+      "properties": {
+        "gate": {
+          "type": "string",
+          "enum": ["G1", "G2", "G3", "G4", "G5", "G6", "G7"]
+        },
+        "verdict": {
+          "type": "string",
+          "enum": ["PASS", "WARN", "FAIL"]
+        },
+        "measured": {
+          "type": "number",
+          "description": "Valeur mesurée (ratio, count, score). Sémantique dépend du gate."
+        },
+        "warn_threshold": {
+          "type": ["number", "null"]
+        },
+        "fail_threshold": {
+          "type": ["number", "null"]
+        },
+        "strict": {
+          "type": "boolean",
+          "description": "G2 Safety et G6 Visual Honesty = STRICT (1 violation = FAIL)."
+        },
+        "details": {
+          "type": ["string", "null"],
+          "maxLength": 1000
+        },
+        "trigger_items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Liste des éléments (claim_id, asset_id) ayant déclenché le verdict."
+        }
+      }
+    },
+    "HistoryEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["timestamp", "actor", "action"],
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "actor": {
+          "type": "string",
+          "description": "Identifiant humain ou skill (ex: 'owner:fafa', 'skill:fafa-brand-safety-reviewer')"
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "brief_created",
+            "script_drafted",
+            "claims_evidenced",
+            "gates_evaluated",
+            "content_approved",
+            "content_rejected",
+            "render_triggered",
+            "render_approved",
+            "render_rejected",
+            "publish_approved",
+            "publish_rejected",
+            "published",
+            "measured"
+          ]
+        },
+        "comment": {
+          "type": ["string", "null"],
+          "maxLength": 500
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://automecanik.com/schema/fafa-media-factory/claim-table.schema.json",
+  "title": "Claim Table",
+  "description": "Artefact #2 (P0 video-governance) — affirmations vidéo avec kind (mileage/dimension/percentage/norm/procedure/safety), source, status. G2 STRICT : 1 claim procedure/safety sans validation humaine = FAIL.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["video_id", "claims"],
+  "properties": {
+    "video_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "claims": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Claim"
+      },
+      "minItems": 0
+    }
+  },
+  "$defs": {
+    "Claim": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claim_id", "text", "kind", "source_status", "human_validated"],
+      "properties": {
+        "claim_id": {
+          "type": "string",
+          "pattern": "^claim-[0-9]+$"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 300
+        },
+        "kind": {
+          "type": "string",
+          "enum": ["mileage", "dimension", "percentage", "norm", "procedure", "safety"]
+        },
+        "source_status": {
+          "type": "string",
+          "enum": ["sourced", "unsourced"],
+          "description": "G1 Truth gate utilise le ratio unsourced/total."
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Liste de docIds dans evidence-pack.schema.json (FK)."
+        },
+        "human_validated": {
+          "type": "boolean",
+          "description": "Obligatoire = true pour kind procedure/safety (G2 STRICT)."
+        },
+        "human_validated_by": {
+          "type": ["string", "null"],
+          "description": "Identifiant humain validateur si human_validated=true"
+        },
+        "human_validated_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "sequence_index": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Position dans la séquence narrative (mode SHORT = 1 claim/séquence max)."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "enum": ["procedure", "safety"]
+              }
+            }
+          },
+          "then": {
+            "required": ["human_validated", "human_validated_by", "human_validated_at"],
+            "properties": {
+              "human_validated": {
+                "const": true
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "source_status": {
+                "const": "sourced"
+              }
+            }
+          },
+          "then": {
+            "required": ["evidence_refs"],
+            "properties": {
+              "evidence_refs": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

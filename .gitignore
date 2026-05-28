@@ -21,6 +21,21 @@ lerna-debug.log*
 # OS
 .DS_Store
 
+# =========================
+# Video/audio binaries (Fafa Media Factory — S3 only, never in repo)
+# Renders live in s3://automecanik-renders/, repo contains only manifests JSON.
+# =========================
+*.mp4
+*.mov
+*.webm
+*.mkv
+*.avi
+*.wav
+*.mp3
+*.flac
+*.srt
+*.vtt
+
 # Tests
 **/coverage/
 /.nyc_output
