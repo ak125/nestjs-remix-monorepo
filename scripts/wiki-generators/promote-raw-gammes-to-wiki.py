@@ -850,18 +850,22 @@ def build_proposal_v2(raw, web_corpus, dimensions, schema_option):
     # Compute variant-readiness for review_notes
     vr = evaluate_variant_readiness(dimensions, is_r2_sensitive=True)  # vanne-egr is R2-sensitive
 
-    # source_refs : recycled (RAW source) only — Phase A canon proposal_writer convention
+    # source_refs : canonical wiki schema kinds only (raw/external_url/manual/recycled)
+    # with unevaluatedProperties: false. Custom kind=rag_recycled_candidate mapped to
+    # canon kind=recycled. Candidate metadata (trust, requires_review) lives in review_notes
+    # per canon doctrine (feedback_rag_to_raw_candidate_requalification).
     src_refs = []
     for r in dimensions.get("source_refs", []):
         if r.get("kind") in ("recycled", "rag_recycled_candidate"):
-            src_refs.append({
-                "kind": r.get("kind"),
+            ref = {
+                "kind": "recycled",
                 "origin_repo": r.get("origin_repo"),
                 "origin_path": r.get("origin_path"),
-                "captured_at": r.get("captured_at"),
-                **({"trust": r["trust"], "requires_review": r["requires_review"]}
-                   if r.get("kind") == "rag_recycled_candidate" else {}),
-            })
+            }
+            captured = r.get("captured_at") or today
+            if captured:
+                ref["captured_at"] = captured
+            src_refs.append(ref)
 
     intents_raw = fm_full.get("intent_targets", []) or []
     intents = [i for i in intents_raw if i in VALID_INTENTS]
