@@ -82,6 +82,16 @@
             "properties": {
               "human_validated": {
                 "const": true
+              },
+              "human_validated_by": {
+                "type": "string",
+                "minLength": 1,
+                "description": "G2 STRICT : validateur humain non-null obligatoire quand kind=procedure|safety. Bypass interdit."
+              },
+              "human_validated_at": {
+                "type": "string",
+                "format": "date-time",
+                "description": "G2 STRICT : timestamp ISO date-time obligatoire. Bypass interdit."
               }
             }
           }

@@ -71,7 +71,39 @@
           "type": ["string", "null"],
           "format": "date-time"
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "content_approved": { "const": true } }, "required": ["content_approved"] },
+          "then": {
+            "required": ["content_approved_by", "content_approved_at"],
+            "properties": {
+              "content_approved_by": { "type": "string", "minLength": 1, "description": "Audit trail non-null obligatoire si flag=true. Bypass interdit." },
+              "content_approved_at": { "type": "string", "format": "date-time" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "render_approved": { "const": true } }, "required": ["render_approved"] },
+          "then": {
+            "required": ["render_approved_by", "render_approved_at"],
+            "properties": {
+              "render_approved_by": { "type": "string", "minLength": 1, "description": "Audit trail non-null obligatoire si flag=true. Bypass interdit." },
+              "render_approved_at": { "type": "string", "format": "date-time" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "publish_approved": { "const": true } }, "required": ["publish_approved"] },
+          "then": {
+            "required": ["publish_approved_by", "publish_approved_at"],
+            "properties": {
+              "publish_approved_by": { "type": "string", "minLength": 1, "description": "Audit trail non-null obligatoire si flag=true. Bypass interdit (STRICT V1 owner-only)." },
+              "publish_approved_at": { "type": "string", "format": "date-time" }
+            }
+          }
+        }
+      ]
     },
     "GateResult": {
       "type": "object",
