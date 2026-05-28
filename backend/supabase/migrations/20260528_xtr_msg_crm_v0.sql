@@ -8,6 +8,10 @@
 --   justifié pour V0 sur cette taille de données. Cf. précédent
 --   20260120_rm_expression_index.sql qui suit le même choix.
 
+-- Timeouts défensifs avant DDL (squawk require-timeout-settings).
+SET lock_timeout      = '5s';
+SET statement_timeout = '60s';
+
 -- Migration: 20260528_xtr_msg_crm_v0
 -- Mini-CRM V0 — extension additive de ___xtr_msg pour suivi commercial des contacts.
 --
@@ -36,7 +40,12 @@ ALTER TABLE ___xtr_msg
   ADD COLUMN IF NOT EXISTS msg_crm_updated_at        TIMESTAMPTZ;
 
 -- ────────────────────────────────────────────────────────────────────────────
--- 2) Invariant enum (CHECK) — NULL toléré pour les lignes legacy non-CRM
+-- 2) Invariant enum (CHECK) — NULL toléré pour les lignes legacy non-CRM.
+--    Two-step ADD CONSTRAINT NOT VALID + VALIDATE CONSTRAINT pour ne pas
+--    bloquer les writes pendant le full-scan initial (squawk
+--    constraint-missing-not-valid). Les lignes existantes ont toutes
+--    msg_crm_status = NULL (colonne ajoutée juste au-dessus), donc le
+--    VALIDATE est trivialement rapide — la procédure reste structural-safe.
 -- ────────────────────────────────────────────────────────────────────────────
 ALTER TABLE ___xtr_msg DROP CONSTRAINT IF EXISTS chk_msg_crm_status;
 ALTER TABLE ___xtr_msg
@@ -44,7 +53,8 @@ ALTER TABLE ___xtr_msg
   CHECK (
     msg_crm_status IS NULL
     OR msg_crm_status IN ('new', 'contacted', 'quoted', 'won', 'lost')
-  );
+  ) NOT VALID;
+ALTER TABLE ___xtr_msg VALIDATE CONSTRAINT chk_msg_crm_status;
 
 -- ────────────────────────────────────────────────────────────────────────────
 -- 3) Index partiels — lectures admin sur leads actifs uniquement
