@@ -337,3 +337,172 @@ def test_exportable_seo_always_false_even_for_strongest_clearest():
     assert r["review_verdict"] != "ACCEPTED"  # ACCEPTED is not a valid verdict
     assert r["review_verdict"] in review.ALL_VERDICTS
     assert r["exportable_seo_allowed"] is False
+
+
+# === ASCII-fold near-duplicate detection (improvement c) ===
+
+def test_ascii_fold_strips_diacritics():
+    assert review._ascii_fold("référence OE") == "reference oe"
+    assert review._ascii_fold("Référence OE") == "reference oe"
+    assert review._ascii_fold("RÉFÉRENCE  OE") == "reference oe"  # collapses whitespace
+    assert review._ascii_fold("réference OE") == review._ascii_fold("reference OE")
+
+
+def test_ascii_fold_empty_safe():
+    assert review._ascii_fold("") == ""
+    assert review._ascii_fold(None) == ""
+
+
+def test_near_duplicate_detected_in_selection_criteria():
+    """The real bug : 'Utiliser la référence OE' vs 'Utiliser la reference OE'."""
+    db = _strong_clear_brief()
+    db["selection_criteria_top"] = [
+        "Utiliser la référence OE ou l'équivalence constructeur",
+        "Respecter les dimensions exactes",
+        "Utiliser la reference OE ou l'equivalence constructeur",  # ASCII-fold dup of [0]
+    ]
+    fm, body = _make_proposal(decision_brief=db)
+    r = review.review_proposal_data(fm, body)
+    assert r["review_verdict"] == "REVIEWABLE_WITH_FIXES"
+    assert len(r["checks"]["selection_actionability"]["near_duplicates"]) == 1
+    dup_sugg = [s for s in r["fix_suggestions"] if "Doublons" in s["message"]]
+    assert len(dup_sugg) == 1
+
+
+def test_no_near_duplicate_when_distinct():
+    db = _strong_clear_brief()
+    db["selection_criteria_top"] = [
+        "Référence OEM constructeur",
+        "Dimensions du filtre",
+        "Motorisation du véhicule",
+    ]
+    fm, body = _make_proposal(decision_brief=db)
+    r = review.review_proposal_data(fm, body)
+    assert r["checks"]["selection_actionability"]["near_duplicates"] == []
+
+
+# === FR check formatter (improvement a) ===
+
+def test_format_check_structural_pass():
+    line = review._format_check_line("structural", {"pass": True, "reason": "ok", "details": ""})
+    assert "✅" in line
+    assert "Validité structurelle" in line
+    assert "{" not in line and "}" not in line  # no Python dict dump
+    assert "requis" in line
+
+
+def test_format_check_anti_filler_violation():
+    line = review._format_check_line(
+        "anti_filler",
+        {"pass": False, "reason": "filler_detected", "violations": ["placeholder_token"]},
+    )
+    assert "⚠️" in line
+    assert "Anti-filler" in line
+    assert "placeholder_token" in line
+    assert "{" not in line
+
+
+def test_format_check_function_clarity_marketing():
+    line = review._format_check_line(
+        "function_clarity",
+        {"pass": False, "marketing_detected": True, "has_technical_verb": False, "reason": "marketing_contamination"},
+    )
+    assert "Clarté de la fonction" in line
+    assert "marketing détecté" in line.lower()
+    assert "pas de verbe technique" in line.lower()
+
+
+def test_format_check_selection_with_near_duplicates():
+    line = review._format_check_line(
+        "selection_actionability",
+        {"pass": False, "actionable_count": 2, "total": 3, "non_actionable_items": [],
+         "near_duplicates": ["foo"]},
+    )
+    assert "2/3 critères actionnables" in line
+    assert "doublons" in line.lower()
+
+
+def test_format_check_compatibility_debug_separator():
+    line = review._format_check_line(
+        "compatibility_readability",
+        {"pass": False, "reason": "debug_separator", "has_debug_separator": True, "has_context": False},
+    )
+    assert "séparateurs debug" in line.lower()
+
+
+def test_format_check_source_quality_data_weak():
+    line = review._format_check_line(
+        "source_quality",
+        {"pass": True, "verdict": "DATA_WEAK"},
+    )
+    assert "DATA_WEAK" in line
+    assert "Qualité de la source" in line
+
+
+# === "Brief actuel" inline section (improvement b) ===
+
+def test_render_markdown_includes_brief_actuel_when_frontmatter_passed():
+    fm, body = _make_proposal(decision_brief=_strong_clear_brief())
+    r = review.review_proposal_data(fm, body)
+    md = review.render_review_markdown(r, frontmatter=fm)
+    assert "## Brief actuel" in md
+    assert "Filtre l'air d'admission" in md  # function_oneliner content visible inline
+
+
+def test_render_markdown_omits_brief_actuel_when_frontmatter_none():
+    """Backward-compat : calling render_review_markdown(report) without frontmatter still works."""
+    fm, body = _make_proposal(decision_brief=_strong_clear_brief())
+    r = review.review_proposal_data(fm, body)
+    md = review.render_review_markdown(r)  # no frontmatter arg
+    assert "## Brief actuel" not in md
+    assert "REVIEWABLE" in md  # still renders verdict
+
+
+def test_render_markdown_brief_actuel_handles_missing_decision_brief():
+    fm, body = _make_proposal(decision_brief=None)
+    r = review.review_proposal_data(fm, body)
+    md = review.render_review_markdown(r, frontmatter=fm)
+    assert "## Brief actuel" in md
+    assert "aucun decision_brief" in md.lower()
+
+
+def test_render_markdown_no_python_dict_dump():
+    """The Checks section must not contain Python dict repr like {'pass': True, ...}."""
+    fm, body = _make_proposal(decision_brief=_strong_clear_brief())
+    r = review.review_proposal_data(fm, body)
+    md = review.render_review_markdown(r, frontmatter=fm)
+    assert "{'pass'" not in md
+    assert "{'reason'" not in md
+    assert "'violations'" not in md
+
+
+# === review_proposal_file returns tuple (CLI integration) ===
+
+def test_review_proposal_file_returns_tuple(tmp_path):
+    """review_proposal_file now returns (report, frontmatter) for --write-audit usage."""
+    proposal_text = """---
+slug: test-x
+entity_type: gamme
+entity_data:
+  pg_id: 1
+  family: test
+  decision_brief:
+    function_oneliner: Filtre l'air d'admission pour protéger le moteur des particules
+    selection_criteria_top:
+    - Référence OEM
+    - Dimensions
+    - Motorisation
+    compatibility_summary: Vérifier la compatibilité selon le carburant et la motorisation.
+    source_kind: deterministic_transform
+    cross_check_status: WEB_CONFIRMS_RAG
+---
+
+## Body content"""
+    p = tmp_path / "test-x.md"
+    p.write_text(proposal_text, encoding="utf-8")
+    result = review.review_proposal_file(p)
+    assert isinstance(result, tuple)
+    assert len(result) == 2
+    report, fm = result
+    assert report["slug"] == "test-x"
+    assert fm["entity_data"]["decision_brief"]["source_kind"] == "deterministic_transform"
