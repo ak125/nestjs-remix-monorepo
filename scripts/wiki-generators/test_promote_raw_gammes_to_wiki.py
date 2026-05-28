@@ -712,3 +712,110 @@ def test_no_db_query_in_b5_dry_run():
     finally:
         if original_url:
             os.environ["SUPABASE_URL"] = original_url
+
+
+# === Task 8d (2026-05-28) : selection_criteria_top dedup + function definitional ===
+
+def test_ascii_fold_drops_diacritics_and_elision():
+    """_ascii_fold normalizes diacritics + drops French elision apostrophes."""
+    assert promote._ascii_fold("référence OE") == "reference oe"
+    assert promote._ascii_fold("l'équivalence") == promote._ascii_fold("equivalence")
+    assert promote._ascii_fold("Utiliser la référence OE ou l'équivalence") == \
+           promote._ascii_fold("utiliser la reference OE ou equivalence")
+    assert promote._ascii_fold("") == ""
+    assert promote._ascii_fold(None) == ""
+
+
+def test_dedup_selection_criteria_ascii_fold_exact():
+    """Identical-after-fold entries are merged, longest kept."""
+    items = [
+        "Utiliser la référence OE",
+        "Utiliser la reference OE",  # ASCII-fold dup of [0]
+    ]
+    result = promote._dedup_selection_criteria(items)
+    assert len(result) == 1
+    # The longer (with accents) is kept since both are same length, last seen wins logic — verify it's one of them
+    assert result[0] in items
+
+
+def test_dedup_selection_criteria_substring_containment():
+    """Entries that differ only by suffix are merged, the longer form kept."""
+    items = [
+        "Utiliser la référence OE ou l'équivalence constructeur",
+        "Utiliser la reference OE ou equivalence constructeur pour le vehicule",
+    ]
+    result = promote._dedup_selection_criteria(items)
+    assert len(result) == 1
+    assert result[0] == "Utiliser la reference OE ou equivalence constructeur pour le vehicule"
+
+
+def test_dedup_selection_criteria_preserves_distinct():
+    items = [
+        "Référence OEM constructeur",
+        "Dimensions du filtre",
+        "Motorisation du véhicule",
+    ]
+    result = promote._dedup_selection_criteria(items)
+    assert len(result) == 3
+    assert result == items  # order preserved
+
+
+def test_dedup_selection_criteria_empty():
+    assert promote._dedup_selection_criteria([]) == []
+    assert promote._dedup_selection_criteria(None) is None
+
+
+def test_extract_function_oneliner_first_window_has_verb():
+    """When the first 140-char window already contains a technical verb, use it as-is."""
+    text = "Filtre l'air d'admission pour protéger le moteur des poussières et particules avant la combustion"
+    result = promote._extract_function_oneliner(text, max_chars=140)
+    assert "Filtre" in result
+    assert promote.DECISION_BRIEF_VERB_RE.search(result)
+
+
+def test_extract_function_oneliner_definitional_phrase_finds_late_verb():
+    """When the verb appears past the 140-char cutoff (definitional phrase), extract a clause containing it."""
+    text = ("La plaquette de frein est la garniture de friction pressee contre le disque "
+            "par l'etrier hydraulique pour ralentir le vehicule de maniere progressive et controlee.")
+    result = promote._extract_function_oneliner(text, max_chars=140)
+    assert promote.DECISION_BRIEF_VERB_RE.search(result), f"verb missing in: {result}"
+    assert len(result) <= 140 + 1  # +1 for the ellipsis "…" if truncated
+
+
+def test_extract_function_oneliner_no_verb_anywhere_falls_back():
+    """When the source has no technical verb anywhere, fallback to first window."""
+    text = "Une description nominale sans aucun verbe technique du genre attendu par le regex de detection."
+    result = promote._extract_function_oneliner(text, max_chars=140)
+    # First window returned, even if no verb
+    assert len(result) <= 140 + 1
+    assert "Une description" in result
+
+
+def test_extract_function_oneliner_empty_safe():
+    assert promote._extract_function_oneliner("", max_chars=140) == ""
+    assert promote._extract_function_oneliner(None, max_chars=140) == ""
+
+
+def test_derive_decision_brief_dedup_integration():
+    """derive_decision_brief applies dedup to selection_criteria_top from candidate/confirmed."""
+    dimensions = {
+        "function": {
+            "candidate_value": "Filtre l'air d'admission pour protéger le moteur",
+            "confirmed_value": None,
+            "cross_check_status": "RAG_ONLY",
+        },
+        "selection_criteria": {
+            "candidate_value": [
+                "Utiliser la référence OE",
+                "Utiliser la reference OE",  # ASCII-fold dup
+                "Dimensions du filtre",
+            ],
+            "confirmed_value": None,
+            "cross_check_status": "RAG_ONLY",
+        },
+        "compatibility_factors": {"fuels": ["diesel"]},
+    }
+    db = promote.derive_decision_brief(dimensions)
+    assert db is not None
+    # Dedup merged the 2 OE entries → 2 distinct criteria
+    assert len(db["selection_criteria_top"]) == 2

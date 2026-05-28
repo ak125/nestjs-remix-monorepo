@@ -30,6 +30,7 @@ import json
 import uuid
 import hashlib
 import argparse
+import unicodedata
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -662,6 +663,117 @@ _CROSS_CHECK_PRIORITY = {
     "NEITHER": 0,
 }
 
+# Task 8d (2026-05-28) — Technical verbs for definitional-phrase function extraction.
+# When a function source starts with "Le/La X est ..." (definitional pattern), the actual
+# technical verb may appear later in the sentence ("...pour ralentir le véhicule..."). This
+# regex helps find it anywhere in the source before deciding the 140-char truncation.
+DECISION_BRIEF_VERB_RE = re.compile(
+    r'(?i)\b(filtre|filtrer|r[eé]gule|r[eé]guler|entra[iî]ne|entra[iî]ner|recycle|recycler|'
+    r'transmet|transmettre|refroidit|refroidir|freine|freiner|ralentit|ralentir|'
+    r'maintient|maintenir|alimente|alimenter|charge|charger|prot[eè]ge|prot[eé]ger|'
+    r'assure|assurer|r[eé]duit|r[eé]duire|am[eé]liore|am[eé]liorer|stocke|stocker|'
+    r'capte|capter|d[eé]tecte|d[eé]tecter|amortit|amortir|guide|guider|relie|relier|'
+    r'isole|isoler|presse|presser|permet|sert)\b'
+)
+
+
+def _ascii_fold(s):
+    """Normalize string for near-duplicate detection.
+
+    Pipeline :
+      1. NFKD decomposition + drop combining diacritics (é → e)
+      2. Drop French elision apostrophes (l', d', s', n', c', j', m', t', qu')
+         that artificially differentiate "l'équivalence" from "equivalence".
+      3. Collapse internal whitespace + trim + lowercase.
+
+    This is purposefully NOT a fuzzy matcher (no Levenshtein, no Jaccard) — just
+    a stronger normalizer so substring-containment dedup catches RAW-doubled entries.
+    """
+    if not isinstance(s, str):
+        return ""
+    normalized = unicodedata.normalize('NFKD', s)
+    no_diacritics = ''.join(c for c in normalized if not unicodedata.combining(c))
+    # Drop French elision apostrophes: l'/d'/s'/n'/c'/j'/m'/t'/qu' before a vowel/h.
+    no_elision = re.sub(r"(?i)\b(l|d|s|n|c|j|m|t|qu)['’]", "", no_diacritics)
+    return re.sub(r'\s+', ' ', no_elision).strip().lower()
+
+
+def _dedup_selection_criteria(items):
+    """Dedup ASCII-fold-similar selection_criteria entries, keeping the longest version.
+
+    Two items are considered duplicates if one's ASCII-fold form is contained in the
+    other's. The longer (more informative) entry is kept. Conservative algorithm :
+    preserves order of first occurrence, only removes strictly-redundant repetitions.
+
+    Catches both :
+    - exact ASCII-fold equality ("référence OE" vs "reference OE")
+    - substring containment ("référence OE" vs "reference OE pour le vehicule")
+
+    Limitation : does NOT do fuzzy matching (Levenshtein, Jaccard) — out of scope.
+    """
+    if not items:
+        return items
+    keep = []
+    for new_item in items:
+        if not isinstance(new_item, str):
+            continue
+        new_norm = _ascii_fold(new_item)
+        if not new_norm:
+            continue
+        replaced = False
+        for i, existing in enumerate(keep):
+            ex_norm = _ascii_fold(existing)
+            if new_norm == ex_norm or new_norm in ex_norm or ex_norm in new_norm:
+                if len(new_item) > len(existing):
+                    keep[i] = new_item
+                replaced = True
+                break
+        if not replaced:
+            keep.append(new_item)
+    return keep
+
+
+def _extract_function_oneliner(text, max_chars=140):
+    """Extract a function_oneliner with a technical verb when possible.
+
+    Strategy :
+    1. Normalize whitespace.
+    2. If first max_chars window already contains a technical verb → use it.
+    3. Else search the FULL text for a verb. If found, extract a sentence-bounded
+       clause (~max_chars) around the verb.
+    4. Else fallback to the first max_chars window (current behaviour).
+
+    This handles definitional phrases like
+    "La plaquette de frein est la garniture ... pour ralentir le véhicule..."
+    where the verb appears past the 140-char cutoff. The current text remains
+    deterministically derived — no LLM, no rewriting, just selecting a different
+    window of the existing source.
+    """
+    if not text:
+        return ""
+    text = " ".join(text.split())
+
+    # Strategy 1 : first window already contains a verb → keep it.
+    first_window = _shorten_at_word(text, max_chars)
+    if DECISION_BRIEF_VERB_RE.search(first_window):
+        return first_window
+
+    # Strategy 2 : search full text for a verb, extract sentence-bounded clause.
+    m = DECISION_BRIEF_VERB_RE.search(text)
+    if m:
+        verb_pos = m.start()
+        # Anchor at the start of the sentence containing the verb (after last '. ').
+        prev_sentence_end = text.rfind(". ", 0, verb_pos)
+        start = prev_sentence_end + 2 if prev_sentence_end >= 0 else 0
+        # Take a slightly larger raw window then word-truncate to max_chars.
+        clause_raw = text[start:start + max_chars + 60]
+        clause = _shorten_at_word(clause_raw, max_chars)
+        if DECISION_BRIEF_VERB_RE.search(clause):
+            return clause
+
+    # Strategy 3 : no verb anywhere — fallback to first window (current behaviour).
+    return first_window
+
 
 def _min_cross_check_status(statuses):
     """Return the cross_check_status with lowest confidence (worst case) among inputs."""
@@ -735,18 +847,24 @@ def derive_decision_brief(dimensions):
     sel_dim = dimensions.get("selection_criteria") or {}
     compat = dimensions.get("compatibility_factors") or {}
 
-    # function_oneliner : confirmed preferred, candidate fallback ; min 20 / max 140
+    # function_oneliner : confirmed preferred, candidate fallback ; min 20 / max 140.
+    # Task 8d (2026-05-28) : use _extract_function_oneliner so definitional phrases
+    # like "La plaquette de frein est la garniture ... pour ralentir le véhicule"
+    # find the verb past the first 140-char window.
     func_value = (func_dim.get("confirmed_value") or func_dim.get("candidate_value") or "").strip()
-    function_oneliner = _shorten_at_word(func_value, max_chars=140)
+    function_oneliner = _extract_function_oneliner(func_value, max_chars=140)
     if len(function_oneliner) < 20:
         return None  # too short to be meaningful → no decision_brief emitted
 
-    # selection_criteria_top : confirmed preferred, candidate fallback ; 1..3 items, 5..80 chars each
+    # selection_criteria_top : confirmed preferred, candidate fallback ; 1..3 items, 5..80 chars each.
+    # Task 8d (2026-05-28) : dedup ASCII-fold-similar entries upstream (e.g.
+    # "Utiliser la référence OE" vs "Utiliser la reference OE pour le vehicule").
     sel_raw = sel_dim.get("confirmed_value") or sel_dim.get("candidate_value") or []
     if not isinstance(sel_raw, list):
         sel_raw = []
+    deduped_raw = _dedup_selection_criteria(sel_raw)
     selection_criteria_top = []
-    for s in sel_raw:
+    for s in deduped_raw:
         if not isinstance(s, str):
             continue
         item = _shorten_at_word(s.strip(), max_chars=80)
