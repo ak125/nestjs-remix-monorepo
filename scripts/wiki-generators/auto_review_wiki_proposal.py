@@ -98,12 +98,14 @@ MARKETING_BLOCKLIST_RE = re.compile(
 
 # Technical verbs that signal a real function description (vs marketing).
 # Both word boundaries (start AND end) required, otherwise "freinage" would match "freine".
+# Must stay in sync with DECISION_BRIEF_VERB_RE in promote-raw-gammes-to-wiki.py.
 TECHNICAL_VERB_RE = re.compile(
     r'(?i)\b(filtre|filtrer|r[eé]gule|r[eé]guler|entra[iî]ne|entra[iî]ner|recycle|recycler|'
-    r'transmet|transmettre|refroidit|refroidir|freine|freiner|maintient|maintenir|alimente|alimenter|'
-    r'charge|charger|prot[eè]ge|prot[eé]ger|assure|assurer|r[eé]duit|r[eé]duire|'
-    r'am[eé]liore|am[eé]liorer|stocke|stocker|capte|capter|d[eé]tecte|d[eé]tecter|'
-    r'amortit|amortir|guide|guider|relie|relier|isole|isoler|permet)\b'
+    r'transmet|transmettre|refroidit|refroidir|freine|freiner|ralentit|ralentir|'
+    r'maintient|maintenir|alimente|alimenter|charge|charger|prot[eè]ge|prot[eé]ger|'
+    r'assure|assurer|r[eé]duit|r[eé]duire|am[eé]liore|am[eé]liorer|stocke|stocker|'
+    r'capte|capter|d[eé]tecte|d[eé]tecter|amortit|amortir|guide|guider|relie|relier|'
+    r'isole|isoler|presse|presser|permet|sert)\b'
 )
 
 # Non-actionable selection criteria words (warn but not block).
