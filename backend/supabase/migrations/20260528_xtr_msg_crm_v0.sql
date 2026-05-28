@@ -1,10 +1,10 @@
--- Migration: 20260530_xtr_msg_crm_v0
+-- Migration: 20260528_xtr_msg_crm_v0
 -- Mini-CRM V0 — extension additive de ___xtr_msg pour suivi commercial des contacts.
 --
 -- Périmètre : ajoute 7 colonnes structurées préfixées `msg_crm_*`, une CHECK
 -- contrainte enum sur le status, deux index partiels et un trigger BEFORE UPDATE
 -- pour maintenir `msg_crm_updated_at`. Strictement additif et réversible
--- (cf. companion 20260530_xtr_msg_crm_v0.down.sql).
+-- (cf. companion 20260528_xtr_msg_crm_v0.down.sql).
 --
 -- Pourquoi `msg_crm_status` est NULLABLE (et non DEFAULT 'new') :
 --   ___xtr_msg contient l'historique legacy de tickets support (déjà fermés,

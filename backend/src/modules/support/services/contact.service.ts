@@ -177,7 +177,7 @@ export class ContactService extends SupabaseBaseService {
         msg_content: messageContent,
         msg_open: '1', // Ouvert par défaut
         msg_close: '0', // Pas fermé
-        // Mini-CRM V0 — colonnes structurées (cf. migration 20260530_xtr_msg_crm_v0).
+        // Mini-CRM V0 — colonnes structurées (cf. migration 20260528_xtr_msg_crm_v0).
         // `msg_crm_status='new'` : seule la création via cette route marque un
         // ticket comme lead trackable (les lignes legacy restent NULL).
         msg_crm_status: 'new' as const,
@@ -763,7 +763,7 @@ export class ContactService extends SupabaseBaseService {
         msg_content: messageContent,
         msg_open: '1',
         msg_close: '0',
-        // Mini-CRM V0 — colonnes structurées (cf. migration 20260530_xtr_msg_crm_v0).
+        // Mini-CRM V0 — colonnes structurées (cf. migration 20260528_xtr_msg_crm_v0).
         // status='new' marque ce ticket comme lead trackable côté /admin/leads.
         msg_crm_status: 'new' as const,
         msg_crm_source_page: trimmedSourcePage || null,

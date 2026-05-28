@@ -1,6 +1,6 @@
--- Rollback: 20260530_xtr_msg_crm_v0
+-- Rollback: 20260528_xtr_msg_crm_v0
 -- Réversibilité complète du Mini-CRM V0. Pas de perte de donnée legacy
--- (msg_crm_* sont des colonnes ajoutées par 20260530_xtr_msg_crm_v0.sql).
+-- (msg_crm_* sont des colonnes ajoutées par 20260528_xtr_msg_crm_v0.sql).
 
 DROP TRIGGER IF EXISTS trg_xtr_msg_touch_crm_updated_at ON ___xtr_msg;
 DROP FUNCTION IF EXISTS fn_xtr_msg_touch_crm_updated_at();

@@ -5,7 +5,7 @@
  *   - la liste fermée des statuts (CHECK contrainte en DB)
  *   - les transitions autorisées (invariant service-layer)
  *
- * Aligné avec la migration backend/supabase/migrations/20260530_xtr_msg_crm_v0.sql
+ * Aligné avec la migration backend/supabase/migrations/20260528_xtr_msg_crm_v0.sql
  * (colonnes `msg_crm_*` sur ___xtr_msg).
  *
  * IMPORTANT : toute évolution de LEAD_STATUSES doit s'accompagner d'une

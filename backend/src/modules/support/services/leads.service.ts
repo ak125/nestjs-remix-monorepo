@@ -191,10 +191,15 @@ export class LeadsService extends SupabaseBaseService {
     // S'assure que la ligne est bien un lead CRM tracké (sinon NotFound).
     await this.getLead(id);
 
+    // Race-safety : le filtre IS NOT NULL est aussi appliqué sur l'UPDATE pour
+    // qu'une ligne dont msg_crm_status passe à NULL entre le getLead() et
+    // l'UPDATE ne soit pas mutée silencieusement (ne devrait pas arriver en V0
+    // — pas d'effacement public — mais ceinture+bretelles).
     const { data, error } = await this.supabase
       .from(TABLES.xtr_msg)
       .update(updates)
       .eq('msg_id', id)
+      .not('msg_crm_status', 'is', null)
       .select(LEAD_SELECT_WITH_CUSTOMER)
       .single();
 
@@ -230,10 +235,13 @@ export class LeadsService extends SupabaseBaseService {
       );
     }
 
+    // Race-safety : filtre IS NOT NULL appliqué aussi sur l'UPDATE
+    // (cf. commentaire identique dans updateLeadFields).
     const { data, error } = await this.supabase
       .from(TABLES.xtr_msg)
       .update({ msg_crm_status: nextStatus })
       .eq('msg_id', id)
+      .not('msg_crm_status', 'is', null)
       .select(LEAD_SELECT_WITH_CUSTOMER)
       .single();
 

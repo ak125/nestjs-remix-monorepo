@@ -83,7 +83,7 @@ export * from './family-registry.js';
 
 /**
  * Lifecycle des leads mini-CRM V0 (LEAD_STATUSES + LEAD_TRANSITIONS).
- * Aligné avec la CHECK contrainte de la migration 20260530_xtr_msg_crm_v0.
+ * Aligné avec la CHECK contrainte de la migration 20260528_xtr_msg_crm_v0.
  */
 export * from './leads.js';
 
