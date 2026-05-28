@@ -53,13 +53,21 @@ describe('VehiclesQuerySchema', () => {
 
   describe('limit / page — borne int4', () => {
     it.each([
+      // limit : ≥ 1 strict (limit=0 = page de résultats vide, jamais voulu)
       ['limit', 'NaN'],
       ['limit', 'abc'],
       ['limit', '-1'],
       ['limit', '0'],
       ['limit', '01'], // leading zero
+      // page : ≥ 0 (offset 0-indexed canon), mais anti-bricolage gardé
       ['page', 'NaN'],
       ['page', 'abc'],
+      ['page', '-1'], // négatif rejeté
+      ['page', '01'], // leading zero rejeté
+      ['page', '+0'], // signe rejeté
+      ['page', ' 0'], // espace rejeté
+      ['page', '0x1E'], // hex rejeté
+      ['page', '2e3'], // scientifique rejeté
       ['page', '2147483648'], // > int4 max
     ])('rejette %s=%s', (field, value) => {
       expect(() => VehiclesQuerySchema.parse({ [field]: value })).toThrow(
@@ -69,8 +77,10 @@ describe('VehiclesQuerySchema', () => {
 
     it.each([
       ['limit', '20', 20],
+      ['page', '0', 0], // ANTI-RÉGRESSION : contrat frontend 0-indexed
       ['page', '1', 1],
-      ['limit', '2147483647', 2147483647], // int4 max
+      ['page', '2147483647', 2147483647], // page int4 max
+      ['limit', '2147483647', 2147483647], // limit int4 max
     ])('accepte %s=%s → %i', (field, value, expected) => {
       const result = VehiclesQuerySchema.parse({ [field]: value });
       expect((result as Record<string, unknown>)[field]).toBe(expected);
@@ -160,6 +170,28 @@ describe('VehiclesQuerySchema', () => {
       expect(() => VehiclesQuerySchema.parse({ year: 'NaN' })).toThrow(
         ZodError,
       );
+    });
+  });
+
+  describe('reproduction exacte de la régression PR #712 (2026-05-23 → 05-27)', () => {
+    it('VehicleSelector contract — getModels(brandId, { year, page: 0, limit: 100 }) doit passer', () => {
+      // Régression PR #712 : `PositiveIntParamSchema` (regex /^[1-9]\d*$/) a
+      // été appliqué à `page` (offset pagination). Or `vehicle-models.service`
+      // est 0-indexed (`offset = page * limit`), et le frontend
+      // `enhanced-vehicle.api.ts::getModels()` envoie `page: 0`. Résultat :
+      // 100% des chargements de modèles VehicleSelector → 400 silencieux
+      // depuis 2026-05-23. Aucun test ne couvrait page='0' (seul page='1' était
+      // testé), donc CI vert + bug atterrit sur PROD.
+      const result = VehiclesQuerySchema.parse({
+        brandId: '140',
+        year: '2012',
+        page: '0',
+        limit: '100',
+      });
+      expect(result.page).toBe(0);
+      expect(result.limit).toBe(100);
+      expect(result.year).toBe(2012);
+      expect(result.brandId).toBe('140');
     });
   });
 });

@@ -627,6 +627,12 @@ export class RmBuilderService extends SupabaseBaseService {
               description: processed.description,
               content: processed.content,
               preview: processed.preview,
+              // Expose per-pg_id technique variations (sgcs_alias=2) pour
+              // rotation H1 suffix côté frontend. `ctx.comp_switches` est
+              // déjà chargé via `loadSeoCtxSwitches(pgId, gammeName)` ;
+              // entities HTML déjà décodées. Aucune nouvelle query DB.
+              // Voir @repo/seo-types pickH1Suffix.
+              compSwitch2: ctx.comp_switches?.['2'] ?? [],
             };
 
             // Retrofit ADR-055 — shadow observation via SeoShadowObservatoryModule (I1).

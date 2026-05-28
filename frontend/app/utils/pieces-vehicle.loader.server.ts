@@ -11,6 +11,7 @@ import {
   redirect,
   type LoaderFunctionArgs,
 } from "@remix-run/node";
+import { enrichTypeNameForHeadings } from "@repo/seo-types";
 import { type NoProductsData } from "~/components/pieces/NoProductsAlternatives";
 import { type FiltersData } from "~/components/pieces/PiecesFilterSidebar";
 import { fetchRmPageV2 } from "~/services/api/rm-api.service";
@@ -253,49 +254,43 @@ export async function piecesVehicleLoader({
       `🔄 [NO_PRODUCTS] 0 produits, page alternatives pour: /pieces/${gammeData.alias}-${gammeId}.html`,
     );
 
-    // Fetch alternatives en parallele (autres gammes pour ce vehicule + autres vehicules pour cette gamme)
-    const alternativesData = await fetchJsonOrNull<{
+    // Fetch alternatives — distinguish transient upstream failure from
+    // genuine empty so each gets the right cache policy downstream.
+    // `fetchJsonOrNull` would conflate both into `null`, leading to silent
+    // long-TTL caching of a transient blip (canon: no silent fallback).
+    type RmAlternativesResponse = {
       success: boolean;
       version?: 'v2';
       etag?: string;
-      alternativeGammes: Array<{
-        pg_id: number;
-        pg_name: string;
-        pg_alias: string;
-        pg_pic: string | null;
-        piece_count: number;
-        tier: 1 | 2 | 3;
-      }>;
-      alternativeVehicles: Array<{
-        type_id: string;
-        type_name: string;
-        type_alias: string | null;
-        type_fuel: string;
-        type_power_ps: string;
-        type_year_from: string;
-        type_year_to: string;
-        modele_id: number;
-        modele_name: string;
-        modele_alias: string;
-        marque_id: number;
-        marque_name: string;
-        marque_alias: string;
-        tier: 1 | 2 | 3;
-      }>;
-      relatedModels: Array<{
-        modele_id: number;
-        modele_name: string;
-        modele_alias: string;
-        marque_id: number;
-        marque_name: string;
-        marque_alias: string;
-        representative_type_id: string;
-        representative_type_alias: string;
-      }>;
-    }>(
-      `http://127.0.0.1:3000/api/rm/alternatives?gamme_id=${gammeId}&type_id=${vehicleIds.typeId}&limit=12`,
-      3000,
-    );
+      alternativeGammes: NoProductsData['alternativeGammes'];
+      alternativeVehicles: NoProductsData['alternativeVehicles'];
+      relatedModels: NoProductsData['relatedModels'];
+    };
+    let alternativesData: RmAlternativesResponse | null = null;
+    let alternativesFetchOk = false;
+    try {
+      const altResp = await fetch(
+        `http://127.0.0.1:3000/api/rm/alternatives?gamme_id=${gammeId}&type_id=${vehicleIds.typeId}&limit=12`,
+        {
+          headers: { Accept: 'application/json' },
+          signal: AbortSignal.timeout(3000),
+        },
+      );
+      if (altResp.ok) {
+        alternativesData = (await altResp.json()) as RmAlternativesResponse;
+        alternativesFetchOk = true;
+      } else {
+        logger.warn(
+          `[R2_ALTS_FETCH_NON_OK] gamme=${gammeId} type=${vehicleIds.typeId} status=${altResp.status}`,
+        );
+      }
+    } catch (e) {
+      logger.warn(
+        `[R2_ALTS_FETCH_FAILED] gamme=${gammeId} type=${vehicleIds.typeId}: ${
+          e instanceof Error ? e.message : String(e)
+        }`,
+      );
+    }
 
     // Construire le label vehicule lisible depuis les params URL
     const vehicleLabel = [rawMarque, rawModele, rawType]
@@ -329,6 +324,23 @@ export async function piecesVehicleLoader({
       /* swallow: jamais bloquant */
     });
 
+    const alternativeGammes = alternativesData?.alternativeGammes ?? [];
+    const alternativeVehicles = alternativesData?.alternativeVehicles ?? [];
+    const relatedModels = alternativesData?.relatedModels ?? [];
+    const hasAlternatives =
+      alternativeGammes.length + alternativeVehicles.length + relatedModels.length > 0;
+
+    // Canon: cache TTL must reflect payload confidence — no silent fallback,
+    // no long-TTL on error paths (feedback_no_long_ttl_cache_on_error_paths).
+    //   upstream fetch failed  → no-store (don't poison CDN, recover next req)
+    //   genuine empty payload  → ≤30s   (fast recovery if alts become available)
+    //   populated              → 1h CDN as designed
+    const cacheControl = !alternativesFetchOk
+      ? "no-store, must-revalidate"
+      : hasAlternatives
+        ? "public, max-age=300, s-maxage=3600"
+        : "public, max-age=30, s-maxage=30";
+
     return json(
       {
         noProducts: true as const,
@@ -338,14 +350,14 @@ export async function piecesVehicleLoader({
           rmV2Response?.gamme?.pg_name || gammeData.alias.replace(/-/g, " "),
         vehicleLabel,
         vehicleContext,
-        alternativeGammes: alternativesData?.alternativeGammes ?? [],
-        alternativeVehicles: alternativesData?.alternativeVehicles ?? [],
-        relatedModels: alternativesData?.relatedModels ?? [],
+        alternativeGammes,
+        alternativeVehicles,
+        relatedModels,
       } satisfies NoProductsData,
       {
         headers: {
           "X-Robots-Tag": "noindex, follow",
-          "Cache-Control": "public, max-age=300, s-maxage=3600",
+          "Cache-Control": cacheControl,
         },
       },
     );
@@ -503,12 +515,25 @@ export async function piecesVehicleLoader({
         seo: {
           title:
             rmV2Response.seo?.title ||
-            `${gamme.name} ${vehicle.marque} ${vehicle.modele} ${vehicle.type} | Pièces Auto`,
+            // R2 title fallback : enrichir `type_name` ambigu avec
+            // `powerPs`/`fuel` (audit 2026-05-26, H1+title duplicates).
+            // No-op si non-ambigu → byte-identique à l'actuel.
+            `${gamme.name} ${vehicle.marque} ${vehicle.modele} ${
+              enrichTypeNameForHeadings({
+                typeName: vehicle.typeName || vehicle.type,
+                powerPs: vehicle.typePowerPs?.toString(),
+                fuel: vehicle.typeFuel,
+              }).value
+            } | Pièces Auto`,
           h1: rmV2Response.seo?.h1 || loaderData.seoContent.h1,
           description: stripHtmlForMeta(
             rmV2Response.seo?.description ||
               loaderData.seoContent.longDescription,
           ),
+          // Per-pg_id technique variations (sgcs_alias=2) pour rotation H1
+          // suffix côté PiecesHeader (audit 2026-05-26 : "au meilleur prix"
+          // figé partout, restaurer le pattern legacy PHP #CompSwitch_2#).
+          compSwitch2: rmV2Response.seo?.compSwitch2 ?? [],
         },
         performance: {
           loadTime,
