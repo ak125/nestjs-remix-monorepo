@@ -827,6 +827,12 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: low
+  # Remotion render microservice (Fafa Media Factory) — video pipeline (D12).
+  - glob: services/remotion-renderer/**
+    domain: D12
+    owner: '@ak125/marketing-team'
+    sourceConfidence: high
+    risk: medium
   - glob: workspaces/wiki/**
     domain: D15
     owner: '@ak125'
