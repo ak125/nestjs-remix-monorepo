@@ -819,3 +819,84 @@ def test_derive_decision_brief_dedup_integration():
     assert db is not None
     # Dedup merged the 2 OE entries → 2 distinct criteria
     assert len(db["selection_criteria_top"]) == 2
+
+
+# === Task 8e (2026-05-29) : extract_dimensions reads richer YAML frontmatter ===
+
+def test_extract_diagnostic_symptoms_preferred_over_confusion_with():
+    """extract_dimensions reads diagnostic.symptoms[].label (real symptoms), not
+    domain.confusion_with (part-confusion warnings)."""
+    raw = promote.read_raw_gamme(VANNE_EGR_PATH)
+    web = []
+    dims = promote.extract_dimensions(raw, web)
+    sym = dims["symptoms"]
+    candidate = sym.get("candidate_value") or []
+    # candidate_value should NOT contain "Filtre à air =" or "Vanne EGR =" style
+    # confusion-with phrases (those are part-confusion, not failure symptoms)
+    confusion_like = [s for s in candidate if "=" in s and ("admission" in s or "moteur" in s)]
+    # Real failure symptoms expected (perte de puissance, fumée, etc.)
+    assert candidate, "candidate_value should be populated from diagnostic.symptoms[]"
+
+
+def test_extract_maintenance_reads_yaml_interval():
+    """Maintenance periodicite_km comes from fm.maintenance.interval YAML, not body regex."""
+    raw = promote.read_raw_gamme(promote.GAMMES_DIR / "filtre-a-air.md")
+    dims = promote.extract_dimensions(raw, [])
+    maint = dims["maintenance_context"]
+    # filtre-a-air YAML has interval.value="20000-40000" → periodicite_km=20000 (lower bound)
+    assert maint.get("periodicite_km") == 20000
+    assert maint.get("periodicite_source") == "constructeurs"
+    assert maint.get("periodicite_note"), "should include the explanatory note from YAML"
+
+
+def test_extract_maintenance_reads_wear_signs_and_good_practices():
+    raw = promote.read_raw_gamme(promote.GAMMES_DIR / "filtre-a-air.md")
+    dims = promote.extract_dimensions(raw, [])
+    maint = dims["maintenance_context"]
+    # filtre-a-air YAML has both wear_signs[] and good_practices[]
+    assert isinstance(maint.get("wear_signs"), list)
+    assert len(maint["wear_signs"]) >= 1
+    assert isinstance(maint.get("good_practices"), list)
+    assert len(maint["good_practices"]) >= 1
+
+
+def test_extract_equipementier_brands_from_yaml():
+    """equipementier_brands dimension populated from selection.brands YAML."""
+    raw = promote.read_raw_gamme(promote.GAMMES_DIR / "filtre-a-air.md")
+    dims = promote.extract_dimensions(raw, [])
+    brands = dims.get("equipementier_brands") or {}
+    # filtre-a-air YAML has premium, standard, budget tiers
+    assert "premium" in brands
+    assert "Mann Filter" in brands["premium"]
+    assert "standard" in brands
+    assert "Bosch" in brands["standard"]
+
+
+def test_extract_variants_summary_from_yaml():
+    """variants_summary dimension populated from variants[] YAML."""
+    raw = promote.read_raw_gamme(promote.GAMMES_DIR / "filtre-a-air.md")
+    dims = promote.extract_dimensions(raw, [])
+    variants = dims.get("variants_summary") or []
+    # filtre-a-air YAML has 3 variants : panneau, cylindrique, conique
+    assert len(variants) >= 3
+    names = [v["name"] for v in variants]
+    assert any("plat" in n.lower() or "panneau" in n.lower() for n in names)
+
+
+def test_extract_dimensions_no_new_dimensions_when_yaml_missing():
+    """Backward compat : when YAML lacks the new fields, dimensions are empty/safe."""
+    # Construct a minimal raw without diagnostic.*, maintenance.*, variants, selection.brands
+    minimal_raw = {
+        "frontmatter_full": {"slug": "minimal", "pg_id": 999, "category": "test"},
+        "safe_taxonomic_fields": {"slug": "minimal", "pg_id": 999, "category": "test"},
+        "is_rag_candidate": False,
+        "source_path": "/tmp/minimal.md",
+        "body": "Some body content without km matches or symptoms.",
+    }
+    dims = promote.extract_dimensions(minimal_raw, [])
+    # No equipementier_brands → empty dict
+    assert dims["equipementier_brands"] == {}
+    # No variants_summary → empty list
+    assert dims["variants_summary"] == []
+    # No maintenance YAML, no body km → maint is empty
+    assert dims["maintenance_context"] == {}
