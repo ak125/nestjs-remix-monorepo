@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://automecanik.com/schema/fafa-media-factory/video-brief.schema.json",
+  "title": "Video Brief",
+  "description": "Artefact #1 (P0 video-governance) — type, mode, vertical, gamme, plateformes, durée, template. Sans ce brief, production bloquée (NO-GO).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "video_id",
+    "format",
+    "mode",
+    "vertical",
+    "gamme",
+    "platforms",
+    "target_duration_sec",
+    "template",
+    "created_at",
+    "status"
+  ],
+  "properties": {
+    "video_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "Slug unique, ex: fafa-vanne-egr-001"
+    },
+    "format": {
+      "type": "string",
+      "enum": ["ne-change-pas-trop-vite", "symptome-3-causes", "piece-expliquee"],
+      "description": "Format narratif V1 (extensible V2)"
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["SOCLE", "SHORT", "GAMME"],
+      "description": "Mode P0 (SOCLE 7-9min, SHORT 15-60s, GAMME 3-6min). V1 = SHORT only."
+    },
+    "vertical": {
+      "type": "string",
+      "enum": ["FREINAGE", "MOTEUR", "ALIMENTATION", "ALLUMAGE", "TRANSMISSION", "REFROIDISSEMENT", "DIRECTION", "SUSPENSION", "ECHAPPEMENT", "ELECTRIQUE", "CARROSSERIE", "HABITACLE", "CLIMATISATION"]
+    },
+    "gamme": {
+      "type": "string",
+      "description": "Slug gamme AutoMecanik (ex: vanne-egr, plaquettes-de-frein, alternateur)"
+    },
+    "platforms": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["tiktok", "instagram_reels", "youtube_shorts", "facebook_reels"]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "target_duration_sec": {
+      "type": "integer",
+      "minimum": 15,
+      "maximum": 540,
+      "description": "Cible. Tolérance ±10% via G4 Platform gate."
+    },
+    "template": {
+      "type": "string",
+      "enum": ["NeChangePasTropVite", "SymptomeTroisCauses", "PieceExpliquee"],
+      "description": "Composition Remotion mappée au format"
+    },
+    "url_cible": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL canonique AutoMecanik à promouvoir (CTA)"
+    },
+    "inspiration_pattern_id": {
+      "type": ["string", "null"],
+      "description": "Référence pattern dans inspiration/patterns/*.jsonl si applicable. Force statut INSPIRED_PATTERN_ONLY."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "DISCOVERED",
+        "PATTERN_EXTRACTED",
+        "INSPIRED_PATTERN_ONLY",
+        "DRAFT_ONLY",
+        "REVIEW_READY",
+        "APPROVED",
+        "PUBLISHED",
+        "MEASURED"
+      ]
+    }
+  }
+}

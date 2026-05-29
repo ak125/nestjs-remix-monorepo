@@ -809,6 +809,19 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: medium
+  # Fafa Media Factory V1 — dotted paths not matched by the parent globstar
+  # (micromatch dot:false). Explicit globs for the workspace .claude surface
+  # and for .gitkeep placeholders that hold the empty workflow dirs.
+  - glob: workspaces/marketing/.claude/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  - glob: workspaces/marketing/**/.gitkeep
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
   - glob: workspaces/wiki/**
     domain: D15
     owner: '@ak125'
