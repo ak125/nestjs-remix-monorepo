@@ -330,6 +330,21 @@ Aucun systeme aval ne peut redefinir librement un role ou une gate
 en dehors de ces deux referentiels.
 Le critere principal de qualification est la promesse centrale exclusive du role.
 
+## URL pattern → R-role (cart/conversion analysis) — invariant 2026-05-25
+
+Toute analyse panier / conversion / funnel doit classifier les URLs selon le mapping suivant. Confondre R8 et R2_PRODUCT véhicule-aware = P1 business-mapping error (mauvais levier UX).
+
+| URL pattern | R-role canon | Cart-capable ? | Composants frontend |
+|-------------|--------------|----------------|---------------------|
+| `/pieces/<gamme>-<id>.html` | **R1_ROUTER** | ❌ (sélecteur véhicule) | `pieces.$slug.tsx` |
+| `/pieces/<gamme>-<id>/<marque>-<id>/<modele>-<id>/<type>-<id>.html` | **R2_PRODUCT** véhicule-aware | ✅ via `PiecesGridView` / `PiecesListView` | `pieces.$gamme.$marque.$modele.$type[.]html.tsx` |
+| `/constructeurs/<brand>/<model>/<type>.html` | **R8_VEHICLE** | ❌ (fiche véhicule pure) | `constructeurs.$brand.$model.$type[.]html.tsx` |
+| `/search/...` | hors R-matrix (utilitaire) | ✅ via `PiecesGridView` / `PiecesListView` | `search.tsx` |
+
+**Règle stricte** : tout texte mentionnant `R8` dans la même ligne que `panier|cart|conver|achat|landing piece` est une violation (sauf citation de cet invariant ou contexte négatif explicite « R8 = fiche véhicule », « JAMAIS R8 », « PAS R8 », « R8 ne convertit pas »). Enforcement : `scripts/governance/check-cart-conversion-r-role.sh` (CI ratchet, wired dans `.github/workflows/governance-checks.yml`).
+
+Doctrine mémoire liée (vieux canon, sessions 2026-04-25) : *"R8 = page véhicule, JAMAIS gamme/pièce"*. Investigation runtime 2026-05-25 a confirmé que 7/8 paniers réels passent par R2_PRODUCT véhicule-aware + `/search/`, et 0 via R8.
+
 ## Lien avec les phases pipeline
 
 Phase 1 garantit la matiere sure.

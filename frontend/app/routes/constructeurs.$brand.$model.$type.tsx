@@ -1,7 +1,8 @@
 // 🚗 Page détail véhicule - Logique métier PHP intégrée
 //
-// Rôle SEO : R8 - VEHICLE (sélection pièces pour un véhicule spécifique)
-// Intention : Sélection de pièces pour un véhicule spécifique
+// Rôle SEO : R8_VEHICLE — fiche véhicule (identité, motorisations, repères entretien).
+// No-cart par canon. Handoff vers R1 (gamme) / R2 (achat). Voir
+// .spec/00-canon/role-matrix.md §R8 et @repo/seo-roles forbidden-overlap.ts.
 
 import {
   defer,

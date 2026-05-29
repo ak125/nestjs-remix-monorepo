@@ -218,6 +218,13 @@ export interface RmSeoData {
   description: string;
   content: string;
   preview: string;
+  /**
+   * Per-pg_id technique variations (`__seo_gamme_car_switch.sgcs_alias=2`)
+   * exposées pour rotation H1 suffix côté frontend (`PiecesHeader.tsx`).
+   * Vide si pg_id n'a pas de rows alias=2 → frontend tombe en fallback
+   * SEO_PRICE_VARIATIONS local. Voir `@repo/seo-types pickH1Suffix`.
+   */
+  compSwitch2?: string[];
 }
 
 /**

@@ -74,6 +74,11 @@ interface ContactRequest {
   };
   ipAddress?: string | null;
   userAgent?: string | null;
+  /**
+   * Mini-CRM V0 — page d'origine du formulaire (document.referrer côté CSR).
+   * null si l'utilisateur arrive en direct sur /contact.
+   */
+  source_page?: string | null;
 }
 
 // Service temporaire pour le contact
@@ -209,6 +214,7 @@ export async function action({
       (formData.get("priority") as ContactRequest["priority"]) || "normal",
     customerId: session.get("userId"),
     orderNumber: (formData.get("orderNumber") as string)?.trim() || undefined,
+    source_page: (formData.get("source_page") as string)?.trim() || null,
     vehicleInfo: {
       brand: (formData.get("vehicleBrand") as string)?.trim() || undefined,
       model: (formData.get("vehicleModel") as string)?.trim() || undefined,
@@ -257,6 +263,15 @@ export default function ContactPage() {
   const [showVehicleInfo, setShowVehicleInfo] = useState(false);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+
+  // Mini-CRM V0 — capture document.referrer côté CSR uniquement.
+  // null si arrivée directe ; PAS '/contact' (faux signal).
+  const [sourcePage, setSourcePage] = useState<string>("");
+  useEffect(() => {
+    if (typeof document !== "undefined" && document.referrer) {
+      setSourcePage(document.referrer);
+    }
+  }, []);
 
   const isSubmitting = navigation.state === "submitting";
 
@@ -506,6 +521,9 @@ export default function ContactPage() {
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow p-6">
               <Form ref={formRef} method="post" className="space-y-6">
+                {/* Mini-CRM V0 — page d'origine (document.referrer côté CSR) */}
+                <input type="hidden" name="source_page" value={sourcePage} />
+
                 {/* Erreur générale */}
                 {actionData?.error && (
                   <Alert

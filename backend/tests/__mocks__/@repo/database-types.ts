@@ -64,3 +64,34 @@ export const FAMILY_DOMAIN_GROUPS: Record<string, number[]> = {
   moteur: [1],
   chassis: [2],
 };
+
+// Mini-CRM V0 — leads (cf. packages/database-types/src/leads.ts).
+// Mirror exact des constantes du package pour que LeadsService et ses tests
+// partagent la même invariant de transitions.
+export const LEAD_STATUSES = [
+  'new',
+  'contacted',
+  'quoted',
+  'won',
+  'lost',
+] as const;
+
+export type LeadStatus = (typeof LEAD_STATUSES)[number];
+
+export const LEAD_TRANSITIONS: Readonly<
+  Record<LeadStatus, readonly LeadStatus[]>
+> = {
+  new: ['contacted', 'lost'],
+  contacted: ['quoted', 'won', 'lost'],
+  quoted: ['won', 'lost', 'contacted'],
+  won: [],
+  lost: ['new'],
+} as const;
+
+export function isValidLeadTransition(
+  from: LeadStatus,
+  to: LeadStatus,
+): boolean {
+  if (from === to) return true;
+  return LEAD_TRANSITIONS[from].includes(to);
+}

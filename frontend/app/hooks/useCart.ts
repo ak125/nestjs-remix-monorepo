@@ -49,6 +49,7 @@ export function useCart() {
       productId: number,
       quantity: number = 1,
       typeId?: number,
+      unitPriceCents?: number | null,
     ): Promise<boolean> => {
       setIsLoading(true);
       setError(null);
@@ -68,13 +69,18 @@ export function useCart() {
         if (result.success) {
           emitCartUpdated();
           // Commerce-Loop V1 étape 4-A — intention d'achat (funnel R2).
+          // unit_price_cents + source_url : caller passe le prix produit en cents
+          // (Math.round(price * 100)) et le funnel-beacon récupère la page source
+          // pour corréler page → panier en runtime (cf. investigation 2026-05-25).
           emitFunnel({
             event_type: "r2_add_to_cart",
             payload: {
               session_id: getFunnelSessionId(),
               product_id: String(productId),
               quantity,
-              unit_price_cents: null,
+              unit_price_cents:
+                typeof unitPriceCents === "number" ? unitPriceCents : null,
+              source_url: sourceUrl ?? null,
             },
           });
           return true;

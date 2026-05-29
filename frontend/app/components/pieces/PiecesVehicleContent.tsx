@@ -41,6 +41,11 @@ import { usePiecesFilters } from "~/hooks/use-pieces-filters";
 import { openCartSidebar } from "~/hooks/useCartSidebar";
 import { useRootCart } from "~/hooks/useRootData";
 import { useSeoLinkTracking } from "~/hooks/useSeoLinkTracking";
+import {
+  classifyReferrer,
+  emitFunnel,
+  getFunnelSessionId,
+} from "~/utils/funnel-beacon";
 import { isValidPosition } from "~/utils/pieces-filters.utils";
 import { buildPiecesBreadcrumbs } from "~/utils/url-builder.utils";
 
@@ -88,6 +93,42 @@ export function PiecesVehicleContent() {
       trackImpression("CrossSelling", data.crossSellingGammes.length);
     }
   }, [trackImpression, data.crossSellingGammes?.length]);
+
+  // Commerce-Loop V1 étape 4-B — view event (funnel R2). Fire-and-forget,
+  // SSR-safe (no-op côté serveur via funnel-beacon). Dédup sessionStorage par
+  // pathname pour éviter remount/hydration/StrictMode double-fire (même
+  // pattern que trackPurchase dans checkout-payment-return.tsx:184-188).
+  // Sans ce dédup : risque 2-4 events r2_view pour 1 vue réelle = volume
+  // funnel pollué.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    // Namespace `amk_funnel_dedup_*` aligné avec `amk_funnel_sid` dans
+    // funnel-beacon.ts — évite collision sessionStorage avec d'autres composants.
+    const dedupKey = `amk_funnel_dedup_r2v_${window.location.pathname}`;
+    if (sessionStorage.getItem(dedupKey)) return;
+    emitFunnel({
+      event_type: "r2_view",
+      payload: {
+        session_id: getFunnelSessionId(),
+        referrer: classifyReferrer(),
+        // data.gamme.alias = slug canonique (cf. line 129/250 du composant).
+        // Pas .slug ni .pg_alias (n'existent pas sur ce data).
+        gamme_slug: data?.gamme?.alias ?? null,
+        // type_id (motorisation TecDoc) — R2 vehicle-aware, clé métier qui
+        // permettra la corrélation runtime moteur/véhicule/conversion.
+        // ATTENTION : data.vehicle.typeId est en CAMELCASE côté JS
+        // (cf. line 380/391/400 du composant), mais le payload JSON est
+        // snake_case `type_id` selon le schema Zod canon.
+        type_id:
+          typeof data?.vehicle?.typeId === "number"
+            ? data.vehicle.typeId
+            : null,
+      },
+    });
+    sessionStorage.setItem(dedupKey, "1");
+    // Mount-only — pas de deps pour éviter re-fire sur filter change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Handlers pour tracker les clics "Voir aussi"
   const handleVoirAussiClick = useCallback(
@@ -194,6 +235,7 @@ export function PiecesVehicleContent() {
           gamme={data.gamme}
           count={data.count}
           performance={data.performance}
+          compSwitch2={data.seo?.compSwitch2}
         />
       </div>
 

@@ -36,3 +36,5 @@ export * from "./geo-aeo.js";
 export * from "./content-ops.js";
 export * from "./crux.js";
 export * from "./control-dashboard.js";
+export * from "./vehicle-aware-label.js";
+export * from "./seo-variations.js";

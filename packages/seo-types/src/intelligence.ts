@@ -188,6 +188,11 @@ export const R2ViewPayloadSchema = z.object({
   session_id: z.string().min(1),
   referrer: FunnelReferrerSchema,
   gamme_slug: z.string().nullable(),
+  // type_id (motorisation TecDoc) — R2 est vehicle-aware, clé métier qui permet
+  // la corrélation moteur/véhicule/gamme/conversion runtime (cross-ref avec
+  // ___xtr_order_line.orl_website_url). Nullable + optional pour rétrocompat
+  // events existants émis sans type_id (extension additive, pattern PR #756 source_url).
+  type_id: z.number().int().positive().nullable().optional(),
 });
 export type R2ViewPayload = z.infer<typeof R2ViewPayloadSchema>;
 
@@ -196,6 +201,9 @@ export const R2AddToCartPayloadSchema = z.object({
   product_id: z.string().min(1),
   quantity: z.number().int().positive(),
   unit_price_cents: z.number().int().nonnegative().nullable(),
+  // Page d'où l'add_to_cart a été émis (pathname + search), pour corréler
+  // page source → panier en runtime (investigation 2026-05-25).
+  source_url: z.string().nullable().optional(),
 });
 export type R2AddToCartPayload = z.infer<typeof R2AddToCartPayloadSchema>;
 
