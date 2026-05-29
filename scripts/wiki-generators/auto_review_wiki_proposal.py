@@ -34,6 +34,7 @@ import argparse
 import json
 import re
 import sys
+import unicodedata
 from pathlib import Path
 
 try:
@@ -41,6 +42,20 @@ try:
 except ImportError:
     sys.stderr.write("Manque : pip install pyyaml\n")
     sys.exit(1)
+
+
+def _ascii_fold(s):
+    """Normalize string for near-duplicate detection : NFKD + remove diacritics + lowercase + collapse whitespace.
+
+    Used to detect cases where the same criterion appears twice with different
+    diacritics (e.g. "Utiliser la référence OE" vs "Utiliser la reference OE")
+    or whitespace.
+    """
+    if not isinstance(s, str):
+        return ""
+    normalized = unicodedata.normalize('NFKD', s)
+    no_diacritics = ''.join(c for c in normalized if not unicodedata.combining(c))
+    return re.sub(r'\s+', ' ', no_diacritics).strip().lower()
 
 
 # === Verdict states (single source of truth) ===
@@ -83,12 +98,14 @@ MARKETING_BLOCKLIST_RE = re.compile(
 
 # Technical verbs that signal a real function description (vs marketing).
 # Both word boundaries (start AND end) required, otherwise "freinage" would match "freine".
+# Must stay in sync with DECISION_BRIEF_VERB_RE in promote-raw-gammes-to-wiki.py.
 TECHNICAL_VERB_RE = re.compile(
     r'(?i)\b(filtre|filtrer|r[eé]gule|r[eé]guler|entra[iî]ne|entra[iî]ner|recycle|recycler|'
-    r'transmet|transmettre|refroidit|refroidir|freine|freiner|maintient|maintenir|alimente|alimenter|'
-    r'charge|charger|prot[eè]ge|prot[eé]ger|assure|assurer|r[eé]duit|r[eé]duire|'
-    r'am[eé]liore|am[eé]liorer|stocke|stocker|capte|capter|d[eé]tecte|d[eé]tecter|'
-    r'amortit|amortir|guide|guider|relie|relier|isole|isoler|permet)\b'
+    r'transmet|transmettre|refroidit|refroidir|freine|freiner|ralentit|ralentir|'
+    r'maintient|maintenir|alimente|alimenter|charge|charger|prot[eè]ge|prot[eé]ger|'
+    r'assure|assurer|r[eé]duit|r[eé]duire|am[eé]liore|am[eé]liorer|stocke|stocker|'
+    r'capte|capter|d[eé]tecte|d[eé]tecter|amortit|amortir|guide|guider|relie|relier|'
+    r'isole|isoler|presse|presser|permet|sert)\b'
 )
 
 # Non-actionable selection criteria words (warn but not block).
@@ -194,26 +211,40 @@ def check_function_clarity(fm, body):
 
 
 def check_selection_actionability(fm, body):
-    """Check 4 : selection_criteria_top actionability (warn but not block)."""
+    """Check 4 : selection_criteria_top actionability + near-duplicate detection (warn but not block).
+
+    Near-duplicate detection (ASCII-fold normalization) catches cases where the
+    same criterion appears twice with different diacritics or whitespace
+    (e.g. "Utiliser la référence OE" vs "Utiliser la reference OE"). These are
+    upstream RAW frontmatter quality issues that the human reviewer should be
+    alerted to.
+    """
     ed = fm.get("entity_data") or {}
     db = ed.get("decision_brief") or {}
     items = db.get("selection_criteria_top") or []
     if not items:
-        return {"pass": False, "actionable_count": 0, "total": 0, "non_actionable_items": []}
+        return {"pass": False, "actionable_count": 0, "total": 0,
+                "non_actionable_items": [], "near_duplicates": []}
     non_actionable = []
     actionable_count = 0
+    folded = [_ascii_fold(str(it)) for it in items]
+    near_duplicates = []
+    for i, f in enumerate(folded):
+        if f and folded.count(f) > 1 and folded.index(f) < i:
+            near_duplicates.append(str(items[i]))
     for it in items:
         s = str(it).strip()
         if NON_ACTIONABLE_SELECTION_RE.match(s):
             non_actionable.append(s)
         elif ACTIONABLE_SELECTION_HINT_RE.search(s):
             actionable_count += 1
-        # else : neutral (neither flagged actionable nor non-actionable) — counts as borderline
+        # else : neutral (neither flagged actionable nor non-actionable) — borderline
     return {
-        "pass": actionable_count >= 1 and len(non_actionable) == 0,
+        "pass": actionable_count >= 1 and len(non_actionable) == 0 and len(near_duplicates) == 0,
         "actionable_count": actionable_count,
         "total": len(items),
         "non_actionable_items": non_actionable,
+        "near_duplicates": near_duplicates,
     }
 
 
@@ -363,6 +394,12 @@ def derive_fix_suggestions(checks):
                 "severity": "minor",
                 "message": "Aucun critère actionnable (OEM, motorisation, dimension, marque, etc.) détecté. À enrichir.",
             })
+        if sa.get("near_duplicates"):
+            suggestions.append({
+                "field": "decision_brief.selection_criteria_top",
+                "severity": "minor",
+                "message": f"Doublons quasi-identiques détectés (ASCII-fold) : {sa['near_duplicates']}. Corriger la source RAW pour dédoublonner ; symptôme typique d'entrées doublées avec/sans accents.",
+            })
     cr = checks["compatibility_readability"]
     if not cr["pass"]:
         if cr["has_debug_separator"]:
@@ -436,15 +473,119 @@ def review_proposal_data(frontmatter, body):
 
 
 def review_proposal_file(path):
-    """Top-level wrapper : read a proposal file from disk and run the review."""
+    """Top-level wrapper : read a proposal file from disk and run the review.
+
+    Returns (report, frontmatter). Frontmatter is returned so callers (CLI
+    --write-audit) can render the "Brief actuel" section inline.
+    """
     fm, body = parse_proposal_file(path)
-    return review_proposal_data(fm, body)
+    report = review_proposal_data(fm, body)
+    return report, fm
 
 
 # === Markdown formatter (audit output) ===
 
-def render_review_markdown(report):
-    """Render a human-readable Markdown summary of the review JSON."""
+# FR labels for each check (replaces raw Python dict dump).
+_CHECK_LABELS_FR = {
+    "structural": "Validité structurelle",
+    "anti_filler": "Anti-filler",
+    "function_clarity": "Clarté de la fonction",
+    "selection_actionability": "Critères de choix actionnables",
+    "compatibility_readability": "Lisibilité de la compatibilité",
+    "source_quality": "Qualité de la source",
+}
+
+
+def _format_check_line(name, result):
+    """Render a single check result as a FR human-readable line (no dict dump)."""
+    symbol = "✅" if result.get("pass") else "⚠️"
+    label = _CHECK_LABELS_FR.get(name, name)
+    summary = ""
+    if name == "structural":
+        if result.get("pass"):
+            summary = "tous les champs requis présents"
+        else:
+            reason = result.get("reason", "?")
+            details = result.get("details") or ""
+            if details:
+                summary = f"{reason} ({details})"
+            else:
+                summary = reason
+    elif name == "anti_filler":
+        if result.get("pass"):
+            summary = "aucun placeholder ni phrase générique"
+        else:
+            v = result.get("violations") or []
+            summary = f"filler détecté : {', '.join(v)}"
+    elif name == "function_clarity":
+        bits = []
+        if result.get("has_technical_verb"):
+            bits.append("verbe technique présent")
+        else:
+            bits.append("**pas de verbe technique** (filtre/régule/entraîne/etc.)")
+        if result.get("marketing_detected"):
+            bits.append("**marketing détecté**")
+        else:
+            bits.append("pas de marketing")
+        summary = " ; ".join(bits)
+    elif name == "selection_actionability":
+        ac = result.get("actionable_count", 0)
+        tot = result.get("total", 0)
+        bits = [f"{ac}/{tot} critères actionnables"]
+        if result.get("non_actionable_items"):
+            bits.append(f"non-actionnables : {result['non_actionable_items']}")
+        if result.get("near_duplicates"):
+            bits.append(f"doublons (ASCII-fold) : {result['near_duplicates']}")
+        summary = " ; ".join(bits)
+    elif name == "compatibility_readability":
+        bits = []
+        if result.get("has_debug_separator"):
+            bits.append("**séparateurs debug détectés (pipe/slash)**")
+        else:
+            bits.append("pas de séparateurs debug")
+        if result.get("has_context"):
+            bits.append("phrase FR naturelle (selon/avec/et)")
+        else:
+            bits.append("**manque mots de liaison FR**")
+        summary = " ; ".join(bits)
+    elif name == "source_quality":
+        summary = f"verdict source = `{result.get('verdict', '?')}`"
+    else:
+        summary = str(result)
+    return f"- {symbol} **{label}** : {summary}"
+
+
+def _format_brief_section(frontmatter):
+    """Render the actual decision_brief facets inline in the review markdown.
+
+    Avoids the reviewer having to open the proposal file separately.
+    """
+    ed = frontmatter.get("entity_data") or {}
+    db = ed.get("decision_brief")
+    if not db:
+        return ["## Brief actuel", "", "_(aucun decision_brief dans cette proposal)_"]
+    lines = ["## Brief actuel (facettes extraites de la proposal)"]
+    lines.append("")
+    lines.append(f"- **Fonction** : {db.get('function_oneliner', '_(absent)_')}")
+    lines.append("- **Critères de choix prioritaires** :")
+    for c in db.get("selection_criteria_top") or []:
+        lines.append(f"  - {c}")
+    if not db.get("selection_criteria_top"):
+        lines.append("  - _(aucun)_")
+    lines.append(f"- **Compatibilité** : {db.get('compatibility_summary', '_(absent)_')}")
+    lines.append(
+        f"- **Sourcing** : `source_kind={db.get('source_kind', '?')}` ; "
+        f"`cross_check_status={db.get('cross_check_status', '?')}`"
+    )
+    return lines
+
+
+def render_review_markdown(report, frontmatter=None):
+    """Render a human-readable Markdown summary of the review JSON.
+
+    If `frontmatter` is provided, include a "## Brief actuel" section showing
+    the decision_brief facets inline (avoids the reviewer juggling 2 files).
+    """
     lines = []
     lines.append(f"# Auto-review WIKI proposal — {report['slug']}")
     lines.append("")
@@ -453,14 +594,18 @@ def render_review_markdown(report):
     lines.append(f"- **human_review_required** : {report['human_review_required']}")
     lines.append(f"- **exportable_seo_allowed** : {report['exportable_seo_allowed']} (toujours false : ADR-033)")
     lines.append("")
+
+    if frontmatter is not None:
+        lines.extend(_format_brief_section(frontmatter))
+        lines.append("")
+
     lines.append("## Scores (1-5)")
     for k, v in report["scores"].items():
         lines.append(f"- **{k}** : {v}")
     lines.append("")
     lines.append("## Checks")
     for k, c in report["checks"].items():
-        symbol = "✅" if c.get("pass") else "⚠️"
-        lines.append(f"- {symbol} **{k}** : {c}")
+        lines.append(_format_check_line(k, c))
     if report["fix_suggestions"]:
         lines.append("")
         lines.append("## Fix suggestions")
@@ -503,7 +648,7 @@ def main():
         return 2
 
     try:
-        report = review_proposal_file(proposal_path)
+        report, frontmatter = review_proposal_file(proposal_path)
     except (ValueError, yaml.YAMLError) as e:
         sys.stderr.write(f"⚠️  cannot parse proposal: {e}\n")
         return 3
@@ -521,7 +666,7 @@ def main():
             json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8"
         )
         (audit_dir / f"{slug}.review.md").write_text(
-            render_review_markdown(report), encoding="utf-8"
+            render_review_markdown(report, frontmatter=frontmatter), encoding="utf-8"
         )
         sys.stderr.write(f"✅ Audit written : {audit_dir}/{slug}.review.{{json,md}}\n")
     return 0

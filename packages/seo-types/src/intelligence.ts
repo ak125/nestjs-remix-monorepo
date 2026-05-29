@@ -201,6 +201,9 @@ export const R2AddToCartPayloadSchema = z.object({
   product_id: z.string().min(1),
   quantity: z.number().int().positive(),
   unit_price_cents: z.number().int().nonnegative().nullable(),
+  // Page d'où l'add_to_cart a été émis (pathname + search), pour corréler
+  // page source → panier en runtime (investigation 2026-05-25).
+  source_url: z.string().nullable().optional(),
 });
 export type R2AddToCartPayload = z.infer<typeof R2AddToCartPayloadSchema>;
 
