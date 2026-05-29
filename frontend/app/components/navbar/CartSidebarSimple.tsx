@@ -5,21 +5,20 @@
  * Utilise les données SSR du root loader (useRootCart)
  * Sans liste détaillée des articles (voir /cart pour ça)
  *
- * ✅ Migré vers Sheet (Radix) pour:
- * - Scroll lock automatique
- * - Focus trap automatique
- * - Fermeture Escape automatique
- * - Animations cohérentes
+ * ✅ Drawer via <dialog> natif (top-layer) pour :
+ * - Scroll lock + focus trap + fermeture Échap NATIFS (aucun JS au clic)
+ * - Pas de reflow forcé (cause de l'INP élevé du Radix Sheet, cf. useNativeDialog)
+ * - API contrôlée inchangée (isOpen / onClose) → singleton useCartSidebar intact
  */
 
 import { Link } from "@remix-run/react";
 import { ShoppingBag, X } from "lucide-react";
-import { memo } from "react";
+import { memo, useEffect } from "react";
 
 import { Badge } from "~/components/ui/badge";
+import { useNativeDialog } from "~/hooks/useNativeDialog";
 import { useRootCart } from "~/hooks/useRootData";
 import { cn } from "../../lib/utils";
-import { Sheet, SheetContent, SheetClose, SheetTitle } from "../ui/sheet";
 
 const FREE_SHIPPING_THRESHOLD = 150;
 
@@ -44,6 +43,13 @@ export const CartSidebarSimple = memo(function CartSidebarSimple({
   // Données du root loader (SSR) - pas besoin de fetch supplémentaire
   const rootCart = useRootCart();
 
+  // Drawer <dialog> natif, piloté par la prop contrôlée `isOpen`.
+  const { open, close, dialogProps } = useNativeDialog({ onClose });
+  useEffect(() => {
+    if (isOpen) open();
+    else close();
+  }, [isOpen, open, close]);
+
   // Extraire les données du panier
   const itemCount = rootCart?.summary?.total_items || 0;
   const subtotal = rootCart?.summary?.subtotal || 0;
@@ -51,161 +57,155 @@ export const CartSidebarSimple = memo(function CartSidebarSimple({
   const total = subtotal + consigneTotal;
 
   return (
-    <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent
-        side="right"
-        className="w-full sm:w-[400px] p-0 flex flex-col"
-      >
-        <SheetTitle className="sr-only">Panier</SheetTitle>
-        {/* Header compact & dynamique */}
-        <div className="flex items-center justify-between px-4 py-2.5 border-b bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-sm">
-          <div className="flex items-center gap-2">
-            <ShoppingBag className="h-4 w-4" />
-            <span className="font-bold text-sm">Panier</span>
-            {itemCount > 0 && (
-              <span className="bg-white text-orange-600 text-xs font-bold px-2 py-0.5 rounded-full shadow-sm">
-                {itemCount}
-              </span>
-            )}
-          </div>
-          <SheetClose asChild>
-            <button
-              aria-label="Fermer le panier"
-              className="p-1.5 hover:bg-white/20 rounded-full transition-colors"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </SheetClose>
-        </div>
-
-        {/* Livraison gratuite - toujours visible */}
-        <div
-          className={cn(
-            "px-4 py-4 border-b",
-            subtotal >= FREE_SHIPPING_THRESHOLD
-              ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white"
-              : "bg-gradient-to-r from-blue-50",
+    <dialog
+      {...dialogProps}
+      aria-label="Panier"
+      className="navdrawer navdrawer-right fixed inset-y-0 right-0 m-0 h-full max-h-none w-full sm:w-[400px] p-0 bg-background text-foreground backdrop:bg-black/80 open:flex flex-col"
+    >
+      {/* Header compact & dynamique */}
+      <div className="flex items-center justify-between px-4 py-2.5 border-b bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-sm">
+        <div className="flex items-center gap-2">
+          <ShoppingBag className="h-4 w-4" />
+          <span className="font-bold text-sm">Panier</span>
+          {itemCount > 0 && (
+            <span className="bg-white text-orange-600 text-xs font-bold px-2 py-0.5 rounded-full shadow-sm">
+              {itemCount}
+            </span>
           )}
+        </div>
+        <button
+          type="button"
+          aria-label="Fermer le panier"
+          onClick={close}
+          className="p-1.5 hover:bg-white/20 rounded-full transition-colors"
         >
-          {subtotal >= FREE_SHIPPING_THRESHOLD ? (
-            <div className="flex items-center gap-3">
-              <span className="text-2xl animate-pulse">🎉</span>
-              <div>
-                <p className="font-bold text-lg">Livraison OFFERTE !</p>
-                <p className="text-xs opacity-90">Vous économisez 9,90€</p>
-              </div>
-            </div>
-          ) : (
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+
+      {/* Livraison gratuite - toujours visible */}
+      <div
+        className={cn(
+          "px-4 py-4 border-b",
+          subtotal >= FREE_SHIPPING_THRESHOLD
+            ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white"
+            : "bg-gradient-to-r from-blue-50",
+        )}
+      >
+        {subtotal >= FREE_SHIPPING_THRESHOLD ? (
+          <div className="flex items-center gap-3">
+            <span className="text-2xl animate-pulse">🎉</span>
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-semibold text-gray-800">
-                  🚚 Livraison gratuite dès {FREE_SHIPPING_THRESHOLD}€
-                </span>
-                <span className="text-xs font-bold text-blue-800 bg-blue-100 px-2 py-0.5 rounded-full">
-                  {Math.round((subtotal / FREE_SHIPPING_THRESHOLD) * 100)}%
-                </span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                <div
-                  className="bg-gradient-to-r from-blue-500 to-green-500 h-2.5 rounded-full transition-all duration-500"
-                  style={{
-                    width: `${Math.min((subtotal / FREE_SHIPPING_THRESHOLD) * 100, 100)}%`,
-                  }}
-                />
-              </div>
-              <div className="mt-2 text-center bg-amber-50 border border-amber-200 rounded-lg py-1.5 px-2">
-                <p className="text-xs text-gray-700">
-                  💡 Plus que{" "}
-                  <span className="font-bold text-blue-600">
-                    {formatPrice(
-                      Math.max(FREE_SHIPPING_THRESHOLD - subtotal, 0),
-                    )}
-                  </span>{" "}
-                  pour débloquer !
-                </p>
-              </div>
+              <p className="font-bold text-lg">Livraison OFFERTE !</p>
+              <p className="text-xs opacity-90">Vous économisez 9,90€</p>
             </div>
-          )}
-        </div>
-
-        {/* Contenu principal - Résumé ou panier vide */}
-        <div className="p-4 flex-1 overflow-y-auto">
-          {itemCount === 0 ? (
-            <div className="flex flex-col items-center justify-center py-8 text-gray-600">
-              <ShoppingBag className="h-16 w-16 mb-4 opacity-50" />
-              <p className="font-medium text-lg">Votre panier est vide</p>
-              <p className="text-sm mt-2">Découvrez nos pièces auto</p>
+          </div>
+        ) : (
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-semibold text-gray-800">
+                🚚 Livraison gratuite dès {FREE_SHIPPING_THRESHOLD}€
+              </span>
+              <span className="text-xs font-bold text-blue-800 bg-blue-100 px-2 py-0.5 rounded-full">
+                {Math.round((subtotal / FREE_SHIPPING_THRESHOLD) * 100)}%
+              </span>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {/* Résumé compact */}
-              <div className="bg-gray-50 rounded-xl p-4 space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Articles</span>
-                  <Badge variant="info" className="text-sm px-3 py-1">
-                    {itemCount} pièce{itemCount > 1 ? "s" : ""}
-                  </Badge>
-                </div>
+            <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+              <div
+                className="bg-gradient-to-r from-blue-500 to-green-500 h-2.5 rounded-full transition-all duration-500"
+                style={{
+                  width: `${Math.min((subtotal / FREE_SHIPPING_THRESHOLD) * 100, 100)}%`,
+                }}
+              />
+            </div>
+            <div className="mt-2 text-center bg-amber-50 border border-amber-200 rounded-lg py-1.5 px-2">
+              <p className="text-xs text-gray-700">
+                💡 Plus que{" "}
+                <span className="font-bold text-blue-600">
+                  {formatPrice(Math.max(FREE_SHIPPING_THRESHOLD - subtotal, 0))}
+                </span>{" "}
+                pour débloquer !
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
 
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Sous-total</span>
-                  <span className="font-semibold">{formatPrice(subtotal)}</span>
-                </div>
+      {/* Contenu principal - Résumé ou panier vide */}
+      <div className="p-4 flex-1 overflow-y-auto">
+        {itemCount === 0 ? (
+          <div className="flex flex-col items-center justify-center py-8 text-gray-600">
+            <ShoppingBag className="h-16 w-16 mb-4 opacity-50" />
+            <p className="font-medium text-lg">Votre panier est vide</p>
+            <p className="text-sm mt-2">Découvrez nos pièces auto</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {/* Résumé compact */}
+            <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">Articles</span>
+                <Badge variant="info" className="text-sm px-3 py-1">
+                  {itemCount} pièce{itemCount > 1 ? "s" : ""}
+                </Badge>
+              </div>
 
-                {consigneTotal > 0 && (
-                  <div className="flex justify-between text-amber-700 bg-amber-50 -mx-4 px-4 py-2 rounded">
-                    <span>♻️ Consignes</span>
-                    <span className="font-medium">
-                      +{formatPrice(consigneTotal)}
-                    </span>
-                  </div>
-                )}
+              <div className="flex justify-between">
+                <span className="text-gray-600">Sous-total</span>
+                <span className="font-semibold">{formatPrice(subtotal)}</span>
+              </div>
 
-                {/* Livraison - Affichée uniquement si gratuite */}
-                {subtotal >= FREE_SHIPPING_THRESHOLD && (
-                  <div className="flex justify-between items-center bg-green-50 -mx-4 px-4 py-2 rounded border border-green-200">
-                    <span className="text-green-700">🚚 Livraison</span>
-                    <span className="text-green-600 font-bold">✓ OFFERTE</span>
-                  </div>
-                )}
-
-                <div className="border-t pt-3 flex justify-between items-center">
-                  <span className="font-bold text-lg">Total TTC</span>
-                  <span className="font-bold text-2xl text-blue-600">
-                    {formatPrice(total)}
+              {consigneTotal > 0 && (
+                <div className="flex justify-between text-amber-700 bg-amber-50 -mx-4 px-4 py-2 rounded">
+                  <span>♻️ Consignes</span>
+                  <span className="font-medium">
+                    +{formatPrice(consigneTotal)}
                   </span>
                 </div>
+              )}
+
+              {/* Livraison - Affichée uniquement si gratuite */}
+              {subtotal >= FREE_SHIPPING_THRESHOLD && (
+                <div className="flex justify-between items-center bg-green-50 -mx-4 px-4 py-2 rounded border border-green-200">
+                  <span className="text-green-700">🚚 Livraison</span>
+                  <span className="text-green-600 font-bold">✓ OFFERTE</span>
+                </div>
+              )}
+
+              <div className="border-t pt-3 flex justify-between items-center">
+                <span className="font-bold text-lg">Total TTC</span>
+                <span className="font-bold text-2xl text-blue-600">
+                  {formatPrice(total)}
+                </span>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
+      </div>
 
-        {/* Footer - Boutons d'action */}
-        <div className="border-t bg-white p-4 space-y-3 mt-auto">
-          {itemCount > 0 && (
-            <SheetClose asChild>
-              <Link
-                to="/cart"
-                rel="nofollow"
-                className="w-full py-3 px-4 bg-orange-500 hover:bg-orange-600 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2"
-              >
-                <span className="text-white font-bold text-lg">
-                  📋 Voir mon panier
-                </span>
-              </Link>
-            </SheetClose>
-          )}
-          <SheetClose asChild>
-            <Link
-              to="/"
-              className="w-full py-2.5 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg text-center block transition-colors"
-            >
-              🛍️ Continuer mes achats
-            </Link>
-          </SheetClose>
-        </div>
-      </SheetContent>
-    </Sheet>
+      {/* Footer - Boutons d'action */}
+      <div className="border-t bg-white p-4 space-y-3 mt-auto">
+        {itemCount > 0 && (
+          <Link
+            to="/cart"
+            rel="nofollow"
+            onClick={close}
+            className="w-full py-3 px-4 bg-orange-500 hover:bg-orange-600 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2"
+          >
+            <span className="text-white font-bold text-lg">
+              📋 Voir mon panier
+            </span>
+          </Link>
+        )}
+        <Link
+          to="/"
+          onClick={close}
+          className="w-full py-2.5 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-lg text-center block transition-colors"
+        >
+          🛍️ Continuer mes achats
+        </Link>
+      </div>
+    </dialog>
   );
 });
 
