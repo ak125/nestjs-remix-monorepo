@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "1.0.0",
+  "briefId": "fafa-vanne-egr-001",
+  "executionLogId": 0,
+  "videoType": "short",
+  "vertical": "alimentation",
+  "composition": "NeChangePasTropVite",
+  "outputFormat": "mp4",
+  "resolution": { "width": 1080, "height": 1920 },
+  "fps": 30,
+  "durationSecs": 38,
+  "compositionProps": {
+    "hook": "Perte de puissance et fumée noire ? Ne change pas ta vanne EGR trop vite.",
+    "symptom": "Perte de puissance",
+    "pieceWrong": "vanne EGR",
+    "causes": [
+      { "cause": "Filtre à air bouché", "check_suggestion": "Inspection visuelle" },
+      { "cause": "Débitmètre fatigué", "check_suggestion": "Test multimètre" },
+      { "cause": "Durite percée", "check_suggestion": "Visuel + écoute" }
+    ],
+    "advice": "Vérifie dans l'ordre : visuel → multimètre → atelier.",
+    "cta": "Sur AutoMecanik, sélectionne ton véhicule pour voir les pièces compatibles.",
+    "disclaimer": "Conseil informatif. Diagnostic à confirmer selon véhicule.",
+    "brandName": "AutoMecanik"
+  }
+}
