@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://automecanik.com/schema/fafa-media-factory/evidence-pack.schema.json",
+  "title": "Evidence Pack",
+  "description": "Artefact #3 (P0 video-governance) — preuves RAG (docId, excerpt, confidence) référencées par Claim Table. Source : wiki AutoMecanik (diagnostic schema), OEM specs, TecDoc.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["video_id", "evidence"],
+  "properties": {
+    "video_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/EvidenceEntry"
+      }
+    }
+  },
+  "$defs": {
+    "EvidenceEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["doc_id", "source_type", "excerpt", "confidence"],
+      "properties": {
+        "doc_id": {
+          "type": "string",
+          "description": "Identifiant unique evidence, ex: wiki-diag-vanne-egr-v1#causes-perte-puissance"
+        },
+        "source_type": {
+          "type": "string",
+          "enum": [
+            "wiki_diagnostic",
+            "wiki_proposal",
+            "oem_spec",
+            "tecdoc",
+            "catalogue_interne",
+            "rappel_gouv",
+            "norm_ece",
+            "expert_humain"
+          ]
+        },
+        "source_url": {
+          "type": ["string", "null"],
+          "description": "URL ou path interne. Null pour sources non-URL (expert humain, norm payante)."
+        },
+        "excerpt": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 1500,
+          "description": "Extrait textuel utilisé comme preuve. PAS de paraphrase Fafa ici, citation brute."
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "0=low, 1=high. <0.5 = warning, suggérer validation humaine."
+        },
+        "extracted_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "claim_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^claim-[0-9]+$"
+          },
+          "description": "Liste des claim_id qui s'appuient sur cette evidence (FK reverse)."
+        }
+      }
+    }
+  }
+}
