@@ -25,7 +25,13 @@ import { PositiveIntParamSchema } from '../../../common/schemas/numeric-param.sc
  * Conventions :
  *   - `z.strictObject` → rejette tout champ inconnu (anti-bricolage)
  *   - Chaque champ string traite `""` comme absent (préprocesseur)
- *   - `limit`/`page` réutilisent `PositiveIntParamSchema` (borne int4 canon)
+ *   - `limit` réutilise `PositiveIntParamSchema` (borne int4 canon, ≥ 1 — un
+ *     `limit=0` n'a pas de sens sémantique pour une page de résultats)
+ *   - `page` utilise un schema dédié non-négatif (0-indexed offset canon,
+ *     contrat avec `vehicle-models.service.ts` qui calcule `offset = page * limit`).
+ *     Régression 2026-05-23 fermée : `PositiveIntParamSchema` rejetait `'0'`,
+ *     ce qui cassait 100% des appels `VehicleSelector` (`page: 0` envoyé par
+ *     `frontend/app/services/api/enhanced-vehicle.api.ts` → 400 silencieux).
  *   - `year` borné 1900-2100 (range humain raisonnable, suffisamment large)
  *
  * Sortie typée = `VehiclesQueryDto`, compatible runtime avec l'interface
@@ -40,6 +46,31 @@ const optionalString = z.preprocess(
 const optionalPositiveIntFromString = z.preprocess(
   (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
   PositiveIntParamSchema.optional(),
+);
+
+// `page` = offset pagination 0-indexed (contrat consommateur
+// `vehicle-models.service.ts` : `offset = page * limit`). Doit accepter `'0'`
+// (première page canon) en plus des entiers positifs, tout en gardant la même
+// rigueur anti-bricolage (rejette `'-1'`, `'00'`, `'NaN'`, `'+0'`, espaces,
+// hex, scientifique, leading zeros). Borne max = int4 (alignée sur
+// `PositiveIntParamSchema`).
+const optionalNonNegativeIntFromString = z.preprocess(
+  (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+  z
+    .string()
+    .regex(/^(0|[1-9]\d*)$/, {
+      message: 'Must be a non-negative integer without leading zero',
+    })
+    .transform(Number)
+    .pipe(
+      z
+        .number()
+        .finite()
+        .int()
+        .min(0, { message: 'Out of int4 range (min 0)' })
+        .max(2147483647, { message: 'Out of int4 range (max 2147483647)' }),
+    )
+    .optional(),
 );
 
 const yearSchema = z.preprocess(
@@ -76,7 +107,7 @@ export const VehiclesQuerySchema = z
     typeId: optionalString,
     year: yearSchema,
     limit: optionalPositiveIntFromString,
-    page: optionalPositiveIntFromString,
+    page: optionalNonNegativeIntFromString,
     includeAll: booleanFromStringEnum,
   })
   .transform((parsed) => ({

@@ -14,7 +14,7 @@ export enum PageRole {
   R6_SUPPORT = 'R6', // Support/Légal
   R6_GUIDE_ACHAT = 'R6_GUIDE', // Guide d'achat
   R7_BRAND = 'R7', // Marque/Constructeur
-  R8_VEHICLE = 'R8', // Véhicule (sélection pièces par véhicule spécifique)
+  R8_VEHICLE = 'R8', // Fiche véhicule — no-cart. Voir @repo/seo-roles forbidden-overlap[R8_VEHICLE].
 }
 
 export interface PageRoleMeta {

@@ -50,6 +50,16 @@
       "types": "./dist/control-dashboard.rules.d.ts",
       "import": "./dist/control-dashboard.rules.js",
       "require": "./dist/control-dashboard.rules.js"
+    },
+    "./vehicle-aware-label": {
+      "types": "./dist/vehicle-aware-label.d.ts",
+      "import": "./dist/vehicle-aware-label.js",
+      "require": "./dist/vehicle-aware-label.js"
+    },
+    "./seo-variations": {
+      "types": "./dist/seo-variations.d.ts",
+      "import": "./dist/seo-variations.js",
+      "require": "./dist/seo-variations.js"
     }
   },
   "scripts": {

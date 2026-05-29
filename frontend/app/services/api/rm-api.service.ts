@@ -187,6 +187,9 @@ export interface RmSeoData {
   description: string;
   content: string;
   preview: string;
+  /** Per-pg_id technique variations from `__seo_gamme_car_switch.sgcs_alias=2`.
+   * Exposed by backend pour rotation H1 suffix via @repo/seo-types pickH1Suffix. */
+  compSwitch2?: string[];
 }
 
 export interface RmCrossSelling {

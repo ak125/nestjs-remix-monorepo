@@ -144,6 +144,9 @@ export interface SEOInfo {
   title: string;
   h1: string;
   description: string;
+  /** Per-pg_id technique variations (`__seo_gamme_car_switch.sgcs_alias=2`)
+   * pour rotation H1 suffix dans PiecesHeader via @repo/seo-types pickH1Suffix. */
+  compSwitch2?: readonly string[];
 }
 
 export interface CatalogueItem {
@@ -175,6 +178,9 @@ export interface LoaderData {
   minPrice: number;
   maxPrice: number;
   prixPasCherText?: string; // Texte dynamique "pas cher"
+  /** Per-pg_id technique variations (__seo_gamme_car_switch.sgcs_alias=2)
+   * pour rotation H1 suffix via @repo/seo-types pickH1Suffix. */
+  compSwitch2?: readonly string[];
 
   // Contenu enrichi V5
   seoContent: SEOEnrichedContent;
