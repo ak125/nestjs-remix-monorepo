@@ -1,5 +1,6 @@
 -- supabase: no-transaction
--- squawk-ignore-file disallowed-in-transaction prefer-robust-stmts require-timeout-settings
+-- squawk-ignore-file ban-concurrent-index-creation-in-transaction
+-- squawk-ignore-file require-timeout-settings
 --
 -- Migration: 20260529_xtr_msg_crm_indexes
 -- Follow-up structurel de #784 (mini-CRM V0). Crée les 2 indexes partiels
