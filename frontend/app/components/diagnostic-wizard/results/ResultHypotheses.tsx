@@ -17,6 +17,8 @@ import { type Hypothesis } from "../types";
 
 interface Props {
   hypotheses: Hypothesis[];
+  /** PR-1a : "particulier" masque le détail technique (scoring breakdown). Défaut = comportement actuel (mécano). */
+  audience?: "particulier" | "mecano";
 }
 
 const URGENCY_BADGE: Record<string, string> = {
@@ -39,7 +41,7 @@ const PROGRESS_COLOR = (score: number) => {
   return "[&>div]:bg-gray-400";
 };
 
-export function ResultHypotheses({ hypotheses }: Props) {
+export function ResultHypotheses({ hypotheses, audience = "mecano" }: Props) {
   const [expandedId, setExpandedId] = useState<string | null>(
     hypotheses[0]?.hypothesis_id || null,
   );
@@ -119,8 +121,8 @@ export function ResultHypotheses({ hypotheses }: Props) {
               {/* Expanded details */}
               {expanded && (
                 <div className="px-3 pb-3 space-y-3 border-t border-gray-100 pt-3 ml-10">
-                  {/* Scoring breakdown */}
-                  {h.scoring_breakdown && (
+                  {/* Scoring breakdown — détail technique masqué en mode particulier (PR-1a) */}
+                  {h.scoring_breakdown && audience === "mecano" && (
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                       {Object.entries(h.scoring_breakdown).map(([key, val]) => (
                         <div
