@@ -71,6 +71,17 @@ export class SeoHeadersInterceptor implements NestInterceptor {
     else if (!this.robotsTxtService.shouldIndex(path)) {
       headers = this.seoHeadersService.getNoIndexHeaders();
     }
+    // Fallthrough = route document générique indexable (home, pages statiques) OU
+    // un 404/410 servi par le catch-all Remix ($.tsx). `index, follow` est le défaut
+    // implicite de Google quand aucun X-Robots-Tag n'est présent : l'affirmer via
+    // header est redondant sur un succès et NUISIBLE sur une erreur (il fuyait sur
+    // les 404/410 du catch-all, contredisant le `noindex` throw de la route — cf.
+    // catch-all-404-noindex.test.ts). On laisse la route Remix posséder robots via
+    // <meta> / `headers`. Les autres headers par défaut (Vary, Referrer-Policy,
+    // X-Content-Type-Options) restent appliqués.
+    else {
+      delete headers['X-Robots-Tag'];
+    }
 
     // Appliquer headers globaux (n'écrase pas les headers explicites définis ensuite)
     Object.entries(headers).forEach(([key, value]) => {
