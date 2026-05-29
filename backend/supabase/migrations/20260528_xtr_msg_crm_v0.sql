@@ -41,11 +41,14 @@ ALTER TABLE ___xtr_msg
 
 -- ────────────────────────────────────────────────────────────────────────────
 -- 2) Invariant enum (CHECK) — NULL toléré pour les lignes legacy non-CRM.
---    Two-step ADD CONSTRAINT NOT VALID + VALIDATE CONSTRAINT pour ne pas
---    bloquer les writes pendant le full-scan initial (squawk
---    constraint-missing-not-valid). Les lignes existantes ont toutes
---    msg_crm_status = NULL (colonne ajoutée juste au-dessus), donc le
---    VALIDATE est trivialement rapide — la procédure reste structural-safe.
+--    Ajout en NOT VALID volontairement (squawk constraint-missing-not-valid) :
+--    la colonne `msg_crm_status` vient d'être ajoutée ci-dessus, donc toutes
+--    les lignes existantes ont NULL = valide par construction. Pas besoin de
+--    VALIDATE CONSTRAINT (qui en plus, dans la même tx, bloquerait les reads
+--    pour rien). La contrainte est enforced pour tous les INSERT/UPDATE
+--    futurs ; les éventuelles backfills opérateurs ultérieures devront
+--    lancer `ALTER TABLE ___xtr_msg VALIDATE CONSTRAINT chk_msg_crm_status`
+--    en migration séparée (out-of-tx) si elles touchent à la colonne.
 -- ────────────────────────────────────────────────────────────────────────────
 ALTER TABLE ___xtr_msg DROP CONSTRAINT IF EXISTS chk_msg_crm_status;
 ALTER TABLE ___xtr_msg
@@ -54,7 +57,6 @@ ALTER TABLE ___xtr_msg
     msg_crm_status IS NULL
     OR msg_crm_status IN ('new', 'contacted', 'quoted', 'won', 'lost')
   ) NOT VALID;
-ALTER TABLE ___xtr_msg VALIDATE CONSTRAINT chk_msg_crm_status;
 
 -- ────────────────────────────────────────────────────────────────────────────
 -- 3) Index partiels — lectures admin sur leads actifs uniquement
