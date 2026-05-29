@@ -9,10 +9,12 @@ import { LegalController } from './controllers/legal.controller';
 import { ClaimController } from './controllers/claim.controller';
 import { SupportAnalyticsController } from './controllers/support-analytics.controller';
 import { AISupportController } from './controllers/ai-support.controller';
+import { LeadsAdminController } from './controllers/leads-admin.controller';
 
 // Services
 import { ReviewService } from './services/review.service';
 import { ContactService } from './services/contact.service';
+import { LeadsService } from './services/leads.service';
 import { QuoteService } from './services/quote.service';
 import { FaqService } from './services/faq.service';
 import { LegalService } from './services/legal.service';
@@ -66,11 +68,13 @@ import { NotificationsModule } from '../../notifications/notifications.module';
     ClaimController,
     SupportAnalyticsController,
     AISupportController, // 🤖 Contrôleur IA
+    LeadsAdminController, // 🧲 Mini-CRM V0 — surface admin /api/admin/leads
   ],
   providers: [
     // Services principaux
     ReviewService,
     ContactService,
+    LeadsService, // Mini-CRM V0 — pipeline commercial sur ___xtr_msg
     QuoteService,
     FaqService,
     LegalService,

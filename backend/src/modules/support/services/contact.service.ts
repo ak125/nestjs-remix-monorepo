@@ -25,6 +25,27 @@ export interface ContactRequest {
   };
   order_number?: string;
   customer_id?: string; // ID du client existant si connecté
+  /**
+   * Mini-CRM V0 — page d'origine du formulaire (document.referrer côté FE).
+   * Optionnel : `null` ou absent si l'utilisateur arrive en direct.
+   * Stocké dans `___xtr_msg.msg_crm_source_page` à la création.
+   */
+  source_page?: string | null;
+}
+
+/**
+ * Mini-CRM V0 — construit la représentation textuelle "Brand Model Year"
+ * stockée dans `msg_crm_vehicle_info` pour faciliter la lecture admin
+ * sans avoir à parser le JSON du `msg_content`.
+ */
+function formatVehicleInfoForCrm(
+  vi: ContactRequest['vehicle_info'],
+): string | null {
+  if (!vi) return null;
+  const parts = [vi.brand, vi.model, vi.year ? String(vi.year) : null].filter(
+    (p): p is string => Boolean(p && p.trim()),
+  );
+  return parts.length > 0 ? parts.join(' ').slice(0, 500) : null;
 }
 
 // Interface ContactFormData hérite de toutes les propriétés de ContactRequest
@@ -143,6 +164,11 @@ export class ContactService extends SupabaseBaseService {
       // 2. Créer le message de support avec métadonnées
       const messageContent = this.buildMessageContent(contactData);
 
+      const trimmedSourcePage =
+        typeof contactData.source_page === 'string'
+          ? contactData.source_page.trim().slice(0, 1000)
+          : '';
+
       const ticketData = {
         msg_cst_id: customerId,
         msg_ord_id: contactData.order_number || null,
@@ -151,6 +177,13 @@ export class ContactService extends SupabaseBaseService {
         msg_content: messageContent,
         msg_open: '1', // Ouvert par défaut
         msg_close: '0', // Pas fermé
+        // Mini-CRM V0 — colonnes structurées (cf. migration 20260528_xtr_msg_crm_v0).
+        // `msg_crm_status='new'` : seule la création via cette route marque un
+        // ticket comme lead trackable (les lignes legacy restent NULL).
+        msg_crm_status: 'new' as const,
+        msg_crm_source_page: trimmedSourcePage || null,
+        msg_crm_vehicle_info: formatVehicleInfoForCrm(contactData.vehicle_info),
+        msg_crm_updated_at: new Date().toISOString(),
       };
 
       const { data, error } = await this.supabase
@@ -716,6 +749,11 @@ export class ContactService extends SupabaseBaseService {
         }
       }
 
+      const trimmedSourcePage =
+        typeof contactData.source_page === 'string'
+          ? contactData.source_page.trim().slice(0, 1000)
+          : '';
+
       const ticketData = {
         msg_id: nextId,
         msg_cst_id: customerId,
@@ -725,6 +763,12 @@ export class ContactService extends SupabaseBaseService {
         msg_content: messageContent,
         msg_open: '1',
         msg_close: '0',
+        // Mini-CRM V0 — colonnes structurées (cf. migration 20260528_xtr_msg_crm_v0).
+        // status='new' marque ce ticket comme lead trackable côté /admin/leads.
+        msg_crm_status: 'new' as const,
+        msg_crm_source_page: trimmedSourcePage || null,
+        msg_crm_vehicle_info: formatVehicleInfoForCrm(contactData.vehicle_info),
+        msg_crm_updated_at: new Date().toISOString(),
       };
 
       const { data, error } = await this.supabase
