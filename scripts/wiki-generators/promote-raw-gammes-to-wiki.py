@@ -499,8 +499,19 @@ def extract_dimensions(raw, web_corpus, compatibility_url_data=None):
             break
     selection_criteria = _dim_with_status(rag_sel, web_sel, is_cand)
 
-    # symptoms : candidate from RAG domain.confusion_with + confirmed from OEM web
-    rag_sym = [c.get("difference", "") for c in (dom.get("confusion_with", []) or []) if c.get("difference")]
+    # symptoms : candidate from RAG diagnostic.symptoms[].label (real failure symptoms,
+    # YAML-structured) + confirmed from OEM web SYMPTOMS_RE.
+    # Task 8e (2026-05-29) — previously read domain.confusion_with which contains part-
+    # confusion warnings ("Filtre à air = ... vs Filtre à huile = ..."), NOT failure symptoms.
+    # diagnostic.symptoms[] is the canonical source per ADR-033 §C8.
+    diag = fm_full.get("diagnostic", {}) or {}
+    rag_sym = []
+    for s in (diag.get("symptoms") or []):
+        if isinstance(s, dict) and s.get("label"):
+            rag_sym.append(s["label"].strip())
+    # Fallback for legacy RAW without diagnostic.symptoms : confusion_with differences
+    if not rag_sym:
+        rag_sym = [c.get("difference", "") for c in (dom.get("confusion_with", []) or []) if c.get("difference")]
     web_sym = []
     for line in all_web_body.split("\n"):
         if SYMPTOMS_RE.search(line) and len(line) > 15 and line not in web_sym:
@@ -602,12 +613,42 @@ def extract_dimensions(raw, web_corpus, compatibility_url_data=None):
                 # B3 only (no DB enrichment)
                 compat["source_kind"] = "compatibility_proven_by_runtime_url"
 
-    # maintenance_context : web km + safe taxonomic must_not_contain
-    km_matches = KM_RE.findall(all_web_body)
+    # maintenance_context : YAML-structured frontmatter (canonical) + web body fallback.
+    # Task 8e (2026-05-29) — prefer fm.maintenance.* over body-regex (YAML is structured,
+    # source-of-truth ; regex is fragile and noisy). Body regex stays as fallback.
     maint = {}
-    if km_matches:
-        kms = sorted(int(k) for k in km_matches)
-        maint["periodicite_km"] = kms[len(kms) // 2] * 1000
+    maint_yaml = fm_full.get("maintenance", {}) or {}
+    interval_yaml = maint_yaml.get("interval", {}) or {}
+    interval_val = interval_yaml.get("value")
+    # Parse YAML interval (can be int or "20000-40000" range string)
+    if interval_val is not None:
+        if isinstance(interval_val, str) and "-" in interval_val:
+            try:
+                # Use the lower bound for periodicite_km (conservative)
+                maint["periodicite_km"] = int(interval_val.split("-")[0].strip())
+            except ValueError:
+                pass
+        elif isinstance(interval_val, int):
+            maint["periodicite_km"] = interval_val
+        if interval_yaml.get("note"):
+            maint["periodicite_note"] = interval_yaml.get("note")
+        if interval_yaml.get("source"):
+            maint["periodicite_source"] = interval_yaml.get("source")
+    # Fallback : body-regex extraction (legacy path)
+    if "periodicite_km" not in maint:
+        km_matches = KM_RE.findall(all_web_body)
+        if km_matches:
+            kms = sorted(int(k) for k in km_matches)
+            maint["periodicite_km"] = kms[len(kms) // 2] * 1000
+    # Wear signs (YAML-structured failure indicators)
+    wear_signs = maint_yaml.get("wear_signs") or []
+    if wear_signs and isinstance(wear_signs, list):
+        maint["wear_signs"] = [s for s in wear_signs if isinstance(s, str)][:5]
+    # Good practices (YAML-structured do/don't)
+    good_practices = maint_yaml.get("good_practices") or []
+    if good_practices and isinstance(good_practices, list):
+        maint["good_practices"] = [s for s in good_practices if isinstance(s, str)][:5]
+    # Anti-pattern warnings (kept for backward compat — domain.must_not_contain)
     must_not = dom.get("must_not_contain", []) or []
     if must_not:
         maint["risques_erreur"] = list(must_not)[:5]
@@ -634,6 +675,29 @@ def extract_dimensions(raw, web_corpus, compatibility_url_data=None):
     # B1.2 : extract web_relations per source (gammes + vehicles + relation_status)
     web_relations = [extract_web_relations(w) for w in web_corpus]
 
+    # Task 8e (2026-05-29) — equipementier_brands : OEM/équipementier reference list
+    # from sel.brands YAML (premium / standard / budget tiers). Helps the reviewer see
+    # which brands are canon-attested in the RAW without re-reading the source.
+    brands_yaml = sel.get("brands", {}) or {}
+    equipementier_brands = {}
+    for tier in ("premium", "standard", "budget"):
+        tier_list = brands_yaml.get(tier)
+        if isinstance(tier_list, list) and tier_list:
+            equipementier_brands[tier] = [b for b in tier_list if isinstance(b, str)][:8]
+
+    # Task 8e (2026-05-29) — variants_summary : product variants (e.g. filter media types
+    # papier/mousse/sport for filtre-a-air) from variants[] YAML. Short name + 1-3
+    # functional differences per variant.
+    variants_yaml = fm_full.get("variants", []) or []
+    variants_summary = []
+    for v in variants_yaml:
+        if isinstance(v, dict) and v.get("name"):
+            entry = {"name": v["name"]}
+            fd = v.get("functional_differences")
+            if isinstance(fd, list) and fd:
+                entry["functional_differences"] = [d for d in fd if isinstance(d, str)][:3]
+            variants_summary.append(entry)
+
     return {
         "function": function,
         "source_refs": refs,
@@ -650,6 +714,9 @@ def extract_dimensions(raw, web_corpus, compatibility_url_data=None):
         "motorisation_profiles": motorisation_profiles,
         # Issue 2 trace : count of related_parts entries filtered out as non-slug
         "related_parts_filtered_count": related_parts_filtered_count,
+        # Task 8e (2026-05-29) : new dimensions from YAML frontmatter
+        "equipementier_brands": equipementier_brands,
+        "variants_summary": variants_summary,
     }
 # === Task 8c (2026-05-28, additive) : decision_brief projection (post-extraction) ===
 
@@ -1117,6 +1184,29 @@ def _build_body_markdown(raw, dimensions):
     if oem_refs:
         parts.append("## Références OEM / équipementiers (candidates, à valider humainement)\n\n"
                      + "\n".join(f"- {r['ref']}" for r in oem_refs[:10]))
+
+    # Task 8e (2026-05-29) — equipementier_brands section (premium / standard / budget)
+    brands = dimensions.get("equipementier_brands") or {}
+    if brands:
+        lines = ["## Marques équipementiers attestées (YAML frontmatter)"]
+        for tier_label, key in (("Premium / OEM", "premium"),
+                                 ("Standard", "standard"),
+                                 ("Budget / aftermarket", "budget")):
+            tier_items = brands.get(key) or []
+            if tier_items:
+                lines.append(f"- **{tier_label}** : {', '.join(tier_items)}")
+        if len(lines) > 1:
+            parts.append("\n".join(lines))
+
+    # Task 8e (2026-05-29) — variants_summary section (papier / mousse / sport, etc.)
+    variants = dimensions.get("variants_summary") or []
+    if variants:
+        lines = ["## Variantes produit (média filtrant / forme / etc.)"]
+        for v in variants:
+            lines.append(f"- **{v['name']}**")
+            for fd in v.get("functional_differences") or []:
+                lines.append(f"  - {fd}")
+        parts.append("\n".join(lines))
 
     fuel = dimensions.get("fuel_engine_differences") or {}
     if fuel:
