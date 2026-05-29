@@ -27,8 +27,8 @@ que DEV serve le code mergé, il faut le **resynchroniser** — automatisé par
 travail feature/agent se fait en **worktree** (`.claude/worktrees/`). Ne jamais y laisser
 une branche feature (sinon DEV:3000 sert du code périmé).
 
-**4 axes de dérive** que le runtime DEV peut accumuler vs `main` (le script garde 1-2,
-alerte sur 3-4 — jamais d'action destructive auto) :
+**5 axes de dérive** que le runtime DEV peut accumuler vs `main` (le script garde 1-2,
+alerte sur 3-5 — jamais d'action destructive auto) :
 
 1. **Git** : checkout sur main + ff-pull `origin/main`. (auto)
 2. **`.env`** : `backend/.env` doit avoir toutes les vars REQUIRED de `env-validation.ts`
@@ -37,6 +37,14 @@ alerte sur 3-4 — jamais d'action destructive auto) :
    Upgrade = manuel (`NodeSource setup_22.x`). (alerte)
 4. **Migrations DB** : les migrations mergées ne sont **pas auto-appliquées** à la DB
    partagée. Appliquer l'additif réviewé à la main (`ADD VALUE IF NOT EXISTS`…). (alerte)
+5. **Workspaces npm** : un nouveau `packages/<name>/` mergé doit être (a) symlinké dans
+   `node_modules/<name>` via `npm install`, (b) compilé si son `package.json` déclare
+   `main: ./dist/...` (typiquement `tsc` via `turbo build`). Sans ces deux, le backend
+   crashe au boot avec `MODULE_NOT_FOUND` (incident 2026-05-25 : `@repo/domain-commerce` +
+   `@repo/cwv-taxonomy` présents sur disque mais sans symlinks ni dist). Le script
+   `sync-dev-runtime.sh` détecte ce drift via `check_workspace_integrity()` et **alerte
+   sans corriger** — install/build = action manuelle (mutation `package-lock.json`,
+   donc owner-gated comme l'axe 4). (alerte)
 
 ## Mécanique du tag Docker `:preprod` (alias flottant)
 
