@@ -506,3 +506,132 @@ entity_data:
     report, fm = result
     assert report["slug"] == "test-x"
     assert fm["entity_data"]["decision_brief"]["source_kind"] == "deterministic_transform"
+
+
+# === Task 8f (2026-05-29) : auto_promotion eligibility + safety detection ===
+
+def test_detect_safety_category_brakes():
+    assert review.detect_safety_category("plaquette-de-frein") == "freinage"
+    assert review.detect_safety_category("disque-de-frein") == "freinage"
+    assert review.detect_safety_category("etrier-de-frein") == "freinage"
+    assert review.detect_safety_category("liquide-de-frein") == "freinage"
+    assert review.detect_safety_category("flexible-de-frein") == "freinage"
+
+
+def test_detect_safety_category_steering():
+    assert review.detect_safety_category("rotule-de-direction") == "direction"
+    assert review.detect_safety_category("cremaillere-de-direction") == "direction"
+
+
+def test_detect_safety_category_airbag():
+    assert review.detect_safety_category("module-airbag") == "airbag"
+
+
+def test_detect_safety_category_suspension():
+    assert review.detect_safety_category("amortisseur-arriere") == "suspension"
+    assert review.detect_safety_category("ressort-de-suspension") == "suspension"
+
+
+def test_detect_safety_category_non_safety():
+    assert review.detect_safety_category("filtre-a-air") is None
+    assert review.detect_safety_category("thermostat") is None
+    assert review.detect_safety_category("courroie-d-accessoire") is None
+    assert review.detect_safety_category("vanne-egr") is None
+
+
+def test_detect_safety_category_via_family():
+    assert review.detect_safety_category("unknown-slug", family="freinage") == "freinage"
+
+
+def test_auto_promotion_strong_non_safety_eligible():
+    """STRONG source + all checks pass + not safety → auto-acceptable."""
+    fm, body = _make_proposal(decision_brief=_strong_clear_brief(), slug="filtre-a-air")
+    r = review.review_proposal_data(fm, body)
+    assert r["review_verdict"] == "REVIEWABLE"
+    assert r["auto_promotion_eligible"] is True
+    assert r["next_action"] == "AUTO_ACCEPT_WIKI_ALLOWED"
+    assert r["safety_critical"] is False
+    assert r["auto_promotion_reason"] == "STRONG_SOURCE_AND_ALL_CHECKS_PASS"
+
+
+def test_auto_promotion_strong_safety_requires_spot_check():
+    """STRONG source + safety part → human spot-check, NOT auto-acceptable."""
+    fm, body = _make_proposal(decision_brief=_strong_clear_brief(), slug="plaquette-de-frein")
+    r = review.review_proposal_data(fm, body)
+    assert r["auto_promotion_eligible"] is False  # safety blocks auto-accept
+    assert r["next_action"] == "HUMAN_SPOT_CHECK"
+    assert r["safety_critical"] is True
+    assert r["safety_category"] == "freinage"
+    assert r["auto_promotion_reason"] == "STRONG_BUT_SAFETY_CRITICAL"
+
+
+def test_auto_promotion_data_weak_enrich_raw():
+    """DATA_WEAK source → ENRICH_RAW_SOURCE, never auto-acceptable."""
+    fm, body = _make_proposal(decision_brief=_data_weak_clear_brief(), slug="filtre-a-air")
+    r = review.review_proposal_data(fm, body)
+    assert r["auto_promotion_eligible"] is False
+    assert r["next_action"] == "ENRICH_RAW_SOURCE"
+    assert r["auto_promotion_reason"] == "DATA_WEAK_SOURCE"
+
+
+def test_auto_promotion_data_weak_safety_still_enrich_raw():
+    """DATA_WEAK + safety : ENRICH_RAW is still the primary action ; safety_critical flagged."""
+    fm, body = _make_proposal(decision_brief=_data_weak_clear_brief(), slug="plaquette-de-frein")
+    r = review.review_proposal_data(fm, body)
+    assert r["auto_promotion_eligible"] is False
+    assert r["next_action"] == "ENRICH_RAW_SOURCE"
+    assert r["safety_critical"] is True
+    assert r["safety_category"] == "freinage"
+
+
+def test_auto_promotion_not_reviewable_rejected():
+    """NOT_REVIEWABLE (marketing/filler/schema) → REJECTED_UPSTREAM_FIX."""
+    db = _strong_clear_brief()
+    db["function_oneliner"] = "Découvrez notre catalogue 2025-2026 — meilleurs prix"
+    fm, body = _make_proposal(decision_brief=db, slug="filtre-a-air")
+    r = review.review_proposal_data(fm, body)
+    assert r["review_verdict"] == "NOT_REVIEWABLE"
+    assert r["auto_promotion_eligible"] is False
+    assert r["next_action"] == "REJECTED_UPSTREAM_FIX"
+
+
+def test_auto_promotion_not_applicable():
+    """No decision_brief → NOT_APPLICABLE."""
+    fm, body = _make_proposal(decision_brief=None, slug="filtre-a-air")
+    r = review.review_proposal_data(fm, body)
+    assert r["review_verdict"] == "NOT_APPLICABLE"
+    assert r["auto_promotion_eligible"] is False
+    assert r["next_action"] == "NOT_APPLICABLE"
+
+
+def test_auto_promotion_never_eligible_with_safety_critical():
+    """Safety invariant : auto_promotion_eligible is NEVER True for safety parts.
+
+    Tested across all combinations : even with the strongest brief, safety always
+    triggers HUMAN_SPOT_CHECK.
+    """
+    for slug in ["plaquette-de-frein", "etrier-de-frein", "rotule-de-direction",
+                  "module-airbag", "amortisseur-arriere"]:
+        fm, body = _make_proposal(decision_brief=_strong_clear_brief(), slug=slug)
+        r = review.review_proposal_data(fm, body)
+        assert r["auto_promotion_eligible"] is False, f"safety part {slug} must not be auto-eligible"
+        assert r["safety_critical"] is True, f"slug {slug} should be detected as safety"
+
+
+def test_render_markdown_includes_auto_promotion_section():
+    fm, body = _make_proposal(decision_brief=_strong_clear_brief(), slug="filtre-a-air")
+    r = review.review_proposal_data(fm, body)
+    md = review.render_review_markdown(r, frontmatter=fm)
+    assert "Auto-promotion eligibility" in md
+    assert "auto_promotion_eligible" in md
+    assert "next_action" in md
+    assert "AUTO_ACCEPT_WIKI_ALLOWED" in md
+
+
+def test_render_markdown_safety_flag_visible():
+    fm, body = _make_proposal(decision_brief=_strong_clear_brief(), slug="plaquette-de-frein")
+    r = review.review_proposal_data(fm, body)
+    md = review.render_review_markdown(r, frontmatter=fm)
+    assert "safety_critical** : `True`" in md
+    assert "freinage" in md.lower()
+    assert "HUMAN_SPOT_CHECK" in md

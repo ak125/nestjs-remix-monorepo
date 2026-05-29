@@ -73,6 +73,52 @@ ALL_VERDICTS = {
 }
 
 
+# === Task 8f (2026-05-29) : auto_promotion eligibility ===
+# Doctrine evolution : replace "human review obligatoire" with
+# "human review only on uncertainty, safety risk, or publication boundary".
+#
+# next_action enum — machine-actionable triage label :
+NEXT_AUTO_ACCEPT_WIKI_ALLOWED = "AUTO_ACCEPT_WIKI_ALLOWED"   # STRONG + checks + not safety
+NEXT_HUMAN_SPOT_CHECK = "HUMAN_SPOT_CHECK"                   # STRONG + safety (brakes/etc.)
+NEXT_ENRICH_RAW_SOURCE = "ENRICH_RAW_SOURCE"                 # DATA_WEAK + clear
+NEXT_FIX_PRODUCER = "FIX_PRODUCER"                           # STRONG but check failed
+NEXT_REJECTED_UPSTREAM_FIX = "REJECTED_UPSTREAM_FIX"         # NOT_REVIEWABLE
+NEXT_NOT_APPLICABLE = "NOT_APPLICABLE"                       # no decision_brief
+
+# Safety-critical part categories — even STRONG briefs need human spot-check.
+# Mapping from regex (slug or family) to category label. Conservative coverage :
+# brake system, steering, airbag, suspension. Extend deliberately, not speculatively.
+SAFETY_CATEGORIES = {
+    "freinage": re.compile(
+        r'(?i)(\bfrein|plaquette|disque-de-frein|etrier|ma[iî]tre-cylindre|'
+        r'\babs\b|liquide-de-frein|flexible-de-frein|capteur-d-usure)'
+    ),
+    "direction": re.compile(
+        r'(?i)(\bdirection|cremaillere|rotule|biellette|colonne-de-direction|'
+        r'\btransmission\b)'
+    ),
+    "airbag": re.compile(r'(?i)\bairbag'),
+    "suspension": re.compile(
+        r'(?i)(amortisseur|ressort-de-suspension|\bressort\b|triangle-de-suspension|'
+        r'\bbras-(?:oscillant|de-suspension)|silentbloc-de-triangle)'
+    ),
+}
+
+
+def detect_safety_category(slug, family=""):
+    """Return safety category label if slug or family matches a safety-critical pattern, else None.
+
+    Order: slug match takes precedence over family match. Returns the first matching
+    category name (deterministic iteration over SAFETY_CATEGORIES dict).
+    """
+    slug = (slug or "").lower()
+    family = (family or "").lower()
+    for category, pattern in SAFETY_CATEGORIES.items():
+        if pattern.search(slug) or pattern.search(family):
+            return category
+    return None
+
+
 # === Pattern constants ===
 
 # Anti-filler markers (any presence → NOT_REVIEWABLE).
@@ -433,6 +479,77 @@ def derive_fix_suggestions(checks):
 
 # === Public API ===
 
+def compute_auto_promotion(verdict, checks, frontmatter):
+    """Compute machine-actionable auto-promotion eligibility per the 2026-05-29 doctrine.
+
+    Doctrine : "human review only on uncertainty, safety risk, or publication boundary".
+    Pure verdict — does NOT actually promote anything (no file move, no schema flip).
+
+    Returns dict :
+      auto_promotion_eligible (bool)  — True only for STRONG + all checks + not safety
+      auto_promotion_reason  (str)    — explains the verdict
+      next_action            (str)    — machine-actionable triage label (see NEXT_* enum)
+      safety_critical        (bool)
+      safety_category        (str|None) — freinage / direction / airbag / suspension
+
+    Invariant : NEVER returns auto_promotion_eligible=True if the part is safety-critical.
+    """
+    slug = (frontmatter.get("slug") or "").lower()
+    ed = frontmatter.get("entity_data") or {}
+    family = (ed.get("family") or "").lower()
+    safety_category = detect_safety_category(slug, family)
+    is_safety = safety_category is not None
+
+    base = {
+        "safety_critical": is_safety,
+        "safety_category": safety_category,
+    }
+
+    # NOT_REVIEWABLE : blocked (filler / marketing / schema invalid)
+    if verdict == VERDICT_NOT_REVIEWABLE:
+        return {**base,
+                "auto_promotion_eligible": False,
+                "auto_promotion_reason": "BLOCKING_ISSUES",
+                "next_action": NEXT_REJECTED_UPSTREAM_FIX}
+
+    # NOT_APPLICABLE : no decision_brief
+    if verdict == VERDICT_NOT_APPLICABLE:
+        return {**base,
+                "auto_promotion_eligible": False,
+                "auto_promotion_reason": "NO_DECISION_BRIEF",
+                "next_action": NEXT_NOT_APPLICABLE}
+
+    source = checks["source_quality"]["verdict"]
+    all_checks_pass = all(c.get("pass") for c in checks.values() if isinstance(c, dict))
+
+    # DATA_WEAK path : never auto-promote, ENRICH_RAW is the next action
+    if source == "DATA_WEAK":
+        return {**base,
+                "auto_promotion_eligible": False,
+                "auto_promotion_reason": "DATA_WEAK_SOURCE",
+                "next_action": NEXT_ENRICH_RAW_SOURCE}
+
+    # STRONG path
+    if source == "STRONG" and all_checks_pass:
+        if is_safety:
+            # STRONG + safety : keep human spot-check (per doctrine matrix)
+            return {**base,
+                    "auto_promotion_eligible": False,
+                    "auto_promotion_reason": "STRONG_BUT_SAFETY_CRITICAL",
+                    "next_action": NEXT_HUMAN_SPOT_CHECK}
+        # STRONG + not safety + all checks → eligible for auto-accept
+        return {**base,
+                "auto_promotion_eligible": True,
+                "auto_promotion_reason": "STRONG_SOURCE_AND_ALL_CHECKS_PASS",
+                "next_action": NEXT_AUTO_ACCEPT_WIKI_ALLOWED}
+
+    # STRONG but with check failures → producer fix needed
+    return {**base,
+            "auto_promotion_eligible": False,
+            "auto_promotion_reason": "STRONG_BUT_NEEDS_FIXES",
+            "next_action": NEXT_HUMAN_SPOT_CHECK if is_safety else NEXT_FIX_PRODUCER}
+
+
 def review_proposal_data(frontmatter, body):
     """Run all 6 checks + compute verdict + scores + fix_suggestions for a parsed proposal."""
     checks = {
@@ -446,6 +563,7 @@ def review_proposal_data(frontmatter, body):
     verdict = compute_verdict(checks)
     scores = compute_scores(checks)
     suggestions = derive_fix_suggestions(checks)
+    auto_promotion = compute_auto_promotion(verdict, checks, frontmatter)
 
     slug = frontmatter.get("slug") or "(unknown)"
     ed = frontmatter.get("entity_data") or {}
@@ -463,6 +581,13 @@ def review_proposal_data(frontmatter, body):
         "decision_brief_quality": db_quality,
         "human_review_required": verdict != VERDICT_NOT_APPLICABLE,
         "exportable_seo_allowed": False,  # ALWAYS false — human review obligatory per ADR-033
+        # Task 8f (2026-05-29) — machine-actionable triage : auto-promotion eligibility.
+        # NEVER causes file mutation or schema flip — just a verdict for downstream tooling.
+        "auto_promotion_eligible": auto_promotion["auto_promotion_eligible"],
+        "auto_promotion_reason": auto_promotion["auto_promotion_reason"],
+        "next_action": auto_promotion["next_action"],
+        "safety_critical": auto_promotion["safety_critical"],
+        "safety_category": auto_promotion["safety_category"],
         "blocking_issues": [
             s for s in suggestions if s["severity"] in ("blocking", "major")
         ],
@@ -593,6 +718,17 @@ def render_review_markdown(report, frontmatter=None):
     lines.append(f"- **decision_brief_quality** : `{report['decision_brief_quality']}`")
     lines.append(f"- **human_review_required** : {report['human_review_required']}")
     lines.append(f"- **exportable_seo_allowed** : {report['exportable_seo_allowed']} (toujours false : ADR-033)")
+    lines.append("")
+    # Task 8f (2026-05-29) — auto_promotion eligibility section.
+    lines.append("## Auto-promotion eligibility (machine verdict)")
+    lines.append("")
+    lines.append(f"- **auto_promotion_eligible** : `{report.get('auto_promotion_eligible', False)}`")
+    lines.append(f"- **next_action** : `{report.get('next_action', 'N/A')}`")
+    lines.append(f"- **reason** : `{report.get('auto_promotion_reason', 'N/A')}`")
+    if report.get("safety_critical"):
+        lines.append(f"- **safety_critical** : `True` ; category : `{report.get('safety_category')}`  ← human spot-check required even if STRONG")
+    else:
+        lines.append(f"- **safety_critical** : `False`")
     lines.append("")
 
     if frontmatter is not None:
