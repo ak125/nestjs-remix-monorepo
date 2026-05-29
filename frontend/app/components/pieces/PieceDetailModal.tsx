@@ -159,7 +159,11 @@ export const PieceDetailModal = memo(function PieceDetailModal({
 
     setAddingToCart(true);
     try {
-      await addToCart(piece.id, 1, typeId);
+      const unitPriceCents =
+        typeof piece.prix_ttc === "number" && Number.isFinite(piece.prix_ttc)
+          ? Math.round(piece.prix_ttc * 100)
+          : null;
+      await addToCart(piece.id, 1, typeId, unitPriceCents);
     } catch (error) {
       logger.error("Erreur ajout panier:", error);
     } finally {

@@ -96,8 +96,12 @@ export const PiecesListView = React.memo(
       // Marquer comme en cours
       setLoadingItems((prev) => new Set(prev).add(pieceId));
 
+      const unitPriceCents =
+        piece && typeof piece.price === "number" && Number.isFinite(piece.price)
+          ? Math.round(piece.price * 100)
+          : null;
       try {
-        await addToCart(pieceId, 1, typeId);
+        await addToCart(pieceId, 1, typeId, unitPriceCents);
         // Petit délai avant de réactiver (debounce)
         await new Promise((resolve) => setTimeout(resolve, 500));
       } catch (error) {
