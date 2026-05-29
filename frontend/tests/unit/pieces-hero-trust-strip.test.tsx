@@ -10,7 +10,7 @@ import { describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
 
 import { PiecesHeroTrustStrip } from '~/components/pieces/hero/PiecesHeroTrustStrip';
-import { SITE_TRUST_CLAIMS } from '~/config/site-trust-claims';
+import { SITE_TRUST_CLAIMS } from '~/components/pieces/hero/site-trust-claims';
 
 const baseProps = {
   count: 24,

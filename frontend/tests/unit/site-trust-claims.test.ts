@@ -1,7 +1,8 @@
 /**
- * Tests — `frontend/app/config/site-trust-claims.ts`.
+ * Tests — `frontend/app/components/pieces/hero/site-trust-claims.ts`.
  *
  * SoT des 3 garanties commerciales/légales affichées dans le hero R2.
+ * Co-locée avec son seul consommateur (`PiecesHeroMetaStrip`).
  * Tout ajout / suppression / modification de claim modifie ces tests
  * (anti-régression marketing silencieux).
  */
@@ -11,7 +12,7 @@ import { describe, expect, it } from 'vitest';
 import {
   SITE_TRUST_CLAIMS,
   type TrustClaim,
-} from '~/config/site-trust-claims';
+} from '~/components/pieces/hero/site-trust-claims';
 
 describe('SITE_TRUST_CLAIMS — SoT contract', () => {
   it('contient exactement 3 entries (anti-drift marketing)', () => {

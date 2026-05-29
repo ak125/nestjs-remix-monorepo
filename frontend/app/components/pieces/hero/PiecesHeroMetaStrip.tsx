@@ -1,4 +1,4 @@
-import { SITE_TRUST_CLAIMS } from '~/config/site-trust-claims';
+import { SITE_TRUST_CLAIMS } from './site-trust-claims';
 
 /**
  * `PiecesHeroMetaStrip` — Tier 3 du `PiecesHeroTrustStrip`.

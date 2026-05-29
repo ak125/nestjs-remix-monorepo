@@ -11,7 +11,7 @@ import { describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
 
 import { PiecesHeroMetaStrip } from '~/components/pieces/hero/PiecesHeroMetaStrip';
-import { SITE_TRUST_CLAIMS } from '~/config/site-trust-claims';
+import { SITE_TRUST_CLAIMS } from '~/components/pieces/hero/site-trust-claims';
 
 describe('PiecesHeroMetaStrip', () => {
   it('rend exactement 3 items (un par claim SoT)', () => {
