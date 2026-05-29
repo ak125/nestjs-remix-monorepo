@@ -1,13 +1,3 @@
--- squawk-ignore-file require-concurrent-index-creation
---   Justification : les 2 indexes ci-dessous sont partiels (excluent NULL legacy
---   et statuts terminaux won/lost), construits sur un sous-ensemble réduit des
---   lignes de ___xtr_msg. Le lock SHARE acquis pendant le build est court.
---   Surface admin-only, hors hot-path SEO/funnel. CREATE INDEX CONCURRENTLY
---   exigerait de sortir du transaction wrapper Supabase (assume_in_transaction
---   = true dans .squawk.toml) et d'avoir 2 fichiers séparés — trade-off non
---   justifié pour V0 sur cette taille de données. Cf. précédent
---   20260120_rm_expression_index.sql qui suit le même choix.
-
 -- Timeouts défensifs avant DDL (squawk require-timeout-settings).
 SET lock_timeout      = '5s';
 SET statement_timeout = '60s';
@@ -59,20 +49,21 @@ ALTER TABLE ___xtr_msg
   ) NOT VALID;
 
 -- ────────────────────────────────────────────────────────────────────────────
--- 3) Index partiels — lectures admin sur leads actifs uniquement
---    NULL NOT IN (...) renvoie NULL (≠ TRUE) ; les lignes legacy sont donc
---    automatiquement exclues des index, sans coût d'écriture.
+-- 3) Indexes : DIFFÉRÉS à une migration follow-up séparée
 -- ────────────────────────────────────────────────────────────────────────────
-CREATE INDEX IF NOT EXISTS idx_xtr_msg_crm_status_active
-  ON ___xtr_msg (msg_crm_status, msg_date DESC)
-  WHERE msg_crm_status IS NOT NULL
-    AND msg_crm_status NOT IN ('won', 'lost');
-
-CREATE INDEX IF NOT EXISTS idx_xtr_msg_crm_follow_up_due
-  ON ___xtr_msg (msg_crm_next_follow_up_at)
-  WHERE msg_crm_next_follow_up_at IS NOT NULL
-    AND msg_crm_status IS NOT NULL
-    AND msg_crm_status NOT IN ('won', 'lost');
+--   ___xtr_msg = 14.6M lignes / 10 GB (table legacy XTR).
+--   Construire `CREATE INDEX` non-concurrent ici prend >60s ET bloque les
+--   writes pendant le scan → inacceptable. `CREATE INDEX CONCURRENTLY` ne
+--   peut pas s'exécuter dans une transaction (toutes les migrations
+--   Supabase sont transactionnelles). Donc les 2 indexes partiels seront
+--   ajoutés via une migration follow-up dédiée `*_xtr_msg_crm_indexes`,
+--   exécutée hors-tx (psql direct ou Supabase CLI avec marker no-transaction).
+--
+--   Acceptable en V0 : tant que msg_crm_status est ~100% NULL (uniquement
+--   les nouveaux contacts soumis post-deploy sont marqués), la requête
+--   admin `WHERE msg_crm_status IS NOT NULL` + LIMIT renvoie ~0 lignes et
+--   le planner n'a pas à scanner massivement. À mesure que les leads
+--   accumulent, ouvrir la migration follow-up.
 
 -- ────────────────────────────────────────────────────────────────────────────
 -- 4) Trigger touch — maintient msg_crm_updated_at à chaque write CRM
@@ -80,10 +71,15 @@ CREATE INDEX IF NOT EXISTS idx_xtr_msg_crm_follow_up_due
 --    /admin/leads sans dépendre de msg_open/msg_close du flow legacy support.
 --    Fonction marquée VOLATILE car elle écrit (cf. PostgREST STABLE-write gotcha).
 -- ────────────────────────────────────────────────────────────────────────────
+-- `SET search_path = ''` durcit la fonction contre une injection search_path
+-- (Supabase advisor function_search_path_mutable). Les seules références
+-- externes — `now()` — sont qualifiées via pg_catalog.
 CREATE OR REPLACE FUNCTION fn_xtr_msg_touch_crm_updated_at()
 RETURNS TRIGGER
 LANGUAGE plpgsql
-VOLATILE AS $$
+VOLATILE
+SET search_path = ''
+AS $$
 BEGIN
   IF (
     NEW.msg_crm_status,
@@ -100,7 +96,7 @@ BEGIN
     OLD.msg_crm_next_follow_up_at,
     OLD.msg_crm_internal_note
   ) THEN
-    NEW.msg_crm_updated_at := now();
+    NEW.msg_crm_updated_at := pg_catalog.now();
   END IF;
   RETURN NEW;
 END;
