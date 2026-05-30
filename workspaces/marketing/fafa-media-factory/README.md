@@ -23,7 +23,7 @@ V2 (différée post-mesure) : recâblage backend + admin UI + DB matérialisée.
 ## Workflow scripts (8 statuts)
 
 ```
-DISCOVERED              # pattern repéré (URL source, asset NON téléchargé)
+DISCOVERED              # pattern repéré ; asset source jamais stocké/committé (analyse éphémère /watch OK, REFERENCE_ANALYSIS_ONLY, hors repo)
   ↓
 PATTERN_EXTRACTED       # Skill creative-pattern-extractor → JSONL
   ↓

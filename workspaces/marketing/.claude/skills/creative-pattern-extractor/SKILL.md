@@ -17,21 +17,29 @@ description: Use when analyzing competitor TikTok/YouTube/Instagram videos to ex
 ## Périmètre AUTORISÉ
 
 - ✅ Analyser hook, structure narrative, durée, rythme, CTA, format visuel
+- ✅ **Analyse éphémère** via `/watch` (claude-video) : frames + transcript d'une source publique, `/tmp` hors-repo, auto-cleanup — mode `REFERENCE_ANALYSIS_ONLY`
 - ✅ Citer URL source pour traçabilité (jamais dans la vidéo finale)
 - ✅ Anonymiser la source dans le brief Fafa
 
 ## Périmètre INTERDIT (FAIL G5 Reuse Risk)
 
-- ❌ Télécharger asset vidéo/audio source
+- ❌ Committer / publier / réutiliser **en sortie** un asset source (frame, cut, montage, texte écran) — l'analyse éphémère `/watch` est OK, sa sortie n'entre jamais dans un brief / script / manifest
 - ❌ Recopier script trop proche (cosine ≥0.7 = FAIL)
-- ❌ Reprendre montage frame-by-frame
+- ❌ Reprendre montage **frame-by-frame** — plans / cadrages / durées / séquence, **même rebrandé AutoMecanik** (rebrand non opposable, voir Contrat)
 - ❌ Imiter une personne réelle identifiable
-- ❌ Reprendre branding concurrent (logos, jingles, mascot)
+- ❌ Reprendre branding concurrent (logos, jingles, mascotte, habillage)
+
+### Contrat `REFERENCE_ANALYSIS_ONLY`
+
+> The extractor may analyze source videos **only as temporary references**. It must output
+> **abstract creative patterns** (beats, hook type, pace, CTA type, format) — **not** reusable
+> source assets, timelines, frame sequences, or shot-by-shot clones. `shot-by-shot functional
+> rebuild` is allowed ; `frame-by-frame copy` is forbidden, **even rebranded**.
 
 ## Workflow
 
 1. Owner fournit URL source
-2. Skill analyse manuellement (visionnage humain, pas scraping automatique)
+2. Skill analyse la source — visionnage humain **ou** `/watch` (analyse éphémère, `REFERENCE_ANALYSIS_ONLY`) ; l'output sert à comprendre, jamais à copier en sortie
 3. Sortie JSONL ajoutée à `inspiration/patterns/<platform>-<niche>.jsonl`
 4. Pattern marqué `INSPIRED_PATTERN_ONLY` quand transformé en brief Fafa
 5. Vérification G5 Reuse Risk avant publication (cosine cible <0.5)
@@ -55,7 +63,8 @@ description: Use when analyzing competitor TikTok/YouTube/Instagram videos to ex
     "comments_useful": "high|medium|low",
     "shares_proxy": "high|medium|low"
   },
-  "risk_flags": ["do_not_copy_visuals", "do_not_reuse_script", "no_person_imitation"],
+  "risk_flags": ["do_not_copy_visuals", "do_not_reuse_script", "no_person_imitation", "reference_analysis_only"],
+  "analysis_method": "human|watch_tool_ephemeral",
   "extracted_at": "2026-05-28",
   "extracted_by": "creative-pattern-extractor-v1"
 }
@@ -80,4 +89,4 @@ description: Use when analyzing competitor TikTok/YouTube/Instagram videos to ex
 - `[[fafa-script-generator]]`
 - `[[fafa-brand-safety-reviewer]]` (gate G5)
 - `workspaces/marketing/fafa-media-factory/inspiration/README.md`
-- Vault rule `rules-video-creative-reuse-policy.md` (PR vault B)
+- Vault rule `rules-video-creative-reuse-policy.md` (draft prêt, ratification G3 en attente)
