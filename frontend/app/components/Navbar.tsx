@@ -372,7 +372,7 @@ export const Navbar = memo(function Navbar() {
       <dialog
         {...menuDialogProps}
         aria-label="Menu de navigation"
-        className="navdrawer navdrawer-left fixed inset-y-0 left-0 m-0 h-full max-h-none w-[85vw] sm:max-w-sm bg-navy text-white p-0 backdrop:bg-black/80 open:flex flex-col"
+        className="navdrawer navdrawer-left fixed inset-y-0 left-0 m-0 h-full max-h-none w-[85vw] sm:max-w-sm bg-navy text-white p-0 backdrop:bg-neutral-900/80 open:flex flex-col"
       >
           <div className="p-4 border-b border-white/10">
             <div className="text-white font-heading font-extrabold tracking-tight text-left text-lg font-semibold">

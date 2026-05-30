@@ -60,7 +60,7 @@ export const CartSidebarSimple = memo(function CartSidebarSimple({
     <dialog
       {...dialogProps}
       aria-label="Panier"
-      className="navdrawer navdrawer-right fixed inset-y-0 right-0 m-0 h-full max-h-none w-full sm:w-[400px] p-0 bg-background text-foreground backdrop:bg-black/80 open:flex flex-col"
+      className="navdrawer navdrawer-right fixed inset-y-0 right-0 m-0 h-full max-h-none w-full sm:w-[400px] p-0 bg-background text-foreground backdrop:bg-neutral-900/80 open:flex flex-col"
     >
       {/* Header compact & dynamique */}
       <div className="flex items-center justify-between px-4 py-2.5 border-b bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-sm">
