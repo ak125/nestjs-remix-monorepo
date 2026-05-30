@@ -550,3 +550,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/fafa-media-factory-v1-foundation`
 - **Décision** : fix(media-factory): close parser-validator differential bypass in 2 schemas (+2 other commits)
 - **Sortie** : PR #789 | commits 3d228cd34 c3c8a304e a194a241e
+
+## 2026-05-30 — chore/preprod-warm-soft-404-fixtures (auto)
+
+- **Branche** : `chore/preprod-warm-soft-404-fixtures`
+- **Décision** : chore(preprod): warm soft-404 R2 fixtures before smoke assertion
+- **Sortie** : PR #801 | commits 27e025ee0
