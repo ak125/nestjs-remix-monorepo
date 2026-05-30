@@ -59,10 +59,20 @@ import {
 } from "../components/vehicle/r8";
 import { hierarchyApi } from "../services/api/hierarchy.api";
 import { brandColorsService } from "../services/brand-colors.service";
+import { buildCacheHeaders } from "../utils/cache-control";
 import { isValidImagePath } from "../utils/image-optimizer";
 import { detectMalformedSegment } from "../utils/pieces-route.utils";
 import { normalizeTypeAlias } from "../utils/url-builder.utils";
 import { resolveVehiclePageError } from "../utils/vehicle-page-status";
+
+// 🔒 Propagate the loader / error-thrown X-Robots-Tag + Cache-Control to the
+// document response. Without a route-level `headers` export, Remix v2 falls back
+// to root.tsx `headers()` and DROPS the seoError() `noindex` on 404/410/503 — the
+// SeoHeadersInterceptor default then leaks onto the error page (live: 404 vehicle
+// shipped no X-Robots-Tag at all). `buildCacheHeaders` (shared with /pieces) reads
+// errorHeaders first; success keeps the historical `private, max-age=60` (no
+// caching-behaviour change).
+export const headers = buildCacheHeaders("private, max-age=60");
 
 /**
  * Handle export pour propager le rôle SEO au root Layout
