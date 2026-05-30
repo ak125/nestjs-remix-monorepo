@@ -556,3 +556,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `chore/preprod-warm-soft-404-fixtures`
 - **Décision** : chore(preprod): warm soft-404 R2 fixtures before smoke assertion
 - **Sortie** : PR #801 | commits 27e025ee0
+
+## 2026-05-30 — fix/cwv-aggregation-flag-declare-2026-05-29 (auto)
+
+- **Branche** : `fix/cwv-aggregation-flag-declare-2026-05-29`
+- **Décision** : fix(cwv): declare and enable aggregation scheduler flag
+- **Sortie** : PR #803 | commits 0caf28c0b
