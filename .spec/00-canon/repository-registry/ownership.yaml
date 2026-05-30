@@ -661,6 +661,11 @@ entries:
     owner: '@ak125/frontend-team'
     sourceConfidence: low
     risk: low
+  - glob: frontend/app/hooks/**
+    domain: D8
+    owner: '@ak125/frontend-team'
+    sourceConfidence: low
+    risk: low
   - glob: frontend/app/routes/**
     domain: D8
     owner: '@ak125/frontend-team'
