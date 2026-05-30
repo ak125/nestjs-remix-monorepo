@@ -1,0 +1,49 @@
+{
+  "video_id": "fafa-plaquettes-frein-001",
+  "claims": [
+    {
+      "claim_id": "claim-1",
+      "text": "La référence des plaquettes dépend de la motorisation du véhicule.",
+      "kind": "dimension",
+      "source_status": "sourced",
+      "evidence_refs": ["catalogue-plaquette-pg402-compat"],
+      "human_validated": false,
+      "human_validated_by": null,
+      "human_validated_at": null,
+      "sequence_index": 1
+    },
+    {
+      "claim_id": "claim-2",
+      "text": "La référence des plaquettes dépend du diamètre/type des disques de frein.",
+      "kind": "dimension",
+      "source_status": "sourced",
+      "evidence_refs": ["catalogue-plaquette-pg402-compat"],
+      "human_validated": false,
+      "human_validated_by": null,
+      "human_validated_at": null,
+      "sequence_index": 1
+    },
+    {
+      "claim_id": "claim-3",
+      "text": "Selon la finition/année, le véhicule a ou non un témoin d'usure, ce qui change la référence.",
+      "kind": "dimension",
+      "source_status": "sourced",
+      "evidence_refs": ["catalogue-plaquette-pg402-compat"],
+      "human_validated": false,
+      "human_validated_by": null,
+      "human_validated_at": null,
+      "sequence_index": 1
+    },
+    {
+      "claim_id": "claim-4",
+      "text": "Les plaquettes de frein se montent sur l'essieu avant ou arrière et se vendent généralement par jeu de 4.",
+      "kind": "dimension",
+      "source_status": "sourced",
+      "evidence_refs": ["catalogue-plaquette-pg402-intro"],
+      "human_validated": false,
+      "human_validated_by": null,
+      "human_validated_at": null,
+      "sequence_index": 2
+    }
+  ]
+}
