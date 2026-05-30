@@ -234,6 +234,7 @@ export function PiecesVehicleContent() {
           vehicle={data.vehicle}
           gamme={data.gamme}
           count={data.count}
+          minPrice={data.minPrice}
           performance={data.performance}
           compSwitch2={data.seo?.compSwitch2}
         />
