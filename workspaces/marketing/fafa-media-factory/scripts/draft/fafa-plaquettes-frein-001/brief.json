@@ -1,0 +1,14 @@
+{
+  "video_id": "fafa-plaquettes-frein-001",
+  "format": "ne-change-pas-trop-vite",
+  "mode": "SHORT",
+  "vertical": "FREINAGE",
+  "gamme": "plaquette-de-frein",
+  "platforms": ["tiktok", "instagram_reels", "youtube_shorts", "facebook_reels"],
+  "target_duration_sec": 38,
+  "template": "NeChangePasTropVite",
+  "url_cible": "https://www.automecanik.com/pieces/plaquette-de-frein-402.html",
+  "inspiration_pattern_id": null,
+  "created_at": "2026-05-30T00:00:00Z",
+  "status": "DRAFT_ONLY"
+}
