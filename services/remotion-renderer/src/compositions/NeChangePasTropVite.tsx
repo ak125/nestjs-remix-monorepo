@@ -20,7 +20,7 @@ import {
  *   Advice   (870-1050)  : conseil de vérification ordonné
  *   Closer   (1050-1140) : brand + CTA
  *
- * Palette: #1a1a2e bg, #e94560 accent, #16213e panel, Liberation Sans.
+ * Palette: #0F1E38 bg, #F97316 accent, #0F4C81 panel, Liberation Sans.
  * Aucun visuel n'est une preuve (G6) — texte animé + schéma stylisé uniquement.
  */
 
@@ -73,7 +73,7 @@ export const NeChangePasTropVite: React.FC<NeChangePasTropViteProps> = ({
   return (
     <AbsoluteFill
       style={{
-        backgroundColor: '#1a1a2e',
+        backgroundColor: '#0F1E38',
         fontFamily: 'Liberation Sans, Arial, sans-serif',
         overflow: 'hidden',
       }}
@@ -114,7 +114,7 @@ export const NeChangePasTropVite: React.FC<NeChangePasTropViteProps> = ({
           left: 0,
           width: `${progress * 100}%`,
           height: 4,
-          backgroundColor: '#e94560',
+          backgroundColor: '#F97316',
         }}
       />
     </AbsoluteFill>
@@ -141,7 +141,7 @@ const HookSection: React.FC<{
     <AbsoluteFill style={{ justifyContent: 'center', alignItems: 'center', padding: '0 60px' }}>
       <div
         style={{
-          color: '#e94560',
+          color: '#F97316',
           fontSize: 28,
           fontWeight: 'bold',
           letterSpacing: 4,
@@ -190,7 +190,7 @@ const ProblemSection: React.FC<{
       <div style={{ transform: `translateY(${slideY}px)`, textAlign: 'center', maxWidth: 900 }}>
         <div style={{ color: 'rgba(255,255,255,0.85)', fontSize: 44, lineHeight: 1.5 }}>
           Changer directement{' '}
-          <span style={{ color: '#e94560', fontWeight: 'bold' }}>la {pieceWrong}</span>, c’est
+          <span style={{ color: '#F97316', fontWeight: 'bold' }}>la {pieceWrong}</span>, c’est
           tentant. Mais si la vraie cause est ailleurs, tu paies pour rien.
         </div>
       </div>
@@ -240,8 +240,8 @@ const CausesSection: React.FC<{
               style={{
                 opacity: reveal,
                 transform: `translateX(${slideX}px)`,
-                backgroundColor: '#16213e',
-                borderLeft: '6px solid #e94560',
+                backgroundColor: '#0F4C81',
+                borderLeft: '6px solid #F97316',
                 borderRadius: 12,
                 padding: '28px 32px',
                 display: 'flex',
@@ -249,7 +249,7 @@ const CausesSection: React.FC<{
                 gap: 24,
               }}
             >
-              <span style={{ color: '#e94560', fontSize: 52, fontWeight: 'bold', lineHeight: 1 }}>
+              <span style={{ color: '#F97316', fontSize: 52, fontWeight: 'bold', lineHeight: 1 }}>
                 {i + 1}
               </span>
               <div>
@@ -312,7 +312,7 @@ const CloserSection: React.FC<{
     <AbsoluteFill style={{ justifyContent: 'center', alignItems: 'center', padding: '0 60px' }}>
       <div
         style={{
-          color: '#e94560',
+          color: '#F97316',
           fontSize: 80,
           fontWeight: 'bold',
           letterSpacing: 5,

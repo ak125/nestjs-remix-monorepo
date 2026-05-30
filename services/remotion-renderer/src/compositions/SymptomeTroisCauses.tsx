@@ -20,7 +20,7 @@ import {
  *   Cause 3  (630-870) : cause moins fréquente mais sérieuse
  *   Closer   (870-990) : brand + CTA
  *
- * Palette: #1a1a2e bg, #e94560 accent, #16213e panel, Liberation Sans.
+ * Palette: #0F1E38 bg, #F97316 accent, #0F4C81 panel, Liberation Sans.
  * Photos pièces autorisées en illustration (G6) — jamais comme preuve diagnostic.
  */
 
@@ -67,7 +67,7 @@ export const SymptomeTroisCauses: React.FC<SymptomeTroisCausesProps> = ({
   return (
     <AbsoluteFill
       style={{
-        backgroundColor: '#1a1a2e',
+        backgroundColor: '#0F1E38',
         fontFamily: 'Liberation Sans, Arial, sans-serif',
         overflow: 'hidden',
       }}
@@ -99,7 +99,7 @@ export const SymptomeTroisCauses: React.FC<SymptomeTroisCausesProps> = ({
           left: 0,
           width: `${progress * 100}%`,
           height: 4,
-          backgroundColor: '#e94560',
+          backgroundColor: '#F97316',
         }}
       />
     </AbsoluteFill>
@@ -137,7 +137,7 @@ const SymptomSection: React.FC<{
       <div
         style={{
           marginTop: 28,
-          color: '#e94560',
+          color: '#F97316',
           fontSize: 34,
           letterSpacing: 2,
           opacity: subOpacity,
@@ -180,7 +180,7 @@ const CauseSection: React.FC<{
               width: 14,
               height: 14,
               borderRadius: '50%',
-              backgroundColor: d === index ? '#e94560' : 'rgba(255,255,255,0.25)',
+              backgroundColor: d === index ? '#F97316' : 'rgba(255,255,255,0.25)',
             }}
           />
         ))}
@@ -188,7 +188,7 @@ const CauseSection: React.FC<{
 
       <div
         style={{
-          color: '#e94560',
+          color: '#F97316',
           fontSize: 96,
           fontWeight: 'bold',
           lineHeight: 1,
@@ -229,7 +229,7 @@ const DetailRow: React.FC<{ label: string; value: string }> = ({ label, value })
       display: 'flex',
       alignItems: 'center',
       gap: 18,
-      backgroundColor: '#16213e',
+      backgroundColor: '#0F4C81',
       borderRadius: 10,
       padding: '18px 24px',
       marginBottom: 16,
@@ -237,7 +237,7 @@ const DetailRow: React.FC<{ label: string; value: string }> = ({ label, value })
   >
     <span
       style={{
-        color: '#e94560',
+        color: '#F97316',
         fontSize: 22,
         fontWeight: 'bold',
         textTransform: 'uppercase',
@@ -271,7 +271,7 @@ const CloserSection: React.FC<{
     <AbsoluteFill style={{ justifyContent: 'center', alignItems: 'center', padding: '0 60px' }}>
       <div
         style={{
-          color: '#e94560',
+          color: '#F97316',
           fontSize: 80,
           fontWeight: 'bold',
           letterSpacing: 5,
