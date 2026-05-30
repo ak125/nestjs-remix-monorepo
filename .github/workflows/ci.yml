@@ -799,6 +799,9 @@ jobs:
         run: |
           BASE="http://localhost:3200"
           FAILED=0
+          # Warm per-URL vehicle-alternatives cache before asserting — kills the
+          # cold-start flake seen on #798/#800/#799 (deterministic pre-pass, not a retry).
+          bash scripts/ci/warm-soft-404-fixtures.sh "$BASE"
 
           echo "Testing critical API endpoints..."
 
@@ -861,6 +864,12 @@ jobs:
         run: |
           BASE="http://localhost:3200"
           FAILED=0
+          # Warm per-URL vehicle-alternatives cache before asserting — kills the
+          # cold-start flake seen on #798/#800/#799 (deterministic pre-pass, not a retry).
+          bash scripts/ci/warm-soft-404-fixtures.sh "$BASE"
+          # Warm per-URL vehicle-alternatives cache before asserting — kills the
+          # cold-start flake seen on #798/#800/#799 (deterministic pre-pass, not a retry).
+          bash scripts/ci/warm-soft-404-fixtures.sh "$BASE"
           echo "## 🩹 Soft-404 R2 Smoke" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           while IFS= read -r url || [ -n "$url" ]; do
