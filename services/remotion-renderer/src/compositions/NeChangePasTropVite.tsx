@@ -37,6 +37,8 @@ interface NeChangePasTropViteProps {
   hook?: string;
   symptom?: string;
   pieceWrong?: string;
+  /** Optionnel : remplace le texte du bloc Problème (ex. cadrage compatibilité). Défaut = cadrage diagnostic. */
+  problemText?: string;
   causes?: Cause[];
   advice?: string;
   cta?: string;
@@ -49,6 +51,7 @@ export const NeChangePasTropVite: React.FC<NeChangePasTropViteProps> = ({
   hook = 'Perte de puissance ? Ne change pas ta pièce trop vite.',
   symptom = 'Perte de puissance',
   pieceWrong = 'vanne EGR',
+  problemText,
   causes = [
     { cause: 'Filtre à air bouché', check_suggestion: 'Inspection visuelle' },
     { cause: 'Débitmètre fatigué', check_suggestion: 'Test multimètre' },
@@ -87,6 +90,7 @@ export const NeChangePasTropVite: React.FC<NeChangePasTropViteProps> = ({
         startFrame={HOOK_END}
         endFrame={PROBLEM_END}
         pieceWrong={pieceWrong}
+        problemText={problemText}
       />
 
       <CausesSection
@@ -174,7 +178,8 @@ const ProblemSection: React.FC<{
   startFrame: number;
   endFrame: number;
   pieceWrong: string;
-}> = ({ frame, startFrame, endFrame, pieceWrong }) => {
+  problemText?: string;
+}> = ({ frame, startFrame, endFrame, pieceWrong, problemText }) => {
   if (frame < startFrame || frame >= endFrame) return null;
   const local = frame - startFrame;
   const fadeIn = interpolate(local, [0, 20], [0, 1], { extrapolateRight: 'clamp' });
@@ -189,9 +194,15 @@ const ProblemSection: React.FC<{
     >
       <div style={{ transform: `translateY(${slideY}px)`, textAlign: 'center', maxWidth: 900 }}>
         <div style={{ color: 'rgba(255,255,255,0.85)', fontSize: 44, lineHeight: 1.5 }}>
-          Changer directement{' '}
-          <span style={{ color: '#F97316', fontWeight: 'bold' }}>la {pieceWrong}</span>, c’est
-          tentant. Mais si la vraie cause est ailleurs, tu paies pour rien.
+          {problemText ? (
+            problemText
+          ) : (
+            <>
+              Changer directement{' '}
+              <span style={{ color: '#F97316', fontWeight: 'bold' }}>la {pieceWrong}</span>, c’est
+              tentant. Mais si la vraie cause est ailleurs, tu paies pour rien.
+            </>
+          )}
         </div>
       </div>
     </AbsoluteFill>
