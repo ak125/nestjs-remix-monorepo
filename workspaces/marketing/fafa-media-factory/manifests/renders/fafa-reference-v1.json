@@ -1,0 +1,18 @@
+{
+  "asset_id": "fafa-reference-v1",
+  "kind": "brand_character_reference",
+  "status": "PENDING_OWNER_GENERATION",
+  "provider": "higgsfield",
+  "model": null,
+  "seed_or_character_id": null,
+  "prompt_template_used": "higgsfield/fafa-reference/avatar-reference-prompt",
+  "prompt_hash_sha256": null,
+  "s3_key": "s3://automecanik-renders/brand/fafa/reference-v1.png",
+  "format": "9:16",
+  "visual_type": "ambiance",
+  "truth_dependency": "illustration",
+  "generated_at": null,
+  "validated_by_owner": false,
+  "validated_at": null,
+  "notes": "Stub. Owner: générer via le prompt, choisir la variante canonique, uploader S3, puis renseigner model/seed/prompt_hash_sha256/generated_at + valider. Verrou consommé par personas/fafa-visual-reference-lock.md. Asset binaire = S3 only (jamais committé)."
+}
