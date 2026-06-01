@@ -4,6 +4,12 @@
  * For more information, see https://remix.run/file-conventions/entry.client
  */
 
+// MUST be first: installs the ES2022 Array.prototype.at polyfill before any
+// other module loads. Sentry's bundled INP web-vital code calls `.at(-1)`,
+// which throws on engines without it (Safari < 15.4, old WebViews, crawlers).
+// See ~/utils/array-at-polyfill.client for the full rationale.
+import "~/utils/array-at-polyfill.client";
+
 import { RemixBrowser } from "@remix-run/react";
 import { startTransition } from "react";
 import { hydrateRoot } from "react-dom/client";
