@@ -468,6 +468,16 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: high
+  - glob: backend/src/modules/supplier-truth/**
+    domain: D11
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
+  - glob: backend/supabase/migrations/*supplier_truth*
+    domain: D11
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
   - glob: backend/src/modules/products/**
     domain: D1
     owner: '@ak125/catalog-team'

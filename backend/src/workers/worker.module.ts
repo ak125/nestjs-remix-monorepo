@@ -25,6 +25,14 @@ import { CwvAggregationSchedulerService } from '../modules/seo-monitoring/servic
 // Services Workers
 import { SeoMonitorSchedulerService } from './services/seo-monitor-scheduler.service';
 
+// Supplier Availability Truth — sync wiring (queue lives here, alongside Bull forRoot)
+import { SupplierTruthReadModule } from '../modules/supplier-truth/supplier-truth-read.module';
+import { SupplierTruthRepository } from '../modules/supplier-truth/supplier-truth.repository';
+import { SupplierSyncProcessor } from '../modules/supplier-truth/supplier-sync.processor';
+import { SupplierSyncRunner } from '../modules/supplier-truth/supplier-sync.runner';
+import { SupplierSyncScheduler } from '../modules/supplier-truth/supplier-sync.scheduler';
+import { SupplierSyncJobProcessor } from '../modules/supplier-truth/supplier-sync.job.processor';
+
 // Dependencies for AgenticProcessor
 import { RagProxyModule } from '../modules/rag-proxy/rag-proxy.module';
 import { AgenticProcessor } from './processors/agentic.processor';
@@ -98,6 +106,7 @@ import { AdminJobHealthService } from '../modules/admin/services/admin-job-healt
       // { name: 'video-render' }, // SUPPRIMÉ 2026-04-10
       { name: 'agentic-engine' },
       { name: 'pipeline-chain' },
+      { name: 'supplier-sync' }, // Supplier Availability Truth periodic sync
     ),
 
     // Cart module for AbandonedCartService (used by EmailProcessor)
@@ -109,6 +118,9 @@ import { AdminJobHealthService } from '../modules/admin/services/admin-job-healt
 
     // V0.A — SEO daily-fetch processor needs GSC/GA4/CWV/Links fetcher services
     SeoMonitoringModule,
+
+    // Supplier Availability Truth — read slice (repo + services) for the sync runner
+    SupplierTruthReadModule,
   ],
 
   providers: [
@@ -142,6 +154,24 @@ import { AdminJobHealthService } from '../modules/admin/services/admin-job-healt
     // SitemapStreamingService, // DESACTIVE
     // SitemapDeltaService, // DESACTIVE
     SeoMonitorSchedulerService,
+
+    // Supplier Availability Truth — periodic sync (scheduler + job consumer), read-only
+    {
+      provide: SupplierSyncProcessor,
+      useFactory: (repo: SupplierTruthRepository) =>
+        new SupplierSyncProcessor(repo),
+      inject: [SupplierTruthRepository],
+    },
+    {
+      provide: SupplierSyncRunner,
+      useFactory: (
+        repo: SupplierTruthRepository,
+        proc: SupplierSyncProcessor,
+      ) => new SupplierSyncRunner(repo, proc),
+      inject: [SupplierTruthRepository, SupplierSyncProcessor],
+    },
+    SupplierSyncScheduler,
+    SupplierSyncJobProcessor,
   ],
   exports: [
     SeoMonitorSchedulerService,
