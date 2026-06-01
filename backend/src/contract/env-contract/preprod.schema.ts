@@ -52,6 +52,13 @@ export const PreprodEnvContractSchema = z
         /^rediss?:\/\/.+/,
         'REDIS_URL must start with redis:// or rediss:// and have a host',
       ),
+    // SEO CWV Aggregation (RCOP Bloc 4 — opt-in BullMQ scheduler kill switch).
+    // Documented here for Phase 2 readiness ; currently passthrough-tolerated.
+    // Runtime parsing : raw === 'true' || raw === '1' (case-insensitive,
+    // cf. CwvAggregationSchedulerService.isEnabled). String-as-literal mirrors
+    // READ_ONLY pattern above. Optional so .env without this var still validates
+    // (scheduler defaults to false, silent skip — never breaks boot).
+    SEO_CWV_AGGREGATION_ENABLED: z.enum(['true', 'false', '1', '0']).optional(),
   })
   .passthrough();
 
