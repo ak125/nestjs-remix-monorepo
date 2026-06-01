@@ -42,8 +42,9 @@ export class CwvAggregationSchedulerService implements OnModuleInit {
 
   onModuleInit(): void {
     if (!this.isEnabled()) {
-      this.logger.log(
-        'SEO_CWV_AGGREGATION_ENABLED=false — cwv-aggregation scheduler skipped',
+      this.logger.warn(
+        'SEO_CWV_AGGREGATION_ENABLED not "true"/"1" — CWV RUM aggregation DORMANT ' +
+          '(raw→hourly→daily_rum skipped). Set it in PREPROD/PROD to activate.',
       );
       return;
     }
