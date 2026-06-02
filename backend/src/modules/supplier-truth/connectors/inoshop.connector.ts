@@ -69,13 +69,26 @@ export class InoshopConnector implements SupplierConnector {
     await page.goto(`${this.baseUrl}/login`, { waitUntil: 'domcontentloaded' });
     await page.fill('input[name="login"]', creds.user);
     await page.fill('input[name="password"]', creds.password);
-    await Promise.all([
-      page.waitForLoadState('networkidle'),
-      page.click('button[type="submit"], [type="submit"]'),
-    ]);
+    await page.click('button[type="submit"], [type="submit"]');
 
-    // Authenticated iff a logout affordance exists (no login form).
-    const authed = (await page.locator('a[href*="logout"]').count()) > 0;
+    // The portal authenticates, then boots its SPA asynchronously (transient
+    // "Loading…" title), so the logout affordance renders a moment LATER than
+    // `networkidle`. Wait for a DETERMINISTIC authenticated state — off the
+    // /login route AND the logout link present — instead of checking too early
+    // (which yielded a false "no authenticated session"). LIVE_VERIFY 2026-06-02.
+    let authed = false;
+    try {
+      await page.waitForFunction(
+        () =>
+          !window.location.pathname.includes('/login') &&
+          document.querySelector('a[href*="logout"]') != null,
+        undefined,
+        { timeout: this.opts.navigationTimeoutMs },
+      );
+      authed = true;
+    } catch {
+      authed = false;
+    }
     await page.close();
     if (!authed) {
       throw new Error('inoshop login failed (no authenticated session)');
