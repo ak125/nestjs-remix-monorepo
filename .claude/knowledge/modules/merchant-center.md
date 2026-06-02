@@ -2,11 +2,13 @@
 module: merchant-center
 sources:
 - backend/src/modules/merchant-center
-last_scan: '2026-05-24'
+last_scan: '2026-06-02'
 primary_files:
 - backend/src/modules/merchant-center/controllers/merchant-center.controller.ts
+- backend/src/modules/merchant-center/controllers/price-competitiveness.controller.ts
 - backend/src/modules/merchant-center/merchant-center.module.ts
 - backend/src/modules/merchant-center/services/merchant-center-feed.service.ts
+- backend/src/modules/merchant-center/services/price-competitiveness.service.ts
 depends_on:
 - DatabaseModule
 ---

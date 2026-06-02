@@ -101,6 +101,48 @@ export class GoogleCredentialsService {
   }
 
   /**
+   * Merchant Center (Content API for Shopping) auth — scope `content`.
+   *
+   * Réutilise le MÊME service account que GSC par défaut (il suffit de
+   * l'ajouter comme utilisateur du compte Merchant Center) ; un SA dédié
+   * `GMC_CLIENT_EMAIL`/`GMC_PRIVATE_KEY` prend le dessus s'il est fourni.
+   * Sert à LIRE le benchmark concurrent (reports.search), jamais à écrire.
+   *
+   * @returns null si credentials manquantes (kill-switch implicite).
+   */
+  getMerchantContentAuth(): InstanceType<typeof google.auth.GoogleAuth> | null {
+    const clientEmail =
+      this.configService.get<string>('GMC_CLIENT_EMAIL') ||
+      this.configService.get<string>('GSC_CLIENT_EMAIL');
+    const privateKey =
+      this.configService.get<string>('GMC_PRIVATE_KEY') ||
+      this.configService.get<string>('GSC_PRIVATE_KEY');
+
+    if (!clientEmail || !privateKey) {
+      this.logger.warn(
+        '⚠️ Merchant Center credentials absentes (GMC_/GSC_CLIENT_EMAIL + PRIVATE_KEY) — sync compétitivité prix désactivé',
+      );
+      return null;
+    }
+
+    return new google.auth.GoogleAuth({
+      credentials: {
+        client_email: clientEmail,
+        private_key: privateKey.replace(/\\n/g, '\n'),
+      },
+      scopes: ['https://www.googleapis.com/auth/content'],
+    });
+  }
+
+  /**
+   * Merchant Center account id (`GMC_MERCHANT_ID`) — requis pour la Content API.
+   * Pas d'équivalent existant : c'est l'identifiant du compte GMC.
+   */
+  getMerchantId(): string | null {
+    return this.configService.get<string>('GMC_MERCHANT_ID') || null;
+  }
+
+  /**
    * Master kill-switch — désactive tout fetch côté schedulers.
    * Default false en prod tant que pipeline pas validée.
    */

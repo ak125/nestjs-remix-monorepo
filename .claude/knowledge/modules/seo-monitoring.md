@@ -2,16 +2,16 @@
 module: seo-monitoring
 sources:
 - backend/src/modules/seo-monitoring
-last_scan: '2026-05-24'
+last_scan: '2026-06-02'
 primary_files:
+- backend/src/modules/seo-monitoring/controllers/cwv-beacon.controller.ts
+- backend/src/modules/seo-monitoring/controllers/cwv-dashboard.controller.ts
 - backend/src/modules/seo-monitoring/controllers/funnel-events.controller.ts
 - backend/src/modules/seo-monitoring/controllers/quality-history.controller.ts
+- backend/src/modules/seo-monitoring/controllers/runtime-events.controller.ts
 - backend/src/modules/seo-monitoring/controllers/seo-monitoring.controller.ts
 - backend/src/modules/seo-monitoring/helpers/ai-readiness-detectors.ts
-- backend/src/modules/seo-monitoring/processors/seo-daily-fetch.processor.ts
-- backend/src/modules/seo-monitoring/seo-monitoring.module.ts
-- backend/src/modules/seo-monitoring/services/audit-findings.service.ts
-- backend/src/modules/seo-monitoring/services/crux-alerter.service.ts
+- backend/src/modules/seo-monitoring/processors/cwv-aggregation.processor.ts
 depends_on:
 - ConfigModule
 ---
