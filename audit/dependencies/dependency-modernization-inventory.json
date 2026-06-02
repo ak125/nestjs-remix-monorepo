@@ -1,5 +1,5 @@
 {
-  "artifact_immutability_hash": "sha256:460a2c80aec5d64146cd5eb13c600c4d68345944f9fc1f733644989ec0769a80",
+  "artifact_immutability_hash": "sha256:272286b862320859b63ba2146fc3c863ec9f8bacb2e699b32f5a4e1349e624b7",
   "divergences": [
     {
       "kind": "specifier",
@@ -174,6 +174,61 @@
     },
     {
       "kind": "resolved",
+      "name": "@typescript-eslint/eslint-plugin",
+      "occurrences": [
+        {
+          "declaredIn": "backend/package.json",
+          "specifier": "^8.59.4",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "declaredIn": "frontend/package.json",
+          "specifier": "^8.59.4",
+          "workspace": "@fafa/eslint-config"
+        },
+        {
+          "declaredIn": "packages/eslint-config/package.json",
+          "specifier": "^8.59.4",
+          "workspace": "@fafa/frontend"
+        }
+      ],
+      "resolved_versions": [
+        "8.59.4",
+        "8.60.0"
+      ]
+    },
+    {
+      "kind": "resolved",
+      "name": "@typescript-eslint/parser",
+      "occurrences": [
+        {
+          "declaredIn": "backend/package.json",
+          "specifier": "^8.59.4",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "declaredIn": "frontend/package.json",
+          "specifier": "^8.59.4",
+          "workspace": "@fafa/eslint-config"
+        },
+        {
+          "declaredIn": "packages/eslint-config/package.json",
+          "specifier": "^8.59.4",
+          "workspace": "@fafa/frontend"
+        },
+        {
+          "declaredIn": "packages/eslint-plugin-fafa-ports/package.json",
+          "specifier": "^8.59.4",
+          "workspace": "eslint-plugin-fafa-ports"
+        }
+      ],
+      "resolved_versions": [
+        "8.59.4",
+        "8.60.0"
+      ]
+    },
+    {
+      "kind": "resolved",
       "name": "@typescript-eslint/utils",
       "occurrences": [
         {
@@ -184,7 +239,8 @@
       ],
       "resolved_versions": [
         "5.62.0",
-        "8.59.4"
+        "8.59.4",
+        "8.60.0"
       ]
     },
     {
@@ -199,7 +255,23 @@
       ],
       "resolved_versions": [
         "2.1.9",
-        "4.1.6"
+        "4.1.6",
+        "4.1.7"
+      ]
+    },
+    {
+      "kind": "resolved",
+      "name": "@vitest/coverage-v8",
+      "occurrences": [
+        {
+          "declaredIn": "frontend/package.json",
+          "specifier": "^4.0.2",
+          "workspace": "@fafa/frontend"
+        }
+      ],
+      "resolved_versions": [
+        "4.1.6",
+        "4.1.7"
       ]
     },
     {
@@ -403,7 +475,8 @@
         }
       ],
       "resolved_versions": [
-        "8.5.14"
+        "8.5.14",
+        "8.5.15"
       ]
     },
     {
@@ -670,7 +743,8 @@
       ],
       "resolved_versions": [
         "5.4.21",
-        "8.0.13"
+        "8.0.13",
+        "8.0.14"
       ]
     },
     {
@@ -690,7 +764,8 @@
       ],
       "resolved_versions": [
         "2.1.9",
-        "4.1.6"
+        "4.1.6",
+        "4.1.7"
       ]
     },
     {
@@ -2770,7 +2845,8 @@
           ],
           "resolved_versions": [
             "5.4.21",
-            "8.0.13"
+            "8.0.13",
+            "8.0.14"
           ]
         }
       ],
@@ -3156,7 +3232,7 @@
       },
       "packages": [
         {
-          "divergent_resolved": false,
+          "divergent_resolved": true,
           "divergent_specifiers": false,
           "name": "@typescript-eslint/eslint-plugin",
           "occurrences": [
@@ -3177,11 +3253,12 @@
             }
           ],
           "resolved_versions": [
-            "8.59.4"
+            "8.59.4",
+            "8.60.0"
           ]
         },
         {
-          "divergent_resolved": false,
+          "divergent_resolved": true,
           "divergent_specifiers": false,
           "name": "@typescript-eslint/parser",
           "occurrences": [
@@ -3207,7 +3284,8 @@
             }
           ],
           "resolved_versions": [
-            "8.59.4"
+            "8.59.4",
+            "8.60.0"
           ]
         },
         {
@@ -3852,7 +3930,7 @@
     "deps_registry": "audit/registry/deps.json",
     "deps_registry_sha": "sha256:ccfbd71d0225371602d43ce9d28f79f480111fc06d78eb98b63312212045edb3",
     "lockfile": "package-lock.json",
-    "lockfile_sha": "sha256:e03a568334510ed53f61bc9bc75cd30029120197ec55db743b1eba0252e963e3",
+    "lockfile_sha": "sha256:e3c6a0764a1c06e9c3db1c3c9496cf33d76a548481eb747d6ba26b8512f9ea26",
     "overlay": "audit/dependencies/family-overlay.yaml",
     "overlay_sha": "sha256:4067a5535b22d0d6c98fa6f3c980189b2a68f9837edd7f7caf1e7b1e10c44746"
   },
@@ -3881,7 +3959,7 @@
       "pr-9f": 17,
       "pr-9g": 0
     },
-    "divergent_packages_count": 35,
+    "divergent_packages_count": 38,
     "families_count": 12,
     "total_occurrences": 323,
     "total_packages": 226,
@@ -3915,7 +3993,7 @@
         }
       ],
       "resolved_versions": [
-        "0.42.2"
+        "0.43.0"
       ]
     },
     {
@@ -4556,7 +4634,7 @@
         }
       ],
       "resolved_versions": [
-        "3.23.4"
+        "3.23.6"
       ]
     },
     {
@@ -4571,7 +4649,7 @@
         }
       ],
       "resolved_versions": [
-        "3.23.4"
+        "3.23.6"
       ]
     },
     {
@@ -4586,7 +4664,7 @@
         }
       ],
       "resolved_versions": [
-        "3.23.4"
+        "3.23.6"
       ]
     },
     {
@@ -4601,7 +4679,7 @@
         }
       ],
       "resolved_versions": [
-        "3.23.4"
+        "3.23.6"
       ]
     },
     {
@@ -4616,7 +4694,7 @@
         }
       ],
       "resolved_versions": [
-        "3.23.4"
+        "3.23.6"
       ]
     },
     {
@@ -5123,7 +5201,7 @@
         }
       ],
       "resolved_versions": [
-        "8.59.4"
+        "8.60.0"
       ]
     },
     {
@@ -5139,7 +5217,8 @@
       ],
       "resolved_versions": [
         "5.62.0",
-        "8.59.4"
+        "8.59.4",
+        "8.60.0"
       ]
     },
     {
@@ -5155,11 +5234,12 @@
       ],
       "resolved_versions": [
         "2.1.9",
-        "4.1.6"
+        "4.1.6",
+        "4.1.7"
       ]
     },
     {
-      "divergent_resolved": false,
+      "divergent_resolved": true,
       "divergent_specifiers": false,
       "name": "@vitest/coverage-v8",
       "occurrences": [
@@ -5170,7 +5250,8 @@
         }
       ],
       "resolved_versions": [
-        "4.1.6"
+        "4.1.6",
+        "4.1.7"
       ]
     },
     {
@@ -5362,7 +5443,7 @@
         }
       ],
       "resolved_versions": [
-        "17.4.0"
+        "17.4.2"
       ]
     },
     {
@@ -5707,7 +5788,7 @@
         }
       ],
       "resolved_versions": [
-        "6.14.1"
+        "6.14.2"
       ]
     },
     {
@@ -5917,7 +5998,7 @@
       ]
     },
     {
-      "divergent_resolved": false,
+      "divergent_resolved": true,
       "divergent_specifiers": true,
       "name": "postcss",
       "occurrences": [
@@ -5933,7 +6014,8 @@
         }
       ],
       "resolved_versions": [
-        "8.5.14"
+        "8.5.14",
+        "8.5.15"
       ]
     },
     {
@@ -6140,7 +6222,7 @@
         }
       ],
       "resolved_versions": [
-        "2.53.0"
+        "2.54.0"
       ]
     },
     {
@@ -6419,7 +6501,8 @@
       ],
       "resolved_versions": [
         "2.1.9",
-        "4.1.6"
+        "4.1.6",
+        "4.1.7"
       ]
     },
     {
