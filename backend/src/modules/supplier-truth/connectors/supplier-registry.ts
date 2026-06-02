@@ -11,7 +11,7 @@
  * no hardcoded secrets). Values live in backend `.env`.
  */
 
-export type SupplierPlatform = 'inoshop';
+export type SupplierPlatform = 'inoshop' | 'cal';
 
 export interface SupplierConnectorConfig {
   /** `___xtr_supplier.spl_id`. */
@@ -41,6 +41,19 @@ const REGISTRY: readonly SupplierConnectorConfig[] = [
     credEnv: {
       userKey: 'SUPPLIER_INOSHOP_DISTRICASH_USER',
       passKey: 'SUPPLIER_INOSHOP_DISTRICASH_PASSWORD',
+    },
+  },
+  {
+    // CAL (Société CAL 92 / PF Préférence Seine) — portail ASP.NET WebForms,
+    // ___xtr_supplier spl_id 19. LIVE_VERIFY 2026-06-02 (read-only) : login +
+    // fetch ref 715899 → achat 160,15 / base 320,30 / remise 50% OK.
+    supplierId: '19',
+    supplierName: 'CAL',
+    platform: 'cal',
+    baseUrl: 'https://siteweb.pfpreference-seine.fr',
+    credEnv: {
+      userKey: 'CAL_USER',
+      passKey: 'CAL_PASSWORD',
     },
   },
 ];

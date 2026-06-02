@@ -15,6 +15,7 @@ import type {
   SupplierCredentials,
 } from './connectors/supplier-connector.interface';
 import { InoshopConnector } from './connectors/inoshop.connector';
+import { CalConnector } from './connectors/cal.connector';
 
 /**
  * Orchestrates one full sync cycle: bounded working-set → each connectable
@@ -36,6 +37,11 @@ export const defaultConnectorFactory: ConnectorFactory = (cfg) => {
   switch (cfg.platform) {
     case 'inoshop':
       return new InoshopConnector({
+        supplierId: cfg.supplierId,
+        baseUrl: cfg.baseUrl,
+      });
+    case 'cal':
+      return new CalConnector({
         supplierId: cfg.supplierId,
         baseUrl: cfg.baseUrl,
       });
