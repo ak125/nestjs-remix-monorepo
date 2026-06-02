@@ -1,7 +1,7 @@
 # AutoMecanik — Tableau de pilotage (24 départements)
 
 > Doc d'analyse/pilotage (pas un registre, pas du canon). Pointe vers l'existant — ne
-> duplique pas `canonical.json`. Maj : 2026-05-31. Voir le tunnel : [sales-funnel-scorecard.md](./sales-funnel-scorecard.md).
+> duplique pas `canonical.json`. Maj : 2026-06-02. Voir le tunnel : [sales-funnel-scorecard.md](./sales-funnel-scorecard.md) (sous-funnel `/pieces`) + le funnel site GA4/GSC : [data-top-of-funnel-report.md](./data-top-of-funnel-report.md).
 > **Règle d'or : existant d'abord → mesurer → améliorer → créer seulement si le scoring prouve le manque → pause sinon.**
 
 > **Ce document ne crée aucun agent, aucun registre, aucun module et aucune infrastructure de reporting.
@@ -26,7 +26,7 @@
 | 1 | Direction générale | priorité semaine claire | IA-CEO (Paperclip) | DORMANT | board digest hebdo | Moyen | 1 décision/sem tracée | REUSE |
 | 2 | Gouvernance | limites respectées | governance-vault + `governance-vault-ops` | LIVE | vault audit | Fort | gates sans bypass | REUSE |
 | 3 | Stratégie & Scoring | verdicts reuse/improve/create | `continuous-improvement-global` | LIVE | weekly improvement verdict | Fort | gap-score/département | REUSE |
-| 4 | Marketing & Acquisition | demandes qualifiées | module `marketing` + 3 agents G1 | SUPPORT | acquisition report | Moyen | trafic total réel (GA4) | REUSE |
+| 4 | Marketing & Acquisition | demandes qualifiées | module `marketing` + 3 agents G1 | SUPPORT | acquisition report | Moyen | mesuré 06-01 : GA4 **10 475 sessions/30 j** ; **direct 75 %** avec bounce ~100 % (signal bot/qualité suspect à vérifier), organic 22 % ; levier = fiabiliser direct + routage home/blog→produit | REUSE |
 | 5 | Brand & Communication | confiance / avis | brand-compliance-gate + `fafa-brand-safety-reviewer` | LIVE | brand compliance report | Moyen | avis & cohérence | REUSE |
 | 6 | Contenu éditorial | contenu validé réutilisable | `blog`/`ai-content` + `content-audit` | LIVE | content coverage report | Moyen | contenu→page→ATC | REUSE |
 | 7 | Production Pages & SEO | pages générant ATC | module `seo` + R-agents SEO + `seo-gamme-audit` | LIVE | page report | Faible/Moyen | pages vues sans ATC (452→18) | IMPROVE |
@@ -44,7 +44,7 @@
 | 19 | Risk & Audit | risques suivis | `audit/` + ratchets CI + `runtime-truth-audit` | LIVE | risk/drift report | Moyen | risques ouverts/fermés | REUSE |
 | 20 | Produit & Expérience Client | conversion / abandon | `frontend-design`/`responsive-audit`/`web-vitals-audit` + design-tokens | MANUAL | UX/CWV audit report | Faible/Moyen | mesuré 06-01 : **page NON coupable (98,6% vendables)** ; 96% non-ajout = **mix-trafic/intention** (gammes cheap browse = 0 panier) + **INP mobile 712ms (poor)** | IMPROVE |
 | 21 | IT & Runtime | site fiable & mesuré | NestJS/Remix/Supabase + CTO + `runtime-truth-audit` | LIVE | runtime health report | Fort | segment panier→paiement aveugle | REUSE |
-| 22 | **Data & Analytics** | tracking fiable (vérité) | RCOP (`seo-monitoring`) + `web-vitals-audit` | LIVE | tracking integrity report | Moyen | trafic total + attribution (0 %) | IMPROVE |
+| 22 | **Data & Analytics** | tracking fiable (vérité) | RCOP (`seo-monitoring`) + `web-vitals-audit` | LIVE | tracking integrity report | Moyen | mesuré 06-01 : tracking site-wide **EXISTE déjà** (`__seo_ga4_daily` 10 488 l. + `__seo_gsc_daily` 47 899 l.) ; reste aveugle = **segment panier→paiement** + **attribution 0 %** (≠ « haut non mesuré ») | IMPROVE |
 | 23 | IA, Agents & Automatisation | capacités utiles ≠ complexité | `canonical.json` + skills registry + `continuous-improvement-global` | LIVE | capability report | Moyen | agents non reliés/inutilisés | REUSE (PAUSE création) |
 | 24 | People, Formation & Doc | système compréhensible | `.claude/knowledge` + REPO_MAP + `.claude/rules` | LIVE | doc coverage report | Faible | modules « rôle à rédiger » | REUSE |
 
@@ -54,11 +54,11 @@
 
 ---
 
-## Vue 2 — Top 5 problèmes business (mesurés 2026-05-31, 30 j)
+## Vue 2 — Top 5 problèmes business (mesurés 2026-05-31, **affinés 2026-06-01**, 30 j)
 1. **0 vente gardée / 30 j** — 3 paiements, **3 annulés**.
 2. **Cause directe = rupture fournisseur** — annulations « pas dispo » / « plus disponible » (100 % des paiements récents).
-3. **vue → panier ≈ 4 %** — 452 sessions vue produit → 18 paniers.
-4. **Trafic faible + haut du tunnel non mesuré** — 452 vues produit/30 j, total site inconnu (pas dans `__seo_event_log`).
+3. **vue → panier ≈ 4 % (sous-funnel `/pieces`)** — 452 sessions vue produit → 18 paniers. **Vrai funnel site (GA4 06-01) = 0,17 % panier** : 10 475 sessions → mêmes 18 paniers. Catalogue/page produit **non retenus comme fuite principale à ce stade** : 98,6 % vendable mesuré 06-01.
+4. **Acquisition faible qualité** (corrige « haut non mesuré » — GA4/GSC peuplés) — direct **75 %** avec bounce ~100 % (signal bot/qualité suspect à vérifier), **SEO CTR 0,27 %** (85 clics) malgré rank pos 4-43 sur vraies requêtes pièces ; seule la requête marque « automecanik » clique.
 5. **Instrumentation aveugle** — segment panier→paiement non tracké · attribution 0 % · panier abandonné 0 capturé.
 
 → Détail, chiffres et actions : **[sales-funnel-scorecard.md](./sales-funnel-scorecard.md)**.
@@ -70,7 +70,7 @@
 |---|---|
 | RAW → WIKI | Actif (ADR-031/033 en cours) |
 | WIKI → PAGE | Partiel (chaîne readiness) |
-| PAGE → DEMANDE | **Faible** (4 % vue→panier) |
+| PAGE → DEMANDE | **Faible** (sous-funnel `/pieces` 4 % ; **funnel site 0,17 %**) |
 | FAFA → DEMANDE | Non mesuré (0 source_code→demande) |
 | DIAGNOSTIC → PAGE/DEMANDE | **Cassé** (diag→produit 5/196) |
 | DEMANDE → DEVIS | n/a (pas de flux devis instrumenté) |
@@ -136,7 +136,7 @@
 | Commercial & Ventes | paiements **gardés** | 🔴 0/30j |
 | Achats & Fournisseurs | annulations « pas dispo » | 🔴 3/3 paiements |
 | Produit & Expérience Client | vue→panier % | 🟠 ~3,4% — cause mesurée = **mix-trafic/intention + INP mobile 712ms** (page innocentée : 98,6% vendable) |
-| Data & Analytics | tunnel mesuré vs aveugle | 🟠 haut + panier→paiement aveugles |
+| Data & Analytics | tunnel mesuré vs aveugle | 🟠 **haut mesuré 06-01** (GA4+GSC peuplés) ; reste aveugle = panier→paiement + attribution 0 % |
 | Catalogue & Compatibilité | erreurs compat / dispo affichée | 🔴 ~11,7k pièces embrayage affichées vendables (rupture exposée, quarantaine = 3) |
 | IT & Runtime | site fiable + events tunnel | 🟠 segment paiement non tracké |
 
@@ -153,6 +153,6 @@
 ---
 
 ## Roadmap par horizon
-- **Court terme (maintenant)** : tunnel jusqu'au paiement **gardé** — fermer la fuite rupture (Achats) + comprendre vue→panier 4 % (Produit/Catalogue/Pricing). *Mesure d'abord, gate ensuite (owner-GO).*
+- **Court terme (maintenant)** : tunnel jusqu'au paiement **gardé** — fermer la fuite rupture (Achats) + **acquisition** (fiabiliser direct 75 %, CTR SEO 0,27 % owner-gated, routage home/blog→produit) ; page/catalogue non retenus comme fuite principale 06-01. *Mesure d'abord, gate ensuite (owner-GO).*
 - **Moyen terme** : pages/contenu/Fafa/diagnostic **reliés aux demandes** (source_code→demande, diag→produit, chaîne RAW→WIKI→page). Documenté, pas construit.
 - **Long terme** : fidélisation véhicule + rappels entretien (vidange, CT, pneus, assurance), agents/Paperclip orchestration, automatisation — seulement si le scoring le prouve.
