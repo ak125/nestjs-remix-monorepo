@@ -568,3 +568,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `chore/cleanup-audit-artifacts`
 - **Décision** : docs(audit): refresh carte 24-départements avec deltas funnel 06-01 (+1 other commit)
 - **Sortie** : PR #820 | commits ed821a72d d88e707ca
+
+## 2026-06-02 — chore/userpromptsubmit-context-hook (auto)
+
+- **Branche** : `chore/userpromptsubmit-context-hook`
+- **Décision** : chore(hooks): add UserPromptSubmit context-push hook (PULL->PUSH)
+- **Sortie** : PR aucune | commits 220a7465c
