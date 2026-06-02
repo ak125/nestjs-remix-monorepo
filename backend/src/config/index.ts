@@ -67,4 +67,3 @@ export {
 export type { SwitchAliasConfig } from './seo-switch-aliases.config';
 
 // NOTE: payment.config.ts excluded (uses registerAs() default export)
-// NOTE: swagger.config.ts excluded (only used in main.ts)

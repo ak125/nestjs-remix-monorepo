@@ -562,3 +562,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/cwv-aggregation-flag-declare-2026-05-29`
 - **Décision** : fix(cwv): declare and enable aggregation scheduler flag
 - **Sortie** : PR #803 | commits 0caf28c0b
+
+## 2026-06-02 — chore/cleanup-audit-artifacts (auto)
+
+- **Branche** : `chore/cleanup-audit-artifacts`
+- **Décision** : docs(audit): refresh carte 24-départements avec deltas funnel 06-01 (+1 other commit)
+- **Sortie** : PR #820 | commits ed821a72d d88e707ca
