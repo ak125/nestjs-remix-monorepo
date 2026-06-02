@@ -43,7 +43,7 @@ jobs:
     steps:
       - name: Issue GitHub OIDC token (audience = automecanik-sitemap-regen)
         id: oidc
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const token = await core.getIDToken('automecanik-sitemap-regen');
@@ -62,7 +62,7 @@ jobs:
 
       - name: Notify on failure (open GitHub issue)
         if: failure()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const today = new Date().toISOString().slice(0, 10);
