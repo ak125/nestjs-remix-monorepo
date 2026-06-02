@@ -3,6 +3,24 @@ import type { SupplierTruthRepository } from './supplier-truth.repository';
 import type { SupplierSyncProcessor } from './supplier-sync.processor';
 import type { SupplierConnector } from './connectors/supplier-connector.interface';
 
+// These tests pin PER-SUPPLIER runner semantics — decouple them from the live
+// registry size so adding a 2nd connectable portal (e.g. CAL) never flips the
+// suppliersRun / suppliersSkipped counts.
+jest.mock('./connectors/supplier-registry', () => ({
+  listConnectableSuppliers: () => [
+    {
+      supplierId: '71',
+      supplierName: 'DISTRICASH (DCA)',
+      platform: 'inoshop',
+      baseUrl: 'https://districashv2.inoshop.net',
+      credEnv: {
+        userKey: 'SUPPLIER_INOSHOP_DISTRICASH_USER',
+        passKey: 'SUPPLIER_INOSHOP_DISTRICASH_PASSWORD',
+      },
+    },
+  ],
+}));
+
 function makeConnector(): jest.Mocked<SupplierConnector> & { closed: boolean } {
   const c = {
     supplierId: '71',

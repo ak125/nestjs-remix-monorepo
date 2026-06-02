@@ -568,3 +568,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `chore/cleanup-audit-artifacts`
 - **Décision** : docs(audit): refresh carte 24-départements avec deltas funnel 06-01 (+1 other commit)
 - **Sortie** : PR #820 | commits ed821a72d d88e707ca
+
+## 2026-06-02 — feat/supplier-cal-pr1b (auto)
+
+- **Branche** : `feat/supplier-cal-pr1b`
+- **Décision** : feat(supplier-truth): wire CAL connector (read-only sentinel, spl_id 19)
+- **Sortie** : PR #828 | commits 136941362
