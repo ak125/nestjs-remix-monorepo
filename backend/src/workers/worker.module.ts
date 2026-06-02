@@ -32,6 +32,7 @@ import { SupplierSyncProcessor } from '../modules/supplier-truth/supplier-sync.p
 import { SupplierSyncRunner } from '../modules/supplier-truth/supplier-sync.runner';
 import { SupplierSyncScheduler } from '../modules/supplier-truth/supplier-sync.scheduler';
 import { SupplierSyncJobProcessor } from '../modules/supplier-truth/supplier-sync.job.processor';
+import { SupplierTruthEventSink } from '../modules/supplier-truth/supplier-truth-event-sink';
 
 // Dependencies for AgenticProcessor
 import { RagProxyModule } from '../modules/rag-proxy/rag-proxy.module';
@@ -156,19 +157,27 @@ import { AdminJobHealthService } from '../modules/admin/services/admin-job-healt
     SeoMonitorSchedulerService,
 
     // Supplier Availability Truth — periodic sync (scheduler + job consumer), read-only
+    SupplierTruthEventSink, // real prod EventSink (replaces implicit noop = no mute sentinel)
     {
       provide: SupplierSyncProcessor,
-      useFactory: (repo: SupplierTruthRepository) =>
-        new SupplierSyncProcessor(repo),
-      inject: [SupplierTruthRepository],
+      useFactory: (
+        repo: SupplierTruthRepository,
+        sink: SupplierTruthEventSink,
+      ) => new SupplierSyncProcessor(repo, sink.emit),
+      inject: [SupplierTruthRepository, SupplierTruthEventSink],
     },
     {
       provide: SupplierSyncRunner,
       useFactory: (
         repo: SupplierTruthRepository,
         proc: SupplierSyncProcessor,
-      ) => new SupplierSyncRunner(repo, proc),
-      inject: [SupplierTruthRepository, SupplierSyncProcessor],
+        sink: SupplierTruthEventSink,
+      ) => new SupplierSyncRunner(repo, proc, undefined, undefined, sink.emit),
+      inject: [
+        SupplierTruthRepository,
+        SupplierSyncProcessor,
+        SupplierTruthEventSink,
+      ],
     },
     SupplierSyncScheduler,
     SupplierSyncJobProcessor,

@@ -32,7 +32,8 @@ export type EventSink = (
   name: string,
   payload: Record<string, unknown>,
 ) => void;
-const noopSink: EventSink = () => {};
+/** No-op sink — for UNIT TESTS only, never the implicit prod default (see worker wiring). */
+export const noopSink: EventSink = () => {};
 
 export interface SyncResult {
   observations: number;

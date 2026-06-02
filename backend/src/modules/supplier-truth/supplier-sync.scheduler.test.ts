@@ -42,6 +42,7 @@ describe('SupplierSyncJobProcessor', () => {
     const runner = {
       runSync: jest.fn(async () => ({
         suppliersRun: 1,
+        suppliersFailed: 0,
         suppliersSkipped: 0,
         refs: 2,
         projectionsUpserted: 2,

@@ -1,6 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { SupplierTruthRepository } from './supplier-truth.repository';
-import { SupplierSyncProcessor } from './supplier-sync.processor';
+import {
+  SupplierSyncProcessor,
+  type EventSink,
+  noopSink,
+} from './supplier-sync.processor';
 import {
   listConnectableSuppliers,
   type SupplierConnectorConfig,
@@ -48,6 +53,9 @@ export const envCredResolver: CredResolver = (cfg) => {
 
 export interface RunSummary {
   suppliersRun: number;
+  /** Connector threw (auth/site-down/anti-ban/crash) — a broken supplier, NOT idle. */
+  suppliersFailed: number;
+  /** Benign skip: no credentials configured, or none of the working-set brands carried. */
   suppliersSkipped: number;
   refs: number;
   projectionsUpserted: number;
@@ -62,12 +70,15 @@ export class SupplierSyncRunner {
     private readonly processor: SupplierSyncProcessor,
     private readonly connectorFactory: ConnectorFactory = defaultConnectorFactory,
     private readonly credResolver: CredResolver = envCredResolver,
+    private readonly emit: EventSink = noopSink,
   ) {}
 
   async runSync(now: Date = new Date()): Promise<RunSummary> {
+    const runId = randomUUID();
     const workingSet = await this.repo.getWorkingSet();
     const summary: RunSummary = {
       suppliersRun: 0,
+      suppliersFailed: 0,
       suppliersSkipped: 0,
       refs: workingSet.length,
       projectionsUpserted: 0,
@@ -114,10 +125,18 @@ export class SupplierSyncRunner {
           `synced ${cfg.supplierName}: ${res.snapshotsInserted} snapshots, ${res.projectionsUpserted} projections`,
         );
       } catch (e) {
-        this.logger.error(
-          `sync failed for ${cfg.supplierName}: ${(e as Error).message}`,
-        );
-        summary.suppliersSkipped++;
+        const message = (e as Error).message;
+        this.logger.error(`sync failed for ${cfg.supplierName}: ${message}`);
+        // A broken connector must be observable, NOT conflated into the benign
+        // suppliersSkipped counter (no silent fallback). Distinct count + event.
+        summary.suppliersFailed++;
+        this.emit('supplier.sync.connector_failed', {
+          supplierId: cfg.supplierId,
+          supplierName: cfg.supplierName,
+          connector: cfg.platform,
+          error: message,
+          runId,
+        });
       } finally {
         await connector.close?.();
       }

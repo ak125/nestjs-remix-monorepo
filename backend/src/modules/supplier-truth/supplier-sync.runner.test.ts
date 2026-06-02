@@ -5,7 +5,7 @@ import type { SupplierConnector } from './connectors/supplier-connector.interfac
 
 function makeConnector(): jest.Mocked<SupplierConnector> & { closed: boolean } {
   const c = {
-    supplierId: '26',
+    supplierId: '71',
     platform: 'inoshop',
     closed: false,
     login: jest.fn(async () => {}),
@@ -88,20 +88,31 @@ describe('SupplierSyncRunner.runSync', () => {
     expect(summary.refs).toBe(0);
   });
 
-  it('a connector failure is isolated (counted skipped, browser still closed)', async () => {
+  it('a connector failure is counted as FAILED (not skipped), emits a distinct event, browser still closed', async () => {
     const connector = makeConnector();
     (connector.login as jest.Mock).mockRejectedValueOnce(
       new Error('login boom'),
     );
+    const emit = jest.fn();
     const runner = new SupplierSyncRunner(
       repo(['ELH4261']),
       processor(),
       () => connector,
       () => ({ user: 'u', password: 'p' }),
+      emit,
     );
     const summary = await runner.runSync();
     expect(summary.suppliersRun).toBe(0);
-    expect(summary.suppliersSkipped).toBe(1);
+    expect(summary.suppliersFailed).toBe(1); // distinct from a benign no-creds/no-brands skip
+    expect(summary.suppliersSkipped).toBe(0);
+    expect(emit).toHaveBeenCalledWith(
+      'supplier.sync.connector_failed',
+      expect.objectContaining({
+        error: 'login boom',
+        supplierId: expect.any(String),
+        runId: expect.any(String),
+      }),
+    );
     expect(connector.close).toHaveBeenCalled();
   });
 
