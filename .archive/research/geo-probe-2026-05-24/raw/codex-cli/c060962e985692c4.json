@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "filtre a huile golf 6",
+  "prompt_normalized": "filtre a huile golf 6",
+  "prompt_hash": "c060962e985692c4",
+  "gamme": "Filtre à huile",
+  "volume": 500,
+  "captured_at": "2026-05-24T15:50:15.532Z",
+  "model_version": null,
+  "duration_ms": 22687,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour une **Volkswagen Golf 6**, le bon filtre à huile dépend surtout du moteur, pas seulement du modèle. Il faut idéalement vérifier avec la **motorisation**, le **code moteur** ou l’immatriculation.\n\nLes références courantes :\n\n- **Golf 6 1.6 TDI / 2.0 TDI** : souvent filtre cartouche type **OE VW 03L 115 562**, équivalents fréquents **MANN HU 7008 z / HU 7020 z**, Bosch, Knecht/Mahle, Purflux selon variante.\n- **Golf 6 1.4 TSI / 1.2 TSI** : souvent **MANN W 712/94** ou équivalent, mais à confirmer selon année et code moteur.\n- **Golf 6 anciens blocs diesel/essence selon version** : certaines variantes utilisent d’autres cartouches, par exemple **MANN HU 719/7 x**.\n\nPour acheter sans erreur, le plus fiable est de rentrer la plaque ou le type mine sur **Oscaro**, **Mister-Auto**, **Autodoc**, **Yakarouler** ou directement dans le catalogue **MANN-FILTER**. Oscaro liste par exemple les filtres pour Golf VI 2.0 TDI avec plusieurs marques compatibles, et Vag Autosport donne la référence origine VW **03L115562** pour les moteurs **1.6 TDI et 2.0 TDI**.\n\nJe privilégierais une marque équipementier : **MANN-FILTER**, **Mahle/Knecht**, **Bosch**, **Purflux** ou **Hengst**. Évite les filtres premier prix inconnus : sur les TDI, la qualité du clapet, du joint et du média filtrant compte vraiment.\n\nÀ prévoir avec le filtre : le **joint torique neuf** fourni, un peu d’huile propre sur le joint au montage, et une huile conforme à la norme VW adaptée au moteur, souvent **VW 507.00** pour les TDI avec FAP. Pour une Golf 6 TDI, une vidange tous les **15 000 km** est une bonne pratique même si le LongLife annonce plus.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

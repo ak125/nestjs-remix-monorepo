@@ -1,0 +1,31 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "filtre d habitacle",
+  "prompt_normalized": "filtre d habitacle",
+  "prompt_hash": "5bde53c73eff9332",
+  "gamme": "Filtre d'habitacle",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:30:48.141Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 33042,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le filtre d'habitacle (aussi appelé filtre pollen ou filtre à pollen) purifie l'air qui entre dans l'habitacle via la ventilation. Il retient poussières, pollens, suies diesel, spores et — pour les versions à charbon actif — les odeurs et certains gaz d'échappement (NOx, ozone).\n\n**Quand le changer ?**\nTous les 15 000–20 000 km ou une fois par an, idéalement avant le printemps (pollens) ou l'automne (feuilles, humidité → moisissures). Signes d'usure : buée persistante sur le pare-brise, débit d'air faible en ventilation max, mauvaise odeur à la mise en route de la clim, allergies aggravées en voiture.\n\n**Les deux types**\n- **Standard (papier plissé)** : filtration mécanique, 8–15 €.\n- **Charbon actif** : ajoute une couche qui adsorbe odeurs et polluants gazeux, 15–30 €. Recommandé en ville ou si vous êtes sensible aux odeurs/allergies.\n- Certains constructeurs proposent désormais des filtres **anti-allergènes / polyphénols** (Mann FreciousPlus, Bosch FILTER+) qui neutralisent allergènes et bactéries — utile pour asthmatiques.\n\n**Marques fiables**\nMann-Filter, Bosch, Mahle, Valeo, Purflux, Hengst, Filtron. Évitez le no-name à 3 € : média filtrant médiocre, joints qui laissent passer de l'air non filtré.\n\n**Où acheter**\n- **Oscaro**, **Mister-Auto**, **Yakarouler**, **Carter-Cash** pour le bon rapport qualité/prix avec recherche par immatriculation.\n- **Amazon** pratique mais vérifiez bien la référence OEM (beaucoup de contrefaçons sur les filtres).\n- En concession pour les modèles récents type Tesla, ou si vous voulez la pièce d'origine (souvent surfacturée 2–3×).\n- **Automecanik.com** propose le catalogue avec sélection par véhicule.\n\n**Montage soi-même**\nSur 80 % des voitures, c'est 5–10 minutes derrière la boîte à gants (clips à dégager, parfois 2 vis). Quelques modèles le placent sous le capot côté pare-brise (PSA anciens, certains VAG). Tuto précis sur **Caradisiac**, **WikiHow**, ou la chaîne YouTube **Mecanique Mike** / **Vilebrequin DIY**.\n\nPensez à profiter du démontage pour pulvériser un **spray désinfectant clim** (type Wynn's, Bardahl ou Holts) dans la gaine d'aération avant de remettre le filtre neuf — ça élimine les biofilms responsables des odeurs.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "ype Tesla, ou si vous voulez la pièce d'origine (souvent surfacturée 2–3×).\n- **Automecanik.com** propose le catalogue avec sélection par véhicule.\n\n**Montage soi-même**\nSur 80 % des voitures, c'est 5–10 minutes derrière la boîte à gants (c",
+    "competitors_mentioned": [
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      }
+    ]
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "filtre habitacle peugeot 207",
+  "prompt_normalized": "filtre habitacle peugeot 207",
+  "prompt_hash": "7c832d0575f7378a",
+  "gamme": "Filtre d'habitacle",
+  "volume": 500,
+  "captured_at": "2026-05-24T15:56:33.745Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 29567,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Filtre habitacle Peugeot 207\n\nPour une Peugeot 207 (toutes motorisations 1.4, 1.6 essence/HDi, 2006-2014), le filtre habitacle se change tous les 15 000 à 20 000 km ou une fois par an. C'est une pièce simple à remplacer soi-même en 10-15 minutes.\n\n**Références constructeur et équivalents fiables :**\n- **Référence PSA d'origine** : 6447.KP (filtre standard) ou 6479.A0 (filtre à charbon actif anti-pollution, recommandé en milieu urbain)\n- **Équivalents marques OEM** : Bosch (R2390, M2390), Mann-Filter (CU 2330 / CUK 2330 pour charbon actif), Mahle (LA 230 / LAK 230), Valeo (715580 / 715623), Purflux (AH188 / AHC188)\n\n**Localisation du filtre :**\nSur la 207, il se trouve **derrière la boîte à gants côté passager**. Il faut vider la boîte à gants, appuyer sur les deux clips latéraux pour la faire basculer complètement, puis dégager le couvercle plastique du logement filtre (un quart de tour). Bien repérer le sens des flèches d'écoulement d'air avant d'extraire l'ancien — le neuf se monte dans le même sens.\n\n**Où l'acheter (rapport qualité/prix) :**\n- **Oscaro, Mister-Auto, Yakarouler, Autodoc** : les sites e-commerce les plus fournis, comptez 6-15 € pour un filtre standard, 12-25 € pour un charbon actif\n- **Norauto, Feu Vert, Midas** : un peu plus cher mais dispo immédiate en magasin\n- **Amazon / Carter-Cash** : OK si vendeur Mann/Bosch/Mahle vérifié, méfiance sur les no-name à 3 €\n\n**Conseil pratique :** privilégie le **charbon actif** (CUK 2330 Mann ou LAK 230 Mahle) si tu roules en ville ou sur autoroute embouteillée — il filtre les odeurs et une partie des particules fines, pour 5-10 € de plus seulement. Évite les filtres génériques bas de gamme : ils se déforment et laissent passer de l'air non filtré sur les côtés.\n\nPour des questions techniques ou retours d'expérience, le **forum Planète 207** et **Forum-Peugeot** sont les références communautaires les plus utiles.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "filtre a air clio 5",
+  "prompt_normalized": "filtre a air clio 5",
+  "prompt_hash": "0630f7ffda0a9bf6",
+  "gamme": "Filtre à air",
+  "volume": 500,
+  "captured_at": "2026-05-24T15:55:43.473Z",
+  "model_version": null,
+  "duration_ms": 38671,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour un filtre à air moteur sur Clio 5 (phase BJA, depuis 2019), la référence dépend de la motorisation. Vérifie la tienne sur la carte grise (case D.2) avant de commander :\n\n**Motorisations essence**\n- **1.0 SCe 65/72 ch** et **1.0 TCe 90/100 ch** : référence OEM Renault **165465154R**. Équivalents fiables : Mann-Filter **C 22 029**, Mahle **LX 3858**, Purflux **A1259**, Bosch **F 026 400 492**. Comptez 7-15 €.\n- **1.3 TCe 130/140 ch** (moteur HR13 co-développé avec Mercedes) : référence différente, type **C 25 014** chez Mann. 12-20 €.\n- **E-Tech hybride 140** : filtre spécifique à la chaîne hybride, vérifie chez Oscaro avec le code moteur (souvent H4M).\n\n**Diesel**\n- **1.5 Blue dCi 85/115 ch** : Mann **C 1858**, Purflux **A1259**, Mahle **LX 1780**. 8-14 €.\n\n**Où acheter**\n- **Oscaro** et **Mister-Auto** : sélecteur par plaque ou VIN, large choix Mann/Mahle/Bosch, expédition rapide. Souvent les mieux placés en prix marque OE.\n- **Yakarouler** et **Auto Doc** : alternatives correctes, parfois moins cher mais délais variables.\n- **Carter-Cash** : si tu veux récupérer en magasin le jour même.\n- **Norauto / Feu Vert** : plus cher, mais utile si tu fais poser dans la foulée.\n- Réseau **Renault / Motrio** : OEM garanti, prix le plus élevé (~25-35 €).\n\n**Évite** : les filtres no-name à 3-5 € sur marketplaces — papier trop fin, étanchéité douteuse sur le boîtier de la Clio 5, qui est sensible aux fuites d'air non mesurées (voyant moteur possible).\n\n**Pose** : 5-10 min, boîtier sur le dessus du moteur, 4 clips ou vis Torx selon la version. Sens de la flèche vers le bas (admission). Profites-en pour souffler le boîtier.\n\n**Intervalle constructeur** : 30 000 km ou 2 ans (1 an en zone poussiéreuse / urbain dense).\n\nPour la **cabine** (pollen), c'est un autre filtre, sous la boîte à gants — ne confonds pas, c'est l'erreur classique.\n\nSi tu veux, donne-moi ta motorisation exacte et l'année, je te sors la référence précise.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

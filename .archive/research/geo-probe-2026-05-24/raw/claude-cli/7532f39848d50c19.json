@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "etrier frein grippe",
+  "prompt_normalized": "etrier frein grippe",
+  "prompt_hash": "7532f39848d50c19",
+  "gamme": "Étrier de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:09:18.608Z",
+  "model_version": null,
+  "duration_ms": 35523,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Étrier de frein grippé : diagnostic et solutions\n\nUn étrier grippé, c'est généralement le **piston** ou les **colonnettes de guidage** qui ne coulissent plus librement. Symptômes typiques : freinage qui tire d'un côté, plaquette qui s'use anormalement (souvent la face intérieure), surchauffe locale (odeur, jante très chaude), voire roue qui force au roulage libre.\n\n## Diagnostic rapide\n\n1. **Roue en l'air** : tu la fais tourner à la main. Si elle freine ou frotte fort, l'étrier reste collé.\n2. **Démontage de l'étrier** : tu vérifies si les **colonnettes (axes de guidage)** coulissent librement, et si le **piston** rentre proprement quand tu le repousses au repousse-piston (ou pince multiprise sur un chiffon).\n3. **Inspection des soufflets** : un soufflet de colonnette ou de piston déchiré = entrée d'eau/poussière = grippage assuré à moyen terme.\n\n## Réparation\n\n**Cas léger (colonnettes grippées)** : démontage, nettoyage brosse laiton + papier de verre fin, graisse **cuivre** ou **silicone haute température** spécifique freinage (jamais de graisse ordinaire qui attaque le caoutchouc). Soufflets neufs si abîmés. Kit colonnettes + soufflets : 10-25 €.\n\n**Cas moyen (piston grippé mais récupérable)** : démontage du piston (air comprimé prudent ou pression hydraulique), nettoyage à la toile émeri très fine, **kit de réparation étrier** (joint + cache-poussière) à 15-30 €. Si le piston est piqué/corrodé profond → étrier neuf ou échange standard.\n\n**Cas lourd** : étrier complet en échange standard. Compte 60-150 € pièce selon le modèle, en passant par **Oscaro**, **Mister-Auto**, **Yakarouler**, **Auto-Doc** ou en magasin **Norauto**/**Feu Vert**. Marques fiables : **ATE**, **TRW**, **Brembo**, **Bosch**, **Delphi**. Toujours remplacer **par paire (essieu complet)** pour garder un freinage équilibré.\n\n## Points importants\n\n- **Plaquettes + disque** : si l'étrier a chauffé, vérifie l'état du disque (voile, gorges) et change les plaquettes.\n- **Purge du circuit** obligatoire après ouverture, avec du **DOT 4** (ou DOT 5.1 selon préco constructeur).\n- Sur les **étriers arrière à frein de parking mécanique**, le mécanisme du levier de frein à main grippe souvent — c'est une cause distincte qui demande un démontage spécifique.\n\nSi tu n'es pas équipé (clé dynamo, repousse-piston, purgeur), un garage facture 80-180 € de main d'œuvre pour la réparation. Forums utiles pour ton modèle précis : **Forum-Auto**, **Caradisiac**, ou le forum dédié à ta marque (ex. **Planète Citroën**, **Forum Peugeot**).\n\nTu peux me dire la marque/modèle et l'essieu concerné, je précise.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

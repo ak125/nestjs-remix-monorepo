@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "temoin usure plaquette frein",
+  "prompt_normalized": "temoin usure plaquette frein",
+  "prompt_hash": "366ca8d269b406f6",
+  "gamme": "Témoin d'usure",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:52:27.188Z",
+  "model_version": null,
+  "duration_ms": 23337,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le témoin d'usure des plaquettes de frein peut être de deux types selon ton véhicule :\n\n**1. Témoin sonore (mécanique)** — Une languette métallique fixée sur la plaquette. Quand la garniture s'use jusqu'à environ 2-3 mm d'épaisseur restante, cette languette frotte contre le disque et produit un **grincement aigu caractéristique au freinage** (parfois même roue libre). C'est le système le plus répandu, notamment chez Renault, Peugeot, Citroën, Dacia, Fiat.\n\n**2. Témoin électronique (capteur d'usure)** — Un fil électrique noyé dans la plaquette qui se coupe quand l'usure atteint le seuil critique, allumant un voyant orange ou rouge au tableau de bord (souvent un cercle en pointillés avec un point d'exclamation). Standard sur BMW, Mercedes, Audi, VW, Volvo, et de plus en plus de modèles récents.\n\n**Signes complémentaires à surveiller :**\n- Pédale de frein plus molle ou course plus longue\n- Vibrations dans le volant au freinage (disque voilé ou plaquettes inégales)\n- Distance de freinage rallongée\n- Poussière noire abondante sur les jantes avant\n\n**Que faire :** Si tu entends le grincement ou vois le voyant, **change les plaquettes sous 500-1000 km maximum**. Au-delà, tu attaques le disque (métal contre métal), ce qui multiplie la facture par 3 ou 4. Sur la plupart des voitures, les plaquettes avant s'usent 2 à 3 fois plus vite que les arrière.\n\n**Pour la durée de vie :** comptez 30 000 à 70 000 km selon ta conduite (urbain = usure rapide, autoroute = lente).\n\n**Où acheter :** des plaquettes de qualité OEM se trouvent chez **Bosch, Brembo, Ferodo, TRW, ATE, Textar, Valeo** — disponibles sur Oscaro, Mister-Auto, Yakarouler, Automecanik, ou en centre auto (Norauto, Feu Vert, Midas) si tu veux montage inclus. Compte 25-60 € le jeu pour un véhicule courant, plus 40-80 € la main d'œuvre si tu ne le fais pas toi-même.\n\nSi tu veux, donne-moi la marque/modèle/année — je peux te dire quel système est monté dessus et l'intervalle d'entretien recommandé.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "o, TRW, ATE, Textar, Valeo** — disponibles sur Oscaro, Mister-Auto, Yakarouler, Automecanik, ou en centre auto (Norauto, Feu Vert, Midas) si tu veux montage inclus. Compte 25-60 € le jeu pour un véhicule courant, plus 40-80 € la main d'œuvr",
+    "competitors_mentioned": [
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

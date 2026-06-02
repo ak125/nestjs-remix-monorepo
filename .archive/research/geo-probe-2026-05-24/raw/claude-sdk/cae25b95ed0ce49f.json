@@ -1,0 +1,32 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "prix disque et plaquette de frein peugeot 208",
+  "prompt_normalized": "prix disque et plaquette de frein peugeot 208",
+  "prompt_hash": "cae25b95ed0ce49f",
+  "gamme": "plaquette de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:00:55.283Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 24170,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour une Peugeot 208 (toutes générations confondues, essence ou diesel), voici les ordres de prix à jour pour les freins avant (les plus sollicités) :\n\n**Disques de frein avant (la paire)**\n- Entrée de gamme (Valeo, Bosch, ATE) : **45 à 75 €**\n- Milieu de gamme (Brembo, TRW, Ferodo) : **75 à 130 €**\n- Haut de gamme rainurés/percés (EBC, Brembo Max) : **140 à 220 €**\n\n**Plaquettes de frein avant (le jeu)**\n- Entrée de gamme : **20 à 35 €**\n- Milieu de gamme (Bosch QuietCast, Ferodo Premier) : **35 à 60 €**\n- Haut de gamme (Brembo Xtra, EBC Redstuff) : **60 à 100 €**\n\n**Kit complet disques + plaquettes avant** : compter **70 à 180 €** selon la marque. Pour la 208 GTi (étriers Brembo, disques 302 mm), prévoir plutôt **180 à 350 €**.\n\n**Où acheter (rapport qualité/prix)**\n- **Oscaro** et **Mister-Auto** : références complètes, filtrage par motorisation fiable, livraison rapide\n- **Yakarouler** et **Auto-Doc** : souvent les moins chers, mais vérifier le délai\n- **Automecanik.com** : catalogue OEM avec compatibilité véhicule garantie\n- **Norauto / Feu Vert** : plus cher (+20-30%) mais montage possible le jour même\n- **Amazon** : à éviter sauf marques vérifiées (contrefaçons fréquentes sur la freinage)\n\n**Conseils pratiques**\n- Toujours remplacer **disques + plaquettes ensemble** sur un même essieu — économie d'1 démontage et freinage homogène.\n- Pour une 208 d'usage urbain, du **milieu de gamme suffit largement** (Bosch ou TRW autour de 110 € le kit complet AV).\n- Pensez à commander la **référence exacte** via votre plaque d'immatriculation ou le code moteur — la 208 a au moins 4 diamètres de disque différents selon motorisation (266, 283, 302 mm).\n- Montage en garage indépendant : **60 à 100 €** de main d'œuvre pour l'essieu avant.\n\nBudget total réaliste pour un freinage avant complet posé : **180 à 280 €** sur une 208 classique.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "arouler** et **Auto-Doc** : souvent les moins chers, mais vérifier le délai\n- **Automecanik.com** : catalogue OEM avec compatibilité véhicule garantie\n- **Norauto / Feu Vert** : plus cher (+20-30%) mais montage possible le jour même\n- **Ama",
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      }
+    ]
+  }
+}

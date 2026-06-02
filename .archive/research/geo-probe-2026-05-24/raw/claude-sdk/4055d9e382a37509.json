@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "maître cylindre de frein",
+  "prompt_normalized": "maitre cylindre de frein",
+  "prompt_hash": "4055d9e382a37509",
+  "gamme": "Maître cylindre de frein",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:28:17.931Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 31462,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Maître-cylindre de frein\n\nLe **maître-cylindre** est la pièce centrale du circuit hydraulique : quand tu appuies sur la pédale, il transforme l'effort mécanique en pression hydraulique transmise aux étriers et cylindres de roue. Il est généralement fixé sur le servofrein (mastervac), sous le bocal de liquide de frein, côté pare-feu.\n\n### Symptômes d'un maître-cylindre HS\n- Pédale qui s'enfonce progressivement quand tu maintiens la pression (fuite interne)\n- Pédale spongieuse ou course excessive\n- Niveau de liquide qui baisse sans fuite visible aux roues\n- Présence de liquide sous le bocal ou trace humide sur le servofrein\n- Voyant ABS/freinage allumé\n\n### Marques de référence\n- **ATE**, **TRW**, **Bosch**, **LPR**, **FTE**, **Brembo** sur la partie premium\n- **Metelli**, **Cifam**, **AISIN** pour le milieu de gamme fiable\n- Évite les no-name à 25-30 € sur AliExpress, c'est une pièce de sécurité\n\n### Où acheter en France\n- **Oscaro**, **Mister-Auto**, **Yakarouler**, **Auto-Doc**, **1001Pieces** pour le e-commerce, comparer les références OE\n- **Norauto / Feu Vert / Speedy** si tu veux pose incluse\n- **Opisto** ou **France Casse** pour de l'occasion (déconseillé sur cette pièce)\n- En concession : OEM constructeur, plus cher mais sans surprise\n\n### Prix indicatifs\n40-150 € selon véhicule (citadine essence vs SUV ABS/ESP). Compter 1h-1h30 de main-d'œuvre + **purge complète obligatoire** du circuit (DOT 4 le plus souvent, vérifier la préconisation constructeur sur le bouchon).\n\n### Points importants\n- Toujours remplacer le **liquide de frein** intégralement après dépose\n- Vérifier l'état du **servofrein** (mastervac) en même temps : un servo fuyard tue un maître-cylindre neuf\n- Sur ABS récent, certains véhicules nécessitent une procédure de purge avec valise diag (Renault, PSA, VAG)\n- Référence à donner au vendeur : marque + modèle + motorisation + année + **type mine** (carte grise case D.2.1), idéalement le numéro OE gravé sur l'ancien\n\nSi tu me donnes le véhicule exact, je peux affiner les références compatibles.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

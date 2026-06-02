@@ -1,0 +1,21 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "maitre cylindre 2cv",
+  "prompt_normalized": "maitre cylindre 2cv",
+  "prompt_hash": "50b679f6d8e75efd",
+  "gamme": "Maître cylindre de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:01:01.047Z",
+  "model_version": null,
+  "duration_ms": 19506,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour un **maître-cylindre de 2CV**, le point crucial est d’identifier le **type de freins et de liquide** avant d’acheter.\n\nSi ta 2CV est une **2CV6 après 1981 avec freins à disques à l’avant**, il te faut en général un **maître-cylindre double circuit compatible LHM**, liquide vert minéral. Références courantes : maître-cylindre LHM double circuit, souvent en sorties Ø8 ou conduite 3,5 selon montage. On en trouve chez **2CV Méhari Club Cassis**, **Ami de la 2CV**, **Cipere**, **Burton 2CV Parts**, **2CV Passion** ou **Restauration-2CV**.\n\nSi ta 2CV a des **freins à tambours à l’avant**, surtout avant 1981, elle est normalement en liquide type **Lockheed / DOT 3 ou DOT 4**, avec un maître-cylindre différent, parfois **simple circuit** ou **double circuit** selon année. Ne mélange jamais DOT et LHM : les joints ne sont pas compatibles, et une erreur peut obliger à remplacer ou reconditionner tout le circuit de freinage.\n\nÀ vérifier avant commande :\n- année exacte de la voiture ;\n- freins avant : tambours ou disques ;\n- liquide actuel : vert = LHM, transparent/ambre = DOT/Lockheed ;\n- nombre de sorties du maître-cylindre ;\n- diamètre et type de raccords ;\n- présence du bocal, joints tubiques, entretoises et commande/poussoir.\n\nSymptômes typiques d’un maître-cylindre fatigué : pédale qui descend lentement, fuite au niveau du tablier/pédalier, freinage déséquilibré, nécessité de pomper, ou liquide qui disparaît sans fuite visible aux roues.\n\nPour une 2CV utilisée régulièrement, je privilégierais une pièce neuve de fournisseur spécialisé 2CV, avec joints neufs et purge complète. Le **2CV Méhari Club Cassis** est une valeur sûre en France, **Ami de la 2CV** et **Cipere** sont aussi de bonnes sources pour comparer les montages et références.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [],
+    "sources_cited": []
+  }
+}

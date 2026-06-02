@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "frein etrier",
+  "prompt_normalized": "frein etrier",
+  "prompt_hash": "31c46dc5cb8ac337",
+  "gamme": "Étrier de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:51:22.805Z",
+  "model_version": null,
+  "duration_ms": 30731,
+  "ok": true,
+  "error": null,
+  "response_raw": "L'étrier de frein est la pièce qui enserre le disque pour ralentir la roue : il loge les pistons hydrauliques et les plaquettes. Sur la plupart des voitures modernes, on a un étrier flottant (un seul piston, le plus courant) ou un étrier fixe (2 à 6 pistons, voitures sportives ou haut de gamme).\n\n**Quand le remplacer**\n- Piston grippé (la voiture tire d'un côté au freinage, surchauffe d'un disque, plaquette usée d'un seul côté).\n- Fuite de liquide de frein au niveau du cache-poussière ou du flexible.\n- Vis de purge cassée ou colonnette de guidage HS (sur étrier flottant).\n- Bruit de frottement permanent ou roue chaude après un trajet court.\n\n**Marques fiables**\nATE, TRW (ZF), Brembo, Bosch, Ferodo, Lucas, Delphi pour le neuf. Pour l'échange standard (remanufacturé, consigne à rendre), Cifam, Budweg, A.B.S. et Remy sont des références sérieuses. Évite les étriers no-name à 35 € : les pistons rouillent vite et les joints lâchent en 6-12 mois.\n\n**Où acheter en France**\n- **Oscaro**, **Mister-Auto**, **Yakarouler**, **Piecesauto24** pour le catalogue large et les prix compétitifs.\n- **Auto Doc** pour les marques européennes type ATE/TRW.\n- **Norauto** ou **Feu Vert** si tu veux pose incluse.\n- Pour les modèles rares ou anciens : **eBay** (vendeurs allemands sérieux) ou les casses via **OpisTo** / **France-Casse**.\n\n**Budget indicatif**\n- Étrier neuf de marque : 80-180 € l'unité sur citadine/compacte, 200-400 € sur premium.\n- Échange standard : 50-120 € + consigne (30-80 €) remboursée au retour de l'ancien.\n- Main d'œuvre garage : 1h à 1h30 par étrier, plus la purge du circuit (compter 80-150 €).\n\n**Conseils pratiques**\nRemplace toujours par paire sur le même essieu, change le liquide de frein (DOT 4) à cette occasion, et vérifie l'état du flexible — un flexible gonflé de l'intérieur peut bloquer le retour du piston et faire grippé un étrier neuf en quelques semaines. Sur forums, **Forum-Auto** et **Caradisiac** regorgent de tutos modèle par modèle.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "disque de frein rs6",
+  "prompt_normalized": "disque de frein rs6",
+  "prompt_hash": "437a40d5b6dc5264",
+  "gamme": "disque de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:48:50.428Z",
+  "model_version": null,
+  "duration_ms": 19493,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour “disque de frein RS6”, le point clé est d’abord la génération exacte : RS6 C5, C6, C7 ou C8, et surtout frein acier ou carbone-céramique. Les références ne sont pas interchangeables.\n\nSur une **RS6 C7 4.0 TFSI**, le montage acier courant est souvent autour de **390 x 36 mm à l’avant** et **356 x 22 mm à l’arrière**. En option carbone-céramique, on passe typiquement sur du **420 mm à l’avant**. Sur **RS6 C8**, les disques acier avant sont souvent en **420 x 40 mm**, avec des références OEM Audi du type **4K0615301S** selon montage. Il faut confirmer avec le VIN, car Audi a plusieurs variantes selon année, étriers et options.\n\nPour de la pièce fiable, je regarderais en priorité :\n- **Audi OEM / origine constructeur** : cher, mais le plus sûr sur une RS6.\n- **Brembo** : très bon choix, surtout si tu veux rester proche origine.\n- **Zimmermann Formula Z** : souvent cité pour les Audi RS, bon compromis performance/prix.\n- **ATE / Textar / TRW** : pertinents selon disponibilité et usage routier.\n\nCôté marchands en France/Europe : **Oscaro**, **Autodoc**, **Mister-Auto**, **PiecesAuto24**, ou des spécialistes comme **Diapason Motorsport**, **ECS Tuning**, **Eurospares**, **oemVWshop** pour les références origine Audi/VAG.\n\nÀ éviter : choisir seulement par “Audi RS6” sans vérifier le **VIN**, le diamètre, l’épaisseur, le côté gauche/droit si disque directionnel, et le type de plaquettes. Sur les freins carbone-céramique, c’est encore plus strict : plaquettes spécifiques obligatoires, sinon tu peux abîmer les disques très vite.\n\nPour un usage route rapide : disques acier Brembo/Zimmermann + bonnes plaquettes type Textar, Brembo, Ferodo ou Pagid. Pour circuit répété, il faut plutôt raisonner kit complet : disques, plaquettes, liquide haute température, durites et refroidissement.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro"
+    ],
+    "sources_cited": []
+  }
+}

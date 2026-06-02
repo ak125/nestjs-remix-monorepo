@@ -1,0 +1,37 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "filtre à habitacle clio 3",
+  "prompt_normalized": "filtre a habitacle clio 3",
+  "prompt_hash": "af762f5cc637d4af",
+  "gamme": "Filtre d'habitacle",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:25:31.071Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 33571,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour une Clio 3 (phase 1 ou 2, 2005-2012), le filtre d'habitacle se change facilement soi-même en 10-15 minutes, sans outil.\n\n**Références utiles**\n- Référence OEM Renault : **7701059997** (standard) ou **272775374R** (sur certaines finitions)\n- Dimensions : environ 200 × 199 × 35 mm\n- Marques de qualité équivalentes (toutes compatibles) :\n  - **Mann-Filter CU 2422** — la référence du marché, allemand, très bon rapport qualité/prix\n  - **Bosch 1987432197**\n  - **Mahle LA 230**\n  - **Valeo 715580** (standard) ou **715745** (charbon actif)\n  - **Purflux AH165**\n  - **Hengst E904LI**\n\nSi tu fumes, traverses des zones urbaines polluées ou veux limiter les odeurs (diesel devant toi dans les bouchons), prends une **version charbon actif** — environ 5-8 € de plus, ça vaut largement le coup.\n\n**Où acheter**\n- **Oscaro.com** — catalogue clair avec sélecteur par immat, livraison rapide\n- **Mister-Auto** — souvent moins cher sur les marques premium\n- **Yakarouler** ou **Auto-doc.fr** — prix agressifs\n- **Amazon** — pratique pour du Mann ou Bosch en Prime\n- En magasin : **Norauto**, **Feu Vert**, **Carter-Cash** si tu veux l'avoir tout de suite (souvent un peu plus cher)\n\nCompte **8-15 €** pour un filtre standard, **15-25 €** pour du charbon actif.\n\n**Où il se trouve et comment le changer**\nCôté passager, derrière la boîte à gants. Sur la Clio 3 :\n1. Vide la boîte à gants\n2. Pince les deux côtés pour la faire basculer vers le bas (clips souples)\n3. Tu vois un cache plastique horizontal — déclipse-le\n4. L'ancien filtre sort en le pliant légèrement\n5. Repère le sens du flux d'air (flèche imprimée sur le filtre, généralement vers le bas)\n6. Insère le neuf, remets le cache, repositionne la boîte à gants\n\nPour un tuto vidéo concret, **Vroomly** et la chaîne YouTube **Vroomly** ont une vidéo dédiée Clio 3, et le forum **Planète Renault** a des fils détaillés avec photos si tu galères avec les clips.\n\nÀ changer tous les **15 000-20 000 km** ou **1 fois par an** (avant le printemps idéalement, pour les pollens).",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Oscaro.com",
+        "cluster": "marchand",
+        "matchedDomain": "oscaro.com"
+      },
+      {
+        "raw": "Auto-doc.fr",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

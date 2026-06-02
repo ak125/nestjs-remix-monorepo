@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "tambour de frein arrière",
+  "prompt_normalized": "tambour de frein arriere",
+  "prompt_hash": "1e7f739bae2ccccf",
+  "gamme": "Tambour de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T15:47:25.265Z",
+  "model_version": null,
+  "duration_ms": 19555,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour “tambour de frein arrière”, il faut d’abord vérifier si vous cherchez **la pièce elle-même** ou un **diagnostic/remplacement**.\n\nUn tambour de frein arrière est la cloche métallique fixée au moyeu, dans laquelle viennent frotter les **mâchoires de frein**. On en trouve surtout sur les citadines, utilitaires légers et versions d’entrée de gamme : Renault Clio/Twingo, Peugeot 206/207/208 selon versions, Citroën C3, Dacia Sandero, etc.\n\nAvant d’acheter, identifiez précisément :\n- marque, modèle, année, motorisation ;\n- immatriculation ou VIN ;\n- diamètre du tambour, largeur intérieure, nombre de trous ;\n- présence ou non de roulement intégré, bague ABS, moyeu prémonté.\n\nSur les sites comme **Oscaro**, **Mister-Auto**, **Autodoc**, **Yakarouler** ou chez un distributeur local type **Norauto**, **Feu Vert**, **AD**, entrez l’immatriculation puis comparez les références. Les marques fiables courantes : **Brembo**, **TRW**, **Bosch**, **ATE**, **Valeo**, **Ferodo**, **Delphi**. Évitez les tambours très bas de gamme si vous gardez la voiture longtemps : mauvaise usure, vibrations ou freinage irrégulier possibles.\n\nSymptômes d’un tambour arrière usé ou déformé :\n- vibration au freinage ;\n- bruit de frottement, grincement ou claquement ;\n- frein à main moins efficace ;\n- déséquilibre au contrôle technique ;\n- fuite de cylindre de roue à l’intérieur du tambour.\n\nEn pratique, on remplace rarement uniquement le tambour si l’ensemble est ancien. Il est souvent judicieux de monter un **kit de freins arrière complet** : tambours, mâchoires, ressorts, cylindres de roue, parfois roulements. Après montage, il faut régler le rattrapage automatique, purger si les cylindres sont changés, puis roder doucement les freins sur quelques dizaines de kilomètres.\n\nPour un garage, comptez généralement **150 à 400 €** selon véhicule et pièces. En DIY, attention : les ressorts de mâchoires sont sous tension et un mauvais montage peut fortement dégrader le freinage ou le frein à main.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

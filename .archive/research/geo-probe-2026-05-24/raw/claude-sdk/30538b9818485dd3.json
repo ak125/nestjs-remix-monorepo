@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "cable frein a main trafic 2",
+  "prompt_normalized": "cable frein a main trafic 2",
+  "prompt_hash": "30538b9818485dd3",
+  "gamme": "Câble de frein à main",
+  "volume": 500,
+  "captured_at": "2026-05-24T15:52:10.528Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 35005,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour un **Renault Trafic II** (2001-2014, aussi rebadgé Opel Vivaro A / Nissan Primastar), le câble de frein à main n'est pas une pièce unique : il y en a généralement **deux câbles secondaires arrière (gauche + droit)** et parfois un **câble primaire** reliant la pédale/levier au répartiteur. Avant de commander, précise impérativement :\n\n- **Empattement** : L1 (court) ou L2 (long) — la longueur du câble change\n- **Côté** : gauche ou droit (les longueurs diffèrent même sur L1)\n- **Année + motorisation** (1.9 dCi, 2.0 dCi, 2.5 dCi) et type de frein arrière (tambour le plus souvent, disque sur certaines finitions)\n- **Câble primaire ou secondaire**\n\n### Références OEM utiles\nQuelques refs Renault courantes à recouper avec ta carte grise / VIN :\n- **8200430822** / **8200747824** — câbles arrière selon côté et empattement\n- **8200004303** — câble primaire sur certaines versions\n\n### Marques fiables en aftermarket\n**Cofle**, **TRW**, **ATE**, **Cabor**, **Triscan**, **First Line**, **Metelli**, **Febi Bilstein**. Cofle est historiquement très présent sur les utilitaires Renault et c'est souvent le meilleur rapport qualité/prix. Évite les marques no-name à 8 €, les gaines vieillissent vite et le câble se grippe en 1 hiver.\n\n### Où acheter\n- **Oscaro**, **Mister-Auto**, **Yakarouler**, **Piecesauto24**, **AutoDoc** — comparer, les écarts sont parfois de 1 à 3 sur la même réf\n- **RPMS / Franssen** ou **Renault Boutique** si tu veux du pièce d'origine\n- En magasin : **Norauto**, **Feu Vert**, ou un fournisseur pro local (souvent meilleur prix sur Cofle)\n\nCompte **25 à 55 €** par câble secondaire, **15 à 30 €** pour le primaire.\n\n### Points à vérifier au montage\n- Remplace **les deux côtés en même temps** (l'autre va lâcher dans les mois qui suivent et le réglage sera déséquilibré)\n- Vérifier l'état des **mâchoires, ressorts et tambours** pendant la dépose — souvent c'est l'auto-réglage tambour qui est grippé, pas seulement le câble\n- Graisse cuivre sur les passages de gaine, et **règle la course du levier** après pose (clic 5-7 crans typique)\n\nSi tu peux donner ton **numéro de série (VIN)** ou la version exacte, je peux affiner la référence.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

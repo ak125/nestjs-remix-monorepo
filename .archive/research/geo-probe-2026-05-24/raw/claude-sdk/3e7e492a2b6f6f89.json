@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "contacteur feux stop clio 3",
+  "prompt_normalized": "contacteur feux stop clio 3",
+  "prompt_hash": "3e7e492a2b6f6f89",
+  "gamme": "Interrupteur des feux de freins",
+  "volume": 500,
+  "captured_at": "2026-05-24T15:59:30.203Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 35570,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le **contacteur de feux stop** sur Clio 3 (phase 1 et 2, 2005–2012) est une pièce qui lâche très fréquemment — symptômes typiques : feux stop allumés en permanence (ou jamais allumés), régulateur de vitesse qui se coupe, voyant ESP/ABS, démarrage impossible sur les boîtes auto (la BVA exige le signal pédale). C'est une panne quasi générique sur cette génération.\n\n**Localisation** : sur le support de pédale de frein, côté conducteur, juste au-dessus de la pédale. On y accède en se mettant à plat sous le volant, un seul connecteur 4 broches.\n\n**Références utiles** :\n- OE Renault : **8200168238** (référence la plus courante), remplacée par **252900005R** sur les fins de série\n- Équivalents qualité OE : **Valeo 255302**, **Hella 6DD 008 622-281**, **FAE 24890**, **Febi 37533**, **Vemo V46-73-0034**, **Metzger 0911011**\n\nTous ces fabricants équipent Renault en première monte ou en rechange, fiabilité équivalente. Évite les marques « no-name » à 3 €, c'est souvent ça qui revient au bout de 6 mois.\n\n**Prix indicatifs** : 8–12 € en générique correct, 15–22 € en Valeo/Hella. Tu trouveras la pièce sur **Automecanik**, **Oscaro**, **Mister-Auto**, **Yakarouler**, ou **Piecesauto24**. En physique : **Norauto**, **Feu Vert**, **Carter-Cash** la stockent quasi systématiquement.\n\n**Remplacement** (5–10 min, aucun outillage) :\n1. Débrancher le connecteur électrique\n2. Tourner l'ancien contacteur d'un quart de tour anti-horaire et le sortir\n3. **Tirer à fond la tige du nouveau contacteur** (elle est pré-armée par un clip)\n4. L'insérer dans son logement, le tourner d'un quart de tour horaire pour le verrouiller\n5. Appuyer une fois à fond sur la pédale de frein → la tige se règle automatiquement à la bonne longueur\n6. Rebrancher le connecteur, tester feux + démarrage\n\n⚠️ Ne **jamais** régler manuellement la tige : le mécanisme auto-ajustant se règle à la première pression pédale. Si tu rates ça, soit les feux restent allumés, soit ils ne s'allument jamais.\n\nSi après remplacement le défaut persiste, contrôle le **fusible F11 (15 A)** sur la platine habitacle et l'état du connecteur (corrosion fréquente sur les Clio 3 ayant pris l'humidité côté pédalier).",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "–12 € en générique correct, 15–22 € en Valeo/Hella. Tu trouveras la pièce sur **Automecanik**, **Oscaro**, **Mister-Auto**, **Yakarouler**, ou **Piecesauto24**. En physique : **Norauto**, **Feu Vert**, **Carter-Cash** la stockent quasi syst",
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

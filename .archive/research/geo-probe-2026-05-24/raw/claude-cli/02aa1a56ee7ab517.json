@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "filtre habitacle 407",
+  "prompt_normalized": "filtre habitacle 407",
+  "prompt_hash": "02aa1a56ee7ab517",
+  "gamme": "Filtre d'habitacle",
+  "volume": 500,
+  "captured_at": "2026-05-24T15:45:32.687Z",
+  "model_version": null,
+  "duration_ms": 32745,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour un Peugeot 407 (2004-2010), le filtre d'habitacle se change tous les 15 000 à 20 000 km ou une fois par an, idéalement au printemps avant la saison des pollens.\n\n**Références OEM Peugeot**\n- Filtre standard : 6447.KS (≈ 6447.KP selon millésime)\n- Filtre charbon actif (recommandé si allergies ou trafic urbain) : 6447.XR\n\n**Marques équivalentes fiables**\n- **Mann-Filter** (CUK 2939 charbon / CU 2939 standard) — référence qualité OEM\n- **Bosch** (1987432397) — très bon rapport qualité/prix\n- **Mahle** (LAK 181) — excellent niveau filtration\n- **Purflux** (AHC189) — marque française, monte d'origine PSA sur plusieurs modèles\n- **Valeo** (715580) — fiable, dispo partout\n- À éviter : les no-name à 3-4 € sur marketplaces, étanchéité du cadre souvent médiocre.\n\n**Où acheter (France)**\n- **Oscaro** et **Mister-Auto** : catalogue compatibilité fiable, livraison rapide, 10-18 €\n- **Yakarouler** et **Piecesauto24** : tarifs souvent un peu plus bas\n- **Autodoc** : large choix mais délais variables\n- **Amazon** : OK si vendu/expédié par Mann, Bosch ou Mahle directement\n- En magasin : **Norauto**, **Feu Vert**, **Carter-Cash** (utile si tu veux poser le jour même)\n\n**Emplacement et pose**\nSur 407, le filtre est derrière la boîte à gants côté passager. Il faut vider la boîte à gants, déclipser les amortisseurs latéraux pour la basculer, puis retirer le cache plastique du logement filtre (2 ergots). Compte 10 minutes, pas d'outil sauf parfois un tournevis cruciforme. Bien respecter le sens des flèches (flux d'air vers le bas en général sur cette plateforme).\n\n**Astuce**\nSi tu sens une odeur d'humidité à la mise en route de la clim, prends directement un **charbon actif** — il neutralise les odeurs en plus de filtrer. Quelques euros de plus, vraie différence à l'usage.\n\nPour confirmer la référence exacte selon ta motorisation (1.6 HDi, 2.0 HDi, 2.2i, etc.) et ta finition, donne le numéro VIN ou la date de mise en circulation, je peux affiner.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

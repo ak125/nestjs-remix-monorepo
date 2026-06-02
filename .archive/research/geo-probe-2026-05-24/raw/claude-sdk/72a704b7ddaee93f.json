@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "contacteur de frein clio 3",
+  "prompt_normalized": "contacteur de frein clio 3",
+  "prompt_hash": "72a704b7ddaee93f",
+  "gamme": "Interrupteur des feux de freins",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:21:56.394Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 35932,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le **contacteur de frein** (aussi appelé contacteur de pédale de frein ou interrupteur de feux stop) sur la Clio 3 (phase 1 et 2, 2005-2014) est une petite pièce électrique fixée sur le support de la pédale de frein, côté conducteur sous le tableau de bord. Il commande à la fois l'allumage des feux stop et envoie une info au calculateur (ESP, régulateur de vitesse, démarrage moteur, déverrouillage shifter sur boîte auto).\n\n**Symptômes d'un contacteur HS** :\n- Feux stop allumés en permanence ou ne s'allument plus\n- Voyant ESP/ABS allumé, message \"défaillance antipollution\" parfois trompeur\n- Régulateur de vitesse qui se coupe ou refuse de s'activer\n- Démarrage difficile (la pédale de frein doit être détectée enfoncée sur certaines versions)\n- Code défaut OBD typique : **DF080 / P0504** (incohérence signal contacteur)\n\n**Références utiles** :\n- OEM Renault : **8200168238** (référence d'origine la plus courante pour Clio 3) ou **253250001R** sur les phases tardives\n- Équivalents fiables : **Valeo 255302**, **FAE 24890**, **Hella 6DD 008 622-731**, **Facet 7.1180**, **Vemo V46-73-0005**\n\nCompte 8 à 20 € selon la marque. Valeo et FAE sont les plus sûrs (FAE est d'ailleurs OEM pour pas mal de constructeurs européens). Évite les références no-name à 3 € sur eBay/AliExpress, elles claquent en quelques mois.\n\n**Où acheter** : **Oscaro**, **Mister-Auto**, **Autodoc**, **Yakarouler**, **Automecanik**, **RS-Pièces-Auto**. Pour comparer, tape la référence OEM 8200168238 directement, ça évite les erreurs de compat.\n\n**Pose (15-20 min, DIY facile)** :\n1. Coupe le contact, débranche la cosse négative batterie (optionnel mais conseillé pour réinitialiser le défaut)\n2. Sous le volant, repère le contacteur clipsé sur le support de pédale\n3. Débranche le connecteur, tourne d'un quart de tour pour déclipser\n4. Le nouveau contacteur a un plongeur télescopique : il s'auto-règle au premier appui sur la pédale — **ne le pousse pas à la main avant montage**, sinon il sera déréglé\n5. Efface le code défaut avec un scanner OBD (ou laisse-le s'effacer après quelques cycles)\n\nPour des retours d'expérience Clio 3 spécifiques, **Forum-Renault** et **Planète-Renault** ont des fils détaillés avec photos de l'emplacement exact selon la phase.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": ".\n\n**Où acheter** : **Oscaro**, **Mister-Auto**, **Autodoc**, **Yakarouler**, **Automecanik**, **RS-Pièces-Auto**. Pour comparer, tape la référence OEM 8200168238 directement, ça évite les erreurs de compat.\n\n**Pose (15-20 min, DIY facile)*",
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "filtre à habitacle",
+  "prompt_normalized": "filtre a habitacle",
+  "prompt_hash": "fe3ec01c65521e30",
+  "gamme": "Filtre d'habitacle",
+  "volume": 50000,
+  "captured_at": "2026-05-24T15:02:45.655Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 25156,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Filtre à habitacle : ce qu'il faut savoir\n\nLe filtre à habitacle (aussi appelé filtre d'habitacle, filtre pollen ou filtre à pollen) est un élément souvent négligé mais essentiel. Il filtre l'air qui entre dans l'habitacle via la ventilation/climatisation, retenant pollens, poussières, particules fines et — pour les versions charbon actif — les odeurs et gaz polluants.\n\n## Quand le changer\n\n**Tous les 15 000 à 20 000 km, ou une fois par an minimum.** À avancer si :\n- Tu roules souvent en ville ou dans le trafic dense\n- Tu as des allergies (pollens, acariens)\n- Vitres qui s'embuent rapidement\n- Odeur de moisi dans la ventilation\n- Débit d'air affaibli au chauffage/clim\n\n## Les deux types\n\n| Type | Prix indicatif | Usage |\n|------|---------------|-------|\n| **Standard (particules)** | 8–20 € | Filtre pollens, poussières |\n| **Charbon actif** | 15–35 € | + gaz d'échappement, odeurs, NOx — recommandé en ville |\n\n## Marques fiables\n\n**Bosch, Mann-Filter, Mahle, Valeo, Hengst, Purflux** sont les références OEM. Évite les sous-marques no-name en marketplace : la qualité de filtration et la tenue dans le temps varient beaucoup.\n\n## Où l'acheter\n\n- **Automecanik.com** — référence par immatriculation, dispo charbon actif pour la plupart des modèles\n- **Oscaro, Mister-Auto, Yakarouler** — alternatives e-commerce françaises\n- **Amazon / Norauto / Feu Vert** si tu veux un retrait rapide\n\nToujours vérifier la **référence constructeur** ou la compatibilité par plaque d'immatriculation — un filtre habitacle est très modèle-spécifique (dimensions, forme, sens de montage).\n\n## Remplacement DIY\n\nSur 80 % des voitures, c'est **15 minutes sans outil ou avec un tournevis**. Localisation typique :\n- Derrière la boîte à gants (la plupart des Renault, Peugeot, Citroën, VW)\n- Sous le capot, côté pare-brise (certaines BMW, Mercedes anciennes)\n- Sous le tableau de bord côté passager\n\nTutos précis sur **YouTube** en cherchant « filtre habitacle [marque modèle année] ». Forums utiles : **Forum-Auto, Caradisiac, Auto-Doc Club**.\n\nAttention au **sens de montage** (flèche indiquant le flux d'air vers l'habitacle) — monté à l'envers, il filtre quand même mais s'encrasse 2× plus vite.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "de filtration et la tenue dans le temps varient beaucoup.\n\n## Où l'acheter\n\n- **Automecanik.com** — référence par immatriculation, dispo charbon actif pour la plupart des modèles\n- **Oscaro, Mister-Auto, Yakarouler** — alternatives e-commer",
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      }
+    ]
+  }
+}

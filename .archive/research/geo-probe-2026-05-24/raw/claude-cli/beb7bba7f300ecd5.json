@@ -1,0 +1,32 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "prix d un etrier de frein",
+  "prompt_normalized": "prix d un etrier de frein",
+  "prompt_hash": "beb7bba7f300ecd5",
+  "gamme": "Étrier de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:04:44.892Z",
+  "model_version": null,
+  "duration_ms": 29129,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Prix d'un étrier de frein\n\nLe prix dépend surtout du véhicule, du côté (avant/arrière, gauche/droit) et de la qualité de la pièce. Voici les fourchettes réalistes en 2026 :\n\n**Étrier neuf (aftermarket)**\n- Citadine / compacte (Clio, 208, Polo) : **60 à 130 €** pièce\n- Berline / SUV milieu de gamme (308, Mégane, Golf, 3008) : **100 à 220 €**\n- Premium (BMW, Audi, Mercedes) : **180 à 450 €**, parfois plus pour les étriers avant gros diamètre\n- Sportives / étriers fixes 4 ou 6 pistons (Brembo d'origine) : **400 à 1 200 €**\n\n**Étrier échange standard (reconditionné)**\nSouvent **30 à 50 % moins cher** que le neuf, avec consigne (50–120 €) restituée au retour du vieil étrier. C'est le bon compromis qualité/prix pour les véhicules de plus de 5 ans.\n\n**Étrier d'origine constructeur (OEM)**\nComptez **1,5 à 3× le prix aftermarket**. Rarement justifié sauf garantie en cours ou véhicule récent sous contrat.\n\n**Marques fiables**\nATE, TRW, Brembo, Bosch, Ferodo, Delphi, Lucas, Cifam, Budweg (spécialiste reconditionné). Évitez les no-name à 25 € sur les marketplaces — risque de fuite ou de piston grippé sous 6 mois.\n\n**Où acheter**\n- **Automecanik.com**, Oscaro, Mister-Auto, Yakarouler, Piecesauto24, Allopneus pour le neuf et l'échange standard avec catalogue par immatriculation.\n- **AD, Autodistribution, Précisium** côté pro si vous passez par un garage partenaire.\n- Pour comparer : Idealo ou Google Shopping en filtrant par référence OE.\n\n**Coût total posé**\nComptez **1 à 1h30 de main-d'œuvre** par côté (60–110 €/h selon région), plus purge du circuit (liquide DOT 4 ~10 €). Budget complet posé : **180 à 400 €** pour une voiture courante, jusqu'à **700 €+** sur premium.\n\n**Conseil** : remplacez toujours les étriers **par paire sur le même essieu** pour garantir un freinage équilibré, et profitez-en pour changer plaquettes et flexible si d'origine.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "etplaces — risque de fuite ou de piston grippé sous 6 mois.\n\n**Où acheter**\n- **Automecanik.com**, Oscaro, Mister-Auto, Yakarouler, Piecesauto24, Allopneus pour le neuf et l'échange standard avec catalogue par immatriculation.\n- **AD, Autod",
+    "competitors_mentioned": [
+      "allopneus",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      }
+    ]
+  }
+}

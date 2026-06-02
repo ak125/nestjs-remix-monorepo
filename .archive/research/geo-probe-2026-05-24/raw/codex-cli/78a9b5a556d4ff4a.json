@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "cable frein a main",
+  "prompt_normalized": "cable frein a main",
+  "prompt_hash": "78a9b5a556d4ff4a",
+  "gamme": "Câble de frein à main",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:17:02.690Z",
+  "model_version": null,
+  "duration_ms": 17676,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour “câble frein à main”, il faut surtout identifier précisément le véhicule, car la pièce varie selon marque, modèle, année, motorisation, carrosserie et parfois type de frein arrière.\n\nLe câble de frein à main relie le levier ou le module de frein de stationnement aux freins arrière. Sur beaucoup de voitures, il y a soit un câble central puis deux câbles arrière gauche/droite, soit directement deux câbles séparés. Si le frein à main tire trop haut, bloque mal, reste grippé, ou si une roue arrière reste freinée, le câble peut être détendu, oxydé, effiloché ou grippé dans sa gaine.\n\nAvant d’acheter, vérifie :\n- immatriculation ou VIN pour éviter l’erreur de référence ;\n- côté concerné : gauche, droit, arrière, avant/central ;\n- frein arrière à tambour ou disque ;\n- frein à main manuel ou frein de parking électrique ;\n- longueur du câble et nombre d’embouts si tu compares les références.\n\nPour acheter en France, les sites fiables et pratiques sont Oscaro, Mister-Auto, Auto-doc, Yakarouler, Norauto, Feu Vert, Piecesauto24 ou directement le réseau constructeur si tu veux une pièce d’origine. Les marques courantes correctes sont TRW, ATE, Bosch, Febi Bilstein, Blue Print, Cofle, NK, Metzger ou Valeo selon disponibilité. Évite les références trop génériques sans compatibilité claire.\n\nCôté remplacement, ce n’est pas toujours compliqué, mais ça peut être pénible si les fixations sont rouillées ou si le câble passe au-dessus de l’échappement, du réservoir ou sous des protections. Après montage, il faut régler la tension correctement : le frein doit serrer franchement après quelques crans, sans que les roues arrière restent freinées frein à main relâché.\n\nSi tu cherches la pièce, la meilleure formulation est : “câble frein à main + marque + modèle + année + côté”, par exemple “câble frein à main arrière droit Peugeot 207 1.6 HDi 2008”.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

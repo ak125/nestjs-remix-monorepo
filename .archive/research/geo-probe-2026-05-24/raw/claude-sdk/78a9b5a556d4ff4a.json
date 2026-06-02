@@ -1,0 +1,25 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "cable frein a main",
+  "prompt_normalized": "cable frein a main",
+  "prompt_hash": "78a9b5a556d4ff4a",
+  "gamme": "Câble de frein à main",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:16:08.043Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 29991,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Câble de frein à main : ce qu'il faut savoir\n\nLe câble de frein à main relie la commande (levier ou pédale) aux mâchoires/étriers arrière. C'est une pièce d'usure soumise à corrosion, étirement et grippage de la gaine — symptômes classiques : course du levier trop longue, frein qui ne tient plus en pente, bruit de friction, ou témoin allumé.\n\n## Diagnostic rapide\n\n- **Course excessive** : souvent juste un réglage à reprendre au tendeur (sous le levier ou sous la voiture).\n- **Frein bloqué après serrage** : câble grippé dans sa gaine, à remplacer (le dégrippant ne tient jamais durablement).\n- **Un seul côté qui freine** : câble secondaire (gauche ou droit) HS, remplacement par paire recommandé.\n- **Véhicule avec frein de parking électrique (EPB)** : pas de câble traditionnel, problème côté moteur électrique ou module — diagnostic OBD obligatoire.\n\n## Pièces et marques fiables\n\nLes références OEM sont presque toujours doublées par de l'aftermarket de qualité équivalente :\n- **TRW, ATE, Brembo, Cofle, Bosch, Febi Bilstein, Triscan, Metelli** — valeurs sûres, garantie 2 ans en général.\n- Évite les câbles no-name à 8-12 € : gaine fine, terminaisons mal serties, durée de vie souvent <1 an.\n\nCompte **20-50 €** le câble unitaire selon le modèle, **40-90 €** la paire.\n\n## Où acheter\n\n- **Oscaro, Mister-Auto, Yakarouler, Piecesauto24, Automecanik** — catalogues larges avec sélection par immatriculation ou code moteur, ce qui évite 90 % des erreurs de référence.\n- **Amazon / eBay** : OK si tu connais déjà la référence exacte (OEM ou équivalent), sinon risque élevé de mauvaise longueur.\n- **Concession** : pièce d'origine, mais 2 à 3× le prix de l'équivalent qualité.\n\n## Pose\n\nComptez 1h à 1h30 par côté pour un bricoleur outillé (cric, chandelles, clés plates, parfois démontage tambour ou étrier). Penser à :\n1. Desserrer le tendeur **à fond** avant de déposer l'ancien câble.\n2. Graisser légèrement les embouts (pas la gaine).\n3. **Régler après pose** : 5-7 crans au levier pour un blocage ferme, roues libres au repos.\n4. Tester en pente avant de reprendre la route.\n\nSi tu me donnes la marque, le modèle et l'année, je peux t'orienter vers la référence exacte.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "** la paire.\n\n## Où acheter\n\n- **Oscaro, Mister-Auto, Yakarouler, Piecesauto24, Automecanik** — catalogues larges avec sélection par immatriculation ou code moteur, ce qui évite 90 % des erreurs de référence.\n- **Amazon / eBay** : OK si tu",
+    "competitors_mentioned": [
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

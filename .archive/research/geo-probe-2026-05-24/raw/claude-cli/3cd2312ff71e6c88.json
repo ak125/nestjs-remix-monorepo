@@ -1,0 +1,47 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "contacteur de stop",
+  "prompt_normalized": "contacteur de stop",
+  "prompt_hash": "3cd2312ff71e6c88",
+  "gamme": "Interrupteur des feux de freins",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:25:38.080Z",
+  "model_version": null,
+  "duration_ms": 45487,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le contacteur de stop (ou contacteur de feu de stop) est un petit capteur électrique monté sur le support de pédale de frein. Sa fonction première : allumer les feux stop arrière dès qu'on appuie sur la pédale. Mais sur les voitures modernes, il fait bien plus — il désactive le régulateur de vitesse, autorise la sortie de Park sur boîte auto (interlock), signale le freinage au calculateur ABS/ESP, et conditionne le démarrage sur les véhicules à bouton poussoir Start/Stop.\n\n**Symptômes de panne fréquents** :\n- Feux stop allumés en permanence (ou qui ne s'allument plus du tout)\n- Régulateur de vitesse qui se coupe ou refuse de s'enclencher\n- Impossible de passer du Park au Drive\n- Voyants ABS/ESP/Cruise allumés\n- Code défaut typique : **P0504** (incohérence entre les deux contacts redondants NO/NF)\n- Sur Start&Stop : refus de démarrage\n\n**Remplacement** : opération simple, 15–30 min. Démontage sous le volant, déclipsage du connecteur, dépose. La plupart des modèles récents sont auto-ajustables (réglage de course au premier appui pédale). Coût pièce : 8–30 € selon marque.\n\n**Marques fiables** : Bosch, Hella, Valeo, FAE, Facet, Metzger, Febi, TRW, Hüco. À éviter sur ce composant : no-name AliExpress — c'est un organe de sécurité, les contacts bas de gamme collent ou s'usent en quelques mois.\n\n**Où acheter en France** : Oscaro, Mister-Auto, Automecanik, Yakarouler, Autodoc, Piecesauto-pro. Toujours rechercher par immatriculation ou code moteur + année — la référence change selon présence de Start&Stop, type de boîte, et équipementier d'origine.\n\n**Forums utiles pour diag par modèle** : forum-auto.caradisiac.com, planeterenault.com, forum-peugeot.com, audipassion.com — beaucoup de fils avec photos d'emplacement.\n\n**Conseil avant achat** : passez une valise OBD (Torque Pro, Carista, OBDeleven pour VAG) pour lire le code exact. Les mêmes symptômes peuvent venir d'un faisceau pincé, d'une masse oxydée à l'arrière, ou d'un BSI capricieux — pas forcément du contacteur. Un test simple : avec le contact mis, débrancher le contacteur — si les feux s'éteignent franchement, c'est lui.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "t ou s'usent en quelques mois.\n\n**Où acheter en France** : Oscaro, Mister-Auto, Automecanik, Yakarouler, Autodoc, Piecesauto-pro. Toujours rechercher par immatriculation ou code moteur + année — la référence change selon présence de Start&S",
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "forum-auto.caradisiac.com",
+        "cluster": "forum_communautaire",
+        "matchedDomain": "forum-auto.caradisiac.com"
+      },
+      {
+        "raw": "planeterenault.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      },
+      {
+        "raw": "forum-peugeot.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      },
+      {
+        "raw": "audipassion.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

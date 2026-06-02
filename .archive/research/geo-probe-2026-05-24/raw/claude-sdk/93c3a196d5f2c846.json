@@ -1,0 +1,32 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "filtre gasoil purflux",
+  "prompt_normalized": "filtre gasoil purflux",
+  "prompt_hash": "93c3a196d5f2c846",
+  "gamme": "Filtre à carburant",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:04:00.487Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 31046,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le **filtre à gasoil Purflux** est une référence solide sur le marché français — Purflux est une marque française historique (filiale de Sogefi, ex-équipementier d'origine pour PSA notamment), donc qualité OE/OEM sur la majorité des véhicules français et européens.\n\n### Comment choisir la bonne référence\n\nLa référence Purflux dépend strictement de ton véhicule (marque, modèle, motorisation, année, code moteur). Quelques exemples courants :\n\n- **CS762** — Renault Clio III, Mégane II/III 1.5 dCi, Scénic II\n- **CS975** — Peugeot 308, 3008, 5008 / Citroën C4, DS3, DS4 1.6 HDi\n- **C522Y** — Peugeot 207/208 1.4–1.6 HDi avec cartouche papier\n- **CS748** — Dacia Logan, Sandero 1.5 dCi\n- **CS439A** — Renault Trafic, Master 2.0/2.5 dCi\n\nPour trouver ta référence exacte, le plus fiable est de partir du **code OEM constructeur** (gravé sur l'ancien filtre ou dans la revue technique) puis de croiser sur le catalogue Purflux officiel.\n\n### Où l'acheter\n\n- **Oscaro** et **Mister-Auto** — les deux références françaises pour les pièces auto en ligne, catalogue Purflux complet, recherche par immatriculation fiable, livraison rapide.\n- **Yakarouler** et **Auto-doc** — alternatives correctes, parfois moins chères mais délais plus longs.\n- **Amazon.fr** — dispo sur certaines références, attention aux vendeurs tiers (risque de contrefaçon sur les filtres carburant, vérifier l'expédition par Amazon ou un vendeur officiel).\n- **Norauto / Feu Vert / Roady** — en magasin si tu veux récupérer immédiatement, mais souvent plus cher (+15–30 %) que le net.\n- **Concessionnaire** — uniquement si tu veux la pièce d'origine constructeur (qui peut d'ailleurs être un Purflux rebadgé), prix x2 à x3.\n\n### Prix indicatif\n\nEntre **8 € et 25 €** selon la référence et le type (cartouche seule, filtre complet avec joints, filtre avec capteur d'eau pour les modèles plus récents).\n\n### Conseil pratique\n\nÀ changer tous les **20 000 à 40 000 km** selon préco constructeur. Sur les diesels modernes (common rail), ne jamais tirer dessus — un filtre encrassé peut endommager la pompe HP, dont le remplacement coûte 800–2000 €. Et purge l'air après remplacement (poire d'amorçage ou contact répété sans démarrer).\n\nSi tu me donnes ta voiture (marque + modèle + motorisation + année), je peux te sortir la référence Purflux exacte.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Amazon.fr",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

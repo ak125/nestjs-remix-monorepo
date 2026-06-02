@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "maitre cylindre voiture",
+  "prompt_normalized": "maitre cylindre voiture",
+  "prompt_hash": "134162e7dde6d5d2",
+  "gamme": "Maître cylindre de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:15:34.608Z",
+  "model_version": null,
+  "duration_ms": 15682,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le **maître-cylindre de frein** est une pièce centrale du système de freinage d’une voiture. Quand tu appuies sur la pédale de frein, il transforme cette pression mécanique en **pression hydraulique**, envoyée ensuite vers les étriers ou cylindres de roue pour freiner le véhicule.\n\nSi tu cherches “maître cylindre voiture”, tu veux probablement soit comprendre la pièce, soit en acheter/remplacer un.\n\nLes signes fréquents d’un maître-cylindre défectueux sont :\n\n- pédale de frein molle ou qui s’enfonce lentement ;\n- freinage moins efficace ;\n- besoin de pomper plusieurs fois sur la pédale ;\n- fuite de liquide de frein autour du maître-cylindre ou du servo-frein ;\n- niveau de liquide de frein qui baisse sans raison évidente ;\n- voyant de frein allumé.\n\nAttention à ne pas confondre avec le **servo-frein**, les **durites**, les **étriers**, ou une simple présence d’air dans le circuit. Une pédale molle peut aussi venir d’une purge mal faite ou d’une fuite ailleurs.\n\nPour acheter la bonne pièce, il faut identifier précisément le véhicule : **marque, modèle, motorisation, année, version, type mine/VIN**. Les sites comme **Oscaro**, **Mister-Auto**, **Autodoc**, **Yakarouler** ou les catalogues de marques comme **ATE**, **TRW**, **Bosch**, **Brembo** et **Delphi** permettent de comparer les références. Pour une pièce de freinage, évite les références inconnues trop bon marché.\n\nLe remplacement demande généralement de :\n\n1. déposer l’ancien maître-cylindre ;\n2. monter le nouveau avec les bons joints ;\n3. remplir avec le liquide de frein adapté, souvent DOT 4 ;\n4. faire une **purge complète du circuit de freinage**.\n\nC’est une intervention sensible : si la purge est mal faite, le freinage peut devenir dangereux. Si tu n’es pas équipé ou expérimenté, mieux vaut passer par un garage, surtout sur une voiture avec ABS/ESP où la purge peut parfois nécessiter une valise diagnostic.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

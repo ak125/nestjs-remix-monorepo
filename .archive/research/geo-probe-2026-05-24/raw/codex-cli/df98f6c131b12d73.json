@@ -1,0 +1,25 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "disque de frein clio 2",
+  "prompt_normalized": "disque de frein clio 2",
+  "prompt_hash": "df98f6c131b12d73",
+  "gamme": "plaquette de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:12:32.804Z",
+  "model_version": null,
+  "duration_ms": 19160,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour une **Renault Clio 2**, il faut choisir les disques selon la **motorisation**, l’année, la présence d’**ABS**, et surtout le **diamètre/épaisseur** du disque. Sur Clio 2, on trouve souvent des disques avant en **238 mm**, mais certaines versions ont du **259 mm**, et les Clio RS ont un montage différent. À l’arrière, beaucoup de Clio 2 ont des **tambours**, pas des disques.\n\nPour éviter l’erreur, cherche avec la **plaque d’immatriculation** ou le **VIN** sur Oscaro, Mister-Auto, Autodoc, Piecesauto24 ou directement chez Renault. Vérifie ensuite les infos techniques : diamètre, épaisseur, nombre de trous, disque plein ou ventilé. Par exemple, certaines références courantes existent chez **Brembo, TRW, ATE, Bosch, Valeo, Ferodo, Textar**. Pour une Clio 2 de tous les jours, je prendrais plutôt **Brembo, TRW, ATE ou Bosch**, avec des plaquettes de même gamme.\n\nÀ remplacer idéalement par **paire sur le même essieu**, avec les **plaquettes neuves**. Si tes disques sont voilés, creusés, rouillés sur la piste de freinage, sous la cote mini, ou si tu as des vibrations au freinage, le remplacement est justifié. Pense aussi aux petites vis de maintien, au nettoyant frein, et au contrôle des étriers/coulisseaux.\n\nSi tu me donnes la **motorisation exacte** — par exemple Clio 2 1.2 8v, 1.2 16v, 1.4, 1.5 dCi, 1.6 16v, RS — et l’année, je peux te dire quel type de disque chercher et quelles marques/références privilégier.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro"
+    ],
+    "sources_cited": []
+  }
+}

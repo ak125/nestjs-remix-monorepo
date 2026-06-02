@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "filtre à habitacle clio 3",
+  "prompt_normalized": "filtre a habitacle clio 3",
+  "prompt_hash": "af762f5cc637d4af",
+  "gamme": "Filtre d'habitacle",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:26:29.961Z",
+  "model_version": null,
+  "duration_ms": 24449,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour une **Renault Clio 3**, le “filtre à habitacle” correspond au **filtre à pollen / filtre de climatisation**. Il filtre l’air qui entre dans l’habitacle par la ventilation. Si tu as de la buée persistante, une mauvaise odeur, un débit d’air faible ou des allergies, c’est souvent lui.\n\nPour acheter le bon modèle, le plus fiable est de chercher avec **l’immatriculation** sur Oscaro, Mister-Auto, AutoDoc, Norauto ou Feu Vert. Les références varient selon année, phase et climatisation, mais on voit souvent des équivalences chez **MANN-FILTER**, **Purflux**, **Bosch**, **Valeo** ou **Mahle/Knecht**. Pour Clio 3, des références courantes peuvent tourner autour de **MANN CU 1829 / CUK 1829**, **Purflux AH207**, **Mahle LA 230**, mais vérifie toujours avec ta plaque ou le VIN avant commande.\n\nJe conseille de prendre un **filtre à charbon actif** plutôt qu’un simple filtre pollen si tu roules en ville : il retient mieux les odeurs, fumées et gaz d’échappement. L’écart de prix est faible, souvent autour de **10 à 20 €** en pièce seule.\n\nLe remplacement est faisable soi-même. Sur Clio 3, il se trouve côté passager, vers le bloc de ventilation derrière/près de la boîte à gants selon version. Il faut généralement déposer un cache plastique, ouvrir le couvercle du logement, sortir l’ancien filtre souvent plié, puis remettre le nouveau dans le bon sens avec la flèche de flux d’air. Prévois 15 à 30 minutes la première fois.\n\nÀ remplacer idéalement **une fois par an** ou tous les **15 000 à 20 000 km**, surtout si la voiture dort dehors ou roule souvent en zone urbaine.\n\nSources utiles : Oscaro pour les compatibilités Clio III, AutoDoc pour le guide de remplacement, et la notice Renault Clio 3.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro"
+    ],
+    "sources_cited": []
+  }
+}

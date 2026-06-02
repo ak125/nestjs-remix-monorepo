@@ -1,0 +1,33 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "flexible frein",
+  "prompt_normalized": "flexible frein",
+  "prompt_hash": "bc5e06148d44e05a",
+  "gamme": "Flexible de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:58:09.664Z",
+  "model_version": null,
+  "duration_ms": 38251,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le **flexible de frein** (ou durite de frein) est la portion souple qui relie la canalisation rigide en métal à l'étrier de frein. Il transmet la pression hydraulique de la pédale jusqu'aux pistons tout en absorbant les mouvements de la suspension et la rotation de la direction. C'est une pièce de sécurité critique, soumise à la pression (jusqu'à 100 bars en freinage d'urgence), aux écarts de température, aux projections (sel, graviers) et au vieillissement de la gomme.\n\n**Signes d'usure à surveiller :**\n- Craquelures visibles sur la gaine extérieure\n- Gonflement (« hernie ») quand on appuie sur la pédale → remplacement immédiat\n- Suintement de Lockheed près des raccords\n- Pédale spongieuse ou freinage qui « tire » d'un côté\n- Corrosion sur les raccords métalliques\n\n**Durée de vie :** généralement 6 à 10 ans selon l'exposition. Beaucoup de garagistes recommandent un contrôle systématique au-delà de 100 000 km ou lors d'un changement de disques/plaquettes.\n\n**Choix du produit :**\n- **Origine caoutchouc** (rubber EPDM) — standard constructeur, suffisant pour un usage routier. Marques fiables : **ATE, TRW, Bosch, Brembo, Ferodo, Delphi**.\n- **Aviation tressé inox** (Goodridge, HEL Performance, Stoptech) — pédale plus ferme, recommandé en usage sportif, piste, ou 4x4 préparé. Plus cher (60-120 €/flexible vs 15-35 € en standard), et homologuation TÜV à vérifier pour la route.\n\n**Où acheter en France :**\n- **Oscaro**, **Mister-Auto**, **Yakarouler**, **1001Pieces** pour le e-commerce pièces détachées\n- **Automecanik.com** pour catalogue large avec compatibilité véhicule\n- Centres-autos (**Norauto, Feu Vert, Speedy**) si vous voulez pose incluse\n- Concession ou MRA pour pièce d'origine constructeur\n\n**Remplacement :** toujours par paire (essieu complet), purge complète du circuit obligatoire après dépose, couple de serrage respecté (généralement 14-18 Nm pour le banjo). Si vous n'êtes pas équipé pour purger correctement (DOT 4 neuf, clé à purge), confiez l'opération à un pro — un freinage défaillant ne pardonne pas.\n\nPour identifier la référence exacte, donnez la marque/modèle/motorisation et l'année : les flexibles avant et arrière diffèrent, et certains véhicules ont des montages spécifiques (ABS, capteurs intégrés).",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "-Auto**, **Yakarouler**, **1001Pieces** pour le e-commerce pièces détachées\n- **Automecanik.com** pour catalogue large avec compatibilité véhicule\n- Centres-autos (**Norauto, Feu Vert, Speedy**) si vous voulez pose incluse\n- Concession ou M",
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      }
+    ]
+  }
+}

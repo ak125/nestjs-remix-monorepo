@@ -1,0 +1,37 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "filtre a huile bmw serie 1",
+  "prompt_normalized": "filtre a huile bmw serie 1",
+  "prompt_hash": "7d53f6617509792d",
+  "gamme": "Filtre à huile",
+  "volume": 500,
+  "captured_at": "2026-05-24T15:53:34.714Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 32221,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour bien choisir, il faut d'abord identifier la motorisation exacte de la Série 1 (E81/E82/E87/E88, F20/F21 ou F40), parce qu'un filtre à huile diffère beaucoup entre un 116i essence et un 120d diesel.\n\n**Références fréquentes par moteur :**\n\n- **N47 / B47 (118d, 120d, 123d diesel F20 et fin E87)** → cartouche **Mahle OX 254D2** (= BMW OEM 11427805707). Équivalents : Mann **HU 816 X**, Hengst **E340H D259**, Bosch **F026407094**.\n- **N13 / B38 / B48 (116i, 118i, 120i essence F20/F21/F40)** → **Mahle OX 813/2D** (BMW 11427622446). Équivalents : Mann **HU 816 Z**, Hengst **E121H D259**.\n- **N43 / N45 / N46 (E87 116i, 118i, 120i essence)** → **Mahle OX 154/1D** (BMW 11427541827). Équivalents : Mann **HU 816 X**, Purflux **L342**.\n- **N20 (125i, 120i F20 2.0T)** → **Mahle OX 813/2D** également.\n\n**Marques recommandées :** Mahle et Hengst sont les **fournisseurs OEM réels** de BMW — c'est exactement le même filtre qu'en concession, à moitié prix. Mann-Filter est aussi excellent. Bosch et Purflux sont bons en second choix. Évite les no-name à 3 €, le bypass peut mal se calibrer sur les BMW (pression huile sensible, surtout sur N47).\n\n**Où acheter :**\n\n- **Oscaro**, **Mister-Auto**, **Yakarouler**, **Auto-Doc** : prix bas (8-15 €), livraison rapide, choix par immatriculation.\n- **Automecanik.com** : intéressant si tu veux croiser pièces + accessoires entretien.\n- **Amazon.fr** : OK pour Mahle/Mann officiels, attention aux contrefaçons sur vendeurs tiers.\n- **Concession BMW ou Bardahl/Norauto/Feu Vert** : 2 à 3× plus cher, sauf si tu veux la cartouche scellée d'origine.\n\n**Tips installation :**\n\n- Sur les N47/B47, c'est une **cartouche papier** dans un boîtier plastique sur le dessus moteur — pas un filtre vissé. Ne pas oublier de **remplacer les deux joints toriques** fournis avec la cartouche.\n- Couple de serrage du couvercle : **25 Nm**, sinon fuite ou casse du plastique.\n- Toujours coupler avec une huile **LL-04** (504/507) pour diesel, **LL-01** pour la plupart des essence — Castrol Edge 5W-30 LL-04 reste la référence.\n\nSi tu me donnes la motorisation exacte ou les 7 derniers caractères du VIN, je peux confirmer la référence pile.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "uto-Doc** : prix bas (8-15 €), livraison rapide, choix par immatriculation.\n- **Automecanik.com** : intéressant si tu veux croiser pièces + accessoires entretien.\n- **Amazon.fr** : OK pour Mahle/Mann officiels, attention aux contrefaçons su",
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      },
+      {
+        "raw": "Amazon.fr",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

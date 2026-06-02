@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "contacteur de feux stop",
+  "prompt_normalized": "contacteur de feux stop",
+  "prompt_hash": "b0dfdf76ec41d2f6",
+  "gamme": "Interrupteur des feux de freins",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:27:12.648Z",
+  "model_version": null,
+  "duration_ms": 38901,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le contacteur de feux stop (ou \"contacteur de pédale de frein\") est un petit interrupteur électrique fixé près de la pédale de frein. Il a deux rôles : allumer les feux stop quand tu appuies sur la pédale, et envoyer un signal au calculateur moteur — c'est lui qui désengage le régulateur de vitesse, désactive le Start & Stop, autorise le passage de P à D sur les boîtes auto, et alimente certaines logiques ABS/ESP.\n\n**Symptômes d'un contacteur HS** :\n- Feux stop allumés en permanence ou jamais allumés\n- Voyant ESP/ABS qui s'allume aléatoirement\n- Régulateur impossible à activer\n- Boîte auto bloquée en P (shift lock)\n- Voyant moteur avec un code OBD du type **P0504** (incohérence des deux contacts du switch)\n- Sur certaines BMW/PSA/VAG : message \"défaut feux de stop\"\n\n**Diagnostic rapide** : un coup de valise OBD (un Carista, OBDeleven ou un Launch suffit) confirme. Sinon, tu peux le tester au multimètre — la plupart ont 4 broches (2 circuits : feux stop + signal ECU).\n\n**Choix de la pièce** : c'est typiquement une pièce à 10–25 €. Les marques fiables sont **Valeo**, **FAE**, **Hella**, **Bosch**, **Vemo**, **Febi**, **Metzger**, **ERA**. Évite les no-name à 4 € sur marketplaces, c'est souvent ce qui repasse en panne 6 mois après. Sur véhicules récents (post-2010), prends de l'OE ou OEM — les contacts à 6 broches gèrent plusieurs signaux et un générique mal câblé peut faire passer la voiture en mode dégradé.\n\n**Où l'acheter en France** : Oscaro, Mister-Auto, Yakarouler, Autodoc pour le grand public ; AutoMecanik si tu veux un référencement par véhicule (gamme \"Système électrique → contacteurs\"). En physique, Carter-Cash et Norauto en ont en stock pour les modèles courants.\n\n**Montage** : c'est du DIY accessible — il se clipse en général sous la planche de bord. Le piège classique c'est le **réglage de la course** : trop enfoncé, les feux restent allumés ; trop sorti, ils ne s'allument plus. Beaucoup de modèles ont un système auto-ajustable : tu le clippes pédale enfoncée et il se cale tout seul au premier relâchement.\n\nPour les retours d'expérience par modèle, **Forum-Auto** et le forum technique de **Caradisiac** sont les meilleures sources (cherche \"contacteur feux stop + ta motorisation\").",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "r en France** : Oscaro, Mister-Auto, Yakarouler, Autodoc pour le grand public ; AutoMecanik si tu veux un référencement par véhicule (gamme \"Système électrique → contacteurs\"). En physique, Carter-Cash et Norauto en ont en stock pour les mo",
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "cylindre de frein",
+  "prompt_normalized": "cylindre de frein",
+  "prompt_hash": "3a0a55ddabe0ca1a",
+  "gamme": "Maître cylindre de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:36:51.946Z",
+  "model_version": null,
+  "duration_ms": 35702,
+  "ok": true,
+  "error": null,
+  "response_raw": "**Cylindre de frein** : terme générique qui recouvre deux pièces distinctes selon ta voiture.\n\n### Cylindre de roue (freins à tambour, arrière)\nPetit cylindre hydraulique qui pousse les mâchoires contre le tambour. Symptômes typiques de défaillance : fuite de liquide derrière la roue, frein arrière qui mord moins, pédale qui s'enfonce. Sur les voitures à tambours arrière (Clio, 208, C3, Sandero…), on remplace **toujours par paire** (gauche + droite) même si une seule fuit, sinon déséquilibre.\n\nPrix indicatif : 15-40 € la pièce. Marques fiables : **ATE**, **TRW**, **Bosch**, **LPR**, **Brembo**, **Delphi**, **Ferodo**. À éviter : no-name Asie hors-marque, joints qui lâchent en 6 mois.\n\n### Maître-cylindre (sous le capot, lié au servofrein)\nLa pompe centrale qui envoie le liquide vers les 4 roues. Défaillance = pédale spongieuse, qui s'enfonce lentement au feu rouge, ou perte totale de pression. Plus cher (60-180 €), souvent **ATE**, **TRW**, **Bosch** en première monte.\n\n### Où acheter en ligne\n- **Oscaro** et **Mister-Auto** : les deux références FR, catalogue compatibilité par immat ou VIN, livraison 24-48h.\n- **Autodoc** : moins cher mais SAV plus lent, expéditions Allemagne.\n- **Yakarouler**, **Piecesauto24**, **1001pieces** : alternatives correctes.\n- **Carter-Cash** si tu préfères retirer en magasin.\n\n### Pose\nSaigner le circuit après remplacement est **obligatoire** (DOT 4 neuf, dans l'ordre : roue la plus éloignée du maître-cylindre en premier — généralement arrière droit, puis arrière gauche, avant droit, avant gauche pour la plupart des voitures FR). Si tu n'as pas de Mityvac ou d'aide, un garage AD, **Speedy**, **Midas** ou **Norauto** facture 40-80 € la purge complète.\n\n### Diagnostic avant achat\nDonne la **référence OE** (lisible sur l'ancienne pièce) ou ton **immatriculation/VIN** au vendeur — les cylindres de roue varient selon diamètre piston (17,46 / 19,05 / 20,64 mm) et un mauvais diamètre = freinage déséquilibré.\n\nPour discuter cas précis : **forum-auto.caradisiac.com** ou la section mécanique de **Caradisiac**, très actifs sur les modèles courants.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "forum-auto.caradisiac.com",
+        "cluster": "forum_communautaire",
+        "matchedDomain": "forum-auto.caradisiac.com"
+      }
+    ]
+  }
+}

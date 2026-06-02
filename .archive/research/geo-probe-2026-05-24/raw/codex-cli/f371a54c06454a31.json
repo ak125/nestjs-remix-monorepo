@@ -1,0 +1,25 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "filtre a air c4",
+  "prompt_normalized": "filtre a air c4",
+  "prompt_hash": "f371a54c06454a31",
+  "gamme": "Filtre à air",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:24:23.956Z",
+  "model_version": null,
+  "duration_ms": 18392,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour **“filtre à air C4”**, le point clé est d’identifier précisément la version de ta **Citroën C4** : génération, moteur et année. Le filtre à air n’est pas forcément le même entre une **C4 1.6 HDi**, **1.6 BlueHDi**, **1.2 PureTech**, **1.6 VTi**, **2.0 HDi**, ou une **C4 Picasso/Grand C4 Picasso**.\n\nÀ vérifier avant d’acheter :\n\n- **Modèle exact** : C4 berline/coupé, C4 II, C4 III, C4 Picasso, Grand C4 Picasso, C4 Cactus.\n- **Année et motorisation** : exemple “C4 II 1.6 HDi 92 de 2012”.\n- **Immatriculation ou VIN** : le plus fiable sur Oscaro, Mister Auto, Autodoc, Norauto, Feu Vert ou directement chez Citroën/Peugeot.\n\nMarques correctes pour ce type de pièce : **Mann-Filter, Purflux, Bosch, Valeo, Mahle, Knecht, UFI**. Purflux est souvent un bon choix sur véhicules français. Évite les filtres sans marque vraiment trop bas de gamme : l’économie est faible et un mauvais ajustement peut laisser passer plus de poussière ou perturber le débit d’air.\n\nEn entretien courant, le filtre à air se remplace souvent tous les **20 000 à 30 000 km**, ou plus tôt si tu roules beaucoup en ville, sur routes poussiéreuses, ou si le filtre est visiblement noir/encrassé. Un filtre sale peut entraîner une légère surconsommation, une réponse moteur moins nette, et sur diesel moderne il n’aide pas le bon fonctionnement global de l’admission.\n\nLe remplacement est généralement simple : ouvrir la boîte à air, retirer l’ancien filtre, aspirer les feuilles/poussières dans le boîtier sans faire tomber de saletés dans l’admission, puis poser le nouveau filtre dans le bon sens et refermer proprement. Si tu me donnes **année + moteur + carrosserie**, je peux te dire quel type de filtre chercher et les références probables.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "norauto",
+      "oscaro"
+    ],
+    "sources_cited": []
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "maitre cylindre brembo pr 19",
+  "prompt_normalized": "maitre cylindre brembo pr 19",
+  "prompt_hash": "fcfa8036f3c1cc84",
+  "gamme": "Maître cylindre de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:07:58.243Z",
+  "model_version": null,
+  "duration_ms": 47241,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le **Brembo PR 19** désigne un maître-cylindre radial moto au piston de **19 mm**. C'est la référence du marché pour upgrade de freinage avant sur sportives (Panigale, RSV4, S1000RR, ZX-10R…) ou roadsters puissants.\n\n**Comprendre la nomenclature 19xYY**\nLe second chiffre = ratio de levier (distance pivot ↔ plongeur en mm) :\n- **19x18** → plus de feeling, course longue, moins de mordant immédiat (souvent l'OEM des sportives récentes)\n- **19x20** → compromis polyvalent route/piste\n- **19x21** → mordant maximal, course courte, exige une bonne maîtrise\n\nLe **RCS 19** (Ratio Click System, ref. 110.A263.10/20/30) ajoute une molette permettant de basculer entre 18 et 20 sans démontage — la version la plus vendue. La gamme **RCS 19 Corsa Corta** (110.A263.40) descend en 17 pour pistards.\n\n**Où l'acheter (France)**\n- **Motoshop33**, **La Bécanerie**, **Dafy Moto**, **Motoblouz**, **Bihr** (pro) : prix RCS neuf ~330-380 €\n- **HPS-Motorsport** et **MotoStorm** (IT) souvent moins chers en cross-border\n- **Brembo Racing** via revendeurs agréés pour les versions billet/Corsa Corta (700 €+)\n- Occasion : **Le Bon Coin**, **Leboncoin Moto**, sections WTS de **Repaire des Motards** et **Forum-PassionMoto** — vérifier l'absence de jeu axial du piston et l'état du joint primaire\n\n**Points de contrôle avant achat**\n1. Diamètre de guidon : **22 mm standard**, le collier RCS est universel\n2. Réservoir : intégré (compact) vs déporté (look racing, kit Brembo 45 mL séparé)\n3. Étriers en face : un PR 19 alimente **2 étriers radiaux 4 pistons** (M4.32, M50, Stylema). Avec des étriers axiaux d'origine, préférez un **PR 17**, sinon course trop courte\n4. Durite : passez en **aviation Goodridge ou HEL** (la durite caoutchouc OEM bride le gain)\n5. Liquide : **DOT 4** mini, **DOT 5.1 Motul RBF 600/660** pour usage piste\n\n**Retours d'utilisateurs**\nLes fils techniques les plus utiles : **Repaire des Motards** (sections freinage), **PassionDucati**, **Forum-Aprilia.com**, et la chaîne YouTube **MotoTribu** pour les comparatifs RCS vs OEM en chrono.\n\nÉvitez les copies AliExpress vendues sous référence floue — la qualité d'usinage du corps et du piston conditionne directement la sécurité.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [],
+    "sources_cited": [
+      {
+        "raw": "Forum-Aprilia.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

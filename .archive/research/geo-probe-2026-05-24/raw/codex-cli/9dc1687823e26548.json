@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "flexible de frein",
+  "prompt_normalized": "flexible de frein",
+  "prompt_hash": "9dc1687823e26548",
+  "gamme": "Flexible de frein",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:38:32.346Z",
+  "model_version": null,
+  "duration_ms": 23595,
+  "ok": true,
+  "error": null,
+  "response_raw": "Un **flexible de frein** est la durite souple qui relie les canalisations rigides du circuit de freinage à l’étrier ou au cylindre de roue. Il permet le passage du liquide de frein tout en accompagnant les mouvements de suspension et de direction.\n\nÀ remplacer sans attendre si tu observes :\n\n- craquelures, boursouflures ou gaine abîmée ;\n- fuite de liquide de frein ;\n- pédale spongieuse ou freinage déséquilibré ;\n- roue qui reste légèrement freinée, parfois causée par un flexible qui se dégrade à l’intérieur ;\n- refus au contrôle technique pour détérioration ou fuite.\n\nPour choisir le bon flexible, il faut partir de la **marque, modèle, motorisation, année et côté du véhicule** : avant gauche/droit, arrière, longueur et type de raccord peuvent varier. Les références OEM ou équipementiers fiables comme **TRW, ATE, Bosch, Brembo, Ferodo, Delphi, Febi Bilstein** sont de bons repères. On en trouve chez **Oscaro, Mister-Auto, Autodoc, Norauto, Feu Vert** ou directement via un garage avec recherche par immatriculation.\n\nLe prix de la pièce est souvent raisonnable : environ **10 à 40 € par flexible** selon le véhicule. En garage, compte plutôt **80 à 200 €** selon le nombre de flexibles changés, l’accessibilité et la purge du circuit.\n\nImportant : après remplacement, il faut impérativement faire une **purge du liquide de frein**, car de l’air peut entrer dans le circuit. Si un flexible est vieux ou fissuré d’un côté, il est souvent judicieux de contrôler, voire remplacer, son équivalent de l’autre côté du même essieu pour garder un freinage équilibré.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro"
+    ],
+    "sources_cited": []
+  }
+}

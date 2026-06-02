@@ -1,0 +1,29 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "vidange et filtre à huile prix",
+  "prompt_normalized": "vidange et filtre a huile prix",
+  "prompt_hash": "844e4c39441cad6c",
+  "gamme": "Filtre à huile",
+  "volume": 500,
+  "captured_at": "2026-05-24T15:44:06.691Z",
+  "model_version": null,
+  "duration_ms": 31761,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Vidange et filtre à huile : à quoi t'attendre côté prix\n\n## Prix moyens en France (2026)\n\n**En centre auto / garage** :\n- Citadine essence (1.0-1.4L) : **45-75 €** tout compris\n- Berline diesel (1.6-2.0L) : **70-120 €**\n- SUV / premium (Audi, BMW, Mercedes) : **120-220 €** (huile 5W-30 LongLife obligatoire)\n\nLe tarif inclut généralement : 4 à 6 L d'huile, filtre à huile, joint de bouchon de vidange, main-d'œuvre (0,3 à 0,5h).\n\n## Comparatif des enseignes\n\n| Enseigne | Forfait vidange typique | Remarque |\n|---|---|---|\n| **Norauto** | 59-99 € | Forfaits \"Mobil 1\" ou \"Total Quartz\" affichés en ligne |\n| **Feu Vert** | 55-95 € | Souvent moins cher en promo trimestrielle |\n| **Midas** | 69-110 € | Bon réseau, huiles Castrol/Mobil |\n| **Speedy** | 65-105 € | Forfait clair, RDV en ligne |\n| **Euromaster** | 70-120 € | Plutôt orienté flottes |\n| **Garage indépendant** | 50-90 € | Souvent le meilleur rapport qualité/prix, surtout en province |\n| **Concession** | 150-300 € | Justifié uniquement sous garantie constructeur |\n\n## Faire soi-même : 25-45 €\n\nSi tu es un peu bricoleur, c'est le poste d'entretien le plus accessible :\n- **Huile** (5L de 5W-30 ou 5W-40) : 25-40 € chez **Oscaro**, **Mister-Auto**, **Yakarouler** ou **Automecanik**\n- **Filtre à huile** : 5-15 € (marques **Bosch**, **Mann-Filter**, **Purflux**, **Mahle**)\n- **Joint de bouchon** : 1-2 €\n\nComptez 30 minutes, une clé à filtre, un bac de récupération, et une déchetterie pour l'huile usagée (gratuit).\n\n## Conseils pratiques\n\n1. **Vérifie la norme d'huile** dans ton carnet d'entretien (ACEA C3, VW 504/507, MB 229.51…) — une mauvaise huile peut coûter cher en FAP/turbo.\n2. **Périodicité** : 10 000-15 000 km en moyenne, ou 1x/an même sans rouler.\n3. **Évite les \"forfaits à 29 €\"** des centres low-cost : huile basique en vrac, marges récupérées sur des \"préconisations\" (filtre à air, bougies…).\n4. Pour comparer rapidement les pièces, **Oscaro** et **Mister-Auto** ont les références constructeur exactes via la plaque d'immatriculation.\n\nBon plan : un garage indépendant qui accepte que tu fournisses l'huile et le filtre te facturera 20-30 € de main-d'œuvre seule.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "5W-30 ou 5W-40) : 25-40 € chez **Oscaro**, **Mister-Auto**, **Yakarouler** ou **Automecanik**\n- **Filtre à huile** : 5-15 € (marques **Bosch**, **Mann-Filter**, **Purflux**, **Mahle**)\n- **Joint de bouchon** : 1-2 €\n\nComptez 30 minutes, une",
+    "competitors_mentioned": [
+      "euromaster",
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

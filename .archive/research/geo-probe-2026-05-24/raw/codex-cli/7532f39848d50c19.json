@@ -1,0 +1,24 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "etrier frein grippe",
+  "prompt_normalized": "etrier frein grippe",
+  "prompt_hash": "7532f39848d50c19",
+  "gamme": "Étrier de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:09:38.412Z",
+  "model_version": null,
+  "duration_ms": 19804,
+  "ok": true,
+  "error": null,
+  "response_raw": "Un **étrier de frein grippé** signifie généralement qu’un piston ou des colonnettes coulissantes ne reviennent plus correctement. Résultat : la plaquette reste en contact avec le disque, la roue chauffe, la voiture peut tirer d’un côté, il peut y avoir une odeur de chaud, une surconsommation, un freinage déséquilibré ou une usure rapide d’un disque/plaquette.\n\nLes causes les plus fréquentes :\n\n- **Piston d’étrier oxydé ou bloqué**, souvent à cause d’un soufflet abîmé qui laisse entrer l’eau.\n- **Colonnettes de guidage grippées**, manque de graisse adaptée ou joints détériorés.\n- **Flexible de frein interne détérioré**, qui laisse passer la pression mais empêche le retour du liquide.\n- **Plaquettes coincées dans leur support**, corrosion ou saleté dans les portées.\n- **Liquide de frein vieux**, chargé en humidité, favorisant la corrosion interne.\n\nÀ faire en priorité : ne pas continuer à rouler longtemps comme ça. Un étrier bloqué peut faire surchauffer le disque, dégrader le roulement, cuire le liquide de frein et réduire fortement l’efficacité du freinage.\n\nLa réparation dépend de l’état. Si seules les colonnettes sont grippées, un démontage, nettoyage et regraissage avec une **graisse spéciale frein haute température** peut suffire. Si le piston est piqué, dur à repousser ou si le soufflet est déchiré, mieux vaut remplacer ou reconditionner l’étrier. En pratique, beaucoup de garages remplacent l’étrier complet, souvent avec purge du circuit.\n\nIl est recommandé de remplacer les pièces **par paire sur le même essieu** si l’usure est importante : plaquettes, parfois disques, et parfois les deux étriers si l’autre côté est proche du même état. Pour les pièces, des marques comme **TRW, Bosch, Brembo, ATE, Ferodo** ou **Textar** sont courantes. On trouve les références sur Oscaro, Mister-Auto, Auto-Doc ou via les catalogues TecDoc, mais il faut bien vérifier avec l’immatriculation/VIN.\n\nSymptôme simple à vérifier après un trajet court sans gros freinage : si une jante est nettement plus chaude que les autres, l’étrier correspondant est fortement suspect.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "mister-auto",
+      "oscaro"
+    ],
+    "sources_cited": []
+  }
+}

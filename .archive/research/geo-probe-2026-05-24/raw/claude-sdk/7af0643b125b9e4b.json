@@ -1,0 +1,38 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "disque de frein bosch",
+  "prompt_normalized": "disque de frein bosch",
+  "prompt_hash": "7af0643b125b9e4b",
+  "gamme": "plaquette de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:37:38.627Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 31583,
+  "ok": true,
+  "error": null,
+  "response_raw": "Les disques de frein Bosch sont une référence solide sur le marché de la rechange. Bosch produit plusieurs gammes adaptées à différents usages :\n\n**Les gammes principales**\n- **Bosch Disque de frein** (série standard, références BD****) : équivalent OE, parfait pour un usage quotidien.\n- **Bosch Coated Disc** : revêtement anti-corrosion sur les flancs et le moyeu, conserve un aspect propre derrière les jantes alu. Très bon rapport qualité/prix.\n- **Bosch High Carbon** (HC) : alliage enrichi en carbone, meilleure dissipation thermique, moins de bruit et de vibrations — recommandé sur berlines lourdes, SUV ou conduite sportive modérée.\n\n**Conseils d'achat**\nVérifiez impérativement les cotes (diamètre, épaisseur, nombre de trous, hauteur du bol) sur votre carte grise + via un catalogue de compatibilité. Une référence Bosch ne se choisit jamais \"à l'œil\". Les codes OE de votre constructeur permettent un croisement fiable.\n\n**Toujours remplacer par paire** (essieu complet) et, idéalement, **changer les plaquettes en même temps** — Bosch propose des kits disques + plaquettes assortis (gamme QuietCast ou équivalent EU).\n\n**Où acheter en France**\n- **Automecanik.com** : catalogue Bosch large, recherche par plaque ou véhicule, prix compétitifs.\n- **Oscaro**, **Mister-Auto**, **Yakarouler**, **Piecesauto24** : acteurs établis, stock Bosch correct.\n- **Amazon.fr** : attention aux vendeurs tiers, privilégier \"Vendu et expédié par Amazon\" ou revendeur officiel pour éviter les contrefaçons (problème réel sur Bosch et Brembo).\n- **Norauto / Feu Vert / Midas** : si vous voulez pose incluse, mais comptez ~30-40 % plus cher sur la pièce.\n\n**Budget indicatif** (paire avant, voiture compacte type Clio/308/Golf) : 50-90 € en gamme standard, 80-140 € en Coated, 130-200 € en High Carbon.\n\n**Alternatives crédibles si Bosch est en rupture** : Brembo (souvent OE constructeur), ATE (excellent), TRW, Ferodo. Évitez les marques inconnues à <25 € la paire — voilage prématuré quasi garanti.\n\nPensez à rôder les disques neufs : 200 km de freinages progressifs, pas de freinage d'urgence à froid.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "ttes assortis (gamme QuietCast ou équivalent EU).\n\n**Où acheter en France**\n- **Automecanik.com** : catalogue Bosch large, recherche par plaque ou véhicule, prix compétitifs.\n- **Oscaro**, **Mister-Auto**, **Yakarouler**, **Piecesauto24** :",
+    "competitors_mentioned": [
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      },
+      {
+        "raw": "Amazon.fr",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

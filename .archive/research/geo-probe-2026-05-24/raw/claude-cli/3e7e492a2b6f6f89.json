@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "contacteur feux stop clio 3",
+  "prompt_normalized": "contacteur feux stop clio 3",
+  "prompt_hash": "3e7e492a2b6f6f89",
+  "gamme": "Interrupteur des feux de freins",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:00:13.217Z",
+  "model_version": null,
+  "duration_ms": 43014,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le contacteur de feux stop sur Clio 3 (phase 1 et 2, 2005-2012) est une panne très classique. Symptômes typiques : feux stop allumés en permanence, ou au contraire qui ne s'allument plus, voyant ESP/ABS, régulateur de vitesse qui se coupe, impossibilité de sortir du P sur boîte auto, démarrage difficile (le calculateur ne voit plus l'appui pédale).\n\n**Localisation** : sous le tableau de bord côté conducteur, clipsé sur la patte de la pédale de frein. Pièce noire avec connecteur 4 broches, environ 4 cm.\n\n**Références utiles** :\n- OEM Renault : `8200168238` (ancienne réf.) ou `253250003R` (réf. actuelle, valable aussi Modus, Twingo 2, Kangoo 2, Mégane 2/3).\n- Équivalents fiables : **Valeo 255302**, **FAE 24890**, **Hella 6DD 008 622-851**, **Facet 7.1212**, **Vemo V46-73-0034**.\n\nCompter entre 8 et 20 € selon la marque. Valeo et FAE sont les plus sûrs (FAE fournit d'ailleurs en OE pour Renault sur cette pièce).\n\n**Où l'acheter** :\n- **Oscaro** et **Mister-Auto** : stock fiable, livraison rapide, bonne traçabilité référence avec ton immat.\n- **Yakarouler** ou **Auto-Doc** : souvent moins cher, délais un peu plus longs.\n- **Amazon** : OK si tu prends Valeo/FAE neuf vendu par marchand pro, méfiance sur les no-name.\n- En physique : **Norauto** ou **Feu Vert** dépannent mais c'est 2 à 3× plus cher.\n\n**Pose** : 5 minutes, sans outil.\n1. Enfonce la pédale de frein à fond avec la main.\n2. Tourne l'ancien contacteur d'un quart de tour (sens antihoraire) puis tire-le.\n3. Branche le neuf sur le connecteur.\n4. Tige du contacteur tirée au maximum, clipsé en position, **relâche doucement** la pédale — le mécanisme s'auto-règle au contact de la butée. Ne pousse pas la tige manuellement, tu fausserais le réglage.\n5. Teste feux stop, puis efface le défaut si voyant ESP allumé (souvent il part seul après 2-3 cycles).\n\nSi après remplacement le défaut persiste, regarde côté **fusible F02 habitacle** et l'état du connecteur (oxydation fréquente sur les Clio 3 ayant pris l'humidité). Discussions détaillées sur **Forum-Auto** (section Renault Clio 3) et **Planète Renault** si besoin d'un retour d'expérience modèle précis.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

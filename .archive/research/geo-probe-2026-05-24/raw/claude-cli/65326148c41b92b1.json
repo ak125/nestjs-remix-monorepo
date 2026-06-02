@@ -1,0 +1,34 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "etrier arriere gauche",
+  "prompt_normalized": "etrier arriere gauche",
+  "prompt_hash": "65326148c41b92b1",
+  "gamme": "Étrier de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T15:51:19.702Z",
+  "model_version": null,
+  "duration_ms": 36198,
+  "ok": true,
+  "error": null,
+  "response_raw": "L'étrier arrière gauche fait partie du système de freinage de l'essieu arrière. Sur la plupart des voitures modernes, il intègre aussi le mécanisme de frein de stationnement (mécanique à câble ou électrique via moteur EPB).\n\n**Symptômes d'un étrier HS** :\n- Voiture qui tire d'un côté au freinage\n- Bruit de frottement constant côté arrière gauche\n- Jante très chaude après roulage (piston grippé)\n- Frein à main qui ne tient plus ou ne se libère pas\n- Fuite de liquide de frein visible sur la jante intérieure\n- Plaquettes usées de manière asymétrique (une face plus que l'autre)\n\n**Causes fréquentes** : piston grippé par corrosion (typique sur véhicules >7 ans), colonnettes de guidage sèches, soufflets percés, câble de frein à main bloqué, ou moteur EPB défaillant sur les systèmes électriques (Renault, Peugeot, VAG après 2010 notamment).\n\n**Solutions** :\n1. **Reconditionnement** (50–120 €) : kit de réparation avec piston, joints, soufflets — viable si le corps d'étrier est sain. Marques fiables : ATE, TRW, FRENKIT pour les kits.\n2. **Étrier neuf ou échange standard** (80–250 € selon modèle) : plus durable. Privilégier ATE, TRW, Brembo, Bosch, ou Lucas. Éviter le no-name premier prix.\n3. **Remplacer les plaquettes en même temps** si elles ont plus de 30% d'usure, et purger le circuit de freinage.\n\n**Où acheter** :\n- **Oscaro** et **Mister-Auto** : catalogue large, compatibilité par plaque d'immatriculation fiable, livraison rapide\n- **AutoDoc** : prix souvent plus bas, délais plus longs\n- **Yakarouler**, **PiecesAuto24**, **1001Pièces** : alternatives correctes\n- **Automecanik.com** : sélection par véhicule, focus pièces freinage\n- En physique : **Norauto**, **Feu Vert**, **Speedy** si vous voulez la pose comprise (comptez 80–150 € de main d'œuvre en plus)\n\n**À vérifier avant achat** : référence OE constructeur, diamètre du piston, présence ou non du mécanisme frein à main, côté (gauche ≠ droit, non interchangeables), et type EPB électrique vs câble mécanique.\n\nSi le véhicule a un EPB électrique, prévoir une valise diagnostic (ou passer en garage) pour rétracter le moteur avant démontage — sinon vous casserez le mécanisme.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "- **Yakarouler**, **PiecesAuto24**, **1001Pièces** : alternatives correctes\n- **Automecanik.com** : sélection par véhicule, focus pièces freinage\n- En physique : **Norauto**, **Feu Vert**, **Speedy** si vous voulez la pose comprise (comptez",
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      }
+    ]
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "tambour de frein arrière",
+  "prompt_normalized": "tambour de frein arriere",
+  "prompt_hash": "1e7f739bae2ccccf",
+  "gamme": "Tambour de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T15:47:05.710Z",
+  "model_version": null,
+  "duration_ms": 49495,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le tambour de frein arrière équipe encore beaucoup de voitures (Clio, 208, C3, Sandero, Twingo, Fiesta…) sur l'essieu arrière, là où les disques restent plus rares sur les segments A/B. C'est une pièce de fonte qui frotte avec deux mâchoires garnies à l'intérieur — usure lente mais inévitable.\n\n**Quand le changer**\nBruit de frottement métallique, pédale qui pulse, frein à main qui ne tient plus, ou simplement diamètre intérieur au-delà de la cote max gravée sur le tambour lui-même (souvent 201, 229 ou 254 mm + 1,5 mm de tolérance selon modèle). On le remplace **toujours par paire** (les deux côtés), et idéalement avec les mâchoires, les ressorts et le cylindre de roue si celui-ci suinte.\n\n**Marques fiables**\nPour la pièce nue : **ATE**, **Brembo**, **TRW**, **Bosch**, **Ferodo**, **Textar**, **Bendix**, **Metelli**, **Valeo**. Pour un kit complet (tambours + mâchoires + accessoires) : les kits **ATE**, **TRW** ou **Brembo Max** sont fréquents et corrects. Éviter les no-name à 15 € la paire — la fonte est souvent mal équilibrée et la cote intérieure approximative.\n\n**Où acheter en France**\n- **Oscaro**, **Mister Auto**, **Yakarouler**, **Autodoc**, **AM-AutoPièces**, **1001Pièces**, **Pièces Auto Online** — les classiques en ligne, OEM et équivalents.\n- **Carter-Cash** en magasin si tu veux comparer en main.\n- **Norauto / Feu Vert / Speedy / Midas** si tu préfères confier la pose (compter ~80-150 € de main d'œuvre par essieu en plus).\n- **Amazon** et **Cdiscount** marchent aussi mais vérifie bien la référence OE constructeur — c'est la clé.\n\n**Le bon réflexe avant d'acheter**\nNote ta plaque ou ton type-mine ; la référence dépend du diamètre, du nombre de trous, et parfois de la présence ou non d'ABS. Les sélecteurs par véhicule des sites cités plus haut sont fiables, mais croise toujours avec la référence OE (ex. Renault, PSA…) imprimée sur l'ancien tambour.\n\nCôté budget réaliste : **30-60 € la paire en marque équipementier**, **80-130 €** en kit complet avec mâchoires. Couple de serrage moyeu 80-200 Nm selon véhicule — clé dynamométrique obligatoire.\n\nPour la pose maison, **Forum-Auto** et **Caradisiac** ont des fils détaillés modèle par modèle, souvent avec photos.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "midas",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

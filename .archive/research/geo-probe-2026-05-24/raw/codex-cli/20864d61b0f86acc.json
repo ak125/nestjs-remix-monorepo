@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "frein tambour",
+  "prompt_normalized": "frein tambour",
+  "prompt_hash": "20864d61b0f86acc",
+  "gamme": "Tambour de frein",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:16:17.265Z",
+  "model_version": null,
+  "duration_ms": 16469,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le **frein à tambour** est un système de freinage encore très courant sur l’arrière de nombreuses voitures, surtout citadines, utilitaires légers et modèles économiques. Il fonctionne avec des **mâchoires de frein** qui s’écartent à l’intérieur d’un tambour métallique solidaire de la roue. Quand tu freines, les mâchoires frottent contre le tambour et ralentissent la voiture.\n\nPar rapport aux freins à disque, les tambours sont souvent **moins chers**, bien protégés de la poussière extérieure et efficaces pour le **frein de stationnement**. En revanche, ils dissipent moins bien la chaleur, donc ils sont moins adaptés aux freinages répétés ou sportifs. C’est pour ça qu’on les trouve surtout à l’arrière, où l’effort de freinage est plus faible.\n\nLes signes d’usure typiques sont : freinage moins mordant, pédale plus longue, bruit de frottement ou grincement, voiture qui tire d’un côté, frein à main qui monte trop haut, ou vibration au freinage. À l’intérieur, les pièces à contrôler sont les **mâchoires**, les **ressorts**, le **cylindre de roue**, le **rattrapage automatique**, et l’état du **tambour** lui-même. Si le cylindre fuit du liquide de frein, il faut intervenir rapidement.\n\nPour les pièces, tu peux regarder des marques connues comme **Bosch**, **TRW**, **Brembo**, **ATE**, **Ferodo**, **Valeo** ou **Delphi**. Les sites comme **Oscaro**, **Mister-Auto**, **Autodoc** ou **Yakarouler** permettent de chercher par plaque d’immatriculation ou modèle exact, ce qui évite les erreurs de diamètre ou de montage.\n\nSi tu veux remplacer un frein tambour complet, le plus pratique est souvent un **kit prémonté** : mâchoires, ressorts et mécanisme déjà assemblés. C’est plus simple et plus sûr qu’un montage pièce par pièce. Après remplacement, il faut généralement régler ou laisser se régler le rattrapage, purger si le cylindre a été changé, puis tester progressivement le freinage.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

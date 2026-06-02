@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "filtre a gasoil 308",
+  "prompt_normalized": "filtre a gasoil 308",
+  "prompt_hash": "c7a5768124d90043",
+  "gamme": "Filtre à carburant",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:19:54.596Z",
+  "model_version": null,
+  "duration_ms": 22329,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour une **Peugeot 308 diesel**, le “filtre à gasoil” dépend surtout de la **génération**, du **moteur** et parfois du **mois de fabrication**. Il faut donc chercher avec la motorisation exacte : **308 1.6 HDi 90/110/112/115**, **1.6 BlueHDi 100/120**, **2.0 HDi/BlueHDi**, etc.\n\nLes marques fiables à privilégier : **Purflux**, **MANN-FILTER**, **Bosch**, **Mahle/Knecht**, **Valeo**. Évite les filtres inconnus très bas de gamme : sur un diesel common rail, une mauvaise filtration ou une prise d’air peut provoquer démarrage difficile, ratés, défaut injection ou limaille dans le circuit.\n\nExemples courants vus sur catalogues pièces :\n- **308 II 1.6 e-HDi / BlueHDi** : on trouve souvent du **MANN PU 7010 Z** selon version.\n- **308 1.6 HDi 92 / certaines DV6** : références fréquentes type **MANN WK 9034 Z** ou **Purflux CS762**, mais à vérifier avec l’immatriculation/VIN.\n- Les 308 essence ont aussi parfois un “filtre à carburant” en catalogue, mais la recherche “gasoil” concerne bien les versions diesel.\n\nPour acheter, les plus pratiques en France sont **Oscaro**, **Mister-Auto**, **Autodoc**, **Yakarouler** ou directement **Peugeot/Spoticar/Réseau Stellantis** si tu veux la référence origine. Le plus sûr : entre l’**immatriculation** sur Oscaro ou Mister-Auto, puis compare la référence proposée avec une marque équipementier.\n\nCôté entretien, Peugeot indique souvent un remplacement autour de **30 000 à 50 000 km ou 4 ans** selon usage et moteur. En usage urbain, carburant douteux ou voiture qui dort dehors, le faire plus tôt est raisonnable. Après remplacement, il faut bien **amorcer le circuit gasoil** avant démarrage ; sinon la voiture peut démarrer difficilement ou afficher un défaut.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

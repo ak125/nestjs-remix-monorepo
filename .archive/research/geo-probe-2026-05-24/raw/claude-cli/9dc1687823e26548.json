@@ -1,0 +1,28 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "flexible de frein",
+  "prompt_normalized": "flexible de frein",
+  "prompt_hash": "9dc1687823e26548",
+  "gamme": "Flexible de frein",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:38:08.751Z",
+  "model_version": null,
+  "duration_ms": 30849,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Flexible de frein — l'essentiel\n\nLe flexible de frein est le tuyau souple qui relie la canalisation rigide (fixée au châssis) à l'étrier de frein monté sur la roue. Sa souplesse absorbe les mouvements de suspension et de direction tout en transmettant la pression hydraulique du liquide de frein. C'est une pièce **critique de sécurité** soumise à pression (jusqu'à 150 bars), chaleur, sel et UV.\n\n## Quand le remplacer\n\n- **Tous les 5 à 7 ans** en préventif (caoutchouc qui durcit / craquelle)\n- Contrôle technique : fissures externes, suintement, gonflement sous pression, corrosion des raccords = contre-visite\n- Pédale spongieuse, freinage qui tire d'un côté, fuite visible = remplacement immédiat\n- Systématiquement par paire (essieu complet) pour conserver l'équilibre\n\n## Choix : origine, aftermarket ou aviation\n\n- **Caoutchouc OEM/aftermarket** : suffisant pour un usage routier. Marques fiables : **TRW, ATE, Bosch, Brembo, Ferodo, Delphi, Metzger, Triscan**. Compter 10–35 € la pièce.\n- **Aviation (gainé inox tressé + téflon)** : pédale plus ferme, dilatation quasi nulle, durée de vie 2–3× supérieure. Marques de référence : **Goodridge, HEL Performance, Venhill**. Compter 60–120 € la paire. Pour usage sportif, piste, ou véhicules anciens — vérifier l'homologation TÜV/route si contrôle technique strict.\n\n## Où acheter en France\n\n- **Oscaro, Mister-Auto, Yakarouler, Piecesauto24, AutoDoc** pour le catalogue généraliste avec recherche par immatriculation\n- **Norauto, Feu Vert, Speedy** si vous voulez pose incluse\n- **RS-direct, MTS-Pro, Motorsport-shop** pour les flexibles aviation Goodridge/HEL\n- Les forums **Forum-Auto, Planète Citroën, Forum BMW France, Audi Passion** sont précieux pour confirmer les références exactes par modèle\n\n## Pose\n\nComptez 30–60 min par flexible + **purge complète obligatoire** du circuit (DOT 4 le plus souvent, DOT 5.1 sur certaines sportives — jamais mélanger DOT 5 silicone). Couple de serrage des banjos : 25–35 Nm selon constructeur, joints cuivre **neufs** à chaque démontage. Si vous n'êtes pas équipé pour purger correctement (idéalement à deux ou avec un kit type Mityvac), confiez la pose à un garage — un freinage avec air dans le circuit est dangereux.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

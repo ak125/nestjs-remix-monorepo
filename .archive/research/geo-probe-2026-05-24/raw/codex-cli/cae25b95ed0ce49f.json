@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "prix disque et plaquette de frein peugeot 208",
+  "prompt_normalized": "prix disque et plaquette de frein peugeot 208",
+  "prompt_hash": "cae25b95ed0ce49f",
+  "gamme": "plaquette de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:02:00.903Z",
+  "model_version": null,
+  "duration_ms": 29370,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour une Peugeot 208, le bon ordre de grandeur est :\n\n- **Plaquettes avant seules** : environ **70 à 150 € posé**, parfois jusqu’à **200 €** selon garage et marque.\n- **Disques + plaquettes avant** : généralement **180 à 320 € posé**.\n- **Disques + plaquettes arrière** : souvent proche, mais ça dépend beaucoup si l’arrière est à disques ou à tambours selon version.\n- **Pièces seules sur internet** : compte souvent **20 à 40 €** pour un jeu de plaquettes correct, et **50 à 160 €** la paire de disques selon marque et diamètre.\n\nSur Oscaro, on voit par exemple des plaquettes Bosch/TRW/Brembo/Valeo autour de **17 à 31 €**, et des disques pour 208 autour de **48 à 70 €** sur certaines références, avec des marques premium pouvant monter plus haut. AUTODOC donne des repères de remplacement autour de **180 à 280 €** pour des disques avant, et **85 à 165 €** pour un kit disques + plaquettes en pièces.\n\nMon conseil : pour une 208 utilisée normalement, prends du **Bosch, TRW, Brembo, Ferodo, Valeo ou ATE**. Évite le premier prix inconnu si tu gardes la voiture. Chez **Norauto, Feu Vert, Midas, AD ou un petit garage**, demande un devis avec la référence exacte des pièces et vérifie si le prix inclut bien **les deux côtés du même essieu**, la main-d’œuvre, le nettoyage/graissage des portées et le témoin d’usure s’il y en a un.\n\nImportant : sur un même modèle “Peugeot 208”, les disques peuvent changer selon **année, motorisation, diamètre de disque et PR/VIN**. Le plus fiable est d’entrer l’immatriculation sur Oscaro, Norauto ou Peugeot, puis comparer avec un devis garage.\n\nSources prix consultées : Oscaro, AD, AUTODOC.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "midas",
+      "norauto",
+      "oscaro"
+    ],
+    "sources_cited": []
+  }
+}

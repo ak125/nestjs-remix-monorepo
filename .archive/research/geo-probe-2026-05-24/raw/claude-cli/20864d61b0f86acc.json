@@ -1,0 +1,35 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "frein tambour",
+  "prompt_normalized": "frein tambour",
+  "prompt_hash": "20864d61b0f86acc",
+  "gamme": "Tambour de frein",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:16:00.795Z",
+  "model_version": null,
+  "duration_ms": 34934,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le frein à tambour équipe principalement l'essieu arrière des voitures citadines et compactes (Clio, 208, Twingo, C3, Sandero…), ainsi que la plupart des utilitaires légers. Le principe : deux mâchoires garnies poussées vers l'intérieur d'un tambour métallique par un cylindre de roue hydraulique. C'est plus économique qu'un disque, mieux protégé de la corrosion sur l'arrière, et il intègre naturellement le frein de stationnement.\n\n**Symptômes d'usure à surveiller :**\n- Frein à main qui monte anormalement haut ou ne tient plus\n- Bruits de frottement/sifflement à froid qui disparaissent à chaud\n- Pédale qui « pompe » ou course allongée\n- Voiture qui tire d'un côté au freinage\n- Fuite de liquide visible derrière la roue (cylindre de roue HS)\n\n**Kit de remplacement complet (recommandé) :** mâchoires + cylindre de roue + ressorts + parfois le tambour lui-même s'il est rayé ou sous la cote mini (gravée dessus, ex. 203,5 mm sur une 208). On change toujours par essieu, jamais une seule roue.\n\n**Marques fiables :** Bosch, TRW, ATE, Ferodo, Brembo (haut de gamme), Valeo, Bendix, LPR, Metelli (bon rapport qualité-prix). Évite les no-name à 15 € le kit complet — la garniture s'use en 10 000 km.\n\n**Où acheter :**\n- **Automecanik.com**, Oscaro, Mister-Auto, Yakarouler, Piecesauto24 pour le neuf en ligne avec catalogue par immatriculation\n- **Norauto, Feu Vert, Midas** si tu veux pose incluse\n- **AD, Top Garage, Speedy** pour un réseau pro indépendant\n- **Leboncoin / casses auto** pour de l'occasion sur véhicules récents uniquement\n\n**Coût indicatif :** kit mâchoires + accessoires entre 35 et 90 € l'essieu, tambours 40-120 € pièce, cylindre de roue 15-35 €. Main d'œuvre 1h à 1h30 par côté, soit ~120-200 € en garage.\n\n**Forums utiles** pour diagnostiquer avant de commander : Forum-Auto, Caradisiac, Mécanique Mike (YouTube en français, tutos très clairs sur démontage tambour), AutoDoc Club. Pour un tutoriel précis à ton modèle, cherche « remplacement frein tambour [modèle] » sur YouTube — c'est une opération accessible en DIY si tu as cric + chandelles + clé dynamométrique.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "à 15 € le kit complet — la garniture s'use en 10 000 km.\n\n**Où acheter :**\n- **Automecanik.com**, Oscaro, Mister-Auto, Yakarouler, Piecesauto24 pour le neuf en ligne avec catalogue par immatriculation\n- **Norauto, Feu Vert, Midas** si tu v",
+    "competitors_mentioned": [
+      "autodoc",
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      }
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "filtre à air",
+  "prompt_normalized": "filtre a air",
+  "prompt_hash": "7ee864bb4d48b432",
+  "gamme": "Filtre à air",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:30:02.058Z",
+  "model_version": null,
+  "duration_ms": 28321,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le filtre à air protège ton moteur en empêchant poussières, insectes et particules d'entrer dans la chambre de combustion. Un filtre encrassé = perte de puissance, surconsommation (jusqu'à 10%), et à terme usure prématurée des injecteurs et de la sonde MAF.\n\n**Quand le changer ?**\nGénéralement tous les 20 000 à 40 000 km, ou 1× par an si tu roules peu. Plus court si environnement poussiéreux (chantier, campagne, pistes). Le carnet d'entretien de ton constructeur donne l'intervalle exact.\n\n**Comment choisir ?**\nTrois critères :\n1. **Référence exacte** — il te faut la marque, le modèle, la motorisation et l'année de ton véhicule. Le filtre est spécifique à chaque moteur (forme du boîtier).\n2. **Type** — papier plissé (standard, jetable) ou coton huilé type **K&N**, **BMC**, **Pipercross** (réutilisable, gain de débit léger, à entretenir tous les 50 000 km).\n3. **Marque** — pour de l'équipementier d'origine : **Mann-Filter**, **Mahle**, **Bosch**, **Purflux**, **Hengst**, **Valeo**. Ce sont souvent les mêmes que ceux montés en sortie d'usine, vendus en aftermarket à moitié prix.\n\n**Où l'acheter ?**\n- **Automecanik.com**, **Oscaro**, **Mister-Auto**, **Yakarouler**, **Carter-Cash** pour le neuf en ligne avec recherche par plaque ou véhicule.\n- **Amazon** et **Norauto**, **Feu Vert**, **Roady** en magasin physique si tu veux l'avoir aujourd'hui.\n- Évite les filtres no-name à 5 € — la qualité du média filtrant est aléatoire et tu peux laisser passer des particules.\n\n**Le changer soi-même ?**\nSur la majorité des voitures essence/diesel, c'est 10 minutes, 0 outil ou juste un tournevis. Tu ouvres le boîtier d'admission (souvent visible en ouvrant le capot, près de la batterie ou du moteur), tu sors l'ancien, tu mets le neuf dans le même sens, tu refermes. Tutos détaillés par modèle sur **YouTube**, **Forum-Auto**, ou **Caradisiac**.\n\nSi tu me donnes la marque/modèle/motorisation, je peux te donner la référence précise et une fourchette de prix.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "en sortie d'usine, vendus en aftermarket à moitié prix.\n\n**Où l'acheter ?**\n- **Automecanik.com**, **Oscaro**, **Mister-Auto**, **Yakarouler**, **Carter-Cash** pour le neuf en ligne avec recherche par plaque ou véhicule.\n- **Amazon** et **N",
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      }
+    ]
+  }
+}

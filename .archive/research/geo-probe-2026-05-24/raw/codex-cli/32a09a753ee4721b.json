@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "filtre a air peugeot 207",
+  "prompt_normalized": "filtre a air peugeot 207",
+  "prompt_hash": "32a09a753ee4721b",
+  "gamme": "Filtre à air",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:44:15.346Z",
+  "model_version": null,
+  "duration_ms": 17579,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour une recherche “filtre à air Peugeot 207”, le plus important est de choisir selon la motorisation exacte : 1.4 essence, 1.6 VTi, 1.4 HDi, 1.6 HDi, avec ou sans FAP. La 207 a eu plusieurs boîtes à air, donc une référence “207” seule ne suffit pas toujours.\n\nMarques fiables : **Purflux, Mann-Filter, Bosch, Mahle/Knecht, Valeo, Mecafilter**. Purflux est souvent un très bon choix sur Peugeot/Citroën, avec un rapport qualité/prix solide. On trouve couramment des références comme **Purflux A1406**, **A1339**, **A1143**, **Mann C3585 / C3459** ou des équivalents Bosch, mais il faut confirmer avec l’immatriculation ou le type moteur.\n\nPour acheter, les sites pratiques en France sont **Oscaro**, **Mister-Auto**, **Autodoc**, **Norauto**, **Feu Vert** et parfois **Amazon** si la référence est bien vérifiée. Norauto/Feu Vert sont utiles si tu veux retrait rapide ou pose en centre. Oscaro et Mister-Auto sont bons pour comparer les références compatibles.\n\nPrix habituel : environ **8 à 20 €** pour un filtre papier standard. Les filtres “sport” type K&N sont plus chers et rarement nécessaires sur une 207 d’usage quotidien.\n\nRemplacement : en général tous les **20 000 à 30 000 km**, ou plus souvent si la voiture roule en ville, poussière, campagne ou petits trajets. Un filtre encrassé peut augmenter la consommation, réduire les reprises et fatiguer l’admission.\n\nLe bon réflexe : entrer l’**immatriculation** sur Oscaro/Norauto/Mister-Auto, puis comparer avec la forme et les dimensions de l’ancien filtre avant montage. Pour une 207, l’accès est généralement simple : ouvrir la boîte à air, retirer l’ancien filtre, aspirer les feuilles/poussières, replacer le neuf bien à plat et refermer sans pincer le joint.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro"
+    ],
+    "sources_cited": []
+  }
+}

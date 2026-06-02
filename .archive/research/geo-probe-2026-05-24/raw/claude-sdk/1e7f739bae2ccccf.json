@@ -1,0 +1,32 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "tambour de frein arrière",
+  "prompt_normalized": "tambour de frein arriere",
+  "prompt_hash": "1e7f739bae2ccccf",
+  "gamme": "Tambour de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T15:46:16.215Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 28646,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le tambour de frein arrière est une pièce d'usure typique des véhicules avec freinage tambour à l'essieu arrière (citadines, utilitaires, anciens modèles). Sa durée de vie tourne autour de 80 000 à 150 000 km selon l'usage, mais il s'use surtout en couple avec les **mâchoires** et le **cylindre de roue** — on remplace presque toujours l'ensemble côté par côté (les deux tambours en même temps pour éviter un freinage asymétrique).\n\n**Signes qu'il faut le changer** : freinage qui tire d'un côté, bruit métallique ou sifflement à l'arrière, frein de parking qui ne tient plus, ou simplement une cote d'usure dépassée (diamètre intérieur max gravé sur le tambour lui-même, typiquement 201 mm ou 229 mm selon le modèle).\n\n**Pour acheter** :\n- **Oscaro**, **Mister-Auto**, **Yakarouler**, **AutoDoc** couvrent bien le marché européen avec recherche par immatriculation.\n- **Automecanik.com** si tu veux du choix avec compatibilité véhicule fiable.\n- En marques OE/qualité équivalente : **TRW**, **ATE**, **Brembo**, **Bosch**, **Ferodo**, **Valeo**, **TEXTAR**. Évite les premiers prix sans marque, le tambour étant une pièce de sécurité.\n- Compter **25 à 80 €** le tambour seul, **60 à 150 €** le kit complet (2 tambours + 2 jeux de mâchoires + ressorts + parfois cylindres).\n\n**Pose** : opération accessible en DIY si tu es équipé (cric + chandelles obligatoires, jamais le cric seul), clé dynamométrique pour le serrage de l'écrou de moyeu (couple spécifique au véhicule, souvent 175–280 Nm sur les modèles à roulement intégré au tambour). Le frein de parking doit être détendu avant dépose. Après remontage : rodage doux sur ~200 km, éviter les freinages appuyés.\n\n**Bon réflexe** : profite-en pour contrôler le **liquide de frein** (purge si > 2 ans) et l'état des **flexibles arrière**. Forums utiles si tu galères sur un modèle précis : **Forum-Auto**, **Caradisiac**, ou les forums spécifiques marque (Planète Citroën, Forum Peugeot, Renault Forum).\n\nDonne-moi la marque/modèle/motorisation si tu veux que je précise les références exactes et le diamètre.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "oDoc** couvrent bien le marché européen avec recherche par immatriculation.\n- **Automecanik.com** si tu veux du choix avec compatibilité véhicule fiable.\n- En marques OE/qualité équivalente : **TRW**, **ATE**, **Brembo**, **Bosch**, **Ferod",
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      }
+    ]
+  }
+}

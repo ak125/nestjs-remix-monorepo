@@ -1,0 +1,37 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "etrier de frein peint",
+  "prompt_normalized": "etrier de frein peint",
+  "prompt_hash": "2365ef3145adfd1a",
+  "gamme": "Étrier de frein",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:20:32.433Z",
+  "model_version": null,
+  "duration_ms": 40250,
+  "ok": true,
+  "error": null,
+  "response_raw": "Peindre ses étriers de frein, c'est un classique du tuning auto — surtout populaire sur les voitures avec jantes ajourées où l'étrier est visible. C'est principalement esthétique (effet \"sportif\" type Brembo/Porsche), avec un petit bonus de protection contre la corrosion.\n\n**Deux options principales :**\n\n1. **Kit de peinture étrier** — solution la plus courante. Le standard du marché c'est **Foliatec** (marque allemande, ~35-50€), avec une vraie peinture époxy bi-composants résistante à ~300°C. Tu trouves aussi **Restom Étriers**, **Dupli-Color Brake Caliper**, **MOTIP Brake Caliper** ou **StP**. À éviter : les bombes de peinture classique qui crament au premier freinage soutenu.\n\n2. **Étriers pré-peints / changement complet** — plus cher, mais propre. Souvent fait par carrossiers ou préparateurs.\n\n**Process DIY :**\n- Démontage des roues (et idéalement de l'étrier pour un boulot propre)\n- Nettoyage profond : dégraissant frein + brosse métallique pour virer la poussière de plaquettes\n- Ponçage léger (P400)\n- Masquage très soigné du disque, des plaquettes, du flexible et du piston\n- 2-3 couches fines au pinceau ou pistolet\n- Séchage 24-48h, durcissement complet à la chaleur du freinage\n\n**Couleurs populaires :** rouge (le grand classique), jaune (effet Porsche/Cayman), noir mat, orange, bleu.\n\n**Où acheter le matériel en France :**\n- **Oscaro**, **Mister-Auto**, **Yakarouler**, **Auto-Doc** en ligne\n- **Norauto**, **Feu Vert**, **Roady** en magasin\n- **Amazon.fr** ou **Motul Shop** pour les marques spécialisées\n\n**Points de vigilance :**\n- Ne **jamais** peindre les surfaces de frottement (plaquettes, disque, piston).\n- Si l'étrier est rouillé, mieux vaut le sabler ou le remplacer avant.\n- Sur véhicule récent sous garantie constructeur, vérifie que ça n'impacte rien.\n\n**Communautés utiles :** forum-auto.caradisiac.com, Forum Audi Passion, GTI-Clubsport, le subreddit r/Tuningfr, et plein de tutos YouTube (Vilebrequin a fait un épisode dessus).\n\nCompte une demi-journée pour les 4 étriers si tu es méthodique. Résultat qui tient 3-5 ans facilement avec un bon kit type Foliatec.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Amazon.fr",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      },
+      {
+        "raw": "forum-auto.caradisiac.com",
+        "cluster": "forum_communautaire",
+        "matchedDomain": "forum-auto.caradisiac.com"
+      }
+    ]
+  }
+}

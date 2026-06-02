@@ -1,0 +1,33 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "filtre a air scenic 3",
+  "prompt_normalized": "filtre a air scenic 3",
+  "prompt_hash": "fe34707392cc1888",
+  "gamme": "Filtre à air",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:50:05.092Z",
+  "model_version": null,
+  "duration_ms": 41476,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour un Scénic 3 (2009-2016), le filtre à air dépend de la motorisation. Vérifie d'abord sur ta carte grise (case D.2) ou sur le moteur :\n\n**Essence**\n- 1.4 TCe 130 ch (H4Jt) : Mann C 27 009, Purflux A1267, Bosch S 0218\n- 1.6 16V 110 ch (K4M) : Mann C 26 168, Mahle LX 1593, Purflux A1153\n- 2.0 16V 140 ch (M4R) : Mann C 30 005, Purflux A1283\n\n**Diesel** (le plus courant sur Scénic 3)\n- 1.5 dCi 85/95/110 ch (K9K) : Mann C 27 030, Purflux A1156, Mahle LX 1780/1, Bosch F 026 400 119\n- 1.9 dCi 130 ch (F9Q) : Mann C 30 195, Purflux A1264\n- 2.0 dCi 150/160 ch (M9R) : Mann C 35 154, Purflux A1311\n\nRéférence OEM Renault courante : **8201047742** (1.5 dCi), **165461408R** (1.4 TCe). Tape la réf OEM dans le moteur de recherche d'un site de pièces, c'est le plus fiable pour éviter une erreur de compatibilité (les Scénic 3 phase 1 / phase 2 / Grand Scénic ont parfois des montages différents).\n\n**Où acheter (France)**\n- **Oscaro** et **Mister-Auto** : catalogues précis avec sélecteur par VIN, livraison 24-48h, marques équipementiers premium (Mann, Mahle, Bosch, Purflux).\n- **Yakarouler** et **Piecesauto24** : souvent un poil moins cher, choix correct.\n- **Autodoc** : le moins cher en général, mais SAV plus lent et marques parfois plus obscures (Maxgear, Hengst — corrects mais à trier).\n- **Amazon** : ok si vendeur officiel équipementier, attention aux contrefaçons sur les références à bas prix.\n- **Norauto / Feu Vert / Carter-Cash** : dispo en magasin si tu veux changer dans la journée, prix +30-40 %.\n\nCompte **8-15 €** en ligne, **18-25 €** en centre auto. Intervalle de remplacement constructeur : **30 000 km ou 2 ans**, à raccourcir à 20 000 km si tu roules en milieu poussiéreux ou beaucoup en ville.\n\nCôté communauté, si tu veux vérifier un montage ou voir un tuto démontage (5 min, 2 clips sur le boîtier côté batterie) : **Forum-Renault.com**, **Planete-Renault** et la chaîne YouTube **Tuto Mécano**.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Forum-Renault.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "clio 3 filtre a gasoil",
+  "prompt_normalized": "clio 3 filtre a gasoil",
+  "prompt_hash": "411a8881effd7479",
+  "gamme": "Filtre à carburant",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:14:04.591Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 34895,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour une **Clio 3 (2005-2014) diesel**, il s'agit dans 95% des cas du moteur **1.5 dCi (K9K)** — décliné en 65, 70, 85, 86, 90, 103 ou 106 ch selon le millésime et la finition. Le filtre à gasoil est monté sur le dessus du moteur, dans un boîtier plastique facile d'accès (à droite, près de la batterie sur la majorité des versions).\n\n**Références fiables :**\n\n- **OEM Renault** : `16 40 078 28R` (versions récentes) ou `77 01 061 577` (premières séries)\n- **Purflux C507** ou **C513** — souvent monté d'origine en première monte, très bon rapport qualité/prix\n- **Bosch** : `F 026 402 085` ou `F 026 402 032` selon le millésime\n- **Mann-Filter WK 9011** — très fiable, filtration fine adaptée aux injecteurs Common Rail\n- **Mahle KL 248** ou **Hengst H280WK** — équivalents constructeur\n\nCompte **12 à 22 €** selon la marque et le revendeur.\n\n**Où l'acheter :**\n\n- **Oscaro** et **Mister-Auto** ont les catalogues les mieux renseignés par immatriculation/code moteur (évite l'erreur de référence)\n- **Yakarouler** ou **Autodoc** souvent un peu moins chers\n- En centre-auto (**Norauto**, **Feu Vert**, **Roady**) si tu veux récupérer sous 24 h\n- En concession Renault uniquement si tu tiens à la pièce d'origine boîtée\n\n**Intervalle de remplacement :** tous les **40 000 km** ou **2 ans**, à ramener à 30 000 km si tu roules beaucoup en ville ou si tu prends du carburant dans des stations peu fréquentées.\n\n**À savoir au montage :**\n\n- Vidange du boîtier obligatoire avant dépose (purge gravitaire ou seringue) — sinon tu mets du gasoil partout\n- **Amorçage indispensable** après remplacement : mets le contact sans démarrer pendant ~10 secondes, répète 3-4 fois pour que la pompe basse pression remplisse le filtre. Sinon démarrage difficile et risque de désamorçage du circuit haute pression\n- Vérifie l'état du **réchauffeur de gasoil** intégré au support sur certains millésimes (panne fréquente, voyant préchauffage qui clignote)\n- Profite-en pour purger l'eau si ton filtre a un bouchon de vidange en bas\n\nSi tu hésites sur la référence exacte, donne-moi ton **immatriculation** ou le **code moteur K9K** (étiquette sur la culasse) — je te confirme la bonne pièce.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

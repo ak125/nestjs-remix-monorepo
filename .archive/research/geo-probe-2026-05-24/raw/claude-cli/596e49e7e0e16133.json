@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "étrier de frein voiture",
+  "prompt_normalized": "etrier de frein voiture",
+  "prompt_hash": "596e49e7e0e16133",
+  "gamme": "Étrier de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:40:51.795Z",
+  "model_version": null,
+  "duration_ms": 28260,
+  "ok": true,
+  "error": null,
+  "response_raw": "L'étrier de frein (brake caliper) est la pièce qui serre les plaquettes contre le disque pour ralentir la roue. Sur une voiture moderne, on en trouve un par roue (parfois deux à l'arrière sur les sportives avec frein de parking électrique séparé).\n\n**Types principaux**\n- **Étrier flottant** (le plus courant) : un seul piston, le corps coulisse sur des colonnettes. Économique, fiable, mais sensible au grippage des colonnettes.\n- **Étrier fixe** : 2, 4 ou 6 pistons opposés. Meilleure modulation et endurance, monté sur véhicules performants ou haut de gamme (Brembo, Akebono, AP Racing).\n\n**Signes de défaillance**\n- Freinage qui tire d'un côté → piston grippé.\n- Bruit de frottement permanent → plaquette qui ne se rétracte plus.\n- Fuite de liquide de frein autour de l'étrier → joint piston HS.\n- Disque qui chauffe anormalement d'un côté → étrier bloqué fermé.\n\n**Marques de rechange courantes en France**\n- **Première monte / OEM** : ATE, TRW, Brembo, Bosch, Lucas (Girling), Bendix.\n- **Échange standard** : Budweg, Cifam, ABS All Brake Systems, Remy, BREMSI. L'échange standard (étrier reconditionné avec consigne) est souvent 30-50% moins cher qu'un neuf et reste une option fiable pour les véhicules de plus de 5 ans.\n\n**Où acheter en France**\n- **Spécialistes en ligne** : Oscaro, Mister-Auto, Yakarouler, Piecesauto24, Auto-Doc, 1001Pieces. Comparer les prix par référence OE.\n- **Réseaux physiques** : Norauto, Feu Vert, Speedy (si pose incluse).\n- **Distributeurs pros** : AD, Autodistribution, Distrigo (Stellantis), si vous avez un compte.\n\n**Conseils pratiques**\n- Toujours remplacer **par paire** (gauche + droite du même essieu) pour un freinage symétrique.\n- Changer les plaquettes et purger le liquide de frein en même temps.\n- Vérifier l'état des **flexibles de frein** : un flexible gonflé peut simuler un étrier grippé.\n- Coût indicatif : 80-250 € l'étrier seul (gamme moyenne), 400-800 € posé avec plaquettes et purge.\n\nPour la référence exacte, donnez la marque, le modèle, l'année, la motorisation et le code moteur — c'est indispensable car le diamètre de piston et les fixations varient.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

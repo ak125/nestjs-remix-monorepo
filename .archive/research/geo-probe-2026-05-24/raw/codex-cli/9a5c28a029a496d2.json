@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "disque clio 4",
+  "prompt_normalized": "disque clio 4",
+  "prompt_hash": "9a5c28a029a496d2",
+  "gamme": "disque de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:42:43.930Z",
+  "model_version": null,
+  "duration_ms": 19299,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour “disque Clio 4”, le point clé est d’identifier exactement la version : Clio IV essence/diesel, puissance, année, et surtout disque avant ou arrière. Sur Clio 4, les disques avant sont généralement ventilés, tandis que l’arrière peut être à tambours ou à disques selon la motorisation/finition.\n\nPour acheter les bons disques, le plus fiable est de chercher avec l’immatriculation ou le VIN sur Oscaro, Mister-Auto, Norauto, Autodoc, Piecesauto24 ou directement chez Renault. Les marques sérieuses à privilégier : Brembo, ATE, Bosch, TRW, Valeo, Ferodo, Textar. Évite les références “premier prix” inconnues si tu veux limiter vibrations, voilage prématuré ou bruit au freinage.\n\nÀ vérifier avant commande :\n- diamètre du disque, souvent différent selon moteur ;\n- épaisseur nominale et épaisseur minimale ;\n- disque plein ou ventilé ;\n- nombre de trous ;\n- présence ou non du roulement/cible ABS pour certains disques arrière ;\n- compatibilité avec ta version exacte de Clio IV.\n\nSi tu changes les disques, remplace aussi les plaquettes du même essieu. Monter des plaquettes usées sur des disques neufs donne un mauvais rodage et peut provoquer bruit ou vibrations. Prévois aussi du nettoyant frein, éventuellement les vis de maintien, et un bon nettoyage du moyeu avant pose.\n\nEn garage, le remplacement disques + plaquettes avant sur Clio 4 est une opération courante. En pièces seules, le prix varie fortement selon marque et version ; en centre auto ou garage, demande un devis avec la marque montée, pas seulement “disques adaptables”. Pour une Clio 4 utilisée au quotidien, un kit Brembo, Bosch, TRW ou ATE est généralement un bon choix qualité/prix.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro"
+    ],
+    "sources_cited": []
+  }
+}

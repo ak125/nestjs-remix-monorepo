@@ -1,0 +1,38 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "contacteur feux stop 206",
+  "prompt_normalized": "contacteur feux stop 206",
+  "prompt_hash": "62d4b9dd7ddbc156",
+  "gamme": "Interrupteur des feux de freins",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:55:25.100Z",
+  "model_version": null,
+  "duration_ms": 34039,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le contacteur de feux stop sur la 206 est une pièce qui lâche fréquemment (symptômes : feux stop allumés en permanence, ou inversement plus du tout ; régulateur de vitesse qui se désactive ; témoin ABS/ESP intermittent ; sur BVA, blocage du levier en position P).\n\n**Localisation** : monté sur le support de pédale de frein, sous le tableau de bord côté conducteur. Accès direct, démontage en 2 minutes — pas besoin de déposer la planche de bord.\n\n**Références utiles** :\n- OEM Peugeot/Citroën : **4534.51** (ancienne réf 4534.A4)\n- Équipementiers fiables : **Valeo 255302**, **Facet 7.1056**, **Hella 6DD 008 622-021**, **Vemo V42-73-0003**, **Febi 23916**\n- Compte 4 cosses (deux circuits indépendants : feux stop + info calculateur)\n\n**Prix indicatif** : 6-15€ chez les spécialistes, jusqu'à 25€ en centre auto.\n\n**Où acheter** :\n- **Oscaro** et **Mister-Auto** : catalogue clair par véhicule (saisir immatriculation), livraison rapide, retours faciles\n- **AutoDoc** : souvent les prix les plus bas, délais un peu plus longs\n- **Yakarouler** et **1001pieces** : alternatives sérieuses\n- **Norauto** / **Feu Vert** : dispo en magasin si urgent, mais marge plus élevée\n- **Amazon** : OK si vendeur = marque (Valeo, Hella) directement\n\n**Montage** : tourner le contacteur d'un quart de tour pour le sortir de son logement, débrancher le connecteur, remonter le neuf (les modèles récents type Valeo s'auto-règlent à l'enfoncement de la pédale — ne pas appuyer sur la pédale pendant la pose, sinon mauvais réglage).\n\n**Diagnostic avant achat** : si les feux stop restent allumés moteur coupé, c'est presque toujours le contacteur (le ressort de rappel interne casse). Vérifier aussi que la patte plastique sur la pédale qui actionne le contacteur n'est pas cassée — défaut connu sur 206, sinon le neuf retombera en panne.\n\n**Forums utiles pour cas spécifiques** : **Planete206.com** (communauté très active sur le modèle) et **Forum-peugeot.com** ont des tutos photos détaillés.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Planete206.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      },
+      {
+        "raw": "Forum-peugeot.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

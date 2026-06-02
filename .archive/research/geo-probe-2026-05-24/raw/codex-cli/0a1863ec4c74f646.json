@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "temoin usure disque de frein",
+  "prompt_normalized": "temoin usure disque de frein",
+  "prompt_hash": "0a1863ec4c74f646",
+  "gamme": "Témoin d'usure",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:16:55.163Z",
+  "model_version": null,
+  "duration_ms": 17486,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le **témoin d’usure d’un disque de frein** n’est pas aussi systématique que celui des plaquettes. Sur beaucoup de voitures, le voyant au tableau de bord concerne surtout **l’usure des plaquettes de frein**, pas directement celle des disques.\n\nPour un **disque de frein**, l’usure se contrôle surtout de trois façons :\n\n1. **Épaisseur minimale gravée sur le disque**  \n   Sur la tranche ou le bol du disque, on trouve souvent une indication du type **MIN TH 22 mm**. Cela signifie que le disque ne doit pas descendre sous 22 mm d’épaisseur. Il faut mesurer avec un pied à coulisse ou un micromètre, idéalement à plusieurs endroits.\n\n2. **Bord prononcé sur le disque**  \n   Si tu sens une grosse lèvre au bord du disque avec le doigt, c’est un signe d’usure. Ce n’est pas une mesure suffisante à elle seule, mais ça indique qu’il faut contrôler l’épaisseur.\n\n3. **Symptômes au freinage**  \n   Vibrations dans la pédale ou le volant, bruit métallique, freinage moins régulier, disque bleui ou rainuré profondément : ce sont des signes possibles de disque usé, voilé ou surchauffé.\n\nSi ta recherche concerne un **voyant allumé**, il s’agit probablement du témoin d’usure des **plaquettes**. Certaines plaquettes ont un capteur électrique qui déclenche un voyant quand elles arrivent en fin de vie. Dans ce cas, il faut contrôler les plaquettes, et souvent les disques en même temps.\n\nEn pratique : si les plaquettes sont mortes mais les disques sont encore au-dessus de la cote minimale et en bon état, on peut remplacer seulement les plaquettes. Si les disques sont trop fins, très rayés, voilés ou avec une grosse bordure, il faut remplacer **disques + plaquettes** sur le même essieu.\n\nPour trouver les bonnes pièces, tu peux comparer sur Oscaro, Mister-Auto, Autodoc ou Norauto avec l’immatriculation, mais vérifie toujours les dimensions : diamètre, épaisseur, nombre de trous, disque ventilé ou plein.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro"
+    ],
+    "sources_cited": []
+  }
+}

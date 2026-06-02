@@ -1,0 +1,30 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "prix flexible de frein",
+  "prompt_normalized": "prix flexible de frein",
+  "prompt_hash": "fd744599a1cfd2f5",
+  "gamme": "Flexible de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:13:58.656Z",
+  "model_version": null,
+  "duration_ms": 40023,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le prix d'un flexible de frein varie selon la qualité et le véhicule :\n\n**Fourchettes de prix (à l'unité)**\n- **Entrée de gamme** (génériques, sans marque) : **8 à 15 €**\n- **Milieu de gamme** (TRW, Bosch, ATE, Ferodo, Delphi) : **15 à 35 €**\n- **OEM / constructeur** (référence d'origine) : **25 à 60 €**\n- **Aviation / inox tressé** (Goodridge, HEL Performance, Venhill) : **40 à 90 €** pièce, **150 à 300 €** le kit complet 4 flexibles\n\n**Où acheter en France**\n\nPour comparer rapidement les prix par référence constructeur : **Oscaro**, **Mister-Auto**, **AutoDoc**, **Yakarouler**, **1001Pieces**, **Piecesauto24**, **Automecanik**. Pour l'achat + pose en une fois : **Norauto**, **Feu Vert**, **Midas**, **Speedy**, **Euromaster**. Pour les flexibles aviation/sport : **OreCa Store**, **Demon Tweeks**, ou directement chez **Goodridge France**.\n\n**À savoir avant d'acheter**\n\n- Les flexibles se vendent à l'unité — un véhicule en a généralement **4** (2 avant + 2 arrière), parfois **6** sur les essieux multibras.\n- **Toujours remplacer par paire sur le même essieu** pour conserver un freinage symétrique.\n- Vérifiez la **référence OEM** sur votre véhicule (ou via le VIN sur Oscaro/AutoDoc) — un flexible AV gauche n'est pas forcément interchangeable avec un AV droit (longueur, fixations, ABS).\n- Durée de vie : **6 à 8 ans** ou au premier signe de craquelure / suintement / gonflement sous freinage.\n\n**Coût pose en garage** : compter **20 à 40 € de main-d'œuvre par flexible**, plus la **purge du circuit obligatoire** (30 à 60 € + liquide DOT 4 ≈ 10 €). Budget total réaliste pour 2 flexibles avant posés + purge : **120 à 200 €** dans un garage indépendant, **180 à 280 €** en centre-auto.\n\nPour un véhicule courant (208, Clio, Mégane, 308…), un kit de 4 flexibles tressés Goodridge livré tourne autour de **180-250 €**, posé environ **350-450 €**.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "Mister-Auto**, **AutoDoc**, **Yakarouler**, **1001Pieces**, **Piecesauto24**, **Automecanik**. Pour l'achat + pose en une fois : **Norauto**, **Feu Vert**, **Midas**, **Speedy**, **Euromaster**. Pour les flexibles aviation/sport : **OreCa S",
+    "competitors_mentioned": [
+      "autodoc",
+      "euromaster",
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

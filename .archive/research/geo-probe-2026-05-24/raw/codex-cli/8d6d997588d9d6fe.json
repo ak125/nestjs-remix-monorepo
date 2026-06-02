@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "disque de frein clio 3",
+  "prompt_normalized": "disque de frein clio 3",
+  "prompt_hash": "8d6d997588d9d6fe",
+  "gamme": "disque de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:31:34.815Z",
+  "model_version": null,
+  "duration_ms": 15559,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour une **Renault Clio 3**, les disques de frein ne se choisissent pas seulement avec “Clio 3” : il faut vérifier la **motorisation**, l’**année**, le **diamètre du disque**, l’**essieu** et parfois le système de freinage.\n\nSur Clio 3, tu peux trouver notamment des disques avant en **260 mm**, **280 mm** ou autres dimensions selon version : 1.2 16V, 1.5 dCi, 1.6, 2.0 RS, break Estate, etc. Les versions sportives ou plus puissantes n’ont pas les mêmes freins qu’une petite dCi. À l’arrière, beaucoup de Clio 3 ont des **tambours**, mais certaines versions ont des **disques arrière**.\n\nLe plus fiable est de chercher avec :\n- l’**immatriculation** sur Oscaro, Mister-Auto, AutoDoc, Yakarouler ou Norauto ;\n- ou le **VIN** / type mine ;\n- puis de confirmer les dimensions indiquées : diamètre, épaisseur, nombre de trous, disque plein ou ventilé.\n\nPour les marques, tu peux viser du sérieux avec **Brembo**, **Bosch**, **ATE**, **TRW**, **Ferodo**, **Textar** ou **Valeo**. Évite les premiers prix inconnus si tu veux un freinage durable et silencieux. En usage normal, un kit disques + plaquettes de marque reconnue est généralement le meilleur choix.\n\nSi tu changes les disques avant, remplace aussi les **plaquettes** en même temps. Vérifie aussi l’état des étriers, coulisseaux et flexibles : un disque neuf peut se voiler ou s’user vite si l’étrier grippe. Après montage, fais un **rodage progressif** sur 200 à 300 km : freinages doux à moyens, pas de gros freinage prolongé à froid ou à très chaud.\n\nEn résumé : pour “disque de frein Clio 3”, cherche d’abord par plaque ou VIN, confirme les dimensions, puis prends un kit Brembo/Bosch/ATE/TRW adapté à ton essieu.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

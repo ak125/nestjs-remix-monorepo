@@ -1,0 +1,28 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "filtre à huile",
+  "prompt_normalized": "filtre a huile",
+  "prompt_hash": "056a6d44be47f320",
+  "gamme": "Filtre à huile",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:24:39.145Z",
+  "model_version": null,
+  "duration_ms": 30265,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le filtre à huile retient les particules métalliques, suies de combustion et débris d'usure qui circulent dans le circuit de lubrification. Il se change **à chaque vidange** (généralement tous les 10 000–15 000 km ou 1 fois par an, selon le constructeur — vérifier le carnet d'entretien).\n\n### Choisir le bon filtre\n\nTrois critères :\n1. **Référence constructeur** ou équivalent OEM — donnée par la plaque véhicule (marque/modèle/motorisation/année) ou le code moteur.\n2. **Type** : cartouche (filtre papier seul, à insérer dans un boîtier réutilisable, fréquent sur diesels récents PSA/Renault/VAG) ou bloc vissé \"spin-on\" (cylindre métallique complet, classique sur essence).\n3. **Qualité** : éviter les no-name à 2 €. Une cartouche qui se déchire = particules dans le moteur = usure prématurée.\n\n### Marques recommandées\n\n- **Première monte / qualité OEM** : Mann-Filter, Mahle, Bosch, Hengst, Purflux (souvent monté d'origine sur PSA), Knecht.\n- **Bon rapport qualité/prix** : Valeo, Champion, Fram, SCT.\n- **À éviter** : marques génériques sans certification, surtout sur moteurs récents downsizés sensibles aux contaminations.\n\n### Où acheter\n\n- **Sites spécialistes pièces auto** : Oscaro, Mister-Auto, Yakarouler, AutoDoc, 1001Pièces, Auto5. Comparer les prix, les délais et la disponibilité par référence véhicule.\n- **Catalogues constructeurs / concessions** : pour pièces d'origine si véhicule sous garantie ou moteur sensible.\n- **Centres auto physiques** : Norauto, Feu Vert, Midas — pratiques si vous faites faire la vidange en même temps.\n- **Forums utiles pour vérifier la référence** : Forum-Auto, Caradisiac, et les forums spécifiques par marque (Planète Citroën, Forum Peugeot, Forum 308, Audi Passion, etc.).\n\n### Conseils pratiques\n\n- **Toujours changer le joint** (fourni avec le filtre neuf), le huiler légèrement avant montage.\n- **Couple de serrage** : à la main + 3/4 de tour, jamais à la clé à choc.\n- **Cartouche** : remplacer aussi le joint torique du boîtier, c'est lui qui fuit en premier.\n- Faites la vidange à chaud (huile fluide, meilleur drainage) mais attention aux brûlures.\n\nDonnez-moi la marque/modèle/motorisation/année si vous voulez une référence précise.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

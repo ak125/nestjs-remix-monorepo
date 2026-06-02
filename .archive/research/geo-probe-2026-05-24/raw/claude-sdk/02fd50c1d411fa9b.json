@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "filtre habitacle clio iii",
+  "prompt_normalized": "filtre habitacle clio iii",
+  "prompt_hash": "02fd50c1d411fa9b",
+  "gamme": "Filtre d'habitacle",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:39:06.946Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 34599,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour une Clio III (2005-2012, phases 1 et 2, moteurs 1.2 16v, 1.4, 1.6, 1.5 dCi…), le filtre d'habitacle se loge **derrière la boîte à gants côté passager**. Compte 5 minutes de pose, sans outil.\n\n**Références OEM Renault**\n- `7701059997` (filtre standard)\n- `272775374R` (révision plus récente, souvent livrée en remplacement)\n\n**Équivalents fiables par marque**\n| Marque | Référence | Type |\n|---|---|---|\n| Mann-Filter | CU 2545 | Standard |\n| Mann-Filter | CUK 2545 | Charbon actif |\n| Mahle | LA 230 / LAK 230 | Std / Charbon |\n| Bosch | M2076 (1 987 432 076) | Standard |\n| Purflux | AH165 / AHC165 | Std / Charbon |\n| Valeo | 715580 / 698880 | Std / Charbon |\n| Filtron | K 1152 / K 1152A | Std / Charbon |\n| Hengst | E900LI / E900LC | Std / Charbon |\n\nLe **charbon actif** coûte 3-5 € de plus mais filtre les odeurs (gaz d'échappement, NOx), utile en zone urbaine. Le standard suffit si tu roules surtout hors ville.\n\n**Démontage**\n1. Vide et ouvre la boîte à gants.\n2. Presse les deux flancs en plastique pour la décrocher complètement (elle tombe sur ses charnières basses).\n3. Tu vois un cache rectangulaire blanc à gauche → tire la languette, le filtre coulisse.\n4. **Flèche du sens d'air vers le bas** au remontage (sinon il se déforme et siffle).\n\n**Prix indicatifs**\n- 8-12 € pour un Purflux/Filtron standard\n- 12-18 € pour un Mann ou Mahle charbon actif\n- 20-25 € pour l'OEM Renault en concession (même fabricant souvent, marge en plus)\n\n**Où l'acheter**\n- **Oscaro** et **Mister-Auto** : catalogue Clio III bien renseigné par motorisation, livraison 48h, retours simples.\n- **Yakarouler** et **Auto-Doc** : souvent moins chers, vérifier les délais.\n- **AutoMecanik** : pour la compat exacte par type-mine (carte grise champ D.2.1).\n- **Norauto/Feu Vert** : dépannage immédiat, prix +20-30 %.\n\n**Périodicité** : tous les 15 000 km ou 1 an, plus tôt si conduite en ville/pollens. Profite-en pour passer un coup d'aspirateur dans le logement — feuilles et poussière s'y accumulent et bouchent le ventilateur.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "**Yakarouler** et **Auto-Doc** : souvent moins chers, vérifier les délais.\n- **AutoMecanik** : pour la compat exacte par type-mine (carte grise champ D.2.1).\n- **Norauto/Feu Vert** : dépannage immédiat, prix +20-30 %.\n\n**Périodicité** : to",
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

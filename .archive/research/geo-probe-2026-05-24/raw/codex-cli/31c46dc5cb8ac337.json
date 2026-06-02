@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "frein etrier",
+  "prompt_normalized": "frein etrier",
+  "prompt_hash": "31c46dc5cb8ac337",
+  "gamme": "Étrier de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:51:38.121Z",
+  "model_version": null,
+  "duration_ms": 15315,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour “frein étrier”, vous cherchez probablement un **étrier de frein**, la pièce qui serre les plaquettes contre le disque pour ralentir la voiture. C’est un élément critique du freinage : s’il grippe, fuit ou reste bloqué, il faut intervenir rapidement.\n\nLes signes courants d’un étrier défectueux sont : voiture qui tire d’un côté au freinage, roue anormalement chaude, odeur de brûlé, plaquettes usées de façon inégale, bruit de frottement permanent, pédale molle si fuite de liquide, ou voyant de frein allumé. Un étrier peut aussi se gripper à cause de coulisseaux encrassés, d’un piston oxydé ou d’un soufflet percé.\n\nAvant d’acheter, il faut vérifier :\n- côté gauche ou droit ;\n- essieu avant ou arrière ;\n- diamètre du disque ;\n- motorisation exacte ;\n- présence éventuelle d’un frein de parking électrique ;\n- référence OEM si possible.\n\nPour les pièces, on trouve des étriers chez Oscaro, Mister-Auto, Autodoc, Yakarouler, Norauto ou Feu Vert. Les marques courantes et sérieuses incluent TRW, Bosch, Brembo, ATE, Budweg Caliper, Textar ou Ferodo. Attention aux étriers “échange standard” : ils sont souvent moins chers, mais une consigne peut être facturée jusqu’au retour de l’ancienne pièce.\n\nEn général, on remplace au minimum les **plaquettes** si elles ont été abîmées par un étrier bloqué. Il faut aussi purger le circuit de freinage après remplacement de l’étrier. Si le disque a chauffé ou bleui, il peut devoir être changé également.\n\nSi vous donnez la marque, le modèle, l’année, la motorisation et le côté concerné, on peut identifier plus précisément le bon type d’étrier et les points à contrôler avant achat.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

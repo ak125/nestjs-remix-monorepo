@@ -1,0 +1,34 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "disque de frein clio 2",
+  "prompt_normalized": "disque de frein clio 2",
+  "prompt_hash": "df98f6c131b12d73",
+  "gamme": "plaquette de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:12:13.644Z",
+  "model_version": null,
+  "duration_ms": 29991,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour un disque de frein de Clio 2, l'essentiel à savoir avant d'acheter :\n\n**Identifier ta version exactement**\nLes Clio 2 (1998-2012) ont eu plusieurs motorisations avec des diamètres de disques différents à l'avant :\n- 238 mm (1.2 8V, 1.2 16V, 1.5 dCi 65/85 ch) — ventilés ou pleins selon finition\n- 259 mm (1.4 16V, 1.6 16V, 1.5 dCi 100 ch, Clio RS) — ventilés\n- 280 mm (Clio RS 172/182) — ventilés rainurés d'origine\n\nÀ l'arrière : tambours sur les versions de base, disques pleins (238 mm) sur les motorisations supérieures et RS. Le numéro de châssis (VIN) ou la carte grise (code moteur + finition) permet de trancher sans erreur. Outil de référence : le **VIN-decoder Oscaro** ou **Mister-Auto**, qui croisent automatiquement avec le bon disque.\n\n**Marques recommandées (rapport qualité/prix)**\n- **Brembo** — référence, souvent montage d'origine, ~40-70 €/paire\n- **TRW** (groupe ZF) — qualité OE, autour de 30-50 €/paire\n- **Bosch** — fiable, large compatibilité\n- **ATE** (Continental) — très bonne tenue thermique\n- **Ferodo** — bon compromis prix/performance\n- À éviter en entrée de gamme : marques no-name à 15 €/paire (voile rapide, vibrations au freinage à 6-12 mois)\n\n**Où acheter**\n- **Oscaro** et **Mister-Auto** pour la disponibilité et le filtre par véhicule fiable\n- **Yakarouler**, **Piecesauto24** ou **Automecanik.com** souvent moins chers à qualité égale\n- **iParts** / **AutoDoc** : prix bas mais délais variables\n- En physique : **Norauto**, **Feu Vert**, **Speedy** si tu fais poser\n\n**Points pratique**\n- Toujours remplacer les disques **par paire** (gauche + droite du même essieu)\n- Profite-en pour changer les **plaquettes** en même temps (sinon usure prématurée du disque neuf)\n- Compte ~80-150 € la paire disques + plaquettes en pièces, ~80-120 € de main d'œuvre si pose garage\n- Vérifie l'épaisseur mini gravée sur la tranche du disque actuel avant de juger l'usure\n\nSi tu me donnes ta motorisation exacte (ex. \"1.5 dCi 85 ch phase 2\"), je peux pointer la référence précise.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "bilité et le filtre par véhicule fiable\n- **Yakarouler**, **Piecesauto24** ou **Automecanik.com** souvent moins chers à qualité égale\n- **iParts** / **AutoDoc** : prix bas mais délais variables\n- En physique : **Norauto**, **Feu Vert**, **S",
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      }
+    ]
+  }
+}

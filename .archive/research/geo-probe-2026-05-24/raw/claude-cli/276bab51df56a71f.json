@@ -1,0 +1,29 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "flexible de frein avant",
+  "prompt_normalized": "flexible de frein avant",
+  "prompt_hash": "276bab51df56a71f",
+  "gamme": "Flexible de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:10:52.326Z",
+  "model_version": null,
+  "duration_ms": 44262,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le flexible de frein avant relie l'étrier de frein à la canalisation rigide du circuit hydraulique. C'est une pièce de sécurité critique : il transmet la pression du liquide de frein (DOT 4 le plus souvent) tout en absorbant les mouvements de la suspension et du braquage.\n\n**Signes qu'il faut le remplacer**\n- Fissures, craquelures ou gonflement visibles sur la gaine extérieure\n- Suintement de liquide de frein au niveau des raccords ou du flexible lui-même\n- Pédale spongieuse, course allongée, freinage qui « tire » d'un côté\n- Flexible qui se dilate anormalement quand on appuie fort sur la pédale (signe que la tresse interne lâche)\n\nSur la plupart des véhicules, contrôle visuel obligatoire au contrôle technique ; durée de vie réelle 8-12 ans ou 100 000-150 000 km. À changer toujours par paire (gauche + droite) sur le même essieu.\n\n**Marques fiables**\n- Origine constructeur (OEM) : référence sûre, mais cher\n- Equipementiers d'origine : **ATE**, **TRW**, **Bosch**, **Ferodo**, **Delphi**, **Brembo** — qualité équivalente première monte, prix raisonnable (15-35 € pièce)\n- Flexibles aviation inox tressé : **Goodridge**, **HEL Performance**, **Venhill** — meilleur feeling pédale, recommandés sur usage sportif ou véhicule ancien. Compter 60-120 € la paire avant.\n\n**Où acheter en France**\n- En ligne avec catalogue par immatriculation : **Oscaro**, **Mister-Auto**, **Yakarouler**, **Autodoc**, **Piecesauto24**\n- Réseau physique : **Norauto**, **Feu Vert**, **Speedy**, **Midas** (souvent plus cher mais pose incluse)\n- Pour modèles anciens ou rares : **Melun Retro Passion**, **Der Franzose**, ou clubs de marque\n\n**Important pour la pose**\nLe remplacement impose une **purge complète du circuit** côté concerné (kit de purge à 10-20 €, ou aspirateur de purge type **Mityvac**). Liquide de frein neuf obligatoire — il est hygroscopique, donc bidon scellé. Couple de serrage des raccords banjo à respecter (généralement 15-25 Nm selon le constructeur). Si vous n'êtes pas équipé, comptez 60-120 € de main d'œuvre chez un garagiste.\n\nPour les tutos spécifiques à votre modèle : **Forum-Auto**, **Caradisiac**, ou les chaînes YouTube **Vilebrequin** et **AutoMoto**.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

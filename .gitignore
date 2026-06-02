@@ -288,3 +288,7 @@ audit/wiki-auto-review/*
 
 # CI gate report artifacts (written by scripts/ci/*-gate.mjs, never committed)
 dod-gate-report.md
+
+# G10 EXPLORATION_BUDGET probes (ADR-081) — local deps + tsbuildinfo, never committed
+scripts/research/node_modules/
+scripts/research/*.tsbuildinfo

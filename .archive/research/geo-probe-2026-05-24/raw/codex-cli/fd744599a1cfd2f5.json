@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "prix flexible de frein",
+  "prompt_normalized": "prix flexible de frein",
+  "prompt_hash": "fd744599a1cfd2f5",
+  "gamme": "Flexible de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:14:16.626Z",
+  "model_version": null,
+  "duration_ms": 17969,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour un **flexible de frein**, compte généralement :\n\n- **Pièce seule** : environ **5 à 25 €** par flexible sur Oscaro, Mister-Auto, Autodoc, Norauto, selon la voiture et la marque.\n- **Marques correctes** : Bosch, TRW, ATE, Delphi, Ferodo, Brembo, Febi, Metelli.\n- **Remplacement en garage** : souvent **70 à 150 € par côté**, pièce + main-d’oeuvre + purge partielle/complément de liquide.\n- **Remplacement par paire sur le même essieu** : plutôt **140 à 250 €**, parfois plus si les raccords sont grippés ou corrodés.\n- **Avec purge complète du liquide de frein** : ajoute souvent **40 à 80 €**.\n\nLe flexible lui-même n’est pas cher ; c’est surtout la main-d’oeuvre et la purge qui font monter la facture. Sur Oscaro, on voit par exemple des flexibles à moins de 10 € pour certains modèles courants, et autour de 10-20 € pour des marques comme Bosch, ATE ou Delphi. Chez Norauto/Feu Vert/Midas, le prix final dépendra surtout du forfait atelier et de l’accès sur ton véhicule.\n\nÀ remplacer si le caoutchouc est **craquelé**, gonflé, poreux, s’il y a une fuite, ou si le frein reste légèrement bloqué à cause d’un flexible qui se désagrège à l’intérieur. En contrôle technique, un flexible abîmé peut entraîner une contre-visite.\n\nMon conseil : demande un devis avec les lignes séparées **flexible**, **liquide de frein/purge**, **main-d’oeuvre**. Si on te sort un devis à plus de **250-300 € pour deux flexibles simples**, ça mérite comparaison chez un petit garage indépendant. Pour un seul flexible avec purge, **100-150 €** est une fourchette assez normale.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro"
+    ],
+    "sources_cited": []
+  }
+}

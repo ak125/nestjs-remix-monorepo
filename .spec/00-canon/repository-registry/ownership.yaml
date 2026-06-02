@@ -967,3 +967,20 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: low
+  # G10 EXPLORATION_BUDGET probes (ADR-081) — research scripts + reports.
+  # Owner D15 (governance) car infrastructure exploration probe, pas runtime SEO.
+  - glob: docs/research/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  - glob: scripts/research/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  - glob: .archive/research/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low

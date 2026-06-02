@@ -1,0 +1,22 @@
+{
+  "name": "@auto/research-probe",
+  "version": "0.1.0",
+  "private": true,
+  "description": "GEO Discovery Probe scripts (G10 EXPLORATION_BUDGET, ADR-081). Self-contained deps to avoid polluting monorepo root.",
+  "type": "module",
+  "scripts": {
+    "sample": "tsx build-dynamic-sample.ts",
+    "capture": "tsx geo-evidence-capture.ts",
+    "capture:smoke": "tsx geo-evidence-capture.ts --smoke"
+  },
+  "devDependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.3.150",
+    "@supabase/supabase-js": "^2.46.1",
+    "@types/node": "^22.10.5",
+    "dotenv": "^16.4.7",
+    "openai": "^4.77.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "yaml": "^2.6.1"
+  }
+}

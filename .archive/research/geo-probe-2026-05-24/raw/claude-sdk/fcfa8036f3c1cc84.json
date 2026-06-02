@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "maitre cylindre brembo pr 19",
+  "prompt_normalized": "maitre cylindre brembo pr 19",
+  "prompt_hash": "fcfa8036f3c1cc84",
+  "gamme": "Maître cylindre de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:07:11.002Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 29122,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le **Brembo PR 19** est une pompe de frein radiale moto (PR = *Pompa Radiale*), avec un piston de 19 mm. C'est l'une des références les plus utilisées en upgrade sur sportives et roadsters pour remplacer une pompe axiale d'origine.\n\n**Les variantes à connaître** (le second chiffre = entraxe levier, qui change le ressenti) :\n- **19x18** : la plus \"dure\", mordant immédiat, course très courte — préférée en piste.\n- **19x20** : compromis route/piste, le best-seller, ressenti progressif.\n- **19x21** : course plus longue, plus douce, bien pour la route et les longs trajets.\n\nIl existe aussi la gamme **Brembo RCS 19** (Ratio Click System) qui permet de basculer entre 18 et 20 mm via une molette — plus chère mais polyvalente, et la **19 Corsa Corta RCS** (haut de gamme piste).\n\n**Compatibilité** : la PR 19 est généralement recommandée à partir de **double disque avant + étriers radiaux 4 pistons** (type M4, M50, Stylema). Sur simple disque, c'est trop puissant → préférer une **PR 16** ou **PR 17**. Vérifie le diamètre piston de tes étriers avant achat.\n\n**Pensez aussi à** : durite avia (sinon le gain de feeling est partiellement gâché), bocal déporté (souvent vendu séparément, ~30-50 €), et le raccord banjo M10x1.\n\n**Où acheter** (neuf, ~250-380 € selon variante) :\n- **Motoblouz**, **iCasque**, **Bihr** (FR, dispo rapide)\n- **Motorcycle-Superstore**, **MotoCard** (EU)\n- **Spiegler**, **Tyga Performance** pour kits complets\n- **Brembo.com** (revendeurs officiels)\n\n**Occasion** : Leboncoin, **MV Forum**, **Forum-Pieces-Moto**, eBay — méfie-toi des contrefaçons chinoises très répandues (logo Brembo mal aligné, poids ~50 g trop léger, absence de numéro de série gravé).\n\nSi tu peux préciser **ta moto** et **ton usage** (route/piste/trackday), je peux affiner sur 19x18 vs 19x20 et te dire si la PR 19 est vraiment l'upgrade adaptée.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [],
+    "sources_cited": [
+      {
+        "raw": "Brembo.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "filtre habitacle clio iii",
+  "prompt_normalized": "filtre habitacle clio iii",
+  "prompt_hash": "02fd50c1d411fa9b",
+  "gamme": "Filtre d'habitacle",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:39:58.480Z",
+  "model_version": null,
+  "duration_ms": 17646,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour une **Renault Clio III**, le “filtre habitacle” correspond au **filtre à pollen / filtre de climatisation**. Il sert à retenir poussières, pollens et odeurs avant que l’air arrive dans l’habitacle.\n\nLe bon choix dépend surtout de la version exacte : **Clio III 3 portes ou 5 portes, phase 1/phase 2, année, motorisation**, et parfois présence de climatisation. Le plus sûr est de chercher avec la **plaque d’immatriculation** sur Oscaro, Mister-Auto, Autodoc, Norauto ou Carter-Cash. Les marques fiables : **MANN-FILTER, Bosch, Valeo, Purflux, Mahle, Febi**.\n\nJe conseille plutôt un **filtre à charbon actif** qu’un simple filtre pollen : il filtre aussi mieux les odeurs, gaz d’échappement et pollution urbaine. Sur une Clio III, l’écart de prix est généralement faible et ça vaut le coup, surtout si la voiture roule en ville.\n\nL’emplacement est côté passager, dans la zone basse de la planche de bord / près de la console centrale selon version. Le remplacement est assez accessible : on retire le cache, on sort l’ancien filtre souvent en le pliant légèrement, puis on remet le neuf dans le **bon sens du flux d’air** indiqué par une flèche. Compter environ **10 à 20 minutes** si on est à l’aise.\n\nÀ remplacer tous les **15 000 à 20 000 km** ou une fois par an. Signes qu’il est à changer : buée persistante, ventilation faible, mauvaise odeur au démarrage de la clim, allergies plus marquées.\n\nPour éviter l’erreur de référence, vérifie toujours les dimensions et la compatibilité avec ton immatriculation. Sur les sites de pièces, ne prends pas seulement “Clio III” : sélectionne précisément l’année et la motorisation.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro"
+    ],
+    "sources_cited": []
+  }
+}

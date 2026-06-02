@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "frein a tambour",
+  "prompt_normalized": "frein a tambour",
+  "prompt_hash": "9060de496b209cba",
+  "gamme": "Tambour de frein",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:35:37.991Z",
+  "model_version": null,
+  "duration_ms": 17123,
+  "ok": true,
+  "error": null,
+  "response_raw": "Un **frein à tambour** est un système de freinage où des **mâchoires garnies de friction** viennent s’écarter à l’intérieur d’un tambour métallique solidaire de la roue. Quand tu appuies sur la pédale, le cylindre de roue pousse les mâchoires contre le tambour, ce qui ralentit la voiture.\n\nOn le trouve surtout à l’arrière sur de nombreuses citadines et compactes, car il est **moins coûteux**, assez durable, et intègre facilement le **frein de stationnement**. Il est moins performant qu’un frein à disque pour dissiper la chaleur, donc moins adapté aux freinages répétés ou sportifs, mais il reste très correct pour l’arrière d’un véhicule léger.\n\nLes symptômes fréquents d’un frein à tambour usé ou mal réglé sont : freinage arrière faible, pédale longue, bruit de frottement ou grincement, frein à main qui monte trop haut, roue qui chauffe, ou voiture qui tire d’un côté au freinage. Il peut aussi y avoir une fuite au **cylindre de roue**, visible par des traces grasses à l’intérieur du tambour.\n\nLes pièces principales sont : **tambour**, **mâchoires**, **ressorts**, **cylindre de roue**, **rattrapage automatique**, et câble de frein à main. Lors d’un remplacement sérieux, on change souvent le **kit de mâchoires complet**, parfois les cylindres de roue, et on contrôle l’état des tambours. Si le tambour est trop creusé, ovalisé ou hors cote, il faut le remplacer.\n\nPour acheter des pièces, des sites comme **Oscaro**, **Mister-Auto**, **Autodoc**, **Yakarouler** ou **Norauto** permettent de chercher par plaque ou modèle. Les marques courantes fiables incluent **Bosch**, **TRW**, **ATE**, **Brembo**, **Ferodo**, **Valeo** et **Delphi**.\n\nSi tu veux intervenir toi-même, attention au remontage des ressorts et au réglage du rattrapage : une erreur peut donner un freinage déséquilibré. Pour une voiture utilisée tous les jours, mieux vaut remplacer les deux côtés du même essieu en même temps.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

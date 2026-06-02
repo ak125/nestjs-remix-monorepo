@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "répartiteur de freinage",
+  "prompt_normalized": "repartiteur de freinage",
+  "prompt_hash": "9140e4dfa0572225",
+  "gamme": "Répartiteur de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:15:38.051Z",
+  "model_version": null,
+  "duration_ms": 26466,
+  "ok": true,
+  "error": null,
+  "response_raw": "Un **répartiteur de freinage** est une pièce du circuit hydraulique qui module la pression de freinage entre l’avant et l’arrière, surtout pour éviter que les roues arrière bloquent trop facilement. On parle aussi de **correcteur de freinage**, **limiteur de pression arrière** ou, sur certains véhicules, de **compensateur asservi à la charge**.\n\nSur beaucoup de voitures anciennes ou utilitaires, il est placé près du train arrière et relié à la suspension par une petite biellette/ressort. Quand le véhicule est chargé, l’arrière s’écrase davantage : le répartiteur autorise alors plus de pression vers les freins arrière. À vide, il limite cette pression pour garder la voiture stable au freinage.\n\nLes symptômes possibles d’un répartiteur défectueux :\n\n- roues arrière qui bloquent trop vite ;\n- freinage arrière trop faible au contrôle technique ;\n- déséquilibre de freinage entre gauche/droite ou avant/arrière ;\n- pédale correcte mais efficacité médiocre ;\n- fuite de liquide de frein autour du correcteur ;\n- biellette grippée, ressort cassé ou mécanisme bloqué par la corrosion.\n\nAvant de remplacer la pièce, il faut vérifier l’ensemble : niveau et état du liquide de frein, purge, flexibles, étriers/cylindres de roue, tambours ou disques, plaquettes/mâchoires, câbles de frein à main si frein arrière à tambour. Un mauvais résultat au contrôle technique peut venir d’un simple grippage ou d’un mauvais réglage.\n\nPour trouver la bonne pièce, le plus fiable est de chercher avec l’**immatriculation**, le **VIN** ou la référence d’origine constructeur. Des sites comme **Oscaro**, **Mister-Auto**, **Autodoc**, **Yakarouler** ou directement le réseau constructeur peuvent aider, mais il faut comparer visuellement les raccords, la position des sorties et le type de montage. Sur certains modèles, la pièce neuve devient rare ; on peut alors chercher en casse, chez **Opisto**, **France Casse**, ou sur des forums spécialisés de la marque.\n\nAprès remplacement, une **purge complète du circuit de freinage** et, si applicable, un **réglage de la biellette selon la hauteur de caisse** sont indispensables. C’est une pièce de sécurité : si elle fuit, est grippée ou mal réglée, le freinage peut devenir instable.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

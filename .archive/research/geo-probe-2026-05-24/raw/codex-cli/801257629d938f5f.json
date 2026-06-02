@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "cable de frein",
+  "prompt_normalized": "cable de frein",
+  "prompt_hash": "801257629d938f5f",
+  "gamme": "Câble de frein à main",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:06:32.807Z",
+  "model_version": null,
+  "duration_ms": 16386,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour un **câble de frein**, il faut d’abord identifier de quel frein on parle : sur une voiture, on parle le plus souvent du **câble de frein à main / frein de stationnement**, pas du freinage principal hydraulique.\n\nLes symptômes classiques d’un câble usé ou grippé sont : frein à main très dur ou au contraire trop lâche, voiture qui ne reste pas immobilisée en pente, levier qui monte trop haut, roue arrière qui reste légèrement freinée, bruit de frottement, ou contrôle technique signalant un déséquilibre du frein de stationnement.\n\nPour choisir la bonne pièce, il faut idéalement avoir :\n- la **marque, modèle, motorisation et année** du véhicule ;\n- le **VIN / numéro de série** si possible ;\n- savoir si c’est le câble **gauche, droit, central**, ou un kit complet ;\n- vérifier le type de frein arrière : **tambours** ou **disques avec étrier de frein à main**.\n\nDes marques fiables pour ce type de pièce : **TRW, ATE, Bosch, Febi Bilstein, Textar, NK, Cofle**. Pour l’achat, des sites comme **Oscaro, Mister-Auto, Autodoc, Yakarouler** ou directement un comptoir type **AD, Norauto, Feu Vert** permettent de filtrer par plaque ou immatriculation, mais il vaut mieux comparer avec la référence d’origine quand c’est possible.\n\nLe remplacement n’est pas toujours compliqué, mais il peut devenir pénible si les gaines sont grippées, les fixations rouillées ou si le réglage du frein à main est mal fait. Après montage, il faut régler la tension correctement : le frein doit bloquer franchement sans que les roues restent freinées une fois le levier relâché.\n\nSi le câble a cassé ou se grippe, je conseille de remplacer au minimum le câble concerné, et souvent les deux côtés arrière ensemble si le véhicule est ancien. Ça évite un déséquilibre au contrôle technique et une usure irrégulière.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

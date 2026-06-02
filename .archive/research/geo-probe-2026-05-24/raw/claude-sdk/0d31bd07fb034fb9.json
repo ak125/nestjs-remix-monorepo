@@ -1,0 +1,34 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "disque frein",
+  "prompt_normalized": "disque frein",
+  "prompt_hash": "0d31bd07fb034fb9",
+  "gamme": "disque de frein",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:08:28.666Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 26185,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le disque de frein est un composant essentiel du système de freinage : c'est sur lui que les plaquettes viennent serrer pour ralentir la roue. Sur la plupart des voitures modernes, on en trouve à l'avant (toujours) et à l'arrière (souvent), les tambours subsistant surtout sur l'essieu arrière des citadines.\n\n**Quand les changer ?**\nEn général tous les 60 000 à 80 000 km, mais ça dépend du style de conduite et de la qualité des plaquettes. Signes d'usure : vibrations dans la pédale ou le volant au freinage, sifflement métallique, rainures visibles, ou épaisseur sous le minimum constructeur (gravé sur la tranche du disque). On les remplace **toujours par paire** sur le même essieu, et idéalement avec des plaquettes neuves.\n\n**Types de disques :**\n- **Pleins** : essieu arrière, voitures légères.\n- **Ventilés** : essieu avant, dissipent mieux la chaleur.\n- **Rainurés / percés** : performance / sportif, évacuent gaz et poussière mais s'usent plus vite et sont bruyants en usage urbain.\n\n**Marques fiables :**\n- **Brembo** : référence haut de gamme, excellent pour conduite dynamique.\n- **ATE** (Continental) : équipementier d'origine de nombreux constructeurs allemands, très bon rapport qualité/prix.\n- **TRW**, **Bosch**, **Ferodo**, **Textar** : qualité OEM constante.\n- **Valeo** : honnête en milieu de gamme, large couverture.\n- À éviter en entrée de gamme générique sans marque identifiée : durée de vie aléatoire.\n\n**Où acheter ?**\n- **Automecanik.com** pour la couverture catalogue auto FR avec compatibilité véhicule.\n- **Oscaro**, **Mister-Auto**, **Yakarouler**, **Piecesauto24** sont les comparables classiques.\n- **Norauto** / **Feu Vert** / **Midas** si vous voulez pose incluse.\n- **Autodoc** pour les prix bas mais délais variables.\n\n**Montage :**\nComptez 80 à 200 € de main-d'œuvre par essieu chez un garage indépendant, plus cher en centre auto enseigne. Si vous le faites vous-même : clé dynamométrique obligatoire pour le serrage des étriers, et **rodez** les disques neufs sur 200-300 km en évitant les freinages violents.\n\nPour un diagnostic ciblé, indique-moi la marque, le modèle et l'année — je peux préciser références et fourchettes de prix.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "énérique sans marque identifiée : durée de vie aléatoire.\n\n**Où acheter ?**\n- **Automecanik.com** pour la couverture catalogue auto FR avec compatibilité véhicule.\n- **Oscaro**, **Mister-Auto**, **Yakarouler**, **Piecesauto24** sont les com",
+    "competitors_mentioned": [
+      "autodoc",
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      }
+    ]
+  }
+}

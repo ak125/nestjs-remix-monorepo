@@ -1,0 +1,25 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "plaquettes de frein bmw serie 1",
+  "prompt_normalized": "plaquettes de frein bmw serie 1",
+  "prompt_hash": "13025cd5762a1cd7",
+  "gamme": "disque de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:11:03.633Z",
+  "model_version": null,
+  "duration_ms": 16774,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour des **plaquettes de frein BMW Série 1**, il faut d’abord identifier précisément la voiture : **E81/E87/E88**, **F20/F21**, **F40**, motorisation, année, et surtout diamètre/type de freinage. Une 116d, 118d, 120i ou M Sport ne monte pas toujours les mêmes plaquettes.\n\nEn marques fiables, je viserais en priorité **ATE**, **Textar**, **TRW**, **Brembo**, **Bosch**, **Ferodo** ou **Jurid**. Pour une BMW utilisée normalement, **ATE** et **Textar** sont souvent d’excellents choix proches de l’origine. **Brembo** est très correct aussi, surtout si tu remplaces disques + plaquettes. **Bosch** convient bien pour un usage quotidien, souvent avec un bon rapport prix/prestation.\n\nÀ vérifier avant achat :\n- **Avant ou arrière** : les références sont différentes.\n- **Présence du témoin d’usure** : souvent à acheter séparément ou inclus selon le kit.\n- **Freinage standard ou M Sport** : les plaquettes peuvent changer complètement.\n- **Numéro VIN / immatriculation** : le plus sûr pour éviter l’erreur.\n\nPour acheter en France, tu peux comparer sur **Oscaro**, **Mister Auto**, **Autodoc**, **Norauto**, **Feu Vert** ou directement chez **BMW** si tu veux de l’origine. Oscaro liste par exemple plusieurs références pour Série 1 chez ATE, Brembo, Bosch, TRW, Ferodo et Valeo, avec des écarts de prix importants selon génération et motorisation.\n\nMon conseil pratique : si tu veux un choix simple et sérieux, prends **ATE ou Textar à l’avant**, avec **témoin d’usure neuf**, et change les disques si leur épaisseur est proche de la limite ou s’ils sont voilés/rayés. Évite les plaquettes premier prix inconnues : sur une Série 1, elles peuvent générer bruit, poussière excessive ou freinage moins constant.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "norauto",
+      "oscaro"
+    ],
+    "sources_cited": []
+  }
+}

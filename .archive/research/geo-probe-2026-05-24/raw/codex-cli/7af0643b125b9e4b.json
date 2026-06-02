@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "disque de frein bosch",
+  "prompt_normalized": "disque de frein bosch",
+  "prompt_hash": "7af0643b125b9e4b",
+  "gamme": "plaquette de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:38:31.272Z",
+  "model_version": null,
+  "duration_ms": 21323,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour “disque de frein Bosch”, le bon réflexe est de chercher par véhicule exact, pas seulement par marque : plaque d’immatriculation, VIN ou au minimum modèle, motorisation, année, diamètre de jante et essieu avant/arrière. Chez Bosch, une même voiture peut avoir plusieurs diamètres de disque selon finition ou option freinage.\n\nBosch est un choix sérieux en freinage : qualité correcte, disponibilité large, prix souvent intermédiaire. On trouve les références sur Oscaro, Mister-Auto, Auto-Doc, Yakarouler, Norauto, Feu Vert ou directement via un garage. Compare aussi avec Brembo, ATE, TRW, Ferodo et Valeo : sur une voiture courante, ces marques sont généralement au même niveau, parfois avec de meilleurs prix selon la référence.\n\nÀ vérifier avant achat :\n- diamètre du disque, épaisseur neuve et épaisseur minimale ;\n- disque plein ou ventilé ;\n- nombre de trous et entraxe ;\n- présence éventuelle d’un roulement ou d’une bague ABS intégrée, surtout à l’arrière ;\n- vendu à l’unité ou par paire. Les disques se remplacent toujours par paire sur le même essieu.\n\nJe recommande de remplacer les plaquettes en même temps que les disques, même si elles ne sont pas totalement usées. Des anciennes plaquettes peuvent mal porter sur un disque neuf et provoquer bruit, vibrations ou rodage médiocre. Prévois aussi nettoyant frein, graisse adaptée pour portées/colonnettes si nécessaire, et vis de disque neuves si elles sont fournies ou abîmées.\n\nSi tu cherches le meilleur rapport qualité/prix : Bosch convient très bien pour conduite normale. Pour conduite soutenue, montagne, véhicule lourd ou freinage sensible, regarde aussi ATE ou Brembo en équivalent exact. Évite les références inconnues très bon marché : sur le freinage, l’économie est rarement intéressante.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

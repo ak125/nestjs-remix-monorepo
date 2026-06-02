@@ -1,0 +1,33 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "filtre a gasoil clio 3",
+  "prompt_normalized": "filtre a gasoil clio 3",
+  "prompt_hash": "b15afa60248cb782",
+  "gamme": "Filtre à carburant",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:17:29.433Z",
+  "model_version": null,
+  "duration_ms": 38755,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour une Clio 3 (phase 1 ou 2, 2005-2014), le filtre à gasoil dépend du moteur — mais dans 95% des cas c'est un **1.5 dCi (K9K)** dans ses différentes puissances (65, 70, 75, 85, 90 ou 105 ch). Bonne nouvelle : c'est le même filtre pour quasiment toute la gamme dCi.\n\n**Références utiles**\n- OEM Renault : `7701066680` (ancienne réf, support métal) ou `164039594R` (réf récente, support plastique avec capteur d'eau).\n- Équivalents aftermarket fiables : **Mann-Filter WK 939/10 x**, **Purflux FCS750**, **Bosch F 026 402 067**, **Mahle KL 228/2D**, **Hengst H272WK**, **UFI 24.434.00**. Purflux et Mann sont souvent montés en première monte sur les K9K — choix sûr.\n\n⚠️ Attention au type de support : certaines Clio 3 phase 2 (à partir de ~2010) ont un filtre intégré au boîtier avec **capteur de présence d'eau** (connecteur 2 broches en bas). Vérifie visuellement le tien avant de commander — l'erreur la plus fréquente.\n\n**Où l'acheter en France**\n- **Oscaro**, **Mister-Auto**, **Yakarouler**, **AutoDoc**, **1001Pieces.fr** pour le web (15-25 € selon marque).\n- **Norauto**, **Feu Vert**, **Carter-Cash** en magasin si tu veux l'avoir tout de suite.\n- Concessionnaire ou agent Renault si tu veux du pur OEM (compte 35-45 €).\n\n**Remplacement**\nPréconisation Renault : tous les 40 000 km ou 2 ans. En vrai, sur les K9K, beaucoup le font tous les 20 000-30 000 km vu la sensibilité de la pompe HP au gasoil sale (les pompes Delphi/Bosch sur ces moteurs détestent l'eau et les impuretés).\n\n**Astuce pose** : après remplacement, ne pas oublier de **réamorcer** (poire d'amorçage ou contact ON/OFF répété 5-6 fois sans démarrer) sinon démarrage difficile et risque de désamorcer la pompe HP. Si capteur d'eau, bien reclipser le connecteur sinon voyant moteur.\n\nPour identifier la bonne réf, le plus fiable reste de taper ton **immatriculation** sur Oscaro ou Mister-Auto, ça te sort le filtre exact pour ton VIN.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "1001Pieces.fr",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "filtre a air peugeot 207",
+  "prompt_normalized": "filtre a air peugeot 207",
+  "prompt_hash": "32a09a753ee4721b",
+  "gamme": "Filtre à air",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:43:57.767Z",
+  "model_version": null,
+  "duration_ms": 35908,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le filtre à air de Peugeot 207 dépend de la motorisation, donc d'abord ta carte grise (champ D.2 = type variant version, ou simplement la cylindrée + année). Les trois cas courants :\n\n- **1.4 / 1.6 essence (8V, 16V, VTi)** : réf. OEM **Peugeot 1444.VR** ou **1444.TT** — équivalents Purflux **A1356**, Mann **C2295**, Bosch **F026400119**.\n- **1.4 HDi / 1.6 HDi (DV4/DV6 diesel)** : réf. OEM **1444.QQ** — équivalents Purflux **A1267**, Mann **C2295/1**, Mahle **LX1566**.\n- **1.6 THP (moteur essence turbo EP6)** : Purflux **A1308**, Mann **C24013**.\n\nLes marques sérieuses sur ce genre de pièce d'entretien : **Mann-Filter, Mahle, Purflux, Bosch, Hengst, Valeo, Filtron**. Évite les no-name à 3 € sur marketplace — le média filtrant est souvent trop poreux et tu encrasses le débitmètre (capteur MAF), c'est précisément ce que le filtre est censé protéger.\n\nPour l'achat en France, les références habituelles : **Oscaro**, **Mister-Auto**, **Yakarouler**, **Carter-Cash**, **Norauto** ou **Feu Vert** (plus cher en boutique, mais dispo immédiat), **Autodoc** (allemand, bons prix mais délai). Fourchette honnête : **8 à 18 €** pour une marque équipementier d'origine. Tu peux aussi croiser la réf sur **AutoDoc** ou **Oscaro** en saisissant ta plaque, ça filtre direct.\n\nLe remplacement est l'un des plus simples de la voiture : 5 à 10 minutes, boîtier en plastique sur le dessus du moteur, 4 clips ou 4 vis cruciformes selon le moteur, on extrait l'ancien, on dépoussière le boîtier, on pose le nouveau dans le bon sens (la flèche ou les plis vers le haut), on referme. Intervalle constructeur : **tous les 30 000 km** ou 2 ans, à raccourcir en zone urbaine/poussiéreuse.\n\nTutos vidéo très clairs sur **YouTube** (recherche \"filtre à air 207 + ta motorisation\") et le **Forum-Peugeot** a un fil dédié par moteur avec photos.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

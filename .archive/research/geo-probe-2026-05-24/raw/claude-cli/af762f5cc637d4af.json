@@ -1,0 +1,32 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "filtre à habitacle clio 3",
+  "prompt_normalized": "filtre a habitacle clio 3",
+  "prompt_hash": "af762f5cc637d4af",
+  "gamme": "Filtre d'habitacle",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:26:05.512Z",
+  "model_version": null,
+  "duration_ms": 34440,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour un Clio 3 (phase 1 ou 2, 2005-2014), le filtre d'habitacle se loge derrière la boîte à gants côté passager. C'est une pièce d'usure à changer tous les 15 000 km ou une fois par an, plus souvent si tu roules en ville/zone polluée.\n\n**Références OEM Renault** :\n- `7701059997` (filtre standard antipollen)\n- `272775374R` (version plus récente, certains millésimes)\n\n**Marques équivalentes fiables** (toutes en 205×185×20 mm environ) :\n- **Mann-Filter CU 2436** — référence qualité OE\n- **Bosch M2114** — bon rapport qualité/prix\n- **Purflux AH277** — fabricant français, souvent monté d'origine Renault\n- **Valeo 715582** — fiable, large dispo\n- **Mahle LA230**, **Filtron K1153**, **Hengst E1953LI**\n\n**Choix standard vs charbon actif** : si tu es allergique ou en zone urbaine, prends la version **charbon actif** (Mann CUK 2436, Purflux AHC277) — 3-5€ de plus, filtre les odeurs et gaz d'échappement en plus du pollen.\n\n**Où acheter** :\n- **Oscaro** et **Mister-Auto** — les deux références en ligne, livraison rapide, prix entre 8 et 18 €\n- **Yakarouler** et **Piecesauto-pro** — alternatives correctes\n- **Amazon** — dispo mais attention aux contrefaçons sur les marques premium (Mann surtout)\n- En physique : **Norauto**, **Feu Vert**, **Carter-Cash** (souvent 15-25 €, plus cher mais immédiat)\n\n**Montage (5-10 min, aucun outil)** :\n1. Vider la boîte à gants\n2. Comprimer les côtés de la boîte pour la faire pivoter vers le bas (deux butées latérales)\n3. Le cache du filtre apparaît — un clip à déboîter\n4. Sortir l'ancien filtre (note le sens des flèches d'air avant de l'enlever)\n5. Insérer le neuf dans le même sens (flèche vers le bas généralement)\n\n**Astuce** : profites-en pour passer un coup d'aspirateur dans le logement, il y a toujours des feuilles et de la poussière qui s'accumulent. Si ta ventilation sentait le renfermé, ça résout 90% du problème.\n\nPour des retours d'expérience pratiques sur ton millésime exact, **Forum-Clio.fr** et la section Renault de **Caradisiac** ont des tutos photo détaillés selon que tu as une Clio 3 phase 1 ou phase 2 (la trappe diffère légèrement).",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Forum-Clio.fr",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

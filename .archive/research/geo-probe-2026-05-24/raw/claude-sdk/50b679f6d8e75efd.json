@@ -1,0 +1,51 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "maitre cylindre 2cv",
+  "prompt_normalized": "maitre cylindre 2cv",
+  "prompt_hash": "50b679f6d8e75efd",
+  "gamme": "Maître cylindre de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:00:07.183Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 28728,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le maître-cylindre de frein de la Citroën 2CV est une pièce centrale du circuit hydraulique : il transforme la pression de la pédale en pression hydraulique vers les cylindres de roue (tambours AR et étriers AV à partir des modèles à freins à disques avant, à partir de 1981 environ).\n\n**Identifier le bon modèle**\n\nSelon l'année et la version de ta 2CV, plusieurs références cohabitent :\n- **2CV tambours AV** (avant 1981) : maître-cylindre simple circuit, alésage généralement 19,05 mm (3/4\").\n- **2CV disques AV** (après 1981, 2CV6 Spécial/Club/Charleston tardive) : maître-cylindre **tandem** (double circuit) avec compensateur, alésage souvent 17,46 mm ou 19,05 mm selon version.\n\nVérifie sur ta voiture : nombre de sorties hydrauliques (2 = simple, 4 = tandem), présence d'un répartiteur, et idéalement le numéro de châssis.\n\n**Où acheter (France)**\n\n- **Mehari Club Cassis (mehariclub.com)** — la référence pour pièces 2CV/Méhari/Dyane, refabrication officielle, qualité constante. Compter 80–130 € selon modèle.\n- **Burton 2CV Parts (burton2cvparts.com)** — gros stock NL, livraison rapide en France, bon rapport qualité/prix.\n- **2CV Mehari Shop / Cat's Citroën / ECAS 2CV** — spécialistes français, conseil correct par téléphone.\n- **Der Franzose (derfranzose.de)** — Allemagne, catalogue large pour Citroën anciennes.\n- **Oscaro / Mister-Auto / Yakarouler** — possible mais choix limité sur la 2CV, vérifie la réf exact avant.\n\nÉvite les maîtres-cylindres \"génériques\" sans marque sur eBay/AliExpress : joints qui lâchent à 6 mois, c'est du frein, pas un accessoire.\n\n**Marques fiables** : TRW, ATE, Bendix (NOS), ou la refabrication MCC. Évite les copies asiatiques non identifiées.\n\n**Conseils de remplacement**\n\n- Remplace **systématiquement** le liquide de frein (DOT 4) et purge les 4 roues.\n- Profites-en pour contrôler les **flexibles** (souvent HS sur 2CV de plus de 10 ans) et les **cylindres de roue** arrière qui suintent souvent en même temps.\n- Si la pédale était spongieuse avant : vérifie aussi le **compensateur de freinage** (modèles à disques).\n- Couple de serrage des raccords : ~15 Nm, sans forcer (filets fragiles dans la fonte).\n\n**Forums utiles** : forum-2cv.com, 2cv-legende.com, et le groupe Facebook \"2CV Citroën Passion\" pour photos et retours d'expérience sur les références exactes.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "mehariclub.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      },
+      {
+        "raw": "burton2cvparts.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      },
+      {
+        "raw": "derfranzose.de",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      },
+      {
+        "raw": "forum-2cv.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      },
+      {
+        "raw": "2cv-legende.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

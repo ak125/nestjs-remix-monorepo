@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "maitre cylindre de frein prix",
+  "prompt_normalized": "maitre cylindre de frein prix",
+  "prompt_hash": "00ba0a87a9b625b6",
+  "gamme": "Maître cylindre de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:03:50.369Z",
+  "model_version": null,
+  "duration_ms": 14080,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le prix d’un **maître-cylindre de frein** dépend surtout du modèle de voiture, de la marque de la pièce et du fait qu’il soit vendu seul ou avec réservoir/capteurs.\n\nEn France, compte en général :\n\n- **Pièce seule en adaptable** : environ **35 à 120 €**\n- **Marque reconnue** comme TRW, Bosch, ATE, LPR, Febi, Bendix : souvent **60 à 180 €**\n- **Pièce constructeur / origine** : plutôt **150 à 350 €**, parfois plus sur véhicules récents ou premium\n- **Main-d’œuvre garage** : généralement **1 à 2 h**, soit environ **70 à 200 €**\n- **Purge du liquide de frein** : souvent incluse ou facturée en plus, avec du liquide DOT 4/DOT 5.1 selon véhicule\n\nAu total, remplacement compris, prévois souvent **150 à 400 €** dans un garage indépendant, et davantage en concession.\n\nPour comparer les prix de pièces, tu peux regarder sur **Oscaro, Mister-Auto, Autodoc, Yakarouler** ou directement chez un distributeur type **AD, Norauto, Feu Vert**. Le plus important est d’entrer l’immatriculation ou le VIN, car plusieurs maîtres-cylindres peuvent exister pour une même motorisation selon ABS/ESP, diamètre de piston, montage Bendix/ATE/TRW, etc.\n\nSignes typiques d’un maître-cylindre fatigué : pédale de frein qui s’enfonce lentement, freinage spongieux malgré une purge, perte de pression sans fuite visible, ou voyant de frein/liquide. Avant de le remplacer, il faut quand même vérifier les flexibles, étriers/cylindres de roue, servo-frein et fuites de liquide.\n\nMon conseil : éviter les pièces premier prix inconnues sur le freinage. Une marque comme **ATE, TRW, Bosch ou Brembo** vaut souvent les quelques dizaines d’euros de plus.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

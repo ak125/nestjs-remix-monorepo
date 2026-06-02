@@ -1,0 +1,25 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "contacteur feux stop 206",
+  "prompt_normalized": "contacteur feux stop 206",
+  "prompt_hash": "62d4b9dd7ddbc156",
+  "gamme": "Interrupteur des feux de freins",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:55:42.080Z",
+  "model_version": null,
+  "duration_ms": 16979,
+  "ok": true,
+  "error": null,
+  "response_raw": "Sur Peugeot 206, le **contacteur de feux stop** est le petit interrupteur fixé au niveau de la **pédale de frein**. Quand tu appuies sur la pédale, il allume les feux stop et peut aussi envoyer l’info au calculateur, à l’ABS/ESP ou au régulateur selon version.\n\nSymptômes typiques d’un contacteur HS ou mal réglé :\n\n- feux stop qui ne s’allument plus ;\n- feux stop qui restent allumés en permanence ;\n- voyant ABS/ESP ou anomalie freinage selon modèle ;\n- régulateur qui ne fonctionne plus ;\n- difficulté à sortir le levier de boîte auto de la position P, sur certaines versions.\n\nPour une **Peugeot 206**, la pièce coûte généralement peu cher. Cherche avec les termes : **“contacteur feux stop Peugeot 206”**, **“interrupteur pédale frein 206”** ou avec ton **VIN** pour éviter l’erreur. Les références peuvent varier selon année, motorisation, multiplexage, présence d’ABS/ESP, boîte auto, etc. Les marques courantes correctes : **Valeo, FAE, Febi Bilstein, Hella, Metzger**, ou pièce d’origine Peugeot/Stellantis.\n\nLe remplacement est souvent simple : le contacteur est au-dessus de la pédale de frein, parfois clipsé avec un quart de tour. Il faut généralement déposer le cache sous volant, débrancher la prise, tourner/déclipser l’ancien contacteur, puis monter le neuf. Attention : certains modèles ont un **réglage automatique de la tige** ; il faut le poser pédale au repos sans forcer, sinon les feux peuvent rester allumés ou ne pas déclencher au bon moment.\n\nAvant d’acheter, vérifie aussi :\n\n- les ampoules de feux stop ;\n- le fusible correspondant ;\n- l’état de la prise du contacteur ;\n- si le troisième feu stop fonctionne ou non.\n\nPour acheter, **Oscaro, Mister-Auto, Auto-Doc, Yakarouler** ou le comptoir Peugeot peuvent convenir, mais le plus sûr reste de filtrer avec l’immatriculation ou le VIN.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

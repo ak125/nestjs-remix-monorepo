@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "frein de tambour",
+  "prompt_normalized": "frein de tambour",
+  "prompt_hash": "12d6fa9d77d36ee0",
+  "gamme": "Tambour de frein",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:22:19.570Z",
+  "model_version": null,
+  "duration_ms": 16069,
+  "ok": true,
+  "error": null,
+  "response_raw": "Un **frein à tambour** est un système de freinage encore très courant sur les roues arrière de nombreuses voitures, surtout les citadines, utilitaires légers et modèles économiques. Il fonctionne avec deux **mâchoires de frein** qui viennent frotter contre l’intérieur d’un **tambour métallique** fixé à la roue. Quand vous appuyez sur la pédale, un cylindre de roue écarte les mâchoires, ce qui ralentit la rotation.\n\nPar rapport au frein à disque, le tambour est souvent moins performant en conduite sportive ou en usage intensif, car il évacue moins bien la chaleur. En revanche, il est robuste, économique, bien protégé de la poussière extérieure, et très adapté au freinage arrière. Il sert aussi fréquemment au **frein de parking**, avec un mécanisme à câble.\n\nLes signes d’usure ou de problème sont assez typiques : frein à main qui monte trop haut, bruit de frottement ou de grincement, roue arrière qui bloque, freinage déséquilibré, pédale molle, fuite de liquide au niveau du cylindre de roue, ou garnitures très usées. Sur certains véhicules, un mauvais réglage du rattrapage automatique peut aussi donner une sensation de freinage faible à l’arrière.\n\nPour les pièces, on parle souvent de **kit de freins arrière** comprenant mâchoires, ressorts et parfois cylindres de roue. Les marques fiables incluent **Bosch, TRW, ATE, Brembo, Ferodo, Valeo** ou **Delphi**. Pour identifier la bonne référence, mieux vaut utiliser l’immatriculation ou le VIN sur des sites comme **Oscaro, Mister-Auto, Autodoc, Yakarouler** ou directement via un garage.\n\nLors du remplacement, il est recommandé de faire les deux côtés du même essieu, de contrôler les cylindres de roue, de dépoussiérer proprement, puis de régler le frein à main si nécessaire. Après montage, le freinage peut demander quelques kilomètres pour se roder correctement.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

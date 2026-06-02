@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "filtre a gasoil clio 3",
+  "prompt_normalized": "filtre a gasoil clio 3",
+  "prompt_hash": "b15afa60248cb782",
+  "gamme": "Filtre à carburant",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:16:50.678Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 33413,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour une **Clio 3** (2005-2014), le filtre à gasoil dépend de la motorisation — dans 90% des cas c'est le **1.5 dCi** (moteur K9K, 65/85/90/105 ch).\n\n**Références fiables (1.5 dCi)** :\n- **OEM Renault** : 8200697875 ou 16400-84A00 (selon millésime)\n- **Mann-Filter** : WK 939/1 — référence la plus citée sur Forum-Auto et Planete-Renault, qualité OEM\n- **Bosch** : 1457434511 (F026402067)\n- **Purflux** : FCS707 ou FCS708\n- **Mahle** : KL 248\n- **Hengst** : H70WK04\n\nPour le **1.9 dCi** (F9Q, plus rare sur Clio 3) : Mann WK 842/2 ou Purflux CS713.\n\n**Où acheter** :\n- **Oscaro** et **Mister-Auto** sont les plus fiables niveau prix/référencement avec sélecteur de véhicule par immatriculation (compte 10-18 € selon marque)\n- **Yakarouler** souvent un peu moins cher mais délais variables\n- **Autodoc** large catalogue mais SAV moyen\n- **Carter-Cash** ou **Norauto** si tu veux récupérer en magasin le jour même\n- Concession Renault : ~25-30 € pour la pièce d'origine\n\n**Intervalle de remplacement** : 30 000 km en préco Renault, mais beaucoup de mécanos sur Forum-Auto recommandent 20 000 km vu la qualité variable du gasoil — surtout si tu prends en station bas de gamme.\n\n**Procédure (1.5 dCi)** :\n1. Filtre situé sur le passage de roue avant droit (ou sous le capot côté batterie selon année)\n2. Pince les durites carburant avant démontage, prévoir chiffons (ça coule)\n3. Sur les versions avec **réchauffeur électrique** et **capteur d'eau**, transférer les deux sur le filtre neuf\n4. Amorçage : pompe noire à main sur le filtre, pomper jusqu'à dureté\n5. Démarrage : ça peut tousser 2-3 secondes, normal\n\n**Conseil** : évite les filtres no-name à 5 € sur Amazon ou eBay — un mauvais filtre = pompe HP qui souffre, et sur K9K la pompe HP coûte 400-600 €. Reste sur Mann, Bosch, Purflux ou Mahle.\n\nTu connais la motorisation et l'année exacte ? Je peux préciser la réf si besoin.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "contacteur de feux stop",
+  "prompt_normalized": "contacteur de feux stop",
+  "prompt_hash": "b0dfdf76ec41d2f6",
+  "gamme": "Interrupteur des feux de freins",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:27:27.450Z",
+  "model_version": null,
+  "duration_ms": 14801,
+  "ok": true,
+  "error": null,
+  "response_raw": "Un **contacteur de feux stop** est l’interrupteur qui allume les feux de freinage quand tu appuies sur la pédale de frein. Il est généralement situé **au-dessus ou derrière la pédale de frein**, fixé sur le pédalier. Sur certaines voitures récentes, il sert aussi à informer l’ABS/ESP, le régulateur de vitesse, la boîte automatique ou le calculateur moteur.\n\nLes symptômes typiques d’un contacteur défectueux sont :\n\n- feux stop qui ne s’allument plus ;\n- feux stop qui restent allumés en permanence ;\n- voyant ESP/ABS allumé ;\n- régulateur de vitesse qui ne fonctionne plus ;\n- impossibilité de sortir le levier de boîte auto de la position P ;\n- message type “défaut freinage”, “contacteur pédale de frein” ou code défaut au diagnostic.\n\nLa pièce coûte souvent **entre 8 et 30 €** en adaptable, parfois plus en origine constructeur. On en trouve facilement chez **Oscaro, Mister-Auto, Autodoc, Norauto, Feu Vert**, ou directement en concession Renault, Peugeot, Citroën, Volkswagen, etc. Il faut choisir selon **la marque, le modèle, l’année, la motorisation** et parfois le numéro OEM, car il existe plusieurs formes : 2 broches, 4 broches, avec réglage automatique, quart de tour, clipsé, etc.\n\nLe remplacement est souvent simple : débrancher la batterie si nécessaire, accéder au pédalier, déconnecter la prise, tourner ou déclipser l’ancien contacteur, puis monter le nouveau. Attention toutefois : certains modèles doivent être **réglés ou initialisés correctement**. S’il est mal positionné, les feux stop peuvent rester allumés ou ne pas s’allumer au bon moment.\n\nAvant de remplacer, vérifie aussi les **ampoules**, le **fusible**, l’état du connecteur et la présence de courant. Si les deux feux stop ne fonctionnent plus d’un coup, le contacteur est une piste très probable.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro"
+    ],
+    "sources_cited": []
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "filtre a huile",
+  "prompt_normalized": "filtre a huile",
+  "prompt_hash": "d7d4111ee88bb270",
+  "gamme": "Filtre à huile",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:13:29.696Z",
+  "model_version": null,
+  "duration_ms": 14902,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour choisir un **filtre à huile**, le point clé est la compatibilité exacte avec le véhicule : **marque, modèle, année, motorisation, puissance, code moteur si possible**. Un filtre qui se ressemble peut avoir un filetage, un clapet anti-retour ou une pression de dérivation différente.\n\nLes bonnes marques à privilégier : **Mann-Filter, Purflux, Bosch, Mahle, Knecht, UFI, Hengst**. Évite les filtres très bas de gamme sans référence claire, surtout sur moteurs turbo, diesel récents ou véhicules avec intervalles de vidange longs.\n\nIl existe deux grands types :\n- **Filtre vissé métallique** : cartouche complète que l’on remplace entièrement.\n- **Cartouche papier** : seul l’élément filtrant se remplace, souvent avec un joint neuf fourni.\n\nLors d’une vidange, il faut idéalement remplacer le filtre à huile à chaque fois. Un vieux filtre peut contaminer l’huile neuve et réduire la lubrification. Pense aussi à changer le **joint du bouchon de vidange** si nécessaire.\n\nPour acheter, tu peux chercher par plaque ou modèle sur **Oscaro, Mister-Auto, Autodoc, Norauto, Feu Vert** ou directement chez un distributeur de pièces auto. Si tu veux une référence fiable, compare avec la référence constructeur ou une référence Mann/Purflux équivalente.\n\nAu montage : lubrifie légèrement le joint avec de l’huile propre, serre à la main ou au couple recommandé, puis démarre le moteur quelques secondes et vérifie l’absence de fuite. Après quelques minutes, contrôle le niveau d’huile et ajuste si besoin.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro"
+    ],
+    "sources_cited": []
+  }
+}

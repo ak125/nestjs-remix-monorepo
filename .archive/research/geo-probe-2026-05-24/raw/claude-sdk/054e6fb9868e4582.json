@@ -1,0 +1,31 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "etrier de freins grippé",
+  "prompt_normalized": "etrier de freins grippe",
+  "prompt_hash": "054e6fb9868e4582",
+  "gamme": "Étrier de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:44:44.829Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 29483,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Étrier de frein grippé : diagnostic et solutions\n\n**Symptômes typiques** : voiture qui tire d'un côté au freinage, odeur de brûlé après quelques kilomètres, jante anormalement chaude au toucher (attention, risque de brûlure), bruit de frottement permanent, consommation en hausse, plaquettes usées de façon asymétrique.\n\n**Causes les plus fréquentes** :\n- **Piston d'étrier grippé** dans son alésage (corrosion du joint, liquide de frein dégradé chargé d'humidité)\n- **Colonnettes de guidage** (axes coulissants) sèches ou rouillées — c'est le cas n°1 sur les étriers flottants type Bosch/TRW/ATE\n- **Câble de frein à main grippé** côté arrière (gaine corrodée)\n- **Flexible de frein interne effondré** : le liquide pousse mais ne revient pas → piston reste sorti\n\n**Diagnostic rapide** : roue en l'air, faire tourner à la main. Si ça force franchement et que ça libère après avoir ouvert la purge (le liquide gicle), c'est le flexible. Si ça reste dur purge ouverte, c'est mécanique (piston ou colonnettes).\n\n**Réparation** :\n1. Démontage étrier, nettoyage des colonnettes à la brosse métallique, regraissage à la **graisse cuivre haute température** ou **graisse silicone Ate Plastilube** (jamais de graisse normale, elle attaque les caoutchoucs).\n2. Si piston grippé : kit de réparation (joint + cache-poussière) chez **Frenkit** ou **ATE**, environ 15-25 €. Repousse au repousse-piston, vérifier l'état du chrome — si piqué, étrier neuf obligatoire.\n3. Étrier complet neuf ou échange standard : compter 60-150 € pièce sur **Oscaro**, **Mister-Auto**, **Yakarouler** ou **Automecanik.com**. Marques fiables : **TRW**, **ATE**, **Brembo**, **Bosch**, **Cifam** (entrée de gamme correcte).\n4. Purge du circuit obligatoire après intervention, liquide **DOT 4** (changement tous les 2 ans recommandé).\n\n**Coût garage** : 150-300 € par étrier main d'œuvre comprise.\n\n**Forums utiles** pour confirmer le modèle exact : **Forum-Auto**, **Caradisiac**, ou les forums dédiés à votre marque (Planète Citroën, Forum-Peugeot, Audi-Passion, etc.). Cherchez la référence OE de votre étrier sur **Oscaro** ou **Mister-Auto** avec votre plaque pour éviter l'erreur de référence (côté G/D, avec ou sans capteur d'usure).\n\nÀ ne pas négliger : un étrier grippé qui chauffe peut voiler le disque — vérifiez son épaisseur et son état avant de remonter.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "d : compter 60-150 € pièce sur **Oscaro**, **Mister-Auto**, **Yakarouler** ou **Automecanik.com**. Marques fiables : **TRW**, **ATE**, **Brembo**, **Bosch**, **Cifam** (entrée de gamme correcte).\n4. Purge du circuit obligatoire après interv",
+    "competitors_mentioned": [
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      }
+    ]
+  }
+}

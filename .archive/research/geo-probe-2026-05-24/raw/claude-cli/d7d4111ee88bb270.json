@@ -1,0 +1,33 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "filtre a huile",
+  "prompt_normalized": "filtre a huile",
+  "prompt_hash": "d7d4111ee88bb270",
+  "gamme": "Filtre à huile",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:13:14.793Z",
+  "model_version": null,
+  "duration_ms": 36880,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le filtre à huile retient les particules métalliques, suies et résidus de combustion qui contaminent l'huile moteur. On le remplace **systématiquement à chaque vidange** (tous les 10 000 à 30 000 km selon le moteur et l'huile, ou une fois par an minimum).\n\n**Comment choisir le bon filtre**\n\nTrois infos suffisent : marque, modèle, motorisation exacte (ex. Peugeot 308 1.6 BlueHDi 120). Avec ça tu trouves la référence via :\n\n- **Oscaro**, **Mister-Auto**, **Yakarouler**, **Auto-doc** : catalogues compatibilité véhicule fiables, prix compétitifs (5–20 € selon marque)\n- **Norauto**, **Feu Vert**, **Midas** : utile si tu veux acheter + faire poser\n- **iParts**, **AutoPartner24** (Allemagne) : souvent moins cher pour les filtres Mahle/Mann d'origine\n- Le **carnet d'entretien constructeur** ou un site comme **TecDoc** donne la référence OEM exacte\n\n**Marques recommandées**\n\n- **Première monte** (qualité OEM, recommandé) : **Mann-Filter**, **Mahle**, **Bosch**, **Hengst**, **Purflux** (FR, équipe PSA), **Valeo**\n- **Bon rapport qualité/prix** : **Fram**, **Champion**, **Filtron**\n- À éviter : marques no-name à 2–3 € sur Amazon/AliExpress — média filtrant médiocre, by-pass mal calibré, risque réel d'encrassement prématuré du moteur\n\n**Pour le remplacement DIY**\n\nSur la plupart des essences c'est 15 minutes avec une clé à sangle ou clé cloche adaptée au diamètre du filtre. Sur les diesels modernes (cartouche dans boîtier plastique sur le dessus du moteur), c'est encore plus simple — souvent une clé de 27 ou 32 suffit. Pense à :\n\n1. Lubrifier le joint neuf avec de l'huile propre avant montage\n2. Serrer à la main + ¾ de tour (pas plus, sinon joint écrasé = fuite)\n3. Vérifier l'absence de fuite après démarrage et contrôler le niveau à chaud\n\n**Ressources utiles**\n\n- **Forum-auto.caradisiac.com**, **Forum Peugeot/Renault/Citroën** : retours d'expérience par modèle\n- **YouTube** : chaînes comme **Vilebrequin**, **Mecano Mickael**, **PJ Mécanique** pour les tutos visuels\n- **ETAI/Revue Technique Automobile (RTA)** : la référence pour les procédures officielles\n\nSi tu me donnes ton modèle exact, je peux t'orienter vers la bonne référence.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Forum-auto.caradisiac.com",
+        "cluster": "forum_communautaire",
+        "matchedDomain": "forum-auto.caradisiac.com"
+      }
+    ]
+  }
+}

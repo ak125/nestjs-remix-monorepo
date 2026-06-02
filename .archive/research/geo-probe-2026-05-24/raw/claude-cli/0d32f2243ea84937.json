@@ -1,0 +1,34 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "disque de frein",
+  "prompt_normalized": "disque de frein",
+  "prompt_hash": "0d32f2243ea84937",
+  "gamme": "disque de frein",
+  "volume": 50000,
+  "captured_at": "2026-05-24T15:05:15.037Z",
+  "model_version": null,
+  "duration_ms": 28939,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le disque de frein est une pièce d'usure essentielle du système de freinage : c'est sur lui que viennent serrer les plaquettes pour ralentir le véhicule. Il s'use en parallèle des plaquettes mais sur un cycle plus long (en général 2 jeux de plaquettes pour 1 jeu de disques).\n\n**Quand les remplacer**\n- Épaisseur sous le minimum gravé sur la tranche du disque (ex. « MIN TH 22.0 mm »)\n- Voile, rainures profondes, gorge marquée en périphérie\n- Vibrations dans la pédale ou le volant au freinage\n- Toujours par paire sur le même essieu, et avec des plaquettes neuves\n\n**Types courants**\n- **Pleins** : voitures légères, essieu arrière\n- **Ventilés** : avant de la plupart des berlines/SUV\n- **Rainurés / percés** : usage sportif ou conduite chargée\n- **Carbone-céramique** : haut de gamme, très cher\n\n**Marques de référence (équipementiers d'origine)**\nBrembo, ATE, TRW, Bosch, Ferodo, Textar, Pagid, Zimmermann, Mintex, Valeo, Delphi. Pour la plupart des véhicules courants, ATE / Brembo / Bosch / Textar sont des choix sûrs au bon rapport qualité-prix. Évitez les disques no-name à très bas prix : la qualité de l'acier et l'équilibrage influent directement sur la sécurité.\n\n**Où acheter en France**\n- **Spécialistes pièces auto en ligne** : Oscaro, Mister-Auto, Yakarouler, Auto Doc, Piecesauto.fr, AutoMecanik\n- **Réseaux physiques** : Norauto, Feu Vert, Speedy, Midas (souvent avec pose)\n- **Comparateurs / avis** : Idealo, Caradisiac, forums comme Forum-Auto ou Planète Citroën / Forum-Peugeot pour les retours d'expérience par modèle\n\n**Compatibilité**\nIndispensable : indiquer la marque, le modèle, la motorisation et l'année — ou mieux, le code moteur ou le numéro VIN. Le diamètre du disque varie selon la motorisation (un 1.6 HDi 90 ch et un 2.0 HDi 150 ch n'ont pas les mêmes disques).\n\n**Pose**\nCompter 1 à 2 h par essieu en atelier, 150–350 € main d'œuvre comprise selon le véhicule et la gamme de pièces. À faire impérativement avec rodage doux sur les 200 premiers kilomètres (freinages progressifs, pas d'arrêt complet prolongé après freinage appuyé).",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "ces auto en ligne** : Oscaro, Mister-Auto, Yakarouler, Auto Doc, Piecesauto.fr, AutoMecanik\n- **Réseaux physiques** : Norauto, Feu Vert, Speedy, Midas (souvent avec pose)\n- **Comparateurs / avis** : Idealo, Caradisiac, forums comme Forum-Au",
+    "competitors_mentioned": [
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Piecesauto.fr",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

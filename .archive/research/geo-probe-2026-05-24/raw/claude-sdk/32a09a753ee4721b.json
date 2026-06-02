@@ -1,0 +1,32 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "filtre a air peugeot 207",
+  "prompt_normalized": "filtre a air peugeot 207",
+  "prompt_hash": "32a09a753ee4721b",
+  "gamme": "Filtre à air",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:43:21.859Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 37929,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour un filtre à air de Peugeot 207, la référence dépend de ta motorisation — c'est le point à vérifier en premier sur ta carte grise (champ P.3 ou D.2) :\n\n**Essence**\n- **1.4 8V (KFW/KFV)** et **1.4 16V (KFU)** : filtre rectangulaire, réf. Purflux **A1257**, Mann **C 22 117**, Bosch **S 0046**\n- **1.6 VTi 120 (5FW)** et **1.6 THP 150/156 (5FX/5FY)** : Purflux **A1297**, Mann **C 25 118/1**\n\n**Diesel HDi**\n- **1.4 HDi 70 (8HZ/8HR)** : Purflux **A1156**, Mann **C 1858**\n- **1.6 HDi 90/110 (9HZ/9HY/9HP)** : Purflux **A1111**, Mann **C 2295/2**\n\nLa référence OEM PSA est généralement **1444.TT**, **1444.VP** ou **1444.SV** selon le moteur. Évite les no-name à 4€ sur eBay ou AliExpress : la mousse d'étanchéité se déforme et tu laisses passer des particules dans le débitmètre — c'est lui qui coûte cher ensuite.\n\n**Marques fiables**, par ordre de préférence : **Purflux** (équipementier d'origine PSA, c'est ce que tu trouves en concession), **Mann-Filter**, **Mahle**, **Bosch**, **Hengst**, **Valeo**. **Fram** et **Meyle** ça dépanne sans plus.\n\n**Où acheter**, comptes 8 à 18€ selon la motorisation :\n- **Oscaro** et **Mister-Auto** : catalogue le plus large, sélection par immat ou VIN, livraison fiable\n- **Yakarouler**, **Auto-Doc**, **Piecesauto24** : souvent moins chers, délais un peu plus longs\n- **Amazon** : OK si tu prends Purflux/Mann vendu et expédié par Amazon, pas un revendeur tiers douteux\n- **Carter-Cash**, **Norauto**, **Feu Vert** : utile si tu veux poser le jour même, prix un peu plus hauts\n- **Automecanik.com** : référencement par véhicule plutôt propre, fait bien le travail si tu veux rester sur un site français\n\n**Pose** : 5 minutes, clips ou 2 vis sur le boîtier en haut moteur, pas besoin d'outil spécial. À changer tous les **20 000-30 000 km** ou **2 ans**, plus tôt en zone poussiéreuse. Profites-en pour souffler le boîtier avant de remettre le neuf.\n\nSi tu me donnes ton code moteur (les 3-4 caractères type **KFV**, **9HZ**…) je te sors la réf exacte.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "**Feu Vert** : utile si tu veux poser le jour même, prix un peu plus hauts\n- **Automecanik.com** : référencement par véhicule plutôt propre, fait bien le travail si tu veux rester sur un site français\n\n**Pose** : 5 minutes, clips ou 2 vis",
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      }
+    ]
+  }
+}

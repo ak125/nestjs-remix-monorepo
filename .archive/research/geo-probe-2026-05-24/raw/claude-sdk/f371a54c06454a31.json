@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "filtre a air c4",
+  "prompt_normalized": "filtre a air c4",
+  "prompt_hash": "f371a54c06454a31",
+  "gamme": "Filtre à air",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:23:19.527Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 38911,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour un **filtre à air de Citroën C4**, le bon choix dépend d'abord de la motorisation et de la génération (C4 I 2004-2010, C4 II 2010-2018, C4 III/C4 X depuis 2020, ou C4 Picasso/Grand Picasso). Note la référence moteur sur la carte grise (case D.2) ou regarde le code moteur sur le bloc — c'est plus fiable qu'un simple \"C4\".\n\n### Les motorisations les plus courantes et leurs filtres\n\n- **1.6 HDi (DV6)** : filtre panneau rectangulaire. Références fréquentes : Purflux **A1111**, Mann **C 26 168**, Bosch **F026400220**.\n- **1.6 VTi / THP (EP6)** : Purflux **A1304**, Mann **C 27 009**.\n- **2.0 HDi (DW10)** : Purflux **A1112**, Mann **C 35 154**.\n- **1.2 PureTech (EB2)** sur C4 II phase 2 et C4 III : Purflux **A1370**, Mann **C 24 005**.\n\n### Marques fiables\n\n**Purflux** (équipementier français d'origine sur beaucoup de PSA), **Mann-Filter**, **Mahle**, **Bosch**, **Hengst** — ce sont les choix sûrs en première monte ou équivalents OEM. Évite les no-name à 3 € sur certaines marketplaces : le média filtrant est souvent trop poreux et le joint mal calibré (fuites d'air non filtré → usure du débitmètre).\n\n### Où l'acheter\n\n- **Oscaro** et **Mister-Auto** : catalogues bien filtrés par immatriculation, prix corrects, retours faciles.\n- **Yakarouler**, **123pieces**, **Piecesauto24** : alternatives compétitives.\n- **Norauto / Feu Vert / Speedy** en magasin si tu veux repartir avec aujourd'hui.\n- **Citroën / Eurorepar** en concession pour la pièce constructeur (plus cher, généralement Purflux rebadgé).\n\nCompte **8–18 €** pour un filtre de qualité selon la motorisation.\n\n### Remplacement\n\nTous les **20 000 à 30 000 km** ou tous les 2 ans, plus souvent en zone urbaine/poussiéreuse. C'est une opération de 5 minutes : boîtier en haut moteur, quelques clips ou vis Torx, on extrait l'ancien et on insère le neuf dans le bon sens (flèche vers l'admission). Profites-en pour aspirer le boîtier avant de refermer.\n\nSi tu me donnes ta motorisation exacte ou ton immatriculation, je te confirme la référence précise.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

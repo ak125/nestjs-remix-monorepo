@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "flexible frein",
+  "prompt_normalized": "flexible frein",
+  "prompt_hash": "bc5e06148d44e05a",
+  "gamme": "Flexible de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:58:24.562Z",
+  "model_version": null,
+  "duration_ms": 14898,
+  "ok": true,
+  "error": null,
+  "response_raw": "Un **flexible de frein** est le tuyau souple qui relie la partie fixe du circuit de freinage à l’étrier ou au cylindre de roue. Il transporte le liquide de frein sous pression. Quand vous appuyez sur la pédale, la pression passe par ce flexible pour actionner les freins.\n\nSi vous cherchez “flexible frein”, il faut surtout identifier le bon côté et le bon essieu : **avant gauche, avant droit, arrière gauche, arrière droit**. Sur beaucoup de voitures, les flexibles avant sont les plus sollicités car ils suivent les mouvements de direction et de suspension.\n\nSignes qu’un flexible est à remplacer :\n\n- craquelures, fissures ou caoutchouc gonflé ;\n- fuite ou suintement de liquide de frein ;\n- pédale molle ou freinage irrégulier ;\n- roue qui reste freinée après relâchement de la pédale ;\n- flexible vrillé, frotté ou abîmé après une intervention.\n\nIl est généralement conseillé de remplacer les flexibles **par paire sur le même essieu**, surtout s’ils ont le même âge. Après remplacement, une **purge du circuit de freinage** est obligatoire, car de l’air entre dans le circuit. Le liquide de frein utilisé doit correspondre aux préconisations constructeur, souvent **DOT 4**, mais il faut vérifier.\n\nPour acheter la bonne pièce, utilisez l’immatriculation ou le VIN sur des sites comme **Oscaro, Mister-Auto, Autodoc, Norauto, Feu Vert** ou directement chez le constructeur. Les marques courantes et sérieuses incluent **ATE, TRW, Bosch, Brembo, Delphi, Ferodo** ou **Febi Bilstein**.\n\nAttention aux longueurs et raccords : deux flexibles qui se ressemblent peuvent avoir un filetage, une orientation ou une fixation différente. Si le flexible est mal monté, trop tendu ou vrillé, il peut s’user vite ou gêner le braquage.\n\nEn atelier, l’opération est souvent rapide, mais les raccords peuvent être grippés sur un véhicule ancien. Dans ce cas, il faut parfois remplacer aussi une portion de canalisation rigide.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro"
+    ],
+    "sources_cited": []
+  }
+}

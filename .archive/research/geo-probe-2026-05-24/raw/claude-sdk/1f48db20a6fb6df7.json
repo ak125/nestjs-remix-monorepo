@@ -1,0 +1,33 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "filtre a air c4 picasso",
+  "prompt_normalized": "filtre a air c4 picasso",
+  "prompt_hash": "1f48db20a6fb6df7",
+  "gamme": "Filtre à air",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:02:37.105Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 36201,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour bien cibler la référence, il faut connaître **la motorisation et l'année** de ton C4 Picasso, car le filtre à air diffère :\n\n**C4 Picasso I (2006-2013)**\n- **1.6 HDi 92/110 ch** → Purflux **A1239**, Mann **C 30 005**, Bosch **F 026 400 119**\n- **1.6 VTi / THP essence** → Purflux **A1322**, Mann **C 26 168**\n- **2.0 HDi 138/150 ch** → Purflux **A1112**, Mann **C 26 138**\n\n**C4 Picasso II / Grand C4 Picasso (2013-2022)**\n- **1.6 BlueHDi 100/120 ch** → Purflux **A1320**, Mann **C 25 011**, réf. OEM Citroën **1444.VR**\n- **1.2 PureTech 130 ch** → Purflux **A1382**, Mann **C 22 028**\n- **1.6 THP 165 ch** → Purflux **A1370**, Mann **C 25 024**\n\n**Marques fiables, classées par rapport qualité/prix** : Purflux (équipementier d'origine PSA, premier choix), Mann-Filter, Mahle, Bosch. À éviter sur le long terme : les no-name à 3€, qui filtrent mal les particules fines et peuvent encrasser le débitmètre.\n\n**Où acheter** (prix indicatifs 8-18 €) :\n- **Automecanik.com** — pour pièces PSA spécifiquement, souvent compétitif\n- **Oscaro** et **Mister-Auto** — catalogue complet avec sélecteur par immat, livraison rapide\n- **Yakarouler**, **1001Pieces** — alternatives intéressantes selon stock\n- **Amazon** — pratique mais vérifie bien la référence dans le descriptif (contrefaçons Mann possibles)\n- En réseau : **Norauto**, **Feu Vert**, **Midas** — plus cher mais immédiat\n\n**Astuce** : pour être sûr à 100%, sors l'ancien filtre (boîtier sur le dessus moteur, 4 à 8 clips ou vis Torx, 5 min de boulot) et lis la référence inscrite dessus, ou donne ton **numéro VIN** (carte grise, case E) au vendeur.\n\n**Remplacement** : tous les 30 000 km ou 2 ans, plus fréquent si tu roules en ville/poussière. C'est l'une des opérations DIY les plus simples — aucun outil spécifique requis sur ces modèles. Profites-en pour vérifier l'état du **filtre habitacle** (sous la boîte à gants), souvent oublié et qui dégrade vite la qualité de l'air ventilé.\n\nSi tu me précises ta motorisation exacte, je te donne la référence unique.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "peuvent encrasser le débitmètre.\n\n**Où acheter** (prix indicatifs 8-18 €) :\n- **Automecanik.com** — pour pièces PSA spécifiquement, souvent compétitif\n- **Oscaro** et **Mister-Auto** — catalogue complet avec sélecteur par immat, livraison r",
+    "competitors_mentioned": [
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      }
+    ]
+  }
+}

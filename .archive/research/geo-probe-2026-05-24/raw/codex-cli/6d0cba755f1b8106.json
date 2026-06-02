@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "prix tambour de frein",
+  "prompt_normalized": "prix tambour de frein",
+  "prompt_hash": "6d0cba755f1b8106",
+  "gamme": "Tambour de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:56:57.610Z",
+  "model_version": null,
+  "duration_ms": 18830,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour un **tambour de frein**, compte en général :\n\n- **Pièce seule** : environ **30 à 90 € l’unité** selon la voiture et la marque.\n- **Jeu de 2 tambours arrière** : souvent **70 à 180 €**.\n- **Kit complet frein arrière** avec mâchoires, cylindres, ressorts, parfois tambours : plutôt **120 à 300 €** en pièces.\n- **Avec pose en garage** : généralement **250 à 500 €** pour l’arrière, selon main-d’œuvre, purge du liquide de frein et état des cylindres de roue.\n\nLes prix varient beaucoup selon le modèle : une Clio, 206, C3, Twingo ou Sandero sera souvent moins chère qu’un utilitaire ou une voiture plus lourde. Sur Oscaro, Mister-Auto, AUTODOC ou Norauto, tu peux comparer avec ta plaque d’immatriculation ou ton modèle exact. Pour les marques, Bosch, TRW, ATE, Brembo, Delphi, Ferodo ou LPR sont des choix courants. Évite les références inconnues ultra-premier prix sur le freinage.\n\nAttention : on ne change pas toujours seulement le tambour. Si les **mâchoires sont usées**, si le **cylindre de roue fuit**, ou si le frein à main est mal réglé, le devis peut monter. En pratique, beaucoup de garages proposent un remplacement du **kit arrière complet**, plus cohérent qu’un seul tambour neuf avec de vieilles garnitures.\n\nSi tu veux juste estimer : pour une citadine française, un prix raisonnable posé se situe souvent autour de **300 à 400 €** pour un remplacement propre des freins arrière à tambour. Demande un devis détaillé avec : tambours, mâchoires/kit, cylindres si concernés, liquide de frein/purge, main-d’œuvre.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro"
+    ],
+    "sources_cited": []
+  }
+}

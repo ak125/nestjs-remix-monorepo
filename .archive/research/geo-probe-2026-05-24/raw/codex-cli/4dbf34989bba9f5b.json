@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "flexible frein avant",
+  "prompt_normalized": "flexible frein avant",
+  "prompt_hash": "4dbf34989bba9f5b",
+  "gamme": "Flexible de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:34:23.392Z",
+  "model_version": null,
+  "duration_ms": 30315,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour “flexible frein avant”, il s’agit du flexible hydraulique qui relie la canalisation rigide au frein de roue avant. C’est une pièce de sécurité : elle doit être choisie exactement selon le véhicule, le côté concerné et parfois le type de montage.\n\nAvant d’acheter, il faut identifier :\n- marque, modèle, année, motorisation ;\n- côté : avant gauche, avant droit, ou les deux ;\n- présence éventuelle d’ABS/ESP selon version ;\n- longueur du flexible, type de raccords et filetage si tu compares visuellement.\n\nLes marques sérieuses à chercher : **ATE**, **TRW**, **Brembo**, **Bosch**, **Ferodo**, **Delphi**, **Febi Bilstein**, **Metzger**. Pour une voiture courante en France, tu peux comparer sur **Oscaro**, **Mister-Auto**, **Autodoc**, **Yakarouler**, **PiècesAuto24**, ou directement via un distributeur local type **AD**, **Autodistribution** ou **Norauto**. L’idéal est de chercher avec l’immatriculation ou le VIN, puis de vérifier les dimensions avant commande.\n\nSymptômes d’un flexible à remplacer : craquelures, boursouflure, suintement de liquide de frein, pédale molle, frein qui reste légèrement bloqué, ou déséquilibre au freinage. Si un flexible avant est vieux ou fissuré, il est souvent préférable de remplacer les deux côtés avant en même temps.\n\nAu montage, il faut prévoir du liquide de frein compatible, généralement **DOT 4**, et faire une purge correcte du circuit. Les raccords peuvent être grippés sur les véhicules anciens : une clé à tuyauter limite le risque d’arrondir l’écrou. Après remplacement, contrôle impératif d’absence de fuite et essai de freinage progressif.\n\nSi tu me donnes le modèle exact ou l’immatriculation, je peux t’indiquer le type de flexible à chercher et les marques à privilégier.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

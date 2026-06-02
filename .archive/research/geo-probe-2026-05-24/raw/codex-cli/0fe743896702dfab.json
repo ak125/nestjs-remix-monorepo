@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "filtre habitacle clio 3",
+  "prompt_normalized": "filtre habitacle clio 3",
+  "prompt_hash": "0fe743896702dfab",
+  "gamme": "Filtre d'habitacle",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:33:04.541Z",
+  "model_version": null,
+  "duration_ms": 16325,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour une **Renault Clio 3**, le “filtre habitacle” correspond au **filtre à pollen / filtre d’habitacle**, qui filtre l’air entrant dans la ventilation et la climatisation.\n\nSur Clio 3, il se trouve généralement **côté passager, derrière ou sous la boîte à gants**, dans le bloc de ventilation. Selon les versions, l’accès peut être un peu étroit : il faut souvent se pencher dans le plancher passager, retirer un cache plastique, puis ouvrir le petit couvercle du logement de filtre.\n\nÀ l’achat, vérifie surtout :\n- **Clio 3 phase 1 ou phase 2**\n- **année et motorisation**\n- présence ou non de **climatisation**\n- dimensions du filtre, car il existe plusieurs références selon montage\n\nTu peux prendre un filtre classique ou un **filtre à charbon actif**. Le charbon actif est préférable si tu roules en ville : il retient mieux les odeurs, fumées et gaz d’échappement. Les marques fiables : **Mann-Filter, Purflux, Bosch, Valeo, Mahle, Febi**. On en trouve facilement chez **Oscaro, Mister-Auto, Autodoc, Norauto, Feu Vert**, ou en centre auto.\n\nPour le remplacement, compte environ **10 à 20 minutes** si l’accès est dégagé. Attention au **sens du flux d’air**, indiqué par une flèche “AIR FLOW” sur le filtre : il faut remettre le nouveau dans le même sens que l’ancien. Si le filtre est très sale, la ventilation souffle moins fort, la buée part mal, et une mauvaise odeur peut apparaître au démarrage de la clim.\n\nEn entretien normal, remplace-le **tous les ans ou tous les 15 000 à 20 000 km**. Si la voiture dort dehors, roule souvent en ville ou dans des zones poussiéreuses, mieux vaut le changer plus souvent.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro"
+    ],
+    "sources_cited": []
+  }
+}

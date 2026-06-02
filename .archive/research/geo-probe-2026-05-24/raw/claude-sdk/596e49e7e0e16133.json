@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "étrier de frein voiture",
+  "prompt_normalized": "etrier de frein voiture",
+  "prompt_hash": "596e49e7e0e16133",
+  "gamme": "Étrier de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:40:23.535Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 29565,
+  "ok": true,
+  "error": null,
+  "response_raw": "# L'étrier de frein : rôle, types et choix\n\nL'étrier de frein est la pièce qui plaque les plaquettes contre le disque pour ralentir la roue. C'est l'élément hydraulique du système : le liquide de frein y arrive sous pression et pousse un ou plusieurs pistons.\n\n## Les deux grandes familles\n\n**Étrier flottant (coulissant)** : un seul piston, le plus courant sur les voitures de tourisme (Clio, 308, Golf…). Le piston pousse une plaquette, et l'étrier coulisse sur ses colonnettes pour appliquer l'autre. Simple et économique, mais sensible au grippage des colonnettes.\n\n**Étrier fixe** : 2, 4, voire 6 pistons opposés. Vissé fermement, pas de coulissement. Meilleure répartition de la pression, freinage plus mordant et plus stable à chaud. On le trouve sur les sportives ou en option (Brembo, AP Racing, Alcon).\n\n## Symptômes d'un étrier défaillant\n\n- Freinage qui tire d'un côté\n- Plaquette usée en biseau ou usure asymétrique gauche/droite\n- Disque bleui ou voilé (étrier qui ne relâche pas)\n- Bruit de frottement permanent roue libre\n- Piston grippé, soufflet déchiré, fuite de liquide rougeâtre\n\n## Remplacement et achat\n\nSur la plupart des véhicules, on remplace en pratique l'étrier **échange standard** (reconditionné) plutôt que neuf : moins cher, qualité équivalente. Compter 60–150 € pièce pour une citadine, 150–400 € pour une berline premium ou un 4×4.\n\nPour acheter avec la bonne référence, **toujours partir de votre plaque d'immatriculation ou du code moteur** — un étrier dépend du diamètre de disque (ex. 256 mm vs 280 mm sur la même Golf VII).\n\nMarques sérieuses en rechange : **TRW, ATE, Brembo, Bosch, Lucas, Ferodo, Textar**. Éviter le no-name à 30 € sur les marketplaces généralistes.\n\nCôté sites pour comparer et commander en France : **Oscaro, Mister-Auto, Yakarouler, Automecanik, Piecesauto24, mecatechnic** pour le grand public ; **Autodoc** souvent moins cher mais délais variables.\n\n## Pose\n\nTravail accessible mais sérieux : purge du circuit de frein **obligatoire** après remplacement (DOT 4 en général), couple de serrage des vis d'étrier à respecter (souvent 25–30 Nm pour les colonnettes, 100+ Nm pour la chape), et toujours remplacer **par paire sur le même essieu**. Si vous n'êtes pas équipé pour la purge, confiez la pose à un garage — un circuit mal purgé = pédale spongieuse = danger.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "sites pour comparer et commander en France : **Oscaro, Mister-Auto, Yakarouler, Automecanik, Piecesauto24, mecatechnic** pour le grand public ; **Autodoc** souvent moins cher mais délais variables.\n\n## Pose\n\nTravail accessible mais sérieux",
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

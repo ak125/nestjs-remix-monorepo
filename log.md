@@ -490,6 +490,36 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Décision** : fix(codeql): loop-until-stable HTML strip in detectExtractableTldr (resolves js/incomplete-multi-character-sanitization) (+19 other commits)
 - **Sortie** : PR #714 | commits 4c0250eca dcb25d4ae a9226d06d ec3cb6a92 296343132 978c50bdf d4121fd65 d9c67602a 213d5db3e 04964ad3b cf61d176a f9e218531 cf5adb9dc 64a4c0a36 a380fbe25 4d61ee999 f9b05b52c 67958cfa7 0fc72ac1a 9b75889bd
 
+## 2026-05-24 — worktree-geo-discovery-probe-2026-05 (auto)
+
+- **Branche** : `worktree-geo-discovery-probe-2026-05`
+- **Décision** : feat(research): add analyze-b1-stats.ts (B1 stats brutes pour rapport final) (+1 other commit)
+- **Sortie** : PR aucune | commits 2449b7151 08b33518e
+
+## 2026-05-24 — worktree-geo-discovery-probe-2026-05 (auto)
+
+- **Branche** : `worktree-geo-discovery-probe-2026-05`
+- **Décision** : chore(registry): register research/ paths in L2 ownership.yaml (ADR-058 + G10) (+4 other commits)
+- **Sortie** : PR aucune | commits b865913bb 77b3a3348 3206430dd 2449b7151 08b33518e
+
+## 2026-05-24 — worktree-geo-discovery-probe-2026-05 (auto)
+
+- **Branche** : `worktree-geo-discovery-probe-2026-05`
+- **Décision** : fix(research): satisfy CodeQL js/file-system-race + registry block-new (+6 other commits)
+- **Sortie** : PR aucune | commits 0752938b3 83ea8c742 b865913bb 77b3a3348 3206430dd 2449b7151 08b33518e
+
+## 2026-05-24 — worktree-geo-discovery-probe-2026-05 (auto)
+
+- **Branche** : `worktree-geo-discovery-probe-2026-05`
+- **Décision** : chore(gitignore): move scripts/research/ ignores to root (anti dotfile glob miss) (+8 other commits)
+- **Sortie** : PR aucune | commits 0531dd196 5b91d5c04 0752938b3 83ea8c742 b865913bb 77b3a3348 3206430dd 2449b7151 08b33518e
+
+## 2026-05-24 — worktree-geo-discovery-probe-2026-05 (auto)
+
+- **Branche** : `worktree-geo-discovery-probe-2026-05`
+- **Décision** : feat(research): geo-discovery-probe-2026-05 B1 closed — 288 captures + MANIFEST + report (+10 other commits)
+- **Sortie** : PR aucune | commits 5d42812f8 4738957d9 0531dd196 5b91d5c04 0752938b3 83ea8c742 b865913bb 77b3a3348 3206430dd 2449b7151 08b33518e
+
 ## 2026-05-24 — feat/automation-reality-registry (auto)
 
 - **Branche** : `feat/automation-reality-registry`

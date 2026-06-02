@@ -1,0 +1,28 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "prix vidange filtre a huile",
+  "prompt_normalized": "prix vidange filtre a huile",
+  "prompt_hash": "1328c1b02ddfb055",
+  "gamme": "Filtre à huile",
+  "volume": 500,
+  "captured_at": "2026-05-24T15:58:36.622Z",
+  "model_version": null,
+  "duration_ms": 37935,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour une vidange avec filtre à huile en France, comptez en moyenne **60 à 150 €** tout compris, selon le type d'huile, le véhicule et l'endroit où vous la faites.\n\n### Le prix décomposé\n\n- **Huile moteur (5L environ)** : 25 à 60 € en grande surface ou en ligne, selon la viscosité et la marque (Total Quartz, Castrol, Mobil 1, Motul, Elf, Shell Helix). Une huile synthétique 5W-30 ou 5W-40 coûte plus cher qu'une semi-synthèse 10W-40.\n- **Filtre à huile** : 5 à 20 € (Mann-Filter, Bosch, Mahle, Purflux, Hengst sont les valeurs sûres). Pour certains moteurs récents, il faut aussi le joint de bouchon de vidange (1-3 €).\n- **Main d'œuvre** : 25 à 60 € selon l'enseigne.\n\n### Où la faire, et pour quel budget\n\n- **Chaînes type Norauto, Feu Vert, Midas, Speedy, Point S** : forfaits autour de **70 à 120 €**, avec promos régulières (Norauto fait souvent des forfaits \"vidange + filtre\" à 79 € sur huiles d'entrée de gamme).\n- **Carter-Cash** : vous achetez l'huile + le filtre, et la pose est gratuite ou très faible. C'est souvent le meilleur rapport qualité/prix si vous voulez choisir vos pièces.\n- **Garage indépendant** : généralement **50 à 90 €**, plus avantageux mais qualité variable. Privilégiez ceux qui ont de bons avis Google ou recommandés sur **Vroomly** ou **iDGarages**, qui proposent en plus un devis en ligne avant rendez-vous.\n- **Concession** : **120 à 200 €**, justifié uniquement si vous êtes sous garantie constructeur ou pour un véhicule récent.\n\n### Faire soi-même\n\nSi vous êtes équipé (cric, bac de récup, clé filtre), l'opération revient à **30-50 €** de pièces seulement. **Oscaro**, **Mister-Auto** et **Yakarouler** sont les références pour commander en ligne avec compatibilité par plaque d'immatriculation. Comptez 30 minutes une fois habitué.\n\n### Bon à savoir\n\nLe filtre doit toujours être remplacé en même temps que l'huile — c'est inutile (et plus cher au final) de ne changer que l'huile. Sur des moteurs essence modernes, l'intervalle est de **15 000 à 30 000 km** ou 1 an ; sur diesel récent, plutôt **20 000 km** ou 1 an. Vérifiez le carnet d'entretien : certains constructeurs (PSA, Renault) imposent une huile précise (ACEA C2, C3…) pour préserver la garantie et le FAP.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

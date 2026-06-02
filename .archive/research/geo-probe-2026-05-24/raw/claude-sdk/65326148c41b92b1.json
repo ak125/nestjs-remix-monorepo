@@ -1,0 +1,31 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "etrier arriere gauche",
+  "prompt_normalized": "etrier arriere gauche",
+  "prompt_hash": "65326148c41b92b1",
+  "gamme": "Étrier de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T15:50:43.504Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 27972,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Étrier arrière gauche — guide d'achat et remplacement\n\n## Identifier la bonne référence\n\nAvant de commander, il te faut **impérativement** :\n- **Plaque d'immatriculation** ou code VIN (17 caractères) pour matcher le bon véhicule\n- **Type de frein arrière** : étrier flottant (le plus courant) ou étrier fixe (sportives, premium)\n- **Présence du frein de parking électrique (EPB)** : c'est le piège n°1. Un étrier EPB (avec moteur électrique) coûte 2 à 4× plus cher et n'est pas interchangeable avec un étrier mécanique à câble\n- **Diamètre du disque** (souvent 255, 272, 280, 300 mm) — indiqué sur le disque ou dans la revue technique\n\n## Où acheter (France)\n\n- **Oscaro**, **Mister-Auto**, **Yakarouler**, **123pieces** : généralistes fiables, retours OK, livraison 24-72h\n- **Automecanik** : si compatibilité véhicule confirmée, bon rapport qualité/prix\n- **Piecesauto24**, **AD Tyres** : alternatives sérieuses\n- **Carter-Cash** : utile si tu veux récupérer en magasin le jour même\n\nPour de l'occasion révisée : **OpisTo** ou casses pro (compte le risque sur joints).\n\n## Marques recommandées\n\n| Gamme | Marques |\n|---|---|\n| **OEM / premium** | ATE, TRW, Brembo, Bosch |\n| **Qualité équivalente** | Ferodo, LPR, Cifam, Textar |\n| À éviter | No-name AliExpress, refabriqués douteux |\n\nCompte **80–180 €** pour un étrier standard neuf, **250–500 €** pour un étrier avec EPB.\n\n## Au moment du remplacement\n\n- Change **les deux côtés** si l'autre étrier a plus de 100 000 km (usure symétrique)\n- Remplace systématiquement **plaquettes + liquide de frein** (DOT 4)\n- Vérifie l'état du **flexible de frein** : s'il est craquelé, change-le maintenant\n- Couples de serrage : à vérifier dans la revue technique (RTA, Haynes, ou ETAI)\n- Si EPB : il faut un **outil de diagnostic** (Launch, Autel, Delphi DS150) pour rétracter le piston électriquement — sinon tu casses le moteur\n\n## Diagnostic avant achat\n\nSi tu hésites entre étrier grippé vs flexible bouché vs piston coincé : démonte, pousse le piston à la pince. S'il ne bouge pas malgré purge → étrier mort. Sur forums **Forum-Auto** ou **Mecanique-Auto.net**, beaucoup de retours par modèle.\n\nDonne-moi la marque/modèle/année si tu veux une référence précise.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "ouler**, **123pieces** : généralistes fiables, retours OK, livraison 24-72h\n- **Automecanik** : si compatibilité véhicule confirmée, bon rapport qualité/prix\n- **Piecesauto24**, **AD Tyres** : alternatives sérieuses\n- **Carter-Cash** : util",
+    "competitors_mentioned": [
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Mecanique-Auto.net",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

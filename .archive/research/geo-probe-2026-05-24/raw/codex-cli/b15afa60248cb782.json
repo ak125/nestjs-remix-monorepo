@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "filtre a gasoil clio 3",
+  "prompt_normalized": "filtre a gasoil clio 3",
+  "prompt_hash": "b15afa60248cb782",
+  "gamme": "Filtre à carburant",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:17:45.351Z",
+  "model_version": null,
+  "duration_ms": 15916,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour une **Renault Clio 3 diesel**, le “filtre à gasoil” correspond au **filtre à carburant**. Il sert à retenir l’eau et les impuretés avant l’injection, ce qui est important sur les moteurs dCi.\n\nSur Clio 3, il faut surtout identifier le moteur exact : **1.5 dCi 65, 70, 75, 85, 90, 105 ch**, année, phase, et parfois le type de montage. Le filtre peut varier selon la motorisation et l’équipement. Le plus fiable est de chercher avec **l’immatriculation** ou le **VIN** sur Oscaro, Mister-Auto, Autodoc, Norauto, Feu Vert ou directement chez Renault.\n\nMarques correctes à privilégier : **Mann-Filter, Purflux, Bosch, Mahle, Knecht, Delphi**. Évite les filtres premier prix inconnus, surtout sur un diesel common rail : un mauvais filtrage peut fatiguer la pompe ou les injecteurs.\n\nEn général, le remplacement se fait tous les **40 000 à 60 000 km**, parfois plus tôt si le véhicule roule peu, si le carburant est douteux, ou si tu as des symptômes comme :\n- démarrage difficile,\n- trous à l’accélération,\n- perte de puissance,\n- calages,\n- voyant injection,\n- présence d’eau dans le carburant.\n\nLe filtre est souvent situé dans le compartiment moteur, parfois côté passager ou près du tablier selon version. Après remplacement, il faut **réamorcer le circuit** avec la poire d’amorçage s’il y en a une, ou via la procédure adaptée. Il faut éviter de faire tourner le moteur longtemps à sec.\n\nPour acheter le bon modèle, cherche par exemple :  \n**“filtre à gasoil Clio 3 1.5 dCi [puissance] [année]”**  \nExemple : **“filtre gasoil Clio 3 1.5 dCi 85 2008”**.\n\nSi tu le fais toi-même, prévois aussi un chiffon, un bac pour récupérer le gasoil, et vérifie que les joints et raccords sont bien remis en place.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro"
+    ],
+    "sources_cited": []
+  }
+}

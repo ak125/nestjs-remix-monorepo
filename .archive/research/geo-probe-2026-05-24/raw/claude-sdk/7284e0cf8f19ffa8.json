@@ -1,0 +1,33 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "filtre huile",
+  "prompt_normalized": "filtre huile",
+  "prompt_hash": "7284e0cf8f19ffa8",
+  "gamme": "Filtre à huile",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:18:11.756Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 26405,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le filtre à huile est un consommable indispensable, à remplacer **systématiquement à chaque vidange moteur** (tous les 10 000 à 30 000 km selon le constructeur, ou 1 fois par an). Son rôle : retenir les particules métalliques, suies et résidus de combustion en suspension dans l'huile, pour protéger paliers, arbres à cames et turbo.\n\n### Types de filtres\n- **Cartouche papier (filtre écologique)** : élément filtrant seul, à insérer dans un boîtier permanent. Standard sur la plupart des moteurs modernes (PSA HDi, VAG TDI/TSI, BMW, Mercedes).\n- **Filtre vissé (spin-on)** : bloc métallique complet, plus courant sur anciens moteurs et essence asiatiques (Toyota, Honda, Renault essence).\n\n### Marques fiables\nDans l'ordre de ce que je recommande :\n1. **Mann-Filter** — équipementier d'origine (OEM) pour VAG, BMW, Mercedes. Référence allemande.\n2. **Mahle / Knecht** — OEM premium, qualité constructeur garantie.\n3. **Bosch** — bon rapport qualité/prix, large couverture véhicules.\n4. **Hengst** — OEM allemand, souvent monté en première monte.\n5. **Purflux** — OEM français (PSA, Renault), excellent sur moteurs français.\n6. **Valeo / SKF / Febi Bilstein** — alternatives sérieuses.\n\nÀ éviter : marques sans nom à 2-3 €, qualité de média filtrant aléatoire (risque de by-pass qui s'ouvre trop tôt = particules dans le moteur).\n\n### Où acheter\n- **Oscaro**, **Mister-Auto**, **Yakarouler** — catalogues larges, recherche par plaque ou par véhicule, prix corrects.\n- **Automecanik.com** — pour la pièce adaptée à votre modèle avec compatibilité vérifiée.\n- **Norauto / Feu Vert / Midas** — pratique si vous faites monter au même endroit.\n- **Amazon** — uniquement si vendeur officiel de la marque (Mann, Mahle, Bosch), sinon risque de contrefaçon.\n\n### Comment choisir le bon\nDonnez **toujours** : marque, modèle, motorisation exacte (ex. 1.6 HDi 110, 2.0 TDI 140), année et idéalement code moteur (sur la plaque sous le capot ou carte grise champ D.2). Une simple erreur de motorisation = filtre qui ne s'adapte pas ou by-pass mal calibré.\n\n### Prix indicatif\n- Cartouche papier : 4 à 12 €\n- Filtre vissé : 6 à 15 €\n- Filtres premium turbo/diesel récents : jusqu'à 20-25 €\n\nAu-delà de 30 €, vous payez de la marge, pas de la qualité.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "* — catalogues larges, recherche par plaque ou par véhicule, prix corrects.\n- **Automecanik.com** — pour la pièce adaptée à votre modèle avec compatibilité vérifiée.\n- **Norauto / Feu Vert / Midas** — pratique si vous faites monter au même",
+    "competitors_mentioned": [
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      }
+    ]
+  }
+}

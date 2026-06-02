@@ -1,0 +1,134 @@
+# Trust Source Registry — classification des sources citées par les LLM
+# Probe slot : geo-discovery-probe-2026-05 (G10 ADR-081)
+# Date : 2026-05-24
+#
+# Pour chaque source URL/domaine citée par un LLM dans une réponse, on la
+# classe dans un cluster d'autorité. Permet de mesurer "qui les LLM
+# croient comme source d'autorité" sur l'automobile en France.
+#
+# Source = donnée brute (URL ou nom de site) → cluster (catégorie canon).
+# Le classifieur dans geo-evidence-capture.ts utilise ce registre + des
+# patterns regex pour catégoriser.
+
+version: 1
+updated_at: 2026-05-24
+
+clusters:
+
+  forum_communautaire:
+    description: "Forums automobiles + Reddit. Sources communautaires non-éditoriales."
+    weight: 1.0
+    domains:
+      - forum-auto.caradisiac.com
+      - caradisiac.com/forums
+      - forums.automobile-magazine.fr
+      - reddit.com/r/voiture
+      - reddit.com/r/MecaniqueAuto
+      - reddit.com/r/Voitures
+      - autoplus.fr/forum
+      - planete-renault.com/forum
+      - peugeot-citroen.club
+      - forum-bmw.fr
+      - audi-passion.com
+
+  video:
+    description: "YouTube + autres plateformes vidéo. Tutoriels mécanique, démos."
+    weight: 1.0
+    domains:
+      - youtube.com
+      - youtu.be
+      - dailymotion.com
+    patterns:
+      - "vimeo.com/(\\d+)"
+
+  marchand:
+    description: "E-commerce pièces auto + distributeurs. Concurrence directe AutoMecanik."
+    weight: 1.0
+    domains:
+      - oscaro.com
+      - mister-auto.com
+      - mister-auto.fr
+      - norauto.fr
+      - feu-vert.fr
+      - yakarouler.com
+      - yakarouler.fr
+      - autodoc.fr
+      - allopneus.com
+      - 1001pneus.fr
+      - euroshop.fr
+      - pieces-auto-pro.fr
+      - euromaster.fr
+      - midas.fr
+      - point-s.fr
+      - speedy.fr
+      - autobacs.fr
+      - automecanik.com   # nous-mêmes, à compter séparément (=automecanik_mentioned=true)
+
+  media_spe:
+    description: "Presse spécialisée auto. Éditorial professionnel."
+    weight: 1.5  # autorité éditoriale plus forte que forums
+    domains:
+      - caradisiac.com   # editorial seulement, pas /forums
+      - autoplus.fr
+      - largus.fr
+      - turbo.fr
+      - sport-auto.fr
+      - auto-moto.com
+      - autonews.fr
+      - leblogauto.com
+      - moniteurautomobile.be
+      - automobile-magazine.fr
+
+  constructeur:
+    description: "Sites officiels constructeurs + docs OEM."
+    weight: 2.0  # autorité maximale sur leur propre marque
+    domains:
+      - peugeot.fr
+      - citroen.fr
+      - renault.fr
+      - dacia.fr
+      - bmw.fr
+      - mercedes-benz.fr
+      - audi.fr
+      - volkswagen.fr
+      - ford.fr
+      - toyota.fr
+      - opel.fr
+      - fiat.fr
+
+  aftermarket_tech:
+    description: "Sites techniques aftermarket (manuels, schémas, diagnostics)."
+    weight: 1.5
+    domains:
+      - techni-pieces.com
+      - oscaro.com/manuels
+      - rta.fr               # Revue Technique Automobile
+      - haynes.com
+      - autodata-group.com
+      - eautorepair.net
+      - mister-auto.com/conseils
+
+  inconnu:
+    description: "Catch-all pour domaines non classés. Reportés en hot-list à enrichir."
+    weight: 0.5
+
+# Classification rules (appliquées dans l'ordre, première match wins) :
+classification_rules:
+  - rule: "exact_domain_match"
+    description: "Match exact sur les domains listés ci-dessus"
+
+  - rule: "subdomain_match"
+    description: "Match sur sous-domaine (ex. m.youtube.com → youtube.com)"
+
+  - rule: "path_pattern_match"
+    description: "Pour les domains avec section éditoriale vs forum (ex. caradisiac.com vs caradisiac.com/forums)"
+
+  - rule: "regex_fallback"
+    description: "Patterns regex (vimeo, youtube short links)"
+
+  - rule: "default_inconnu"
+    description: "Tous les autres → cluster inconnu"
+
+# Anti-pattern : on ne déduit PAS le cluster à partir d'analyse sémantique
+# de la page. Cela introduirait du bias. Classification = lookup pur sur
+# domaine + path.

@@ -1,0 +1,29 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "etrier de freins grippé",
+  "prompt_normalized": "etrier de freins grippe",
+  "prompt_hash": "054e6fb9868e4582",
+  "gamme": "Étrier de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:45:25.621Z",
+  "model_version": null,
+  "duration_ms": 40792,
+  "ok": true,
+  "error": null,
+  "response_raw": "## Étrier de frein grippé — diagnostic et solutions\n\n**Symptômes typiques** : la voiture tire d'un côté au freinage, odeur de chaud après un trajet, jante très chaude d'un seul côté, usure asymétrique des plaquettes (une plaquette quasi neuve, l'autre rasée), parfois surconsommation et perte de puissance. Au volant, on sent souvent une légère retenue même pédale relâchée.\n\n**Deux causes principales à distinguer** :\n\n1. **Colonnettes (axes de guidage) grippées** — le cas le plus fréquent. La graisse a séché, les soufflets sont fendus, l'eau et la poussière sont rentrées. L'étrier ne coulisse plus, la plaquette extérieure ne touche plus le disque correctement.\n2. **Piston grippé dans son alésage** — corrosion liée à un liquide de frein vieilli (chargé en humidité) ou à un soufflet déchiré. Le piston ne revient pas en position après freinage : la plaquette frotte en permanence.\n\n**Réparation**\n\n- **Colonnettes** : démontage, nettoyage à la toile émeri fine, regraissage avec une **graisse cuivre haute température** ou graisse céramique spéciale étrier (jamais de graisse universelle, elle fond). Soufflets neufs obligatoires. Kit complet chez ATE, TRW, Frenkit ou Bosch pour 15-30 €.\n- **Piston grippé** : si la corrosion est légère, kit de réparation étrier (joint + soufflet + parfois piston) — comptez 25-50 €. Si l'alésage est piqué, **remplacer l'étrier complet** est plus sûr (ATE, Brembo, TRW, Bosch, ou échange standard en remanufacturé chez Cifam). Profitez-en pour **purger le circuit** (liquide DOT 4 neuf).\n\n**Où acheter**\n\nOscaro, Mister-Auto, Yakarouler, AutoDoc, 1001pneus pour les pièces. Pour comparer les références par véhicule, Oscaro et Mister-Auto ont les meilleurs sélecteurs. Forums utiles si vous voulez creuser un cas précis : **Forum-Auto** et la section mécanique de **Caradisiac**.\n\n**Coût indicatif posé en garage** : 80-150 € par étrier en réparation simple (colonnettes), 180-300 € pour un remplacement complet avec disques et plaquettes du même côté (recommandé). Norauto, Feu Vert et Midas font ça couramment ; un garage indépendant sera 20-30 % moins cher.\n\n**À ne pas négliger** : changez toujours les plaquettes par paire sur le même essieu, et purgez le liquide si vous ouvrez le circuit.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "1001pneus",
+      "autodoc",
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

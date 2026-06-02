@@ -1,0 +1,33 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "filtre a huile bmw serie 1",
+  "prompt_normalized": "filtre a huile bmw serie 1",
+  "prompt_hash": "7d53f6617509792d",
+  "gamme": "Filtre à huile",
+  "volume": 500,
+  "captured_at": "2026-05-24T15:54:16.409Z",
+  "model_version": null,
+  "duration_ms": 41695,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour un filtre à huile de BMW Série 1, le bon réflexe c'est d'abord d'identifier précisément ton moteur — la Série 1 couvre les générations E81/E87 (2004-2011), F20/F21 (2011-2019) et F40 (2019+), avec des moteurs très différents (N47/B47 diesel, N43/N52/N54/N55/B38/B48 essence). La référence du filtre change selon le bloc, pas selon le millésime ou la carrosserie.\n\nQuelques références OEM utiles à connaître :\n- **Diesel N47 / B47** (116d, 118d, 120d) : BMW 11 42 7 788 460 ou 11 42 8 507 683 (cartouche papier).\n- **Essence N20 / B48** (118i, 120i, 125i récentes) : BMW 11 42 7 566 327.\n- **Six cylindres N52 / N53** (125i, 130i E87) : BMW 11 42 7 541 827.\n- **N54 / N55 turbo** (135i, M135i) : BMW 11 42 7 583 220.\n\nPour vérifier la référence exacte de ton véhicule, tu peux entrer ton VIN sur **bmwfans.info** ou **realoem.com** — c'est gratuit et c'est la méthode la plus fiable.\n\nCôté marques, les fabricants OEM qui livrent l'usine BMW sont **Mann-Filter** (références HU 816 x, HU 816/2 x, HU 7008 z), **Mahle/Knecht** (OX 387D, OX 554D, OX 813/1D) et **Hengst**. Tu as exactement la même qualité qu'un filtre d'origine pour moitié prix. **Bosch**, **Purflux** et **Febi Bilstein** sont aussi très corrects. À éviter : les filtres no-name à 3 €, le média filtrant et la valve anti-retour ne tiennent pas la pression sur les moteurs BMW modernes.\n\nOù acheter en France : **Oscaro**, **Mister-Auto**, **Yakarouler** et **Autodoc** sont les références pour le tarif et la disponibilité. **Amazon** dépanne mais attention aux contrefaçons Mann sur les vendeurs tiers — privilégie « Expédié par Amazon » ou les marchands officiels. En magasin, **Norauto** et **Feu Vert** dépannent mais c'est ~30-50 % plus cher.\n\nPetit conseil : profite du changement de filtre pour passer sur une huile **5W-30 LL-04** (exigence BMW pour la majorité des moteurs récents, surtout diesels FAP). Castrol Edge LL04, Shell Helix Ultra Professional AV-L ou Liqui Moly Top Tec 4200 font le job. Couple de serrage cartouche : 25 Nm.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "realoem.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

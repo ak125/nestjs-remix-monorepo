@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "filtre huile",
+  "prompt_normalized": "filtre huile",
+  "prompt_hash": "7284e0cf8f19ffa8",
+  "gamme": "Filtre à huile",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:19:25.555Z",
+  "model_version": null,
+  "duration_ms": 36092,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour trouver le bon **filtre à huile**, il faut partir de la voiture, pas seulement du terme générique. Le filtre dépend du moteur exact : marque, modèle, année, motorisation, puissance, parfois code moteur.\n\nLe plus sûr est de chercher avec :\n- l’immatriculation sur des sites comme **Oscaro**, **Mister-Auto**, **Autodoc**, **Norauto** ou **Feu Vert** ;\n- ou la référence constructeur / référence inscrite sur l’ancien filtre ;\n- ou les infos véhicule : exemple “Peugeot 308 1.6 BlueHDi 120 2017 filtre à huile”.\n\nIl existe deux grands types :\n1. **Filtre cartouche** : seulement l’élément filtrant en papier, à insérer dans un boîtier plastique ou métal. Il est souvent vendu avec un ou plusieurs joints toriques.\n2. **Filtre vissé métallique** : une cartouche complète qui se visse directement sur le moteur.\n\nMarques fiables : **Mann-Filter**, **Purflux**, **Mahle**, **Bosch**, **Hengst**, **UFI**, **Fram**. Sur beaucoup de véhicules français, **Purflux** est très courant et souvent proche de la monte d’origine.\n\nÀ vérifier avant achat :\n- diamètre et hauteur du filtre ;\n- type de montage : cartouche ou vissé ;\n- présence des joints ;\n- compatibilité exacte avec le moteur ;\n- norme/équivalence constructeur si indiquée.\n\nPour l’entretien, on remplace normalement le filtre à huile **à chaque vidange**, jamais une fois sur deux. Un filtre neuf évite de faire circuler une huile propre à travers un élément déjà saturé. Il faut aussi respecter l’huile recommandée : viscosité, par exemple **5W-30**, **0W-30**, **5W-40**, et norme constructeur, surtout sur les moteurs diesel avec FAP ou les moteurs récents turbo.\n\nAu montage : huiler légèrement le joint neuf, serrer au couple si indiqué, ne pas écraser le boîtier plastique, puis démarrer le moteur quelques secondes et vérifier l’absence de fuite. Après quelques minutes, contrôler le niveau d’huile et compléter si nécessaire.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro"
+    ],
+    "sources_cited": []
+  }
+}

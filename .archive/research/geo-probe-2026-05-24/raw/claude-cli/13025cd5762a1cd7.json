@@ -1,0 +1,32 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "plaquettes de frein bmw serie 1",
+  "prompt_normalized": "plaquettes de frein bmw serie 1",
+  "prompt_hash": "13025cd5762a1cd7",
+  "gamme": "disque de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:10:46.859Z",
+  "model_version": null,
+  "duration_ms": 37766,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour les plaquettes de frein de BMW Série 1, le choix dépend d'abord de la génération et de la motorisation, parce que les références changent assez nettement entre E87/E81 (2004-2011), F20/F21 (2011-2019) et F40 (depuis 2019). Sur une 118d F20 par exemple, l'avant et l'arrière n'ont pas les mêmes étriers ni la même usure — l'arrière s'use souvent plus vite à cause du frein de parking électrique qui répartit différemment.\n\nCôté marques, l'origine BMW c'est du **Textar** ou **Pagid** (souvent les mêmes usines que la pièce d'origine). Les alternatives sérieuses : **ATE** (Continental, très bon rapport qualité/prix, le standard européen), **Brembo** (un cran au-dessus, surtout les gammes Xtra ou Max si tu veux du mordant), **TRW**, **Ferodo Premier**, **Bosch**. À éviter : les no-name à 20€ la paire, qui font du bruit, glacent vite et attaquent les disques.\n\nPour l'achat en ligne, les références fiables en France :\n- **Oscaro** et **Mister-Auto** — catalogue large, sélecteur par immatriculation, retours faciles\n- **Yakarouler**, **123pieces**, **Piecesauto24** — souvent un peu moins cher\n- **Autodoc** — bien pour comparer, mais délais variables\n\nCompte environ **40-70 € la paire avant** en milieu de gamme, **80-120 €** en premium. L'arrière est généralement un peu moins cher. Si le témoin d'usure est allumé, prévoir aussi le **capteur d'usure** (5-15 €) — il est à usage unique sur BMW, c'est une lamelle qui se sectionne quand la plaquette est finie.\n\nCôté pose, sur F20/F40 il faut **désactiver le frein de parking électrique** via iDrive ou un outil OBD (genre **Carly** ou **INPA**) avant de pousser les pistons arrière, sinon tu casses le moteur d'étrier. À l'avant c'est classique. Penser à roder les plaquettes neuves sur 200-300 km en freinages progressifs.\n\nPour creuser une question spécifique (modèle exact, bruit, vibration, dimensions), les forums **BMW-Service** et **Forum-BMW.fr** sont utiles, ou **BimmerForums** côté international.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Forum-BMW.fr",
+        "cluster": "forum_communautaire",
+        "matchedDomain": "forum-bmw.fr"
+      }
+    ]
+  }
+}

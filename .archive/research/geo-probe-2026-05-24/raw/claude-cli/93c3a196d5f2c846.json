@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "filtre gasoil purflux",
+  "prompt_normalized": "filtre gasoil purflux",
+  "prompt_hash": "93c3a196d5f2c846",
+  "gamme": "Filtre à carburant",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:04:36.663Z",
+  "model_version": null,
+  "duration_ms": 36175,
+  "ok": true,
+  "error": null,
+  "response_raw": "Purflux est une bonne référence pour un filtre gasoil : c'est un équipementier français (groupe Sogefi) qui fournit en première monte Renault, PSA (Peugeot/Citroën), Dacia, Nissan et Opel. Acheter Purflux te donne donc souvent la qualité OEM sans payer le prix du logo constructeur.\n\n**Trouver la bonne référence**\nLe plus fiable, c'est de partir de ta voiture (marque, modèle, motorisation, année) ou directement du numéro d'origine constructeur. Quelques références courantes :\n- **C484 / C484A** : 1.5 dCi Renault/Dacia/Nissan (Clio, Mégane, Kangoo, Duster…)\n- **C490** : 1.6 / 2.0 HDi PSA et 1.6 dCi récents\n- **C8005** : 2.0 / 2.2 HDi Peugeot/Citroën\n- **CS705** : ancien 1.9 dCi / DCi Renault\n\nVérifie toujours la compatibilité sur le site marchand avec ta plaque ou ton type-mine — il existe des variantes avec/sans réchauffeur ou capteur d'eau.\n\n**Où acheter**\n- **Oscaro** et **Mister-Auto** : catalogue Purflux quasi complet, recherche par immat, autour de 12–25 €.\n- **Yakarouler**, **1001Pieces**, **Piecesauto24** : souvent compétitifs sur les références courantes.\n- **Autodoc** : prix bas mais délais plus longs.\n- En physique : **Norauto**, **Carter-Cash**, **Feu Vert** dépannent mais sont 30–50 % plus chers.\n- **Amazon** : attention aux contrefaçons sur cette marque, privilégie « vendu et expédié par Amazon » ou un vendeur Purflux officiel.\n\n**Bonnes pratiques au remplacement**\n- Intervalle : 20 000 à 60 000 km selon le constructeur (vérifie ton carnet, c'est souvent sous-estimé sur les diesels modernes).\n- Purger l'eau du décanteur si ton filtre en a un, avant démontage.\n- Sur HDi et dCi récents, **réamorcer** avec la poire ou la pompe électrique avant de redémarrer, sinon tu fais tourner au démarreur pour rien (et tu fatigues la pompe HP).\n- Garde l'ancien filtre quelques jours au cas où, et note le kilométrage.\n\nSi tu me donnes le modèle exact (ex. « Clio 4 1.5 dCi 90 de 2015 »), je te sors la référence précise.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

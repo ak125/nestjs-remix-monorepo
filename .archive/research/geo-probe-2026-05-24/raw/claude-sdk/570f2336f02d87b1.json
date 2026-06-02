@@ -1,0 +1,34 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "machoir frein arriere",
+  "prompt_normalized": "machoir frein arriere",
+  "prompt_hash": "570f2336f02d87b1",
+  "gamme": "Mâchoires de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:32:01.570Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 26754,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Mâchoires de frein arrière : ce qu'il faut savoir\n\nLes **mâchoires de frein arrière** équipent les véhicules à freinage à tambour (encore très courant à l'arrière sur citadines et compactes : Clio, 208, C3, Twingo, Sandero, Fiesta, Polo, etc.). Elles se composent de deux segments métalliques garnis de **ferodo** (matériau de friction) qui s'écartent sous l'action du cylindre de roue pour frotter contre le tambour et ralentir la roue.\n\n## Quand les remplacer\n\n- Bruit de grincement ou frottement métallique à l'arrière\n- Frein à main qui « tire » long (plus de 5-7 crans)\n- Distance de freinage allongée\n- Garniture < 1,5 mm d'épaisseur restante (mini légal généralement 1 mm)\n- Kilométrage indicatif : **80 000 à 150 000 km** selon usage\n\nÀ remplacer **toujours par paire** (essieu complet), et profitez-en pour changer le **kit de ressorts/ressorts de rappel** et vérifier le **cylindre de roue** (fuite de liquide = remplacement obligatoire).\n\n## Où acheter en France\n\n- **Oscaro**, **Mister-Auto**, **Yakarouler**, **Piecesauto24**, **AutoDoc** : catalogues complets avec filtre par immatriculation/VIN\n- **Amazon.fr** : pratique mais vérifier la compatibilité référence constructeur\n- **Norauto / Feu Vert / Speedy** : si vous voulez pose comprise\n\nComptez **25-60 €** le kit de mâchoires pour la plupart des modèles courants, **15-30 €** le kit ressorts, **20-40 €** le cylindre de roue.\n\n## Marques fiables\n\n**TRW**, **Bosch**, **ATE**, **Ferodo**, **Brembo**, **Textar**, **Bendix**, **Delphi**, **Valeo**. Évitez le no-name à 12 € : la qualité du ferodo joue directement sur la distance de freinage et la durée de vie du tambour.\n\n## Pose : DIY ou garage ?\n\nOpération **moyennement difficile** : démontage du tambour (parfois grippé), repérage du montage des ressorts (prenez une photo avant !), réglage du rattrapage automatique, purge si cylindre changé. Comptez **2 h** pour un bricoleur équipé, **80-150 €** de main d'œuvre en garage.\n\nCôté tutos : chaînes YouTube comme **Vilebrequin**, **AutoMecanik**, ou les forums **Forum-Auto** et **Caradisiac** ont d'excellents pas-à-pas modèle par modèle.\n\nPensez à vérifier l'état du **tambour** (rainures, ovalisation) : s'il est marqué, un rectifiage ou remplacement s'impose en même temps.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "main d'œuvre en garage.\n\nCôté tutos : chaînes YouTube comme **Vilebrequin**, **AutoMecanik**, ou les forums **Forum-Auto** et **Caradisiac** ont d'excellents pas-à-pas modèle par modèle.\n\nPensez à vérifier l'état du **tambour** (rainures,",
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Amazon.fr",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

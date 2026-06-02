@@ -1,0 +1,32 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "vidange et filtre à huile prix",
+  "prompt_normalized": "vidange et filtre a huile prix",
+  "prompt_hash": "844e4c39441cad6c",
+  "gamme": "Filtre à huile",
+  "volume": 500,
+  "captured_at": "2026-05-24T15:43:34.929Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 30368,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Vidange et filtre à huile : prix et conseils\n\n## Combien ça coûte en 2026 ?\n\n**En centre auto ou garage indépendant**, la fourchette habituelle :\n\n- **Citadine essence** (Clio, 208, Polo) : **55–90 €** TTC (forfait 4–5 L huile 5W-30 + filtre)\n- **Compacte / berline diesel** (Mégane, 308, Golf TDI) : **80–130 €** (5–6 L, souvent huile 5W-30 C3)\n- **SUV / Premium** (BMW, Audi, Mercedes) : **130–250 €** (huile longue durée 0W-20 / 5W-40, filtre + joint vis de vidange spécifique)\n- **Hybride Toyota / Lexus** : **70–110 €** (huile 0W-16 ou 0W-20)\n\n**En concession constructeur** : compter +30 à +50 % (souvent 150–300 €), justifié surtout sous garantie ou pour les huiles spécifiques (PSA B71 2312, VW 504.00, BMW LL-04…).\n\n**En DIY (faire soi-même)** : **25–55 €** de pièces. Huile en bidon 5 L chez **Norauto, Feu Vert, Oscaro, Mister-Auto ou Amazon** (Total Quartz, Motul, Castrol, Mobil 1) entre 25 et 50 €, filtre **Mann, Mahle, Bosch ou Purflux** entre 6 et 15 €, joint cuivre 1 €. Prévoir une clé à filtre et un bac de récupération.\n\n## Ce qui fait varier le prix\n\n1. **Volume et type d'huile** : une 0W-20 longue durée premium coûte 2× plus qu'une 10W-40 minérale.\n2. **Norme constructeur** : ACEA C3, C5, dexos2, MB 229.51… ne pas se tromper sous peine d'invalider la garantie.\n3. **Filtre** : cartouche papier (5–10 €) vs filtre vissé métallique (8–20 €).\n4. **Joint de vis de vidange** : à changer systématiquement (souvent oublié en low-cost).\n\n## Où comparer\n\n- **idGarages, Vroomly, Carter-Cash** affichent des forfaits transparents par modèle et immatriculation, souvent 20–30 % moins chers que les enseignes classiques.\n- **Oscaro, Mister-Auto, Yakarouler** pour les pièces si vous voulez fournir vous-même.\n- **AutoMecanik.com** permet de chercher directement le **filtre à huile compatible** avec votre véhicule via plaque ou type-mine, avec les références équivalentes (origine vs aftermarket).\n\n## Périodicité\n\n- Essence : **15 000 km ou 1 an**\n- Diesel : **20 000 km ou 1 an**\n- Longue durée constructeur (PSA, BMW, VAG) : **30 000 km / 2 ans** — mais beaucoup de mécaniciens recommandent de revenir à **15 000 km** pour préserver le moteur, surtout en usage urbain.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "Mister-Auto, Yakarouler** pour les pièces si vous voulez fournir vous-même.\n- **AutoMecanik.com** permet de chercher directement le **filtre à huile compatible** avec votre véhicule via plaque ou type-mine, avec les références équivalentes",
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "AutoMecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      }
+    ]
+  }
+}

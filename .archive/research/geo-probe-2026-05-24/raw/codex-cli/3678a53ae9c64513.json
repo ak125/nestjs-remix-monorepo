@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "disque de frein brembo",
+  "prompt_normalized": "disque de frein brembo",
+  "prompt_hash": "3678a53ae9c64513",
+  "gamme": "plaquette de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:35:47.385Z",
+  "model_version": null,
+  "duration_ms": 18673,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour “disque de frein Brembo”, le bon choix dépend surtout de la voiture, du moteur, de l’année et de l’essieu avant/arrière. Chez Brembo, la gamme **Prime** est généralement le choix le plus pertinent pour un remplacement type origine : fiable, silencieux, adapté à un usage quotidien. Pour une conduite plus dynamique, regarde les **Brembo Max** rainurés ou **Brembo Xtra** percés ; Brembo indique que les Xtra sont conçus pour améliorer le comportement en conditions de freinage variées, et recommande de les associer aux plaquettes Xtra pour garder un ensemble cohérent. Sources utiles : catalogue officiel Brembo Parts et pages Brembo Xtra.\n\nÀ vérifier avant achat : diamètre du disque, épaisseur, nombre de trous, hauteur, disque ventilé ou plein, présence d’un roulement/cible ABS selon modèle. Ne te fie pas seulement à l’immatriculation sur Oscaro, Mister-Auto, Autodoc ou Yakarouler : compare toujours la référence Brembo avec le catalogue officiel Brembo Parts.\n\nPour un conducteur français qui veut un bon rapport qualité/prix, je prendrais :\n- **Brembo Prime + plaquettes Brembo, Ferodo, TRW ou ATE** pour usage normal.\n- **Brembo Max/Xtra + plaquettes adaptées** si conduite montagne, autoroute rapide ou freinages répétés.\n- **ATE, TRW, Bosch, Textar, Zimmermann** comme alternatives sérieuses.\n\nÉvite les disques “performance” très bon marché ou les références mal documentées. Et remplace toujours les disques par paire sur le même essieu, avec plaquettes neuves. Après montage, fais un rodage progressif sur 200 à 300 km : pas de freinage violent à froid, pas d’arrêt prolongé pédale appuyée après gros freinage.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

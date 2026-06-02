@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "filtre a huile",
+  "prompt_normalized": "filtre a huile",
+  "prompt_hash": "d7d4111ee88bb270",
+  "gamme": "Filtre à huile",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:12:37.913Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 31146,
+  "ok": true,
+  "error": null,
+  "response_raw": "**Filtre à huile — l'essentiel**\n\nLe filtre à huile retient les particules métalliques, suies et résidus de combustion qui contaminent l'huile moteur. Sans lui, ces impuretés circulent dans les paliers, l'arbre à cames et la pompe — usure prématurée garantie. Il se change **systématiquement à chaque vidange**, jamais une vidange sur deux comme on l'entend parfois.\n\n**Types courants**\n- **Cartouche vissée (spin-on)** : le plus répandu, boîtier métallique scellé, on dévisse et on remplace.\n- **Cartouche papier (insert)** : sur la plupart des moteurs récents PSA, VAG, BMW — on ouvre une cloche et on change uniquement l'élément filtrant + les joints toriques. Plus écologique, souvent moins cher.\n\n**Marques de référence**\nPour rester sur du fiable sans payer le prix concession :\n- **Mann-Filter, Mahle, Bosch, Hengst, Purflux** : équipementiers d'origine pour la plupart des constructeurs européens. Choix sûr.\n- **Valeo, Febi, Meyle** : bon rapport qualité/prix.\n- **K&N, Mocal** : si tu cherches du sport/haute performance.\n\nÉvite les no-name à 3€ sur les marketplaces — la valve anti-retour et le clapet de dérivation sont souvent absents ou défaillants.\n\n**Où l'acheter**\n- **Oscaro, Mister-Auto, Yakarouler, 1001Pieces** : catalogues larges, recherche par immatriculation, prix corrects.\n- **Norauto, Feu Vert, Carter-Cash** : pratique si tu veux récupérer en magasin.\n- **AutoDoc** : prix bas, mais délais et SAV variables.\n- **Amazon** : OK si tu vérifies bien la référence OEM et que le vendeur est l'équipementier (Mann, Bosch en direct).\n\n**Comment trouver la bonne référence**\nLe plus fiable : ta **plaque d'immatriculation** sur les sites cités ci-dessus, ils croisent avec la base TecDoc. Sinon, le numéro OEM gravé sur l'ancien filtre, ou la référence constructeur dans le carnet d'entretien. Méfie-toi des recherches par modèle seul : un 1.6 HDi 2008 et un 1.6 HDi 2012 peuvent avoir des filtres différents selon la motorisation exacte (code moteur dans la carte grise, case D.2).\n\n**Prix indicatif** : 4–15 € pour une voiture courante, 20–35 € pour du premium ou Diesel récent.\n\n**Côté entretien** : pense à pré-remplir le filtre d'huile neuve avant montage (sur les modèles montés à la verticale) et à serrer à la main + 3/4 de tour, jamais à la clé à fond.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

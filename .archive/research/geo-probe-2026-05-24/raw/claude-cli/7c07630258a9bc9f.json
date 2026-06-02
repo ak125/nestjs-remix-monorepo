@@ -1,0 +1,29 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "prix disque et plaquette de frein peugeot 3008",
+  "prompt_normalized": "prix disque et plaquette de frein peugeot 3008",
+  "prompt_hash": "7c07630258a9bc9f",
+  "gamme": "disque de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T15:41:09.582Z",
+  "model_version": null,
+  "duration_ms": 41580,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour un Peugeot 3008, le prix dépend de la génération (I : 2009-2016, II : 2016-2023, III : 2023+) et de la motorisation, qui déterminent le diamètre des disques (souvent 283 ou 304 mm à l'avant, 268 ou 290 mm à l'arrière).\n\n**Fourchettes de prix indicatives (pièces seules, France 2026)**\n\nAvant (le plus sollicité, à changer en premier) :\n- Paire de disques : 50–90 € en entrée de gamme (Valeo, TRW), 90–150 € en milieu de gamme (Bosch, ATE, Ferodo), 150–220 € en premium (Brembo, Textar, Pagid).\n- Jeu de plaquettes : 25–45 € entrée de gamme, 45–75 € milieu, 75–110 € premium.\n\nArrière :\n- Paire de disques : 45–100 € selon marque.\n- Jeu de plaquettes : 20–55 €.\n\n**Budget total kit avant complet (disques + plaquettes)** : compter 80–130 € en montage soi-même milieu de gamme, jusqu'à 250–300 € en premium Brembo/Textar.\n\n**Où acheter en ligne** : Oscaro, Mister-Auto, Yakarouler, Autodoc, Piecesauto24, et Automecanik sont les références habituelles — comparer les références d'origine (numéro OE Peugeot, ex. 1611842280 pour certains disques avant 304 mm) plutôt que les seuls visuels. Amazon liste aussi des kits Bosch/ATE mais attention aux vendeurs tiers.\n\n**Pose** : un centre auto type Norauto, Feu Vert, Midas ou Speedy facture en général 80–140 € de main d'œuvre pour un essieu (disques + plaquettes), soit un total posé autour de 200–350 € pour l'avant selon la gamme choisie. Un garage indépendant est souvent 20–30 % moins cher.\n\n**Conseil pratique** : sur 3008, on remplace toujours par paire (les deux côtés du même essieu), disques + plaquettes ensemble si les disques ont fait plus de 60 000 km, et on ne mélange pas les marques entre disque et plaquette pour conserver le bon couple de friction. Pour identifier précisément la référence, donner le numéro VIN au vendeur évite 90 % des erreurs (le 3008 a eu plusieurs évolutions de freinage selon les moteurs HDi/PureTech/Hybrid).",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "acheter en ligne** : Oscaro, Mister-Auto, Yakarouler, Autodoc, Piecesauto24, et Automecanik sont les références habituelles — comparer les références d'origine (numéro OE Peugeot, ex. 1611842280 pour certains disques avant 304 mm) plutôt qu",
+    "competitors_mentioned": [
+      "autodoc",
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

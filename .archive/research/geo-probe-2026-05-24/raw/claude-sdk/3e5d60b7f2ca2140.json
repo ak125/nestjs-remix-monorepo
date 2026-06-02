@@ -1,0 +1,32 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "interrupteur feux stop",
+  "prompt_normalized": "interrupteur feux stop",
+  "prompt_hash": "3e5d60b7f2ca2140",
+  "gamme": "Interrupteur des feux de freins",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:39:03.743Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 32470,
+  "ok": true,
+  "error": null,
+  "response_raw": "L'**interrupteur de feux stop** (aussi appelé *contacteur de pédale de frein* ou *contacteur de stop*) est une pièce située sous le tableau de bord, fixée sur le support de la pédale de frein. Quand tu appuies sur la pédale, il ferme un contact qui allume les feux stop arrière — et envoie aussi un signal à plusieurs calculateurs (ABS, ESP, régulateur de vitesse, boîte auto, démarrage Start&Stop).\n\n### Symptômes d'un contacteur HS\n- Feux stop allumés en permanence ou ne s'allument plus\n- Voyant ABS/ESP qui s'allume\n- Régulateur de vitesse qui se désactive seul ou refuse de s'enclencher\n- Impossible de sortir du mode P sur une boîte auto (sécurité shift-lock)\n- Démarrage impossible sur certaines récentes (BMW, VAG, PSA) qui exigent le signal pédale appuyée\n- Code défaut OBD : souvent **P0571**, P0703, ou équivalent constructeur\n\n### Diagnostic rapide\nUn multimètre en mode continuité sur les bornes du contacteur, pédale relâchée puis appuyée, suffit dans 90 % des cas. Sur véhicules récents à double contact (NO + NF, typique VAG), les deux circuits doivent commuter en miroir — un seul qui lâche déclenche le défaut. Un OBD-Eleven, VCDS, ou Delphi DS150 lit le défaut en 30 secondes.\n\n### Marques de référence\n**Febi Bilstein**, **Hella**, **Facet**, **Vemo**, **Valeo**, **Bosch**, **Metzger**, **Triscan**. En première monte d'origine selon le constructeur : FAE est très répandu sur PSA/Renault, Hella sur les allemandes.\n\n### Prix et achat\nCompter **8 à 25 €** pour la pièce selon le modèle. Les sites spécialisés sérieux : **Oscaro**, **Mister-Auto**, **Yakarouler**, **AutoDoc**, **Automecanik.com**, **1001pieces**. Sur Amazon attention aux compatibilités annoncées trop larges. Toujours filtrer par ta motorisation exacte (type mine / code moteur), pas juste par modèle — un même véhicule peut avoir 2 ou 3 références selon l'année et l'équipement (BVA, régulateur, Start&Stop).\n\n### Remplacement\nOpération de **10-20 minutes** sans outillage spécial : déclipser, dévisser ou tourner d'un quart de tour selon le système, débrancher le connecteur, remonter à l'identique. Sur certaines récentes, un réglage automatique se fait à la première pression pédale. Aucune réinitialisation calculateur nécessaire sauf si un code défaut persistant doit être effacé à la valise.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "écialisés sérieux : **Oscaro**, **Mister-Auto**, **Yakarouler**, **AutoDoc**, **Automecanik.com**, **1001pieces**. Sur Amazon attention aux compatibilités annoncées trop larges. Toujours filtrer par ta motorisation exacte (type mine / code",
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      }
+    ]
+  }
+}

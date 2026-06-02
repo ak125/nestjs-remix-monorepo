@@ -1,0 +1,30 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "prix tambour de frein",
+  "prompt_normalized": "prix tambour de frein",
+  "prompt_hash": "6d0cba755f1b8106",
+  "gamme": "Tambour de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:56:38.779Z",
+  "model_version": null,
+  "duration_ms": 32838,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Prix d'un tambour de frein\n\nLes tarifs varient selon la marque, le véhicule et l'endroit où tu achètes.\n\n## Prix de la pièce seule\n\n- **Entrée de gamme** (marques asiatiques type Japanparts, Ashika) : **20 à 40 €** le tambour\n- **Milieu de gamme / qualité OEM** (TRW, ATE, Ferodo, Bosch, Brembo, Valeo, Delphi) : **35 à 80 €**\n- **Premium ou véhicules spécifiques** (utilitaires, 4x4, gros diamètres) : **80 à 150 €** voire plus\n\nLes tambours se changent **toujours par paire** sur le même essieu, donc compte le double. Et en général on profite du démontage pour remplacer aussi les **mâchoires** (kit complet 40-90 € l'essieu) et le **kit de ressorts/accessoires** (15-30 €).\n\n## Où acheter en ligne\n\n- **Oscaro** et **Mister-Auto** — les deux références françaises, large catalogue avec recherche par plaque\n- **Yakarouler**, **1001Pieces**, **Piecesauto24** — souvent un peu moins cher\n- **AutoDoc** — gros catalogue européen, délais parfois longs\n- **Amazon** — pratique mais vérifie bien la compatibilité avec ton modèle\n\n## Où acheter en magasin\n\n- **Norauto**, **Feu Vert**, **Midas**, **Speedy**, **Euromaster** — plus cher mais montage possible sur place\n- **Carter-Cash** — bon compromis prix/dispo immédiate\n\n## Coût du montage\n\nCompte **80 à 180 €** de main d'œuvre pour le remplacement des deux tambours + mâchoires (1h30 à 2h30 selon le véhicule). Un centre auto type Norauto te facturera plutôt 150-200 €, un garage indépendant souvent moins. Profite de l'intervention pour faire **purger le liquide de frein** si ça n'a pas été fait depuis 2 ans (+30-50 €).\n\n## Conseils\n\n- Donne toujours **immatriculation + code moteur** au vendeur pour éviter les erreurs\n- Les **cylindres de roue** (≈15-25 € pièce) sont à inspecter pendant le démontage, c'est le moment de les changer s'ils suintent\n- Évite vraiment les tambours premier prix non identifiés sur les marketplaces — sur du freinage, la qualité de fonte compte",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "euromaster",
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

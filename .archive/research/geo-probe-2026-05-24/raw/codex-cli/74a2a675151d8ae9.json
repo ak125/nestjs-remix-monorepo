@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "étrier de frein",
+  "prompt_normalized": "etrier de frein",
+  "prompt_hash": "74a2a675151d8ae9",
+  "gamme": "Étrier de frein",
+  "volume": 50000,
+  "captured_at": "2026-05-24T15:06:46.355Z",
+  "model_version": null,
+  "duration_ms": 18209,
+  "ok": true,
+  "error": null,
+  "response_raw": "Un **étrier de frein** est la pièce qui serre les plaquettes contre le disque de frein pour ralentir ou arrêter la voiture. Si vous cherchez cette pièce, il faut surtout identifier **le véhicule exact** : marque, modèle, année, motorisation, diamètre de disque, et parfois côté gauche/droit ou avant/arrière.\n\nIl existe deux grands cas :\n\n**1. Étrier complet neuf ou échange standard**  \nC’est le choix le plus courant si l’étrier est grippé, fuit, ou si le piston ne revient plus correctement. Les marques fiables sont par exemple **Brembo, TRW, ATE, Bosch, Budweg Caliper, NK, Febi Bilstein**. L’**échange standard** est souvent intéressant : vous payez une consigne, puis vous renvoyez l’ancien étrier.\n\n**2. Kit de réparation d’étrier**  \nPossible si l’étrier est simplement encrassé ou si les joints/poussières sont fatigués, mais il faut être soigneux : nettoyage, piston en bon état, purge correcte du circuit. Sur une voiture utilisée tous les jours, remplacer l’étrier complet est souvent plus sûr et plus rapide.\n\nSymptômes typiques d’un étrier défectueux : voiture qui tire d’un côté au freinage, roue anormalement chaude, odeur de chaud, plaquettes usées de façon inégale, frein qui reste légèrement bloqué, fuite de liquide de frein, pédale molle après intervention.\n\nPour acheter en France, les sites pratiques sont **Oscaro, Mister-Auto, Autodoc, Yakarouler, Piecesauto24**, ou un réseau local type **AD, Norauto, Feu Vert**. Vérifiez bien la compatibilité avec la plaque d’immatriculation, mais confirmez aussi visuellement : position du flexible, présence du frein à main intégré à l’arrière, nombre de pistons, marque du système de freinage.\n\nÀ remplacer idéalement avec : **plaquettes si elles sont contaminées ou usées**, liquide de frein si ancien, vis/colonnettes si grippées, et purge obligatoire après dépose de l’étrier. Sur le même essieu, il est souvent recommandé de comparer l’état des deux côtés pour éviter un déséquilibre au freinage.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

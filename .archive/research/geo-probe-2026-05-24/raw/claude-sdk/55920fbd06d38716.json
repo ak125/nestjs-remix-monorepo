@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "maitre cylindre de frein voiture",
+  "prompt_normalized": "maitre cylindre de frein voiture",
+  "prompt_hash": "55920fbd06d38716",
+  "gamme": "Maître cylindre de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:01:29.535Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 28488,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Maître-cylindre de frein : ce qu'il faut savoir\n\nLe **maître-cylindre** (ou MC) est la pièce centrale du circuit hydraulique de freinage : quand tu appuies sur la pédale, il convertit cet effort mécanique en pression hydraulique qui pousse le liquide de frein vers les étriers (avant) et cylindres de roue (arrière). Il est généralement monté sur le **servofrein** (amplificateur de freinage), juste derrière le bocal de liquide de frein.\n\n## Symptômes d'un maître-cylindre HS\n\n- **Pédale spongieuse ou qui s'enfonce** progressivement sous le pied maintenu (fuite interne entre les deux circuits)\n- **Pédale qui descend au plancher** sans freinage efficace\n- **Niveau de liquide de frein qui baisse** sans fuite visible aux roues → fuite interne ou vers le servofrein (tache d'huile au niveau de la cloison moteur)\n- **Voyant ABS / frein** allumé, pression dissymétrique entre circuits\n\n⚠️ Ne pas confondre avec : plaquettes usées, durite gonflée, étrier grippé ou purge mal faite. Un diagnostic propre commence par une **purge complète** et l'inspection des durites avant d'incriminer le MC.\n\n## Marques et prix indicatifs\n\nPour la plupart des voitures européennes (Renault, Peugeot, Citroën, VW, Opel…), un MC neuf de qualité OEM coûte entre **60 € et 180 €** selon le modèle.\n\nMarques fiables : **TRW, ATE, Bosch, FTE, LPR, Brembo, Delphi, Bendix**. Évite les premiers prix sans marque sur les marketplaces — le maître-cylindre est une pièce de sécurité critique.\n\n## Où acheter\n\n- **Oscaro, Mister-Auto, Yakarouler, Piecesauto24, AutoDoc** pour le neuf en ligne avec catalogue par véhicule (saisis ta plaque ou ton type-mine)\n- **Norauto / Feu Vert** si tu veux un montage inclus\n- **Casse auto / Opisto** pour de l'occasion, mais déconseillé sur cet organe\n\n## Remplacement\n\nC'est faisable soi-même si tu es équipé (clés à tuyauter pour ne pas mater les écrous des canalisations rigides, clé dynamométrique, liquide DOT 4 neuf, kit de purge type Mityvac). Compte **1h30 à 3h** + une **purge complète des 4 roues** dans l'ordre constructeur. Sinon, en garage, table autour de **120-200 € de main d'œuvre**.\n\nForums utiles pour ton modèle précis : **Forum-Auto, Caradisiac, Planète-Citroën, Forum Peugeot, Renault Forum**.\n\nSi tu me donnes la marque, le modèle et l'année, je peux préciser la référence et les pièges spécifiques.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

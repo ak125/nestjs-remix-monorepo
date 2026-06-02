@@ -1,0 +1,33 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "maitre cylindre de frein prix",
+  "prompt_normalized": "maitre cylindre de frein prix",
+  "prompt_hash": "00ba0a87a9b625b6",
+  "gamme": "Maître cylindre de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:03:36.288Z",
+  "model_version": null,
+  "duration_ms": 37516,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le prix d'un maître-cylindre de frein varie principalement selon la marque, le véhicule et le circuit (simple, tandem, avec/sans ABS).\n\n**Fourchettes de prix réalistes**\n\n- **Entrée de gamme / marques génériques** (LPR, Metelli, FTE) : 30 à 70 €\n- **Équipementiers reconnus** (ATE, TRW, Bosch, Brembo, Delphi, Valeo) : 70 à 180 €\n- **Pièces d'origine constructeur** (réseaux Peugeot, Renault, VAG, etc.) : 150 à 400 €, parfois plus sur véhicules récents avec ESP intégré\n\nPour un véhicule courant (Clio, 308, Golf, C3…), comptez en général **60-120 €** chez un équipementier de qualité comme **ATE** ou **TRW**, qui sont souvent les fournisseurs d'origine. Sur SUV récents ou utilitaires, le prix grimpe vite à 200 €+.\n\n**Où acheter en ligne (France)**\n\nLes marchands généralistes les plus utilisés :\n- **Oscaro** — large catalogue, fiches techniques claires, bonne traçabilité marque/référence OE\n- **Mister-Auto** (groupe PSA/Stellantis) — souvent compétitif sur ATE/TRW\n- **Yakarouler** — bon sur les marques milieu de gamme\n- **1001pieces** et **Pieces-Auto.fr** — alternatives utiles pour comparer\n- **Autodoc** — catalogue très large, mais délais parfois plus longs\n\nEn physique : **Carter-Cash**, **Norauto** ou un distributeur **AD / Précisium** si vous voulez retirer rapidement.\n\n**Conseils avant achat**\n\n1. **Référencez-vous toujours par la plaque d'immatriculation ou le code moteur**, pas seulement par le modèle — un même véhicule peut avoir 2 à 4 références de maître-cylindre selon la motorisation, le diamètre du piston (généralement 20,6 / 22,2 / 23,8 mm) et la présence d'ESP.\n2. **Privilégiez ATE, TRW ou Bosch** : ce sont les fournisseurs d'origine de la majorité des constructeurs européens, le rapport qualité/prix est imbattable face à l'OEM.\n3. **Prévoyez le budget annexe** : liquide de frein DOT 4 (8-15 €), purgeur si vous ne l'avez pas, et idéalement un contrôle des flexibles. Le remplacement seul du maître-cylindre coûte 60-120 € de main d'œuvre en garage indépendant, 150-250 € en concession.\n\nSi vous me donnez le modèle exact et l'année, je peux affiner la fourchette et pointer la référence ATE/TRW correspondante.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Pieces-Auto.fr",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

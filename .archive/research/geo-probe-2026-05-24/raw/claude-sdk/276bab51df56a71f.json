@@ -1,0 +1,37 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "flexible de frein avant",
+  "prompt_normalized": "flexible de frein avant",
+  "prompt_hash": "276bab51df56a71f",
+  "gamme": "Flexible de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:10:08.063Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 28581,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le flexible de frein avant est la durite souple qui relie la canalisation rigide (côté caisse) à l'étrier de frein. Il transmet la pression hydraulique du maître-cylindre vers les pistons d'étrier tout en absorbant les mouvements de la suspension et de la direction.\n\n**Signes qu'il faut le remplacer :**\n- Pédale de frein spongieuse ou qui s'enfonce progressivement\n- Fissures, craquelures ou gonflements visibles sur la gaine extérieure\n- Suintement de liquide de frein au niveau des raccords\n- Freinage qui « tire » d'un côté (un flexible interne se délamine et fait clapet)\n- Âge > 6-8 ans ou kilométrage élevé, surtout en région où l'on sale les routes\n\n**Choix de la pièce :**\n- **Origine / qualité OE** : ATE, TRW, Bosch, Febi Bilstein, Brembo — fiables, longévité équivalente au constructeur\n- **Aviation / inox tressé** : Goodridge, HEL Performance, Vénhill — pédale plus ferme, durée de vie supérieure, homologués route (TÜV/DOT). Intéressant si conduite sportive ou véhicule conservé longtemps\n- À éviter : flexibles « no-name » sur marketplaces génériques, le freinage n'est pas le poste sur lequel économiser 8 €\n\n**Où acheter en France :**\n- **Oscaro**, **Mister-Auto**, **Yakarouler**, **Automecanik.com** pour les références OE/équipementiers, avec recherche par plaque ou par modèle\n- **Tribology / Demon-Tweeks** ou directement **Goodridge.fr** pour les flexibles aviation\n- En physique : Norauto, Feu Vert, ou un distributeur Autodistribution / Alliance Automotive près de chez vous\n\n**Pose :**\nComptez 30-60 min par côté pour un bricoleur équipé. Points critiques : ne pas vriller le flexible au remontage (repère d'orientation à respecter), purger les freins dans l'ordre constructeur après remplacement, et contrôler l'absence de frottement sur le pneu en butée de braquage. Couple de serrage des banjos généralement 25-35 Nm — vérifier la RTA ou Haynes du modèle.\n\nSi tu me donnes la marque, le modèle et l'année du véhicule, je peux t'orienter vers la bonne référence et te dire s'il faut remplacer les deux côtés en même temps (recommandé).",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "€\n\n**Où acheter en France :**\n- **Oscaro**, **Mister-Auto**, **Yakarouler**, **Automecanik.com** pour les références OE/équipementiers, avec recherche par plaque ou par modèle\n- **Tribology / Demon-Tweeks** ou directement **Goodridge.fr**",
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      },
+      {
+        "raw": "Goodridge.fr",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

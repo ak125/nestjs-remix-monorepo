@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "filtre a gasoil megane 3",
+  "prompt_normalized": "filtre a gasoil megane 3",
+  "prompt_hash": "ca82733b5dbf4c7b",
+  "gamme": "Filtre à carburant",
+  "volume": 500,
+  "captured_at": "2026-05-24T15:47:58.496Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 33231,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour un filtre à gasoil de Mégane 3, le choix dépend de la motorisation diesel :\n\n**Identifier la motorisation (carte grise, champ P.3)**\n- **1.5 dCi (K9K)** — le plus répandu, 90/95/105/110 ch\n- **1.6 dCi (R9M)** — 130 ch, à partir de 2011\n- **1.9 dCi (F9Q)** — 130 ch, début de production\n- **2.0 dCi (M9R)** — 150/160 ch\n\n**Références fiables**\n- **Purflux C504Y** (équipementier d'origine Renault) pour le 1.5 dCi et 1.9 dCi — c'est la pose constructeur, pas un équivalent\n- **Purflux C523** pour le 1.6 dCi R9M et 2.0 dCi M9R\n- Référence Renault d'origine : **8200813237** (K9K), **164039594R** (R9M/M9R)\n- Alternatives sérieuses : **Mann-Filter WK 9023**, **Bosch F026402115**, **Mahle KL 781**, **Hengst H280WK**. Évite les no-name à 6 € sur marketplaces — un filtre gasoil défaillant abîme la pompe HP (facture 800-1500 €).\n\n**Où acheter en France**\n- **Oscaro** et **Mister-Auto** : catalogue précis avec sélecteur véhicule, prix corrects (12-25 € selon marque)\n- **Yakarouler**, **123pieces**, **Piecesauto24** : alternatives compétitives\n- **Autodoc** : très large stock, livraison parfois plus lente\n- En physique : **Norauto**, **Feu Vert**, **Carter-Cash** si tu veux récupérer la pièce le jour même\n\n**Montage et entretien**\nSur le K9K, le filtre est sous le capot côté passager, fixé sur le bloc moteur, avec deux durites à clipser. Sur les versions plus récentes (post-2012), il est parfois intégré au boîtier avec un élément filtrant seul à remplacer — vérifie la photo de la référence avant commande.\n\n**Intervalle constructeur** : 40 000 km ou tous les 2 ans. Amorçage manuel via la poire après montage, puis 2-3 démarrages courts pour purger l'air avant de rouler. Pense à remplacer aussi le joint torique fourni dans le kit.\n\nPour un diagnostic plus poussé (perte de puissance, démarrage difficile à froid), des forums comme **Planète Renault** ou **Forum-Auto** ont des fils détaillés par motorisation.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

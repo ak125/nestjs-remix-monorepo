@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "capteur feu stop",
+  "prompt_normalized": "capteur feu stop",
+  "prompt_hash": "81c954d720d83ecc",
+  "gamme": "Interrupteur des feux de freins",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:21:20.461Z",
+  "model_version": null,
+  "duration_ms": 19839,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le terme le plus courant pour **“capteur feu stop”** est **contacteur de feu stop** ou **interrupteur de pédale de frein**. C’est une petite pièce généralement fixée au niveau de la pédale de frein. Quand tu appuies sur la pédale, elle envoie l’information pour allumer les feux stop arrière.\n\nCette pièce peut aussi servir à d’autres systèmes selon le véhicule : régulateur de vitesse, ABS/ESP, boîte automatique, aide au démarrage, détection de freinage pour le calculateur moteur. Donc un contacteur défectueux ne provoque pas seulement des feux stop qui ne s’allument plus.\n\nSymptômes fréquents :\n- feux stop qui restent allumés en permanence ;\n- feux stop qui ne s’allument plus ;\n- voyant ABS/ESP ou défaut moteur ;\n- régulateur de vitesse qui ne fonctionne plus ;\n- impossibilité de sortir le levier de boîte auto de la position P ;\n- message du type “défaut freinage” ou “contacteur pédale de frein”.\n\nAvant d’acheter, il faut identifier le véhicule précisément : marque, modèle, année, motorisation, parfois numéro VIN. Il existe souvent plusieurs références pour une même voiture. Tu peux chercher la pièce sous les noms **contacteur de stop**, **contacteur pédale de frein**, **interrupteur feu stop** ou **brake light switch**.\n\nPour l’achat, les sites comme **Oscaro**, **Mister-Auto**, **Autodoc**, **Yakarouler**, **Norauto** ou directement le réseau constructeur peuvent convenir. Les marques courantes sont **Bosch**, **Febi Bilstein**, **Hella**, **Valeo**, **Vemo**, **Facet** ou parfois la référence d’origine constructeur.\n\nLe remplacement est souvent simple : accès sous le tableau de bord, débrancher le connecteur, tourner ou déclipser l’ancien contacteur, installer le nouveau. Mais sur certains modèles, il faut régler la position du contacteur ou respecter une procédure de montage. Un mauvais réglage peut laisser les feux stop allumés ou empêcher leur déclenchement.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

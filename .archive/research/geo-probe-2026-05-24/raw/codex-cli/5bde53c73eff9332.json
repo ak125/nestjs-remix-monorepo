@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "filtre d habitacle",
+  "prompt_normalized": "filtre d habitacle",
+  "prompt_hash": "5bde53c73eff9332",
+  "gamme": "Filtre d'habitacle",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:31:36.460Z",
+  "model_version": null,
+  "duration_ms": 18526,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le **filtre d’habitacle** (aussi appelé filtre à pollen) sert à filtrer l’air qui entre dans l’habitacle via la ventilation, le chauffage ou la climatisation. Il retient poussières, pollen, particules, feuilles, pollution et parfois les mauvaises odeurs selon le type de filtre.\n\nIl existe surtout deux versions :\n\n- **Filtre d’habitacle standard** : filtre les poussières et pollens. Suffisant pour un usage simple.\n- **Filtre à charbon actif** : plus efficace contre les odeurs, les gaz d’échappement et une partie de la pollution urbaine. C’est souvent le meilleur choix, surtout si vous roulez en ville.\n- Certains modèles récents proposent aussi des filtres “anti-allergènes” ou “antibactériens”, chez Bosch, Mann-Filter, Valeo, Purflux, Mahle ou Corteco.\n\nEn général, il faut le remplacer **tous les 15 000 à 30 000 km**, ou **une fois par an**. Si vous roulez beaucoup en ville, sur routes poussiéreuses, ou si vous utilisez souvent la clim, mieux vaut le changer plus souvent.\n\nSignes d’un filtre d’habitacle à remplacer :\n\n- ventilation moins puissante ;\n- buée qui part mal ;\n- mauvaises odeurs à l’allumage de la clim ;\n- allergies ou irritation plus fréquentes ;\n- bruit de ventilation inhabituel.\n\nLe prix du filtre seul varie souvent entre **10 et 30 €**, parfois un peu plus pour un filtre haut de gamme. En garage, avec la main-d’œuvre, comptez généralement **30 à 80 €** selon l’accessibilité. Sur certaines voitures, il se change en 5 minutes derrière la boîte à gants ; sur d’autres, l’accès est plus pénible côté pédalier ou baie de pare-brise.\n\nPour trouver le bon modèle, utilisez l’immatriculation ou le modèle exact du véhicule sur Oscaro, Mister-Auto, Autodoc, Norauto, Feu Vert ou directement chez le constructeur. Vérifiez bien le **sens de montage**, indiqué par une flèche “Air Flow” ou “UP” sur le filtre.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro"
+    ],
+    "sources_cited": []
+  }
+}

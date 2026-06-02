@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "etrier de frein peint",
+  "prompt_normalized": "etrier de frein peint",
+  "prompt_hash": "2365ef3145adfd1a",
+  "gamme": "Étrier de frein",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:20:49.303Z",
+  "model_version": null,
+  "duration_ms": 16870,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour “étrier de frein peint”, l’utilisateur cherche probablement soit à acheter des étriers déjà peints, soit à savoir comment peindre ses étriers actuels.\n\nLa solution la plus propre dépend du besoin :\n\nSi les étriers sont en bon état, il vaut souvent mieux les peindre soi-même ou les faire peindre. Un kit peinture étriers est adapté, avec des marques comme Foliatec, Motip, E-Tech ou Dupli-Color. Il faut choisir une peinture haute température, résistante aux projections, au sel, au nettoyant jantes et à la poussière de frein. Les couleurs les plus courantes sont rouge, noir brillant, gris, jaune, bleu ou doré.\n\nPour un rendu durable, la préparation compte plus que la peinture : démontage de la roue, nettoyage poussé au dégraissant frein, brosse métallique, ponçage léger, masquage des disques/plaquettes/flexibles, puis application en couches fines. Il ne faut jamais peindre les surfaces de friction, les soufflets, les joints ni les vis de purge. Un séchage complet est indispensable avant de rouler.\n\nSi les étriers sont rouillés, grippés ou fatigués, mieux vaut les remplacer. On trouve des étriers neufs ou reconditionnés chez Oscaro, Autodoc, Mister-Auto, Yakarouler, Norauto ou Feu Vert, mais ils sont rarement livrés peints en couleur sportive sauf gammes spécifiques. Pour un look type Brembo, il faut distinguer un vrai étrier performance d’un simple étrier standard peint en rouge : visuellement proche, mais techniquement très différent.\n\nÀ éviter : les caches étriers bas de gamme, souvent peu esthétiques et parfois problématiques s’ils gênent le refroidissement ou la roue. Éviter aussi la peinture carrosserie classique, qui tient mal à la chaleur.\n\nEn pratique : pour un projet esthétique raisonnable, prends un kit Foliatec ou Motip, nettoie soigneusement, applique proprement et laisse sécher 24 h minimum. Pour une vraie amélioration freinage, regarde plutôt des kits Brembo, EBC, ATE, TRW ou Bosch adaptés au véhicule.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

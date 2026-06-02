@@ -1,0 +1,37 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "filtre a air briggs stratton",
+  "prompt_normalized": "filtre a air briggs stratton",
+  "prompt_hash": "6096ecce64558af5",
+  "gamme": "Filtre à air",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:13:02.967Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 30162,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour un filtre à air Briggs & Stratton, l'essentiel est d'identifier précisément ton moteur avant d'acheter — il existe plusieurs dizaines de références selon la série.\n\n**Identifier ta référence**\n\nSur le carter moteur (pas sur la tondeuse), tu trouves trois chiffres gravés ou sur une étiquette : **Model**, **Type**, **Code** (ex. 21R707-0011-G1). Avec ça tu remontes sans erreur à la pièce d'origine. Le configurateur officiel **briggsandstratton.com** (\"Trouver mon manuel / pièces\") fait le mapping correctement.\n\n**Types courants**\n\n- **Filtre cartouche papier plissé** (séries Quantum, 500/550/675EXi, DOV) — ref typiques : **491588S**, **399959**, **5043K**\n- **Filtre cartouche + préfiltre mousse** (séries Intek, OHV, Vanguard mono/bi-cylindre) — ex. **496894S**, **792105**, **594201**\n- **Filtre mousse seul** (vieux Classic / Sprint) — ex. **272235S**\n- **Filtre cylindrique Vanguard V-twin** — ex. **841497** ou **691643**\n\n**Où acheter (France)**\n\n- **Motoculture-Distri-Pro**, **Jardin-Motoculture**, **Loisirsetjardin**, **Pièces-Motoculture.com** — stock large, prix corrects, expédition rapide\n- **Amazon.fr** ou **ManoMano** — OK pour les refs courantes (491588S notamment), attention aux clones génériques non-certifiés (la mousse Stens / Oregon est fiable, les no-name asiatiques moins)\n- **Réseau agréé Briggs & Stratton** (annuaire sur leur site) — utile si moteur sous garantie ou ref rare\n- **eBay** pour les très vieilles séries plus distribuées\n\n**Compatibles vs origine**\n\n**Stens**, **Oregon**, **Hifi-Filter** et **Rotary** sont des marques aftermarket sérieuses, souvent 30-50 % moins cher que le B&S d'origine, avec la même qualité de filtration. À éviter : les packs ultra-low-cost sans marque, mousse qui se désagrège en 1 saison.\n\n**Conseil entretien** : remplace tous les 100h ou 1× par saison. Si tu as un préfiltre mousse, huile-le légèrement (huile moteur SAE 30, essoré) — c'est lui qui capte 80 % des poussières.\n\nDonne-moi ta ref Model/Type si tu veux que je pointe la cartouche exacte.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [],
+    "sources_cited": [
+      {
+        "raw": "briggsandstratton.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      },
+      {
+        "raw": "ces-Motoculture.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      },
+      {
+        "raw": "Amazon.fr",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

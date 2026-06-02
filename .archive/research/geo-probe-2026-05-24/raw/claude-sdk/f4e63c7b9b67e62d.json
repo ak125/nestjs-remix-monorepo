@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "filtre a air polini",
+  "prompt_normalized": "filtre a air polini",
+  "prompt_hash": "f4e63c7b9b67e62d",
+  "gamme": "Filtre à air",
+  "volume": 500,
+  "captured_at": "2026-05-24T15:42:03.043Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 32169,
+  "ok": true,
+  "error": null,
+  "response_raw": "Polini est un équipementier italien historique (Bergame, depuis 1945) spécialisé dans la préparation moteur pour scooters, motos 50/125 cc et minimotos. Leurs filtres à air font partie des références sur ce segment, en particulier pour MBK Nitro/Booster, Yamaha Aerox, Piaggio Zip/Typhoon, Peugeot Speedfight/Ludix, Derbi Senda, et les moteurs Minarelli AM6.\n\n**Les gammes principales :**\n\n- **Filtres à air conique \"Special Air Box\"** (mousse imprégnée d'huile) — le grand classique en tuning, avec différentes longueurs (longueur 39, 60, 90 mm) et entrées de 28 à 46 mm. À choisir en fonction de ton carbu (Dell'Orto PHBG, PHBN, Mikuni, Keihin…).\n- **Filtres droits** pour montage sur carbu plat.\n- **Filtres d'origine** pour boîte à air d'origine si tu veux juste un remplacement OEM-quality.\n- **Filtres pour kits moteur Polini** (Hi-Speed, Evolution, Corsa) souvent vendus avec le boîtier dédié.\n\n**Où acheter en France (fiables) :**\n\n- **Scoot-Center**, **Tecnium**, **MaxiScoot**, **Streetbuzz**, **MotoKristen** — spécialistes scoot/50, gros stock Polini, conseils corrects.\n- **iCasque / Dafy Moto / La Bécanerie** — généralistes, dépannage rapide.\n- **Amazon / eBay** — attention aux contrefaçons, vérifier le vendeur (Polini officiel ou revendeur agréé). Le packaging Polini est jaune/rouge avec hologramme.\n- **AliExpress** — à éviter, beaucoup de copies.\n\n**Points pratiques :**\n\n- Un filtre Polini se nettoie à l'essence ou produit dédié (Twin Air, Motul A1/A2), puis ré-huile (Motul A3, Twin Air Bio Dirt Remover). Ne pas monter à sec.\n- Si tu passes d'un filtre boîte d'origine à un cornet Polini, il faut **regicler le carburateur** (gicleur principal +5 à +15 selon la config) sinon tu tournes pauvre → risque de serrage.\n- Pour les forums de réglage : **Scooter System**, **Forum-Scooter.com**, **Motoservices** sont les références FR.\n\nTu cherches pour quel modèle exactement ? Je peux te donner la référence précise et le giclage associé.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [],
+    "sources_cited": [
+      {
+        "raw": "Forum-Scooter.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

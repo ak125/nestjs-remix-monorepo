@@ -1,0 +1,34 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "filtre a gasoil megane 3",
+  "prompt_normalized": "filtre a gasoil megane 3",
+  "prompt_hash": "ca82733b5dbf4c7b",
+  "gamme": "Filtre à carburant",
+  "volume": 500,
+  "captured_at": "2026-05-24T15:48:28.684Z",
+  "model_version": null,
+  "duration_ms": 30188,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour une Renault Mégane 3 diesel (phase 1 ou 2, motorisations 1.5 dCi, 1.9 dCi ou 2.0 dCi de 2008 à 2016), le filtre à gasoil se change tous les 60 000 à 80 000 km, ou tous les 2 ans. Quelques repères pratiques :\n\n**Références constructeur (OEM Renault)**\n- 1.5 dCi (K9K) : référence 16 40 075 73R\n- 1.9 dCi (F9Q) : référence 16 40 061 41R\n- 2.0 dCi (M9R) : référence 16 40 049 99R\n\nVérifie toujours le code moteur sur la carte grise (champ D.2) et croise avec le numéro VIN, car Renault a fait évoluer les références pendant la production.\n\n**Marques équivalentes fiables**\n- **Mann-Filter** (WK 9019, WK 9020 selon motorisation) — premier monte d'origine sur beaucoup de Renault, excellent rapport qualité/prix\n- **Bosch** (F 026 402 067) — qualité allemande constante\n- **Mahle** (KL 723D) — souvent OEM aussi\n- **Purflux** (FCS750, FCS787) — équipementier français historique de PSA/Renault\n- **Hengst** — alternative premium\n\nÉvite les filtres \"no-name\" à 5€ : les médias filtrants bas de gamme laissent passer les particules qui détruisent les injecteurs common-rail (1500€ à 2500€ la réparation).\n\n**Où acheter**\n- **Oscaro** et **Mister-Auto** : larges catalogues, prix compétitifs, sélection par immatriculation fiable\n- **Yakarouler**, **Piecesauto24**, **AutoDoc** : alternatives intéressantes\n- **Norauto / Feu Vert / Speedy** en magasin si tu veux le montage inclus\n- Pour de l'OEM strict : concession Renault ou **Renault Boutique** en ligne\n\n**Astuce montage**\nSur la Mégane 3 dCi, pense à amorcer le circuit avant de redémarrer (poire d'amorçage sur le 1.9, ou contact + démarrage répété sur le 1.5/2.0 dCi). Profite-en pour contrôler le réchauffeur de gasoil intégré sur certaines versions — c'est une panne classique l'hiver.\n\nPour des tutos visuels, **Forum-Mecanique.com**, **Planeterenault** ou les chaînes YouTube **Vilebrequin** et **GarageDIY** ont des pas-à-pas spécifiques Mégane 3.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Forum-Mecanique.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

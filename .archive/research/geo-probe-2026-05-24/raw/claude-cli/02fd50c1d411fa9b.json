@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "filtre habitacle clio iii",
+  "prompt_normalized": "filtre habitacle clio iii",
+  "prompt_hash": "02fd50c1d411fa9b",
+  "gamme": "Filtre d'habitacle",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:39:40.834Z",
+  "model_version": null,
+  "duration_ms": 33888,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour un Clio III (phase 1 ou 2, 2005-2014), le filtre d'habitacle se loge derrière la boîte à gants côté passager. C'est une intervention faisable en 5-10 minutes sans outil : tu déclipses les butées latérales de la boîte à gants pour la faire basculer, puis tu repères le couvercle plastique du logement filtre (souvent maintenu par 2-3 languettes). Tu retires l'ancien filtre par le dessus en notant le sens du flux d'air (flèche → habitacle) avant d'insérer le neuf dans la même orientation.\n\n**Références d'origine Renault** : 7701059997 ou 272775374R selon le millésime/finition. Vérifie sur ta carte grise (date de 1ʳᵉ mise en circulation) et idéalement le numéro VIN, parce que la version \"carbone actif\" (anti-odeurs/pollens chargés) a une référence différente de la version standard particules. Sur les Clio III avec clim auto, certains modèles prennent un format légèrement plus épais.\n\n**Marques recommandées** (du meilleur rapport qualité/prix au premium) :\n- **Purflux AH 230** — fabricant français, monte d'origine sur beaucoup de Renault, choix le plus cohérent\n- **Mann-Filter CU 2230** ou **CU 2329** — référence allemande, qualité OEM\n- **Mahle LA 230** — équivalent solide\n- **Bosch** et **Valeo** — corrects, parfois en promo\n- **Filtron K 1152** — premier prix sérieux\n\nÉvite les no-name à 4 €, le média filtrant se déchire ou laisse passer les pollens.\n\n**Où acheter** : **Oscaro** et **Mister-Auto** sont les plus fiables côté tarif + dispo (compte 8-15 € pour du Purflux/Mann standard, 15-25 € en charbon actif). **Yakarouler** est compétitif aussi. En physique, **Norauto**, **Feu Vert** et **Carter-Cash** ont le filtre en stock mais 30-50 % plus cher. Sur **Amazon**, attention aux vendeurs tiers qui envoient des contrefaçons Mann/Bosch — privilégie \"Expédié par Amazon\" ou les boutiques officielles des marques.\n\nFréquence de remplacement : tous les 15 000 km ou 1 an, plus souvent si tu roules en ville/zone polluée ou si tu sens des odeurs à l'allumage de la ventilation. Pour des tutos visuels précis sur le démontage de la boîte à gants Clio III, le **Forum Clio Passion** et **Forum-Auto** ont des fils détaillés avec photos.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

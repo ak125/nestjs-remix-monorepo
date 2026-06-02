@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "flexible de frein arrière",
+  "prompt_normalized": "flexible de frein arriere",
+  "prompt_hash": "de75e04ad33bd785",
+  "gamme": "Flexible de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:54:15.680Z",
+  "model_version": null,
+  "duration_ms": 17376,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour “flexible de frein arrière”, il faut surtout identifier précisément le véhicule : marque, modèle, année, motorisation, type de frein arrière et côté concerné si les flexibles sont différenciés. Sur beaucoup de voitures, le flexible arrière relie la canalisation rigide au frein de roue ou au bras/train arrière. Il peut y en avoir un par côté, parfois un flexible central plus des flexibles latéraux selon le montage.\n\nÀ vérifier avant achat :\n\n- **Longueur du flexible** : quelques millimètres d’écart peuvent gêner au braquage/suspension.\n- **Type de raccords** : mâle/femelle, diamètre, pas de vis, forme des embouts.\n- **Côté** : arrière gauche, arrière droit, ou flexible commun de train arrière.\n- **Présence ABS/ESP** : pas toujours déterminant, mais peut modifier le montage.\n- **Référence OEM** : la meilleure base pour éviter l’erreur.\n\nMarques fiables courantes : **ATE**, **TRW**, **Brembo**, **Bosch**, **Delphi**, **Febi Bilstein**, **Ferodo**. Pour une pièce de freinage, je privilégierais une marque reconnue plutôt qu’un premier prix inconnu.\n\nPour trouver la bonne pièce en France, tu peux chercher avec l’immatriculation ou le VIN sur **Oscaro**, **Mister Auto**, **Autodoc**, **Yakarouler**, ou demander confirmation chez un distributeur type **AD**, **Norauto**, **Feu Vert**. Si tu veux la correspondance la plus sûre, un magasin de pièces auto avec la carte grise peut croiser la référence constructeur.\n\nSymptômes d’un flexible arrière fatigué : craquelures, boursouflures, suintement de liquide de frein, pédale molle, frein qui reste légèrement serré, ou déséquilibre au freinage. Après remplacement, une **purge du circuit de freinage** est obligatoire. Il faut aussi utiliser du liquide conforme au véhicule, souvent **DOT 4**, mais à confirmer dans le manuel ou sur le bouchon du bocal.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

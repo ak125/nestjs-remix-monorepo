@@ -1,0 +1,32 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "filtre a air briggs stratton",
+  "prompt_normalized": "filtre a air briggs stratton",
+  "prompt_hash": "6096ecce64558af5",
+  "gamme": "Filtre à air",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:13:36.809Z",
+  "model_version": null,
+  "duration_ms": 33842,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour un filtre à air Briggs & Stratton, l'essentiel est d'identifier le modèle exact de ton moteur avant d'acheter — il est gravé sur le carter (numéro à 11 chiffres type \"12H802-xxxx\" ou \"126M02-xxxx\"). C'est ce code qui détermine la référence du filtre, pas la marque de la machine (tondeuse Honda, MTD, Husqvarna, etc.).\n\n**Références les plus courantes** :\n\n- **491588S** (équivalent 399959) — cartouche papier ovale plate, c'est le grand classique des moteurs Quantum / Classic / Sprint, série 3,5 à 6,5 CV. Souvent vendu avec pré-filtre mousse **272490S**.\n- **593260** (ou 798452) — cartouche pour les moteurs récents **EXi Series / 550-625-675**, format rond compact.\n- **794422** — pour les moteurs Intek Single Cylinder OHV (séries 4-8 CV).\n- **499486S** (cylindrique haute) — pour Intek V-Twin (gros moteurs de tracteurs tondeuses, 18-26 CV) avec pré-filtre **273638S**.\n- **710265** — Vanguard série pro.\n\n**Où acheter sereinement** :\n\n- **Motoculture-distripro**, **Jardin-Direct**, **Pieces-Tondeuses.com**, **Tondeuse-online** : revendeurs spécialisés FR, références B&S officielles, prix correct (8-15 €).\n- **Amazon / ManoMano** : OK si tu vérifies que le vendeur affiche la réf B&S exacte. Beaucoup de génériques \"compatibles\" circulent — souvent corrects en papier, mais évite les copies douteuses sur les V-Twin où une fuite d'air non filtrée peut user les segments en quelques heures.\n- **Concessionnaire B&S local** (annuaire sur briggsandstratton.com) : utile si doute sur le modèle, ils identifient à partir du numéro moteur.\n\n**Conseil pratique** : tape ton **numéro moteur complet** sur le site officiel Briggs & Stratton (rubrique \"Pièces détachées\" → \"Trouver votre numéro de modèle\") — il sort la nomenclature éclatée avec la réf exacte du filtre. Ça évite 90 % des erreurs d'achat.\n\nSi c'est un usage tondeuse domestique, change le filtre **une fois par saison** ou toutes les 25 h. Le pré-filtre mousse se lave à l'eau savonneuse, mais la cartouche papier ne se nettoie pas — un coup d'air comprimé de l'intérieur vers l'extérieur à la rigueur, mais jamais d'essence ni d'huile dessus.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [],
+    "sources_cited": [
+      {
+        "raw": "Pieces-Tondeuses.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      },
+      {
+        "raw": "briggsandstratton.com",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "prix flexible de frein",
+  "prompt_normalized": "prix flexible de frein",
+  "prompt_hash": "fd744599a1cfd2f5",
+  "gamme": "Flexible de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:13:18.632Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 30717,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le prix d'un **flexible de frein** varie surtout selon le type, la marque et le véhicule, mais voici les ordres de grandeur réalistes sur le marché français :\n\n**Flexible standard (caoutchouc d'origine)**\n- À l'unité : **8 à 25 €** pour les marques équipementiers (TRW, ATE, Bosch, Ferodo, Delphi, Metelli)\n- Pièce premium ou véhicule récent / haut de gamme : **25 à 45 €** l'unité\n- Kit complet 4 flexibles : généralement **30 à 90 €**\n\n**Flexible aviation (durite tressée inox / téflon)**\n- Type Goodridge, HEL, Venhill, Fren Tubo : **80 à 180 €** le kit complet selon le modèle de voiture, homologué TÜV. Très populaire en sportive et préparation.\n\n**Où les acheter en ligne** (prix souvent 30 à 50 % moins chers qu'en concession) :\n- **Oscaro**, **Mister-Auto**, **AutoDoc**, **Yakarouler**, **Piecesauto24**, **AutoMecanik** pour les pièces équipementiers\n- **Carter-Cash**, **Norauto**, **Feu Vert** en magasin physique si tu veux récupérer le jour même\n- **Demon Tweeks** ou **Motorkit** pour les durites aviation type Goodridge\n\n**Côté garage / pose**\nLe remplacement n'est pas cher en main-d'œuvre : **30 à 60 €** par essieu, mais il faut **purger le circuit de frein** ensuite (compter 20 à 40 € de plus, ou DOT4 ≈ 10 € si tu le fais toi-même). Total posé chez un garagiste indépendant ou un centre auto : souvent **80 à 150 €** pour les deux flexibles avant + purge.\n\n**Conseils pratiques**\n- Toujours remplacer **par paire** (les deux côtés du même essieu) pour un freinage équilibré.\n- Vérifier la **référence OEM** sur ta carte grise + modèle exact (les flexibles diffèrent selon ABS, taille jante, motorisation).\n- Méfie-toi des flexibles \"no-name\" à 3-5 € sur AliExpress/Amazon Marketplace : pièce de sécurité, pas le bon plan.\n- Si ton flexible est craquelé ou suinte, c'est un **contrôle technique défavorable** immédiat — à changer sans attendre.\n\nTu veux que je t'aide à trouver la référence exacte pour ton véhicule ?",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "- **Oscaro**, **Mister-Auto**, **AutoDoc**, **Yakarouler**, **Piecesauto24**, **AutoMecanik** pour les pièces équipementiers\n- **Carter-Cash**, **Norauto**, **Feu Vert** en magasin physique si tu veux récupérer le jour même\n- **Demon Tweeks",
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "temoin d usure des plaquettes de frein avant",
+  "prompt_normalized": "temoin d usure des plaquettes de frein avant",
+  "prompt_hash": "a86757a47d8ea141",
+  "gamme": "Témoin d'usure",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:18:07.937Z",
+  "model_version": null,
+  "duration_ms": 39706,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le témoin d'usure des plaquettes de frein avant existe sous deux formes principales, selon le véhicule :\n\n**1. Témoin mécanique (acoustique)** — c'est le plus répandu. Une petite lamelle métallique est rivée sur la plaquette. Quand la garniture s'use et atteint ~3 mm d'épaisseur (contre ~10-12 mm à neuf), cette lamelle vient frotter le disque et produit un sifflement aigu et caractéristique, surtout au freinage ou parfois en roulage libre. C'est le système monté sur la grande majorité des Renault, Peugeot, Citroën, Dacia, Ford, Opel, Toyota, etc.\n\n**2. Témoin électrique (filaire)** — un capteur intégré dans la plaquette, relié au calculateur. Quand l'usure atteint la cote critique, le fil est sectionné et un voyant orange « plaquettes » s'allume au tableau de bord. On le trouve surtout sur BMW, Mercedes, Audi, Volkswagen, Volvo, et les Peugeot/Citroën récentes (3008, 508, C5 Aircross…). Attention : il faut souvent remplacer aussi le capteur, vendu séparément ou avec le kit.\n\n**Diagnostic rapide :**\n- Sifflement au freinage → témoin mécanique en action, remplacement sous 500-1000 km.\n- Voyant orange au tableau → témoin électrique, à traiter rapidement.\n- Pédale qui s'enfonce davantage, distance de freinage allongée, vibrations → contrôle immédiat.\n\nNe pas attendre : une plaquette usée jusqu'au support métallique raye le disque et la facture passe de 40-80 € (plaquettes) à 150-300 € (plaquettes + disques).\n\n**Pour acheter les pièces**, les sites de référence en France sont Oscaro, Mister-Auto, Yakarouler, Autodoc et AutoMecanik, avec des marques fiables comme Bosch, Ferodo, TRW, Brembo, ATE, Textar, Pagid ou Valeo. En enseignes physiques : Norauto, Feu Vert, Midas, Speedy pour le montage.\n\n**Pour vérifier la référence exacte** selon votre modèle, motorisation et année, utilisez la recherche par plaque d'immatriculation sur Oscaro ou AutoMecanik — c'est le plus fiable car les références varient même au sein d'un même modèle (étrier Bosch vs TRW, par exemple).\n\nPour des retours d'expérience ou tutos de remplacement, Forum-Auto, Caradisiac et la chaîne YouTube Vilebrequin proposent des guides clairs.",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "s sites de référence en France sont Oscaro, Mister-Auto, Yakarouler, Autodoc et AutoMecanik, avec des marques fiables comme Bosch, Ferodo, TRW, Brembo, ATE, Textar, Pagid ou Valeo. En enseignes physiques : Norauto, Feu Vert, Midas, Speedy p",
+    "competitors_mentioned": [
+      "autodoc",
+      "midas",
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "speedy",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

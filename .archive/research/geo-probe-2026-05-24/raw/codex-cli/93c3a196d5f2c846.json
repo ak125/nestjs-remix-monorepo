@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "filtre gasoil purflux",
+  "prompt_normalized": "filtre gasoil purflux",
+  "prompt_hash": "93c3a196d5f2c846",
+  "gamme": "Filtre à carburant",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:04:54.438Z",
+  "model_version": null,
+  "duration_ms": 17775,
+  "ok": true,
+  "error": null,
+  "response_raw": "Pour “filtre gasoil Purflux”, le point important est la **référence exacte**, pas seulement la marque. Purflux est une marque sérieuse, très utilisée en rechange automobile, mais un filtre à gasoil dépend du moteur, de l’année, du montage et parfois du type de boîtier.\n\nLe plus fiable : entrez votre **immatriculation** ou votre modèle précis sur le **catalogue Purflux officiel**, mis à jour régulièrement, puis recoupez avec un vendeur comme **Oscaro**, **Mister-Auto**, **Norauto** ou **Yakarouler**. On trouve par exemple des références Purflux comme **C491**, **C489**, **FCS828**, **FCS952**, **CS949**, mais elles ne sont pas interchangeables entre véhicules.\n\nÀ vérifier avant achat :\n- **Cartouche seule ou filtre complet** avec boîtier.\n- Présence éventuelle d’un **capteur d’eau**, d’une vis de purge ou d’un réchauffeur.\n- Diamètre, hauteur, nombre de raccords, sens de circulation.\n- Correspondance avec la référence d’origine constructeur, pas seulement avec “diesel/gasoil”.\n\nCôté remplacement, sur un diesel moderne, faites attention à l’**amorçage** après montage. Selon le véhicule, il peut y avoir une poire d’amorçage, une pompe électrique ou une procédure au contact. Un mauvais amorçage peut provoquer un démarrage long, voire une mise en défaut. Remplacez aussi les joints fournis et lubrifiez-les légèrement au gasoil propre avant remontage.\n\nEn entretien courant, le filtre à gasoil se remplace souvent autour de **30 000 à 60 000 km**, mais il faut suivre le carnet constructeur. Si vous avez des symptômes comme démarrages difficiles, trous à l’accélération, voyant injection ou présence d’eau dans le carburant, mieux vaut ne pas attendre.\n\nSi vous me donnez la **marque, modèle, moteur, année ou immatriculation**, je peux vous aider à identifier la bonne référence Purflux.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "mister-auto",
+      "norauto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

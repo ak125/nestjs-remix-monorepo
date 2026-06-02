@@ -1,0 +1,26 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "codex-cli",
+  "prompt": "maitre cylindre de frein voiture",
+  "prompt_normalized": "maitre cylindre de frein voiture",
+  "prompt_hash": "55920fbd06d38716",
+  "gamme": "Maître cylindre de frein",
+  "volume": 500,
+  "captured_at": "2026-05-24T17:02:21.977Z",
+  "model_version": null,
+  "duration_ms": 15434,
+  "ok": true,
+  "error": null,
+  "response_raw": "Le **maître-cylindre de frein** est une pièce centrale du système de freinage : quand vous appuyez sur la pédale, il transforme l’effort mécanique en **pression hydraulique** envoyée vers les étriers ou cylindres de roue. S’il fatigue, le freinage devient dangereux ou irrégulier.\n\nLes signes classiques d’un maître-cylindre défectueux sont : **pédale de frein molle**, pédale qui s’enfonce lentement à l’arrêt, baisse du niveau de liquide de frein sans fuite évidente, freinage moins mordant, voyant frein/allumage ABS selon les cas, ou traces de liquide autour du maître-cylindre et du servo-frein. Attention à ne pas confondre avec une fuite sur un flexible, un étrier, un cylindre de roue arrière ou une simple présence d’air dans le circuit.\n\nPour choisir la bonne pièce, il faut idéalement partir de la **plaque d’immatriculation**, du **VIN**, ou au minimum : marque, modèle, motorisation, année, type de freinage et présence d’ABS/ESP. Deux versions peuvent exister sur une même voiture, avec diamètre de piston, nombre de sorties ou raccords différents.\n\nCôté achat, les sites courants en France sont **Oscaro**, **Mister-Auto**, **Yakarouler**, **Autodoc**, **Piecesauto24** ou directement les réseaux constructeurs comme **Renault, Peugeot, Citroën, Volkswagen, Toyota**, etc. Les marques de pièces fiables incluent souvent **ATE, TRW, Bosch, Brembo, Ferodo, Delphi, LPR** ou **Valeo**, selon disponibilité pour le véhicule.\n\nLe remplacement impose ensuite une **purge complète du circuit de freinage**, parfois avec procédure spécifique si le bloc ABS a pris de l’air. Si la pédale est déjà molle ou descend au plancher, mieux vaut éviter de rouler : le risque de perte partielle ou totale de freinage est réel. Pour un diagnostic rapide, commencez par contrôler le niveau de liquide, chercher les fuites visibles, puis tester si la pédale s’enfonce progressivement moteur tournant et pied appuyé.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-sdk",
+  "prompt": "contacteur de stop",
+  "prompt_normalized": "contacteur de stop",
+  "prompt_hash": "3cd2312ff71e6c88",
+  "gamme": "Interrupteur des feux de freins",
+  "volume": 500,
+  "captured_at": "2026-05-24T16:24:52.593Z",
+  "model_version": "claude-opus-4-7",
+  "duration_ms": 28637,
+  "ok": true,
+  "error": null,
+  "response_raw": "## Contacteur de stop : à quoi ça sert et comment le diagnostiquer\n\nLe contacteur de stop (ou contacteur de feux stop, *brake light switch*) est un petit interrupteur placé au-dessus de la pédale de frein. Quand tu appuies sur la pédale, il ferme un circuit qui allume les feux stop arrière. Sur les véhicules modernes, il fait bien plus que ça : il informe aussi le calculateur moteur (désactivation du régulateur de vitesse, mode \"auto-hold\", autorisation de passage en D sur boîte auto via le shift-lock, démarrage Start&Stop, ABS/ESP).\n\n**Symptômes typiques d'un contacteur HS :**\n- Feux stop allumés en permanence ou jamais allumés\n- Régulateur de vitesse qui se désactive ou refuse de s'enclencher\n- Voyant ESP/ABS allumé\n- Impossible de sortir du parking (P) sur boîte auto\n- Start&Stop qui ne redémarre plus\n- Code défaut type **P0504** (incohérence signal frein) ou équivalents constructeurs\n\n**Diagnostic rapide :**\n1. Vérifier d'abord les ampoules et le fusible des feux stop (souvent c'est juste ça).\n2. Brancher une valise OBD (un Konnwei KW902 ou OBDeleven suffit) → lire les codes.\n3. Tester le contacteur au multimètre : continuité quand pédale enfoncée, ouvert au repos. Beaucoup ont 4 broches (deux circuits redondants — normal).\n\n**Remplacement :** 15-30 min en général, sous le volant. Bien respecter le réglage de course : trop enfoncé → feux stop permanents ; pas assez → ils ne s'allument jamais. Sur certains modèles (PSA, VAG), un auto-apprentissage est nécessaire après pose.\n\n**Où acheter :**\n- **Automecanik.com** : référence par immatriculation, pratique pour éviter les erreurs de compatibilité.\n- **Oscaro**, **Mister-Auto**, **Yakarouler** : choix large, comparer les prix.\n- **Amazon.fr** ou **AliExpress** : pour les marques génériques, attention à la qualité.\n- Marques fiables à privilégier : **FAE**, **Hella**, **Valeo**, **Facet**, **Bosch**, **Vemo**. Éviter les no-name à 3 € qui lâchent en quelques mois.\n\n**Fourchette de prix :** 8-25 € en pièce de qualité OEM-équivalent, jusqu'à 60 € chez le concessionnaire. La pose en garage tourne autour de 30-50 € main d'œuvre.\n\nSi tu me donnes la marque/modèle/année du véhicule, je peux te pointer la référence exacte et les éventuelles particularités (réglage, codage requis).",
+  "analysis": {
+    "automecanik_mentioned": true,
+    "automecanik_context": "A, VAG), un auto-apprentissage est nécessaire après pose.\n\n**Où acheter :**\n- **Automecanik.com** : référence par immatriculation, pratique pour éviter les erreurs de compatibilité.\n- **Oscaro**, **Mister-Auto**, **Yakarouler** : choix larg",
+    "competitors_mentioned": [
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": [
+      {
+        "raw": "Automecanik.com",
+        "cluster": "marchand",
+        "matchedDomain": "automecanik.com"
+      },
+      {
+        "raw": "Amazon.fr",
+        "cluster": "inconnu",
+        "matchedDomain": null
+      }
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "probe_slot": "geo-discovery-probe-2026-05",
+  "engine": "claude-cli",
+  "prompt": "frein a tambour",
+  "prompt_normalized": "frein a tambour",
+  "prompt_hash": "9060de496b209cba",
+  "gamme": "Tambour de frein",
+  "volume": 5000,
+  "captured_at": "2026-05-24T15:35:20.868Z",
+  "model_version": null,
+  "duration_ms": 31899,
+  "ok": true,
+  "error": null,
+  "response_raw": "# Frein à tambour — l'essentiel\n\nLe frein à tambour équipe encore l'essieu arrière de nombreuses citadines et compactes (Clio, 208, Twingo, Sandero, Polo entrée de gamme…), parce qu'il est compact, peu coûteux et intègre facilement le frein de parking. Sur l'avant, il a quasi disparu depuis les années 90 au profit du disque, plus performant à chaud.\n\n## Comment ça marche\n\nDeux mâchoires garnies poussent vers l'extérieur contre la paroi interne d'un tambour solidaire de la roue. La poussée vient d'un cylindre de roue hydraulique. Un système de rattrapage automatique compense l'usure des garnitures. Le frein à main agit mécaniquement sur les mêmes mâchoires via un câble.\n\n## Signes d'usure ou de panne\n\n- **Bruit de grattement / sifflement à froid** : garnitures en fin de vie, ou rouille de surface sur le tambour.\n- **Pédale qui s'enfonce** ou frein de parking qui ne tient plus : cylindre de roue qui fuit (tache brunâtre derrière la roue).\n- **Tirage d'un côté au freinage** : une mâchoire grippée ou un cylindre HS d'un côté.\n- **Vibrations** : tambour ovalisé (souvent après surchauffe).\n\nContrôle visuel recommandé tous les 30 000 km, remplacement typique entre 80 000 et 120 000 km selon usage.\n\n## Pièces et marques fiables\n\nCôté kits complets (mâchoires + ressorts + cylindres + tambours), les références sérieuses sont **TRW, Bosch, ATE, Ferodo, Brembo, Bendix, Textar**. Pour des kits préassemblés économiques mais corrects : **Metelli, A.B.S., LPR**. Évite le no-name sur un organe de sécurité.\n\n## Où acheter / se renseigner\n\n- **Catalogues pièces** : Oscaro, Mister-Auto, Yakarouler, Piecesauto24, Autodoc — comparer par référence OEM.\n- **Tutos** : la chaîne YouTube **Vroumvroum**, le forum **Forum-Auto**, **Caradisiac mécanique**, et les fiches **WikiHow auto** ou **AlloPneus blog**.\n- **Données techniques** (couples de serrage, schémas éclatés) : **TecDoc** (via Oscaro/MisterAuto), ou **ETAI / Revue Technique Automobile** pour ton modèle précis.\n\n## Bon à savoir\n\nToujours remplacer **par essieu** (les deux côtés), purger le circuit hydraulique si on a ouvert un cylindre, et roder doucement les 200 premiers km (freinages progressifs) pour stabiliser les garnitures.\n\nSi tu me donnes la marque/modèle/année, je peux préciser la référence et la fourchette de prix.",
+  "analysis": {
+    "automecanik_mentioned": false,
+    "automecanik_context": null,
+    "competitors_mentioned": [
+      "allopneus",
+      "autodoc",
+      "mister-auto",
+      "oscaro",
+      "yakarouler"
+    ],
+    "sources_cited": []
+  }
+}
