@@ -562,3 +562,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/cwv-aggregation-flag-declare-2026-05-29`
 - **Décision** : fix(cwv): declare and enable aggregation scheduler flag
 - **Sortie** : PR #803 | commits 0caf28c0b
+
+## 2026-06-02 — feat/gmc-price-competitiveness (auto)
+
+- **Branche** : `feat/gmc-price-competitiveness`
+- **Décision** : feat(merchant-center): ingest GMC price-competitiveness benchmark (inbound)
+- **Sortie** : PR aucune | commits db17a343c
