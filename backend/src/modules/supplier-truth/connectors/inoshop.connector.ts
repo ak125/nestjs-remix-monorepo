@@ -138,25 +138,41 @@ export class InoshopConnector implements SupplierConnector {
     ref: string,
   ): Promise<SupplierObservation[]> {
     await page.goto(`${this.baseUrl}/`, { waitUntil: 'domcontentloaded' });
-    // type in the reference autocomplete (tagsinput) and submit
-    const input = page.locator(
-      '#autocompletion-invoker input[data-role="tagsinput"]',
-    );
-    await input.fill(ref);
-    await input.press('Enter');
-    await page.waitForLoadState('networkidle');
+    // The reference field is a tagsinput widget whose <input> is HIDDEN — you
+    // click the styled invoker, type the ref, Tab to commit the tag, Enter to
+    // submit, which NAVIGATES to /search where the .ARTICLE rows render.
+    // (The old `input.fill()` hit the hidden node → "element not visible" → no
+    // rows → every ref degraded to parseError.) LIVE_VERIFY 2026-06-02.
+    await page.locator('#autocompletion-invoker').click();
+    await page.keyboard.type(ref);
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Enter');
+    await page
+      .waitForURL((u) => u.toString().includes('/search'), {
+        timeout: this.opts.navigationTimeoutMs,
+      })
+      .catch(() => undefined);
+    await page
+      .waitForLoadState('networkidle', {
+        timeout: this.opts.navigationTimeoutMs,
+      })
+      .catch(() => undefined);
 
     // extract each rendered .ARTICLE row's data attributes (verified-on-first-run)
     const articles = (await page.$$eval('.ARTICLE', (nodes) =>
       nodes.map((n) => {
         const ds = (k: string) => n.getAttribute(k);
-        const priceText =
-          n.querySelector('[class*="prix-achat"], [class*="price-buy"]')
-            ?.textContent ?? '';
+        // Net purchase price (achat HT) is a data-attribute, not row text.
+        const priceText = ds('data-filtreprixachat') ?? ds('data-prix') ?? '';
         const icon =
           n.querySelector('img[src*="/stock/"]')?.getAttribute('src') ?? null;
         return {
-          rawRef: ds('data-filtrecodearticle') || ds('data-ref') || '',
+          // supplier/searched ref (e.g. 314772), not the internal code (SBS314772)
+          rawRef:
+            ds('data-filtrecodearticlefournisseur') ||
+            ds('data-filtrecodearticle') ||
+            ds('data-ref') ||
+            '',
           codeArticle: ds('data-filtrecodearticle'),
           stockRaw: ds('data-stock'),
           dispoType: ds('data-dispo-type'),
