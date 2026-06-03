@@ -43,6 +43,16 @@ ne jamais éditer un artefact généré (`canonical.json`, blocs
 `<!-- AUTO-GENERATED -->`, `REPO_MAP.md`, canon mirrors hash-lockés) — corriger
 L1+L2, puis rebuild.
 
+**AI Operating Map (reference projection, non-canon).** Carte d'interopérabilité
+des surfaces IA (root, seo-batch, marketing, wiki, paperclip) et de leurs
+handoffs `RAW → WIKI → SEO → marketing → runtime` taggés
+`EXISTS | PARTIAL | ASPIRATIONAL`. Fichier :
+`.spec/00-canon/ai-registry/agent-operating-map.yaml`. Schéma :
+`agent-operating-map.schema.json`. Validateur warn-only :
+`scripts/governance/validate-agent-operating-map.js` (CI dans
+`skills-canon-gate.yml`). Reference projection, pas orchestrateur ; mutation
+autoritaire (hard-fail) = vault ADR requis.
+
 ### Heuristiques de décision (en cas de doute) `[HIGH]`
 
 Dans l'ordre : 1) étendre l'existant · 2) préserver le déterminisme ·

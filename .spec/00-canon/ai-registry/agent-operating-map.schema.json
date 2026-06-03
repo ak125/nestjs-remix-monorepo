@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://automecanik.com/canon/agent-operating-map.schema.json",
+  "title": "AI Agent Operating Map (reference projection)",
+  "description": "Non-authoritative reference projection of the monorepo's AI surfaces, nodes (skills/agents), and inter-workspace handoffs. Hard-fail enforcement requires a vault ADR.",
+  "type": "object",
+  "required": ["version", "last_verified", "surfaces", "nodes", "handoffs"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "type": "integer", "const": 1 },
+    "last_verified": { "type": "string", "format": "date" },
+    "surfaces": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/surface" } },
+    "nodes":    { "type": "array", "minItems": 0, "items": { "$ref": "#/$defs/node" } },
+    "handoffs": { "type": "array", "items": { "$ref": "#/$defs/handoff" } },
+    "departments":           { "type": "array", "items": { "$ref": "#/$defs/department" } },
+    "declared_capabilities": { "type": "array", "items": { "$ref": "#/$defs/declaredCapability" } },
+    "department_handoffs":   { "type": "array", "items": { "$ref": "#/$defs/departmentHandoff" } }
+  },
+  "$defs": {
+    "surfaceId":   { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+    "nodeId":      { "type": "string", "pattern": "^[a-z][a-z0-9-]*/[a-z][a-z0-9-]*$" },
+    "externalRef": { "type": "string", "pattern": "^external:[a-z][a-z0-9_-]*$" },
+    "nodeOrExternal": { "oneOf": [ { "$ref": "#/$defs/nodeId" }, { "$ref": "#/$defs/externalRef" } ] },
+    "surface": {
+      "type": "object",
+      "required": ["id", "cwd", "role", "purpose", "capabilities", "loads"],
+      "additionalProperties": false,
+      "properties": {
+        "id":       { "$ref": "#/$defs/surfaceId" },
+        "cwd":      { "type": "string", "minLength": 1 },
+        "role":     { "enum": ["dev", "content", "marketing", "knowledge", "advisory"] },
+        "purpose":  { "type": "string", "minLength": 5 },
+        "capabilities": {
+          "type": "object",
+          "required": ["can_mutate", "can_open_pr", "can_trigger_pipeline"],
+          "additionalProperties": false,
+          "properties": {
+            "can_mutate":           { "type": "boolean" },
+            "can_open_pr":          { "type": "boolean" },
+            "can_trigger_pipeline": { "type": "boolean" }
+          }
+        },
+        "loads": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "skills": { "type": "array", "items": { "$ref": "#/$defs/nodeId" } },
+            "agents": { "type": "array", "items": { "$ref": "#/$defs/nodeId" } }
+          }
+        }
+      }
+    },
+    "node": {
+      "type": "object",
+      "required": ["id", "type", "path", "owner", "domain"],
+      "additionalProperties": false,
+      "properties": {
+        "id":     { "$ref": "#/$defs/nodeId" },
+        "type":   { "enum": ["skill", "agent"] },
+        "path":   { "type": "string", "minLength": 1 },
+        "owner":  { "type": "string", "minLength": 1 },
+        "domain": { "type": "string", "pattern": "^(D([1-9]|1[0-5])|UNKNOWN)$" }
+      }
+    },
+    "handoff": {
+      "type": "object",
+      "required": ["id", "from", "to", "produced_by", "consumed_by", "input_contract", "output_contract", "gate", "state"],
+      "additionalProperties": false,
+      "properties": {
+        "id":   { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+        "from": { "oneOf": [ { "$ref": "#/$defs/surfaceId" }, { "$ref": "#/$defs/externalRef" } ] },
+        "to":   { "oneOf": [ { "$ref": "#/$defs/surfaceId" }, { "$ref": "#/$defs/externalRef" } ] },
+        "produced_by": { "oneOf": [ { "$ref": "#/$defs/nodeOrExternal" }, { "type": "array", "items": { "$ref": "#/$defs/nodeOrExternal" }, "minItems": 1 } ] },
+        "consumed_by": { "oneOf": [ { "$ref": "#/$defs/nodeOrExternal" }, { "type": "array", "items": { "$ref": "#/$defs/nodeOrExternal" }, "minItems": 1 } ] },
+        "input_contract":  { "type": "string", "minLength": 1 },
+        "output_contract": { "type": "string", "minLength": 1 },
+        "gate":  { "type": "string", "minLength": 1 },
+        "state": { "enum": ["EXISTS", "PARTIAL", "ASPIRATIONAL"] },
+        "evidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "adr":     { "type": "string", "pattern": "^ADR-\\d{3,4}$" },
+            "scripts": { "type": "array", "items": { "type": "string" } },
+            "tables":  { "type": "array", "items": { "type": "string" } },
+            "skills":  { "type": "array", "items": { "$ref": "#/$defs/nodeId" } }
+          }
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "departmentId":  { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+    "repoDomainId":  { "type": "string", "pattern": "^D([1-9]|1[0-6])$" },
+    "capabilityRef": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+    "declaredCapability": {
+      "type": "object",
+      "required": ["id", "type", "owner", "status"],
+      "additionalProperties": false,
+      "properties": {
+        "id":     { "$ref": "#/$defs/capabilityRef" },
+        "type":   { "enum": ["skill", "agent", "service", "module", "engine", "pipeline", "signal"] },
+        "owner":  { "$ref": "#/$defs/departmentId" },
+        "status": { "enum": ["live", "partial", "dormant", "broken", "duplicate"] }
+      }
+    },
+    "department": {
+      "type": "object",
+      "required": ["id", "label", "lead", "repo_domains", "state"],
+      "additionalProperties": false,
+      "properties": {
+        "id":           { "$ref": "#/$defs/departmentId" },
+        "label":        { "type": "string", "minLength": 1 },
+        "lead":         { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+        "priority":     { "enum": ["P0", "P1", "P2", "P3"] },
+        "kpi_primary":  { "type": "string", "minLength": 1 },
+        "repo_domains": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/repoDomainId" } },
+        "capabilities": { "type": "array", "items": { "$ref": "#/$defs/capabilityRef" } },
+        "state":        { "enum": ["live", "partial", "dormant", "broken", "duplicate"] }
+      }
+    },
+    "departmentHandoff": {
+      "type": "object",
+      "required": ["id", "from", "to", "contract_ref", "contract_status", "gate", "state"],
+      "additionalProperties": false,
+      "properties": {
+        "id":              { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+        "from":            { "$ref": "#/$defs/departmentId" },
+        "to":              { "$ref": "#/$defs/departmentId" },
+        "contract_ref":    { "type": "string", "minLength": 1 },
+        "contract_status": { "enum": ["planned", "defined"] },
+        "purpose":         { "type": "string", "minLength": 1 },
+        "gate":            { "type": "string", "minLength": 1 },
+        "state":           { "enum": ["EXISTS", "PARTIAL", "ASPIRATIONAL"] },
+        "evidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "runtime": { "type": "string" },
+            "adr":     { "type": "string", "pattern": "^ADR-\\d{3,4}$" },
+            "scripts": { "type": "array", "items": { "type": "string" } },
+            "tables":  { "type": "array", "items": { "type": "string" } }
+          }
+        }
+      }
+    }
+  }
+}

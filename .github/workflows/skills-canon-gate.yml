@@ -24,6 +24,8 @@ on:
       - ".claude/skills/**"
       - ".spec/00-canon/ai-registry/**"
       - "scripts/governance/validate-skills-frontmatter.js"
+      - "scripts/governance/validate-agent-operating-map.js"
+      - "scripts/governance/__fixtures__/agent-operating-map.invalid.yaml"
       - ".github/workflows/skills-canon-gate.yml"
 
 jobs:
@@ -85,3 +87,30 @@ jobs:
               echo "_Phase 0 = warn-only. Hard-fail starts in PR-V2.5 (new skills only)._"
             fi
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 🗺️ Validate AI agent operating map (warn-only)
+        if: always()
+        continue-on-error: true
+        run: |
+          node scripts/governance/validate-agent-operating-map.js --json > /tmp/operating-map-report.json || true
+          ERRORS=$(jq '.counts.errors' /tmp/operating-map-report.json)
+          WARNS=$(jq  '.counts.warns'  /tmp/operating-map-report.json)
+          {
+            if [ "$ERRORS" = "0" ] && [ "$WARNS" = "0" ]; then
+              echo "## ✅ AI Operating Map clean (Phase 0 warn-only)"
+            else
+              echo "## ⚠️ AI Operating Map — $ERRORS errors, $WARNS warnings (Phase 0 warn-only)"
+              echo ""
+              echo "Findings :"
+              echo ""
+              jq -r '.findings[] | "- [\(.severity | ascii_upcase)] \(.code): \(.message)"' /tmp/operating-map-report.json
+              echo ""
+              echo "**Fix** : edit \`.spec/00-canon/ai-registry/agent-operating-map.yaml\`. Schema : \`agent-operating-map.schema.json\`."
+              echo ""
+              echo "_Reference projection — non-authoritative. Hard-fail enforcement = vault ADR required._"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 🧪 Operating map schema self-test
+        if: always()
+        run: node scripts/governance/validate-agent-operating-map.js --self-test
