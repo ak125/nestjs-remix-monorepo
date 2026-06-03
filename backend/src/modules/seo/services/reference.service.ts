@@ -753,8 +753,10 @@ export class ReferenceService extends SupabaseBaseService {
    * Drop related_parts that belong to another family (mf_id) before write.
    * Returns the kept list (null if empty). Dropped items are logged — never silent.
    * Fail-safe: on any resolution error the raw list is kept (content is never lost).
+   * Public: reused as-is by SeoGeneratorService.buildR4FromRag (2nd R4 writer) — same filter,
+   * no duplicated resolution logic, no behaviour change to this primary writer.
    */
-  private async filterCompositionByFamily(
+  async filterCompositionByFamily(
     pgAlias: string,
     targetPgId: number,
     parts: string[] | null,
