@@ -178,6 +178,24 @@ departments:
     capabilities: [pricing-invariants]
     state: partial                   # economic-governance system; invariants live, CP partial
 
+  - id: data
+    label: "Data & Analytics"
+    lead: data-lead
+    priority: P1                     # max criticality of repo_domains (D10 = P1)
+    kpi_primary: metric_reliability
+    repo_domains: [D10]
+    capabilities: [analytics, cwv-beacon]
+    state: partial                   # measurement exists; reliability gaps (funnel/CWV instrumentation)
+
+  - id: runtime
+    label: "Runtime & Observability"
+    lead: runtime-lead
+    priority: P1
+    kpi_primary: runtime_health
+    repo_domains: [D10, D13]
+    capabilities: [observability, health, rpc-alerts]
+    state: partial                   # observability live; commerce-runtime plane (RCOP) partial
+
 # Allowlist of capabilities that resolve to neither a registry skill nor a node
 # yet (modules/engines/services/signals). Keeps department.capabilities from being
 # ghost slugs; `owner` is the department id. Each commented with its real path.
@@ -188,6 +206,11 @@ declared_capabilities:
   - { id: orders,             type: module,  owner: sales,    status: live }     # backend/src/modules/orders
   - { id: funnel-events,      type: signal,  owner: sales,    status: partial }  # backend/src/modules/seo-monitoring/services/funnel-events.service.ts
   - { id: pricing-invariants, type: service, owner: pricing,  status: live }     # backend/src/modules/pricing/services/pricing-invariants.service.ts
+  - { id: analytics,          type: module,  owner: data,     status: live }     # backend/src/modules/analytics
+  - { id: cwv-beacon,         type: signal,  owner: data,     status: partial }  # backend/src/modules/seo-monitoring/controllers/cwv-beacon.controller.ts (CWV/RUM ingestion)
+  - { id: observability,      type: module,  owner: runtime,  status: live }     # backend/src/modules/observability
+  - { id: health,             type: module,  owner: runtime,  status: live }     # backend/src/modules/health
+  - { id: rpc-alerts,         type: signal,  owner: runtime,  status: live }     # rpc_*_alerts_v1 (backend/src/modules/admin/services/seo-control.service.ts)
 
 # Business handoffs (department→department), distinct from the pipeline `handoffs`
 # above. Communication by contract, not free discussion. `contract_ref` points to
@@ -216,3 +239,28 @@ department_handoffs:
     evidence:
       scripts:
         - backend/src/modules/pricing/services/pricing-invariants.service.ts
+
+  # data is foundational: runtime health → data measurement truth → sales decisions.
+  - id: runtime-to-data-health
+    from: runtime
+    to: data
+    contract_ref: runtime-health-verdict.v1
+    contract_status: planned
+    purpose: "Signaler une dégradation runtime qui fausse la collecte de mesure"
+    gate: observe_only
+    state: PARTIAL
+    evidence:
+      scripts:
+        - backend/src/modules/health/health.module.ts
+
+  - id: data-to-sales-tracking-integrity
+    from: data
+    to: sales
+    contract_ref: tracking-integrity-verdict.v1
+    contract_status: planned
+    purpose: "Certifier la fiabilité des métriques funnel avant décision commerciale (data conditionne les autres leads)"
+    gate: human_review_or_owner_go
+    state: PARTIAL
+    evidence:
+      scripts:
+        - backend/src/modules/seo-monitoring/services/funnel-events.service.ts
