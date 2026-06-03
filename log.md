@@ -574,3 +574,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/supplier-cal-pr1b`
 - **Décision** : feat(supplier-truth): wire CAL connector (read-only sentinel, spl_id 19)
 - **Sortie** : PR #828 | commits 136941362
+
+## 2026-06-03 — feat/supplier-truth-runtime-wiring (auto)
+
+- **Branche** : `feat/supplier-truth-runtime-wiring`
+- **Décision** : feat(supplier-truth): runtime wiring (inert mode, scheduler OFF default)
+- **Sortie** : PR #831 | commits 268efea6c
