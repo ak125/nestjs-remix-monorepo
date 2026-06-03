@@ -147,4 +147,26 @@ describe('SupplierSyncRunner.runSync', () => {
     expect(summary.suppliersRun).toBe(0);
     expect(summary.suppliersSkipped).toBe(1);
   });
+
+  it('caps per-supplier refs to maxRefsPerRun (anti-ban) — extra refs deferred to later runs', async () => {
+    const connector = makeConnector();
+    const proc = processor();
+    const runner = new SupplierSyncRunner(
+      repo(['R1', 'R2', 'R3', 'R4', 'R5']),
+      proc,
+      () => connector,
+      () => ({ user: 'u', password: 'p' }),
+      undefined, // emit → default noopSink
+      2, // maxRefsPerRun
+    );
+
+    await runner.runSync();
+
+    // Only the first 2 carried refs hit the portal this run; R3-R5 wait for TTL refresh.
+    expect(proc.syncRefs).toHaveBeenCalledWith(
+      connector,
+      ['R1', 'R2'],
+      expect.any(Date),
+    );
+  });
 });
