@@ -91,11 +91,11 @@ describe('SupplierSyncJobProcessor', () => {
         suppliersFailed: 0,
         suppliersSkipped: 0,
         refs: 2,
-        projectionsUpserted: 2,
+        offersInserted: 2,
       })),
     } as unknown as SupplierSyncRunner;
     const summary = await new SupplierSyncJobProcessor(runner).handle();
     expect(runner.runSync).toHaveBeenCalled();
-    expect(summary.projectionsUpserted).toBe(2);
+    expect(summary.offersInserted).toBe(2);
   });
 });
