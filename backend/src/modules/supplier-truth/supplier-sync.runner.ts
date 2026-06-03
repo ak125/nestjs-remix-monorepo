@@ -57,6 +57,19 @@ export const envCredResolver: CredResolver = (cfg) => {
   return user && password ? { user, password } : null;
 };
 
+/**
+ * Per-supplier refs cap per run — anti-ban guard bounding how many references a
+ * single run queries against a supplier portal (each ref = one authenticated
+ * portal query). Env-overridable via `SUPPLIER_SYNC_MAX_REFS_PER_RUN`; the
+ * working-set is already bounded upstream, this caps the per-supplier slice so a
+ * large overlap can't hammer a portal in one pass (refs cycle across runs via TTL).
+ */
+const DEFAULT_MAX_REFS_PER_RUN = 50;
+export function envMaxRefsPerRun(): number {
+  const raw = Number(process.env.SUPPLIER_SYNC_MAX_REFS_PER_RUN);
+  return Number.isInteger(raw) && raw > 0 ? raw : DEFAULT_MAX_REFS_PER_RUN;
+}
+
 export interface RunSummary {
   suppliersRun: number;
   /** Connector threw (auth/site-down/anti-ban/crash) — a broken supplier, NOT idle. */
@@ -77,6 +90,7 @@ export class SupplierSyncRunner {
     private readonly connectorFactory: ConnectorFactory = defaultConnectorFactory,
     private readonly credResolver: CredResolver = envCredResolver,
     private readonly emit: EventSink = noopSink,
+    private readonly maxRefsPerRun: number = envMaxRefsPerRun(),
   ) {}
 
   async runSync(now: Date = new Date()): Promise<RunSummary> {
@@ -106,13 +120,21 @@ export class SupplierSyncRunner {
       const carriedBrands = new Set(
         await this.repo.getSupplierLinkedBrands(cfg.supplierId),
       );
-      const refs = [
+      const carriedRefs = [
         ...new Set(
           workingSet
             .filter((w) => w.pmId != null && carriedBrands.has(w.pmId))
             .map((w) => w.ref),
         ),
       ];
+      // Anti-ban: cap the per-supplier portal queries for this run; the rest
+      // refresh on subsequent runs (TTL-driven). No silent drop — logged.
+      const refs = carriedRefs.slice(0, this.maxRefsPerRun);
+      if (carriedRefs.length > refs.length) {
+        this.logger.log(
+          `${cfg.supplierName}: capping ${carriedRefs.length} carried refs to ${refs.length} this run (SUPPLIER_SYNC_MAX_REFS_PER_RUN=${this.maxRefsPerRun})`,
+        );
+      }
       if (refs.length === 0) {
         this.logger.log(
           `skip ${cfg.supplierName}: none of the working-set brands are carried`,
