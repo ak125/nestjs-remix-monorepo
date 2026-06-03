@@ -38,6 +38,7 @@ import { SeoModule } from './modules/seo/seo.module'; // 🔍 NOUVEAU - Module S
 import { SeoMonitoringModule } from './modules/seo-monitoring/seo-monitoring.module'; // 📊 Phase 1 — Observability GSC/GA4/CWV daily ingestion
 import { SeoControlPlaneModule } from './modules/seo-control-plane/seo-control-plane.module'; // 🤖 ADR-064 — SEO Production Control Plane (L1 synthetic crawler q15min)
 import { MerchantCenterModule } from './modules/merchant-center/merchant-center.module'; // 🛒 PR commerce-loop V1 step 5B — Google Shopping XML feed
+import { SupplierTruthModule } from './modules/supplier-truth/supplier-truth.module'; // 🔌 Supplier availability sentinel — INERT (SUPPLIER_TRUTH_SYNC_ENABLED=false by default)
 import { SearchModule } from './modules/search/search.module'; // 🔍 NOUVEAU - Module de recherche optimisé v3.0 !
 import { SystemModule } from './modules/system/system.module'; // ⚡ NOUVEAU - Module system monitoring !
 import { BlogModule } from './modules/blog/blog.module'; // 📚 NOUVEAU - Module blog avec tables __blog_* intégrées !
@@ -203,6 +204,7 @@ import { TrendSignalsModule } from './modules/trend-signals/trend-signals.module
     SeoMonitoringModule, // 📊 Phase 1 — Observability GSC/GA4/CWV daily ingestion (cf. ADR-025)
     SeoControlPlaneModule, // 🤖 ADR-064 — SEO Production Control Plane (L1 synthetic crawler q15min)
     MerchantCenterModule, // 🛒 PR commerce-loop V1 step 5B — Google Shopping XML feed /api/feed/merchant-center.xml
+    SupplierTruthModule, // 🔌 Supplier availability sentinel — runtime wiring, INERT by default (no sync armed unless SUPPLIER_TRUTH_SYNC_ENABLED=true); read-only /api/admin/supplier-truth/*
     SearchModule, // 🔍 NOUVEAU - Module de recherche optimisé v3.0 avec Meilisearch !
     BlogModule, // 📚 NOUVEAU - Module blog avec conseils, guides et glossaire intégrés !
     SystemModule, // ⚡ NOUVEAU - Module system monitoring et métriques !
