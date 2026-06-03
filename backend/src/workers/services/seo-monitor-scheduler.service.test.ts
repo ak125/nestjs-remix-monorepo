@@ -35,7 +35,9 @@ function makeQueueMock(existing: RepeatableJob[]) {
 }
 
 /** Accède à la méthode privée sans `any` étalé partout. */
-function cleanOldRepeatableJobs(svc: SeoMonitorSchedulerService): Promise<void> {
+function cleanOldRepeatableJobs(
+  svc: SeoMonitorSchedulerService,
+): Promise<void> {
   return (
     svc as unknown as { cleanOldRepeatableJobs: () => Promise<void> }
   ).cleanOldRepeatableJobs();
@@ -43,13 +45,25 @@ function cleanOldRepeatableJobs(svc: SeoMonitorSchedulerService): Promise<void> 
 
 describe('SeoMonitorSchedulerService.cleanOldRepeatableJobs (allowlist prune)', () => {
   const OWNED: RepeatableJob[] = [
-    { name: 'check-pages', key: 'check-pages:critical-urls-monitoring:::*/30 * * * *' },
-    { name: 'check-pages', key: 'check-pages:random-sample-monitoring:::0 */6 * * *' },
+    {
+      name: 'check-pages',
+      key: 'check-pages:critical-urls-monitoring:::*/30 * * * *',
+    },
+    {
+      name: 'check-pages',
+      key: 'check-pages:random-sample-monitoring:::0 */6 * * *',
+    },
     { name: 'daily-fetch', key: 'daily-fetch:seo-daily-fetch:::0 4 * * *' },
   ];
   const FOREIGN_CWV: RepeatableJob[] = [
-    { name: 'cwv-aggregation-hourly', key: 'cwv-aggregation-hourly:cwv-agg-hourly-repeat::UTC:5 * * * *' },
-    { name: 'cwv-aggregation-daily', key: 'cwv-aggregation-daily:cwv-agg-daily-repeat::UTC:15 3 * * *' },
+    {
+      name: 'cwv-aggregation-hourly',
+      key: 'cwv-aggregation-hourly:cwv-agg-hourly-repeat::UTC:5 * * * *',
+    },
+    {
+      name: 'cwv-aggregation-daily',
+      key: 'cwv-aggregation-daily:cwv-agg-daily-repeat::UTC:15 3 * * *',
+    },
   ];
 
   it('supprime les jobs possédés (check-pages, daily-fetch)', async () => {
