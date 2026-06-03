@@ -13,6 +13,13 @@
  *   --self-test  run the schema fixture and assert SCHEMA error is detected
  *   --json       print the JSON report to stdout (in addition to file)
  *
+ * Exit codes (aligned with sibling validate-skills-frontmatter.js):
+ *   0  OK, or warn-only run (no --strict)
+ *   1  validation errors found AND --strict
+ *   2  operational failure (map absent, YAML/JSON unparseable, schema not
+ *      compilable) — surfaced as a readable [FATAL] line, never a raw stack
+ *      trace. Set DEBUG=1 to also print the stack.
+ *
  * CommonJS to stay consistent with sibling validators
  * (scripts/governance/validate-skills-frontmatter.js).
  */
@@ -52,6 +59,11 @@ const argv = new Set(process.argv.slice(2));
 const strict = argv.has("--strict");
 const selfTest = argv.has("--self-test");
 const jsonOut = argv.has("--json");
+
+// Exit codes (aligned with sibling validate-skills-frontmatter.js).
+const EXIT_OK = 0;
+const EXIT_VALIDATION = 1;
+const EXIT_OP_ERROR = 2;
 
 function loadYaml(p) {
   return yaml.load(fs.readFileSync(p, "utf8"));
@@ -296,27 +308,29 @@ function runSchemaSelfTest() {
     REPO_ROOT,
     "scripts/governance/__fixtures__/agent-operating-map.invalid.yaml",
   );
-  const fixture = loadYaml(fixturePath);
-  const ajvValidate = makeAjv();
+  let fixture;
+  let ajvValidate;
+  try {
+    fixture = loadYaml(fixturePath);
+    ajvValidate = makeAjv();
+  } catch (e) {
+    console.error(`[FATAL] schema self-test setup failed: ${e.message}`);
+    process.exit(EXIT_OP_ERROR);
+  }
   const findings = checkMap(fixture, ajvValidate);
   const passedSchema = findings.some((f) => f.code === "SCHEMA");
   if (!passedSchema) {
     console.error(
       "schema self-test: FAIL — invalid fixture did not trigger SCHEMA error",
     );
-    process.exit(1);
+    process.exit(EXIT_VALIDATION);
   }
   console.log("schema self-test: PASS (schema validation error detected)");
-  process.exit(0);
+  process.exit(EXIT_OK);
 }
 
-function main() {
-  if (selfTest) return runSchemaSelfTest();
-
-  const ajvValidate = makeAjv();
-  const map = loadYaml(MAP_PATH);
-  const findings = checkMap(map, ajvValidate);
-
+/** Build + persist the JSON report, returning the partitioned findings. */
+function writeReport(findings) {
   const errors = findings.filter((f) => f.severity === "error");
   const warns = findings.filter((f) => f.severity === "warn");
   const report = {
@@ -329,9 +343,61 @@ function main() {
     },
     findings,
   };
-
   fs.mkdirSync(REPORT_DIR, { recursive: true });
   fs.writeFileSync(REPORT_PATH, JSON.stringify(report, null, 2));
+  return { report, errors, warns };
+}
+
+/**
+ * Operational failure (missing/unparseable map or schema). Surfaced as a
+ * structured `error` finding in the report — never a raw stack trace — then
+ * exit 2. Independent of --strict: an infra failure is not a validation verdict.
+ */
+function failOperational(code, message) {
+  const { report } = writeReport([
+    { severity: "error", code, message, where: null },
+  ]);
+  if (jsonOut) {
+    console.log(JSON.stringify(report, null, 2));
+  } else {
+    console.error(`[FATAL] ${code}: ${message}`);
+    console.error(`Report: ${path.relative(REPO_ROOT, REPORT_PATH)}`);
+  }
+  process.exit(EXIT_OP_ERROR);
+}
+
+function main() {
+  if (selfTest) return runSchemaSelfTest();
+
+  let ajvValidate;
+  try {
+    ajvValidate = makeAjv();
+  } catch (e) {
+    return failOperational(
+      "SCHEMA_LOAD",
+      `cannot load/compile schema at ${path.relative(REPO_ROOT, SCHEMA_PATH)}: ${e.message}`,
+    );
+  }
+
+  if (!fs.existsSync(MAP_PATH)) {
+    return failOperational(
+      "MAP_MISSING",
+      `map not found on disk: ${path.relative(REPO_ROOT, MAP_PATH)}`,
+    );
+  }
+
+  let map;
+  try {
+    map = loadYaml(MAP_PATH);
+  } catch (e) {
+    return failOperational(
+      "MAP_PARSE",
+      `cannot parse YAML at ${path.relative(REPO_ROOT, MAP_PATH)}: ${e.message}`,
+    );
+  }
+
+  const findings = checkMap(map, ajvValidate);
+  const { report, errors, warns } = writeReport(findings);
 
   if (jsonOut) {
     console.log(JSON.stringify(report, null, 2));
@@ -345,7 +411,17 @@ function main() {
     console.log(`Report: ${path.relative(REPO_ROOT, REPORT_PATH)}`);
   }
 
-  process.exit(strict && errors.length > 0 ? 1 : 0);
+  process.exit(strict && errors.length > 0 ? EXIT_VALIDATION : EXIT_OK);
 }
 
-main();
+if (require.main === module) {
+  try {
+    main();
+  } catch (e) {
+    process.stderr.write(`[FATAL] ${e.message}\n`);
+    if (process.env.DEBUG) process.stderr.write(`${e.stack}\n`);
+    process.exit(EXIT_OP_ERROR);
+  }
+}
+
+module.exports = { checkMap, makeAjv, loadYaml };
