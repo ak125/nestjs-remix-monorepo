@@ -1,3 +1,7 @@
+// @role-purity-skip
+// Cross-cutting FAMILY guard: legitimately references both the R4 `composition` and
+// the `symptomes_associes` columns it protects — it is a guard, not R4 content. The
+// role-overlap rule targets role content comments, not protective utilities.
 /**
  * R4 cross-family pollution guard — pure functions, zero NestJS/DB dependency.
  *
