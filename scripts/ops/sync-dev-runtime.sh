@@ -39,6 +39,55 @@ alert() {
 report() { command -v cron_report >/dev/null 2>&1 && cron_report "$LOG_TAG" "$1" "$(( $(date +%s) - START ))" "${2:-{}}" "${3:-}" 2>/dev/null || true; }
 abort()  { alert "$1"; report "error" "{}" "$1"; exit 1; }
 
+# 5e axe de dérive — Workspaces npm (drift install/dist).
+# Détecte (sans corriger — canon no-silent-fallback) :
+#   - packages/*/package.json sans symlink node_modules/<name>   → install manquant
+#   - packages/* avec "main": "./dist/..." sans fichier dist/    → build manquant
+# Pourquoi : npm install (étape 6) ne tourne que si package-lock.json change ;
+# turbo build skip aussi un workspace si sa dépendance graph ne l'inclut pas.
+# Un workspace fraîchement mergé peut donc rester invisible jusqu'au boot crash
+# backend (cf. incident 2026-05-25 : @repo/domain-commerce + @repo/cwv-taxonomy
+# présents sur disque mais sans symlinks ni dist → MODULE_NOT_FOUND).
+# Sortie : exit 0 = sain · exit 1 = drift détecté (alerté avant retour).
+check_workspace_integrity() {
+  # Dépendance dure : `jq` est requis pour parser package.json sans heuristique
+  # fragile. Faute explicite (pas un skip silencieux) — canon no-silent-fallback.
+  command -v jq >/dev/null 2>&1 || {
+    alert "jq absent — check_workspace_integrity ne peut pas s'exécuter (apt install jq)"
+    return 2
+  }
+
+  local missing_links=() missing_dist=()
+  local pkgdir pkg_name main_field
+
+  for pkgdir in packages/*/; do
+    [ -f "${pkgdir}package.json" ] || continue
+    pkg_name=$(jq -r '.name // empty' "${pkgdir}package.json" 2>/dev/null)
+    [ -n "$pkg_name" ] || continue
+
+    if [ ! -e "node_modules/${pkg_name}" ]; then
+      missing_links+=("$pkg_name")
+      continue
+    fi
+
+    main_field=$(jq -r '.main // empty' "${pkgdir}package.json" 2>/dev/null)
+    if [[ "$main_field" == *"/dist/"* ]]; then
+      [ -f "${pkgdir}${main_field#./}" ] || missing_dist+=("$pkg_name")
+    fi
+  done
+
+  local drift=0
+  if [ "${#missing_links[@]}" -gt 0 ]; then
+    alert "workspaces sans symlink node_modules (run: npm install) : ${missing_links[*]}"
+    drift=1
+  fi
+  if [ "${#missing_dist[@]}" -gt 0 ]; then
+    alert "workspaces sans dist compilé (run: npm run build) : ${missing_dist[*]}"
+    drift=1
+  fi
+  return "$drift"
+}
+
 # 1. Garde branche : le checkout runtime DOIT rester sur main (features = worktrees).
 branch=$(git rev-parse --abbrev-ref HEAD)
 [ "$branch" = "main" ] || abort "checkout sur '$branch' (pas main) — resync refusée (cf. convention worktree)"
@@ -52,6 +101,13 @@ git fetch --quiet origin main || abort "git fetch échoué"
 local_sha=$(git rev-parse HEAD)
 remote_sha=$(git rev-parse origin/main)
 if [ "$local_sha" = "$remote_sha" ]; then
+  # Pas de sync git — mais on probe quand même l'intégrité workspaces. Un drift
+  # ici (symlink supprimé, dist effacé entre 2 ticks cron, install manuel
+  # interrompu) doit être visible AVANT que nodemon redémarre et crashe.
+  if ! check_workspace_integrity; then
+    report "error" "{\"action\":\"workspace_drift_noop\",\"sha\":\"$local_sha\"}" "workspace drift detected without git change"
+    exit 1
+  fi
   report "ok" "{\"action\":\"noop\",\"sha\":\"$local_sha\"}" ""
   exit 0
 fi
@@ -67,12 +123,28 @@ if [ -n "$want_major" ] && [ -n "$have_major" ] && [ "$want_major" != "$have_maj
   alert "dérive Node : v$have_major installé, .nvmrc=$want_major attendu — l'app peut crasher ; upgrade manuel requis (NodeSource setup_${want_major}.x)"
 fi
 
-# 6. npm install seulement si le lockfile a changé, puis build.
+# 6. npm install si lockfile changé, puis build. Sorties capturées dans /tmp et
+#    re-déversées (tail -50) sur stderr en cas d'échec — pas de silencement total
+#    (canon no-silent-fallback). Logs gardés sur disque pour postmortem manuel.
+INSTALL_LOG="/tmp/${LOG_TAG}-npm-install-$$.log"
+BUILD_LOG="/tmp/${LOG_TAG}-npm-build-$$.log"
 if ! git diff --quiet "$local_sha" "$remote_sha" -- package-lock.json 2>/dev/null; then
-  log "package-lock.json modifié → npm install"
-  npm install >/dev/null 2>&1 || abort "npm install échoué"
+  log "package-lock.json modifié → npm install (log: $INSTALL_LOG)"
+  if ! npm install >"$INSTALL_LOG" 2>&1; then
+    tail -50 "$INSTALL_LOG" >&2
+    abort "npm install échoué — log complet : $INSTALL_LOG"
+  fi
 fi
-npm run build >/dev/null 2>&1 || abort "npm run build échoué (probable régression code ou parité deps)"
+if ! npm run build >"$BUILD_LOG" 2>&1; then
+  tail -50 "$BUILD_LOG" >&2
+  abort "npm run build échoué — log complet : $BUILD_LOG"
+fi
+
+# 6b. Probe d'intégrité workspaces post-build (5e axe). Si install/build sont
+#     passés "verts" mais qu'un workspace reste sans symlink ou sans dist, c'est
+#     un drift silencieux (turbo a skippé, lockfile pas refreshé, etc.). On
+#     refuse de marquer ":3000 sain" sans l'avoir vérifié.
+check_workspace_integrity || abort "drift workspaces après npm install + build — install/build incomplet (cf. alerts ci-dessus)"
 
 # 7. Redémarrer le runtime (nodemon surveille dist ; le build l'a réécrit, on force un boot propre).
 touch backend/dist/main.js

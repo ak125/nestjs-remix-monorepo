@@ -429,8 +429,12 @@ export function PiecesGridView({
         );
       }
 
+      const unitPriceCents =
+        piece && typeof piece.price === "number" && Number.isFinite(piece.price)
+          ? Math.round(piece.price * 100)
+          : null;
       try {
-        const success = await addToCart(pieceId, 1, typeId);
+        const success = await addToCart(pieceId, 1, typeId, unitPriceCents);
         if (success) {
           toast.success(`${piece?.name || "Article"} ajouté au panier`);
           openCartSidebar();

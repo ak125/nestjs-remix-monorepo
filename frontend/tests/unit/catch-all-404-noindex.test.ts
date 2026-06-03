@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-import { loader } from "~/routes/$";
+import { headers as catchAllHeaders, loader } from "~/routes/$";
 
 // vi.mock is hoisted by Vitest's transformer (runs before imports at runtime),
 // safe to declare after the import for ESLint's `import/first` rule.
@@ -84,5 +84,45 @@ describe("catch-all $.tsx — 404/410 X-Robots-Tag noindex,follow", () => {
     expect(thrown).toBeInstanceOf(Response);
     expect(thrown?.status).toBe(404);
     expect(thrown?.headers.get("X-Robots-Tag")).toBe("noindex, follow");
+  });
+});
+
+/**
+ * Régression runtime (live 2026-05-29) : le loader throw bien `noindex, follow`,
+ * MAIS sans `headers` export Remix v2 retombait sur root.tsx `headers()` et le
+ * X-Robots-Tag de la Response throw était perdu → le défaut interceptor
+ * (`index, follow`) ressortait sur la 410. Les 3 tests ci-dessus ne couvraient que
+ * la Response *throw*, pas la propagation vers la réponse document. Ce bloc ferme
+ * ce trou : `headers()` DOIT propager le X-Robots-Tag (et le Cache-Control) porté
+ * par errorHeaders.
+ */
+describe("catch-all $.tsx — headers() propage le X-Robots-Tag de la Response throw", () => {
+  const ctx = (errorHeaders?: Headers) =>
+    ({
+      loaderHeaders: new Headers(),
+      parentHeaders: new Headers(),
+      actionHeaders: new Headers(),
+      errorHeaders,
+    }) as never;
+
+  it("propage noindex,follow + Cache-Control depuis errorHeaders (410)", () => {
+    const result = catchAllHeaders(
+      ctx(
+        new Headers({
+          "X-Robots-Tag": "noindex, follow",
+          "Cache-Control": "public, max-age=86400",
+        }),
+      ),
+    ) as Record<string, string>;
+    expect(result["X-Robots-Tag"]).toBe("noindex, follow");
+    expect(result["Cache-Control"]).toBe("public, max-age=86400");
+  });
+
+  it("refuse le cache CDN (no-store) quand la Response throw n'a pas de Cache-Control", () => {
+    const result = catchAllHeaders(
+      ctx(new Headers({ "X-Robots-Tag": "noindex, follow" })),
+    ) as Record<string, string>;
+    expect(result["X-Robots-Tag"]).toBe("noindex, follow");
+    expect(result["Cache-Control"]).toBe("no-cache, no-store, must-revalidate");
   });
 });

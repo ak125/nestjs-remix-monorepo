@@ -16,12 +16,12 @@ import {
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { registerCartSidebarSetter } from "~/hooks/useCartSidebar";
+import { useNativeDialog } from "~/hooks/useNativeDialog";
 import { useOptionalUser, useRootCart } from "~/hooks/useRootData";
 import { SITE_CONFIG } from "../config/site";
 import { CartSidebarSimple } from "./navbar/CartSidebarSimple";
 import { UserDropdownMenu } from "./navbar/UserDropdownMenu";
 import { Badge } from "./ui/badge";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "./ui/sheet";
 
 /** Scroll-to helper for homepage anchor links */
 function scrollToSection(e: React.MouseEvent, sectionId: string) {
@@ -48,7 +48,12 @@ export const Navbar = memo(function Navbar() {
     return () => registerCartSidebarSetter(null);
   }, []);
 
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // Menu mobile : drawer via <dialog> natif (top-layer, INP -54% vs Radix Sheet).
+  const {
+    open: openMenu,
+    close: closeMenu,
+    dialogProps: menuDialogProps,
+  } = useNativeDialog();
 
   const summary = useMemo(
     () => cartData?.summary ?? { total_items: 0, subtotal: 0 },
@@ -149,7 +154,7 @@ export const Navbar = memo(function Navbar() {
           {/* MOBILE: Hamburger + Logo centré + Cart */}
           <div className="lg:hidden flex items-center justify-between w-full">
             <button
-              onClick={() => setIsMenuOpen(true)}
+              onClick={openMenu}
               className="min-w-[44px] min-h-[44px] rounded-lg flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-colors bg-transparent border-none cursor-pointer"
               aria-label="Menu"
             >
@@ -364,22 +369,22 @@ export const Navbar = memo(function Navbar() {
       </nav>
 
       {/* Mobile menu drawer */}
-      <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-        <SheetContent
-          side="left"
-          className="bg-navy border-white/10 text-white p-0 w-[85vw] sm:max-w-sm"
-        >
-          <SheetHeader className="p-4 border-b border-white/10">
-            <SheetTitle className="text-white font-heading font-extrabold tracking-tight text-left">
+      <dialog
+        {...menuDialogProps}
+        aria-label="Menu de navigation"
+        className="navdrawer navdrawer-left fixed inset-y-0 left-0 m-0 h-full max-h-none w-[85vw] sm:max-w-sm bg-navy text-white p-0 backdrop:bg-neutral-900/80 open:flex flex-col"
+      >
+          <div className="p-4 border-b border-white/10">
+            <div className="text-white font-heading font-extrabold tracking-tight text-left text-lg font-semibold">
               <span className="text-white">AUTO</span>
               <span className="text-cta">MECANIK</span>
-            </SheetTitle>
-          </SheetHeader>
+            </div>
+          </div>
 
           <nav className="flex flex-col py-2" aria-label="Menu mobile">
             <Link
               to="/#catalogue"
-              onClick={() => setIsMenuOpen(false)}
+              onClick={closeMenu}
               className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
             >
               <Package className="w-4 h-4" />
@@ -387,7 +392,7 @@ export const Navbar = memo(function Navbar() {
             </Link>
             <Link
               to="/#marques"
-              onClick={() => setIsMenuOpen(false)}
+              onClick={closeMenu}
               className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
             >
               <Search className="w-4 h-4" />
@@ -395,7 +400,7 @@ export const Navbar = memo(function Navbar() {
             </Link>
             <Link
               to="/blog-pieces-auto"
-              onClick={() => setIsMenuOpen(false)}
+              onClick={closeMenu}
               className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
             >
               <BookOpen className="w-4 h-4" />
@@ -403,7 +408,7 @@ export const Navbar = memo(function Navbar() {
             </Link>
             <Link
               to="/diagnostic-auto"
-              onClick={() => setIsMenuOpen(false)}
+              onClick={closeMenu}
               className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-cta hover:text-cta-light hover:bg-white/[0.06] transition-colors"
             >
               <ScanLine className="w-4 h-4" />
@@ -420,7 +425,7 @@ export const Navbar = memo(function Navbar() {
                 {user.level && user.level >= 3 && (
                   <Link
                     to="/commercial"
-                    onClick={() => setIsMenuOpen(false)}
+                    onClick={closeMenu}
                     className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-cta hover:text-cta-light hover:bg-white/[0.06] transition-colors"
                   >
                     <Package className="w-4 h-4" />
@@ -429,7 +434,7 @@ export const Navbar = memo(function Navbar() {
                 )}
                 <Link
                   to="/account/dashboard"
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={closeMenu}
                   className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
                 >
                   <User className="w-4 h-4" />
@@ -437,7 +442,7 @@ export const Navbar = memo(function Navbar() {
                 </Link>
                 <Link
                   to="/notifications"
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={closeMenu}
                   className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
                 >
                   <Bell className="w-4 h-4" />
@@ -449,7 +454,7 @@ export const Navbar = memo(function Navbar() {
                 <Link
                   to="/login"
                   rel="nofollow"
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={closeMenu}
                   className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
                 >
                   <User className="w-4 h-4" />
@@ -458,7 +463,7 @@ export const Navbar = memo(function Navbar() {
                 <Link
                   to="/register"
                   rel="nofollow"
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={closeMenu}
                   className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
                 >
                   <User className="w-4 h-4" />
@@ -477,8 +482,7 @@ export const Navbar = memo(function Navbar() {
               {SITE_CONFIG.contact.phone.display}
             </a>
           </nav>
-        </SheetContent>
-      </Sheet>
+      </dialog>
 
       {/* Cart Sidebar (portail, hors du flex) */}
       <CartSidebarSimple isOpen={isCartOpen} onClose={closeCart} />

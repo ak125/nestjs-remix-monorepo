@@ -7,6 +7,7 @@ import {
 } from "@remix-run/node";
 import { useRouteError, isRouteErrorResponse } from "@remix-run/react";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
+import { buildCacheHeaders } from "~/utils/cache-control";
 import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => [
@@ -17,6 +18,13 @@ export const meta: MetaFunction = () => [
   },
   { name: "robots", content: "noindex, nofollow" },
 ];
+
+// 🔒 Le catch-all throw TOUJOURS (404 / 410 / redirect) — il ne sert jamais un 200
+// indexable. Sans ce `headers` export, Remix v2 retombe sur root.tsx `headers()` et
+// le `X-Robots-Tag: noindex, follow` posé sur la Response throw était perdu (live :
+// la 410 garbage ressortait `index, follow` via le défaut interceptor). Paire avec
+// la suppression du défaut `index, follow` côté SeoHeadersInterceptor (fallthrough).
+export const headers = buildCacheHeaders("no-cache");
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);

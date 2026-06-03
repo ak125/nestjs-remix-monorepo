@@ -4,7 +4,15 @@
 import { redirect, type LoaderFunctionArgs } from "@remix-run/node";
 import { useRouteError, isRouteErrorResponse } from "@remix-run/react";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
+import { buildCacheHeaders } from "~/utils/cache-control";
 import { detectMalformedSegment } from "~/utils/pieces-route.utils";
+
+// 🔒 Shim 301 (→ .html) qui throw aussi 400 (nu) et 404 (inline noindex). Sans ce
+// `headers` export, Remix v2 DROP ces directives. `defaultErrorRobots` couvre le 400
+// nu ; le 404 inline est propagé tel quel. Voir gotcha Remix headers-export (#798/#800).
+export const headers = buildCacheHeaders("no-cache", {
+  defaultErrorRobots: "noindex, follow",
+});
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const { brand, model, type } = params;

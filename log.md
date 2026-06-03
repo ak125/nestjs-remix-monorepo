@@ -538,3 +538,45 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Décision** : 4 essais stratégiques user (SEO Operating System / Doctrine moderne / Opportunity Engine V1 / Growth Content System) rejetés contre PR #714 déjà mergée 2026-05-24 (8-salve brainstorm Phase 0+1 livrée hier). Plan `/home/deploy/.claude/plans/utiliser-superpower-apr-s-curried-toucan.md` approuvé après 7 corrections P0/P1/P2. Migration `__trend_signals` appliquée via MCP (canonique). Opportunity Lens J+0 baseline exécutée → **20/20 probe URLs = no-gsc-signal**, révélant **3 gaps majeurs invisibles autrement** : (1) spec PR #714 a 2 bugs JOIN — `g.page = pt.target_url` ne match jamais (full URL prod vs path probe) + `device = 'all'` filtre tout (vraies valeurs mobile/desktop/tablet) ; (2) 20 probe URLs `prompts.yaml` aspirationnelles, aucune ne match prod (vrais slugs = `/blog-pieces-auto/conseils/*`) ; (3) `__seo_quality_history.ai_has_*` metrics = 0 ligne en runtime, détecteurs PR #714 jamais exécutés + snapshot service stale depuis 2026-05-07 (18j). → **Fenêtre 14j NON-LANÇABLE** dans cet état (4/6 signaux dépendants de tables non-alimentées). Action #1 sync-dev-runtime bloquée par staged migration owner-controlled `20260524_diagnostic_resolution_outcome.sql` (commerce-loop V1A.0 Intent Resolution). 4 mécanismes protection doctrinale installés : 2 mémoires Layer 0 (`feedback_architecture_to_evidence_centric_shift` + `feedback_no_new_architecture_until_evidence_window_closes`), MEMORY.md indexée, `.claude/top-priorities.md` updated (TOP +1 commerce-loop-execution-cycle-v1, DO_NOT_START +2 growth-content-system + auto-content-publishing, STRUCTURAL_CONSTRAINTS +1 evidence-window-locks-architecture-decisions).
 - **Sortie** : 0 commit, 0 PR (per [[feedback_branch_scope_discipline]] + working tree dirty). Migration `__trend_signals` appliquée Supabase (vérification : `mcp__supabase__list_migrations` ne la listait pas avant, présente maintenant). Fichiers créés : `audit/opportunity-lens-2026-05-25.csv` (raw J+0), `audit/opportunity-lens-2026-05-25-baseline-analysis.md` (3 gaps + recommandation), 2 fichiers mémoire Layer 0 dans `~/.claude/projects/-opt-automecanik-app/memory/`. Fichiers modifiés : `MEMORY.md`, `.claude/top-priorities.md`, `log.md` (cette entrée). Owner-action requise pour : (a) décider staged migration `20260524_diagnostic_resolution_outcome.sql` → sync DEV ; (b) PR fix-pack 3 gaps `fix/opportunity-lens-v1-runtime-gaps` ; (c) vérifier orchestration `quality-history-snapshot.service.ts` cron système + redémarrage si en panne ; (d) revoir `workspaces/ai-probe/prompts.yaml` avec 20 URLs live extraites de top-200 GSC ; (e) opener les 9 ADRs vault Phase 0 (per spec PR #714). Tests jest 4 fichiers AI-additive-layer non re-vérifiés (local 31 commits behind, fichiers non checkout — 36/36 validés en PR #714 review).
 
+
+## 2026-05-28 — feat/fafa-media-factory-v1-foundation (auto)
+
+- **Branche** : `feat/fafa-media-factory-v1-foundation`
+- **Décision** : feat(media-factory): V1 Foundation scaffold
+- **Sortie** : PR #789 | commits a194a241e
+
+## 2026-05-28 — feat/fafa-media-factory-v1-foundation (auto)
+
+- **Branche** : `feat/fafa-media-factory-v1-foundation`
+- **Décision** : fix(media-factory): close parser-validator differential bypass in 2 schemas (+2 other commits)
+- **Sortie** : PR #789 | commits 3d228cd34 c3c8a304e a194a241e
+
+## 2026-05-30 — chore/preprod-warm-soft-404-fixtures (auto)
+
+- **Branche** : `chore/preprod-warm-soft-404-fixtures`
+- **Décision** : chore(preprod): warm soft-404 R2 fixtures before smoke assertion
+- **Sortie** : PR #801 | commits 27e025ee0
+
+## 2026-05-30 — fix/cwv-aggregation-flag-declare-2026-05-29 (auto)
+
+- **Branche** : `fix/cwv-aggregation-flag-declare-2026-05-29`
+- **Décision** : fix(cwv): declare and enable aggregation scheduler flag
+- **Sortie** : PR #803 | commits 0caf28c0b
+
+## 2026-06-02 — chore/cleanup-audit-artifacts (auto)
+
+- **Branche** : `chore/cleanup-audit-artifacts`
+- **Décision** : docs(audit): refresh carte 24-départements avec deltas funnel 06-01 (+1 other commit)
+- **Sortie** : PR #820 | commits ed821a72d d88e707ca
+
+## 2026-06-02 — feat/supplier-cal-pr1b (auto)
+
+- **Branche** : `feat/supplier-cal-pr1b`
+- **Décision** : feat(supplier-truth): wire CAL connector (read-only sentinel, spl_id 19)
+- **Sortie** : PR #828 | commits 136941362
+
+## 2026-06-03 — feat/supplier-truth-runtime-wiring (auto)
+
+- **Branche** : `feat/supplier-truth-runtime-wiring`
+- **Décision** : feat(supplier-truth): runtime wiring (inert mode, scheduler OFF default)
+- **Sortie** : PR #831 | commits 268efea6c

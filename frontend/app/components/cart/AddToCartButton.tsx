@@ -75,7 +75,16 @@ export const AddToCartButton = memo(function AddToCartButton({
     triggerCartBadgeBounce();
 
     try {
-      const success = await addToCart(piece.id, quantity, typeId);
+      const unitPriceCents =
+        typeof piece.price === "number" && Number.isFinite(piece.price)
+          ? Math.round(piece.price * 100)
+          : null;
+      const success = await addToCart(
+        piece.id,
+        quantity,
+        typeId,
+        unitPriceCents,
+      );
 
       if (success) {
         setIsOptimistic(false);

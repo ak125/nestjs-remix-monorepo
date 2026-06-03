@@ -6,6 +6,11 @@
 -- unitaire. Pour précision opérationnelle, remplacer les CTEs `est_*` par
 -- les valeurs réelles après réponse owner sur docs/pricing/cost-data-request.md.
 --
+-- Correctif 2026-06-02 : le port n'est PAS un coût par-ligne — payé par le CLIENT
+-- sous 150€ (pass-through), GRATUIT ≥150€ (franco, absorbé au niveau commande).
+-- shipping_per_order=0 dans le seuil par-ligne (l'inclure créait un faux
+-- "perte unitaire" sur le bucket 0-10€ — vérifié grille ___xtr_delivery_ape_france).
+--
 -- Périmètre : 6 buckets canon (0-10 / 10-30 / 30-80 / 80-150 / 150-300 / 300+),
 -- 12 derniers mois roulants, pieces_price (442 173 lignes) + ___xtr_order_line.
 --
@@ -27,8 +32,11 @@ WITH est_costs AS (
     0.60::numeric AS picking_per_line,
     -- Packing par commande (€)
     0.40::numeric AS packing_per_order,
-    -- Expédition amortie par commande (€)
-    5.50::numeric AS shipping_per_order,
+    -- Expédition : NEUTRE par ligne (corrigé 2026-06-02). Port payé par le CLIENT
+    -- sous 150€ (pass-through exact : grille ___xtr_delivery_ape_france,
+    -- facturé_TTC = coût_HT × 1,2) ; GRATUIT ≥150€ (franco, shipping-calculator
+    -- .service.ts:45) = coût absorbé au niveau COMMANDE, pas par-SKU. Donc 0 ici.
+    0.00::numeric AS shipping_per_order,
     -- Frais paiement (% du TTC + fixe €)
     0.015::numeric AS payment_rate_pct,
     0.10::numeric AS payment_fixed_per_order,
@@ -188,7 +196,7 @@ ORDER BY
 -- re-runner avec :
 --   - picking_per_line ∈ {0.42, 0.78}
 --   - packing_per_order ∈ {0.21, 0.65}
---   - shipping_per_order ∈ {3.85, 7.15}
+--   - shipping_per_order : N/A — pass-through client <150€, franco ≥150€ hors-ligne
 --   - return_rate ∈ {0.035, 0.065}
 --   - fixed_allocated_pct ∈ {0.07, 0.13}
 -- Un bucket robuste = même verdict sur les 5 runs. Un bucket borderline =

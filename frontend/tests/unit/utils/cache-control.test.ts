@@ -93,6 +93,37 @@ describe("buildCacheHeaders", () => {
     expect(result["X-Robots-Tag"]).toBe("noindex");
   });
 
+  it("falls back to defaultErrorRobots when a bare thrown Response carries no X-Robots-Tag", () => {
+    // Covers catch-all routes (e.g. constructeurs.$.tsx) whose throws are
+    // `new Response("Not Found", { status: 404 })` with no robots header.
+    const fn = buildCacheHeaders(SUCCESS_POLICY, {
+      defaultErrorRobots: "noindex, follow",
+    });
+    const result = fn({
+      loaderHeaders: new Headers(),
+      parentHeaders: new Headers(),
+      actionHeaders: new Headers(),
+      errorHeaders: new Headers(),
+    });
+
+    expect(result["X-Robots-Tag"]).toBe("noindex, follow");
+    expect(result["Cache-Control"]).toBe(NO_STORE_CACHE_CONTROL);
+  });
+
+  it("an explicit X-Robots-Tag on the thrown Response overrides defaultErrorRobots", () => {
+    const fn = buildCacheHeaders(SUCCESS_POLICY, {
+      defaultErrorRobots: "noindex, follow",
+    });
+    const result = fn({
+      loaderHeaders: new Headers(),
+      parentHeaders: new Headers(),
+      actionHeaders: new Headers(),
+      errorHeaders: headers([["X-Robots-Tag", "noindex"]]),
+    });
+
+    expect(result["X-Robots-Tag"]).toBe("noindex");
+  });
+
   it("never leaks the success policy onto an error response (the cache-poisoning regression)", () => {
     const fn = buildCacheHeaders(SUCCESS_POLICY);
     const result = fn({

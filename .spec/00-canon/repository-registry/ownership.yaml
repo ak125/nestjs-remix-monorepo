@@ -468,6 +468,16 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: high
+  - glob: backend/src/modules/supplier-truth/**
+    domain: D11
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
+  - glob: backend/supabase/migrations/*supplier_truth*
+    domain: D11
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
   - glob: backend/src/modules/products/**
     domain: D1
     owner: '@ak125/catalog-team'
@@ -543,6 +553,19 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: medium
+  # Support module — customer contact / quote requests / claims / FAQ / legal.
+  # Mini-CRM V0 (PR support-crm-v0-mini-module-2026-05-28) extends ___xtr_msg
+  # with msg_crm_* columns and the /api/admin/leads admin surface.
+  - glob: backend/src/modules/support/**
+    domain: D11
+    owner: '@ak125'
+    sourceConfidence: medium
+    risk: medium
+  - glob: backend/supabase/migrations/*xtr_msg_crm*
+    domain: D11
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
   - glob: backend/src/modules/users/**
     domain: D11
     owner: '@ak125/auth-team'
@@ -593,6 +616,11 @@ entries:
     owner: '@ak125/admin-team'
     sourceConfidence: high
     risk: medium
+  - glob: backend/supabase/migrations/*seo_sitemap_freshness*
+    domain: D8
+    owner: '@ak125/admin-team'
+    sourceConfidence: high
+    risk: medium
   - glob: backend/supabase/migrations/*order_landing_attribution*
     domain: D11
     owner: '@ak125/payments-team'
@@ -639,6 +667,11 @@ entries:
     sourceConfidence: medium
     risk: high
   - glob: frontend/app/components/**
+    domain: D8
+    owner: '@ak125/frontend-team'
+    sourceConfidence: low
+    risk: low
+  - glob: frontend/app/hooks/**
     domain: D8
     owner: '@ak125/frontend-team'
     sourceConfidence: low
@@ -794,6 +827,25 @@ entries:
   - glob: workspaces/marketing/**
     domain: D15
     owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  # Fafa Media Factory V1 — dotted paths not matched by the parent globstar
+  # (micromatch dot:false). Explicit globs for the workspace .claude surface
+  # and for .gitkeep placeholders that hold the empty workflow dirs.
+  - glob: workspaces/marketing/.claude/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  - glob: workspaces/marketing/**/.gitkeep
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  # Remotion render microservice (Fafa Media Factory) — video pipeline (D12).
+  - glob: services/remotion-renderer/**
+    domain: D12
+    owner: '@ak125/marketing-team'
     sourceConfidence: high
     risk: medium
   - glob: workspaces/wiki/**

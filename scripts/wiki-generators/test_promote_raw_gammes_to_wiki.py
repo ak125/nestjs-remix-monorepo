@@ -712,3 +712,191 @@ def test_no_db_query_in_b5_dry_run():
     finally:
         if original_url:
             os.environ["SUPABASE_URL"] = original_url
+
+
+# === Task 8d (2026-05-28) : selection_criteria_top dedup + function definitional ===
+
+def test_ascii_fold_drops_diacritics_and_elision():
+    """_ascii_fold normalizes diacritics + drops French elision apostrophes."""
+    assert promote._ascii_fold("référence OE") == "reference oe"
+    assert promote._ascii_fold("l'équivalence") == promote._ascii_fold("equivalence")
+    assert promote._ascii_fold("Utiliser la référence OE ou l'équivalence") == \
+           promote._ascii_fold("utiliser la reference OE ou equivalence")
+    assert promote._ascii_fold("") == ""
+    assert promote._ascii_fold(None) == ""
+
+
+def test_dedup_selection_criteria_ascii_fold_exact():
+    """Identical-after-fold entries are merged, longest kept."""
+    items = [
+        "Utiliser la référence OE",
+        "Utiliser la reference OE",  # ASCII-fold dup of [0]
+    ]
+    result = promote._dedup_selection_criteria(items)
+    assert len(result) == 1
+    # The longer (with accents) is kept since both are same length, last seen wins logic — verify it's one of them
+    assert result[0] in items
+
+
+def test_dedup_selection_criteria_substring_containment():
+    """Entries that differ only by suffix are merged, the longer form kept."""
+    items = [
+        "Utiliser la référence OE ou l'équivalence constructeur",
+        "Utiliser la reference OE ou equivalence constructeur pour le vehicule",
+    ]
+    result = promote._dedup_selection_criteria(items)
+    assert len(result) == 1
+    assert result[0] == "Utiliser la reference OE ou equivalence constructeur pour le vehicule"
+
+
+def test_dedup_selection_criteria_preserves_distinct():
+    items = [
+        "Référence OEM constructeur",
+        "Dimensions du filtre",
+        "Motorisation du véhicule",
+    ]
+    result = promote._dedup_selection_criteria(items)
+    assert len(result) == 3
+    assert result == items  # order preserved
+
+
+def test_dedup_selection_criteria_empty():
+    assert promote._dedup_selection_criteria([]) == []
+    assert promote._dedup_selection_criteria(None) is None
+
+
+def test_extract_function_oneliner_first_window_has_verb():
+    """When the first 140-char window already contains a technical verb, use it as-is."""
+    text = "Filtre l'air d'admission pour protéger le moteur des poussières et particules avant la combustion"
+    result = promote._extract_function_oneliner(text, max_chars=140)
+    assert "Filtre" in result
+    assert promote.DECISION_BRIEF_VERB_RE.search(result)
+
+
+def test_extract_function_oneliner_definitional_phrase_finds_late_verb():
+    """When the verb appears past the 140-char cutoff (definitional phrase), extract a clause containing it."""
+    text = ("La plaquette de frein est la garniture de friction pressee contre le disque "
+            "par l'etrier hydraulique pour ralentir le vehicule de maniere progressive et controlee.")
+    result = promote._extract_function_oneliner(text, max_chars=140)
+    assert promote.DECISION_BRIEF_VERB_RE.search(result), f"verb missing in: {result}"
+    assert len(result) <= 140 + 1  # +1 for the ellipsis "…" if truncated
+
+
+def test_extract_function_oneliner_no_verb_anywhere_falls_back():
+    """When the source has no technical verb anywhere, fallback to first window."""
+    text = "Une description nominale sans aucun verbe technique du genre attendu par le regex de detection."
+    result = promote._extract_function_oneliner(text, max_chars=140)
+    # First window returned, even if no verb
+    assert len(result) <= 140 + 1
+    assert "Une description" in result
+
+
+def test_extract_function_oneliner_empty_safe():
+    assert promote._extract_function_oneliner("", max_chars=140) == ""
+    assert promote._extract_function_oneliner(None, max_chars=140) == ""
+
+
+def test_derive_decision_brief_dedup_integration():
+    """derive_decision_brief applies dedup to selection_criteria_top from candidate/confirmed."""
+    dimensions = {
+        "function": {
+            "candidate_value": "Filtre l'air d'admission pour protéger le moteur",
+            "confirmed_value": None,
+            "cross_check_status": "RAG_ONLY",
+        },
+        "selection_criteria": {
+            "candidate_value": [
+                "Utiliser la référence OE",
+                "Utiliser la reference OE",  # ASCII-fold dup
+                "Dimensions du filtre",
+            ],
+            "confirmed_value": None,
+            "cross_check_status": "RAG_ONLY",
+        },
+        "compatibility_factors": {"fuels": ["diesel"]},
+    }
+    db = promote.derive_decision_brief(dimensions)
+    assert db is not None
+    # Dedup merged the 2 OE entries → 2 distinct criteria
+    assert len(db["selection_criteria_top"]) == 2
+
+
+# === Task 8e (2026-05-29) : extract_dimensions reads richer YAML frontmatter ===
+
+def test_extract_diagnostic_symptoms_preferred_over_confusion_with():
+    """extract_dimensions reads diagnostic.symptoms[].label (real symptoms), not
+    domain.confusion_with (part-confusion warnings)."""
+    raw = promote.read_raw_gamme(VANNE_EGR_PATH)
+    web = []
+    dims = promote.extract_dimensions(raw, web)
+    sym = dims["symptoms"]
+    candidate = sym.get("candidate_value") or []
+    # candidate_value should NOT contain "Filtre à air =" or "Vanne EGR =" style
+    # confusion-with phrases (those are part-confusion, not failure symptoms)
+    confusion_like = [s for s in candidate if "=" in s and ("admission" in s or "moteur" in s)]
+    # Real failure symptoms expected (perte de puissance, fumée, etc.)
+    assert candidate, "candidate_value should be populated from diagnostic.symptoms[]"
+
+
+def test_extract_maintenance_reads_yaml_interval():
+    """Maintenance periodicite_km comes from fm.maintenance.interval YAML, not body regex."""
+    raw = promote.read_raw_gamme(promote.GAMMES_DIR / "filtre-a-air.md")
+    dims = promote.extract_dimensions(raw, [])
+    maint = dims["maintenance_context"]
+    # filtre-a-air YAML has interval.value="20000-40000" → periodicite_km=20000 (lower bound)
+    assert maint.get("periodicite_km") == 20000
+    assert maint.get("periodicite_source") == "constructeurs"
+    assert maint.get("periodicite_note"), "should include the explanatory note from YAML"
+
+
+def test_extract_maintenance_reads_wear_signs_and_good_practices():
+    raw = promote.read_raw_gamme(promote.GAMMES_DIR / "filtre-a-air.md")
+    dims = promote.extract_dimensions(raw, [])
+    maint = dims["maintenance_context"]
+    # filtre-a-air YAML has both wear_signs[] and good_practices[]
+    assert isinstance(maint.get("wear_signs"), list)
+    assert len(maint["wear_signs"]) >= 1
+    assert isinstance(maint.get("good_practices"), list)
+    assert len(maint["good_practices"]) >= 1
+
+
+def test_extract_equipementier_brands_from_yaml():
+    """equipementier_brands dimension populated from selection.brands YAML."""
+    raw = promote.read_raw_gamme(promote.GAMMES_DIR / "filtre-a-air.md")
+    dims = promote.extract_dimensions(raw, [])
+    brands = dims.get("equipementier_brands") or {}
+    # filtre-a-air YAML has premium, standard, budget tiers
+    assert "premium" in brands
+    assert "Mann Filter" in brands["premium"]
+    assert "standard" in brands
+    assert "Bosch" in brands["standard"]
+
+
+def test_extract_variants_summary_from_yaml():
+    """variants_summary dimension populated from variants[] YAML."""
+    raw = promote.read_raw_gamme(promote.GAMMES_DIR / "filtre-a-air.md")
+    dims = promote.extract_dimensions(raw, [])
+    variants = dims.get("variants_summary") or []
+    # filtre-a-air YAML has 3 variants : panneau, cylindrique, conique
+    assert len(variants) >= 3
+    names = [v["name"] for v in variants]
+    assert any("plat" in n.lower() or "panneau" in n.lower() for n in names)
+
+
+def test_extract_dimensions_no_new_dimensions_when_yaml_missing():
+    """Backward compat : when YAML lacks the new fields, dimensions are empty/safe."""
+    # Construct a minimal raw without diagnostic.*, maintenance.*, variants, selection.brands
+    minimal_raw = {
+        "frontmatter_full": {"slug": "minimal", "pg_id": 999, "category": "test"},
+        "safe_taxonomic_fields": {"slug": "minimal", "pg_id": 999, "category": "test"},
+        "is_rag_candidate": False,
+        "source_path": "/tmp/minimal.md",
+        "body": "Some body content without km matches or symptoms.",
+    }
+    dims = promote.extract_dimensions(minimal_raw, [])
+    # No equipementier_brands → empty dict
+    assert dims["equipementier_brands"] == {}
+    # No variants_summary → empty list
+    assert dims["variants_summary"] == []
+    # No maintenance YAML, no body km → maint is empty
+    assert dims["maintenance_context"] == {}

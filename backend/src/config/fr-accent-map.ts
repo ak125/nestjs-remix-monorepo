@@ -48,6 +48,46 @@ const ACCENT_MAP: Array<[RegExp, string]> = [
   [/\bdelai\b/gi, 'délai'],
   [/\bdepose\b/gi, 'dépose'],
   [/\brepose\b/gi, 'repose'], // correct, no accent
+  // --- freinage lexicon (PR fix/restoreaccents-freinage-lexicon-2026-06-02) ---
+  // Frontière HYPHEN-AWARE (?<![\w-])…(?![\w-]) pour ces entrées : ne matche jamais
+  // à l'intérieur d'un token kebab → protège slugs / wikilinks / URLs
+  // (ex. "etrier-de-frein" intact, mais "l'etrier" corrigé). Sortie minuscule = comportement
+  // historique inchangé (cf. test EnricherTextUtils "case-insensitive") — PR strictement additif.
+  // Ambigus VOLONTAIREMENT exclus (laissés cassés) : cote (côté/cotation), rainure (nom/adj),
+  // estime/perces (adj/verbe) — hors scope de ce correctif déterministe.
+  [/(?<![\w-])cinetiques?(?![\w-])/gi, 'cinétique'],
+  [/(?<![\w-])repetables?(?![\w-])/gi, 'répétable'],
+  [/(?<![\w-])difficultes?(?![\w-])/gi, 'difficulté'],
+  [/(?<![\w-])experiences?(?![\w-])/gi, 'expérience'],
+  [/(?<![\w-])deformations?(?![\w-])/gi, 'déformation'],
+  [/(?<![\w-])kilometres?(?![\w-])/gi, 'kilomètre'],
+  [/(?<![\w-])capacites?(?![\w-])/gi, 'capacité'],
+  [/(?<![\w-])cles?(?![\w-])/gi, 'clé'],
+  [/(?<![\w-])memes?(?![\w-])/gi, 'même'],
+  [/(?<![\w-])etriers?(?![\w-])/gi, 'étrier'],
+  [/(?<![\w-])machoires?(?![\w-])/gi, 'mâchoire'],
+  [/(?<![\w-])pedales?(?![\w-])/gi, 'pédale'],
+  [/(?<![\w-])metalliques?(?![\w-])/gi, 'métallique'],
+  [/(?<![\w-])allongees?(?![\w-])/gi, 'allongée'],
+  [/(?<![\w-])bleutees?(?![\w-])/gi, 'bleutée'],
+  [/(?<![\w-])creusees?(?![\w-])/gi, 'creusée'],
+  [/(?<![\w-])immediats?(?![\w-])/gi, 'immédiat'],
+  [/(?<![\w-])elevees?(?![\w-])/gi, 'élevée'],
+  [/(?<![\w-])integrees?(?![\w-])/gi, 'intégrée'],
+  [/(?<![\w-])diametres?(?![\w-])/gi, 'diamètre'],
+  [/(?<![\w-])epaisseurs?(?![\w-])/gi, 'épaisseur'],
+  [/(?<![\w-])stabilites?(?![\w-])/gi, 'stabilité'],
+  [/(?<![\w-])arrieres?(?![\w-])/gi, 'arrière'],
+  [/(?<![\w-])ventiles?(?![\w-])/gi, 'ventilé'],
+  [/(?<![\w-])perfores?(?![\w-])/gi, 'perforé'],
+  [/(?<![\w-])pressees?(?![\w-])/gi, 'pressée'],
+  [/(?<![\w-])rivetees?(?![\w-])/gi, 'rivetée'],
+  [/(?<![\w-])collees?(?![\w-])/gi, 'collée'],
+  [/(?<![\w-])echauffements?(?![\w-])/gi, 'échauffement'],
+  [/(?<![\w-])majorites?(?![\w-])/gi, 'majorité'],
+  [/(?<![\w-])qualites?(?![\w-])/gi, 'qualité'],
+  [/(?<![\w-])mecaniques?(?![\w-])/gi, 'mécanique'],
+  [/(?<![\w-])numeros?(?![\w-])/gi, 'numéro'],
 ];
 
 /**

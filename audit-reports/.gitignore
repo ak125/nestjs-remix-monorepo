@@ -13,3 +13,7 @@ dep-graph.svg
 # Contract Drift Observatory V1 — ephemeral CI outputs (PR-6)
 drift-dashboard.md
 contract-health.json
+
+# Cloudflare purge audit trail — per-operation compliance records written by
+# scripts/ops/cloudflare-purge-by-pattern.sh. No consumer reads them back.
+cloudflare-purge/
