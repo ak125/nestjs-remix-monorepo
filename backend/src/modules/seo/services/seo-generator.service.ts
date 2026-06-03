@@ -115,6 +115,9 @@ export interface GenerateResult {
   validation?: ValidationResult;
 }
 
+// @role-purity-skip
+// Multi-role generator: produces R4 Reference AND R5 Diagnostics (saveR4Draft / saveR5Draft);
+// its docstring legitimately names both roles. Not single-role content.
 /**
  * Service pour générer du contenu SEO depuis les fichiers RAG
  *
