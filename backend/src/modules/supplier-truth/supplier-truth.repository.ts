@@ -13,6 +13,13 @@ import { SupabaseBaseService } from '../../database/services/supabase-base.servi
 const T_SNAPSHOTS = 'supplier_inventory_snapshots';
 const T_PROJECTION = 'supplier_truth_projection';
 const T_PROFILE = 'supplier_runtime_profile';
+/**
+ * Canonical per-supplier price+availability observation timeline (pricing H2,
+ * 20260523 migration). Append-only (DB anti-mutation trigger), partitioned
+ * monthly by observed_at. This is the SoT observation store the live-portal
+ * connectors write to — NOT the (unapplied, parallel) supplier_inventory_snapshots.
+ */
+const T_OFFERS = 'supplier_offer_snapshot';
 
 export interface SnapshotInsert {
   supplier_id: string;
@@ -31,6 +38,29 @@ export interface SnapshotInsert {
 export interface SnapshotRow extends SnapshotInsert {
   id: number;
   fetched_at: string;
+}
+
+/**
+ * One row of `supplier_offer_snapshot` (canonical observation). All prices in
+ * integer cents (no float drift); `piece_id_i` is NOT NULL at the DB, so only
+ * RESOLVED observations are written. `offer_id` + `observed_at` are DB defaults.
+ */
+export interface OfferSnapshotInsert {
+  piece_id_i: number;
+  supplier_id: string;
+  supplier_ref: string;
+  public_ht_cents: number | null;
+  remise_pct: number | null;
+  achat_ht_cents: number | null;
+  available: boolean;
+  delay_days: number | null;
+  parse_confidence:
+    | 'HIGH_CONFIDENCE'
+    | 'AMBIGUOUS_MAPPING'
+    | 'FALLBACK_MATCH'
+    | 'EAN_FALLBACK'
+    | 'UNKNOWN';
+  source_verified_at: string | null;
 }
 
 export interface ProjectionRow {
@@ -74,7 +104,23 @@ export class SupplierTruthRepository extends SupabaseBaseService {
     super(configService);
   }
 
-  /** APPEND-ONLY. The only write into the snapshot log. */
+  /**
+   * APPEND-ONLY write into the canonical supplier-offer observation timeline
+   * (`supplier_offer_snapshot`). This is the live-portal collection target.
+   */
+  async insertOffer(offer: OfferSnapshotInsert): Promise<void> {
+    const { error } = await this.supabase.from(T_OFFERS).insert(offer);
+    if (error) {
+      throw new Error(`insertOffer failed: ${error.message}`);
+    }
+  }
+
+  /**
+   * APPEND-ONLY. Write into the (deferred-H3) availability-consensus snapshot log
+   * `supplier_inventory_snapshots`. NOT wired into the live collection path — that
+   * writes `supplier_offer_snapshot` via `insertOffer`. Kept for the future
+   * availability-consensus layer (truth-engine); its table is not yet applied.
+   */
   async insertSnapshot(snapshot: SnapshotInsert): Promise<void> {
     const { error } = await this.supabase.from(T_SNAPSHOTS).insert(snapshot);
     if (error) {

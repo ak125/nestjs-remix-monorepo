@@ -48,9 +48,8 @@ const processor = () =>
   ({
     syncRefs: jest.fn(async () => ({
       observations: 1,
-      snapshotsInserted: 1,
+      offersInserted: 1,
       unresolved: 0,
-      projectionsUpserted: 1,
     })),
   }) as unknown as SupplierSyncProcessor;
 
@@ -68,15 +67,14 @@ describe('SupplierSyncRunner.runSync', () => {
     const summary = await runner.runSync();
 
     expect(connector.login).toHaveBeenCalledWith({ user: 'u', password: 'p' });
-    expect(proc.syncRefs).toHaveBeenCalledWith(
-      connector,
-      ['ELH4261', 'SCL4123'],
-      expect.any(Date),
-    );
+    expect(proc.syncRefs).toHaveBeenCalledWith(connector, [
+      'ELH4261',
+      'SCL4123',
+    ]);
     expect(connector.close).toHaveBeenCalled(); // resources released
     expect(summary.suppliersRun).toBe(1);
     expect(summary.refs).toBe(2);
-    expect(summary.projectionsUpserted).toBe(1);
+    expect(summary.offersInserted).toBe(1);
   });
 
   it('skips a supplier with no credentials (never logs in)', async () => {
@@ -163,10 +161,6 @@ describe('SupplierSyncRunner.runSync', () => {
     await runner.runSync();
 
     // Only the first 2 carried refs hit the portal this run; R3-R5 wait for TTL refresh.
-    expect(proc.syncRefs).toHaveBeenCalledWith(
-      connector,
-      ['R1', 'R2'],
-      expect.any(Date),
-    );
+    expect(proc.syncRefs).toHaveBeenCalledWith(connector, ['R1', 'R2']);
   });
 });

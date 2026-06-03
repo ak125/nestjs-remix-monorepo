@@ -77,7 +77,8 @@ export interface RunSummary {
   /** Benign skip: no credentials configured, or none of the working-set brands carried. */
   suppliersSkipped: number;
   refs: number;
-  projectionsUpserted: number;
+  /** Rows appended to the canonical `supplier_offer_snapshot` this run. */
+  offersInserted: number;
 }
 
 @Injectable()
@@ -93,7 +94,7 @@ export class SupplierSyncRunner {
     private readonly maxRefsPerRun: number = envMaxRefsPerRun(),
   ) {}
 
-  async runSync(now: Date = new Date()): Promise<RunSummary> {
+  async runSync(): Promise<RunSummary> {
     const runId = randomUUID();
     const workingSet = await this.repo.getWorkingSet();
     const summary: RunSummary = {
@@ -101,7 +102,7 @@ export class SupplierSyncRunner {
       suppliersFailed: 0,
       suppliersSkipped: 0,
       refs: workingSet.length,
-      projectionsUpserted: 0,
+      offersInserted: 0,
     };
     if (workingSet.length === 0) return summary;
 
@@ -146,11 +147,11 @@ export class SupplierSyncRunner {
       const connector = this.connectorFactory(cfg);
       try {
         await connector.login(creds);
-        const res = await this.processor.syncRefs(connector, refs, now);
-        summary.projectionsUpserted += res.projectionsUpserted;
+        const res = await this.processor.syncRefs(connector, refs);
+        summary.offersInserted += res.offersInserted;
         summary.suppliersRun++;
         this.logger.log(
-          `synced ${cfg.supplierName}: ${res.snapshotsInserted} snapshots, ${res.projectionsUpserted} projections`,
+          `synced ${cfg.supplierName}: ${res.offersInserted} offers, ${res.unresolved} unresolved`,
         );
       } catch (e) {
         const message = (e as Error).message;
