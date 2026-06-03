@@ -8,6 +8,15 @@
 > Il route les capacités existantes vers les départements, clarifie leur mode de maturité, et définit le
 > rapport attendu pour permettre le pilotage par scoring.**
 
+> **Projection machine-readable (warn-only, PR #787).** Un sous-ensemble *commerce-loop* de ces départements
+> (Achats & Fournisseurs → `supplier`, Commercial & Ventes → `sales`, Pricing → `pricing`) + leurs handoffs
+> métier (`supplier→sales` dispo, `pricing→sales` marge) est formalisé, en **slugs**, dans
+> [`agent-operating-map.yaml`](../.spec/00-canon/ai-registry/agent-operating-map.yaml) (blocs `departments:` /
+> `department_handoffs:`, ai-registry). Pont vers les domaines techniques D1-D16 via `repo_domains`.
+> **Autorité par champ** : ce markdown reste la **SoT narrative** (Vue 1/5/6 + format rapport) ; le yaml est la
+> **SoT machine** des champs structurés (`id`, `lead`, `repo_domains`, `state`, handoffs). Linker, pas recopier
+> — ne pas dupliquer le contenu entre les deux (cf. règle d'or ci-dessus).
+
 ## Doctrine opérationnelle — 6 règles concrètes
 1. **Toyota Gate** — stop sur défaut, corrige à la source. 8 gates : RAW→WIKI · WIKI→PAGE · PAGE→PUBLISH · FAFA→PUBLISH · DEMANDE→DEVIS · DEVIS→PAIEMENT · **PRODUIT→PANIER (dispo !)** · AGENT→OUTPUT.
 2. **Amazon Owner** — chaque département possède **un résultat (KPI)**, pas une activité.
