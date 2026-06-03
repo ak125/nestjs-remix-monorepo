@@ -179,3 +179,45 @@ describe('r4-family-guard — detectOffFamilyArtifacts (guard flag)', () => {
     expect(found).toEqual(['alternateur']);
   });
 });
+
+describe('r4-family-guard — anti-reintroduction (shared by both R4 writers)', () => {
+  // Both ReferenceService.refreshSingleGamme (primary) and SeoGeneratorService.buildR4FromRag
+  // (secondary) route frontmatter.composition through filterOffFamilyParts before persisting.
+  // This is the single point preventing re-introduction of the cross-family pollution.
+  it('drops the off-family bare-slug tail from a frontmatter-style composition, keeps prose + same-family', () => {
+    const frontmatterComposition = [
+      'Disque de frein (plateau en fonte GG25)', // prose → kept
+      'Plaquettes de frein (garnitures sacrificielles)', // prose → kept
+      'etrier-de-frein', // SAME family slug → kept
+      'alternateur', // OFF-FAMILY → dropped
+      'batterie', // OFF-FAMILY → dropped
+      'poulie-d-alternateur', // OFF-FAMILY → dropped
+    ];
+    const { kept, dropped } = filterOffFamilyParts(
+      frontmatterComposition,
+      TARGET_BRAKE,
+      SLUG_MF,
+    );
+    expect(dropped).toEqual([
+      'alternateur',
+      'batterie',
+      'poulie-d-alternateur',
+    ]);
+    expect(kept).toEqual([
+      'Disque de frein (plateau en fonte GG25)',
+      'Plaquettes de frein (garnitures sacrificielles)',
+      'etrier-de-frein',
+    ]);
+  });
+
+  it('a clean frontmatter composition passes through unchanged (no false drop)', () => {
+    const clean = ['disque-de-frein', 'plaquette-de-frein', 'etrier-de-frein'];
+    const { kept, dropped } = filterOffFamilyParts(
+      clean,
+      TARGET_BRAKE,
+      SLUG_MF,
+    );
+    expect(dropped).toEqual([]);
+    expect(kept).toEqual(clean);
+  });
+});

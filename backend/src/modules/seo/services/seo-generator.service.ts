@@ -19,6 +19,8 @@ import {
 
 // Import du service AI Content pour enrichissement LLM
 import { AiContentService } from '../../ai-content/ai-content.service';
+// R4 cross-family guard: reuse the primary writer's family filter (no duplicated logic)
+import { ReferenceService } from './reference.service';
 
 // Import des templates SEO
 import {
@@ -130,6 +132,7 @@ export class SeoGeneratorService {
 
   constructor(
     private readonly configService: ConfigService,
+    private readonly referenceService: ReferenceService,
     @Optional() private readonly qualityValidator?: QualityValidatorService,
     @Optional() private readonly aiContentService?: AiContentService,
   ) {
@@ -480,6 +483,15 @@ Retourne UNIQUEMENT le texte reformulé, sans commentaires.`;
     const url = `${SITE_ORIGIN}/reference-auto/${slug}`;
     const schemaOrg = buildR4SchemaOrg(templated.title, definition, url);
 
+    // R4 cross-family guard (parity with the primary writer ReferenceService.refreshSingleGamme):
+    // drop related_parts belonging to another product family before persisting. Reuses the exact
+    // same merged, mf_id-based filter — no duplicated logic, no behaviour change to the primary writer.
+    const composition = await this.referenceService.filterCompositionByFamily(
+      slug,
+      pgId,
+      frontmatter.composition || null,
+    );
+
     return {
       slug,
       title: templated.title,
@@ -487,7 +499,7 @@ Retourne UNIQUEMENT le texte reformulé, sans commentaires.`;
       definition,
       role_mecanique: roleMecanique,
       role_negatif: roleNegatif,
-      composition: frontmatter.composition || null,
+      composition,
       confusions_courantes: frontmatter.confusions_courantes || null,
       symptomes_associes: symptomesAssocies,
       regles_metier: mechanicalRules.must_be_true || null,
