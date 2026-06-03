@@ -10,6 +10,11 @@ import * as path from 'path';
 import * as yaml from 'js-yaml';
 import { SITE_ORIGIN } from '../../../config/app.config';
 import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
+import {
+  isBareSlug,
+  filterOffFamilyParts,
+  detectOffFamilyArtifacts,
+} from './r4-family-guard';
 
 // ── V4 Schema Types ──
 
@@ -533,10 +538,21 @@ export class ReferenceService extends SupabaseBaseService {
           : null;
 
     // v4: Build composition from related_parts
-    const composition =
+    const compositionRaw =
       v4Data && v4Data.domain.relatedParts.length > 0
         ? v4Data.domain.relatedParts
         : null;
+
+    // R4 cross-family guard (write-time prevention): drop related_parts that belong
+    // to ANOTHER product family (e.g. electrical slugs in a brake gamme). Family key =
+    // mf_id (catalog_family) via __seo_family_gamme_car_switch. Conservative: only a
+    // bare-slug whose family is KNOWN and differs from this gamme's is dropped; prose,
+    // unmapped slugs, or an unmapped target gamme are kept (UNKNOWN). Drops are logged.
+    const composition = await this.filterCompositionByFamily(
+      pgAlias,
+      gamme.id,
+      compositionRaw,
+    );
 
     if (existing) {
       // 5a. Update existing entry — refresh content but keep is_published
@@ -660,6 +676,112 @@ export class ReferenceService extends SupabaseBaseService {
       qualityScore: quality.score,
       qualityFlags: quality.flags,
     };
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // R4 cross-family guard helpers — pure logic lives in ./r4-family-guard.ts.
+  // Family key = mf_id (catalog_family) resolved via __seo_family_gamme_car_switch.
+  // ──────────────────────────────────────────────────────────────────────────
+
+  /**
+   * Memoized pg_id → mf_id (catalog family) map. ~104 gammes are mapped; the rest
+   * resolve to UNKNOWN and are therefore never dropped/flagged by the guard.
+   * Paginated read (sfgcs has ~3790 rows, up to 295/pg → a plain `.in()` would hit
+   * the supabase-js 1000-row cap), first mf_id per gamme wins.
+   */
+  private r4GammeFamilyMap: Map<string, number> | null = null;
+
+  private async getGammeFamilyMap(): Promise<Map<string, number>> {
+    if (this.r4GammeFamilyMap) return this.r4GammeFamilyMap;
+    const map = new Map<string, number>();
+    const PAGE = 1000;
+    for (let from = 0; from < 100_000; from += PAGE) {
+      const { data, error } = await this.supabase
+        .from('__seo_family_gamme_car_switch')
+        .select('sfgcs_pg_id, sfgcs_mf_id')
+        .range(from, from + PAGE - 1);
+      if (error || !data || data.length === 0) break;
+      for (const row of data as Array<{
+        sfgcs_pg_id: string | number;
+        sfgcs_mf_id: string | number;
+      }>) {
+        const pid = String(row.sfgcs_pg_id);
+        if (!map.has(pid)) map.set(pid, Number(row.sfgcs_mf_id));
+      }
+      if (data.length < PAGE) break;
+    }
+    this.r4GammeFamilyMap = map;
+    return map;
+  }
+
+  /**
+   * Resolve bare-slug → mf_id for the given entries (slug → pg_id via pieces_gamme,
+   * pg_id → mf_id via the family map). Non bare-slug / unmapped entries are absent.
+   */
+  private async resolveSlugFamilies(
+    entries: readonly string[],
+  ): Promise<Map<string, number>> {
+    const out = new Map<string, number>();
+    const bare = [
+      ...new Set(
+        entries.filter((s) => isBareSlug(s)).map((s) => s.trim().toLowerCase()),
+      ),
+    ];
+    if (bare.length === 0) return out;
+    const famMap = await this.getGammeFamilyMap();
+    const slugToPgId = new Map<string, string>();
+    for (let i = 0; i < bare.length; i += 200) {
+      const { data } = await this.supabase
+        .from('pieces_gamme')
+        .select('pg_id, pg_alias')
+        .in('pg_alias', bare.slice(i, i + 200));
+      for (const g of (data ?? []) as Array<{
+        pg_id: string | number;
+        pg_alias: string;
+      }>) {
+        slugToPgId.set(String(g.pg_alias).toLowerCase(), String(g.pg_id));
+      }
+    }
+    for (const [slug, pgId] of slugToPgId) {
+      const mf = famMap.get(pgId);
+      if (mf != null) out.set(slug, mf);
+    }
+    return out;
+  }
+
+  /**
+   * Drop related_parts that belong to another family (mf_id) before write.
+   * Returns the kept list (null if empty). Dropped items are logged — never silent.
+   * Fail-safe: on any resolution error the raw list is kept (content is never lost).
+   */
+  private async filterCompositionByFamily(
+    pgAlias: string,
+    targetPgId: number,
+    parts: string[] | null,
+  ): Promise<string[] | null> {
+    if (!parts || parts.length === 0) return parts;
+    try {
+      const famMap = await this.getGammeFamilyMap();
+      const targetMfId = famMap.get(String(targetPgId)) ?? null;
+      if (targetMfId == null) return parts; // unmapped gamme → cannot judge → keep
+      const slugToMfId = await this.resolveSlugFamilies(parts);
+      const { kept, dropped } = filterOffFamilyParts(
+        parts,
+        targetMfId,
+        slugToMfId,
+      );
+      if (dropped.length > 0) {
+        this.logger.warn(
+          `R4 family guard: dropped ${dropped.length} off-family related_parts from "${pgAlias}" (mf_id ${targetMfId}): ${dropped.join(', ')}`,
+        );
+      }
+      return kept.length > 0 ? kept : null;
+    } catch (e) {
+      this.logger.warn(
+        `R4 family guard skipped for "${pgAlias}" (resolution error, content kept): ${(e as Error).message}`,
+      );
+      return parts;
+    }
   }
 
   /**
@@ -1474,7 +1596,13 @@ export class ReferenceService extends SupabaseBaseService {
    * - MISSING_ROLE_NEGATIF, MISSING_REGLES_METIER, MISSING_SCOPE
    * - MISSING_ACCENTS, TITLE_FORMAT
    */
-  validateReferenceQuality(ref: SeoReference): ReferenceQualityResult {
+  validateReferenceQuality(
+    ref: SeoReference,
+    familyCtx?: {
+      targetMfId: number | null;
+      slugToMfId: ReadonlyMap<string, number>;
+    },
+  ): ReferenceQualityResult {
     const flags: string[] = [];
 
     // --- BLOQUANTS ---
@@ -1559,6 +1687,8 @@ export class ReferenceService extends SupabaseBaseService {
       ...(ref.composition || []),
       ...(ref.reglesMetier || []),
       ...(ref.confusionsCourantes || []),
+      ...(ref.symptomesAssocies || []),
+      ...(ref.takeaways || []),
     ]
       .filter(Boolean)
       .join(' ')
@@ -1566,6 +1696,26 @@ export class ReferenceService extends SupabaseBaseService {
 
     if (R4_FORBIDDEN.some((term) => allText.includes(term))) {
       flags.push('R4_CONTAMINATED');
+    }
+
+    // 9b. Cross-FAMILY contamination: related-part slugs that belong to another
+    // product family (e.g. electrical slugs in a brake reference). Family-aware via
+    // mf_id (catalog_family), no denylist. Only runs when a family context is supplied
+    // (auditAllReferences); skipped otherwise to keep backward-compatible callers pure.
+    if (familyCtx) {
+      const offFamily = detectOffFamilyArtifacts(
+        [
+          ref.composition,
+          ref.symptomesAssocies,
+          ref.confusionsCourantes,
+          ref.takeaways,
+        ],
+        familyCtx.targetMfId,
+        familyCtx.slugToMfId,
+      );
+      if (offFamily.length > 0) {
+        flags.push('R4_OFF_GAMME');
+      }
     }
 
     // 10. Règles métier = mots-clés au lieu de phrases
@@ -1594,6 +1744,7 @@ export class ReferenceService extends SupabaseBaseService {
       'NO_NUMBERS_IN_DEFINITION',
       'GENERIC_COMPOSITION',
       'R4_CONTAMINATED',
+      'R4_OFF_GAMME',
     ];
     const blockingCount = flags.filter((f) => blockingFlags.includes(f)).length;
     const warningCount = flags.filter((f) => !blockingFlags.includes(f)).length;
@@ -1612,8 +1763,32 @@ export class ReferenceService extends SupabaseBaseService {
    */
   async auditAllReferences(): Promise<ReferenceAuditResult> {
     const allRefs = await this.getAllFull();
+
+    // Pre-resolve the family context once for cross-family (R4_OFF_GAMME) detection:
+    // pg_id → mf_id map + bare-slug → mf_id for every slug appearing in any ref array.
+    const famMap = await this.getGammeFamilyMap();
+    const allSlugs = new Set<string>();
+    for (const ref of allRefs) {
+      for (const arr of [
+        ref.composition,
+        ref.symptomesAssocies,
+        ref.confusionsCourantes,
+        ref.takeaways,
+      ]) {
+        for (const v of arr ?? []) {
+          if (isBareSlug(v)) allSlugs.add(v.trim().toLowerCase());
+        }
+      }
+    }
+    const slugToMfId = await this.resolveSlugFamilies([...allSlugs]);
+
     const details: ReferenceAuditDetail[] = allRefs.map((ref) => {
-      const quality = this.validateReferenceQuality(ref);
+      const familyCtx = {
+        targetMfId:
+          ref.pgId != null ? (famMap.get(String(ref.pgId)) ?? null) : null,
+        slugToMfId,
+      };
+      const quality = this.validateReferenceQuality(ref, familyCtx);
       return {
         slug: ref.slug,
         title: ref.title,
@@ -1628,7 +1803,11 @@ export class ReferenceService extends SupabaseBaseService {
     const real = details.filter((d) => d.isPublishable).length;
 
     // Persist contamination flags in DB (Phase 5B)
-    const PERSIST_FLAGS = ['R4_CONTAMINATED', 'RULES_ARE_KEYWORDS'];
+    const PERSIST_FLAGS = [
+      'R4_CONTAMINATED',
+      'RULES_ARE_KEYWORDS',
+      'R4_OFF_GAMME',
+    ];
     for (const ref of allRefs) {
       const detail = details.find((d) => d.slug === ref.slug);
       if (!detail) continue;
