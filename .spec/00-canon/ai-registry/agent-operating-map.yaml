@@ -140,3 +140,79 @@ handoffs:
     state: EXISTS
     evidence: {}
     notes: "Hardcoded agent list in workspaces/seo-batch/.claude/skills/pipeline-orchestrator/SKILL.md lines 20-26. No central registry SoT. ADR evidence intentionally empty in PR#1 — to be resolved in PR#2 if a real ADR covers this handoff (no invented evidence)."
+
+# ── Business departments (slug-keyed) ─────────────────────────────────────────
+# Reference projection of the business-org layer (Achats, Commercial, Pricing…),
+# DISTINCT from `surfaces` (which are Claude-session cwds). Slugs, not numbers —
+# no collision with technical domains D1-D16; `repo_domains` bridges the two.
+# Machine SoT for structured fields here; narrative SoT stays
+# audit/automecanik-departments-map.md (Vue 5 report / Vue 6). `state` exposes
+# unused value. V1 seeds the commerce-loop core only; capabilities reference real
+# modules via `declared_capabilities` (never recopied). Warn-only — hard-fail
+# enforcement requires a vault ADR (same stance as the rest of this file).
+departments:
+  - id: supplier
+    label: "Achats & Fournisseurs"
+    lead: supplier-lead
+    priority: P0                     # P0-P3 (V1 hand-set = max criticality of repo_domains; V1.5 derives it)
+    kpi_primary: supplier_unavailability_cancellations
+    repo_domains: [D11, D13, D15]
+    capabilities: [suppliers-service, supplier-truth]
+    state: partial                   # supplier-truth runtime wiring not yet merged
+
+  - id: sales
+    label: "Commercial & Ventes"
+    lead: sales-lead
+    priority: P0
+    kpi_primary: payments_kept
+    repo_domains: [D11]
+    capabilities: [cart, orders, funnel-events]
+    state: partial                   # funnel instrumentation partial (not all events emitted)
+
+  - id: pricing
+    label: "Pricing"
+    lead: pricing-lead
+    priority: P0
+    kpi_primary: margin_protected
+    repo_domains: [D11]
+    capabilities: [pricing-invariants]
+    state: partial                   # economic-governance system; invariants live, CP partial
+
+# Allowlist of capabilities that resolve to neither a registry skill nor a node
+# yet (modules/engines/services/signals). Keeps department.capabilities from being
+# ghost slugs; `owner` is the department id. Each commented with its real path.
+declared_capabilities:
+  - { id: suppliers-service,  type: service, owner: supplier, status: live }     # backend/src/modules/suppliers/suppliers.service.ts
+  - { id: supplier-truth,     type: engine,  owner: supplier, status: partial }  # feat/supplier-truth-runtime-wiring (not merged)
+  - { id: cart,               type: module,  owner: sales,    status: live }     # backend/src/modules/cart
+  - { id: orders,             type: module,  owner: sales,    status: live }     # backend/src/modules/orders
+  - { id: funnel-events,      type: signal,  owner: sales,    status: partial }  # backend/src/modules/seo-monitoring/services/funnel-events.service.ts
+  - { id: pricing-invariants, type: service, owner: pricing,  status: live }     # backend/src/modules/pricing/services/pricing-invariants.service.ts
+
+# Business handoffs (department→department), distinct from the pipeline `handoffs`
+# above. Communication by contract, not free discussion. `contract_ref` points to
+# the runtime effort that owns the verdict; `contract_status: planned` = no JSON
+# schema until a real consumer validates it (no speculative canon).
+department_handoffs:
+  - id: supplier-to-sales-availability
+    from: supplier
+    to: sales
+    contract_ref: availability-verdict.v1
+    contract_status: planned
+    purpose: "Vérifier la disponibilité avant paiement (commerce-loop-v1)"
+    gate: human_review_or_owner_go
+    state: PARTIAL
+    evidence:
+      runtime: "feat/supplier-truth-runtime-wiring"
+
+  - id: pricing-to-sales-margin
+    from: pricing
+    to: sales
+    contract_ref: margin-verdict.v1
+    contract_status: planned
+    purpose: "Protéger la marge avant validation commande (never sell at loss)"
+    gate: "VENTE_BELOW_ACHAT (enforced at import)"
+    state: PARTIAL
+    evidence:
+      scripts:
+        - backend/src/modules/pricing/services/pricing-invariants.service.ts

@@ -37,6 +37,14 @@ const OWNER_PATH = path.join(
   REPO_ROOT,
   ".spec/00-canon/repository-registry/ownership.yaml",
 );
+const DOMAINS_PATH = path.join(
+  REPO_ROOT,
+  ".spec/00-canon/repository-registry/domains.yaml",
+);
+const SKILLS_REGISTRY_PATH = path.join(
+  REPO_ROOT,
+  ".spec/00-canon/ai-registry/skills.registry.json",
+);
 const REPORT_DIR = path.join(REPO_ROOT, "audit-reports");
 const REPORT_PATH = path.join(REPORT_DIR, "agent-operating-map-report.json");
 
@@ -58,6 +66,22 @@ function knownOwnersFromOwnership() {
       .filter(Boolean)
       .filter((owner) => owner !== "__unassigned__"),
   );
+}
+
+function knownDomainsFromDomainsYaml() {
+  if (!fs.existsSync(DOMAINS_PATH)) return new Set();
+  const d = loadYaml(DOMAINS_PATH);
+  return new Set((d.entries ?? []).map((e) => e && e.id).filter(Boolean));
+}
+
+function skillNamesFromRegistry() {
+  if (!fs.existsSync(SKILLS_REGISTRY_PATH)) return new Set();
+  try {
+    const r = JSON.parse(fs.readFileSync(SKILLS_REGISTRY_PATH, "utf8"));
+    return new Set((r.skills ?? []).map((s) => s && s.name).filter(Boolean));
+  } catch {
+    return new Set();
+  }
 }
 
 /**
@@ -191,6 +215,62 @@ function checkMap(map, ajvValidate) {
           `node ${n.id} not referenced by any surface or handoff`,
           n.id,
         );
+      }
+    }
+  }
+
+  // 7) Department checks — fire when departments are declared (independent of the
+  //    node inventory, unlike checks 2-6). All warn-only in V1: never blocking,
+  //    hard-fail enforcement requires a vault ADR (same stance as the rest of the map).
+  const departments = map.departments || [];
+  if (departments.length > 0) {
+    const declaredCaps = new Set(
+      (map.declared_capabilities || []).map((c) => c.id),
+    );
+    const skillNames = skillNamesFromRegistry();
+    const knownDomains = knownDomainsFromDomainsYaml();
+    // Resolution set for a capability slug: declared allowlist ∪ registry skills ∪ nodes.
+    const capResolves = (cap) =>
+      declaredCaps.has(cap) || skillNames.has(cap) || nodeIds.has(cap);
+
+    for (const d of departments) {
+      // 7a) lead resolves to an agent/skill node, a declared capability, or the
+      //     `<id>-lead` convention (a structured-manual lead without a backing node).
+      const leadOk =
+        nodeIds.has(d.lead) ||
+        declaredCaps.has(d.lead) ||
+        d.lead === `${d.id}-lead`;
+      if (!leadOk) {
+        add(
+          "warn",
+          "DEPT_LEAD_UNRESOLVED",
+          `department ${d.id} lead "${d.lead}" is neither a node, a declared capability, nor the ${d.id}-lead convention`,
+          d.id,
+        );
+      }
+
+      // 7b) capabilities resolve to the explicit target set (no ghost slugs).
+      for (const cap of d.capabilities || []) {
+        if (!capResolves(cap)) {
+          add(
+            "warn",
+            "DEPT_CAPABILITY_UNRESOLVED",
+            `department ${d.id} capability "${cap}" resolves to no skill, node, or declared_capabilities entry`,
+            d.id,
+          );
+        }
+      }
+
+      // 7c) repo_domains exist in domains.yaml.
+      for (const dom of d.repo_domains || []) {
+        if (knownDomains.size > 0 && !knownDomains.has(dom)) {
+          add(
+            "warn",
+            "DEPT_REPO_DOMAIN_UNKNOWN",
+            `department ${d.id} repo_domain "${dom}" not in domains.yaml`,
+            d.id,
+          );
+        }
       }
     }
   }
