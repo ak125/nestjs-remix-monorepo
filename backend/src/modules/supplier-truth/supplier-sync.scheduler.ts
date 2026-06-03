@@ -2,6 +2,7 @@ import { Injectable, Logger, type OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectQueue } from '@nestjs/bull';
 import type { Queue } from 'bull';
+import { isSupplierSyncEnabled } from './supplier-sync.flag';
 
 /**
  * Schedules the recurring supplier sync (Task 12) via Bull.
@@ -34,7 +35,7 @@ export class SupplierSyncScheduler implements OnModuleInit {
    * connector login / portal hit / DB write.
    */
   isSyncEnabled(): boolean {
-    return this.config.get<string>('SUPPLIER_TRUTH_SYNC_ENABLED') === 'true';
+    return isSupplierSyncEnabled(this.config);
   }
 
   onModuleInit(): void {

@@ -5,12 +5,13 @@ import {
   ParseIntPipe,
   UseGuards,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { IsAdminGuard } from '@auth/is-admin.guard';
 import {
   SupplierTruthService,
   type AvailabilityView,
 } from './supplier-truth.service';
-import { SupplierSyncScheduler } from './supplier-sync.scheduler';
+import { isSupplierSyncEnabled } from './supplier-sync.flag';
 import {
   listConnectableSuppliers,
   type SupplierPlatform,
@@ -30,7 +31,7 @@ import {
 export class SupplierTruthController {
   constructor(
     private readonly service: SupplierTruthService,
-    private readonly scheduler: SupplierSyncScheduler,
+    private readonly config: ConfigService,
   ) {}
 
   /** Activation + wiring status. Read-only; no connector login, no DB write. */
@@ -44,7 +45,7 @@ export class SupplierTruthController {
       platform: SupplierPlatform;
     }>;
   } {
-    const syncEnabled = this.scheduler.isSyncEnabled();
+    const syncEnabled = isSupplierSyncEnabled(this.config);
     return {
       mode: syncEnabled ? 'ACTIVE' : 'OBSERVABLE_DORMANT',
       syncEnabled,
