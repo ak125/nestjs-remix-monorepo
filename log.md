@@ -580,3 +580,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/supplier-truth-runtime-wiring`
 - **Décision** : feat(supplier-truth): runtime wiring (inert mode, scheduler OFF default)
 - **Sortie** : PR #831 | commits 268efea6c
+
+## 2026-06-04 — fix/storefront-can-sell-gate (auto)
+
+- **Branche** : `fix/storefront-can-sell-gate`
+- **Décision** : fix(storefront): gate add-to-cart on can_sell = price + confirmed availability
+- **Sortie** : PR #850 | commits 67af406de
