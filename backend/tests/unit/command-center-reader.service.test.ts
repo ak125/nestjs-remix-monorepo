@@ -134,12 +134,14 @@ describe('CommandCenterReaderService', () => {
     });
 
     it('safe default: disabled in production, full elsewhere', () => {
-      delete process.env.COMMAND_CENTER_MODE;
-      process.env.NODE_ENV = 'production';
+      // NODE_ENV is type-narrowed in the backend; widen for the 'preprod' literal.
+      const env = process.env as Record<string, string | undefined>;
+      delete env.COMMAND_CENTER_MODE;
+      env.NODE_ENV = 'production';
       expect(resolveCommandCenterMode()).toBe('disabled');
-      process.env.NODE_ENV = 'preprod';
+      env.NODE_ENV = 'preprod';
       expect(resolveCommandCenterMode()).toBe('full');
-      process.env.NODE_ENV = 'development';
+      env.NODE_ENV = 'development';
       expect(resolveCommandCenterMode()).toBe('full');
     });
 
