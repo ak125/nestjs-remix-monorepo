@@ -214,6 +214,15 @@ departments:
     capabilities: [seo-pages, seo-roles, seo-gamme-audit]
     state: partial                   # pages live; ATC conversion gap (IMPROVE) — resolves wiki→seo handoff
 
+  - id: catalog
+    label: "Catalogue & Compatibilité"
+    lead: catalog-lead
+    priority: P0                     # max criticality of repo_domains (D1/D4 = P0)
+    kpi_primary: compat_and_displayed_availability
+    repo_domains: [D1, D4]
+    capabilities: [catalog-core, compatibility, catalog-integrity, vehicle-ops]   # vehicle-ops resolves via skills.registry
+    state: partial                   # catalog live; displayed-vs-real availability gap (epicentre rupture, IMPROVE)
+
 # Allowlist of capabilities that resolve to neither a registry skill nor a node
 # yet (modules/engines/services/signals). Keeps department.capabilities from being
 # ghost slugs; `owner` is the department id. Each commented with its real path.
@@ -234,6 +243,9 @@ declared_capabilities:
   - { id: seo-pages,       type: module, owner: seo, status: live }     # backend/src/modules/seo (DynamicSeoV4UltimateService, sitemap)
   - { id: seo-roles,       type: module, owner: seo, status: live }     # packages/seo-roles (@repo/seo-roles, #670 KW classification)
   - { id: seo-gamme-audit, type: skill,  owner: seo, status: partial }  # workspaces/seo-batch/.claude/skills/seo-gamme-audit
+  - { id: catalog-core,      type: module,  owner: catalog, status: live }     # backend/src/modules/catalog (Catalog Core, D1)
+  - { id: compatibility,     type: service, owner: catalog, status: live }     # backend/src/modules/catalog/services/compatibility.service.ts
+  - { id: catalog-integrity, type: service, owner: catalog, status: partial }  # backend/src/modules/catalog/services/catalog-data-integrity.service.ts
 
 # Business handoffs (department→department), distinct from the pipeline `handoffs`
 # above. Communication by contract, not free discussion. `contract_ref` points to
@@ -312,3 +324,18 @@ department_handoffs:
     evidence:
       scripts:
         - backend/src/modules/seo/r2/constants/r2-eligibility.constants.ts
+
+  # availability truth flows supplier → catalog (displayed) so out-of-stock pieces
+  # aren't shown vendable (epicentre rupture). Quarantine deferred until the
+  # supplier-truth sentinel is live — never a blind hide.
+  - id: supplier-to-catalog-availability
+    from: supplier
+    to: catalog
+    contract_ref: catalog-availability-reconciliation.v1
+    contract_status: planned
+    purpose: "Réconcilier dispo affichée (catalogue) vs dispo réelle (fournisseur) — pas de pièce affichée vendable mais en rupture"
+    gate: "supplier-truth sentinel live (sentinelle avant quarantaine, jamais hide aveugle)"
+    state: PARTIAL
+    evidence:
+      scripts:
+        - backend/src/modules/catalog/services/catalog-data-integrity.service.ts
