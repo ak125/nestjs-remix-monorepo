@@ -139,6 +139,22 @@ if git diff --cached --name-only --diff-filter=ACMR | grep -qE '^audit/registry/
   fi
 fi
 
+# Command Center snapshot (projection of the AI Operating Map) — staleness guard.
+# When the canon, schema, or generator changes, the committed snapshot must match.
+# We --check (no autostage): the hyphenated filename is outside the no-manual-edit
+# guard regex above, so the dev regenerates + stages it explicitly (no churn).
+if git diff --cached --name-only --diff-filter=ACMR \
+   | grep -qE '^(\.spec/00-canon/ai-registry/agent-operating-map\.(yaml|schema\.json)|scripts/governance/build-command-center-snapshot\.js|audit/registry/command-center-snapshot\.json)$'; then
+  if command -v node >/dev/null 2>&1 && [ -f scripts/governance/build-command-center-snapshot.js ]; then
+    node scripts/governance/build-command-center-snapshot.js --check || {
+      echo ""
+      echo "ERROR: audit/registry/command-center-snapshot.json is stale."
+      echo "Run \`npm run governance:command-center\` and \`git add\` the result before committing."
+      exit 1
+    }
+  fi
+fi
+
 # Fast deterministic gate: ast-grep rules in .ast-grep/rules/
 # Warnings do not block commits; only `severity: error` rules fail here.
 # For full audit run: npm run audit:all (see package.json scripts)

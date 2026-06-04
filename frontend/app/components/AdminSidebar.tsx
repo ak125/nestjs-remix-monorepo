@@ -435,6 +435,12 @@ export const AdminSidebar = memo(function AdminSidebar({
       notification: false,
       subItems: [
         {
+          name: "Command Center",
+          href: "/admin/command-center",
+          icon: Map,
+          description: "Cockpit IA — santé départements & actions",
+        },
+        {
           name: "Monitoring",
           href: "/admin/system",
           icon: Activity,
@@ -493,6 +499,7 @@ export const AdminSidebar = memo(function AdminSidebar({
     "RAG / Chat IA": location.pathname.startsWith("/admin/rag"),
     Système:
       location.pathname.startsWith("/admin/system") ||
+      location.pathname.startsWith("/admin/command-center") ||
       location.pathname.startsWith("/admin/db-governance") ||
       location.pathname.startsWith("/admin/debug") ||
       location.pathname.startsWith("/admin/couleurs") ||
