@@ -1,6 +1,6 @@
 {
   "compliantCount": 12,
-  "generatedAt": "2026-06-04T12:10:05.585Z",
+  "generatedAt": "2026-06-04T13:09:31.552Z",
   "issues": [],
   "schemaPath": ".spec/00-canon/ai-registry/skill.schema.json",
   "schemaVersion": "1.0.0",
@@ -215,7 +215,7 @@
       "type": "technique"
     },
     {
-      "checksum": "sha256:a17ac66e551c18064130fb86758a0632bee10aeae84c467ffbaded98dc0bacd4",
+      "checksum": "sha256:5646319e6e91b4bea6eba2fcd708488df6bb3b6f7069cf1aa1dffdb7e2ce85bf",
       "domain": "D15",
       "last_verified": "2026-06-04",
       "llm_safe": false,
@@ -223,7 +223,7 @@
         "argument-hint": "[brand] [supplier]",
         "disable-model-invocation": true,
         "spec": "agentskills.io/specification v1",
-        "version": "1.0"
+        "version": "2.0"
       },
       "name": "supplier-price-load",
       "owners": [
@@ -239,6 +239,7 @@
         "import",
         "pieces_price",
         "pricing",
+        "pricing-control-plane",
         "supplier",
         "tariff"
       ],
