@@ -581,8 +581,8 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Décision** : feat(supplier-truth): runtime wiring (inert mode, scheduler OFF default)
 - **Sortie** : PR #831 | commits 268efea6c
 
-## 2026-06-04 — fix/storefront-can-sell-gate (auto)
+## 2026-06-04 — feat/command-center-exposure-mode (auto)
 
-- **Branche** : `fix/storefront-can-sell-gate`
-- **Décision** : fix(storefront): gate add-to-cart on can_sell = price + confirmed availability
-- **Sortie** : PR #850 | commits 67af406de
+- **Branche** : `feat/command-center-exposure-mode`
+- **Décision** : fix(command-center): widen NODE_ENV type in mode test (TS2322 'preprod') (PR4) (+1 other commit)
+- **Sortie** : PR #856 | commits 75f42754f d20d75831

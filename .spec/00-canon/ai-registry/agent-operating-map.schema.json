@@ -100,7 +100,17 @@
         "id":     { "$ref": "#/$defs/capabilityRef" },
         "type":   { "enum": ["skill", "agent", "service", "module", "engine", "pipeline", "signal"] },
         "owner":  { "$ref": "#/$defs/departmentId" },
-        "status": { "enum": ["live", "partial", "dormant", "broken", "duplicate"] }
+        "status": { "enum": ["live", "partial", "dormant", "broken", "duplicate"] },
+        "evidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "runtime": { "type": "string" },
+            "adr":     { "type": "string", "pattern": "^ADR-\\d{3,4}$" },
+            "scripts": { "type": "array", "items": { "type": "string" } },
+            "tables":  { "type": "array", "items": { "type": "string" } }
+          }
+        }
       }
     },
     "department": {

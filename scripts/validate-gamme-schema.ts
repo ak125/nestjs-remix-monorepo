@@ -154,9 +154,123 @@ function scoreV4(errors: ValidationError[], fm: any): number {
   return Math.max(0, Math.min(100, 100 - penalties + bonuses));
 }
 
+// ── R1 readiness (WIKI_EXPORT dimension only) ──
+// Validates the WIKI EXPORT .md (the source content-gen R1 actually reads), NOT RAG
+// (__rag_knowledge / RagFoundationGate). Presence gates = hard BLOCK ; depth gates flag
+// thin content. Reason codes align with the /r1-readiness verdict (see plan).
+const R1_READINESS_THRESHOLDS = {
+  criteriaMin: 5, // calibré sur exemplaires : filtre=10, disque=5 (rendent riche) ; colonne=3 (thin)
+  mustBeTrueMin: 3,
+};
+
+// Calibration EMPIRIQUE (vérifiée sur exemplaires qui rendent 9-10K c) :
+// `seo_cluster` + profondeur `criteria` prédisent la richesse du rendu ; `completeness_profile`
+// et `verification_status` NE la prédisent PAS (disque-de-frein rend 9809c sans completeness_profile
+// et en `draft`) → BLOCK sur seo_cluster/criteria ; les deux autres = warnings advisory (gouvernance).
+export function r1WikiExportReadiness(fm: any): {
+  status: 'READY' | 'BLOCKED';
+  blockers: string[];
+  warnings: string[];
+} {
+  const blockers: string[] = [];
+  const warnings: string[] = [];
+  if (!fm?.seo_cluster) blockers.push('seo_cluster_missing');
+  if ((fm?.selection?.criteria?.length ?? 0) < R1_READINESS_THRESHOLDS.criteriaMin)
+    blockers.push('selection_criteria_thin');
+  if (!fm?.completeness_profile) warnings.push('completeness_profile_missing');
+  if (fm?.verification_status !== 'verified') warnings.push('verification_status_not_verified');
+  if ((fm?.domain?.must_be_true?.length ?? 0) < R1_READINESS_THRESHOLDS.mustBeTrueMin)
+    warnings.push('must_be_true_thin');
+  return { status: blockers.length === 0 ? 'READY' : 'BLOCKED', blockers, warnings };
+}
+
+export interface WikiExportReadiness {
+  found: boolean;
+  status: 'READY' | 'BLOCKED';
+  blockers: string[];
+  warnings: string[];
+  fields: {
+    seo_cluster: boolean;
+    completeness_profile: string | null;
+    verification_status: string | null;
+    criteria: number;
+    must_be_true: number;
+    schema: string;
+  };
+  score: number;
+}
+
+// Reusable WIKI_EXPORT verdict for one gamme (filesystem only — validates the WIKI export,
+// NOT RAG). Imported by the /r1-readiness composer (scripts/seo/r1-readiness.ts) which adds
+// the DB-backed KW / CONTENT / LIVE dimensions.
+export function wikiExportReadiness(alias: string): WikiExportReadiness {
+  const filePath = path.join(GAMMES_DIR, `${alias}.md`);
+  if (!fs.existsSync(filePath)) {
+    return {
+      found: false,
+      status: 'BLOCKED',
+      blockers: ['export_missing'],
+      warnings: [],
+      fields: { seo_cluster: false, completeness_profile: null, verification_status: null, criteria: 0, must_be_true: 0, schema: 'none' },
+      score: 0,
+    };
+  }
+  const content = fs.readFileSync(filePath, 'utf-8');
+  const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
+  const fm = fmMatch ? yaml.load(fmMatch[1]) : {};
+  const { status, blockers, warnings } = r1WikiExportReadiness(fm);
+  const version = detectVersion(fm);
+  const score = version === 'v4' ? scoreV4(validateV4(fm, alias), fm) : 0;
+  return {
+    found: true,
+    status,
+    blockers,
+    warnings,
+    fields: {
+      seo_cluster: !!fm?.seo_cluster,
+      completeness_profile: fm?.completeness_profile ?? null,
+      verification_status: fm?.verification_status ?? null,
+      criteria: fm?.selection?.criteria?.length ?? 0,
+      must_be_true: fm?.domain?.must_be_true?.length ?? 0,
+      schema: version,
+    },
+    score,
+  };
+}
+
+// Single-gamme WIKI_EXPORT readiness (CLI). KW / CONTENT / LIVE dimensions are DB-backed and
+// composed by scripts/seo/r1-readiness.ts — this script owns the WIKI_EXPORT dimension only.
+function runSingleR1Readiness(alias: string): void {
+  const r = wikiExportReadiness(alias);
+  const { status, blockers, warnings, fields, score } = r;
+
+  console.log(`\nR1_READINESS ${alias} (WIKI_EXPORT dimension — valide l'export WIKI, PAS le RAG)`);
+  console.log(`- WIKI_EXPORT: ${status}${blockers.length ? `  blockers:[${blockers.join(', ')}]` : ''}`);
+  if (warnings.length) console.log(`  warnings:[${warnings.join(', ')}]`);
+  console.log(
+    `  fields: seo_cluster=${fields.seo_cluster} completeness_profile=${fields.completeness_profile ?? 'null'} ` +
+      `verification_status=${fields.verification_status ?? 'null'} criteria=${fields.criteria} ` +
+      `must_be_true=${fields.must_be_true} schema=${fields.schema} score=${score}`,
+  );
+  console.log(
+    `  NEXT_ACTION(WIKI): ${status === 'READY' ? 'none — vérifier KW/CONTENT/LIVE (dims DB, owner-gated)' : 'RUN_RAW_TO_WIKI'}`,
+  );
+  if (process.argv.includes('--json')) {
+    console.log('--- JSON ---');
+    console.log(JSON.stringify({ alias, dimension: 'WIKI_EXPORT', ...r }, null, 2));
+  }
+}
+
 // ── Main ──
 
 function main() {
+  // Single-gamme R1 WIKI_EXPORT readiness verdict (read-only).
+  const gIdx = process.argv.indexOf('--gamme');
+  if (gIdx >= 0 && process.argv[gIdx + 1]) {
+    runSingleR1Readiness(process.argv[gIdx + 1]);
+    return;
+  }
+
   const files = fs.readdirSync(GAMMES_DIR).filter((f) => f.endsWith('.md'));
   const reports: GammeReport[] = [];
   const versionCounts: Record<string, number> = { v1: 0, v3: 0, v4: 0 };
@@ -261,4 +375,4 @@ function main() {
   }
 }
 
-main();
+if (require.main === module) main();
