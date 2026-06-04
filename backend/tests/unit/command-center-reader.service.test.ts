@@ -1,6 +1,7 @@
 import { join } from 'path';
 import {
   CommandCenterReaderService,
+  resolveCommandCenterMode,
   type CommandCenterResponse,
 } from '../../src/modules/admin/services/command-center-reader.service';
 
@@ -112,6 +113,56 @@ describe('CommandCenterReaderService', () => {
       const result = await service.getCommandCenter();
       expect(result).toBe(cached);
       expect(cache.set).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('exposure mode (COMMAND_CENTER_MODE)', () => {
+    const ENV = {
+      mode: process.env.COMMAND_CENTER_MODE,
+      node: process.env.NODE_ENV,
+    };
+    afterEach(() => {
+      process.env.COMMAND_CENTER_MODE = ENV.mode;
+      process.env.NODE_ENV = ENV.node;
+    });
+
+    it('explicit COMMAND_CENTER_MODE wins (full/light/disabled)', () => {
+      for (const m of ['full', 'light', 'disabled'] as const) {
+        process.env.COMMAND_CENTER_MODE = m;
+        expect(resolveCommandCenterMode()).toBe(m);
+      }
+    });
+
+    it('safe default: disabled in production, full elsewhere', () => {
+      // NODE_ENV is type-narrowed in the backend; widen for the 'preprod' literal.
+      const env = process.env as Record<string, string | undefined>;
+      delete env.COMMAND_CENTER_MODE;
+      env.NODE_ENV = 'production';
+      expect(resolveCommandCenterMode()).toBe('disabled');
+      env.NODE_ENV = 'preprod';
+      expect(resolveCommandCenterMode()).toBe('full');
+      env.NODE_ENV = 'development';
+      expect(resolveCommandCenterMode()).toBe('full');
+    });
+
+    it('light mode strips internal detail but keeps top-line health', async () => {
+      process.env.COMMAND_CENTER_MODE = 'light';
+      const { service } = makeService('full');
+      const res = await service.getCommandCenter();
+      expect(res.mode).toBe('light');
+      expect(res.departments).toEqual([]);
+      expect(res.capabilities).toEqual([]);
+      expect(res.chains).toEqual([]);
+      expect(res.owner_actions).toEqual([]);
+      expect(res.global_status.reasons).toEqual([]);
+      expect(res.source_truth.canon_path).toBe('');
+      expect(res.stale_status).toBe('STALE');
+    });
+
+    it('getMode() reflects the resolver', () => {
+      process.env.COMMAND_CENTER_MODE = 'disabled';
+      const { service } = makeService('full');
+      expect(service.getMode()).toBe('disabled');
     });
   });
 });

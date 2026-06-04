@@ -20,11 +20,27 @@
  */
 import { z } from "zod";
 
-export const CertificationSchema = z.enum(["CERTIFIED", "PARTIAL", "UNKNOWN", "BROKEN"]);
+export const CertificationSchema = z.enum([
+  "CERTIFIED",
+  "PARTIAL",
+  "UNKNOWN",
+  "BROKEN",
+]);
 export type Certification = z.infer<typeof CertificationSchema>;
 
-export const CapabilityStatusSchema = z.enum(["live", "partial", "dormant", "broken", "duplicate"]);
-export const DepartmentFamilySchema = z.enum(["Business", "Growth", "Operations", "AI-Governance"]);
+export const CapabilityStatusSchema = z.enum([
+  "live",
+  "partial",
+  "dormant",
+  "broken",
+  "duplicate",
+]);
+export const DepartmentFamilySchema = z.enum([
+  "Business",
+  "Growth",
+  "Operations",
+  "AI-Governance",
+]);
 export const HandoffStateSchema = z.enum(["EXISTS", "PARTIAL", "ASPIRATIONAL"]);
 
 export const CcEvidenceSchema = z
@@ -39,7 +55,15 @@ export const CcEvidenceSchema = z
 export const CcCapabilitySchema = z
   .object({
     id: z.string(),
-    type: z.enum(["skill", "agent", "service", "module", "engine", "pipeline", "signal"]),
+    type: z.enum([
+      "skill",
+      "agent",
+      "service",
+      "module",
+      "engine",
+      "pipeline",
+      "signal",
+    ]),
     owner: z.string(),
     status: CapabilityStatusSchema,
     certification: CertificationSchema,
@@ -82,7 +106,12 @@ export const CcChainSchema = z
   .strict();
 export type CcChain = z.infer<typeof CcChainSchema>;
 
-export const CcAlertCodeSchema = z.enum(["BROKEN_EVIDENCE", "OVERCLAIM_RISK", "P0_NO_KPI", "HANDOFF_INCOMPLETE"]);
+export const CcAlertCodeSchema = z.enum([
+  "BROKEN_EVIDENCE",
+  "OVERCLAIM_RISK",
+  "P0_NO_KPI",
+  "HANDOFF_INCOMPLETE",
+]);
 export const CcAlertSchema = z
   .object({
     code: CcAlertCodeSchema,
@@ -121,9 +150,22 @@ export const CcExecutiveKpiSchema = z
 export const CcSummarySchema = z
   .object({
     departments_total: z.number().int().min(0),
-    by_priority: z.object({ P0: z.number().int(), P1: z.number().int(), P2: z.number().int(), P3: z.number().int() }).strict(),
+    by_priority: z
+      .object({
+        P0: z.number().int(),
+        P1: z.number().int(),
+        P2: z.number().int(),
+        P3: z.number().int(),
+      })
+      .strict(),
     by_state: z
-      .object({ live: z.number().int(), partial: z.number().int(), dormant: z.number().int(), broken: z.number().int(), duplicate: z.number().int() })
+      .object({
+        live: z.number().int(),
+        partial: z.number().int(),
+        dormant: z.number().int(),
+        broken: z.number().int(),
+        duplicate: z.number().int(),
+      })
       .strict(),
     capabilities_total: z.number().int().min(0),
     capabilities_certified: z.number().int().min(0),
@@ -137,7 +179,12 @@ export const CcSummarySchema = z
 export const CommandCenterSnapshotSchema = z
   .object({
     schema_version: z.literal("command-center.v1"),
-    source_truth: z.object({ canon_path: z.string().min(1), last_verified: z.string().nullable() }).strict(),
+    source_truth: z
+      .object({
+        canon_path: z.string().min(1),
+        last_verified: z.string().nullable(),
+      })
+      .strict(),
     summary: CcSummarySchema,
     executive_kpis: z.array(CcExecutiveKpiSchema),
     departments: z.array(CcDepartmentSchema),
@@ -151,8 +198,18 @@ export type CommandCenterSnapshot = z.infer<typeof CommandCenterSnapshotSchema>;
 
 // ── Live response envelope (computed by the backend reader at request time) ──
 
-export const StaleStatusSchema = z.enum(["FRESH", "WARNING", "STALE", "UNKNOWN"]);
-export const ValidationStatusSchema = z.enum(["VALIDATED", "WARN_ONLY", "STRICT_FAIL", "UNKNOWN"]);
+export const StaleStatusSchema = z.enum([
+  "FRESH",
+  "WARNING",
+  "STALE",
+  "UNKNOWN",
+]);
+export const ValidationStatusSchema = z.enum([
+  "VALIDATED",
+  "WARN_ONLY",
+  "STRICT_FAIL",
+  "UNKNOWN",
+]);
 
 export const GlobalStatusSchema = z
   .object({
@@ -171,8 +228,12 @@ export const CcDepartmentLiveSchema = CcDepartmentSchema.extend({
 export type CcDepartmentLive = z.infer<typeof CcDepartmentLiveSchema>;
 
 /** What GET /api/admin/command-center returns (data wrapped by AdminResponseInterceptor). */
+export const CommandCenterModeSchema = z.enum(["full", "light", "disabled"]);
+export type CommandCenterMode = z.infer<typeof CommandCenterModeSchema>;
+
 export const CommandCenterResponseSchema = CommandCenterSnapshotSchema.extend({
   degraded: z.boolean(),
+  mode: CommandCenterModeSchema,
   generated_at: z.string(),
   git_sha: z.string().nullable(),
   stale_status: StaleStatusSchema,
