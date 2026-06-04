@@ -1,0 +1,1207 @@
+{
+  "alerts": [
+    {
+      "code": "HANDOFF_INCOMPLETE",
+      "message": "Handoff content→seo is PARTIAL (contract planned).",
+      "severity": "info",
+      "target_id": "content-to-seo-supply",
+      "target_kind": "handoff"
+    },
+    {
+      "code": "HANDOFF_INCOMPLETE",
+      "message": "Handoff data→sales is PARTIAL (contract planned).",
+      "severity": "info",
+      "target_id": "data-to-sales-tracking-integrity",
+      "target_kind": "handoff"
+    },
+    {
+      "code": "HANDOFF_INCOMPLETE",
+      "message": "Handoff diagnostic→catalog is PARTIAL (contract planned).",
+      "severity": "info",
+      "target_id": "diagnostic-to-catalog-part",
+      "target_kind": "handoff"
+    },
+    {
+      "code": "HANDOFF_INCOMPLETE",
+      "message": "Handoff marketing→sales is ASPIRATIONAL (contract planned).",
+      "severity": "info",
+      "target_id": "marketing-to-sales-qualified-demand",
+      "target_kind": "handoff"
+    },
+    {
+      "code": "HANDOFF_INCOMPLETE",
+      "message": "Handoff pricing→sales is PARTIAL (contract planned).",
+      "severity": "info",
+      "target_id": "pricing-to-sales-margin",
+      "target_kind": "handoff"
+    },
+    {
+      "code": "HANDOFF_INCOMPLETE",
+      "message": "Handoff runtime→data is PARTIAL (contract planned).",
+      "severity": "info",
+      "target_id": "runtime-to-data-health",
+      "target_kind": "handoff"
+    },
+    {
+      "code": "HANDOFF_INCOMPLETE",
+      "message": "Handoff seo→sales is PARTIAL (contract planned).",
+      "severity": "info",
+      "target_id": "seo-to-sales-atc-readiness",
+      "target_kind": "handoff"
+    },
+    {
+      "code": "HANDOFF_INCOMPLETE",
+      "message": "Handoff supplier→catalog is PARTIAL (contract planned).",
+      "severity": "info",
+      "target_id": "supplier-to-catalog-availability",
+      "target_kind": "handoff"
+    },
+    {
+      "code": "HANDOFF_INCOMPLETE",
+      "message": "Handoff supplier→sales is PARTIAL (contract planned).",
+      "severity": "info",
+      "target_id": "supplier-to-sales-availability",
+      "target_kind": "handoff"
+    },
+    {
+      "code": "HANDOFF_INCOMPLETE",
+      "message": "Handoff wiki→seo is PARTIAL (contract planned).",
+      "severity": "info",
+      "target_id": "wiki-to-seo-readiness",
+      "target_kind": "handoff"
+    }
+  ],
+  "capabilities": [
+    {
+      "certification": "CERTIFIED",
+      "evidence": {
+        "scripts": [
+          "scripts/governance/validate-agent-operating-map.js",
+          ".spec/00-canon/ai-registry/agent-operating-map.yaml"
+        ]
+      },
+      "has_evidence": true,
+      "id": "agent-operating-map",
+      "module": "ia-agents",
+      "owner": "ia-agents",
+      "reason": null,
+      "status": "live",
+      "type": "service"
+    },
+    {
+      "certification": "PARTIAL",
+      "evidence": {
+        "scripts": [
+          "backend/src/modules/ai-content"
+        ]
+      },
+      "has_evidence": true,
+      "id": "ai-content",
+      "module": "ai-content",
+      "owner": "content",
+      "reason": null,
+      "status": "partial",
+      "type": "module"
+    },
+    {
+      "certification": "CERTIFIED",
+      "evidence": {
+        "scripts": [
+          "backend/src/modules/analytics"
+        ]
+      },
+      "has_evidence": true,
+      "id": "analytics",
+      "module": "analytics",
+      "owner": "data",
+      "reason": null,
+      "status": "live",
+      "type": "module"
+    },
+    {
+      "certification": "CERTIFIED",
+      "evidence": {
+        "scripts": [
+          "backend/src/modules/blog"
+        ]
+      },
+      "has_evidence": true,
+      "id": "blog",
+      "module": "blog",
+      "owner": "content",
+      "reason": null,
+      "status": "live",
+      "type": "module"
+    },
+    {
+      "certification": "CERTIFIED",
+      "evidence": {
+        "scripts": [
+          "backend/src/modules/marketing/services/brand-compliance-gate.service.ts"
+        ]
+      },
+      "has_evidence": true,
+      "id": "brand-compliance-gate",
+      "module": "marketing",
+      "owner": "brand",
+      "reason": null,
+      "status": "live",
+      "type": "service"
+    },
+    {
+      "certification": "CERTIFIED",
+      "evidence": {
+        "scripts": [
+          "backend/src/modules/cart"
+        ]
+      },
+      "has_evidence": true,
+      "id": "cart",
+      "module": "cart",
+      "owner": "sales",
+      "reason": null,
+      "status": "live",
+      "type": "module"
+    },
+    {
+      "certification": "CERTIFIED",
+      "evidence": {
+        "scripts": [
+          "backend/src/modules/catalog"
+        ]
+      },
+      "has_evidence": true,
+      "id": "catalog-core",
+      "module": "catalog",
+      "owner": "catalog",
+      "reason": null,
+      "status": "live",
+      "type": "module"
+    },
+    {
+      "certification": "PARTIAL",
+      "evidence": {
+        "scripts": [
+          "backend/src/modules/catalog/services/catalog-data-integrity.service.ts"
+        ]
+      },
+      "has_evidence": true,
+      "id": "catalog-integrity",
+      "module": "catalog",
+      "owner": "catalog",
+      "reason": null,
+      "status": "partial",
+      "type": "service"
+    },
+    {
+      "certification": "CERTIFIED",
+      "evidence": {
+        "scripts": [
+          "backend/src/modules/catalog/services/compatibility.service.ts"
+        ]
+      },
+      "has_evidence": true,
+      "id": "compatibility",
+      "module": "catalog",
+      "owner": "catalog",
+      "reason": null,
+      "status": "live",
+      "type": "service"
+    },
+    {
+      "certification": "CERTIFIED",
+      "evidence": {
+        "scripts": [
+          ".claude/skills/continuous-improvement-global"
+        ]
+      },
+      "has_evidence": true,
+      "id": "continuous-improvement-global",
+      "module": "strategy",
+      "owner": "strategy",
+      "reason": null,
+      "status": "live",
+      "type": "skill"
+    },
+    {
+      "certification": "CERTIFIED",
+      "evidence": {
+        "scripts": [
+          "backend/src/modules/customers"
+        ]
+      },
+      "has_evidence": true,
+      "id": "customers",
+      "module": "customers",
+      "owner": "support",
+      "reason": null,
+      "status": "live",
+      "type": "module"
+    },
+    {
+      "certification": "PARTIAL",
+      "evidence": {
+        "scripts": [
+          "backend/src/modules/seo-monitoring/controllers/cwv-beacon.controller.ts"
+        ]
+      },
+      "has_evidence": true,
+      "id": "cwv-beacon",
+      "module": "seo-monitoring",
+      "owner": "data",
+      "reason": null,
+      "status": "partial",
+      "type": "signal"
+    },
+    {
+      "certification": "PARTIAL",
+      "evidence": {
+        "scripts": [
+          "backend/src/modules/diagnostic-engine"
+        ]
+      },
+      "has_evidence": true,
+      "id": "diagnostic-engine",
+      "module": "diagnostic-engine",
+      "owner": "diagnostic",
+      "reason": null,
+      "status": "partial",
+      "type": "module"
+    },
+    {
+      "certification": "PARTIAL",
+      "evidence": null,
+      "has_evidence": false,
+      "id": "fafa-brand-safety-reviewer",
+      "module": "brand",
+      "owner": "brand",
+      "reason": null,
+      "status": "partial",
+      "type": "skill"
+    },
+    {
+      "certification": "PARTIAL",
+      "evidence": null,
+      "has_evidence": false,
+      "id": "fafa-media-factory",
+      "module": "media",
+      "owner": "media",
+      "reason": null,
+      "status": "partial",
+      "type": "pipeline"
+    },
+    {
+      "certification": "PARTIAL",
+      "evidence": null,
+      "has_evidence": false,
+      "id": "fafa-script-generator",
+      "module": "media",
+      "owner": "media",
+      "reason": null,
+      "status": "partial",
+      "type": "skill"
+    },
+    {
+      "certification": "PARTIAL",
+      "evidence": {
+        "scripts": [
+          "backend/src/modules/seo-monitoring/services/funnel-events.service.ts"
+        ]
+      },
+      "has_evidence": true,
+      "id": "funnel-events",
+      "module": "seo-monitoring",
+      "owner": "sales",
+      "reason": null,
+      "status": "partial",
+      "type": "signal"
+    },
+    {
+      "certification": "CERTIFIED",
+      "evidence": {
+        "scripts": [
+          "backend/src/modules/health"
+        ]
+      },
+      "has_evidence": true,
+      "id": "health",
+      "module": "health",
+      "owner": "runtime",
+      "reason": null,
+      "status": "live",
+      "type": "module"
+    },
+    {
+      "certification": "CERTIFIED",
+      "evidence": {
+        "scripts": [
+          "backend/src/modules/seo/internal-linking.service.ts"
+        ],
+        "tables": [
+          "__seo_internal_link"
+        ]
+      },
+      "has_evidence": true,
+      "id": "internal-linking",
+      "module": "seo",
+      "owner": "seo",
+      "reason": null,
+      "status": "live",
+      "type": "service"
+    },
+    {
+      "certification": "PARTIAL",
+      "evidence": {
+        "scripts": [
+          "backend/src/modules/invoices"
+        ]
+      },
+      "has_evidence": true,
+      "id": "invoices",
+      "module": "invoices",
+      "owner": "finance",
+      "reason": null,
+      "status": "partial",
+      "type": "module"
+    },
+    {
+      "certification": "PARTIAL",
+      "evidence": {
+        "scripts": [
+          "backend/src/modules/knowledge-graph"
+        ]
+      },
+      "has_evidence": true,
+      "id": "knowledge-graph",
+      "module": "knowledge-graph",
+      "owner": "diagnostic",
+      "reason": null,
+      "status": "partial",
+      "type": "module"
+    },
+    {
+      "certification": "PARTIAL",
+      "evidence": {
+        "scripts": [
+          "backend/src/modules/marketing"
+        ]
+      },
+      "has_evidence": true,
+      "id": "marketing",
+      "module": "marketing",
+      "owner": "marketing",
+      "reason": null,
+      "status": "partial",
+      "type": "module"
+    },
+    {
+      "certification": "PARTIAL",
+      "evidence": {
+        "scripts": [
+          "backend/src/modules/marketing/services/marketing-backlinks.service.ts"
+        ],
+        "tables": [
+          "__marketing_backlinks"
+        ]
+      },
+      "has_evidence": true,
+      "id": "marketing-backlinks",
+      "module": "marketing",
+      "owner": "marketing",
+      "reason": null,
+      "status": "partial",
+      "type": "service"
+    },
+    {
+      "certification": "CERTIFIED",
+      "evidence": {
+        "scripts": [
+          "backend/src/modules/observability"
+        ]
+      },
+      "has_evidence": true,
+      "id": "observability",
+      "module": "observability",
+      "owner": "runtime",
+      "reason": null,
+      "status": "live",
+      "type": "module"
+    },
+    {
+      "certification": "CERTIFIED",
+      "evidence": {
+        "scripts": [
+          "backend/src/modules/orders"
+        ]
+      },
+      "has_evidence": true,
+      "id": "orders",
+      "module": "orders",
+      "owner": "sales",
+      "reason": null,
+      "status": "live",
+      "type": "module"
+    },
+    {
+      "certification": "CERTIFIED",
+      "evidence": {
+        "scripts": [
+          "backend/src/modules/pricing/services/pricing-invariants.service.ts"
+        ]
+      },
+      "has_evidence": true,
+      "id": "pricing-invariants",
+      "module": "pricing",
+      "owner": "pricing",
+      "reason": null,
+      "status": "live",
+      "type": "service"
+    },
+    {
+      "certification": "PARTIAL",
+      "evidence": {
+        "scripts": [
+          "backend/src/modules/rag-knowledge-bootstrap"
+        ]
+      },
+      "has_evidence": true,
+      "id": "rag-knowledge-bootstrap",
+      "module": "rag-knowledge-bootstrap",
+      "owner": "wiki",
+      "reason": null,
+      "status": "partial",
+      "type": "module"
+    },
+    {
+      "certification": "CERTIFIED",
+      "evidence": {
+        "scripts": [
+          "backend/src/modules/admin/services/seo-control.service.ts"
+        ]
+      },
+      "has_evidence": true,
+      "id": "rpc-alerts",
+      "module": "admin",
+      "owner": "runtime",
+      "reason": null,
+      "status": "live",
+      "type": "signal"
+    },
+    {
+      "certification": "PARTIAL",
+      "evidence": null,
+      "has_evidence": false,
+      "id": "seo-gamme-audit",
+      "module": "seo",
+      "owner": "seo",
+      "reason": null,
+      "status": "partial",
+      "type": "skill"
+    },
+    {
+      "certification": "CERTIFIED",
+      "evidence": {
+        "scripts": [
+          "backend/src/modules/seo"
+        ]
+      },
+      "has_evidence": true,
+      "id": "seo-pages",
+      "module": "seo",
+      "owner": "seo",
+      "reason": null,
+      "status": "live",
+      "type": "module"
+    },
+    {
+      "certification": "CERTIFIED",
+      "evidence": {
+        "scripts": [
+          "packages/seo-roles"
+        ]
+      },
+      "has_evidence": true,
+      "id": "seo-roles",
+      "module": "seo-roles",
+      "owner": "seo",
+      "reason": null,
+      "status": "live",
+      "type": "module"
+    },
+    {
+      "certification": "PARTIAL",
+      "evidence": {
+        "scripts": [
+          "backend/src/modules/shipping"
+        ]
+      },
+      "has_evidence": true,
+      "id": "shipping",
+      "module": "shipping",
+      "owner": "logistics",
+      "reason": null,
+      "status": "partial",
+      "type": "module"
+    },
+    {
+      "certification": "CERTIFIED",
+      "evidence": {
+        "scripts": [
+          "scripts/governance/build-skills-registry.js",
+          ".spec/00-canon/ai-registry/skills.registry.json"
+        ]
+      },
+      "has_evidence": true,
+      "id": "skills-registry",
+      "module": "ia-agents",
+      "owner": "ia-agents",
+      "reason": null,
+      "status": "live",
+      "type": "service"
+    },
+    {
+      "certification": "PARTIAL",
+      "evidence": {
+        "scripts": [
+          "backend/src/modules/staff"
+        ]
+      },
+      "has_evidence": true,
+      "id": "staff",
+      "module": "staff",
+      "owner": "people",
+      "reason": null,
+      "status": "partial",
+      "type": "module"
+    },
+    {
+      "certification": "PARTIAL",
+      "evidence": {
+        "runtime": "feat/supplier-truth-runtime-wiring"
+      },
+      "has_evidence": true,
+      "id": "supplier-truth",
+      "module": "supplier",
+      "owner": "supplier",
+      "reason": null,
+      "status": "partial",
+      "type": "engine"
+    },
+    {
+      "certification": "CERTIFIED",
+      "evidence": {
+        "scripts": [
+          "backend/src/modules/suppliers/suppliers.service.ts"
+        ]
+      },
+      "has_evidence": true,
+      "id": "suppliers-service",
+      "module": "suppliers",
+      "owner": "supplier",
+      "reason": null,
+      "status": "live",
+      "type": "service"
+    },
+    {
+      "certification": "UNKNOWN",
+      "evidence": {
+        "scripts": [
+          "backend/src/modules/support"
+        ]
+      },
+      "has_evidence": true,
+      "id": "support",
+      "module": "support",
+      "owner": "support",
+      "reason": "status_dormant",
+      "status": "dormant",
+      "type": "module"
+    },
+    {
+      "certification": "PARTIAL",
+      "evidence": {
+        "adr": "ADR-033"
+      },
+      "has_evidence": true,
+      "id": "wiki-proposal-writer",
+      "module": "wiki",
+      "owner": "wiki",
+      "reason": null,
+      "status": "partial",
+      "type": "skill"
+    }
+  ],
+  "chains": [
+    {
+      "contract_ref": "content-readiness.v1",
+      "contract_status": "planned",
+      "from": "content",
+      "gate": "human_review_required",
+      "id": "content-to-seo-supply",
+      "incomplete": true,
+      "state": "PARTIAL",
+      "to": "seo"
+    },
+    {
+      "contract_ref": "tracking-integrity-verdict.v1",
+      "contract_status": "planned",
+      "from": "data",
+      "gate": "human_review_or_owner_go",
+      "id": "data-to-sales-tracking-integrity",
+      "incomplete": true,
+      "state": "PARTIAL",
+      "to": "sales"
+    },
+    {
+      "contract_ref": "diagnostic-part-identification.v1",
+      "contract_status": "planned",
+      "from": "diagnostic",
+      "gate": "human_review_required",
+      "id": "diagnostic-to-catalog-part",
+      "incomplete": true,
+      "state": "PARTIAL",
+      "to": "catalog"
+    },
+    {
+      "contract_ref": "qualified-demand.v1",
+      "contract_status": "planned",
+      "from": "marketing",
+      "gate": "human_review_or_owner_go",
+      "id": "marketing-to-sales-qualified-demand",
+      "incomplete": true,
+      "state": "ASPIRATIONAL",
+      "to": "sales"
+    },
+    {
+      "contract_ref": "margin-verdict.v1",
+      "contract_status": "planned",
+      "from": "pricing",
+      "gate": "VENTE_BELOW_ACHAT (enforced at import)",
+      "id": "pricing-to-sales-margin",
+      "incomplete": true,
+      "state": "PARTIAL",
+      "to": "sales"
+    },
+    {
+      "contract_ref": "runtime-health-verdict.v1",
+      "contract_status": "planned",
+      "from": "runtime",
+      "gate": "observe_only",
+      "id": "runtime-to-data-health",
+      "incomplete": true,
+      "state": "PARTIAL",
+      "to": "data"
+    },
+    {
+      "contract_ref": "page-atc-readiness.v1",
+      "contract_status": "planned",
+      "from": "seo",
+      "gate": "catalog_signature (ADR-066 structural gate)",
+      "id": "seo-to-sales-atc-readiness",
+      "incomplete": true,
+      "state": "PARTIAL",
+      "to": "sales"
+    },
+    {
+      "contract_ref": "catalog-availability-reconciliation.v1",
+      "contract_status": "planned",
+      "from": "supplier",
+      "gate": "supplier-truth sentinel live (sentinelle avant quarantaine, jamais hide aveugle)",
+      "id": "supplier-to-catalog-availability",
+      "incomplete": true,
+      "state": "PARTIAL",
+      "to": "catalog"
+    },
+    {
+      "contract_ref": "availability-verdict.v1",
+      "contract_status": "planned",
+      "from": "supplier",
+      "gate": "human_review_or_owner_go",
+      "id": "supplier-to-sales-availability",
+      "incomplete": true,
+      "state": "PARTIAL",
+      "to": "sales"
+    },
+    {
+      "contract_ref": "wiki-readiness-verdict.v1",
+      "contract_status": "planned",
+      "from": "wiki",
+      "gate": "human_review_required",
+      "id": "wiki-to-seo-readiness",
+      "incomplete": true,
+      "state": "PARTIAL",
+      "to": "seo"
+    }
+  ],
+  "departments": [
+    {
+      "capabilities": [
+        "brand-compliance-gate",
+        "fafa-brand-safety-reviewer"
+      ],
+      "certification": "PARTIAL",
+      "family": "Growth",
+      "health_score_base": 49,
+      "id": "brand",
+      "kpi_primary": "brand_trust",
+      "label": "Brand & Communication",
+      "lead": "brand-lead",
+      "priority": "P3",
+      "state": "partial",
+      "structural_caps_applied": [
+        "no_evidence_max_49"
+      ]
+    },
+    {
+      "capabilities": [
+        "catalog-core",
+        "compatibility",
+        "catalog-integrity"
+      ],
+      "certification": "PARTIAL",
+      "family": "Operations",
+      "health_score_base": 78,
+      "id": "catalog",
+      "kpi_primary": "compat_and_displayed_availability",
+      "label": "Catalogue & Compatibilité",
+      "lead": "catalog-lead",
+      "priority": "P0",
+      "state": "partial",
+      "structural_caps_applied": []
+    },
+    {
+      "capabilities": [
+        "blog",
+        "ai-content"
+      ],
+      "certification": "PARTIAL",
+      "family": "Growth",
+      "health_score_base": 73,
+      "id": "content",
+      "kpi_primary": "reusable_validated_content",
+      "label": "Contenu éditorial",
+      "lead": "content-lead",
+      "priority": "P2",
+      "state": "partial",
+      "structural_caps_applied": []
+    },
+    {
+      "capabilities": [
+        "analytics",
+        "cwv-beacon"
+      ],
+      "certification": "PARTIAL",
+      "family": "Operations",
+      "health_score_base": 73,
+      "id": "data",
+      "kpi_primary": "metric_reliability",
+      "label": "Data & Analytics",
+      "lead": "data-lead",
+      "priority": "P1",
+      "state": "partial",
+      "structural_caps_applied": []
+    },
+    {
+      "capabilities": [
+        "diagnostic-engine",
+        "knowledge-graph"
+      ],
+      "certification": "PARTIAL",
+      "family": "Operations",
+      "health_score_base": 55,
+      "id": "diagnostic",
+      "kpi_primary": "diagnostic_to_product",
+      "label": "Diagnostic & Assistance",
+      "lead": "diagnostic-lead",
+      "priority": "P2",
+      "state": "partial",
+      "structural_caps_applied": []
+    },
+    {
+      "capabilities": [
+        "invoices"
+      ],
+      "certification": "PARTIAL",
+      "family": "Business",
+      "health_score_base": 55,
+      "id": "finance",
+      "kpi_primary": "billing_integrity",
+      "label": "Finance & Facturation",
+      "lead": "finance-lead",
+      "priority": "P0",
+      "state": "partial",
+      "structural_caps_applied": []
+    },
+    {
+      "capabilities": [],
+      "certification": "UNKNOWN",
+      "family": "AI-Governance",
+      "health_score_base": 30,
+      "id": "governance",
+      "kpi_primary": "limits_respected",
+      "label": "Gouvernance",
+      "lead": "governance-lead",
+      "priority": "P0",
+      "state": "live",
+      "structural_caps_applied": [
+        "no_capabilities"
+      ]
+    },
+    {
+      "capabilities": [
+        "agent-operating-map",
+        "skills-registry"
+      ],
+      "certification": "CERTIFIED",
+      "family": "AI-Governance",
+      "health_score_base": 90,
+      "id": "ia-agents",
+      "kpi_primary": "useful_capabilities_not_complexity",
+      "label": "IA, Agents & Automatisation",
+      "lead": "ia-agents-lead",
+      "priority": "P1",
+      "state": "live",
+      "structural_caps_applied": []
+    },
+    {
+      "capabilities": [
+        "shipping"
+      ],
+      "certification": "PARTIAL",
+      "family": "Business",
+      "health_score_base": 55,
+      "id": "logistics",
+      "kpi_primary": "delays_and_returns",
+      "label": "Logistique & Opérations",
+      "lead": "logistics-lead",
+      "priority": "P0",
+      "state": "partial",
+      "structural_caps_applied": []
+    },
+    {
+      "capabilities": [
+        "marketing",
+        "marketing-backlinks"
+      ],
+      "certification": "PARTIAL",
+      "family": "Growth",
+      "health_score_base": 55,
+      "id": "marketing",
+      "kpi_primary": "qualified_demands",
+      "label": "Marketing & Acquisition",
+      "lead": "marketing-lead",
+      "priority": "P3",
+      "state": "partial",
+      "structural_caps_applied": []
+    },
+    {
+      "capabilities": [
+        "fafa-media-factory",
+        "fafa-script-generator"
+      ],
+      "certification": "PARTIAL",
+      "family": "Growth",
+      "health_score_base": 49,
+      "id": "media",
+      "kpi_primary": "demands_from_video",
+      "label": "Media & Fafa",
+      "lead": "media-lead",
+      "priority": "P3",
+      "state": "partial",
+      "structural_caps_applied": [
+        "no_evidence_max_49"
+      ]
+    },
+    {
+      "capabilities": [
+        "staff"
+      ],
+      "certification": "PARTIAL",
+      "family": "Business",
+      "health_score_base": 55,
+      "id": "people",
+      "kpi_primary": "staff_coverage",
+      "label": "People & Staff",
+      "lead": "people-lead",
+      "priority": "P1",
+      "state": "partial",
+      "structural_caps_applied": []
+    },
+    {
+      "capabilities": [
+        "pricing-invariants"
+      ],
+      "certification": "CERTIFIED",
+      "family": "Operations",
+      "health_score_base": 90,
+      "id": "pricing",
+      "kpi_primary": "margin_protected",
+      "label": "Pricing",
+      "lead": "pricing-lead",
+      "priority": "P0",
+      "state": "partial",
+      "structural_caps_applied": []
+    },
+    {
+      "capabilities": [
+        "observability",
+        "health",
+        "rpc-alerts"
+      ],
+      "certification": "CERTIFIED",
+      "family": "Operations",
+      "health_score_base": 90,
+      "id": "runtime",
+      "kpi_primary": "runtime_health",
+      "label": "Runtime & Observability",
+      "lead": "runtime-lead",
+      "priority": "P1",
+      "state": "partial",
+      "structural_caps_applied": []
+    },
+    {
+      "capabilities": [
+        "cart",
+        "orders",
+        "funnel-events"
+      ],
+      "certification": "PARTIAL",
+      "family": "Business",
+      "health_score_base": 78,
+      "id": "sales",
+      "kpi_primary": "payments_kept",
+      "label": "Commercial & Ventes",
+      "lead": "sales-lead",
+      "priority": "P0",
+      "state": "partial",
+      "structural_caps_applied": []
+    },
+    {
+      "capabilities": [
+        "seo-pages",
+        "seo-roles",
+        "internal-linking",
+        "seo-gamme-audit"
+      ],
+      "certification": "PARTIAL",
+      "family": "Growth",
+      "health_score_base": 49,
+      "id": "seo",
+      "kpi_primary": "pages_generating_atc",
+      "label": "Production Pages & SEO",
+      "lead": "seo-lead",
+      "priority": "P1",
+      "state": "partial",
+      "structural_caps_applied": [
+        "no_evidence_max_49"
+      ]
+    },
+    {
+      "capabilities": [
+        "continuous-improvement-global"
+      ],
+      "certification": "CERTIFIED",
+      "family": "AI-Governance",
+      "health_score_base": 90,
+      "id": "strategy",
+      "kpi_primary": "reuse_improve_create_verdicts",
+      "label": "Stratégie & Scoring",
+      "lead": "strategy-lead",
+      "priority": "P1",
+      "state": "live",
+      "structural_caps_applied": []
+    },
+    {
+      "capabilities": [
+        "suppliers-service",
+        "supplier-truth"
+      ],
+      "certification": "PARTIAL",
+      "family": "Operations",
+      "health_score_base": 73,
+      "id": "supplier",
+      "kpi_primary": "supplier_unavailability_cancellations",
+      "label": "Achats & Fournisseurs",
+      "lead": "supplier-lead",
+      "priority": "P0",
+      "state": "partial",
+      "structural_caps_applied": []
+    },
+    {
+      "capabilities": [
+        "support",
+        "customers"
+      ],
+      "certification": "UNKNOWN",
+      "family": "Business",
+      "health_score_base": 60,
+      "id": "support",
+      "kpi_primary": "reactivation_satisfaction",
+      "label": "Service Client & Fidélisation",
+      "lead": "support-lead",
+      "priority": "P0",
+      "state": "dormant",
+      "structural_caps_applied": []
+    },
+    {
+      "capabilities": [
+        "wiki-proposal-writer",
+        "rag-knowledge-bootstrap"
+      ],
+      "certification": "PARTIAL",
+      "family": "Growth",
+      "health_score_base": 55,
+      "id": "wiki",
+      "kpi_primary": "wiki_readiness",
+      "label": "Knowledge RAW & WIKI",
+      "lead": "wiki-lead",
+      "priority": "P1",
+      "state": "partial",
+      "structural_caps_applied": []
+    }
+  ],
+  "executive_kpis": [
+    {
+      "certified": true,
+      "id": "departments_total",
+      "label": "Départements",
+      "source": "canon",
+      "status": "OK",
+      "value": 20
+    },
+    {
+      "certified": true,
+      "id": "capabilities_certified",
+      "label": "Capacités certifiées",
+      "source": "canon",
+      "status": "OK",
+      "unit": "/38",
+      "value": 19
+    },
+    {
+      "certified": true,
+      "id": "capabilities_without_evidence",
+      "label": "Sans preuve",
+      "source": "canon",
+      "status": "WARNING",
+      "value": 4
+    },
+    {
+      "certified": true,
+      "id": "handoffs_incomplete",
+      "label": "Handoffs incomplets",
+      "source": "canon",
+      "status": "WARNING",
+      "unit": "/10",
+      "value": 10
+    }
+  ],
+  "owner_actions": [
+    {
+      "action": "Wire the contract or document why it stays PARTIAL/ASPIRATIONAL",
+      "decision": "Promote content-to-seo-supply to EXISTS or keep with evidence.",
+      "file": ".spec/00-canon/ai-registry/agent-operating-map.yaml",
+      "from_alert": "HANDOFF_INCOMPLETE",
+      "owner": "content",
+      "target_id": "content-to-seo-supply"
+    },
+    {
+      "action": "Wire the contract or document why it stays PARTIAL/ASPIRATIONAL",
+      "decision": "Promote data-to-sales-tracking-integrity to EXISTS or keep with evidence.",
+      "file": ".spec/00-canon/ai-registry/agent-operating-map.yaml",
+      "from_alert": "HANDOFF_INCOMPLETE",
+      "owner": "data",
+      "target_id": "data-to-sales-tracking-integrity"
+    },
+    {
+      "action": "Wire the contract or document why it stays PARTIAL/ASPIRATIONAL",
+      "decision": "Promote diagnostic-to-catalog-part to EXISTS or keep with evidence.",
+      "file": ".spec/00-canon/ai-registry/agent-operating-map.yaml",
+      "from_alert": "HANDOFF_INCOMPLETE",
+      "owner": "diagnostic",
+      "target_id": "diagnostic-to-catalog-part"
+    },
+    {
+      "action": "Wire the contract or document why it stays PARTIAL/ASPIRATIONAL",
+      "decision": "Promote marketing-to-sales-qualified-demand to EXISTS or keep with evidence.",
+      "file": ".spec/00-canon/ai-registry/agent-operating-map.yaml",
+      "from_alert": "HANDOFF_INCOMPLETE",
+      "owner": "marketing",
+      "target_id": "marketing-to-sales-qualified-demand"
+    },
+    {
+      "action": "Wire the contract or document why it stays PARTIAL/ASPIRATIONAL",
+      "decision": "Promote pricing-to-sales-margin to EXISTS or keep with evidence.",
+      "file": ".spec/00-canon/ai-registry/agent-operating-map.yaml",
+      "from_alert": "HANDOFF_INCOMPLETE",
+      "owner": "pricing",
+      "target_id": "pricing-to-sales-margin"
+    },
+    {
+      "action": "Wire the contract or document why it stays PARTIAL/ASPIRATIONAL",
+      "decision": "Promote runtime-to-data-health to EXISTS or keep with evidence.",
+      "file": ".spec/00-canon/ai-registry/agent-operating-map.yaml",
+      "from_alert": "HANDOFF_INCOMPLETE",
+      "owner": "runtime",
+      "target_id": "runtime-to-data-health"
+    },
+    {
+      "action": "Wire the contract or document why it stays PARTIAL/ASPIRATIONAL",
+      "decision": "Promote seo-to-sales-atc-readiness to EXISTS or keep with evidence.",
+      "file": ".spec/00-canon/ai-registry/agent-operating-map.yaml",
+      "from_alert": "HANDOFF_INCOMPLETE",
+      "owner": "seo",
+      "target_id": "seo-to-sales-atc-readiness"
+    },
+    {
+      "action": "Wire the contract or document why it stays PARTIAL/ASPIRATIONAL",
+      "decision": "Promote supplier-to-catalog-availability to EXISTS or keep with evidence.",
+      "file": ".spec/00-canon/ai-registry/agent-operating-map.yaml",
+      "from_alert": "HANDOFF_INCOMPLETE",
+      "owner": "supplier",
+      "target_id": "supplier-to-catalog-availability"
+    },
+    {
+      "action": "Wire the contract or document why it stays PARTIAL/ASPIRATIONAL",
+      "decision": "Promote supplier-to-sales-availability to EXISTS or keep with evidence.",
+      "file": ".spec/00-canon/ai-registry/agent-operating-map.yaml",
+      "from_alert": "HANDOFF_INCOMPLETE",
+      "owner": "supplier",
+      "target_id": "supplier-to-sales-availability"
+    },
+    {
+      "action": "Wire the contract or document why it stays PARTIAL/ASPIRATIONAL",
+      "decision": "Promote wiki-to-seo-readiness to EXISTS or keep with evidence.",
+      "file": ".spec/00-canon/ai-registry/agent-operating-map.yaml",
+      "from_alert": "HANDOFF_INCOMPLETE",
+      "owner": "wiki",
+      "target_id": "wiki-to-seo-readiness"
+    }
+  ],
+  "schema_version": "command-center.v1",
+  "source_truth": {
+    "canon_path": ".spec/00-canon/ai-registry/agent-operating-map.yaml",
+    "last_verified": "2026-06-04"
+  },
+  "summary": {
+    "by_priority": {
+      "P0": 8,
+      "P1": 7,
+      "P2": 2,
+      "P3": 3
+    },
+    "by_state": {
+      "broken": 0,
+      "dormant": 1,
+      "duplicate": 0,
+      "live": 3,
+      "partial": 16
+    },
+    "capabilities_certified": 19,
+    "capabilities_total": 38,
+    "capabilities_without_evidence": 4,
+    "departments_total": 20,
+    "handoffs_incomplete": 10,
+    "handoffs_total": 10
+  }
+}

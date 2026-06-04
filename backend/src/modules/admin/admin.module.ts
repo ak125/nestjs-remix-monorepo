@@ -20,6 +20,8 @@ import { DatabaseModule } from '../../database/database.module';
 // Controllers - Stock consolidé ✅
 import { ControlPlaneController } from './controllers/control-plane.controller';
 import { RegistryReaderService } from './services/registry-reader.service';
+import { CommandCenterController } from './controllers/command-center.controller';
+import { CommandCenterReaderService } from './services/command-center-reader.service';
 import { ConfigurationController } from './controllers/configuration.controller';
 import { StockController } from './controllers/stock.controller'; // 🔥 Controller consolidé unique
 import { AdminController } from './controllers/admin.controller';
@@ -163,6 +165,7 @@ import { SeoControlRefreshProcessor } from './processors/seo-control-refresh.pro
   ],
   controllers: [
     ControlPlaneController,
+    CommandCenterController, // 🛰️ Command Center cockpit - /api/admin/command-center
     ConfigurationController,
     StockController, // 🔥 Un seul controller stock consolidé (13 routes)
     // ❌ StockEnhancedController - SUPPRIMÉ
@@ -210,6 +213,7 @@ import { SeoControlRefreshProcessor } from './processors/seo-control-refresh.pro
   ],
   providers: [
     RegistryReaderService,
+    CommandCenterReaderService,
     ConfigurationService,
     StockManagementService, // ✅ Service principal stock
     WorkingStockService, // ✅ Service complémentaire (search, export, stats)
