@@ -143,6 +143,37 @@ incrémentale). Re-contrôle remise / achat / quantité par sous-famille.
 ## 7 — Mises à jour suivantes
 **INCRÉMENTAL — nouvelles réfs only**, même profil, jamais tout le fichier.
 
+## 8 — Deltas catalogue (new refs / pièce disparue) — CONSIGNÉ, à part, gated `[CRITICAL]`
+
+Une MAJ tarif produit des **deltas catalogue** qui ne se traitent **PAS** dans le
+commit prix bulk : ils sont **consignés** et traités **séparément, owner-gated**.
+
+**A. Nouvelles réfs → déblocage véhicule/gamme.** Une new réf peut pointer une
+pièce rattachée à un **véhicule** (`type_display`) ou une **gamme** (`pg_display`)
+non affiché. « Débloquer » = activer ce flag — mais c'est une **décision SEO/catalogue**
+(R8 fiche véhicule, R1 routage gamme), donc :
+- **Consigner** les new refs nécessitant une activation véhicule/gamme dans une
+  **liste de deltas** (à part du feed prix). **Jamais d'activation auto.**
+- Respecter le pipeline d'entrée existant (`integrations/parts-feed.md` : IDs internes
+  `*_i`, remap 60000-83456 noindex+301, `type_display` ≠ `type_relfollow`).
+
+**B. Pièce qui n'existe plus → quarantaine, PAS suppression.** Réutiliser le plan
+existant `audit/unavailable-quarantine-plan.md` (owner, vérifié code) :
+- **Retrait du grid** = `pieces.piece_display=false` (seul vrai levier ;
+  `pri_dispo='0'` **ne retire pas**, il ne fait que badger/trier).
+- **Verrou import-safe** = `pricing_state='FROZEN'` (skip-list de l'import) +
+  note `pricing_state_reason`. ⚠️ **NE PAS** quarantiner via `pri_dispo` seul : le
+  commit gouverné **force `pri_dispo='1'`** → la quarantaine serait **annulée à la
+  prochaine MAJ incrémentale**.
+- Si un véhicule/gamme se retrouve à **0 pièce vendable** → page `NoProductsAlternatives`
+  (existant). **Supprimer le véhicule/gamme = manuel, dernier recours, consigné,
+  JAMAIS auto** — valeur SEO, retour possible, alternative compatible (cf.
+  [[feedback_no_auto_page_suppression_ever]], [[feedback_vehicle_page_notfound_is_404_not_503]]).
+
+**Composition avec le gate storefront (#850)** : une pièce `pri_dispo='0'` ou sans
+prix vendable reste sur le grid mais à prix 0 → le gate `can_sell` l'affiche
+**« Indisponible »** (non-achetable). Le retrait total = `piece_display=false`.
+
 ## Outillage ops
 - **Vérif** : `supplier-price-verify.ts` (existant, read-only). ✅
 - **Import bulk** : un adaptateur CLI **Nest standalone-context** appelant
