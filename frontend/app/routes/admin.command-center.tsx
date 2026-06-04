@@ -8,9 +8,13 @@
  * degraded banner so the page is always reachable (the backend already returns
  * 200 + degraded:true when the snapshot file is absent).
  */
-import { type LoaderFunctionArgs, json, type MetaFunction } from "@remix-run/node";
+import {
+  type LoaderFunctionArgs,
+  json,
+  type MetaFunction,
+} from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import type { CommandCenterResponse } from "@repo/registry";
+import { type CommandCenterResponse } from "@repo/registry";
 import { AlertTriangle, Boxes, GitBranch, FileWarning } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
@@ -33,7 +37,8 @@ import { OwnerActionQueue } from "~/components/command-center/OwnerActionQueue";
 import { ModuleGrid } from "~/components/command-center/ModuleGrid";
 import { CertBadge } from "~/components/command-center/badges";
 
-export const meta: MetaFunction = () => createNoIndexMeta("Command Center — Admin");
+export const meta: MetaFunction = () =>
+  createNoIndexMeta("Command Center — Admin");
 
 function degraded(reason: string): CommandCenterResponse {
   return {
@@ -70,13 +75,20 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   try {
     const res = await fetch(
       getInternalApiUrlFromRequest("/api/admin/command-center", request),
-      { headers: { "Content-Type": "application/json", Cookie: request.headers.get("Cookie") || "" } },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: request.headers.get("Cookie") || "",
+        },
+      },
     );
     if (!res.ok) {
       logger.warn(`[command-center] API ${res.status} — rendering degraded`);
       return json(degraded(`backend API ${res.status}`));
     }
-    const body = (await res.json()) as { data?: CommandCenterResponse } & CommandCenterResponse;
+    const body = (await res.json()) as {
+      data?: CommandCenterResponse;
+    } & CommandCenterResponse;
     // AdminResponseInterceptor wraps as { success, data, meta }.
     return json(body.data ?? (body as CommandCenterResponse));
   } catch (e) {
@@ -93,13 +105,18 @@ export default function AdminCommandCenter() {
       <header>
         <h1 className="text-2xl font-bold tracking-tight">AI Command Center</h1>
         <p className="text-sm text-muted-foreground">
-          Projection lecture-seule de la carte opérationnelle IA — {data.summary.departments_total}{" "}
-          départements · {data.summary.capabilities_certified}/{data.summary.capabilities_total} capacités certifiées
+          Projection lecture-seule de la carte opérationnelle IA —{" "}
+          {data.summary.departments_total} départements ·{" "}
+          {data.summary.capabilities_certified}/
+          {data.summary.capabilities_total} capacités certifiées
         </p>
       </header>
 
       {data.degraded ? (
-        <Alert variant="error" icon={<AlertTriangle className="h-5 w-5" aria-hidden />}>
+        <Alert
+          variant="error"
+          icon={<AlertTriangle className="h-5 w-5" aria-hidden />}
+        >
           <AlertTitle>Command Center indisponible</AlertTitle>
           <AlertDescription>
             {data.global_status.reasons[0] ??
@@ -145,12 +162,13 @@ function HandoffList({ data }: { data: CommandCenterResponse }) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
-          <GitBranch className="h-4 w-4" aria-hidden /> Chaînes inter-départements (
-          {data.summary.handoffs_incomplete}/{data.summary.handoffs_total} incomplètes)
+          <GitBranch className="h-4 w-4" aria-hidden /> Chaînes
+          inter-départements ({data.summary.handoffs_incomplete}/
+          {data.summary.handoffs_total} incomplètes)
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <ul role="list" className="space-y-2">
+        <ul className="space-y-2">
           {data.chains.map((c) => (
             <li
               key={c.id}
@@ -163,9 +181,13 @@ function HandoffList({ data }: { data: CommandCenterResponse }) {
               </span>
               <span className="flex flex-wrap items-center gap-2">
                 {c.contract_ref ? (
-                  <code className="text-xs text-muted-foreground">{c.contract_ref}</code>
+                  <code className="text-xs text-muted-foreground">
+                    {c.contract_ref}
+                  </code>
                 ) : null}
-                <Badge variant={c.incomplete ? "warning" : "success"}>{c.state}</Badge>
+                <Badge variant={c.incomplete ? "warning" : "success"}>
+                  {c.state}
+                </Badge>
               </span>
             </li>
           ))}
@@ -180,7 +202,8 @@ function CapabilityTable({ data }: { data: CommandCenterResponse }) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
-          <Boxes className="h-4 w-4" aria-hidden /> Capacités ({data.capabilities.length})
+          <Boxes className="h-4 w-4" aria-hidden /> Capacités (
+          {data.capabilities.length})
           {data.summary.capabilities_without_evidence > 0 ? (
             <Badge variant="warning" className="ml-2">
               <FileWarning className="mr-1 h-3 w-3" aria-hidden />
@@ -193,7 +216,9 @@ function CapabilityTable({ data }: { data: CommandCenterResponse }) {
         {/* desktop table */}
         <div className="hidden md:block">
           <Table>
-            <caption className="sr-only">Capacités et leur certification</caption>
+            <caption className="sr-only">
+              Capacités et leur certification
+            </caption>
             <TableHeader>
               <TableRow>
                 <TableHead scope="col">Capacité</TableHead>
@@ -207,11 +232,15 @@ function CapabilityTable({ data }: { data: CommandCenterResponse }) {
                 <TableRow key={c.id}>
                   <TableCell className="font-medium">{c.id}</TableCell>
                   <TableCell>{c.owner}</TableCell>
-                  <TableCell className="text-muted-foreground">{c.type}</TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {c.type}
+                  </TableCell>
                   <TableCell>
                     <CertBadge value={c.certification} />
                     {c.reason ? (
-                      <span className="ml-2 text-xs text-muted-foreground">{c.reason}</span>
+                      <span className="ml-2 text-xs text-muted-foreground">
+                        {c.reason}
+                      </span>
                     ) : null}
                   </TableCell>
                 </TableRow>
@@ -220,9 +249,12 @@ function CapabilityTable({ data }: { data: CommandCenterResponse }) {
           </Table>
         </div>
         {/* mobile cards */}
-        <ul role="list" className="space-y-2 md:hidden">
+        <ul className="space-y-2 md:hidden">
           {data.capabilities.map((c) => (
-            <li key={c.id} className="flex items-center justify-between gap-2 rounded-md border p-3">
+            <li
+              key={c.id}
+              className="flex items-center justify-between gap-2 rounded-md border p-3"
+            >
               <div>
                 <p className="text-sm font-medium">{c.id}</p>
                 <p className="text-xs text-muted-foreground">

@@ -115,7 +115,10 @@ export class CommandCenterReaderService {
       };
     }
 
-    const staleStatus = this.computeStale(snapshot.source_truth?.last_verified, now);
+    const staleStatus = this.computeStale(
+      snapshot.source_truth?.last_verified,
+      now,
+    );
     const validationStatus = this.computeValidationStatus();
 
     // chains graph: which upstream departments feed each department, with the
@@ -125,7 +128,8 @@ export class CommandCenterReaderService {
     const riskyUpstream = new Set<string>();
     for (const c of snapshot.chains) {
       const fromCert = deptCert.get(c.from);
-      if (fromCert === 'UNKNOWN' || fromCert === 'BROKEN') riskyUpstream.add(c.to);
+      if (fromCert === 'UNKNOWN' || fromCert === 'BROKEN')
+        riskyUpstream.add(c.to);
     }
 
     const departments = snapshot.departments.map((d) => {
@@ -143,7 +147,11 @@ export class CommandCenterReaderService {
         }
         liveCaps.push('upstream_unreliable_max_69');
       }
-      return { ...d, health_score_current: current, live_caps_applied: liveCaps };
+      return {
+        ...d,
+        health_score_current: current,
+        live_caps_applied: liveCaps,
+      };
     });
 
     const globalStatus = this.computeGlobalStatus(
@@ -172,7 +180,10 @@ export class CommandCenterReaderService {
     };
   }
 
-  private computeStale(lastVerified: string | null | undefined, now: Date): StaleStatus {
+  private computeStale(
+    lastVerified: string | null | undefined,
+    now: Date,
+  ): StaleStatus {
     if (!lastVerified) return 'UNKNOWN';
     const lv = Date.parse(lastVerified);
     if (Number.isNaN(lv)) return 'UNKNOWN';
@@ -183,9 +194,9 @@ export class CommandCenterReaderService {
   }
 
   private computeValidationStatus(): ValidationStatus {
-    const report = this.readJson<{ counts?: { errors?: number; warns?: number } }>(
-      this.reportPath,
-    );
+    const report = this.readJson<{
+      counts?: { errors?: number; warns?: number };
+    }>(this.reportPath);
     if (!report || !report.counts) return 'UNKNOWN';
     if ((report.counts.errors ?? 0) > 0) return 'STRICT_FAIL';
     if ((report.counts.warns ?? 0) > 0) return 'WARN_ONLY';
@@ -194,7 +205,11 @@ export class CommandCenterReaderService {
 
   private computeGlobalStatus(
     snapshot: SnapshotFile,
-    departments: Array<{ id: string; priority: string | null; certification: string }>,
+    departments: Array<{
+      id: string;
+      priority: string | null;
+      certification: string;
+    }>,
     stale: StaleStatus,
     validation: ValidationStatus,
   ): GlobalStatus {
@@ -211,8 +226,11 @@ export class CommandCenterReaderService {
       level = 'CRITICAL';
       verdict = 'BLOCKED';
       if (p0Broken.length)
-        reasons.push(`P0 department(s) broken: ${p0Broken.map((d) => d.id).join(', ')}`);
-      if (validation === 'STRICT_FAIL') reasons.push('operating-map validation STRICT_FAIL');
+        reasons.push(
+          `P0 department(s) broken: ${p0Broken.map((d) => d.id).join(', ')}`,
+        );
+      if (validation === 'STRICT_FAIL')
+        reasons.push('operating-map validation STRICT_FAIL');
     } else if (
       errorAlerts.length > 0 ||
       stale === 'STALE' ||
@@ -221,12 +239,17 @@ export class CommandCenterReaderService {
     ) {
       level = 'WARNING';
       verdict = 'PARTIAL_READY';
-      if (errorAlerts.length) reasons.push(`${errorAlerts.length} error alert(s)`);
+      if (errorAlerts.length)
+        reasons.push(`${errorAlerts.length} error alert(s)`);
       if (stale === 'STALE') reasons.push('snapshot source stale (>14d)');
       if (snapshot.summary.handoffs_incomplete > 0)
-        reasons.push(`${snapshot.summary.handoffs_incomplete} incomplete handoff(s)`);
+        reasons.push(
+          `${snapshot.summary.handoffs_incomplete} incomplete handoff(s)`,
+        );
       if (snapshot.summary.capabilities_without_evidence > 0)
-        reasons.push(`${snapshot.summary.capabilities_without_evidence} capability(ies) without evidence`);
+        reasons.push(
+          `${snapshot.summary.capabilities_without_evidence} capability(ies) without evidence`,
+        );
     }
     return { level, verdict, reasons };
   }
@@ -287,12 +310,27 @@ interface SnapshotFile {
     structural_caps_applied: string[];
   }>;
   capabilities: unknown[];
-  chains: Array<{ id: string; from: string; to: string; state: string; incomplete: boolean }>;
-  alerts: Array<{ code: string; severity: string; target_kind: string; target_id: string; message: string }>;
+  chains: Array<{
+    id: string;
+    from: string;
+    to: string;
+    state: string;
+    incomplete: boolean;
+  }>;
+  alerts: Array<{
+    code: string;
+    severity: string;
+    target_kind: string;
+    target_id: string;
+    message: string;
+  }>;
   owner_actions: unknown[];
 }
 
-export interface CommandCenterResponse extends Omit<SnapshotFile, 'departments'> {
+export interface CommandCenterResponse extends Omit<
+  SnapshotFile,
+  'departments'
+> {
   degraded: boolean;
   departments: Array<
     SnapshotFile['departments'][number] & {

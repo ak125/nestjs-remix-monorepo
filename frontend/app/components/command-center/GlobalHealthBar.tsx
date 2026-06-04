@@ -4,7 +4,7 @@
  * rollup + freshness/validation. Enforces "no green on broken source" — a family
  * with any non-CERTIFIED department is never shown green.
  */
-import type { CommandCenterResponse, Certification } from "@repo/registry";
+import { type CommandCenterResponse, type Certification } from "@repo/registry";
 import { ShieldCheck, ShieldAlert, AlertTriangle, Clock } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
@@ -17,14 +17,27 @@ import {
 } from "./badges";
 
 const FAMILIES = ["Business", "Growth", "Operations", "AI-Governance"] as const;
-const RANK: Record<Certification, number> = { BROKEN: 0, UNKNOWN: 1, PARTIAL: 2, CERTIFIED: 3 };
+const RANK: Record<Certification, number> = {
+  BROKEN: 0,
+  UNKNOWN: 1,
+  PARTIAL: 2,
+  CERTIFIED: 3,
+};
 
 export function GlobalHealthBar({ data }: { data: CommandCenterResponse }) {
   const { global_status: g } = data;
   const Icon =
-    g.level === "OK" ? ShieldCheck : g.level === "WARNING" ? AlertTriangle : ShieldAlert;
+    g.level === "OK"
+      ? ShieldCheck
+      : g.level === "WARNING"
+        ? AlertTriangle
+        : ShieldAlert;
   const alertVariant =
-    g.level === "CRITICAL" ? "error" : g.level === "WARNING" ? "warning" : "success";
+    g.level === "CRITICAL"
+      ? "error"
+      : g.level === "WARNING"
+        ? "warning"
+        : "success";
 
   // per-family rollup = worst department certification in the family
   const families = FAMILIES.map((family) => {
@@ -40,7 +53,10 @@ export function GlobalHealthBar({ data }: { data: CommandCenterResponse }) {
 
   return (
     <section aria-label="Santé globale" className="space-y-4">
-      <Alert variant={alertVariant} icon={<Icon className="h-5 w-5" aria-hidden />}>
+      <Alert
+        variant={alertVariant}
+        icon={<Icon className="h-5 w-5" aria-hidden />}
+      >
         <AlertTitle className="flex flex-wrap items-center gap-2">
           <span>État global&nbsp;:</span>
           <Badge variant={globalLevelVariant[g.level]}>{g.level}</Badge>
@@ -75,7 +91,10 @@ export function GlobalHealthBar({ data }: { data: CommandCenterResponse }) {
                 <p className="text-sm font-medium">{f.family}</p>
                 <p className="text-xs text-muted-foreground">{f.count} dépt.</p>
               </div>
-              <Badge variant={certVariant[f.worst]} aria-label={`${f.family} : ${f.worst}`}>
+              <Badge
+                variant={certVariant[f.worst]}
+                aria-label={`${f.family} : ${f.worst}`}
+              >
                 {f.worst}
               </Badge>
             </CardContent>

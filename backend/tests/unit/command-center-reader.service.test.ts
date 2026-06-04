@@ -66,7 +66,11 @@ describe('CommandCenterReaderService', () => {
     it('caches with the OK ttl (60s)', () => {
       const { service, cache } = makeService('full');
       return service.getCommandCenter().then(() => {
-        expect(cache.set).toHaveBeenCalledWith(expect.any(String), expect.any(Object), 60);
+        expect(cache.set).toHaveBeenCalledWith(
+          expect.any(String),
+          expect.any(Object),
+          60,
+        );
       });
     });
   });
@@ -88,7 +92,11 @@ describe('CommandCenterReaderService', () => {
     });
 
     it('caches the degraded result with the short ttl (15s)', () => {
-      expect(cacheRef.set).toHaveBeenCalledWith(expect.any(String), expect.any(Object), 15);
+      expect(cacheRef.set).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.any(Object),
+        15,
+      );
     });
   });
 
@@ -96,7 +104,10 @@ describe('CommandCenterReaderService', () => {
     it('returns the cached response without rebuilding', async () => {
       process.env.REGISTRY_DIR = join(FIXTURES, 'full');
       const cached = { degraded: false, cachedMarker: true } as never;
-      const cache = { get: jest.fn().mockResolvedValue(cached), set: jest.fn() };
+      const cache = {
+        get: jest.fn().mockResolvedValue(cached),
+        set: jest.fn(),
+      };
       const service = new CommandCenterReaderService(cache as never);
       const result = await service.getCommandCenter();
       expect(result).toBe(cached);

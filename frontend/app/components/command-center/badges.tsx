@@ -3,15 +3,21 @@
  * Single source for tile colours so "no green on broken source" stays consistent.
  * Colour is never the ONLY signal — every badge carries text.
  */
-import type {
-  Certification,
-  GlobalStatus,
-} from "@repo/registry";
+import { type Certification, type GlobalStatus } from "@repo/registry";
 import { Badge } from "~/components/ui/badge";
 
 type BadgeVariant =
-  | "default" | "secondary" | "destructive" | "outline"
-  | "success" | "warning" | "info" | "error" | "orange" | "subtle" | "purple";
+  | "default"
+  | "secondary"
+  | "destructive"
+  | "outline"
+  | "success"
+  | "warning"
+  | "info"
+  | "error"
+  | "orange"
+  | "subtle"
+  | "purple";
 
 export const certVariant: Record<Certification, BadgeVariant> = {
   CERTIFIED: "success",
@@ -70,7 +76,10 @@ export function CertBadge({ value }: { value: Certification }) {
 
 export function StaleBadge({ value }: { value: string }) {
   return (
-    <Badge variant={staleVariant[value] ?? "subtle"} aria-label={`Fraîcheur : ${value}`}>
+    <Badge
+      variant={staleVariant[value] ?? "subtle"}
+      aria-label={`Fraîcheur : ${value}`}
+    >
       {value}
     </Badge>
   );
@@ -78,7 +87,10 @@ export function StaleBadge({ value }: { value: string }) {
 
 export function ValidationBadge({ value }: { value: string }) {
   return (
-    <Badge variant={validationVariant[value] ?? "subtle"} aria-label={`Validation : ${value}`}>
+    <Badge
+      variant={validationVariant[value] ?? "subtle"}
+      aria-label={`Validation : ${value}`}
+    >
       {value.replace("_", " ")}
     </Badge>
   );

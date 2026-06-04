@@ -5,15 +5,18 @@
  * capabilities with per-capability certification (OVERCLAIM highlight when a
  * live capability has no evidence).
  */
-import type { CommandCenterResponse, Certification } from "@repo/registry";
-import { Progress } from "~/components/ui/progress";
+import { type CommandCenterResponse, type Certification } from "@repo/registry";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Progress } from "~/components/ui/progress";
 import { certVariant, scoreTextClass } from "./badges";
 
 const FAMILIES = ["Business", "Growth", "Operations", "AI-Governance"] as const;
 
-const priorityVariant: Record<string, "destructive" | "warning" | "info" | "subtle"> = {
+const priorityVariant: Record<
+  string,
+  "destructive" | "warning" | "info" | "subtle"
+> = {
   P0: "destructive",
   P1: "warning",
   P2: "info",
@@ -48,22 +51,34 @@ export function ModuleGrid({ data }: { data: CommandCenterResponse }) {
                         <CardTitle className="text-sm">{d.label}</CardTitle>
                         <div className="flex shrink-0 flex-wrap items-center gap-1">
                           {d.priority ? (
-                            <Badge variant={priorityVariant[d.priority] ?? "subtle"}>{d.priority}</Badge>
+                            <Badge
+                              variant={priorityVariant[d.priority] ?? "subtle"}
+                            >
+                              {d.priority}
+                            </Badge>
                           ) : null}
-                          <Badge variant={certVariant[d.certification as Certification]}>
+                          <Badge
+                            variant={
+                              certVariant[d.certification as Certification]
+                            }
+                          >
                             {d.certification}
                           </Badge>
                         </div>
                       </div>
                       {d.kpi_primary ? (
-                        <p className="text-xs text-muted-foreground">KPI : {d.kpi_primary}</p>
+                        <p className="text-xs text-muted-foreground">
+                          KPI : {d.kpi_primary}
+                        </p>
                       ) : null}
                     </CardHeader>
                     <CardContent className="flex grow flex-col gap-3">
                       <div>
                         <div className="mb-1 flex items-center justify-between text-xs">
                           <span className="text-muted-foreground">Santé</span>
-                          <span className={`font-semibold ${scoreTextClass(d.health_score_current)}`}>
+                          <span
+                            className={`font-semibold ${scoreTextClass(d.health_score_current)}`}
+                          >
                             {d.health_score_current}/100
                           </span>
                         </div>
@@ -71,31 +86,50 @@ export function ModuleGrid({ data }: { data: CommandCenterResponse }) {
                           value={d.health_score_current}
                           aria-label={`Santé ${d.label} : ${d.health_score_current} sur 100`}
                         />
-                        {d.live_caps_applied.length + d.structural_caps_applied.length > 0 ? (
+                        {d.live_caps_applied.length +
+                          d.structural_caps_applied.length >
+                        0 ? (
                           <p className="mt-1 text-[11px] text-muted-foreground">
-                            plafonds : {[...d.structural_caps_applied, ...d.live_caps_applied].join(", ")}
+                            plafonds :{" "}
+                            {[
+                              ...d.structural_caps_applied,
+                              ...d.live_caps_applied,
+                            ].join(", ")}
                           </p>
                         ) : null}
                       </div>
-                      <ul role="list" className="space-y-1">
+                      <ul className="space-y-1">
                         {caps.map((c) => {
                           const overclaim =
-                            c.status === "live" && c.reason === "no_structured_evidence";
+                            c.status === "live" &&
+                            c.reason === "no_structured_evidence";
                           return (
-                            <li key={c.id} className="flex items-center justify-between gap-2 text-xs">
+                            <li
+                              key={c.id}
+                              className="flex items-center justify-between gap-2 text-xs"
+                            >
                               <span className="truncate" title={c.id}>
                                 {c.id}
                               </span>
                               <span className="flex shrink-0 items-center gap-1">
                                 {overclaim ? (
-                                  <Badge variant="destructive" aria-label="Risque de surclassement : live sans preuve">
+                                  <Badge
+                                    variant="destructive"
+                                    aria-label="Risque de surclassement : live sans preuve"
+                                  >
                                     OVERCLAIM
                                   </Badge>
                                 ) : null}
                                 {c.certification === "BROKEN" ? (
                                   <Badge variant="destructive">BROKEN</Badge>
                                 ) : (
-                                  <Badge variant={certVariant[c.certification as Certification]}>
+                                  <Badge
+                                    variant={
+                                      certVariant[
+                                        c.certification as Certification
+                                      ]
+                                    }
+                                  >
                                     {c.certification}
                                   </Badge>
                                 )}
