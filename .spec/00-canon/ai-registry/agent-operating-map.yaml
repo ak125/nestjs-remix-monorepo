@@ -223,6 +223,105 @@ departments:
     capabilities: [catalog-core, compatibility, catalog-integrity, vehicle-ops]   # vehicle-ops resolves via skills.registry
     state: partial                   # catalog live; displayed-vs-real availability gap (epicentre rupture, IMPROVE)
 
+  - id: diagnostic
+    label: "Diagnostic & Assistance"
+    lead: diagnostic-lead
+    priority: P2                     # D7 = P2
+    kpi_primary: diagnostic_to_product
+    repo_domains: [D7]
+    capabilities: [diagnostic-engine, knowledge-graph, vehicle-ops]   # vehicle-ops via skills.registry
+    state: partial                   # V1A.0 OFF; __diag_* peuplé, kg_* vides
+
+  - id: marketing
+    label: "Marketing & Acquisition"
+    lead: marketing-lead
+    priority: P3                     # D12 = P3
+    kpi_primary: qualified_demands
+    repo_domains: [D12]
+    capabilities: [marketing]
+    state: partial                   # ADR-036 Phase 1-2 (G1 agents)
+
+  - id: brand
+    label: "Brand & Communication"
+    lead: brand-lead
+    priority: P3
+    kpi_primary: brand_trust
+    repo_domains: [D12]
+    capabilities: [brand-compliance-gate, fafa-brand-safety-reviewer]
+    state: partial
+
+  - id: content
+    label: "Contenu éditorial"
+    lead: content-lead
+    priority: P2                     # D5 = P2
+    kpi_primary: reusable_validated_content
+    repo_domains: [D5]
+    capabilities: [blog, ai-content]
+    state: partial
+
+  - id: media
+    label: "Media & Fafa"
+    lead: media-lead
+    priority: P3
+    kpi_primary: demands_from_video
+    repo_domains: [D12]
+    capabilities: [fafa-media-factory, fafa-script-generator]
+    state: partial                   # MANUAL mode; pilot (#805/#806)
+
+  - id: support
+    label: "Service Client & Fidélisation"
+    lead: support-lead
+    priority: P0                     # D11 = P0
+    kpi_primary: reactivation_satisfaction
+    repo_domains: [D11]
+    capabilities: [support, customers]
+    state: dormant                   # 0 panier abandonné capturé
+
+  - id: logistics
+    label: "Logistique & Opérations"
+    lead: logistics-lead
+    priority: P0
+    kpi_primary: delays_and_returns
+    repo_domains: [D11]
+    capabilities: [shipping]
+    state: partial                   # physique externe
+
+  - id: finance
+    label: "Finance & Facturation"
+    lead: finance-lead
+    priority: P0
+    kpi_primary: billing_integrity
+    repo_domains: [D11]
+    capabilities: [invoices]
+    state: partial                   # distinct de pricing (Pricing ≠ Finance)
+
+  - id: people
+    label: "People & Staff"
+    lead: people-lead
+    priority: P1                     # max(D11 P0, D13 P1)
+    kpi_primary: staff_coverage
+    repo_domains: [D11, D13]
+    capabilities: [staff]
+    state: partial
+
+  - id: governance
+    label: "Gouvernance"
+    lead: governance-lead
+    priority: P0                     # D15 = P0
+    kpi_primary: limits_respected
+    repo_domains: [D15]
+    capabilities: [governance-vault-ops]   # via skills.registry
+    state: live                      # governance-vault actif
+
+  - id: strategy
+    label: "Stratégie & Scoring"
+    lead: strategy-lead
+    priority: P1                     # D10 = P1
+    kpi_primary: reuse_improve_create_verdicts
+    repo_domains: [D10]
+    capabilities: [continuous-improvement-global]   # via skills.registry
+    state: live
+
 # Allowlist of capabilities that resolve to neither a registry skill nor a node
 # yet (modules/engines/services/signals). Keeps department.capabilities from being
 # ghost slugs; `owner` is the department id. Each commented with its real path.
@@ -246,6 +345,21 @@ declared_capabilities:
   - { id: catalog-core,      type: module,  owner: catalog, status: live }     # backend/src/modules/catalog (Catalog Core, D1)
   - { id: compatibility,     type: service, owner: catalog, status: live }     # backend/src/modules/catalog/services/compatibility.service.ts
   - { id: catalog-integrity, type: service, owner: catalog, status: partial }  # backend/src/modules/catalog/services/catalog-data-integrity.service.ts
+  - { id: diagnostic-engine,        type: module,  owner: diagnostic, status: partial }  # backend/src/modules/diagnostic-engine
+  - { id: knowledge-graph,          type: module,  owner: diagnostic, status: partial }  # backend/src/modules/knowledge-graph (kg_* vides)
+  - { id: marketing,                type: module,  owner: marketing,  status: partial }  # backend/src/modules/marketing
+  - { id: brand-compliance-gate,    type: service, owner: brand,      status: live }     # backend/src/modules/marketing/services/brand-compliance-gate.service.ts
+  - { id: fafa-brand-safety-reviewer, type: skill, owner: brand,      status: partial }  # workspaces/marketing/.claude/skills/fafa-brand-safety-reviewer
+  - { id: blog,                     type: module,  owner: content,    status: live }     # backend/src/modules/blog
+  - { id: ai-content,               type: module,  owner: content,    status: partial }  # backend/src/modules/ai-content
+  - { id: fafa-media-factory,       type: pipeline, owner: media,     status: partial }  # workspaces/marketing/fafa-media-factory
+  - { id: fafa-script-generator,    type: skill,   owner: media,      status: partial }  # workspaces/marketing/.claude/skills/fafa-script-generator
+  - { id: support,                  type: module,  owner: support,    status: dormant }  # backend/src/modules/support
+  - { id: customers,                type: module,  owner: support,    status: live }     # backend/src/modules/customers
+  - { id: shipping,                 type: module,  owner: logistics,  status: partial }  # backend/src/modules/shipping
+  - { id: invoices,                 type: module,  owner: finance,    status: partial }  # backend/src/modules/invoices
+  - { id: staff,                    type: module,  owner: people,     status: partial }  # backend/src/modules/staff
+  - { id: continuous-improvement-global, type: skill, owner: strategy, status: live }    # .claude/skills/continuous-improvement-global (SKILL.md present; not yet in skills.registry.json)
 
 # Business handoffs (department→department), distinct from the pipeline `handoffs`
 # above. Communication by contract, not free discussion. `contract_ref` points to
@@ -339,3 +453,38 @@ department_handoffs:
     evidence:
       scripts:
         - backend/src/modules/catalog/services/catalog-data-integrity.service.ts
+
+  - id: diagnostic-to-catalog-part
+    from: diagnostic
+    to: catalog
+    contract_ref: diagnostic-part-identification.v1
+    contract_status: planned
+    purpose: "Transformer un diagnostic en pièce/gamme compatible identifiée"
+    gate: human_review_required
+    state: PARTIAL
+    evidence:
+      scripts:
+        - backend/src/modules/diagnostic-engine
+
+  - id: content-to-seo-supply
+    from: content
+    to: seo
+    contract_ref: content-readiness.v1
+    contract_status: planned
+    purpose: "Fournir du contenu éditorial validé réutilisable aux pages SEO"
+    gate: human_review_required
+    state: PARTIAL
+    evidence:
+      scripts:
+        - backend/src/modules/blog
+
+  - id: marketing-to-sales-qualified-demand
+    from: marketing
+    to: sales
+    contract_ref: qualified-demand.v1
+    contract_status: planned
+    purpose: "Transmettre une demande qualifiée au commerce pour conversion"
+    gate: human_review_or_owner_go
+    state: ASPIRATIONAL
+    evidence:
+      adr: ADR-036
