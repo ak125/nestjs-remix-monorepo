@@ -25,8 +25,6 @@
 SET lock_timeout = '2s';
 SET statement_timeout = '30s';
 
-BEGIN;
-
 -- DROP the old signature (CREATE OR REPLACE cannot change the parameter list).
 -- Backward-compatible: any caller that omits p_activate resolves via the DEFAULT
 -- to PENDING (the safe default). This PR also updates the sole caller
@@ -148,8 +146,6 @@ $$;
 
 COMMENT ON FUNCTION pricing_commit_chunk(uuid, uuid, text, text, jsonb, boolean) IS
   'Pricing Control Plane V1 atomic chunk commit. p_activate=false (default) = PENDING (cost only, not sellable: INSERT pri_dispo=0 + reason pending_stock_check, UPDATE preserves dispo); p_activate=true = activate (pri_dispo=1). See supplier-brand-price-load-procedure.md.';
-
-COMMIT;
 
 -- ============================================================================
 -- ROLLBACK (manual, owner-gated) — restore the original always-activating fn:
