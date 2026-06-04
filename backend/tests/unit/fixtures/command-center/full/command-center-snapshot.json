@@ -1,0 +1,45 @@
+{
+  "schema_version": "command-center.v1",
+  "source_truth": { "canon_path": "fixture.yaml", "last_verified": "2020-01-01" },
+  "summary": {
+    "departments_total": 3,
+    "by_priority": { "P0": 2, "P1": 1, "P2": 0, "P3": 0 },
+    "by_state": { "live": 1, "partial": 2, "dormant": 0, "broken": 0, "duplicate": 0 },
+    "capabilities_total": 3,
+    "capabilities_certified": 2,
+    "capabilities_without_evidence": 1,
+    "handoffs_total": 1,
+    "handoffs_incomplete": 1
+  },
+  "executive_kpis": [],
+  "departments": [
+    {
+      "id": "data", "label": "Data", "lead": "data-lead", "priority": "P1",
+      "kpi_primary": "metric_reliability", "state": "partial", "family": "Operations",
+      "capabilities": ["analytics"], "certification": "UNKNOWN",
+      "health_score_base": 30, "structural_caps_applied": []
+    },
+    {
+      "id": "sales", "label": "Sales", "lead": "sales-lead", "priority": "P0",
+      "kpi_primary": "payments_kept", "state": "partial", "family": "Business",
+      "capabilities": ["orders"], "certification": "CERTIFIED",
+      "health_score_base": 90, "structural_caps_applied": []
+    },
+    {
+      "id": "ops", "label": "Ops", "lead": "ops-lead", "priority": "P0",
+      "kpi_primary": "k", "state": "live", "family": "Operations",
+      "capabilities": ["svc"], "certification": "CERTIFIED",
+      "health_score_base": 90, "structural_caps_applied": []
+    }
+  ],
+  "capabilities": [
+    { "id": "analytics", "type": "module", "owner": "data", "status": "partial", "certification": "UNKNOWN", "reason": null, "module": "analytics", "has_evidence": false, "evidence": null },
+    { "id": "orders", "type": "module", "owner": "sales", "status": "live", "certification": "CERTIFIED", "reason": null, "module": "orders", "has_evidence": true, "evidence": { "scripts": ["backend/src/modules/orders"] } },
+    { "id": "svc", "type": "service", "owner": "ops", "status": "live", "certification": "CERTIFIED", "reason": null, "module": "ops", "has_evidence": true, "evidence": { "scripts": ["backend/src/modules/ops"] } }
+  ],
+  "chains": [
+    { "id": "data-to-sales", "from": "data", "to": "sales", "contract_ref": "tracking.v1", "contract_status": "planned", "gate": "g", "state": "PARTIAL", "incomplete": true }
+  ],
+  "alerts": [],
+  "owner_actions": []
+}
