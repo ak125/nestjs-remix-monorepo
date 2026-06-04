@@ -18,7 +18,7 @@ import { logger } from "~/utils/logger";
 import { useCart } from "../../hooks/useCart";
 import { type PieceData } from "../../types/pieces-route.types";
 import { trackAddToCart } from "../../utils/analytics";
-import { hasStockAvailable } from "../../utils/stock.utils";
+import { isSellable } from "../../utils/stock.utils";
 import { BrandLogo } from "../ui/BrandLogo";
 import { PieceDetailModal } from "./PieceDetailModal";
 import { ProductGallery } from "./ProductGallery";
@@ -112,7 +112,9 @@ const PieceCard = memo(function PieceCard({
   onOpenDetail,
   priority = false,
 }: PieceCardProps) {
-  const hasStock = hasStockAvailable(piece.stock);
+  // 🛒 can_sell = prix présent ET dispo confirmée (pri_dispo IN '1','2','3').
+  // Remplace l'ancien hasStockAvailable()=true qui rendait achetables les 0,00 €.
+  const hasStock = isSellable(piece.price, piece.stockStatus);
 
   // ⚡ Pré-calculer valeurs une seule fois par piece
   const { whole: priceWhole, cents: priceCents } = useMemo(
@@ -293,14 +295,20 @@ const PieceCard = memo(function PieceCard({
 
         <div className="flex items-center justify-between gap-2">
           <div className="flex flex-col">
-            <div className="flex items-baseline">
-              <span className="text-xl sm:text-2xl font-black text-slate-900 leading-none">
-                {priceWhole}
+            {hasStock ? (
+              <div className="flex items-baseline">
+                <span className="text-xl sm:text-2xl font-black text-slate-900 leading-none">
+                  {priceWhole}
+                </span>
+                <span className="text-sm sm:text-base font-bold text-slate-400">
+                  ,{priceCents}€
+                </span>
+              </div>
+            ) : (
+              <span className="text-sm font-bold text-slate-400">
+                Indisponible
               </span>
-              <span className="text-sm sm:text-base font-bold text-slate-400">
-                ,{priceCents}€
-              </span>
-            </div>
+            )}
             {/* Info livraison */}
             {hasStock && (
               <div className="flex items-center gap-1 text-xs text-emerald-600 mt-0.5">
@@ -317,8 +325,8 @@ const PieceCard = memo(function PieceCard({
                 ? `Ajouter ${piece.name} au panier`
                 : `${piece.name} indisponible`
             }
-            className={`flex items-center justify-center gap-1.5 px-3 py-2.5 min-h-[44px] min-w-[44px] rounded-lg text-xs sm:text-sm font-bold transition-all duration-200 active:scale-95 ${ !isLoading ? "bg-primary hover:bg-primary text-white shadow-md shadow-indigo-500/30" : "bg-primary text-white cursor-wait" }`}
-            disabled={isLoading}
+            className={`flex items-center justify-center gap-1.5 px-3 py-2.5 min-h-[44px] min-w-[44px] rounded-lg text-xs sm:text-sm font-bold transition-all duration-200 active:scale-95 ${ !hasStock ? "bg-slate-100 text-slate-400 cursor-not-allowed" : !isLoading ? "bg-primary hover:bg-primary text-white shadow-md shadow-indigo-500/30" : "bg-primary text-white cursor-wait" }`}
+            disabled={isLoading || !hasStock}
             onClick={handleAddToCart}
           >
             {isLoading ? (
