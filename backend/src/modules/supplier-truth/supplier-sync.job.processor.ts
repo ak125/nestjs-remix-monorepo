@@ -18,7 +18,7 @@ export class SupplierSyncJobProcessor {
   async handle(): Promise<RunSummary> {
     const summary = await this.runner.runSync();
     this.logger.log(
-      `supplier-sync done: ${summary.suppliersRun} run / ${summary.suppliersFailed} failed / ${summary.suppliersSkipped} skipped, ${summary.refs} refs, ${summary.projectionsUpserted} projections`,
+      `supplier-sync done: ${summary.suppliersRun} run / ${summary.suppliersFailed} failed / ${summary.suppliersSkipped} skipped, ${summary.refs} refs, ${summary.offersInserted} offers`,
     );
     return summary;
   }

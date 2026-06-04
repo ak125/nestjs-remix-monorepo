@@ -1,13 +1,15 @@
 import { SupplierSyncProcessor } from './supplier-sync.processor';
-import type { SupplierTruthRepository } from './supplier-truth.repository';
+import type {
+  SupplierTruthRepository,
+  OfferSnapshotInsert,
+} from './supplier-truth.repository';
 import type {
   SupplierConnector,
   SupplierObservation,
 } from './connectors/supplier-connector.interface';
-import { AvailabilityState } from './domain/availability-state';
 
 const obs = (o: Partial<SupplierObservation>): SupplierObservation => ({
-  supplierId: '26',
+  supplierId: '71',
   rawRef: 'ELH4261',
   available: true,
   delayDays: null,
@@ -15,12 +17,14 @@ const obs = (o: Partial<SupplierObservation>): SupplierObservation => ({
   freshnessProvenance: 'CONNECTOR_FETCHED',
   parseError: false,
   priceBuyHt: null,
+  priceBaseHt: null,
+  remisePct: null,
   ...o,
 });
 
 function mockConnector(observations: SupplierObservation[]): SupplierConnector {
   return {
-    supplierId: '26',
+    supplierId: '71',
     platform: 'inoshop',
     login: jest.fn(async () => {}),
     fetchAvailability: jest.fn(async () => observations),
@@ -28,44 +32,21 @@ function mockConnector(observations: SupplierObservation[]): SupplierConnector {
 }
 
 function mockRepo() {
-  const inserted: unknown[] = [];
-  const upserted: { piece_id: number; state: string }[] = [];
+  const offers: OfferSnapshotInsert[] = [];
   const repo = {
     resolveRefToPieceIds: jest.fn(async (n: string) =>
       n === 'ELH4261' ? [123] : [],
     ),
-    insertSnapshot: jest.fn(async (s: unknown) => {
-      inserted.push(s);
+    insertOffer: jest.fn(async (o: OfferSnapshotInsert) => {
+      offers.push(o);
     }),
-    readRecentSnapshots: jest.fn(async (pieceId: number) => [
-      {
-        id: 1,
-        supplier_id: '26',
-        piece_id: pieceId,
-        raw_ref: 'ELH4261',
-        normalized_ref: 'ELH4261',
-        available: true,
-        delay_days: null,
-        parse_error: false,
-        fetched_at: new Date().toISOString(),
-        source_verified_at: null,
-        freshness_provenance: 'CONNECTOR_FETCHED',
-      },
-    ]),
-    getSupplierProfile: jest.fn(async () => null), // cold start
-    getProjection: jest.fn(async () => null),
-    upsertProjection: jest.fn(
-      async (row: { piece_id: number; state: string }) => {
-        upserted.push({ piece_id: row.piece_id, state: row.state });
-      },
-    ),
   } as unknown as SupplierTruthRepository;
-  return { repo, inserted, upserted };
+  return { repo, offers };
 }
 
-describe('SupplierSyncProcessor.syncRefs', () => {
-  it('inserts a snapshot per observation, emits unresolved, upserts resolved projections', async () => {
-    const { repo, inserted, upserted } = mockRepo();
+describe('SupplierSyncProcessor.syncRefs (canonical supplier_offer_snapshot ingestion)', () => {
+  it('writes one offer per RESOLVED observation; emits + skips unresolved (piece_id_i is NOT NULL)', async () => {
+    const { repo, offers } = mockRepo();
     const events: { name: string; payload: unknown }[] = [];
     const proc = new SupplierSyncProcessor(repo, (name, payload) =>
       events.push({ name, payload }),
@@ -78,36 +59,55 @@ describe('SupplierSyncProcessor.syncRefs', () => {
     const res = await proc.syncRefs(connector, ['ELH4261', 'NOPE']);
 
     expect(res.observations).toBe(2);
-    expect(res.snapshotsInserted).toBe(2);
-    expect(inserted).toHaveLength(2);
+    expect(res.offersInserted).toBe(1); // only the resolved ref is written
     expect(res.unresolved).toBe(1);
+    expect(offers).toHaveLength(1);
+    expect(offers[0].piece_id_i).toBe(123);
     expect(events.some((e) => e.name === 'supplier.ref.unresolved')).toBe(true);
-    // only the resolved piece (123) gets a projection
-    expect(res.projectionsUpserted).toBe(1);
-    expect(upserted).toHaveLength(1);
-    expect(upserted[0].piece_id).toBe(123);
   });
 
-  it('cold-start supplier (no profile) never yields VERIFIED_AVAILABLE', async () => {
-    const { repo, upserted } = mockRepo();
+  it('captures the FULL price triplet in integer cents (no data loss)', async () => {
+    const { repo, offers } = mockRepo();
     const proc = new SupplierSyncProcessor(repo);
-    await proc.syncRefs(mockConnector([obs({ rawRef: 'ELH4261' })]), [
-      'ELH4261',
-    ]);
-    expect(upserted[0].state).not.toBe(AvailabilityState.VERIFIED_AVAILABLE);
-    expect(upserted[0].state).toBe(AvailabilityState.SUPPLIER_PENDING);
+
+    await proc.syncRefs(
+      mockConnector([
+        obs({
+          rawRef: 'ELH4261',
+          priceBaseHt: 320.3, // public HT €
+          remisePct: 50,
+          priceBuyHt: 160.15, // achat HT €
+          delayDays: 3,
+        }),
+      ]),
+      ['ELH4261'],
+    );
+
+    expect(offers).toHaveLength(1);
+    expect(offers[0]).toMatchObject({
+      supplier_id: '71',
+      supplier_ref: 'ELH4261',
+      public_ht_cents: 32030,
+      remise_pct: 50,
+      achat_ht_cents: 16015,
+      available: true,
+      delay_days: 3,
+      parse_confidence: 'HIGH_CONFIDENCE',
+    });
   });
 
-  it('a parse-error observation is still snapshotted (append-only) but stays safe', async () => {
-    const { repo, inserted } = mockRepo();
+  it('a parse-error observation is stored with parse_confidence UNKNOWN', async () => {
+    const { repo, offers } = mockRepo();
     const proc = new SupplierSyncProcessor(repo);
+
     const res = await proc.syncRefs(
       mockConnector([
         obs({ rawRef: 'ELH4261', parseError: true, available: false }),
       ]),
       ['ELH4261'],
     );
-    expect(inserted).toHaveLength(1);
-    expect(res.projectionsUpserted).toBe(1);
+
+    expect(res.offersInserted).toBe(1);
+    expect(offers[0].parse_confidence).toBe('UNKNOWN');
   });
 });
