@@ -16,14 +16,21 @@
 --   - true (ACTIVATE): previous behaviour (pri_dispo='1' on INSERT and UPDATE).
 --
 -- SAFETY: function-definition change only (no table rewrite, no lock on
---   pieces_price). Backward-compatible: existing named-param caller (5 args)
---   resolves to the new function via the DEFAULT → gets PENDING (the safe
---   default). Reversible (rollback re-creates the original below).
+--   pieces_price). Backward-compatible: any caller that omits p_activate
+--   resolves via the DEFAULT to PENDING (the safe default). Reversible
+--   (rollback re-creates the original below).
 -- ============================================================================
+
+-- Apply-time guards (match the original pricing functions migration pattern).
+SET lock_timeout = '2s';
+SET statement_timeout = '30s';
 
 BEGIN;
 
--- DROP the 5-arg signature (CREATE OR REPLACE cannot change the parameter list).
+-- DROP the old signature (CREATE OR REPLACE cannot change the parameter list).
+-- Backward-compatible: any caller that omits p_activate resolves via the DEFAULT
+-- to PENDING (the safe default). This PR also updates the sole caller
+-- (pricing.repository.ts) to pass p_activate explicitly.
 DROP FUNCTION IF EXISTS pricing_commit_chunk(uuid, uuid, text, text, jsonb);
 
 CREATE OR REPLACE FUNCTION pricing_commit_chunk(
