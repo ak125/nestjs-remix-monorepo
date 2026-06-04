@@ -580,3 +580,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/supplier-truth-runtime-wiring`
 - **Décision** : feat(supplier-truth): runtime wiring (inert mode, scheduler OFF default)
 - **Sortie** : PR #831 | commits 268efea6c
+
+## 2026-06-04 — feat/command-center-exposure-mode (auto)
+
+- **Branche** : `feat/command-center-exposure-mode`
+- **Décision** : fix(command-center): widen NODE_ENV type in mode test (TS2322 'preprod') (PR4) (+1 other commit)
+- **Sortie** : PR #856 | commits 75f42754f d20d75831

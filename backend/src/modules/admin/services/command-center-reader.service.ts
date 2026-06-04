@@ -60,25 +60,32 @@ export class CommandCenterReaderService {
     }
   }
 
-  /** Cache-aside aggregate. Degraded results get a short TTL. */
+  /** Resolved exposure mode (full / light / disabled). */
+  getMode(): CommandCenterMode {
+    return resolveCommandCenterMode();
+  }
+
+  /** Cache-aside aggregate. Degraded results get a short TTL. Mode-aware key. */
   async getCommandCenter(): Promise<CommandCenterResponse> {
-    const cached = await this.cacheService.get<CommandCenterResponse>(
-      CommandCenterReaderService.CACHE_KEY,
-    );
+    const mode = resolveCommandCenterMode();
+    const cacheKey = `${CommandCenterReaderService.CACHE_KEY}:${mode}`;
+    const cached = await this.cacheService.get<CommandCenterResponse>(cacheKey);
     if (cached) return cached;
 
-    const summary = this.build();
+    const built = this.build();
+    const result: CommandCenterResponse =
+      mode === 'light' ? toLightResponse(built) : { ...built, mode };
     await this.cacheService.set(
-      CommandCenterReaderService.CACHE_KEY,
-      summary,
-      summary.degraded
+      cacheKey,
+      result,
+      result.degraded
         ? CommandCenterReaderService.TTL_DEGRADED
         : CommandCenterReaderService.TTL_OK,
     );
-    return summary;
+    return result;
   }
 
-  private build(): CommandCenterResponse {
+  private build(): Omit<CommandCenterResponse, 'mode'> {
     const now = new Date();
     const gitSha = process.env.GIT_SHA || process.env.SOURCE_COMMIT || null;
     const snapshot = this.readJson<SnapshotFile>(
@@ -327,11 +334,64 @@ interface SnapshotFile {
   owner_actions: unknown[];
 }
 
+export type CommandCenterMode = 'full' | 'light' | 'disabled';
+
+/**
+ * Exposure mode for the Command Center cockpit (owner decision 2026-06-04):
+ * full in DEV/PREPROD, restricted in PROD. Explicit `COMMAND_CENTER_MODE` wins;
+ * otherwise SAFE DEFAULT = `disabled` when NODE_ENV=production (PROD), else `full`
+ * (DEV runs `development`, PREPROD runs `preprod`). The Docker REGISTRY_DIR fix is
+ * independent of this flag and stays active in every environment.
+ */
+export function resolveCommandCenterMode(): CommandCenterMode {
+  const raw = (process.env.COMMAND_CENTER_MODE || '').trim().toLowerCase();
+  if (raw === 'full' || raw === 'light' || raw === 'disabled') return raw;
+  return process.env.NODE_ENV === 'production' ? 'disabled' : 'full';
+}
+
+/**
+ * Light projection: top-line health only. Strips ALL internal detail
+ * (departments, capabilities, chains, alerts, owner_actions, evidence paths,
+ * canon_path, git_sha, global_status.reasons) so PROD can show "is it healthy?"
+ * without leaking the agent/department map. `summary` aggregate counts are kept
+ * (numbers, no internal identifiers).
+ */
+function toLightResponse(
+  full: Omit<CommandCenterResponse, 'mode'>,
+): CommandCenterResponse {
+  return {
+    degraded: full.degraded,
+    schema_version: full.schema_version,
+    source_truth: {
+      canon_path: '',
+      last_verified: full.source_truth.last_verified,
+    },
+    summary: full.summary,
+    executive_kpis: [],
+    departments: [],
+    capabilities: [],
+    chains: [],
+    alerts: [],
+    owner_actions: [],
+    generated_at: full.generated_at,
+    git_sha: null,
+    stale_status: full.stale_status,
+    validation_status: full.validation_status,
+    global_status: {
+      level: full.global_status.level,
+      verdict: full.global_status.verdict,
+      reasons: [],
+    },
+    mode: 'light',
+  };
+}
+
 export interface CommandCenterResponse extends Omit<
   SnapshotFile,
   'departments'
 > {
   degraded: boolean;
+  mode: CommandCenterMode;
   departments: Array<
     SnapshotFile['departments'][number] & {
       health_score_current: number;
