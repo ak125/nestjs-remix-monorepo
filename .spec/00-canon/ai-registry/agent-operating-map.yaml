@@ -205,6 +205,15 @@ departments:
     capabilities: [wiki-proposal-writer, rag-knowledge-bootstrap]
     state: partial                   # ADR-033 Phase 2 sas; readiness chain partial (wiki produces, consumers read)
 
+  - id: seo
+    label: "Production Pages & SEO"
+    lead: seo-lead
+    priority: P1                     # max criticality of repo_domains (D3 = P1)
+    kpi_primary: pages_generating_atc
+    repo_domains: [D3]
+    capabilities: [seo-pages, seo-roles, seo-gamme-audit]
+    state: partial                   # pages live; ATC conversion gap (IMPROVE) — resolves wiki→seo handoff
+
 # Allowlist of capabilities that resolve to neither a registry skill nor a node
 # yet (modules/engines/services/signals). Keeps department.capabilities from being
 # ghost slugs; `owner` is the department id. Each commented with its real path.
@@ -222,6 +231,9 @@ declared_capabilities:
   - { id: rpc-alerts,         type: signal,  owner: runtime,  status: live }     # rpc_*_alerts_v1 (backend/src/modules/admin/services/seo-control.service.ts)
   - { id: wiki-proposal-writer,    type: skill,  owner: wiki, status: partial }  # workspaces/wiki/.claude/skills/wiki-proposal-writer/SKILL.md (ADR-033)
   - { id: rag-knowledge-bootstrap, type: module, owner: wiki, status: partial }  # backend/src/modules/rag-knowledge-bootstrap
+  - { id: seo-pages,       type: module, owner: seo, status: live }     # backend/src/modules/seo (DynamicSeoV4UltimateService, sitemap)
+  - { id: seo-roles,       type: module, owner: seo, status: live }     # packages/seo-roles (@repo/seo-roles, #670 KW classification)
+  - { id: seo-gamme-audit, type: skill,  owner: seo, status: partial }  # workspaces/seo-batch/.claude/skills/seo-gamme-audit
 
 # Business handoffs (department→department), distinct from the pipeline `handoffs`
 # above. Communication by contract, not free discussion. `contract_ref` points to
@@ -287,3 +299,16 @@ department_handoffs:
     state: PARTIAL
     evidence:
       adr: ADR-033
+
+  # wiki → seo → sales: pages drive add-to-cart, which drives kept payments.
+  - id: seo-to-sales-atc-readiness
+    from: seo
+    to: sales
+    contract_ref: page-atc-readiness.v1
+    contract_status: planned
+    purpose: "Certifier qu'une page R2 est transactionnelle (vehicle-aware, ATC présent) avant de compter sur la conversion"
+    gate: "catalog_signature (ADR-066 structural gate)"
+    state: PARTIAL
+    evidence:
+      scripts:
+        - backend/src/modules/seo/r2/constants/r2-eligibility.constants.ts
