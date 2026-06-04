@@ -1,6 +1,6 @@
 {
-  "compliantCount": 10,
-  "generatedAt": "2026-05-23T10:26:42.241Z",
+  "compliantCount": 12,
+  "generatedAt": "2026-06-04T12:10:05.585Z",
   "issues": [],
   "schemaPath": ".spec/00-canon/ai-registry/skill.schema.json",
   "schemaVersion": "1.0.0",
@@ -31,6 +31,21 @@
         "rls",
         "security"
       ],
+      "type": "technique"
+    },
+    {
+      "checksum": "sha256:560db4f431dab582ebbfaa4c7135496b7a8fb174990b1bab53708f260c3d4729",
+      "domain": "D15",
+      "last_verified": "2026-05-28",
+      "llm_safe": true,
+      "name": "continuous-improvement-global",
+      "owners": [
+        "@ak125"
+      ],
+      "path": ".claude/skills/continuous-improvement-global/SKILL.md",
+      "runtime_class": "read-only",
+      "spec_compliant": true,
+      "status": "stable",
       "type": "technique"
     },
     {
@@ -200,6 +215,36 @@
       "type": "technique"
     },
     {
+      "checksum": "sha256:a17ac66e551c18064130fb86758a0632bee10aeae84c467ffbaded98dc0bacd4",
+      "domain": "D15",
+      "last_verified": "2026-06-04",
+      "llm_safe": false,
+      "metadata": {
+        "argument-hint": "[brand] [supplier]",
+        "disable-model-invocation": true,
+        "spec": "agentskills.io/specification v1",
+        "version": "1.0"
+      },
+      "name": "supplier-price-load",
+      "owners": [
+        "@ak125"
+      ],
+      "path": ".claude/skills/supplier-price-load/SKILL.md",
+      "runtime_class": "privileged",
+      "spec_compliant": true,
+      "status": "stable",
+      "tags": [
+        "dca",
+        "governance",
+        "import",
+        "pieces_price",
+        "pricing",
+        "supplier",
+        "tariff"
+      ],
+      "type": "discipline"
+    },
+    {
       "checksum": "sha256:e48cd63c0c1b5d5036b9ea424a7751772ecc58719347579bb8c59e531cc2edd1",
       "domain": "D15",
       "last_verified": "2026-05-18",
@@ -287,5 +332,5 @@
       "type": "technique"
     }
   ],
-  "totalSkills": 10
+  "totalSkills": 12
 }
