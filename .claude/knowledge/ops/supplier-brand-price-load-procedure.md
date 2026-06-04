@@ -40,7 +40,8 @@ Le 1er run NK (worker `feed-commit-nk.ts` / `supplier-price-commit.ts`) faisait 
 **INSERT direct** dans `pieces_price` avec `pri_dispo=null`, **hors module
 gouverné** : pas d'invariants L2, pas d'historique, pas de rollback gouverné, et
 — `pri_dispo=null` étant filtré par **tous** les chemins de lecture de prix
-(`pri_dispo='1'`) — les **30 621 prix sont restés invisibles** (load inerte).
+(`='1'` côté search/products, `IN ('1','2','3')` côté RPC R2) — les **30 621 prix
+sont restés invisibles** (load inerte).
 C'était un **système parallèle** (anti-pattern). **Superseded** par le flux
 gouverné ci-dessous. Remédiation NK = import gouverné **sans activation**, puis
 activation des seules réfs à dispo **confirmée** (voir §Garde-fou storefront).
@@ -55,19 +56,22 @@ Séparer **trois** états, jamais les confondre :
 
 La règle robuste — qui remplace le dangereux « prix présent ⇒ vendable » :
 
-> **`can_sell = price_exists && supplier_available`**, modélisé sans nouveau
-> champ : **`pri_dispo='1'` = disponible/vendable confirmé** (déjà la sémantique
-> lue par tous les chemins de prix). Non-`'1'` = **non vendable** ; la nuance
-> (raison) va dans **`pricing_state_reason`** (`pending_stock_check` /
-> `portal_unavailable` / `review`). **Pas de champ `supplier_stock_status`
-> parallèle** — `pri_dispo` (+ `pricing_state_reason`) le porte déjà.
+> **`can_sell = price_exists && pri_dispo IN ('1','2','3')`** (disponibilité
+> commerciale confirmée), modélisé sans nouveau champ :
+> - **`'1'`** = en stock confirmé · **`'2'`** = stock faible confirmé ·
+>   **`'3'`** = sur commande / PREORDER confirmé → **vendable**.
+> - **`'0'`, `null`, absence de prix** = **non vendable**. La nuance (raison) va
+>   dans **`pricing_state_reason`** (`pending_stock_check` / `portal_unavailable` /
+>   `review`). **Pas de champ `supplier_stock_status` parallèle** — `pri_dispo`
+>   (+ `pricing_state_reason`) le porte déjà.
 
 **Import ≠ activation commerciale.** Un import met le **coût** en base ; il ne
 doit PAS rendre la pièce vendable tant que la dispo n'est pas vérifiée. Donc :
 
-- **Importer** avec `pri_dispo` **≠ '1'** (état « pending », `pricing_state_reason='pending_stock_check'`) → coût connu, **non vendable**.
-- **Activer** (`pri_dispo='1'`) **uniquement** les réfs **CONFIRMED** au portail.
-  **BLOCK** → `pri_dispo='0'` (`portal_unavailable`) ; **REVIEW** → reste non-`'1'`.
+- **Importer** en **pending** (`pri_dispo` **∉ ('1','2','3')**, `pricing_state_reason='pending_stock_check'`) → coût connu, **non vendable**.
+- **Activer uniquement les réfs CONFIRMED, avec le statut réel** : `'1'` en stock,
+  `'2'` stock faible, `'3'` sur commande. **Rupture confirmée → `'0'`** (non vendable).
+  **Doute / non vérifié → pending** (non vendable).
 - **Priorité de vérification** : les réfs **réellement affichables/vendables**
   (storefront), pas un top-N générique — pas besoin de couvrir 100 % du fichier.
 
@@ -76,11 +80,12 @@ doit PAS rendre la pièce vendable tant que la dispo n'est pas vérifiée. Donc 
 > (option d'activation paramétrable, défaut **non-activant**) — **changement
 > gouverné à livrer** (sinon : import puis demote immédiat des non-confirmées).
 
-> ⚠️ **Dette storefront** : aujourd'hui `hasStockAvailable()` est hardcodé `true`
-> et le filtre dispo est désactivé (« flux tendu ») → une pièce affichée sans prix
-> `'1'` apparaît à **0,00 €** avec « Ajouter » actif (prix 0). Tant que le
-> storefront **n'enforce pas `can_sell = price + pri_dispo='1'`** (cacher / marquer
-> indisponible sinon), **NO-GO pour toute activation commerciale bulk d'une marque.**
+> ⚠️ **Dette storefront — traitée par #850** : `hasStockAvailable()` était hardcodé
+> `true` (« flux tendu ») → une pièce affichée sans prix vendable apparaissait à
+> **0,00 €** avec « Ajouter » actif (prix 0). #850 enforce
+> **`can_sell = price_exists && pri_dispo IN ('1','2','3')`** (sinon « Indisponible »,
+> non-achetable). Toute activation commerciale bulk d'une marque reste **gated**
+> derrière ce gate + l'owner GO.
 
 `pri_dispo` ne se laisse jamais à `null` pour un prix **vendable** ; et un prix
 **non encore vérifié** ne doit pas être vendable. La rupture se demote **après**,
@@ -131,9 +136,10 @@ par EAN** → corriger le fichier (ou exclure du 1er commit, repris en contrôle
 écrit `pieces_price_history`, batch `COMMITTED`. **Met le coût en base.**
 ⚠️ Le module met `pri_dispo='1'` au commit ; pour respecter « import ≠ vendable »
 (§Garde-fou storefront), soit l'import écrit en **pending** (option non-activante,
-**à livrer**), soit on **demote** immédiatement les non-confirmées (`pri_dispo`≠'1'
-+ `pricing_state_reason='pending_stock_check'`) — l'activation `'1'` ne reste que
-sur les réfs **CONFIRMED** (étape 2). **Rollback** : `POST .../rollback`
+**à livrer**), soit on **demote** immédiatement les non-confirmées (→ pending /
+`'0'` + `pricing_state_reason`) — l'activation **vendable** (`'1'` en stock, `'2'`
+stock faible, `'3'` sur commande) ne reste que sur les réfs **CONFIRMED** (étape 2),
+selon leur statut réel. **Rollback** : `POST .../rollback`
 `{ batchId, supplierId }` (LIFO `pricing_rollback_batch`, restaure prix + dispo).
 
 ## 6 — Post-commit (étalé 30 j la 1ère fois)
@@ -214,6 +220,7 @@ Marque **NK** (= `SBS.xlsx`, « SBS = NK »), fournisseur **DCA** (spl 71), feed
 superseded** (`pri_dispo=null` → invisibles, 0 perte, marge moy 58 %).
 **Remédiation** = import gouverné `DIRECT_NET` (price-neutral, invariants OK,
 historise) **en pending** (coût en base, **non vendable**), PUIS vérif dispo ciblée
-sur les ~1 922 pièces affichables → activation `pri_dispo='1'` des **seules
-CONFIRMED** (BLOCK/REVIEW restent non vendables) — **owner-gated**. Tant que le
-storefront n'enforce pas `can_sell = price + pri_dispo='1'`, **NO-GO activation bulk**.
+sur les ~1 922 pièces affichables → activation des **seules CONFIRMED** selon statut
+(`'1'` en stock / `'2'` stock faible / `'3'` sur commande ; rupture → `'0'` ;
+doute → pending) — **owner-gated**. Gate storefront `can_sell = price_exists &&
+pri_dispo IN ('1','2','3')` traité par #850.
