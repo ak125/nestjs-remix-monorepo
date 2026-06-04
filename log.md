@@ -586,3 +586,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/command-center-exposure-mode`
 - **Décision** : fix(command-center): widen NODE_ENV type in mode test (TS2322 'preprod') (PR4) (+1 other commit)
 - **Sortie** : PR #856 | commits 75f42754f d20d75831
+
+## 2026-06-04 — feat/pricing-import-pending-mode (auto)
+
+- **Branche** : `feat/pricing-import-pending-mode`
+- **Décision** : feat(pricing): import-pending mode — commit cost without auto-activating sellability
+- **Sortie** : PR #857 | commits f746ce702

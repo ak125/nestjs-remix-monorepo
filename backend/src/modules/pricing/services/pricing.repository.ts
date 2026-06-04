@@ -129,6 +129,8 @@ export class PricingRepository extends SupabaseBaseService {
     supplier: string;
     operator: string | null;
     rows: CommitRowPayload[];
+    /** false (default) = PENDING (cost only, not sellable); true = activate (pri_dispo='1'). */
+    activate?: boolean;
   }): Promise<{ committed: number; skipped: number; missing: number }> {
     const { data, error } = await this.callRpc('pricing_commit_chunk', {
       p_batch_id: input.batchId,
@@ -136,6 +138,7 @@ export class PricingRepository extends SupabaseBaseService {
       p_supplier: input.supplier,
       p_operator: input.operator,
       p_rows: input.rows,
+      p_activate: input.activate ?? false,
     });
     if (error) throw error;
     return data as { committed: number; skipped: number; missing: number };

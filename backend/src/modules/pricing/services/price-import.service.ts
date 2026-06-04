@@ -38,6 +38,14 @@ export interface ImportRequest {
   fileRows: Record<string, string>[];
   operator?: string;
   options?: DryRunOptions;
+  /**
+   * Commercial activation gate (owner doctrine 2026-06-04). Default false = PENDING:
+   * the commit puts the cost in base but does NOT make pieces sellable
+   * (INSERT → pri_dispo='0' + pending_stock_check; UPDATE → dispo preserved).
+   * true = activate (pri_dispo='1') — only for portal-CONFIRMED refs, owner-gated.
+   * See supplier-brand-price-load-procedure.md §Garde-fou storefront.
+   */
+  activate?: boolean;
 }
 
 @Injectable()
@@ -117,6 +125,7 @@ export class PriceImportService {
     const rules = await this.repo.fetchRules();
     const opts: DryRunOptions = {
       ...req.options,
+      activate: req.activate ?? false, // preview reflects the activation mode (default PENDING)
       resolveGridVenteHt: this.makeGridResolver(rules),
     };
     return computeDryRun(lines, existing, catalog, opts);
@@ -208,6 +217,7 @@ export class PriceImportService {
           supplier: req.supplierId,
           operator: req.operator ?? null,
           rows: slice,
+          activate: req.activate ?? false, // default PENDING: cost only, not sellable
         });
         totals.committed += res.committed;
         totals.skipped += res.skipped;
