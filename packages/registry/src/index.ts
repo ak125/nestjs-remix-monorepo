@@ -166,3 +166,29 @@ export {
   type VehicleContext,
   type VehicleContextPayload,
 } from "./vehicle-context";
+
+// ── Command Center snapshot (admin cockpit projection of the AI Operating Map) ──
+export {
+  CommandCenterSnapshotSchema,
+  CommandCenterResponseSchema,
+  CertificationSchema,
+  GlobalStatusSchema,
+  StaleStatusSchema,
+  ValidationStatusSchema,
+  CcDepartmentSchema,
+  CcDepartmentLiveSchema,
+  CcCapabilitySchema,
+  CcChainSchema,
+  CcAlertSchema,
+  CcOwnerActionSchema,
+  type CommandCenterSnapshot,
+  type CommandCenterResponse,
+  type Certification,
+  type GlobalStatus,
+  type CcDepartment,
+  type CcDepartmentLive,
+  type CcCapability,
+  type CcChain,
+  type CcAlert,
+  type CcOwnerAction,
+} from "./command-center/snapshot";

@@ -89,6 +89,15 @@ COPY --chown=remix-api:nodejs --from=installer /app/packages ./packages
 # and rpc-gate.service.ts uses process.cwd()/governance/rpc
 COPY --chown=remix-api:nodejs --from=builder /app/backend/governance ./backend/governance
 
+# 📊 Repository Control Plane + Command Center registries (audit/registry/*.json).
+# Committed, read by RegistryReaderService / CommandCenterReaderService. The reader
+# resolves via REGISTRY_DIR; we set it to the ABSOLUTE path so the cwd=/app/backend
+# trap (start.sh "cd backend" → process.cwd() would otherwise miss /app/audit) cannot
+# degrade the control-plane / command-center endpoints. Copied from the builder stage
+# (full source); turbo-pruned `installer` does not carry non-workspace audit/.
+COPY --chown=remix-api:nodejs --from=builder /app/audit/registry ./audit/registry
+ENV REGISTRY_DIR=/app/audit/registry
+
 COPY --chown=remix-api:nodejs --from=builder /app/backend/start.sh ./backend/start.sh
 RUN chmod +x ./backend/start.sh
 

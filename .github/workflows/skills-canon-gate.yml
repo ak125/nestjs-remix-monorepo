@@ -25,7 +25,10 @@ on:
       - ".spec/00-canon/ai-registry/**"
       - "scripts/governance/validate-skills-frontmatter.js"
       - "scripts/governance/validate-agent-operating-map.js"
+      - "scripts/governance/build-command-center-snapshot.js"
+      - "scripts/governance/__tests__/build-command-center-snapshot.test.ts"
       - "scripts/governance/__fixtures__/agent-operating-map.invalid.yaml"
+      - "audit/registry/command-center-snapshot.json"
       - ".github/workflows/skills-canon-gate.yml"
 
 jobs:
@@ -41,10 +44,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Node 20
+      - name: Setup Node 22
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           cache: "npm"
 
       - name: Install
@@ -114,3 +117,41 @@ jobs:
       - name: 🧪 Operating map schema self-test
         if: always()
         run: node scripts/governance/validate-agent-operating-map.js --self-test
+
+      - name: 🛰️ Command Center snapshot — generator tests (warn-only)
+        if: always()
+        continue-on-error: true
+        run: npx tsx --test scripts/governance/__tests__/build-command-center-snapshot.test.ts
+
+      - name: 🔁 Command Center snapshot — determinism (build ×2 → equal sha256)
+        if: always()
+        continue-on-error: true
+        run: |
+          node scripts/governance/build-command-center-snapshot.js --quiet
+          sha256sum audit/registry/command-center-snapshot.json > /tmp/cc1.txt
+          node scripts/governance/build-command-center-snapshot.js --quiet
+          sha256sum audit/registry/command-center-snapshot.json > /tmp/cc2.txt
+          if ! diff -q /tmp/cc1.txt /tmp/cc2.txt >/dev/null; then
+            echo "::warning::command-center-snapshot.json not deterministic across 2 runs"
+            diff /tmp/cc1.txt /tmp/cc2.txt || true
+            exit 1
+          fi
+          echo "✓ snapshot deterministic across 2 runs"
+
+      - name: ✅ Command Center snapshot — committed file is fresh + valid (AJV)
+        if: always()
+        continue-on-error: true
+        run: |
+          node scripts/governance/build-command-center-snapshot.js --check || {
+            echo "::warning::command-center-snapshot.json is stale — run npm run governance:command-center"; exit 1;
+          }
+          node -e '
+            const fs=require("fs");
+            const Ajv=require("ajv/dist/2020");
+            const addFormats=require("ajv-formats");
+            const ajv=new Ajv({allErrors:true,strict:false}); addFormats(ajv);
+            const schema=JSON.parse(fs.readFileSync(".spec/00-canon/ai-registry/command-center-snapshot.schema.json","utf8"));
+            const data=JSON.parse(fs.readFileSync("audit/registry/command-center-snapshot.json","utf8"));
+            if(!ajv.compile(schema)(data)){console.error(JSON.stringify(ajv.errors,null,2));process.exit(1);}
+            console.log("✓ snapshot valid against command-center-snapshot.schema.json");
+          '
