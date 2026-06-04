@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
 
 import { PiecesGridView } from "~/components/pieces/PiecesGridView";
 import { type PieceData } from "~/types/pieces-route.types";
