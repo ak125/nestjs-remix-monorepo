@@ -1,6 +1,6 @@
 -- squawk-ignore-file prefer-identity
 -- squawk-ignore-file prefer-bigint-over-int
--- squawk-ignore-file prefer-text-field
+-- squawk-ignore-file ban-char-field
 -- Justification des ignores (cf. §3 + .squawk.toml « per-file ignore for legitimate patterns ») :
 -- la table __seo_type_vlevel est CAPTURÉE VERBATIM depuis la DB live (structure legacy
 -- pré-existante : bigserial, pg_id integer, colonnes varchar). Les règles « prefer-* » visent
