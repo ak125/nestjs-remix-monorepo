@@ -1,0 +1,15 @@
+-- ============================================================================
+-- DOWN — 20260605_vlevel_capture_db_only_functions
+-- ----------------------------------------------------------------------------
+-- VOLONTAIREMENT NON DESTRUCTIF.
+--
+-- Cette migration ne fait que VERSIONNER des objets qui PRÉ-EXISTENT en DB live
+-- (propagate_vlevel_per_typeid, validate_vlevel_integrity + trigger DISABLED,
+-- table __seo_type_vlevel). Un down qui DROP supprimerait des objets live encore
+-- utilisés par le runtime (admin recalc, import CLI, projecteur python) → interdit.
+--
+-- Le rollback éventuel = restaurer le corps ANTÉRIEUR des fonctions depuis un
+-- snapshot `pg_get_functiondef` pris AVANT l'application — opération owner,
+-- pas un DROP automatique. Aucune action ici.
+-- ============================================================================
+SELECT 1; -- no-op intentionnel (voir en-tête)
