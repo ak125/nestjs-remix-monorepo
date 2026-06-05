@@ -40,9 +40,13 @@ import { CertBadge } from "~/components/command-center/badges";
 export const meta: MetaFunction = () =>
   createNoIndexMeta("Command Center — Admin");
 
-function degraded(reason: string): CommandCenterResponse {
+function degraded(
+  reason: string,
+  mode: "full" | "disabled" = "full",
+): CommandCenterResponse {
   return {
     degraded: true,
+    mode,
     schema_version: "command-center.v1",
     source_truth: { canon_path: "", last_verified: null },
     summary: {
@@ -82,6 +86,15 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         },
       },
     );
+    if (res.status === 404) {
+      // COMMAND_CENTER_MODE=disabled (prod-safe default) → endpoint 404s.
+      return json(
+        degraded(
+          "Command Center désactivé dans cet environnement.",
+          "disabled",
+        ),
+      );
+    }
     if (!res.ok) {
       logger.warn(`[command-center] API ${res.status} — rendering degraded`);
       return json(degraded(`backend API ${res.status}`));
@@ -112,7 +125,18 @@ export default function AdminCommandCenter() {
         </p>
       </header>
 
-      {data.degraded ? (
+      {data.mode === "disabled" ? (
+        <Alert
+          variant="info"
+          icon={<AlertTriangle className="h-5 w-5" aria-hidden />}
+        >
+          <AlertTitle>Command Center désactivé</AlertTitle>
+          <AlertDescription>
+            Le cockpit complet est réservé à DEV/PREPROD (COMMAND_CENTER_MODE).
+            Le correctif Docker registry reste actif partout.
+          </AlertDescription>
+        </Alert>
+      ) : data.degraded ? (
         <Alert
           variant="error"
           icon={<AlertTriangle className="h-5 w-5" aria-hidden />}
@@ -127,30 +151,38 @@ export default function AdminCommandCenter() {
         <>
           <GlobalHealthBar data={data} />
 
-          <Tabs defaultValue="actions">
-            <TabsList className="flex flex-wrap">
-              <TabsTrigger value="actions">Actions</TabsTrigger>
-              <TabsTrigger value="departments">Départements</TabsTrigger>
-              <TabsTrigger value="handoffs">Handoffs</TabsTrigger>
-              <TabsTrigger value="capabilities">Capacités</TabsTrigger>
-            </TabsList>
+          {data.mode === "light" ? (
+            <p className="text-sm text-muted-foreground">
+              Mode light — synthèse de santé uniquement. Le détail
+              (départements, capacités, handoffs, actions) est disponible en
+              DEV/PREPROD.
+            </p>
+          ) : (
+            <Tabs defaultValue="actions">
+              <TabsList className="flex flex-wrap">
+                <TabsTrigger value="actions">Actions</TabsTrigger>
+                <TabsTrigger value="departments">Départements</TabsTrigger>
+                <TabsTrigger value="handoffs">Handoffs</TabsTrigger>
+                <TabsTrigger value="capabilities">Capacités</TabsTrigger>
+              </TabsList>
 
-            <TabsContent value="actions" className="mt-4">
-              <OwnerActionQueue data={data} />
-            </TabsContent>
+              <TabsContent value="actions" className="mt-4">
+                <OwnerActionQueue data={data} />
+              </TabsContent>
 
-            <TabsContent value="departments" className="mt-4">
-              <ModuleGrid data={data} />
-            </TabsContent>
+              <TabsContent value="departments" className="mt-4">
+                <ModuleGrid data={data} />
+              </TabsContent>
 
-            <TabsContent value="handoffs" className="mt-4">
-              <HandoffList data={data} />
-            </TabsContent>
+              <TabsContent value="handoffs" className="mt-4">
+                <HandoffList data={data} />
+              </TabsContent>
 
-            <TabsContent value="capabilities" className="mt-4">
-              <CapabilityTable data={data} />
-            </TabsContent>
-          </Tabs>
+              <TabsContent value="capabilities" className="mt-4">
+                <CapabilityTable data={data} />
+              </TabsContent>
+            </Tabs>
+          )}
         </>
       )}
     </div>

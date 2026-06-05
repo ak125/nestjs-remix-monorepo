@@ -63,6 +63,13 @@ export interface PieceData {
   priceFormatted: string;
   brand: string;
   stock: string;
+  /**
+   * Availability code surfaced from the RPC (stock_status: IN_STOCK / LOW_STOCK /
+   * PREORDER / OUT_OF_STOCK ≈ pri_dispo '1'/'2'/'3'/else). Optional: when absent,
+   * sellability falls back to price>0 (the RPC zeroes the price for non-sellable
+   * dispo). Drives the can_sell gate — see utils/stock.utils isSellable.
+   */
+  stockStatus?: string;
   reference: string;
   oemRef?: string; // Référence OEM constructeur (ex: "1109 91")
   matchKind?: number; // 0=direct, 1=OEM équip, 2=OEM constr, 3-4=équivalences croisées

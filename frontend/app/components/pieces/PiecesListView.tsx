@@ -13,7 +13,7 @@ import { logger } from "~/utils/logger";
 import { useCart } from "../../hooks/useCart";
 import { type PieceData } from "../../types/pieces-route.types";
 import { trackAddToCart } from "../../utils/analytics";
-import { hasStockAvailable } from "../../utils/stock.utils";
+import { isSellable } from "../../utils/stock.utils";
 import { BrandLogo } from "../ui/BrandLogo";
 
 interface PiecesListViewProps {
@@ -134,7 +134,8 @@ export const PiecesListView = React.memo(
       <div className="space-y-3">
         {pieces.map((piece) => {
           const isSelected = selectedPieces.includes(piece.id);
-          const hasStock = hasStockAvailable(piece.stock);
+          // 🛒 can_sell = prix présent ET dispo confirmée (pri_dispo IN '1','2','3').
+          const hasStock = isSellable(piece.price, piece.stockStatus);
 
           // Calcul fiabilité - masquer si valeur par défaut (stars=3 ou undefined)
           // FIX 2026-01-17: Ne pas afficher fiabilité quand c'est la valeur par défaut
@@ -280,14 +281,22 @@ export const PiecesListView = React.memo(
                   {/* Prix + Livraison */}
                   <div className="text-left sm:text-right">
                     <div>
-                      <span className="text-lg sm:text-xl font-bold text-gray-900">
-                        {typeof piece.price === "number"
-                          ? piece.price.toFixed(2)
-                          : piece.priceFormatted}
-                      </span>
-                      <span className="text-sm font-bold text-gray-400 ml-0.5">
-                        €
-                      </span>
+                      {hasStock ? (
+                        <>
+                          <span className="text-lg sm:text-xl font-bold text-gray-900">
+                            {typeof piece.price === "number"
+                              ? piece.price.toFixed(2)
+                              : piece.priceFormatted}
+                          </span>
+                          <span className="text-sm font-bold text-gray-400 ml-0.5">
+                            €
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-sm font-bold text-gray-400">
+                          Indisponible
+                        </span>
+                      )}
                     </div>
                     {/* Info livraison */}
                     {hasStock && (
