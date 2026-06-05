@@ -19,6 +19,7 @@ import {
   V_LEVEL_IDS,
   VLEVEL_V2_CAP,
   V_GROUP_KEY,
+  vLevelGroupKey,
   V_LEVEL_INVARIANTS,
   V_PROPAGATE,
   V_LEVEL_KNOWN_GAPS,
@@ -56,6 +57,50 @@ describe("V-Level invariants — cohérence (gelé, vert aujourd'hui)", () => {
     assert.equal(V_PROPAGATE.fillsOnlyNull, true);
     assert.equal(V_PROPAGATE.preservesAssigned, true);
     assert.deepEqual([...V_PROPAGATE.priorityOrder], ["V2", "V3", "V4", "V5"]);
+  });
+});
+
+describe("vLevelGroupKey — clé canonique partagée (G2, service)", () => {
+  test("groupe [model|energy] en lowercase", () => {
+    assert.equal(vLevelGroupKey("clio", "diesel"), "clio|diesel");
+  });
+
+  test("case-insensitive (résout le mismatch group/dedup côté service)", () => {
+    assert.equal(vLevelGroupKey("Clio", "Diesel"), vLevelGroupKey("clio", "diesel"));
+    assert.equal(vLevelGroupKey("CLIO", "DIESEL"), "clio|diesel");
+  });
+
+  test("gamme universelle → énergie ignorée", () => {
+    assert.equal(vLevelGroupKey("clio", "diesel", { gammeUniverselle: true }), "clio");
+  });
+
+  test("fallbacks _no_model / unknown (sémantique service energy||'unknown')", () => {
+    assert.equal(vLevelGroupKey(null, null), "_no_model|unknown");
+    assert.equal(vLevelGroupKey("clio", null), "clio|unknown");
+    assert.equal(vLevelGroupKey("", ""), "_no_model|unknown");
+  });
+
+  test("même clé pour groupe ET dedup (ne peuvent plus diverger)", () => {
+    assert.equal(vLevelGroupKey("clio", "diesel"), vLevelGroupKey("clio", "diesel"));
+  });
+});
+
+describe("V-Level gaps — résolution G2 (7 → 6)", () => {
+  test("propagate-comment-false retiré (résolu en G2)", () => {
+    const ids = V_LEVEL_KNOWN_GAPS.map((g) => g.id);
+    assert.ok(!ids.includes("propagate-comment-false"), "gap résolu encore présent");
+  });
+
+  test("dedup case-mismatch transformé en gap script-energy (G3)", () => {
+    const g = V_LEVEL_KNOWN_GAPS.find(
+      (x) => x.id === "v2-dedup-case-mismatch-and-script-energy-normalization",
+    );
+    assert.ok(g, "gap transformé absent");
+    assert.equal(g?.gate, "G3");
+  });
+
+  test("6 écarts restants (était 7)", () => {
+    assert.equal(V_LEVEL_KNOWN_GAPS.length, 6);
   });
 });
 
