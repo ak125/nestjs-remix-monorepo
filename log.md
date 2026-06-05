@@ -394,3 +394,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `vlevel-doctrine-lock`
 - **Décision** : feat(seo-roles): V-Level doctrine — invariants ref + DB-only capture (lock-before-fix) ; + fixes squawk migration + overlay ownership D14
 - **Sortie** : PR #861 | commits 07141fcc4 4f037916a a599763f8 525cfa21d
+
+## 2026-06-05 — feat/content-raw-evidence-inventory (auto)
+
+- **Branche** : `feat/content-raw-evidence-inventory`
+- **Décision** : feat(content): read-only deterministic RAW evidence inventory (pilote filtre-a-air)
+- **Sortie** : PR aucune | commits a9a042483
