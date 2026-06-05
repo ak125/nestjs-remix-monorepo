@@ -392,11 +392,5 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 ## 2026-06-05 — vlevel-doctrine-lock (auto)
 
 - **Branche** : `vlevel-doctrine-lock`
-- **Décision** : feat(seo-roles): V-Level doctrine — invariants ref + DB-only capture (lock-before-fix)
-- **Sortie** : PR aucune | commits 07141fcc4
-
-## 2026-06-05 — vlevel-doctrine-lock (auto)
-
-- **Branche** : `vlevel-doctrine-lock`
-- **Décision** : fix(migration): squawk ignore correct rule name (ban-char-field, pas prefer-text-field) (+4 other commits)
-- **Sortie** : PR #861 | commits 525cfa21d a599763f8 4f037916a 1ab0093ce 07141fcc4
+- **Décision** : feat(seo-roles): V-Level doctrine — invariants ref + DB-only capture (lock-before-fix) ; + fixes squawk migration + overlay ownership D14
+- **Sortie** : PR #861 | commits 07141fcc4 4f037916a a599763f8 525cfa21d
