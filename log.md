@@ -592,3 +592,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/pricing-import-pending-mode`
 - **Décision** : feat(pricing): import-pending mode — commit cost without auto-activating sellability
 - **Sortie** : PR #857 | commits f746ce702
+
+## 2026-06-05 — vlevel-doctrine-lock (auto)
+
+- **Branche** : `vlevel-doctrine-lock`
+- **Décision** : feat(seo-roles): V-Level doctrine — invariants ref + DB-only capture (lock-before-fix)
+- **Sortie** : PR aucune | commits 07141fcc4
