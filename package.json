@@ -88,6 +88,8 @@
     "governance:command-center": "node scripts/governance/build-command-center-snapshot.js",
     "governance:command-center:check": "node scripts/governance/build-command-center-snapshot.js --check",
     "governance:test:command-center": "tsx --test scripts/governance/__tests__/build-command-center-snapshot.test.ts",
+    "content:raw-evidence:schema-check": "tsx scripts/wiki-generators/raw-evidence-inventory.ts --check",
+    "content:test:raw-evidence": "tsx --test scripts/wiki-generators/__tests__/raw-evidence-inventory.test.ts",
     "architecture:build": "npm -w @repo/registry run build:architecture",
     "architecture:test": "tsx --test tests/registry/architecture-generator.test.ts",
     "depcruise:integrity-test": "tsx --test tests/registry/depcruise-integrity.test.ts",
