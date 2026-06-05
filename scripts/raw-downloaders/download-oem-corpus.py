@@ -38,8 +38,12 @@ except ImportError:
 # AUTOMECANIK_RAW_PATH overrides the rag-knowledge root for ADR-031 Phase D.
 # Default keeps the legacy location so unset = no behavioral change.
 RAW_KNOWLEDGE_ROOT = os.getenv("AUTOMECANIK_RAW_PATH", "/opt/automecanik/rag/knowledge")
-GAMMES_DIR = f"{RAW_KNOWLEDGE_ROOT}/gammes"
-WEB_DIR = f"{RAW_KNOWLEDGE_ROOT}/web"
+GAMMES_DIR = f"{RAW_KNOWLEDGE_ROOT}/gammes"  # gamme metadata (enrichment detection) — export disk
+# FIX (path drift) : le corpus web DOIT atterrir dans le repo RAW canon
+# (recycled/rag-knowledge/web), là où gamme-from-web-corpus-generator.py le LIT.
+# Avant : {RAW_KNOWLEDGE_ROOT}/web → écrivait sur le disque d'export, jamais lu par le générateur.
+RAW_REPO = os.getenv("AUTOMECANIK_RAW_REPO_PATH", "/opt/automecanik/automecanik-raw")
+WEB_DIR = f"{RAW_REPO}/recycled/rag-knowledge/web"
 REQUEST_DELAY = 1.2
 MAX_RETRIES = 2
 TIMEOUT = 12
