@@ -234,7 +234,9 @@ export class GammeVLevelService extends SupabaseBaseService {
       const top10: VLevelKeywordRow[] = [];
       for (const kw of v3Champions) {
         // Même clé canonique que le groupement (plus de divergence group/dedup en casse).
-        const modelEnergy = vLevelGroupKey(kw.model, kw.energy, { gammeUniverselle });
+        const modelEnergy = vLevelGroupKey(kw.model, kw.energy, {
+          gammeUniverselle,
+        });
         if (seenModelEnergy.has(modelEnergy)) continue;
         seenModelEnergy.add(modelEnergy);
         top10.push(kw);
