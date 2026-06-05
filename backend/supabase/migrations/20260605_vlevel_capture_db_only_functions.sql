@@ -1,3 +1,11 @@
+-- squawk-ignore-file prefer-identity
+-- squawk-ignore-file prefer-bigint-over-int
+-- squawk-ignore-file prefer-text-field
+-- Justification des ignores (cf. §3 + .squawk.toml « per-file ignore for legitimate patterns ») :
+-- la table __seo_type_vlevel est CAPTURÉE VERBATIM depuis la DB live (structure legacy
+-- pré-existante : bigserial, pg_id integer, colonnes varchar). Les règles « prefer-* » visent
+-- la conception de NOUVELLES tables ; ici changer serial→identity / int→bigint / varchar→text
+-- ferait DIVERGER la migration de la table live et casserait le but (capture idempotente no-op).
 -- ============================================================================
 -- 20260605_vlevel_capture_db_only_functions
 -- ----------------------------------------------------------------------------
@@ -19,6 +27,11 @@
 -- toute divergence future DB↔repo échouera en review au lieu de muter en silence.
 -- Le `.down.sql` est volontairement NON destructif (ne DROP pas des objets live).
 -- ============================================================================
+
+-- require-timeout-settings (squawk) : bornes pour les ALTER/CREATE TRIGGER ci-dessous
+-- (locks brefs sur une petite table, mais on borne par hygiène). Transaction-scoped.
+SET lock_timeout = '5s';
+SET statement_timeout = '60s';
 
 -- ----------------------------------------------------------------------------
 -- 1) propagate_vlevel_per_typeid(p_pg_id)
@@ -164,7 +177,7 @@ END;
 $function$;
 
 -- Recrée le trigger en conservant son état LIVE = DISABLED.
--- (CREATE OR REPLACE TRIGGER requiert PG14+ ; Supabase est PG15+.)
+-- (CREATE OR REPLACE TRIGGER requiert PG14+ ; Supabase est PG17.)
 CREATE OR REPLACE TRIGGER trg_vlevel_integrity
   BEFORE INSERT OR UPDATE ON public.__seo_keywords
   FOR EACH ROW EXECUTE FUNCTION public.validate_vlevel_integrity();
@@ -172,8 +185,9 @@ ALTER TABLE public.__seo_keywords DISABLE TRIGGER trg_vlevel_integrity;
 
 -- ----------------------------------------------------------------------------
 -- 3) __seo_type_vlevel — table de PROJECTION (peuplée par rebuild-type-vlevel.py)
---    Capture best-effort des colonnes observées en live (la DB live reste
---    autoritaire pour index/contraintes non reproduits ici).
+--    Capture VERBATIM des colonnes observées en live (structure legacy : voir les
+--    ignores squawk en tête de fichier). La DB live reste autoritaire pour
+--    index/contraintes non reproduits ici.
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.__seo_type_vlevel (
   id          bigserial PRIMARY KEY,
