@@ -89,3 +89,19 @@ export {
   KeywordClusterSchema,
   type KeywordCluster,
 } from "./keyword-cluster.schema";
+
+// ── V-Level invariants (réf : audit/levels-doctrine-cgc-vs-vlevel-2026-06-04.md) ──
+// Data-only : énonce les règles V une seule fois (classement marketing FR). N'est PAS un
+// moteur. Ne JAMAIS confondre avec cgc_level (maillage public) ni L1–L5 (sizing contenu).
+export {
+  V_LEVEL_IDS,
+  type VLevelId,
+  VLEVEL_V2_CAP,
+  V_GROUP_KEY,
+  type VLevelInvariant,
+  V_LEVEL_INVARIANTS,
+  V_PROPAGATE,
+  type VLevelKnownGap,
+  V_LEVEL_KNOWN_GAPS,
+  VLEVEL_DB_BASELINE_2026_06_05,
+} from "./vlevel-invariants";
