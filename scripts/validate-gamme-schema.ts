@@ -184,6 +184,59 @@ export function r1WikiExportReadiness(fm: any): {
   return { status: blockers.length === 0 ? 'READY' : 'BLOCKED', blockers, warnings };
 }
 
+// Load + parse a gamme WIKI export frontmatter once (reused by all per-role gates).
+export function loadGammeFrontmatter(alias: string): any | null {
+  const filePath = path.join(GAMMES_DIR, `${alias}.md`);
+  if (!fs.existsSync(filePath)) return null;
+  const content = fs.readFileSync(filePath, 'utf-8');
+  const m = content.match(/^---\n([\s\S]*?)\n---/);
+  return m ? yaml.load(m[1]) : {};
+}
+
+const _len = (a: any): number => (Array.isArray(a) ? a.length : 0);
+const _present = (v: any): boolean =>
+  Array.isArray(v) ? v.length > 0 : v && typeof v === 'object' ? Object.keys(v).length > 0 : !!v;
+
+export type RoleWikiVerdict = { status: 'READY' | 'BLOCKED'; blockers: string[]; warnings: string[] };
+const _verdict = (blockers: string[], warnings: string[]): RoleWikiVerdict => ({
+  status: blockers.length === 0 ? 'READY' : 'BLOCKED',
+  blockers,
+  warnings,
+});
+
+// R3 (conseil / diagnostic / how-to) WIKI gate.
+export function r3WikiExportReadiness(fm: any): RoleWikiVerdict {
+  const b: string[] = [], w: string[] = [];
+  if (!fm?.domain?.role) b.push('domain_role_missing');
+  if (_len(fm?.diagnostic?.symptoms) < 3) b.push('diagnostic_symptoms_thin');
+  if (_len(fm?.diagnostic?.causes) < 2) w.push('diagnostic_causes_thin');
+  if (_len(fm?.diagnostic?.quick_checks) < 2) w.push('quick_checks_thin');
+  if (!fm?.maintenance?.interval?.note) w.push('maintenance_note_missing');
+  if (_len(fm?.rendering?.faq) < 4) w.push('faq_thin');
+  return _verdict(b, w);
+}
+
+// R4 (référence / encyclopédique) WIKI gate.
+export function r4WikiExportReadiness(fm: any): RoleWikiVerdict {
+  const b: string[] = [], w: string[] = [];
+  const role = fm?.domain?.role || '';
+  if (!role || String(role).length < 80) b.push('domain_role_missing');
+  if (_len(fm?.domain?.must_be_true) < 2) b.push('must_be_true_thin');
+  if (_len(fm?.domain?.confusion_with) < 2) b.push('confusion_with_thin');
+  if (!_present(fm?.domain?.related_parts)) w.push('related_parts_missing');
+  return _verdict(b, w);
+}
+
+// R6 (guide d'achat / comparatif) WIKI gate.
+export function r6WikiExportReadiness(fm: any): RoleWikiVerdict {
+  const b: string[] = [], w: string[] = [];
+  if (!_present(fm?.selection?.brands)) b.push('brands_missing');
+  if (!_present(fm?.selection?.quality_tiers)) b.push('quality_tiers_missing');
+  if (!_present(fm?.selection?.cost_range)) w.push('cost_range_missing');
+  if (_len(fm?.selection?.criteria) < 3) w.push('selection_criteria_thin');
+  return _verdict(b, w);
+}
+
 export interface WikiExportReadiness {
   found: boolean;
   status: 'READY' | 'BLOCKED';
