@@ -105,11 +105,18 @@ async function decisionPack(pgId: number): Promise<void> {
   }
   const champs = [...byTid.values(), ...nulls];
 
-  // 2. resolve type_id -> type -> modele -> marque
-  const tids = champs.map((c) => c.type_id).filter(Boolean) as string[];
+  // résolution des champions type_id NULL via seed data-driven (keyword -> {modele_id,type_id,...})
+  // -> pas de parsing fragile, curé manuellement (investigation web), reproductible.
+  const nrSeed: Record<string, any> = seed.null_resolution_by_keyword || {};
+  const nrOf = (c: Champ) => (c.type_id ? null : nrSeed[c.keyword] || null);
+  const nrTypeIds = champs.map((c) => nrOf(c)?.type_id).filter(Boolean).map(String);
+  const nrModeleIds = champs.map((c) => nrOf(c)?.modele_id).filter(Boolean).map(String);
+
+  // 2. resolve type_id -> type -> modele -> marque (champions + résolutions NULL du seed)
+  const tids = [...new Set([...(champs.map((c) => c.type_id).filter(Boolean) as string[]), ...nrTypeIds])];
   const types = await selectIn<any>(s, 'auto_type', 'type_id,type_modele_id,type_name,type_fuel,type_display,type_alias,type_power_ps', 'type_id', tids);
   const typeMap = new Map(types.map((t) => [String(t.type_id), t]));
-  const modeleIds = [...new Set(types.map((t) => t.type_modele_id).filter(Boolean))].map(String);
+  const modeleIds = [...new Set([...types.map((t) => String(t.type_modele_id)).filter((x) => x && x !== 'null'), ...nrModeleIds])];
   const modeles = await selectIn<any>(s, 'auto_modele', 'modele_id,modele_name,modele_alias,modele_marque_id', 'modele_id', modeleIds);
   const modMap = new Map(modeles.map((m) => [String(m.modele_id), m]));
   const marqueIds = [...new Set(modeles.map((m) => String(m.modele_marque_id)))];
@@ -156,7 +163,19 @@ async function decisionPack(pgId: number): Promise<void> {
     } else if (c.type_id && !renderable) {
       decision = 'DEFER_REMAP'; reason = 'orphan / non rendable (type_id absent auto_type ou type_display!=1)'; risk = 'page non rendable';
     } else if (!c.type_id) {
-      decision = 'REVIEW_OWNER'; reason = 'type_id NULL — investigation requise (voir resolution-queue)'; risk = 'non mappé';
+      const nr = nrOf(c);
+      if (nr) {
+        const rt = typeMap.get(String(nr.type_id));
+        const rm = rt ? modMap.get(String(rt.type_modele_id)) : modMap.get(String(nr.modele_id));
+        const rmq = rm ? mqMap.get(String(rm.modele_marque_id)) : null;
+        recId = String(nr.type_id); recLabel = nr.label || ''; conf = nr.confidence || 0; source = nr.source || 'seed';
+        v3type = 'DIESEL_DEFAULT_RESOLVED_NULL';
+        if (rt && rt.type_display === '1' && rm && rmq) recUrl = url(rt.type_alias, rm.modele_alias, rm.modele_id, rmq.marque_alias, rmq.marque_id, recId);
+        decision = conf >= 78 && recUrl ? 'APPROVE_CANDIDATE' : 'REVIEW_OWNER';
+        reason = 'type_id NULL résolu via seed (investigation web curée)';
+      } else {
+        decision = 'REVIEW_OWNER'; reason = 'type_id NULL — investigation requise (voir resolution-queue)'; risk = 'non mappé';
+      }
     } else if (ek) {
       recId = ek.type_id; v3type = ek.v3_type; conf = ek.confidence; source = 'web(explicit)'; reason = ek.reason;
       recUrl = renderable && t.type_alias ? url(t.type_alias, m.modele_alias, m.modele_id, mq.marque_alias, mq.marque_id, recId) : curUrl;
