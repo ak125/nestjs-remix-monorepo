@@ -70,6 +70,7 @@ function degraded(
     stale_status: "UNKNOWN",
     validation_status: "UNKNOWN",
     global_status: { level: "WARNING", verdict: "BLOCKED", reasons: [reason] },
+    action_queue: [],
   };
 }
 
