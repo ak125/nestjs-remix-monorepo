@@ -16,6 +16,10 @@
     "disque 308 gti": { "type_id": "33864", "v3_type": "EXPLICIT_PETROL_PERFORMANCE", "owner_hint": "APPROVE_DISTINCT", "confidence": 75, "reason": "keyword sportif essence explicite -> V3 distinct, hors diesel-default; volume500 niche" },
     "plaquette de frein clio 3 1.5 dci": { "type_id": "34746", "v3_type": "DIESEL_EXPLICIT", "owner_hint": "REVIEW", "confidence": 73, "reason": "conflit: clio 3 générique->86 (19052) vs explicite 1.5 dci->88 (34746)" }
   },
+  "null_resolution_by_keyword": {
+    "$note": "Champions type_id NULL résolus via investigation web curée (resolution-queue). Seulement les cas confirmés ; les NULL ambigus (motorisation/génération inconnue) restent volontairement absents -> REVIEW par défaut. Jamais de devinette.",
+    "disque arriere scenic 3": { "modele_id": "140089", "type_id": "5853", "label": "Scénic III 1.5 dCi 110", "confidence": 82, "source": "web:fiches-auto,largus" }
+  },
   "review_keyword": {
     "disque de frein 206": "essence-vs-diesel: diesel défaut 1.4 HDi 69 (30091) mais 206 essence 1.4 75 best-seller -> trancher demande réelle"
   },
