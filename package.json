@@ -38,6 +38,7 @@
     "audit:ast": "ast-grep scan",
     "audit:graph": "madge --json --extensions ts,tsx backend/src frontend/app > audit-reports/dep-graph.json",
     "vlevel:v3:decision-pack": "tsx scripts/seo/vlevel-v3-pipeline.ts decision-pack",
+    "vlevel:v3:generics-pack": "tsx scripts/seo/vlevel-v3-pipeline.ts generics-pack",
     "vlevel:v3:validate-pack": "tsx scripts/seo/vlevel-v3-pipeline.ts validate-pack",
     "vlevel:v3:apply-pack": "tsx scripts/seo/vlevel-v3-pipeline.ts apply-pack",
     "audit:baseline": "node scripts/cleanup/audit-compare-baseline.js",
