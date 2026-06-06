@@ -4,7 +4,10 @@
  *   business (source certified) · risk (cautious) · certification/repair (fix the source).
  * "Une action sans next_step est du bruit" — every row carries a concrete next step,
  * its score, its source, and a "prudence" flag when the data is only partial.
+ * PR2: seo:opportunity:* actions carry a per-URL drill-down (`details`) shown in a
+ * collapsible table (URL · page kind · impressions · clicks · CTR).
  */
+import { useState } from "react";
 import { type CommandCenterResponse } from "@repo/registry";
 import {
   Target,
@@ -13,6 +16,8 @@ import {
   CheckCircle2,
   Wrench,
   TrendingUp,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
@@ -46,6 +51,14 @@ const PRUDENCE_THRESHOLD = 70; // data_confidence below this → cautious
 
 export function OwnerActionQueue({ data }: { data: CommandCenterResponse }) {
   const actions = data.action_queue; // already scored + sorted server-side
+  const [openIds, setOpenIds] = useState<Set<string>>(new Set());
+  const toggle = (id: string) =>
+    setOpenIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
 
   return (
     <Card>
@@ -92,7 +105,100 @@ export function OwnerActionQueue({ data }: { data: CommandCenterResponse }) {
                         />
                         <span>{a.next_step}</span>
                       </p>
-                      {a.evidence.length > 0 ? (
+                      {a.details && a.details.length > 0 ? (
+                        <div className="mt-1.5">
+                          <button
+                            type="button"
+                            onClick={() => toggle(a.id)}
+                            aria-expanded={openIds.has(a.id)}
+                            aria-controls={`seo-details-${a.id}`}
+                            className="flex items-center gap-1 text-xs font-medium text-foreground hover:underline"
+                          >
+                            {openIds.has(a.id) ? (
+                              <ChevronDown
+                                className="h-3.5 w-3.5"
+                                aria-hidden
+                              />
+                            ) : (
+                              <ChevronRight
+                                className="h-3.5 w-3.5"
+                                aria-hidden
+                              />
+                            )}
+                            {openIds.has(a.id) ? "Masquer" : "Voir"} les détails
+                            ({a.details.length} URL)
+                          </button>
+                          {openIds.has(a.id) ? (
+                            <div
+                              id={`seo-details-${a.id}`}
+                              className="mt-1.5 overflow-x-auto"
+                            >
+                              <table className="w-full text-xs">
+                                <thead>
+                                  <tr className="text-left text-muted-foreground">
+                                    <th
+                                      scope="col"
+                                      className="py-1 pr-3 font-medium"
+                                    >
+                                      URL
+                                    </th>
+                                    <th
+                                      scope="col"
+                                      className="py-1 pr-3 font-medium"
+                                    >
+                                      Type
+                                    </th>
+                                    <th
+                                      scope="col"
+                                      className="py-1 pr-3 text-right font-medium"
+                                    >
+                                      Impr.
+                                    </th>
+                                    <th
+                                      scope="col"
+                                      className="py-1 pr-3 text-right font-medium"
+                                    >
+                                      Clics
+                                    </th>
+                                    <th
+                                      scope="col"
+                                      className="py-1 text-right font-medium"
+                                    >
+                                      CTR
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {a.details.map((d) => (
+                                    <tr
+                                      key={d.url}
+                                      className="border-t border-border/50"
+                                    >
+                                      <td className="py-1 pr-3">
+                                        <code className="break-all">
+                                          {d.url}
+                                        </code>
+                                      </td>
+                                      <td className="py-1 pr-3">
+                                        {d.page_kind}
+                                      </td>
+                                      <td className="py-1 pr-3 text-right tabular-nums">
+                                        {d.impressions}
+                                      </td>
+                                      <td className="py-1 pr-3 text-right tabular-nums">
+                                        {d.clicks}
+                                      </td>
+                                      <td className="py-1 text-right tabular-nums">
+                                        {(d.ctr * 100).toFixed(2)}%
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : a.evidence.length > 0 ? (
                         <ul className="mt-1 space-y-0.5">
                           {a.evidence.slice(0, 3).map((e, i) => (
                             <li

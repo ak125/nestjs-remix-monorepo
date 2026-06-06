@@ -11,16 +11,15 @@
  * so a rule physically cannot emit a business recommendation on broken data.
  */
 
-export type ActionSource =
-  | 'seo'
-  | 'pricing'
-  | 'orders'
-  | 'suppliers'
-  | 'runtime'
-  | 'data'
-  | 'governance';
+import type { CcActionV2, CcSeoDetail } from '@repo/registry';
 
-export type ActionType = 'business' | 'risk' | 'certification' | 'repair';
+/**
+ * Single source of truth: the action wire types ARE the registry Zod-inferred
+ * contract the frontend consumes. Aliasing (not hand-mirroring) makes any future
+ * drift a COMPILE error at the registry SoT — no parallel definition, no runtime gate.
+ */
+export type ActionSource = CcActionV2['source'];
+export type ActionType = CcActionV2['action_type'];
 
 export type SourceCertification =
   | 'CERTIFIED'
@@ -28,25 +27,24 @@ export type SourceCertification =
   | 'UNKNOWN'
   | 'BROKEN';
 
-export interface OwnerActionV2 {
-  id: string;
-  title: string;
-  department: string;
-  source: ActionSource;
-  action_type: ActionType;
-  impact: number; // 0..10  (business value)
-  urgency: number; // 0..10
-  data_confidence: number; // 0..100 (how much we trust the source)
-  effort: number; // 0..10
-  risk: number; // 0..10  (risk of acting)
-  score: number; // computed
-  reason: string;
-  evidence: string[];
-  next_step: string;
-}
+/** Per-URL drill-down for a seo:opportunity:* action (PR2). null for every other action. */
+export type SeoOpportunityDetail = CcSeoDetail;
 
-/** What a rule emits before scoring/gating (score computed by finalizeAction). */
-export type RawAction = Omit<OwnerActionV2, 'score'>;
+/**
+ * The owner-action wire contract = the registry Zod type (single source of truth).
+ * Field bounds (impact/urgency/effort/risk 0..10, data_confidence 0..100) and the
+ * source/action_type enums live in CcActionV2Schema; this is its inferred type.
+ */
+export type OwnerActionV2 = CcActionV2;
+
+/**
+ * What a rule emits before scoring/gating (score computed by finalizeAction).
+ * `details` is optional here — only SEO rules set it; finalizeAction normalises
+ * the absent case to `null`.
+ */
+export type RawAction = Omit<OwnerActionV2, 'score' | 'details'> & {
+  details?: SeoOpportunityDetail[] | null;
+};
 
 /** Confidence floor below which a `business`/`risk` action is downgraded to certification. */
 export const BUSINESS_CONFIDENCE_FLOOR = 40;
@@ -92,10 +90,13 @@ export function finalizeAction(raw: RawAction): OwnerActionV2 {
         `Certifier / câbler la source ${a.source} (preuve + fraîcheur) avant toute optimisation.`,
       // a degraded source is high-leverage to fix → keep urgency, drop risk of acting
       risk: Math.min(a.risk, 2),
+      // a non-certified action must NOT carry presentational per-URL metrics —
+      // keep "details only on a trusted/business action" structurally true.
+      details: null,
     };
   }
 
-  return { ...a, score: computeScore(a) };
+  return { ...a, score: computeScore(a), details: a.details ?? null };
 }
 
 /** Sort: highest score first; ties broken by action_type then id (deterministic). */

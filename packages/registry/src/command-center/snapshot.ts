@@ -231,6 +231,18 @@ export type CcDepartmentLive = z.infer<typeof CcDepartmentLiveSchema>;
 export const CommandCenterModeSchema = z.enum(["full", "light", "disabled"]);
 export type CommandCenterMode = z.infer<typeof CommandCenterModeSchema>;
 
+/** PR2: per-URL drill-down for a seo:opportunity:* action. null for other actions. */
+export const CcSeoDetailSchema = z
+  .object({
+    url: z.string(),
+    page_kind: z.enum(["product", "content", "other"]),
+    impressions: z.number(),
+    clicks: z.number(),
+    ctr: z.number(), // clicks/impressions (0..1)
+  })
+  .strict();
+export type CcSeoDetail = z.infer<typeof CcSeoDetailSchema>;
+
 export const CcActionV2Schema = z
   .object({
     id: z.string(),
@@ -255,6 +267,7 @@ export const CcActionV2Schema = z
     reason: z.string(),
     evidence: z.array(z.string()),
     next_step: z.string(),
+    details: z.array(CcSeoDetailSchema).nullable(), // PR2 drill-down (SEO only)
   })
   .strict();
 export type CcActionV2 = z.infer<typeof CcActionV2Schema>;
