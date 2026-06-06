@@ -50,16 +50,25 @@ V5 (dont la plupart **enfants**, aujourd'hui **absents**), alors que **581** son
 cette gamme : retirer les non-conformes **et** ajouter ~191 enfants (véhicules **sans demande
 Google** → risque **thin-content R8**, cf. outil `r8-diversity-check`).
 
-→ **Verdict A (pg_402)** : `NO-GO sans liste type_id complète + décision owner`. Changement
-marketing-data important (≈ −381 / +200). Liste candidate dans le diff JSON.
+→ **Verdict A (pg_402)** : `NO-GO sans liste type_id complète + décision owner`. Réalité
+(Block D) : **garder 238 · réviser 263 root · ajouter ~200 enfants · 0 remove net** (+ ~80
+orphelins). Reste un changement structurel **mais pas une purge** ; les ~191 pages enfants
+ajoutées sont sans demande Google → risque **thin-content R8**. Liste candidate dans le diff JSON.
 
-## Totaux (pg_402)
-| Élément | Valeur |
+## Totaux & classification ligne-par-ligne (pg_402) — Block D du harnais
+| Classification des V5 **actuels** | type_id |
 |---|---|
-| V5 actuels (type_id) | 581 |
-| dont sur root (suspects, REVIEW) | 263 |
-| V5 union « nouveaux » (siblings 9 + enfants 191) | 200 |
+| **KEEP** (conforme : sibling / enfant d'un véhicule classé) | **238** |
+| **REVIEW_OWNER** (sur modèle root) | **263** |
+| **REMOVE_CANDIDATE** (ni sibling ni enfant) | **0** |
+| (orphelins : type_id non joignable à `auto_type`/`auto_modele`) | **~80** |
+| V5 actuels **joignables** | 501 (sur 581 bruts) |
+| **ADD_CANDIDATE** (union, nouveaux : 9 siblings + 191 enfants) | **+200** |
 | V5 changés par energy (C) | 0 |
+
+⇒ **Ce n'est PAS un « −381 »** (mon estimation initiale était fausse). Réalité mesurée :
+**garder 238 · réviser 263 roots · ajouter ~200 enfants · 0 suppression nette claire**
+(+ **~80 orphelins** type_id à investiguer — drapeau qualité distinct).
 
 ## Verdict global : **GO-PARTIEL** (pour la PHASE SUIVANTE owner-gated, pas pour appliquer)
 - **C** : `GO` (no-op ici ; sim full-pipeline requise pour les autres gammes).

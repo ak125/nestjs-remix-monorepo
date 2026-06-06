@@ -93,3 +93,36 @@ JOIN auto_modele mm ON mm.modele_id::text = t.type_modele_id::text
 WHERE t.type_display = '1' AND t.type_id::text NOT IN (SELECT type_id FROM already)
 GROUP BY t.type_id::text, mm.modele_name
 ORDER BY relation, candidate_model;
+-- (chaque ligne = un candidat ADD_CANDIDATE si simulated_action='add_v5')
+
+-- ── BLOC D : classification ligne-par-ligne des V5 ACTUELS (581) ─────────────
+-- KEEP (conforme union) / REMOVE_CANDIDATE (ni sibling ni enfant) / REVIEW_OWNER (root).
+-- JAMAIS auto-appliqué : c'est la base de décision owner avant toute mutation.
+WITH classified AS (
+  SELECT DISTINCT t.type_modele_id::text AS modele_id
+  FROM __seo_keywords k JOIN auto_type t ON t.type_id::text = k.type_id::text
+  WHERE k.pg_id = :pg AND k.v_level IN ('V2','V3','V4')
+),
+parents AS (
+  SELECT DISTINCT m.modele_parent FROM auto_modele m
+  JOIN classified c ON m.modele_id::text = c.modele_id WHERE m.modele_parent <> 0
+),
+union_models AS (
+  SELECT DISTINCT m.modele_id::text AS modele_id FROM auto_modele m
+  JOIN parents p ON m.modele_parent = p.modele_parent
+  UNION
+  SELECT DISTINCT m.modele_id::text FROM auto_modele m
+  JOIN classified c ON m.modele_parent::text = c.modele_id
+)
+SELECT 'D_current_v5_classification' AS section,
+  k.type_id, m.modele_name, m.modele_parent, k.keyword, k.v_level AS current_level,
+  CASE
+    WHEN m.modele_parent = 0                                         THEN 'REVIEW_OWNER'
+    WHEN t.type_modele_id::text IN (SELECT modele_id FROM union_models) THEN 'KEEP'
+    ELSE 'REMOVE_CANDIDATE'
+  END AS classification
+FROM __seo_keywords k
+JOIN auto_type   t ON t.type_id::text   = k.type_id::text
+JOIN auto_modele m ON m.modele_id::text = t.type_modele_id::text
+WHERE k.pg_id = :pg AND k.v_level = 'V5'
+ORDER BY classification, m.modele_name, k.type_id;
