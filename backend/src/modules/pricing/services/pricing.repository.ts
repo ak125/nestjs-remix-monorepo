@@ -122,6 +122,71 @@ export class PricingRepository extends SupabaseBaseService {
     return data.chunk_id as string;
   }
 
+  /** Open a batch for a dispo-only ACTIVATION run (no raw import file). */
+  async createActivationBatch(input: {
+    supplierId: string;
+    operator: string | null;
+  }): Promise<string> {
+    const { data, error } = await this.supabase
+      .from('price_import_batches')
+      .insert({
+        status: 'UPLOADED',
+        supplier_id: input.supplierId,
+        operator: input.operator,
+      })
+      .select('batch_id')
+      .single();
+    if (error) throw error;
+    return data.batch_id as string;
+  }
+
+  /**
+   * Read pieces_price (brand-locked) for a set of supplier refs — the activation
+   * scope resolver. Chunked (<=500 refs/query, under the 1000-row cap).
+   */
+  async resolveActivationRows(
+    supplier: string,
+    refs: string[],
+  ): Promise<
+    Map<
+      string,
+      {
+        pieceId: number | null;
+        priType: string;
+        dispo: string | null;
+        state: string;
+      }
+    >
+  > {
+    const out = new Map<
+      string,
+      {
+        pieceId: number | null;
+        priType: string;
+        dispo: string | null;
+        state: string;
+      }
+    >();
+    for (let i = 0; i < refs.length; i += 500) {
+      const chunk = refs.slice(i, i + 500);
+      const { data, error } = await this.supabase
+        .from('pieces_price')
+        .select('pri_ref, pri_piece_id_i, pri_type, pri_dispo, pricing_state')
+        .eq('pri_pm_id', supplier)
+        .in('pri_ref', chunk);
+      if (error) throw error;
+      for (const r of (data ?? []) as Array<Record<string, unknown>>) {
+        out.set(String(r.pri_ref), {
+          pieceId: (r.pri_piece_id_i as number | null) ?? null,
+          priType: String(r.pri_type ?? '0'),
+          dispo: (r.pri_dispo as string | null) ?? null,
+          state: String(r.pricing_state ?? ''),
+        });
+      }
+    }
+    return out;
+  }
+
   /** Atomic per-chunk commit via the server-side function. */
   async commitChunk(input: {
     batchId: string;
