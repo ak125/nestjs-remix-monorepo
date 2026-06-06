@@ -246,6 +246,12 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: low
+  # G3 dry-run V-Level (owner GO 2026-06-06, ultra-strict pilote) — rapport read-only.
+  - glob: audit/vlevel-g3-dry-run-plaquette-de-frein-*
+    domain: D14
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
   # WIKI bootstrap Phase A (cf. PR #781) — script promote-raw-gammes-to-wiki.py
   # + tests + fixtures B2/B4 + run logs. D3 / @ak125/seo-team par convention
   # SEO content pipeline (RAW → WIKI → consumers, ADR-031).

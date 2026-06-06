@@ -406,3 +406,15 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `g2-vlevel-invariants-runtime-wiring`
 - **Décision** : fix(seo-roles): wire V-Level invariants without recalculation
 - **Sortie** : PR #863 | commits 58af79a1f
+
+## 2026-06-06 — g3-vlevel-dryrun-harness (auto)
+
+- **Branche** : `g3-vlevel-dryrun-harness`
+- **Décision** : docs(seo): G3 dry-run read-only report + reusable harness (plaquette-de-frein)
+- **Sortie** : PR aucune | commits 3a79fcbb0
+
+## 2026-06-06 — g3-vlevel-dryrun-harness (auto)
+
+- **Branche** : `g3-vlevel-dryrun-harness`
+- **Décision** : chore(registry): register G3 dry-run audit glob (owner GO, ultra-strict pilote) (+2 other commits)
+- **Sortie** : PR #864 | commits 48efcb919 c92e3d0bc 3a79fcbb0
