@@ -231,9 +231,38 @@ export type CcDepartmentLive = z.infer<typeof CcDepartmentLiveSchema>;
 export const CommandCenterModeSchema = z.enum(["full", "light", "disabled"]);
 export type CommandCenterMode = z.infer<typeof CommandCenterModeSchema>;
 
+export const CcActionV2Schema = z
+  .object({
+    id: z.string(),
+    title: z.string(),
+    department: z.string(),
+    source: z.enum([
+      "seo",
+      "pricing",
+      "orders",
+      "suppliers",
+      "runtime",
+      "data",
+      "governance",
+    ]),
+    action_type: z.enum(["business", "risk", "certification", "repair"]),
+    impact: z.number().min(0).max(10),
+    urgency: z.number().min(0).max(10),
+    data_confidence: z.number().min(0).max(100),
+    effort: z.number().min(0).max(10),
+    risk: z.number().min(0).max(10),
+    score: z.number(), // computed: impact+urgency+confidence/10-effort-risk (may be negative)
+    reason: z.string(),
+    evidence: z.array(z.string()),
+    next_step: z.string(),
+  })
+  .strict();
+export type CcActionV2 = z.infer<typeof CcActionV2Schema>;
+
 export const CommandCenterResponseSchema = CommandCenterSnapshotSchema.extend({
   degraded: z.boolean(),
   mode: CommandCenterModeSchema,
+  action_queue: z.array(CcActionV2Schema),
   generated_at: z.string(),
   git_sha: z.string().nullable(),
   stale_status: StaleStatusSchema,
