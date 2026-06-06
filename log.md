@@ -406,3 +406,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `g2-vlevel-invariants-runtime-wiring`
 - **Décision** : fix(seo-roles): wire V-Level invariants without recalculation
 - **Sortie** : PR #863 | commits 58af79a1f
+
+## 2026-06-06 — feat/seo-r3-consolidation-evidence (auto)
+
+- **Branche** : `feat/seo-r3-consolidation-evidence`
+- **Décision** : feat(seo): read-only GSC-backed R3 consolidation evidence matrix (10-gamme pilot)
+- **Sortie** : PR aucune | commits ca0232d4c
