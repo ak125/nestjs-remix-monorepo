@@ -274,6 +274,13 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: low
+  # RAW evidence inventory (read-only diagnostic upstream of promote-raw-gammes-to-wiki.py).
+  # D3 / @ak125/seo-team — same SEO content pipeline family (RAW → WIKI → consumers, ADR-031).
+  - glob: audit/content/raw-evidence/**
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
   # ADR-082 Phase 1 — continuous improvement doctrine pilots + cross-validation
   # (rangés à plat sous audit/ par convention historique, cf. audit/seo-*.md).
   - glob: audit/pilot-*.md
