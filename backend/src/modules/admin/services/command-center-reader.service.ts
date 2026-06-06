@@ -2,6 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { CacheService } from '../../../cache/cache.service';
+import { CommandCenterActionsService } from './command-center-actions.service';
+import { type OwnerActionV2 } from './command-center-action-rules/score-action';
 
 /**
  * Read-only reader for the Command Center snapshot
@@ -48,7 +50,10 @@ export class CommandCenterReaderService {
   private static readonly STALE_WARNING_DAYS = 7;
   private static readonly STALE_DAYS = 14;
 
-  constructor(private readonly cacheService: CacheService) {}
+  constructor(
+    private readonly cacheService: CacheService,
+    private readonly actions: CommandCenterActionsService,
+  ) {}
 
   private readJson<T>(filePath: string): T | null {
     try {
@@ -73,8 +78,19 @@ export class CommandCenterReaderService {
     if (cached) return cached;
 
     const built = this.build();
-    const result: CommandCenterResponse =
-      mode === 'light' ? toLightResponse(built) : { ...built, mode };
+    let result: CommandCenterResponse;
+    if (mode === 'light') {
+      result = toLightResponse(built);
+    } else {
+      const action_queue = built.degraded
+        ? []
+        : await this.actions.computeActionQueue(
+            built.departments,
+            built.chains,
+            mode,
+          );
+      result = { ...built, mode, action_queue };
+    }
     await this.cacheService.set(
       cacheKey,
       result,
@@ -85,7 +101,7 @@ export class CommandCenterReaderService {
     return result;
   }
 
-  private build(): Omit<CommandCenterResponse, 'mode'> {
+  private build(): Omit<CommandCenterResponse, 'mode' | 'action_queue'> {
     const now = new Date();
     const gitSha = process.env.GIT_SHA || process.env.SOURCE_COMMIT || null;
     const snapshot = this.readJson<SnapshotFile>(
@@ -357,7 +373,7 @@ export function resolveCommandCenterMode(): CommandCenterMode {
  * (numbers, no internal identifiers).
  */
 function toLightResponse(
-  full: Omit<CommandCenterResponse, 'mode'>,
+  full: Omit<CommandCenterResponse, 'mode' | 'action_queue'>,
 ): CommandCenterResponse {
   return {
     degraded: full.degraded,
@@ -383,6 +399,7 @@ function toLightResponse(
       reasons: [],
     },
     mode: 'light',
+    action_queue: [],
   };
 }
 
@@ -392,6 +409,7 @@ export interface CommandCenterResponse extends Omit<
 > {
   degraded: boolean;
   mode: CommandCenterMode;
+  action_queue: OwnerActionV2[];
   departments: Array<
     SnapshotFile['departments'][number] & {
       health_score_current: number;

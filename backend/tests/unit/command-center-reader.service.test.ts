@@ -20,7 +20,16 @@ function makeService(scenario: 'full' | 'missing') {
     get: jest.fn().mockResolvedValue(null),
     set: jest.fn().mockResolvedValue(undefined),
   };
-  return { service: new CommandCenterReaderService(cache as never), cache };
+  // Mock the live action engine — the reader's only job here is to wire it in
+  // (full + non-degraded → call it; light/degraded → []), not to run real queries.
+  const actions = {
+    computeActionQueue: jest.fn().mockResolvedValue([]),
+  };
+  return {
+    service: new CommandCenterReaderService(cache as never, actions as never),
+    cache,
+    actions,
+  };
 }
 
 describe('CommandCenterReaderService', () => {
@@ -109,10 +118,55 @@ describe('CommandCenterReaderService', () => {
         get: jest.fn().mockResolvedValue(cached),
         set: jest.fn(),
       };
-      const service = new CommandCenterReaderService(cache as never);
+      const actions = { computeActionQueue: jest.fn().mockResolvedValue([]) };
+      const service = new CommandCenterReaderService(
+        cache as never,
+        actions as never,
+      );
       const result = await service.getCommandCenter();
       expect(result).toBe(cached);
       expect(cache.set).not.toHaveBeenCalled();
+      expect(actions.computeActionQueue).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('action_queue wiring (live engine)', () => {
+    const SAMPLE = [
+      {
+        id: 'seo:opportunity:R2',
+        title: 't',
+        department: 'seo',
+        source: 'seo',
+        action_type: 'business',
+        impact: 8,
+        urgency: 7,
+        data_confidence: 90,
+        effort: 4,
+        risk: 1,
+        score: 19,
+        reason: 'r',
+        evidence: [],
+        next_step: 'n',
+      },
+    ];
+
+    it('full + non-degraded: action_queue is populated from computeActionQueue', async () => {
+      const { service, actions } = makeService('full');
+      (actions.computeActionQueue as jest.Mock).mockResolvedValue(SAMPLE);
+      const res = await service.getCommandCenter();
+      expect(actions.computeActionQueue).toHaveBeenCalledWith(
+        expect.any(Array),
+        expect.any(Array),
+        'full',
+      );
+      expect(res.action_queue).toEqual(SAMPLE);
+    });
+
+    it('degraded: action_queue is [] and the engine is NEVER called', async () => {
+      const { service, actions } = makeService('missing');
+      const res = await service.getCommandCenter();
+      expect(res.action_queue).toEqual([]);
+      expect(actions.computeActionQueue).not.toHaveBeenCalled();
     });
   });
 
