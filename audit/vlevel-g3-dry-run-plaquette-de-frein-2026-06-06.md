@@ -55,20 +55,25 @@ Google** → risque **thin-content R8**, cf. outil `r8-diversity-check`).
 orphelins). Reste un changement structurel **mais pas une purge** ; les ~191 pages enfants
 ajoutées sont sans demande Google → risque **thin-content R8**. Liste candidate dans le diff JSON.
 
-## Totaux & classification ligne-par-ligne (pg_402) — Block D du harnais
-| Classification des V5 **actuels** | type_id |
-|---|---|
-| **KEEP** (conforme : sibling / enfant d'un véhicule classé) | **238** |
-| **REVIEW_OWNER** (sur modèle root) | **263** |
-| **REMOVE_CANDIDATE** (ni sibling ni enfant) | **0** |
-| (orphelins : type_id non joignable à `auto_type`/`auto_modele`) | **~80** |
-| V5 actuels **joignables** | 501 (sur 581 bruts) |
-| **ADD_CANDIDATE** (union, nouveaux : 9 siblings + 191 enfants) | **+200** |
-| V5 changés par energy (C) | 0 |
+## Totaux & classification ligne-par-ligne (pg_402) — **export faisant autorité**
+> Source : `…-v5_full_classification.csv` / `…-review-lists.json` (581 type_id distincts ;
+> 716 lignes keyword). Supersède l'agrégat préliminaire (qui surestimait KEEP).
 
-⇒ **Ce n'est PAS un « −381 »** (mon estimation initiale était fausse). Réalité mesurée :
-**garder 238 · réviser 263 roots · ajouter ~200 enfants · 0 suppression nette claire**
-(+ **~80 orphelins** type_id à investiguer — drapeau qualité distinct).
+| Classification des V5 **actuels** (distinct type_id) | type_id |
+|---|---|
+| **KEEP** (conforme : sibling / enfant d'un classé) | **212** |
+| **REVIEW_OWNER** = 263 root + ~80 orphelins + ~26 même-modèle/autre-motorisation | **369** |
+| **REMOVE_CANDIDATE** | **0** |
+| **ADD_CANDIDATE** (union, nouveaux candidats) | **189** |
+| V5 changés par energy (C) | **0** |
+| Total V5 distinct | **581** (212 + 369) |
+
+⇒ **Ce n'est PAS un « −381 »** (mon estimation initiale était fausse). Réalité exacte :
+**garder 212 · réviser 369 · 0 remove net · ajouter 189 candidats**.
+
+**Ambiguïté de règle surfacée par l'export** : ~26 V5 dont le **modèle est aussi cherché**
+(autre motorisation) ne sont ni sibling ni enfant → classés `REVIEW_OWNER`, **pas auto-remove**.
+Décision owner requise sur leur statut (faut-il garder une autre motorisation du même modèle ?).
 
 ## Verdict global : **GO-PARTIEL** (pour la PHASE SUIVANTE owner-gated, pas pour appliquer)
 - **C** : `GO` (no-op ici ; sim full-pipeline requise pour les autres gammes).
