@@ -257,6 +257,70 @@ async function decisionPack(pgId: number): Promise<void> {
   console.log(`✅ decision-pack généré (READ-ONLY): ${base}.{md,csv,json}\n   ${rows.length} lignes — ${Object.entries(counts).map(([k, v]) => `${k}=${v}`).join(' · ')}`);
 }
 
+// ---- helpers génériques modèle-seul ----
+const ROMAN: Record<string, string> = { '1': 'i', '2': 'ii', '3': 'iii', '4': 'iv', '5': 'v', '6': 'vi', '7': 'vii' };
+// génération détectée dans le keyword (ex. "clio 2" -> ii). Détection générique, pas de hardcode.
+function kwGen(kw: string): string | null {
+  const m = kw.toLowerCase().match(/\b(clio|megane|m[eé]gane|sc[eé]nic|golf|polo|astra|corsa|laguna|twingo|kangoo|punto|fiesta|focus)\s+([1-7])\b/);
+  return m ? ROMAN[m[2]] : null;
+}
+// génération romaine présente dans le nom modèle (ex. "CLIO III" -> iii)
+function modGen(name: string): string | null {
+  const m = (name || '').toLowerCase().match(/\b(vii|vi|iv|iii|ii|v|i)\b/);
+  return m ? m[1] : null;
+}
+const piecesUrl = (gamme: string, pg: number, mqA: string, mqId: any, mA: string, mId: any, tA: string, tid: any) =>
+  `/pieces/${gamme}-${pg}/${mqA}-${mqId}/${mA}-${mId}/${tA}-${tid}.html`;
+
+// generics-pack : re-cible TOUS les génériques modèle-seul (V2/V3/V4) des modèles seed-confirmés
+// vers leur diesel par défaut. mismatch génération texte/modèle -> REMAP_REVIEW (hors apply).
+async function genericsPack(pgId: number): Promise<void> {
+  const s = sb();
+  const seed = JSON.parse(fs.readFileSync(SEED_FILE, 'utf8'));
+  const reps: Record<string, any> = seed.diesel_default_by_modele || {};
+  const gamme = (await selectIn<any>(s, 'pieces_gamme', 'pg_id,pg_alias', 'pg_id', [String(pgId)]))[0]?.pg_alias || `pg-${pgId}`;
+  const TOKEN = /(dci|hdi|tdci|cdti|tdi|dti|bluehdi|tce|vti|thp|essence|diesel|gpl|16v|gti|\brs\b|sport|\d[.,\-]\d)/i;
+
+  const { data: kws, error } = await s.from('__seo_keywords')
+    .select('keyword,v_level,type_id,volume').eq('pg_id', pgId).eq('type', 'vehicle').in('v_level', ['V2', 'V3', 'V4']).range(0, 9999);
+  if (error) throw new Error(`__seo_keywords: ${error.message}`);
+  const generics = (kws as any[]).filter((k) => k.type_id != null && !TOKEN.test(k.keyword));
+
+  const curTids = generics.map((k) => String(k.type_id));
+  const repTids = Object.values(reps).map((r: any) => String(r.type_id));
+  const types = await selectIn<any>(s, 'auto_type', 'type_id,type_modele_id,type_alias,type_display', 'type_id', [...new Set([...curTids, ...repTids])]);
+  const typeMap = new Map(types.map((t) => [String(t.type_id), t]));
+  const modeleIds = [...new Set(types.map((t) => String(t.type_modele_id)).filter((x) => x && x !== 'null'))];
+  const modeles = await selectIn<any>(s, 'auto_modele', 'modele_id,modele_name,modele_alias,modele_marque_id', 'modele_id', modeleIds);
+  const modMap = new Map(modeles.map((m) => [String(m.modele_id), m]));
+  const marques = await selectIn<any>(s, 'auto_marque', 'marque_id,marque_alias', 'marque_id', [...new Set(modeles.map((m) => String(m.modele_marque_id)))]);
+  const mqMap = new Map(marques.map((m) => [String(m.marque_id), m]));
+
+  const rows = generics.map((k) => {
+    const t = typeMap.get(String(k.type_id)); if (!t) return null;
+    const modId = String(t.type_modele_id); const rep = reps[modId]; if (!rep) return null; // modèles seed-confirmés seulement
+    const m = modMap.get(modId); const mq = m ? mqMap.get(String(m.modele_marque_id)) : null;
+    const rt = typeMap.get(String(rep.type_id)); const rm = rt ? modMap.get(String(rt.type_modele_id)) : null; const rmq = rm ? mqMap.get(String(rm.modele_marque_id)) : null;
+    const newUrl = rt && rt.type_display === '1' && rm && rmq ? piecesUrl(gamme, pgId, rmq.marque_alias, rmq.marque_id, rm.modele_alias, rm.modele_id, rt.type_alias, rep.type_id) : '';
+    const kg = kwGen(k.keyword); const mg = modGen(m?.modele_name || '');
+    let decision: string, reason: string;
+    if (kg && mg && kg !== mg) { decision = 'REMAP_REVIEW'; reason = `texte génération ${kg.toUpperCase()} != modèle mappé ${m?.modele_name} (contamination) -> remap manuel, hors règle diesel`; }
+    else if (String(k.type_id) !== String(rep.type_id)) { decision = 'APPROVE_CANDIDATE'; reason = 'générique modèle-seul -> cible diesel par défaut'; }
+    else { decision = 'KEEP'; reason = 'déjà sur la cible diesel'; }
+    return { keyword: k.keyword, pg_id: pgId, gamme, v_level: k.v_level, volume: k.volume,
+      current_type_id: k.type_id, recommended_type_id: rep.type_id, recommended_url: newUrl,
+      recommended_label: rep.label, decision_source: rep.source, confidence: rep.confidence, owner_decision: decision, reason };
+  }).filter(Boolean) as any[];
+
+  rows.sort((a, b) => String(a.recommended_label).localeCompare(String(b.recommended_label)) || a.v_level.localeCompare(b.v_level) || a.keyword.localeCompare(b.keyword));
+  const base = path.join(AUDIT_DIR, `vlevel-v3-generics-pack-${gamme}-${DATE}`);
+  const cols = ['keyword', 'pg_id', 'gamme', 'v_level', 'volume', 'current_type_id', 'recommended_type_id', 'recommended_url', 'decision_source', 'confidence', 'owner_decision', 'reason'];
+  fs.writeFileSync(`${base}.csv`, [cols.join(';'), ...rows.map((r) => cols.map((c) => String(r[c] ?? '').replace(/;/g, ',')).join(';'))].join('\n') + '\n');
+  fs.writeFileSync(`${base}.json`, JSON.stringify({ pg_id: pgId, gamme, generated: DATE, mutation: false, rows }, null, 2));
+  const counts = rows.reduce((a: any, r) => ((a[r.owner_decision] = (a[r.owner_decision] || 0) + 1), a), {});
+  console.log(`✅ generics-pack généré (READ-ONLY): ${base}.{csv,json}\n   ${rows.length} lignes — ${Object.entries(counts).map(([k, v]) => `${k}=${v}`).join(' · ')}`);
+}
+
 function readPackCsv(file: string): Record<string, string>[] {
   const lines = fs.readFileSync(file, 'utf8').trim().split('\n');
   const head = lines[0].split(';');
@@ -310,8 +374,10 @@ async function applyPack(file: string): Promise<void> {
     console.log(`  • ${r.keyword} [pg ${r.pg_id}] : ${r.current_type_id || 'NULL'} -> ${r.recommended_type_id}`);
     console.log(`      avant : ${r.current_url || '(aucune)'}`);
     console.log(`      après : ${r.recommended_url}`);
-    out.push(`-- ${r.keyword} (pg ${r.pg_id}) : ${r.current_type_id || 'NULL'} -> ${r.recommended_type_id}`);
-    out.push(`UPDATE "__seo_keywords" SET type_id = ${r.recommended_type_id} WHERE pg_id = ${r.pg_id} AND keyword = '${r.keyword.replace(/'/g, "''")}' AND v_level IN ('V2','V3'); -- rollback: SET type_id = ${r.current_type_id || 'NULL'}`);
+    // v_level exact si le pack le porte (packs génériques V2/V3/V4), sinon champions V2/V3
+    const vl = r.v_level ? `v_level = '${r.v_level}'` : `v_level IN ('V2','V3')`;
+    out.push(`-- ${r.keyword} (pg ${r.pg_id}, ${r.v_level || 'V2/V3'}) : ${r.current_type_id || 'NULL'} -> ${r.recommended_type_id}`);
+    out.push(`UPDATE "__seo_keywords" SET type_id = ${r.recommended_type_id} WHERE pg_id = ${r.pg_id} AND keyword = '${r.keyword.replace(/'/g, "''")}' AND ${vl}; -- rollback: SET type_id = ${r.current_type_id || 'NULL'}`);
   }
   const sqlFile = file.replace(/\.csv$/, `.apply-dryrun.sql`);
   fs.writeFileSync(sqlFile, out.join('\n') + '\n');
@@ -322,7 +388,8 @@ async function applyPack(file: string): Promise<void> {
 (async () => {
   const mode = process.argv[2];
   if (mode === 'decision-pack') await decisionPack(Number(arg('--pg-id') || 402));
+  else if (mode === 'generics-pack') await genericsPack(Number(arg('--pg-id') || 402));
   else if (mode === 'validate-pack') validatePack(arg('--file')!);
   else if (mode === 'apply-pack') await applyPack(arg('--file')!);
-  else { console.error('Usage: vlevel-v3-pipeline.ts <decision-pack|validate-pack|apply-pack> [--pg-id N | --file f] [--dry-run|--apply --owner-approved]'); process.exitCode = 1; }
+  else { console.error('Usage: vlevel-v3-pipeline.ts <decision-pack|generics-pack|validate-pack|apply-pack> [--pg-id N | --file f] [--dry-run|--apply --owner-approved]'); process.exitCode = 1; }
 })().catch((e) => { console.error('ERR:', e.message); process.exitCode = 1; });

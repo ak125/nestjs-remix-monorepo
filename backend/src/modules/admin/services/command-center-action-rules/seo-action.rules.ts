@@ -9,7 +9,11 @@
  *   - product (/pieces/…)            → CA impact (title/meta + bloc commercial + maillage)
  *   - content (/blog-… /conseils)    → traffic impact (CTR title/meta + maillage)
  */
-import { CONFIDENCE_BY_CERT, type RawAction } from './score-action';
+import {
+  CONFIDENCE_BY_CERT,
+  type RawAction,
+  type SeoOpportunityDetail,
+} from './score-action';
 
 export interface GscOpportunityRow {
   page: string;
@@ -68,10 +72,18 @@ export function buildSeoOpportunityActions(
     const list = byKind.get(kind);
     if (!list || !list.length) continue;
     const totalImp = list.reduce((s, r) => s + r.impressions, 0);
-    const top = [...list]
-      .sort((a, b) => b.impressions - a.impressions)
-      .slice(0, 3);
+    const sorted = [...list].sort((a, b) => b.impressions - a.impressions);
     const m = KIND_META[kind];
+    // PR2 drill-down: every page behind this action (already bounded by the RPC
+    // p_limit). ctr = clicks/impressions (~0 here, since the source filters to
+    // zero-click) — the frontend renders the per-URL table.
+    const details: SeoOpportunityDetail[] = sorted.map((r) => ({
+      url: r.page,
+      page_kind: kind,
+      impressions: r.impressions,
+      clicks: r.clicks,
+      ctr: r.impressions > 0 ? r.clicks / r.impressions : 0,
+    }));
     out.push({
       id: `seo:opportunity:${kind}`,
       title: `${list.length} ${m.label} à fort potentiel SEO (impressions sans clic)`,
@@ -84,10 +96,11 @@ export function buildSeoOpportunityActions(
       effort: kind === 'product' ? 4 : 3,
       risk: 1,
       reason: `${list.length} ${m.label} cumulent ${totalImp} impressions sur 120j avec ~0 clic → CTR à récupérer.`,
-      evidence: top.map(
-        (r) => `${r.page} (${r.impressions} imp, ${r.clicks} clic)`,
-      ),
+      evidence: sorted
+        .slice(0, 3)
+        .map((r) => `${r.page} (${r.impressions} imp, ${r.clicks} clic)`),
       next_step: m.step,
+      details,
     });
   }
   return out;

@@ -42,6 +42,44 @@ describe('score caps — honesty invariant', () => {
     expect(a.action_type).toBe('business');
   });
 
+  it('PR2: normalises details to null when a rule provides none', () => {
+    expect(finalizeAction(biz(90)).details).toBeNull();
+  });
+
+  it('PR2: preserves a provided details payload', () => {
+    const withDetails: RawAction = {
+      ...biz(90),
+      details: [
+        {
+          url: 'u',
+          page_kind: 'product',
+          impressions: 10,
+          clicks: 0,
+          ctr: 0,
+        },
+      ],
+    };
+    expect(finalizeAction(withDetails).details).toHaveLength(1);
+  });
+
+  it('PR2: strips details when a low-confidence action is downgraded to certification', () => {
+    const lowWithDetails: RawAction = {
+      ...biz(BUSINESS_CONFIDENCE_FLOOR - 1),
+      details: [
+        {
+          url: 'u',
+          page_kind: 'product',
+          impressions: 10,
+          clicks: 0,
+          ctr: 0,
+        },
+      ],
+    };
+    const a = finalizeAction(lowWithDetails);
+    expect(a.action_type).toBe('certification'); // honesty cap fired
+    expect(a.details).toBeNull(); // non-certified → no presentational drill-down
+  });
+
   it('also gates "risk" actions below the floor', () => {
     const a = finalizeAction({ ...biz(20), action_type: 'risk' });
     expect(a.action_type).toBe('certification');
@@ -188,6 +226,23 @@ describe('SEO opportunity rules — real business actions (certified source)', (
 
   it('returns nothing on empty input', () => {
     expect(buildSeoOpportunityActions([])).toEqual([]);
+  });
+
+  it('PR2: emits a per-URL details payload (sorted desc; ctr = clicks/impressions)', () => {
+    const out = buildSeoOpportunityActions([
+      { page: 'https://x/pieces/a.html', impressions: 200, clicks: 0 },
+      { page: 'https://x/pieces/b.html', impressions: 50, clicks: 5 },
+    ]).map(finalizeAction);
+    const product = out.find((a) => a.id === 'seo:opportunity:product')!;
+    expect(product.details).toHaveLength(2);
+    expect(product.details![0]).toEqual({
+      url: 'https://x/pieces/a.html',
+      page_kind: 'product',
+      impressions: 200,
+      clicks: 0,
+      ctr: 0,
+    });
+    expect(product.details![1].ctr).toBeCloseTo(0.1, 5); // 5/50
   });
 });
 
