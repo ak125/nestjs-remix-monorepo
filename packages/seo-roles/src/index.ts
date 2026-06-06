@@ -98,6 +98,7 @@ export {
   type VLevelId,
   VLEVEL_V2_CAP,
   V_GROUP_KEY,
+  vLevelGroupKey,
   type VLevelInvariant,
   V_LEVEL_INVARIANTS,
   V_PROPAGATE,

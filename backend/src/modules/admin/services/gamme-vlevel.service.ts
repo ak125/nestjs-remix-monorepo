@@ -11,6 +11,7 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
+import { VLEVEL_V2_CAP, vLevelGroupKey } from '@repo/seo-roles';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 
 interface VLevelKeywordRow {
@@ -184,9 +185,10 @@ export class GammeVLevelService extends SupabaseBaseService {
       // 4. Group CSV vehicle keywords by [model+energy] or [model] if universelle
       const byModelEnergy = new Map<string, VLevelKeywordRow[]>();
       for (const kw of csvVehicleKws) {
-        const key = gammeUniverselle
-          ? `${kw.model || '_no_model'}`
-          : `${kw.model || '_no_model'}|${kw.energy || 'unknown'}`;
+        // Clé de groupe canonique partagée (@repo/seo-roles) — lowercase, fallbacks
+        // `_no_model`/`unknown`. Neutre ici : la donnée live est déjà lowercase et le
+        // service utilise déjà `energy||'unknown'` (cf. probe G2).
+        const key = vLevelGroupKey(kw.model, kw.energy, { gammeUniverselle });
         if (!byModelEnergy.has(key)) byModelEnergy.set(key, []);
         byModelEnergy.get(key)!.push(kw);
       }
@@ -231,11 +233,14 @@ export class GammeVLevelService extends SupabaseBaseService {
       const seenModelEnergy = new Set<string>();
       const top10: VLevelKeywordRow[] = [];
       for (const kw of v3Champions) {
-        const modelEnergy = `${(kw.model || '').toLowerCase()}|${(kw.energy || '').toLowerCase()}`;
+        // Même clé canonique que le groupement (plus de divergence group/dedup en casse).
+        const modelEnergy = vLevelGroupKey(kw.model, kw.energy, {
+          gammeUniverselle,
+        });
         if (seenModelEnergy.has(modelEnergy)) continue;
         seenModelEnergy.add(modelEnergy);
         top10.push(kw);
-        if (top10.length >= 10) break;
+        if (top10.length >= VLEVEL_V2_CAP) break;
       }
       const top10Ids = new Set(top10.map((c) => c.id));
 

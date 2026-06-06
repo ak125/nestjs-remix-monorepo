@@ -400,3 +400,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/content-raw-evidence-inventory`
 - **Décision** : feat(content): read-only deterministic RAW evidence inventory (pilote filtre-a-air)
 - **Sortie** : PR aucune | commits a9a042483
+
+## 2026-06-05 — g2-vlevel-invariants-runtime-wiring (auto)
+
+- **Branche** : `g2-vlevel-invariants-runtime-wiring`
+- **Décision** : fix(seo-roles): wire V-Level invariants without recalculation
+- **Sortie** : PR #863 | commits 58af79a1f

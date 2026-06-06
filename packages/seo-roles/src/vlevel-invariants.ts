@@ -40,6 +40,28 @@ export const V_GROUP_KEY = {
 } as const;
 
 /**
+ * Clé de groupe/dedup canonique `[modèle(+énergie)]` — lowercase, fallbacks `_no_model` /
+ * `unknown`, énergie ignorée si gamme universelle. À utiliser pour le groupement V3 ET la
+ * dedup V2 d'un MÊME calculateur, afin qu'ils ne puissent plus diverger en casse.
+ *
+ * ⚠️ Sémantique `energy || 'unknown'` (null == 'unknown'). Le calculateur d'import CLI
+ * (`scripts/insert-missing-keywords.ts`) utilise l'énergie BRUTE (null ≠ 'unknown') et la
+ * donnée live contient les deux → le brancher ici serait DATA-AFFECTING (fusion de groupes,
+ * change l'élection V3/V4). C'est donc différé à G3 (dry-run before/after). En G2 ce helper
+ * n'est câblé QUE dans le service admin (`gamme-vlevel.service.ts`), où il est neutre.
+ */
+export function vLevelGroupKey(
+  model: string | null | undefined,
+  energy: string | null | undefined,
+  opts?: { gammeUniverselle?: boolean },
+): string {
+  const m = (model ?? "").toLowerCase() || "_no_model";
+  if (opts?.gammeUniverselle) return m;
+  const e = (energy ?? "").toLowerCase() || "unknown";
+  return `${m}|${e}`;
+}
+
+/**
  * Définition de chaque niveau (intention owner figée 2026-06-05).
  * `persisted` = présent en DB aujourd'hui ; `built` = produit par le pipeline aujourd'hui.
  */
@@ -134,16 +156,10 @@ export const V_LEVEL_KNOWN_GAPS: readonly VLevelKnownGap[] = [
     gate: "G1",
   },
   {
-    id: "v2-dedup-case-mismatch",
+    id: "v2-dedup-case-mismatch-and-script-energy-normalization",
     description:
-      "Clé groupe V3 non-lowercase vs clé dedup V2 lowercase. INERTE aujourd'hui (198/198 modèles déjà lowercase) → code smell, normaliser.",
-    gate: "G2",
-  },
-  {
-    id: "propagate-comment-false",
-    description:
-      "Commentaire insert-missing-keywords.ts:1037-1039 décrit une règle (champion→V2, autres→V3, héritage total) qui NE correspond PAS à la fonction DB réelle (backfill-NULL-only). Corriger le commentaire.",
-    gate: "G2",
+      "Service side is neutralized via shared lowercase helper (vLevelGroupKey). CLI script still uses raw energy; live data has NULL and 'unknown', so switching it to the canonical helper is data-affecting and deferred to G3 with before/after proof.",
+    gate: "G3",
   },
   {
     id: "count-vehicles-no-gamme-absent",
