@@ -144,6 +144,41 @@ export class PricingRepository extends SupabaseBaseService {
     return data as { committed: number; skipped: number; missing: number };
   }
 
+  /**
+   * Dispo-only ACTIVATION via the governed server-side function. Flips pri_dispo
+   * null/'0' -> '1' (agence) | '2' (groupe) PER ROW, brand-locked, skipping
+   * FROZEN/MANUAL/already-sellable. Reversible via {@link rollbackBatch}
+   * (pieces_price_history). Prices are never mutated. See migration
+   * 20260606_pricing_activate_chunk.sql.
+   */
+  async activateChunk(input: {
+    batchId: string;
+    chunkId: string;
+    supplier: string; // pri_pm_id (brand-lock)
+    operator: string | null;
+    rows: { piece_id_i: number; pri_type: string; dispo: '1' | '2' }[];
+  }): Promise<{
+    activated: number;
+    skipped: number;
+    missing: number;
+    rejected: number;
+  }> {
+    const { data, error } = await this.callRpc('pricing_activate_chunk', {
+      p_batch_id: input.batchId,
+      p_chunk_id: input.chunkId,
+      p_supplier: input.supplier,
+      p_operator: input.operator,
+      p_rows: input.rows,
+    });
+    if (error) throw error;
+    return data as {
+      activated: number;
+      skipped: number;
+      missing: number;
+      rejected: number;
+    };
+  }
+
   async rollbackBatch(
     batchId: string,
     supplier: string,
