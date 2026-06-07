@@ -31,6 +31,9 @@
 -- SCOPE. Touches EXACTLY pieces.piece_display. NEVER touches pieces_gamme.pg_display,
 --   auto_type.type_display, prices, pri_dispo, the sitemap, indexation, or any page row.
 --   Gamme/véhicule visibility is out of scope (a separate, SEO-gated concern).
+--   p_gamme_ids (optional) only RESTRICTS which pieces are considered (a pieces.piece_ga_id
+--   row-filter, for staged per-cohort commits) — it NEVER mutates pg_display or any gamme
+--   row; gamme visibility stays out of scope.
 --
 -- SAFETY INVARIANTS:
 --   - brand-locked by p_supplier (pieces.piece_pm_id): never touches a non-brand piece;
@@ -87,7 +90,8 @@ CREATE OR REPLACE FUNCTION catalog_display_quarantine(
   p_batch_id  UUID,          -- governed batch (price_import_batches); required for commit
   p_supplier  TEXT,          -- pieces.piece_pm_id (brand), e.g. '3410' (NK). Brand-lock.
   p_operator  TEXT,
-  p_dry_run   BOOLEAN DEFAULT true   -- safe default: project, do not write
+  p_dry_run   BOOLEAN DEFAULT true,   -- safe default: project, do not write
+  p_gamme_ids INTEGER[] DEFAULT NULL  -- optional cohort scope (pieces.piece_ga_id); NULL = whole brand
 ) RETURNS JSONB
 LANGUAGE plpgsql
 AS $$
@@ -136,13 +140,21 @@ BEGIN
           AND pp.pri_pm_id = p_supplier
           AND pp.pri_dispo IN ('1', '2', '3')
           AND pp.pri_vente_ttc_n > 0
-      );
+      )
+      -- (3) optional cohort scope. NULL = the whole brand (all candidate refs). When the
+      --     owner passes a gamme-id list (pieces.piece_ga_id), the action is restricted to
+      --     those gammes — this only NARROWS the set, so every safety invariant above
+      --     (brand-lock, activate-domain disjointness, storefront non-vendability,
+      --     reversibility) holds unchanged on the subset. Enables staged commits
+      --     (e.g. pure-dead gammes first, then mixed) with clean per-batch rollback.
+      AND (p_gamme_ids IS NULL OR p.piece_ga_id = ANY(p_gamme_ids));
 
   SELECT count(*) INTO v_eligible FROM _disp_quarantine_eligible;
 
   IF p_dry_run THEN
     RETURN jsonb_build_object(
-      'dry_run', true, 'supplier', p_supplier, 'eligible', v_eligible
+      'dry_run', true, 'supplier', p_supplier, 'eligible', v_eligible,
+      'gamme_ids', p_gamme_ids
     );
   END IF;
 
@@ -158,10 +170,10 @@ BEGIN
 
   RETURN jsonb_build_object(
     'dry_run', false, 'supplier', p_supplier, 'batch_id', p_batch_id,
-    'eligible', v_eligible, 'hidden', v_hidden
+    'eligible', v_eligible, 'hidden', v_hidden, 'gamme_ids', p_gamme_ids
   );
 END;
 $$;
 
-COMMENT ON FUNCTION catalog_display_quarantine(UUID, TEXT, TEXT, BOOLEAN) IS
-  'Catalog visibility quarantine (inverse of catalog_display_activate): flips pieces.piece_display true -> false for brand-locked refs that are currently visible AND non-vendable per the storefront isSellable gate (no pieces_price row with pri_dispo IN 1,2,3 AND pri_vente_ttc_n > 0). Structurally disjoint from the activate domain (excludes any pri_dispo IN 1,2 ref). Set-based + idempotent. p_dry_run=true (default) projects without writing. Never touches gamme/vehicle/price/dispo. Journals to pieces_display_history; reverse with catalog_display_rollback_batch. Owner-gated.';
+COMMENT ON FUNCTION catalog_display_quarantine(UUID, TEXT, TEXT, BOOLEAN, INTEGER[]) IS
+  'Catalog visibility quarantine (inverse of catalog_display_activate): flips pieces.piece_display true -> false for brand-locked refs that are currently visible AND non-vendable per the storefront isSellable gate (no pieces_price row with pri_dispo IN 1,2,3 AND pri_vente_ttc_n > 0). Structurally disjoint from the activate domain (excludes any pri_dispo IN 1,2 ref). Optional p_gamme_ids (pieces.piece_ga_id) narrows the action to a cohort for staged commits (NULL = whole brand). Set-based + idempotent. p_dry_run=true (default) projects without writing. Never touches gamme/vehicle/price/dispo. Journals to pieces_display_history; reverse with catalog_display_rollback_batch. Owner-gated.';

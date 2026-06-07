@@ -307,18 +307,22 @@ export class PricingRepository extends SupabaseBaseService {
     supplier: string; // pieces.piece_pm_id (brand-lock)
     operator: string | null;
     dryRun: boolean;
+    /** optional cohort scope (pieces.piece_ga_id); null/undefined = whole brand */
+    gammeIds?: number[] | null;
   }): Promise<{
     dry_run: boolean;
     supplier: string;
     eligible: number;
     hidden?: number;
     batch_id?: string;
+    gamme_ids?: number[] | null;
   }> {
     const { data, error } = await this.callRpc('catalog_display_quarantine', {
       p_batch_id: input.batchId,
       p_supplier: input.supplier,
       p_operator: input.operator,
       p_dry_run: input.dryRun,
+      p_gamme_ids: input.gammeIds ?? null,
     });
     if (error) throw error;
     return data as {
@@ -327,6 +331,7 @@ export class PricingRepository extends SupabaseBaseService {
       eligible: number;
       hidden?: number;
       batch_id?: string;
+      gamme_ids?: number[] | null;
     };
   }
 

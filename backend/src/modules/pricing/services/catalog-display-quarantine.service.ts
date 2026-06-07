@@ -27,6 +27,8 @@ export interface DisplayQuarantineRequest {
   /** pieces.piece_pm_id (brand), e.g. '3410' (NK). Brand-lock. */
   supplierId: string;
   operator?: string | null;
+  /** optional cohort scope (pieces.piece_ga_id); omitted/null = whole brand */
+  gammeIds?: number[] | null;
 }
 
 @Injectable()
@@ -35,8 +37,14 @@ export class CatalogDisplayQuarantineService {
 
   constructor(private readonly repo: PricingRepository) {}
 
-  /** Read-only projection of how many visible-but-non-vendable refs WOULD be hidden. */
-  async dryRun(supplierId: string): Promise<{ eligible: number }> {
+  /**
+   * Read-only projection of how many visible-but-non-vendable refs WOULD be hidden.
+   * `gammeIds` (optional, pieces.piece_ga_id) scopes the projection to a cohort.
+   */
+  async dryRun(
+    supplierId: string,
+    gammeIds?: number[] | null,
+  ): Promise<{ eligible: number }> {
     if (!supplierId) {
       throw new BadRequestException('supplierId is required');
     }
@@ -45,9 +53,11 @@ export class CatalogDisplayQuarantineService {
       supplier: supplierId,
       operator: null,
       dryRun: true,
+      gammeIds: gammeIds ?? null,
     });
     this.logger.log(
-      `[CATALOG_DISPLAY] quarantine dry-run supplier=${supplierId} eligible=${res.eligible}`,
+      `[CATALOG_DISPLAY] quarantine dry-run supplier=${supplierId} ` +
+        `gammes=${gammeIds?.length ?? 'all'} eligible=${res.eligible}`,
     );
     return { eligible: res.eligible };
   }
@@ -78,6 +88,7 @@ export class CatalogDisplayQuarantineService {
         supplier: req.supplierId,
         operator: req.operator ?? null,
         dryRun: false,
+        gammeIds: req.gammeIds ?? null,
       });
       await this.repo.setBatchStatus(batchId, 'COMMITTED', {
         committed_rows: res.hidden ?? 0,
@@ -85,7 +96,7 @@ export class CatalogDisplayQuarantineService {
       });
       this.logger.log(
         `[CATALOG_DISPLAY] quarantine commit batchId=${batchId} supplier=${req.supplierId} ` +
-          `eligible=${res.eligible} hidden=${res.hidden ?? 0}`,
+          `gammes=${req.gammeIds?.length ?? 'all'} eligible=${res.eligible} hidden=${res.hidden ?? 0}`,
       );
       return {
         batchId,

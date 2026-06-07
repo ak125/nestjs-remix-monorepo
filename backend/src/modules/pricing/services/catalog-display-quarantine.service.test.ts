@@ -52,9 +52,30 @@ describe('CatalogDisplayQuarantineService', () => {
         supplier: '3410',
         operator: null,
         dryRun: true,
+        gammeIds: null,
       });
       expect(repo.createActivationBatch).not.toHaveBeenCalled();
       expect(repo.setBatchStatus).not.toHaveBeenCalled();
+    });
+
+    it('forwards a cohort gamme scope (staged dry-run)', async () => {
+      const repo = makeRepo({
+        displayQuarantine: jest
+          .fn()
+          .mockResolvedValue({ dry_run: true, supplier: '3410', eligible: 862 }),
+      });
+      const svc = new CatalogDisplayQuarantineService(repo);
+
+      const res = await svc.dryRun('3410', [2, 4, 13, 188, 286, 1145]);
+
+      expect(res).toEqual({ eligible: 862 });
+      expect(repo.displayQuarantine).toHaveBeenCalledWith({
+        batchId: null,
+        supplier: '3410',
+        operator: null,
+        dryRun: true,
+        gammeIds: [2, 4, 13, 188, 286, 1145],
+      });
     });
 
     it('rejects an empty supplierId', async () => {
@@ -95,6 +116,7 @@ describe('CatalogDisplayQuarantineService', () => {
         supplier: '3410',
         operator: 'owner',
         dryRun: false,
+        gammeIds: null,
       });
       expect(repo.setBatchStatus).toHaveBeenNthCalledWith(
         1,

@@ -114,10 +114,13 @@ export class PricingImportController {
     );
   }
 
-  /** Read-only quarantine projection — how many visible-but-non-vendable refs (no writes). */
+  /**
+   * Read-only quarantine projection — how many visible-but-non-vendable refs (no writes).
+   * Optional `gammeIds` (pieces.piece_ga_id) scopes the projection to a cohort.
+   */
   @Post('display/quarantine/dry-run')
   displayQuarantineDryRun(@Body() body: DisplayQuarantineRequest) {
-    return this.displayQuarantineService.dryRun(body.supplierId);
+    return this.displayQuarantineService.dryRun(body.supplierId, body.gammeIds);
   }
 
   /** Apply piece_display true→false for non-vendable refs — requires `confirm:true`. */
