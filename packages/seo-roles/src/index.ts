@@ -78,6 +78,7 @@ export {
   type SupportedLocale,
   normalizeSeoText,
   normalizePhrase,
+  modelMatchKey,
   tokenize,
   stem,
   tokenizeAndStem,
