@@ -12,6 +12,9 @@
  *   POST /api/admin/pricing/display/quarantine/dry-run → non-vendable hide projection (no writes)
  *   POST /api/admin/pricing/display/quarantine/commit  → flip piece_display true→false (confirm:true)
  *   POST /api/admin/pricing/display/quarantine/rollback → restore piece_display for a quarantine batch
+ *   POST /api/admin/pricing/display/gamme/dry-run  → pg_display projection, level-4 (no writes)
+ *   POST /api/admin/pricing/display/gamme/commit   → flip pg_display→'1' level-4 hubs (confirm:true)
+ *   POST /api/admin/pricing/display/gamme/rollback → restore pg_display for a gamme batch
  */
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { IsAdminGuard } from '@auth/is-admin.guard';
@@ -136,6 +139,31 @@ export class PricingImportController {
     @Body() body: { batchId: string; supplierId: string },
   ) {
     return this.displayQuarantineService.rollback(
+      body.batchId,
+      body.supplierId,
+    );
+  }
+
+  /**
+   * Read-only GAMME visibility projection (étape B1, no writes). Returns the owner-gate
+   * values eligible(gammes)/refs(pieces)/gammeIds (NK expected: 1 / 11 / {1330}).
+   */
+  @Post('display/gamme/dry-run')
+  gammeDisplayDryRun(@Body() body: DisplayActivationRequest) {
+    return this.displayActivationService.gammeDryRun(body.supplierId);
+  }
+
+  /** Apply pg_display -> '1' for masked level-4 hub gammes — requires `confirm:true`. */
+  @Post('display/gamme/commit')
+  gammeDisplayCommit(
+    @Body() body: DisplayActivationRequest & { confirm?: boolean },
+  ) {
+    return this.displayActivationService.gammeCommit(body);
+  }
+
+  @Post('display/gamme/rollback')
+  gammeDisplayRollback(@Body() body: { batchId: string; supplierId: string }) {
+    return this.displayActivationService.gammeRollback(
       body.batchId,
       body.supplierId,
     );
