@@ -40,6 +40,15 @@ if echo "$QUERY_UPPER" | grep -qE 'TRUNCATE\s+'; then
   exit 2
 fi
 
+# Guard 6: Block raw DML on governed tables (BLOCK placed before the WARN guards
+# below so a combined statement cannot slip through on a WARN early-exit).
+# pieces / pieces_price = PricingModule gouverne ; __seo_* = pas de touch meta/H1 sans autorisation.
+# Une mutation legitime de ces surfaces passe par le module/RPC gouverne, pas du SQL brut en session.
+if echo "$QUERY_UPPER" | grep -qE '\b(UPDATE|DELETE\s+FROM)\s+(PUBLIC\.)?"?(PIECES_PRICE|PIECES|__SEO_[A-Z0-9_]+)\b'; then
+  echo "BLOCKED: DML brut (UPDATE/DELETE) sur pieces/pieces_price/__seo_*. Passer par le module/RPC gouverne (PricingModule / RPC), pas du SQL brut en session." >&2
+  exit 2
+fi
+
 # Guard 4: Warn on ALTER TABLE DROP COLUMN (data loss potential)
 if echo "$QUERY_UPPER" | grep -qE 'ALTER\s+TABLE.*DROP\s+COLUMN'; then
   echo "WARNING: ALTER TABLE DROP COLUMN detecte. Verifier qu'aucune donnee critique n'est perdue." >&2

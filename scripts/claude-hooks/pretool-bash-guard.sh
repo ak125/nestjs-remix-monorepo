@@ -50,4 +50,12 @@ if echo "$COMMAND" | grep -qE 'npm\s+(install|uninstall|update|remove|add)\s'; t
   exit 2
 fi
 
+# Guard 6: Block version-tag create/push (v* = PROD deploy trigger, owner GO only)
+# Covers: git tag v1.2.3 / git tag -a v1.2.3 / git tag -s v1.2.3 / git push origin v1.2.3 / git push --tags
+# Rationale: tag v* promeut :preprod -> :production (voir .claude/rules/deployment.md).
+if echo "$COMMAND" | grep -qE 'git\s+tag\b.*\bv[0-9]+(\.[0-9]+){1,3}\b|git\s+push\b.*(--tags|\bv[0-9]+(\.[0-9]+){1,3}\b)'; then
+  echo "BLOCKED: tag v* = declencheur deploy PROD (voir .claude/rules/deployment.md). GO owner explicite requis." >&2
+  exit 2
+fi
+
 exit 0
