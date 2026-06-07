@@ -963,6 +963,118 @@ async function blockedPlan(family: string): Promise<void> {
   console.log(`   action: ${Object.entries(byAction).map(([k, v]) => `${k}=${v}`).join(' · ')}`);
 }
 
+// blocked-apply-pack : package SQL gardé pour les cas CLAIRS du blocked-plan UNIQUEMENT
+// (RESOLVE_CANDIDATE + REMAP_REVIEW TecDoc avec candidat rendable). Transforme des champions cassés
+// (page /pieces impossible) en champions rendables. READ-ONLY (génère le .sql, n'écrit jamais en DB).
+// EXCLUT : QUARANTINE · DEFER_CATALOG · WRONG_GAMME · V5 · 206 · clio 3 1.5 dci · toute autre gamme.
+async function blockedApplyPack(family: string): Promise<void> {
+  const pgIds = FAMILIES[family];
+  if (!pgIds) throw new Error(`famille inconnue: ${family}`);
+  const jf = path.join(AUDIT_DIR, `vlevel-blocked-${family}-${DATE}.json`);
+  if (!fs.existsSync(jf)) throw new Error(`blocked-plan absent: ${jf} (lancer blocked-plan d'abord)`);
+  const rows = (JSON.parse(fs.readFileSync(jf, 'utf8')).rows as any[]);
+
+  // cas CLAIRS : candidat rendable présent ET (RESOLVE_CANDIDATE OU REMAP_REVIEW TecDoc-orphan)
+  const isClear = (r: any) => r.candidate_type_id && r.candidate_url &&
+    (r.proposed_action === 'RESOLVE_CANDIDATE' || (r.proposed_action === 'REMAP_REVIEW' && r.blocked_reason === 'TECDOC_ORPHAN'));
+  const clear = rows.filter(isClear);
+  const excluded = rows.filter((r) => !isClear(r));
+
+  // CONTRÔLE : re-vérifier display=1 des candidats (DB live) — STOP si un seul échoue
+  const s = sb();
+  const candTids = [...new Set(clear.map((r) => String(r.candidate_type_id)))];
+  const candTypes = await selectIn<any>(s, 'auto_type', 'type_id,type_display', 'type_id', candTids);
+  const displayOk = new Map(candTypes.map((t) => [String(t.type_id), t.type_display === '1']));
+  const bad = clear.filter((r) => !displayOk.get(String(r.candidate_type_id)));
+  if (bad.length) {
+    console.error(`⛔ STOP : ${bad.length} candidat(s) non display=1 (jamais dans un apply) :`);
+    bad.forEach((r) => console.error(`   ${r.keyword} -> ${r.candidate_type_id}`));
+    process.exitCode = 1; return;
+  }
+
+  const N = clear.length;
+  const byPg = clear.reduce((a, r) => ((a[r.pg_id] = (a[r.pg_id] || 0) + 1), a), {} as Record<string, number>);
+  const byAct = clear.reduce((a, r) => ((a[r.proposed_action] = (a[r.proposed_action] || 0) + 1), a), {} as Record<string, number>);
+  const exByAct = excluded.reduce((a, r) => ((a[r.proposed_action] = (a[r.proposed_action] || 0) + 1), a), {} as Record<string, number>);
+
+  // contrôle CYLINDRÉE : le candidat correspond-il à la cylindrée explicite du keyword (ex. "1.9 dci") ?
+  // (modèle-seul = pas de cylindrée explicite -> OK ; sinon l'alias candidat doit la contenir).
+  const kwDisp = (kw: string): string => (kw.match(/\b(\d[.,]\d)\b/)?.[1] || '').replace(/[.,]/, '-');
+  const candAlias = (url: string): string => (url.match(/\/([^/]+)-\d+\.html$/)?.[1] || '');
+  const engineMatch = (r: any): boolean => { const d = kwDisp(r.keyword); return !d || candAlias(r.candidate_url).includes(d); };
+  const mismatches = clear.filter((r) => !engineMatch(r));
+
+  // VALUES : (pg, keyword, old_tid|'' si NULL, new_tid). match coalesce(type_id,'')=old gère le NULL.
+  const vals = clear.map((r, i) =>
+    `    (${r.pg_id}, ${sqlLit(r.keyword)}, ${sqlLit(String(r.current_type_id || ''))}, ${sqlLit(String(r.candidate_type_id))})${i < clear.length - 1 ? ',' : ''}  -- ${r.blocked_reason} ${r.proposed_action}${engineMatch(r) ? '' : ' [!!CYLINDREE != keyword]'} -> ${r.candidate_url}`).join('\n');
+  const rbVals = clear.map((r) =>
+    `--     (${r.pg_id}, ${sqlLit(r.keyword)}, ${sqlLit(String(r.current_type_id || ''))}, ${sqlLit(String(r.candidate_type_id))})${''}`).join(',\n');
+
+  const sql = [
+    `-- ====================================================================`,
+    `-- V-LEVEL APPLY — champions V3 BLOCKED cas CLAIRS -> rendables — ${family} (pg ${pgIds.join('/')}) · ${DATE}`,
+    `-- ${N} lignes : RESOLVE_CANDIDATE=${byAct.RESOLVE_CANDIDATE || 0} · REMAP_REVIEW(TecDoc rendable)=${byAct.REMAP_REVIEW || 0}.`,
+    `-- Transforme UNIQUEMENT des champions cassés (type_id NULL/non-rendable) en champions rendables (display=1).`,
+    `-- EXCLUS (confirmés) : ${Object.entries(exByAct).map(([k, v]) => `${k}=${v}`).join(' · ')} · V5 · 206 · clio 3 1.5 dci · autres gammes.`,
+    `-- NE PAS mélanger avec décontamination / réélection / V5 / quarantine / wrong_gamme.`,
+    `-- OWNER-GATED · RÉVERSIBLE · ZÉRO PROD · GÉNÉRÉ. Tous candidats re-vérifiés display=1.`,
+    `-- ====================================================================`,
+    ``,
+    `-- ÉTAPE 0 — BEFORE (état cassé : type_id NULL ou TecDoc non-affiché) :`,
+    `SELECT k.pg_id, k.keyword, k.v_level, k.type_id, t.type_display`,
+    `FROM "__seo_keywords" k LEFT JOIN auto_type t ON t.type_id = k.type_id::text`,
+    `WHERE (k.pg_id, k.keyword) IN (${clear.map((r) => `(${r.pg_id},${sqlLit(r.keyword)})`).join(', ')})`,
+    `  AND k.v_level='V3' ORDER BY k.pg_id, k.keyword;`,
+    ``,
+    `-- ÉTAPE 1 — APPLY (transaction gardée ; COMMIT après AFTER conforme) :`,
+    `BEGIN;`,
+    `DO $$ DECLARE n int;`,
+    `BEGIN`,
+    `  UPDATE "__seo_keywords" k SET type_id = s.new_tid::int, updated_at = now()`,
+    `  FROM (VALUES`,
+    vals,
+    `  ) AS s(pg, keyword, old_tid, new_tid)`,
+    `  WHERE k.pg_id = s.pg AND k.keyword = s.keyword AND k.v_level = 'V3'`,
+    `    AND coalesce(k.type_id::text, '') = s.old_tid;`,
+    `  GET DIAGNOSTICS n = ROW_COUNT;`,
+    `  IF n <> ${N} THEN RAISE EXCEPTION 'GUARD blocked-clear: % lignes (attendu ${N}) -- ROLLBACK', n; END IF;`,
+    `  RAISE NOTICE 'OK: % champions cassés -> rendables', n;`,
+    `END $$;`,
+    ``,
+    `-- vérif AFTER (tous doivent être rendables : type_display=1) :`,
+    `SELECT k.pg_id, k.keyword, k.type_id, m.modele_name, t.type_alias, t.type_display`,
+    `FROM "__seo_keywords" k JOIN auto_type t ON t.type_id=k.type_id::text`,
+    `JOIN auto_modele m ON m.modele_id=NULLIF(t.type_modele_id,'')::int`,
+    `WHERE (k.pg_id, k.keyword) IN (${clear.map((r) => `(${r.pg_id},${sqlLit(r.keyword)})`).join(', ')})`,
+    `  AND k.v_level='V3' ORDER BY k.pg_id, k.keyword;`,
+    ``,
+    `-- COMMIT;   -- décommenter si AFTER montre tous display=1. SINON : ROLLBACK;`,
+    ``,
+    `-- ÉTAPE 2 — ROLLBACK (réversible ; restaure l'état cassé : NULL si old vide, sinon l'ancien type_id) :`,
+    `-- BEGIN;`,
+    `-- UPDATE "__seo_keywords" k SET type_id = CASE WHEN s.old_tid='' THEN NULL ELSE s.old_tid::int END, updated_at = now()`,
+    `-- FROM (VALUES`,
+    rbVals,
+    `-- ) AS s(pg, keyword, old_tid, new_tid)`,
+    `-- WHERE k.pg_id = s.pg AND k.keyword = s.keyword AND k.v_level = 'V3' AND k.type_id::text = s.new_tid;`,
+    `-- COMMIT;`,
+    ``,
+  ].join('\n');
+
+  const outDir = path.join(ROOT, 'scripts', 'seo');
+  const outFile = path.join(outDir, `vlevel-v3-apply-blocked-clear-${family}-${DATE}.sql`);
+  fs.writeFileSync(outFile, sql);
+
+  console.log(`✅ blocked-apply-pack généré (READ-ONLY, ZÉRO mutation) : ${outFile}`);
+  console.log(`   ${N} lignes — par pg : ${Object.entries(byPg).map(([k, v]) => `pg${k}=${v}`).join(' · ')}`);
+  console.log(`   par action : ${Object.entries(byAct).map(([k, v]) => `${k}=${v}`).join(' · ')}`);
+  console.log(`   EXCLUS : ${Object.entries(exByAct).map(([k, v]) => `${k}=${v}`).join(' · ')} (+ V5/206/clio3-1.5dci hors V3 BLOCKED)`);
+  if (mismatches.length) {
+    console.log(`   ⚠ ${mismatches.length} candidat(s) CYLINDRÉE != keyword (rendable mais variante approx — à arbitrer owner) :`);
+    mismatches.forEach((r) => console.log(`     "${r.keyword}" -> ${r.candidate_type_id} (${candAlias(r.candidate_url)})`));
+  }
+}
+
 function readPackCsv(file: string): Record<string, string>[] {
   const lines = fs.readFileSync(file, 'utf8').trim().split('\n');
   const head = lines[0].split(';');
@@ -1035,6 +1147,7 @@ async function applyPack(file: string): Promise<void> {
   else if (mode === 'reelection-pack') await reelectionPack(Number(arg('--pg-id') || 402));
   else if (mode === 'auto-plan') await autoPlan(arg('--family') || 'freinage');
   else if (mode === 'blocked-plan') await blockedPlan(arg('--family') || 'freinage');
+  else if (mode === 'blocked-apply-pack') await blockedApplyPack(arg('--family') || 'freinage');
   else if (mode === 'validate-pack') validatePack(arg('--file')!);
   else if (mode === 'apply-pack') await applyPack(arg('--file')!);
   else { console.error('Usage: vlevel-v3-pipeline.ts <decision-pack|generics-pack|validate-pack|apply-pack> [--pg-id N | --file f] [--dry-run|--apply --owner-approved]'); process.exitCode = 1; }

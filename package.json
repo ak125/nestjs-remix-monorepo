@@ -42,6 +42,7 @@
     "vlevel:v3:reelection-pack": "tsx scripts/seo/vlevel-v3-pipeline.ts reelection-pack",
     "vlevel:auto:plan": "tsx scripts/seo/vlevel-v3-pipeline.ts auto-plan",
     "vlevel:blocked:plan": "tsx scripts/seo/vlevel-v3-pipeline.ts blocked-plan",
+    "vlevel:blocked:apply-pack": "tsx scripts/seo/vlevel-v3-pipeline.ts blocked-apply-pack",
     "vlevel:v3:generics-pack": "tsx scripts/seo/vlevel-v3-pipeline.ts generics-pack",
     "vlevel:v3:validate-pack": "tsx scripts/seo/vlevel-v3-pipeline.ts validate-pack",
     "vlevel:v3:apply-pack": "tsx scripts/seo/vlevel-v3-pipeline.ts apply-pack",
