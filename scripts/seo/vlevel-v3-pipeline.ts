@@ -6,7 +6,8 @@
  * L'apply RÉEL est volontairement NON IMPLÉMENTÉ (stub owner-gated qui n'écrit jamais en DB).
  *
  * Sous-commandes :
- *   decision-pack  --pg-id <id>            -> génère audit/vlevel-v3-decision-pack-<gamme>-<date>.{md,csv,json}
+ *   decision-pack       --pg-id <id>       -> génère audit/vlevel-v3-decision-pack-<gamme>-<date>.{md,csv,json}
+ *   decontaminate-pack  --pg-id <id>       -> déclasse la pollution cross-gamme : decision-pack + package SQL gardé
  *   validate-pack  --file <pack.csv>       -> contrôles d'intégrité avant tout apply
  *   apply-pack     --file <pack.csv> --dry-run  -> before/after + UPDATE/rollback SQL (ZÉRO écriture)
  *   apply-pack     --file <pack.csv> --apply --owner-approved -> REFUSÉ (owner-gated, hors périmètre)
@@ -43,6 +44,23 @@ function loadEnv(): void {
 function sb(): SupabaseClient {
   loadEnv();
   return createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+}
+
+// pagination offset : PostgREST cape les réponses à `max-rows` (1000) côté serveur — .range(0,N) NE
+// contourne PAS ce cap. Paginer par pages de 1000. `orderByUniqueKey` DOIT être une colonne UNIQUE
+// (idéalement la PK) : un order non-unique rend l'offset pagination instable (saut/duplication aux
+// frontières de page). Sinon perte silencieuse de lignes.
+async function selectAllEq<T = any>(s: SupabaseClient, table: string, cols: string, col: string, value: any, orderByUniqueKey: string): Promise<T[]> {
+  const out: T[] = [];
+  const PAGE = 1000;
+  for (let off = 0; ; off += PAGE) {
+    const { data, error } = await s.from(table).select(cols).eq(col, value).order(orderByUniqueKey, { ascending: true }).range(off, off + PAGE - 1);
+    if (error) throw new Error(`${table}.range(${off}): ${error.message}`);
+    const batch = (data || []) as T[];
+    out.push(...batch);
+    if (batch.length < PAGE) break;
+  }
+  return out;
 }
 
 async function selectIn<T = any>(s: SupabaseClient, table: string, cols: string, col: string, values: string[]): Promise<T[]> {
@@ -321,6 +339,173 @@ async function genericsPack(pgId: number): Promise<void> {
   console.log(`✅ generics-pack généré (READ-ONLY): ${base}.{csv,json}\n   ${rows.length} lignes — ${Object.entries(counts).map(([k, v]) => `${k}=${v}`).join(' · ')}`);
 }
 
+// ---- décontamination cross-gamme ----
+// decontaminate-pack : déclasse (v_level -> NULL) les keywords d'une AUTRE pièce présents dans cette
+// gamme (pollution cross-gamme). Le déclassement RETIRE la pollution de l'élection champion SANS
+// supprimer la ligne ni toucher la gamme d'origine (aucune fusion, aucune suppression — doctrine).
+// Sécurité : ne déclasse QUE les keywords aussi présents dans leur gamme cible (sinon REVIEW_ORPHAN).
+// READ-ONLY : émet decision-pack + package SQL gardé (snapshot embarqué = apply set-based + rollback exact).
+function sqlLit(s: string): string {
+  return `'${String(s).replace(/'/g, "''")}'`;
+}
+
+async function decontaminatePack(pgId: number): Promise<void> {
+  const s = sb();
+  const ownRe = GAMME_PARTS[pgId];
+  if (!ownRe) throw new Error(`pas de regex gamme pour pg ${pgId} (GAMME_PARTS)`);
+  const others = Object.entries(GAMME_PARTS)
+    .filter(([id]) => Number(id) !== pgId)
+    .map(([id, re]) => [Number(id), re] as [number, RegExp]);
+  const gamme = (await selectIn<any>(s, 'pieces_gamme', 'pg_id,pg_alias', 'pg_id', [String(pgId)]))[0]?.pg_alias || `pg-${pgId}`;
+
+  // lecture PAGINÉE (cap PostgREST 1000) ordonnée sur la PK `id` (unique) -> pagination stable,
+  // sans dépendre d'un index composite implicite. Sinon perte silencieuse de lignes sur grandes gammes.
+  const kws = await selectAllEq<any>(s, '__seo_keywords', 'keyword,type,v_level,type_id,volume', 'pg_id', pgId, 'id');
+
+  // classification : KEEP (own) / CROSS_GAMME (autre pièce) / REVIEW (ni l'un ni l'autre)
+  const classify = (kw: string): { cls: 'KEEP' | 'CROSS' | 'REVIEW'; target: number | null } => {
+    if (ownRe.test(kw)) return { cls: 'KEEP', target: null };
+    for (const [oid, ore] of others) if (ore.test(kw)) return { cls: 'CROSS', target: oid };
+    return { cls: 'REVIEW', target: null };
+  };
+
+  const all = (kws as any[]).map((k) => {
+    const c = classify(k.keyword);
+    let decision: string;
+    if (c.cls === 'KEEP') decision = 'KEEP';
+    else if (c.cls === 'REVIEW') decision = 'REVIEW_OWNER';
+    else decision = k.v_level ? 'MOVE_DECLASSIFY' : 'CROSS_GAMME_NOOP'; // déjà NULL = aucun rôle V-Level
+    return {
+      keyword: k.keyword, type: k.type, v_level: k.v_level ?? '', volume: k.volume,
+      current_type_id: k.type_id ?? '', cross_gamme_target: c.target ?? '', owner_decision: decision,
+    };
+  });
+
+  // sécurité réversibilité : ne déclasser QUE si le keyword existe dans sa gamme cible (sinon on retirerait
+  // la seule trace V-Level du keyword -> REVIEW_ORPHAN, hors apply).
+  const moves = all.filter((r) => r.owner_decision === 'MOVE_DECLASSIFY');
+  const byTarget = new Map<number, string[]>();
+  for (const r of moves) {
+    const t = Number(r.cross_gamme_target);
+    (byTarget.get(t) || byTarget.set(t, []).get(t)!).push(r.keyword);
+  }
+  const presentInTarget = new Set<string>(); // `${target}::${keyword}`
+  for (const [tg, kwList] of byTarget) {
+    const uniq = [...new Set(kwList)];
+    for (let i = 0; i < uniq.length; i += 200) {
+      const { data, error: e2 } = await s
+        .from('__seo_keywords').select('keyword').eq('pg_id', tg).in('keyword', uniq.slice(i, i + 200));
+      if (e2) throw new Error(`presence pg ${tg}: ${e2.message}`);
+      for (const row of (data as any[])) presentInTarget.add(`${tg}::${row.keyword}`);
+    }
+  }
+  for (const r of moves) {
+    if (!presentInTarget.has(`${r.cross_gamme_target}::${r.keyword}`)) r.owner_decision = 'REVIEW_ORPHAN';
+  }
+  const declassify = moves.filter((r) => r.owner_decision === 'MOVE_DECLASSIFY'); // set final (réversible prouvé)
+  declassify.sort((a, b) =>
+    String(a.v_level).localeCompare(String(b.v_level)) || b.volume - a.volume || a.keyword.localeCompare(b.keyword));
+
+  // --- artefacts ---
+  const counts = all.reduce((acc: Record<string, number>, r) => ((acc[r.owner_decision] = (acc[r.owner_decision] || 0) + 1), acc), {});
+  const base = path.join(AUDIT_DIR, `vlevel-decontaminate-${gamme}-${DATE}`);
+
+  // CSV (toutes les lignes classées)
+  const cols = ['keyword', 'type', 'v_level', 'volume', 'current_type_id', 'cross_gamme_target', 'owner_decision'];
+  fs.writeFileSync(`${base}.csv`,
+    [cols.join(';'), ...all.map((r) => cols.map((c) => String((r as any)[c] ?? '').replace(/;/g, ',')).join(';'))].join('\n') + '\n');
+  fs.writeFileSync(`${base}.json`, JSON.stringify({ pg_id: pgId, gamme, generated: DATE, mutation: false, counts, declassify_count: declassify.length, rows: all }, null, 2));
+
+  // package SQL gardé (snapshot embarqué) — ZÉRO mutation par le script ; exécution owner-gated séparée
+  // ownTerm = terme propre de la gamme (pollution = champion ne le mentionnant pas). contamTerm = label
+  // de la pièce dominante polluante (informatif). Le vrai garde = VALUES + ROW_COUNT exact (term-indépendant).
+  const ownTerm = ownRe.source.split('|')[0];
+  const domTarget = [...declassify.reduce((m, r) => m.set(Number(r.cross_gamme_target), (m.get(Number(r.cross_gamme_target)) || 0) + 1), new Map<number, number>())]
+    .sort((a, b) => b[1] - a[1])[0]?.[0];
+  const contamTerm = (domTarget && GAMME_PARTS[domTarget]?.source.split('|')[0]) || 'autre-piece';
+  const valuesList = declassify.map((r) => `    (${sqlLit(r.keyword)}, ${sqlLit(r.v_level)})`).join(',\n');
+  const sql = [
+    `-- ====================================================================`,
+    `-- V-LEVEL DÉCONTAMINATION cross-gamme — ${gamme} (pg ${pgId}) · ${DATE}`,
+    `-- Déclasse (v_level -> NULL) ${declassify.length} keywords « ${contamTerm} » présents dans « ${gamme} »,`,
+    `-- TOUS représentés dans leur gamme d'origine (sécurité réversibilité vérifiée).`,
+    `-- OWNER-GATED · RÉVERSIBLE · ZÉRO PROD DIRECT · GÉNÉRÉ (ne pas éditer à la main : régénérer).`,
+    `-- Doctrine : aucune suppression de ligne, aucune fusion. Déclassement seul = retire la pollution`,
+    `-- de l'élection champion ${gamme} sans toucher la gamme d'origine. Snapshot embarqué = rollback exact.`,
+    `-- ====================================================================`,
+    ``,
+    `-- ÉTAPE 0 — BEFORE (pollution des champions ${gamme} = champion ne mentionnant pas « ${ownTerm} ») :`,
+    `SELECT v_level, count(*) AS total,`,
+    `  count(*) FILTER (WHERE keyword NOT ILIKE '%${ownTerm}%') AS pollution`,
+    `FROM "__seo_keywords" WHERE pg_id=${pgId} AND v_level IN ('V2','V3') GROUP BY v_level ORDER BY v_level;`,
+    ``,
+    `-- ÉTAPE 1 — APPLY (transaction gardée ; COMMIT seulement après vérif AFTER=0) :`,
+    `BEGIN;`,
+    `DO $$`,
+    `DECLARE n int;`,
+    `BEGIN`,
+    `  UPDATE "__seo_keywords" k SET v_level = NULL`,
+    `  FROM (VALUES`,
+    valuesList,
+    `  ) AS s(keyword, v_level)`,
+    `  WHERE k.pg_id = ${pgId} AND k.keyword = s.keyword AND k.v_level = s.v_level;`,
+    `  GET DIAGNOSTICS n = ROW_COUNT;`,
+    `  IF n <> ${declassify.length} THEN`,
+    `    RAISE EXCEPTION 'scope mismatch: % lignes déclassées (attendu ${declassify.length}) — STOP, rien ne doit committer', n;`,
+    `  END IF;`,
+    `  RAISE NOTICE 'OK: % keywords cross-gamme déclassés (v_level -> NULL)', n;`,
+    `END $$;`,
+    ``,
+    `-- vérif AFTER (doit montrer pollution_restante=0 en V2/V3) :`,
+    `SELECT v_level, count(*) AS total,`,
+    `  count(*) FILTER (WHERE keyword NOT ILIKE '%${ownTerm}%') AS pollution_restante`,
+    `FROM "__seo_keywords" WHERE pg_id=${pgId} AND v_level IN ('V2','V3') GROUP BY v_level ORDER BY v_level;`,
+    ``,
+    `-- COMMIT;   -- décommenter si pollution_restante=0 partout. SINON : ROLLBACK;`,
+    ``,
+    `-- ÉTAPE 2 — ROLLBACK (réversible ; restaure le v_level EXACT depuis le snapshot embarqué) :`,
+    `-- BEGIN;`,
+    `-- UPDATE "__seo_keywords" k SET v_level = s.v_level`,
+    `-- FROM (VALUES`,
+    ...declassify.map((r, i) => `--     (${sqlLit(r.keyword)}, ${sqlLit(r.v_level)})${i < declassify.length - 1 ? ',' : ''}`),
+    `-- ) AS s(keyword, v_level)`,
+    `-- WHERE k.pg_id = ${pgId} AND k.keyword = s.keyword AND k.v_level IS NULL;`,
+    `-- COMMIT;`,
+    ``,
+    `-- ÉTAPE 3 — RE-ÉLECTION champions ${gamme} (séparé, NON inclus) : après décontamination, ré-élire`,
+    `-- les vrais champions ${gamme} depuis ses propres keywords (modèle disque appliqué). Owner-gated.`,
+    ``,
+  ].join('\n');
+  fs.writeFileSync(`${base}.sql`, sql);
+
+  // MD résumé
+  const md = [
+    `# Décontamination cross-gamme (PROPOSITION) — ${gamme} (pg ${pgId}) · ${DATE}`,
+    ``,
+    `> READ-ONLY. Le script PROPOSE le déclassement des keywords cross-gamme. Aucune mutation.`,
+    `> Mécanisme = déclassement (v_level -> NULL), **pas** de suppression de ligne ni de fusion.`,
+    ``,
+    `Lignes pg ${pgId} : ${all.length}. Répartition : ${Object.entries(counts).map(([k, v]) => `${k}=${v}`).join(' · ')}`,
+    ``,
+    `**Déclassables (réversibilité prouvée, présents dans gamme cible) : ${declassify.length}**`,
+    `Package SQL gardé : \`${path.basename(base)}.sql\` (guard ROW_COUNT=${declassify.length}, snapshot embarqué).`,
+    ``,
+    `| owner_decision | sens |`,
+    `|---|---|`,
+    `| KEEP | keyword « ${ownRe.source} » légitime de la gamme |`,
+    `| MOVE_DECLASSIFY | pollution cross-gamme avec v_level -> déclasser (réversible) |`,
+    `| CROSS_GAMME_NOOP | pollution cross-gamme déjà v_level NULL -> aucun rôle V-Level |`,
+    `| REVIEW_ORPHAN | pollution NON représentée dans la gamme cible -> ne pas déclasser (prudence) |`,
+    `| REVIEW_OWNER | ni la gamme ni une autre pièce identifiée -> arbitrage owner |`,
+    ``,
+  ].join('\n');
+  fs.writeFileSync(`${base}.md`, md);
+
+  console.log(`✅ decontaminate-pack généré (READ-ONLY): ${base}.{md,csv,json,sql}`);
+  console.log(`   pg ${pgId} (${gamme}) — ${all.length} lignes — ${Object.entries(counts).map(([k, v]) => `${k}=${v}`).join(' · ')}`);
+  console.log(`   → ${declassify.length} déclassables (guard ROW_COUNT=${declassify.length}, snapshot embarqué, réversible).`);
+}
+
 function readPackCsv(file: string): Record<string, string>[] {
   const lines = fs.readFileSync(file, 'utf8').trim().split('\n');
   const head = lines[0].split(';');
@@ -389,6 +574,7 @@ async function applyPack(file: string): Promise<void> {
   const mode = process.argv[2];
   if (mode === 'decision-pack') await decisionPack(Number(arg('--pg-id') || 402));
   else if (mode === 'generics-pack') await genericsPack(Number(arg('--pg-id') || 402));
+  else if (mode === 'decontaminate-pack') await decontaminatePack(Number(arg('--pg-id') || 402));
   else if (mode === 'validate-pack') validatePack(arg('--file')!);
   else if (mode === 'apply-pack') await applyPack(arg('--file')!);
   else { console.error('Usage: vlevel-v3-pipeline.ts <decision-pack|generics-pack|validate-pack|apply-pack> [--pg-id N | --file f] [--dry-run|--apply --owner-approved]'); process.exitCode = 1; }
