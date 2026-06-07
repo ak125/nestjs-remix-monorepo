@@ -11,7 +11,11 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import { VLEVEL_V2_CAP, vLevelGroupKey } from '@repo/seo-roles';
+import {
+  VLEVEL_V2_CAP,
+  vLevelGroupKey,
+  isKeywordEligibleForGamme,
+} from '@repo/seo-roles';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 
 interface VLevelKeywordRow {
@@ -179,8 +183,18 @@ export class GammeVLevelService extends SupabaseBaseService {
         (kw) => !MOTOR_PATTERN.test(kw.keyword || ''),
       );
 
-      // CSV motor keywords only (V5 is computed dynamically, not persisted)
-      const csvVehicleKws = motorKws.filter((kw) => kw.v_level !== 'V5');
+      // CSV motor keywords only (V5 is computed dynamically, not persisted).
+      // Gamme-term-aware (anti re-contamination, @repo/seo-roles SoT) : un keyword d'une AUTRE pièce
+      // présent dans cette gamme (ex. « disque de frein clio 3 » dans la gamme plaquette) n'est PAS
+      // éligible à l'élection et sera déclassé (v_level NULL) plus bas avec les génériques.
+      // Gamme NON mappée ⇒ isKeywordEligibleForGamme=true ⇒ comportement strictement inchangé.
+      const eligibleMotorKws = motorKws.filter((kw) => kw.v_level !== 'V5');
+      const csvVehicleKws = eligibleMotorKws.filter((kw) =>
+        isKeywordEligibleForGamme(kw.keyword || '', pgId),
+      );
+      const crossGammeKws = eligibleMotorKws.filter(
+        (kw) => !isKeywordEligibleForGamme(kw.keyword || '', pgId),
+      );
 
       // 4. Group CSV vehicle keywords by [model+energy] or [model] if universelle
       const byModelEnergy = new Map<string, VLevelKeywordRow[]>();
@@ -250,11 +264,15 @@ export class GammeVLevelService extends SupabaseBaseService {
         }
       }
 
-      // 7. Non-vehicle + generic vehicle keywords: clear v_level
+      // 7. Non-vehicle + generic vehicle + cross-gamme keywords: clear v_level
       for (const kw of nonVehicleKws) {
         updates.push({ id: kw.id, v_level: null, score_seo: null });
       }
       for (const kw of genericVehicleKws) {
+        updates.push({ id: kw.id, v_level: null, score_seo: null });
+      }
+      // cross-gamme (keyword d'une autre pièce) : déclassé, jamais champion de cette gamme (anti re-contamination)
+      for (const kw of crossGammeKws) {
         updates.push({ id: kw.id, v_level: null, score_seo: null });
       }
 

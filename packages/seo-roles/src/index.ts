@@ -99,6 +99,8 @@ export {
   VLEVEL_V2_CAP,
   V_GROUP_KEY,
   vLevelGroupKey,
+  GAMME_PART_TERMS,
+  isKeywordEligibleForGamme,
   type VLevelInvariant,
   V_LEVEL_INVARIANTS,
   V_PROPAGATE,
