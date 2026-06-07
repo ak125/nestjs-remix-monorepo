@@ -60,9 +60,11 @@ describe('CatalogDisplayQuarantineService', () => {
 
     it('forwards a cohort gamme scope (staged dry-run)', async () => {
       const repo = makeRepo({
-        displayQuarantine: jest
-          .fn()
-          .mockResolvedValue({ dry_run: true, supplier: '3410', eligible: 862 }),
+        displayQuarantine: jest.fn().mockResolvedValue({
+          dry_run: true,
+          supplier: '3410',
+          eligible: 862,
+        }),
       });
       const svc = new CatalogDisplayQuarantineService(repo);
 
