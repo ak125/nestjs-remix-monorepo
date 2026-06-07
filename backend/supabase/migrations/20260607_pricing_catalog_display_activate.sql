@@ -54,6 +54,13 @@
 -- Service-role-only internal rollback journal; no anon/frontend read path.
 -- =====================================================
 
+-- squawk-ignore-file prefer-bigint-over-int
+--   pieces_display_history.piece_id INTENTIONALLY mirrors pieces.piece_id, which is
+--   integer (int4) in the live schema. The type is dictated by the FK relationship,
+--   not a free choice: matching int4 keeps the rollback join
+--   (pieces p JOIN pieces_display_history h ON p.piece_id = h.piece_id) aligned with
+--   the pieces int4 PK. Promoting to bigint would diverge from the source column type.
+
 set lock_timeout = '2s';
 set statement_timeout = '120s';
 
