@@ -15,6 +15,9 @@
  *   POST /api/admin/pricing/display/gamme/dry-run  → pg_display projection, level-4 (no writes)
  *   POST /api/admin/pricing/display/gamme/commit   → flip pg_display→'1' level-4 hubs (confirm:true)
  *   POST /api/admin/pricing/display/gamme/rollback → restore pg_display for a gamme batch
+ *   POST /api/admin/pricing/display/accessory-link/dry-run  → accessory→main link projection (no writes)
+ *   POST /api/admin/pricing/display/accessory-link/commit   → write pg_parent_gamme_id (confirm:true)
+ *   POST /api/admin/pricing/display/accessory-link/rollback → restore pg_parent_gamme_id for a batch
  */
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { IsAdminGuard } from '@auth/is-admin.guard';
@@ -167,5 +170,38 @@ export class PricingImportController {
       body.batchId,
       body.supplierId,
     );
+  }
+
+  /**
+   * Read-only accessory→main commercial LINK projection (data layer, no writes). Returns
+   * eligible/rejected accessories. Does NOT activate anything visible (no pg_display change).
+   */
+  @Post('display/accessory-link/dry-run')
+  accessoryLinkDryRun(
+    @Body() body: { mainPgId: number; accessoryPgIds: number[] },
+  ) {
+    return this.displayActivationService.accessoryLinkDryRun(
+      body.mainPgId,
+      body.accessoryPgIds,
+    );
+  }
+
+  /** Apply the accessory→main link (pg_parent_gamme_id) — requires `confirm:true`. */
+  @Post('display/accessory-link/commit')
+  accessoryLinkCommit(
+    @Body()
+    body: {
+      mainPgId: number;
+      accessoryPgIds: number[];
+      operator?: string | null;
+      confirm?: boolean;
+    },
+  ) {
+    return this.displayActivationService.accessoryLinkCommit(body);
+  }
+
+  @Post('display/accessory-link/rollback')
+  accessoryLinkRollback(@Body() body: { batchId: string }) {
+    return this.displayActivationService.accessoryLinkRollback(body.batchId);
   }
 }
