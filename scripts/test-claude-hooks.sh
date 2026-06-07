@@ -189,6 +189,55 @@ assert_exit "validate-top-priorities TOP>5 → exit 1" "1" "$?"
 assert_contains "validate-top-priorities flags TOP overflow" "TOP a 7" "$(cat /tmp/v3-out)"
 
 # ============================================================
+# Guard : pretool-bash-guard.sh — Guard 6 (tag v* = PROD deploy trigger)
+# ============================================================
+
+echo ""
+echo "=== pretool-bash-guard.sh (Guard 6 tag PROD) ==="
+
+run_bash_guard() {
+  echo "{\"command\":\"$1\"}" | bash scripts/claude-hooks/pretool-bash-guard.sh >/dev/null 2>&1
+  echo $?
+}
+
+# BLOCK : créations/pushes de tag v* (déclencheur deploy PROD)
+assert_exit "bash-guard: git tag v1.2.3 → BLOCK"           "2" "$(run_bash_guard 'git tag v1.2.3')"
+assert_exit "bash-guard: git tag -a v1.2.3 -m rel → BLOCK" "2" "$(run_bash_guard 'git tag -a v1.2.3 -m rel')"
+assert_exit "bash-guard: git tag -s v2.0.0 → BLOCK"        "2" "$(run_bash_guard 'git tag -s v2.0.0')"
+assert_exit "bash-guard: git push origin v1.2.3 → BLOCK"   "2" "$(run_bash_guard 'git push origin v1.2.3')"
+assert_exit "bash-guard: git push --tags → BLOCK"          "2" "$(run_bash_guard 'git push --tags')"
+# ALLOW : pas de faux positif sur les usages git courants
+assert_exit "bash-guard: git tag (list) → allow"           "0" "$(run_bash_guard 'git tag')"
+assert_exit "bash-guard: push feature branch → allow"      "0" "$(run_bash_guard 'git push origin feat/foo')"
+assert_exit "bash-guard: git status → allow"               "0" "$(run_bash_guard 'git status')"
+# Sanity : guard existant (Guard 1) toujours actif
+assert_exit "bash-guard: git push origin main → BLOCK (G1)" "2" "$(run_bash_guard 'git push origin main')"
+
+# ============================================================
+# Guard : pretool-supabase-guard.sh — Guard 6 (DML direct sur tables gouvernées)
+# ============================================================
+
+echo ""
+echo "=== pretool-supabase-guard.sh (Guard 6 DML) ==="
+
+run_sql_guard() {
+  echo "{\"query\":\"$1\"}" | bash scripts/claude-hooks/pretool-supabase-guard.sh >/dev/null 2>&1
+  echo $?
+}
+
+# BLOCK : DML brut sur pieces / pieces_price / __seo_*
+assert_exit "sql-guard: UPDATE pieces_price → BLOCK"           "2" "$(run_sql_guard 'UPDATE pieces_price SET pri_dispo=1')"
+assert_exit "sql-guard: UPDATE pieces → BLOCK"                 "2" "$(run_sql_guard 'UPDATE pieces SET x=1 WHERE id=1')"
+assert_exit "sql-guard: DELETE FROM __seo_keywords → BLOCK"    "2" "$(run_sql_guard 'DELETE FROM __seo_keywords WHERE id=1')"
+assert_exit "sql-guard: lowercase update public.pieces_price → BLOCK" "2" "$(run_sql_guard 'update public.pieces_price set x=1')"
+# ALLOW : pas de faux positif (autre table pieces_*, SELECT, INSERT hors scope owner)
+assert_exit "sql-guard: UPDATE pieces_relation_type → allow"  "0" "$(run_sql_guard 'UPDATE pieces_relation_type SET x=1')"
+assert_exit "sql-guard: SELECT FROM pieces → allow"           "0" "$(run_sql_guard 'SELECT * FROM pieces')"
+assert_exit "sql-guard: INSERT pieces_price → allow (scope=UPDATE/DELETE)" "0" "$(run_sql_guard 'INSERT INTO pieces_price (id) VALUES (1)')"
+# Sanity : guard existant (Guard 1) toujours actif
+assert_exit "sql-guard: DROP TABLE foo (no IF EXISTS) → BLOCK (G1)" "2" "$(run_sql_guard 'DROP TABLE foo')"
+
+# ============================================================
 # Résumé
 # ============================================================
 

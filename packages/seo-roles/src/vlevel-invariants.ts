@@ -62,6 +62,44 @@ export function vLevelGroupKey(
 }
 
 /**
+ * Termes de gamme (pièce) pour l'ÉLIGIBILITÉ d'élection V-Level, par `pg_id`.
+ *
+ * Un keyword n'est éligible à l'élection V2/V3/V4 d'une gamme QUE s'il mentionne le terme de SA
+ * gamme. C'est la garde anti **re-contamination** cross-gamme : sans elle, l'élection groupe par
+ * [modèle+énergie] sans regarder la pièce, donc un keyword « disque de frein clio 3 » présent dans
+ * la gamme plaquette (pollution) pouvait être élu champion plaquette (et inversement).
+ *
+ * Source = mêmes termes que le pipeline de décision (`scripts/seo/vlevel-v3-pipeline.ts` GAMME_PARTS),
+ * hoistés ici comme **SoT partagée unique** (le service admin `gamme-vlevel.service` ET le pipeline
+ * référencent cette map — plus de duplication ni de dérive).
+ *
+ * Le couple frein (disque/plaquette/cable) partage « de frein » → seul le 1er terme
+ * (disque / plaquette / cable) discrimine. `câble` géré accent-insensible.
+ *
+ * EXTENSIBLE & SÛR : une gamme NON mappée ⇒ {@link isKeywordEligibleForGamme} renvoie `true`
+ * (aucun filtre = comportement actuel strictement préservé). Ajouter une entrée = activer la garde.
+ */
+export const GAMME_PART_TERMS: Readonly<Record<number, RegExp>> = {
+  82: /disque/i, // disque-de-frein
+  402: /plaquette/i, // plaquette-de-frein
+  124: /cable|câble/i, // cable-de-frein-a-main
+};
+
+/**
+ * Un keyword est-il éligible à l'élection V-Level de la gamme `pgId` ?
+ *  - gamme non mappée (pas de terme) ⇒ `true` (aucun filtre, comportement actuel).
+ *  - gamme mappée ⇒ `true` ssi le keyword mentionne le terme de la gamme.
+ *
+ * Pure & déterministe. NE CALCULE PAS v_level — décide seulement de l'éligibilité (anti
+ * re-contamination). Utilisée par `gamme-vlevel.service` (élection) et le pipeline de décision.
+ */
+export function isKeywordEligibleForGamme(keyword: string, pgId: number): boolean {
+  const term = GAMME_PART_TERMS[pgId];
+  if (!term) return true;
+  return term.test(keyword || "");
+}
+
+/**
  * Définition de chaque niveau (intention owner figée 2026-06-05).
  * `persisted` = présent en DB aujourd'hui ; `built` = produit par le pipeline aujourd'hui.
  */

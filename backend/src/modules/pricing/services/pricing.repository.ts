@@ -122,10 +122,15 @@ export class PricingRepository extends SupabaseBaseService {
     return data.chunk_id as string;
   }
 
-  /** Open a batch for a dispo-only ACTIVATION run (no raw import file). */
+  /**
+   * Open a batch for a no-file ACTIVATION run (dispo / display / gamme-display). The
+   * optional `operation` marker (e.g. 'GAMME_DISPLAY_ACTIVATION') is a self-describing
+   * audit tag on the shared price_import_batches table; null = legacy/unspecified.
+   */
   async createActivationBatch(input: {
     supplierId: string;
     operator: string | null;
+    operation?: string | null;
   }): Promise<string> {
     const { data, error } = await this.supabase
       .from('price_import_batches')
@@ -133,6 +138,7 @@ export class PricingRepository extends SupabaseBaseService {
         status: 'UPLOADED',
         supplier_id: input.supplierId,
         operator: input.operator,
+        ...(input.operation ? { operation: input.operation } : {}),
       })
       .select('batch_id')
       .single();
@@ -254,6 +260,180 @@ export class PricingRepository extends SupabaseBaseService {
     });
     if (error) throw error;
     return data as { restored: number; superseded: number };
+  }
+
+  /**
+   * Set-based CATALOG VISIBILITY activation via the governed server-side
+   * function. Flips pieces.piece_display false -> true for brand-locked pieces
+   * that are ALREADY sellable (pieces_price.pri_dispo IN '1','2') and currently
+   * hidden. Idempotent; `dryRun` projects without writing. Reversible via
+   * {@link displayRollback}. Never touches gamme/vehicle/price/dispo. See
+   * migration 20260607_pricing_catalog_display_activate.sql.
+   */
+  async displayActivate(input: {
+    batchId: string | null; // required by the fn only for a commit
+    supplier: string; // pieces.piece_pm_id (brand-lock)
+    operator: string | null;
+    dryRun: boolean;
+  }): Promise<{
+    dry_run: boolean;
+    supplier: string;
+    eligible: number;
+    displayed?: number;
+    batch_id?: string;
+  }> {
+    const { data, error } = await this.callRpc('catalog_display_activate', {
+      p_batch_id: input.batchId,
+      p_supplier: input.supplier,
+      p_operator: input.operator,
+      p_dry_run: input.dryRun,
+    });
+    if (error) throw error;
+    return data as {
+      dry_run: boolean;
+      supplier: string;
+      eligible: number;
+      displayed?: number;
+      batch_id?: string;
+    };
+  }
+
+  /**
+   * Set-based CATALOG VISIBILITY quarantine via the governed server-side function —
+   * the inverse of {@link displayActivate}. Flips pieces.piece_display true -> false
+   * for brand-locked refs that are currently visible AND non-vendable per the
+   * storefront isSellable gate (no pieces_price row with pri_dispo IN '1','2','3'
+   * AND pri_vente_ttc_n > 0). Structurally disjoint from the activate domain.
+   * Idempotent; `dryRun` projects without writing. Reversible via the SAME generic
+   * {@link displayRollback} (restores old_display). Never touches gamme/vehicle/
+   * price/dispo. See migration 20260607_pricing_catalog_display_quarantine.sql.
+   */
+  async displayQuarantine(input: {
+    batchId: string | null; // required by the fn only for a commit
+    supplier: string; // pieces.piece_pm_id (brand-lock)
+    operator: string | null;
+    dryRun: boolean;
+    /** optional cohort scope (pieces.piece_ga_id); null/undefined = whole brand */
+    gammeIds?: number[] | null;
+  }): Promise<{
+    dry_run: boolean;
+    supplier: string;
+    eligible: number;
+    hidden?: number;
+    batch_id?: string;
+    gamme_ids?: number[] | null;
+  }> {
+    const { data, error } = await this.callRpc('catalog_display_quarantine', {
+      p_batch_id: input.batchId,
+      p_supplier: input.supplier,
+      p_operator: input.operator,
+      p_dry_run: input.dryRun,
+      p_gamme_ids: input.gammeIds ?? null,
+    });
+    if (error) throw error;
+    return data as {
+      dry_run: boolean;
+      supplier: string;
+      eligible: number;
+      hidden?: number;
+      batch_id?: string;
+      gamme_ids?: number[] | null;
+    };
+  }
+
+  /**
+   * Reverse a display batch (restores prior piece_display). Generic: reverses BOTH a
+   * {@link displayActivate} batch (restores false) and a {@link displayQuarantine}
+   * batch (restores true), since the journal records old_display per piece.
+   */
+  async displayRollback(
+    batchId: string,
+    supplier: string,
+  ): Promise<{ restored: number; batch_id: string }> {
+    const { data, error } = await this.callRpc(
+      'catalog_display_rollback_batch',
+      {
+        p_batch_id: batchId,
+        p_supplier: supplier,
+      },
+    );
+    if (error) throw error;
+    return data as { restored: number; batch_id: string };
+  }
+
+  /**
+   * Set-based GAMME visibility activation (étape B1) via the governed server-side
+   * function. Flips pieces_gamme.pg_display -> '1' for masked LEVEL-4 hub gammes that
+   * already contain >=1 brand ref visible & sellable. Idempotent; `dryRun` projects
+   * without writing and returns eligible(gammes)/refs(pieces)/gamme_ids for the owner
+   * gate. Never touches pg_relfollow/pg_sitemap (gamme stays out of sitemap). Reversible
+   * via {@link gammeDisplayRollback}. See migration
+   * 20260607_pricing_catalog_gamme_display_activate.sql.
+   */
+  async gammeDisplayActivate(input: {
+    batchId: string | null; // required by the fn only for a commit
+    supplier: string; // pieces.piece_pm_id (brand-lock)
+    operator: string | null;
+    dryRun: boolean;
+  }): Promise<{
+    dry_run: boolean;
+    supplier: string;
+    eligible: number;
+    refs: number;
+    displayed?: number;
+    gamme_ids: number[];
+    batch_id?: string;
+  }> {
+    const { data, error } = await this.callRpc(
+      'catalog_gamme_display_activate',
+      {
+        p_batch_id: input.batchId,
+        p_supplier: input.supplier,
+        p_operator: input.operator,
+        p_dry_run: input.dryRun,
+      },
+    );
+    if (error) throw error;
+    return data as {
+      dry_run: boolean;
+      supplier: string;
+      eligible: number;
+      refs: number;
+      displayed?: number;
+      gamme_ids: number[];
+      batch_id?: string;
+    };
+  }
+
+  /**
+   * Reverse a gamme-display batch (restores prior pg_display) with the server-side
+   * anti-conflict guard (only restores gammes whose current pg_display still equals
+   * what the batch wrote). Returns rolled_back + skipped_value_changed (a later writer
+   * changed it) + skipped_missing_gamme (gamme deleted upstream), classified explicitly.
+   */
+  async gammeDisplayRollback(
+    batchId: string,
+    supplier: string,
+  ): Promise<{
+    rolled_back: number;
+    skipped_value_changed: number;
+    skipped_missing_gamme: number;
+    batch_id: string;
+  }> {
+    const { data, error } = await this.callRpc(
+      'catalog_gamme_display_rollback_batch',
+      {
+        p_batch_id: batchId,
+        p_supplier: supplier,
+      },
+    );
+    if (error) throw error;
+    return data as {
+      rolled_back: number;
+      skipped_value_changed: number;
+      skipped_missing_gamme: number;
+      batch_id: string;
+    };
   }
 
   async fetchProfiles(supplierId: string): Promise<SupplierPriceProfile[]> {

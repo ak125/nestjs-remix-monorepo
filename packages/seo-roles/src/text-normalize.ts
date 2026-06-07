@@ -57,6 +57,36 @@ export function normalizePhrase(text: string): string {
 }
 
 /**
+ * Numéraux romains de génération de modèle (I..X) → arabe, pour un MATCH robuste
+ * keyword ↔ catalogue. `normalizeSeoText` gère déjà accents + tirets + espaces, mais pas
+ * `II` ↔ `2`. Seuls les tokens romains PURS sont convertis (`ii`→`2`), jamais un sous-mot
+ * (`vti`, `c4` restent). Mapping consistant des DEUX côtés → l'exactitude sémantique n'importe
+ * pas (ex. « classe v » et « CLASSE V » donnent tous deux `classe 5` → ils matchent).
+ */
+const MODEL_ROMAN_TO_ARABIC: Readonly<Record<string, string>> = {
+  i: "1", ii: "2", iii: "3", iv: "4", v: "5",
+  vi: "6", vii: "7", viii: "8", ix: "9", x: "10",
+};
+
+/**
+ * Clé canonique de MATCHING d'un nom de modèle véhicule (keyword libre ↔ `auto_modele.modele_name`).
+ *
+ * Pipeline : {@link normalizeSeoText} (lowercase, accents, tirets/ponctuation → espace, collapse)
+ * puis génération romaine → arabe par token. Déterministe & idempotent.
+ *
+ * Exemples : `"scenic 2"` et `"SCÉNIC II"` → `"scenic 2"` ; `"C4 Picasso"` → `"c4 picasso"` ;
+ * `"Clio III"` et `"clio 3"` → `"clio 3"`. Usage : résolution de candidat modèle (blocked-plan)
+ * et groupement V-Level — JAMAIS pour de l'affichage (clé interne uniquement).
+ */
+export function modelMatchKey(modelName: string): string {
+  return normalizeSeoText(modelName)
+    .split(" ")
+    .map((tok) => MODEL_ROMAN_TO_ARABIC[tok] ?? tok)
+    .join(" ")
+    .trim();
+}
+
+/**
  * Tokenise text into matchable units.
  *
  * Drops tokens shorter than {@link MIN_TOKEN_LEN} chars and FR stopwords.
