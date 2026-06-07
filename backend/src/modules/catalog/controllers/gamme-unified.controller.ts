@@ -14,6 +14,7 @@ import {
 import { GammeUnifiedService } from '../services/gamme-unified.service';
 import { GammePricePreviewService } from '../services/gamme-price-preview.service';
 import { UnifiedPageDataService } from '../services/unified-page-data.service';
+import { AccessoryProductsService } from '../services/accessory-products.service';
 
 @Controller('api/catalog/gammes')
 export class GammeUnifiedController {
@@ -23,7 +24,26 @@ export class GammeUnifiedController {
     private readonly gammeService: GammeUnifiedService,
     private readonly unifiedPageDataService: UnifiedPageDataService,
     private readonly pricePreviewService: GammePricePreviewService,
+    private readonly accessoryProductsService: AccessoryProductsService,
   ) {}
+
+  /**
+   * GET /api/catalog/gammes/:mainPgId/accessories/:typeId
+   * R2 "Accessoires" block (PR-2a): products of the accessory gammes linked to this
+   * MAIN gamme (via pg_parent_gamme_id) that are compatible with the vehicle :typeId.
+   * Read-only; flag-gated (SHOW_ACCESSORY_BLOCKS_ON_R2, default OFF → empty result).
+   * Never touches pg_display / URL / sitemap — the accessory gamme stays hidden.
+   */
+  @Get(':mainPgId/accessories/:typeId')
+  async getAccessoryProducts(
+    @Param('mainPgId') mainPgId: string,
+    @Param('typeId') typeId: string,
+  ) {
+    return this.accessoryProductsService.getForVehicle(
+      parseInt(mainPgId, 10),
+      parseInt(typeId, 10),
+    );
+  }
 
   /**
    * 🎯 GET /api/catalog/gammes - Toutes les gammes
