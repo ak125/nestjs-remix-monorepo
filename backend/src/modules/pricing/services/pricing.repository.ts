@@ -436,6 +436,78 @@ export class PricingRepository extends SupabaseBaseService {
     };
   }
 
+  /**
+   * Governed accessory->main commercial link (data layer, étape PR-1) via the
+   * server-side function. Writes pieces_gamme.pg_parent_gamme_id for HIDDEN level-4/5
+   * accessories under a valid visible strategic main hub. Hard guards (parent must be
+   * level-1/2 + pg_display=1 + pg_relfollow=1; accessory must be level-4/5 + fully
+   * hidden) live in the SQL function. `dryRun` projects eligible/rejected without
+   * writing. Reversible via {@link accessoryLinkRollback}. Never touches
+   * display/sitemap/URL/product. See migration 20260607_pricing_catalog_accessory_link.sql.
+   */
+  async accessoryLinkActivate(input: {
+    batchId: string | null; // required by the fn only for a commit
+    mainPgId: number;
+    accessoryPgIds: number[];
+    operator: string | null;
+    dryRun: boolean;
+  }): Promise<{
+    dry_run: boolean;
+    main_pg_id: number;
+    eligible_count: number;
+    eligible?: { pg_id: number; pg_name: string }[];
+    rejected_count: number;
+    rejected: { pg_id: number; reason: string }[];
+    linked?: number;
+    batch_id?: string;
+  }> {
+    const { data, error } = await this.callRpc(
+      'catalog_accessory_link_activate',
+      {
+        p_batch_id: input.batchId,
+        p_main_pg_id: input.mainPgId,
+        p_accessory_pg_ids: input.accessoryPgIds,
+        p_operator: input.operator,
+        p_dry_run: input.dryRun,
+      },
+    );
+    if (error) throw error;
+    return data as {
+      dry_run: boolean;
+      main_pg_id: number;
+      eligible_count: number;
+      eligible?: { pg_id: number; pg_name: string }[];
+      rejected_count: number;
+      rejected: { pg_id: number; reason: string }[];
+      linked?: number;
+      batch_id?: string;
+    };
+  }
+
+  /**
+   * Reverse an accessory-link batch (restores prior pg_parent_gamme_id) with the
+   * server-side anti-conflict guard. Returns rolled_back + skipped_value_changed +
+   * skipped_missing_gamme.
+   */
+  async accessoryLinkRollback(batchId: string): Promise<{
+    rolled_back: number;
+    skipped_value_changed: number;
+    skipped_missing_gamme: number;
+    batch_id: string;
+  }> {
+    const { data, error } = await this.callRpc(
+      'catalog_accessory_link_rollback_batch',
+      { p_batch_id: batchId },
+    );
+    if (error) throw error;
+    return data as {
+      rolled_back: number;
+      skipped_value_changed: number;
+      skipped_missing_gamme: number;
+      batch_id: string;
+    };
+  }
+
   async fetchProfiles(supplierId: string): Promise<SupplierPriceProfile[]> {
     const { data, error } = await this.supabase
       .from('supplier_price_profiles')
