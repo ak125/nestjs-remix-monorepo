@@ -20,6 +20,7 @@ import {
   VLEVEL_V2_CAP,
   V_GROUP_KEY,
   vLevelGroupKey,
+  compareV3Champions,
   V_LEVEL_INVARIANTS,
   V_PROPAGATE,
   V_LEVEL_KNOWN_GAPS,
@@ -139,4 +140,52 @@ describe("V-Level écarts CONNUS owner-vs-code (todo nommés — owner-gated)", 
       /* résolution owner-gated — voir plan G0–G4 */
     });
   }
+});
+
+describe("compareV3Champions — tie-break déterministe (volume DESC → longueur ASC → keyword ASC)", () => {
+  test("volume DESC domine (avant toute égalité)", () => {
+    const a = { keyword: "x", volume: 50 };
+    const b = { keyword: "aaaaaaaa", volume: 500 };
+    assert.ok(compareV3Champions(a, b) > 0, "b (vol 500) doit passer avant a (vol 50)");
+    assert.ok(compareV3Champions(b, a) < 0);
+  });
+
+  test("à volume égal : keyword le plus COURT gagne", () => {
+    const court = { keyword: "filtre a air 407", volume: 50 };
+    const long = { keyword: "filtre a air 407 1.6 hdi", volume: 50 };
+    assert.ok(compareV3Champions(court, long) < 0, "le plus court passe en premier (champion)");
+  });
+
+  test("à volume ET longueur égaux : keyword ASC tranche (ordre total)", () => {
+    // Cas réel groupe [206] habitacle : deux keywords vol=500, len=20.
+    const a = { keyword: "206 filtre habitacle", volume: 500 }; // '2' < 'f'
+    const b = { keyword: "filtre habitacle 206", volume: 500 };
+    assert.equal(a.keyword.length, b.keyword.length);
+    assert.ok(compareV3Champions(a, b) < 0, "'206 filtre habitacle' (commence par '2') est champion canonique");
+    assert.ok(compareV3Champions(b, a) > 0);
+  });
+
+  test("DÉTERMINISME : le tri est stable quelle que soit la permutation d'entrée", () => {
+    // 5 champions ex-aequo à volume=500 (le palier qui rendait le cut V2 non reproductible).
+    const base = [
+      { keyword: "kangoo", volume: 500 },
+      { keyword: "modus", volume: 500 },
+      { keyword: "kadjar", volume: 500 },
+      { keyword: "500x", volume: 500 },
+      { keyword: "c3 aircross", volume: 500 },
+    ];
+    const order = (arr: typeof base) =>
+      [...arr].sort(compareV3Champions).map((k) => k.keyword);
+    const canonical = order(base);
+    // longueur ASC puis keyword ASC : 500x(4) modus(5) kadjar(6) kangoo(6) c3 aircross(11)
+    assert.deepEqual(canonical, ["500x", "modus", "kadjar", "kangoo", "c3 aircross"]);
+    // deux permutations différentes -> MÊME résultat (reproductible)
+    assert.deepEqual(order([...base].reverse()), canonical);
+    assert.deepEqual(order([base[2], base[0], base[4], base[1], base[3]]), canonical);
+  });
+
+  test("tolère volume/keyword null|undefined (0 / chaîne vide)", () => {
+    assert.equal(compareV3Champions({ keyword: "", volume: 0 }, { keyword: "", volume: 0 }), 0);
+    assert.ok(compareV3Champions({ keyword: "a" }, { keyword: "a", volume: 10 }) > 0);
+  });
 });

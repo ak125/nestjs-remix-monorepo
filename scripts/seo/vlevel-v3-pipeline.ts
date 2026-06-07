@@ -20,7 +20,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 // invariants V-Level canoniques (SoT) — mirrorés par reelection-pack, JAMAIS réinventés.
-import { VLEVEL_V2_CAP, vLevelGroupKey, modelMatchKey } from '@repo/seo-roles';
+import { VLEVEL_V2_CAP, vLevelGroupKey, compareV3Champions, modelMatchKey } from '@repo/seo-roles';
 
 const ROOT = process.cwd();
 const AUDIT_DIR = path.join(ROOT, 'audit'); // sortie runtime (decision-packs), non versionnée par défaut
@@ -35,9 +35,11 @@ const GAMME_PARTS: Record<number, RegExp> = {
   402: /plaquette/i,
   82: /disque/i,
   124: /cable|câble/i,
-  // FILTRATION (validé 2026-06-07 : huile 99.8% · carburant 99.9% · air 100% · boîte 100% · habitacle|pollen 90%)
+  // FILTRATION (validé 2026-06-07 : huile 99.8% · carburant 99.9% · air 100% · boîte 100% · habitacle 99.9%)
   7: /huile/i,
-  424: /habitacle|pollen/i,
+  // habitacle : filtre d'habitacle = aussi nommé clim/climatisation/charbon-actif/anti-pollen (médium).
+  // `habitacle|pollen` ne couvre que 90% (manque ~160 kw clim/charbon) ; terme étendu = 99.9% (mesuré pg_id=424).
+  424: /habitacle|pollen|clim|charbon|anti.?pollen/i,
   9: /carburant|gasoil|gazole/i,
   8: /\bair\b/i,
   416: /bo[iî]te/i,
@@ -574,12 +576,12 @@ async function reelectionPack(pgId: number): Promise<void> {
   const proposed = new Map<number, string>();
   const v3Champs: any[] = [];
   for (const [, group] of byGroup) {
-    group.sort((a: any, b: any) => ((b.volume || 0) - (a.volume || 0)) || ((a.keyword || '').length - (b.keyword || '').length));
+    group.sort(compareV3Champions); // tri canonique déterministe (@repo/seo-roles), miroir exact du service
     proposed.set(group[0].id, 'V3');
     v3Champs.push(group[0]);
     for (let i = 1; i < group.length; i++) proposed.set(group[i].id, 'V4');
   }
-  v3Champs.sort((a, b) => (b.volume || 0) - (a.volume || 0));
+  v3Champs.sort(compareV3Champions); // même tie-break déterministe → composition du cut V2 reproductible
   const seen = new Set<string>();
   let promoted = 0;
   for (const c of v3Champs) {

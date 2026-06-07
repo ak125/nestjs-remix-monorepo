@@ -100,6 +100,7 @@ export {
   VLEVEL_V2_CAP,
   V_GROUP_KEY,
   vLevelGroupKey,
+  compareV3Champions,
   GAMME_PART_TERMS,
   isKeywordEligibleForGamme,
   type VLevelInvariant,
