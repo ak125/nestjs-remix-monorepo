@@ -826,7 +826,7 @@ async function autoPlan(family: string): Promise<void> {
 }
 
 // ---- résolution des champions BLOCKED (page /pieces impossible) ----
-// blocked-plan : pour une famille, liste les champions V3 BLOCKED (type_id NULL / non-rendable /
+// blocked-plan : pour une famille, liste les champions V2/V3 BLOCKED (type_id NULL / non-rendable /
 // TecDoc orphelin / cross-gamme), classe la CAUSE, et propose un candidat rendable + une action.
 // READ-ONLY : n'écrit JAMAIS. Réutilise seed + helpers.
 const DIESEL_BLK = /(dci|hdi|tdci|cdti|tdi|dti|bluehdi|multijet|jtd|cdti|crdi)/i;
@@ -842,7 +842,7 @@ async function blockedPlan(family: string): Promise<void> {
     const ownRe = GAMME_PARTS[pgId];
     const gamme = (await selectIn<any>(s, 'pieces_gamme', 'pg_id,pg_alias', 'pg_id', [String(pgId)]))[0]?.pg_alias || `pg-${pgId}`;
     const champs = await selectAllEq<any>(s, '__seo_keywords', 'id,keyword,volume,type_id,model,energy,type,v_level', 'pg_id', pgId, 'id');
-    const v3 = champs.filter((k) => k.type === 'vehicle' && k.v_level === 'V3');
+    const v3 = champs.filter((k) => k.type === 'vehicle' && (k.v_level === 'V3' || k.v_level === 'V2'));
 
     // types courants (pour savoir si rendable)
     const curTids = v3.map((k) => k.type_id).filter(Boolean).map(String);
@@ -959,7 +959,7 @@ async function blockedPlan(family: string): Promise<void> {
   fs.writeFileSync(`${base}.csv`, [cols.join(';'), ...out.map((r) => cols.map((c) => String((r as any)[c] ?? '').replace(/;/g, ',')).join(';'))].join('\n') + '\n');
   fs.writeFileSync(`${base}.json`, JSON.stringify({ family, pg_ids: pgIds, generated: DATE, mutation: false, scope: 'V3 BLOCKED', by_reason: byReason, by_action: byAction, rows: out }, null, 2));
   const md = [
-    `# Champions V3 BLOCKED (page /pieces impossible) — ${family} · ${DATE}`,
+    `# Champions V2/V3 BLOCKED (page /pieces impossible) — ${family} · ${DATE}`,
     ``,
     `> READ-ONLY. Le système croit avoir un champion mais la page cible est cassée/impossible. Aucune mutation.`,
     ``,
@@ -1060,7 +1060,7 @@ async function blockedApplyPack(family: string, pgFilter?: number, label?: strin
 
   const sql = [
     `-- ====================================================================`,
-    `-- V-LEVEL APPLY — champions V3 BLOCKED cas CLAIRS -> rendables — ${slug} (pg ${pgFilter || pgIds.join('/')}) · ${DATE}`,
+    `-- V-LEVEL APPLY — champions V2/V3 BLOCKED cas CLAIRS -> rendables — ${slug} (pg ${pgFilter || pgIds.join('/')}) · ${DATE}`,
     `-- ${N} lignes : RESOLVE_CANDIDATE=${byAct.RESOLVE_CANDIDATE || 0} · REMAP_REVIEW(TecDoc rendable)=${byAct.REMAP_REVIEW || 0}.`,
     `-- Transforme UNIQUEMENT des champions cassés (type_id NULL/non-rendable) en champions rendables (display=1).`,
     `-- EXCLUS STRICTS (${excluded.length}) : ${Object.entries(exBy).map(([k, v]) => `${k}=${v}`).join(' · ')}.`,
@@ -1072,7 +1072,7 @@ async function blockedApplyPack(family: string, pgFilter?: number, label?: strin
     `SELECT k.pg_id, k.keyword, k.v_level, k.type_id, t.type_display`,
     `FROM "__seo_keywords" k LEFT JOIN auto_type t ON t.type_id = k.type_id::text`,
     `WHERE (k.pg_id, k.keyword) IN (${clear.map((r) => `(${r.pg_id},${sqlLit(r.keyword)})`).join(', ')})`,
-    `  AND k.v_level='V3' ORDER BY k.pg_id, k.keyword;`,
+    `  AND k.v_level IN ('V2','V3') ORDER BY k.pg_id, k.keyword;`,
     ``,
     `-- ÉTAPE 1 — APPLY (transaction gardée ; COMMIT après AFTER conforme) :`,
     `BEGIN;`,
@@ -1082,7 +1082,7 @@ async function blockedApplyPack(family: string, pgFilter?: number, label?: strin
     `  FROM (VALUES`,
     vals,
     `  ) AS s(pg, keyword, old_tid, new_tid)`,
-    `  WHERE k.pg_id = s.pg AND k.keyword = s.keyword AND k.v_level = 'V3'`,
+    `  WHERE k.pg_id = s.pg AND k.keyword = s.keyword AND k.v_level IN ('V2','V3')`,
     `    AND coalesce(k.type_id::text, '') = s.old_tid;`,
     `  GET DIAGNOSTICS n = ROW_COUNT;`,
     `  IF n <> ${N} THEN RAISE EXCEPTION 'GUARD blocked-clear: % lignes (attendu ${N}) -- ROLLBACK', n; END IF;`,
@@ -1094,7 +1094,7 @@ async function blockedApplyPack(family: string, pgFilter?: number, label?: strin
     `FROM "__seo_keywords" k JOIN auto_type t ON t.type_id=k.type_id::text`,
     `JOIN auto_modele m ON m.modele_id=NULLIF(t.type_modele_id,'')::int`,
     `WHERE (k.pg_id, k.keyword) IN (${clear.map((r) => `(${r.pg_id},${sqlLit(r.keyword)})`).join(', ')})`,
-    `  AND k.v_level='V3' ORDER BY k.pg_id, k.keyword;`,
+    `  AND k.v_level IN ('V2','V3') ORDER BY k.pg_id, k.keyword;`,
     ``,
     `-- COMMIT;   -- décommenter si AFTER montre tous display=1. SINON : ROLLBACK;`,
     ``,
@@ -1104,7 +1104,7 @@ async function blockedApplyPack(family: string, pgFilter?: number, label?: strin
     `-- FROM (VALUES`,
     rbVals,
     `-- ) AS s(pg, keyword, old_tid, new_tid)`,
-    `-- WHERE k.pg_id = s.pg AND k.keyword = s.keyword AND k.v_level = 'V3' AND k.type_id::text = s.new_tid;`,
+    `-- WHERE k.pg_id = s.pg AND k.keyword = s.keyword AND k.v_level IN ('V2','V3') AND k.type_id::text = s.new_tid;`,
     `-- COMMIT;`,
     ``,
   ].join('\n');
