@@ -292,7 +292,49 @@ export class PricingRepository extends SupabaseBaseService {
     };
   }
 
-  /** Reverse a display activation batch (restores prior piece_display). */
+  /**
+   * Set-based CATALOG VISIBILITY quarantine via the governed server-side function —
+   * the inverse of {@link displayActivate}. Flips pieces.piece_display true -> false
+   * for brand-locked refs that are currently visible AND non-vendable per the
+   * storefront isSellable gate (no pieces_price row with pri_dispo IN '1','2','3'
+   * AND pri_vente_ttc_n > 0). Structurally disjoint from the activate domain.
+   * Idempotent; `dryRun` projects without writing. Reversible via the SAME generic
+   * {@link displayRollback} (restores old_display). Never touches gamme/vehicle/
+   * price/dispo. See migration 20260607_pricing_catalog_display_quarantine.sql.
+   */
+  async displayQuarantine(input: {
+    batchId: string | null; // required by the fn only for a commit
+    supplier: string; // pieces.piece_pm_id (brand-lock)
+    operator: string | null;
+    dryRun: boolean;
+  }): Promise<{
+    dry_run: boolean;
+    supplier: string;
+    eligible: number;
+    hidden?: number;
+    batch_id?: string;
+  }> {
+    const { data, error } = await this.callRpc('catalog_display_quarantine', {
+      p_batch_id: input.batchId,
+      p_supplier: input.supplier,
+      p_operator: input.operator,
+      p_dry_run: input.dryRun,
+    });
+    if (error) throw error;
+    return data as {
+      dry_run: boolean;
+      supplier: string;
+      eligible: number;
+      hidden?: number;
+      batch_id?: string;
+    };
+  }
+
+  /**
+   * Reverse a display batch (restores prior piece_display). Generic: reverses BOTH a
+   * {@link displayActivate} batch (restores false) and a {@link displayQuarantine}
+   * batch (restores true), since the journal records old_display per piece.
+   */
   async displayRollback(
     batchId: string,
     supplier: string,
