@@ -73,10 +73,11 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_pieces_gamme_link_history_batch_acc
 COMMENT ON TABLE pieces_gamme_link_history IS
   'Rollback journal for catalog_accessory_link_activate: per-accessory old/new pg_parent_gamme_id, keyed by governed batch_id. Service-role-only (RLS-off like pieces_gamme_display_history).';
 
--- ── Fast lookup of "accessories of a main gamme" (for the future PR-2 runtime block) ─
-CREATE INDEX IF NOT EXISTS idx_pieces_gamme_parent_main
-  ON pieces_gamme (pg_parent_gamme_id)
-  WHERE pg_parent_gamme_id IS NOT NULL;
+-- NOTE: the read-path index on pieces_gamme(pg_parent_gamme_id) — used to look up "accessories
+-- of a main gamme" — is DEFERRED to PR-2 (the runtime block that actually reads it). On the
+-- existing pieces_gamme table it must be created CONCURRENTLY (require-concurrent-index-creation),
+-- which cannot run inside this transactional migration; PR-2 adds it out-of-band (small table,
+-- ~9.7k rows). PR-1 only WRITES pg_parent_gamme_id (UPDATE by pg_id PK), so no index is needed here.
 
 -- ── Link: pg_parent_gamme_id <- main, set-based, guarded, dry-run-capable, gated ────
 CREATE OR REPLACE FUNCTION catalog_accessory_link_activate(
