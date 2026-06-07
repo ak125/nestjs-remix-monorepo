@@ -24,6 +24,7 @@ Si la réponse n'est pas dans REPO_MAP ni canonical, passer à la prose ci-desso
 4. `integrations/*.md` — pour Paybox, SystemPay, Supabase, catalogue fournisseur (parts-feed)
 5. `routes/*.md` — pour les routes Remix critiques
 6. `ops/*.md` — pour toute question sur **cleanup / refactor / suppression** (procédures, backlog, playbook cycles)
+7. [`agent-method-patterns.md`](agent-method-patterns.md) — patterns de méthode agent (phases DISCOVER→…, danger-zone, scope-freeze) ; **NON-CANON advisory / pointer-only**, renvoie aux guards/skills/vault. Relocalisé `.claude/rules/`→ici le 2026-06-07 (était auto-chargé chaque turn ; lu **on-demand** désormais).
 
 Si la question n'est pas couverte ici, lire `.claude/rules/*` puis grepper.
 
