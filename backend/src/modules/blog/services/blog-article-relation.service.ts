@@ -3,6 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseIndexationService } from '../../search/services/supabase-indexation.service';
 import { BlogArticleTransformService } from './blog-article-transform.service';
 import { normalizeTypeAlias } from '../../../common/utils/url-builder.utils';
+import { CacheService } from '@cache/cache.service';
 
 /**
  * 🔗 BlogArticleRelationService - Relations et véhicules compatibles
@@ -17,23 +18,131 @@ import { normalizeTypeAlias } from '../../../common/utils/url-builder.utils';
  *
  * Extrait de BlogService pour réduire la complexité (SRP)
  */
+
+/**
+ * TTL fenêtre fraîche (secondes) pour les véhicules compatibles. Donnée de
+ * référence stable (`__cross_gamme_car_new` + `auto_*`), mutée sur import
+ * catalogue, PAS sur publication d'article → invalidation = expiration TTL.
+ */
+const COMPAT_VEHICLES_CACHE_TTL_SECONDS = 60 * 60;
+
+/**
+ * TTL court pour résultat vide (négative-cache). Évite de relancer le fan-out
+ * 5-7 requêtes à chaque hit de crawl sur une gamme non couverte, sans staleness
+ * longue si la couverture est ajoutée par un import ultérieur.
+ */
+const COMPAT_VEHICLES_EMPTY_TTL_SECONDS = 5 * 60;
+
+/**
+ * Préfixe de clé versionné — bumper `v1` → `v2` force une invalidation globale
+ * (pas de source d'événement par-item pour la donnée de compatibilité).
+ */
+const COMPAT_VEHICLES_CACHE_PREFIX = 'blog:compat-vehicles:v1:';
+
 @Injectable()
 export class BlogArticleRelationService {
   private readonly logger = new Logger(BlogArticleRelationService.name);
 
+  /**
+   * Single-flight in-memory dedup (pattern R3GuideService). N requêtes
+   * concurrentes en cache miss sur la même clé partagent un seul compute —
+   * casse le thundering-herd du crawl concurrent sur clé froide. Dedup local
+   * par replica ; le store Redis partagé visibilise le résultat aux autres.
+   */
+  private readonly inflight = new Map<string, Promise<any[]>>();
+
   constructor(
     private readonly supabaseService: SupabaseIndexationService,
     private readonly transformService: BlogArticleTransformService,
+    private readonly cacheService: CacheService,
   ) {}
 
   /**
-   * 🚗 Charger les véhicules compatibles avec une gamme de pièce
-   * Version simplifiée : requête directe sans multiples étapes
+   * 🚗 Charger les véhicules compatibles avec une gamme de pièce.
+   *
+   * Cache-aside + single-flight au-dessus du fan-out 5-7 requêtes Supabase
+   * (cause racine du pic CPU sous crawl concurrent). Réutilise le `CacheService`
+   * global gouverné — partagé avec sessions/paiements, donc on ne consomme que
+   * son API publique (`get`/`set`), jamais ses internes.
+   *
    * @param pg_id - ID de la pièce générique
    * @param limit - Nombre max de véhicules (défaut: 1000 = quasi illimité)
    * @param pg_alias - Alias de la gamme pour construire l'URL
    */
   async getCompatibleVehicles(
+    pg_id: number,
+    limit = 1000,
+    pg_alias = '',
+  ): Promise<any[]> {
+    // Clé versionnée incluant pg_id + limit + pg_alias : les callers passent des
+    // limites différentes (1000 vs 24) et pg_alias change le `catalog_url`
+    // assemblé — une clé partagée servirait un mauvais payload.
+    const cacheKey = `${COMPAT_VEHICLES_CACHE_PREFIX}pg=${pg_id}:lim=${limit}:alias=${pg_alias}`;
+    const startedAt = Date.now();
+
+    const cached = await this.cacheService.get<any[]>(cacheKey);
+    if (cached !== null) {
+      this.logger.debug(
+        `[compat-cache] hit key=${cacheKey} count=${cached.length} duration_ms=${Date.now() - startedAt}`,
+      );
+      return cached;
+    }
+
+    const existing = this.inflight.get(cacheKey);
+    if (existing) {
+      this.logger.debug(`[compat-cache] coalesced key=${cacheKey}`);
+      return existing;
+    }
+
+    const promise = (async () => {
+      const computeStart = Date.now();
+      try {
+        const vehicles = await this.computeCompatibleVehicles(
+          pg_id,
+          limit,
+          pg_alias,
+        );
+        // Écriture best-effort : un blip Redis sur le `set` ne doit JAMAIS
+        // transformer un compute réussi en 500 (CacheService.set rethrow).
+        try {
+          await this.cacheService.set(
+            cacheKey,
+            vehicles,
+            vehicles.length > 0
+              ? COMPAT_VEHICLES_CACHE_TTL_SECONDS
+              : COMPAT_VEHICLES_EMPTY_TTL_SECONDS,
+          );
+        } catch (cacheErr) {
+          this.logger.error(
+            `[compat-cache] set-failed key=${cacheKey} — résultat retourné non caché`,
+            cacheErr instanceof Error ? cacheErr.stack : String(cacheErr),
+          );
+        }
+        this.logger.log(
+          `[compat-cache] miss key=${cacheKey} count=${vehicles.length} duration_ms=${Date.now() - computeStart}`,
+        );
+        return vehicles;
+      } finally {
+        // Toujours libérer le slot single-flight, même si le compute rejette
+        // (il ne rejette pas aujourd'hui — catch interne → []), pour ne pas
+        // figer une promesse rejetée dans la Map.
+        this.inflight.delete(cacheKey);
+      }
+    })();
+
+    this.inflight.set(cacheKey, promise);
+    return promise;
+  }
+
+  /**
+   * Fan-out réel (extrait verbatim, logique inchangée) — 5-7 requêtes Supabase
+   * séquentielles + assemblage JS. Toujours invoqué via
+   * {@link getCompatibleVehicles} (couche cache-aside + single-flight).
+   * @param pg_id - ID de la pièce générique
+   * @param limit - Nombre max de véhicules (défaut: 1000 = quasi illimité)
+   * @param pg_alias - Alias de la gamme pour construire l'URL
+   */
+  private async computeCompatibleVehicles(
     pg_id: number,
     limit = 1000,
     pg_alias = '',
