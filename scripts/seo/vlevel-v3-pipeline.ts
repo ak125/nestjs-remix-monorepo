@@ -810,6 +810,143 @@ async function autoPlan(family: string): Promise<void> {
   console.log(`   AUTO_APPLY_SAFE: ${autoSafe.length} (dont ${autoPending.length} à appliquer, ${autoNoop} déjà sur cible)`);
 }
 
+// ---- résolution des champions BLOCKED (page /pieces impossible) ----
+// blocked-plan : pour une famille, liste les champions V3 BLOCKED (type_id NULL / non-rendable /
+// TecDoc orphelin / cross-gamme), classe la CAUSE, et propose un candidat rendable + une action.
+// READ-ONLY : n'écrit JAMAIS. Réutilise seed + helpers.
+const DIESEL_BLK = /(dci|hdi|tdci|cdti|tdi|dti|bluehdi|multijet|jtd|cdti|crdi)/i;
+async function blockedPlan(family: string): Promise<void> {
+  const pgIds = FAMILIES[family];
+  if (!pgIds) throw new Error(`famille inconnue: ${family} (connues: ${Object.keys(FAMILIES).join(', ')})`);
+  const s = sb();
+  const seed = JSON.parse(fs.readFileSync(SEED_FILE, 'utf8'));
+  const reps: Record<string, any> = seed.diesel_default_by_modele || {};
+
+  const out: any[] = [];
+  for (const pgId of pgIds) {
+    const ownRe = GAMME_PARTS[pgId];
+    const gamme = (await selectIn<any>(s, 'pieces_gamme', 'pg_id,pg_alias', 'pg_id', [String(pgId)]))[0]?.pg_alias || `pg-${pgId}`;
+    const champs = await selectAllEq<any>(s, '__seo_keywords', 'id,keyword,volume,type_id,model,energy,type,v_level', 'pg_id', pgId, 'id');
+    const v3 = champs.filter((k) => k.type === 'vehicle' && k.v_level === 'V3');
+
+    // types courants (pour savoir si rendable)
+    const curTids = v3.map((k) => k.type_id).filter(Boolean).map(String);
+    const curTypes = await selectIn<any>(s, 'auto_type', 'type_id,type_modele_id,type_alias,type_display', 'type_id', curTids);
+    const curTypeMap = new Map(curTypes.map((t) => [String(t.type_id), t]));
+
+    // BLOCKED = cross-gamme, ou type_id NULL, ou type absent/non-affiché
+    const renderableNow = (k: any): boolean => {
+      if (!k.type_id) return false;
+      const t = curTypeMap.get(String(k.type_id));
+      return !!(t && t.type_display === '1' && t.type_modele_id);
+    };
+    const blocked = v3.filter((k) => (ownRe && !ownRe.test(k.keyword)) || !renderableNow(k));
+
+    // résoudre le modele_id de chaque blocked : via le type courant (même non-affiché) ou fuzzy via k.model
+    const fuzzyNames = [...new Set(blocked.filter((k) => !curTypeMap.get(String(k.type_id))?.type_modele_id && k.model).map((k) => String(k.model).toUpperCase()))];
+    const fuzzyModeles = fuzzyNames.length
+      ? await selectIn<any>(s, 'auto_modele', 'modele_id,modele_name,modele_alias,modele_marque_id', 'modele_name', fuzzyNames)
+      : [];
+    const fuzzyByName = new Map(fuzzyModeles.map((m) => [String(m.modele_name).toUpperCase(), m]));
+    const modeleIdOf = (k: any): string | null => {
+      const t = curTypeMap.get(String(k.type_id));
+      if (t?.type_modele_id && t.type_modele_id !== 'null') return String(t.type_modele_id);
+      const fm = k.model ? fuzzyByName.get(String(k.model).toUpperCase()) : null;
+      return fm ? String(fm.modele_id) : null;
+    };
+
+    // candidats rendables (display=1) des modeles concernés
+    const modeleIds = [...new Set(blocked.map(modeleIdOf).filter(Boolean) as string[])];
+    const candTypes = modeleIds.length
+      ? (await selectIn<any>(s, 'auto_type', 'type_id,type_modele_id,type_alias,type_power_ps,type_fuel,type_display', 'type_modele_id', modeleIds)).filter((t) => t.type_display === '1')
+      : [];
+    const candByMod = new Map<string, any[]>();
+    for (const t of candTypes) { const a = candByMod.get(String(t.type_modele_id)) || []; a.push(t); candByMod.set(String(t.type_modele_id), a); }
+    const modeles = modeleIds.length ? await selectIn<any>(s, 'auto_modele', 'modele_id,modele_name,modele_alias,modele_marque_id', 'modele_id', modeleIds) : [];
+    const modMap = new Map(modeles.map((m) => [String(m.modele_id), m]));
+    const marques = modeles.length ? await selectIn<any>(s, 'auto_marque', 'marque_id,marque_alias', 'marque_id', [...new Set(modeles.map((m) => String(m.modele_marque_id)))]) : [];
+    const mqMap = new Map(marques.map((m) => [String(m.marque_id), m]));
+
+    for (const k of blocked) {
+      const modId = modeleIdOf(k);
+      const curT = curTypeMap.get(String(k.type_id));
+      // 1. CAUSE
+      let reason: string;
+      if (ownRe && !ownRe.test(k.keyword)) reason = 'WRONG_GAMME';
+      else if (!k.type_id) reason = modId ? 'TYPE_ID_NULL' : 'PARSER_MISS';
+      else if (!curT) reason = 'TECDOC_ORPHAN'; // type_id absent d'auto_type
+      else if (curT.type_display !== '1') reason = 'TECDOC_ORPHAN'; // TecDoc non affiché
+      else reason = 'TYPE_NOT_RENDERABLE';
+
+      // 2. CANDIDAT rendable du même modèle (énergie du keyword si explicite, sinon diesel-default)
+      let candId = '', candUrl = '', conf = 0;
+      const cands = modId ? (candByMod.get(modId) || []) : [];
+      if (cands.length && modId) {
+        const hasEnergy = ENERGY_RE.test(k.keyword);
+        const wantDiesel = !hasEnergy || DIESEL_BLK.test(k.keyword); // modèle-seul OU keyword diesel
+        const isDiesel = (t: any) => /diesel/i.test(t.type_fuel || '') || DIESEL_BLK.test(t.type_alias || '');
+        const dieselC = cands.filter(isDiesel);
+        const petrolC = cands.filter((t) => !isDiesel(t));
+        // respecter l'énergie EXPLICITE du keyword : essence -> pool essence ; sinon diesel-default
+        const pool = wantDiesel ? (dieselC.length ? dieselC : cands) : (petrolC.length ? petrolC : cands);
+        // rep seed diesel = uniquement si on veut du diesel (jamais sur un keyword essence explicite)
+        const seedRep = wantDiesel && reps[modId] && cands.find((t) => String(t.type_id) === String(reps[modId].type_id));
+        const chosen = seedRep
+          || (pool.length ? pool.slice().sort((a, b) => (Number(b.type_power_ps) || 0) - (Number(a.type_power_ps) || 0))[Math.floor((pool.length - 1) / 2)] : null)
+          || cands[0];
+        if (chosen) {
+          candId = String(chosen.type_id);
+          const m = modMap.get(modId); const mq = m ? mqMap.get(String(m.modele_marque_id)) : null;
+          if (m && mq && chosen.type_alias) candUrl = piecesUrl(gamme, pgId, mq.marque_alias, mq.marque_id, m.modele_alias, m.modele_id, chosen.type_alias, candId);
+          conf = seedRep ? (reps[modId].confidence || 70) : (hasEnergy ? 60 : 55);
+        }
+      }
+
+      // 3. ACTION proposée
+      let action: string;
+      if (reason === 'WRONG_GAMME') action = 'REMAP_REVIEW';
+      else if (reason === 'PARSER_MISS') action = 'PARSER_RETRY_CANDIDATE';
+      else if (candId && candUrl) action = (reason === 'TECDOC_ORPHAN') ? 'REMAP_REVIEW' : 'RESOLVE_CANDIDATE';
+      else if (modId && !cands.length) action = 'DEFER_CATALOG'; // modèle sans aucune variante rendable
+      else if (reason === 'TECDOC_ORPHAN') action = 'QUARANTINE_CANDIDATE';
+      else action = 'BLOCKED_KEEP';
+
+      out.push({
+        pg_id: pgId, gamme, keyword: k.keyword, volume: k.volume ?? 0, v_level: k.v_level,
+        current_type_id: k.type_id ?? '', blocked_reason: reason, candidate_type_id: candId,
+        candidate_url: candUrl, confidence: conf, proposed_action: action, owner_decision: action,
+      });
+    }
+  }
+
+  out.sort((a, b) => a.blocked_reason.localeCompare(b.blocked_reason) || a.pg_id - b.pg_id || b.volume - a.volume || a.keyword.localeCompare(b.keyword));
+  const byReason = out.reduce((a, r) => ((a[r.blocked_reason] = (a[r.blocked_reason] || 0) + 1), a), {} as Record<string, number>);
+  const byAction = out.reduce((a, r) => ((a[r.proposed_action] = (a[r.proposed_action] || 0) + 1), a), {} as Record<string, number>);
+
+  const base = path.join(AUDIT_DIR, `vlevel-blocked-${family}-${DATE}`);
+  const cols = ['pg_id', 'gamme', 'keyword', 'volume', 'v_level', 'current_type_id', 'blocked_reason', 'candidate_type_id', 'candidate_url', 'confidence', 'proposed_action', 'owner_decision'];
+  fs.writeFileSync(`${base}.csv`, [cols.join(';'), ...out.map((r) => cols.map((c) => String((r as any)[c] ?? '').replace(/;/g, ',')).join(';'))].join('\n') + '\n');
+  fs.writeFileSync(`${base}.json`, JSON.stringify({ family, pg_ids: pgIds, generated: DATE, mutation: false, scope: 'V3 BLOCKED', by_reason: byReason, by_action: byAction, rows: out }, null, 2));
+  const md = [
+    `# Champions V3 BLOCKED (page /pieces impossible) — ${family} · ${DATE}`,
+    ``,
+    `> READ-ONLY. Le système croit avoir un champion mais la page cible est cassée/impossible. Aucune mutation.`,
+    ``,
+    `Total : ${out.length}. Cause : ${Object.entries(byReason).map(([k, v]) => `${k}=${v}`).join(' · ')}`,
+    `Action proposée : ${Object.entries(byAction).map(([k, v]) => `${k}=${v}`).join(' · ')}`,
+    ``,
+    `| pg | keyword | cause | candidat | conf | action |`,
+    `|---|---|---|---|---|---|`,
+    ...out.map((r) => `| ${r.pg_id} | ${r.keyword} | ${r.blocked_reason} | ${r.candidate_type_id || '—'} | ${r.confidence} | ${r.proposed_action} |`),
+    ``,
+  ].join('\n');
+  fs.writeFileSync(`${base}.md`, md);
+
+  console.log(`✅ blocked-plan (READ-ONLY) ${family} : ${base}.{md,csv,json}`);
+  console.log(`   ${out.length} BLOCKED — cause: ${Object.entries(byReason).map(([k, v]) => `${k}=${v}`).join(' · ')}`);
+  console.log(`   action: ${Object.entries(byAction).map(([k, v]) => `${k}=${v}`).join(' · ')}`);
+}
+
 function readPackCsv(file: string): Record<string, string>[] {
   const lines = fs.readFileSync(file, 'utf8').trim().split('\n');
   const head = lines[0].split(';');
@@ -881,6 +1018,7 @@ async function applyPack(file: string): Promise<void> {
   else if (mode === 'decontaminate-pack') await decontaminatePack(Number(arg('--pg-id') || 402));
   else if (mode === 'reelection-pack') await reelectionPack(Number(arg('--pg-id') || 402));
   else if (mode === 'auto-plan') await autoPlan(arg('--family') || 'freinage');
+  else if (mode === 'blocked-plan') await blockedPlan(arg('--family') || 'freinage');
   else if (mode === 'validate-pack') validatePack(arg('--file')!);
   else if (mode === 'apply-pack') await applyPack(arg('--file')!);
   else { console.error('Usage: vlevel-v3-pipeline.ts <decision-pack|generics-pack|validate-pack|apply-pack> [--pg-id N | --file f] [--dry-run|--apply --owner-approved]'); process.exitCode = 1; }
