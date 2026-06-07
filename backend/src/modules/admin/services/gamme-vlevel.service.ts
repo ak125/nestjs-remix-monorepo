@@ -14,6 +14,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import {
   VLEVEL_V2_CAP,
   vLevelGroupKey,
+  compareV3Champions,
   isKeywordEligibleForGamme,
 } from '@repo/seo-roles';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
@@ -216,12 +217,8 @@ export class GammeVLevelService extends SupabaseBaseService {
       }> = [];
 
       for (const [, group] of byModelEnergy) {
-        // Sort: volume DESC, keyword length ASC (shorter = better match)
-        group.sort((a: VLevelKeywordRow, b: VLevelKeywordRow) => {
-          if ((b.volume || 0) !== (a.volume || 0))
-            return (b.volume || 0) - (a.volume || 0);
-          return (a.keyword || '').length - (b.keyword || '').length;
-        });
+        // Tri canonique déterministe (volume DESC → longueur ASC → keyword ASC) — @repo/seo-roles.
+        group.sort(compareV3Champions);
 
         // First keyword = V3 (champion), even if volume=0
         const champion = group[0];
@@ -243,7 +240,8 @@ export class GammeVLevelService extends SupabaseBaseService {
       }
 
       // 6. Promote top 10 V3 -> V2 (dedup by [model + energy])
-      v3Champions.sort((a, b) => (b.score_seo || 0) - (a.score_seo || 0));
+      // Même tie-break déterministe que l'in-group (cut V2 reproductible aux volumes ex-aequo).
+      v3Champions.sort(compareV3Champions);
       const seenModelEnergy = new Set<string>();
       const top10: VLevelKeywordRow[] = [];
       for (const kw of v3Champions) {

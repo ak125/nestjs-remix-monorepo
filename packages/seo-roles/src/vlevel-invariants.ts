@@ -62,6 +62,37 @@ export function vLevelGroupKey(
 }
 
 /**
+ * Comparateur déterministe canonique des keywords/champions pour l'élection V-Level.
+ * Ordre TOTAL : volume DESC → longueur keyword ASC → keyword ASC (lexicographique).
+ *
+ * Tue le non-déterminisme du tri par volume seul : aux paliers de volume ex-aequo (fréquents —
+ * beaucoup de keywords partagent le même volume), un tri par volume seul est INSTABLE, donc la
+ * composition du tier V2 (top-{@link VLEVEL_V2_CAP}) et le choix du champion in-group ne sont
+ * plus reproductibles d'un recalc à l'autre. Le 3ᵉ critère (keyword ASC) garantit un ordre total
+ * stable. À utiliser À LA FOIS pour :
+ *   - l'élection du champion IN-GROUP (V3) : le keyword le plus court (puis ASC) du groupe ;
+ *   - le cut V2 = top-N des champions : même tie-break, donc composition V2 reproductible.
+ *
+ * Les deux calculateurs (`gamme-vlevel.service` admin recalc + `scripts/seo/vlevel-v3-pipeline`
+ * reelection-pack) DOIVENT référencer ce comparateur pour rester des miroirs l'un de l'autre.
+ * Changement de comportement = uniquement aux ex-aequo (avant : ordre d'insertion arbitraire) ;
+ * il NE déplace AUCUN champion entre volumes distincts. Owner-gated côté DATA (un recalc reste
+ * une action explicite ; ce comparateur seul ne mute rien).
+ */
+export function compareV3Champions(
+  a: { volume?: number | null; keyword?: string | null },
+  b: { volume?: number | null; keyword?: string | null },
+): number {
+  const va = a.volume || 0;
+  const vb = b.volume || 0;
+  if (vb !== va) return vb - va; // volume DESC
+  const ka = a.keyword || "";
+  const kb = b.keyword || "";
+  if (ka.length !== kb.length) return ka.length - kb.length; // longueur ASC (keyword le plus court)
+  return ka < kb ? -1 : ka > kb ? 1 : 0; // keyword ASC → ordre total déterministe
+}
+
+/**
  * Termes de gamme (pièce) pour l'ÉLIGIBILITÉ d'élection V-Level, par `pg_id`.
  *
  * Un keyword n'est éligible à l'élection V2/V3/V4 d'une gamme QUE s'il mentionne le terme de SA
