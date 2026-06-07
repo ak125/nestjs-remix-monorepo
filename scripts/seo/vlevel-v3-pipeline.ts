@@ -20,7 +20,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 // invariants V-Level canoniques (SoT) — mirrorés par reelection-pack, JAMAIS réinventés.
-import { VLEVEL_V2_CAP, vLevelGroupKey } from '@repo/seo-roles';
+import { VLEVEL_V2_CAP, vLevelGroupKey, modelMatchKey } from '@repo/seo-roles';
 
 const ROOT = process.cwd();
 const AUDIT_DIR = path.join(ROOT, 'audit'); // sortie runtime (decision-packs), non versionnée par défaut
@@ -842,16 +842,32 @@ async function blockedPlan(family: string): Promise<void> {
     };
     const blocked = v3.filter((k) => (ownRe && !ownRe.test(k.keyword)) || !renderableNow(k));
 
-    // résoudre le modele_id de chaque blocked : via le type courant (même non-affiché) ou fuzzy via k.model
-    const fuzzyNames = [...new Set(blocked.filter((k) => !curTypeMap.get(String(k.type_id))?.type_modele_id && k.model).map((k) => String(k.model).toUpperCase()))];
-    const fuzzyModeles = fuzzyNames.length
-      ? await selectIn<any>(s, 'auto_modele', 'modele_id,modele_name,modele_alias,modele_marque_id', 'modele_name', fuzzyNames)
-      : [];
-    const fuzzyByName = new Map(fuzzyModeles.map((m) => [String(m.modele_name).toUpperCase(), m]));
+    // résoudre le modele_id de chaque blocked : via le type courant (même non-affiché), sinon par
+    // MATCH NORMALISÉ k.model ↔ catalogue via modelMatchKey (@repo/seo-roles : accents + roman↔arabe).
+    // L'accent casse un ILIKE de préfiltre → on normalise tout le catalogue en mémoire (une fois, si besoin).
+    const needFuzzy = blocked.some((k) => !curTypeMap.get(String(k.type_id))?.type_modele_id && k.model);
+    const modelKeyMap = new Map<string, any>(); // modelMatchKey(modele_name) -> modele (base préféré sur collision)
+    if (needFuzzy) {
+      for (let off = 0; ; off += 1000) {
+        const { data, error: e3 } = await s.from('auto_modele')
+          .select('modele_id,modele_name,modele_alias,modele_marque_id')
+          .order('modele_id', { ascending: true }).range(off, off + 999);
+        if (e3) throw new Error(`auto_modele.range(${off}): ${e3.message}`);
+        const batch = (data || []) as any[];
+        for (const m of batch) {
+          const key = modelMatchKey(m.modele_name || '');
+          if (!key) continue;
+          const prev = modelKeyMap.get(key);
+          // collision -> préférer le nom le plus court (la base, sans code châssis entre parenthèses)
+          if (!prev || String(m.modele_name).length < String(prev.modele_name).length) modelKeyMap.set(key, m);
+        }
+        if (batch.length < 1000) break;
+      }
+    }
     const modeleIdOf = (k: any): string | null => {
       const t = curTypeMap.get(String(k.type_id));
       if (t?.type_modele_id && t.type_modele_id !== 'null') return String(t.type_modele_id);
-      const fm = k.model ? fuzzyByName.get(String(k.model).toUpperCase()) : null;
+      const fm = k.model ? modelKeyMap.get(modelMatchKey(String(k.model))) : null;
       return fm ? String(fm.modele_id) : null;
     };
 
