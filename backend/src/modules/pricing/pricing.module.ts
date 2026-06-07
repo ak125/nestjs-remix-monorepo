@@ -14,6 +14,7 @@ import { PricingRepository } from './services/pricing.repository';
 import { PriceImportService } from './services/price-import.service';
 import { PriceActivationService } from './services/price-activation.service';
 import { CatalogDisplayActivationService } from './services/catalog-display-activation.service';
+import { CatalogDisplayQuarantineService } from './services/catalog-display-quarantine.service';
 import { PricingSimulationService } from './services/pricing-simulation.service';
 import { PricingImportController } from './controllers/pricing-import.controller';
 
@@ -28,6 +29,7 @@ import { PricingImportController } from './controllers/pricing-import.controller
     PriceImportService,
     PriceActivationService,
     CatalogDisplayActivationService,
+    CatalogDisplayQuarantineService,
     PricingSimulationService,
   ],
   exports: [

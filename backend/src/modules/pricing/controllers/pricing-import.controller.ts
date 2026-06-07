@@ -9,6 +9,9 @@
  *   POST /api/admin/pricing/display/dry-run     → piece_display projection (no writes)
  *   POST /api/admin/pricing/display/commit      → flip piece_display false→true (confirm:true)
  *   POST /api/admin/pricing/display/rollback    → restore piece_display for a batch
+ *   POST /api/admin/pricing/display/quarantine/dry-run → non-vendable hide projection (no writes)
+ *   POST /api/admin/pricing/display/quarantine/commit  → flip piece_display true→false (confirm:true)
+ *   POST /api/admin/pricing/display/quarantine/rollback → restore piece_display for a quarantine batch
  *   POST /api/admin/pricing/display/gamme/dry-run  → pg_display projection, level-4 (no writes)
  *   POST /api/admin/pricing/display/gamme/commit   → flip pg_display→'1' level-4 hubs (confirm:true)
  *   POST /api/admin/pricing/display/gamme/rollback → restore pg_display for a gamme batch
@@ -27,6 +30,10 @@ import {
   CatalogDisplayActivationService,
   type DisplayActivationRequest,
 } from '../services/catalog-display-activation.service';
+import {
+  CatalogDisplayQuarantineService,
+  type DisplayQuarantineRequest,
+} from '../services/catalog-display-quarantine.service';
 import { PricingSimulationService } from '../services/pricing-simulation.service';
 import type {
   CustomerType,
@@ -40,6 +47,7 @@ export class PricingImportController {
     private readonly importService: PriceImportService,
     private readonly activationService: PriceActivationService,
     private readonly displayActivationService: CatalogDisplayActivationService,
+    private readonly displayQuarantineService: CatalogDisplayQuarantineService,
     private readonly simulationService: PricingSimulationService,
   ) {}
 
@@ -104,6 +112,33 @@ export class PricingImportController {
   @Post('display/rollback')
   displayRollback(@Body() body: { batchId: string; supplierId: string }) {
     return this.displayActivationService.rollback(
+      body.batchId,
+      body.supplierId,
+    );
+  }
+
+  /**
+   * Read-only quarantine projection — how many visible-but-non-vendable refs (no writes).
+   * Optional `gammeIds` (pieces.piece_ga_id) scopes the projection to a cohort.
+   */
+  @Post('display/quarantine/dry-run')
+  displayQuarantineDryRun(@Body() body: DisplayQuarantineRequest) {
+    return this.displayQuarantineService.dryRun(body.supplierId, body.gammeIds);
+  }
+
+  /** Apply piece_display true→false for non-vendable refs — requires `confirm:true`. */
+  @Post('display/quarantine/commit')
+  displayQuarantineCommit(
+    @Body() body: DisplayQuarantineRequest & { confirm?: boolean },
+  ) {
+    return this.displayQuarantineService.commit(body);
+  }
+
+  @Post('display/quarantine/rollback')
+  displayQuarantineRollback(
+    @Body() body: { batchId: string; supplierId: string },
+  ) {
+    return this.displayQuarantineService.rollback(
       body.batchId,
       body.supplierId,
     );
