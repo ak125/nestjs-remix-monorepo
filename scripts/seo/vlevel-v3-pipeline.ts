@@ -830,6 +830,8 @@ async function autoPlan(family: string): Promise<void> {
 // TecDoc orphelin / cross-gamme), classe la CAUSE, et propose un candidat rendable + une action.
 // READ-ONLY : n'écrit JAMAIS. Réutilise seed + helpers.
 const DIESEL_BLK = /(dci|hdi|tdci|cdti|tdi|dti|bluehdi|multijet|jtd|cdti|crdi)/i;
+// Cylindrée explicite d'un keyword (ex. "1.6" -> "1-6"), pour matcher l'alias d'une variante (ex. "1-6-hdi").
+const kwDisplacement = (kw: string): string => (kw.match(/\b(\d[.,]\d)\b/)?.[1] || '').replace(/[.,]/, '-');
 async function blockedPlan(family: string): Promise<void> {
   const pgIds = FAMILIES[family];
   if (!pgIds) throw new Error(`famille inconnue: ${family} (connues: ${Object.keys(FAMILIES).join(', ')})`);
@@ -920,16 +922,21 @@ async function blockedPlan(family: string): Promise<void> {
         const petrolC = cands.filter((t) => !isDiesel(t));
         // respecter l'énergie EXPLICITE du keyword : essence -> pool essence ; sinon diesel-default
         const pool = wantDiesel ? (dieselC.length ? dieselC : cands) : (petrolC.length ? petrolC : cands);
+        // CYLINDRÉE-EXACTE d'abord : si le keyword précise une cylindrée (ex. "1.6"), préférer la variante
+        // du pool (énergie déjà filtrée) dont l'alias la contient — tue l'approx du fallback médiane-puissance.
+        const disp = kwDisplacement(k.keyword);
+        const exact = disp ? pool.find((t) => (t.type_alias || '').includes(disp)) : null;
         // rep seed diesel = uniquement si on veut du diesel (jamais sur un keyword essence explicite)
         const seedRep = wantDiesel && reps[modId] && cands.find((t) => String(t.type_id) === String(reps[modId].type_id));
-        const chosen = seedRep
+        const chosen = exact
+          || seedRep
           || (pool.length ? pool.slice().sort((a, b) => (Number(b.type_power_ps) || 0) - (Number(a.type_power_ps) || 0))[Math.floor((pool.length - 1) / 2)] : null)
           || cands[0];
         if (chosen) {
           candId = String(chosen.type_id);
           const m = modMap.get(modId); const mq = m ? mqMap.get(String(m.modele_marque_id)) : null;
           if (m && mq && chosen.type_alias) candUrl = piecesUrl(gamme, pgId, mq.marque_alias, mq.marque_id, m.modele_alias, m.modele_id, chosen.type_alias, candId);
-          conf = seedRep ? (reps[modId].confidence || 70) : (hasEnergy ? 60 : 55);
+          conf = exact ? 75 : seedRep ? (reps[modId].confidence || 70) : (hasEnergy ? 60 : 55);
         }
       }
 
@@ -994,7 +1001,7 @@ async function blockedApplyPack(family: string, pgFilter?: number, label?: strin
 
   // --- contrôles de cohérence par ligne (verify the proof — pas de candidat approximatif) ---
   // GATE 1 cylindrée : la cylindrée explicite du keyword (ex. "1.5 dci") DOIT être dans l'alias candidat. EXCLUSION (pas flag).
-  const kwDisp = (kw: string): string => (kw.match(/\b(\d[.,]\d)\b/)?.[1] || '').replace(/[.,]/, '-');
+  const kwDisp = kwDisplacement; // helper module-level (dédup avec le résolveur blocked-plan)
   const candAlias = (url: string): string => (url.match(/\/([^/]+)-\d+\.html$/)?.[1] || '');
   const engineMatch = (r: any): boolean => { const d = kwDisp(r.keyword); return !d || candAlias(r.candidate_url).includes(d); };
   // GATE 2 moteur : famille carburant du candidat (type_fuel DB). hybride/GPL = thermique (a un filtre à huile).
