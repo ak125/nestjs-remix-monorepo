@@ -684,6 +684,132 @@ async function reelectionPack(pgId: number): Promise<void> {
   console.log(`   V2 ${cur.V2 || 0}->${prop.V2} · V3 ${cur.V3 || 0}->${prop.V3} · V4 ${cur.V4 || 0}->${prop.V4} · ${changed.length} changements (guard=${changed.length})`);
 }
 
+// ---- orchestrateur de classification (policy AUTO / REVIEW / DEFER / BLOCKED) ----
+// Familles de gammes (périmètre initial : freinage). Étendre = ajouter une entrée.
+const FAMILIES: Record<string, number[]> = { freinage: [82, 402, 124] };
+// Sous-modèles niche : si le type recommandé tombe dessus mais que le keyword ne le nomme PAS,
+// c'est une erreur de sous-modèle (Aircross SUV, Allroad break, Décapotable, Be Bop) -> DEFER.
+const SUBMODEL_SUSPECT = /aircross|allroad|d[ée]capotable|be ?bop|cabriolet|spacetourer/i;
+
+// auto-plan : classe les champions V3 d'une FAMILLE en AUTO_APPLY_SAFE / OWNER_REVIEW / DEFER / BLOCKED
+// (policy owner). READ-ONLY : aucune écriture. Réutilise le seed + helpers (pas de système parallèle).
+// AUTO_APPLY_SAFE = seul bucket auto-applicable, et SEULEMENT si tous les checks passent (conf>=80,
+// rendable /pieces, pas cross-gamme, pas sous-modèle suspect, pas REVIEW/DEFER flag, rollback prêt).
+async function autoPlan(family: string): Promise<void> {
+  const pgIds = FAMILIES[family];
+  if (!pgIds) throw new Error(`famille inconnue: ${family} (connues: ${Object.keys(FAMILIES).join(', ')})`);
+  const s = sb();
+  const seed = JSON.parse(fs.readFileSync(SEED_FILE, 'utf8'));
+  const reps: Record<string, any> = seed.diesel_default_by_modele || {};
+  const reviewKw: Record<string, any> = seed.review_keyword || {};
+  const explicitKw: Record<string, any> = seed.explicit_keyword || {};
+  const deferCatalog: string[] = seed.defer_catalog_gap || [];
+  const AUTO_CONF = 80; // seuil AUTO_APPLY_SAFE (owner)
+
+  const allRows: any[] = [];
+  for (const pgId of pgIds) {
+    const ownRe = GAMME_PARTS[pgId];
+    const gamme = (await selectIn<any>(s, 'pieces_gamme', 'pg_id,pg_alias', 'pg_id', [String(pgId)]))[0]?.pg_alias || `pg-${pgId}`;
+    const champs = await selectAllEq<any>(s, '__seo_keywords', 'id,keyword,volume,type_id,model,energy,type,v_level', 'pg_id', pgId, 'id');
+    const v3 = champs.filter((k) => k.type === 'vehicle' && k.v_level === 'V3'); // périmètre : V3 uniquement
+
+    const curTids = v3.map((k) => k.type_id).filter(Boolean).map(String);
+    const repTids = Object.values(reps).map((r: any) => String(r.type_id));
+    const types = await selectIn<any>(s, 'auto_type', 'type_id,type_modele_id,type_alias,type_display', 'type_id', [...new Set([...curTids, ...repTids])]);
+    const typeMap = new Map(types.map((t) => [String(t.type_id), t]));
+    const modeleIds = [...new Set(types.map((t) => String(t.type_modele_id)).filter((x) => x && x !== 'null'))];
+    const modeles = await selectIn<any>(s, 'auto_modele', 'modele_id,modele_name,modele_alias,modele_marque_id', 'modele_id', modeleIds);
+    const modMap = new Map(modeles.map((m) => [String(m.modele_id), m]));
+    const marques = await selectIn<any>(s, 'auto_marque', 'marque_id,marque_alias', 'marque_id', [...new Set(modeles.map((m) => String(m.modele_marque_id)))]);
+    const mqMap = new Map(marques.map((m) => [String(m.marque_id), m]));
+
+    const render = (tid: string): { url: string; modeleName: string } | null => {
+      const t = typeMap.get(String(tid));
+      if (!t || t.type_display !== '1') return null;
+      const m = modMap.get(String(t.type_modele_id));
+      const mq = m ? mqMap.get(String(m.modele_marque_id)) : null;
+      if (!m || !mq || !t.type_alias) return null;
+      return { url: piecesUrl(gamme, pgId, mq.marque_alias, mq.marque_id, m.modele_alias, m.modele_id, t.type_alias, tid), modeleName: m.modele_name || '' };
+    };
+
+    for (const k of v3) {
+      const r: any = {
+        pg_id: pgId, gamme, keyword: k.keyword, volume: k.volume ?? 0,
+        current_type_id: k.type_id ?? '', recommended_type_id: '', recommended_url: '', confidence: 0,
+        changed: false, decision: '', reason: '',
+      };
+      // 1. cross-gamme (non résolu) -> BLOCKED
+      if (ownRe && !ownRe.test(k.keyword)) { r.decision = 'BLOCKED'; r.reason = 'cross-gamme non résolu'; allRows.push(r); continue; }
+      // 2. résolution type_id : motorisation explicite => garder ; modèle-seul => diesel-default seed
+      const curT = k.type_id ? typeMap.get(String(k.type_id)) : null;
+      const curModId = curT ? String(curT.type_modele_id) : null;
+      const modelOnly = !ENERGY_RE.test(k.keyword);
+      if (modelOnly && curModId && reps[curModId]) {
+        r.recommended_type_id = String(reps[curModId].type_id); r.confidence = reps[curModId].confidence || 0; r.reason = 'diesel-default modèle-seul';
+      } else if (!modelOnly && k.type_id) {
+        r.recommended_type_id = String(k.type_id); r.confidence = 75; r.reason = 'motorisation explicite (puissance à confirmer)';
+      } else {
+        r.recommended_type_id = k.type_id ? String(k.type_id) : ''; r.confidence = 50; r.reason = 'modèle-seul sans rep seed';
+      }
+      r.changed = !!r.recommended_type_id && r.recommended_type_id !== String(k.type_id ?? '');
+      const rend = r.recommended_type_id ? render(r.recommended_type_id) : null;
+      r.recommended_url = rend?.url || '';
+      // 3. BLOCKED : type_id absent ou /pieces impossible
+      if (!r.recommended_type_id || !rend) { r.decision = 'BLOCKED'; r.reason = 'type_id absent ou /pieces non rendable'; allRows.push(r); continue; }
+      // 4. DEFER : catalogue absent / sous-modèle suspect
+      if (deferCatalog.some((d) => k.keyword.includes(d) || d.includes(k.keyword))) { r.decision = 'DEFER'; r.reason = 'catalogue absent'; allRows.push(r); continue; }
+      if (SUBMODEL_SUSPECT.test(rend.modeleName) && !SUBMODEL_SUSPECT.test(k.keyword)) { r.decision = 'DEFER'; r.reason = `sous-modèle suspect (${rend.modeleName}) vs keyword générique`; allRows.push(r); continue; }
+      // 5. OWNER_REVIEW : flag seed / explicite power-ambigu / confiance 60-79
+      if (reviewKw[k.keyword]) { r.decision = 'OWNER_REVIEW'; r.reason = reviewKw[k.keyword]; allRows.push(r); continue; }
+      if (explicitKw[k.keyword]?.owner_hint === 'REVIEW') { r.decision = 'OWNER_REVIEW'; r.reason = explicitKw[k.keyword].reason || 'explicite ambigu'; allRows.push(r); continue; }
+      // 6a. AUCUN changement à appliquer + rendable + aucun flag => déjà correct = sûr (no-op, rien à écrire)
+      if (!r.changed) { r.decision = 'AUTO_APPLY_SAFE'; r.reason = 'déjà sur cible, /pieces rendable (no-op)'; allRows.push(r); continue; }
+      // 6b. CHANGEMENT proposé : seuil de confiance pour l'auto-apply
+      if (r.confidence >= AUTO_CONF) { r.decision = 'AUTO_APPLY_SAFE'; r.reason = 'safe: re-cible diesel-default web-confirmé (conf>=80)'; allRows.push(r); continue; }
+      if (r.confidence >= 60) { r.decision = 'OWNER_REVIEW'; r.reason = `re-cible confiance ${r.confidence} (60-79) — arbitrage owner`; allRows.push(r); continue; }
+      r.decision = 'OWNER_REVIEW'; r.reason = `re-cible confiance ${r.confidence} (<60) — défaut prudent`; allRows.push(r);
+    }
+  }
+
+  allRows.sort((a, b) => a.decision.localeCompare(b.decision) || a.pg_id - b.pg_id || b.volume - a.volume || a.keyword.localeCompare(b.keyword));
+  const counts = allRows.reduce((a, r) => ((a[r.decision] = (a[r.decision] || 0) + 1), a), {} as Record<string, number>);
+  const autoSafe = allRows.filter((r) => r.decision === 'AUTO_APPLY_SAFE');
+  const autoPending = autoSafe.filter((r) => r.changed); // changements RÉELS auto-applicables
+  const autoNoop = autoSafe.length - autoPending.length;
+
+  const base = path.join(AUDIT_DIR, `vlevel-auto-plan-${family}-${DATE}`);
+  const cols = ['decision', 'pg_id', 'gamme', 'keyword', 'volume', 'current_type_id', 'recommended_type_id', 'recommended_url', 'confidence', 'changed', 'reason'];
+  fs.writeFileSync(`${base}.csv`, [cols.join(';'), ...allRows.map((r) => cols.map((c) => String(r[c] ?? '').replace(/;/g, ',')).join(';'))].join('\n') + '\n');
+  fs.writeFileSync(`${base}.json`, JSON.stringify({ family, pg_ids: pgIds, generated: DATE, mutation: false, scope: 'V3', counts, auto_pending: autoPending.length, auto_noop: autoNoop, rows: allRows }, null, 2));
+
+  // package SQL gardé : SEULEMENT AUTO_APPLY_SAFE avec changement réel (snapshot + rollback + guard)
+  const vals = autoPending.map((r) => `    (${r.pg_id}, ${sqlLit(r.keyword)}, ${sqlLit(String(r.current_type_id))}, ${sqlLit(r.recommended_type_id)})`).join(',\n');
+  const sql = [
+    `-- ====================================================================`,
+    `-- V-LEVEL AUTO-APPLY-SAFE — famille ${family} (pg ${pgIds.join('/')}) · ${DATE} · scope V3`,
+    `-- SEULEMENT les ${autoPending.length} cas AUTO_APPLY_SAFE avec changement réel. Réversible (snapshot embarqué).`,
+    `-- JAMAIS : OWNER_REVIEW (${counts.OWNER_REVIEW || 0}) · DEFER (${counts.DEFER || 0}) · BLOCKED (${counts.BLOCKED || 0}).`,
+    `-- GÉNÉRÉ READ-ONLY. L'apply réel = DO-block gardé (row_count exact) ou RPC gouverné. ZÉRO PROD.`,
+    `-- ====================================================================`,
+    autoPending.length === 0 ? `-- (aucun changement AUTO_APPLY_SAFE en attente — famille déjà sur cible)` : ``,
+    autoPending.length === 0 ? `` : `BEGIN;`,
+    autoPending.length === 0 ? `` : `DO $$ DECLARE n int; BEGIN`,
+    autoPending.length === 0 ? `` : `  UPDATE "__seo_keywords" k SET type_id = s.new_tid::int, updated_at = now()`,
+    autoPending.length === 0 ? `` : `  FROM (VALUES\n${vals}\n  ) AS s(pg, keyword, old_tid, new_tid)`,
+    autoPending.length === 0 ? `` : `  WHERE k.pg_id = s.pg AND k.keyword = s.keyword AND k.type_id::text = s.old_tid AND k.v_level='V3';`,
+    autoPending.length === 0 ? `` : `  GET DIAGNOSTICS n = ROW_COUNT;`,
+    autoPending.length === 0 ? `` : `  IF n <> ${autoPending.length} THEN RAISE EXCEPTION 'GUARD auto-apply: % (attendu ${autoPending.length}) -- ROLLBACK', n; END IF;`,
+    autoPending.length === 0 ? `` : `  RAISE NOTICE 'OK: % AUTO_APPLY_SAFE appliqués', n;`,
+    autoPending.length === 0 ? `` : `END $$;`,
+    autoPending.length === 0 ? `` : `-- COMMIT;  -- décommenter après vérif. ROLLBACK : SET type_id = old_tid depuis le snapshot ci-dessus.`,
+  ].filter((l) => l !== ``).join('\n') + '\n';
+  fs.writeFileSync(`${base}.sql`, sql);
+
+  console.log(`✅ auto-plan (READ-ONLY) famille=${family} scope=V3 : ${base}.{csv,json,sql}`);
+  console.log(`   ${Object.entries(counts).map(([k, v]) => `${k}=${v}`).join(' · ')}`);
+  console.log(`   AUTO_APPLY_SAFE: ${autoSafe.length} (dont ${autoPending.length} à appliquer, ${autoNoop} déjà sur cible)`);
+}
+
 function readPackCsv(file: string): Record<string, string>[] {
   const lines = fs.readFileSync(file, 'utf8').trim().split('\n');
   const head = lines[0].split(';');
@@ -754,6 +880,7 @@ async function applyPack(file: string): Promise<void> {
   else if (mode === 'generics-pack') await genericsPack(Number(arg('--pg-id') || 402));
   else if (mode === 'decontaminate-pack') await decontaminatePack(Number(arg('--pg-id') || 402));
   else if (mode === 'reelection-pack') await reelectionPack(Number(arg('--pg-id') || 402));
+  else if (mode === 'auto-plan') await autoPlan(arg('--family') || 'freinage');
   else if (mode === 'validate-pack') validatePack(arg('--file')!);
   else if (mode === 'apply-pack') await applyPack(arg('--file')!);
   else { console.error('Usage: vlevel-v3-pipeline.ts <decision-pack|generics-pack|validate-pack|apply-pack> [--pg-id N | --file f] [--dry-run|--apply --owner-approved]'); process.exitCode = 1; }
