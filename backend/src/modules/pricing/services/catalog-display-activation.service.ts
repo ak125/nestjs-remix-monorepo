@@ -114,4 +114,123 @@ export class CatalogDisplayActivationService {
     );
     return { restored: res.restored };
   }
+
+  // ── Étape B1 — GAMME visibility (pieces_gamme.pg_display, level-4 hubs) ──────────────
+  // Mirrors the piece_display flow above at the gamme level, via the governed
+  // catalog_gamme_display_activate RPC. Distinct log prefix [CATALOG_GAMME_DISPLAY] and
+  // a self-describing batch operation marker so audits never confuse the two surfaces.
+
+  /**
+   * Read-only projection of the gamme-display activation. Returns the OWNER GATE values:
+   * eligible (number of level-4 gammes), refs (NK visible+sellable pieces inside them),
+   * and gammeIds. The owner commits only if these match the verified scope
+   * (NK expected: eligible=1, gammeIds={1330}, refs=11).
+   */
+  async gammeDryRun(
+    supplierId: string,
+  ): Promise<{ eligible: number; refs: number; gammeIds: number[] }> {
+    if (!supplierId) {
+      throw new BadRequestException('supplierId is required');
+    }
+    const res = await this.repo.gammeDisplayActivate({
+      batchId: null,
+      supplier: supplierId,
+      operator: null,
+      dryRun: true,
+    });
+    this.logger.log(
+      `[CATALOG_GAMME_DISPLAY] dry-run supplier=${supplierId} ` +
+        `eligible=${res.eligible} refs=${res.refs} gammes=[${res.gamme_ids.join(',')}]`,
+    );
+    return { eligible: res.eligible, refs: res.refs, gammeIds: res.gamme_ids };
+  }
+
+  /**
+   * Apply the gamme-display activation — requires `confirm:true` (owner-gated).
+   * Opens a governed batch tagged operation='GAMME_DISPLAY_ACTIVATION'.
+   */
+  async gammeCommit(
+    req: DisplayActivationRequest & { confirm?: boolean },
+  ): Promise<{
+    batchId: string;
+    eligible: number;
+    refs: number;
+    displayed: number;
+    gammeIds: number[];
+  }> {
+    if (!req.supplierId) {
+      throw new BadRequestException('supplierId is required');
+    }
+    if (req.confirm !== true) {
+      throw new BadRequestException(
+        'gamme display activation commit requires confirm:true',
+      );
+    }
+    const batchId = await this.repo.createActivationBatch({
+      supplierId: req.supplierId,
+      operator: req.operator ?? null,
+      operation: 'GAMME_DISPLAY_ACTIVATION',
+    });
+    await this.repo.setBatchStatus(batchId, 'COMMITTING'); // per-supplier mutex
+    try {
+      const res = await this.repo.gammeDisplayActivate({
+        batchId,
+        supplier: req.supplierId,
+        operator: req.operator ?? null,
+        dryRun: false,
+      });
+      await this.repo.setBatchStatus(batchId, 'COMMITTED', {
+        committed_rows: res.displayed ?? 0,
+        completed_at: new Date().toISOString(),
+      });
+      this.logger.log(
+        `[CATALOG_GAMME_DISPLAY] commit batchId=${batchId} supplier=${req.supplierId} ` +
+          `eligible=${res.eligible} refs=${res.refs} displayed=${res.displayed ?? 0} ` +
+          `gammes=[${res.gamme_ids.join(',')}]`,
+      );
+      return {
+        batchId,
+        eligible: res.eligible,
+        refs: res.refs,
+        displayed: res.displayed ?? 0,
+        gammeIds: res.gamme_ids,
+      };
+    } catch (e) {
+      await this.repo.setBatchStatus(batchId, 'FAILED', {
+        completed_at: new Date().toISOString(),
+      });
+      this.logger.error(
+        `[CATALOG_GAMME_DISPLAY] commit FAILED batchId=${batchId}: ${(e as Error).message}`,
+      );
+      throw e;
+    }
+  }
+
+  /**
+   * Restore the prior pg_display for a gamme-display batch (anti-conflict guarded).
+   * Anomaly-only in prod — never a routine step.
+   */
+  async gammeRollback(
+    batchId: string,
+    supplierId: string,
+  ): Promise<{
+    rolledBack: number;
+    skippedValueChanged: number;
+    skippedMissingGamme: number;
+  }> {
+    if (!batchId || !supplierId) {
+      throw new BadRequestException('batchId and supplierId are required');
+    }
+    const res = await this.repo.gammeDisplayRollback(batchId, supplierId);
+    this.logger.log(
+      `[CATALOG_GAMME_DISPLAY] rollback batchId=${batchId} ` +
+        `rolled_back=${res.rolled_back} skipped_value_changed=${res.skipped_value_changed} ` +
+        `skipped_missing_gamme=${res.skipped_missing_gamme}`,
+    );
+    return {
+      rolledBack: res.rolled_back,
+      skippedValueChanged: res.skipped_value_changed,
+      skippedMissingGamme: res.skipped_missing_gamme,
+    };
+  }
 }
