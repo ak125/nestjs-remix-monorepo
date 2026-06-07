@@ -61,12 +61,12 @@ doctrine mais **pas** intercepté par un guard — l'agent s'auto-discipline + d
 | `ALTER TABLE DROP COLUMN` / `CREATE TABLE` sans RLS | **WARN** | pretool-supabase-guard.sh G4-G5 |
 | `payments/` edits | **WARN** *(not BLOCK)* | pretool-file-guard.sh G3 + [payments.md](payments.md) |
 | `gh pr merge` → main | **GATED (CI)** | branch protection : checks stricts requis + `enforce_admins` (merge = PREPROD ; PROD reste tag-gated). Pas un gap de guard local. |
-| `git tag v*` / `push --tags` / deploy-prod | **DOCTRINE_ONLY** | tag = décision opérateur ([deployment.md](deployment.md)) |
-| `UPDATE`/`DELETE` `pieces` / `pieces_price` / `__seo_*` via execute_sql | **DOCTRINE_ONLY** | pricing = module gouverné / pas de touch meta-H1 |
+| `git tag v*` / `push --tags` / deploy-prod | **BLOCK** | pretool-bash-guard.sh G6 (#879) — tag = décision opérateur ([deployment.md](deployment.md)) |
+| `UPDATE`/`DELETE` `pieces` / `pieces_price` / `__seo_*` via execute_sql | **BLOCK** | pretool-supabase-guard.sh G6 (#879) — passer par module/RPC gouverné |
 
-> Les lignes **DOCTRINE_ONLY** ne sont **pas** protégées mécaniquement aujourd'hui. Les fermer =
-> durcir les guards (**renforcer, jamais affaiblir**) — décision **owner-gated**, hors de ce
-> fichier (qui ne peut pas modifier un guard).
+> Gaps `tag v*` et DML gouverné **fermés par #879** (Guard 6 ×2, durcissement owner-gated —
+> renforcer, jamais affaiblir). `gh pr merge` reste **GATED (CI)** (branch protection). Plus
+> aucune ligne **DOCTRINE_ONLY** dans cette danger-zone.
 
 ---
 
