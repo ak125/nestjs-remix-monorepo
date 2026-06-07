@@ -256,6 +256,58 @@ export class PricingRepository extends SupabaseBaseService {
     return data as { restored: number; superseded: number };
   }
 
+  /**
+   * Set-based CATALOG VISIBILITY activation via the governed server-side
+   * function. Flips pieces.piece_display false -> true for brand-locked pieces
+   * that are ALREADY sellable (pieces_price.pri_dispo IN '1','2') and currently
+   * hidden. Idempotent; `dryRun` projects without writing. Reversible via
+   * {@link displayRollback}. Never touches gamme/vehicle/price/dispo. See
+   * migration 20260607_pricing_catalog_display_activate.sql.
+   */
+  async displayActivate(input: {
+    batchId: string | null; // required by the fn only for a commit
+    supplier: string; // pieces.piece_pm_id (brand-lock)
+    operator: string | null;
+    dryRun: boolean;
+  }): Promise<{
+    dry_run: boolean;
+    supplier: string;
+    eligible: number;
+    displayed?: number;
+    batch_id?: string;
+  }> {
+    const { data, error } = await this.callRpc('catalog_display_activate', {
+      p_batch_id: input.batchId,
+      p_supplier: input.supplier,
+      p_operator: input.operator,
+      p_dry_run: input.dryRun,
+    });
+    if (error) throw error;
+    return data as {
+      dry_run: boolean;
+      supplier: string;
+      eligible: number;
+      displayed?: number;
+      batch_id?: string;
+    };
+  }
+
+  /** Reverse a display activation batch (restores prior piece_display). */
+  async displayRollback(
+    batchId: string,
+    supplier: string,
+  ): Promise<{ restored: number; batch_id: string }> {
+    const { data, error } = await this.callRpc(
+      'catalog_display_rollback_batch',
+      {
+        p_batch_id: batchId,
+        p_supplier: supplier,
+      },
+    );
+    if (error) throw error;
+    return data as { restored: number; batch_id: string };
+  }
+
   async fetchProfiles(supplierId: string): Promise<SupplierPriceProfile[]> {
     const { data, error } = await this.supabase
       .from('supplier_price_profiles')
