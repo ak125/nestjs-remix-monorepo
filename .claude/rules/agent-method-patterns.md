@@ -46,7 +46,8 @@ Les actions sensibles sont **déjà gardées mécaniquement**. Sources autoritai
 [pretool-file-guard.sh](../../scripts/claude-hooks/pretool-file-guard.sh),
 27 règles [.ast-grep/rules/](../../.ast-grep/rules/), [.husky/pre-commit](../../.husky/pre-commit).
 
-Niveaux : **BLOCK** (refusé) · **WARN** (averti, autorisé) · **DOCTRINE_ONLY** (interdit par
+Niveaux : **BLOCK** (refusé, guard local) · **WARN** (averti, autorisé) · **GATED (CI)** (gardé
+au niveau branch protection GitHub, pas par un guard local) · **DOCTRINE_ONLY** (interdit par
 doctrine mais **pas** intercepté par un guard — l'agent s'auto-discipline + demande GO owner).
 
 | Trigger | Niveau actuel | Mécanisme |
@@ -59,7 +60,7 @@ doctrine mais **pas** intercepté par un guard — l'agent s'auto-discipline + d
 | `supabase.rpc` direct (commerce) / order-cart status writes | **BLOCK** *(code)* | ast-grep `commerce-*` |
 | `ALTER TABLE DROP COLUMN` / `CREATE TABLE` sans RLS | **WARN** | pretool-supabase-guard.sh G4-G5 |
 | `payments/` edits | **WARN** *(not BLOCK)* | pretool-file-guard.sh G3 + [payments.md](payments.md) |
-| `gh pr merge` | **DOCTRINE_ONLY** | Airlock / owner-GO — non mécanisé |
+| `gh pr merge` → main | **GATED (CI)** | branch protection : checks stricts requis + `enforce_admins` (merge = PREPROD ; PROD reste tag-gated). Pas un gap de guard local. |
 | `git tag v*` / `push --tags` / deploy-prod | **DOCTRINE_ONLY** | tag = décision opérateur ([deployment.md](deployment.md)) |
 | `UPDATE`/`DELETE` `pieces` / `pieces_price` / `__seo_*` via execute_sql | **DOCTRINE_ONLY** | pricing = module gouverné / pas de touch meta-H1 |
 
