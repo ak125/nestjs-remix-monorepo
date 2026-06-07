@@ -8,6 +8,7 @@
  * Sous-commandes :
  *   decision-pack       --pg-id <id>       -> génère audit/vlevel-v3-decision-pack-<gamme>-<date>.{md,csv,json}
  *   decontaminate-pack  --pg-id <id>       -> déclasse la pollution cross-gamme : decision-pack + package SQL gardé
+ *   reelection-pack     --pg-id <id>       -> réélit V2/V3/V4 (miroir canonique @repo/seo-roles) : decision-pack + SQL gardé
  *   validate-pack  --file <pack.csv>       -> contrôles d'intégrité avant tout apply
  *   apply-pack     --file <pack.csv> --dry-run  -> before/after + UPDATE/rollback SQL (ZÉRO écriture)
  *   apply-pack     --file <pack.csv> --apply --owner-approved -> REFUSÉ (owner-gated, hors périmètre)
@@ -18,6 +19,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+// invariants V-Level canoniques (SoT) — mirrorés par reelection-pack, JAMAIS réinventés.
+import { VLEVEL_V2_CAP, vLevelGroupKey } from '@repo/seo-roles';
 
 const ROOT = process.cwd();
 const AUDIT_DIR = path.join(ROOT, 'audit'); // sortie runtime (decision-packs), non versionnée par défaut
@@ -302,7 +305,10 @@ async function genericsPack(pgId: number): Promise<void> {
   const { data: kws, error } = await s.from('__seo_keywords')
     .select('keyword,v_level,type_id,volume').eq('pg_id', pgId).eq('type', 'vehicle').in('v_level', ['V2', 'V3', 'V4']).range(0, 9999);
   if (error) throw new Error(`__seo_keywords: ${error.message}`);
-  const generics = (kws as any[]).filter((k) => k.type_id != null && !TOKEN.test(k.keyword));
+  // gamme-term-aware : ne re-cible que les keywords de CETTE gamme (terme propre) — exclut la pollution
+  // cross-gamme / REVIEW (ex. « frein 207 » dans plaquette). No-op sur une gamme propre (tous matchent son terme).
+  const ownRe = GAMME_PARTS[pgId];
+  const generics = (kws as any[]).filter((k) => k.type_id != null && !TOKEN.test(k.keyword) && (!ownRe || ownRe.test(k.keyword)));
 
   const curTids = generics.map((k) => String(k.type_id));
   const repTids = Object.values(reps).map((r: any) => String(r.type_id));
@@ -506,6 +512,178 @@ async function decontaminatePack(pgId: number): Promise<void> {
   console.log(`   → ${declassify.length} déclassables (guard ROW_COUNT=${declassify.length}, snapshot embarqué, réversible).`);
 }
 
+// detectEnergy — MIROIR EXACT de gamme-vlevel.service.detectEnergy (type_fuel -> energy v5.0, ordre
+// significatif : 1er match gagne). Utilisé pour enrichir l'énergie EN MÉMOIRE avant le groupement
+// (le calculateur canonique enrichit les unknown depuis type_fuel AVANT d'élire) — sans réécrire la DB.
+function detectEnergy(fuel: string): string {
+  const f = (fuel || '').toLowerCase();
+  if (['diesel', 'dci', 'hdi', 'tdi', 'cdi', 'd4d', 'jtd', 'cdti', 'crdi', 'dtec'].some((x) => f.includes(x))) return 'diesel';
+  if (['hybrid', 'phev', 'e-hybrid', 'plug-in', 'hybride'].some((x) => f.includes(x))) return 'hybride';
+  if (['electrique', 'electric', 'ev', 'e-208', 'e-c4'].some((x) => f.includes(x))) return 'electrique';
+  if (['gpl', 'lpg', 'bifuel'].some((x) => f.includes(x))) return 'gpl';
+  if (['essence', 'tce', 'vti', 'puretech', 'tfsi', 'tsi', 'gti', 'vtec', 'mpi'].some((x) => f.includes(x))) return 'essence';
+  return 'unknown';
+}
+
+// ---- réélection V2/V3/V4 (post-décontamination) ----
+// reelection-pack : réélit V2/V3/V4 parmi les VRAIS keywords de la gamme (mention terme-gamme), en
+// MIROIR EXACT de l'élection canonique (gamme-vlevel.service) via les invariants @repo/seo-roles —
+// JAMAIS une élection parallèle. Scopé au terme-gamme pour NE PAS re-contaminer (l'élection globale
+// re-pulle les keywords cross-gamme déclassés). Gate CLI (type=vehicle, modèle-seul inclus). V5 PRÉSERVÉ
+// (jamais touché). Ce pack ne touche QUE v_level — le type_id diesel-default = generics-pack (séparé).
+// READ-ONLY : génère decision-pack + package SQL gardé (snapshot+rollback). N'écrit JAMAIS en DB.
+async function reelectionPack(pgId: number): Promise<void> {
+  const s = sb();
+  const ownRe = GAMME_PARTS[pgId];
+  if (!ownRe) throw new Error(`pas de regex gamme pour pg ${pgId} (GAMME_PARTS)`);
+  const gamme = (await selectIn<any>(s, 'pieces_gamme', 'pg_id,pg_alias', 'pg_id', [String(pgId)]))[0]?.pg_alias || `pg-${pgId}`;
+
+  const all = await selectAllEq<any>(s, '__seo_keywords', 'id,keyword,volume,model,energy,type,v_level,type_id', 'pg_id', pgId, 'id');
+  // candidats = vrais keywords gamme, véhicule, non-V5 (gate CLI : type=vehicle, modèle-seul INCLUS).
+  const candidates = all.filter((k) => k.type === 'vehicle' && ownRe.test(k.keyword) && k.v_level !== 'V5');
+
+  // ENRICHISSEMENT ÉNERGIE EN MÉMOIRE (miroir canonique §1b) : remplit les unknown depuis auto_type.type_fuel
+  // AVANT de grouper ; NE RÉÉCRIT PAS la DB (read-only). Sans ça, la colonne energy incohérente sur-split les groupes.
+  const tids = [...new Set(candidates.map((k) => k.type_id).filter(Boolean).map(String))];
+  const fuelTypes = await selectIn<any>(s, 'auto_type', 'type_id,type_fuel', 'type_id', tids);
+  const fuelMap = new Map(fuelTypes.map((t) => [String(t.type_id), t.type_fuel as string]));
+  const energyOf = (k: any): string => {
+    const raw = (k.energy ?? '').toLowerCase();
+    if (raw && raw !== 'unknown') return raw; // garde une énergie déjà réelle (comme le canonique)
+    if (k.type_id) { const d = detectEnergy(fuelMap.get(String(k.type_id)) || ''); if (d !== 'unknown') return d; }
+    return raw || 'unknown';
+  };
+
+  // ÉLECTION MIROIR (gamme-vlevel.service §5-6) : group [model+énergie enrichie] (gamme NON universelle) ;
+  // champion = volume DESC puis longueur keyword ASC ; V2 = top-cap des V3 dédupliqués par groupe.
+  const byGroup = new Map<string, any[]>();
+  for (const k of candidates) {
+    const key = vLevelGroupKey(k.model, energyOf(k));
+    (byGroup.get(key) || byGroup.set(key, []).get(key)!).push(k);
+  }
+  const proposed = new Map<number, string>();
+  const v3Champs: any[] = [];
+  for (const [, group] of byGroup) {
+    group.sort((a: any, b: any) => ((b.volume || 0) - (a.volume || 0)) || ((a.keyword || '').length - (b.keyword || '').length));
+    proposed.set(group[0].id, 'V3');
+    v3Champs.push(group[0]);
+    for (let i = 1; i < group.length; i++) proposed.set(group[i].id, 'V4');
+  }
+  v3Champs.sort((a, b) => (b.volume || 0) - (a.volume || 0));
+  const seen = new Set<string>();
+  let promoted = 0;
+  for (const c of v3Champs) {
+    const key = vLevelGroupKey(c.model, energyOf(c));
+    if (seen.has(key)) continue;
+    seen.add(key);
+    proposed.set(c.id, 'V2');
+    if (++promoted >= VLEVEL_V2_CAP) break;
+  }
+
+  const rows = candidates.map((k) => {
+    const np = proposed.get(k.id)!;
+    return {
+      keyword: k.keyword, volume: k.volume ?? 0, model: k.model ?? '', energy: energyOf(k),
+      group: vLevelGroupKey(k.model, energyOf(k)), current_v_level: k.v_level ?? '',
+      proposed_v_level: np, change: (k.v_level ?? '') !== np ? 'CHANGE' : 'KEEP',
+    };
+  }).sort((a, b) =>
+    (a.proposed_v_level.localeCompare(b.proposed_v_level)) || (b.volume - a.volume) || a.keyword.localeCompare(b.keyword));
+  const changed = rows.filter((r) => r.change === 'CHANGE');
+
+  const cur = { V2: 0, V3: 0, V4: 0 } as Record<string, number>;
+  const prop = { V2: 0, V3: 0, V4: 0 } as Record<string, number>;
+  for (const r of rows) { cur[r.current_v_level] = (cur[r.current_v_level] || 0) + 1; prop[r.proposed_v_level]++; }
+
+  const base = path.join(AUDIT_DIR, `vlevel-reelection-${gamme}-${DATE}`);
+  const cols = ['keyword', 'volume', 'model', 'energy', 'group', 'current_v_level', 'proposed_v_level', 'change'];
+  fs.writeFileSync(`${base}.csv`,
+    [cols.join(';'), ...rows.map((r) => cols.map((c) => String((r as any)[c] ?? '').replace(/;/g, ',')).join(';'))].join('\n') + '\n');
+  fs.writeFileSync(`${base}.json`, JSON.stringify(
+    { pg_id: pgId, gamme, generated: DATE, mutation: false, gate: 'CLI(type=vehicle)', groups: byGroup.size,
+      current: cur, proposed: prop, changed_count: changed.length, rows }, null, 2));
+
+  // package SQL gardé (snapshot v_level embarqué) — ne touche QUE v_level des candidats ; V5/NULL/generic/cross-gamme intouchés
+  const ownTerm = ownRe.source.split('|')[0];
+  const valuesList = changed.map((r) => `    (${sqlLit(r.keyword)}, ${sqlLit(r.current_v_level)}, ${sqlLit(r.proposed_v_level)})`).join(',\n');
+  const sql = [
+    `-- ====================================================================`,
+    `-- V-LEVEL RÉÉLECTION (post-décontamination) — ${gamme} (pg ${pgId}) · ${DATE}`,
+    `-- Réélit V2/V3/V4 parmi les ${rows.length} VRAIS keywords « ${ownTerm} » (véhicule, non-V5), MIROIR de`,
+    `-- l'élection canonique (gamme-vlevel.service via @repo/seo-roles). ${changed.length} changements.`,
+    `-- OWNER-GATED · RÉVERSIBLE · ZÉRO PROD · GÉNÉRÉ (ne pas éditer : régénérer). Ne touche QUE v_level.`,
+    `-- INTOUCHÉS : V5 (famille), génériques NULL, REVIEW, keywords disque déclassés (hors candidats).`,
+    `-- Le type_id diesel-default = generics-pack (package séparé). Re-lancer l'élection GLOBALE (recalc`,
+    `-- admin) re-contaminerait (re-pulle le cross-gamme) -> CE pack ciblé est la voie sûre.`,
+    `-- ====================================================================`,
+    ``,
+    `-- ÉTAPE 0 — BEFORE (distribution V2/V3/V4 des vrais ${ownTerm}) :`,
+    `SELECT v_level, count(*) FROM "__seo_keywords"`,
+    `WHERE pg_id=${pgId} AND type='vehicle' AND keyword ILIKE '%${ownTerm}%' AND coalesce(v_level,'')<>'V5'`,
+    `GROUP BY v_level ORDER BY v_level;`,
+    `-- attendu BEFORE : ${Object.entries(cur).map(([k, v]) => `${k}=${v}`).join(' ')}`,
+    ``,
+    `-- ÉTAPE 1 — APPLY (transaction gardée ; COMMIT après vérif AFTER) :`,
+    `BEGIN;`,
+    `DO $$`,
+    `DECLARE n int;`,
+    `BEGIN`,
+    `  UPDATE "__seo_keywords" k SET v_level = s.new_vl, updated_at = now()`,
+    `  FROM (VALUES`,
+    valuesList,
+    `  ) AS s(keyword, old_vl, new_vl)`,
+    `  WHERE k.pg_id = ${pgId} AND k.keyword = s.keyword AND coalesce(k.v_level,'') = s.old_vl;`,
+    `  GET DIAGNOSTICS n = ROW_COUNT;`,
+    `  IF n <> ${changed.length} THEN`,
+    `    RAISE EXCEPTION 'scope mismatch: % lignes (attendu ${changed.length}) — STOP', n;`,
+    `  END IF;`,
+    `  RAISE NOTICE 'OK: % réélections v_level', n;`,
+    `END $$;`,
+    ``,
+    `-- vérif AFTER (distribution attendue : ${Object.entries(prop).map(([k, v]) => `${k}=${v}`).join(' ')}) :`,
+    `SELECT v_level, count(*) FROM "__seo_keywords"`,
+    `WHERE pg_id=${pgId} AND type='vehicle' AND keyword ILIKE '%${ownTerm}%' AND coalesce(v_level,'')<>'V5'`,
+    `GROUP BY v_level ORDER BY v_level;`,
+    ``,
+    `-- COMMIT;   -- décommenter si AFTER conforme. SINON : ROLLBACK;`,
+    ``,
+    `-- ÉTAPE 2 — ROLLBACK (restaure le v_level EXACT depuis le snapshot embarqué) :`,
+    `-- BEGIN;`,
+    `-- UPDATE "__seo_keywords" k SET v_level = s.old_vl, updated_at = now()`,
+    `-- FROM (VALUES`,
+    ...changed.map((r, i) => `--     (${sqlLit(r.keyword)}, ${sqlLit(r.current_v_level)}, ${sqlLit(r.proposed_v_level)})${i < changed.length - 1 ? ',' : ''}`),
+    `-- ) AS s(keyword, old_vl, new_vl)`,
+    `-- WHERE k.pg_id = ${pgId} AND k.keyword = s.keyword AND coalesce(k.v_level,'') = s.new_vl;`,
+    `-- COMMIT;`,
+    ``,
+  ].join('\n');
+  fs.writeFileSync(`${base}.sql`, sql);
+
+  const md = [
+    `# Réélection V-Level (PROPOSITION) — ${gamme} (pg ${pgId}) · ${DATE}`,
+    ``,
+    `> READ-ONLY. Miroir de l'élection canonique (gamme-vlevel.service via @repo/seo-roles). Aucune mutation.`,
+    `> Gate CLI (type=vehicle, modèle-seul inclus). Scopé au terme-gamme (anti re-contamination). V5 préservé.`,
+    ``,
+    `Candidats (vrais ${ownTerm} véhicule, non-V5) : ${rows.length} · groupes [modèle+énergie] : ${byGroup.size}`,
+    ``,
+    `| niveau | actuel | proposé |`,
+    `|---|---|---|`,
+    `| V2 | ${cur.V2 || 0} | ${prop.V2} |`,
+    `| V3 | ${cur.V3 || 0} | ${prop.V3} |`,
+    `| V4 | ${cur.V4 || 0} | ${prop.V4} |`,
+    ``,
+    `**Changements : ${changed.length}** (package SQL gardé : \`${path.basename(base)}.sql\`, guard ROW_COUNT=${changed.length}).`,
+    `Suite séparée : \`generics-pack --pg-id ${pgId}\` pour le type_id diesel-default (REVIEW/DEFER y vivent).`,
+    ``,
+  ].join('\n');
+  fs.writeFileSync(`${base}.md`, md);
+
+  console.log(`✅ reelection-pack généré (READ-ONLY): ${base}.{md,csv,json,sql}`);
+  console.log(`   pg ${pgId} (${gamme}) — ${rows.length} candidats · ${byGroup.size} groupes`);
+  console.log(`   V2 ${cur.V2 || 0}->${prop.V2} · V3 ${cur.V3 || 0}->${prop.V3} · V4 ${cur.V4 || 0}->${prop.V4} · ${changed.length} changements (guard=${changed.length})`);
+}
+
 function readPackCsv(file: string): Record<string, string>[] {
   const lines = fs.readFileSync(file, 'utf8').trim().split('\n');
   const head = lines[0].split(';');
@@ -575,6 +753,7 @@ async function applyPack(file: string): Promise<void> {
   if (mode === 'decision-pack') await decisionPack(Number(arg('--pg-id') || 402));
   else if (mode === 'generics-pack') await genericsPack(Number(arg('--pg-id') || 402));
   else if (mode === 'decontaminate-pack') await decontaminatePack(Number(arg('--pg-id') || 402));
+  else if (mode === 'reelection-pack') await reelectionPack(Number(arg('--pg-id') || 402));
   else if (mode === 'validate-pack') validatePack(arg('--file')!);
   else if (mode === 'apply-pack') await applyPack(arg('--file')!);
   else { console.error('Usage: vlevel-v3-pipeline.ts <decision-pack|generics-pack|validate-pack|apply-pack> [--pg-id N | --file f] [--dry-run|--apply --owner-approved]'); process.exitCode = 1; }
