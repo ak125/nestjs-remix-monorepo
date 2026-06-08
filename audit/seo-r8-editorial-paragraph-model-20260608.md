@@ -1,8 +1,8 @@
 # R8 — Modèle de contenu éditorial par motorisation (reference design, NON-canon)
 
 > Read-only. Définit la **structure de vrais paragraphes éditoriaux** par motorisation
-> (pas seulement la FAQ, pas de la rotation de templates) et **quelle connaissance WIKI**
-> alimente chaque section. **N'invente aucun contenu** (doctrine : pas de prose LLM ;
+> (pas seulement la FAQ, pas de la rotation de templates) et **quelle connaissance éditoriale
+> OWNED** (DB `__seo_gamme_*`) alimente chaque section. **N'invente aucun contenu** (doctrine : pas de prose LLM ;
 > tout est sourcé + validé). Référence, pas canon — cite role-matrix §R8 + `page-contract-r8`.
 
 ## Constat vérifié (code)
@@ -16,10 +16,10 @@ Les sections de l'enricher V5 (`R8_V5_PLANNABLE_SECTIONS`,
   `selectVariation` + RAG **par gamme** → PAS de vrai paragraphe par motorisation) :
   `S_IDENTITY` (intro), `S_VARIANT_DIFFERENCE`, `S_SELECTION_GUIDE`, `S_ENTRETIEN_CONTEXT`, `S_FAQ_DEDICATED`.
 
-→ La **structure des paragraphes existe déjà**. Ce qui manque = la **connaissance éditoriale
-réelle par motorisation** (WIKI) pour les remplir. C'est ça « un vrai contenu paragraphe ».
+→ La **structure des paragraphes existe déjà**. Ce qui manque = **brancher la connaissance
+éditoriale OWNED** (DB `__seo_gamme_*`, par gamme) pour les remplir. C'est ça « un vrai contenu paragraphe ».
 
-## Le modèle (par section prose : paragraphe réel + source WIKI + garde-fou faits)
+## Le modèle (par section prose : paragraphe réel + source éditoriale owned + garde-fou faits)
 
 | Section                | Vrai paragraphe attendu                           | Source éditoriale **OWNED (DB `__seo_gamme_*`, ~221-259 gammes, EEAT-sourcé)** | Garde-fou faits (DB interne)    |
 | ---------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------ | ------------------------------- |
@@ -37,8 +37,8 @@ réelle par motorisation** (WIKI) pour les remplir. C'est ça « un vrai contenu
    rotation de templates ni d'invention LLM.
 1. **Les faits = garde-fous** (DB interne : compatibilité/specs), **pas la plume**.
 1. **Décliné par rôle** : `R8` = ce qui caractérise cette motorisation · `R1` = comment choisir
-   une gamme pour elle · `R2` = pourquoi ce produit précis est compatible. Même connaissance WIKI,
-   angles différents (anti-duplication entre rôles).
+   une gamme pour elle · `R2` = pourquoi ce produit précis est compatible. Même connaissance
+   éditoriale owned, angles différents (anti-duplication entre rôles).
 
 ## Le vrai gap (correction — l'éditorial est OWNED, pas vide)
 
