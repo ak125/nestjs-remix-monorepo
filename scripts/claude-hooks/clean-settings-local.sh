@@ -56,8 +56,12 @@ done <<< "$NON_BASH_PERMS"
 # Build JSON
 JSON_ARRAY=$(printf '%s\n' "${ALLOW_ENTRIES[@]}" | jq -R . | jq -s .)
 
-# Write new settings
-jq -n --argjson allow "$JSON_ARRAY" '{"permissions": {"allow": $allow}}' > "$SETTINGS_FILE"
+# Write new settings — NON-DESTRUCTIVE merge.
+# Ne réécrit QUE .permissions.allow (normalisé en wildcards). Préserve TOUTES les
+# autres clés (.permissions.additionalDirectories, .hooks, et toute clé future).
+# tmp + mv obligatoire : on lit $SETTINGS_FILE, donc pas de redirect direct dedans.
+jq --argjson allow "$JSON_ARRAY" '.permissions.allow = $allow' "$SETTINGS_FILE" > "${SETTINGS_FILE}.tmp" \
+  && mv "${SETTINGS_FILE}.tmp" "$SETTINGS_FILE"
 
 echo "=== After:  $(wc -l < "$SETTINGS_FILE") lines / $(wc -c < "$SETTINGS_FILE") bytes ==="
 echo "Cleaned! Reduced from $LINE_COUNT lines to $(wc -l < "$SETTINGS_FILE") lines"
