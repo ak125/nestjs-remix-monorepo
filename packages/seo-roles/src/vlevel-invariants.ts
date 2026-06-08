@@ -204,6 +204,70 @@ export function validateV2Promotion(c: V2PromotionCandidate): {
   return { ok: violations.length === 0, violations };
 }
 
+/** Résultat de la sélection du tier V2 — cf. {@link selectV2Tier}. */
+export interface V2TierSelection<T> {
+  /** Champions promus V2 : sous-ensemble VALIDE des top-`cap` champions élite. */
+  readonly v2: readonly T[];
+  /**
+   * Champions élite (dans le top-`cap`) REJETÉS de V2 et leurs violations. Ils restent
+   * V3 (ils demeurent le champion de leur groupe) — la démotion en V4 + ré-élection est
+   * un job de recalc séparé, owner-gated. Exposé pour l'observabilité (log/decision-pack).
+   */
+  readonly rejected: ReadonlyArray<{
+    readonly champion: T;
+    readonly violations: readonly V2Violation[];
+  }>;
+}
+
+/**
+ * Sélectionne le tier V2 = sous-ensemble VALIDE des top-`cap` champions élite.
+ *
+ * SoT UNIQUE du cut V2 : les calculateurs canoniques (`gamme-vlevel.service` recalc admin +
+ * `scripts/seo/vlevel-v3-pipeline` reelection-pack) l'appellent au lieu de dupliquer la boucle
+ * — ils ne peuvent donc plus diverger. Applique l'invariant `V2 ⟹ V3` + les garde-fous OBJECTIFS
+ * ({@link validateV2Promotion}) AU MOMENT DE LA PROMOTION.
+ *
+ * `cap` = PLAFOND, PAS quota : on prend les top-`cap` champions élite (dédupliqués par groupe),
+ * PUIS on retire ceux qui échouent {@link validateV2Promotion}. AUCUN backfill par des champions
+ * de rang inférieur (« moins de V2 mais propres », règle owner 2026-06-08 : air 10→8). Un champion
+ * rejeté RESTE V3 (cf. {@link V2TierSelection.rejected}).
+ *
+ * Pré-condition : `sortedChampions` DOIT être trié par {@link compareV3Champions} (volume DESC →
+ * longueur ASC → keyword ASC) — l'appelant le garantit (même tie-break que l'élection in-group).
+ * PURE & déterministe. NE MUTE RIEN. NE LIT PAS la DB (l'appelant fournit `toCandidate`).
+ *
+ * @param sortedChampions champions V3 (1 par groupe) déjà triés canoniquement.
+ * @param cap plafond du tier V2 ({@link VLEVEL_V2_CAP}).
+ * @param groupKeyOf clé de groupe `[modèle+énergie]` ({@link vLevelGroupKey}) — dédup défensive.
+ * @param toCandidate projette un champion en {@link V2PromotionCandidate} (isChampion=true).
+ */
+export function selectV2Tier<T>(
+  sortedChampions: readonly T[],
+  cap: number,
+  groupKeyOf: (champion: T) => string,
+  toCandidate: (champion: T) => V2PromotionCandidate,
+): V2TierSelection<T> {
+  // 1. Pool élite = top-`cap` champions dédupliqués par groupe (1 V2 max / [modèle+énergie]).
+  const seenGroup = new Set<string>();
+  const elite: T[] = [];
+  for (const champion of sortedChampions) {
+    const key = groupKeyOf(champion);
+    if (seenGroup.has(key)) continue;
+    seenGroup.add(key);
+    elite.push(champion);
+    if (elite.length >= cap) break;
+  }
+  // 2. V2 = sous-ensemble VALIDE du pool élite. Pas de backfill (plafond, pas quota).
+  const v2: T[] = [];
+  const rejected: Array<{ champion: T; violations: readonly V2Violation[] }> = [];
+  for (const champion of elite) {
+    const { ok, violations } = validateV2Promotion(toCandidate(champion));
+    if (ok) v2.push(champion);
+    else rejected.push({ champion, violations });
+  }
+  return { v2, rejected };
+}
+
 /**
  * Classement V-Level (figé 2026-06-08, owner-validé).
  *
@@ -355,7 +419,7 @@ export const V_LEVEL_KNOWN_GAPS: readonly VLevelKnownGap[] = [
   {
     id: "v2-promotion-not-affined",
     description:
-      "Le cut V2 = top-N volume brut, sans les garde-fous d'affinage (validateV2Promotion) : il remplit le cap avec des entrées type_id NULL, à énergie incohérente (mot-clé gasoil → véhicule essence) ou à volume-plancher. Observé sur filtre-à-carburant 2026-06-08 (Duster essence 2025 en V2). Câbler validateV2Promotion dans l'élection + recalc owner-gated before/after.",
+      "CÂBLÉ (selectV2Tier, SoT unique du cut V2) dans les 2 calculateurs canoniques (gamme-vlevel.service recalc + vlevel-v3-pipeline reelection-pack) : le cut applique désormais validateV2Promotion (type_id résolu + énergie cohérente), plafond sans backfill. RESTE owner-gated : (a) recalc before/after pour appliquer aux données existantes (ex. filtre-carburant Duster essence 2025) ; (b) scripts/insert-missing-keywords.ts (import CSV) garde tri/dedup NON-canoniques (énergie brute) — sa convergence est data-affecting, liée au gap v2-dedup-...-normalization.",
     gate: "G3",
   },
 ] as const;
