@@ -31,6 +31,8 @@ import {
   CatalogActivationPlanService,
   type ActivationPlan,
 } from './catalog-activation-plan.service';
+import { CatalogDisplayActivationService } from './catalog-display-activation.service';
+import { FeatureFlagsService } from '../../../config/feature-flags.service';
 
 const CHUNK_SIZE = 5000;
 
@@ -59,6 +61,8 @@ export class PriceImportService {
   constructor(
     private readonly repo: PricingRepository,
     private readonly activationPlan: CatalogActivationPlanService,
+    private readonly displayActivation: CatalogDisplayActivationService,
+    private readonly flags: FeatureFlagsService,
   ) {}
 
   private hashRows(rows: Record<string, string>[]): string {
@@ -180,6 +184,7 @@ export class PriceImportService {
     skipped: number;
     missing: number;
     activationPlan: ActivationPlan | null;
+    displayActivation: { eligible: number; applied: boolean } | null;
   }> {
     const lines = await this.buildLines(req);
     const linesByKey = new Map(lines.map((l) => [l.key, l]));
@@ -260,6 +265,7 @@ export class PriceImportService {
     // commit: the price commit already succeeded, so a verification error is logged only
     // (no silent fallback) and returns a null plan.
     let activationPlan: ActivationPlan | null = null;
+    let displayActivation: { eligible: number; applied: boolean } | null = null;
     const brandPmIdNum = Number(req.brandPmId);
     if (Number.isInteger(brandPmIdNum) && brandPmIdNum > 0) {
       try {
@@ -269,13 +275,40 @@ export class PriceImportService {
           `[PRICING_IMPORT] activation verification failed batchId=${batchId} brand=${req.brandPmId}: ${(e as Error).message}`,
         );
       }
+
+      // T3 — AUTO-APPLY (governed kill-switch CATALOG_AUTO_ACTIVATE, default OFF).
+      // ALWAYS dry-run the display activation (read-only: what WOULD become visible).
+      // Only when the flag is ON do we COMMIT it — flip piece_display for the brand's
+      // vendable-but-hidden refs via the governed catalog_display_activate primitive
+      // (#880, respects FROZEN / quarantine #884). Never fails the commit (price already
+      // committed); a failure is logged (no silent fallback) and leaves applied=false.
+      try {
+        const dry = await this.displayActivation.dryRun(req.brandPmId);
+        let applied = false;
+        if (this.flags.catalogAutoActivateEnabled && dry.eligible > 0) {
+          await this.displayActivation.commit({
+            supplierId: req.brandPmId,
+            operator: req.operator ?? null,
+            confirm: true,
+          });
+          applied = true;
+          this.logger.log(
+            `[PRICING_IMPORT] auto-activate APPLIED batchId=${batchId} brand=${req.brandPmId} eligible=${dry.eligible}`,
+          );
+        }
+        displayActivation = { eligible: dry.eligible, applied };
+      } catch (e) {
+        this.logger.error(
+          `[PRICING_IMPORT] auto-activate failed batchId=${batchId} brand=${req.brandPmId}: ${(e as Error).message}`,
+        );
+      }
     } else {
       this.logger.warn(
         `[PRICING_IMPORT] activation verification skipped batchId=${batchId}: brandPmId="${req.brandPmId}" is not a positive integer`,
       );
     }
 
-    return { ...totals, activationPlan };
+    return { ...totals, activationPlan, displayActivation };
   }
 
   async rollback(
