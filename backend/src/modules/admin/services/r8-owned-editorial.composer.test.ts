@@ -12,6 +12,7 @@ import {
   buildOwnedSelectionGuide,
   buildOwnedEntretien,
   buildOwnedFaq,
+  extractGammeSourceFromRpc,
   type GammeEditorial,
   type MotorisationFacts,
 } from './r8-owned-editorial.composer';
@@ -196,6 +197,81 @@ describe('buildOwnedFaq', () => {
     const g = gamme();
     g.purchaseGuide!.faq = [{ q: 'only one', a: 'answer' }];
     expect(buildOwnedFaq([g], facts, 'opener')).toBeNull();
+  });
+});
+
+describe('extractGammeSourceFromRpc', () => {
+  it('maps popular_parts (popularity-ranked) with proxy product_count desc', () => {
+    const out = extractGammeSourceFromRpc({
+      popular_parts: [
+        {
+          pg_id: 402,
+          pg_alias: 'plaquette-de-frein',
+          pg_name: 'Plaquettes de frein',
+        },
+        { pg_id: 8, pg_alias: 'filtre-a-air', pg_name: 'Filtre à air' },
+      ],
+    });
+    expect(out).toHaveLength(2);
+    expect(out[0]).toMatchObject({
+      pg_id: 402,
+      pg_alias: 'plaquette-de-frein',
+    });
+    expect(out[0].product_count).toBeGreaterThan(out[1].product_count);
+  });
+
+  it('falls back to catalog.families[].gammes when popular_parts empty', () => {
+    const out = extractGammeSourceFromRpc({
+      popular_parts: [],
+      catalog: {
+        families: [
+          {
+            mf_id: '1',
+            gammes: [
+              {
+                pg_id: 7,
+                pg_alias: 'filtre-a-huile',
+                pg_name: 'Filtre à huile',
+              },
+            ],
+          },
+          {
+            mf_id: '2',
+            gammes: [
+              {
+                pg_id: 9,
+                pg_alias: 'filtre-a-carburant',
+                pg_name: 'Filtre à carburant',
+              },
+            ],
+          },
+        ],
+      },
+    });
+    expect(out.map((g) => g.pg_id)).toEqual([7, 9]);
+  });
+
+  it('dedups by pg_id and skips rows missing id/alias/name', () => {
+    const out = extractGammeSourceFromRpc({
+      popular_parts: [
+        { pg_id: 7, pg_alias: 'filtre-a-huile', pg_name: 'Filtre à huile' },
+        { pg_id: 7, pg_alias: 'filtre-a-huile', pg_name: 'dup' },
+        { pg_id: 0, pg_alias: 'bad', pg_name: 'bad' },
+        { pg_id: 8, pg_alias: '', pg_name: 'no alias' },
+      ],
+    });
+    expect(out.map((g) => g.pg_id)).toEqual([7]);
+  });
+
+  it('uses real product_count when present, and returns [] for empty/garbage', () => {
+    expect(extractGammeSourceFromRpc(null)).toEqual([]);
+    expect(extractGammeSourceFromRpc({})).toEqual([]);
+    const out = extractGammeSourceFromRpc({
+      popular_parts: [
+        { pg_id: 5, pg_alias: 'x', pg_name: 'X', product_count: 42 },
+      ],
+    });
+    expect(out[0].product_count).toBe(42);
   });
 });
 
