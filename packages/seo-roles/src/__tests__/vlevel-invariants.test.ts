@@ -23,6 +23,7 @@ import {
   VLEVEL_V2_PROMOTION,
   validateV2Promotion,
   selectV2Tier,
+  isVLevelEligibleVehicle,
   V_GROUP_KEY,
   vLevelGroupKey,
   compareV3Champions,
@@ -376,5 +377,35 @@ describe("selectV2Tier — SoT du cut V2 (plafond sans backfill, V2 ⟹ V3 + gar
     const snapshot = champs.map((c) => c.id);
     selectV2Tier(champs, 10, groupKeyOf, toCandidate);
     assert.deepEqual(champs.map((c) => c.id), snapshot);
+  });
+});
+
+describe("isVLevelEligibleVehicle — éligibilité par RÉSOLUTION (motif texte OU type_id), pas texte seul", () => {
+  test("motorisation dans le TEXTE → éligible (comportement historique préservé)", () => {
+    assert.equal(isVLevelEligibleVehicle({ keyword: "filtre a air clio 3 1.5 dci", typeId: null }), true);
+    assert.equal(isVLevelEligibleVehicle({ keyword: "disque de frein 206 hdi", typeId: null }), true);
+    assert.equal(isVLevelEligibleVehicle({ keyword: "plaquette megane 110 ch", typeId: null }), true);
+  });
+
+  test("model-only AVEC type_id résolu → éligible (FIX incident pg424 : véhicule résolu jamais NULL)", () => {
+    // « filtre habitacle clio 3 » sans code moteur MAIS résolu à un type_id = véhicule complet.
+    assert.equal(isVLevelEligibleVehicle({ keyword: "filtre habitacle clio 3", typeId: "12345" }), true);
+    assert.equal(isVLevelEligibleVehicle({ keyword: "ds5 filtre habitacle", typeId: 77999 }), true);
+  });
+
+  test("model-only SANS type_id → NON éligible ici (relève de l'attribution motorisation, pas silent-NULL)", () => {
+    assert.equal(isVLevelEligibleVehicle({ keyword: "filtre habitacle clio 3", typeId: null }), false);
+    assert.equal(isVLevelEligibleVehicle({ keyword: "filtre a air fiat 500", typeId: "" }), false);
+    assert.equal(isVLevelEligibleVehicle({ keyword: "ds5 filtre habitacle" }), false);
+  });
+
+  test("type_id 0 / espaces → traité comme NON résolu (cohérent validateV2Promotion)", () => {
+    assert.equal(isVLevelEligibleVehicle({ keyword: "generic", typeId: "   " }), false);
+    assert.equal(isVLevelEligibleVehicle({ keyword: "generic", typeId: null }), false);
+  });
+
+  test("tolère keyword null/undefined", () => {
+    assert.equal(isVLevelEligibleVehicle({ keyword: null, typeId: "9468" }), true);
+    assert.equal(isVLevelEligibleVehicle({ keyword: undefined, typeId: null }), false);
   });
 });
