@@ -131,6 +131,80 @@ export function isKeywordEligibleForGamme(keyword: string, pgId: number): boolea
 }
 
 /**
+ * Promotion V2 (figé 2026-06-08, owner « on commence toujours par V3 »).
+ *
+ * INVARIANT DUR `V2 ⟹ V3` : on ne peut être promu V2 que si on est DÉJÀ un champion V3
+ * (champion #1 de son groupe [modèle+énergie]). Impossible d'être V2 sans être champion —
+ * V2 est un SUR-CLASSEMENT du socle V3, jamais une entrée directe.
+ *
+ * `cap` = PLAFOND ({@link VLEVEL_V2_CAP}), PAS un quota à remplir. « Meilleurs champions »
+ * ≠ « top-N par volume brut » : sans affinage, le cap se remplit avec des entrées sans véhicule
+ * (type_id NULL), à énergie incohérente (mot-clé « gasoil » → véhicule essence) ou à volume-plancher.
+ * Défaut observé sur filtre-à-carburant le 2026-06-08 (Duster essence 2025 promu V2). Les 2 premiers
+ * garde-fous sont OBJECTIFS (enforced par {@link validateV2Promotion}) ; `demand_floor`/`real_parc`
+ * sont des préférences à seuils OWNER-TUNABLES appliquées au recalc (before/after) — volontairement
+ * PAS codées en dur ici (pas de magic constant, pas de seuil inventé).
+ */
+export const VLEVEL_V2_PROMOTION = {
+  requires: "V3_champion",
+  cap: VLEVEL_V2_CAP,
+  affinageGuards: ["resolved_vehicle", "energy_coherent", "demand_floor", "real_parc"],
+} as const;
+
+/** Classe d'énergie normalisée (diesel / essence / other) pour la cohérence mot-clé ↔ véhicule. */
+function energyClass(s: string): "diesel" | "essence" | "other" {
+  const t = s.toLowerCase();
+  if (/diesel|gasoil|\bhdi\b|\bdci\b|\btdi\b|\bcrdi\b|bluehdi|\bcdti\b|\btdci\b/.test(t)) return "diesel";
+  if (/essence|petrol|\btce\b|\bvti\b|\bthp\b|gpl|ethanol|éthanol|flex|gnc|cng|hybrid|electr/.test(t))
+    return "essence";
+  return "other";
+}
+
+/** Énergie mot-clé et véhicule compatibles ? `other`/inconnu ⇒ true (aucun faux rejet). */
+function energyCompatible(keywordEnergy: string, vehicleEnergy: string): boolean {
+  const a = energyClass(keywordEnergy);
+  const b = energyClass(vehicleEnergy);
+  if (a === "other" || b === "other") return true;
+  return a === b;
+}
+
+/** Candidat à la promotion V2 (champs minimaux pour valider les invariants objectifs). */
+export interface V2PromotionCandidate {
+  /** Champion #1 de son groupe [modèle+énergie] (donc V3-éligible) ? */
+  readonly isChampion: boolean;
+  /** Véhicule résolu : type_id non NULL. */
+  readonly typeId?: string | number | null;
+  /** Énergie portée par le mot-clé (ex. « gasoil » ⇒ diesel). */
+  readonly keywordEnergy?: string | null;
+  /** Énergie réelle du véhicule (`auto_type.type_fuel`). */
+  readonly vehicleEnergy?: string | null;
+}
+
+export type V2Violation = "not_a_champion" | "unresolved_vehicle" | "energy_mismatch";
+
+/**
+ * Valide qu'un candidat PEUT être promu V2. Pure & déterministe. N'enforce QUE les invariants
+ * OBJECTIFS (sans seuil de jugement) :
+ *   - `not_a_champion`     : viole `V2 ⟹ V3` (pas champion).
+ *   - `unresolved_vehicle` : type_id NULL → pas un véhicule complet.
+ *   - `energy_mismatch`    : énergies connues incohérentes (mot-clé gasoil ↔ véhicule essence).
+ * Les garde-fous `demand_floor`/`real_parc` ({@link VLEVEL_V2_PROMOTION}) restent owner-tunables
+ * (appliqués au recalc), donc hors de cette fonction. NE MUTE RIEN.
+ */
+export function validateV2Promotion(c: V2PromotionCandidate): {
+  ok: boolean;
+  violations: V2Violation[];
+} {
+  const violations: V2Violation[] = [];
+  if (!c.isChampion) violations.push("not_a_champion");
+  if (c.typeId == null || String(c.typeId).trim() === "") violations.push("unresolved_vehicle");
+  const ke = (c.keywordEnergy ?? "").trim();
+  const ve = (c.vehicleEnergy ?? "").trim();
+  if (ke && ve && !energyCompatible(ke, ve)) violations.push("energy_mismatch");
+  return { ok: violations.length === 0, violations };
+}
+
+/**
  * Classement V-Level (figé 2026-06-08, owner-validé).
  *
  * OBJECTIF = **top-vente** : classer les véhicules qui RAPPORTENT (valeur commerciale).
@@ -182,13 +256,13 @@ export const V_LEVEL_INVARIANTS: readonly VLevelInvariant[] = [
   },
   {
     id: "V2",
-    meaning: `Top ${VLEVEL_V2_CAP} des champions V3 de la gamme (dedup [modèle+énergie]), classés par DEMANDE DE RECHERCHE (VLEVEL_RANKING_SIGNALS). Les stars marketing de la gamme.`,
+    meaning: `Promotion ÉLITE des champions V3 de la gamme — V2 ⟹ V3 : impossible d'être V2 sans être champion (validateV2Promotion). Plafonné à ${VLEVEL_V2_CAP} (PLAFOND, pas quota). Sélection = meilleurs champions par DEMANDE DE RECHERCHE (VLEVEL_RANKING_SIGNALS) + affinage top-vente (VLEVEL_V2_PROMOTION : véhicule résolu, énergie cohérente, parc réel) — PAS un top-N volume brut.`,
     built: true,
   },
   {
     id: "V3",
     meaning:
-      "Champion #1 du groupe [modèle+énergie] = 1 VÉHICULE COMPLET (marque+modèle+motorisation+ch+années). " +
+      "SOCLE de l'élection — on commence TOUJOURS par V3. Champion #1 du groupe [modèle+énergie] = 1 VÉHICULE COMPLET (marque+modèle+motorisation+ch+années). " +
       "Dispatché sur sa fiche véhicule R8 /constructeurs/{marque}/{modele}/{type}.html + ses pages produit " +
       "R2 /pieces/{gamme}/{marque}/{modele}/{type}.html ({@link VLEVEL_PAGE_DISPATCH}). Tri canonique " +
       "compareV3Champions (volume DESC → longueur keyword ASC → keyword ASC). Volume 0 autorisé.",
@@ -277,6 +351,12 @@ export const V_LEVEL_KNOWN_GAPS: readonly VLevelKnownGap[] = [
     description:
       "score_seo : formule v3 abandonnée mais colonne conservée (peuplée au volume brut). Figer-déprécié ou rebrancher — jamais DROP.",
     gate: "G1",
+  },
+  {
+    id: "v2-promotion-not-affined",
+    description:
+      "Le cut V2 = top-N volume brut, sans les garde-fous d'affinage (validateV2Promotion) : il remplit le cap avec des entrées type_id NULL, à énergie incohérente (mot-clé gasoil → véhicule essence) ou à volume-plancher. Observé sur filtre-à-carburant 2026-06-08 (Duster essence 2025 en V2). Câbler validateV2Promotion dans l'élection + recalc owner-gated before/after.",
+    gate: "G3",
   },
 ] as const;
 
