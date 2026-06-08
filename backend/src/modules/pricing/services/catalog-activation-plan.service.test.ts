@@ -16,7 +16,9 @@ const samplePlan: ActivationPlan = {
     orphan_with_oem: 2454,
     orphan_no_source: 2181,
   },
-  universal_candidates: [{ pg_id: 3357, pg_name: 'Liquide de frein', pieces: 42 }],
+  orphan_no_source_by_gamme: [
+    { pg_id: 82, pg_name: 'Disque de frein', pieces: 3 },
+  ],
 };
 
 function makeService(planImpl?: jest.Mock) {

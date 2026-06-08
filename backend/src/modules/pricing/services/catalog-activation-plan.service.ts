@@ -32,8 +32,13 @@ export interface ActivationPlanCategories {
   orphan_no_source: number;
 }
 
-/** A gamme proposed as "universal section" candidate (orphan + no-OEM), for owner confirmation. */
-export interface UniversalCandidate {
+/**
+ * A gamme grouping the brand's orphan + no-OEM pieces (no fitment source).
+ * NOT auto-universal: a genuinely universal gamme is a CATALOG-level property
+ * (curated registry: ~0 vehicle fitment + consumable nature), detected separately —
+ * not inferred per-brand from "orphan + no OEM". This list is a follow-up hint only.
+ */
+export interface OrphanGammeGroup {
   pg_id: number;
   pg_name: string | null;
   pieces: number;
@@ -43,7 +48,7 @@ export interface ActivationPlan {
   brand_pm_id: number;
   sellable_priced: number;
   categories: ActivationPlanCategories;
-  universal_candidates: UniversalCandidate[];
+  orphan_no_source_by_gamme: OrphanGammeGroup[];
 }
 
 @Injectable()
@@ -70,7 +75,7 @@ export class CatalogActivationPlanService {
       `[ACTIVATION_PLAN] brand=${brandPmId} sellable=${data.sellable_priced} ` +
         `visible=${c.already_visible} display_gated=${c.display_gated} accessory=${c.accessory} ` +
         `gamme_inactive=${c.gamme_inactive} orphan_oem=${c.orphan_with_oem} orphan_no_source=${c.orphan_no_source} ` +
-        `universal_candidates=${data.universal_candidates.length}`,
+        `orphan_no_source_gammes=${data.orphan_no_source_by_gamme.length}`,
     );
     return data;
   }

@@ -69,7 +69,7 @@ AS $$
       'orphan_with_oem',   (SELECT count(*) FROM classified WHERE NOT has_link AND piece_has_oem),
       'orphan_no_source',  (SELECT count(*) FROM classified WHERE NOT has_link AND NOT piece_has_oem)
     ),
-    'universal_candidates', COALESCE(
+    'orphan_no_source_by_gamme', COALESCE(
       (SELECT jsonb_agg(jsonb_build_object('pg_id', piece_pg_id, 'pg_name', pg_name, 'pieces', n)) FROM cand),
       '[]'::jsonb
     )

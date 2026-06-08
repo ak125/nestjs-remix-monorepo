@@ -27,6 +27,10 @@ import {
   type PricingRule,
 } from './pricing-strategy.service';
 import { PricingRepository, type CommitRowPayload } from './pricing.repository';
+import {
+  CatalogActivationPlanService,
+  type ActivationPlan,
+} from './catalog-activation-plan.service';
 
 const CHUNK_SIZE = 5000;
 
@@ -52,7 +56,10 @@ export interface ImportRequest {
 export class PriceImportService {
   private readonly logger = new Logger(PriceImportService.name);
 
-  constructor(private readonly repo: PricingRepository) {}
+  constructor(
+    private readonly repo: PricingRepository,
+    private readonly activationPlan: CatalogActivationPlanService,
+  ) {}
 
   private hashRows(rows: Record<string, string>[]): string {
     return createHash('sha256').update(JSON.stringify(rows)).digest('hex');
@@ -168,7 +175,12 @@ export class PriceImportService {
   async commit(
     batchId: string,
     req: ImportRequest,
-  ): Promise<{ committed: number; skipped: number; missing: number }> {
+  ): Promise<{
+    committed: number;
+    skipped: number;
+    missing: number;
+    activationPlan: ActivationPlan | null;
+  }> {
     const lines = await this.buildLines(req);
     const linesByKey = new Map(lines.map((l) => [l.key, l]));
     const report = await this.computeReport(req, lines);
@@ -239,7 +251,31 @@ export class PriceImportService {
       );
       throw e;
     }
-    return totals;
+
+    // AUTO catalog-activation verification (read-only) — runs at EVERY tariff commit
+    // ("au fur et à mesure des mises à jour tarif"). Classifies the just-committed brand:
+    // what's recoverable (display-gated / accessory / gamme-inactive / orphan) +
+    // orphan-no-source gammes. READ-ONLY: no catalog mutation here (the actual activation
+    // — display flip, universal section, fitment — are governed steps). Never fails the
+    // commit: the price commit already succeeded, so a verification error is logged only
+    // (no silent fallback) and returns a null plan.
+    let activationPlan: ActivationPlan | null = null;
+    const brandPmIdNum = Number(req.brandPmId);
+    if (Number.isInteger(brandPmIdNum) && brandPmIdNum > 0) {
+      try {
+        activationPlan = await this.activationPlan.plan(brandPmIdNum);
+      } catch (e) {
+        this.logger.error(
+          `[PRICING_IMPORT] activation verification failed batchId=${batchId} brand=${req.brandPmId}: ${(e as Error).message}`,
+        );
+      }
+    } else {
+      this.logger.warn(
+        `[PRICING_IMPORT] activation verification skipped batchId=${batchId}: brandPmId="${req.brandPmId}" is not a positive integer`,
+      );
+    }
+
+    return { ...totals, activationPlan };
   }
 
   async rollback(
