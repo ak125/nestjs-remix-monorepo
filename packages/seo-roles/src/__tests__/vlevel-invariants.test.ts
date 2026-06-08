@@ -18,6 +18,10 @@ import assert from "node:assert/strict";
 import {
   V_LEVEL_IDS,
   VLEVEL_V2_CAP,
+  VLEVEL_RANKING_SIGNALS,
+  VLEVEL_PAGE_DISPATCH,
+  VLEVEL_V2_PROMOTION,
+  validateV2Promotion,
   V_GROUP_KEY,
   vLevelGroupKey,
   compareV3Champions,
@@ -100,8 +104,9 @@ describe("V-Level gaps — résolution G2 (7 → 6)", () => {
     assert.equal(g?.gate, "G3");
   });
 
-  test("6 écarts restants (était 7)", () => {
-    assert.equal(V_LEVEL_KNOWN_GAPS.length, 6);
+  test("7 écarts (6 + V2 affinage observé 2026-06-08)", () => {
+    assert.equal(V_LEVEL_KNOWN_GAPS.length, 7);
+    assert.ok(V_LEVEL_KNOWN_GAPS.some((g) => g.id === "v2-promotion-not-affined"));
   });
 });
 
@@ -187,5 +192,103 @@ describe("compareV3Champions — tie-break déterministe (volume DESC → longue
   test("tolère volume/keyword null|undefined (0 / chaîne vide)", () => {
     assert.equal(compareV3Champions({ keyword: "", volume: 0 }, { keyword: "", volume: 0 }), 0);
     assert.ok(compareV3Champions({ keyword: "a" }, { keyword: "a", volume: 10 }) > 0);
+  });
+});
+
+describe("Méthode V-Level — doctrine figée (objectif top-vente, mesuré par recherche, dispatch constructeur)", () => {
+  test("objectif = TOP-VENTE ; mesure = recherche KW (vivier) + Trends/web (affinage)", () => {
+    assert.equal(VLEVEL_RANKING_SIGNALS.goal, "top_vente");
+    assert.equal(VLEVEL_RANKING_SIGNALS.measurePrimary, "kw_search_volume");
+    assert.deepEqual([...VLEVEL_RANKING_SIGNALS.measureRefine], ["google_trends", "web_search"]);
+  });
+
+  test("les TABLES de vente ne sont PAS exploitables (proxy recherche à la place)", () => {
+    assert.equal(VLEVEL_RANKING_SIGNALS.notUsable, "sales_tables");
+  });
+
+  test("V1 = niveau MODÈLE, top-vente via recherche, page constructeur marque, à construire", () => {
+    const v1 = V_LEVEL_INVARIANTS.find((v) => v.id === "V1")!;
+    assert.match(v1.meaning, /MODÈLE/);
+    assert.match(v1.meaning, /TOP-VENTE/);
+    assert.match(v1.meaning, /constructeurs/);
+    assert.equal(v1.built, false);
+  });
+
+  test("V3 = 1 véhicule complet, dispatché fiche véhicule R8 constructeur + produit R2", () => {
+    const v3 = V_LEVEL_INVARIANTS.find((v) => v.id === "V3")!;
+    assert.match(v3.meaning, /VÉHICULE COMPLET/);
+    assert.match(v3.meaning, /constructeurs/);
+    assert.match(v3.meaning, /R2/);
+  });
+
+  test("dispatch pages : V3→fiche véhicule, V2→gamme, V1→page marque + marketing", () => {
+    assert.match(VLEVEL_PAGE_DISPATCH.V3, /constructeurs/);
+    assert.match(VLEVEL_PAGE_DISPATCH.V1, /constructeurs/);
+    assert.match(VLEVEL_PAGE_DISPATCH.V1, /marketing/);
+  });
+});
+
+describe("Promotion V2 — invariant DUR « V2 ⟹ V3 » + affinage (on commence toujours par V3)", () => {
+  test("V3 est le SOCLE (mention explicite dans l'invariant)", () => {
+    const v3 = V_LEVEL_INVARIANTS.find((v) => v.id === "V3")!;
+    assert.match(v3.meaning, /SOCLE/);
+    assert.match(v3.meaning, /TOUJOURS par V3/);
+  });
+
+  test("V2 = promotion méritée, plafond (pas quota), V2 ⟹ V3 explicite", () => {
+    const v2 = V_LEVEL_INVARIANTS.find((v) => v.id === "V2")!;
+    assert.match(v2.meaning, /V2 ⟹ V3/);
+    assert.match(v2.meaning, /PLAFOND, pas quota/);
+    assert.equal(VLEVEL_V2_PROMOTION.requires, "V3_champion");
+    assert.equal(VLEVEL_V2_PROMOTION.cap, VLEVEL_V2_CAP);
+    assert.deepEqual(
+      [...VLEVEL_V2_PROMOTION.affinageGuards],
+      ["resolved_vehicle", "energy_coherent", "demand_floor", "real_parc"],
+    );
+  });
+
+  test("candidat valide : champion + véhicule résolu + énergie cohérente", () => {
+    const r = validateV2Promotion({
+      isChampion: true,
+      typeId: "9468",
+      keywordEnergy: "diesel",
+      vehicleEnergy: "Diesel",
+    });
+    assert.equal(r.ok, true);
+    assert.deepEqual(r.violations, []);
+  });
+
+  test("not_a_champion : pas champion → ne peut PAS être V2 (V2 ⟹ V3)", () => {
+    const r = validateV2Promotion({ isChampion: false, typeId: "9468" });
+    assert.ok(r.violations.includes("not_a_champion"));
+    assert.equal(r.ok, false);
+  });
+
+  test("unresolved_vehicle : type_id NULL → pas un véhicule (cas des entrées polluées)", () => {
+    const r = validateV2Promotion({ isChampion: true, typeId: null });
+    assert.ok(r.violations.includes("unresolved_vehicle"));
+    assert.equal(r.ok, false);
+  });
+
+  test("energy_mismatch : mot-clé gasoil → véhicule essence (cas Duster 2025)", () => {
+    const r = validateV2Promotion({
+      isChampion: true,
+      typeId: "77163",
+      keywordEnergy: "gasoil",
+      vehicleEnergy: "Essence",
+    });
+    assert.ok(r.violations.includes("energy_mismatch"));
+    assert.equal(r.ok, false);
+  });
+
+  test("énergie inconnue d'un côté → PAS de faux rejet (other ⇒ compatible)", () => {
+    const r = validateV2Promotion({
+      isChampion: true,
+      typeId: "100",
+      keywordEnergy: "",
+      vehicleEnergy: "Diesel",
+    });
+    assert.ok(!r.violations.includes("energy_mismatch"));
+    assert.equal(r.ok, true);
   });
 });
