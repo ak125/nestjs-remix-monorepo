@@ -38,6 +38,7 @@ import {
   type DisplayQuarantineRequest,
 } from '../services/catalog-display-quarantine.service';
 import { PricingSimulationService } from '../services/pricing-simulation.service';
+import { CatalogActivationPlanService } from '../services/catalog-activation-plan.service';
 import type {
   CustomerType,
   PricingRule,
@@ -52,7 +53,18 @@ export class PricingImportController {
     private readonly displayActivationService: CatalogDisplayActivationService,
     private readonly displayQuarantineService: CatalogDisplayQuarantineService,
     private readonly simulationService: PricingSimulationService,
+    private readonly activationPlanService: CatalogActivationPlanService,
   ) {}
+
+  /**
+   * Read-only activation plan for a tariff batch (brand). T1 — NO writes.
+   * Classifies sellable-priced pieces (visible / display-gated / accessory /
+   * gamme-inactive / orphan) + proposes universal-section candidates.
+   */
+  @Post('activation/plan')
+  activationPlan(@Body() body: { brandPmId: number }) {
+    return this.activationPlanService.plan(body.brandPmId);
+  }
 
   /** Read-only grid simulation (no write). */
   @Post('simulate')

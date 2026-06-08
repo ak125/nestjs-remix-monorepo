@@ -12,6 +12,7 @@ import type { CatalogPiece, ExistingPriceRow } from './price-import.dry-run';
 import type { SupplierPriceProfile } from './supplier-profile.service';
 import type { PricingRule } from './pricing-strategy.service';
 import type { CostBucketAggregate } from './pricing-simulation.core';
+import type { ActivationPlan } from './catalog-activation-plan.service';
 
 const PAGE = 1000; // supabase-js caps a single select at 1000 rows → paginate
 
@@ -32,6 +33,20 @@ export interface CommitRowPayload {
 export class PricingRepository extends SupabaseBaseService {
   constructor(configService: ConfigService) {
     super(configService);
+  }
+
+  /**
+   * READ-ONLY activation plan for a brand batch (T1). Drives the STABLE RPC
+   * `catalog_activation_plan` — classifies sellable-priced pieces + proposes
+   * universal candidates. No writes. See migration
+   * 20260608_pricing_catalog_activation_plan.sql.
+   */
+  async catalogActivationPlan(brandPmId: number): Promise<ActivationPlan> {
+    const { data, error } = await this.callRpc('catalog_activation_plan', {
+      p_brand_pm_id: brandPmId,
+    });
+    if (error) throw error;
+    return data as ActivationPlan;
   }
 
   /** Idempotency: an identical file (same hash) already imported? */

@@ -16,6 +16,7 @@ import { PriceActivationService } from './services/price-activation.service';
 import { CatalogDisplayActivationService } from './services/catalog-display-activation.service';
 import { CatalogDisplayQuarantineService } from './services/catalog-display-quarantine.service';
 import { PricingSimulationService } from './services/pricing-simulation.service';
+import { CatalogActivationPlanService } from './services/catalog-activation-plan.service';
 import { PricingImportController } from './controllers/pricing-import.controller';
 
 @Module({
@@ -31,6 +32,7 @@ import { PricingImportController } from './controllers/pricing-import.controller
     CatalogDisplayActivationService,
     CatalogDisplayQuarantineService,
     PricingSimulationService,
+    CatalogActivationPlanService,
   ],
   exports: [
     PricingFormulaService,

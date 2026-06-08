@@ -32,6 +32,16 @@ export class FeatureFlagsService {
     return this.bool('SAFE_FALLBACK_ENABLED', false);
   }
 
+  /**
+   * Kill-switch for the auto-apply at tariff commit (T3). Default OFF → the commit
+   * runs the activation verification + a display-activation DRY-RUN only (no mutation).
+   * ON → the brand's vendable-but-hidden pieces are auto-activated (piece_display) via
+   * the governed catalog_display_activate primitive (#880, respects FROZEN / quarantine).
+   */
+  get catalogAutoActivateEnabled(): boolean {
+    return this.bool('CATALOG_AUTO_ACTIVATE', false);
+  }
+
   get canaryGammes(): string[] {
     return this.csv('CANARY_GAMMES');
   }
@@ -316,6 +326,7 @@ export class FeatureFlagsService {
     'HARD_GATES_ENABLED',
     'AUTO_REPAIR_ENABLED',
     'SAFE_FALLBACK_ENABLED',
+    'CATALOG_AUTO_ACTIVATE',
     'CANARY_GAMMES',
     'R1_CONTENT_PIPELINE_ENABLED',
     'BRIEF_GATES_ENABLED',

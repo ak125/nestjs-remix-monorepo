@@ -412,3 +412,21 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-r3-consolidation-evidence`
 - **Décision** : feat(seo): read-only GSC-backed R3 consolidation evidence matrix (10-gamme pilot)
 - **Sortie** : PR aucune | commits ca0232d4c
+
+## 2026-06-08 — feat/catalog-activation-plan (auto)
+
+- **Branche** : `feat/catalog-activation-plan`
+- **Décision** : feat(pricing): catalog activation plan (T1) — read-only orphan/activation classifier
+- **Sortie** : PR #901 | commits 11b8a77b8
+
+## 2026-06-08 — feat/catalog-activation-plan (auto)
+
+- **Branche** : `feat/catalog-activation-plan`
+- **Décision** : feat(pricing): auto-run activation verification at each tariff commit (+2 other commits)
+- **Sortie** : PR #901 | commits 327c43402 12ded3a7b 11b8a77b8
+
+## 2026-06-08 — feat/catalog-activation-plan (auto)
+
+- **Branche** : `feat/catalog-activation-plan`
+- **Décision** : feat(pricing): catalog_universal_gammes() — read-only universal-section source (T2a) (+4 other commits)
+- **Sortie** : PR #901 | commits 978bf889d 2601ab61b 327c43402 12ded3a7b 11b8a77b8
