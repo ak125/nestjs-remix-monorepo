@@ -9,8 +9,7 @@
 
 Les sections de l'enricher V5 (`R8_V5_PLANNABLE_SECTIONS`,
 [`r8-keyword-plan.constants.ts:589`](../backend/src/config/r8-keyword-plan.constants.ts#L589)) :
-`S_IDENTITY · S_COMPAT_SCOPE · S_VARIANT_DIFFERENCE · S_SELECTION_GUIDE · S_ENTRETIEN_CONTEXT ·
-S_CATALOG_ACCESS · S_TECH_SPECS · S_FAQ_DEDICATED · S_TRUST`.
+`S_IDENTITY · S_COMPAT_SCOPE · S_VARIANT_DIFFERENCE · S_SELECTION_GUIDE · S_ENTRETIEN_CONTEXT · S_CATALOG_ACCESS · S_TECH_SPECS · S_FAQ_DEDICATED · S_TRUST`.
 
 - **Sections FAITS** (DB interne par `type_id`, déjà OK) : `S_COMPAT_SCOPE`, `S_TECH_SPECS`, `S_CATALOG_ACCESS`.
 - **Sections PROSE éditoriale** (existent, mais alimentées par **rotation de templates**
@@ -22,36 +21,42 @@ réelle par motorisation** (WIKI) pour les remplir. C'est ça « un vrai contenu
 
 ## Le modèle (par section prose : paragraphe réel + source WIKI + garde-fou faits)
 
-| Section | Vrai paragraphe attendu (par motorisation) | Source WIKI (sourcée/validée) | Garde-fou faits (DB interne) |
-|---|---|---|---|
-| `S_IDENTITY` | **Présentation** : ce qu'est cette version (moteur, énergie, usage typique) | description véhicule/motorisation | type/puissance/années/carburant |
-| `S_VARIANT_DIFFERENCE` | **Ce qui distingue** réellement cette motorisation des sœurs (moteur K9K, FAP, phase) — pas le mot « variant » | spécificités moteur/version | puissance/année/code moteur |
-| `S_SELECTION_GUIDE` | **Comment choisir** la bonne pièce pour cette motorisation (critères, pièges) | critères de choix gamme × motorisation | familles compatibles |
-| `S_ENTRETIEN_CONTEXT` | **Entretien narratif** : intervalles, points de vigilance (admission/EGR/turbo/carburant diesel) | entretien/vigilance par moteur | intervalles si présents |
-| (erreurs) | **Erreurs fréquentes** à éviter (ex. confondre filtre air/habitacle/carburant) | erreurs connues par motorisation | — |
-| `S_FAQ_DEDICATED` | **FAQ** = un bloc **parmi d'autres**, pas le cœur | Q&A par motorisation | — |
+| Section                | Vrai paragraphe attendu                           | Source éditoriale **OWNED (DB `__seo_gamme_*`, ~221-259 gammes, EEAT-sourcé)** | Garde-fou faits (DB interne)    |
+| ---------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------ | ------------------------------- |
+| `S_IDENTITY`           | **Présentation** : ce qu'est cette version        | `__seo_gamme_conseil.sgc_content` (section intro) × motorisation               | type/puissance/années/carburant |
+| `S_VARIANT_DIFFERENCE` | **Ce qui distingue** cette motorisation des sœurs | `sgc_content` (spécificités) + faits moteur tissés                             | puissance/année/code moteur     |
+| `S_SELECTION_GUIDE`    | **Comment choisir** la bonne pièce                | `__seo_gamme_purchase_guide.sgpg_how_to_choose` + `sgpg_selection_criteria`    | familles compatibles            |
+| `S_ENTRETIEN_CONTEXT`  | **Entretien narratif** + vigilance                | `sgpg_timing_*` + `sgpg_symptoms` + `sgpg_risk_explanation`                    | intervalles                     |
+| (erreurs)              | **Erreurs fréquentes** à éviter                   | `sgpg_anti_mistakes` (5-35 par gamme)                                          | —                               |
+| `S_FAQ_DEDICATED`      | **FAQ** = un bloc **parmi d'autres**, pas le cœur | `sgpg_faq` (jsonb)                                                             | —                               |
 
 ## Règles (non négociables)
 
-1. **Les paragraphes éditoriaux viennent du WIKI éditorial** (sourcé + validé) —
-   **jamais** d'une rotation de templates ni d'invention LLM.
-2. **Les faits = garde-fous** (DB interne : compatibilité/specs), **pas la plume**.
-3. **Décliné par rôle** : `R8` = ce qui caractérise cette motorisation · `R1` = comment choisir
+1. **Les paragraphes éditoriaux viennent de l'éditorial OWNED** (DB `__seo_gamme_*`,
+   EEAT-sourcé/validé ; WIKI/RAW seulement pour combler des trous) — **jamais** d'une
+   rotation de templates ni d'invention LLM.
+1. **Les faits = garde-fous** (DB interne : compatibilité/specs), **pas la plume**.
+1. **Décliné par rôle** : `R8` = ce qui caractérise cette motorisation · `R1` = comment choisir
    une gamme pour elle · `R2` = pourquoi ce produit précis est compatible. Même connaissance WIKI,
    angles différents (anti-duplication entre rôles).
 
-## Dépendance honnête (le vrai blocage)
+## Le vrai gap (correction — l'éditorial est OWNED, pas vide)
 
-La couche **WIKI éditoriale par motorisation est VIDE aujourd'hui** (la chaîne RAW éditorial
-#17→#21 a capturé 0 éditorial validé). Donc « vrais paragraphes » exige, dans l'ordre :
+**L'éditorial existe déjà, owned, dans la DB** (vérifié) : `__seo_gamme_purchase_guide`
+(221 gammes : `how_to_choose`, `risk_explanation`, `symptoms`, `timing`, `anti_mistakes`,
+`faq`, `selection_criteria`…) + `__seo_gamme_conseil` (259 gammes, 2750 blocs prose
+substantiels, EEAT-sourcé). **L'enricher R8 ne l'utilise pas** (il ne lit que la FAQ des RAG files).
+
+Donc le gap **n'est PAS le sourcing** — c'est le **câblage** de cet éditorial owned dans
+les sections prose R8, croisé avec les faits par type :
 
 ```
-sources éditoriales (allowlist, owner) → RAW éditorial (runner) → validation humaine
-→ WIKI par motorisation → content-gen rend les paragraphes (sections V5 ci-dessus)
+DB owned __seo_gamme_* (par gamme) × faits par type_id (DB)
+→ content-gen rend les sections prose V5 par motorisation
 ```
 
-**Aucun raccourci** : tant que le WIKI n'a pas de connaissance par motorisation, les sections
-prose restent de la rotation (générique). On ne comble pas ça en inventant du texte.
+**Aucune dépendance externe, aucun scraping, aucune invention.** Le RAW éditorial (#17→#21)
+sert **uniquement à combler les trous** (gammes/sujets sans éditorial owned), en complément.
 
 ## Anti-bricolage
 
@@ -63,7 +68,8 @@ sans demande/URL).
 
 ## Portée
 
-- **Reference design**, pas canon. Mutation (binder WIKI → content-gen sur ces sections) =
-  chantier **séparé, owner-gated, runtime-aware** (observabilité/flag/rollback).
+- **Reference design**, pas canon. Mutation (binder l'éditorial **owned DB `__seo_gamme_*`** →
+  enricher R8 / content-gen sur ces sections, × faits par type) = chantier **séparé,
+  owner-gated, runtime-aware** (observabilité/feature-flag/rollback/cache).
 - Cite : `role-matrix §R8` (vault), `page-contract-r8.schema.ts`, `R8_V5_PLANNABLE_SECTIONS`.
 - Ne modifie aucun contrat, aucune section, aucun runtime. Read-only.
