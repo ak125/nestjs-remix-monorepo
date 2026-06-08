@@ -131,18 +131,32 @@ export function isKeywordEligibleForGamme(keyword: string, pgId: number): boolea
 }
 
 /**
- * Signaux de classement V-Level (figés 2026-06-08, owner-validés). Le V-Level classe les
- * véhicules par **DEMANDE DE RECHERCHE**, JAMAIS par ventes : les commandes sont par-pièce
- * (`___xtr_order_line.orl_art_ref`), pas par-véhicule, et trop minces (~1,7k) → aucune
- * attribution vente→véhicule fiable. Corroboré par le parc roulant FR (web search 2026-06).
+ * Classement V-Level (figé 2026-06-08, owner-validé).
+ *
+ * OBJECTIF = **top-vente** : classer les véhicules qui RAPPORTENT (valeur commerciale).
+ * MESURE = **demande de recherche** (KW + Google Trends + web search), utilisée comme PROXY du
+ * top-vente PARCE QUE les tables de vente ne sont pas exploitables (commandes par-pièce
+ * `___xtr_order_line.orl_art_ref`, pas par-véhicule, + ~1,7k = trop minces → aucune attribution
+ * vente→véhicule). Corroboré par le parc roulant FR (web search 2026-06 : Clio III/207/206 en tête).
  *   - `kw_search_volume` = vivier + 1er tri (`__seo_keywords.volume`, via {@link compareV3Champions}).
  *   - `google_trends` + `web_search` = AFFINAGE : départagent les ex-aequo KW (ex. 206 vs 207,
  *     tous deux vol=500, mais 207 > 206 au parc réel), détectent le déclin, corroborent la réalité.
  */
 export const VLEVEL_RANKING_SIGNALS = {
-  primary: "kw_search_volume",
-  refine: ["google_trends", "web_search"],
-  excluded: ["sales", "orders"],
+  goal: "top_vente",
+  measurePrimary: "kw_search_volume",
+  measureRefine: ["google_trends", "web_search"],
+  notUsable: "sales_tables",
+} as const;
+
+/**
+ * Dispatch des niveaux V-Level sur les pages publiques (figé 2026-06-08, owner-validé).
+ * Les véhicules V apparaissent sur les pages **constructeur** (`/constructeurs/...`) + produit.
+ */
+export const VLEVEL_PAGE_DISPATCH = {
+  V3: "fiche véhicule R8 /constructeurs/{marque}-{id}/{modele}-{id}/{type_id}.html + produit R2 /pieces/{gamme}/{marque}/{modele}/{type}.html",
+  V2: "top-10 véhicules de la gamme — mis en avant sur la page gamme (R1)",
+  V1: "modèle star — en tête de la page marque /constructeurs/{marque}-{id}.html + cible marketing",
 } as const;
 
 /**
@@ -160,9 +174,10 @@ export const V_LEVEL_INVARIANTS: readonly VLevelInvariant[] = [
     id: "V1",
     meaning:
       "Star multi-gammes au niveau MODÈLE : un modèle qui est V2 dans beaucoup de gammes (chaque gamme " +
-      "résout sa PROPRE variante-véhicule, donc V1 vit au niveau modèle, pas type_id). Classé par DEMANDE " +
-      "DE RECHERCHE ({@link VLEVEL_RANKING_SIGNALS}), jamais par ventes. Projection cross-gammes (pas un " +
-      "v_level stocké par ligne). À CONSTRUIRE (0 aujourd'hui).",
+      "résout sa PROPRE variante-véhicule, donc V1 vit au niveau modèle, pas type_id). Classé TOP-VENTE " +
+      "mesuré via la recherche ({@link VLEVEL_RANKING_SIGNALS}). Dispatché en tête de la page marque " +
+      "/constructeurs/{marque}.html + marketing ({@link VLEVEL_PAGE_DISPATCH}). Projection cross-gammes " +
+      "(pas un v_level stocké par ligne). À CONSTRUIRE (0 aujourd'hui).",
     built: false,
   },
   {
@@ -173,9 +188,10 @@ export const V_LEVEL_INVARIANTS: readonly VLevelInvariant[] = [
   {
     id: "V3",
     meaning:
-      "Champion #1 du groupe [modèle+énergie] = 1 VÉHICULE COMPLET (marque+modèle+motorisation+ch+années) " +
-      "= 1 page R2 /pieces/{gamme}/{marque}/{modele}/{type}.html. Tri canonique compareV3Champions " +
-      "(volume DESC → longueur keyword ASC → keyword ASC). Volume 0 autorisé.",
+      "Champion #1 du groupe [modèle+énergie] = 1 VÉHICULE COMPLET (marque+modèle+motorisation+ch+années). " +
+      "Dispatché sur sa fiche véhicule R8 /constructeurs/{marque}/{modele}/{type}.html + ses pages produit " +
+      "R2 /pieces/{gamme}/{marque}/{modele}/{type}.html ({@link VLEVEL_PAGE_DISPATCH}). Tri canonique " +
+      "compareV3Champions (volume DESC → longueur keyword ASC → keyword ASC). Volume 0 autorisé.",
     built: true,
   },
   {

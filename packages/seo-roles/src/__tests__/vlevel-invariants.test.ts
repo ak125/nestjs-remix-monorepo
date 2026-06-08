@@ -19,6 +19,7 @@ import {
   V_LEVEL_IDS,
   VLEVEL_V2_CAP,
   VLEVEL_RANKING_SIGNALS,
+  VLEVEL_PAGE_DISPATCH,
   V_GROUP_KEY,
   vLevelGroupKey,
   compareV3Champions,
@@ -191,27 +192,35 @@ describe("compareV3Champions — tie-break déterministe (volume DESC → longue
   });
 });
 
-describe("Méthode V-Level — doctrine figée (signaux recherche, jamais ventes)", () => {
-  test("signal primaire = volume de recherche KW ; affinage Trends + web", () => {
-    assert.equal(VLEVEL_RANKING_SIGNALS.primary, "kw_search_volume");
-    assert.deepEqual([...VLEVEL_RANKING_SIGNALS.refine], ["google_trends", "web_search"]);
+describe("Méthode V-Level — doctrine figée (objectif top-vente, mesuré par recherche, dispatch constructeur)", () => {
+  test("objectif = TOP-VENTE ; mesure = recherche KW (vivier) + Trends/web (affinage)", () => {
+    assert.equal(VLEVEL_RANKING_SIGNALS.goal, "top_vente");
+    assert.equal(VLEVEL_RANKING_SIGNALS.measurePrimary, "kw_search_volume");
+    assert.deepEqual([...VLEVEL_RANKING_SIGNALS.measureRefine], ["google_trends", "web_search"]);
   });
 
-  test("les VENTES sont explicitement EXCLUES du classement", () => {
-    assert.ok(VLEVEL_RANKING_SIGNALS.excluded.includes("sales"));
-    assert.ok(VLEVEL_RANKING_SIGNALS.excluded.includes("orders"));
+  test("les TABLES de vente ne sont PAS exploitables (proxy recherche à la place)", () => {
+    assert.equal(VLEVEL_RANKING_SIGNALS.notUsable, "sales_tables");
   });
 
-  test("V1 = niveau MODÈLE, classé recherche, jamais ventes, à construire", () => {
+  test("V1 = niveau MODÈLE, top-vente via recherche, page constructeur marque, à construire", () => {
     const v1 = V_LEVEL_INVARIANTS.find((v) => v.id === "V1")!;
     assert.match(v1.meaning, /MODÈLE/);
-    assert.match(v1.meaning, /jamais par ventes/);
+    assert.match(v1.meaning, /TOP-VENTE/);
+    assert.match(v1.meaning, /constructeurs/);
     assert.equal(v1.built, false);
   });
 
-  test("V3 = 1 véhicule complet = 1 page R2", () => {
+  test("V3 = 1 véhicule complet, dispatché fiche véhicule R8 constructeur + produit R2", () => {
     const v3 = V_LEVEL_INVARIANTS.find((v) => v.id === "V3")!;
     assert.match(v3.meaning, /VÉHICULE COMPLET/);
+    assert.match(v3.meaning, /constructeurs/);
     assert.match(v3.meaning, /R2/);
+  });
+
+  test("dispatch pages : V3→fiche véhicule, V2→gamme, V1→page marque + marketing", () => {
+    assert.match(VLEVEL_PAGE_DISPATCH.V3, /constructeurs/);
+    assert.match(VLEVEL_PAGE_DISPATCH.V1, /constructeurs/);
+    assert.match(VLEVEL_PAGE_DISPATCH.V1, /marketing/);
   });
 });
