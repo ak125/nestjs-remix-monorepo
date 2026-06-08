@@ -20,7 +20,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 // invariants V-Level canoniques (SoT) — mirrorés par reelection-pack, JAMAIS réinventés.
-import { VLEVEL_V2_CAP, vLevelGroupKey, compareV3Champions, modelMatchKey } from '@repo/seo-roles';
+import { VLEVEL_V2_CAP, vLevelGroupKey, compareV3Champions, modelMatchKey, selectV2Tier } from '@repo/seo-roles';
 
 const ROOT = process.cwd();
 const AUDIT_DIR = path.join(ROOT, 'audit'); // sortie runtime (decision-packs), non versionnée par défaut
@@ -582,15 +582,21 @@ async function reelectionPack(pgId: number): Promise<void> {
     for (let i = 1; i < group.length; i++) proposed.set(group[i].id, 'V4');
   }
   v3Champs.sort(compareV3Champions); // même tie-break déterministe → composition du cut V2 reproductible
-  const seen = new Set<string>();
-  let promoted = 0;
-  for (const c of v3Champs) {
-    const key = vLevelGroupKey(c.model, energyOf(c));
-    if (seen.has(key)) continue;
-    seen.add(key);
-    proposed.set(c.id, 'V2');
-    if (++promoted >= VLEVEL_V2_CAP) break;
-  }
+  // Cut V2 via la SoT unique (selectV2Tier, @repo/seo-roles) — MIROIR EXACT de gamme-vlevel.service.
+  // Plafond + validateV2Promotion (type_id résolu + énergie cohérente), sans backfill. Un champion
+  // recalé reste V3 (déjà posé ci-dessus) ; seuls les valides sont surclassés V2.
+  const { v2: v2Champs } = selectV2Tier(
+    v3Champs,
+    VLEVEL_V2_CAP,
+    (c) => vLevelGroupKey(c.model, energyOf(c)),
+    (c) => ({
+      isChampion: true, // par construction : c provient de v3Champs (champion in-group)
+      typeId: c.type_id,
+      keywordEnergy: c.keyword, // hint énergie depuis le TEXTE du mot-clé (ex. « gasoil »)
+      vehicleEnergy: c.type_id ? fuelMap.get(String(c.type_id)) ?? null : null,
+    }),
+  );
+  for (const c of v2Champs) proposed.set(c.id, 'V2');
 
   const rows = candidates.map((k) => {
     const np = proposed.get(k.id)!;

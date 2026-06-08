@@ -16,6 +16,7 @@ import {
   vLevelGroupKey,
   compareV3Champions,
   isKeywordEligibleForGamme,
+  selectV2Tier,
 } from '@repo/seo-roles';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 
@@ -239,27 +240,66 @@ export class GammeVLevelService extends SupabaseBaseService {
         }
       }
 
-      // 6. Promote top 10 V3 -> V2 (dedup by [model + energy])
-      // Même tie-break déterministe que l'in-group (cut V2 reproductible aux volumes ex-aequo).
+      // 6. Promote top-CAP V3 -> V2 via la SoT du cut (selectV2Tier, @repo/seo-roles).
+      // Même tie-break déterministe que l'in-group (cut V2 reproductible aux volumes ex-aequo)
+      // PUIS garde-fous objectifs validateV2Promotion : un champion type_id NULL ou à énergie
+      // incohérente (mot-clé gasoil ↔ véhicule essence) N'est PAS promu — il reste V3. Plafond
+      // sans backfill (« moins de V2 mais propres », owner 2026-06-08). Invariant V2 ⟹ V3.
       v3Champions.sort(compareV3Champions);
-      const seenModelEnergy = new Set<string>();
-      const top10: VLevelKeywordRow[] = [];
-      for (const kw of v3Champions) {
-        // Même clé canonique que le groupement (plus de divergence group/dedup en casse).
-        const modelEnergy = vLevelGroupKey(kw.model, kw.energy, {
-          gammeUniverselle,
-        });
-        if (seenModelEnergy.has(modelEnergy)) continue;
-        seenModelEnergy.add(modelEnergy);
-        top10.push(kw);
-        if (top10.length >= VLEVEL_V2_CAP) break;
+
+      // Énergie réelle du véhicule (auto_type.type_fuel) pour détecter energy_mismatch au cut.
+      const championTypeIds = [
+        ...new Set(
+          v3Champions
+            .map((c) => c.type_id)
+            .filter(Boolean)
+            .map(Number),
+        ),
+      ];
+      const championFuelMap = new Map<number, string>();
+      for (let i = 0; i < championTypeIds.length; i += 100) {
+        const batch = championTypeIds.slice(i, i + 100);
+        const { data: types } = await this.supabase
+          .from('auto_type')
+          .select('type_id, type_fuel')
+          .in('type_id', batch.map(String));
+        if (types) {
+          for (const t of types) {
+            if (t.type_fuel)
+              championFuelMap.set(Number(t.type_id), t.type_fuel);
+          }
+        }
       }
-      const top10Ids = new Set(top10.map((c) => c.id));
+
+      const { v2: v2Champions, rejected: v2Rejected } = selectV2Tier(
+        v3Champions,
+        VLEVEL_V2_CAP,
+        (kw) => vLevelGroupKey(kw.model, kw.energy, { gammeUniverselle }),
+        (kw) => ({
+          isChampion: true, // par construction : kw provient de v3Champions (champion in-group)
+          typeId: kw.type_id,
+          keywordEnergy: kw.keyword, // hint énergie depuis le TEXTE du mot-clé (ex. « gasoil »)
+          vehicleEnergy: kw.type_id
+            ? (championFuelMap.get(Number(kw.type_id)) ?? null)
+            : null,
+        }),
+      );
+      const v2Ids = new Set(v2Champions.map((c) => c.id));
 
       for (const update of updates) {
-        if (top10Ids.has(update.id)) {
+        if (v2Ids.has(update.id)) {
           update.v_level = 'V2';
         }
+      }
+
+      if (v2Rejected.length > 0) {
+        // No silent fallback : on TRACE les champions élite recalés (restent V3, pas promus).
+        this.logger.log(
+          `V2 cut gamme ${pgId}: ${v2Rejected.length} champion(s) élite recalé(s) (restent V3) — ` +
+            v2Rejected
+              .map((r) => `"${r.champion.keyword}" [${r.violations.join(',')}]`)
+              .join('; '),
+        );
       }
 
       // 7. Non-vehicle + generic vehicle + cross-gamme keywords: clear v_level

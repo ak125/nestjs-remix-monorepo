@@ -412,3 +412,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-r3-consolidation-evidence`
 - **Décision** : feat(seo): read-only GSC-backed R3 consolidation evidence matrix (10-gamme pilot)
 - **Sortie** : PR aucune | commits ca0232d4c
+
+## 2026-06-08 — docs/vlevel-method-freeze (auto)
+
+- **Branche** : `docs/vlevel-method-freeze`
+- **Décision** : docs(seo): vlevel — objectif top-vente (proxy recherche) + dispatch pages constructeur (+1 other commit)
+- **Sortie** : PR #898 | commits 1db293cf8 bd605b606
