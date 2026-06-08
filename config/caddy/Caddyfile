@@ -30,12 +30,17 @@
 
 # ===== REDIRECTION .FR VERS .COM =====
 automecanik.fr, www.automecanik.fr {
+    # TLS via Cloudflare Origin CA — plus d'ACME/expiration (incident 2026-06-08)
+    tls /etc/caddy/origin/origin.pem /etc/caddy/origin/origin.key
     redir https://www.automecanik.com{uri} permanent
 }
 
 # ===== SITE PRINCIPAL .COM =====
 automecanik.com, www.automecanik.com {
-    
+
+    # TLS via Cloudflare Origin CA — plus d'ACME/expiration (incident 2026-06-08, cert LE expiré)
+    tls /etc/caddy/origin/origin.pem /etc/caddy/origin/origin.key
+
     # Redirection apex vers www
     @apex host automecanik.com
     redir @apex https://www.automecanik.com{uri} permanent
