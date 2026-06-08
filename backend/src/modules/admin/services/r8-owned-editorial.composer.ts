@@ -35,6 +35,56 @@
 /** Min quality floor for owned editorial to be eligible (gatekeeper / conseil quality). */
 export const R8_OWNED_EDITORIAL_MIN_QUALITY = 75;
 
+// ── Gamme source (compatible gammes for owned editorial) ───────────────────
+
+/** Minimal gamme row consumed by `R8VehicleEnricherService.loadGammeEditorial()`. */
+export interface OwnedGammeSource {
+  pg_id: number;
+  pg_alias: string;
+  pg_name: string;
+  product_count: number;
+}
+
+/**
+ * Extract the compatible-gamme list for owned editorial from the cache RPC
+ * (`get_vehicle_page_data_cached`). The enricher's legacy `families` reads
+ * `compatible_families`, which the current RPC does NOT return — the gammes
+ * live under `popular_parts` (top, popularity-ranked) and, as a fallback,
+ * `catalog.families[].gammes[]`. Used ONLY by the flag-gated owned-editorial
+ * path; it does NOT touch the legacy `families` / catalog block. Pure +
+ * defensive: returns `[]` when neither source is present.
+ */
+export function extractGammeSourceFromRpc(
+  vehicleData: unknown,
+): OwnedGammeSource[] {
+  const vd = (vehicleData ?? {}) as Record<string, any>;
+  const popular = Array.isArray(vd.popular_parts) ? vd.popular_parts : [];
+  const catFamilies =
+    vd.catalog && Array.isArray(vd.catalog.families) ? vd.catalog.families : [];
+  const flattened = catFamilies.flatMap((f: any) =>
+    Array.isArray(f?.gammes) ? f.gammes : [],
+  );
+  const source = popular.length > 0 ? popular : flattened;
+  const out: OwnedGammeSource[] = [];
+  const seen = new Set<number>();
+  source.forEach((g: any, i: number) => {
+    const pgId = Number(g?.pg_id);
+    if (!Number.isFinite(pgId) || pgId <= 0 || seen.has(pgId)) return;
+    if (!g?.pg_alias || !g?.pg_name) return;
+    seen.add(pgId);
+    out.push({
+      pg_id: pgId,
+      pg_alias: String(g.pg_alias),
+      pg_name: String(g.pg_name),
+      // RPC carries no product_count here; preserve source order as a proxy
+      // (popular_parts is already popularity-ranked) so the anchor pick is stable.
+      product_count:
+        typeof g.product_count === 'number' ? g.product_count : 1000 - i,
+    });
+  });
+  return out;
+}
+
 // ── Inputs (plain data — the service maps DB rows into these) ──────────────
 
 export interface GammePurchaseGuide {

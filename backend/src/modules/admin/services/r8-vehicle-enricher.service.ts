@@ -44,6 +44,7 @@ import {
   buildOwnedSelectionGuide,
   buildOwnedEntretien,
   buildOwnedFaq,
+  extractGammeSourceFromRpc,
   type GammeEditorial,
   type MotorisationFacts,
 } from './r8-owned-editorial.composer';
@@ -252,9 +253,21 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       // editorial from the OWNED DB tables. OFF (default) → [] → existing path.
       const useOwnedEditorial =
         this.featureFlags?.r8OwnedEditorialEnabled ?? false;
+      // The cache RPC exposes compatible gammes under popular_parts /
+      // catalog.families[].gammes (NOT compatible_families), so legacy
+      // `families` is often empty. When so, source owned-editorial gammes from
+      // the RPC. Flag-gated only — never touches the legacy families/catalog block.
+      const ownedGammeSource =
+        useOwnedEditorial && topGammes.length === 0
+          ? extractGammeSourceFromRpc(vehicleData)
+          : topGammes;
       const gammeEditorials: GammeEditorial[] = useOwnedEditorial
         ? (
-            await Promise.all(topGammes.map((g) => this.loadGammeEditorial(g)))
+            await Promise.all(
+              ownedGammeSource
+                .slice(0, 5)
+                .map((g) => this.loadGammeEditorial(g)),
+            )
           ).filter((e): e is GammeEditorial => e !== null)
         : [];
 
