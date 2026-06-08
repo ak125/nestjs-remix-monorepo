@@ -254,9 +254,7 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
         this.featureFlags?.r8OwnedEditorialEnabled ?? false;
       const gammeEditorials: GammeEditorial[] = useOwnedEditorial
         ? (
-            await Promise.all(
-              topGammes.map((g) => this.loadGammeEditorial(g)),
-            )
+            await Promise.all(topGammes.map((g) => this.loadGammeEditorial(g)))
           ).filter((e): e is GammeEditorial => e !== null)
         : [];
 

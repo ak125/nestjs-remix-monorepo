@@ -120,7 +120,12 @@ export function parseOwnedFaq(value: unknown): FaqPair[] {
     const o = item as Record<string, unknown>;
     const q = (o.q ?? o.question) as unknown;
     const a = (o.a ?? o.answer) as unknown;
-    if (typeof q === 'string' && typeof a === 'string' && q.trim() && a.trim()) {
+    if (
+      typeof q === 'string' &&
+      typeof a === 'string' &&
+      q.trim() &&
+      a.trim()
+    ) {
       out.push({ q: q.trim(), a: a.trim() });
     }
   }
@@ -136,7 +141,9 @@ function powerFuelSuffix(facts: MotorisationFacts): string {
 
 function yearSpan(facts: MotorisationFacts): string {
   if (!facts.yearFrom) return '';
-  return facts.yearTo ? `${facts.yearFrom}–${facts.yearTo}` : `depuis ${facts.yearFrom}`;
+  return facts.yearTo
+    ? `${facts.yearFrom}–${facts.yearTo}`
+    : `depuis ${facts.yearFrom}`;
 }
 
 // ── Anchor selection ───────────────────────────────────────────────────────
@@ -197,9 +204,7 @@ export function buildOwnedSelectionGuide(
 
   const mistakes = asStringArray(pg?.anti_mistakes, 4);
   if (mistakes.length) {
-    parts.push(
-      `**À éviter :**\n${mistakes.map((m) => `- ${m}`).join('\n')}`,
-    );
+    parts.push(`**À éviter :**\n${mistakes.map((m) => `- ${m}`).join('\n')}`);
   }
 
   return {
@@ -245,7 +250,9 @@ export function buildOwnedEntretien(
 
   if (timingKm || timingYears) {
     const echeance = [timingKm, timingYears].filter(Boolean).join(' ou ');
-    parts.push(`**Échéance indicative :** ${echeance}.${timingNote ? ` ${timingNote}` : ''}`);
+    parts.push(
+      `**Échéance indicative :** ${echeance}.${timingNote ? ` ${timingNote}` : ''}`,
+    );
   } else if (timingNote) {
     parts.push(timingNote);
   }

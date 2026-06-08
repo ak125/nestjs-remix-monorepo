@@ -45,7 +45,10 @@ function gamme(over: Partial<GammeEditorial> = {}): GammeEditorial {
       timing_note: 'à vérifier plus tôt en usage urbain',
       anti_mistakes: ['Monter sans changer les disques usés'],
       faq: [
-        { q: 'Quand changer les plaquettes ?', a: 'Dès 3 mm d’épaisseur restante.' },
+        {
+          q: 'Quand changer les plaquettes ?',
+          a: 'Dès 3 mm d’épaisseur restante.',
+        },
         { question: 'Faut-il roder ?', answer: 'Oui, 200 km en douceur.' },
         { q: '', a: 'ignored' },
       ],
@@ -116,20 +119,26 @@ describe('buildOwnedSelectionGuide', () => {
     expect(block!.id).toBe('S_SELECTION_GUIDE');
     expect(block!.type).toBe('selection_help');
     // factual frame — only real values
-    expect(block!.renderedText).toContain('Renault Clio III 1.5 dCi 105 ch (diesel)');
+    expect(block!.renderedText).toContain(
+      'Renault Clio III 1.5 dCi 105 ch (diesel)',
+    );
     // real owned prose body
     expect(block!.renderedText).toContain('homologuées ECE R90');
     // criteria (string + object label) and anti-mistakes rendered
     expect(block!.renderedText).toContain('- Indice ECE R90');
     expect(block!.renderedText).toContain('- Compatibilité disque');
-    expect(block!.renderedText).toContain('Monter sans changer les disques usés');
+    expect(block!.renderedText).toContain(
+      'Monter sans changer les disques usés',
+    );
   });
 
   it('falls back to conseil content when how_to_choose missing', () => {
     const g = gamme();
     g.purchaseGuide!.how_to_choose = null;
     const block = buildOwnedSelectionGuide(g, facts);
-    expect(block!.renderedText).toContain('Conseil expert sur le freinage urbain.');
+    expect(block!.renderedText).toContain(
+      'Conseil expert sur le freinage urbain.',
+    );
   });
 
   it('returns null when neither how_to_choose nor conseil exists', () => {
@@ -145,7 +154,9 @@ describe('buildOwnedEntretien', () => {
     expect(block).not.toBeNull();
     expect(block!.id).toBe('S_ENTRETIEN_CONTEXT');
     expect(block!.type).toBe('maintenance_context');
-    expect(block!.renderedText).toContain('Renault Clio III 1.5 dCi (2005–2014)');
+    expect(block!.renderedText).toContain(
+      'Renault Clio III 1.5 dCi (2005–2014)',
+    );
     expect(block!.renderedText).toContain('30 000 km ou 2 ans');
     expect(block!.renderedText).toContain('allongent la distance de freinage');
     expect(block!.renderedText).toContain('- Grincement au freinage');
@@ -175,7 +186,10 @@ describe('buildOwnedFaq', () => {
     // 2 unique questions despite 2 gammes
     expect(block!.renderedText).toContain('Quand changer les plaquettes ?');
     expect(block!.renderedText).toContain('Faut-il roder ?');
-    expect((block!.renderedText.match(/Quand changer les plaquettes \?/g) || []).length).toBe(1);
+    expect(
+      (block!.renderedText.match(/Quand changer les plaquettes \?/g) || [])
+        .length,
+    ).toBe(1);
   });
 
   it('returns null when fewer than 2 unique FAQ entries', () => {
@@ -187,7 +201,14 @@ describe('buildOwnedFaq', () => {
 
 describe('sibling distinctness signal', () => {
   it('same anchor gamme but different motorisation facts → different rendered frames', () => {
-    const sibling: MotorisationFacts = { ...facts, type: '1.2 16V', power: '75', fuel: 'essence', yearFrom: '2006', yearTo: '2012' };
+    const sibling: MotorisationFacts = {
+      ...facts,
+      type: '1.2 16V',
+      power: '75',
+      fuel: 'essence',
+      yearFrom: '2006',
+      yearTo: '2012',
+    };
     const a = buildOwnedSelectionGuide(gamme(), facts)!.renderedText;
     const b = buildOwnedSelectionGuide(gamme(), sibling)!.renderedText;
     expect(a).not.toEqual(b);
