@@ -98,6 +98,7 @@ export {
   V_LEVEL_IDS,
   type VLevelId,
   VLEVEL_V2_CAP,
+  VLEVEL_RANKING_SIGNALS,
   V_GROUP_KEY,
   vLevelGroupKey,
   compareV3Champions,

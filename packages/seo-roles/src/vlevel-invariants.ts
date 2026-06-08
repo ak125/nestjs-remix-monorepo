@@ -131,6 +131,21 @@ export function isKeywordEligibleForGamme(keyword: string, pgId: number): boolea
 }
 
 /**
+ * Signaux de classement V-Level (figés 2026-06-08, owner-validés). Le V-Level classe les
+ * véhicules par **DEMANDE DE RECHERCHE**, JAMAIS par ventes : les commandes sont par-pièce
+ * (`___xtr_order_line.orl_art_ref`), pas par-véhicule, et trop minces (~1,7k) → aucune
+ * attribution vente→véhicule fiable. Corroboré par le parc roulant FR (web search 2026-06).
+ *   - `kw_search_volume` = vivier + 1er tri (`__seo_keywords.volume`, via {@link compareV3Champions}).
+ *   - `google_trends` + `web_search` = AFFINAGE : départagent les ex-aequo KW (ex. 206 vs 207,
+ *     tous deux vol=500, mais 207 > 206 au parc réel), détectent le déclin, corroborent la réalité.
+ */
+export const VLEVEL_RANKING_SIGNALS = {
+  primary: "kw_search_volume",
+  refine: ["google_trends", "web_search"],
+  excluded: ["sales", "orders"],
+} as const;
+
+/**
  * Définition de chaque niveau (intention owner figée 2026-06-05).
  * `persisted` = présent en DB aujourd'hui ; `built` = produit par le pipeline aujourd'hui.
  */
@@ -144,18 +159,23 @@ export const V_LEVEL_INVARIANTS: readonly VLevelInvariant[] = [
   {
     id: "V1",
     meaning:
-      "Star multi-gammes : véhicule (type_id) qui est V2 dans beaucoup de gammes. À CONSTRUIRE (0 aujourd'hui).",
+      "Star multi-gammes au niveau MODÈLE : un modèle qui est V2 dans beaucoup de gammes (chaque gamme " +
+      "résout sa PROPRE variante-véhicule, donc V1 vit au niveau modèle, pas type_id). Classé par DEMANDE " +
+      "DE RECHERCHE ({@link VLEVEL_RANKING_SIGNALS}), jamais par ventes. Projection cross-gammes (pas un " +
+      "v_level stocké par ligne). À CONSTRUIRE (0 aujourd'hui).",
     built: false,
   },
   {
     id: "V2",
-    meaning: `Top ${VLEVEL_V2_CAP} des champions V3 de la gamme (dedup [modèle+énergie]). Les stars marketing.`,
+    meaning: `Top ${VLEVEL_V2_CAP} des champions V3 de la gamme (dedup [modèle+énergie]), classés par DEMANDE DE RECHERCHE (VLEVEL_RANKING_SIGNALS). Les stars marketing de la gamme.`,
     built: true,
   },
   {
     id: "V3",
     meaning:
-      "Champion #1 du groupe [modèle+énergie] (volume DESC, tie = keyword le plus court). Volume 0 autorisé.",
+      "Champion #1 du groupe [modèle+énergie] = 1 VÉHICULE COMPLET (marque+modèle+motorisation+ch+années) " +
+      "= 1 page R2 /pieces/{gamme}/{marque}/{modele}/{type}.html. Tri canonique compareV3Champions " +
+      "(volume DESC → longueur keyword ASC → keyword ASC). Volume 0 autorisé.",
     built: true,
   },
   {

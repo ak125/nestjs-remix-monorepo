@@ -18,6 +18,7 @@ import assert from "node:assert/strict";
 import {
   V_LEVEL_IDS,
   VLEVEL_V2_CAP,
+  VLEVEL_RANKING_SIGNALS,
   V_GROUP_KEY,
   vLevelGroupKey,
   compareV3Champions,
@@ -187,5 +188,30 @@ describe("compareV3Champions — tie-break déterministe (volume DESC → longue
   test("tolère volume/keyword null|undefined (0 / chaîne vide)", () => {
     assert.equal(compareV3Champions({ keyword: "", volume: 0 }, { keyword: "", volume: 0 }), 0);
     assert.ok(compareV3Champions({ keyword: "a" }, { keyword: "a", volume: 10 }) > 0);
+  });
+});
+
+describe("Méthode V-Level — doctrine figée (signaux recherche, jamais ventes)", () => {
+  test("signal primaire = volume de recherche KW ; affinage Trends + web", () => {
+    assert.equal(VLEVEL_RANKING_SIGNALS.primary, "kw_search_volume");
+    assert.deepEqual([...VLEVEL_RANKING_SIGNALS.refine], ["google_trends", "web_search"]);
+  });
+
+  test("les VENTES sont explicitement EXCLUES du classement", () => {
+    assert.ok(VLEVEL_RANKING_SIGNALS.excluded.includes("sales"));
+    assert.ok(VLEVEL_RANKING_SIGNALS.excluded.includes("orders"));
+  });
+
+  test("V1 = niveau MODÈLE, classé recherche, jamais ventes, à construire", () => {
+    const v1 = V_LEVEL_INVARIANTS.find((v) => v.id === "V1")!;
+    assert.match(v1.meaning, /MODÈLE/);
+    assert.match(v1.meaning, /jamais par ventes/);
+    assert.equal(v1.built, false);
+  });
+
+  test("V3 = 1 véhicule complet = 1 page R2", () => {
+    const v3 = V_LEVEL_INVARIANTS.find((v) => v.id === "V3")!;
+    assert.match(v3.meaning, /VÉHICULE COMPLET/);
+    assert.match(v3.meaning, /R2/);
   });
 });
