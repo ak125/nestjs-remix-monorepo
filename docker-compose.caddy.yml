@@ -11,6 +11,11 @@ services:
       # Configuration
       - ./config/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
 
+      # Cloudflare Origin CA cert (15 ans, hors ACME) — fichiers déposés sur le serveur,
+      # JAMAIS committés (.gitignored). Incident 2026-06-08 : cert LE expiré, renouvellement
+      # ACME impossible car origine firewall-locked aux IPs Cloudflare.
+      - ./config/caddy/origin:/etc/caddy/origin:ro
+
       # Données persistantes (certificats SSL)
       - caddy_data:/data
       - caddy_config:/config
