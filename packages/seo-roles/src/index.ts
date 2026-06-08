@@ -104,6 +104,8 @@ export {
   type V2PromotionCandidate,
   type V2Violation,
   validateV2Promotion,
+  type V2TierSelection,
+  selectV2Tier,
   V_GROUP_KEY,
   vLevelGroupKey,
   compareV3Champions,

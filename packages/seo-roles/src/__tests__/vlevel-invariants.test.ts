@@ -22,6 +22,7 @@ import {
   VLEVEL_PAGE_DISPATCH,
   VLEVEL_V2_PROMOTION,
   validateV2Promotion,
+  selectV2Tier,
   V_GROUP_KEY,
   vLevelGroupKey,
   compareV3Champions,
@@ -290,5 +291,90 @@ describe("Promotion V2 — invariant DUR « V2 ⟹ V3 » + affinage (on commence
     });
     assert.ok(!r.violations.includes("energy_mismatch"));
     assert.equal(r.ok, true);
+  });
+});
+
+describe("selectV2Tier — SoT du cut V2 (plafond sans backfill, V2 ⟹ V3 + garde-fous objectifs)", () => {
+  // Champion minimal tel que fourni par les 2 calculateurs canoniques (service recalc + pipeline).
+  type Champ = {
+    id: number;
+    keyword: string;
+    model: string;
+    energy: string;
+    type_id: string | number | null;
+    vehicleFuel: string | null; // auto_type.type_fuel, résolu par l'appelant (pas par selectV2Tier)
+  };
+  const groupKeyOf = (c: Champ) => vLevelGroupKey(c.model, c.energy);
+  // Miroir EXACT de la projection des calculateurs : keywordEnergy = TEXTE du mot-clé.
+  const toCandidate = (c: Champ) => ({
+    isChampion: true as const,
+    typeId: c.type_id,
+    keywordEnergy: c.keyword,
+    vehicleEnergy: c.vehicleFuel,
+  });
+  const champ = (over: Partial<Champ> & { id: number }): Champ => ({
+    keyword: `kw${over.id}`,
+    model: `model${over.id}`,
+    energy: "diesel",
+    type_id: String(1000 + over.id),
+    vehicleFuel: "Diesel",
+    ...over,
+  });
+
+  test("données propres : v2 = top-cap, aucun recalé (comportement préservé)", () => {
+    const champs = [champ({ id: 1 }), champ({ id: 2 }), champ({ id: 3 })];
+    const { v2, rejected } = selectV2Tier(champs, 10, groupKeyOf, toCandidate);
+    assert.deepEqual(v2.map((c) => c.id), [1, 2, 3]);
+    assert.equal(rejected.length, 0);
+  });
+
+  test("plafond, pas quota : invalide DANS le top-cap retiré SANS backfill (cap 3 → 2)", () => {
+    const champs = [
+      champ({ id: 1 }),
+      champ({ id: 2, type_id: null }), // unresolved_vehicle, dans le top-3
+      champ({ id: 3 }),
+      champ({ id: 4 }), // hors top-cap : ne doit PAS remonter combler le trou
+    ];
+    const { v2, rejected } = selectV2Tier(champs, 3, groupKeyOf, toCandidate);
+    assert.deepEqual(v2.map((c) => c.id), [1, 3], "v2 = valides du top-3, sans backfill de c4");
+    assert.equal(v2.length, 2, "« moins de V2 mais propres » (pas re-rempli à 3)");
+    assert.ok(!v2.some((c) => c.id === 4), "c4 (rang > cap) jamais promu");
+    assert.deepEqual(rejected.map((r) => r.champion.id), [2]);
+    assert.ok(rejected[0].violations.includes("unresolved_vehicle"));
+  });
+
+  test("energy_mismatch : « filtre a gasoil duster » sur véhicule essence → recalé (reste V3)", () => {
+    const duster = champ({
+      id: 9,
+      keyword: "filtre a gasoil duster",
+      model: "duster",
+      energy: "diesel",
+      type_id: "77163",
+      vehicleFuel: "Essence",
+    });
+    const { v2, rejected } = selectV2Tier([duster], 10, groupKeyOf, toCandidate);
+    assert.equal(v2.length, 0);
+    assert.equal(rejected.length, 1);
+    assert.ok(rejected[0].violations.includes("energy_mismatch"));
+  });
+
+  test("dédup défensive : 1 V2 max par groupe [model+energy]", () => {
+    const a = champ({ id: 1, model: "clio", energy: "diesel" });
+    const b = champ({ id: 2, model: "clio", energy: "diesel" }); // même groupe
+    const { v2 } = selectV2Tier([a, b], 10, groupKeyOf, toCandidate);
+    assert.deepEqual(v2.map((c) => c.id), [1], "le 2e du même groupe n'entre pas dans l'élite");
+  });
+
+  test("plafond respecté : jamais plus de cap V2, même avec surplus de champions valides", () => {
+    const champs = Array.from({ length: 15 }, (_, i) => champ({ id: i + 1 }));
+    const { v2 } = selectV2Tier(champs, VLEVEL_V2_CAP, groupKeyOf, toCandidate);
+    assert.equal(v2.length, VLEVEL_V2_CAP);
+  });
+
+  test("PURE : n'altère pas le tableau d'entrée", () => {
+    const champs = [champ({ id: 1 }), champ({ id: 2, type_id: null })];
+    const snapshot = champs.map((c) => c.id);
+    selectV2Tier(champs, 10, groupKeyOf, toCandidate);
+    assert.deepEqual(champs.map((c) => c.id), snapshot);
   });
 });
