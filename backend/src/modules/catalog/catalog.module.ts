@@ -15,6 +15,7 @@ import { PiecesDiagnosticController } from './controllers/pieces-diagnostic.cont
 import { CatalogIntegrityController } from './controllers/catalog-integrity.controller';
 import { VehicleHierarchyController } from './controllers/vehicle-hierarchy.controller'; // 🚗 API hiérarchie véhicules
 import { CompatibilityController } from './controllers/compatibility.controller'; // 🎯 API compatibilité pièce/véhicule
+import { UniversalCatalogController } from './controllers/universal-catalog.controller'; // 🧴 Section "Produits universels" (T2b)
 // import { PiecesDbController } from '../../pieces/pieces-db.controller'; // DÉSACTIVÉ - service manquant
 
 // ========================================
@@ -38,6 +39,7 @@ import { CacheWarmingService } from './services/cache-warming.service';
 import { CompatibilityService } from './services/compatibility.service'; // 🎯 Service compatibilité pièce/véhicule
 import { PopularGammesService } from './services/popular-gammes.service'; // 🔗 Service maillage SEO (découplage Catalog↔Vehicles)
 import { GammePricePreviewService } from './services/gamme-price-preview.service'; // 💰 Prix indicatifs gamme (conversion P0)
+import { UniversalCatalogService } from './services/universal-catalog.service'; // 🧴 Section "Produits universels" (T2b)
 
 /**
  * 📂 MODULE CATALOGUE CONSOLIDÉ
@@ -78,6 +80,7 @@ import { GammePricePreviewService } from './services/gamme-price-preview.service
     CatalogIntegrityController, // 🛡️ VALIDATION de l'intégrité des données
     VehicleHierarchyController, // 🚗 API hiérarchie véhicules pour pages motorisation
     CompatibilityController, // 🎯 API compatibilité pièce/véhicule (Pack Confiance V2)
+    UniversalCatalogController, // 🧴 Section "Produits universels" (T2b)
     // PiecesDbController, // DÉSACTIVÉ - service manquant
   ],
   providers: [
@@ -110,6 +113,8 @@ import { GammePricePreviewService } from './services/gamme-price-preview.service
     PopularGammesService,
     // 💰 PRICE PREVIEW SERVICE - Prix indicatifs sans véhicule (conversion P0)
     GammePricePreviewService,
+    // 🧴 UNIVERSAL CATALOG - Section "Produits universels" (T2b, flag-gated)
+    UniversalCatalogService,
     // Alias pour compatibilité
     { provide: 'PricingServiceV5UltimateFinal', useClass: PricingService },
   ],

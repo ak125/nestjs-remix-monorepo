@@ -32,6 +32,11 @@ export class FeatureFlagsService {
     return this.bool('SAFE_FALLBACK_ENABLED', false);
   }
 
+  /** "Produits universels" section (T2b). Default OFF — owner enables when validated. */
+  get universalSectionEnabled(): boolean {
+    return this.bool('SHOW_UNIVERSAL_SECTION', false);
+  }
+
   get canaryGammes(): string[] {
     return this.csv('CANARY_GAMMES');
   }
@@ -316,6 +321,7 @@ export class FeatureFlagsService {
     'HARD_GATES_ENABLED',
     'AUTO_REPAIR_ENABLED',
     'SAFE_FALLBACK_ENABLED',
+    'SHOW_UNIVERSAL_SECTION',
     'CANARY_GAMMES',
     'R1_CONTENT_PIPELINE_ENABLED',
     'BRIEF_GATES_ENABLED',
