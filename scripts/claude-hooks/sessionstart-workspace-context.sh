@@ -117,6 +117,12 @@ extract_section() {
   echo "_Source : .claude/top-priorities.md — mise à jour max 1×/sem_"
 } > /tmp/sessionstart-output.txt
 
+# Garde-taille MEMORY.md (Layer 0) — alerte ALERT-ONLY si re-gonflement >20KiB.
+# Émise hors du manifest borné (ligne courte, rare, jamais bloquante). Sœur de
+# rotate-log.sh. Réf project_memory_context_architecture (P0 ≤20KiB / P4 observe).
+MEM_FILE="${HOME}/.claude/projects/$(printf '%s' "$REPO_ROOT_CANON" | tr '/' '-')/memory/MEMORY.md"
+bash "$REPO_ROOT/scripts/claude-hooks/check-memory-size.sh" "$MEM_FILE" 2>/dev/null || true
+
 # Borne taille : sortie ≤ 2000 bytes (~500 tokens). Si dépasse → fail silencieux (exit 0)
 # avec message stderr ; ne JAMAIS bloquer la session sur ce défaut.
 SIZE=$(wc -c < /tmp/sessionstart-output.txt)
