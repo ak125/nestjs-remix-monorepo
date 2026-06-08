@@ -114,6 +114,24 @@ export class FeatureFlagsService {
     return this.bool('KEYWORD_DENSITY_GATE_ENABLED', false);
   }
 
+  // ── R8 Owned Editorial (Fix B — owned DB editorial × per-type facts) ──
+
+  /**
+   * Controls whether the R8 vehicle enricher composes its editorial sections
+   * (S_SELECTION_GUIDE / S_ENTRETIEN_CONTEXT / S_FAQ_DEDICATED) from OWNED DB
+   * editorial (`__seo_gamme_purchase_guide` + `__seo_gamme_conseil`, quality-gated)
+   * blended with per-motorisation facts, instead of the template / RAG-FAQ path.
+   *
+   * This gates the WRITE path (the enricher run), not the served read path:
+   * once blocks are persisted to `__seo_r8_pages`, they're served regardless.
+   * Default: false (safe for cold starts without .env). When a gamme has no
+   * publishable owned editorial, the enricher falls back to the existing path
+   * and logs `R8_OWNED_EDITORIAL_FALLBACK` (never silent — CLAUDE.md no-silent-fallback).
+   */
+  get r8OwnedEditorialEnabled(): boolean {
+    return this.bool('R8_OWNED_EDITORIAL_ENABLED', false);
+  }
+
   // ── Conseil Pack flags ──
 
   get conseilPackEnabled(): boolean {
@@ -318,6 +336,7 @@ export class FeatureFlagsService {
     'SAFE_FALLBACK_ENABLED',
     'CANARY_GAMMES',
     'R1_CONTENT_PIPELINE_ENABLED',
+    'R8_OWNED_EDITORIAL_ENABLED',
     'BRIEF_GATES_ENABLED',
     'BRIEF_GATES_OBSERVE_ONLY',
     'RAG_CATCHUP_ENABLED',
