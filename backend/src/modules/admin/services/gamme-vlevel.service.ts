@@ -16,6 +16,7 @@ import {
   vLevelGroupKey,
   compareV3Champions,
   isKeywordEligibleForGamme,
+  isVLevelEligibleVehicle,
   selectV2Tier,
 } from '@repo/seo-roles';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
@@ -174,15 +175,17 @@ export class GammeVLevelService extends SupabaseBaseService {
       const vehicleKws = allKeywords.filter((kw) => kw.type === 'vehicle');
       const nonVehicleKws = allKeywords.filter((kw) => kw.type !== 'vehicle');
 
-      // 3. V-levels = keywords with motorisation ONLY (never generic)
-      // A keyword is "specific" if it mentions engine/fuel/hp patterns
-      const MOTOR_PATTERN =
-        /(\d+\.\d+|hdi|dci|tdi|cdi|tce|tsi|vti|puretech|tfsi|gti|vtec|mpi|d4d|jtd|cdti|crdi|dtec|\d+\s*ch|\d+\s*cv)/i;
+      // 3. V-Level election eligibility = keyword RESOLVES TO A PRECISE VEHICLE :
+      // motorisation in the TEXT, OR a resolved type_id (a type_id IS a motorisation/
+      // variant). SoT @repo/seo-roles `isVLevelEligibleVehicle` — fixes the historical
+      // TEXT-only gate (`MOTOR_PATTERN`) that wrongly declassed RESOLVED vehicles whose
+      // keyword is model-only (incident 2026-06-08 pg424: 104/284 resolved → NULL).
       const motorKws = vehicleKws.filter((kw) =>
-        MOTOR_PATTERN.test(kw.keyword || ''),
+        isVLevelEligibleVehicle({ keyword: kw.keyword, typeId: kw.type_id }),
       );
       const genericVehicleKws = vehicleKws.filter(
-        (kw) => !MOTOR_PATTERN.test(kw.keyword || ''),
+        (kw) =>
+          !isVLevelEligibleVehicle({ keyword: kw.keyword, typeId: kw.type_id }),
       );
 
       // CSV motor keywords only (V5 is computed dynamically, not persisted).
@@ -308,6 +311,20 @@ export class GammeVLevelService extends SupabaseBaseService {
       }
       for (const kw of genericVehicleKws) {
         updates.push({ id: kw.id, v_level: null, score_seo: null });
+      }
+      if (genericVehicleKws.length > 0) {
+        // No silent fallback : un model-only NON résolu (ni motif moteur, ni type_id) n'est pas
+        // élu — il RELÈVE de l'ATTRIBUTION de motorisation (règle owner : Google Trends/Search /
+        // demande, via decision-pack/generics-pack + web-evidence seed), PAS d'un recalc.
+        // On TRACE pour le pipeline d'attribution (jamais un déclassement silencieux).
+        this.logger.log(
+          `V-Level gamme ${pgId}: ${genericVehicleKws.length} keyword(s) model-only NON résolu(s) -> ` +
+            `v_level NULL, EN ATTENTE d'attribution motorisation (decision-pack/generics-pack). ` +
+            `Ex: ${genericVehicleKws
+              .slice(0, 3)
+              .map((k) => `"${k.keyword}"`)
+              .join(', ')}`,
+        );
       }
       // cross-gamme (keyword d'une autre pièce) : déclassé, jamais champion de cette gamme (anti re-contamination)
       for (const kw of crossGammeKws) {
