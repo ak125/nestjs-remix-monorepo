@@ -80,7 +80,10 @@ function loadFeed(path: string): FeedRow[] {
 
 async function main(): Promise<void> {
   const cfg = getSupplierConnectorConfig(req('SUPPLIER_SPL'));
-  if (!cfg) throw new Error(`no connector cfg for SUPPLIER_SPL=${process.env.SUPPLIER_SPL}`);
+  if (!cfg)
+    throw new Error(
+      `no connector cfg for SUPPLIER_SPL=${process.env.SUPPLIER_SPL}`,
+    );
   if (cfg.platform !== 'inoshop')
     throw new Error(
       `supplier ${cfg.supplierId} platform '${cfg.platform}' has no bulk /search route — classifier supports 'inoshop' only`,
@@ -222,7 +225,8 @@ async function main(): Promise<void> {
       }
     }
     await sleep(4000 + Math.floor(Math.random() * 4000)); // 4-8s anti-ban
-    if (batches % 50 === 0) await sleep(20000 + Math.floor(Math.random() * 20000));
+    if (batches % 50 === 0)
+      await sleep(20000 + Math.floor(Math.random() * 20000));
   }
   await connector.close();
   const durationS = Math.round((Date.now() - t0) / 1000);

@@ -109,7 +109,7 @@ describe('parseSearchHtml', () => {
 
 describe('isBrandRow', () => {
   const row = (marque: string | null, mrq: string | null): SearchRow =>
-    ({ marque, mrq } as SearchRow);
+    ({ marque, mrq }) as SearchRow;
   it('matches on brand label', () => {
     expect(isBrandRow(row('NK', null), NK)).toBe(true);
   });
@@ -147,11 +147,17 @@ describe('matchBrandRow', () => {
       libelle: null,
       sousFamille: null,
       icon: o.icon ?? null,
-    } as SearchRow);
+    }) as SearchRow;
 
   it('EAN-first lock (brand-checked)', () => {
     const rows = [
-      mk({ code: 'SBS1', refFournisseur: '1', marque: 'NK', ean: 'E1', dispoType: 'ag' }),
+      mk({
+        code: 'SBS1',
+        refFournisseur: '1',
+        marque: 'NK',
+        ean: 'E1',
+        dispoType: 'ag',
+      }),
       mk({ code: 'V1', refFournisseur: '1', marque: 'VALEO', ean: 'E2' }),
     ];
     const { row, kind } = matchBrandRow(rows, '1', 'E1', NK);
@@ -163,7 +169,13 @@ describe('matchBrandRow', () => {
     // feed EAN matches only a VALEO row; our NK row shares the ref but not the EAN
     const rows = [
       mk({ code: 'V1', refFournisseur: '1', marque: 'VALEO', ean: 'EX' }),
-      mk({ code: 'SBS1', refFournisseur: '1', marque: 'NK', ean: 'EY', dispoType: 'ag' }),
+      mk({
+        code: 'SBS1',
+        refFournisseur: '1',
+        marque: 'NK',
+        ean: 'EY',
+        dispoType: 'ag',
+      }),
     ];
     const { row, kind } = matchBrandRow(rows, '1', 'EX', NK);
     expect(kind).toBe('REF_BRAND');
@@ -171,14 +183,21 @@ describe('matchBrandRow', () => {
   });
 
   it('REF_BRAND when no feed EAN but a single NK SKU', () => {
-    const rows = [mk({ code: 'SBS1', refFournisseur: '9', marque: 'NK', dispoType: 'grp' })];
+    const rows = [
+      mk({ code: 'SBS1', refFournisseur: '9', marque: 'NK', dispoType: 'grp' }),
+    ];
     expect(matchBrandRow(rows, '9', null, NK).kind).toBe('REF_BRAND');
   });
 
   it('REF_BRAND_AMBIGUOUS when no EAN lock and several NK SKUs share the ref', () => {
     const rows = [
       mk({ code: 'SBS1', refFournisseur: '9', marque: 'NK', dispoType: 'ag' }),
-      mk({ code: 'SBS2', refFournisseur: '9', marque: 'SBS', dispoType: 'grp' }),
+      mk({
+        code: 'SBS2',
+        refFournisseur: '9',
+        marque: 'SBS',
+        dispoType: 'grp',
+      }),
     ];
     expect(matchBrandRow(rows, '9', null, NK).kind).toBe('REF_BRAND_AMBIGUOUS');
   });
@@ -198,34 +217,54 @@ describe('matchBrandRow', () => {
 
 describe('classifyForActivation (no-false-in-stock invariant)', () => {
   const row = (dispo: string | null, icon: string | null): SearchRow =>
-    ({ dispoType: dispo, icon } as SearchRow);
+    ({ dispoType: dispo, icon }) as SearchRow;
 
   it('ag + vert → CONFIRMED_AG', () => {
-    expect(classifyForActivation(row('ag', '/stock/vert.png')).bucket).toBe('CONFIRMED_AG');
+    expect(classifyForActivation(row('ag', '/stock/vert.png')).bucket).toBe(
+      'CONFIRMED_AG',
+    );
   });
   it('grp + vert+ → CONFIRMED_GRP', () => {
-    expect(classifyForActivation(row('grp', '/stock/vert+.png')).bucket).toBe('CONFIRMED_GRP');
+    expect(classifyForActivation(row('grp', '/stock/vert+.png')).bucket).toBe(
+      'CONFIRMED_GRP',
+    );
   });
   it('ag WITHOUT a green icon → REVIEW_NO_SIGNAL (never auto-sell on dispo alone)', () => {
-    expect(classifyForActivation(row('ag', '/stock/orange.png')).bucket).toBe('REVIEW_NO_SIGNAL');
-    expect(classifyForActivation(row('grp', null)).bucket).toBe('REVIEW_NO_SIGNAL');
+    expect(classifyForActivation(row('ag', '/stock/orange.png')).bucket).toBe(
+      'REVIEW_NO_SIGNAL',
+    );
+    expect(classifyForActivation(row('grp', null)).bucket).toBe(
+      'REVIEW_NO_SIGNAL',
+    );
   });
   it('ag + rouge → REVIEW_CONTRADICTION', () => {
-    expect(classifyForActivation(row('ag', '/stock/rouge.png')).bucket).toBe('REVIEW_CONTRADICTION');
+    expect(classifyForActivation(row('ag', '/stock/rouge.png')).bucket).toBe(
+      'REVIEW_CONTRADICTION',
+    );
   });
   it('none + (rouge/none) → BLOCK_NONE', () => {
-    expect(classifyForActivation(row('none', '/stock/rouge.png')).bucket).toBe('BLOCK_NONE');
+    expect(classifyForActivation(row('none', '/stock/rouge.png')).bucket).toBe(
+      'BLOCK_NONE',
+    );
     expect(classifyForActivation(row('none', null)).bucket).toBe('BLOCK_NONE');
   });
   it('none + green → REVIEW_CONTRADICTION (mis-block guard)', () => {
-    expect(classifyForActivation(row('none', '/stock/vert.png')).bucket).toBe('REVIEW_CONTRADICTION');
+    expect(classifyForActivation(row('none', '/stock/vert.png')).bucket).toBe(
+      'REVIEW_CONTRADICTION',
+    );
   });
   it('arrivage → REVIEW_ARRIVAGE (never auto-PREORDER)', () => {
-    expect(classifyForActivation(row('arrivage', '/stock/transport.png')).bucket).toBe('REVIEW_ARRIVAGE');
+    expect(
+      classifyForActivation(row('arrivage', '/stock/transport.png')).bucket,
+    ).toBe('REVIEW_ARRIVAGE');
   });
   it('unknown dispo + rouge → BLOCK_NONE; unknown dispo + other → REVIEW_NO_SIGNAL', () => {
-    expect(classifyForActivation(row(null, '/stock/rouge.png')).bucket).toBe('BLOCK_NONE');
-    expect(classifyForActivation(row(null, '/stock/orange.png')).bucket).toBe('REVIEW_NO_SIGNAL');
+    expect(classifyForActivation(row(null, '/stock/rouge.png')).bucket).toBe(
+      'BLOCK_NONE',
+    );
+    expect(classifyForActivation(row(null, '/stock/orange.png')).bucket).toBe(
+      'REVIEW_NO_SIGNAL',
+    );
   });
 });
 
@@ -235,7 +274,17 @@ describe('verdictForRef (end-to-end)', () => {
 
   it('CONFIRMED via EAN lock + green', () => {
     const rows = parseSearchHtml(
-      articleHtml({ code: 'SBS1', ref: '1', marque: 'NK', ean: 'E1', dispo: 'ag', prix: '8.5' }, 'vert'),
+      articleHtml(
+        {
+          code: 'SBS1',
+          ref: '1',
+          marque: 'NK',
+          ean: 'E1',
+          dispo: 'ag',
+          prix: '8.5',
+        },
+        'vert',
+      ),
     );
     const v = verdictForRef(rows, '1', 'E1', NK);
     expect(v.bucket).toBe('CONFIRMED_AG');
@@ -245,8 +294,14 @@ describe('verdictForRef (end-to-end)', () => {
 
   it('ambiguous ref+brand match holds a would-be CONFIRMED in REVIEW_NO_EAN', () => {
     const rows = parseSearchHtml(
-      articleHtml({ code: 'SBS1', ref: '9', marque: 'NK', dispo: 'ag' }, 'vert') +
-        articleHtml({ code: 'SBS2', ref: '9', marque: 'NK', dispo: 'grp' }, 'vert+'),
+      articleHtml(
+        { code: 'SBS1', ref: '9', marque: 'NK', dispo: 'ag' },
+        'vert',
+      ) +
+        articleHtml(
+          { code: 'SBS2', ref: '9', marque: 'NK', dispo: 'grp' },
+          'vert+',
+        ),
     );
     const v = verdictForRef(rows, '9', null, NK);
     expect(v.matchKind).toBe('REF_BRAND_AMBIGUOUS');
@@ -255,14 +310,23 @@ describe('verdictForRef (end-to-end)', () => {
   });
 
   it('FALSE_MATCH → REVIEW_FALSE_MATCH, NOT_FOUND → REVIEW_NOT_FOUND', () => {
-    const rows = parseSearchHtml(articleHtml({ code: 'V1', ref: '5', marque: 'VALEO' }, 'vert'));
-    expect(verdictForRef(rows, '5', null, NK).bucket).toBe('REVIEW_FALSE_MATCH');
-    expect(verdictForRef(rows, 'absent', null, NK).bucket).toBe('REVIEW_NOT_FOUND');
+    const rows = parseSearchHtml(
+      articleHtml({ code: 'V1', ref: '5', marque: 'VALEO' }, 'vert'),
+    );
+    expect(verdictForRef(rows, '5', null, NK).bucket).toBe(
+      'REVIEW_FALSE_MATCH',
+    );
+    expect(verdictForRef(rows, 'absent', null, NK).bucket).toBe(
+      'REVIEW_NOT_FOUND',
+    );
   });
 
   it('BLOCK_NONE → would map to pri_dispo 0 (rupture)', () => {
     const rows = parseSearchHtml(
-      articleHtml({ code: 'SBS1', ref: '1', marque: 'NK', ean: 'E1', dispo: 'none' }, 'rouge'),
+      articleHtml(
+        { code: 'SBS1', ref: '1', marque: 'NK', ean: 'E1', dispo: 'none' },
+        'rouge',
+      ),
     );
     expect(verdictForRef(rows, '1', 'E1', NK).bucket).toBe('BLOCK_NONE');
   });

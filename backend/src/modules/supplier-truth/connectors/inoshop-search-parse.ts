@@ -67,7 +67,9 @@ export interface BrandMatcher {
 
 /** Build a normalized matcher (uppercased token set) once, reuse per row. */
 export function brandTokenSet(brand: BrandMatcher): Set<string> {
-  return new Set(brand.tokens.map((t) => t.trim().toUpperCase()).filter(Boolean));
+  return new Set(
+    brand.tokens.map((t) => t.trim().toUpperCase()).filter(Boolean),
+  );
 }
 
 function attr(tag: string, name: string): string | null {
@@ -223,7 +225,10 @@ export interface RefVerdict {
   portalPrix: number | null;
 }
 
-const GREEN_ICONS: ReadonlySet<StockIcon> = new Set<StockIcon>(['vert', 'vert+']);
+const GREEN_ICONS: ReadonlySet<StockIcon> = new Set<StockIcon>([
+  'vert',
+  'vert+',
+]);
 
 /**
  * Classify a matched row into an activation bucket.
@@ -248,7 +253,11 @@ export function classifyForActivation(row: SearchRow): {
     if (icon === 'rouge')
       return { bucket: 'REVIEW_CONTRADICTION', reason: `${d}+rouge`, icon };
     // ag/grp without a GREEN corroborating icon → never auto-sell on dispo alone
-    return { bucket: 'REVIEW_NO_SIGNAL', reason: `${d}+noncorrob:${icon}`, icon };
+    return {
+      bucket: 'REVIEW_NO_SIGNAL',
+      reason: `${d}+noncorrob:${icon}`,
+      icon,
+    };
   }
   if (d === 'arrivage')
     return { bucket: 'REVIEW_ARRIVAGE', reason: `arrivage/${icon}`, icon };
@@ -259,7 +268,11 @@ export function classifyForActivation(row: SearchRow): {
   // unknown / empty dispo-type → conservative (never auto-confirm on icon alone)
   if (icon === 'rouge')
     return { bucket: 'BLOCK_NONE', reason: `nodispo/rouge`, icon };
-  return { bucket: 'REVIEW_NO_SIGNAL', reason: `dispo='${d}' icon=${icon}`, icon };
+  return {
+    bucket: 'REVIEW_NO_SIGNAL',
+    reason: `dispo='${d}' icon=${icon}`,
+    icon,
+  };
 }
 
 /** End-to-end: feed ref (+ean) + parsed rows + brand → one activation verdict. */
@@ -274,7 +287,8 @@ export function verdictForRef(
     return {
       ref: feedRef,
       ean: feedEan,
-      bucket: kind === 'FALSE_MATCH' ? 'REVIEW_FALSE_MATCH' : 'REVIEW_NOT_FOUND',
+      bucket:
+        kind === 'FALSE_MATCH' ? 'REVIEW_FALSE_MATCH' : 'REVIEW_NOT_FOUND',
       matchKind: kind,
       reason: kind,
       code: null,
