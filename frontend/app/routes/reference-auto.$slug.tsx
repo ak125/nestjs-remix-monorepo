@@ -11,6 +11,7 @@
 
 import {
   json,
+  redirect,
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
@@ -322,6 +323,25 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
   if (!slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
     throw new Response("Slug invalide", { status: 400 });
+  }
+
+  try {
+    // R4→R3 consolidation (flag-gated côté serveur, inerte par défaut) :
+    // 301 vers la page R3 conseils de la gamme liée quand le flag est ON ET
+    // que la page R3 existe (self-gate backend — jamais de redirect-vers-404).
+    // Mirror des patterns R5 (diagnostic-auto.$slug) et R6 (guide-achat).
+    const redirectRes = await fetch(
+      `${getInternalApiUrl("")}/api/seo/reference/redirect/${slug}`,
+      { headers: { Accept: "application/json" } },
+    );
+    if (redirectRes.ok) {
+      const target = await redirectRes.json();
+      if (target?.redirect_to) {
+        return redirect(target.redirect_to, 301);
+      }
+    }
+  } catch {
+    // probe réseau en échec → rendu normal de la page R4 (comportement actuel)
   }
 
   try {
