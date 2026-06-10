@@ -1,3 +1,7 @@
+// @role-purity-skip — fichier transverse multi-rôles : il génère les sitemaps
+// de TOUTES les familles (R4 référence, R5 diagnostic, blog, véhicules…) ;
+// son en-tête mélange légitimement les vocabulaires de rôles (latent,
+// pré-existant — surfacé par le scan changed-files de la PR #927).
 /**
  * 📄 SERVICE GÉNÉRATEURS STATIQUES SITEMAP V10
  *
