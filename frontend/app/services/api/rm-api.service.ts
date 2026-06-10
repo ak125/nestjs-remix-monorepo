@@ -123,6 +123,10 @@ export interface RmProductV2 extends RmProduct {
   image: string;
   filtre_gamme: string;
   is_accessory: boolean;
+  // Statut de stock dérivé de pri_dispo : '1'→IN_STOCK · '2'→LOW_STOCK ·
+  // '3'→PREORDER · sinon OUT_OF_STOCK. Sert au gate d'indexabilité R2
+  // (sellable = stock_status != OUT_OF_STOCK + price_ttc > 0).
+  stock_status: string;
 }
 
 export interface RmGroupedPiece {

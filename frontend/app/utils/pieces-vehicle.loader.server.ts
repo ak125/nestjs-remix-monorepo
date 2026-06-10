@@ -260,11 +260,11 @@ export async function piecesVehicleLoader({
     // long-TTL caching of a transient blip (canon: no silent fallback).
     type RmAlternativesResponse = {
       success: boolean;
-      version?: 'v2';
+      version?: "v2";
       etag?: string;
-      alternativeGammes: NoProductsData['alternativeGammes'];
-      alternativeVehicles: NoProductsData['alternativeVehicles'];
-      relatedModels: NoProductsData['relatedModels'];
+      alternativeGammes: NoProductsData["alternativeGammes"];
+      alternativeVehicles: NoProductsData["alternativeVehicles"];
+      relatedModels: NoProductsData["relatedModels"];
     };
     let alternativesData: RmAlternativesResponse | null = null;
     let alternativesFetchOk = false;
@@ -272,7 +272,7 @@ export async function piecesVehicleLoader({
       const altResp = await fetch(
         `http://127.0.0.1:3000/api/rm/alternatives?gamme_id=${gammeId}&type_id=${vehicleIds.typeId}&limit=12`,
         {
-          headers: { Accept: 'application/json' },
+          headers: { Accept: "application/json" },
           signal: AbortSignal.timeout(3000),
         },
       );
@@ -305,19 +305,19 @@ export async function piecesVehicleLoader({
       marqueName: vi?.marqueName ?? _marqueData.alias.replace(/-/g, " "),
       modeleName: vi?.modeleName ?? _modeleData.alias.replace(/-/g, " "),
       typeName: vi?.typeName ?? _typeData.alias.replace(/-/g, " "),
-      typeFuel: vi?.typeFuel ?? '',
-      typePowerPs: vi?.typePowerPs ?? '',
-      yearFrom: vi?.typeYearFrom ?? '',
-      yearTo: vi?.typeYearTo ?? '',
+      typeFuel: vi?.typeFuel ?? "",
+      typePowerPs: vi?.typePowerPs ?? "",
+      yearFrom: vi?.typeYearFrom ?? "",
+      yearTo: vi?.typeYearTo ?? "",
     };
 
     // Beacon télémétrie fire-and-forget (n'attend jamais)
-    void fetch('http://127.0.0.1:3000/api/rm/alternatives/track-soft-404', {
-      method: 'POST',
+    void fetch("http://127.0.0.1:3000/api/rm/alternatives/track-soft-404", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'user-agent': request.headers.get('user-agent') ?? '',
-        referer: request.headers.get('referer') ?? '',
+        "Content-Type": "application/json",
+        "user-agent": request.headers.get("user-agent") ?? "",
+        referer: request.headers.get("referer") ?? "",
       },
       body: JSON.stringify({ pg_id: gammeId, type_id: vehicleIds.typeId }),
     }).catch(() => {
@@ -328,7 +328,10 @@ export async function piecesVehicleLoader({
     const alternativeVehicles = alternativesData?.alternativeVehicles ?? [];
     const relatedModels = alternativesData?.relatedModels ?? [];
     const hasAlternatives =
-      alternativeGammes.length + alternativeVehicles.length + relatedModels.length > 0;
+      alternativeGammes.length +
+        alternativeVehicles.length +
+        relatedModels.length >
+      0;
 
     // Canon: cache TTL must reflect payload confidence — no silent fallback,
     // no long-TTL on error paths (feedback_no_long_ttl_cache_on_error_paths).
@@ -484,6 +487,17 @@ export async function piecesVehicleLoader({
         }
       : null;
 
+    // R2 indexabilité (flag SEO_R2_SELLABLE_NOINDEX, OFF par défaut) : nombre
+    // de produits VENDABLES = pri_dispo IN ('1','2','3') (→ stock_status !=
+    // OUT_OF_STOCK) + prix. Les vendables sont triés en tête (score dispo DESC),
+    // seul le tail OUT_OF_STOCK est tronqué par le LIMIT → sellableCount===0
+    // est fiable. Les produits compatibles restent affichés (UX) ; seule
+    // l'indexabilité bascule. Décision par-requête → auto-réparante.
+    const sellableCount = (rmV2Response.products ?? []).filter(
+      (p) => p.stock_status !== "OUT_OF_STOCK" && (p.price_ttc ?? 0) > 0,
+    ).length;
+    const sellableGateEnabled = process.env.SEO_R2_SELLABLE_NOINDEX === "on";
+
     // LCP OPTIMIZATION V6: defer() pour streamer donnees non-critiques
     // Donnees critiques (vehicle, pieces, seo) : retournees immediatement
     // Donnees non-critiques (relatedArticles, blogArticle) : streamees apres le first paint
@@ -542,6 +556,9 @@ export async function piecesVehicleLoader({
           rmDuration: rmV2Response.duration_ms,
         },
         dataQuality: rmV2Response.validation?.dataQuality?.quality ?? 0,
+        // R2 indexabilité (flag SEO_R2_SELLABLE_NOINDEX) — consommés par le robots meta
+        sellableCount,
+        sellableGateEnabled,
 
         // === DONNEES STREAMEES (non-bloquantes, chargees en background) ===
         // LCP: blogData deferred (below-fold, Googlebot execute JS)

@@ -125,12 +125,15 @@ export function buildPiecesVehicleMeta(
     { property: "og:title", content: d.seo.title },
     { property: "og:description", content: d.seo.description },
     { property: "og:url", content: canonicalUrl },
-    // Robots: index si 2+ produits, OU si 1 produit avec qualite donnees suffisante
-    // Pages 2+ produits ont ~300 mots SSR (FAQ, guide, compatibilite)
+    // Robots: index si 2+ produits OU 1 produit avec qualite donnees suffisante,
+    // ET (flag SEO_R2_SELLABLE_NOINDEX) au moins 1 produit vendable
+    // (pri_dispo '1'|'2'|'3' → stock_status != OUT_OF_STOCK + prix). Flag OFF
+    // (defaut) → clause vendabilite neutre → robots identique a l'existant.
     {
       name: "robots",
       content:
-        d.count >= 2 || (d.count === 1 && (d.dataQuality ?? 0) >= 50)
+        (d.count >= 2 || (d.count === 1 && (d.dataQuality ?? 0) >= 50)) &&
+        (!d.sellableGateEnabled || (d.sellableCount ?? 0) >= 1)
           ? "index, follow"
           : "noindex, follow",
     },
