@@ -59,6 +59,11 @@ describe('GammeResponseBuilderService — SEO chain shadow mode (PR-5)', () => {
     const chainFlags = new SeoFeatureFlagRegistry();
 
     const dummy = {} as never;
+    // SeoReadyGammeService stub — promotion OFF so the additive kw-path stays inert here.
+    const seoReadyGamme = {
+      isPromoteEnabled: () => false,
+      isSeoReady: async () => false,
+    } as never;
     return new GammeResponseBuilderService(
       dummy, // GammeDataTransformerService
       dummy, // GammeRpcService
@@ -68,6 +73,7 @@ describe('GammeResponseBuilderService — SEO chain shadow mode (PR-5)', () => {
       dummy, // R1RelatedResourcesService
       chainOrchestrator as never,
       chainFlags,
+      seoReadyGamme, // SeoReadyGammeService
     );
   }
 
