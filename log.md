@@ -424,3 +424,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/rack-images-recovery-runbook-and-ingester`
 - **Décision** : docs(ops): rack-images brand recovery runbook (INC-2026-015) (+1 other commit)
 - **Sortie** : PR #924 | commits aac5fc7dd 1082519ac
+
+## 2026-06-10 — feat/rack-images-recovery-runbook-and-ingester (auto)
+
+- **Branche** : `feat/rack-images-recovery-runbook-and-ingester`
+- **Décision** : docs(ops): runbook V5 — verify modal gallery + get_piece_detail display filter dep (+5 other commits)
+- **Sortie** : PR #924 | commits 4b349094f dd4de4159 9f43a6bd8 4330d2ba6 aac5fc7dd 1082519ac
