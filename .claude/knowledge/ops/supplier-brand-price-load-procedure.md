@@ -11,7 +11,7 @@ sources:
   - backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts  # bulk-search parser + activation classifier (brand-generic)
   - backend/src/modules/supplier-truth/connectors/supplier-registry.ts
   - /opt/automecanik/data/tecdoc/
-last_scan: 2026-06-08
+last_scan: 2026-06-10
 ---
 
 # Supplier Brand Price-Load Procedure
@@ -80,10 +80,11 @@ doit PAS rendre la pièce vendable tant que la dispo n'est pas vérifiée. Donc 
 - **Priorité de vérification** : les réfs **réellement affichables/vendables**
   (storefront), pas un top-N générique — pas besoin de couvrir 100 % du fichier.
 
-> ⚠️ **Le module gouverné active `pri_dispo='1'` au commit** (`pricing_commit_chunk`).
-> Pour respecter « import ≠ vendable », l'import doit pouvoir écrire en **pending**
-> (option d'activation paramétrable, défaut **non-activant**) — **changement
-> gouverné à livrer** (sinon : import puis demote immédiat des non-confirmées).
+> ✅ **Livré** (`ImportRequest.activate`, défaut **false** = PENDING — prouvé
+> MECAFILTER + VENEPORTE) : le commit écrit `pri_dispo='0'` + `pending_stock_check`
+> (INSERT) / préserve la dispo (UPDATE) → coût en base, **non vendable**.
+> `activate:true` reste owner-gated (réfs portal-CONFIRMED uniquement). Rendre
+> vendable = endpoint séparé `POST /api/admin/pricing/activate/{dry-run,commit,rollback}`.
 
 > ⚠️ **Dette storefront — traitée par #850** : `hasStockAvailable()` était hardcodé
 > `true` (« flux tendu ») → une pièce affichée sans prix vendable apparaissait à
@@ -120,6 +121,33 @@ Formule canon (module L1, en cents) : `achat = px_base×(1−remise)` ;
 `vente_ht = round(achat×(1+marge))` ; remise par (marque×sous-famille) ;
 grille = `MARGE_NEW_2021.xls`. ⚠️ **Valider l'unité `px_base`** (pack vs pièce).
 
+### 1bis — EAN-13 : reconstruire le check digit depuis la DB `[CRITICAL]`
+
+`pieces_ref_ean.pre_code_ean` stocke l'EAN-13 **SANS chiffre de contrôle** (12
+chars — constaté sur toutes les marques vérifiées : pm 3040, 3080, 4900). Or
+l'EAN-lock du parser (`inoshop-search-parse.ts`) est une **égalité stricte** avec
+le `data-ean` portail (13 chars) → un feed généré depuis la DB sans reconstruction
+**perd le verrou EAN** (tout retombe en REF_BRAND / REVIEW). Reconstruction
+(validée **0 mismatch sur 2 982 réfs** MECAFILTER DB↔xlsx, 2026-06-10) :
+
+```sql
+-- d13 = (10 − Σ(d_i × poids alterné 1/3) mod 10) mod 10
+SELECT pre_code_ean || (((10 - (
+  SELECT sum(substr(pre_code_ean,i,1)::int * CASE WHEN i % 2 = 1 THEN 1 ELSE 3 END)
+  FROM generate_series(1,12) i) % 10) % 10))::text AS ean13
+WHERE pre_code_ean ~ '^[0-9]{12}$';
+```
+
+Règles feed CSV (le parser du worker est un `split(',')` naïf) :
+
+- EAN absent → champ **VIDE non-quoté** (psql : laisser NULL — **jamais** `''`,
+  que `\copy` sort en `""` quoted, lu comme un EAN littéral de 2 chars).
+- `ORDER BY ref` (checkpoint resume stable). Gencode xlsx **prioritaire** quand un
+  fichier fournisseur existe ; EAN DB reconstruit en complément des manquants.
+- Deux sources de feed : **xlsx fournisseur** (actives = `c_arret_gamme='N'` +
+  `px_base>0`, clé `c_art_fourn`, `gencode`=EAN-13) ou **catalogue DB** (pas de
+  fichier : `piece_ref` + EAN reconstruit, périmètre `piece_pm_id`).
+
 ## 2 — Vérif live portail (lecture seule, owner-gated)
 Deux outils complémentaires, **génériques** (tout `SUPPLIER_SPL` + `BRAND_TOKENS`),
 read-only, ne touchent **jamais** `pieces_price` :
@@ -149,15 +177,15 @@ read-only, ne touchent **jamais** `pieces_price` :
 par EAN** → corriger le fichier (ou exclure du 1er commit, repris en contrôle 30 j).
 
 ## 5 — Import gouverné (owner GO) — coût d'abord, activation ensuite
-`POST /api/admin/pricing/import/commit` `{ batchId }` → chunks atomiques 5000,
-écrit `pieces_price_history`, batch `COMMITTED`. **Met le coût en base.**
-⚠️ Le module met `pri_dispo='1'` au commit ; pour respecter « import ≠ vendable »
-(§Garde-fou storefront), soit l'import écrit en **pending** (option non-activante,
-**à livrer**), soit on **demote** immédiatement les non-confirmées (→ pending /
-`'0'` + `pricing_state_reason`) — l'activation **vendable** (`'1'` en stock, `'2'`
-stock faible, `'3'` sur commande) ne reste que sur les réfs **CONFIRMED** (étape 2),
-selon leur statut réel. **Rollback** : `POST .../rollback`
-`{ batchId, supplierId }` (LIFO `pricing_rollback_batch`, restaure prix + dispo).
+`POST /api/admin/pricing/import/commit` `{ batchId, ...ImportRequest }` (le corps
+reprend les mêmes `fileRows`) → chunks atomiques 5000, écrit `pieces_price_history`,
+batch `COMMITTED`. **Met le coût en base, en PENDING par défaut** (`activate:false`
+→ `pri_dispo='0'`, non vendable ; **`pri_ref` persisté** depuis #913 — c'est la clé
+de l'activation). L'activation **vendable** (`'1'` en stock, `'2'` stock faible,
+`'3'` sur commande) ne porte que sur les réfs **CONFIRMED** (étape 2), via
+`activate/{dry-run,commit}` (rows `{ref,dispo}`, `confirm:true`, brand-lock
+`supplierId=pm_id`). **Rollback** : `POST .../rollback` `{ batchId, supplierId }`
+(LIFO `pricing_rollback_batch`, restaure prix + dispo).
 
 ## 6 — Post-commit (étalé 30 j la 1ère fois)
 Dispo tenue à jour par la sentinelle (capée `SUPPLIER_SYNC_MAX_REFS_PER_RUN`,
@@ -232,6 +260,38 @@ prix vendable reste sur le grid mais à prix 0 → le gate `can_sell` l'affiche
 | Plateforme connecteur (CAL ≠ DCA) | `platform` du registry |
 | Dérivation prix | profil `DIRECT_NET` / `REMISE_ON_BRUT` / … |
 | `brand pm_id` cible | scope du profil + du match |
+
+## Séquence figée (routine standard — prouvée de bout en bout VENEPORTE 2026-06-10)
+
+| # | Étape | Endpoint / commande | Gate | Vérif après |
+|---|---|---|---|---|
+| 1 | Feed (§1/§1bis) | psql `\copy` → `data/tecdoc/<fourn>-<marque>-<AAAAMM>-feed.csv` | — | longueurs EAN ∈ {13, 0}, zéro `"` |
+| 2 | Pilote classify | worker §2, `LIMIT=30` | **GO owner** (login portail) | 0 FALSE_MATCH, CONFIRMED EAN-locked |
+| 3 | Full classify | worker sans LIMIT (background, resumable) | couvert par le GO pilote | `MECE sum_check`, buckets, 0 batch failed |
+| 4 | Dry-run import | `POST import/dry-run` (fileRows = `confirmed.csv` : `ref,ean,achat_ht=portalPrix`) | **GO owner** | 0 rejet / 0 outlier ; unmatched = hors-catalogue connu |
+| 5 | Commit PENDING | `POST import/commit` `{batchId,…}` | **GO owner** | SQL : n lignes, 100 % `pri_dispo='0'`, `pri_ref` non-vide, 0 vente<achat |
+| 6 | Activation | `POST activate/{dry-run,commit}` rows AG→`'1'` / GRP→`'2'`, `confirm:true` | **GO owner** | SQL : répartition `pri_dispo` 1/2, 0 resté à `'0'` |
+| 7 | Display | `POST display/{dry-run,commit}` `{supplierId=pm_id, confirm:true}` | **GO owner** | décomposition **MECE** : flippées + déjà-affichées + retenues gate gamme |
+
+À l'étape 7, **toujours décomposer** `eligible` vs vendables. Les retenues par le
+gate gamme (`pg_display≠'1'`, #915) sont de deux natures distinctes :
+**accessoires level-4/5** → NO-GO permanent (cachés par design) ; **hub de gamme
+principale (level-1) caché** → **décision owner séparée**, jamais prise par la
+routine (ex. VENEPORTE : pg 26 Silencieux + pg 17 Tube d'échappement restent
+cachés — coût de transport trop cher, à revoir). Les review du classify
+(`ARRIVAGE`/`NOT_FOUND`/`NO_EAN`) restent pending (re-vérification ultérieure).
+MAJ tarifaire ultérieure = §7 INCRÉMENTAL.
+
+## Worked example — VENEPORTE (2026-06-10) — 1er run 100 % gouverné de bout en bout
+`VENEPORTE.xlsx` (9 640 lignes, pm 4900, DCA spl 71) → 7 338 actives → feed
+`dca-veneporte-202606-feed.csv` (6 865 EAN-13 dont 8 complétés depuis la DB, 473
+vides nets) → pilote 30 réfs (0 NOT_FOUND = preuve empirique que DCA porte la
+marque) → full classify 47 min, 0 erreur : **1 449 CONFIRMED tous EAN-locked**
+(791 AG + 658 GRP), 5 850 ruptures, 39 review → dry-run batch `85c26ac0`
+(1 411 INSERT / 38 unmatched / 0 rejet) → commit PENDING 1 411 (`pri_ref` 100 %)
+→ activation batch `f3f18443` (778×`'1'` + 633×`'2'`) → display batch `9969fcd9` :
+**332 visibles** (Catalyseur 163, Joint d'échappement 105, FAP 57, SCR 7) ;
+1 078 vendables retenues hubs pg 26/17 (owner : transport) + 1 accessoire level-4.
 
 ## Worked example — 1er run NK (2026-06-04) + remédiation
 Marque **NK** (= `SBS.xlsx`, « SBS = NK »), fournisseur **DCA** (spl 71), feed
