@@ -45,6 +45,23 @@ export function excludeConsolidatedGuideUrls(
   return { kept, excludedCount: urls.length - kept.length };
 }
 
+/**
+ * Consolidation R4→R3 (flag SEO_R4_CONSOLIDATION_ENABLED) : retire du sitemap
+ * référence les fiches liées à une gamme dont l'article R3 existe (même
+ * condition que le self-gate du redirect R4). Fonction pure — testée sans mock.
+ */
+export function excludeConsolidatedReferenceRows<
+  T extends { pg_id: number | null },
+>(
+  rows: T[],
+  r3GammePgIds: ReadonlySet<number>,
+): { kept: T[]; excludedCount: number } {
+  const kept = rows.filter(
+    (r) => !(r.pg_id !== null && r3GammePgIds.has(Number(r.pg_id))),
+  );
+  return { kept, excludedCount: rows.length - kept.length };
+}
+
 @Injectable()
 export class SitemapV10StaticService extends SupabaseBaseService {
   protected override readonly logger = new Logger(SitemapV10StaticService.name);
@@ -67,7 +84,13 @@ export class SitemapV10StaticService extends SupabaseBaseService {
    * warn explicite (repli observable : le sitemap reste complet plutôt
    * que tronqué silencieusement).
    */
-  private async fetchR6RedirectingAliases(): Promise<Set<string>> {
+  /**
+   * pg_id des gammes ayant un article R3 conseils vivant — la condition
+   * partagée par les self-gates des redirects R4 et R6. Vide si erreur,
+   * avec warn explicite (repli observable : sitemap complet plutôt que
+   * tronqué silencieusement).
+   */
+  private async fetchR3GammePgIds(): Promise<Set<number>> {
     try {
       // ba_pg_id est TEXT (legacy), pg_id est INTEGER — comparaison via Number().
       const { data: advice, error: adviceError } = await this.supabase
@@ -76,17 +99,26 @@ export class SitemapV10StaticService extends SupabaseBaseService {
         .limit(5000); // cap supabase-js 1000 par défaut — borne explicite
       if (adviceError || !advice) {
         this.logger.warn(
-          `⚠️ R6 consolidation: lecture __blog_advice impossible (${adviceError?.message}) — aucune exclusion sitemap appliquée`,
+          `⚠️ Consolidation R3: lecture __blog_advice impossible (${adviceError?.message}) — aucune exclusion sitemap appliquée`,
         );
         return new Set();
       }
-      const pgIds = [
-        ...new Set(
-          advice
-            .map((a) => Number(a.ba_pg_id))
-            .filter((n) => Number.isInteger(n) && n > 0),
-        ),
-      ];
+      return new Set(
+        advice
+          .map((a) => Number(a.ba_pg_id))
+          .filter((n) => Number.isInteger(n) && n > 0),
+      );
+    } catch (e) {
+      this.logger.warn(
+        `⚠️ Consolidation R3: fetch pg_ids failed (${e}) — aucune exclusion sitemap appliquée`,
+      );
+      return new Set();
+    }
+  }
+
+  private async fetchR6RedirectingAliases(): Promise<Set<string>> {
+    try {
+      const pgIds = [...(await this.fetchR3GammePgIds())];
       if (pgIds.length === 0) return new Set();
 
       const { data: gammes, error: gammeError } = await this.supabase
@@ -482,9 +514,9 @@ export class SitemapV10StaticService extends SupabaseBaseService {
    */
   async generateReferenceSitemap(): Promise<string | null> {
     try {
-      const { data: references, error } = await this.supabase
+      const { data: fetched, error } = await this.supabase
         .from('__seo_reference')
-        .select('slug, updated_at')
+        .select('slug, updated_at, pg_id')
         .eq('is_published', true)
         .order('updated_at', { ascending: false });
 
@@ -495,9 +527,24 @@ export class SitemapV10StaticService extends SupabaseBaseService {
         return null;
       }
 
-      if (!references || references.length === 0) {
+      if (!fetched || fetched.length === 0) {
         this.logger.warn('⚠️ No reference pages found for sitemap');
         return null;
+      }
+
+      // Consolidation R4→R3 : ne jamais émettre une URL qui répond 301
+      // (inerte tant que SEO_R4_CONSOLIDATION_ENABLED=false).
+      let references = fetched;
+      if (this.featureFlags.seoR4ConsolidationEnabled) {
+        const r3PgIds = await this.fetchR3GammePgIds();
+        const { kept, excludedCount } = excludeConsolidatedReferenceRows(
+          fetched,
+          r3PgIds,
+        );
+        this.logger.log(
+          `   🔀 R4 consolidation ON: ${excludedCount} URL(s) référence exclue(s) du sitemap (301 → conseils)`,
+        );
+        references = kept;
       }
 
       const urls: SitemapUrl[] = references.map(

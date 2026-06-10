@@ -10,7 +10,10 @@
  * Fonction pure — aucun mock Supabase nécessaire.
  */
 
-import { excludeConsolidatedGuideUrls } from './sitemap-v10-static.service';
+import {
+  excludeConsolidatedGuideUrls,
+  excludeConsolidatedReferenceRows,
+} from './sitemap-v10-static.service';
 import type { SitemapUrl } from './sitemap-v10.types';
 
 const u = (url: string): SitemapUrl => ({
@@ -61,5 +64,31 @@ describe('excludeConsolidatedGuideUrls — consolidation R6→R3', () => {
       '/blog-pieces-auto/conseils/filtre-a-air',
       '/blog-pieces-auto/un-article-blog',
     ]);
+  });
+});
+
+describe('excludeConsolidatedReferenceRows — consolidation R4→R3', () => {
+  const ROWS = [
+    { slug: 'filtre-a-air', pg_id: 8 },
+    { slug: 'batterie', pg_id: 1 },
+    { slug: 'notion-isolee', pg_id: null },
+  ];
+
+  it('set vide → aucune exclusion', () => {
+    const { kept, excludedCount } = excludeConsolidatedReferenceRows(
+      ROWS,
+      new Set(),
+    );
+    expect(kept).toHaveLength(3);
+    expect(excludedCount).toBe(0);
+  });
+
+  it('retire les fiches des gammes avec R3 ; pg_id null jamais exclu', () => {
+    const { kept, excludedCount } = excludeConsolidatedReferenceRows(
+      ROWS,
+      new Set([8]),
+    );
+    expect(excludedCount).toBe(1);
+    expect(kept.map((r) => r.slug)).toEqual(['batterie', 'notion-isolee']);
   });
 });
