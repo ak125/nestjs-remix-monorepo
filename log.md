@@ -430,3 +430,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-r6-sitemap-exclusion-prep`
 - **Décision** : chore(seo): @role-purity-skip sur sitemap-v10-static — fichier transverse multi-rôles (+1 other commit)
 - **Sortie** : PR #927 | commits 0a392a48a b534f3994
+
+## 2026-06-10 — feat/seo-r6-sitemap-exclusion-prep (auto)
+
+- **Branche** : `feat/seo-r6-sitemap-exclusion-prep`
+- **Décision** : style(seo): prettier — import single-line + single quotes (test exclusion) (+3 other commits)
+- **Sortie** : PR #927 | commits 4fde222fe 6a7fca177 0a392a48a b534f3994
