@@ -64,7 +64,10 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
   const makeRpcServiceMock = () =>
     ({
       getPageDataRpcV2: jest.fn(async () => makeBaseRpcPayload()),
-      getSeoFragmentsByTypeId: jest.fn(() => ({ fragment1: '', fragment2: '' })),
+      getSeoFragmentsByTypeId: jest.fn(() => ({
+        fragment1: '',
+        fragment2: '',
+      })),
       getTechnicalCodesByTypeIds: jest.fn(async () => []),
     }) as any;
 
@@ -156,14 +159,24 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
       buildAutoBuyingGuideV1: jest.fn(() => autoGuide),
     } as any;
 
-    const referenceService = { getByPgId: jest.fn().mockResolvedValue(null) } as any;
+    const referenceService = {
+      getByPgId: jest.fn().mockResolvedValue(null),
+    } as any;
     const seoTitleEngine = {
       resolve: jest.fn(() => ({
-        title: 'Test Title', description: 'Test Desc', keywords: '', h1: 'H1', content: '',
+        title: 'Test Title',
+        description: 'Test Desc',
+        keywords: '',
+        h1: 'H1',
+        content: '',
       })),
     } as any;
 
-    const relatedResources = { getRelatedResources: jest.fn(() => Promise.resolve({ links: [], blocks: [] })) } as any;
+    const relatedResources = {
+      getRelatedResources: jest.fn(() =>
+        Promise.resolve({ links: [], blocks: [] }),
+      ),
+    } as any;
     const chainOrchestrator = { run: jest.fn() } as any;
     const chainFlags = { mode: jest.fn(() => 'off') } as any;
     const service = new GammeResponseBuilderService(
@@ -175,11 +188,14 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
       relatedResources,
       chainOrchestrator,
       chainFlags,
+      { isPromoteEnabled: () => false, isSeoReady: async () => false } as never,
     );
 
     const result = await service.buildRpcV2Response('479');
 
-    expect(buyingGuideService.getBuyingGuideContractV1).toHaveBeenCalledWith('479');
+    expect(buyingGuideService.getBuyingGuideContractV1).toHaveBeenCalledWith(
+      '479',
+    );
     expect(buyingGuideService.toBuyingGuideV1).not.toHaveBeenCalled();
     expect(buyingGuideService.buildAutoBuyingGuideV1).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -194,7 +210,9 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
     expect(result.performance.buying_guide_available).toBe(1);
     expect(result.performance.buying_guide_fallback_used).toBe(1);
     expect(result.performance.buying_guide_gate_ok).toBe(0);
-    expect(result.performance).not.toHaveProperty('purchase_guide_v2_available');
+    expect(result.performance).not.toHaveProperty(
+      'purchase_guide_v2_available',
+    );
   });
 
   it('utilise le contrat guide DB quand il existe', async () => {
@@ -213,14 +231,24 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
       buildAutoBuyingGuideV1: jest.fn(),
     } as any;
 
-    const referenceService = { getByPgId: jest.fn().mockResolvedValue(null) } as any;
+    const referenceService = {
+      getByPgId: jest.fn().mockResolvedValue(null),
+    } as any;
     const seoTitleEngine = {
       resolve: jest.fn(() => ({
-        title: 'Test Title', description: 'Test Desc', keywords: '', h1: 'H1', content: '',
+        title: 'Test Title',
+        description: 'Test Desc',
+        keywords: '',
+        h1: 'H1',
+        content: '',
       })),
     } as any;
 
-    const relatedResources = { getRelatedResources: jest.fn(() => Promise.resolve({ links: [], blocks: [] })) } as any;
+    const relatedResources = {
+      getRelatedResources: jest.fn(() =>
+        Promise.resolve({ links: [], blocks: [] }),
+      ),
+    } as any;
     const chainOrchestrator = { run: jest.fn() } as any;
     const chainFlags = { mode: jest.fn(() => 'off') } as any;
     const service = new GammeResponseBuilderService(
@@ -232,15 +260,18 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
       relatedResources,
       chainOrchestrator,
       chainFlags,
+      { isPromoteEnabled: () => false, isSeoReady: async () => false } as never,
     );
 
     const result = await service.buildRpcV2Response('479');
 
-    expect(buyingGuideService.getBuyingGuideContractV1).toHaveBeenCalledWith('479');
-    expect(buyingGuideService.toBuyingGuideV1).toHaveBeenCalledWith(dbContract);
-    expect(buyingGuideService.passesBuyingGuideAntiWikiGate).toHaveBeenCalledWith(
-      mappedGuide,
+    expect(buyingGuideService.getBuyingGuideContractV1).toHaveBeenCalledWith(
+      '479',
     );
+    expect(buyingGuideService.toBuyingGuideV1).toHaveBeenCalledWith(dbContract);
+    expect(
+      buyingGuideService.passesBuyingGuideAntiWikiGate,
+    ).toHaveBeenCalledWith(mappedGuide);
     expect(buyingGuideService.buildAutoBuyingGuideV1).not.toHaveBeenCalled();
     expect(result.gammeBuyingGuide).toEqual(mappedGuide);
     expect(result.performance.buying_guide_fallback_used).toBe(0);
@@ -270,14 +301,24 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
       buildAutoBuyingGuideV1: jest.fn(() => fallbackGuide),
     } as any;
 
-    const referenceService = { getByPgId: jest.fn().mockResolvedValue(null) } as any;
+    const referenceService = {
+      getByPgId: jest.fn().mockResolvedValue(null),
+    } as any;
     const seoTitleEngine = {
       resolve: jest.fn(() => ({
-        title: 'Test Title', description: 'Test Desc', keywords: '', h1: 'H1', content: '',
+        title: 'Test Title',
+        description: 'Test Desc',
+        keywords: '',
+        h1: 'H1',
+        content: '',
       })),
     } as any;
 
-    const relatedResources = { getRelatedResources: jest.fn(() => Promise.resolve({ links: [], blocks: [] })) } as any;
+    const relatedResources = {
+      getRelatedResources: jest.fn(() =>
+        Promise.resolve({ links: [], blocks: [] }),
+      ),
+    } as any;
     const chainOrchestrator = { run: jest.fn() } as any;
     const chainFlags = { mode: jest.fn(() => 'off') } as any;
     const service = new GammeResponseBuilderService(
@@ -289,6 +330,7 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
       relatedResources,
       chainOrchestrator,
       chainFlags,
+      { isPromoteEnabled: () => false, isSeoReady: async () => false } as never,
     );
 
     const result = await service.buildRpcV2Response('479');

@@ -15,6 +15,12 @@
 --
 -- Date: 2026-06-10
 -- ============================================================================
+
+-- squawk require-timeout-settings (pré-DDL ; CREATE FUNCTION est instantané mais
+-- le linter l'exige avant toute opération potentiellement lente).
+SET lock_timeout = '2s';
+SET statement_timeout = '60s';
+
 CREATE OR REPLACE FUNCTION rpc_seo_ready_gammes(p_min_kw integer DEFAULT 50)
 RETURNS TABLE (pg_id integer)
 LANGUAGE sql

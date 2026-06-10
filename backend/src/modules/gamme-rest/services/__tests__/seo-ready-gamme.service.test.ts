@@ -2,20 +2,19 @@ import { SeoReadyGammeService } from '../seo-ready-gamme.service';
 
 /**
  * Unit test the logic without the heavy SupabaseBaseService constructor:
- * build the instance via Object.create and inject a mocked supabase client.
+ * build the instance via Object.create and mock the inherited `callRpc` wrapper
+ * (the service calls `this.callRpc`, not `this.supabase.rpc` directly).
  */
-function makeService(rpc: jest.Mock): SeoReadyGammeService {
+function makeService(callRpc: jest.Mock): SeoReadyGammeService {
   const svc = Object.create(
     SeoReadyGammeService.prototype,
   ) as SeoReadyGammeService;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   (svc as any).logger = { error: jest.fn(), log: jest.fn(), warn: jest.fn() };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (svc as any).supabase = { rpc };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (svc as any).callRpc = callRpc;
   (svc as any).cache = null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (svc as any).inflight = null;
+  /* eslint-enable @typescript-eslint/no-explicit-any */
   return svc;
 }
 
@@ -45,15 +44,18 @@ describe('SeoReadyGammeService', () => {
 
   describe('isSeoReady — cached kw-count set membership', () => {
     it('true for a gamme in the ready set, false otherwise; RPC called once (cached)', async () => {
-      const rpc = jest
-        .fn()
-        .mockResolvedValue({ data: [{ pg_id: 7 }, { pg_id: 82 }], error: null });
+      const rpc = jest.fn().mockResolvedValue({
+        data: [{ pg_id: 7 }, { pg_id: 82 }],
+        error: null,
+      });
       const svc = makeService(rpc);
       expect(await svc.isSeoReady(7)).toBe(true);
       expect(await svc.isSeoReady(82)).toBe(true);
       expect(await svc.isSeoReady(999)).toBe(false);
       expect(rpc).toHaveBeenCalledTimes(1);
-      expect(rpc).toHaveBeenCalledWith('rpc_seo_ready_gammes', { p_min_kw: 50 });
+      expect(rpc).toHaveBeenCalledWith('rpc_seo_ready_gammes', {
+        p_min_kw: 50,
+      });
     });
 
     it('honours SEO_R1_KW_MIN override', async () => {
@@ -69,7 +71,9 @@ describe('SeoReadyGammeService', () => {
       process.env.SEO_R1_KW_MIN = 'abc';
       const rpc = jest.fn().mockResolvedValue({ data: [], error: null });
       await makeService(rpc).isSeoReady(7);
-      expect(rpc).toHaveBeenCalledWith('rpc_seo_ready_gammes', { p_min_kw: 50 });
+      expect(rpc).toHaveBeenCalledWith('rpc_seo_ready_gammes', {
+        p_min_kw: 50,
+      });
     });
 
     it('fail-safe: returns false on RPC error (legacy robots preserved, no throw)', async () => {

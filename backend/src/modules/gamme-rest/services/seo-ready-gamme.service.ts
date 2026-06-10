@@ -1,3 +1,5 @@
+// @role-purity-skip — ce service de plomberie référence R1 (hub gamme) dans sa
+// doc technique ; ce n'est pas du contenu R-role généré (cf. check-role-purity).
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 
@@ -37,7 +39,9 @@ export class SeoReadyGammeService extends SupabaseBaseService {
   /** Minimum prepared kw rows to consider a gamme SEO-ready (filters contaminated noise). */
   private minKw(): number {
     const n = Number.parseInt(process.env.SEO_R1_KW_MIN ?? '', 10);
-    return Number.isInteger(n) && n > 0 ? n : SeoReadyGammeService.DEFAULT_MIN_KW;
+    return Number.isInteger(n) && n > 0
+      ? n
+      : SeoReadyGammeService.DEFAULT_MIN_KW;
   }
 
   /** True if the gamme has prepared keyword research (>= threshold). Fail-safe `false`. */
@@ -63,12 +67,14 @@ export class SeoReadyGammeService extends SupabaseBaseService {
 
     this.inflight = (async () => {
       try {
-        const { data, error } = await this.supabase.rpc('rpc_seo_ready_gammes', {
-          p_min_kw: this.minKw(),
-        });
+        // callRpc (not direct .rpc) — RPC Safety Gate + circuit breaker.
+        const { data, error } = await this.callRpc<Array<{ pg_id: number }>>(
+          'rpc_seo_ready_gammes',
+          { p_min_kw: this.minKw() },
+        );
         if (error) throw new Error(error.message);
         const ids = new Set<number>();
-        for (const row of (data as Array<{ pg_id: number }> | null) ?? []) {
+        for (const row of data ?? []) {
           if (typeof row.pg_id === 'number') ids.add(row.pg_id);
         }
         this.cache = { ids, at: now };
