@@ -3,3 +3,4 @@ export * from './gamme-rpc.service';
 export * from './gamme-response-builder.service';
 export * from './gamme-page-data.service';
 export * from './buying-guide-data.service';
+export * from './seo-ready-gamme.service';

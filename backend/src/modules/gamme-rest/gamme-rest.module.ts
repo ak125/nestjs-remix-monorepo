@@ -13,6 +13,7 @@ import {
   GammeResponseBuilderService,
   GammePageDataService,
   BuyingGuideDataService,
+  SeoReadyGammeService,
 } from './services';
 import { R1RelatedResourcesService } from './services/r1-related-resources.service';
 
@@ -39,6 +40,7 @@ import { R1RelatedResourcesService } from './services/r1-related-resources.servi
     GammePageDataService,
     BuyingGuideDataService,
     R1RelatedResourcesService,
+    SeoReadyGammeService,
   ],
 })
 export class GammeRestModule {}

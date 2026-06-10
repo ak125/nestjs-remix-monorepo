@@ -26,6 +26,7 @@ import {
   type NormalizeResult,
 } from '../utils/r1-image-normalizer';
 import { R1RelatedResourcesService } from './r1-related-resources.service';
+import { SeoReadyGammeService } from './seo-ready-gamme.service';
 
 interface MotorizationRow {
   type_id: number;
@@ -81,6 +82,7 @@ export class GammeResponseBuilderService {
     private readonly relatedResources: R1RelatedResourcesService,
     private readonly chainOrchestrator: SeoChainOrchestratorService,
     private readonly chainFlags: SeoFeatureFlagRegistry,
+    private readonly seoReadyGamme: SeoReadyGammeService,
   ) {}
 
   /**
@@ -303,7 +305,24 @@ export class GammeResponseBuilderService {
     }) as { family_count: number; gamme_count: number };
     // pg_level est TEXT en BDD ('1' ou '2'), '1' = INDEX
     const isG1orG2 = String(pgLevel) === '1';
-    const pageRobots = isG1orG2 ? 'index, follow' : 'noindex, nofollow';
+    let pageRobots = isG1orG2 ? 'index, follow' : 'noindex, nofollow';
+
+    // 🔑 Promotion R1 ADDITIVE par mots-clés (owner 2026-06-10) — flag OFF par défaut.
+    // `indexable = pg_level='1' OU seoReady(kw préparé)`. PROMOTION SEULEMENT : on
+    // ne flippe que noindex→index, jamais l'inverse (les gammes déjà indexées le
+    // restent). Auto-activation : dès qu'une gamme reçoit du kw (≥ seuil) elle devient
+    // éligible. Flag OFF → aucun appel DB, comportement legacy byte-identique.
+    if (
+      !isG1orG2 &&
+      this.seoReadyGamme.isPromoteEnabled() &&
+      (await this.seoReadyGamme.isSeoReady(pgIdNum))
+    ) {
+      pageRobots = 'index, follow';
+      this.logger.log(
+        `[R1-KW-PROMOTE] pg_id=${pgIdNum} promu noindex→index (kw préparé)`,
+      );
+    }
+
     const canonicalLink = `pieces/${pgAlias}-${pgIdNum}.html`;
 
     // Traitement données
@@ -946,7 +965,7 @@ export class GammeResponseBuilderService {
         familyCount: seoValidation.family_count,
         gammeCount: seoValidation.gamme_count,
         relfollow: String(pgRelfollow) === '1' ? 1 : 0,
-        isIndexable: isG1orG2,
+        isIndexable: pageRobots === 'index, follow',
         robots: pageRobots,
         pgLevel: pageData.pg_level,
         pgRelfollow: pageData.pg_relfollow,
