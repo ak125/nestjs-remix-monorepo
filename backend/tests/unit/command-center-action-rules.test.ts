@@ -9,6 +9,7 @@ import { buildCertificationActions } from '../../src/modules/admin/services/comm
 import {
   buildSeoOpportunityActions,
   pageKindFromUrl,
+  deriveUrlNextStep,
 } from '../../src/modules/admin/services/command-center-action-rules/seo-action.rules';
 import { buildPricingRiskActions } from '../../src/modules/admin/services/command-center-action-rules/pricing-action.rules';
 
@@ -56,6 +57,8 @@ describe('score caps — honesty invariant', () => {
           impressions: 10,
           clicks: 0,
           ctr: 0,
+          position: 4,
+          next_step: 'x',
         },
       ],
     };
@@ -72,6 +75,8 @@ describe('score caps — honesty invariant', () => {
           impressions: 10,
           clicks: 0,
           ctr: 0,
+          position: 4,
+          next_step: 'x',
         },
       ],
     };
@@ -228,10 +233,20 @@ describe('SEO opportunity rules — real business actions (certified source)', (
     expect(buildSeoOpportunityActions([])).toEqual([]);
   });
 
-  it('PR2: emits a per-URL details payload (sorted desc; ctr = clicks/impressions)', () => {
+  it('PR2+PR3: per-URL details (sorted desc; ctr; position + advisory next_step)', () => {
     const out = buildSeoOpportunityActions([
-      { page: 'https://x/pieces/a.html', impressions: 200, clicks: 0 },
-      { page: 'https://x/pieces/b.html', impressions: 50, clicks: 5 },
+      {
+        page: 'https://x/pieces/a.html',
+        impressions: 200,
+        clicks: 0,
+        position: 4,
+      },
+      {
+        page: 'https://x/pieces/b.html',
+        impressions: 50,
+        clicks: 5,
+        position: 30,
+      },
     ]).map(finalizeAction);
     const product = out.find((a) => a.id === 'seo:opportunity:product')!;
     expect(product.details).toHaveLength(2);
@@ -241,8 +256,44 @@ describe('SEO opportunity rules — real business actions (certified source)', (
       impressions: 200,
       clicks: 0,
       ctr: 0,
+      position: 4,
+      next_step: expect.stringMatching(/title\/meta/i), // pos 4 ranked → SERP appeal
     });
     expect(product.details![1].ctr).toBeCloseTo(0.1, 5); // 5/50
+    expect(product.details![1].next_step).toMatch(/maillage/i); // pos 30 → authority
+  });
+
+  it('PR3: position=null + honest next_step when the RPC omits avg_position', () => {
+    const product = buildSeoOpportunityActions([
+      { page: 'https://x/pieces/a.html', impressions: 200, clicks: 0 },
+    ])
+      .map(finalizeAction)
+      .find((a) => a.id === 'seo:opportunity:product')!;
+    expect(product.details![0].position).toBeNull();
+    expect(product.details![0].next_step).toMatch(/inconnue/i);
+  });
+});
+
+describe('PR3: deriveUrlNextStep — deterministic, advisory, honest', () => {
+  it('ranked (pos ≤ 15) → title/meta + intent (SERP appeal)', () => {
+    expect(deriveUrlNextStep('product', 4)).toMatch(/title\/meta/i);
+    expect(deriveUrlNextStep('product', 4)).toMatch(/ranke/i);
+    expect(deriveUrlNextStep('content', 12)).toMatch(/title\/meta/i);
+    expect(deriveUrlNextStep('other', 8)).toMatch(/title\/meta/i);
+  });
+
+  it('not ranked (pos > 15) → maillage / enrich + money link', () => {
+    expect(deriveUrlNextStep('product', 40)).toMatch(/maillage/i);
+    expect(deriveUrlNextStep('content', 40)).toMatch(/transactionnelle/i);
+    expect(deriveUrlNextStep('content', 40)).toMatch(/enrichir/i);
+  });
+
+  it('honest fallback when position unknown — no fabricated SERP diagnosis', () => {
+    for (const pos of [null, 0]) {
+      const s = deriveUrlNextStep('product', pos);
+      expect(s).toMatch(/inconnue/i);
+      expect(s).not.toMatch(/ranke/i);
+    }
   });
 });
 
