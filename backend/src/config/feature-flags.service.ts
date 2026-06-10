@@ -132,6 +132,23 @@ export class FeatureFlagsService {
     return this.bool('R8_OWNED_EDITORIAL_ENABLED', false);
   }
 
+  // ── R6 Consolidation (guide d'achat → R3 conseils, décision owner 2026-06-10) ──
+
+  /**
+   * Gates the R6→R3 consolidation redirect path: when ON, R6 guide-achat
+   * detail pages 301-redirect to the gamme's R3 conseils page — ONLY for
+   * gammes whose R3 article exists (self-gated per gamme: no live R3 → no
+   * redirect, the standalone R6 page keeps serving — never a redirect-to-404).
+   * Mirrors the R5→R3 consolidation (diagnostic-auto sub-pages → conseils).
+   *
+   * Activation is owner-gated: requires the vault ADR amending role-matrix v5
+   * (R6 standalone page → R3 section) + smoke-test anchor swap (airlock) +
+   * sitemap exclusion of folded gammes. Default: false (inert — zero change).
+   */
+  get seoR6ConsolidationEnabled(): boolean {
+    return this.bool('SEO_R6_CONSOLIDATION_ENABLED', false);
+  }
+
   // ── Conseil Pack flags ──
 
   get conseilPackEnabled(): boolean {
