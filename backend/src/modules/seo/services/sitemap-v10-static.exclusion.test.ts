@@ -10,9 +10,7 @@
  * Fonction pure — aucun mock Supabase nécessaire.
  */
 
-import {
-  excludeConsolidatedGuideUrls,
-} from './sitemap-v10-static.service';
+import { excludeConsolidatedGuideUrls } from './sitemap-v10-static.service';
 import type { SitemapUrl } from './sitemap-v10.types';
 
 const u = (url: string): SitemapUrl => ({
@@ -40,7 +38,7 @@ describe('excludeConsolidatedGuideUrls — consolidation R6→R3', () => {
     expect(excludedCount).toBe(0);
   });
 
-  it("retire uniquement les guide-achat des gammes redirigeantes, jamais les conseils", () => {
+  it('retire uniquement les guide-achat des gammes redirigeantes, jamais les conseils', () => {
     const { kept, excludedCount } = excludeConsolidatedGuideUrls(
       URLS,
       new Set(['filtre-a-air']),
