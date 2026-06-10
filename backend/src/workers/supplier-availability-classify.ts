@@ -55,6 +55,9 @@ const sleep = (ms: number): Promise<void> =>
   new Promise((r) => setTimeout(r, ms));
 const pct = (n: number, d: number): string =>
   d ? ((n / d) * 100).toFixed(1) + '%' : '0%';
+// Supplier refs can contain `/` (e.g. VDO "2910000102400/483") — a raw ref in the
+// cache filename becomes a nested path and crashes writeFileSync (ENOENT).
+const fsSafe = (ref: string): string => ref.replace(/[^A-Za-z0-9._-]/g, '-');
 
 interface FeedRow {
   ref: string;
@@ -212,7 +215,7 @@ async function main(): Promise<void> {
     }
     consecutiveFails = 0;
     writeFileSync(
-      `${HTML_DIR}/${batch[0].ref}_${batch[batch.length - 1].ref}.html.gz`,
+      `${HTML_DIR}/${fsSafe(batch[0].ref)}_${fsSafe(batch[batch.length - 1].ref)}.html.gz`,
       gzipSync(r.html),
     );
     const lines = batch.map((b) =>
