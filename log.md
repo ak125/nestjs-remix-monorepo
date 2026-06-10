@@ -436,3 +436,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/rack-images-recovery-runbook-and-ingester`
 - **Décision** : feat(recovery): scope image recovery to sellable pieces, coupled to tariff injection (+7 other commits)
 - **Sortie** : PR #924 | commits 38d9b9388 6a0673df8 4b349094f dd4de4159 9f43a6bd8 4330d2ba6 aac5fc7dd 1082519ac
+
+## 2026-06-10 — feat/rack-images-recovery-runbook-and-ingester (auto)
+
+- **Branche** : `feat/rack-images-recovery-runbook-and-ingester`
+- **Décision** : feat(recovery): key on pieces.piece_ref (full-brand coverage) + generalize metadata executor (+9 other commits)
+- **Sortie** : PR #924 | commits 8a64d91f0 fb07ea518 38d9b9388 6a0673df8 4b349094f dd4de4159 9f43a6bd8 4330d2ba6 aac5fc7dd 1082519ac
