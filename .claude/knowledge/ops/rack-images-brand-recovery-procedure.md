@@ -28,6 +28,14 @@ last_scan: 2026-06-10
 
 ## Règles cardinales `[CRITICAL]`
 
+0. **Images UNIQUEMENT sur les pièces VENDABLES, et récupération COUPLÉE à l'injection
+   du tarif.** On ne récupère pas les images d'une marque « en bloc » : on les récupère
+   **quand le tarif fournisseur est injecté** (flux [`supplier-price-load`](../../skills/supplier-price-load/SKILL.md)
+   / PricingModule), et **seulement pour les pièces rendues vendables**
+   (`pieces_price.pri_dispo ∈ ('1','2','3')`). L'image est un investissement (fetch TecDoc +
+   storage) qui ne va qu'aux pièces générant du chiffre — cohérent avec la doctrine
+   [[feedback_pricing_is_economic_governance_not_engine]]. Concrètement : ingester
+   `--sellable-only`, et la phase image vient **après** le commit tarif gouverné.
 1. **Read-only par défaut.** L'ingester est `--dry-run` par défaut (fetch + manifest,
    ZÉRO write). Tout `--commit` (upload) et tout SQL mutant = **GO owner nominatif**.
 2. **Séparation storage / metadata.** Le script écrit **uniquement** le storage ;
@@ -80,14 +88,23 @@ tranches avec des `pmi_pm_id` différents :
 
 ## 0 — Prérequis (par marque) — read-only, pas de gate
 
+0. **Déclencheur = injection tarif.** Cette procédure se lance **après** un import tarif
+   gouverné de la marque (skill `supplier-price-load`) qui a rendu des pièces **vendables**
+   (`pri_dispo ∈ ('1','2','3')`). Pas de tarif injecté ⇒ pas de récupération d'images.
 1. **Marque dans le registry** : `brand-folder-registry.yaml` → `pm_id → primary_folder`
    (MECAFILTER : 3040 → 218). Registry **owner-only** : si la marque manque, STOP
    (l'owner édite le registry, jamais ce runbook ni le script).
-2. **Couverture ARTNR** (PG direct, **jamais supabase-js** — cap 1000 lignes) :
+2. **Couverture ARTNR VENDABLES** (PG direct, **jamais supabase-js** — cap 1000 lignes) :
    ```sql
-   SELECT count(*) FROM tecdoc_map.article_registry WHERE source_dlnr = <dlnr>;
+   SELECT count(*) FROM tecdoc_map.article_registry ar
+   WHERE ar.source_dlnr = <dlnr>
+     AND EXISTS (SELECT 1 FROM pieces_price pr
+                 WHERE pr.pri_piece_id_i = ar.piece_id AND pr.pri_dispo IN ('1','2','3'));
    ```
-   (MECAFILTER DLNR 218 : 3 735 ARTNR, tous mappés `piece_id`.)
+   ⚠️ Le `source_dlnr` (TecDoc) peut **ne pas couvrir 100 %** des pièces vendables d'un
+   `pm_id` (images réparties sur plusieurs DLNR/folders). Croiser le compte vendable
+   par `pm_id` (audit) vs par `source_dlnr` avant de conclure (ex. NK : 6 431 vendables
+   par pm 3410 vs 4 986 par DLNR 127 — gap à élucider au cas par cas).
 3. **Snapshot baseline** (devient la référence rollback / vérification) :
    ```sql
    SELECT count(*) FROM storage.objects WHERE bucket_id='rack-images' AND name LIKE '<folder>/%';
@@ -110,10 +127,14 @@ one-shot pour capturer la clé (ou clé directe via `TECDOC_API_KEY`).
 ```bash
 # dry-run ciblé (zéro write Supabase, produit le manifest)
 python3 scripts/recovery/tecdoc-image-recover.py --pm-id 3040 --dlnr 218 --folder 218 \
-  --artnr CLR7120,EAR7004,EAR7123 --dry-run
-# dry-run complet
-python3 scripts/recovery/tecdoc-image-recover.py --pm-id 3040 --dlnr 218 --folder 218 --dry-run
+  --sellable-only --artnr CLR7120,EAR7004,EAR7123 --dry-run
+# dry-run complet (vendables seulement — usage normal)
+python3 scripts/recovery/tecdoc-image-recover.py --pm-id 3040 --dlnr 218 --folder 218 \
+  --sellable-only --dry-run
 ```
+> **`--sellable-only` = mode normal** (couplé au tarif) : ne fetch que les pièces vendables.
+> Sans le flag, l'ingester couvre toutes les pièces mappées (à éviter — pose des images
+> sur des pièces non vendables, cf. règle cardinale 0).
 
 Mécanique (prouvée 2026-06-10, 15/15 réfs MECAFILTER → image 3200px) :
 - boucle ARTNR (depuis `article_registry`) → `getArticles` → **filtre `dataSupplierId==<dlnr>`
@@ -270,7 +291,12 @@ Chaque rollback = GO owner nominatif ; SQL forward+rollback appairés sous `scri
 - **Méthode validée en session** : `getArticles` httpx → **15/15** API · image · download
   JPEG valide en `imageURL3200`, **0,61 s/réf** ; dédup hash confirmée (image partagée
   EAR7004/EAR7092/EAR7219 = 1 objet).
-- **Reste owner-gated** : GO-1 (test-prefix), GO-2 (run storage), GO-3/GO-4 (metadata).
+- **Exécuté 2026-06-10** : storage 3 442 objets uploadés (run complet) ; metadata flip ;
+  **PUIS re-scope vendables** (règle cardinale 0) — masquage des images des 1 378 pièces
+  non vendables (2 596 lignes `display=0`). Résultat : **1 928 / 1 931 pièces vendables
+  affichées ont une image servable** (3 sans = no_images TecDoc). Le 1er run avait couvert
+  toutes les pièces mappées (3 306) car lancé sans `--sellable-only` — corrigé a posteriori ;
+  pour les marques suivantes, utiliser `--sellable-only` dès le départ.
 
 ---
 _Lié : INC-2026-015 / ADR-078 (vault), `brand-folder-registry.yaml`, PR #699 (tier-C), PR #921 (suppression deleter)._

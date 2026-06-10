@@ -213,8 +213,12 @@ def resolve_apikey(file_env, provider, per_page):
 # ─────────────────────────────────────────────────────────────────────────────
 # article_registry mapping (READ-ONLY) + ARTNR list
 # ─────────────────────────────────────────────────────────────────────────────
-def artnr_piece_map(dlnr, file_env, only_artnrs=None):
-    """{source_artnr -> piece_id} for the DLNR, read READ-ONLY from PG."""
+def artnr_piece_map(dlnr, file_env, only_artnrs=None, sellable_only=False):
+    """{source_artnr -> piece_id} for the DLNR, read READ-ONLY from PG.
+
+    sellable_only=True restricts to pieces with a sellable price
+    (pieces_price.pri_dispo IN ('1','2','3')) — image recovery is coupled to the
+    supplier tariff: only pieces a tariff makes sellable get their images fetched."""
     import psycopg2
 
     pwd = env("SUPABASE_DB_PASSWORD", file_env)
@@ -229,16 +233,21 @@ def artnr_piece_map(dlnr, file_env, only_artnrs=None):
     )
     conn.set_session(readonly=True, autocommit=True)  # hard guard: no DB writes
     cur = conn.cursor()
+    sellable_clause = (
+        " AND EXISTS (SELECT 1 FROM pieces_price pr "
+        "WHERE pr.pri_piece_id_i = ar.piece_id AND pr.pri_dispo IN ('1','2','3'))"
+        if sellable_only else ""
+    )
     if only_artnrs:
         cur.execute(
-            "SELECT source_artnr, piece_id FROM tecdoc_map.article_registry "
-            "WHERE source_dlnr = %s AND source_artnr = ANY(%s)",
+            "SELECT ar.source_artnr, ar.piece_id FROM tecdoc_map.article_registry ar "
+            "WHERE ar.source_dlnr = %s AND ar.source_artnr = ANY(%s)" + sellable_clause,
             (dlnr, list(only_artnrs)),
         )
     else:
         cur.execute(
-            "SELECT source_artnr, piece_id FROM tecdoc_map.article_registry "
-            "WHERE source_dlnr = %s",
+            "SELECT ar.source_artnr, ar.piece_id FROM tecdoc_map.article_registry ar "
+            "WHERE ar.source_dlnr = %s" + sellable_clause,
             (dlnr,),
         )
     rows = cur.fetchall()
@@ -342,7 +351,9 @@ async def run(args, file_env, apikey, tmpl):
 
     # ARTNR set
     only = [a.strip() for a in args.artnr.split(",")] if args.artnr else None
-    amap = artnr_piece_map(dlnr, file_env, only_artnrs=only)
+    amap = artnr_piece_map(dlnr, file_env, only_artnrs=only, sellable_only=args.sellable_only)
+    if args.sellable_only:
+        log("🎯 --sellable-only : restreint aux pièces vendables (pri_dispo ∈ 1,2,3) — couplé au tarif injecté")
     artnrs = sorted(amap.keys())
     if args.limit:
         artnrs = artnrs[: args.limit]
@@ -470,6 +481,8 @@ def main():
     ap.add_argument("--test-prefix", default=None, help="upload under this prefix instead of <folder> (e.g. _recover-test/218)")
     ap.add_argument("--artnr", default=None, help="comma-separated ARTNR subset")
     ap.add_argument("--limit", type=int, default=None)
+    ap.add_argument("--sellable-only", action="store_true",
+                    help="restreint aux pièces vendables (pieces_price.pri_dispo IN 1,2,3) — usage normal couplé au tarif")
     ap.add_argument("--resume", action="store_true", help="skip ARTNR already 'ok' in checkpoint")
     ap.add_argument("--retry-failed", action="store_true", help="re-attempt failed ARTNR from checkpoint")
     ap.add_argument("--concurrency", type=int, default=8)

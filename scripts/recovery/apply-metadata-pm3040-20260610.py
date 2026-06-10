@@ -137,19 +137,53 @@ def flip(c):
     print(f"[flip] legacy soft-hidden: {hidden} ; nouvelles lignes visibles: {shown}")
 
 
+def sellable_rescope(c):
+    """Hide new images of NON-sellable pieces (runbook cardinal rule 0).
+
+    Used once for MECAFILTER because the first run predated --sellable-only.
+    Going forward, run the ingester with --sellable-only and this is unnecessary."""
+    cur = c.cursor()
+    cur.execute(f"""
+        WITH nonsellable_new AS (
+          SELECT m.pmi_piece_id, m.pmi_name
+          FROM pieces_media_img m
+          JOIN pieces p ON p.piece_id = m.pmi_piece_id_i AND p.piece_pm_id = {PM_ID}
+          WHERE m.pmi_display='1' AND m.pmi_pm_id='{PM_ID}' AND m.pmi_name ~ '\\.jpg$'
+            AND NOT EXISTS (SELECT 1 FROM pieces_price pr
+                            WHERE pr.pri_piece_id_i = p.piece_id AND pr.pri_dispo IN ('1','2','3'))
+        )
+        INSERT INTO {FLIPS} (pmi_piece_id, pmi_name, direction)
+        SELECT pmi_piece_id, pmi_name, 'nonsellable_1_to_0' FROM nonsellable_new
+        ON CONFLICT DO NOTHING
+    """)
+    cur.execute(f"""
+        UPDATE pieces_media_img m SET pmi_display='0'
+        FROM {FLIPS} f
+        WHERE f.direction='nonsellable_1_to_0' AND m.pmi_piece_id=f.pmi_piece_id
+          AND m.pmi_name=f.pmi_name AND m.pmi_display='1'
+    """)
+    hidden = cur.rowcount
+    c.commit()
+    print(f"[rescope] images non-vendables masquées: {hidden}")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--stage", action="store_true")
     ap.add_argument("--flip", action="store_true")
+    ap.add_argument("--sellable-rescope", action="store_true",
+                    help="masque les images des pièces non vendables (one-off MECAFILTER ; sinon utiliser ingester --sellable-only)")
     a = ap.parse_args()
-    if not (a.stage or a.flip):
-        sys.exit("préciser --stage ou --flip")
+    if not (a.stage or a.flip or a.sellable_rescope):
+        sys.exit("préciser --stage, --flip ou --sellable-rescope")
     c = conn()
     try:
         if a.stage:
             stage(c)
         if a.flip:
             flip(c)
+        if a.sellable_rescope:
+            sellable_rescope(c)
     finally:
         c.close()
 
