@@ -34,7 +34,6 @@ import {
   writeFileSync,
   appendFileSync,
   mkdirSync,
-  existsSync,
 } from 'node:fs';
 import { gzipSync } from 'node:zlib';
 import { getSupplierConnectorConfig } from '../modules/supplier-truth/connectors/supplier-registry';
@@ -108,16 +107,21 @@ async function main(): Promise<void> {
   let feed = loadFeed(req('FEED_PATH'));
   if (process.env.LIMIT) feed = feed.slice(0, Number(process.env.LIMIT));
 
-  // resume: skip refs already in the checkpoint
+  // resume: skip refs already in the checkpoint. Read directly + tolerate a missing
+  // file (fresh run) rather than existsSync-then-read — removes a TOCTOU on JSONL.
   const done = new Set<string>();
-  if (existsSync(JSONL)) {
-    for (const line of readFileSync(JSONL, 'utf8').split('\n')) {
-      if (!line.trim()) continue;
-      try {
-        done.add((JSON.parse(line) as RefVerdict).ref);
-      } catch {
-        /* skip malformed checkpoint line */
-      }
+  let checkpoint = '';
+  try {
+    checkpoint = readFileSync(JSONL, 'utf8');
+  } catch {
+    /* no checkpoint yet (fresh run) — start with an empty set */
+  }
+  for (const line of checkpoint.split('\n')) {
+    if (!line.trim()) continue;
+    try {
+      done.add((JSON.parse(line) as RefVerdict).ref);
+    } catch {
+      /* skip malformed checkpoint line */
     }
   }
   const todo = feed.filter((r) => !done.has(r.ref));
