@@ -14,6 +14,7 @@ export enum RoleId {
   R3_CONSEILS = "R3_CONSEILS",
   R4_REFERENCE = "R4_REFERENCE",
   R5_DIAGNOSTIC = "R5_DIAGNOSTIC",
+  /** Label local de surface support non éditoriale (contact, légal, CGV…) — PAS un rôle métier canonique R*. NON_WRITING. Voir legacy-canon-map.md §2/§12 ; ne jamais confondre avec R6_GUIDE_ACHAT. */
   R6_SUPPORT = "R6_SUPPORT",
   R6_GUIDE_ACHAT = "R6_GUIDE_ACHAT",
   R7_BRAND = "R7_BRAND",
