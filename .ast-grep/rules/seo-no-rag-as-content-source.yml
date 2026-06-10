@@ -1,0 +1,23 @@
+id: seo-no-rag-as-content-source
+language: typescript
+severity: warning
+message: |
+  ⚠️ LEGACY RAG-comme-source-de-CONTENU — interdit comme source contenu/SEO.
+  Le RAG = retrieval CHATBOT uniquement (ADR-031 / ADR-046, vault). La vérité
+  contenu = WIKI (chaîne RAW → WIKI → DB → R*). Ces lectures `RAG_KNOWLEDGE_PATH`
+  dans les enrichers/services de contenu sont du code OBSOLÈTE (le piège) : ne
+  PAS en déduire la stratégie, ne PAS l'étendre. Remplacement = WIKI.
+  Réf : mémoire feedback_no_rag_for_content_legacy_code_is_not_strategy + ADR-031/046.
+  NB : rag-proxy (chatbot) et diagnostic-engine sont HORS de cette règle (chemins
+  non couverts par `files`) — ce sont des consommateurs légitimes, on n'y touche pas.
+# Scope = modules de CONTENU uniquement. rag-proxy/** (chatbot) et
+# diagnostic-engine/** (diagnostic) ne sont PAS dans ces globs → jamais flaggés.
+files:
+  - backend/src/modules/admin/services/**/*.ts
+  - backend/src/modules/seo/services/**/*.ts
+ignores:
+  - "**/*.spec.ts"
+  - "**/*.e2e-spec.ts"
+  - "**/*.test.ts"
+rule:
+  pattern: RAG_KNOWLEDGE_PATH
