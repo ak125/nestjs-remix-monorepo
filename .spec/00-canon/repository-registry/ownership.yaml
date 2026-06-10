@@ -989,3 +989,8 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: low
+  - glob: backend/supabase/migrations/*get_piece_detail*
+    domain: D1
+    owner: '@ak125/catalog-team'
+    sourceConfidence: high
+    risk: medium
