@@ -16,11 +16,30 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { FeatureFlagsService } from '../../../config/feature-flags.service';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 import { SitemapV10DataService } from './sitemap-v10-data.service';
 import { SitemapV10XmlService } from './sitemap-v10-xml.service';
 import { type SitemapUrl, STATIC_PAGES } from './sitemap-v10.types';
+
+/**
+ * Consolidation R6→R3 (flag SEO_R6_CONSOLIDATION_ENABLED) : retire du sitemap
+ * blog les URLs guide-achat des gammes qui 301-redirigent vers leur page R3
+ * (même condition que le self-gate du redirect : l'article R3 existe).
+ * Émettre une URL qui répond 301 = crawl budget gaspillé (audit sitemap issue #2).
+ * Fonction pure — testée unitairement sans mock Supabase.
+ */
+export function excludeConsolidatedGuideUrls(
+  urls: SitemapUrl[],
+  redirectingGammeAliases: ReadonlySet<string>,
+): { kept: SitemapUrl[]; excludedCount: number } {
+  const kept = urls.filter((u) => {
+    const m = u.url.match(/^\/blog-pieces-auto\/guide-achat\/(.+)$/);
+    return !(m && redirectingGammeAliases.has(m[1]));
+  });
+  return { kept, excludedCount: urls.length - kept.length };
+}
 
 @Injectable()
 export class SitemapV10StaticService extends SupabaseBaseService {
@@ -31,9 +50,59 @@ export class SitemapV10StaticService extends SupabaseBaseService {
     rpcGate: RpcGateService,
     private readonly dataService: SitemapV10DataService,
     private readonly xmlService: SitemapV10XmlService,
+    private readonly featureFlags: FeatureFlagsService,
   ) {
     super(configService);
     this.rpcGate = rpcGate;
+  }
+
+  /**
+   * Aliases des gammes dont la page guide-achat 301-redirige vers R3
+   * (consolidation R6→R3) : gammes ayant un article R3 vivant — même
+   * condition que R6GuideService.getRedirectTarget. Vide si erreur, avec
+   * warn explicite (repli observable : le sitemap reste complet plutôt
+   * que tronqué silencieusement).
+   */
+  private async fetchR6RedirectingAliases(): Promise<Set<string>> {
+    try {
+      // ba_pg_id est TEXT (legacy), pg_id est INTEGER — comparaison via Number().
+      const { data: advice, error: adviceError } = await this.supabase
+        .from('__blog_advice')
+        .select('ba_pg_id')
+        .limit(5000); // cap supabase-js 1000 par défaut — borne explicite
+      if (adviceError || !advice) {
+        this.logger.warn(
+          `⚠️ R6 consolidation: lecture __blog_advice impossible (${adviceError?.message}) — aucune exclusion sitemap appliquée`,
+        );
+        return new Set();
+      }
+      const pgIds = [
+        ...new Set(
+          advice
+            .map((a) => Number(a.ba_pg_id))
+            .filter((n) => Number.isInteger(n) && n > 0),
+        ),
+      ];
+      if (pgIds.length === 0) return new Set();
+
+      const { data: gammes, error: gammeError } = await this.supabase
+        .from('pieces_gamme')
+        .select('pg_alias')
+        .in('pg_id', pgIds)
+        .limit(5000);
+      if (gammeError || !gammes) {
+        this.logger.warn(
+          `⚠️ R6 consolidation: lecture pieces_gamme impossible (${gammeError?.message}) — aucune exclusion sitemap appliquée`,
+        );
+        return new Set();
+      }
+      return new Set(gammes.map((g) => g.pg_alias as string).filter(Boolean));
+    } catch (e) {
+      this.logger.warn(
+        `⚠️ R6 consolidation: fetch aliases failed (${e}) — aucune exclusion sitemap appliquée`,
+      );
+      return new Set();
+    }
   }
 
   /**
@@ -296,13 +365,27 @@ export class SitemapV10StaticService extends SupabaseBaseService {
         return null;
       }
 
-      const urls: SitemapUrl[] = articles.map((a) => ({
+      let urls: SitemapUrl[] = articles.map((a) => ({
         url: `/blog-pieces-auto/${a.map_alias}`,
         page_type: 'blog',
         changefreq: 'monthly',
         priority: '0.6',
         last_modified_at: a.map_date || null,
       }));
+
+      // Consolidation R6→R3 : ne jamais émettre une URL qui répond 301
+      // (inerte tant que SEO_R6_CONSOLIDATION_ENABLED=false).
+      if (this.featureFlags.seoR6ConsolidationEnabled) {
+        const redirecting = await this.fetchR6RedirectingAliases();
+        const { kept, excludedCount } = excludeConsolidatedGuideUrls(
+          urls,
+          redirecting,
+        );
+        this.logger.log(
+          `   🔀 R6 consolidation ON: ${excludedCount} URL(s) guide-achat exclue(s) du sitemap (301 → conseils)`,
+        );
+        urls = kept;
+      }
 
       const filePath = path.join(
         this.xmlService.OUTPUT_DIR,
