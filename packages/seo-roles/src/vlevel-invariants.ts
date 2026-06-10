@@ -131,6 +131,48 @@ export function isKeywordEligibleForGamme(keyword: string, pgId: number): boolea
 }
 
 /**
+ * Motif de motorisation dans le TEXTE d'un mot-clé véhicule (code moteur / cylindrée / puissance).
+ * SoT unique — dé-duplique le regex auparavant copié dans `gamme-vlevel.service` (élection) et le
+ * `TOKEN` de `scripts/seo/vlevel-v3-pipeline`. Une motorisation explicite ⇒ véhicule précis.
+ */
+// Quantificateurs BORNÉS (`\d{1,2}` cylindrée, `\d{2,4}` puissance, `\s?`) — pas de `\d+`
+// non borné adjacent à un littéral, ce qui éliminerait le risque ReDoS polynomial (CodeQL
+// js/polynomial-redos) tout en préservant la sémantique `.test()` sur les mots-clés réels
+// (« 1.5 dci », « 110 ch », « 90cv »). Couvre cylindrée X.Y et puissance ch/cv.
+export const VLEVEL_MOTOR_PATTERN =
+  /(\d{1,2}\.\d{1,2}|hdi|dci|tdi|cdi|tce|tsi|vti|puretech|tfsi|gti|vtec|mpi|d4d|jtd|cdti|crdi|dtec|\d{2,4}\s?(?:ch|cv))/i;
+
+/** Candidat véhicule minimal pour le test d'éligibilité V-Level. */
+export interface VLevelVehicleCandidate {
+  /** Texte du mot-clé. */
+  readonly keyword?: string | null;
+  /** type_id résolu (auto_type) — présent ⇒ véhicule complet, quel que soit le texte. */
+  readonly typeId?: string | number | null;
+}
+
+/**
+ * Un mot-clé véhicule est-il éligible à l'élection V-Level (V2/V3/V4) ?
+ *
+ * `true` ssi il RÉSOUT VERS UN VÉHICULE PRÉCIS :
+ *   - le TEXTE porte une motorisation ({@link VLEVEL_MOTOR_PATTERN}), OU
+ *   - il a un `type_id` résolu (un type_id EST une motorisation/variante).
+ *
+ * Corrige la garde historiquement basée sur le TEXTE seul (`MOTOR_PATTERN`), qui déclassait à tort
+ * des véhicules RÉSOLUS dont le mot-clé est model-only (ex. « filtre habitacle clio 3 » → type_id
+ * 12345). Incident 2026-06-08 pg424 : 104/284 véhicules résolus wrongly NULL.
+ *
+ * Un model-only NON résolu (ni motif, ni type_id) n'est PAS éligible ICI — mais ne doit PAS être
+ * nullifié en silence : il relève de l'ATTRIBUTION de motorisation (règle owner — Google Trends /
+ * Search / demande, via decision-pack/generics-pack + web-evidence seed), jamais d'un silent-NULL.
+ *
+ * Pure & déterministe. NE CALCULE PAS v_level.
+ */
+export function isVLevelEligibleVehicle(c: VLevelVehicleCandidate): boolean {
+  if (c.typeId != null && String(c.typeId).trim() !== "") return true;
+  return VLEVEL_MOTOR_PATTERN.test(c.keyword ?? "");
+}
+
+/**
  * Promotion V2 (figé 2026-06-08, owner « on commence toujours par V3 »).
  *
  * INVARIANT DUR `V2 ⟹ V3` : on ne peut être promu V2 que si on est DÉJÀ un champion V3
