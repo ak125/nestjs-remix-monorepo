@@ -18,12 +18,14 @@
  * Env (required): SUPPLIER_SPL (registry spl_id, must be an `inoshop` platform),
  *   FEED_PATH (CSV with `ref` + `ean` columns), BRAND_TOKENS (csv of the portal brand
  *   labels/short-codes to lock onto, e.g. "NK,SBS" or "MECAFILTER,MEFI").
- * Env (optional): OUT_DIR (default /tmp/supplier-availability), BATCH (default 50),
- *   LIMIT (cap refs, for a pilot).
+ * Env (required): OUT_DIR — durable output dir; holds the resumable JSONL checkpoint
+ *   + gz HTML, so it MUST be a persistent path the operator controls, never an
+ *   ephemeral OS temp dir.
+ * Env (optional): BATCH (default 50), LIMIT (cap refs, for a pilot).
  *
  * Run: SUPPLIER_SPL=71 BRAND_TOKENS=NK,SBS \
  *      FEED_PATH=/opt/automecanik/data/tecdoc/<supplier>-<brand>-<YYYYMM>-feed.csv \
- *      OUT_DIR=/tmp/dca-nk [LIMIT=100] \
+ *      OUT_DIR=/opt/automecanik/data/tecdoc/dca-nk [LIMIT=100] \
  *      npx tsx -r dotenv/config backend/src/workers/supplier-availability-classify.ts \
  *        dotenv_config_path=backend/.env
  */
@@ -91,7 +93,12 @@ async function main(): Promise<void> {
   const tokens = brandTokenSet({ tokens: req('BRAND_TOKENS').split(',') });
   if (tokens.size === 0) throw new Error('BRAND_TOKENS resolved to empty set');
 
-  const OUT = process.env.OUT_DIR ?? '/tmp/supplier-availability';
+  // Durable, operator-chosen output dir (required): holds the resumable JSONL
+  // checkpoint + gz HTML, so it must persist across runs. Deliberately NO default —
+  // a hardcoded /tmp path is an insecure predictable temp location, and a random
+  // per-run temp dir (mkdtemp) would defeat --resume. The operator passes a stable
+  // path under the repo data dir (e.g. OUT_DIR=/opt/automecanik/data/tecdoc/dca-<brand>).
+  const OUT = req('OUT_DIR');
   const HTML_DIR = `${OUT}/html`;
   mkdirSync(HTML_DIR, { recursive: true });
   const JSONL = `${OUT}/verdicts.jsonl`;
