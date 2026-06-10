@@ -59,7 +59,12 @@ root = sys.argv[1]
 def extract_calls(src: str):
     """Yield (rpc_name, has_api_source) per callRpc(...) invocation."""
     # Trouver toutes les positions de "callRpc"
-    for m in re.finditer(r"callRpc(?:<[^>]*>)?\s*\(", src):
+    # `<[^(]*` (et non `<[^>]*>`) : tolère les génériques imbriqués
+    # (`callRpc<Array<Record<string, unknown>>>(`) — l'ancien pattern s'arrêtait
+    # au premier `>` et rendait l'appel invisible au gate. Angle mort qui a
+    # laissé get_all_seo_references hors allowlist → RpcBlockedError en PROD
+    # (enforce P2) → index /reference-auto vide (« 0 références » sur 231).
+    for m in re.finditer(r"callRpc(?:<[^(]*)?\(", src):
         start = m.end()
         # Parcourir pour trouver la ) qui ferme, en comptant les (
         depth = 1
