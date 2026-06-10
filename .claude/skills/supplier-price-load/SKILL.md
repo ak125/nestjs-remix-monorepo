@@ -53,20 +53,32 @@ PR #707/#709), de façon vérifiée et réversible. Doctrine = runbook
 ## Workflow (OBLIGATOIRE — chaque étape gated)
 
 ### 1. Localiser le fichier fournisseur
-Fichier brut ou feed préparé sous `/opt/automecanik/data/tecdoc/`. ⚠️ **Valider
-l'unité `px_base`** (pack vs pièce) — risque d'erreur ×N.
+Feed préparé sous `/opt/automecanik/data/tecdoc/`, nommage générique
+`<fournisseur>-<marque>-<AAAAMM>-feed.csv`. ⚠️ **Valider l'unité `px_base`**
+(pack vs pièce) — risque d'erreur ×N.
 
 ### 2. Vérif live portail (login RÉEL, lecture seule — GO owner)
+Deux outils **génériques** (tout `SUPPLIER_SPL` + `BRAND_TOKENS`), read-only, ne
+touchent jamais `pieces_price`. C'est la **seule** brique hors-module (le
+`PricingModule` n'a pas de vérif portail).
+
+**Full-feed (recommandé au 1er load d'une marque)** — classifie TOUT le feed via la
+route bulk `POST /search` (~0,2 s/réf), buckets `CONFIRMED_AG`/`CONFIRMED_GRP`/
+`BLOCK_NONE`/`REVIEW_*`, cache + checkpoint reprenable, invariant *no false in-stock* :
+```bash
+SUPPLIER_SPL=<spl_id> BRAND_TOKENS=NK,SBS FEED_PATH=<feed.csv> OUT_DIR=/tmp/<run> \
+  npx tsx -r dotenv/config backend/src/workers/supplier-availability-classify.ts dotenv_config_path=backend/.env
+```
+
+**Spot-check prix (échantillon)** — compare achat fichier vs achat portail sur N réfs
+risque-pondérées :
 ```bash
 SUPPLIER_SPL=<spl_id> FEED_PATH=<feed.csv> VERIFY_N=200 \
   node -r dotenv/config dist/workers/supplier-price-verify.js dotenv_config_path=.env
 ```
-- Compare achat fichier vs achat **portail** + **dispo**. Verdict
-  **CONFIRMED / FIX_FEED / REVIEW / BLOCK(indispo)**.
+- Verdict **CONFIRMED / FIX_FEED / REVIEW / BLOCK(indispo)**.
 - ⚠️ recherche réf **floue** → re-vérifier les FIX_FEED avec `BY_EAN=true` (exact)
   AVANT de conclure. *Fournisseur sans portail → fichier seul.*
-- C'est la **seule** brique hors-module : le `PricingModule` n'a pas de vérif
-  portail. Read-only, ne touche jamais `pieces_price`.
 
 ### 3. Profil fournisseur gouverné (`supplier_price_profiles`)
 Le module **exige** un profil actif pour le `supplierId` (sinon
