@@ -25,6 +25,7 @@ import {
   type SupplierObservation,
 } from './supplier-connector.interface';
 import { articleToObservation, type InoshopArticle } from './inoshop-parse';
+import { parseSearchHtml, type SearchRow } from './inoshop-search-parse';
 
 export interface InoshopConnectorOptions {
   supplierId: string;
@@ -215,6 +216,73 @@ export class InoshopConnector implements SupplierConnector {
       };
       return articleToObservation(article);
     });
+  }
+
+  /**
+   * BULK route (captured 2026-06-05): the Symfony search form's CSRF token, read
+   * from the home page. Required by `POST /search`. Re-fetchable to recover from a
+   * stale token without a full re-login.
+   */
+  async getCsrfToken(): Promise<string> {
+    if (!this.context) throw new Error('getCsrfToken before login');
+    const res = await this.context.request.get(`${this.baseUrl}/`);
+    const html = await res.text();
+    const token =
+      html.match(/name="_token"[^>]*value="([^"]+)"/i)?.[1] ??
+      html.match(/value="([^"]+)"[^>]*name="_token"/i)?.[1];
+    if (!token) throw new Error('CSRF _token not found on home page');
+    return token;
+  }
+
+  /**
+   * BULK route: one `POST /search` with a MULTI-REF `reference_input` array returns
+   * the full results HTML for ALL refs at once (~0.2s/ref vs ~17s/ref page render).
+   * Replays the captured form over the logged-in context's cookies — no browser
+   * render. Returns deduped product rows; the caller brand/EAN-locks per feed ref.
+   * Throws on non-200 (session/CSRF expiry) so the caller can refresh + retry.
+   */
+  async fetchSearchRows(refs: string[], token: string): Promise<SearchRow[]> {
+    return (await this.fetchSearchRaw(refs, token)).rows;
+  }
+
+  /** Same as {@link fetchSearchRows} but also returns the raw HTML (diagnostics/cache). */
+  async fetchSearchRaw(
+    refs: string[],
+    token: string,
+    timeoutMs = 60000,
+  ): Promise<{ html: string; rows: SearchRow[] }> {
+    if (!this.context) throw new Error('fetchSearchRaw before login');
+    const res = await this.context.request.post(`${this.baseUrl}/search`, {
+      // the portal can be slow generating large multi-ref result sets — give it room
+      // (default Playwright request timeout is 30s, which 504/timeouts the big batches)
+      timeout: timeoutMs,
+      form: {
+        _token: token,
+        reference_input: JSON.stringify(
+          refs.map((r) => ({
+            code: r,
+            label: r,
+            type: 'reference',
+            noUpdateSource: false,
+          })),
+        ),
+        tyre_inputs: JSON.stringify({
+          pneu_larg: '',
+          pneu_haut: '',
+          pneu_diam: '',
+          pneu_indc: '',
+          pneu_indv: '',
+        }),
+        quantite: '1',
+        user_filters: '{}',
+        searchTypeDefaut: 'recherche_standard',
+      },
+    });
+    if (res.status() !== 200) {
+      throw new Error(`POST /search status ${res.status()}`);
+    }
+    const html = await res.text();
+    return { html, rows: parseSearchHtml(html) };
   }
 
   private async jitterDelay(): Promise<void> {
