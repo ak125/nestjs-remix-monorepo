@@ -6,10 +6,12 @@ sources:
   - backend/src/modules/pricing/controllers/pricing-import.controller.ts
   - backend/supabase/migrations/20260522_pricing_control_plane_v1_functions.sql
   - .claude/skills/supplier-price-load/SKILL.md        # canonical operator flow (PR #849)
-  - backend/src/workers/supplier-price-verify.ts       # read-only portal verification
+  - backend/src/workers/supplier-price-verify.ts            # read-only portal price spot-check (N-sample)
+  - backend/src/workers/supplier-availability-classify.ts   # read-only full-feed availability classifier (bulk /search, generic)
+  - backend/src/modules/supplier-truth/connectors/inoshop-search-parse.ts  # bulk-search parser + activation classifier (brand-generic)
   - backend/src/modules/supplier-truth/connectors/supplier-registry.ts
   - /opt/automecanik/data/tecdoc/
-last_scan: 2026-06-04
+last_scan: 2026-06-08
 ---
 
 # Supplier Brand Price-Load Procedure
@@ -45,6 +47,9 @@ sont restés invisibles** (load inerte).
 C'était un **système parallèle** (anti-pattern). **Superseded** par le flux
 gouverné ci-dessous. Remédiation NK = import gouverné **sans activation**, puis
 activation des seules réfs à dispo **confirmée** (voir §Garde-fou storefront).
+Le worker `feed-commit-nk.ts` (+ les scratch DCA-spécifiques `feed-verify-dca.ts` /
+`verify-dca-prices.ts`) ont été **supprimés** (consolidation 2026-06-08) : le commit
+passe **uniquement** par `POST /api/admin/pricing/import/commit`.
 
 ## Garde-fou storefront `[CRITICAL]` — 3 couches : coût ≠ dispo ≠ vendable
 
@@ -108,18 +113,30 @@ réactivement, via le toggle admin `working-stock` / la sentinelle.
   owner-confirmée.**
 
 ## 1 — Préparer le fichier
+Feed préparé sous `/opt/automecanik/data/tecdoc/`, **convention de nommage
+générique** `<fournisseur>-<marque>-<AAAAMM>-feed.csv` (ex. `dca-nk-202606-feed.csv`),
+colonnes minimales `ref,ean,achat_ht` (le classifier n'a besoin que de `ref`+`ean`).
 Formule canon (module L1, en cents) : `achat = px_base×(1−remise)` ;
 `vente_ht = round(achat×(1+marge))` ; remise par (marque×sous-famille) ;
 grille = `MARGE_NEW_2021.xls`. ⚠️ **Valider l'unité `px_base`** (pack vs pièce).
 
 ## 2 — Vérif live portail (lecture seule, owner-gated)
-`supplier-price-verify.ts` (read-only, ne touche jamais `pieces_price`) :
-`achat fichier` vs `achat portail` + **dispo**. Verdict
-**CONFIRMED / FIX_FEED / REVIEW / BLOCK(indispo)**. ⚠️ recherche réf **floue** →
-re-vérifier les écarts par **EAN exact** avant de conclure (sur NK, les « erreurs
-×4 » étaient des faux positifs ; l'EAN a confirmé le fichier). Pas d'API → portail
-lent (~17 s/réf) → **vérif ciblée** (réfs affichables/vendables + plus gros
-montants), jamais tout le fichier.
+Deux outils complémentaires, **génériques** (tout `SUPPLIER_SPL` + `BRAND_TOKENS`),
+read-only, ne touchent **jamais** `pieces_price` :
+
+- **`supplier-availability-classify.ts`** *(recommandé pour le 1er load d'une marque)* —
+  classifie **tout** le feed via la route **bulk `POST /search`** (~0,2 s/réf, vs
+  ~17 s/réf en rendu page) : EAN-lock + marque-lock par réf → buckets d'activation
+  `CONFIRMED_AG` (ag/vert → futur `pri_dispo='1'`), `CONFIRMED_GRP` (grp/vert+ → `'2'`),
+  `BLOCK_NONE` (rupture → `'0'`), `REVIEW_*` (humain). Cache HTML gz + checkpoint JSONL
+  **reprenable** ; un batch en échec n'est jamais checkpointé (pas de faux NOT_FOUND).
+  Invariant **no false in-stock** : CONFIRMED seulement si dispo-type **ET** icône verte
+  concordent. `SUPPLIER_SPL=71 BRAND_TOKENS=NK,SBS FEED_PATH=… OUT_DIR=… npx tsx …`
+- **`supplier-price-verify.ts`** *(spot-check prix rapide)* — compare `achat fichier`
+  vs `achat portail` sur un **échantillon** risque-pondéré (gros montants). Verdict
+  **CONFIRMED / FIX_FEED / REVIEW / BLOCK**. ⚠️ recherche réf **floue** → re-vérifier
+  les écarts par **EAN exact** avant de conclure (sur NK, les « erreurs ×4 » étaient
+  des faux positifs ; l'EAN a confirmé le fichier).
 
 ## 3 — Dry-run gouverné (ZÉRO write)
 `POST /api/admin/pricing/import/dry-run` `{ supplierId, brandPmId, fileRows, operator }`
@@ -198,7 +215,9 @@ prix vendable reste sur le grid mais à prix 0 → le gate `can_sell` l'affiche
 **« Indisponible »** (non-achetable). Le retrait total = `piece_display=false`.
 
 ## Outillage ops
-- **Vérif** : `supplier-price-verify.ts` (existant, read-only). ✅
+- **Classif dispo (full feed)** : `supplier-availability-classify.ts` (read-only, bulk
+  `/search`, cache+checkpoint, brand-générique via `BRAND_TOKENS`). ✅
+- **Spot-check prix** : `supplier-price-verify.ts` (existant, read-only, N-échantillon). ✅
 - **Import bulk** : un adaptateur CLI **Nest standalone-context** appelant
   `PriceImportService` (mêmes garde-fous : `--brand-pm-id`/`--feed-path`/
   `--source-tag` requis, `--dry-run` par défaut, `--commit` explicite,
