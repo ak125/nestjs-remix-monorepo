@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
 """
-GO-3 (staged insert) + GO-4 (flip) for MECAFILTER (pm_id 3040, folder 218) image recovery.
-INC-2026-015. Reads the ingester manifest, rebuilds pieces_media_img.
+Rack-images metadata rebuild (GO-3 staged insert + GO-4 flip) for any brand.
+INC-2026-015. Reads the ingester manifest (scripts/logs/recover-manifest-pm<pm>.csv),
+rebuilds pieces_media_img. Parametré : --pm-id / --folder / --date.
 
 Steps (idempotent, transactional, reversible):
-  --stage : create staging table from manifest CSV + INSERT new rows (pmi_display='0').
-  --flip  : single transaction — soft-hide legacy rows (no storage object) + turn new rows on.
+  --stage           : staging table from manifest CSV + INSERT new rows (pmi_display='0').
+  --flip            : 1 tx — soft-hide legacy rows (no storage object) + turn new rows on.
+  --sellable-rescope: hide new images of NON-sellable pieces (cardinal rule 0 ; one-off if
+                      the ingester ran without --sellable-only).
 
-Backup table pieces_media_img_backup_pm3040_20260610 must already exist (created separately).
-Scope is ALWAYS via JOIN pieces (p.piece_pm_id=3040), never m.pmi_pm_id (inconsistent).
+Backup table must already exist (created separately, GO-3 5a).
+Scope is ALWAYS via JOIN pieces (p.piece_pm_id=<pm>), never m.pmi_pm_id (inconsistent).
+Worked instance: MECAFILTER pm 3040 / folder 218 / 2026-06-10.
 """
 import argparse
 import csv
@@ -18,12 +22,13 @@ import sys
 import psycopg2
 from psycopg2.extras import execute_values
 
-PM_ID = 3040
-FOLDER = "218"
-STAGING = "pieces_media_img_recover_manifest_pm3040_20260610"
-FLIPS = "pieces_media_img_recover_flips_pm3040_20260610"
-BACKUP = "pieces_media_img_backup_pm3040_20260610"
-MANIFEST = os.path.join(os.path.dirname(__file__), "..", "logs", "recover-manifest-pm3040.csv")
+# Populated by main() from CLI args.
+PM_ID = None
+FOLDER = None
+STAGING = None
+FLIPS = None
+BACKUP = None
+MANIFEST = None
 
 
 def conn():
@@ -168,14 +173,24 @@ def sellable_rescope(c):
 
 
 def main():
+    global PM_ID, FOLDER, STAGING, FLIPS, BACKUP, MANIFEST
     ap = argparse.ArgumentParser()
+    ap.add_argument("--pm-id", type=int, required=True)
+    ap.add_argument("--folder", required=True)
+    ap.add_argument("--date", required=True, help="suffixe table, ex. 20260610")
     ap.add_argument("--stage", action="store_true")
     ap.add_argument("--flip", action="store_true")
     ap.add_argument("--sellable-rescope", action="store_true",
-                    help="masque les images des pièces non vendables (one-off MECAFILTER ; sinon utiliser ingester --sellable-only)")
+                    help="masque les images des pièces non vendables (one-off si ingester sans --sellable-only)")
     a = ap.parse_args()
     if not (a.stage or a.flip or a.sellable_rescope):
         sys.exit("préciser --stage, --flip ou --sellable-rescope")
+    PM_ID = a.pm_id
+    FOLDER = a.folder
+    STAGING = f"pieces_media_img_recover_manifest_pm{PM_ID}_{a.date}"
+    FLIPS = f"pieces_media_img_recover_flips_pm{PM_ID}_{a.date}"
+    BACKUP = f"pieces_media_img_backup_pm{PM_ID}_{a.date}"
+    MANIFEST = os.path.join(os.path.dirname(__file__), "..", "logs", f"recover-manifest-pm{PM_ID}.csv")
     c = conn()
     try:
         if a.stage:

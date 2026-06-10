@@ -256,6 +256,49 @@ def artnr_piece_map(dlnr, file_env, only_artnrs=None, sellable_only=False):
     return {r[0]: r[1] for r in rows}
 
 
+def pieceref_map(pm_id, file_env, only_refs=None, sellable_only=False):
+    """{piece_ref -> piece_id} from the `pieces` table for a brand pm_id.
+
+    More robust than article_registry: covers every piece of the brand (article_registry
+    may miss some, e.g. NK has 1445 sellable pieces with no DLNR-127 entry). The getArticles
+    search keys on piece_ref and filters dataSupplierId==<dlnr>."""
+    import psycopg2
+
+    pwd = env("SUPABASE_DB_PASSWORD", file_env)
+    if not pwd:
+        sys.exit("ABORT: SUPABASE_DB_PASSWORD absent — requis pour le mapping piece_ref→piece.")
+    conn = psycopg2.connect(
+        host=env("SUPABASE_DB_HOST", file_env, "aws-0-eu-west-3.pooler.supabase.com"),
+        port=env("SUPABASE_DB_PORT", file_env, "6543"),
+        user=env("SUPABASE_DB_USER", file_env, "postgres.cxpojprgwgubzjyqzmoq"),
+        password=pwd, dbname="postgres",
+    )
+    conn.set_session(readonly=True, autocommit=True)
+    cur = conn.cursor()
+    sellable_clause = (
+        " AND EXISTS (SELECT 1 FROM pieces_price pr "
+        "WHERE pr.pri_piece_id_i = p.piece_id AND pr.pri_dispo IN ('1','2','3'))"
+        if sellable_only else ""
+    )
+    if only_refs:
+        cur.execute(
+            "SELECT p.piece_ref, p.piece_id FROM pieces p "
+            "WHERE p.piece_pm_id = %s AND p.piece_display = true "
+            "AND p.piece_ref = ANY(%s)" + sellable_clause,
+            (pm_id, list(only_refs)),
+        )
+    else:
+        cur.execute(
+            "SELECT p.piece_ref, p.piece_id FROM pieces p "
+            "WHERE p.piece_pm_id = %s AND p.piece_display = true" + sellable_clause,
+            (pm_id,),
+        )
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+    return {r[0]: r[1] for r in rows if r[0]}
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # fetch / extract / download / upload
 # ─────────────────────────────────────────────────────────────────────────────
@@ -349,9 +392,15 @@ async def run(args, file_env, apikey, tmpl):
     prefix = args.test_prefix.strip("/") if args.test_prefix else folder
     commit = args.commit and not args.dry_run
 
-    # ARTNR set
+    # (ref -> piece_id) source : pieces.piece_ref (robuste, couvre toute la marque)
+    # ou article_registry (legacy). Le filtre image utilise dataSupplierId==dlnr.
     only = [a.strip() for a in args.artnr.split(",")] if args.artnr else None
-    amap = artnr_piece_map(dlnr, file_env, only_artnrs=only, sellable_only=args.sellable_only)
+    if args.by_piece_ref:
+        amap = pieceref_map(pm_id, file_env, only_refs=only, sellable_only=args.sellable_only)
+        log("🔑 clé = pieces.piece_ref (marque %d)" % pm_id)
+    else:
+        amap = artnr_piece_map(dlnr, file_env, only_artnrs=only, sellable_only=args.sellable_only)
+        log("🔑 clé = tecdoc_map.article_registry (DLNR %d)" % dlnr)
     if args.sellable_only:
         log("🎯 --sellable-only : restreint aux pièces vendables (pri_dispo ∈ 1,2,3) — couplé au tarif injecté")
     artnrs = sorted(amap.keys())
@@ -483,6 +532,8 @@ def main():
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--sellable-only", action="store_true",
                     help="restreint aux pièces vendables (pieces_price.pri_dispo IN 1,2,3) — usage normal couplé au tarif")
+    ap.add_argument("--by-piece-ref", action="store_true",
+                    help="clé sur pieces.piece_ref (marque pm_id) au lieu de article_registry — couvre toute la marque")
     ap.add_argument("--resume", action="store_true", help="skip ARTNR already 'ok' in checkpoint")
     ap.add_argument("--retry-failed", action="store_true", help="re-attempt failed ARTNR from checkpoint")
     ap.add_argument("--concurrency", type=int, default=8)

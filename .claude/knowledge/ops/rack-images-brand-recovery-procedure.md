@@ -137,9 +137,12 @@ python3 scripts/recovery/tecdoc-image-recover.py --pm-id 3040 --dlnr 218 --folde
 > sur des pièces non vendables, cf. règle cardinale 0).
 
 Mécanique (prouvée 2026-06-10, 15/15 réfs MECAFILTER → image 3200px) :
-- boucle ARTNR (depuis `article_registry`) → `getArticles` → **filtre `dataSupplierId==<dlnr>`
-  + `articleNumber==ARTNR`** (la recherche renvoie aussi les cross-réfs concurrentes) →
-  `images[N].imageURL3200` (fallback résolutions inférieures) sur `digital-assets.tecalliance.services`.
+- **clé `--by-piece-ref`** (recommandé) : source `(piece_ref → piece_id)` depuis `pieces`
+  (pm_id, sellable) → couvre **toute la marque**. `article_registry` (clé legacy) peut
+  **manquer** des pièces (NK : 1 445 vendables sans entrée DLNR 127). → `getArticles`
+  `searchQuery=piece_ref` → **filtre `dataSupplierId==<dlnr>` + `articleNumber==piece_ref`**
+  (la recherche renvoie aussi les cross-réfs concurrentes) → `images[N].imageURL3200`
+  (fallback résolutions inférieures) sur `digital-assets.tecalliance.services`.
 - download + sha256 ; **nom objet = `<sha256>.jpg`** → **dédup automatique** : une image
   partagée entre réfs (cas type `TDMA_*`) = 1 objet, n lignes manifest (validé au test :
   un même sha256 sur EAR7004/EAR7092/EAR7219).
