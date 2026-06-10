@@ -24,6 +24,9 @@
 -- (pg_get_functiondef capturé) ; REVOKE EXECUTE pour annuler les grants.
 -- ============================================================================
 
+SET lock_timeout = '1s';
+SET statement_timeout = '5s';
+
 -- 1. Cible de redirection R5 → R3 corrigée (consolidation R5)
 CREATE OR REPLACE FUNCTION public.get_r5_redirect_target(p_slug text)
 RETURNS TABLE(redirect_to text, pg_alias text)
