@@ -418,3 +418,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `docs/vlevel-method-freeze`
 - **Décision** : docs(seo): vlevel — objectif top-vente (proxy recherche) + dispatch pages constructeur (+1 other commit)
 - **Sortie** : PR #898 | commits 1db293cf8 bd605b606
+
+## 2026-06-10 — feat/rack-images-recovery-runbook-and-ingester (auto)
+
+- **Branche** : `feat/rack-images-recovery-runbook-and-ingester`
+- **Décision** : docs(ops): rack-images brand recovery runbook (INC-2026-015) (+1 other commit)
+- **Sortie** : PR #924 | commits aac5fc7dd 1082519ac
