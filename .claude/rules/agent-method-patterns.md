@@ -1,80 +1,49 @@
-# Agent method patterns — idées gstack traduites AutoMecanik-native
+# Agent method patterns — pointers AutoMecanik-native
 
 > `NON-CANON · ADVISORY · POINTER-ONLY · NO AUTHORITY · NO NEW CONTROL PLANE · NO EXTERNAL DEPENDENCY`
 >
-> Patterns inspirés de **gstack** (pack de skills tiers), traduits en **pointers** vers les
-> mécanismes AutoMecanik **déjà existants**. Aucune nouvelle couche, aucun registre, aucune
-> projection, aucune dépendance externe : chaque pattern **renvoie** à sa source autoritaire.
-> La vérité reste **vault / registry / DB / RAW→WIKI**.
->
-> **Ce fichier n'autorise aucune action, ne remplace aucun gate et ne peut jamais assouplir un
-> guard existant. Il aide seulement l'agent à choisir le bon mécanisme existant.**
-> *(Garde anti-authority-drift — même classe d'incident que celle documentée côté vault.)*
+> Idées gstack traduites en **pointers** vers les mécanismes AutoMecanik **déjà existants**.
+> Ce fichier n'autorise aucune action, ne remplace aucun gate et ne peut jamais assouplir un
+> guard existant. La vérité reste **vault / registry / DB / RAW→WIKI**.
 
-## Pourquoi ce fichier
+## 1. Phases — `DISCOVER → DECIDE → PLAN → PATCH → VERIFY → HANDOFF`
 
-gstack organise le travail agent autour d'une discipline (phases, garde-fous, scope, second
-avis, routing). AutoMecanik a **déjà** des équivalents — souvent **mécaniques et bloquants** là
-où gstack reste *advisory*. Ce fichier ne reconstruit rien : il **nomme** la discipline et
-**pointe** vers le mécanisme qui fait foi. But unique = aider un agent à choisir le bon outil
-existant, **sans installer gstack** ni créer de système parallèle.
+Vocabulaire de lecture/sortie — **PAS** un orchestrateur, PAS un gate CI, PAS une pipeline.
 
----
-
-## 1. Phases agent — `DISCOVER → DECIDE → PLAN → PATCH → VERIFY → HANDOFF`
-
-> **Ces phases sont un vocabulaire de lecture/sortie — PAS un orchestrateur, PAS un gate CI,
-> PAS une nouvelle pipeline.** Elles nomment une discipline déjà présente ; rien ne s'exécute et
-> rien ne bloque sur leur base.
-
-| Phase | Ce qu'elle nomme | Mécanisme autoritaire (déjà là) |
-|---|---|---|
-| **DISCOVER** | cartographier avant de muter | [CLAUDE.md](../../CLAUDE.md) « analyser AVANT muter » → ordre `canonical.json → REPO_MAP → knowledge → ADR vault → grep` |
-| **DECIDE** | verdict `REUSE / IMPROVE / CREATE / STOP` | [continuous-improvement-global](../skills/continuous-improvement-global/SKILL.md) (`GO / GO_WITH_WATCH / FIX_AND_RETEST / OWNER_DECISION / STOP_*`) + CLAUDE.md « Prefer extension over creation » |
-| **PLAN** | scope borné, risques, rollback | CLAUDE.md « Discipline de périmètre » + branche dédiée / worktree ([deployment.md](deployment.md)) |
-| **PATCH** | modification minimale, blast radius réduit | CLAUDE.md « périmètre minimal » |
-| **VERIFY** | tests + preuves | champ *Test* de continuous-improvement + vérification runtime PRE-PR / POST-MERGE (CLAUDE.md §Runtime-awareness) |
-| **HANDOFF** | résumé owner, next action, no overclaim | [agent-exit-contract.md](../canon-mirrors/agent-exit-contract.md) (coverage manifest, verdict, anti-overclaim) |
-
----
+| Phase | Mécanisme autoritaire (déjà là) |
+|---|---|
+| **DISCOVER** | [CLAUDE.md](../../CLAUDE.md) « analyser AVANT muter » → `canonical.json → REPO_MAP → knowledge → ADR vault → grep` |
+| **DECIDE** | [continuous-improvement-global](../skills/continuous-improvement-global/SKILL.md) + CLAUDE.md « Prefer extension over creation » |
+| **PLAN** | CLAUDE.md « Discipline de périmètre » + worktree dédié ([deployment.md](deployment.md)) |
+| **PATCH** | CLAUDE.md « périmètre minimal » |
+| **VERIFY** | champ *Test* de continuous-improvement + vérification runtime PRE-PR / POST-MERGE |
+| **HANDOFF** | [agent-exit-contract.md](../canon-mirrors/agent-exit-contract.md) (coverage manifest, anti-overclaim) |
 
 ## 2. Danger-zone — POINTE vers les guards (ne réécrit rien)
 
-Les actions sensibles sont **déjà gardées mécaniquement**. Sources autoritaires :
-[pretool-bash-guard.sh](../../scripts/claude-hooks/pretool-bash-guard.sh),
+Sources autoritaires : [pretool-bash-guard.sh](../../scripts/claude-hooks/pretool-bash-guard.sh),
 [pretool-supabase-guard.sh](../../scripts/claude-hooks/pretool-supabase-guard.sh),
 [pretool-file-guard.sh](../../scripts/claude-hooks/pretool-file-guard.sh),
-27 règles [.ast-grep/rules/](../../.ast-grep/rules/), [.husky/pre-commit](../../.husky/pre-commit).
+[.ast-grep/rules/](../../.ast-grep/rules/), [.husky/pre-commit](../../.husky/pre-commit).
+Niveaux : **BLOCK** (refusé, guard local) · **WARN** (averti, autorisé) · **GATED (CI)** (branch protection GitHub).
 
-Niveaux : **BLOCK** (refusé, guard local) · **WARN** (averti, autorisé) · **GATED (CI)** (gardé
-au niveau branch protection GitHub, pas par un guard local) · **DOCTRINE_ONLY** (interdit par
-doctrine mais **pas** intercepté par un guard — l'agent s'auto-discipline + demande GO owner).
-
-| Trigger | Niveau actuel | Mécanisme |
+| Trigger | Niveau | Mécanisme |
 |---|---|---|
-| `git push origin main` / `--force` / `reset --hard` / `npm install` | **BLOCK** | pretool-bash-guard.sh G1/G3/G4/G5 |
-| `docker down/stop/rm` (prod) | **BLOCK** | pretool-bash-guard.sh G2 |
-| `DROP` / `TRUNCATE` / `DISABLE RLS` | **BLOCK** | pretool-supabase-guard.sh G1-G3 |
-| `.env` / `.github` / docker / lock / build config | **BLOCK** | pretool-file-guard.sh G1-G4 |
-| `backend/src/modules/rm/` | **BLOCK** | pretool-file-guard.sh G5 |
+| `git push origin main` / `--force` / `reset --hard` / `npm install` | **BLOCK** | bash-guard G1/G3/G4/G5 |
+| `docker down/stop/rm` (prod) | **BLOCK** | bash-guard G2 |
+| `DROP` / `TRUNCATE` / `DISABLE RLS` | **BLOCK** | supabase-guard G1-G3 |
+| `.env` / `.github` / docker / lock / build config | **BLOCK** | file-guard G1-G4 |
+| `backend/src/modules/rm/` | **BLOCK** | file-guard G5 |
 | `supabase.rpc` direct (commerce) / order-cart status writes | **BLOCK** *(code)* | ast-grep `commerce-*` |
-| `ALTER TABLE DROP COLUMN` / `CREATE TABLE` sans RLS | **WARN** | pretool-supabase-guard.sh G4-G5 |
-| `payments/` edits | **WARN** *(not BLOCK)* | pretool-file-guard.sh G3 + [payments.md](payments.md) |
-| `gh pr merge` → main | **GATED (CI)** | branch protection : checks stricts requis + `enforce_admins` (merge = PREPROD ; PROD reste tag-gated). Pas un gap de guard local. |
-| `git tag v*` / `push --tags` / deploy-prod | **BLOCK** | pretool-bash-guard.sh G6 (#879) — tag = décision opérateur ([deployment.md](deployment.md)) |
-| `UPDATE`/`DELETE` `pieces` / `pieces_price` / `__seo_*` via execute_sql | **BLOCK** | pretool-supabase-guard.sh G6 (#879) — passer par module/RPC gouverné |
-
-> Gaps `tag v*` et DML gouverné **fermés par #879** (Guard 6 ×2, durcissement owner-gated —
-> renforcer, jamais affaiblir). `gh pr merge` reste **GATED (CI)** (branch protection). Plus
-> aucune ligne **DOCTRINE_ONLY** dans cette danger-zone.
-
----
+| `ALTER TABLE DROP COLUMN` / `CREATE TABLE` sans RLS | **WARN** | supabase-guard G4-G5 |
+| `payments/` edits | **WARN** | file-guard G3 + [payments.md](payments.md) |
+| `gh pr merge` → main | **GATED (CI)** | branch protection (merge = PREPROD ; PROD reste tag-gated) |
+| `git tag v*` / `push --tags` / deploy-prod | **BLOCK** | bash-guard G6 (#879) — tag = décision opérateur ([deployment.md](deployment.md)) |
+| `UPDATE`/`DELETE` `pieces` / `pieces_price` / `__seo_*` via execute_sql | **BLOCK** | supabase-guard G6 (#879) — passer par module/RPC gouverné |
 
 ## 3. Freeze scope — rituel par tâche
 
-Discipline existante : CLAUDE.md « Discipline de périmètre » + ownership 992 globs
-([ownership.yaml](../../.spec/00-canon/repository-registry/ownership.yaml)) + travail en worktree
-dédié ([deployment.md](deployment.md)). Rituel à poser en tête de tâche :
+Discipline : CLAUDE.md « Discipline de périmètre » + [ownership.yaml](../../.spec/00-canon/repository-registry/ownership.yaml) + worktree.
 
 ```
 Allowed:   <chemins du bounded-context concerné>
@@ -82,101 +51,32 @@ Forbidden: <tout le reste — ex. payments/, orders/, migrations non demandées>
 Hors scope trouvé → report only, jamais de patch.
 ```
 
----
-
 ## 4. QA = report-only par défaut
 
-Sources autoritaires existantes : Playwright E2E ([playwright.config.ts](../../frontend/playwright.config.ts)),
-Lighthouse CI, PROD smoke ([prod-smoke-tests.yml](../../.github/workflows/prod-smoke-tests.yml)),
-skills [responsive-audit](../skills/responsive-audit/SKILL.md),
-[web-vitals-audit](../skills/web-vitals-audit/SKILL.md),
-[runtime-truth-audit](../skills/runtime-truth-audit/SKILL.md).
-
-**Règle : la QA produit d'abord un rapport, jamais un patch auto. Tout fix = GO explicite.**
-
-Invariants commerce à vérifier *(aide-mémoire — autorité = code runtime + prod-smoke-tests.yml,
-pas cette liste)* :
-
-- sélecteur véhicule visible (R1)
-- lien R3 → R1 présent
-- bouton panier masqué si `can_sell=false`
-- prix affiché seulement si `price_exists`
-- PREORDER vendable si `pri_dispo=3`
-- `noindex` sur 404/410, canonical propre
-- pas de contenu générique dupliqué visible
-
-Non-couvert par un test existant → **candidat signalé**, **pas** de nouveau skill (V1-first).
-
----
+**La QA produit d'abord un rapport, jamais un patch auto. Tout fix = GO explicite.**
+Autorité = code runtime + [prod-smoke-tests.yml](../../.github/workflows/prod-smoke-tests.yml) +
+Playwright E2E + Lighthouse CI + skills `responsive-audit` / `web-vitals-audit` / `runtime-truth-audit`.
+Non-couvert par un test existant → **candidat signalé**, pas de nouveau skill (V1-first).
 
 ## 5. Second avis = advisory only
 
-> Second avis multi-modèle = **advisory only**. Primary pointers :
-> - existing [code-review](../skills/code-review/SKILL.md) skill
-> - existing CodeRabbit review *when available*
-> - optional external model review, **never authoritative**
->
-> Owner = décision finale. vault / repo / DB = vérité. *Aucun outil tiers n'est nommé comme
-> chemin prioritaire.*
+[code-review](../skills/code-review/SKILL.md) + CodeRabbit *si disponible* + éventuel avis
+multi-modèle — **jamais autoritaire** ; owner = décision finale. 5 questions standard :
+architecture parallèle inventée ? hors scope touché ? rollback oublié ? invariant métier
+cassé ? `DONE` sur-déclaré alors que `PARTIAL` ?
 
-5 questions standard du second avis :
+## 6. Mémoire & routing — pointers
 
-1. Ai-je inventé une architecture parallèle ?
-2. Ai-je touché hors scope ?
-3. Ai-je oublié un rollback ?
-4. Ai-je cassé un invariant métier ?
-5. Ai-je sur-déclaré `DONE` alors que c'est `PARTIAL` ?
+- Mémoire = aide au rappel, **jamais** source de vérité — couches `MEMORY.md` / `CLAUDE.md` /
+  vault / WIKI / DB / RAG : voir [agent-doc-search.md](agent-doc-search.md).
+- Routing autoritaire = [agent-operating-map.yaml](../../.spec/00-canon/ai-registry/agent-operating-map.yaml)
+  + [role-matrix.md](../../.spec/00-canon/role-matrix.md) + [departments-map](../../audit/automecanik-departments-map.md).
 
----
+## 7. Refusés (de gstack)
 
-## 6. Mémoire = aide au rappel, pas vérité
-
-Doctrine **déjà en place** (rien à construire) :
-
-| Couche | Rôle |
-|---|---|
-| `MEMORY.md` | gotchas, préférences |
-| `CLAUDE.md` | comportement agent |
-| vault | décisions canon |
-| WIKI | connaissance validée |
-| DB | vérité runtime |
-| RAG | consultation seulement |
-
-Voir [agent-doc-search.md](agent-doc-search.md) : « pas de nouvel index, pas de couche RAG
-parallèle, pas de vérité parallèle ». Une mémoire agent n'est **jamais** source de vérité.
-
----
-
-## 7. Review routing — vers le bon mécanisme, pas 15 agents génériques
-
-Routing **autoritaire** = [agent-operating-map.yaml](../../.spec/00-canon/ai-registry/agent-operating-map.yaml)
-(surfaces root / seo-batch / marketing / wiki / paperclip) + [role-matrix.md](../../.spec/00-canon/role-matrix.md)
-(R\*/G\*) + section « Interaction » de chaque skill + [departments-map](../../audit/automecanik-departments-map.md).
-
-Table d'**exemple non-autoritaire** *(illustration ; la source qui fait foi reste
-agent-operating-map.yaml, owner-gated)* :
-
-| Tâche | Surface / département |
-|---|---|
-| pricing / marge / dispo | pricing + supplier |
-| supplier (DCA / CAL / NK) | supplier + catalog |
-| SEO R1 / R2 / R3 / R8 | seo-batch |
-| RAW / WIKI | wiki |
-| cart / order / payment | commerce + governance |
-| runtime / CWV / errors | runtime + data |
-| dashboard / command-center | strategy + governance |
-
----
-
-## 8. Ce qu'on REFUSE (de gstack)
-
-| Refusé | Pourquoi |
-|---|---|
-| `/ship`, `/land-and-deploy` auto | PROD owner-gated : tag `v*` = décision opérateur ([deployment.md](deployment.md)) |
-| team-required mode | aucune imposition d'outil tiers dans le repo |
-| brain / mémoire externe comme canon | vérité = vault / DB / WIKI, jamais une mémoire agent ([agent-doc-search.md](agent-doc-search.md)) |
-| browser agent mutant sans garde-fou | toute mutation passe par les gates existants |
-| continuous checkpoint push | déclenche CI / PROD ; le push est une action gouvernée |
+`/ship` / `/land-and-deploy` auto (PROD owner-gated, tag `v*` = opérateur) · team-required mode ·
+mémoire externe comme canon · browser agent mutant sans garde-fou · continuous checkpoint push
+(le push est une action gouvernée).
 
 ---
 
