@@ -37,9 +37,11 @@ Niveaux : **BLOCK** (refusé, guard local) · **WARN** (averti, autorisé) · **
 | `supabase.rpc` direct (commerce) / order-cart status writes | **BLOCK** *(code)* | ast-grep `commerce-*` |
 | `ALTER TABLE DROP COLUMN` / `CREATE TABLE` sans RLS | **WARN** | supabase-guard G4-G5 |
 | `payments/` edits | **WARN** | file-guard G3 + [payments.md](payments.md) |
-| `gh pr merge` → main | **GATED (CI)** | branch protection (merge = PREPROD ; PROD reste tag-gated) |
+| `gh pr merge` → main | **GATED (CI)** | branch protection : checks stricts + `enforce_admins` (merge = PREPROD ; PROD tag-gated) |
 | `git tag v*` / `push --tags` / deploy-prod | **BLOCK** | bash-guard G6 (#879) — tag = décision opérateur ([deployment.md](deployment.md)) |
 | `UPDATE`/`DELETE` `pieces` / `pieces_price` / `__seo_*` via execute_sql | **BLOCK** | supabase-guard G6 (#879) — passer par module/RPC gouverné |
+
+> #879 = durcissement owner-gated — **renforcer, jamais affaiblir** un guard.
 
 ## 3. Freeze scope — rituel par tâche
 
@@ -55,7 +57,14 @@ Hors scope trouvé → report only, jamais de patch.
 
 **La QA produit d'abord un rapport, jamais un patch auto. Tout fix = GO explicite.**
 Autorité = code runtime + [prod-smoke-tests.yml](../../.github/workflows/prod-smoke-tests.yml) +
-Playwright E2E + Lighthouse CI + skills `responsive-audit` / `web-vitals-audit` / `runtime-truth-audit`.
+[Playwright E2E](../../frontend/playwright.config.ts) + Lighthouse CI + skills `responsive-audit` /
+`web-vitals-audit` / `runtime-truth-audit`.
+
+Invariants commerce *(aide-mémoire — autorité = code runtime, pas cette liste)* : sélecteur
+véhicule visible (R1) · lien R3 → R1 présent · bouton panier masqué si `can_sell=false` · prix
+affiché seulement si `price_exists` · PREORDER vendable si `pri_dispo=3` · `noindex` sur 404/410
++ canonical propre · pas de contenu générique dupliqué visible.
+
 Non-couvert par un test existant → **candidat signalé**, pas de nouveau skill (V1-first).
 
 ## 5. Second avis = advisory only

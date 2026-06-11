@@ -49,7 +49,7 @@ feature (sinon DEV:3000 sert du code périmé).
 
 ## Pièges de nommage INTERDITS (CI lint enforcé)
 
-Toute occurrence des patterns ci-dessous dans un fichier `.md` du repo (hors errata explicites ou ce fichier canon) fait échouer le job `gates-lint-vocabulary` :
+Toute occurrence des patterns ci-dessous dans un fichier `.md` du repo (hors errata explicites ou ce fichier canon) fait échouer le job `no-confusing-preprod-formulations` (workflow [`preprod-vocabulary-guard.yml`](../../.github/workflows/preprod-vocabulary-guard.yml)) :
 
 - ❌ `DEV pré-prod` ou `DEV preprod` → confond 2 machines distinctes (46.224.118.55 vs 49.12.233.2)
 - ❌ `preprod.automecanik.com` → hostname inexistant. Aucune URL publique n'expose PREPROD.
