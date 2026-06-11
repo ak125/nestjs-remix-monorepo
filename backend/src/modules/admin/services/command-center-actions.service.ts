@@ -71,6 +71,7 @@ export class CommandCenterActionsService extends SupabaseBaseService {
           page: string;
           impressions: number | string;
           clicks: number | string;
+          avg_position?: number | string | null;
         }>
       >('rpc_seo_low_ctr_v1', {
         p_window_days: CommandCenterActionsService.GSC_WINDOW_DAYS,
@@ -80,12 +81,18 @@ export class CommandCenterActionsService extends SupabaseBaseService {
       });
       if (error) throw error;
 
-      // RPC returns BIGINT sums as JSONB numbers; coerce defensively.
-      const rows: GscOpportunityRow[] = (data ?? []).map((r) => ({
-        page: r.page,
-        impressions: Number(r.impressions) || 0,
-        clicks: Number(r.clicks) || 0,
-      }));
+      // RPC returns BIGINT sums as JSONB numbers; coerce defensively. avg_position
+      // → position (PR3): only a real SERP position (>0) survives; 0/NaN/absent → null
+      // (explicit finite check, not a falsy-coerce) so the rule uses its honest fallback.
+      const rows: GscOpportunityRow[] = (data ?? []).map((r) => {
+        const pos = Number(r.avg_position);
+        return {
+          page: r.page,
+          impressions: Number(r.impressions) || 0,
+          clicks: Number(r.clicks) || 0,
+          position: Number.isFinite(pos) && pos > 0 ? pos : null,
+        };
+      });
       return buildSeoOpportunityActions(rows);
     } catch (e) {
       this.logger.warn(`[command-center-actions] SEO RPC failed: ${e}`);

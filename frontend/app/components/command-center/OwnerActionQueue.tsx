@@ -162,9 +162,21 @@ export function OwnerActionQueue({ data }: { data: CommandCenterResponse }) {
                                     </th>
                                     <th
                                       scope="col"
-                                      className="py-1 text-right font-medium"
+                                      className="py-1 pr-3 text-right font-medium"
                                     >
                                       CTR
+                                    </th>
+                                    <th
+                                      scope="col"
+                                      className="py-1 pr-3 text-right font-medium"
+                                    >
+                                      Pos.
+                                    </th>
+                                    <th
+                                      scope="col"
+                                      className="py-1 font-medium"
+                                    >
+                                      Action SEO
                                     </th>
                                   </tr>
                                 </thead>
@@ -188,8 +200,16 @@ export function OwnerActionQueue({ data }: { data: CommandCenterResponse }) {
                                       <td className="py-1 pr-3 text-right tabular-nums">
                                         {d.clicks}
                                       </td>
-                                      <td className="py-1 text-right tabular-nums">
+                                      <td className="py-1 pr-3 text-right tabular-nums">
                                         {(d.ctr * 100).toFixed(2)}%
+                                      </td>
+                                      <td className="py-1 pr-3 text-right tabular-nums">
+                                        {d.position == null
+                                          ? "—"
+                                          : d.position.toFixed(1)}
+                                      </td>
+                                      <td className="py-1 text-muted-foreground">
+                                        {d.next_step}
                                       </td>
                                     </tr>
                                   ))}
