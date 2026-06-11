@@ -28,10 +28,8 @@ import {
   Map,
   Share2,
   MessageSquare,
-  RefreshCw,
   Activity,
   ShieldCheck,
-  FilePen,
   Zap,
   ImageIcon,
   DatabaseIcon,
@@ -317,12 +315,6 @@ export const AdminSidebar = memo(function AdminSidebar({
             : "Métadonnées SEO",
         },
         {
-          name: "Content Refresh",
-          href: "/admin/content-refresh",
-          icon: RefreshCw,
-          description: "Pipeline rafraîchissement contenu",
-        },
-        {
           name: "Keyword Clusters",
           href: "/admin/seo-hub/keyword-clusters",
           icon: Tag,
@@ -363,12 +355,6 @@ export const AdminSidebar = memo(function AdminSidebar({
       notification: false,
       subItems: [
         {
-          name: "Cockpit Contenu",
-          href: "/admin/rag/cockpit",
-          icon: Activity,
-          description: "Pilotage unifie pipeline",
-        },
-        {
           name: "Dashboard RAG",
           href: "/admin/rag",
           icon: BarChart3,
@@ -387,28 +373,10 @@ export const AdminSidebar = memo(function AdminSidebar({
           description: "PDF & URL ingest",
         },
         {
-          name: "Pipeline",
-          href: "/admin/rag/pipeline",
-          icon: Activity,
-          description: "Content refresh & gates",
-        },
-        {
-          name: "QA Gate",
-          href: "/admin/rag/qa-gate",
-          icon: ShieldCheck,
-          description: "Champs SEO protégés",
-        },
-        {
           name: "Webhook Monitor",
           href: "/admin/rag/webhook-monitor",
           icon: Zap,
           description: "Suivi webhooks & pipeline",
-        },
-        {
-          name: "Drafts SEO",
-          href: "/admin/rag/seo-drafts",
-          icon: FilePen,
-          description: "Review & publish drafts",
         },
         {
           name: "Images IA",
@@ -488,7 +456,6 @@ export const AdminSidebar = memo(function AdminSidebar({
     "SEO Enterprise":
       location.pathname.startsWith("/admin/seo") ||
       location.pathname.startsWith("/admin/gammes-seo") ||
-      location.pathname.startsWith("/admin/content-refresh") ||
       location.pathname.startsWith("/admin/keyword-planner") ||
       location.pathname.startsWith("/admin/page-role"),
     Blog:
