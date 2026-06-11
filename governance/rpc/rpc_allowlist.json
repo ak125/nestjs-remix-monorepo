@@ -2,7 +2,7 @@
   "version": "1.0.0",
   "generated_at": "2026-02-03T14:00:00Z",
   "description": "RPC READ_SAFE - Autorisees pour tous les roles",
-  "total": 167,
+  "total": 169,
   "functions": [
     {
       "name": "auth_email_exists",
@@ -743,6 +743,16 @@
       "name": "rm_get_page_complete_v2",
       "volatility": "VOLATILE",
       "reason": "Read-only cache (migrated from P2)"
+    },
+    {
+      "name": "rpc_seo_low_ctr_v1",
+      "volatility": "STABLE",
+      "reason": "SEO low-CTR aggregation read-only (Command Center + seo-control dashboard)"
+    },
+    {
+      "name": "rpc_seo_low_ctr_v2",
+      "volatility": "STABLE",
+      "reason": "SEO low-CTR v2 honest envelope read-only (Command Center owner-action queue)"
     },
     {
       "name": "search_pieces_fts",
