@@ -17,7 +17,10 @@
 -- version via un recreate DÉTERMINISTE depuis sa définition courante (pas de
 -- transcription manuelle fragile d'une fonction de ~9 100 caractères).
 --
--- Squawk : pas de BEGIN/COMMIT explicite (assume_in_transaction).
+-- Squawk : pas de BEGIN/COMMIT explicite (assume_in_transaction) + timeouts requis
+-- (require-timeout-settings, convention repo 2s/5s — DDL léger, swap de définition).
+set lock_timeout = '2s';
+set statement_timeout = '5s';
 
 -- 1) Helper type-guardé : 0 si non-array / null jsonb.
 CREATE OR REPLACE FUNCTION public.safe_jsonb_array_length(x jsonb)
