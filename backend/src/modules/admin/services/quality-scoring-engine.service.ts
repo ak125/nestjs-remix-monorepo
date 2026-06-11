@@ -879,7 +879,9 @@ export class QualityScoringEngineService extends SupabaseBaseService {
       actions.push('Ajouter une meta description');
     // v2.2: action ré-ancrée sur le contenu RÉEL de la page (source RAW→WIKI), plus le RAG.
     if (row.seo_content_length < 800)
-      actions.push('Enrichir le contenu éditorial de la page (source RAW→WIKI)');
+      actions.push(
+        'Enrichir le contenu éditorial de la page (source RAW→WIKI)',
+      );
 
     return actions;
   }
