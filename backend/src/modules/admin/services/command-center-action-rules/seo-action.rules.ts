@@ -1,7 +1,9 @@
 /**
- * SEO opportunity rules — REAL business actions (source SEO/GSC is CERTIFIED).
+ * SEO opportunity rules — REAL business actions (source SEO/GSC, CERTIFIED
+ * seulement si la fraîcheur d'ingestion est vérifiée — sinon PARTIAL).
  * Input = GSC rows already filtered by the service to "high impressions, ~0 clicks"
- * (the clearest opportunity). Pure function (no I/O) → testable with fixtures.
+ * (the clearest opportunity) — requêtes synthétiques exclues côté RPC
+ * (_seo_is_synthetic_query). Pure function (no I/O) → testable with fixtures.
  *
  * Aggregated by PAGE KIND so the queue stays a prioritized list, not 500 rows.
  * NB: these are local opportunity-grouping buckets, NOT the governed SEO R* role
@@ -21,6 +23,29 @@ export interface GscOpportunityRow {
   clicks: number;
   position?: number | null; // PR3: avg SERP position (rpc_seo_low_ctr_v1.avg_position)
 }
+
+/**
+ * Méta d'honnêteté de la source GSC (enveloppe rpc_seo_low_ctr_v2) :
+ *   - total_qualifying : pages qualifiantes AVANT le cap p_limit (divulgue le cap),
+ *   - data_from/data_to : couverture réellement présente dans la fenêtre demandée
+ *     (remplace le « sur 120j » qui affirmait une couverture non vérifiée),
+ *   - freshness : 'fresh' = dernière ingestion dans le SLA ; 'stale'/'unknown'
+ *     dégradent la confiance à PARTIAL — jamais un CERTIFIED non vérifié.
+ */
+export interface GscOpportunityMeta {
+  total_qualifying: number | null;
+  data_from: string | null; // YYYY-MM-DD — première date réellement couverte
+  data_to: string | null; // YYYY-MM-DD — dernière date réellement couverte
+  freshness: 'fresh' | 'stale' | 'unknown';
+}
+
+/** Fallback honnête (RPC v1 sans enveloppe) : rien d'affirmé, confiance PARTIAL. */
+export const UNKNOWN_GSC_META: GscOpportunityMeta = {
+  total_qualifying: null,
+  data_from: null,
+  data_to: null,
+  freshness: 'unknown',
+};
 
 type PageKind = 'product' | 'content' | 'other';
 
@@ -101,8 +126,64 @@ export function deriveUrlNextStep(
 
 export function buildSeoOpportunityActions(
   rows: GscOpportunityRow[],
+  meta: GscOpportunityMeta = UNKNOWN_GSC_META,
 ): RawAction[] {
-  if (!rows.length) return [];
+  if (!rows.length) {
+    // 0 ligne + données fraîches et couvertes = vraie bonne nouvelle → rien.
+    // 0 ligne SANS fraîcheur/couverture vérifiée = indistinguable d'une panne
+    // d'ingestion : un signal de certification, jamais un silence ambigu.
+    if (meta.freshness === 'fresh' && meta.data_from) return [];
+    return [
+      {
+        id: 'seo:gsc-data-gap',
+        title:
+          'Données GSC absentes ou non fraîches — fiabiliser avant de conclure',
+        department: 'seo',
+        source: 'seo',
+        action_type: 'certification',
+        impact: 6,
+        urgency: 6,
+        // le constat « pas de donnée fraîche » est lui-même certain
+        data_confidence: CONFIDENCE_BY_CERT.CERTIFIED,
+        effort: 3,
+        risk: 1,
+        reason:
+          "0 page d'opportunité remontée, mais la fraîcheur/couverture GSC n'est pas vérifiée " +
+          `(fraîcheur : ${meta.freshness}${meta.data_from ? '' : ', couverture inconnue'}) — ` +
+          "impossible de distinguer « aucune opportunité » d'une ingestion arrêtée.",
+        evidence: ['__seo_gsc_daily (fenêtre interrogée vide ou non fraîche)'],
+        next_step:
+          "Vérifier l'ingestion GSC (gsc-daily-fetcher) et appliquer la migration rpc_seo_low_ctr_v2 si absente.",
+      },
+    ];
+  }
+
+  const sampleSize = rows.length;
+  const truncated =
+    meta.total_qualifying != null && meta.total_qualifying > sampleSize;
+  // CERTIFIED exige une fraîcheur vérifiée ; stale/unknown → PARTIAL (≥ floor 40 :
+  // l'action business survit mais l'UI la marque « prudence », pas de faux 90).
+  const confidence =
+    meta.freshness === 'fresh'
+      ? CONFIDENCE_BY_CERT.CERTIFIED
+      : CONFIDENCE_BY_CERT.PARTIAL;
+  // sampleSize/total_qualifying sont GLOBAUX (tous types de pages, cap p_limit
+  // partagé) alors que chaque action est émise PAR type — le wording le dit.
+  const scopeNote = truncated
+    ? `Échantillon global top ${sampleSize} par impact — ${meta.total_qualifying} pages qualifiantes (fortes impressions, ~0 clic) au total, tous types de pages confondus.`
+    : meta.total_qualifying != null
+      ? `Liste complète (${meta.total_qualifying} pages qualifiantes, tous types confondus).`
+      : `Échantillon top ${sampleSize} (toutes pages) — total qualifiant inconnu (RPC v1).`;
+  const coverageNote =
+    meta.data_from && meta.data_to
+      ? `Données GSC réellement couvertes du ${meta.data_from} au ${meta.data_to}`
+      : 'Couverture réelle des données GSC inconnue';
+  const freshnessNote =
+    meta.freshness === 'fresh'
+      ? ''
+      : meta.freshness === 'stale'
+        ? ' ; fraîcheur GSC dégradée (ingestion en retard)'
+        : ' ; fraîcheur GSC non vérifiée';
 
   const byKind = new Map<PageKind, GscOpportunityRow[]>();
   for (const r of rows) {
@@ -137,16 +218,16 @@ export function buildSeoOpportunityActions(
     });
     out.push({
       id: `seo:opportunity:${kind}`,
-      title: `${list.length} ${m.label} à fort potentiel SEO (impressions sans clic)`,
+      title: `${list.length} ${m.label} à fort potentiel SEO (impressions sans clic${truncated ? ` — top ${sampleSize} toutes pages` : ''})`,
       department: 'seo',
       source: 'seo',
       action_type: 'business',
       impact: m.impact,
       urgency: m.urgency,
-      data_confidence: CONFIDENCE_BY_CERT.CERTIFIED, // GSC certified
+      data_confidence: confidence,
       effort: kind === 'product' ? 4 : 3,
       risk: 1,
-      reason: `${list.length} ${m.label} cumulent ${totalImp} impressions sur 120j avec ~0 clic → CTR à récupérer.`,
+      reason: `${list.length} ${m.label} cumulent ${totalImp} impressions avec ~0 clic → CTR à récupérer. ${scopeNote} ${coverageNote}${freshnessNote}.`,
       evidence: sorted
         .slice(0, 3)
         .map((r) => `${r.page} (${r.impressions} imp, ${r.clicks} clic)`),
