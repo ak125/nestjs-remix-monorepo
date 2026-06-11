@@ -533,10 +533,9 @@ export class QualityScoringEngineService extends SupabaseBaseService {
         else reasons.push('Image hero (pg_pic) manquante');
         if (row.has_pg_wall) score += 10;
         if (row.has_blog_advice) score += 10;
-        // v2.1: check contenu SEO (description gamme)
-        score += continuousScore(row.seo_content_length, 800, 20);
-        // v2.1: check RAG
-        score += continuousScore(row.rag_content_length, 1500, 10);
+        // v2.2: contenu RÉEL (sg_content). Absorbe les 10 pts de l'ex-signal RAG
+        // (retiré : RAG = chatbot only). 20+15+15+10+10+30 = 100.
+        score += continuousScore(row.seo_content_length, 800, 30);
         return decimalClamp(score);
       }
 
@@ -581,27 +580,19 @@ export class QualityScoringEngineService extends SupabaseBaseService {
     else reasons.push('H1 absent ou trop court');
 
     // Content length (for R4 use content_html, for others use seo_content)
+    // v2.2: contenu RÉEL de la page (sg_content). Absorbe les 15 pts de l'ex-signal
+    // RAG (retiré : RAG = chatbot only, ADR-031/046). 25+25+15+35 = 100.
     const contentLen =
       pageType === 'R4_reference'
         ? row.ref_content_html_length
         : row.seo_content_length;
-    if (contentLen >= t.content_min) score += 20;
+    if (contentLen >= t.content_min) score += 35;
     else if (contentLen > 0) {
-      score += 8;
+      score += 14;
       reasons.push(
         `Contenu page trop court (${contentLen} chars, min ${t.content_min})`,
       );
     } else reasons.push('Contenu page absent');
-
-    // RAG file (shared across types) — continuous
-    const ragPts = continuousScore(
-      row.rag_content_length,
-      t.rag_content_min,
-      15,
-    );
-    score += ragPts;
-    if (ragPts < 7.5)
-      reasons.push(`Fichier RAG court (${row.rag_content_length} chars)`);
 
     return decimalClamp(score);
   }
@@ -610,27 +601,22 @@ export class QualityScoringEngineService extends SupabaseBaseService {
     let score = 0;
 
     // Source verified (guide-specific but important for all)
-    if (row.guide_source_verified) score += 30;
+    // v2.2: +10 pts (absorbe une partie de l'ex-signal "RAG truth" retiré).
+    if (row.guide_source_verified) score += 40;
     else reasons.push('Source non verifiee');
 
-    // Pipeline quality
+    // Pipeline quality — v2.2: +10 pts (absorbe le reste de l'ex-signal RAG).
     const pq = row.pipeline_quality_score;
-    if (pq >= TRUST_THRESHOLDS.pipeline_quality_good) score += 25;
-    else if (pq >= TRUST_THRESHOLDS.pipeline_quality_min) score += 15;
+    if (pq >= TRUST_THRESHOLDS.pipeline_quality_good) score += 35;
+    else if (pq >= TRUST_THRESHOLDS.pipeline_quality_min) score += 25;
     else if (pq > 0) {
-      score += 5;
+      score += 10;
       reasons.push(`Pipeline quality faible (${pq})`);
     }
 
-    // RAG truth level
-    if (
-      row.rag_truth_level &&
-      TRUST_THRESHOLDS.rag_truth_level_good.includes(row.rag_truth_level)
-    ) {
-      score += 20;
-    } else if (row.rag_content_length > 0) {
-      score += 10;
-    }
+    // (ex-signal "RAG truth level" RETIRÉ : RAG = chatbot only, ADR-031/046.
+    //  La confiance s'ancre sur la provenance vérifiée + le pipeline réels.)
+    // Max inchangé : 40 + 35 + 15 = 90 (+10 canonical R4) = identique à l'ex 30+25+20+15.
 
     // Hard gate results (pipeline)
     const hgr = row.pipeline_hard_gate_results;
@@ -780,18 +766,12 @@ export class QualityScoringEngineService extends SupabaseBaseService {
             else if (days <= 180) score += signal.weight * 0.2;
           }
           break;
-        case 'rag_available':
-          score += continuousScore(row.rag_content_length, 1000, signal.weight);
-          break;
+        // v2.2: cases 'rag_available' + 'truth_level_high' RETIRÉES (RAG = chatbot only).
         case 'data_completeness': {
           const featuresPct = this.countPresentFeatures(row, _pageType);
           score += (featuresPct / 100) * signal.weight;
           break;
         }
-        case 'truth_level_high':
-          if (row.rag_truth_level && ['L1', 'L2'].includes(row.rag_truth_level))
-            score += signal.weight;
-          break;
       }
     }
 
@@ -817,7 +797,7 @@ export class QualityScoringEngineService extends SupabaseBaseService {
     check(row.seo_title_length, 0);
     check(row.seo_desc_length, 0);
     check(row.seo_h1_length, 0);
-    check(row.rag_content_length, 0);
+    // v2.2: rag_content_length retiré des features de complétude (RAG = chatbot only).
     check(row.pipeline_quality_score, 0);
 
     switch (pageType) {
@@ -897,8 +877,11 @@ export class QualityScoringEngineService extends SupabaseBaseService {
       actions.push('Ajouter un titre SEO');
     if (row.seo_desc_length === 0 && row.ref_meta_desc_length === 0)
       actions.push('Ajouter une meta description');
-    if (row.rag_content_length < 1500)
-      actions.push('Enrichir le fichier RAG (>1500 chars)');
+    // v2.2: action ré-ancrée sur le contenu RÉEL de la page (source RAW→WIKI), plus le RAG.
+    if (row.seo_content_length < 800)
+      actions.push(
+        'Enrichir le contenu éditorial de la page (source RAW→WIKI)',
+      );
 
     return actions;
   }
