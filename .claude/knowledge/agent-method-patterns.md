@@ -31,7 +31,7 @@ existant, **sans installer gstack** ni créer de système parallèle.
 |---|---|---|
 | **DISCOVER** | cartographier avant de muter | [CLAUDE.md](../../CLAUDE.md) « analyser AVANT muter » → ordre `canonical.json → REPO_MAP → knowledge → ADR vault → grep` |
 | **DECIDE** | verdict `REUSE / IMPROVE / CREATE / STOP` | [continuous-improvement-global](../skills/continuous-improvement-global/SKILL.md) (`GO / GO_WITH_WATCH / FIX_AND_RETEST / OWNER_DECISION / STOP_*`) + CLAUDE.md « Prefer extension over creation » |
-| **PLAN** | scope borné, risques, rollback | CLAUDE.md « Discipline de périmètre » + branche dédiée / worktree ([deployment.md](deployment.md)) |
+| **PLAN** | scope borné, risques, rollback | CLAUDE.md « Discipline de périmètre » + branche dédiée / worktree ([deployment.md](../rules/deployment.md)) |
 | **PATCH** | modification minimale, blast radius réduit | CLAUDE.md « périmètre minimal » |
 | **VERIFY** | tests + preuves | champ *Test* de continuous-improvement + vérification runtime PRE-PR / POST-MERGE (CLAUDE.md §Runtime-awareness) |
 | **HANDOFF** | résumé owner, next action, no overclaim | [agent-exit-contract.md](../canon-mirrors/agent-exit-contract.md) (coverage manifest, verdict, anti-overclaim) |
@@ -59,9 +59,9 @@ doctrine mais **pas** intercepté par un guard — l'agent s'auto-discipline + d
 | `backend/src/modules/rm/` | **BLOCK** | pretool-file-guard.sh G5 |
 | `supabase.rpc` direct (commerce) / order-cart status writes | **BLOCK** *(code)* | ast-grep `commerce-*` |
 | `ALTER TABLE DROP COLUMN` / `CREATE TABLE` sans RLS | **WARN** | pretool-supabase-guard.sh G4-G5 |
-| `payments/` edits | **WARN** *(not BLOCK)* | pretool-file-guard.sh G3 + [payments.md](payments.md) |
+| `payments/` edits | **WARN** *(not BLOCK)* | pretool-file-guard.sh G3 + [payments.md](../rules/payments.md) |
 | `gh pr merge` → main | **GATED (CI)** | branch protection : checks stricts requis + `enforce_admins` (merge = PREPROD ; PROD reste tag-gated). Pas un gap de guard local. |
-| `git tag v*` / `push --tags` / deploy-prod | **BLOCK** | pretool-bash-guard.sh G6 (#879) — tag = décision opérateur ([deployment.md](deployment.md)) |
+| `git tag v*` / `push --tags` / deploy-prod | **BLOCK** | pretool-bash-guard.sh G6 (#879) — tag = décision opérateur ([deployment.md](../rules/deployment.md)) |
 | `UPDATE`/`DELETE` `pieces` / `pieces_price` / `__seo_*` via execute_sql | **BLOCK** | pretool-supabase-guard.sh G6 (#879) — passer par module/RPC gouverné |
 
 > Gaps `tag v*` et DML gouverné **fermés par #879** (Guard 6 ×2, durcissement owner-gated —
@@ -74,7 +74,7 @@ doctrine mais **pas** intercepté par un guard — l'agent s'auto-discipline + d
 
 Discipline existante : CLAUDE.md « Discipline de périmètre » + ownership 992 globs
 ([ownership.yaml](../../.spec/00-canon/repository-registry/ownership.yaml)) + travail en worktree
-dédié ([deployment.md](deployment.md)). Rituel à poser en tête de tâche :
+dédié ([deployment.md](../rules/deployment.md)). Rituel à poser en tête de tâche :
 
 ```
 Allowed:   <chemins du bounded-context concerné>
@@ -142,7 +142,7 @@ Doctrine **déjà en place** (rien à construire) :
 | DB | vérité runtime |
 | RAG | consultation seulement |
 
-Voir [agent-doc-search.md](agent-doc-search.md) : « pas de nouvel index, pas de couche RAG
+Voir [agent-doc-search.md](../rules/agent-doc-search.md) : « pas de nouvel index, pas de couche RAG
 parallèle, pas de vérité parallèle ». Une mémoire agent n'est **jamais** source de vérité.
 
 ---
@@ -172,9 +172,9 @@ agent-operating-map.yaml, owner-gated)* :
 
 | Refusé | Pourquoi |
 |---|---|
-| `/ship`, `/land-and-deploy` auto | PROD owner-gated : tag `v*` = décision opérateur ([deployment.md](deployment.md)) |
+| `/ship`, `/land-and-deploy` auto | PROD owner-gated : tag `v*` = décision opérateur ([deployment.md](../rules/deployment.md)) |
 | team-required mode | aucune imposition d'outil tiers dans le repo |
-| brain / mémoire externe comme canon | vérité = vault / DB / WIKI, jamais une mémoire agent ([agent-doc-search.md](agent-doc-search.md)) |
+| brain / mémoire externe comme canon | vérité = vault / DB / WIKI, jamais une mémoire agent ([agent-doc-search.md](../rules/agent-doc-search.md)) |
 | browser agent mutant sans garde-fou | toute mutation passe par les gates existants |
 | continuous checkpoint push | déclenche CI / PROD ; le push est une action gouvernée |
 
