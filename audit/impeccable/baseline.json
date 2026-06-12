@@ -1,0 +1,27 @@
+{
+  "$schema": "https://raw.githubusercontent.com/ak125/nestjs-remix-monorepo/main/audit/impeccable/baseline.schema.json",
+  "note": "Decremental baseline for impeccable design anti-pattern ratchet (see audit/impeccable/README.md). Regenerate via scripts/audit/impeccable-baseline-write.mjs.",
+  "generatedAt": "2026-05-19T13:36:05.984Z",
+  "computedFrom": "git@fa83792731389761475e334c3331b9a843289f7c",
+  "total": 20,
+  "byCategory": {
+    "ai-color-palette": 1,
+    "bounce-easing": 3,
+    "gradient-text": 1,
+    "gray-on-color": 1,
+    "overused-font": 2,
+    "pure-black-white": 12
+  },
+  "byFile": {
+    "frontend/app/components/blog/CompactBlogHeader.tsx": 1,
+    "frontend/app/components/cart/AddToCartButton.tsx": 1,
+    "frontend/app/components/pieces/MotorisationsSection.tsx": 1,
+    "frontend/app/components/ui/alert-dialog.tsx": 1,
+    "frontend/app/components/ui/dialog.tsx": 1,
+    "frontend/app/components/ui/sheet.tsx": 1,
+    "frontend/app/components/vehicle/VehicleSelector.tsx": 1,
+    "frontend/app/config/visual-intent.ts": 9,
+    "frontend/app/global.css": 2,
+    "frontend/app/styles/animations.css": 2
+  }
+}

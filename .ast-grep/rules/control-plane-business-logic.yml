@@ -1,0 +1,42 @@
+id: control-plane-business-logic
+language: typescript
+severity: error
+message: |
+  Business-logic class detected in the control-plane layer. The control-plane
+  COORDINATES (Observer / Router / Coordinator / Span / Metric / Tracer), it
+  does NOT host domain business logic.
+
+  Why this matters (Diagnostic Control Plane V1, ADR-pending) :
+    - Bounded contexts own their entities and rules (D1..D16).
+    - The control-plane is non-extensible on the business-logic axis :
+      no `*Entity`, `*Model`, or `*DomainService` may live under
+      `backend/src/control-plane/`.
+    - Allowed class-name suffixes for `@Injectable()` here :
+      Observer / Router / Coordinator / Span / Metric / Tracer.
+    - Override list is frozen in ADR vault (canon `vault-flow-direction.md`).
+
+  Fix:
+    1. Move the business class to the owning domain module
+       (e.g. `backend/src/modules/<domain>/services/`).
+    2. If the responsibility is genuinely cross-domain coordination,
+       rename it to one of the allowed suffixes (Coordinator / Router / …).
+    3. Or open an ADR L4 (architecture review) to extend the allow-list.
+
+  Severity tier : L2 (PR-block + override `pr-toolkit:override-L2`) per
+  `.claude/governance/guard-hierarchy.yaml`.
+files:
+  - backend/src/control-plane/**/*.ts
+ignores:
+  - backend/src/control-plane/**/*.spec.ts
+  - backend/src/control-plane/**/*.test.ts
+rule:
+  all:
+    - pattern: |
+        @Injectable($$$)
+        export class $NAME {
+          $$$
+        }
+    - has:
+        kind: type_identifier
+        regex: '(Service|Engine|Repository|Entity|Model|Domain|Usecase|Manager|Handler)$'
+        stopBy: end

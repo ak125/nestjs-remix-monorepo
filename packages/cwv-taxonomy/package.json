@@ -1,0 +1,29 @@
+{
+  "name": "@repo/cwv-taxonomy",
+  "version": "0.1.0",
+  "description": "Single source of truth for CWV runtime taxonomy — Surface / RouteGroup / PriorityTier / FunnelStep enums, classifyRoute(), classifyUserAgent(), Zod schemas. Mirror of .spec/00-canon/seo-runtime/cwv-taxonomy.yaml.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist *.tsbuildinfo",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test src/__tests__/*.test.ts"
+  },
+  "dependencies": {
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.22.4",
+    "typescript": "^5.9.3"
+  }
+}

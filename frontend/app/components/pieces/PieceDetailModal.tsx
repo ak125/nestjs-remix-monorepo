@@ -159,7 +159,11 @@ export const PieceDetailModal = memo(function PieceDetailModal({
 
     setAddingToCart(true);
     try {
-      await addToCart(piece.id, 1, typeId);
+      const unitPriceCents =
+        typeof piece.prix_ttc === "number" && Number.isFinite(piece.prix_ttc)
+          ? Math.round(piece.prix_ttc * 100)
+          : null;
+      await addToCart(piece.id, 1, typeId, unitPriceCents);
     } catch (error) {
       logger.error("Erreur ajout panier:", error);
     } finally {
@@ -170,7 +174,7 @@ export const PieceDetailModal = memo(function PieceDetailModal({
   return (
     <DialogPrimitive.Root open={isOpen} onOpenChange={handleOpenChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 duration-200" />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-neutral-900/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 duration-200" />
         <DialogPrimitive.Content
           className="fixed inset-0 z-50 flex items-center justify-center p-4 focus:outline-none"
           aria-describedby={undefined}
@@ -274,6 +278,12 @@ export const PieceDetailModal = memo(function PieceDetailModal({
                             className="w-full h-full object-contain hover:scale-110 transition-transform duration-300"
                             loading="lazy"
                             decoding="async"
+                            // Defense-in-depth (INC-2026-015 / ADR-078) — see PiecesGrid.tsx
+                            onError={(e) => {
+                              const img = e.currentTarget;
+                              if (img.src.endsWith('/images/no.png')) return;
+                              img.src = '/images/no.png';
+                            }}
                           />
                         </div>
                       </div>
@@ -298,6 +308,12 @@ export const PieceDetailModal = memo(function PieceDetailModal({
                                 className="w-full h-full object-contain"
                                 loading="lazy"
                                 decoding="async"
+                                // Defense-in-depth (INC-2026-015 / ADR-078)
+                                onError={(e) => {
+                                  const t = e.currentTarget;
+                                  if (t.src.endsWith('/images/no.png')) return;
+                                  t.src = '/images/no.png';
+                                }}
                               />
                             </button>
                           ))}
@@ -400,7 +416,7 @@ export const PieceDetailModal = memo(function PieceDetailModal({
 
                   {/* Prix, disponibilite et bouton panier */}
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6">
+                    <div className="bg-gradient-to-r from-blue-50 rounded-xl p-6">
                       <div className="text-sm text-gray-600 mb-2">Prix TTC</div>
                       <div className="flex items-baseline gap-2">
                         <span className="text-4xl font-black text-blue-600">
@@ -429,7 +445,7 @@ export const PieceDetailModal = memo(function PieceDetailModal({
                     <button
                       onClick={handleAddToCart}
                       disabled={addingToCart}
-                      className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2"
+                      className="bg-gradient-to-r from-blue-600 hover:from-blue-700 hover: disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2"
                     >
                       {addingToCart ? (
                         <>
@@ -582,7 +598,7 @@ export const PieceDetailModal = memo(function PieceDetailModal({
                 <button
                   onClick={handleAddToCart}
                   disabled={addingToCart}
-                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-4 px-6 rounded-xl shadow-lg flex items-center justify-center gap-3 touch-target-lg"
+                  className="w-full bg-gradient-to-r from-blue-600 hover:from-blue-700 hover: disabled:from-gray-400 disabled:to-gray-500 text-white font-bold py-4 px-6 rounded-xl shadow-lg flex items-center justify-center gap-3 touch-target-lg"
                 >
                   {addingToCart ? (
                     <>

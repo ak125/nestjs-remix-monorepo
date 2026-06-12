@@ -9,6 +9,8 @@ import {
   SEO_PROPOSE_VARIATIONS,
   selectVariation,
 } from '../../../config/seo-variations.config';
+import { enrichTypeNameForHeadings } from '@repo/seo-types';
+import { composeVehicleAwareDescription } from './vehicle-aware-description.composer';
 
 /**
  * 📝 Contexte SEO pour le remplacement des variables
@@ -33,6 +35,24 @@ export interface SeoContext {
   fuel?: string;
   power_ps?: string;
   power_kw?: string;
+  /**
+   * Fragments switch PAR GAMME (`__seo_gamme_car_switch`), indexés par alias
+   * (« 1 », « 2 », « 3 »…). Résolus dans #CompSwitch_alias[_pgid]# par rotation
+   * déterministe (type_id + pg_id + alias). Chargés par l'appelant (rm-builder),
+   * cachés. Absent → le placeholder est stripté (fallback).
+   */
+  comp_switches?: Record<string, string[]>;
+  /**
+   * Fragments switch PAR VÉHICULE (`__seo_type_switch`, R8, gamme-agnostique),
+   * indexés par alias. Résolus dans #Switch_alias#.
+   */
+  type_switches?: Record<string, string[]>;
+  /**
+   * Modifieur mot-clé DÉJÀ VALIDÉ (cf. `pickGammeKeywordModifier`) injecté par
+   * l'appelant (rm-builder). Ajouté au terme produit dans la description composée.
+   * Absent/null → terme produit = nom de gamme seul.
+   */
+  gamme_keyword_modifier?: string | null;
 }
 
 /**
@@ -113,7 +133,9 @@ export class SeoTemplateService {
     context: SeoContext,
   ): Promise<ProcessedSeo> {
     const startTime = Date.now();
-    const cacheKey = `seo:processed:${context.pg_id}:${context.type_id}`;
+    // Le modifieur mot-clé fait partie de la clé : sinon une valeur null
+    // transitoire (erreur lookup) resterait figée 24h dans le résultat caché.
+    const cacheKey = `seo:processed:${context.pg_id}:${context.type_id}:${context.gamme_keyword_modifier ?? ''}`;
 
     try {
       // 1. Tentative lecture cache Redis
@@ -126,11 +148,25 @@ export class SeoTemplateService {
       }
 
       // 2. Traitement des templates
+      // Enrichissement conditionnel `type_name` pour H1 + title uniquement
+      // (audit empirique 2026-05-26 : 3 duplicates R2 H1 + 1 EXACT title dûs
+      // à `type_name` ambigu — ex. "2.0 HDi" partagé par 140 ch et 163 ch).
+      // `description` (composer PR #665), `content`, `preview` reçoivent le
+      // context ORIGINAL (zero impact hors H1/title).
+      const enrichedTypeName = enrichTypeNameForHeadings({
+        typeName: context.type_name,
+        powerPs: context.power_ps,
+        fuel: context.fuel,
+      });
+      const headingContext: SeoContext = enrichedTypeName.isEnriched
+        ? { ...context, type_name: enrichedTypeName.value }
+        : context;
+
       const processed: ProcessedSeo = {
         success: true,
-        h1: this.processTemplate(templates.h1, context),
-        title: this.processTemplate(templates.title, context),
-        description: this.processTemplate(templates.description, context),
+        h1: this.processTemplate(templates.h1, headingContext),
+        title: this.processTemplate(templates.title, headingContext),
+        description: this.composeDescription(templates.description, context),
         content: this.processTemplate(templates.content, context),
         preview: this.processTemplate(templates.preview, context),
         keywords: this.generateKeywords(context),
@@ -149,6 +185,45 @@ export class SeoTemplateService {
       this.logger.error('❌ Erreur processTemplates:', error);
       return this.getDefaultSeo(context);
     }
+  }
+
+  /**
+   * 🧩 Description R2 : compose une vraie phrase véhicule-aware quand le
+   * template DB est dégénéré (uniquement des placeholders, ex.
+   * `#LinkGammeCar#, #CompSwitch#` → fragment sans verbe). Sinon (prose
+   * rédigée à la main), on conserve le rendu du template tel quel
+   * (`feedback_no_touch_meta_h1_if_optimized`).
+   */
+  private composeDescription(template: string, context: SeoContext): string {
+    const rendered = this.processTemplate(template, context);
+    if (!context.gamme_name) return rendered; // pas de terme produit fiable
+    if (!this.isDegenerateDescriptionTemplate(template)) return rendered;
+    return composeVehicleAwareDescription({
+      gammeName: context.gamme_name,
+      marqueName: context.marque_name,
+      modeleName: context.modele_name,
+      typeName: context.type_name,
+      powerPs: context.power_ps,
+      count: context.count,
+      minPrice: context.min_price,
+      typeId: context.type_id,
+      pgId: context.pg_id,
+      keywordModifier: context.gamme_keyword_modifier ?? null,
+    });
+  }
+
+  /**
+   * Un template description est "dégénéré" s'il ne contient quasiment que des
+   * placeholders (#...#, %...%) → après substitution = fragment sans verbe.
+   * Mesuré : 118/118 templates `sgc_descrip` sont dans ce cas.
+   */
+  private isDegenerateDescriptionTemplate(template?: string): boolean {
+    if (!template || !template.trim()) return true;
+    const stripped = template
+      .replace(/#[^#]*#/g, '')
+      .replace(/%[^%]*%/g, '')
+      .replace(/[^\p{L}]/gu, '');
+    return stripped.length < 5;
   }
 
   /**
@@ -291,18 +366,49 @@ export class SeoTemplateService {
       .replace(/#LinkGammeCar_\d+#/gi, linkGammeCar)
       .replace(/#LinkGammeCar#/gi, linkGammeCar)
 
-      // Supprimer les switches complexes non résolus
-      // Format: #CompSwitch_X# ou #CompSwitch_X_Y#
-      .replace(/#CompSwitch_\d+(_\d+)?#/gi, '')
+      // 🔄 RÉSOUDRE les switches DB (legacy) au lieu de les stripper.
+      // Format: #CompSwitch_X# ou #CompSwitch_X_Y# (X = alias, Y = pg_id facultatif).
+      // Rotation déterministe par (type_id + pg_id + alias) → chaque slot tourne
+      // indépendamment (offset = alias) = vraie divergence multi-slots.
+      // Fallback : strip si aucun fragment chargé pour cet alias (comportement d'avant).
+      .replace(/#CompSwitch_(\d+)(?:_\d+)?#/gi, (_match, aliasStr: string) => {
+        const variants = context.comp_switches?.[aliasStr];
+        if (variants && variants.length > 0) {
+          return selectVariation(
+            variants,
+            context.type_id,
+            context.pg_id,
+            Number(aliasStr),
+          );
+        }
+        return '';
+      })
 
-      // Format: #FamilySwitch_X#
+      // Format: #FamilySwitch_X# (non encore alimenté → strip)
       .replace(/#FamilySwitch_\d+#/gi, '')
 
-      // Format: #Switch_X#
-      .replace(/#Switch_\d+#/gi, '')
+      // Format: #Switch_X# (switch véhicule R8 ; résolu si fourni, sinon strip)
+      .replace(/#Switch_(\d+)#/gi, (_match, aliasStr: string) => {
+        const variants = context.type_switches?.[aliasStr];
+        if (variants && variants.length > 0) {
+          return selectVariation(
+            variants,
+            context.type_id,
+            0,
+            Number(aliasStr),
+          );
+        }
+        return '';
+      })
 
       // Autres liens non résolus
-      .replace(/#Link[A-Za-z]+(_\d+)?#/gi, '');
+      .replace(/#Link[A-Za-z]+(_\d+)?#/gi, '')
+
+      // Nettoyage : ponctuation orpheline laissée par un switch vide (ex. ", ," ou " .")
+      .replace(/,\s*,/g, ',')
+      .replace(/\s+([.,;:])/g, '$1')
+      .replace(/(^[\s,;:]+)|([\s,;:]+$)/g, '')
+      .trim();
 
     return result;
   }

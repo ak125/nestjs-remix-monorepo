@@ -1,3 +1,20 @@
+# Skip hooks during merge/cherry-pick/revert — git auto-stages files inherited
+# from the incoming branch, which can include pre-existing-on-main warnings
+# that `lint-staged --max-warnings=0` cannot distinguish from user-authored
+# changes. CI lint compares `git diff main..HEAD` and tolerates those warnings.
+# Aligned with husky community pattern (typicode/husky#188).
+#
+# Worktree-safe : uses `git rev-parse --git-dir` because in worktrees `.git`
+# is a file (gitdir pointer), not a directory ; MERGE_HEAD lives in the
+# per-worktree gitdir `<repo>/.git/worktrees/<name>/`.
+GIT_DIR_RESOLVED=$(git rev-parse --git-dir 2>/dev/null || echo .git)
+if [ -e "$GIT_DIR_RESOLVED/MERGE_HEAD" ] \
+   || [ -e "$GIT_DIR_RESOLVED/CHERRY_PICK_HEAD" ] \
+   || [ -e "$GIT_DIR_RESOLVED/REVERT_HEAD" ]; then
+  echo "[pre-commit] merge/cherry-pick/revert detected — hooks skipped (CI gates on diff vs base)."
+  exit 0
+fi
+
 # Block manual edits to canon mirrors (ADR-061 §3 — canon mirrors are READ-ONLY).
 # Canon mirrors (`.claude/canon-mirrors/<canon>.md` + workspaces) are synced by
 # cron VPS DEV (governance-vault/_scripts/cron-sync-canon-mirrors.sh). Manual edits
@@ -72,6 +89,18 @@ if [ -n "$STAGED_ROUTES" ]; then
   bash scripts/lint/check-no-zero-arg-headers-with-s-maxage.sh $STAGED_ROUTES || exit 1
 fi
 
+# Block confused `preprod` formulations in markdown files (ADR-075).
+# Canon `.claude/rules/deployment.md` defines DEV / PREPROD / PROD strictly.
+# Forbidden : "DEV pré-prod" / "preprod.automecanik.com" / "preprod miroir" /
+# "staging soak|env|server|VPS|deploy|deployment|gate". See
+# scripts/lint/check-preprod-vocabulary.sh for the full pattern set + allowlist.
+STAGED_MD=$(git diff --cached --name-only --diff-filter=ACMR \
+  | grep -E '\.md$' || true)
+if [ -n "$STAGED_MD" ]; then
+  # shellcheck disable=SC2086
+  bash scripts/lint/check-preprod-vocabulary.sh $STAGED_MD || exit 1
+fi
+
 # Refresh auto-generated YAML frontmatter + AUTO-GENERATED blocks in
 # .claude/knowledge/modules/*.md so last_scan + primary_files stay honest.
 # Only touches files when the module .ts changed; otherwise no-op.
@@ -110,6 +139,22 @@ if git diff --cached --name-only --diff-filter=ACMR | grep -qE '^audit/registry/
   fi
 fi
 
+# Command Center snapshot (projection of the AI Operating Map) — staleness guard.
+# When the canon, schema, or generator changes, the committed snapshot must match.
+# We --check (no autostage): the hyphenated filename is outside the no-manual-edit
+# guard regex above, so the dev regenerates + stages it explicitly (no churn).
+if git diff --cached --name-only --diff-filter=ACMR \
+   | grep -qE '^(\.spec/00-canon/ai-registry/agent-operating-map\.(yaml|schema\.json)|scripts/governance/build-command-center-snapshot\.js|audit/registry/command-center-snapshot\.json)$'; then
+  if command -v node >/dev/null 2>&1 && [ -f scripts/governance/build-command-center-snapshot.js ]; then
+    node scripts/governance/build-command-center-snapshot.js --check || {
+      echo ""
+      echo "ERROR: audit/registry/command-center-snapshot.json is stale."
+      echo "Run \`npm run governance:command-center\` and \`git add\` the result before committing."
+      exit 1
+    }
+  fi
+fi
+
 # Fast deterministic gate: ast-grep rules in .ast-grep/rules/
 # Warnings do not block commits; only `severity: error` rules fail here.
 # For full audit run: npm run audit:all (see package.json scripts)
@@ -125,4 +170,56 @@ if command -v npx >/dev/null 2>&1; then
       exit 1
     fi
   }
+fi
+
+# impeccable design ratchet (Phase 2 — block-by-default) — runs only if
+# frontend/** or the ratchet's own files are staged. Catches reintroductions
+# of the anti-patterns the cascade eliminated (side-tab, pure-black-white,
+# bounce-easing, ai-color-palette, gray-on-color, low-priority sweep)
+# before they hit CI.
+#
+# - BLOCK by default (Phase 2 closure 2026-05) : refuses the commit on
+#   regression. CI's `.github/workflows/impeccable-ratchet.yml` remains
+#   the authoritative gate but the local hook now matches that posture.
+# - Override (urgence) : `IMPECCABLE_HOOK=skip` to silence entirely OR
+#   `IMPECCABLE_HOOK=warn` to keep Phase 1 posture for one commit.
+# - Baseline state at closure : 20 issues (162 → 20, -88%). All residue
+#   documented in audit/impeccable/README.md as legitimate.
+IMPECCABLE_HOOK="${IMPECCABLE_HOOK:-block}"
+if [ "$IMPECCABLE_HOOK" != "skip" ]; then
+  FRONTEND_TOUCHED=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '^(frontend/|packages/design-tokens/|audit/impeccable/|scripts/audit/impeccable-|\.github/workflows/impeccable-ratchet\.yml)' || true)
+  if [ -n "$FRONTEND_TOUCHED" ] && [ -f scripts/audit/impeccable-ratchet-check.mjs ] && command -v npm >/dev/null 2>&1; then
+    if npm --workspace=@fafa/frontend run design:detect:json --silent 2>/dev/null \
+      | node scripts/audit/impeccable-ratchet-check.mjs >/tmp/impeccable-hook.log 2>&1; then
+      :  # green — silent
+    else
+      echo ""
+      echo "⚠️  impeccable ratchet (warn-only): frontend changes increased the design anti-pattern count."
+      echo "    See /tmp/impeccable-hook.log for the diff."
+      echo "    CI workflow .github/workflows/impeccable-ratchet.yml is the authoritative BLOCKING gate."
+      echo "    Set IMPECCABLE_HOOK=skip to silence this hook."
+      if [ "$IMPECCABLE_HOOK" = "block" ]; then
+        echo ""
+        echo "    IMPECCABLE_HOOK=block is set — refusing the commit."
+        cat /tmp/impeccable-hook.log
+        exit 1
+      fi
+    fi
+  fi
+fi
+
+# Role-vocabulary purity ratchet (comments in .ts/.tsx vs @repo/seo-roles SoT).
+# Detects role-vocabulary contamination in source comments — a comment mentioning
+# role X must not contain a term forbidden for role X per the canon
+# (packages/seo-roles/src/forbidden-overlap.ts). Complementary to
+# scripts/governance/check-cart-conversion-r-role.sh which scans .md files.
+#
+# Runs only when .ts/.tsx are staged. Use `// @role-purity-skip` in a file to
+# opt-out (apply sparingly — e.g. test fixtures already excluded by default).
+STAGED_TS=$(git diff --cached --name-only --diff-filter=ACMR \
+  | grep -E '\.(ts|tsx)$' || true)
+if [ -n "$STAGED_TS" ] && [ -f scripts/governance/check-role-purity.ts ]; then
+  if command -v npx >/dev/null 2>&1; then
+    npx --no-install tsx scripts/governance/check-role-purity.ts --staged || exit 1
+  fi
 fi

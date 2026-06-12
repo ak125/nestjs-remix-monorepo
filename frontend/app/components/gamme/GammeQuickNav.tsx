@@ -35,7 +35,7 @@ export default function GammeQuickNav() {
                     .getElementById(s.id)
                     ?.scrollIntoView({ behavior: "smooth", block: "start" });
                 }}
-                className="flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-200 rounded-[18px] text-[12px] font-semibold text-slate-600 whitespace-nowrap shadow-sm hover:border-blue-200 hover:text-blue-600 hover:bg-blue-50 hover:-translate-y-0.5 transition-all cursor-pointer"
+                className="flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-200 rounded-[18px] text-[12px] font-semibold text-blue-900 whitespace-nowrap shadow-sm hover:border-blue-200 hover:text-blue-600 hover:bg-blue-50 hover:-translate-y-0.5 transition-all cursor-pointer"
               >
                 <Icon size={13} /> {s.label}
               </button>

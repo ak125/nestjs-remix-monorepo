@@ -1,0 +1,157 @@
+name: Skills Canon gate (PR-V2 Phase 0, warn-only)
+
+# AI Governance Control Plane — Phase 0 (warn-only).
+#
+# For every SKILL.md under .claude/skills/<name>/, validates :
+#   1. Frontmatter present + valid YAML
+#   2. Conforms to .spec/00-canon/ai-registry/skill.schema.json
+#   3. `name` matches dirname
+#   4. `owners[]` cross-referenced in ownership.yaml (warn if not)
+#   5. `domain` exists in domains.yaml
+#   6. `description` contains "Use when" (CSO trigger)
+#
+# Progressive enforcement per ADR-058 PR-G / PR-7a ratchet pattern :
+#   - Phase 0 (this PR-V2)   : warn-only, continue-on-error: true
+#   - Phase 1 (PR-V2.5, J+7) : hard-fail on NEW skills only
+#   - Phase 2 (PR-V3, J+14)  : hard-fail on all skills + required check
+#
+# Trigger : PRs touching .claude/skills/** OR the schema/validator itself.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".claude/skills/**"
+      - ".spec/00-canon/ai-registry/**"
+      - "scripts/governance/validate-skills-frontmatter.js"
+      - "scripts/governance/validate-agent-operating-map.js"
+      - "scripts/governance/build-command-center-snapshot.js"
+      - "scripts/governance/__tests__/build-command-center-snapshot.test.ts"
+      - "scripts/governance/__fixtures__/agent-operating-map.invalid.yaml"
+      - "audit/registry/command-center-snapshot.json"
+      - ".github/workflows/skills-canon-gate.yml"
+
+jobs:
+  skills-canon-gate:
+    name: Skills canon (frontmatter + schema, warn-only Phase 0)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # Phase 0 — warn-only. Promote to hard-fail in PR-V2.5 / PR-V3.
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install
+        run: npm ci
+
+      - name: Validate skills frontmatter (the gate)
+        id: gate
+        run: |
+          set -e
+          node scripts/governance/validate-skills-frontmatter.js --json > /tmp/skills-report.json
+          cat /tmp/skills-report.json | jq -c '{ok, totalSkills, failureCount}'
+
+      - name: Surface findings
+        if: always()
+        run: |
+          {
+            REPORT=/tmp/skills-report.json
+            if [ ! -f "$REPORT" ]; then
+              echo "## ⚠️ Skills canon gate — report not generated"
+              exit 0
+            fi
+            OK=$(jq -r '.ok' "$REPORT")
+            TOTAL=$(jq -r '.totalSkills' "$REPORT")
+            FAIL=$(jq -r '.failureCount' "$REPORT")
+            if [ "$OK" = "true" ]; then
+              echo "## ✅ Skills canon gate PASSED (Phase 0 warn-only)"
+              echo ""
+              echo "- Total skills: $TOTAL"
+              echo "- All passed: $OK"
+            else
+              echo "## ⚠️ Skills canon gate — $FAIL/$TOTAL skill(s) drifted (Phase 0 warn-only)"
+              echo ""
+              echo "Failures :"
+              echo ""
+              jq -r '.results[] | select(.verdict != "ok") | "### `\(.skill)` — **\(.verdict)**\n" + (.errors // [] | map("- ERROR: \(.)") | join("\n")) + "\n" + (.warnings // [] | map("- WARN: \(.)") | join("\n"))' "$REPORT"
+              echo ""
+              echo "**Fix** : align frontmatter with \`.spec/00-canon/ai-registry/skill.schema.json\`."
+              echo "See \`.claude/skills/README.md\` (skill creation guide) for canonical template."
+              echo ""
+              echo "_Phase 0 = warn-only. Hard-fail starts in PR-V2.5 (new skills only)._"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 🗺️ Validate AI agent operating map (warn-only)
+        if: always()
+        continue-on-error: true
+        run: |
+          node scripts/governance/validate-agent-operating-map.js --json > /tmp/operating-map-report.json || true
+          ERRORS=$(jq '.counts.errors' /tmp/operating-map-report.json)
+          WARNS=$(jq  '.counts.warns'  /tmp/operating-map-report.json)
+          {
+            if [ "$ERRORS" = "0" ] && [ "$WARNS" = "0" ]; then
+              echo "## ✅ AI Operating Map clean (Phase 0 warn-only)"
+            else
+              echo "## ⚠️ AI Operating Map — $ERRORS errors, $WARNS warnings (Phase 0 warn-only)"
+              echo ""
+              echo "Findings :"
+              echo ""
+              jq -r '.findings[] | "- [\(.severity | ascii_upcase)] \(.code): \(.message)"' /tmp/operating-map-report.json
+              echo ""
+              echo "**Fix** : edit \`.spec/00-canon/ai-registry/agent-operating-map.yaml\`. Schema : \`agent-operating-map.schema.json\`."
+              echo ""
+              echo "_Reference projection — non-authoritative. Hard-fail enforcement = vault ADR required._"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: 🧪 Operating map schema self-test
+        if: always()
+        run: node scripts/governance/validate-agent-operating-map.js --self-test
+
+      - name: 🛰️ Command Center snapshot — generator tests (warn-only)
+        if: always()
+        continue-on-error: true
+        run: npx tsx --test scripts/governance/__tests__/build-command-center-snapshot.test.ts
+
+      - name: 🔁 Command Center snapshot — determinism (build ×2 → equal sha256)
+        if: always()
+        continue-on-error: true
+        run: |
+          node scripts/governance/build-command-center-snapshot.js --quiet
+          sha256sum audit/registry/command-center-snapshot.json > /tmp/cc1.txt
+          node scripts/governance/build-command-center-snapshot.js --quiet
+          sha256sum audit/registry/command-center-snapshot.json > /tmp/cc2.txt
+          if ! diff -q /tmp/cc1.txt /tmp/cc2.txt >/dev/null; then
+            echo "::warning::command-center-snapshot.json not deterministic across 2 runs"
+            diff /tmp/cc1.txt /tmp/cc2.txt || true
+            exit 1
+          fi
+          echo "✓ snapshot deterministic across 2 runs"
+
+      - name: ✅ Command Center snapshot — committed file is fresh + valid (AJV)
+        if: always()
+        continue-on-error: true
+        run: |
+          node scripts/governance/build-command-center-snapshot.js --check || {
+            echo "::warning::command-center-snapshot.json is stale — run npm run governance:command-center"; exit 1;
+          }
+          node -e '
+            const fs=require("fs");
+            const Ajv=require("ajv/dist/2020");
+            const addFormats=require("ajv-formats");
+            const ajv=new Ajv({allErrors:true,strict:false}); addFormats(ajv);
+            const schema=JSON.parse(fs.readFileSync(".spec/00-canon/ai-registry/command-center-snapshot.schema.json","utf8"));
+            const data=JSON.parse(fs.readFileSync("audit/registry/command-center-snapshot.json","utf8"));
+            if(!ajv.compile(schema)(data)){console.error(JSON.stringify(ajv.errors,null,2));process.exit(1);}
+            console.log("✓ snapshot valid against command-center-snapshot.schema.json");
+          '

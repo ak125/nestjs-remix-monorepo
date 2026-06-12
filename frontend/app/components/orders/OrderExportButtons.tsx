@@ -96,7 +96,7 @@ export const OrderExportButtons = memo(function OrderExportButtons({
       <button
         onClick={handleSendEmail}
         disabled={!hasSelection || isProcessing}
-        className="flex items-center gap-2 px-3 py-2 bg-purple-100 text-purple-700 hover:bg-purple-200 rounded-lg  transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+        className="flex items-center gap-2 px-3 py-2 bg-muted text-foreground hover:bg-muted rounded-lg transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <Mail className="w-4 h-4" />
         Envoyer email

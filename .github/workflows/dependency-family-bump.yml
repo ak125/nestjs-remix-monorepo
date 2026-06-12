@@ -1,0 +1,245 @@
+name: 📦 Dependency family bump (manual)
+
+# Manual dependency-family bump executor (PR-9b — tooling-typescript-eslint only in Phase 0).
+#
+# Trigger: workflow_dispatch only (no cron, no auto-trigger).
+#
+# Defense in depth:
+#   1. workflow_dispatch only — no cron in Phase 0
+#   2. Typed input `confirm=BUMP` required when not dry-run
+#   3. dry_run=true default — runs bump simulation, regen, verify, but does NOT open a PR
+#   4. `family` is a `choice` — Phase 0 exposes only tooling-typescript-eslint
+#   5. Scope-dirty gate hard-fails before evidence bundle (no leaky PR ever)
+#   6. Concurrency: single-flight per family (re-run updates the same branch)
+#   7. NO auto-merge — the PR sits for human review
+
+on:
+  workflow_dispatch:
+    inputs:
+      family:
+        description: 'Dependency family to bump (only tooling-typescript-eslint is wired in Phase 0)'
+        required: true
+        type: choice
+        options:
+          - tooling-typescript-eslint
+      target:
+        description: 'ncu target semver level'
+        required: true
+        type: choice
+        default: latest
+        options:
+          - latest
+          - minor
+          - patch
+      dry_run:
+        description: 'Dry-run only — bump + regen + verify, but do NOT open a PR'
+        required: true
+        type: boolean
+        default: true
+      confirm:
+        description: 'Type BUMP to confirm PR creation (required when dry_run=false)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: dep-family-bump-${{ inputs.family }}
+  cancel-in-progress: false
+
+jobs:
+  bump:
+    name: 📦 Bump ${{ inputs.family }} (target=${{ inputs.target }}, dry_run=${{ inputs.dry_run }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: 🛑 Confirm token (when not dry-run)
+        if: ${{ !inputs.dry_run && inputs.confirm != 'BUMP' }}
+        run: |
+          echo "::error::Real run requires confirm=BUMP (got '${{ inputs.confirm }}'). Re-run with confirm=BUMP or dry_run=true."
+          exit 1
+
+      - name: ⬇️ Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🟢 Setup Node 22 (canonical for registry builders)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: 📥 Install dependencies (baseline before bump)
+        run: npm ci --no-audit --no-fund
+
+      - name: 📦 Run bump script
+        id: bump
+        run: |
+          set -euo pipefail
+          FLAG=""
+          if [ "${{ inputs.dry_run }}" = "true" ]; then FLAG="--dry-run"; fi
+          node scripts/audit/bump-dependency-family.mjs \
+            --family "${{ inputs.family }}" \
+            --target "${{ inputs.target }}" \
+            $FLAG \
+            2>&1 | tee /tmp/bump.log
+
+      - name: 🔄 Regenerate dependency registry (skipped in dry-run)
+        if: ${{ !inputs.dry_run }}
+        run: npm run registry:build:deps 2>&1 | tee /tmp/registry-build-deps.log
+
+      - name: 🔄 Regenerate PR-9 modernization inventory (skipped in dry-run)
+        if: ${{ !inputs.dry_run }}
+        run: npm run audit:pr-9-modernization-inventory 2>&1 | tee /tmp/inventory-build.log
+
+      - name: 🔄 Regenerate canonical registry (skipped in dry-run)
+        if: ${{ !inputs.dry_run }}
+        run: npm run registry:build:canonical 2>&1 | tee /tmp/registry-build-canonical.log
+
+      - name: 🚧 Scope-dirty gate (HARD FAIL on any non-allowlisted path)
+        if: ${{ !inputs.dry_run }}
+        run: bash scripts/governance/check-family-pr-scope.sh --base origin/main
+
+      - name: ✅ Verify — lint
+        if: ${{ !inputs.dry_run }}
+        run: npx turbo run lint 2>&1 | tee /tmp/verify-lint.log
+
+      - name: ✅ Verify — typecheck
+        if: ${{ !inputs.dry_run }}
+        run: npx turbo run typecheck 2>&1 | tee /tmp/verify-typecheck.log
+
+      - name: ✅ Verify — build
+        if: ${{ !inputs.dry_run }}
+        run: npx turbo run build 2>&1 | tee /tmp/verify-build.log
+
+      - name: ✅ Verify — test
+        if: ${{ !inputs.dry_run }}
+        run: npx turbo run test 2>&1 | tee /tmp/verify-test.log
+
+      - name: 📊 Compute before/after extract
+        if: ${{ !inputs.dry_run }}
+        id: diff
+        run: |
+          set -euo pipefail
+          {
+            echo "before_after<<EOF_BEFORE_AFTER"
+            git diff origin/main -- package.json '**/package.json' 2>/dev/null \
+              | grep -E '^\s*[+-]\s*"' \
+              | grep -vE '"(name|version|description|main|scripts|repository)":' \
+              | head -200 || true
+            echo "EOF_BEFORE_AFTER"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: 📤 Upload evidence artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dep-bump-evidence-${{ github.run_id }}
+          path: |
+            /tmp/bump.log
+            /tmp/registry-build-deps.log
+            /tmp/inventory-build.log
+            /tmp/registry-build-canonical.log
+            /tmp/verify-*.log
+          retention-days: 30
+          if-no-files-found: ignore
+
+      - name: 🤖 Open (or update) PR
+        if: ${{ !inputs.dry_run }}
+        id: cpr
+        env:
+          # peter-evans runs `git commit` internally, which triggers husky
+          # pre-commit → lint-staged → exits 1 on "no matching staged files"
+          # (caught on cycle 1, gh run #26366771736). The bot commit doesn't
+          # need lint-staged (deps-only diff, scope-gate + turbo already ran).
+          HUSKY: '0'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: deps/auto/${{ inputs.family }}
+          commit-message: "chore(deps): bump ${{ inputs.family }} → ${{ inputs.target }}"
+          title: "chore(deps): bump ${{ inputs.family }} → ${{ inputs.target }}"
+          body: |
+            > Auto-generated by `.github/workflows/dependency-family-bump.yml` (run #${{ github.run_id }}).
+
+            ## Family
+            `${{ inputs.family }}` — target=`${{ inputs.target }}`
+
+            ## Verification (all ran on Node 22, ubuntu-latest)
+            - ✅ scope-dirty gate (allowlist enforced — `scripts/governance/check-family-pr-scope.sh`)
+            - ✅ `turbo lint`
+            - ✅ `turbo typecheck`
+            - ✅ `turbo build`
+            - ✅ `turbo test`
+
+            ## Before / after (extract from `git diff -- package.json '**/package.json'`)
+            ```diff
+            ${{ steps.diff.outputs.before_after }}
+            ```
+
+            ## Evidence
+            Full logs attached as artifact: [`dep-bump-evidence-${{ github.run_id }}`](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+
+            ## Rollback plan (manual, human-executed)
+            ```bash
+            # If this PR is already merged:
+            git revert -m 1 <merge-commit-sha>
+            git push origin main
+
+            # If this PR is open and broken:
+            gh pr close <this-pr-number> --delete-branch
+            ```
+
+            ## Non-goals (Phase 0)
+            - ❌ No auto-merge — review the diff, ensure required checks green, merge by hand.
+            - ❌ No cron trigger — re-run via `workflow_dispatch` when ready.
+            - ❌ This workflow does NOT modify `audit/dependencies/family-overlay.yaml` (governance L2 = humans only).
+
+            ## After merging
+            If this is one of the first 3 cycles for `${{ inputs.family }}`, log observations in `log.md` so the Phase 2 plan (extend choice to next family) can build on real data.
+          labels: |
+            automated
+            dep-bump
+            pr-9b-${{ inputs.family }}
+          author: "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
+          committer: "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
+          delete-branch: true
+
+      - name: 💬 Upsert verdict comment (HTML marker)
+        if: ${{ !inputs.dry_run && steps.cpr.outputs.pull-request-number }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          MARKER='<!-- dep-family-bump:${{ inputs.family }}:verdict -->'
+          PR_NUMBER='${{ steps.cpr.outputs.pull-request-number }}'
+          BODY=$(cat <<EOF
+          $MARKER
+
+          **Verdict for run #${{ github.run_id }}** — all gates passed.
+
+          | Phase | Result |
+          |-------|--------|
+          | scope-dirty gate | ✅ pass |
+          | turbo lint | ✅ pass |
+          | turbo typecheck | ✅ pass |
+          | turbo build | ✅ pass |
+          | turbo test | ✅ pass |
+
+          Re-run \`gh workflow run dependency-family-bump.yml\` to refresh this PR with a newer target version.
+          EOF
+          )
+          EXISTING=$(gh pr view "$PR_NUMBER" --json comments \
+            --jq ".comments[] | select(.body | contains(\"$MARKER\")) | .id" | head -1 || true)
+          if [ -n "$EXISTING" ]; then
+            gh api "repos/${{ github.repository }}/issues/comments/$EXISTING" -X DELETE
+          fi
+          gh pr comment "$PR_NUMBER" --body "$BODY"
+
+      - name: 🟢 Dry-run summary
+        if: ${{ inputs.dry_run }}
+        run: |
+          echo "::notice::Dry-run complete. Bump simulation succeeded. No PR was opened."
+          echo "::notice::To create a PR, re-run with dry_run=false and confirm=BUMP."

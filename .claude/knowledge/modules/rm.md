@@ -2,13 +2,16 @@
 module: rm
 sources:
 - backend/src/modules/rm
-last_scan: '2026-05-17'
+last_scan: '2026-05-24'
 primary_files:
 - backend/src/modules/rm/controllers/rm.controller.ts
+- backend/src/modules/rm/dto/alternatives-v2.dto.ts
 - backend/src/modules/rm/rm.module.ts
 - backend/src/modules/rm/rm.types.ts
+- backend/src/modules/rm/services/__tests__/rm-alternatives.service.test.ts
 - backend/src/modules/rm/services/__tests__/rm-builder-seo-shadow.test.ts
-- backend/src/modules/rm/services/rm-builder.service.ts
+- backend/src/modules/rm/services/__tests__/rm-soft404-tracker.service.test.ts
+- backend/src/modules/rm/services/gamme-clusters.const.ts
 depends_on:
 - DatabaseModule
 - CatalogModule

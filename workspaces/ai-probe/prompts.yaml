@@ -1,0 +1,127 @@
+# Prompt Registry MINIMAL — V1 (canon)
+#
+# 5 champs uniquement : {prompt, intent, r_role, target_url, funnel_stage}.
+# Pas de DB, pas de UI. Sert d'index pour la probe + KW canonical alignment.
+# Validated by backend/tests/unit/ai-probe/prompt-registry-schema.test.ts (Zod schema).
+#
+# Cf. spec docs/superpowers/specs/2026-05-23-ai-additive-layer-phase-0-and-1-design.md §4.4
+
+- prompt: "Pourquoi ma Clio 3 fume noir ?"
+  intent: diagnostic
+  r_role: R5
+  target_url: /symptomes-auto/fumee-noire/clio-3
+  funnel_stage: MOFU
+
+- prompt: "Symptômes d'un turbo HS sur 1.5 dCi ?"
+  intent: diagnostic
+  r_role: R5
+  target_url: /symptomes-auto/turbo-hs/1-5-dci
+  funnel_stage: MOFU
+
+- prompt: "Pourquoi ma voiture tremble au freinage ?"
+  intent: diagnostic
+  r_role: R5
+  target_url: /symptomes-auto/tremblements-freinage
+  funnel_stage: TOFU
+
+- prompt: "Voyant ESP allumé : que faire ?"
+  intent: diagnostic
+  r_role: R5
+  target_url: /symptomes-auto/voyant-esp-allume
+  funnel_stage: TOFU
+
+- prompt: "Bruit coupelle amortisseur — symptômes ?"
+  intent: diagnostic
+  r_role: R5
+  target_url: /symptomes-auto/bruit-coupelle-amortisseur
+  funnel_stage: MOFU
+
+- prompt: "Fumée blanche au démarrage diesel — causes ?"
+  intent: diagnostic
+  r_role: R5
+  target_url: /symptomes-auto/fumee-blanche-demarrage-diesel
+  funnel_stage: MOFU
+
+- prompt: "Quand changer la distribution sur une 207 1.4 HDI ?"
+  intent: advice
+  r_role: R3
+  target_url: /conseils-entretien/distribution/peugeot-207-1-4-hdi
+  funnel_stage: MOFU
+
+- prompt: "Quelle huile pour C4 Picasso HDI ?"
+  intent: advice
+  r_role: R3
+  target_url: /conseils-entretien/huile-moteur/citroen-c4-picasso-hdi
+  funnel_stage: MOFU
+
+- prompt: "Intervalle vidange Renault Megane 1.5 dCi ?"
+  intent: advice
+  r_role: R3
+  target_url: /conseils-entretien/vidange/renault-megane-1-5-dci
+  funnel_stage: MOFU
+
+- prompt: "Comment savoir si mes plaquettes sont usées ?"
+  intent: advice
+  r_role: R3
+  target_url: /conseils-entretien/plaquettes-frein-usure
+  funnel_stage: TOFU
+
+- prompt: "Quel filtre à gasoil pour Renault Clio 3 1.5 dCi ?"
+  intent: compatibility
+  r_role: R2
+  target_url: /pieces/filtration/filtre-a-gasoil/renault/clio-3/1-5-dci
+  funnel_stage: BOFU
+
+- prompt: "Plaquettes de frein compatibles Peugeot 208 1.4 HDI ?"
+  intent: compatibility
+  r_role: R2
+  target_url: /pieces/freinage/plaquettes/peugeot/208/1-4-hdi
+  funnel_stage: BOFU
+
+- prompt: "Meilleur amortisseur Clio 3 phase 2 ?"
+  intent: compatibility
+  r_role: R2
+  target_url: /pieces/suspension/amortisseurs/renault/clio-3
+  funnel_stage: BOFU
+
+- prompt: "Vanne EGR Renault Megane 1.5 dCi prix ?"
+  intent: transaction
+  r_role: R2
+  target_url: /pieces/echappement/vanne-egr/renault/megane/1-5-dci
+  funnel_stage: BOFU
+
+- prompt: "Disque de frein avant Peugeot 308 — référence ?"
+  intent: compatibility
+  r_role: R2
+  target_url: /pieces/freinage/disques/peugeot/308
+  funnel_stage: BOFU
+
+- prompt: "Oscaro vs Mister Auto — quelle différence ?"
+  intent: compare
+  r_role: R2
+  target_url: /comparatif/oscaro-vs-mister-auto
+  funnel_stage: TOFU
+
+- prompt: "Comparatif huile moteur 5W30 vs 5W40 ?"
+  intent: compare
+  r_role: R3
+  target_url: /comparatif/huile-5w30-vs-5w40
+  funnel_stage: TOFU
+
+- prompt: "Garage Citroën agréé à Lyon ?"
+  intent: local
+  r_role: R7
+  target_url: /local/garage/citroen/lyon
+  funnel_stage: MOFU
+
+- prompt: "Spécialiste turbo diesel Marseille ?"
+  intent: local
+  r_role: R7
+  target_url: /local/specialiste/turbo-diesel/marseille
+  funnel_stage: MOFU
+
+- prompt: "Comment changer un filtre à air soi-même ?"
+  intent: advice
+  r_role: R3
+  target_url: /conseils-entretien/tutoriel/changer-filtre-air
+  funnel_stage: TOFU

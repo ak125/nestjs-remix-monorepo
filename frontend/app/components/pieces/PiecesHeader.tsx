@@ -5,9 +5,15 @@
  * ⚠️ URLS PRÉSERVÉES - Breadcrumb et navigation inchangés
  */
 
-import { Car, Package, Shield, Truck } from "lucide-react";
+import {
+  enrichTypeNameForHeadings,
+  pickH1Suffix,
+  SEO_PRICE_VARIATIONS,
+} from "@repo/seo-types";
+import { Car } from "lucide-react";
 import React, { useState, memo } from "react";
 
+import { PiecesHeroTrustStrip } from "./hero";
 import { brandColorsService } from "../../services/brand-colors.service";
 import {
   type GammeData,
@@ -21,7 +27,12 @@ interface PiecesHeaderProps {
   gamme: GammeData;
   count: number;
   minPrice?: number;
-  prixPasCherText?: string; // Texte dynamique "pas cher"
+  prixPasCherText?: string; // Texte dynamique "pas cher" (legacy override)
+  /** Per-pg_id technique variations (__seo_gamme_car_switch.sgcs_alias=2) :
+   * pool de suffixes H1 gamme-specific (ex. "synchroniser les soupapes" pour
+   * pg_id=307 kit-distribution). Rotation déterministe par (typeId+pgId)
+   * via @repo/seo-types pickH1Suffix. Vide → fallback SEO_PRICE_VARIATIONS. */
+  compSwitch2?: readonly string[];
   performance?: PerformanceInfo;
 }
 
@@ -35,18 +46,33 @@ export const PiecesHeader = memo(function PiecesHeader({
   count,
   minPrice,
   prixPasCherText,
+  compSwitch2,
   performance,
 }: PiecesHeaderProps) {
   const [imageError, setImageError] = useState(false);
 
-  // Formater le prix et le texte "pas cher"
-  const _priceText =
-    minPrice && minPrice > 0
-      ? `à partir de ${minPrice.toFixed(2)} €`
-      : "au meilleur prix";
+  // Suffix H1 R2 rotation : compSwitch2 per-gamme primary (pattern legacy PHP
+  // #CompSwitch_2#), fallback SEO_PRICE_VARIATIONS 7 variantes prix, fallback
+  // ultime literal "au meilleur prix" (compatibilité legacy prixPasCherText).
+  // Cause : audit 2026-05-26 montre `au meilleur prix` figé 4/4 fixtures car
+  // prop n'était jamais passée. Restauration pattern legacy via #763 follow-up.
+  const finalText = pickH1Suffix({
+    compSwitch2,
+    priceVariations: SEO_PRICE_VARIATIONS,
+    ctx: { typeId: vehicle.typeId, pgId: gamme.id },
+    literalFallback: prixPasCherText ?? "au meilleur prix",
+  });
 
-  // Utiliser le texte dynamique ou fallback
-  const finalText = prixPasCherText || "au meilleur prix";
+  // R2 H1/title disambiguation : enrichir `typeName` avec `powerPs`/`fuel`
+  // quand le type_name est ambigu (ex. "2.0 HDi" partagé par 140/163 ch).
+  // No-op si non-ambigu → byte-identique à l'actuel. Cause empirique :
+  // audit/seo-h1-meta-empirical-verification-2026-05-26.md (3 H1 + 1 title
+  // EXACT duplicates sur 100 paires LIVE PROD).
+  const enrichedTypeLabel = enrichTypeNameForHeadings({
+    typeName: vehicle.typeName || vehicle.type,
+    powerPs: vehicle.typePowerPs?.toString(),
+    fuel: vehicle.typeFuel,
+  }).value;
 
   // Récupérer le gradient de la marque du véhicule
   const brandGradient = vehicle.marqueAlias
@@ -87,105 +113,27 @@ export const PiecesHeader = memo(function PiecesHeader({
               {/* Header typographique optimisé - animations retirées pour LCP */}
               <header>
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black leading-tight mb-3 tracking-tight">
-                  <span className="bg-gradient-to-br from-white via-white to-white/90 bg-clip-text text-transparent drop-shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+                  <span className="text-foreground from-white via-white to-white/90 drop-shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
                     {gamme.name} {vehicle.marque?.toUpperCase()}{" "}
-                    {vehicle.modele?.toUpperCase()}{" "}
-                    {vehicle.typeName || vehicle.type} {finalText}
+                    {vehicle.modele?.toUpperCase()} {enrichedTypeLabel}{" "}
+                    {finalText}
                   </span>
                 </h1>
               </header>
 
-              {/* Specs Grid - Badges horizontaux premium */}
-              <div className="flex flex-wrap gap-2.5">
-                {/* Badge Prix premium avec pulse */}
-                {minPrice && minPrice > 0 && (
-                  <div className="group bg-gradient-to-br from-white/[0.24] via-white/[0.18] to-white/[0.10] backdrop-blur-none md:backdrop-blur-xl rounded-xl px-4 py-2.5 border border-white/35 shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 cursor-default">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-lg flex items-center justify-center shadow-lg group-hover:rotate-12 transition-transform duration-300">
-                        <span className="text-lg">💰</span>
-                      </div>
-                      <div>
-                        <div className="text-2xl font-black text-white leading-none tracking-tight">
-                          {minPrice.toFixed(2)} €
-                        </div>
-                        <div className="text-white/70 text-[11px] sm:text-xs uppercase tracking-wider font-bold mt-0.5">
-                          À partir de
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Badge Nombre de pièces */}
-                <div className="group bg-white/[0.14] backdrop-blur-none md:backdrop-blur-xl rounded-xl px-3.5 py-2.5 border border-white/30 shadow-lg hover:bg-white/[0.18] hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-default">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-lg flex items-center justify-center shadow-md group-hover:rotate-6 transition-transform duration-300">
-                      <Package
-                        className="w-4 h-4 text-white"
-                        strokeWidth={2.5}
-                      />
-                    </div>
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-xl font-black text-white">
-                        {count}
-                      </span>
-                      <span className="text-sm font-bold text-white/90">
-                        pièce{count > 1 ? "s" : ""}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Badge Qualité */}
-                <div className="group bg-white/[0.14] backdrop-blur-none md:backdrop-blur-xl rounded-xl px-3.5 py-2.5 border border-white/30 shadow-lg hover:bg-white/[0.18] hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-default relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-shimmer"></div>
-                  <div className="flex items-center gap-2.5 relative z-10">
-                    <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-emerald-500 rounded-lg flex items-center justify-center shadow-md group-hover:-rotate-6 transition-transform duration-300">
-                      <Shield
-                        className="w-4 h-4 text-white"
-                        strokeWidth={2.5}
-                      />
-                    </div>
-                    <span className="text-sm font-bold text-white">
-                      Qualité garantie
-                    </span>
-                  </div>
-                </div>
-
-                {/* Badge Livraison */}
-                <div className="group bg-white/[0.14] backdrop-blur-none md:backdrop-blur-xl rounded-xl px-3.5 py-2.5 border border-white/30 shadow-lg hover:bg-white/[0.18] hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-default">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center shadow-md group-hover:translate-x-1 transition-transform duration-300">
-                      <Truck className="w-4 h-4 text-white" strokeWidth={2.5} />
-                    </div>
-                    <span className="text-sm font-bold text-white">
-                      Livraison rapide
-                    </span>
-                  </div>
-                </div>
-
-                {/* Badge Performance si disponible */}
-                {performance && (
-                  <div className="flex items-center gap-2 bg-purple-500/20 backdrop-blur-sm border border-purple-300/30 rounded-xl px-3 py-2">
-                    <svg
-                      className="w-3.5 h-3.5 text-purple-300"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13 10V3L4 14h7v7l9-11h-7z"
-                      />
-                    </svg>
-                    <span className="text-white text-xs font-medium">
-                      {performance.source} • {performance.loadTime}ms
-                    </span>
-                  </div>
-                )}
-              </div>
+              {/*
+                Trust Strip 3-tier — refonte 2026-05-28 (direction "Confiance",
+                canon `frontend-design` + audit `ui-ux-pro-max`).
+                Voir `frontend/app/components/pieces/hero/` pour les sous-composants
+                atomiques testés (47 tests passants).
+              */}
+              <PiecesHeroTrustStrip
+                count={count}
+                vehicleModele={vehicle.modele}
+                vehicleType={vehicle.typeName || vehicle.type}
+                minPrice={minPrice}
+                debugPerformance={performance}
+              />
             </div>
 
             {/* Image Premium - Sidebar optimisée */}

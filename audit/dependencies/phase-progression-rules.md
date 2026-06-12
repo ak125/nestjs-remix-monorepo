@@ -24,7 +24,7 @@ PR-9b is not a tooling upgrade. PR-9b is **the first real-world test of every ov
 
 **Exit criteria (all 4 mandatory before merge):**
 
-1. **Rollback runbook drilled ≤ 30 minutes on DEV preprod.** The `rollback_rto_minutes: 30` in the overlay is not aspirational — it is a measured wall-clock time recorded in the PR body. Drill = execute every step of `estimated_recovery_sequence` against the deployed canary state.
+1. **Rollback runbook drilled ≤ 30 minutes on PREPROD container** (`49.12.233.2:3200`, image `:preprod`, READ_ONLY=true ; see [`.claude/rules/deployment.md`](../../.claude/rules/deployment.md) for canonical topology). The `rollback_rto_minutes: 30` in the overlay is not aspirational — it is a measured wall-clock time recorded in the PR body. Drill = execute every step of `estimated_recovery_sequence` against the deployed canary state.
 2. **`Node20Required` migration blocker verified BEFORE opening the PR.** Verified = grep `engines.node` in `package.json` + Dockerfile + `.github/workflows/ci.yml` Node matrix returns `>=20` consistently. NOT verified mid-PR via CI failure.
 3. **`target_major: "locked-at-execution"` resolved explicitly in the PR body.** PR-9b's first task is to lock the concrete version (e.g. `TS 5.6 / ESLint 9 flat config`) with an upstream-release link. This converts the placeholder into a concrete contract for downstream consumption.
 4. **`rollback_tested_at` + `rollback_drill_commit` set to non-null in `family-overlay.yaml` BEFORE the prod tag.** Overlay overlay-edit + generator re-run + `--check` succeeds + matrix renderer re-run + `--check` succeeds.

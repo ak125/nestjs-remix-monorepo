@@ -25,11 +25,11 @@ const ROLE_BADGE: Record<string, { label: string; className: string }> = {
   },
   R4: {
     label: "Reference",
-    className: "bg-indigo-100 text-indigo-700 border-indigo-200",
+    className: "bg-muted text-foreground border-indigo-200",
   },
   R4_REFERENCE: {
     label: "Reference",
-    className: "bg-indigo-100 text-indigo-700 border-indigo-200",
+    className: "bg-muted text-foreground border-indigo-200",
   },
 };
 

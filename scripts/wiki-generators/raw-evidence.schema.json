@@ -1,0 +1,231 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "coverage": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "block": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "canon_role": {
+            "type": "string"
+          },
+          "fold_status": {
+            "enum": [
+              "PENDING_ADR",
+              "LIVE",
+              "NATIVE",
+              "NOT_FOLDED"
+            ],
+            "type": "string"
+          },
+          "r3_section": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "enum": [
+              "PRESENT",
+              "PARTIAL",
+              "MISSING",
+              "NOT_APPLICABLE",
+              "NOT_MAPPED",
+              "BLOCKED_CATALOG_REQUIRED"
+            ],
+            "type": "string"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "block",
+          "status",
+          "canon_role",
+          "r3_section",
+          "fold_status",
+          "warnings"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "fold_note": {
+      "type": "string"
+    },
+    "fold_readiness": {
+      "additionalProperties": false,
+      "properties": {
+        "R4_to_R3": {
+          "enum": [
+            "BLOCKED_PENDING_ADR",
+            "READY_ADR_027"
+          ],
+          "type": "string"
+        },
+        "R5_to_R3": {
+          "enum": [
+            "BLOCKED_PENDING_ADR",
+            "READY_ADR_027"
+          ],
+          "type": "string"
+        },
+        "R6_to_R3": {
+          "enum": [
+            "BLOCKED_PENDING_ADR",
+            "READY_ADR_027"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "R4_to_R3",
+        "R5_to_R3",
+        "R6_to_R3"
+      ],
+      "type": "object"
+    },
+    "intent_targets": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "inventory_status": {
+      "enum": [
+        "DIAGNOSTIC_READY",
+        "NO_RAW",
+        "RAW_PARSE_ERROR"
+      ],
+      "type": "string"
+    },
+    "next_action": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "pg_id": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "provenance": {
+      "additionalProperties": false,
+      "properties": {
+        "completeness_profile": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source_type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sources": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "content_hash": {
+                "pattern": "^sha256:[0-9a-f]{64}$",
+                "type": "string"
+              },
+              "kind": {
+                "enum": [
+                  "gamme",
+                  "guide",
+                  "evidence"
+                ],
+                "type": "string"
+              },
+              "path": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "path",
+              "kind",
+              "content_hash"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "truth_level": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "unlinked_source_types": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "verification_status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "source_type",
+        "truth_level",
+        "verification_status",
+        "completeness_profile",
+        "sources",
+        "unlinked_source_types"
+      ],
+      "type": "object"
+    },
+    "raw_verdict": {
+      "enum": [
+        "READY",
+        "PARTIAL_READY",
+        "BLOCKED",
+        "NO_RAW",
+        "RAW_PARSE_ERROR"
+      ],
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "raw-evidence.v1",
+      "type": "string"
+    },
+    "subject": {
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "subject",
+    "pg_id",
+    "inventory_status",
+    "intent_targets",
+    "provenance",
+    "coverage",
+    "fold_readiness",
+    "raw_verdict",
+    "next_action",
+    "fold_note"
+  ],
+  "type": "object"
+}

@@ -16,11 +16,11 @@ import { ZodValidationPipe } from '../zod-validation.pipe';
  *  - le contrat `PipeTransform<string, number>`
  *
  * Les concrétisations injectent uniquement leur schéma Zod
- * (smallint, int4, futur uuid/slug/alias-id, etc.).
+ * (int4 aujourd'hui ; futur uuid/slug/alias-id, etc.).
  *
  * SCALAR PARAM ONLY — usage attendu :
- *   `@Param('id', PositiveSmallIntParamPipe) id: number`
- * jamais `@Param(PositiveSmallIntParamPipe)` (passerait l'objet `params`).
+ *   `@Param('id', PositiveIntParamPipe) id: number`
+ * jamais `@Param(PositiveIntParamPipe)` (passerait l'objet `params`).
  */
 @Injectable()
 export abstract class BaseNumericParamPipe

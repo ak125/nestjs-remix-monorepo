@@ -18,7 +18,7 @@ entries:
     criticality: P0
     globs:
       - "backend/src/modules/catalog/**"
-      - "backend/src/modules/pieces/**"
+      - "backend/src/modules/products/**"
     owner: "@ak125/catalog-team"
 
   - id: D2
@@ -28,7 +28,7 @@ entries:
       ADR-004). Status archive_review per domain-map.md.
     criticality: P2
     globs:
-      - "backend/src/rm/**"
+      - "backend/src/modules/rm/**"
     owner: "__unassigned__"
 
   - id: D3
@@ -53,8 +53,8 @@ entries:
       (T=keywords, V=vehicles), compatibility RPC. P0 — drives R8 vehicle pages.
     criticality: P0
     globs:
-      - "backend/src/modules/vehicle/**"
-      - "backend/src/modules/diagnostic/**"
+      - "backend/src/modules/vehicles/**"
+      - "backend/src/modules/diagnostic-engine/**"
     owner: "@ak125/vehicle-team"
 
   - id: D5
@@ -73,10 +73,10 @@ entries:
       generation, agentic engine orchestration.
     criticality: P1
     globs:
-      - "backend/src/modules/rag/**"
+      - "backend/src/modules/rag-proxy/**"
+      - "backend/src/modules/rag-knowledge-bootstrap/**"
       - "backend/src/modules/ai-content/**"
       - "backend/src/modules/agentic-engine/**"
-      - "rag/**"
     owner: "@ak125/rag-team"
 
   - id: D7
@@ -116,8 +116,8 @@ entries:
       cache modules, observability.
     criticality: P1
     globs:
-      - "backend/src/modules/cache/**"
-      - "backend/src/observability/**"
+      - "backend/src/cache/**"
+      - "backend/src/modules/observability/**"
     owner: "@ak125"
 
   - id: D11
@@ -156,7 +156,7 @@ entries:
       - ".github/workflows/**"
       - "scripts/**"
       - "packages/database-types/**"
-      - "packages/shared-types/**"
+      - "packages/typescript-config/**"
     owner: "@ak125"
 
   - id: D14
@@ -166,7 +166,11 @@ entries:
       (V3=champion / V4/V5 sibling / V2 top10). Powers R1/R2/R8 indexability.
     criticality: P1
     globs:
-      - "backend/src/modules/gamme-aggregates/**"
+      # No dedicated gamme-aggregates module — these live physically under admin/.
+      # Authoritative file→domain mapping is ownership.yaml (longest-glob-wins);
+      # these globs are documentation and must resolve to real files (invariant I5b).
+      - "backend/src/modules/admin/services/gamme-{aggregator,vlevel}.service.ts"
+      - "backend/src/modules/admin/controllers/admin-gammes-seo-{aggregates,vlevel}.controller.ts"
     owner: "@ak125/seo-team"
 
   - id: D15
@@ -184,4 +188,19 @@ entries:
       - "packages/registry/**"
       - "scripts/registry/**"
       - "scripts/agents/**"
+    owner: "@ak125"
+
+  - id: D16
+    name: Maintenance
+    description: |
+      Preventive maintenance domain (Diagnostic Control Plane V1, ADR-pending).
+      Decoupled from D4 (Vehicle/Compatibility) and D7 (Knowledge Graph &
+      Diagnostic). Owns service intervals, oil specifications, maintenance
+      schedules per vehicle context. Distinct intent from D7 incident-centric :
+      D16 = preventive ("quoi faire à 120 000 km"), D7 = incident ("j'ai un
+      problème"). Carnet entretien (stateful SaaS user-history) explicitly NOT
+      in D16 — that becomes a separate domain when/if introduced post-V1.
+    criticality: P2
+    globs:
+      - "backend/src/modules/maintenance/**"
     owner: "@ak125"

@@ -41,7 +41,7 @@ jobs:
       # gère son propre checkout en interne.
       - name: Fetch Dependabot metadata
         id: meta
-        uses: dependabot/fetch-metadata@v2
+        uses: dependabot/fetch-metadata@v3
 
       - name: Skip if already auto-mergeable (deterministic rules)
         id: skip-check

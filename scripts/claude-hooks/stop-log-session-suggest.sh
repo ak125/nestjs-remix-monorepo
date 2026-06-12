@@ -103,8 +103,24 @@ fi
   printf -- '- **Sortie** : PR %s | commits %s\n' "$pr_part" "$short_shas"
 } >> "$LOG_FILE"
 
-# Stage ONLY log.md and commit.
+# Bound log.md size: archive old entries into log-archive-<year>.md so the
+# live file never grows without limit. Deterministic, no LLM. The archive is
+# committed for history but never read at session start (CLAUDE.md reads only
+# the bounded `tail` of log.md).
+ARCHIVE_FILE="${REPO_ROOT}/log-archive-$(date +%Y).md"
+bash "${REPO_ROOT}/scripts/claude-hooks/rotate-log.sh" "$LOG_FILE" "$ARCHIVE_FILE" 2>/dev/null || true
+
+# Stop hook companion : suggérer (stderr-only) une mise à jour CLAUDE.md /
+# MEMORY si la branche a accumulé des commits de correction. Hors du flow de
+# commit log — émet uniquement un message advisory. Idempotent, opt-out via
+# CLAUDE_HOOKS_DISABLE=1.
+if [ -x "${REPO_ROOT}/scripts/claude-hooks/stop-claude-md-suggest.sh" ]; then
+  bash "${REPO_ROOT}/scripts/claude-hooks/stop-claude-md-suggest.sh" 2>&1 >&2 || true
+fi
+
+# Stage log.md (+ the archive if rotation just touched it) and commit.
 git add -- "$LOG_FILE" 2>/dev/null
+[ -f "$ARCHIVE_FILE" ] && git add -- "$ARCHIVE_FILE" 2>/dev/null
 
 # Use a dedicated commit message. Pre-commit hooks run normally (no bypass).
 if git commit -m "chore(log): auto session entry for ${current_branch}" \
@@ -114,10 +130,16 @@ if git commit -m "chore(log): auto session entry for ${current_branch}" \
   printf '%s\n' "$(git rev-parse HEAD)" > "$LAST_SHA_FILE"
   printf '%s\n' "$current_branch" > "$LAST_BRANCH_FILE"
 else
-  # Commit failed (probably a pre-commit hook). Roll back the staged change
-  # so the user finds a clean working tree, leave a marker so we don't loop.
-  git reset HEAD -- "$LOG_FILE" >/dev/null 2>&1
+  # Commit failed (probably a pre-commit hook). Roll back the staged changes
+  # (log.md + archive, in case rotation just ran) so the user finds a clean
+  # working tree, leave a marker so we don't loop.
+  git reset HEAD -- "$LOG_FILE" "$ARCHIVE_FILE" >/dev/null 2>&1
   git checkout -- "$LOG_FILE" >/dev/null 2>&1
+  # A fresh archive created this run is untracked → checkout won't remove it.
+  git ls-files --error-unmatch -- "$ARCHIVE_FILE" >/dev/null 2>&1 \
+    && git checkout -- "$ARCHIVE_FILE" >/dev/null 2>&1 \
+    || rm -f "$ARCHIVE_FILE" 2>/dev/null
+  # `checkout -- log.md` restored the full pre-append file → no entry lost.
   printf '%s\n' "$current_head" > "$LAST_SHA_FILE"
   printf '%s\n' "$current_branch" > "$LAST_BRANCH_FILE"
 fi

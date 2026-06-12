@@ -1,0 +1,114 @@
+# .claude/governance/guard-hierarchy.yaml
+#
+# Diagnostic Control Plane V1 — Guard Hierarchy L1-L4 (canon
+# `feedback_guard_hierarchy_stop_at_v1_funnel_truth.md`).
+#
+# Single source of truth mapping every CI/AST/policy guard introduced by
+# PR-A/B/C/D/E to a severity level. The hierarchy exists to prevent
+# dev-friction inflation : 20 guards each at L3 = devs disable / hate the
+# platform. Most V1 guards land in L1 (warning) or L2 (PR-block + override).
+# L3/L4 reserved for invariants critical to security / SEO governance.
+#
+# Schema :
+#   levels:
+#     L<n>:
+#       behavior:         human-readable explanation
+#       block_pr:         true | false
+#       override:         null | <override-token>
+#       branch_protected: true | false  (admin-merge required if true)
+#       requires_adr:     true | false
+#       guards:           list of guard names (must match enforcement layer
+#                         id / file basename : .ast-grep rule, .dependency-
+#                         cruiser rule, conftest policy, custom script).
+#
+# Onboarding doc : docs/onboarding/guard-hierarchy.md (max 30 lines, 2-min read).
+
+schemaVersion: "1.0.0"
+
+levels:
+  L1:
+    behavior: |
+      Warning only. PR shows a yellow badge but merges normally. Used for
+      capacity-trending metrics where false positives are common and the
+      signal value comes from the trend, not the individual occurrence.
+    block_pr: false
+    override: null
+    branch_protected: false
+    requires_adr: false
+    guards:
+      - kernel_loc_total_threshold       # alert if > baseline + 20 % (capacity-trending)
+      - port_dto_size_p95_metric         # observability only, no block
+
+  L2:
+    behavior: |
+      Standard PR block. Devs can override with explicit token in commit
+      message after triage. Default tier for structural rules : import
+      boundaries, port shape, naming intent, canonical event taxonomy.
+    block_pr: true
+    override: "pr-toolkit:override-L2"
+    branch_protected: false
+    requires_adr: false
+    guards:
+      - dep-cruiser:no-cross-domain-import          # cross-domain raw imports
+      - dep-cruiser:no-control-plane-business-logic # control-plane business logic
+      - dep-cruiser:no-shared-kernel-fattening      # _kernel/ outward imports
+      - eslint-boundaries:domain-isolation          # eslint-plugin-boundaries
+      - eslint:fafa-ports/port-method-cap           # ports ≤ 5 methods (eslint-plugin-fafa-ports, replaces buggy ast-grep dropped 2026-05-18)
+      - ast-grep:domain-port-naming-intent          # anti get(All|Everything|Stuff|Bulk|Combined) (PR-A.2)
+      - eslint:fafa-ports/port-dto-shape            # ≤ 8 fields / ≤ 3 nesting (eslint-plugin-fafa-ports, replaces buggy ast-grep dropped 2026-05-18)
+      - ast-grep:frontend-analytics-canonical-event # track* must reference event-taxonomy
+      - ast-grep:control-plane-business-logic       # @Injectable() in control-plane/ allow-list only
+      - script:check-diagnostic-engine-boundary     # PR-D — engines/ may only cross-import via ports/
+
+  L3:
+    behavior: |
+      Hard block on protected branches (main, dev). Override requires
+      admin-merge AND triaged reviewer sign-off. Reserved for invariants
+      that protect security, contracts, or systemic SEO governance.
+    block_pr: true
+    override: null
+    branch_protected: true
+    requires_adr: false
+    guards:
+      # declared-not-wired (constat 2026-06-10) : rego + test existent
+      # (policies/maintenance/) mais aucun job CI ne lance conftest —
+      # policy-gates.yml absent, prérequis générateur de manifest routes
+      # (docs/routes/manifest.json) absent. Voir policies/README.md §CI wiring.
+      - rego:maintenance-no-programmatic-seo-pages  # PR-A.4 (anti-SEO-farm Maintenance)
+      # declared-not-implemented (constat 2026-06-10) : aucun fichier .rego
+      # correspondant dans policies/ ni référence dans scripts/ ou .github/.
+      # Implémenter ou retirer = décision owner.
+      - rego:control-plane-route-allow-list         # control-plane route lockdown
+      - contract-drift:port-signature               # port contract change without taxonomy bump — câblé : .github/workflows/contract-drift-ratchet.yml
+
+  L4:
+    behavior: |
+      Requires PR label `architecture-review` AND an ADR in the governance
+      vault BEFORE merge. Reviewer @architects mandatory. Reserved for
+      irreversible / cross-domain decisions where the cost of undoing is
+      higher than the cost of pausing for review.
+    block_pr: true
+    override: null
+    branch_protected: true
+    requires_adr: true
+    adr_label: "architecture-review"
+    required_reviewer: "@architects"
+    guards:
+      - kernel_addition                             # any new file in _kernel/ (ratchet)
+      - new_domain                                  # adding Dn beyond canon registry
+      - port_signature_breaking_change              # bump port contract major
+      - vehicle_context_schema_version_bump         # OPTION A figée — v ≠ 1 = ADR
+      - new_public_route                            # opening a new Remix route (R-SEO-09 override)
+
+# Inflation guard : adding a new guard at L3 or L4 requires an ADR
+# referencing the dev-friction budget impact. Default for new guards is L2.
+inflation_policy:
+  default_tier: L2
+  l3_l4_addition_requires: "ADR-vault entry justifying systemic risk"
+
+# Mapping back to MEMORY canon
+canon_refs:
+  - "feedback_guard_hierarchy_stop_at_v1_funnel_truth.md"
+  - "feedback_v1_first_dont_build_ultimate_engine_too_early.md"
+  - "feedback_no_url_changes_ever.md"
+  - "feedback_verify_existing_first.md"

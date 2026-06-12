@@ -114,6 +114,41 @@ export class FeatureFlagsService {
     return this.bool('KEYWORD_DENSITY_GATE_ENABLED', false);
   }
 
+  // ── R8 Owned Editorial (Fix B — owned DB editorial × per-type facts) ──
+
+  /**
+   * Controls whether the R8 vehicle enricher composes its editorial sections
+   * (S_SELECTION_GUIDE / S_ENTRETIEN_CONTEXT / S_FAQ_DEDICATED) from OWNED DB
+   * editorial (`__seo_gamme_purchase_guide` + `__seo_gamme_conseil`, quality-gated)
+   * blended with per-motorisation facts, instead of the template / RAG-FAQ path.
+   *
+   * This gates the WRITE path (the enricher run), not the served read path:
+   * once blocks are persisted to `__seo_r8_pages`, they're served regardless.
+   * Default: false (safe for cold starts without .env). When a gamme has no
+   * publishable owned editorial, the enricher falls back to the existing path
+   * and logs `R8_OWNED_EDITORIAL_FALLBACK` (never silent — CLAUDE.md no-silent-fallback).
+   */
+  get r8OwnedEditorialEnabled(): boolean {
+    return this.bool('R8_OWNED_EDITORIAL_ENABLED', false);
+  }
+
+  // ── R6 Consolidation (guide d'achat → R3 conseils, décision owner 2026-06-10) ──
+
+  /**
+   * Gates the R6→R3 consolidation redirect path: when ON, R6 guide-achat
+   * detail pages 301-redirect to the gamme's R3 conseils page — ONLY for
+   * gammes whose R3 article exists (self-gated per gamme: no live R3 → no
+   * redirect, the standalone R6 page keeps serving — never a redirect-to-404).
+   * Mirrors the R5→R3 consolidation (diagnostic-auto sub-pages → conseils).
+   *
+   * Activation is owner-gated: requires the vault ADR amending role-matrix v5
+   * (R6 standalone page → R3 section) + smoke-test anchor swap (airlock) +
+   * sitemap exclusion of folded gammes. Default: false (inert — zero change).
+   */
+  get seoR6ConsolidationEnabled(): boolean {
+    return this.bool('SEO_R6_CONSOLIDATION_ENABLED', false);
+  }
+
   // ── Conseil Pack flags ──
 
   get conseilPackEnabled(): boolean {
@@ -144,26 +179,11 @@ export class FeatureFlagsService {
     return this.bool('RAG_VIRTUAL_MERGE_ENABLED', false);
   }
 
-  // ── RAG Change → Content Improvement Pipeline ──
-
-  /** Master switch for RAG change detection pipeline */
-  get ragChangePipelineEnabled(): boolean {
-    return this.bool('RAG_CHANGE_PIPELINE_ENABLED', false);
-  }
-
-  /** Auto-enqueue improvement jobs (false = log only, manual review) */
-  get ragChangeAutoEnqueue(): boolean {
-    return this.bool('RAG_CHANGE_AUTO_ENQUEUE', false);
-  }
+  // ── RAG Merge scope flags (consumed by PipelineChainProcessor) ──
 
   /** Dry run mode for merge operations (preview without DB writes) */
   get ragMergeDryRun(): boolean {
     return this.bool('RAG_MERGE_DRY_RUN', true);
-  }
-
-  /** Polling interval for RAG change events (default: 60s) */
-  get ragChangePollIntervalMs(): number {
-    return this.int('RAG_CHANGE_POLL_INTERVAL_MS', 60_000);
   }
 
   /** CSV of allowed roles for RAG merge (empty = all IMPROVABLE_ROLES) */
@@ -174,11 +194,6 @@ export class FeatureFlagsService {
   /** CSV of allowed gamme aliases for RAG merge (empty = all gammes) */
   get ragMergeAllowedGammes(): string[] {
     return this.csv('RAG_MERGE_ALLOWED_GAMMES');
-  }
-
-  /** Dedup window in minutes — skip enqueue if same gamme+role job exists within this window (default: 60) */
-  get ragDedupWindowMinutes(): number {
-    return this.int('RAG_DEDUP_WINDOW_MINUTES', 60);
   }
 
   // ── Agentic Engine flags ──
@@ -215,6 +230,67 @@ export class FeatureFlagsService {
 
   get abandonedCartEmailEnabled(): boolean {
     return this.bool('ABANDONED_CART_EMAIL_ENABLED', false);
+  }
+
+  // ── SEO Business Control Dashboard flag (PR-SBD-1 Task 7) ──
+
+  /**
+   * Controls visibility of /admin/seo-control dashboard route + endpoint.
+   * Default: false (Phase A rollout — only admin Fafa overrides ON).
+   * Kill-switch silencieux : OFF → endpoint returns 404 (not 503) to hide
+   * the surface entirely from non-admins.
+   */
+  get seoControlDashboardEnabled(): boolean {
+    return this.bool('SEO_CONTROL_DASHBOARD_ENABLED', false);
+  }
+
+  // ── R2 Accessories block (accessory products under main gamme, PR-2) ──
+
+  /**
+   * Master switch for the R2 "Accessoires" block — surfaces an accessory gamme's
+   * PRODUCTS (linked via pieces_gamme.pg_parent_gamme_id) on the main gamme's R2
+   * product page, in the current vehicle context. Default: false (rollout safe).
+   * OFF = the AccessoryProductsService short-circuits to an empty result (no query,
+   * no surface). The accessory gamme stays hidden; no URL/sitemap/indexation change.
+   */
+  get accessoryBlocksOnR2Enabled(): boolean {
+    return this.bool('SHOW_ACCESSORY_BLOCKS_ON_R2', false);
+  }
+
+  // ── VehicleContext cookie kill-switch (PR-B.6) ──
+
+  /**
+   * Master switch for the VehicleContext JWS cookie middleware (PR-B).
+   * Default `true` — the cookie path is on by default.
+   * Set `VEHICLE_CTX_ENABLED=false` to make the middleware a no-op
+   * pass-through. Cookies already stored in browsers are not cleared —
+   * they're simply ignored. Used for emergency rollback or A/B holdback.
+   */
+  get vehicleContextEnabled(): boolean {
+    return this.bool('VEHICLE_CTX_ENABLED', true);
+  }
+
+  // ── Diagnostic KG shadow flags (PR-E) ──
+
+  /**
+   * Master switch for the KG shadow comparison (PR-E). Default `true` —
+   * the shadow path runs fire-and-forget alongside the canonical engines.
+   * Set `DIAGNOSTIC_KG_SHADOW_ENABLED=false` for emergency rollback.
+   * Disabled = no RPC call, no event emission, no metric.
+   */
+  get diagnosticKgShadowEnabled(): boolean {
+    return this.bool('DIAGNOSTIC_KG_SHADOW_ENABLED', true);
+  }
+
+  /**
+   * Whether the KG result is the canonical (primary) source of truth.
+   * Default `false` per canon `project_diagnostic_control_plane_v1_plan.md` :
+   * the KG only graduates to primary after V1.5 evidence gates pass
+   * (≥ 1000 golden cohort sessions with < 5 % divergence). Flipping early
+   * = production decision-bypassing-V1-evidence regression.
+   */
+  get diagnosticKgPrimaryEnabled(): boolean {
+    return this.bool('DIAGNOSTIC_KG_PRIMARY_ENABLED', false);
   }
 
   // ── Write Guard flags (P1.5) ──
@@ -257,15 +333,13 @@ export class FeatureFlagsService {
     'SAFE_FALLBACK_ENABLED',
     'CANARY_GAMMES',
     'R1_CONTENT_PIPELINE_ENABLED',
+    'R8_OWNED_EDITORIAL_ENABLED',
     'BRIEF_GATES_ENABLED',
     'BRIEF_GATES_OBSERVE_ONLY',
     'RAG_CATCHUP_ENABLED',
-    'RAG_CHANGE_PIPELINE_ENABLED',
-    'RAG_CHANGE_AUTO_ENQUEUE',
     'RAG_MERGE_DRY_RUN',
     'RAG_MERGE_ALLOWED_ROLES',
     'RAG_MERGE_ALLOWED_GAMMES',
-    'RAG_DEDUP_WINDOW_MINUTES',
     'CONSEIL_PACK_ENABLED',
     'KEYWORD_DENSITY_GATE_ENABLED',
     'CANARY_AUTO_PUBLISH',
@@ -288,6 +362,11 @@ export class FeatureFlagsService {
     'WRITE_GUARD_CANARY_ROLES',
     'WRITE_GUARD_CANARY_GROUPS',
     'RAG_VIRTUAL_MERGE_ENABLED',
+    'SEO_CONTROL_DASHBOARD_ENABLED',
+    'VEHICLE_CTX_ENABLED',
+    'DIAGNOSTIC_KG_SHADOW_ENABLED',
+    'DIAGNOSTIC_KG_PRIMARY_ENABLED',
+    'SHOW_ACCESSORY_BLOCKS_ON_R2',
   ]);
 
   listFlags(): Record<

@@ -7,7 +7,11 @@
  * Git-versioned — changes require code review.
  */
 
-export const SCORING_VERSION = 'v2.1';
+// v2.2 (2026-06-11): RAG retiré du scoring SEO (RAG = chatbot only, ADR-031/046).
+// Les poids des ex-signaux RAG (contenu + truth) sont ré-ancrés sur le contenu
+// RÉEL de la page (sg_content, provenance vérifiée, complétude). Décalage de score
+// attendu = correction (dé-pollution), pas régression.
+export const SCORING_VERSION = 'v2.2';
 
 // ── Types ──
 
@@ -171,15 +175,14 @@ export const SEO_THRESHOLDS = {
   desc_min: 120,
   desc_max: 165,
   h1_min: 10,
-  content_min: 800, // page content length
-  rag_content_min: 1500, // RAG file length
+  content_min: 800, // page content length (v2.2: rag_content_min retiré — RAG ≠ signal SEO)
 };
 
 /** Trust & Evidence: thresholds */
 export const TRUST_THRESHOLDS = {
   pipeline_quality_min: 70,
   pipeline_quality_good: 85,
-  rag_truth_level_good: ['L1', 'L2'], // high confidence levels
+  // v2.2: rag_truth_level_good retiré — la confiance s'ancre sur provenance + pipeline réels.
 };
 
 /** Freshness: days since update thresholds per page type */
@@ -394,31 +397,24 @@ export interface ConfidenceSignal {
   description: string;
 }
 
+// v2.2: signaux RAG (rag_available, truth_level_high) RETIRÉS — RAG = chatbot only
+// (ADR-031/046). Leurs 35 pts redistribués sur les signaux RÉELS (provenance + complétude).
+// Somme = 100 (40 + 25 + 35).
 export const CONFIDENCE_SIGNALS: ConfidenceSignal[] = [
   {
     id: 'source_verified',
-    weight: 25,
+    weight: 40,
     description: 'Source provenance verifiee',
   },
   {
     id: 'pipeline_recent',
-    weight: 20,
+    weight: 25,
     description: 'Pipeline execute < 30 jours',
   },
   {
-    id: 'rag_available',
-    weight: 20,
-    description: 'Fichier RAG present et substantiel',
-  },
-  {
     id: 'data_completeness',
-    weight: 20,
+    weight: 35,
     description: 'Majorite des features presentes',
-  },
-  {
-    id: 'truth_level_high',
-    weight: 15,
-    description: 'RAG truth level L1 ou L2',
   },
 ];
 

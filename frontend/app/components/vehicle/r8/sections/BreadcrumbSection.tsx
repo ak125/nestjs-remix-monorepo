@@ -1,5 +1,10 @@
 // 🍞 R8 Vehicle — S_BREADCRUMB
-// Schema.org BreadcrumbList microdata (for Google rich snippets).
+// Rendu visuel du fil d'Ariane. Les données structurées BreadcrumbList
+// sont émises EXCLUSIVEMENT via JSON-LD (generateVehicleSchema → meta
+// script:ld+json côté route). Voir r8-schema.ts pour le SoT.
+//
+// Décision architecturale (2026-05-26) : single SoT JSON-LD après cycle
+// d'incidents GSC dual-surface (#729 + alert suivante). Microdata supprimée.
 
 import { type LoaderData } from "../r8.types";
 
@@ -9,87 +14,53 @@ interface Props {
 }
 
 export function BreadcrumbSection({ vehicle, breadcrumb }: Props) {
+  const brandHref = `/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}.html`;
+  const modelHref = `/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}.html`;
+
   return (
     <nav
       className="bg-white border-b border-gray-200 py-3"
-      aria-label="Breadcrumb"
+      aria-label="Fil d'Ariane"
       data-section="S_BREADCRUMB"
     >
       <div className="container mx-auto px-4">
-        <ol
-          className="flex items-center gap-2 text-sm"
-          itemScope
-          itemType="https://schema.org/BreadcrumbList"
-        >
-          <li
-            itemProp="itemListElement"
-            itemScope
-            itemType="https://schema.org/ListItem"
-          >
-            <a href="/" itemProp="item" className="hover:underline text-brand">
-              <span itemProp="name">Accueil</span>
+        <ol className="flex items-center gap-2 text-sm">
+          <li>
+            <a href="/" className="hover:underline text-brand">
+              Accueil
             </a>
-            <meta itemProp="position" content="1" />
           </li>
           <li>
             <span className="text-gray-400">→</span>
           </li>
-          <li
-            itemProp="itemListElement"
-            itemScope
-            itemType="https://schema.org/ListItem"
-          >
-            <a
-              href="/constructeurs"
-              itemProp="item"
-              className="hover:underline text-brand"
-            >
-              <span itemProp="name">Constructeurs</span>
+          <li>
+            <a href="/constructeurs" className="hover:underline text-brand">
+              Constructeurs
             </a>
-            <meta itemProp="position" content="2" />
           </li>
           <li>
             <span className="text-gray-400">→</span>
           </li>
-          <li
-            itemProp="itemListElement"
-            itemScope
-            itemType="https://schema.org/ListItem"
-          >
-            <a
-              href={`/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}.html`}
-              itemProp="item"
-              className="hover:underline text-brand"
-            >
-              <span itemProp="name">{breadcrumb.brand}</span>
+          <li>
+            <a href={brandHref} className="hover:underline text-brand">
+              {breadcrumb.brand}
             </a>
-            <meta itemProp="position" content="3" />
           </li>
           <li>
             <span className="text-gray-400">→</span>
           </li>
-          <li
-            itemProp="itemListElement"
-            itemScope
-            itemType="https://schema.org/ListItem"
-          >
-            <span itemProp="name" className="text-gray-600">
+          <li>
+            <a href={modelHref} className="hover:underline text-brand">
               {breadcrumb.model}
-            </span>
-            <meta itemProp="position" content="4" />
+            </a>
           </li>
           <li>
             <span className="text-gray-400">→</span>
           </li>
-          <li
-            itemProp="itemListElement"
-            itemScope
-            itemType="https://schema.org/ListItem"
-          >
-            <span itemProp="name" className="font-semibold text-gray-900">
+          <li aria-current="page">
+            <span className="font-semibold text-gray-900">
               {vehicle.type_name} {vehicle.type_power_ps} ch
             </span>
-            <meta itemProp="position" content="5" />
           </li>
         </ol>
       </div>

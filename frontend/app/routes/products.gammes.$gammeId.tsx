@@ -368,7 +368,7 @@ export default function ProductsGammeDetail() {
                   </div>
                   <div className="flex items-center gap-1">
                     <span className="font-medium">Marques uniques:</span>
-                    <span className="text-purple-600">
+                    <span className="text-foreground">
                       {
                         new Set(
                           products

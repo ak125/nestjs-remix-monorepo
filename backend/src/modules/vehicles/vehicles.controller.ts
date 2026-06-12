@@ -11,13 +11,21 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { DomainNotFoundException } from '@common/exceptions';
-import {
-  PositiveIntParamPipe,
-  PositiveSmallIntParamPipe,
-} from '../../common/pipes/params';
+import { PositiveIntParamPipe } from '../../common/pipes/params';
+import { StrictZodQueryValidationPipe } from '../../common/pipes/strict-zod-query-validation.pipe';
 import { Request, Response } from 'express';
 import { VehiclesService } from './vehicles.service';
 import { VehiclePaginationDto } from './dto/vehicles.dto';
+import {
+  VehiclesQuerySchema,
+  type VehiclesQueryDto,
+} from './dto/vehicles-query.schema';
+
+// Pipe partagé par les 4 endpoints qui consomment les query params via
+// `VehiclesQuerySchema`. Anti-bricolage : tout query param non-conforme
+// (NaN, format invalide, hors borne) → 400 Bad Request. Voir
+// `./dto/vehicles-query.schema.ts` pour le contrat de validation.
+const vehiclesQueryPipe = new StrictZodQueryValidationPipe(VehiclesQuerySchema);
 import { VehicleBrandsService } from './services/data/vehicle-brands.service';
 import { VehicleModelsService } from './services/data/vehicle-models.service';
 import { VehicleTypesService } from './services/data/vehicle-types.service';
@@ -51,75 +59,69 @@ export class VehiclesController {
     private readonly vehicleProfileService: VehicleProfileService,
   ) {}
 
-  /**
-   * Transformer les query params string en VehiclePaginationDto
-   */
-  private parseQueryParams(
-    query: Record<string, string>,
-  ): VehiclePaginationDto {
+  // Convertit la sortie Zod (VehiclesQueryDto) vers l'interface
+  // VehiclePaginationDto consommée par les services. Pas de coercition ici —
+  // la validation a déjà eu lieu.
+  private toPaginationDto(query: VehiclesQueryDto): VehiclePaginationDto {
     return {
-      search: query.search || undefined,
-      brandId: query.brandId || undefined,
-      modelId: query.modelId || undefined,
-      typeId: query.typeId || undefined,
-      year: query.year ? parseInt(query.year, 10) : undefined,
-      limit: query.limit ? parseInt(query.limit, 10) : undefined,
-      page: query.page ? parseInt(query.page, 10) : undefined,
-      includeAll: query.includeAll === 'true',
+      search: query.search,
+      brandId: query.brandId,
+      modelId: query.modelId,
+      typeId: query.typeId,
+      year: query.year,
+      limit: query.limit,
+      page: query.page,
+      includeAll: query.includeAll,
     };
   }
 
   @Get('brands')
-  async getAllBrands(@Query() query: Record<string, string>) {
-    const params = this.parseQueryParams(query);
+  async getAllBrands(@Query(vehiclesQueryPipe) query: VehiclesQueryDto) {
+    const params = this.toPaginationDto(query);
     return this.vehicleBrandsService.getBrands(params);
   }
 
   @Get('brands/:brandId')
-  async getBrandById(
-    @Param('brandId', PositiveSmallIntParamPipe) brandId: number,
-  ) {
+  async getBrandById(@Param('brandId', PositiveIntParamPipe) brandId: number) {
     return this.vehicleBrandsService.getBrandById(brandId);
   }
 
   @Get('brands/:brandId/models')
   async getModelsByBrand(
-    @Param('brandId', PositiveSmallIntParamPipe) brandId: number,
-    @Query() query: Record<string, string>,
+    @Param('brandId', PositiveIntParamPipe) brandId: number,
+    @Query(vehiclesQueryPipe) query: VehiclesQueryDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const params = this.parseQueryParams(query);
+    const params = this.toPaginationDto(query);
     params.brandId = String(brandId);
 
     // 🔍 Header pour traçabilité du cache (debugging)
     res.setHeader('X-Cache-Source', 'vehicleModelsService.getModelsByBrand');
-    res.setHeader('X-Filter-Year', query.year || 'none');
+    res.setHeader(
+      'X-Filter-Year',
+      query.year !== undefined ? String(query.year) : 'none',
+    );
 
     return this.vehicleModelsService.getModelsByBrand(brandId, params);
   }
 
   @Get('brands/:brandId/years')
   async getYearsByBrand(
-    @Param('brandId', PositiveSmallIntParamPipe) brandId: number,
-    @Query() query: Record<string, string>,
+    @Param('brandId', PositiveIntParamPipe) brandId: number,
+    @Query(vehiclesQueryPipe) query: VehiclesQueryDto,
   ) {
-    const params = this.parseQueryParams(query);
+    const params = this.toPaginationDto(query);
     params.brandId = String(brandId);
     return this.vehicleBrandsService.getYearsByBrand(brandId, params);
   }
 
   @Get('models/:modelId/types')
   async getTypesByModel(
-    @Param('modelId', PositiveSmallIntParamPipe) modelId: number,
-    @Query() query: Record<string, string>,
+    @Param('modelId', PositiveIntParamPipe) modelId: number,
+    @Query(vehiclesQueryPipe) query: VehiclesQueryDto,
   ) {
-    const params = this.parseQueryParams(query);
+    const params = this.toPaginationDto(query);
     params.modelId = String(modelId);
-
-    // 🔧 Support du filtrage par année
-    if (query.year) {
-      params.year = parseInt(query.year);
-    }
 
     return this.vehicleTypesService.getTypesByModel(modelId, {
       ...params,

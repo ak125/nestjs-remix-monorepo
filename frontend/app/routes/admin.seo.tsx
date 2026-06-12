@@ -262,7 +262,7 @@ export default function SeoAdmin() {
 
       {/* 📊 KPIs CRITIQUES - Section prioritaire */}
       {kpis?.data && (
-        <Card className="border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50">
+        <Card className="border-2 border-purple-200 bg-gradient-to-br to-pink-50">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-xl">
@@ -481,7 +481,7 @@ export default function SeoAdmin() {
         <div className="space-y-6">
           {/* Métriques principales avec indicateurs visuels */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50">
+            <Card className="border-blue-200 bg-gradient-to-br from-blue-50">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                   🌐 Total Pages
@@ -554,14 +554,14 @@ export default function SeoAdmin() {
               </CardContent>
             </Card>
 
-            <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-violet-50">
+            <Card className="border-purple-200 bg-gradient-to-br">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                   🎯 Performance SEO
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-purple-700">
+                <div className="text-3xl font-bold text-foreground">
                   {analytics.completionRate}%
                 </div>
                 <div className="flex items-center gap-2 mt-2">
@@ -582,13 +582,13 @@ export default function SeoAdmin() {
                         : "🔧 À améliorer"}
                   </Badge>
                 </div>
-                <div className="w-full bg-purple-200 rounded-full h-1 mt-2">
+                <div className="w-full bg-muted rounded-full h-1 mt-2">
                   <div
-                    className="bg-gradient-to-r from-purple-500 to-violet-500 h-1 rounded-full"
+                    className="bg-gradient-to-r h-1 rounded-full"
                     style={{ width: `${analytics.completionRate}%` }}
                   ></div>
                 </div>
-                <div className="text-xs text-purple-600 mt-1">
+                <div className="text-xs text-foreground mt-1">
                   Objectif: 95%
                 </div>
               </CardContent>
@@ -615,7 +615,7 @@ export default function SeoAdmin() {
                   </div>
                   <div className="flex justify-between items-center text-sm">
                     <span>Pages critiques corrigées</span>
-                    <span className="font-bold text-purple-600">2,891</span>
+                    <span className="font-bold text-foreground">2,891</span>
                   </div>
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <div className="text-xs text-gray-600 mb-2">
@@ -739,7 +739,7 @@ export default function SeoAdmin() {
             <CardContent className="space-y-6">
               {/* Métriques de performance */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
+                <div className="bg-gradient-to-r from-blue-50 p-4 rounded-lg border border-blue-200">
                   <div className="flex items-center gap-3">
                     <Alert intent="info">🌐</Alert>
                     <div>
@@ -828,7 +828,7 @@ export default function SeoAdmin() {
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
-                          className="bg-purple-500 h-2 rounded-full"
+                          className="bg-primary h-2 rounded-full"
                           style={{ width: "89%" }}
                         ></div>
                       </div>
@@ -864,14 +864,14 @@ export default function SeoAdmin() {
                         </span>
                       </div>
 
-                      <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
+                      <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
                         <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-purple-600 rounded-full"></div>
+                          <div className="w-2 h-2 bg-primary rounded-full"></div>
                           <span className="text-sm">
                             Pages critiques résolues
                           </span>
                         </div>
-                        <span className="font-bold text-purple-700">1,234</span>
+                        <span className="font-bold text-foreground">1,234</span>
                       </div>
                     </div>
                   </CardContent>
@@ -1067,7 +1067,7 @@ export default function SeoAdmin() {
                       >
                         {isSubmitting ? (
                           <span className="flex items-center gap-2">
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            <div className="animate-spin rounded-full h-4 w-4 border-white"></div>
                             Enregistrement...
                           </span>
                         ) : (
@@ -1083,7 +1083,7 @@ export default function SeoAdmin() {
             </Card>
 
             {/* Prévisualisation Google */}
-            <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50">
+            <Card className="border-blue-200 bg-gradient-to-br from-blue-50">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-blue-800">
                   👁️ Prévisualisation Google
@@ -1149,7 +1149,7 @@ export default function SeoAdmin() {
                       className="flex items-center gap-2 p-2  rounded"
                       variant="default"
                     >
-                      <span className="text-purple-600">🎯</span>
+                      <span className="text-foreground">🎯</span>
                       <span>
                         Utilisez des émojis avec parcimonie pour attirer l'œil
                       </span>

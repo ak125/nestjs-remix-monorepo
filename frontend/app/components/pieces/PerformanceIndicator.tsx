@@ -41,7 +41,7 @@ const PerformanceIndicator = memo(function PerformanceIndicator({
   const speedBadge = getSpeedBadge(performance.total_time_ms);
 
   return (
-    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 mb-6">
+    <div className="bg-gradient-to-r from-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
           ⚡ API Complète - Performances optimisées
@@ -67,7 +67,7 @@ const PerformanceIndicator = memo(function PerformanceIndicator({
           <div className="text-xs text-gray-600">Motorisations</div>
         </div>
         <div className="text-center">
-          <div className="text-2xl font-bold text-purple-600">
+          <div className="text-2xl font-bold text-foreground">
             {performance.catalogue_famille_count}
           </div>
           <div className="text-xs text-gray-600">Pièces similaires</div>
@@ -81,7 +81,7 @@ const PerformanceIndicator = memo(function PerformanceIndicator({
           <div className="text-xs text-gray-600">Plus rapide</div>
         </div>
         <div className="text-center">
-          <div className="text-2xl font-bold text-indigo-600">
+          <div className="text-2xl font-bold text-foreground">
             {Math.round((totalSections / 6) * 100)}%
           </div>
           <div className="text-xs text-gray-600">Fonctionnalités</div>

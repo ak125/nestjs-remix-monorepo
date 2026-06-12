@@ -26,6 +26,7 @@ export const CartItemSchema = z.object({
   product_image: z.string().optional(), // URL image
   weight: z.number().min(0).optional(),
   type_id: z.number().int().positive().optional(), // Vehicle type_id (contexte vehicule a l'ajout)
+  website_url: z.string().optional(), // F1 attribution : source d'ajout (URL/chemin de la page) → orl_website_url
 });
 
 export const CartMetadataSchema = z.object({
@@ -304,6 +305,7 @@ export class CartDataService extends SupabaseBaseService {
     customPrice?: number,
     replace: boolean = false,
     typeId?: number,
+    sourceUrl?: string, // F1 attribution : page d'où l'article a été ajouté → orl_website_url
   ): Promise<CartItem> {
     try {
       // 1. Récupérer le produit avec TOUTES les vraies données
@@ -345,6 +347,7 @@ export class CartDataService extends SupabaseBaseService {
         product_image: product.piece_image || undefined,
         weight: product.piece_weight_kgm,
         ...(typeId && { type_id: typeId }),
+        ...(sourceUrl && { website_url: sourceUrl }),
       };
 
       if (existingItemIndex >= 0) {

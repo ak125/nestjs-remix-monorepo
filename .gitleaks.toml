@@ -38,4 +38,11 @@ title = "AutoMecanik Gitleaks Config"
     # MEMORY feedback_no_hardcoded_infra_in_agentsmd.md. Tracked
     # for follow-up after ticket #5 (history audit).
     '''856528eb83bd8b36867bc0bbf8ead7796f69de30fa6888a6876b54f4d98be08a''',
+    # PR-B test fixture for the vehicle_ctx JWS HS256 secret. Named "test-secret"
+    # explicitly to communicate intent ; high entropy from a-z trips the
+    # generic-api-key rule otherwise. Used only in vehicle-context unit tests
+    # at backend/src/modules/vehicle-context/*.test.ts and frontend/tests/unit/.
+    '''test-secret-must-be-at-least-32-chars-long-xyz''',
+    # Sister fixture used in tamper-rejection tests.
+    '''different-secret-also-32-chars-or-more-abcd''',
   ]

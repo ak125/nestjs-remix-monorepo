@@ -181,12 +181,12 @@ export default function CommercialReports() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Panier Moyen</p>
-              <p className="text-2xl font-bold text-purple-600">
+              <p className="text-2xl font-bold text-foreground">
                 {formatCurrency(parseFloat(data.statistics.averageOrderValue))}
               </p>
               <p className="text-xs text-gray-500 mt-1">Par commande payée</p>
             </div>
-            <Package className="h-8 w-8 text-purple-500" />
+            <Package className="h-8 w-8 text-foreground" />
           </div>
         </div>
 
@@ -261,7 +261,7 @@ export default function CommercialReports() {
 
         <div className="bg-white p-6 rounded-lg shadow-sm border">
           <h3 className="text-lg font-semibold mb-4 flex items-center">
-            <Package className="mr-2 h-5 w-5 text-purple-600" />
+            <Package className="mr-2 h-5 w-5 text-foreground" />
             Résumé Rapide
           </h3>
           <div className="space-y-3">
@@ -393,7 +393,7 @@ export default function CommercialReports() {
               </div>
             </Link>
             <div className="flex items-center p-4 bg-white rounded-lg shadow-sm">
-              <Users className="h-8 w-8 text-purple-600 mr-3" />
+              <Users className="h-8 w-8 text-foreground mr-3" />
               <div>
                 <div className="font-medium">Support Client</div>
                 <div className="text-sm text-gray-600">

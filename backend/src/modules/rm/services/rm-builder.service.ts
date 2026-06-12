@@ -7,6 +7,7 @@ import {
   type SeoContext,
   type SeoTemplates,
 } from '../../catalog/services/seo-template.service';
+import { pickGammeKeywordModifier } from '../../catalog/services/vehicle-aware-description.composer';
 import { SeoShadowObservatory } from '../../seo-shadow-observatory/seo-shadow-observatory.service';
 import {
   RmProduct,
@@ -608,6 +609,12 @@ export class RmBuilderService extends SupabaseBaseService {
               min_price: result.minPrice ?? undefined,
               count: result.count,
               power_ps: seoCtx.type_power_ps || '',
+              // Fragments switch PAR GAMME (legacy) pour résoudre #CompSwitch_alias#
+              // (sinon strippés à vide → meta dégénérée). Chargé caché.
+              ...(await this.loadSeoCtxSwitches(
+                Number(seoCtx.pg_id),
+                result.gamme?.pg_name || '',
+              )),
             };
 
             const processed = await this.seoTemplateService.processTemplates(
@@ -620,6 +627,12 @@ export class RmBuilderService extends SupabaseBaseService {
               description: processed.description,
               content: processed.content,
               preview: processed.preview,
+              // Expose per-pg_id technique variations (sgcs_alias=2) pour
+              // rotation H1 suffix côté frontend. `ctx.comp_switches` est
+              // déjà chargé via `loadSeoCtxSwitches(pgId, gammeName)` ;
+              // entities HTML déjà décodées. Aucune nouvelle query DB.
+              // Voir @repo/seo-types pickH1Suffix.
+              compSwitch2: ctx.comp_switches?.['2'] ?? [],
             };
 
             // Retrofit ADR-055 — shadow observation via SeoShadowObservatoryModule (I1).
@@ -707,82 +720,131 @@ export class RmBuilderService extends SupabaseBaseService {
   }
 
   /**
-   * 🔄 Get alternative gammes and vehicles when a combination has 0 products
-   *
-   * @param gamme_id - Current gamme (excluded from results)
-   * @param type_id - Current vehicle type (excluded from results)
-   * @param limit - Max results per category
+   * Charge les fragments switch PAR GAMME (`__seo_gamme_car_switch`) pour un
+   * pg_id, groupés par alias → résolus dans #CompSwitch_alias[_pgid]# par
+   * `SeoTemplateService` (sinon strippés à vide = meta dégénérée). Caché 24h
+   * (quasi-statique). Décode les entités HTML legacy (`&rsquo;` etc.).
    */
-  async getAlternatives(
-    gamme_id: number,
-    type_id: number,
-    limit: number,
-  ): Promise<{
-    alternativeGammes: Array<{
-      pg_id: number;
-      pg_name: string;
-      pg_alias: string;
-      pg_pic: string | null;
-    }>;
-    alternativeVehicles: Array<{
-      type_id: string;
-      type_name: string;
-      type_alias: string | null;
-      modele_name: string;
-      modele_alias: string;
-      modele_id: number;
-      marque_name: string;
-      marque_alias: string;
-      marque_id: number;
-    }>;
-  }> {
-    const startTime = performance.now();
-    const emptyResult = { alternativeGammes: [], alternativeVehicles: [] };
+  private async loadCompSwitches(
+    pgId: number,
+  ): Promise<Record<string, string[]>> {
+    if (!pgId || Number.isNaN(pgId)) return {};
+    const cacheKey = `seo:comp_switches:${pgId}`;
+    const cached =
+      await this.cacheService.get<Record<string, string[]>>(cacheKey);
+    if (cached) return cached;
 
+    const grouped: Record<string, string[]> = {};
     try {
-      // Parallel queries
-      const [gammesResult, vehiclesResult] = await Promise.all([
-        // Other gammes available for this vehicle
-        this.supabase.rpc('get_alternative_gammes_for_vehicle', {
-          p_type_id: type_id,
-          p_exclude_gamme_id: gamme_id,
-          p_limit: limit,
-        }),
-        // Other vehicles with products for this gamme
-        this.supabase.rpc('get_alternative_vehicles_for_gamme', {
-          p_gamme_id: gamme_id,
-          p_exclude_type_id: type_id,
-          p_limit: Math.min(limit, 6),
-        }),
-      ]);
-
-      const duration = Math.round(performance.now() - startTime);
-      this.logger.debug(`Alternatives fetched in ${duration}ms`);
-
-      if (gammesResult.error) {
-        this.logger.warn(
-          `Alternatives gammes RPC error: ${gammesResult.error.message}`,
-        );
+      const { data, error } = await this.supabase
+        .from('__seo_gamme_car_switch')
+        .select('sgcs_alias, sgcs_content')
+        .eq('sgcs_pg_id', String(pgId));
+      if (!error && Array.isArray(data)) {
+        for (const row of data as Array<{
+          sgcs_alias: string | null;
+          sgcs_content: string | null;
+        }>) {
+          const alias = (row.sgcs_alias ?? '').trim();
+          const content = this.decodeHtmlEntities(
+            (row.sgcs_content ?? '').trim(),
+          );
+          if (alias && content) {
+            (grouped[alias] ??= []).push(content);
+          }
+        }
       }
-      if (vehiclesResult.error) {
-        this.logger.warn(
-          `Alternatives vehicles RPC error: ${vehiclesResult.error.message}`,
-        );
-      }
-
-      return {
-        alternativeGammes: gammesResult.error ? [] : gammesResult.data || [],
-        alternativeVehicles: vehiclesResult.error
-          ? []
-          : vehiclesResult.data || [],
-      };
-    } catch (err) {
-      const duration = Math.round(performance.now() - startTime);
-      this.logger.warn(
-        `Alternatives RPC failed in ${duration}ms: ${err instanceof Error ? err.message : err}`,
-      );
-      return emptyResult;
+    } catch (e) {
+      this.logger.warn(`loadCompSwitches(${pgId}) failed: ${String(e)}`);
     }
+    // Cache même si vide (évite re-query répétée). TTL 24h.
+    await this.cacheService
+      .set(cacheKey, grouped, 86400)
+      .catch(() => undefined);
+    return grouped;
+  }
+
+  /**
+   * Charge en PARALLÈLE les deux sources switch du contexte SEO (fragments par
+   * gamme + modifieur mot-clé gaté) — requêtes indépendantes, évite la latence
+   * série sur le cold path de `getPageCompleteV2`.
+   */
+  private async loadSeoCtxSwitches(
+    pgId: number,
+    gammeName: string,
+  ): Promise<Pick<SeoContext, 'comp_switches' | 'gamme_keyword_modifier'>> {
+    const [comp_switches, gamme_keyword_modifier] = await Promise.all([
+      this.loadCompSwitches(pgId),
+      this.loadGammeKeywordModifier(pgId, gammeName),
+    ]);
+    return { comp_switches, gamme_keyword_modifier };
+  }
+
+  /**
+   * Choisit un modifieur mot-clé SÛR pour la gamme depuis `__seo_keywords`
+   * (gate anti-contamination : le mot-clé doit contenir les mots-cœur de la
+   * gamme — cf. `pickGammeKeywordModifier`). Null si rien de sûr.
+   * Le résultat n'est caché 24h QUE si la requête a réussi (succès, même null) ;
+   * sur erreur → pas de cache long TTL, réessai au prochain appel
+   * (`feedback_no_long_ttl_cache_on_error_paths`).
+   */
+  private async loadGammeKeywordModifier(
+    pgId: number,
+    gammeName: string,
+  ): Promise<string | null> {
+    if (!pgId || Number.isNaN(pgId) || !gammeName) return null;
+    const cacheKey = `seo:gamme_kw_modifier:${pgId}`;
+    const cached = await this.cacheService.get<string>(cacheKey);
+    if (cached !== undefined && cached !== null)
+      return cached === '' ? null : cached;
+
+    let modifier: string | null = null;
+    let querySucceeded = false;
+    try {
+      const { data, error } = await this.supabase
+        .from('__seo_keywords')
+        .select('keyword, volume')
+        .eq('pg_id', pgId);
+      if (!error && Array.isArray(data)) {
+        querySucceeded = true;
+        modifier = pickGammeKeywordModifier(
+          gammeName,
+          (
+            data as Array<{ keyword: string | null; volume: number | null }>
+          ).map((r) => ({ keyword: r.keyword ?? '', volume: r.volume ?? 0 })),
+        );
+      }
+    } catch (e) {
+      this.logger.warn(
+        `loadGammeKeywordModifier(${pgId}) failed: ${String(e)}`,
+      );
+    }
+    // Cache 24h UNIQUEMENT si succès (null légitime = pas de modifieur sûr).
+    // Sur erreur : pas de cache → réessai (pas de null figé 24h).
+    if (querySucceeded) {
+      await this.cacheService
+        .set(cacheKey, modifier ?? '', 86400)
+        .catch(() => undefined);
+    }
+    return modifier;
+  }
+
+  /** Décode les entités HTML legacy les plus fréquentes dans les fragments switch. */
+  private decodeHtmlEntities(s: string): string {
+    if (!s) return s;
+    return s
+      .replace(/&rsquo;/g, '’')
+      .replace(/&lsquo;/g, '‘')
+      .replace(/&rdquo;/g, '”')
+      .replace(/&ldquo;/g, '“')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&eacute;/g, 'é')
+      .replace(/&egrave;/g, 'è')
+      .replace(/&agrave;/g, 'à')
+      .replace(/&ccedil;/g, 'ç')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/&amp;/g, '&');
   }
 
   // ────────────────────────────────────────────────────────────────────

@@ -354,7 +354,7 @@ function TableOfContentsGuide() {
               className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-2.5 sm:py-1.5 text-sm transition-all duration-200 ${
                 isActive
                   ? "border-green-400 bg-green-100 font-medium text-green-800"
-                  : "border-gray-200 bg-white text-gray-700 hover:border-green-300 hover:bg-green-50 hover:text-green-700"
+                  : "border-gray-200 bg-white text-green-900 hover:border-green-300 hover:bg-green-50 hover:text-green-700"
               }`}
             >
               <Icon className="h-3.5 w-3.5" />
@@ -405,7 +405,7 @@ function MethodCard({
                 : badgeVariant === "info"
                   ? "border-blue-300 bg-blue-50 text-blue-800"
                   : badgeVariant === "purple"
-                    ? "border-purple-300 bg-purple-50 text-purple-800"
+                    ? "border-purple-300 bg-muted text-foreground"
                     : ""
             }
           >
@@ -770,26 +770,26 @@ export default function GuideSelecteurVehicule() {
               </MethodCard>
 
               <MethodCard
-                icon={<Package className="h-5 w-5 text-purple-600" />}
+                icon={<Package className="h-5 w-5 text-foreground" />}
                 title="Par reference OEM"
                 badge="La plus precise"
                 badgeVariant="purple"
               >
                 <ul className="space-y-1">
                   <li className="flex items-start gap-1.5">
-                    <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-purple-600" />
+                    <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-foreground" />
                     Chercher piece detachee par sa reference OEM
                   </li>
                   <li className="flex items-start gap-1.5">
-                    <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-purple-600" />
+                    <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-foreground" />
                     Trouver les equivalences equipementiers
                   </li>
                   <li className="flex items-start gap-1.5">
-                    <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-purple-600" />
+                    <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-foreground" />
                     Remplacement a l'identique garanti
                   </li>
                 </ul>
-                <div className="mt-3 rounded-md bg-purple-50 p-2 text-xs text-purple-800">
+                <div className="mt-3 rounded-md bg-muted p-2 text-xs text-foreground">
                   <strong>Recommande si :</strong> vous avez le numero OE de
                   l'ancienne piece (grave sur la piece).
                 </div>
@@ -813,7 +813,7 @@ export default function GuideSelecteurVehicule() {
                     <TableHead className="font-semibold text-gray-700">
                       Manuelle
                     </TableHead>
-                    <TableHead className="font-semibold text-purple-800">
+                    <TableHead className="font-semibold text-foreground">
                       OEM
                     </TableHead>
                   </TableRow>
@@ -832,7 +832,7 @@ export default function GuideSelecteurVehicule() {
                     <TableCell className="text-gray-600">
                       Bonne (si motorisation exacte)
                     </TableCell>
-                    <TableCell className="text-purple-700">
+                    <TableCell className="text-foreground">
                       Maximale (100%)
                     </TableCell>
                   </TableRow>
@@ -847,7 +847,7 @@ export default function GuideSelecteurVehicule() {
                       Quelques secondes
                     </TableCell>
                     <TableCell className="text-gray-600">1-2 minutes</TableCell>
-                    <TableCell className="text-purple-700">
+                    <TableCell className="text-foreground">
                       Instantane
                     </TableCell>
                   </TableRow>
@@ -864,7 +864,7 @@ export default function GuideSelecteurVehicule() {
                     <TableCell className="text-gray-600">
                       Marque, modele, annee, motorisation
                     </TableCell>
-                    <TableCell className="text-purple-700">
+                    <TableCell className="text-foreground">
                       Numero OE (grave sur la piece)
                     </TableCell>
                   </TableRow>
@@ -881,7 +881,7 @@ export default function GuideSelecteurVehicule() {
                     <TableCell className="text-gray-600">
                       Sans carte grise, vehicule connu
                     </TableCell>
-                    <TableCell className="text-purple-700">
+                    <TableCell className="text-foreground">
                       Remplacement a l'identique
                     </TableCell>
                   </TableRow>
@@ -898,7 +898,7 @@ export default function GuideSelecteurVehicule() {
                     <TableCell className="text-gray-600">
                       Doute entre motorisations proches
                     </TableCell>
-                    <TableCell className="text-purple-700">
+                    <TableCell className="text-foreground">
                       Piece usagee necessaire
                     </TableCell>
                   </TableRow>
@@ -1012,7 +1012,7 @@ export default function GuideSelecteurVehicule() {
               id="h2-oem"
               className="mb-4 flex items-center gap-2 text-xl font-bold text-gray-900 sm:text-2xl"
             >
-              <Package className="h-6 w-6 text-purple-600" />
+              <Package className="h-6 w-6 text-foreground" />
               Recherche par reference OEM : trouver la piece exacte
             </h2>
 

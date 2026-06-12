@@ -77,7 +77,7 @@ export const OrderActions = memo(function OrderActions({
         <button
           onClick={() => onStartProcessing(order.ord_id)}
           disabled={isProcessing}
-          className="flex items-center gap-2 px-3 py-1.5 bg-purple-100 text-purple-700 hover:bg-purple-200 rounded-lg  transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-3 py-1.5 bg-muted text-foreground hover:bg-muted rounded-lg transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <PlayCircle className="w-4 h-4" />
           Préparer
@@ -101,7 +101,7 @@ export const OrderActions = memo(function OrderActions({
         <button
           onClick={() => onShip(order.ord_id)}
           disabled={isProcessing}
-          className="flex items-center gap-2 px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-3 py-1.5 bg-muted text-foreground rounded-lg hover:bg-muted transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Truck className="w-4 h-4" />
           Expédier

@@ -2,16 +2,16 @@
 module: admin
 sources:
 - backend/src/modules/admin
-last_scan: '2026-05-17'
+last_scan: '2026-05-24'
 primary_files:
 - backend/src/modules/admin/admin.module.ts
+- backend/src/modules/admin/constants/seo-control.constants.ts
 - backend/src/modules/admin/controllers/admin-buying-guide-preview.controller.ts
 - backend/src/modules/admin/controllers/admin-buying-guide.controller.ts
 - backend/src/modules/admin/controllers/admin-conseil.controller.ts
 - backend/src/modules/admin/controllers/admin-db-governance.controller.ts
 - backend/src/modules/admin/controllers/admin-feature-flags.controller.ts
 - backend/src/modules/admin/controllers/admin-gammes-seo-aggregates.controller.ts
-- backend/src/modules/admin/controllers/admin-gammes-seo-list.controller.ts
 depends_on:
 - DatabaseModule
 - OrdersModule
@@ -24,6 +24,8 @@ depends_on:
 - AiContentModule
 - VehiclesModule
 - OperatingMatrixModule
+- FeatureFlagsModule
+- BullModule
 ---
 
 # Module Admin

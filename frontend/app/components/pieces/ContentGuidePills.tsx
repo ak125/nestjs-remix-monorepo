@@ -82,7 +82,7 @@ export const ContentGuidePills = memo(function ContentGuidePills({
         {reference && (
           <Link
             to={`/reference-auto/${reference.slug}`}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-muted text-foreground hover:bg-muted transition-colors"
           >
             <FileText className="w-3.5 h-3.5" />
             Fiche technique : {reference.title}

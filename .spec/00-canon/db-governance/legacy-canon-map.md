@@ -1,9 +1,14 @@
 # Table canonique figee — legacy → canon
 
-> **Version** : 1.2.0
-> **Date** : 2026-05-05
+> **Version** : 1.3.0
+> **Date** : 2026-06-10
 > **Status** : BASELINE_AUDIT
 > **Complement de** : role-matrix.md V4, pipeline-phases.md V7, role-implementation-map.md V1.1.0
+>
+> **Changelog v1.3.0** (correction cohérence interne, détectée par `scripts/governance/validate-role-coherence.js`) :
+> - `R6_SUPPORT` retiré de la série canonique §1.1 — la table §2 et le verdict final §15 (qui ne l'ont jamais inclus) font foi : label local de surface support non éditoriale, hors matrice coeur. Aligné sur role-matrix.md (autorité #1 selon §0) et le runtime (`NON_WRITING_ROLES`, `operating-matrix.service.ts`). Annule le 1er point du changelog v1.2.0 (l'enum `@repo/seo-roles` contient `R6_SUPPORT` comme label local, pas comme rôle métier).
+> - `R6_SUPPORT_LOCAL` (nom normatif jamais implémenté — zéro occurrence code) remplacé par `R6_SUPPORT`, le label réellement utilisé (§2, §3).
+> - Classification des membres enum hors-R* ajoutée à la table §2 : `R9_GOVERNANCE` (déprécié → G*), `AGENTIC_ENGINE` et `FOUNDATION` (infrastructure ADR-037, NON_WRITING).
 >
 > **Changelog v1.2.0** (PR-4A) :
 > - Ajout `R6_SUPPORT` à la série canonique (alignement avec `backend/src/config/role-ids.ts` et `@repo/seo-roles`)
@@ -54,11 +59,10 @@ Les seuls roles metier canoniques sont :
 - `R4_REFERENCE` — Définition / désambiguïsation / lexique
 - `R5_DIAGNOSTIC` — Symptômes / causes / quick checks / urgence
 - `R6_GUIDE_ACHAT` — Choix avant achat / comparatif / critères
-- `R6_SUPPORT` — Support / légal / contact / mentions / CGV
 - `R7_BRAND` — Hub marque / constructeur / équipementier
 - `R8_VEHICLE` — Hub véhicule (type_id) / compatibilité pièces
 
-> **Note R6** : `R6_GUIDE_ACHAT` et `R6_SUPPORT` sont deux rôles canoniques distincts. Le suffixe court `R6` seul est **interdit** en sortie — il est ambigu entre les deux. La désambiguïsation passe par l'URL via la PL/pgSQL `assign_page_role_from_url()`. Voir §1.5.
+> **Note R6** : `R6_GUIDE_ACHAT` est le **seul** rôle métier canonique de la famille R6. `R6_SUPPORT` n'est **pas** un rôle canonique métier — c'est un label local de surface support non éditoriale (contact, légal, CGV — voir §2, §11, §12), à ne jamais confondre avec `R6_GUIDE_ACHAT`. Le suffixe court `R6` seul reste **interdit** en sortie — ambigu entre rôle métier et label local. La désambiguïsation passe par l'URL via la PL/pgSQL `assign_page_role_from_url()`. Voir §1.5.
 
 ## 1.2 Serie canonique de gouvernance
 
@@ -131,7 +135,7 @@ Les rôles courts `R3` et `R6` sont **interdits en sortie** (canon obligatoire).
 | `R5` | `R5_DIAGNOSTIC` | accepte | — | garder |
 | `R5_diagnostic` | `R5_DIAGNOSTIC` | tolere temporairement | faible | migrer |
 | `R5_DIAGNOSTIC` | `R5_DIAGNOSTIC` | accepte | — | garder |
-| `R6` | ambigu | interdit seul | fort | toujours preciser `R6_GUIDE_ACHAT` ou `R6_SUPPORT_LOCAL` |
+| `R6` | ambigu | interdit seul | fort | toujours preciser `R6_GUIDE_ACHAT` (role metier) ou `R6_SUPPORT` (label local support) |
 | `R6_GUIDE_ACHAT` | `R6_GUIDE_ACHAT` | accepte | — | garder |
 | `R6_BUYING_GUIDE` | `R6_GUIDE_ACHAT` | tolere temporairement | moyen | unifier |
 | `R6_SUPPORT` | hors matrice editoriale coeur | tolere local uniquement | moyen | n'est pas un role canonique metier — tolere uniquement comme label local de surface support non editoriale — ne jamais confondre avec `R6_GUIDE_ACHAT` |
@@ -140,6 +144,9 @@ Les rôles courts `R3` et `R6` sont **interdits en sortie** (canon obligatoire).
 | `R8` | `R8_VEHICLE` | accepte | — | garder |
 | `R8_VEHICLE` | `R8_VEHICLE` | accepte | — | garder |
 | `R9` | aucun | interdit | fort | supprimer de la matrice canonique |
+| `R9_GOVERNANCE` | aucun — la gouvernance est la serie `G*` | deprecie (membre enum legacy) | moyen | ne jamais utiliser en sortie ; voir §1.2 |
+| `AGENTIC_ENGINE` | hors matrice editoriale | infrastructure (ADR-037) | faible | orchestrateurs agentiques NON_WRITING — pas un role de page |
+| `FOUNDATION` | hors matrice editoriale | infrastructure (ADR-037) | faible | utilitaires transverses NON_WRITING — pas un role de page |
 | `RX_CHECKOUT` | hors matrice SEO canonique | tolere local | faible | isoler comme surface applicative non editoriale |
 
 ---
@@ -153,7 +160,7 @@ Les rôles courts `R3` et `R6` sont **interdits en sortie** (canon obligatoire).
 | `R3_guide_achat` | `R6_GUIDE_ACHAT` | legacy a migrer | fort | remapper dans docs et services |
 | `R4_reference` | `R4_REFERENCE` | tolere temporairement | faible | garder si DB legacy |
 | `R5_diagnostic` | `R5_DIAGNOSTIC` | tolere temporairement | faible | garder si DB legacy |
-| `R6_support` ou equivalent | `R6_SUPPORT_LOCAL` | hors matrice editoriale canonique | moyen | isoler comme support |
+| `R6_support` ou equivalent | `R6_SUPPORT` (label local) | hors matrice editoriale canonique | moyen | isoler comme support |
 | `brand` / constructeur implicite | `R7_BRAND` | ambigu | moyen | interdit en documentation cible sans renommage |
 | `vehicle` / fiche vehicule implicite | `R8_VEHICLE` | ambigu | moyen | interdit en documentation cible sans renommage |
 
@@ -399,5 +406,5 @@ Ces surfaces peuvent garder des roles techniques locaux, mais elles ne redefinis
 
 ---
 
-_Derniere mise a jour: 2026-03-14_
+_Derniere mise a jour: 2026-06-10_
 _Source: code search backend + role-matrix.md V4 + role-implementation-map.md V1.1.0_

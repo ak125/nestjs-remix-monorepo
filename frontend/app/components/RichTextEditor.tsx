@@ -68,7 +68,7 @@ export const RichTextEditor = memo(function RichTextEditor({
           className={`p-2 rounded hover:bg-gray-200 transition-colors ${
             editor.isActive("bold")
               ? "bg-blue-100 text-blue-700"
-              : "text-gray-700"
+              : "text-blue-900"
           }`}
           title="Gras (Ctrl+B)"
         >
@@ -93,7 +93,7 @@ export const RichTextEditor = memo(function RichTextEditor({
           className={`p-2 rounded hover:bg-gray-200 transition-colors ${
             editor.isActive("italic")
               ? "bg-blue-100 text-blue-700"
-              : "text-gray-700"
+              : "text-blue-900"
           }`}
           title="Italique (Ctrl+I)"
         >
@@ -120,7 +120,7 @@ export const RichTextEditor = memo(function RichTextEditor({
           className={`p-2 rounded hover:bg-gray-200 transition-colors ${
             editor.isActive("bulletList")
               ? "bg-blue-100 text-blue-700"
-              : "text-gray-700"
+              : "text-blue-900"
           }`}
           title="Liste à puces"
         >
@@ -145,7 +145,7 @@ export const RichTextEditor = memo(function RichTextEditor({
           className={`p-2 rounded hover:bg-gray-200 transition-colors ${
             editor.isActive("orderedList")
               ? "bg-blue-100 text-blue-700"
-              : "text-gray-700"
+              : "text-blue-900"
           }`}
           title="Liste numérotée"
         >

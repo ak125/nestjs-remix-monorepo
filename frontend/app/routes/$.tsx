@@ -7,6 +7,7 @@ import {
 } from "@remix-run/node";
 import { useRouteError, isRouteErrorResponse } from "@remix-run/react";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
+import { buildCacheHeaders } from "~/utils/cache-control";
 import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => [
@@ -17,6 +18,13 @@ export const meta: MetaFunction = () => [
   },
   { name: "robots", content: "noindex, nofollow" },
 ];
+
+// 🔒 Le catch-all throw TOUJOURS (404 / 410 / redirect) — il ne sert jamais un 200
+// indexable. Sans ce `headers` export, Remix v2 retombe sur root.tsx `headers()` et
+// le `X-Robots-Tag: noindex, follow` posé sur la Response throw était perdu (live :
+// la 410 garbage ressortait `index, follow` via le défaut interceptor). Paire avec
+// la suppression du défaut `index, follow` côté SeoHeadersInterceptor (fallthrough).
+export const headers = buildCacheHeaders("no-cache");
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
@@ -30,7 +38,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         status: 410,
         headers: {
           "Cache-Control": "public, max-age=86400",
-          "X-Robots-Tag": "noindex",
+          "X-Robots-Tag": "noindex, follow",
         },
       },
     );
@@ -221,13 +229,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
           status: 410,
           headers: {
             "Cache-Control": "public, max-age=86400", // Cache 24h pour accélérer la désindexation
-            "X-Robots-Tag": "noindex",
+            "X-Robots-Tag": "noindex, follow",
           },
         },
       );
     }
 
     // 6. Retourner erreur 404 enrichie avec suggestions
+    // X-Robots-Tag obligatoire : sans ce header, SeoHeadersInterceptor.intercept()
+    // applique le default `index, follow` pour les paths non-matchés (ex /wp-admin/,
+    // /panier inexistant). Canon SEO : un 404 ne s'indexe jamais.
     throw json(
       {
         ...errorResponseData,
@@ -237,6 +248,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         status: 404,
         headers: {
           "Cache-Control": "no-cache", // Ne pas cacher les 404
+          "X-Robots-Tag": "noindex, follow",
         },
       },
     );
@@ -254,7 +266,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
         message: "Page non trouvée",
         error: "Une erreur technique s'est produite lors de la vérification",
       },
-      { status: 404 },
+      {
+        status: 404,
+        headers: {
+          "Cache-Control": "no-cache",
+          "X-Robots-Tag": "noindex, follow",
+        },
+      },
     );
   }
 }

@@ -7,6 +7,7 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
+import { FeatureFlagsService } from '../../../config/feature-flags.service';
 import { SupabaseIndexationService } from '../../search/services/supabase-indexation.service';
 import { BlogArticleTransformService } from './blog-article-transform.service';
 import { InternalLinkingService } from '../../seo/internal-linking.service';
@@ -46,7 +47,42 @@ export class R6GuideService {
     private readonly supabaseService: SupabaseIndexationService,
     private readonly transformService: BlogArticleTransformService,
     private readonly internalLinkingService: InternalLinkingService,
+    private readonly featureFlags: FeatureFlagsService,
   ) {}
+
+  /**
+   * R6→R3 consolidation redirect target (mirror du pattern R5,
+   * DiagnosticService.getRedirectTarget). Auto-gaté par gamme : retourne une
+   * cible UNIQUEMENT si la gamme a un article R3 conseils vivant — sinon null
+   * et la page R6 standalone continue de servir (jamais de redirect-vers-404).
+   * Inerte tant que SEO_R6_CONSOLIDATION_ENABLED=false (défaut).
+   */
+  async getRedirectTarget(
+    pgAlias: string,
+  ): Promise<{ redirect_to: string; pg_alias: string } | null> {
+    if (!this.featureFlags.seoR6ConsolidationEnabled) return null;
+
+    const { data: gamme } = await this.supabaseService.client
+      .from('pieces_gamme')
+      .select('pg_id')
+      .eq('pg_alias', pgAlias)
+      .single();
+    if (!gamme) return null;
+
+    // Self-gate : ne rediriger que si la page R3 de la gamme existe
+    const { data: advice } = await this.supabaseService.client
+      .from('__blog_advice')
+      .select('ba_pg_id')
+      .eq('ba_pg_id', gamme.pg_id)
+      .limit(1)
+      .single();
+    if (!advice) return null;
+
+    return {
+      redirect_to: `/blog-pieces-auto/conseils/${pgAlias}`,
+      pg_alias: pgAlias,
+    };
+  }
 
   /**
    * Resolve a non-canonical slug to the canonical pg_alias.

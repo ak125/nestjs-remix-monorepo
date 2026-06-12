@@ -1,0 +1,24 @@
+{
+  "name": "eslint-plugin-fafa-ports",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "description": "ESLint rules enforcing Diagnostic Control Plane V1 port contracts (DDD bounded contexts).",
+  "main": "index.js",
+  "files": [
+    "index.js",
+    "rules"
+  ],
+  "peerDependencies": {
+    "eslint": "^8.57.0 || ^9.0.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/parser": "^8.60.1",
+    "@typescript-eslint/rule-tester": "^8.60.1",
+    "@typescript-eslint/utils": "^8.60.1",
+    "eslint": "^8.57.1"
+  },
+  "scripts": {
+    "test": "node --test __tests__/*.test.js"
+  }
+}

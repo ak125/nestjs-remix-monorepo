@@ -233,7 +233,7 @@ function VehicleItem({
                   ? "bg-blue-100 text-blue-700"
                   : displayFuel.toLowerCase() === "essence"
                     ? "bg-green-100 text-green-700"
-                    : "bg-gray-100 text-gray-600"
+                    : "bg-gray-100 text-blue-900"
               }`}
             >
               {displayFuel}
@@ -244,7 +244,7 @@ function VehicleItem({
       {/* Metrics - fixed min-width to prevent layout shift */}
       <div className="flex items-center gap-1.5 text-xs ml-2 shrink-0 min-w-[100px] justify-end">
         {item.search_volume != null && item.search_volume > 0 && (
-          <span className="text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded">
+          <span className="text-foreground bg-muted px-1.5 py-0.5 rounded">
             {item.search_volume.toLocaleString()}/m
           </span>
         )}
@@ -255,7 +255,7 @@ function VehicleItem({
                 ? "bg-green-100 text-green-700"
                 : item.rank <= 7
                   ? "bg-yellow-100 text-yellow-700"
-                  : "bg-gray-100 text-gray-600"
+                  : "bg-gray-100 text-green-900"
             }`}
             title="Position Google Suggest"
           >

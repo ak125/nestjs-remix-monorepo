@@ -1,7 +1,7 @@
 # Repo Map - AutoMecanik Monorepo
 
-> **Source de verite** - Structure reelle du code au 2026-05-13
-> **Version**: 2.0.1 | **Status**: CANON
+> **Source de verite** - Structure reelle du code au 2026-05-25
+> **Version**: 2.0.2 | **Status**: CANON
 
 ---
 
@@ -9,9 +9,9 @@
 
 ```
 /opt/automecanik/app/
-├── backend/          # NestJS API (47 modules)
-├── frontend/         # Remix SSR (233 fichiers routes top-level)
-├── packages/         # 8 packages partages
+├── backend/          # NestJS API (54 modules)
+├── frontend/         # Remix SSR (235 fichiers routes top-level)
+├── packages/         # 12 packages partages
 ├── .spec/            # Documentation technique
 ├── scripts/          # Scripts utilitaires
 └── docs/             # Documentation publique
@@ -24,7 +24,7 @@
 ## Backend - NestJS API
 
 **Chemin**: `backend/src/modules/`
-**Total**: 47 modules
+**Total**: 54 modules
 
 ### Modules par domaine
 
@@ -32,40 +32,43 @@
 |---------|---------|
 | **Core** | `config`, `health`, `system`, `errors` |
 | **Auth** | `auth`, `users`, `staff` |
-| **Catalog** | `products`, `catalog`, `vehicles`, `gamme-rest`, `substitution` |
-| **Commerce** | `cart`, `orders`, `payments`, `invoices`, `promo`, `commercial` |
+| **Catalog** | `products`, `catalog`, `vehicles`, `gamme-rest`, `substitution`, `vehicle-context` |
+| **Commerce** | `cart`, `orders`, `payments`, `invoices`, `promo`, `commercial`, `pricing` |
 | **Logistics** | `shipping`, `suppliers`, `customers` |
-| **Content** | `blog`, `blog-metadata`, `ai-content`, `marketing` |
-| **SEO** | `seo`, `seo-logs`, `seo-monitoring`, `seo-shadow-observatory` |
+| **Content** | `blog`, `blog-metadata`, `ai-content`, `marketing`, `merchant-center` |
+| **SEO** | `seo`, `seo-logs`, `seo-monitoring`, `seo-shadow-observatory`, `seo-control-plane`, `trend-signals` |
 | **Support** | `messages`, `support` |
-| **Analytics** | `analytics`, `dashboard` |
+| **Analytics** | `analytics`, `dashboard`, `observability` |
 | **Search/RAG** | `search`, `knowledge-graph`, `rag-proxy`, `rag-knowledge-bootstrap` |
 | **AI/Diagnostic** | `agentic-engine`, `diagnostic-engine`, `mcp-validation` |
 | **Security** | `bot-guard` |
 | **Media** | `upload`, `metadata` |
 | **Navigation** | `navigation`, `layout` |
 | **Admin** | `admin` |
+| **Ops** | `maintenance` |
 | **Legacy/DEV** | `rm` (DEV uniquement — cf. CLAUDE.md backend.md) |
 
 ### Liste complete
 
 ```
-admin               agentic-engine      ai-content
-analytics           auth                blog
-blog-metadata       bot-guard           cart
-catalog             commercial          config
-customers           dashboard           diagnostic-engine
-errors              gamme-rest          health
-invoices            knowledge-graph     layout
-marketing           mcp-validation      messages
-metadata            navigation          orders
-payments            products            promo
-rag-knowledge-bootstrap                 rag-proxy
-rm                  search              seo
-seo-logs            seo-monitoring      seo-shadow-observatory
-shipping            staff               substitution
-suppliers           support             system
-upload              users               vehicles
+admin                       agentic-engine              ai-content
+analytics                   auth                        blog
+blog-metadata               bot-guard                   cart
+catalog                     commercial                  config
+customers                   dashboard                   diagnostic-engine
+errors                      gamme-rest                  health
+invoices                    knowledge-graph             layout
+maintenance                 marketing                   mcp-validation
+merchant-center             messages                    metadata
+navigation                  observability               orders
+payments                    pricing                     products
+promo                       rag-knowledge-bootstrap     rag-proxy
+rm                          search                      seo
+seo-control-plane           seo-logs                    seo-monitoring
+seo-shadow-observatory      shipping                    staff
+substitution                suppliers                   support
+system                      trend-signals               upload
+users                       vehicle-context             vehicles
 ```
 
 ---
@@ -73,13 +76,13 @@ upload              users               vehicles
 ## Frontend - Remix SSR
 
 **Chemin**: `frontend/app/`
-**Routes**: 233 fichiers top-level (.ts/.tsx, hors sous-dossiers)
+**Routes**: 235 fichiers top-level (.ts/.tsx, hors sous-dossiers)
 
 ### Structure
 
 ```
 frontend/app/
-├── routes/           # 233 fichiers top-level (flat routes)
+├── routes/           # 235 fichiers top-level (flat routes)
 ├── components/       # Composants React
 │   ├── ui/          # shadcn/ui components
 │   └── ...          # Composants metier
@@ -105,7 +108,7 @@ frontend/app/
 ## Packages partages
 
 **Chemin**: `packages/`
-**Total**: 8 packages
+**Total**: 12 packages
 
 | Package | Description |
 |---------|-------------|
@@ -113,9 +116,13 @@ frontend/app/
 | `@fafa/design-tokens` | Design system tokens |
 | `@fafa/typescript-config` | tsconfig partage |
 | `@fafa/eslint-config` | ESLint rules partagees |
+| `@fafa/eslint-plugin-fafa-ports` | ESLint plugin guards d'imports cross-domaine |
 | `@repo/seo-role-contracts` | Contrats Zod R0-R8 (ADR-038/039) |
 | `@repo/seo-roles` | Canon RoleId R0-R8 + normalisation |
 | `@repo/seo-types` | Types partages SEO |
+| `@repo/seo-url-contract` | SoT CJS regles URL R-SEO-09 (front + back) |
+| `@repo/cwv-taxonomy` | Canon taxonomie CWV (ADR-063) |
+| `@repo/domain-commerce` | Types partages domaine commerce (cart/orders/pricing) |
 | `@repo/registry` | Schemas Zod Repository Control Plane (ADR-058 V1) |
 
 ---
@@ -151,9 +158,9 @@ frontend/app/
 
 | Metrique | Valeur |
 |----------|--------|
-| Backend modules | 48 |
-| Frontend routes | 233 |
-| Shared packages | 8 |
+| Backend modules | 54 |
+| Frontend routes | 235 |
+| Shared packages | 12 |
 | Docker configs | 10 |
 | Produits DB | 4M+ |
 | Utilisateurs | 59k+ |
@@ -182,5 +189,5 @@ Voir `.spec/bmad/output/rag_diagnosis.md` pour details.
 
 ---
 
-_Derniere mise a jour: 2026-05-13_
+_Derniere mise a jour: 2026-05-25_
 _Status: CANON - Source de verite_

@@ -368,6 +368,67 @@
 
 /* Animations: définies dans animations.css, seules les classes utilitaires ici */
 @layer utilities {
+  /* INP: skip style/layout of OFF-SCREEN content. A forced reflow triggered
+     inside a click handler (notably opening a Radix Dialog/Sheet, which mutates
+     <body> for scroll-lock) otherwise recomputes style+layout for the ENTIRE
+     large /pieces/ document (~1250 nodes → ~120-270ms forced layout, scaling to
+     the 537ms mobile INP p75 on slow devices). Applied to below-the-fold section
+     wrappers so off-screen blocks are skipped. `auto` intrinsic-size remembers
+     the last rendered size to avoid scroll jumps. Validated on prod DOM
+     (menu-toggle INP 288→192ms @6x CPU). SEO-safe: content stays in the DOM and
+     content-visibility:auto is rendered/indexed when reached. */
+  .cv-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 700px;
+  }
+
+  /* Native <dialog> drawer (menu mobile + panier) : slide + backdrop fade.
+     Contenu rendu en permanence (display:none fermé) → showModal() instantané,
+     INP -54% vs Radix Sheet (pas de react-remove-scroll / FocusScope reflow).
+     @starting-style + allow-discrete : navigateurs récents animent ; anciens
+     ouvrent instantanément (dégradation gracieuse, aucune casse). */
+  .navdrawer {
+    /* neutralise les contraintes UA du <dialog> (max-width/height ~= 100%-2em) */
+    max-width: none;
+    max-height: none;
+    transition:
+      translate 0.25s ease,
+      overlay 0.25s ease allow-discrete,
+      display 0.25s ease allow-discrete;
+  }
+  .navdrawer-left {
+    translate: -100%;
+  }
+  .navdrawer-right {
+    translate: 100%;
+  }
+  .navdrawer[open] {
+    translate: 0;
+  }
+  @starting-style {
+    .navdrawer-left[open] {
+      translate: -100%;
+    }
+    .navdrawer-right[open] {
+      translate: 100%;
+    }
+  }
+  .navdrawer::backdrop {
+    opacity: 0;
+    transition:
+      opacity 0.25s ease,
+      overlay 0.25s ease allow-discrete,
+      display 0.25s ease allow-discrete;
+  }
+  .navdrawer[open]::backdrop {
+    opacity: 1;
+  }
+  @starting-style {
+    .navdrawer[open]::backdrop {
+      opacity: 0;
+    }
+  }
+
   .animate-shimmer {
     animation: shimmer 3s ease-in-out infinite;
     will-change: transform;
@@ -642,7 +703,7 @@
 }
 .s1-prose .warning-box {
   background: #fef2f2;
-  border-left: 3px solid #ef4444;
+  border: 1px solid #ef4444;
   border-radius: 0.5rem;
   padding: 0.75rem 1rem;
   margin: 1rem 0;

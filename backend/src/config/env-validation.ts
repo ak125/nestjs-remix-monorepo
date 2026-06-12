@@ -30,6 +30,10 @@ const REQUIRED_ENV_VARS = [
   'SUPABASE_SERVICE_ROLE_KEY',
   'REDIS_URL',
   'SESSION_SECRET',
+  // JWT_SECRET — required since PR #606 (VehicleContextService.getOrThrow).
+  // Used to sign HS256 JWS for the VCP cookie and any future JWT-backed
+  // contexts. Missing → boot crash with cryptic ConfigService error.
+  'JWT_SECRET',
   'SYSTEMPAY_SITE_ID',
   'PAYBOX_SITE',
   'PAYBOX_HMAC_KEY',
@@ -43,6 +47,11 @@ const REQUIRED_ENV_VARS = [
  * secrets. SESSION_SECRET is also not required because preprod has no mutable
  * server-side session state to protect (sessions are read-only or unused).
  *
+ * JWT_SECRET IS required even in read-only mode : the VCP cookie
+ * (PR #606 VehicleContextService) signs anonymous-but-typed payloads
+ * via HS256, and the service uses `getOrThrow` at construction time.
+ * Without it the entire NestJS bootstrap crashes (run 26096588258 evidence).
+ *
  * If a future change re-enables writes in preprod, this list MUST be revisited
  * AND the ADR-028 Option D acceptance criteria re-evaluated.
  */
@@ -51,6 +60,7 @@ const REQUIRED_ENV_VARS_READ_ONLY = [
   'SUPABASE_URL',
   'SUPABASE_ANON_KEY',
   'REDIS_URL',
+  'JWT_SECRET',
 ] as const;
 
 /**

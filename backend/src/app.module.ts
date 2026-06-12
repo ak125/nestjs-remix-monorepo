@@ -29,11 +29,16 @@ import { AdminModule } from './modules/admin/admin.module'; // ✅ NOUVEAU - Mod
 import { ApiModule } from './modules/api.module'; // ✅ NOUVEAU - API Legacy directe !
 import { DashboardModule } from './modules/dashboard/dashboard.module'; // ✅ NOUVEAU - Dashboard Stats !
 import { ProductsModule } from './modules/products/products.module'; // ✅ NOUVEAU - Module produits !
+import { PricingModule } from './modules/pricing/pricing.module'; // 💶 Pricing Control Plane V1
 import { VehiclesModule } from './modules/vehicles/vehicles.module'; // 🚗 MODULE VEHICLES - Pour sélecteur véhicule (inclut VehicleBrandsService)
+import { VehicleContextModule } from './modules/vehicle-context/vehicle-context.module'; // 🪪 PR-B.2 — VehicleContext JWS cookie middleware (OPTION A locked)
+import { ObservabilityModule } from './modules/observability/observability.module'; // 📊 PR-C — Prometheus counters for vehicle_ctx_* events + /api/observability/metrics
 import { InvoicesModule } from './modules/invoices/invoices.module'; // 🧾 NOUVEAU - Module factures !
 import { SeoModule } from './modules/seo/seo.module'; // 🔍 NOUVEAU - Module SEO avec services intégrés !
 import { SeoMonitoringModule } from './modules/seo-monitoring/seo-monitoring.module'; // 📊 Phase 1 — Observability GSC/GA4/CWV daily ingestion
 import { SeoControlPlaneModule } from './modules/seo-control-plane/seo-control-plane.module'; // 🤖 ADR-064 — SEO Production Control Plane (L1 synthetic crawler q15min)
+import { MerchantCenterModule } from './modules/merchant-center/merchant-center.module'; // 🛒 PR commerce-loop V1 step 5B — Google Shopping XML feed
+import { SupplierTruthModule } from './modules/supplier-truth/supplier-truth.module'; // 🔌 Supplier-truth read-only observability endpoint (sync side lives in WorkerModule)
 import { SearchModule } from './modules/search/search.module'; // 🔍 NOUVEAU - Module de recherche optimisé v3.0 !
 import { SystemModule } from './modules/system/system.module'; // ⚡ NOUVEAU - Module system monitoring !
 import { BlogModule } from './modules/blog/blog.module'; // 📚 NOUVEAU - Module blog avec tables __blog_* intégrées !
@@ -64,6 +69,7 @@ import { RmModule } from './modules/rm/rm.module'; // ✅ RÉACTIVÉ - Fix Docke
 import { MarketingModule } from './modules/marketing/marketing.module'; // 📊 NOUVEAU - Module marketing avec backlinks, content roadmap et KPIs !
 // MediaFactoryModule — SUPPRIMÉ 2026-04-10 (prototype P1, axios vuln critique, 0 usage prod)
 import { DiagnosticEngineModule } from './modules/diagnostic-engine/diagnostic-engine.module'; // 🔧 NOUVEAU - Moteur diagnostic mecanique MVP !
+import { TrendSignalsModule } from './modules/trend-signals/trend-signals.module'; // 📈 NOUVEAU - Middle-ground trend signals ingestion (Tasks 1.9-1.11 ai-additive-layer)
 
 /**
  * AppModule - Architecture Modulaire Restaurée
@@ -188,12 +194,17 @@ import { DiagnosticEngineModule } from './modules/diagnostic-engine/diagnostic-e
     ApiModule, // ✅ NOUVEAU - API Legacy directe connectée aux vraies tables !
     DashboardModule, // ✅ NOUVEAU - Dashboard Stats pour admin panel !
     ProductsModule, // ✅ NOUVEAU - Module produits avec CRUD complet !
+    PricingModule, // 💶 Pricing Control Plane V1 — import fournisseur + moteur de prix canonique
     // 🚗 MODULES VÉHICULES
     VehiclesModule, // Module vehicle principal pour sélecteur véhicule (inclut gestion marques via VehicleBrandsService)
+    VehicleContextModule, // PR-B.2 — JWS cookie middleware on /api/diagnostic/* + /api/v1/orientation/*
+    ObservabilityModule, // PR-C — prom-client counters subscribed to NestJS events + scrape endpoint
     InvoicesModule, // 🧾 NOUVEAU - Module factures avec cache et stats !
     SeoModule, // 🔍 NOUVEAU - Module SEO avec SeoService et SitemapService !
     SeoMonitoringModule, // 📊 Phase 1 — Observability GSC/GA4/CWV daily ingestion (cf. ADR-025)
     SeoControlPlaneModule, // 🤖 ADR-064 — SEO Production Control Plane (L1 synthetic crawler q15min)
+    MerchantCenterModule, // 🛒 PR commerce-loop V1 step 5B — Google Shopping XML feed /api/feed/merchant-center.xml
+    SupplierTruthModule, // 🔌 Read-only observability for the supplier-truth sentinel (admin status + projection); the inert-gated sync runtime lives in WorkerModule
     SearchModule, // 🔍 NOUVEAU - Module de recherche optimisé v3.0 avec Meilisearch !
     BlogModule, // 📚 NOUVEAU - Module blog avec conseils, guides et glossaire intégrés !
     SystemModule, // ⚡ NOUVEAU - Module system monitoring et métriques !
@@ -216,6 +227,7 @@ import { DiagnosticEngineModule } from './modules/diagnostic-engine/diagnostic-e
     MarketingModule, // 📊 ACTIVÉ - Module marketing avec backlinks, content roadmap et KPIs !
     // MediaFactoryModule — SUPPRIMÉ 2026-04-10
     DiagnosticEngineModule, // 🔧 ACTIVÉ - Moteur diagnostic mecanique MVP (Slice 1) !
+    TrendSignalsModule, // 📈 ACTIVÉ - Middle-ground trend signals ingestion (Tasks 1.9-1.11)
     // AgenticEngineModule — ARCHIVÉ 2026-04-02 (tables → _archive schema, remplacé par Paperclip)
 
     // 🔄 WORKERS & BACKGROUND JOBS

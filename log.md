@@ -14,6 +14,7 @@
 | Détails techniques d'un changement | PR description GitHub |
 | Décision architecturale canon | `governance-vault/ledger/decisions/adr/` |
 | Transcripts session bruts | `.remember/logs/memory-*.log` (gitignored) |
+| Entrées anciennes (rotées) | `log-archive-<année>.md` (historique, JAMAIS lu au démarrage) |
 
 ## Format strict (imposé par le skill `/log-session`)
 
@@ -34,665 +35,10 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 2. **Pas de secrets.** Pas de tokens, IPs internes, credentials. `gitleaks` actif en pre-commit.
 3. **Filtre auto.** Hook `Stop` détecte commits/PRs créés et déclenche le skill. Sessions de simple lecture ne loguent pas.
 4. **Curated.** Seul Claude Code (via skill `/log-session`) écrit. Les autres agents n'écrivent pas ici.
-5. **Lu au démarrage.** `CLAUDE.md` instruit de lire les ~100 dernières lignes en début de session.
+5. **Lu au démarrage, borné.** `CLAUDE.md` instruit de lire **`tail -n 80 log.md`** uniquement (jamais le fichier entier — gaspillage tokens).
+6. **Borné automatiquement.** `scripts/claude-hooks/rotate-log.sh` (appelé par le hook `Stop`) archive les entrées les plus anciennes vers `log-archive-<année>.md` dès que `log.md` dépasse 600 lignes, en gardant les 60 dernières.
 
 ---
-
-# Timeline
-
-## 2026-04-27 — INC-2026-010 fix root-cause 503 R8 + steady state J+2
-
-- **Branche** : `fix/inc-2026-007-build-vehicle-page-payload-optim` (monorepo) + `incident/inc-2026-007-503-vehicle-build-payload-slow` (vault) — note : nom branches garde `007` historique, ID incident vault renumerote `INC-2026-010` post collision detectee par CI vault
-- **Décision** : Root-cause 503 R8 vehicle pages = `build_vehicle_page_payload` cree par Phase 1 ADR-016 (21/04) avec sous-requete `catalog` qui force le PK 12 GB au lieu de l'index covering 4 GB existant (~2 s rebuild vs timeout 2 s = 503). Fix structurel : reecriture en deux phases (CTE) -> warm 27 ms (-96 %) + steady-state guarantees (cron one-shot backfill + trigger auto_type + wrapper canon mark_stale_with_followup_rebuild + check CI guard). Validation J+2 : stale=0/28 505, watcher auto-unschedule, page 34746 = 200, stress 100 hits = 100/100 = 200.
-- **Sortie** : PR monorepo #167 OPEN (4 commits, 4 migrations DB + 2 controllers NestJS + instrumentation loader Remix + smoke 12 URLs + check CI) | PR vault #65 OPEN (post-mortem INC-2026-010 + steady state J+2 + fix CI G2/wikilinks) | DB deja patchee en prod via MCP (idempotent) | Reste : merge user PR #167 + tag semver pour deploy PROD, Etape 6 RPC_TIMEOUT_MS=500 (post-merge), Etape 10 ADR-016 accepted (J+7 = 2026-05-02), J+14 verif __error_logs + GSC
-
-## 2026-04-25 — bootstrap log.md timeline
-
-- **Branche** : `chore/log-md-session-timeline-1777110107`
-- **Décision** : Adoption d'un `log.md` append-only à la racine, complémentaire à `MEMORY.md` (apprentissages) et aux PR descriptions (détails). Hook `Stop` auto-déclenche le skill `/log-session` si commits ou PRs créés. Format strict 3-4 lignes par entrée.
-- **Sortie** : nouvelle PR (numéro à venir) | fichiers `log.md`, `.claude/skills/session-log/SKILL.md`, `scripts/claude-hooks/stop-log-session-suggest.sh`, `.claude/settings.json`, `CLAUDE.md`, `.claude/knowledge/README.md`
-
-## 2026-04-25 — vague cleanup batches 1-3 (rétroactif)
-
-- **Branche** : multiples — `chore/cleanup-backend-root-js-...`, `chore/cleanup-dead-components-search-...`, `chore/cleanup-dead-components-forms-...`
-- **Décision** : Lancement vague cleanup post-Phase-0. Pattern adopté : worktree isolé + branches timestamp uniques + sequence atomique (rm + commit + push + PR sans typecheck local) pour zero collision avec IDE actif. Validation par CI uniquement.
-- **Sortie** : PR #157 mergée (62 scripts `.js` backend root, 5991 lignes) | PRs #158 + #160 ouvertes (3 + 4 composants `frontend/app/components/{search,forms}/`, ~3500 lignes) | git worktree à `/tmp/claude-cleanup-worktree`
-
-## 2026-04-24 — infrastructure Phase 0 cleanup tooling
-
-- **Branche** : `feat/claude-knowledge-base`, `feat/audit-ci-integration`, `feat/cleanup-tooling-prep`
-- **Décision** : Adoption knip + madge + dependency-cruiser + ast-grep en gates déterministes (warning-mode Phase 0). Création `.claude/knowledge/` (42 modules + 4 db + 4 integrations). CI workflow `audit.yml` blockant ast-grep. Safe-delete script + baseline JSON regression gate + 3 runbooks ops.
-- **Sortie** : PRs #149, #152, #155 mergées | knip 6.6.2 (avec nested zod@4 override) + madge 8 + dep-cruiser 17.3 + @ast-grep/cli 0.42 installés | baseline 362 unused / 17 cycles / 148 violations / 0 ast-errors capturée
-
-## 2026-04-25 — feat/seo-department-phase-0 (auto)
-
-- **Branche** : `feat/seo-department-phase-0`
-- **Décision** : feat(seo-department): phase 0 foundations - seo-types package + runbook + recharts + env
-- **Sortie** : PR #166 | commits c7d166e3
-
-## 2026-04-25 — feat/seo-department-phase-0 (auto)
-
-- **Branche** : `feat/seo-department-phase-0`
-- **Décision** : fix(seo-department): align env var names + domain on existing codebase conventions (+2 other commits)
-- **Sortie** : PR #166 | commits 8d6ef182 db07048c c7d166e3
-
-## 2026-04-25 — feat/seo-department-phase-1 (auto)
-
-- **Branche** : `feat/seo-department-phase-1`
-- **Décision** : feat(seo-department): phase 1a - observability foundations (migrations + module + endpoints)
-- **Sortie** : PR #170 | commits 7d4ce121
-
-## 2026-04-25 — feat/seo-department-phase-2a (auto)
-
-- **Branche** : `feat/seo-department-phase-2a`
-- **Décision** : feat(seo-department): phase 2a - audit findings table + canonical auditor
-- **Sortie** : PR #174 | commits 9581f6c2
-
-## 2026-04-25 — fix/inc-2026-007-build-vehicle-page-payload-optim (auto)
-
-- **Branche** : `fix/inc-2026-007-build-vehicle-page-payload-optim`
-- **Décision** : fix(ci): smoke /constructeurs/* — replace inactive type + redirect URL with valid ones (+3 other commits)
-- **Sortie** : PR #167 | commits 84aa9655 9dc8f71b 26d3cea0 26812832
-
-## 2026-04-27 — feat/r1-gamme-page-cache-phase1 (auto)
-
-- **Branche** : `feat/r1-gamme-page-cache-phase1`
-- **Décision** : feat(r1-cache): adr-024 phase 1 gamme_page_cache scaffolding (no runtime impact)
-- **Sortie** : PR #194 | commits a95a8b74
-
-## 2026-04-27 — feat/r1-gamme-page-cache-phase1 (auto)
-
-- **Branche** : `feat/r1-gamme-page-cache-phase1`
-- **Décision** : fix(r1-cache): add gamme_cache RPCs to allowlist + APPROVED comment for DROP POLICY (+2 other commits)
-- **Sortie** : PR #194 | commits 39c034be 8b289897 a95a8b74
-
-## 2026-04-29 — feat/db-diag-maintenance-via-kg-and-cleanup (auto)
-
-- **Branche** : `feat/db-diag-maintenance-via-kg-and-cleanup`
-- **Décision** : feat(adr-032-pr1): kg_* canon for maintenance/safety/DTC + DROP __diag_safety_rule
-- **Sortie** : PR #207 | commits 3ca8db82
-
-## 2026-04-29 — feat/be-maintenance-calculator-service-v2 (auto)
-
-- **Branche** : `feat/be-maintenance-calculator-service-v2`
-- **Décision** : fix(adr-032-pr2): drop @jest/globals import in calculator test (+1 other commit)
-- **Sortie** : PR #211 | commits 317ccb67 a55d03ee
-
-## 2026-04-29 — feat/fe-diagnostic-wizard-dynamic (auto)
-
-- **Branche** : `feat/fe-diagnostic-wizard-dynamic`
-- **Décision** : feat(adr-032-pr10): make DiagnosticWizard.tsx dynamic via /wizard-steps endpoint
-- **Sortie** : PR #219 | commits d55e5beb
-
-## 2026-04-30 — fix/permissions-canonical-backend (auto)
-
-- **Branche** : `fix/permissions-canonical-backend`
-- **Décision** : feat(auth): add UserPermissions DTO + level constants (+2 other commits)
-- **Sortie** : PR aucune | commits fa3c03ef 8ba4394a 2b9678b3
-
-## 2026-04-30 — fix/cache-warm-non-blocking (auto)
-
-- **Branche** : `fix/cache-warm-non-blocking`
-- **Décision** : fix(boot): make cache-warm non-blocking in CatalogService + InternalLinkingService
-- **Sortie** : PR #224 | commits a0a67c66
-
-## 2026-04-30 — fix/cache-warm-non-blocking (auto)
-
-- **Branche** : `fix/cache-warm-non-blocking`
-- **Décision** : fix(boot): finish non-blocking onModuleInit + lock contract via lint (+2 other commits)
-- **Sortie** : PR #224 | commits 5d503e1a 31e9517e a0a67c66
-
-## 2026-04-30 — fix/cache-warm-non-blocking (auto)
-
-- **Branche** : `fix/cache-warm-non-blocking`
-- **Décision** : fix(boot): non-blocking onModuleInit for Meilisearch services (+4 other commits)
-- **Sortie** : PR #224 | commits e489ecbe 5b7c5530 5d503e1a 31e9517e a0a67c66
-
-## 2026-04-30 — fix/cache-warm-non-blocking (auto)
-
-- **Branche** : `fix/cache-warm-non-blocking`
-- **Décision** : fix(boot): align bullmq redis config with REDIS_URL + remove diagnostics (+7 other commits)
-- **Sortie** : PR #224 | commits 919ba33a abc6cd6a 45cddefd e489ecbe 5b7c5530 5d503e1a 31e9517e a0a67c66
-
-## 2026-04-30 — fix/cache-warm-non-blocking (auto)
-
-- **Branche** : `fix/cache-warm-non-blocking`
-- **Décision** : fix(ci): correct constructeur URL format in perf-gates lighthouse list (+12 other commits)
-- **Sortie** : PR #224 | commits 74c9305e fdf691af 20d8e294 5a6e63b4 5e034ca4 919ba33a abc6cd6a 45cddefd e489ecbe 5b7c5530 5d503e1a 31e9517e a0a67c66
-
-## 2026-04-30 — fix/cache-warm-non-blocking (auto)
-
-- **Branche** : `fix/cache-warm-non-blocking`
-- **Décision** : fix(ci): unblock lighthouse — drop budget `name` + disable broken artifact upload (+14 other commits)
-- **Sortie** : PR #224 | commits 96fa0553 a580ba03 74c9305e fdf691af 20d8e294 5a6e63b4 5e034ca4 919ba33a abc6cd6a 45cddefd e489ecbe 5b7c5530 5d503e1a 31e9517e a0a67c66
-
-## 2026-04-30 — fix/cache-warm-non-blocking (auto)
-
-- **Branche** : `fix/cache-warm-non-blocking`
-- **Décision** : Revert "perf(home): lazy-load below-the-fold sections via React.lazy + Suspense" (+17 other commits)
-- **Sortie** : PR #224 | commits 74148c9e 374cba10 e5b05cac 96fa0553 a580ba03 74c9305e fdf691af 20d8e294 5a6e63b4 5e034ca4 919ba33a abc6cd6a 45cddefd e489ecbe 5b7c5530 5d503e1a 31e9517e a0a67c66
-
-## 2026-04-30 — perf/warm-cache-homepage-families (auto)
-
-- **Branche** : `perf/warm-cache-homepage-families`
-- **Décision** : perf(home): warm homepage:families cache key alongside below-fold
-- **Sortie** : PR #227 | commits a0dc5519
-
-## 2026-04-30 — feat/marketing-phase1-db (auto)
-
-- **Branche** : `feat/marketing-phase1-db`
-- **Décision** : feat(adr-036-pr1.1): marketing phase 1 db migration + python apply scripts
-- **Sortie** : PR #238 | commits 2200cb61
-
-## 2026-04-30 — feat/marketing-phase1-db (auto)
-
-- **Branche** : `feat/marketing-phase1-db`
-- **Décision** : fix(migration-safety): approve idempotent drop policy pattern (recreate immediate) (+2 other commits)
-- **Sortie** : PR #238 | commits 3c446aa8 8c742bc8 2200cb61
-
-## 2026-04-30 — chore/matrix-pr-d3-zero-unmappable (auto)
-
-- **Branche** : `chore/matrix-pr-d3-zero-unmappable`
-- **Décision** : feat(matrix): ADR-037 agent-naming-canon — frontmatter `role:` Zod-validated, fail-fast
-- **Sortie** : PR #239 | commits 043daeb9
-
-## 2026-04-30 — chore/matrix-pr-d3-zero-unmappable (auto)
-
-- **Branche** : `chore/matrix-pr-d3-zero-unmappable`
-- **Décision** : fix(matrix): remove TOCTOU race in inject-agent-role.ts (CodeQL js/file-system-race) (+3 other commits)
-- **Sortie** : PR #239 | commits d62eafab 6d1b7db3 eba3c643 043daeb9
-
-## 2026-04-30 — feat/marketing-phase1-dto-scoring (auto)
-
-- **Branche** : `feat/marketing-phase1-dto-scoring`
-- **Décision** : fix(adr-036-pr1.3): broaden env signature to record (avoids unknown cast) (+2 other commits)
-- **Sortie** : PR #241 | commits d1baf143 a5c86dca 7f4ebdf1
-
-## 2026-05-01 — feat/p3-diag-canon-flat-map-composite-fk (auto)
-
-- **Branche** : `feat/p3-diag-canon-flat-map-composite-fk`
-- **Décision** : feat(p3): diag-canon flat map + composite FK validator + drop hardcoded fallback
-- **Sortie** : PR aucune | commits 714b742e
-
-## 2026-05-01 — Roadmap globale 2026 + Chantier C ADR-033 READY
-
-- **Branche** : `audit/2026-05-01-roadmap-chantier-c-clean` (vault)
-- **Décision** : Re-cadrage ADR-033 → Chantier C (1/9) via MOC-Roadmap-2026 + verdict wiki-readiness-check READY après 2 hotfixes cron PR-D
-- **Sortie** : PRs vault #128 #131 | monorepo #256 #257 | commits b3f820a ec17aaa b70ca1e6 097d3558 | fichiers `ops/moc/MOC-Roadmap-2026.md`, `scripts/wiki/export-diag-canon-slugs.py`
-
-## 2026-05-01 — ADR-033 wave 2/3 closed + canonisation vault
-
-- **Branche** : `feat/p3-diag-canon-flat-map-composite-fk`
-- **Décision** : Wave Phase 2/3 ADR-033 livrée (10 PRs : rag #7 + wiki #10 + monorepo #249 #250 #251 #253 + 3 fixes) ; verdict wiki-readiness-check READY 6/6 atteint run #25211876381 ; knowledge canonisé vault PR #129
-- **Sortie** : PRs vault #129 | monorepo #249 #250 #251 #253 | rag #7 | wiki #10 | commits 224e4c63 7d77be6d d0b32a0b 96837b95 b6a73af8 c6c8eae4 | fichiers `workspaces/wiki/`, `scripts/wiki/`, `.github/workflows/{wiki-validate,diag-canon-slugs-export,wiki-readiness-check}.yml`, `ledger/knowledge/adr-033-wave-2-closed-20260501.md`
-
-## 2026-05-01 — feat/p3-diag-canon-flat-map-composite-fk (auto)
-
-- **Branche** : `feat/p3-diag-canon-flat-map-composite-fk`
-- **Décision** : feat(p3): zod ts as single sot, schema derived, drift via parse runtime (+3 other commits)
-- **Sortie** : PR aucune | commits 4e24f1b9 85214f84 9a6b9240 714b742e
-
-## 2026-05-01 — feat/p3-diag-canon-flat-map-composite-fk (auto)
-
-- **Branche** : `feat/p3-diag-canon-flat-map-composite-fk`
-- **Décision** : fix(p3): wrap tsx -e parse step in async iife (cjs forbids top-level await) (+5 other commits)
-- **Sortie** : PR #262 | commits 8fe27520 7669f75d 4e24f1b9 85214f84 9a6b9240 714b742e
-
-## 2026-05-02 — feat/p3-diag-canon-flat-map-composite-fk (auto)
-
-- **Branche** : `feat/p3-diag-canon-flat-map-composite-fk`
-- **Décision** : Merge branch 'main' into feat/p3-diag-canon-flat-map-composite-fk (+7 other commits)
-- **Sortie** : PR #262 | commits 683178d4 2a4cf7d7 8fe27520 7669f75d 4e24f1b9 85214f84 9a6b9240 714b742e
-
-## 2026-05-02 — feat/p3-diag-canon-flat-map-composite-fk (auto)
-
-- **Branche** : `feat/p3-diag-canon-flat-map-composite-fk`
-- **Décision** : Merge branch 'main' into feat/p3-diag-canon-flat-map-composite-fk (+10 other commits)
-- **Sortie** : PR #262 | commits 9b94dc04 0862f103 a0c05032 683178d4 2a4cf7d7 8fe27520 7669f75d 4e24f1b9 85214f84 9a6b9240 714b742e
-
-## 2026-05-02 — feat/p3-diag-canon-flat-map-composite-fk (auto)
-
-- **Branche** : `feat/p3-diag-canon-flat-map-composite-fk`
-- **Décision** : chore(audit): bump knip.unused_types baseline 310 → 326 (zod types prep partie 3) (+12 other commits)
-- **Sortie** : PR #262 | commits cd2789fe 2fd4f936 9b94dc04 0862f103 a0c05032 683178d4 2a4cf7d7 8fe27520 7669f75d 4e24f1b9 85214f84 9a6b9240 714b742e
-
-## 2026-05-02 — feat/p3-diag-canon-flat-map-composite-fk (auto)
-
-- **Branche** : `feat/p3-diag-canon-flat-map-composite-fk`
-- **Décision** : Merge branch 'main' into feat/p3-diag-canon-flat-map-composite-fk (+14 other commits)
-- **Sortie** : PR #262 | commits 6992eea5 ce7f7c7f cd2789fe 2fd4f936 9b94dc04 0862f103 a0c05032 683178d4 2a4cf7d7 8fe27520 7669f75d 4e24f1b9 85214f84 9a6b9240 714b742e
-
-## 2026-05-02 — feat/p3-diag-canon-flat-map-composite-fk (auto)
-
-- **Branche** : `feat/p3-diag-canon-flat-map-composite-fk`
-- **Décision** : Merge branch 'main' into feat/p3-diag-canon-flat-map-composite-fk (+16 other commits)
-- **Sortie** : PR #262 | commits 9d5af4da baa8ee78 6992eea5 ce7f7c7f cd2789fe 2fd4f936 9b94dc04 0862f103 a0c05032 683178d4 2a4cf7d7 8fe27520 7669f75d 4e24f1b9 85214f84 9a6b9240 714b742e
-
-## 2026-05-02 — feat/p3-diag-canon-flat-map-composite-fk (auto)
-
-- **Branche** : `feat/p3-diag-canon-flat-map-composite-fk`
-- **Décision** : Merge branch 'main' into feat/p3-diag-canon-flat-map-composite-fk (+18 other commits)
-- **Sortie** : PR #262 | commits 21ea2b3a 0d300149 9d5af4da baa8ee78 6992eea5 ce7f7c7f cd2789fe 2fd4f936 9b94dc04 0862f103 a0c05032 683178d4 2a4cf7d7 8fe27520 7669f75d 4e24f1b9 85214f84 9a6b9240 714b742e
-
-## 2026-05-02 — chore/husky-pre-push-main-guard (auto)
-
-- **Branche** : `chore/husky-pre-push-main-guard`
-- **Décision** : chore(husky): add pre-push hook blocking direct pushes to main/dev
-- **Sortie** : PR aucune | commits e5c5d261
-
-## 2026-05-02 — fix/diag-canon-jsonschema-typed-cast (auto)
-
-- **Branche** : `fix/diag-canon-jsonschema-typed-cast`
-- **Décision** : fix(p3): replace @ts-nocheck with typed cast on zodToJsonSchema import
-- **Sortie** : PR aucune | commits 5e56077a
-
-## 2026-05-02 — fix/diag-canon-jsonschema-typed-cast (auto)
-
-- **Branche** : `fix/diag-canon-jsonschema-typed-cast`
-- **Décision** : chore(audit): ratchet baseline unused_types 355→326 (revert post-#262 over-bump) (+2 other commits)
-- **Sortie** : PR #265 | commits 12f54d26 cefeb9ae 5e56077a
-
-## 2026-05-02 — fix/diag-canon-jsonschema-typed-cast (auto)
-
-- **Branche** : `fix/diag-canon-jsonschema-typed-cast`
-- **Décision** : revert(audit): undo baseline ratchet 355→326 (was based on stale local knip) (+4 other commits)
-- **Sortie** : PR #265 | commits c0ca674e 4e290722 12f54d26 cefeb9ae 5e56077a
-
-## 2026-05-02 — fix/diag-canon-jsonschema-typed-cast (auto)
-
-- **Branche** : `fix/diag-canon-jsonschema-typed-cast`
-- **Décision** : Merge remote-tracking branch 'origin/main' into fix/diag-canon-jsonschema-typed-cast (+6 other commits)
-- **Sortie** : PR #265 | commits c9b7a2be a9f8741a c0ca674e 4e290722 12f54d26 cefeb9ae 5e56077a
-
-## 2026-05-03 — feat/audit-claude-md-agents-md (auto)
-
-- **Branche** : `feat/audit-claude-md-agents-md`
-- **Décision** : feat(agents): audit + structural gate for AGENTS.md / CLAUDE.md
-- **Sortie** : PR aucune | commits 9842fa00
-
-## 2026-05-03 — chore/bump-wiki-submodule-pointer (auto)
-
-- **Branche** : `chore/bump-wiki-submodule-pointer`
-- **Décision** : chore: bump wiki submodule pointer to current origin/main
-- **Sortie** : PR #273 | commits 707a1775
-
-## 2026-05-03 — feat/wiki-generators-output-redirect (auto)
-
-- **Branche** : `feat/wiki-generators-output-redirect`
-- **Décision** : feat(scripts): refactor placement vers sous-dossiers thematiques (Etape 5 plan v3)
-- **Sortie** : PR aucune | commits b6400f07
-
-## 2026-05-04 — fix/perf-gates-read-only-adr028 (auto)
-
-- **Branche** : `fix/perf-gates-read-only-adr028`
-- **Décision** : fix(ci): mock SERVICE_ROLE_KEY for boot — ~30 services bypass SupabaseBaseService (+1 other commit)
-- **Sortie** : PR #285 | commits 442f5956 af006c72
-
-## 2026-05-04 — chore/sync-rag-from-wiki-cron-canon (auto)
-
-- **Branche** : `chore/sync-rag-from-wiki-cron-canon`
-- **Décision** : chore(cron): sync-rag-from-wiki canon DEV VPS — meilleure approche (zero PAT)
-- **Sortie** : PR #288 | commits 005b9d0a
-
-## 2026-05-04 — chore/sync-rag-from-wiki-cron-canon (auto)
-
-- **Branche** : `chore/sync-rag-from-wiki-cron-canon`
-- **Décision** : fix(cron): log path /opt/automecanik/rag/logs/ (le user deploy n'a pas droit /var/log) (+2 other commits)
-- **Sortie** : PR #288 | commits ee0ba019 8fc09139 005b9d0a
-
-## 2026-05-04 — chore/canon-mirrors-relocation (auto)
-
-- **Branche** : `chore/canon-mirrors-relocation`
-- **Décision** : chore(canon): relocate AEC + Marketing Voice mirrors to canon-mirrors/
-- **Sortie** : PR aucune | commits aa0e8980
-
-## 2026-05-05 — chore/cleanup-dead-page-type-map (auto)
-
-- **Branche** : `chore/cleanup-dead-page-type-map`
-- **Décision** : chore(seo-roles): drop dead-code PAGE_TYPE_TO_CANONICAL_ROLE map
-- **Sortie** : PR #311 | commits 10135a2f
-
-## 2026-05-05 — canon SEO R0..R8 — 9 PRs livrées d'un trait
-
-- **Branche** : `main` (squash cascade)
-- **Décision** : Stack canon SEO complet livré : foundation `@repo/seo-roles@0.2.0` + admin display + Zod boundary + lint enforcement observe + dead-code cleanup + MCP inventory pivot Option C ; 4 couches enforcement (TS branded + Zod runtime + lint statique + observability), DB CHECK retiré (worker vocab vs canon séparation intentionnelle).
-- **Sortie** : PRs #304 #305 #306 #307 #308 #309 #310 #311 #312 | commits 0a792dcc 7f139d91 0545f36c d06677ae 179bbfdb | fichiers `packages/seo-roles/`, `frontend/app/routes/admin.*.tsx`, `backend/src/modules/seo/utils/parse-response.ts`, `.ast-grep/rules/seo-no-bare-role-literal.yml`, `.spec/00-canon/db-governance/legacy-canon-map.md`
-
-## 2026-05-05 — feat/seo-roles-keyword-intent-canon (auto)
-
-- **Branche** : `feat/seo-roles-keyword-intent-canon`
-- **Décision** : feat(seo-roles): keyword-intent canonical SoT @repo/seo-roles@0.3.0 (PR-0C)
-- **Sortie** : PR #317 | commits 94aabb03
-
-## 2026-05-06 — feat/observability-sentry-dev (auto)
-
-- **Branche** : `feat/observability-sentry-dev`
-- **Décision** : feat(observability): Sentry wiring + SOPS+age secret management infra
-- **Sortie** : PR #324 | commits aaa59617
-
-## 2026-05-06 — chore/trigger-redeploy-sentry-fix (auto)
-
-- **Branche** : `chore/trigger-redeploy-sentry-fix`
-- **Décision** : fix(ci): source preprod .env in deploy step to prevent env stripping on manual rerun
-- **Sortie** : PR #329 | commits a008b0fe
-
-## 2026-05-06 — feat/observability-sentry-prod (auto)
-
-- **Branche** : `feat/observability-sentry-prod`
-- **Décision** : feat(observability): extend Sentry+SOPS to PROD via deploy-prod.yml wrapper (PR-D)
-- **Sortie** : PR #334 | commits f433640a
-
-## 2026-05-07 — feat/seo-roles-canon-pr-a-classification (auto)
-
-- **Branche** : `feat/seo-roles-canon-pr-a-classification`
-- **Décision** : feat(seo-roles): intents + forbidden-overlap + text-normalize @0.5.0 (R3 PR-A)
-- **Sortie** : PR #342 | commits 9f58b1ca
-
-## 2026-05-07 — feat/r3-canon-observability-pr-e (auto)
-
-- **Branche** : `feat/r3-canon-observability-pr-e`
-- **Décision** : feat(seo-r3): conseil-enricher 2-gate canon refactor (r3 canon hardening pr-c)
-- **Sortie** : PR aucune | commits 35ae7726
-
-## 2026-05-07 — feat/r3-canon-observability-pr-e (auto)
-
-- **Branche** : `feat/r3-canon-observability-pr-e`
-- **Décision** : feat(seo-r3): canon violation sentry counter (r3 canon hardening pr-e) (+2 other commits)
-- **Sortie** : PR aucune | commits 10e247bd 09177259 35ae7726
-
-## 2026-05-07 — feat/adr-048-repo-map-drift-detector (auto)
-
-- **Branche** : `feat/adr-048-repo-map-drift-detector`
-- **Décision** : feat(spec-canon): repo-map.md drift detector + CI workflow (ADR-048 sprint 2 P1)
-- **Sortie** : PR #358 | commits 7b031164
-
-## 2026-05-07 — feat/pr-e-l3-rag-mirror-readonly (auto)
-
-- **Branche** : `feat/pr-e-l3-rag-mirror-readonly`
-- **Décision** : feat(rag): L3 mirror readonly enforcement + bootstrap guard (MVP-0 PR-E)
-- **Sortie** : PR #356 | commits 2ed2e9b7
-
-## 2026-05-08 — feat/seo-v9-pr1-gap-matrix (auto)
-
-- **Branche** : `feat/seo-v9-pr1-gap-matrix`
-- **Décision** : feat(seo-v9-pr1): orchestrateur audit-v9-inventaire (5 volets + rapport) (+8 other commits)
-- **Sortie** : PR aucune | commits e71c56db 24a3f45b 336af298 0ca47b59 80ca710a db687ebb 209ab2a0 5e1b91d9 8241d404
-
-## 2026-05-08 — feat/seo-v9-pr1-gap-matrix (auto)
-
-- **Branche** : `feat/seo-v9-pr1-gap-matrix`
-- **Décision** : feat(seo-v9-pr1): livrable canon legacy_to_monorepo_gap_matrix.md (baseline 10 lignes) (+12 other commits)
-- **Sortie** : PR #398 | commits 7f2ee66c 823f88c1 d9fa7ced 75c5e45b e71c56db 24a3f45b 336af298 0ca47b59 80ca710a db687ebb 209ab2a0 5e1b91d9 8241d404
-
-## 2026-05-08 — feat/seo-v9-pr1-gap-matrix (auto)
-
-- **Branche** : `feat/seo-v9-pr1-gap-matrix`
-- **Décision** : fix(seo-v9-pr1): sample-urls.json avec IDs Supabase réels (Nissan Almera + BMW Série 3) (+14 other commits)
-- **Sortie** : PR #398 | commits 60bc790b ce003574 7f2ee66c 823f88c1 d9fa7ced 75c5e45b e71c56db 24a3f45b 336af298 0ca47b59 80ca710a db687ebb 209ab2a0 5e1b91d9 8241d404
-
-## 2026-05-08 — feat/seo-v9-pr1-gap-matrix (auto)
-
-- **Branche** : `feat/seo-v9-pr1-gap-matrix`
-- **Décision** : fix(seo-v9-pr1): sample-urls.json — gammes vraiment dans le catalogue (pg_display=1) (+16 other commits)
-- **Sortie** : PR #398 | commits 57021f0b fb988099 60bc790b ce003574 7f2ee66c 823f88c1 d9fa7ced 75c5e45b e71c56db 24a3f45b 336af298 0ca47b59 80ca710a db687ebb 209ab2a0 5e1b91d9 8241d404
-
-## 2026-05-08 — feat/seo-v9-pr1-gap-matrix (auto)
-
-- **Branche** : `feat/seo-v9-pr1-gap-matrix`
-- **Décision** : fix(seo-v9-pr1): volet 4 — chiffres vérifiés via vue v_pieces_seo_safe (+18 other commits)
-- **Sortie** : PR #398 | commits beb9eda9 44a035c5 57021f0b fb988099 60bc790b ce003574 7f2ee66c 823f88c1 d9fa7ced 75c5e45b e71c56db 24a3f45b 336af298 0ca47b59 80ca710a db687ebb 209ab2a0 5e1b91d9 8241d404
-
-## 2026-05-08 — feat/seo-v9-pr1-gap-matrix (auto)
-
-- **Branche** : `feat/seo-v9-pr1-gap-matrix`
-- **Décision** : feat(seo-v9-pr1): matrice enrichie avec findings empiriques + décision PR-2 motivée (+20 other commits)
-- **Sortie** : PR #398 | commits 9b970255 99372469 beb9eda9 44a035c5 57021f0b fb988099 60bc790b ce003574 7f2ee66c 823f88c1 d9fa7ced 75c5e45b e71c56db 24a3f45b 336af298 0ca47b59 80ca710a db687ebb 209ab2a0 5e1b91d9 8241d404
-
-## 2026-05-08 — feat/seo-v9-pr1-gap-matrix (auto)
-
-- **Branche** : `feat/seo-v9-pr1-gap-matrix`
-- **Décision** : fix(seo-v9-pr1): 4 critiques review auto (regex faux positifs, silent failures, README, anti-rot) (+22 other commits)
-- **Sortie** : PR #398 | commits 86d77b1b a34af83e 9b970255 99372469 beb9eda9 44a035c5 57021f0b fb988099 60bc790b ce003574 7f2ee66c 823f88c1 d9fa7ced 75c5e45b e71c56db 24a3f45b 336af298 0ca47b59 80ca710a db687ebb 209ab2a0 5e1b91d9 8241d404
-
-## 2026-05-08 — feat/seo-v9-pr1-gap-matrix (auto)
-
-- **Branche** : `feat/seo-v9-pr1-gap-matrix`
-- **Décision** : fix(seo-v9-pr1): samples complets avec 14 variables SeoVariablesSchema requises (+24 other commits)
-- **Sortie** : PR #398 | commits 65e3cdac af66d534 86d77b1b a34af83e 9b970255 99372469 beb9eda9 44a035c5 57021f0b fb988099 60bc790b ce003574 7f2ee66c 823f88c1 d9fa7ced 75c5e45b e71c56db 24a3f45b 336af298 0ca47b59 80ca710a db687ebb 209ab2a0 5e1b91d9 8241d404
-
-## 2026-05-08 — feat/seo-v9-pr2b-policies (auto)
-
-- **Branche** : `feat/seo-v9-pr2b-policies`
-- **Décision** : feat(seo): 4 services policies SEO (PR-2b/v9, stacked sur 2a) (+1 other commit)
-- **Sortie** : PR #400 | commits 85731ace 8d66d310
-
-## 2026-05-08 — feat/seo-v9-pr2c-renderer-switch (auto)
-
-- **Branche** : `feat/seo-v9-pr2c-renderer-switch`
-- **Décision** : feat(seo): chain services + orchestrator (PR-2c/v9, stacked sur 2b) (+3 other commits)
-- **Sortie** : PR #401 | commits d4278b8e c02a31d2 85731ace 8d66d310
-
-## 2026-05-08 — feat/seo-v9-pr2c-renderer-switch (auto)
-
-- **Branche** : `feat/seo-v9-pr2c-renderer-switch`
-- **Décision** : refactor(seo): v4 delegates to chain orchestrator (PR-2c rev 2) (+5 other commits)
-- **Sortie** : PR #401 | commits 79c32c9c 93c63ffe d4278b8e c02a31d2 85731ace 8d66d310
-
-## 2026-05-08 — feat/seo-v9-pr2d-marketing-parity (auto)
-
-- **Branche** : `feat/seo-v9-pr2d-marketing-parity`
-- **Décision** : feat(seo-v9): PR-2c chain services + orchestrator (stacked sur 2b) (#401) (+2 other commits)
-- **Sortie** : PR aucune | commits efc4c9fa 85731ace 8d66d310
-
-## 2026-05-08 — feat/seo-v9-pr2d-marketing-parity (auto)
-
-- **Branche** : `feat/seo-v9-pr2d-marketing-parity`
-- **Décision** : feat(seo): marketing seed parity legacy V4 + V4 E2E test (PR-2d) (+4 other commits)
-- **Sortie** : PR #402 | commits 06f62afe 7cd4063f efc4c9fa 85731ace 8d66d310
-
-## 2026-05-09 — pr6-clean (auto)
-
-- **Branche** : `pr6-clean`
-- **Décision** : fix(seo-v9): pr-6 update vehicle-rpc legacy test for shadowObservatory dep (+2 other commits)
-- **Sortie** : PR aucune | commits c4808beb a8df0f53 c230abd4
-
-## 2026-05-09 — feat/seo-v9-r7-router-wire (auto)
-
-- **Branche** : `feat/seo-v9-r7-router-wire`
-- **Décision** : docs(seo-batch): unblock R7 step in seo-gamme-audit skill (+2 other commits)
-- **Sortie** : PR #418 | commits cd329235 b94d51eb 46778759
-
-## 2026-05-10 — monorepo/pr5-url-immutability-gate (auto)
-
-- **Branche** : `monorepo/pr5-url-immutability-gate`
-- **Décision** : feat(seo): add R-SEO-09 URL immutability gate phase 1 surface guard (+1 other commit)
-- **Sortie** : PR #428 | commits 18cc6c59 22ff92fc
-
-## 2026-05-13 — feat/registry-pr-b-schemas (auto)
-
-- **Branche** : `feat/registry-pr-b-schemas`
-- **Décision** : feat(registry): add @repo/registry package — Zod schemas V1 (ADR-058 PR-B)
-- **Sortie** : PR #457 | commits 0504fd38
-
-## 2026-05-13 — feat/registry-pr-c-data-layer (auto)
-
-- **Branche** : `feat/registry-pr-c-data-layer`
-- **Décision** : feat(registry): 5 Layer 1 builders + RPC parse modes + CI warn-only (ADR-058 PR-C) (+2 other commits)
-- **Sortie** : PR #458 | commits b281943b f067e9ec 0504fd38
-
-## 2026-05-13 — feat/registry-pr-d-canon-overlay (auto)
-
-- **Branche** : `feat/registry-pr-d-canon-overlay`
-- **Décision** : feat(registry): Layer 2 overlay manuel + seed/validate + DomainId D1..D15 (ADR-058 PR-D) (+4 other commits)
-- **Sortie** : PR #460 | commits 66d9e64f b08d3e90 b281943b f067e9ec 0504fd38
-
-## 2026-05-13 — feat/registry-pr-e-canonical (auto)
-
-- **Branche** : `feat/registry-pr-e-canonical`
-- **Décision** : feat(registry): canonical projection Layer 3 + freshness CI Phase 1 + 4 invariants (ADR-058 PR-E) (+6 other commits)
-- **Sortie** : PR #462 | commits a1d79d5b 658018c4 66d9e64f b08d3e90 b281943b f067e9ec 0504fd38
-
-## 2026-05-13 — feat/registry-pr-g-block-new (auto)
-
-- **Branche** : `feat/registry-pr-g-block-new`
-- **Décision** : feat(registry): CI Phase 2 block-new gate + pre-push hook (ADR-058 PR-G) (+8 other commits)
-- **Sortie** : PR #464 | commits 27d515d8 77d4b57a a1d79d5b 658018c4 66d9e64f b08d3e90 b281943b f067e9ec 0504fd38
-
-## 2026-05-13 — feat/registry-pr-g-block-new (auto)
-
-- **Branche** : `feat/registry-pr-g-block-new`
-- **Décision** : chore(registry): regen canonical + REPO_MAP after merge main (PR-G recovery) (+12 other commits)
-- **Sortie** : PR #482 | commits 0653d797 00fe3be6 60209305 5828f494 27d515d8 77d4b57a a1d79d5b 658018c4 66d9e64f b08d3e90 b281943b f067e9ec 0504fd38
-
-## 2026-05-13 — feat/registry-pr-g-block-new (auto)
-
-- **Branche** : `feat/registry-pr-g-block-new`
-- **Décision** : fix(registry-new-file-gate): invoke node direct (npm wrapper pollutes JSON stdout) (+14 other commits)
-- **Sortie** : PR #482 | commits 3eb76950 5368dec1 0653d797 00fe3be6 60209305 5828f494 27d515d8 77d4b57a a1d79d5b 658018c4 66d9e64f b08d3e90 b281943b f067e9ec 0504fd38
-
-## 2026-05-13 — feat/registry-pr-g-block-new (auto)
-
-- **Branche** : `feat/registry-pr-g-block-new`
-- **Décision** : fix(check-new-files): sanitize argv ref + execFileSync (CodeQL injection guard) (+16 other commits)
-- **Sortie** : PR #482 | commits f0c6f729 b05435e8 3eb76950 5368dec1 0653d797 00fe3be6 60209305 5828f494 27d515d8 77d4b57a a1d79d5b 658018c4 66d9e64f b08d3e90 b281943b f067e9ec 0504fd38
-
-## 2026-05-14 — feat/ci-workspace-invariants (auto)
-
-- **Branche** : `feat/ci-workspace-invariants`
-- **Décision** : feat(ci): workspace mini-monorepo check (ADR-061 §6)
-- **Sortie** : PR aucune | commits 9331cadd
-
-## 2026-05-14 — feat/canon-mirrors-precommit-hook (auto)
-
-- **Branche** : `feat/canon-mirrors-precommit-hook`
-- **Décision** : feat(canon-mirrors): pre-commit hook blocks manual edits (ADR-061 §3)
-- **Sortie** : PR aucune | commits c725253e
-
-## 2026-05-14 — feat/pr-4-frontend-utils-batch-1 (auto)
-
-- **Branche** : `feat/pr-4-frontend-utils-batch-1`
-- **Décision** : chore(cleanup): drop 4 frontend dead utils (PR-4 batch 1)
-- **Sortie** : PR aucune | commits c24a3fe5
-
-## 2026-05-14 — refactor/registry-zod-validator-extract (auto)
-
-- **Branche** : `refactor/registry-zod-validator-extract`
-- **Décision** : refactor(ci): extract Zod validator to tsx script, remove inline heredoc + build dependency
-- **Sortie** : PR #503 | commits 47dea57f
-
-## 2026-05-14 — refactor/registry-zod-validator-extract (auto)
-
-- **Branche** : `refactor/registry-zod-validator-extract`
-- **Décision** : refactor(registry): convert @repo/registry to source-only workspace (+2 other commits)
-- **Sortie** : PR #503 | commits 90f20f13 9afc7674 47dea57f
-
-## 2026-05-14 — fix/perf-gates-bundle-stats-no-lighthouse (auto)
-
-- **Branche** : `fix/perf-gates-bundle-stats-no-lighthouse`
-- **Décision** : fix(ci): remplace Lighthouse-CI synthétique par bundle-stats déterministe
-- **Sortie** : PR #506 | commits 8b2dfd70
-
-## 2026-05-14 — fix/perf-gates-bundle-stats-no-lighthouse (auto)
-
-- **Branche** : `fix/perf-gates-bundle-stats-no-lighthouse`
-- **Décision** : fix(perf-gates): use turbo build at root, not -w frontend (workspace deps) (+2 other commits)
-- **Sortie** : PR #506 | commits dbb88af1 d2f291a8 8b2dfd70
-
-## 2026-05-14 — feat/db-contract-v1 (auto)
-
-- **Branche** : `feat/db-contract-v1`
-- **Décision** : feat(db-contract): §2 add canon db.yaml — 8 P0/P1 tables (V1 minimal) (+1 other commit)
-- **Sortie** : PR aucune | commits 82a7cede 48330a0d
-
-## 2026-05-14 — feat/db-contract-v1 (auto)
-
-- **Branche** : `feat/db-contract-v1`
-- **Décision** : feat(db-contract): §6 size invariants + doctrine pointer cleanup (+6 other commits)
-- **Sortie** : PR #511 | commits 3a654957 f9aa65a7 e1bc4a24 c27b7035 106c0bb6 82a7cede 48330a0d
-
-## 2026-05-14 — feat/seo-cp-criticality-tiers (auto)
-
-- **Branche** : `feat/seo-cp-criticality-tiers`
-- **Décision** : fix(seo): closure INC-2026-005 — GSC 5xx 30 400 pages recovery + tactical hardening (#510)
-- **Sortie** : PR aucune | commits e118d599
-
-## 2026-05-14 — feat/seo-cp-criticality-tiers (auto)
-
-- **Branche** : `feat/seo-cp-criticality-tiers`
-- **Décision** : chore(registry): renumber ADR-062 → ADR-064 (062 + 063 already taken) (+3 other commits)
-- **Sortie** : PR #515 | commits 815d3307 7fbe8bd1 24e425ab e118d599
-
-## 2026-05-14 — feat/adr-063-cwv-monitoring-crux-api (auto)
-
-- **Branche** : `feat/adr-063-cwv-monitoring-crux-api`
-- **Décision** : fix(seo-crux): reword down.sql comment to avoid migration-safety false positive (+3 other commits)
-- **Sortie** : PR #514 | commits ac7fd3ad feb1d4b0 5d1a7535 15092a48
-
-## 2026-05-14 — feat/seo-cp-synthetic-crawler (auto)
-
-- **Branche** : `feat/seo-cp-synthetic-crawler`
-- **Décision** : feat(seo-cp): synthetic crawler L1 — PR-2A-1 SEO Production Control Plane
-- **Sortie** : PR #516 | commits 78e38791
-
-## 2026-05-14 — feat/seo-cp-synthetic-crawler (auto)
-
-- **Branche** : `feat/seo-cp-synthetic-crawler`
-- **Décision** : fix(seo-cp): extend SupabaseBaseService + correct path resolution (+2 other commits)
-- **Sortie** : PR #516 | commits 764670e0 d148698d 78e38791
-
-## 2026-05-14 — feat/seo-cp-synthetic-crawler (auto)
-
-- **Branche** : `feat/seo-cp-synthetic-crawler`
-- **Décision** : fix(seo-cp): add -- APPROVED: comments to DROP statements (CI migration safety gate) (+4 other commits)
-- **Sortie** : PR #516 | commits b2489e5e d8002a36 824d0dfc 7e84c3ee dba46e79
-
-## 2026-05-14 — feat/adr-063-cwv-ingestion-v2 (auto)
-
-- **Branche** : `feat/adr-063-cwv-ingestion-v2`
-- **Décision** : fix(seo-crux): prettier formatting + jest transformIgnore for @repo/seo-types (+1 other commit)
-- **Sortie** : PR #518 | commits ea602630 dd75d842
-
-## 2026-05-14 — feat/adr-063-cwv-ingestion-v2 (auto)
-
-- **Branche** : `feat/adr-063-cwv-ingestion-v2`
-- **Décision** : fix(seo-crux): jest moduleNameMapper for @repo/seo-types workspace symlink (+3 other commits)
-- **Sortie** : PR #518 | commits f03a0252 26c34086 ea602630 dd75d842
-
-## 2026-05-14 — feat/adr-063-cwv-ingestion-v2 (auto)
-
-- **Branche** : `feat/adr-063-cwv-ingestion-v2`
-- **Décision** : test(seo-crux): skip fake-timer retry+circuit-breaker tests (CI timeout) (+5 other commits)
-- **Sortie** : PR #518 | commits f07a4990 44181f8c f03a0252 26c34086 ea602630 dd75d842
-
-## 2026-05-14 — feat/adr-063-cwv-ingestion-v2 (auto)
-
-- **Branche** : `feat/adr-063-cwv-ingestion-v2`
-- **Décision** : test(seo-crux): minimize to sync-only coverage (3 tests) (+7 other commits)
-- **Sortie** : PR #518 | commits 08142888 e5c6864b f07a4990 44181f8c f03a0252 26c34086 ea602630 dd75d842
-
-## 2026-05-14 — feat/adr-063-cwv-alerting (auto)
-
-- **Branche** : `feat/adr-063-cwv-alerting`
-- **Décision** : feat(seo-crux): alerter service (pr-4 adr-063)
-- **Sortie** : PR #525 | commits a6f3b25f
-
-## 2026-05-14 — feat/pr-w3b-registry-tests-blocking (auto)
-
-- **Branche** : `feat/pr-w3b-registry-tests-blocking`
-- **Décision** : ci(audit): promote @repo/registry contract tests to BLOCKING gate (PR-W3b)
-- **Sortie** : PR aucune | commits fce47ec9
-
-## 2026-05-14 — feat/seo-cp-cf-analytics-collector (auto)
-
-- **Branche** : `feat/seo-cp-cf-analytics-collector`
-- **Décision** : feat(seo-cp): cloudflare analytics collector L1 — PR-2A-2 (ADR-064)
-- **Sortie** : PR #520 | commits 8701fdf4
-
-## 2026-05-14 — feat/seo-cp-cf-analytics-collector (auto)
-
-- **Branche** : `feat/seo-cp-cf-analytics-collector`
-- **Décision** : fix(ci): grant pull-requests:write to migration-safety job (squawk upload-to-github) (+2 other commits)
-- **Sortie** : PR #520 | commits adf76ba3 f240f3b5 8701fdf4
 
 ## 2026-05-14 — feat/seo-cp-cf-analytics-collector (auto)
 
@@ -801,3 +147,280 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-cp-cf-rum-collector`
 - **Décision** : feat(seo-cp): pr-2a-2.5 cloudflare rum collector (web vitals edge ingestion)
 - **Sortie** : PR #583 | commits 24fdf7367
+
+## 2026-05-18 — feat/vehicle-context-cookie-jws (auto)
+
+- **Branche** : `feat/vehicle-context-cookie-jws`
+- **Décision** : fix(vehicle-context): PR-B.8 CI green (prettier + gitleaks + dep inventory) (+7 other commits)
+- **Sortie** : PR #606 | commits b99f9f80e 2fe8f2beb 6eb399a47 019b10d89 6dcfb20a5 6833edfae a51962447 ce57fa9d8
+
+## 2026-05-18 — chore/impeccable-cli-devdep (auto)
+
+- **Branche** : `chore/impeccable-cli-devdep`
+- **Décision** : chore(frontend): add impeccable@2.1.9 CLI for design anti-pattern detection
+- **Sortie** : PR #597 | commits 54afbb9d8
+
+## 2026-05-18 — feat/vehicle-context-cookie-jws (auto)
+
+- **Branche** : `feat/vehicle-context-cookie-jws`
+- **Décision** : Merge remote-tracking branch 'origin/main' into feat/vehicle-context-cookie-jws (+9 other commits)
+- **Sortie** : PR #606 | commits 4cfd22868 54aecaacd b99f9f80e 2fe8f2beb 6eb399a47 019b10d89 6dcfb20a5 6833edfae a51962447 ce57fa9d8
+
+## 2026-05-18 — refactor/impeccable-bounce-easing (auto)
+
+- **Branche** : `refactor/impeccable-bounce-easing`
+- **Décision** : refactor(frontend): smooth bounce-easing animations (-8, components-only)
+- **Sortie** : PR #610 | commits f260a8de4
+
+## 2026-05-19 — chore/impeccable-husky-hardening (auto)
+
+- **Branche** : `chore/impeccable-husky-hardening`
+- **Décision** : chore(husky): wire impeccable ratchet as warn-only pre-commit hook (PR 6)
+- **Sortie** : PR #621 | commits f977316a4
+
+## 2026-05-19 — chore/impeccable-husky-hardening (auto)
+
+- **Branche** : `chore/impeccable-husky-hardening`
+- **Décision** : chore(registry): regenerate after PR #606 (vehicle-context cookie devDep bump) (+2 other commits)
+- **Sortie** : PR #621 | commits 4d635fac7 8bd1c7c84 c7b056d68
+
+## 2026-05-19 — fix/preprod-env-contract-preflight (auto)
+
+- **Branche** : `fix/preprod-env-contract-preflight`
+- **Décision** : chore(registry): scope env-contract paths in ownership.yaml (D13) (+1 other commit)
+- **Sortie** : PR #632 | commits eacfdcbe3 fbc50be95
+
+## 2026-05-19 — fix/preprod-env-contract-preflight (auto)
+
+- **Branche** : `fix/preprod-env-contract-preflight`
+- **Décision** : style(env-contract): apply prettier (CI lint fix) (+3 other commits)
+- **Sortie** : PR #632 | commits 22cd9867e 690c78525 eacfdcbe3 fbc50be95
+
+## 2026-05-21 — worktree-commerce-loop-step4-funnel (auto)
+
+- **Branche** : `worktree-commerce-loop-step4-funnel`
+- **Décision** : feat(commerce-loop): funnel event tracking outil diagnostic (étape 4-A)
+- **Sortie** : PR #676 | commits 8d7652572
+
+## 2026-05-21 — worktree-commerce-loop-step4-funnel (auto)
+
+- **Branche** : `worktree-commerce-loop-step4-funnel`
+- **Décision** : fix(commerce-loop): squawk require-timeout-settings sur migration funnel (+4 other commits)
+- **Sortie** : PR #676 | commits af96bc122 367574432 a8b1dd059 93c0f8664 8d7652572
+
+## 2026-05-21 — worktree-commerce-loop-step4-funnel (auto)
+
+- **Branche** : `worktree-commerce-loop-step4-funnel`
+- **Décision** : fix(commerce-loop): eslint — prettier wrap + safeLocalStorage dans funnel (+5 other commits)
+- **Sortie** : PR #676 | commits 477564255 71198a3ab af96bc122 367574432 a8b1dd059 8d7652572
+
+## 2026-05-22 — fix param id véhicule int4 + retrait foot-gun smallint
+
+- **Branche** : `fix/vehicle-modelid-int4-pipe` + `fix/retire-smallint-id-param-pipe` (mergées, supprimées)
+- **Décision** : modelId/brandId validés en int4 (type réel colonne, max 667022) — `PositiveSmallIntParamPipe` rejetait 400 sur ~82% des modèles ; pipe smallint supprimé (foot-gun), garde ast-grep `.max(32767)` + test régression controller ajoutés.
+- **Sortie** : PRs #686 (live prod, tag v2026.05.21-vehicle-modelid-int4) #689 (mergé main, prod via prochaine release) | fichiers `backend/src/modules/vehicles/vehicles.controller.ts`, `backend/src/common/{schemas/numeric-param.schema.ts,pipes/params/}`, `.ast-grep/rules/backend-no-subint4-ceiling-on-id-param.yml`
+
+## 2026-05-22 — INP /pieces/ mobile : root cause + déploiement PROD
+
+- **Branche** : `perf/inp-pieces-content-visibility` (+ `perf/inp-attribution-instrumentation`)
+- **Décision** : INP 537ms p75 mobile = ouverture Radix Sheet (menu + panier, header partagé) forçant un reflow full-document ; corrigé par `content-visibility` sur blocs below-fold (−25% mesuré live PROD), attribution web-vitals livrée pour le diagnostic terrain.
+- **Sortie** : PRs #692 #694 (merged) | tag PROD `v2026.05.22-inp-pieces-content-visibility` | fichiers `frontend/app/utils/web-vitals.client.ts`, `frontend/app/global.css`, `frontend/app/components/pieces/PiecesVehicleContent.tsx`
+
+## 2026-05-22 — Rotation partitions SEO (snapshot daily + mensuel)
+
+- **Branche** : `fix/seo-observability-partition-rotation`
+- **Décision** : revue de la migration rotation snapshot daily (sûre, ajout `.down.sql`) ; livré la rotation mensuelle observability (gsc/ga4/cwv premake+3 TTL 18mo) + quality_history (réutilise `ensure_next_quality_history_partition`) pour éviter les falaises d'épuisement de partitions 2026-07-01 / 2026-08-01.
+- **Sortie** : PR #698 (open) | fichiers `backend/supabase/migrations/20260522_seo_observability_partition_rotation.sql` (+`.down.sql`)
+
+## 2026-05-23 — pieces_media_img recovery Tier C + gardes (ADR-078)
+
+- **Branche** : `recovery/pieces-media-img-corruption-20260523`
+- **Décision** : Soft-hide 1.1M lignes malformées (357K pièces affichées, 103 marques) → fallback no.png ; Tier B (vraies images) différé car files absents de toute l'infra ; 4 gardes structurelles installées (audit nightly + ast-grep paginate + brand-folder registry canon L2 + spot-fix shipping).
+- **Sortie** : PR #699 + vault PR #302 (ADR-078 / INC-2026-015) | commits a44deeb9d + 2ee8c3c (vault) | fichiers `.spec/00-canon/repository-registry/brand-folder-registry.yaml`, `scripts/audit/audit-pieces-media-img-invariants.sh`, `.ast-grep/rules/supabase-js-bulk-select-paginate.yml`, `scripts/recovery/tier-c-softhide-malformed-p1.sql`, `backend/src/modules/cart/services/shipping-calculator.service.ts`
+
+## 2026-05-23 — feat/pricing-control-plane-v1 (auto)
+
+- **Branche** : `feat/pricing-control-plane-v1`
+- **Décision** : chore(registry): cover backend/src/modules/pricing/** and pricing migrations (+8 other commits)
+- **Sortie** : PR #709 | commits 252bb1b8 e22bf3c2 a65383cc e404171c 4000e00b 358da2dd 7d29d9b6 6641b556 667581d3
+
+## 2026-05-23 — feat/pricing-control-plane-v1 (auto)
+
+- **Branche** : `feat/pricing-control-plane-v1`
+- **Décision** : fix(pricing): dedupe squawk timeout settings in 2 migrations (+12 other commits)
+- **Sortie** : PR #709 | commits 289eb0c4 b3e3b9ec 656bf6dc 04754b37 b8c048bf d529c744 4c4fa7a6 ad027f11 5701a64e d135bb9b 227d3a4d 142a0218 c4f6ea33
+
+## 2026-05-24 — feat/ai-additive-layer-design-spec (auto)
+
+- **Branche** : `feat/ai-additive-layer-design-spec`
+- **Décision** : docs(superpowers): implementation plan Phase 0+1 — AI additive layer (+1 other commit)
+- **Sortie** : PR aucune | commits 90ac3b313 31fca3a81
+
+## 2026-05-24 — feat/ai-additive-layer-design-spec (auto)
+
+- **Branche** : `feat/ai-additive-layer-design-spec`
+- **Décision** : feat(trend-signals): module + rappels.gouv.fr fetcher + BullMQ monthly processor + migration additive (+11 other commits)
+- **Sortie** : PR #714 | commits 213d5db3e 04964ad3b cf61d176a f9e218531 cf5adb9dc 64a4c0a36 a380fbe25 4d61ee999 f9b05b52c 67958cfa7 0fc72ac1a 9b75889bd
+
+## 2026-05-24 — feat/ai-additive-layer-design-spec (auto)
+
+- **Branche** : `feat/ai-additive-layer-design-spec`
+- **Décision** : fix(ci): prettier + squawk migration timeouts (3 prettier errors, 2 squawk warnings on __trend_signals) (+13 other commits)
+- **Sortie** : PR #714 | commits d4121fd65 d9c67602a 213d5db3e 04964ad3b cf61d176a f9e218531 cf5adb9dc 64a4c0a36 a380fbe25 4d61ee999 f9b05b52c 67958cfa7 0fc72ac1a 9b75889bd
+
+## 2026-05-24 — feat/ai-additive-layer-design-spec (auto)
+
+- **Branche** : `feat/ai-additive-layer-design-spec`
+- **Décision** : fix(registry): add ownership overlays for AI additive layer files (5 globs covering 21 new files) (+15 other commits)
+- **Sortie** : PR #714 | commits 296343132 978c50bdf d4121fd65 d9c67602a 213d5db3e 04964ad3b cf61d176a f9e218531 cf5adb9dc 64a4c0a36 a380fbe25 4d61ee999 f9b05b52c 67958cfa7 0fc72ac1a 9b75889bd
+
+## 2026-05-24 — feat/ai-additive-layer-design-spec (auto)
+
+- **Branche** : `feat/ai-additive-layer-design-spec`
+- **Décision** : ci: empty commit to retrigger checks (CodeQL phantom stale from initial push) (+17 other commits)
+- **Sortie** : PR #714 | commits a9226d06d ec3cb6a92 296343132 978c50bdf d4121fd65 d9c67602a 213d5db3e 04964ad3b cf61d176a f9e218531 cf5adb9dc 64a4c0a36 a380fbe25 4d61ee999 f9b05b52c 67958cfa7 0fc72ac1a 9b75889bd
+
+## 2026-05-24 — feat/ai-additive-layer-design-spec (auto)
+
+- **Branche** : `feat/ai-additive-layer-design-spec`
+- **Décision** : fix(codeql): loop-until-stable HTML strip in detectExtractableTldr (resolves js/incomplete-multi-character-sanitization) (+19 other commits)
+- **Sortie** : PR #714 | commits 4c0250eca dcb25d4ae a9226d06d ec3cb6a92 296343132 978c50bdf d4121fd65 d9c67602a 213d5db3e 04964ad3b cf61d176a f9e218531 cf5adb9dc 64a4c0a36 a380fbe25 4d61ee999 f9b05b52c 67958cfa7 0fc72ac1a 9b75889bd
+
+## 2026-05-24 — feat/automation-reality-registry (auto)
+
+- **Branche** : `feat/automation-reality-registry`
+- **Décision** : feat(registry): automation-reality-registry V1 — observe gap intent↔execution
+- **Sortie** : PR #726 | commits 79dfa5792
+
+## 2026-05-24 — feat/automation-reality-registry (auto)
+
+- **Branche** : `feat/automation-reality-registry`
+- **Décision** : fix(registry): npm install --ignore-scripts in automation registry workflows (+2 other commits)
+- **Sortie** : PR #726 | commits d3cb777b6 3f2bfbba9 79dfa5792
+
+## 2026-05-24 — feat/automation-reality-registry (auto)
+
+- **Branche** : `feat/automation-reality-registry`
+- **Décision** : fix(registry): use npm ci for automation registry workflows (tsx hoisting) (+4 other commits)
+- **Sortie** : PR #726 | commits b9cb833df 522703395 d3cb777b6 3f2bfbba9 79dfa5792
+
+## 2026-05-24 — feat/automation-reality-registry (auto)
+
+- **Branche** : `feat/automation-reality-registry`
+- **Décision** : Merge remote-tracking branch 'origin/main' into feat/automation-reality-registry (+6 other commits)
+- **Sortie** : PR #726 | commits 220f8cf08 970c2c08d b9cb833df 522703395 d3cb777b6 3f2bfbba9 79dfa5792
+
+## 2026-05-25 — chore/ownership-yaml-audit-seo-glob (auto)
+
+- **Branche** : `chore/ownership-yaml-audit-seo-glob`
+- **Décision** : chore(registry): add audit/seo-*.md ownership glob (PR #736 follow-up)
+- **Sortie** : PR #740 | commits 080868ce8
+
+## 2026-05-25 — Audit GSC crawl health + fix 404 catch-all noindex (PR #741)
+
+- **Branche** : `fix/seo-runtime-cache-noindex-sitemap` (mergée @ 9ae83f301 via admin override squash, 3 cycles BEHIND main race)
+- **Décision** : Audit empirique GSC v6 (snapshot 2026-05-23 : 1.56M crawls/90j, 17% 404, 19% Unknown, 5% 301, ratio amplification ~15x vs sitemap V10 ~102K URLs) → STOP-gate CORE-A après 22 curls Googlebot UA + 5 SQL `__seo_gsc_daily`/`__seo_crawl_log` (table **vide**, gap observabilité majeur). **Hypothèse v6 confirmée fortement** : (Q1) 19% Unknown = edge/Cloudflare suspect (non-prouvé sans creds CF + SSH PROD denied, fallback DB tables `__seo_crawl_log`/`crawl_budget_metrics`/`__seo_snapshot_cf_rum` toutes 0 rows) ; (Q2) 17% 404 = R8 canoniques majoritaires + bug catch-all `index, follow` au lieu de `noindex, follow` sur `/wp-admin/`, `/panier`, URL inexistante ; (Q3) cacheability `cf-cache-status: DYNAMIC` sur 9/10 HTML, bug origin `cache-control` dupliqué conflictant (`public,1800` + `private,60` même réponse), TTFB 3.6s sur `/blog-pieces-auto/conseils/filtre-a-huile` (top URL 4690 impr 90j), sitemap-temperature-{hot,cold}.xml → 302 /404, R3 conseils 54.5% impressions × 56 clicks (CTR 0.16%) = catastrophe ROI vs `/` CTR 9.8%, 96.8% sitemap URLs sans impression. Branche B Étape 3 (3 fixes ciblés) → **2/3 droppés par classifier** (Caddyfile edge config + git mv route file → out-of-scope strict user "pas Cloudflare rules globales au départ"). Livré : Fix #2 catch-all 404 `X-Robots-Tag: noindex, follow` (3 throws dans `$.tsx` + test unitaire 3 cas). Follow-ups owner-gated **issues #744** (Caddy `>Cache-Control` replace mode pour duplication) + **#745** (sitemap-$.tsx rename `[sitemap-]$.tsx` flat-routes + `___xtr_msg` REDIRECT_RULE cleanup). 3 mémoires canon P1 créées : `feedback_audit_must_correlate_business_and_provenance` + `feedback_unknown_before_404_when_edge_in_chain` + `feedback_stop_modeling_start_executing`. Doctrine v6 plan : max 1 fix par cycle + mesure +30j avant suivant. Aucun changement URL/canonical/meta/H1/payments.
+- **Sortie** : PR #741 mergé @ 9ae83f301 (admin squash, 3 cycles BEHIND main + 2 reruns flaky npm ECONNRESET) | commits 758a0afcf (fix) + 184c638b2 (lint import/first) | fichiers `frontend/app/routes/$.tsx` (+13 -3, 3 throws fix : l.33 garbage 410, l.224 contenu 410, l.238 404 enrichi, l.258 404 fallback) + `frontend/tests/unit/catch-all-404-noindex.test.ts` (+87 new, 3 assertions vitest avec stubGlobal fetch + vi.mock logger) | issues #744 #745 ouvertes owner-gated | plan canon `~/.claude/plans/utiliser-superpower-automecanik-com-ancient-tide.md` v6 | DEV runtime curl post-merge à attendre ~10min (cron `scripts/ops/sync-dev-runtime.sh`) → vérifier `/wp-admin/`, `/panier`, URL inexistante émettent `x-robots-tag: noindex, follow` HTTP 404
+
+## 2026-05-25 — A3 skip cycle deploy-prod PR #741 (race :preprod flottant)
+
+- **Branche** : n/a (3 tags PROD tentés, aucun succès deploy ; PR #741 reste mergé en `origin/main`, fix actif en code mais pas en PROD container)
+- **Décision** : 3 tentatives tag PROD pour propager PR #741 fix(seo) catch-all noindex,follow → 3 fails structurels (tag 1 `v2026.05.25-seo-404-catch-all-noindex` SHA `23855551c` deploy success mais a promu STALE `:preprod` car CI Deploy backlog queue / tag 2 `v2026.05.25.1` SHA `eebcdca48` denied par safety-gate built-in `:preprod` SHA mismatch / tag 3 `v2026.05.25.2` SHA `256ad7992` race lost — `:preprod` flotté vers `72d670308` entre tag et deploy-prod pull, ~5min race window structurellement insuffisante face à push velocity main `98cff9f48` → `72d670308` → `256ad7992` en cascade). Owner décision **A3 skip** : PROD reste sur ancien image sans fix, fix attend prochain quiet window de main. Per doctrine `feedback_more_seo_engineering_not_equal_more_business` + `feedback_v1_first_dont_build_ultimate_engine_too_early`, valeur business marginale court terme (Google re-crawle eventually, 17% 404 catch-all reste avec X-Robots-Tag: index, follow uniquement). Issues #744 (Caddy >Cache-Control) + #745 (sitemap-$.tsx rename) demeurent owner-gated J+7-10 post-PROD-deploy effective, **pas post-merge** (G1-G5 timer ne démarre qu'à PROD container réellement mis à jour avec fix). Tag-orphans laissés en place pour traçabilité historique : `v2026.05.25-seo-404-catch-all-noindex` (deploy stale), `v2026.05.25.2-seo-404-noindex-retry` (safety-gate failed). Tag `v2026.05.25.1` supprimé (jamais utilisé). Discovery secondaire : safety-gate `deploy-prod.yml` est canonique correct (compare OCI label `org.opencontainers.image.revision` ↔ tag commit SHA) — pas de bypass requis ni recommandé.
+- **Sortie** : 0 commit, 0 PR cette phase deploy. Tags poussés : `v2026.05.25-seo-404-catch-all-noindex` (deploy run 26400235525 success stale), `v2026.05.25.2-seo-404-noindex-retry` (deploy run 26402538530 safety-gate fail). Tag supprimé : `v2026.05.25.1-seo-404-noindex-retry`. Aucun changement PROD état. Suivi : quiet window main (low push velocity) requis avant prochain tentative tag → owner action ultérieure.
+
+## 2026-05-25 — Doctrine shift architecture→evidence + Opportunity Lens V1 J+0 baseline = null-result révélateur
+
+- **Branche** : aucune (read-only DB + memory files + .claude/top-priorities.md + audit/, working tree dirty owner-controlled — pas de commit cette session)
+- **Décision** : 4 essais stratégiques user (SEO Operating System / Doctrine moderne / Opportunity Engine V1 / Growth Content System) rejetés contre PR #714 déjà mergée 2026-05-24 (8-salve brainstorm Phase 0+1 livrée hier). Plan `/home/deploy/.claude/plans/utiliser-superpower-apr-s-curried-toucan.md` approuvé après 7 corrections P0/P1/P2. Migration `__trend_signals` appliquée via MCP (canonique). Opportunity Lens J+0 baseline exécutée → **20/20 probe URLs = no-gsc-signal**, révélant **3 gaps majeurs invisibles autrement** : (1) spec PR #714 a 2 bugs JOIN — `g.page = pt.target_url` ne match jamais (full URL prod vs path probe) + `device = 'all'` filtre tout (vraies valeurs mobile/desktop/tablet) ; (2) 20 probe URLs `prompts.yaml` aspirationnelles, aucune ne match prod (vrais slugs = `/blog-pieces-auto/conseils/*`) ; (3) `__seo_quality_history.ai_has_*` metrics = 0 ligne en runtime, détecteurs PR #714 jamais exécutés + snapshot service stale depuis 2026-05-07 (18j). → **Fenêtre 14j NON-LANÇABLE** dans cet état (4/6 signaux dépendants de tables non-alimentées). Action #1 sync-dev-runtime bloquée par staged migration owner-controlled `20260524_diagnostic_resolution_outcome.sql` (commerce-loop V1A.0 Intent Resolution). 4 mécanismes protection doctrinale installés : 2 mémoires Layer 0 (`feedback_architecture_to_evidence_centric_shift` + `feedback_no_new_architecture_until_evidence_window_closes`), MEMORY.md indexée, `.claude/top-priorities.md` updated (TOP +1 commerce-loop-execution-cycle-v1, DO_NOT_START +2 growth-content-system + auto-content-publishing, STRUCTURAL_CONSTRAINTS +1 evidence-window-locks-architecture-decisions).
+- **Sortie** : 0 commit, 0 PR (per [[feedback_branch_scope_discipline]] + working tree dirty). Migration `__trend_signals` appliquée Supabase (vérification : `mcp__supabase__list_migrations` ne la listait pas avant, présente maintenant). Fichiers créés : `audit/opportunity-lens-2026-05-25.csv` (raw J+0), `audit/opportunity-lens-2026-05-25-baseline-analysis.md` (3 gaps + recommandation), 2 fichiers mémoire Layer 0 dans `~/.claude/projects/-opt-automecanik-app/memory/`. Fichiers modifiés : `MEMORY.md`, `.claude/top-priorities.md`, `log.md` (cette entrée). Owner-action requise pour : (a) décider staged migration `20260524_diagnostic_resolution_outcome.sql` → sync DEV ; (b) PR fix-pack 3 gaps `fix/opportunity-lens-v1-runtime-gaps` ; (c) vérifier orchestration `quality-history-snapshot.service.ts` cron système + redémarrage si en panne ; (d) revoir `workspaces/ai-probe/prompts.yaml` avec 20 URLs live extraites de top-200 GSC ; (e) opener les 9 ADRs vault Phase 0 (per spec PR #714). Tests jest 4 fichiers AI-additive-layer non re-vérifiés (local 31 commits behind, fichiers non checkout — 36/36 validés en PR #714 review).
+
+
+## 2026-05-28 — feat/fafa-media-factory-v1-foundation (auto)
+
+- **Branche** : `feat/fafa-media-factory-v1-foundation`
+- **Décision** : feat(media-factory): V1 Foundation scaffold
+- **Sortie** : PR #789 | commits a194a241e
+
+## 2026-05-28 — feat/fafa-media-factory-v1-foundation (auto)
+
+- **Branche** : `feat/fafa-media-factory-v1-foundation`
+- **Décision** : fix(media-factory): close parser-validator differential bypass in 2 schemas (+2 other commits)
+- **Sortie** : PR #789 | commits 3d228cd34 c3c8a304e a194a241e
+
+## 2026-05-30 — chore/preprod-warm-soft-404-fixtures (auto)
+
+- **Branche** : `chore/preprod-warm-soft-404-fixtures`
+- **Décision** : chore(preprod): warm soft-404 R2 fixtures before smoke assertion
+- **Sortie** : PR #801 | commits 27e025ee0
+
+## 2026-05-30 — fix/cwv-aggregation-flag-declare-2026-05-29 (auto)
+
+- **Branche** : `fix/cwv-aggregation-flag-declare-2026-05-29`
+- **Décision** : fix(cwv): declare and enable aggregation scheduler flag
+- **Sortie** : PR #803 | commits 0caf28c0b
+
+## 2026-06-02 — chore/cleanup-audit-artifacts (auto)
+
+- **Branche** : `chore/cleanup-audit-artifacts`
+- **Décision** : docs(audit): refresh carte 24-départements avec deltas funnel 06-01 (+1 other commit)
+- **Sortie** : PR #820 | commits ed821a72d d88e707ca
+
+## 2026-06-02 — feat/supplier-cal-pr1b (auto)
+
+- **Branche** : `feat/supplier-cal-pr1b`
+- **Décision** : feat(supplier-truth): wire CAL connector (read-only sentinel, spl_id 19)
+- **Sortie** : PR #828 | commits 136941362
+
+## 2026-06-03 — feat/supplier-truth-runtime-wiring (auto)
+
+- **Branche** : `feat/supplier-truth-runtime-wiring`
+- **Décision** : feat(supplier-truth): runtime wiring (inert mode, scheduler OFF default)
+- **Sortie** : PR #831 | commits 268efea6c
+
+## 2026-06-04 — feat/command-center-exposure-mode (auto)
+
+- **Branche** : `feat/command-center-exposure-mode`
+- **Décision** : fix(command-center): widen NODE_ENV type in mode test (TS2322 'preprod') (PR4) (+1 other commit)
+- **Sortie** : PR #856 | commits 75f42754f d20d75831
+
+## 2026-06-04 — feat/pricing-import-pending-mode (auto)
+
+- **Branche** : `feat/pricing-import-pending-mode`
+- **Décision** : feat(pricing): import-pending mode — commit cost without auto-activating sellability
+- **Sortie** : PR #857 | commits f746ce702
+
+## 2026-06-05 — vlevel-doctrine-lock (auto)
+
+- **Branche** : `vlevel-doctrine-lock`
+- **Décision** : feat(seo-roles): V-Level doctrine — invariants ref + DB-only capture (lock-before-fix) ; + fixes squawk migration + overlay ownership D14
+- **Sortie** : PR #861 | commits 07141fcc4 4f037916a a599763f8 525cfa21d
+
+## 2026-06-05 — feat/content-raw-evidence-inventory (auto)
+
+- **Branche** : `feat/content-raw-evidence-inventory`
+- **Décision** : feat(content): read-only deterministic RAW evidence inventory (pilote filtre-a-air)
+- **Sortie** : PR aucune | commits a9a042483
+
+## 2026-06-05 — g2-vlevel-invariants-runtime-wiring (auto)
+
+- **Branche** : `g2-vlevel-invariants-runtime-wiring`
+- **Décision** : fix(seo-roles): wire V-Level invariants without recalculation
+- **Sortie** : PR #863 | commits 58af79a1f
+
+## 2026-06-06 — feat/seo-r3-consolidation-evidence (auto)
+
+- **Branche** : `feat/seo-r3-consolidation-evidence`
+- **Décision** : feat(seo): read-only GSC-backed R3 consolidation evidence matrix (10-gamme pilot)
+- **Sortie** : PR aucune | commits ca0232d4c
+
+## 2026-06-08 — docs/vlevel-method-freeze (auto)
+
+- **Branche** : `docs/vlevel-method-freeze`
+- **Décision** : docs(seo): vlevel — objectif top-vente (proxy recherche) + dispatch pages constructeur (+1 other commit)
+- **Sortie** : PR #898 | commits 1db293cf8 bd605b606
+
+## 2026-06-10 — fix/r4-reference-list-rpc-gate (auto)
+
+- **Branche** : `fix/r4-reference-list-rpc-gate`
+- **Décision** : chore(registry): glob ownership pour la migration 20260610 (D14, owner GO en session) (+3 other commits)
+- **Sortie** : PR #922 | commits f719e0d1f 5d5cf54c9 c62447acd 974ad3996

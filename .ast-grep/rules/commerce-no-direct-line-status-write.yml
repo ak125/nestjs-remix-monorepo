@@ -1,0 +1,18 @@
+id: commerce-no-direct-line-status-write
+language: typescript
+severity: error
+message: |
+  Direct write to orl_orls_id is FORBIDDEN outside OrderActionsService.
+  Canon: .spec/00-canon/commerce-runtime/authority-graph.yaml#authorities.order_line_lifecycle.status_writes_allowed_in
+  Line status is the SoT for order-line workflow (1..6, 91..94 equivalence).
+note: |
+  Per F3 (Vault #301), OrderActionsService is the unique SoT for line status. Any other
+  write path creates the kind of double SoT that PR #696 removed.
+files:
+  - backend/src/**/*.ts
+ignores:
+  - backend/src/modules/orders/services/order-actions.service.ts
+rule:
+  any:
+    - pattern: "$X.from('___xtr_order_line').update({ orl_orls_id: $$$ })"
+    - pattern: '$X.from("___xtr_order_line").update({ orl_orls_id: $$$ })'

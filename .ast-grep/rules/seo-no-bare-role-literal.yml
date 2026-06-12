@@ -88,6 +88,15 @@ ignores:
   - "**/blog/services/r6-guide.service.ts"
   - "**/blog/interfaces/r6-guide.interfaces.ts"
   - "**/types/r6-guide.types.ts"                   # frontend-only file
+  # ── V1A.0 Intent Resolution canonical event analytics discriminator ──
+  # `TargetRole` type est défini ici pour discriminer le payload du canonical
+  # event `diagnostic_resolution_outcome` (cf. ADR-080). Valeurs 'R1'/'R2'/'R3'
+  # sont des analytics tags (anti double-truth, dérivations to_commerce/to_human
+  # via target_role runtime), pas des role literals exposés en OUTPUT SEO.
+  # Mirror frontend de backend/src/modules/diagnostic-engine/types/recommended-action.ts
+  - "**/diagnostic-wizard/results/v1a-intent-types.ts"
+  - "**/diagnostic-engine/types/recommended-action.ts"
+  - "**/diagnostic-engine/services/action-recommender.service.ts"  # TYPE_TO_TARGET_ROLE mapping canon
   # ── Input DTOs accepting legacy roles (per "Legacy accepté en entrée") ──
   - "**/rag-proxy/dto/search.dto.ts"
   # NB : __regression__/ NOT excluded — that's where the regression

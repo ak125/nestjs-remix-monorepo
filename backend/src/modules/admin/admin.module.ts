@@ -18,6 +18,11 @@ import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module';
 
 // Controllers - Stock consolidé ✅
+import { ControlPlaneController } from './controllers/control-plane.controller';
+import { RegistryReaderService } from './services/registry-reader.service';
+import { CommandCenterController } from './controllers/command-center.controller';
+import { CommandCenterReaderService } from './services/command-center-reader.service';
+import { CommandCenterActionsService } from './services/command-center-actions.service';
 import { ConfigurationController } from './controllers/configuration.controller';
 import { StockController } from './controllers/stock.controller'; // 🔥 Controller consolidé unique
 import { AdminController } from './controllers/admin.controller';
@@ -123,7 +128,6 @@ import { AiContentModule } from '../ai-content/ai-content.module'; // 🤖 Pour 
 import { SystemModule } from '../system/system.module';
 import { AdminDbGovernanceController } from './controllers/admin-db-governance.controller';
 import { AdminPipelineController } from './controllers/admin-pipeline.controller'; // 🚀 Unified pipeline execution
-import { AdminRagPipelineStatusController } from './controllers/admin-rag-pipeline-status.controller';
 import { ExecutionRouterService } from './services/execution-router.service'; // 🚀 Enricher dispatch router
 import { R2EnricherService } from './services/r2-enricher.service'; // 🏗️ R2 Product enricher (WriteGate-native)
 import { R1EnricherService } from './services/r1-enricher.service'; // 🏗️ R1 Router enricher (0-LLM, RAG+KP)
@@ -132,6 +136,16 @@ import { R4ContentEnricherService } from './services/r4-content-enricher.service
 import { R4LintGatesService } from './services/r4-lint-gates.service'; // 🚦 R4 content lint gates LG1-LG8
 import { InternalPipelineController } from './controllers/internal-pipeline.controller'; // 🚀 Internal pipeline (X-Internal-Key auth)
 import { InternalSeoAuditController } from './controllers/internal-seo-audit.controller'; // 📊 Internal SEO audit (X-Internal-Key auth)
+
+// PR-SBD-1 Task 4 — SEO Business Control Dashboard (Phase A)
+import { BullModule } from '@nestjs/bull';
+import { FeatureFlagsModule } from '../../config/feature-flags.module';
+import { SEO_CONTROL_REFRESH_QUEUE } from './constants/seo-control.constants';
+import { SeoControlController } from './controllers/seo-control.controller';
+import { SeoControlService } from './services/seo-control.service';
+import { SeoControlDecisionsService } from './services/seo-control-decisions.service';
+import { SeoControlRefresherService } from './services/seo-control-refresher.service';
+import { SeoControlRefreshProcessor } from './processors/seo-control-refresh.processor';
 
 @Module({
   imports: [
@@ -146,8 +160,12 @@ import { InternalSeoAuditController } from './controllers/internal-seo-audit.con
     AiContentModule, // 🤖 Pour ConseilEnricher + BuyingGuideSEODraft (optional LLM polish)
     VehiclesModule, // 🚗 INC-2026-007 — pour AdminVehicleCacheController (VehicleRpcService)
     OperatingMatrixModule, // 🛡️ Read-only governance matrix (zero infra deps)
+    FeatureFlagsModule, // 🎛️ PR-SBD-1 — feature.seoControlDashboardEnabled kill-switch
+    BullModule.registerQueue({ name: SEO_CONTROL_REFRESH_QUEUE }), // 🚀 PR-SBD-1 SWR per-block refresh
   ],
   controllers: [
+    ControlPlaneController,
+    CommandCenterController, // 🛰️ Command Center cockpit - /api/admin/command-center
     ConfigurationController,
     StockController, // 🔥 Un seul controller stock consolidé (13 routes)
     // ❌ StockEnhancedController - SUPPRIMÉ
@@ -187,12 +205,15 @@ import { InternalSeoAuditController } from './controllers/internal-seo-audit.con
     // AdminSupplierStatsController — not ready for prod
     AdminDbGovernanceController, // 📊 DB Governance Phase 2 - /api/admin/db-governance/*
     AdminPipelineController, // 🚀 Unified pipeline execution - /api/admin/pipeline/*
-    AdminRagPipelineStatusController, // 📊 RAG pipeline dashboard - /api/admin/rag-pipeline/status
     InternalPipelineController, // 🚀 Internal pipeline (X-Internal-Key) - /api/internal/pipeline/*
     InternalSeoAuditController, // 📊 Internal SEO audit (X-Internal-Key) - /api/internal/seo/audit/*
     GovernanceMatrixController, // 🛡️ SEO Operating Matrix - /api/admin/governance/seo-operating-matrix
+    SeoControlController, // 📊 PR-SBD-1 — SEO Business Control Dashboard - /api/admin/seo-control/*
   ],
   providers: [
+    RegistryReaderService,
+    CommandCenterReaderService,
+    CommandCenterActionsService,
     ConfigurationService,
     StockManagementService, // ✅ Service principal stock
     WorkingStockService, // ✅ Service complémentaire (search, export, stats)
@@ -251,6 +272,11 @@ import { InternalSeoAuditController } from './controllers/internal-seo-audit.con
     ContentQualityGateService, // 🚦 Cross-role quality gates (R1/R3/R4/R6 min lengths + vocab)
     R4ContentEnricherService, // 🏗️ R4 Reference enricher (0-LLM audit + lint gates)
     R4LintGatesService, // 🚦 R4 content lint gates LG1-LG8
+    // PR-SBD-1 Task 4 — SEO Business Control Dashboard
+    SeoControlService, // 📊 Snapshot assembly + cache per-block + lineage
+    SeoControlDecisionsService, // 🧭 TS pure decisions (rule_ids + role_id)
+    SeoControlRefresherService, // 🔄 BullMQ SWR scheduler (per-block, TTL/2)
+    SeoControlRefreshProcessor, // 🔄 BullMQ processor (refresh-block job)
   ],
   exports: [
     ConfigurationService,

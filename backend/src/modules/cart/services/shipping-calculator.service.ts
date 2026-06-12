@@ -236,19 +236,32 @@ export class ShippingCalculatorService
     const productIds = items.map((item) => item.productId);
 
     try {
-      const { data, error } = await this.supabase
-        .from('pieces_price')
-        .select('pri_piece_id_i, pri_poids, pri_udm_poids')
-        .in('pri_piece_id_i', productIds);
-
-      if (error) {
-        this.logger.warn(
-          `Erreur récupération poids: ${error.message}. Fallback ${this.DEFAULT_ITEM_WEIGHT_G}g/article`,
-        );
-        return items.reduce(
-          (sum, item) => sum + this.DEFAULT_ITEM_WEIGHT_G * item.quantity,
-          0,
-        );
+      // Batch `.in()` by chunks of 1000 — PostgREST silently caps results at
+      // 1000 rows, which on a >1000-item cart would drop weights and skew the
+      // shipping fee. Same root cause as the pieces_media_img corruption
+      // (cf. .ast-grep/rules/supabase-js-bulk-select-paginate.yml).
+      const CHUNK = 1000;
+      const data: Array<{
+        pri_piece_id_i: number;
+        pri_poids: string;
+        pri_udm_poids: string;
+      }> = [];
+      for (let i = 0; i < productIds.length; i += CHUNK) {
+        const slice = productIds.slice(i, i + CHUNK);
+        const { data: chunkData, error } = await this.supabase
+          .from('pieces_price')
+          .select('pri_piece_id_i, pri_poids, pri_udm_poids')
+          .in('pri_piece_id_i', slice);
+        if (error) {
+          this.logger.warn(
+            `Erreur récupération poids: ${error.message}. Fallback ${this.DEFAULT_ITEM_WEIGHT_G}g/article`,
+          );
+          return items.reduce(
+            (sum, item) => sum + this.DEFAULT_ITEM_WEIGHT_G * item.quantity,
+            0,
+          );
+        }
+        if (chunkData) data.push(...chunkData);
       }
 
       // Map product_id → poids en grammes
@@ -257,7 +270,7 @@ export class ShippingCalculatorService
       //   - KGM ≤ 100 : vrais kg (plaquettes, amortisseurs) → ×1000
       //   - KGM > 100 : grammes mal étiquetés (disques de frein à 9445 "KGM") → tel quel
       const weightMap = new Map<string, number>();
-      for (const row of data || []) {
+      for (const row of data) {
         const rawWeight = parseFloat(row.pri_poids);
         if (!isNaN(rawWeight) && rawWeight > 0) {
           const udm = (row.pri_udm_poids || '').toUpperCase();

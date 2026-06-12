@@ -396,11 +396,11 @@ export default function ShippingTracking() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">En transit</p>
-              <p className="text-2xl font-bold text-indigo-600">
+              <p className="text-2xl font-bold text-foreground">
                 {stats.inTransit}
               </p>
             </div>
-            <Truck className="w-8 h-8 text-indigo-600" />
+            <Truck className="w-8 h-8 text-foreground" />
           </div>
         </div>
 
@@ -618,7 +618,7 @@ export default function ShippingTracking() {
               </button>
 
               <button className="w-full px-4 py-2 text-left border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center gap-3">
-                <Phone className="w-4 h-4 text-purple-600" />
+                <Phone className="w-4 h-4 text-foreground" />
                 <span className="text-sm">Support transporteurs</span>
               </button>
             </div>

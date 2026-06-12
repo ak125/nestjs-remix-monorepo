@@ -175,7 +175,7 @@ export const PiecesGroupedDisplay = memo(function PiecesGroupedDisplay({
             {/* Titre dynamique — H2 pour groupes riches, H3 compact pour groupes ≤ 1 */}
             {groupPieces.length > 1 ? (
               <h2 className="text-2xl font-bold text-gray-900 mb-4 pb-3 border-b-2 border-blue-500 flex items-center gap-3">
-                <span className="w-1.5 h-8 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"></span>
+                <span className="w-1.5 h-8 bg-gradient-to-b from-blue-500 rounded-full"></span>
                 {group.title_h2 || `${group.filtre_gamme} ${group.filtre_side}`}{" "}
                 {vehicleModele}
                 <span className="text-sm font-normal text-gray-500 ml-auto">

@@ -58,6 +58,7 @@ import {
   OrderFilters,
   computeOrderFingerprint,
 } from '../services/orders.service';
+import type { OrderStatusCode } from '@repo/domain-commerce';
 import {
   promisifyLoginNoRegenerate,
   promisifySessionRegenerate,
@@ -377,12 +378,18 @@ export class OrdersController {
           'completed',
         );
       }
-      if (gaClientId && orderId) {
+      // Persist GA4 client id + first-party landing attribution (Étape 0).
+      const landing = req.session?.landing;
+      if ((gaClientId || landing) && orderId) {
         const sb = this.ordersService.getSupabaseClient();
-        await sb
-          .from('___xtr_order')
-          .update({ ga_client_id: gaClientId })
-          .eq('ord_id', orderId);
+        const patch: Record<string, unknown> = {};
+        if (gaClientId) patch.ga_client_id = gaClientId;
+        if (landing) {
+          patch.landing_source = landing.source;
+          patch.landing_path = landing.path;
+          patch.landing_first_seen_at = landing.firstSeenAt;
+        }
+        await sb.from('___xtr_order').update(patch).eq('ord_id', orderId);
       }
       let resumeToken: string | undefined;
       if (orderId) {
@@ -556,13 +563,18 @@ export class OrdersController {
           'completed',
         );
       }
-      // Stocker ga_client_id
-      if (gaClientId && finalOrderId) {
+      // Stocker ga_client_id + first-party landing attribution (Étape 0)
+      const landing = req.session?.landing;
+      if ((gaClientId || landing) && finalOrderId) {
         const sb = this.ordersService.getSupabaseClient();
-        await sb
-          .from('___xtr_order')
-          .update({ ga_client_id: gaClientId })
-          .eq('ord_id', finalOrderId);
+        const patch: Record<string, unknown> = {};
+        if (gaClientId) patch.ga_client_id = gaClientId;
+        if (landing) {
+          patch.landing_source = landing.source;
+          patch.landing_path = landing.path;
+          patch.landing_first_seen_at = landing.firstSeenAt;
+        }
+        await sb.from('___xtr_order').update(patch).eq('ord_id', finalOrderId);
       }
       // Générer resume token
       let resumeToken: string | undefined;
@@ -604,7 +616,16 @@ export class OrdersController {
 
       // TODO: Vérifier que l'utilisateur possède cette commande
 
-      return await this.ordersService.updateOrder(String(orderId), updateData);
+      // Convert legacy numeric status to canonical OrderStatusCode (1..5).
+      // Vault #301 PR-C: UpdateOrderData.status is now OrderStatusCode (string).
+      return await this.ordersService.updateOrder(String(orderId), {
+        status:
+          updateData.status !== undefined
+            ? (String(updateData.status) as OrderStatusCode)
+            : undefined,
+        customerNote: updateData.comment,
+        userId: userId ? Number(userId) : undefined,
+      });
     } catch (error) {
       this.logger.error(`Error updating order ${orderId}:`, error);
       throw error;
@@ -831,7 +852,7 @@ export class OrdersController {
         `Admin updating order ${orderId} status to ${updateData.status}`,
       );
       return await this.ordersService.updateOrder(String(orderId), {
-        status: updateData.status,
+        status: String(updateData.status) as OrderStatusCode,
       });
     } catch (error) {
       this.logger.error(

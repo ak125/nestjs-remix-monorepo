@@ -386,7 +386,7 @@ export default function ProductsByRange() {
         )}
 
         {user.role === "pro" && (
-          <Badge className="bg-gradient-to-r from-purple-500 to-pink-500">
+          <Badge className="bg-gradient-to-r to-pink-500">
             💎 PRO
           </Badge>
         )}
@@ -420,7 +420,7 @@ export default function ProductsByRange() {
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-purple-600">
+            <div className="text-2xl font-bold text-foreground">
               {stats.filtered}
             </div>
             <p className="text-sm text-gray-600">Filtrés</p>
@@ -598,7 +598,7 @@ export default function ProductsByRange() {
                       {user.role === "pro" && product.price_pro && (
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-gray-600">Prix Pro</span>
-                          <span className="font-medium text-purple-600">
+                          <span className="font-medium text-foreground">
                             {product.price_pro}€
                           </span>
                         </div>

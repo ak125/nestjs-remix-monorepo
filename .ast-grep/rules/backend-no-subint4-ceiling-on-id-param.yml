@@ -1,0 +1,32 @@
+id: backend-no-subint4-ceiling-on-id-param
+language: typescript
+severity: error
+message: |
+  Plafond `smallint` (.max(32767)) dans un validateur de path-param numérique.
+
+  Un path-param d'id doit être validé contre le **type de stockage de sa
+  colonne**, jamais contre une borne plus étroite : toutes les colonnes PK
+  d'id de ce codebase sont Postgres `integer` (int4), pas `smallint`. Un
+  plafond à 32767 rejette silencieusement (HTTP 400) des ids parfaitement
+  valides.
+
+  Incident 2026-05-22 (PR #686) : `GET /api/vehicles/models/:modelId/types`
+  validait `modele_id` (int4, max DB 667022) avec un pipe smallint →
+  400 sur ~82% des modèles, dont 928 présents dans le sitemap. Trouvé par
+  hasard dans les logs, sans alerte.
+
+  Utiliser `PositiveIntParamPipe` / `PositiveIntParamSchema`
+  (1..2_147_483_647). Pas de variante smallint pour les ids.
+  (Si une colonne est réellement `smallint` ET que le param doit l'être,
+  documenter explicitement et retirer ce fichier de `files:` ci-dessous.)
+files:
+  - backend/src/common/schemas/**/*.ts
+  - backend/src/common/pipes/params/**/*.ts
+ignores:
+  - backend/src/**/__tests__/**
+  - backend/src/**/*.spec.ts
+  - backend/src/**/*.test.ts
+rule:
+  any:
+    - pattern: $OBJ.max(32767)
+    - pattern: $OBJ.max(32767, $$$ARGS)

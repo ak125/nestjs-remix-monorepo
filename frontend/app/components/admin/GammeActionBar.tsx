@@ -108,7 +108,7 @@ export function GammeActionBar({
               className={`text-[10px] px-1.5 py-0 ${
                 has
                   ? "bg-green-600 hover:bg-green-600 text-white"
-                  : "text-slate-400 border-slate-200"
+                  : "text-white border-slate-200"
               }`}
               title={
                 has ? `${r.label} : contenu présent` : `${r.label} : manquant`
@@ -133,7 +133,7 @@ export function GammeActionBar({
       <div className="flex flex-wrap items-center gap-3 px-4 py-3">
         <Button
           size="lg"
-          className="gap-2 bg-purple-600 hover:bg-purple-700 text-white"
+          className="gap-2 bg-primary hover:bg-primary text-white"
           onClick={onGenerateContent}
           disabled={isGeneratingContent}
         >
@@ -171,8 +171,8 @@ export function GammeActionBar({
 
       {/* Ligne 3 — Résultat (repliable) */}
       {contentResult?.command && (
-        <div className="px-4 py-2.5 bg-purple-50 border-t border-purple-100 flex items-center gap-3">
-          <code className="flex-1 text-xs font-mono text-purple-800 break-all">
+        <div className="px-4 py-2.5 bg-muted border-t border-purple-100 flex items-center gap-3">
+          <code className="flex-1 text-xs font-mono text-foreground break-all">
             {contentResult.command}
           </code>
           <Button

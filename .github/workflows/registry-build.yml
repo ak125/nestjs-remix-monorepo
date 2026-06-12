@@ -77,6 +77,12 @@ jobs:
       - name: "Run RPC parser fixture tests (V1-3: 3 parse modes)"
         run: npm run registry:test:rpc-parser
 
+      - name: "Run planning builder transform tests (fixture, no live gh)"
+        run: npm run registry:test:planning
+
+      - name: "Run dependency-graph builder transform tests (fixture)"
+        run: npm run registry:test:dependency-graph
+
       - name: Validate outputs against @repo/registry Zod schemas
         run: npm run registry:validate:zod
 

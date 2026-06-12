@@ -41,6 +41,11 @@ import { usePiecesFilters } from "~/hooks/use-pieces-filters";
 import { openCartSidebar } from "~/hooks/useCartSidebar";
 import { useRootCart } from "~/hooks/useRootData";
 import { useSeoLinkTracking } from "~/hooks/useSeoLinkTracking";
+import {
+  classifyReferrer,
+  emitFunnel,
+  getFunnelSessionId,
+} from "~/utils/funnel-beacon";
 import { isValidPosition } from "~/utils/pieces-filters.utils";
 import { buildPiecesBreadcrumbs } from "~/utils/url-builder.utils";
 
@@ -88,6 +93,42 @@ export function PiecesVehicleContent() {
       trackImpression("CrossSelling", data.crossSellingGammes.length);
     }
   }, [trackImpression, data.crossSellingGammes?.length]);
+
+  // Commerce-Loop V1 étape 4-B — view event (funnel R2). Fire-and-forget,
+  // SSR-safe (no-op côté serveur via funnel-beacon). Dédup sessionStorage par
+  // pathname pour éviter remount/hydration/StrictMode double-fire (même
+  // pattern que trackPurchase dans checkout-payment-return.tsx:184-188).
+  // Sans ce dédup : risque 2-4 events r2_view pour 1 vue réelle = volume
+  // funnel pollué.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    // Namespace `amk_funnel_dedup_*` aligné avec `amk_funnel_sid` dans
+    // funnel-beacon.ts — évite collision sessionStorage avec d'autres composants.
+    const dedupKey = `amk_funnel_dedup_r2v_${window.location.pathname}`;
+    if (sessionStorage.getItem(dedupKey)) return;
+    emitFunnel({
+      event_type: "r2_view",
+      payload: {
+        session_id: getFunnelSessionId(),
+        referrer: classifyReferrer(),
+        // data.gamme.alias = slug canonique (cf. line 129/250 du composant).
+        // Pas .slug ni .pg_alias (n'existent pas sur ce data).
+        gamme_slug: data?.gamme?.alias ?? null,
+        // type_id (motorisation TecDoc) — R2 vehicle-aware, clé métier qui
+        // permettra la corrélation runtime moteur/véhicule/conversion.
+        // ATTENTION : data.vehicle.typeId est en CAMELCASE côté JS
+        // (cf. line 380/391/400 du composant), mais le payload JSON est
+        // snake_case `type_id` selon le schema Zod canon.
+        type_id:
+          typeof data?.vehicle?.typeId === "number"
+            ? data.vehicle.typeId
+            : null,
+      },
+    });
+    sessionStorage.setItem(dedupKey, "1");
+    // Mount-only — pas de deps pour éviter re-fire sur filter change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Handlers pour tracker les clics "Voir aussi"
   const handleVoirAussiClick = useCallback(
@@ -183,7 +224,7 @@ export function PiecesVehicleContent() {
   );
 
   return (
-    <div className="min-h-[100dvh] bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 relative overflow-x-clip">
+    <div className="min-h-[100dvh] bg-gradient-to-br from-slate-50 via-blue-50/30 /50 relative overflow-x-clip">
       {/* Pattern d'arriere-plan subtil */}
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDE0YzIuMiAwIDQgMS44IDQgNHMtMS44IDQtNCA0LTQtMS44LTQtNGMwLTIuMiAxLjgtNCA0LTR6bTAgNDBjMi4yIDAgNCAxLjggNCA0cy0xLjggNC00IDQtNC0xLjgtNC00YzAtMi4yIDEuOC00IDQtNHoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-40 pointer-events-none"></div>
 
@@ -193,7 +234,9 @@ export function PiecesVehicleContent() {
           vehicle={data.vehicle}
           gamme={data.gamme}
           count={data.count}
+          minPrice={data.minPrice}
           performance={data.performance}
+          compSwitch2={data.seo?.compSwitch2}
         />
       </div>
 
@@ -421,8 +464,8 @@ export function PiecesVehicleContent() {
                 vehicle={data.vehicle}
               />
 
-              {/* Sections SEO */}
-              <div className="space-y-6 mt-12">
+              {/* Sections SEO (below-fold → cv-auto: skip layout when off-screen) */}
+              <div className="space-y-6 mt-12 cv-auto">
                 <PiecesSEOSection
                   content={data.seoContent}
                   vehicleName={`${data.vehicle.marque} ${data.vehicle.modele} ${data.vehicle.type}`}
@@ -467,7 +510,7 @@ export function PiecesVehicleContent() {
 
         {/* Cross-selling - SSR pour maillage interne (5-12 liens) */}
         {data.crossSellingGammes.length > 0 && (
-          <div className="mt-12">
+          <div className="mt-12 cv-auto">
             <PiecesCrossSelling
               gammes={data.crossSellingGammes}
               vehicle={data.vehicle}
@@ -483,7 +526,7 @@ export function PiecesVehicleContent() {
                 (a): a is NonNullable<typeof a> => a !== null,
               );
               return validArticles.length > 0 ? (
-                <div className="container mx-auto px-4">
+                <div className="container mx-auto px-4 cv-auto">
                   <PiecesRelatedArticles
                     articles={validArticles}
                     gammeName={data.gamme.name}
@@ -496,12 +539,14 @@ export function PiecesVehicleContent() {
         </Suspense>
 
         {/* Section "Voir aussi" - Maillage interne SEO (composant extrait) */}
-        <PiecesVoirAussi
-          links={data.voirAussiLinks}
-          gamme={data.gamme}
-          vehicle={data.vehicle}
-          onLinkClick={handleVoirAussiClick}
-        />
+        <div className="cv-auto">
+          <PiecesVoirAussi
+            links={data.voirAussiLinks}
+            gamme={data.gamme}
+            vehicle={data.vehicle}
+            onLinkClick={handleVoirAussiClick}
+          />
+        </div>
       </div>
 
       {/* Bouton retour en haut */}
@@ -558,7 +603,7 @@ export function PiecesVehicleContent() {
 
       {/* Performance debug (dev only) */}
       {process.env.NODE_ENV === "development" && (
-        <div className="fixed bottom-4 right-4 bg-black/80 text-white text-xs p-3 rounded-lg backdrop-blur-sm">
+        <div className="fixed bottom-4 right-4 bg-neutral-900/80 text-white text-xs p-3 rounded-lg backdrop-blur-sm">
           <div>Load: {data.performance.loadTime}ms</div>
           <div>Pieces: {data.count}</div>
           <div>Filtrees: {filteredProducts.length}</div>

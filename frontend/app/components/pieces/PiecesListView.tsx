@@ -13,7 +13,7 @@ import { logger } from "~/utils/logger";
 import { useCart } from "../../hooks/useCart";
 import { type PieceData } from "../../types/pieces-route.types";
 import { trackAddToCart } from "../../utils/analytics";
-import { hasStockAvailable } from "../../utils/stock.utils";
+import { isSellable } from "../../utils/stock.utils";
 import { BrandLogo } from "../ui/BrandLogo";
 
 interface PiecesListViewProps {
@@ -96,8 +96,12 @@ export const PiecesListView = React.memo(
       // Marquer comme en cours
       setLoadingItems((prev) => new Set(prev).add(pieceId));
 
+      const unitPriceCents =
+        piece && typeof piece.price === "number" && Number.isFinite(piece.price)
+          ? Math.round(piece.price * 100)
+          : null;
       try {
-        await addToCart(pieceId, 1, typeId);
+        await addToCart(pieceId, 1, typeId, unitPriceCents);
         // Petit délai avant de réactiver (debounce)
         await new Promise((resolve) => setTimeout(resolve, 500));
       } catch (error) {
@@ -130,7 +134,8 @@ export const PiecesListView = React.memo(
       <div className="space-y-3">
         {pieces.map((piece) => {
           const isSelected = selectedPieces.includes(piece.id);
-          const hasStock = hasStockAvailable(piece.stock);
+          // 🛒 can_sell = prix présent ET dispo confirmée (pri_dispo IN '1','2','3').
+          const hasStock = isSellable(piece.price, piece.stockStatus);
 
           // Calcul fiabilité - masquer si valeur par défaut (stars=3 ou undefined)
           // FIX 2026-01-17: Ne pas afficher fiabilité quand c'est la valeur par défaut
@@ -276,14 +281,22 @@ export const PiecesListView = React.memo(
                   {/* Prix + Livraison */}
                   <div className="text-left sm:text-right">
                     <div>
-                      <span className="text-lg sm:text-xl font-bold text-gray-900">
-                        {typeof piece.price === "number"
-                          ? piece.price.toFixed(2)
-                          : piece.priceFormatted}
-                      </span>
-                      <span className="text-sm font-bold text-gray-400 ml-0.5">
-                        €
-                      </span>
+                      {hasStock ? (
+                        <>
+                          <span className="text-lg sm:text-xl font-bold text-gray-900">
+                            {typeof piece.price === "number"
+                              ? piece.price.toFixed(2)
+                              : piece.priceFormatted}
+                          </span>
+                          <span className="text-sm font-bold text-gray-400 ml-0.5">
+                            €
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-sm font-bold text-gray-400">
+                          Indisponible
+                        </span>
+                      )}
                     </div>
                     {/* Info livraison */}
                     {hasStock && (
@@ -296,11 +309,7 @@ export const PiecesListView = React.memo(
 
                   {/* Bouton panier - plus grand sur mobile */}
                   <button
-                    className={`w-12 h-12 sm:w-10 sm:h-10 rounded-xl sm:rounded-lg flex-shrink-0 flex items-center justify-center transition-all duration-200 ${
-                      hasStock && !loadingItems.has(piece.id)
-                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md hover:shadow-lg hover:scale-110"
-                        : "bg-slate-100 text-slate-400 cursor-not-allowed"
-                    }`}
+                    className={`w-12 h-12 sm:w-10 sm:h-10 rounded-xl sm:rounded-lg flex-shrink-0 flex items-center justify-center transition-all duration-200 ${ hasStock && !loadingItems.has(piece.id) ? "bg-gradient-to-r from-blue-600 hover:from-blue-700 hover: text-white shadow-md hover:shadow-lg hover:scale-110" : "bg-slate-100 text-slate-400 cursor-not-allowed" }`}
                     disabled={!hasStock || loadingItems.has(piece.id)}
                     onClick={() => hasStock && handleAddToCart(piece.id)}
                     title={hasStock ? "Ajouter au panier" : "Indisponible"}

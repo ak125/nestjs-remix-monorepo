@@ -84,6 +84,9 @@ jobs:
           NODE_ENV: production
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          # Optional override. If unset, the value already present in the PROD
+          # .env is used (REQUIRED_VARS below guarantees it exists).
+          JWT_SECRET_OVERRIDE: ${{ secrets.PROD_JWT_SECRET }}
         run: |
           docker pull massdoc/nestjs-remix-monorepo:production
 
@@ -106,7 +109,12 @@ jobs:
             exit 1
           fi
           source .env
-          REQUIRED_VARS="SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY SYSTEMPAY_SITE_ID PAYBOX_SITE PAYBOX_HMAC_KEY PAYBOX_CALLBACK_MODE SESSION_SECRET"
+          # JWT_SECRET required since PR #606 (VehicleContextService does
+          # configService.getOrThrow('JWT_SECRET') at construction — missing
+          # value = crash boot, not a graceful skip). Listed here so a missing
+          # value fails fast with a readable message instead of an opaque
+          # container crash + failed auto-rollback (incident 2026-05-20).
+          REQUIRED_VARS="SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY SYSTEMPAY_SITE_ID PAYBOX_SITE PAYBOX_HMAC_KEY PAYBOX_CALLBACK_MODE SESSION_SECRET JWT_SECRET"
           for var in $REQUIRED_VARS; do
             if [ -z "${!var}" ]; then
               echo "❌ FATAL: Missing required env var: $var"
@@ -123,6 +131,17 @@ jobs:
           if [ -n "$SUPABASE_PUBLISHABLE_KEY" ]; then
             sed -i "s|^SUPABASE_ANON_KEY=.*|SUPABASE_ANON_KEY=${SUPABASE_PUBLISHABLE_KEY}|" .env
             echo "✅ SUPABASE_ANON_KEY updated from GitHub Secrets"
+          fi
+          # Inject JWT_SECRET from GitHub Secret if provided (parity with the
+          # PREPROD path in ci.yml, PR #630). Optional: when the secret is
+          # unset the .env value (guaranteed present by REQUIRED_VARS) is kept.
+          if [ -n "$JWT_SECRET_OVERRIDE" ]; then
+            if grep -q '^JWT_SECRET=' .env; then
+              sed -i "s|^JWT_SECRET=.*|JWT_SECRET=${JWT_SECRET_OVERRIDE}|" .env
+            else
+              echo "JWT_SECRET=${JWT_SECRET_OVERRIDE}" >> .env
+            fi
+            echo "✅ JWT_SECRET updated from GitHub Secrets"
           fi
 
           docker network create automecanik-prod 2>/dev/null || true

@@ -1,0 +1,83 @@
+name: 🕸️ Dependency-graph ratchet (PR-stack depth)
+
+# Étape 2 PR-DG-2 — block-new ratchet on PR-stack depth. Builds planning.json
+# (gh) + dependency-graph.json, then checks that no NEW stack deeper than the
+# Étape 3 target (maxStackDepth=2) appears vs audit/baselines/
+# dependency-graph-baseline.json. Existing deep stacks are grandfathered.
+#
+# PHASE 1 (warn-only): the ratchet step is `continue-on-error: true` — it posts a
+# verdict comment + logs but never blocks merge (matches registry-build.yml /
+# pr-dod-gate.yml during Phase 1). Promotion to blocking = Étape 3 (remove
+# continue-on-error + add to required-status-checks). The script already returns
+# correct exit codes, verified by check-dependency-graph-ratchet.test.ts.
+#
+# Degrades gracefully: if `gh` fails (no token / rate limit) the planning build
+# is degraded → graph degraded → ratchet skips (exit 0), no false block.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  dependency-graph-ratchet:
+    name: 🕸️ No new deep PR-stacks
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: 📦 Install deps
+        run: npm ci --no-audit --no-fund
+
+      - name: 🛰️ Build planning + dependency graph
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          npm run registry:build:planning
+          npm run registry:build:dependency-graph
+
+      - name: 🕸️ Dependency-graph ratchet (Phase 1 warn-only)
+        id: ratchet
+        continue-on-error: true
+        run: |
+          set +e
+          npm run --silent audit:dependency-graph-ratchet > ratchet-out.txt 2>&1
+          echo "exit=$?" >> "$GITHUB_OUTPUT"
+          cat ratchet-out.txt
+
+      - name: 💬 Comment on PR (idempotent via marker)
+        if: always()
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const fs = require('fs');
+            let out = '';
+            try { out = fs.readFileSync('ratchet-out.txt', 'utf8'); } catch { out = '(no output)'; }
+            const exit = '${{ steps.ratchet.outputs.exit }}';
+            const icon = exit === '0' ? '✅ PASS' : '⚠️ NEW DEEP STACK (warn-only Phase 1)';
+            const marker = '<!-- dependency-graph-ratchet -->';
+            const body = `${marker}\n### 🕸️ Dependency-graph ratchet — ${icon}\n\n\`\`\`\n${out.trim()}\n\`\`\`\n`;
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const existing = await github.paginate(
+              github.rest.issues.listComments,
+              { owner, repo, issue_number, per_page: 100 },
+            );
+            const previous = existing.find(c => c.body && c.body.startsWith(marker));
+            if (previous) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: previous.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }

@@ -1,0 +1,231 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-05-23",
+  "purpose": "Golden dataset bucketed canonique pour Reality Audit + regression CI V1A.0+. Validé humainement, versionné en git, rejoué par CI golden-regression.",
+  "ownership": {
+    "domain_owner": "automecanik.seo@gmail.com",
+    "validators": ["automecanik.seo@gmail.com"],
+    "review_cadence": "monthly",
+    "change_approval": "requires_domain_owner_signoff_OR_2_validators",
+    "deprecation_policy": "case marked status=deprecated, kept ≥6mo, replacement_id ref required, ADR amendment justifying removal"
+  },
+  "bucket_coverage_gate": {
+    "rule": "no bucket with status='active' count < 10",
+    "current_state": "SEED — 2-3 cases per bucket. Extend to ≥10/bucket via human review before V1A.0 ship-gate."
+  },
+  "buckets": {
+    "urgence": [
+      {
+        "case_id": "U001",
+        "status": "active",
+        "input": {
+          "intent_type": "breakdown",
+          "system_scope": "freinage",
+          "signal_input": {
+            "primary_signal": "pedale_au_plancher",
+            "secondary_signals": ["voyant_frein_allume", "perte_pression"]
+          },
+          "vehicle_context": { "brand": "PEUGEOT", "model": "208", "engine": "1.6 HDi", "year": 2018, "mileage_km": 95000 }
+        },
+        "expected": {
+          "intent": "urgence",
+          "intent_confidence_bucket_min": "strong",
+          "top_action_type": "appel",
+          "expected_urgency": "critique",
+          "safety_rail": false,
+          "expected_pg_id_in_suggested": null
+        },
+        "rationale_notes": "Perte de pression + pédale au plancher = défaillance hydraulique critique. Doit déclencher safety_alert + risk_level=critique + appel/human_resolution top action.",
+        "validated_by": "TBD",
+        "validated_at": "TBD"
+      },
+      {
+        "case_id": "U002",
+        "status": "active",
+        "input": {
+          "system_scope": "refroidissement",
+          "signal_input": {
+            "primary_signal": "fumee_blanche_capot",
+            "secondary_signals": ["temperature_rouge", "perte_liquide"]
+          },
+          "vehicle_context": { "brand": "RENAULT", "model": "Megane", "engine": "1.5 dCi", "year": 2015, "mileage_km": 140000 }
+        },
+        "expected": {
+          "intent": "urgence",
+          "intent_confidence_bucket_min": "strong",
+          "top_action_type": "appel",
+          "expected_urgency": "critique",
+          "safety_rail": false,
+          "expected_pg_id_in_suggested": null
+        },
+        "rationale_notes": "Surchauffe imminente + fuite = risk_level critique, immobilisation. Action top doit être appel (assistance/garage), pas piece."
+      }
+    ],
+    "maintenance": [
+      {
+        "case_id": "M001",
+        "status": "active",
+        "input": {
+          "system_scope": "filtration",
+          "signal_input": {
+            "primary_signal": "intervalle_vidange_depasse",
+            "secondary_signals": []
+          },
+          "vehicle_context": { "brand": "CITROEN", "model": "C3", "engine": "1.4 HDi", "year": 2017, "mileage_km": 122000 },
+          "usage_context": { "usage_profile": "urbain", "last_service_km": 100000 }
+        },
+        "expected": {
+          "intent": "maintenance",
+          "intent_confidence_bucket_min": "strong",
+          "top_action_type": "guide",
+          "expected_urgency": "moyenne",
+          "safety_rail": false,
+          "expected_pg_id_in_suggested": 9573325
+        },
+        "rationale_notes": "22 000 km dépassent l'intervalle vidange 15K. Doit produire maintenance_links populated + maintenance_recommendations. Top action = guide entretien ou pack vidange (pas piece directe sauf si confidence très forte)."
+      },
+      {
+        "case_id": "M002",
+        "status": "active",
+        "input": {
+          "system_scope": "distribution",
+          "signal_input": {
+            "primary_signal": "courroie_distribution_revision",
+            "secondary_signals": []
+          },
+          "vehicle_context": { "brand": "VOLKSWAGEN", "model": "Golf", "engine": "1.6 TDi", "year": 2014, "mileage_km": 158000 },
+          "usage_context": { "usage_profile": "mixte", "last_service_km": 70000 }
+        },
+        "expected": {
+          "intent": "maintenance",
+          "intent_confidence_bucket_min": "plausible",
+          "top_action_type": "guide",
+          "expected_urgency": "haute",
+          "safety_rail": false,
+          "expected_pg_id_in_suggested": null
+        },
+        "rationale_notes": "Courroie distribution 88K km après dernier remplacement → intervalle constructeur dépassé. Risque rupture moteur. Doit produire urgency=haute mais intent=maintenance (action proactive)."
+      }
+    ],
+    "flou_low_confidence": [
+      {
+        "case_id": "F001",
+        "status": "active",
+        "input": {
+          "system_scope": "freinage",
+          "signal_input": {
+            "primary_signal": "bruit_indefini",
+            "secondary_signals": ["intermittent"]
+          },
+          "vehicle_context": { "brand": "FORD", "model": "Focus", "engine": "1.6 TDCi", "year": 2012, "mileage_km": 180000 }
+        },
+        "expected": {
+          "intent": "education",
+          "intent_confidence_bucket_min": "weak",
+          "top_action_type": "assistant_diagnostic",
+          "expected_urgency": "moyenne",
+          "safety_rail": false,
+          "expected_pg_id_in_suggested": null
+        },
+        "rationale_notes": "Signal vague + véhicule âgé + intermittent → diagnostic_confidence faible. Doit guider vers assistant diagnostic ou FAQ, jamais commerce direct."
+      },
+      {
+        "case_id": "F002",
+        "status": "active",
+        "input": {
+          "system_scope": "transmission",
+          "signal_input": {
+            "primary_signal": "comportement_anormal",
+            "secondary_signals": ["a_chaud", "occasionnel"]
+          },
+          "vehicle_context": { "brand": "TOYOTA", "model": "Yaris", "engine": "1.0 VVT-i", "year": 2016, "mileage_km": 89000 }
+        },
+        "expected": {
+          "intent": "education",
+          "intent_confidence_bucket_min": "weak",
+          "top_action_type": "assistant_diagnostic",
+          "expected_urgency": "basse",
+          "safety_rail": false,
+          "expected_pg_id_in_suggested": null
+        },
+        "rationale_notes": "Symptôme flou multi-causes → low confidence. Doit éviter de pousser commerce (false_commerce_rate risk)."
+      }
+    ],
+    "benign_reassurance": [
+      {
+        "case_id": "B001",
+        "status": "active",
+        "input": {
+          "system_scope": "freinage",
+          "signal_input": {
+            "primary_signal": "couinement_leger_froid",
+            "secondary_signals": ["disparait_apres_chauffe"]
+          },
+          "vehicle_context": { "brand": "DACIA", "model": "Sandero", "engine": "1.0 SCe", "year": 2020, "mileage_km": 28000 }
+        },
+        "expected": {
+          "intent": "reassurance",
+          "intent_confidence_bucket_min": "plausible",
+          "top_action_type": "faq",
+          "expected_urgency": "basse",
+          "safety_rail": false,
+          "expected_pg_id_in_suggested": null
+        },
+        "rationale_notes": "Couinement matinal disparaissant = phénomène bénin connu (humidité/poussière disques). Doit produire reassurance + FAQ, jamais commerce ni urgence."
+      }
+    ],
+    "vehicle_absent": [
+      {
+        "case_id": "V001",
+        "status": "active",
+        "input": {
+          "system_scope": "demarrage_charge",
+          "signal_input": {
+            "primary_signal": "moteur_demarre_pas",
+            "secondary_signals": ["clic_demarreur"]
+          },
+          "vehicle_context": {}
+        },
+        "expected": {
+          "intent": "education",
+          "intent_confidence_bucket_min": "weak",
+          "top_action_type": "assistant_diagnostic",
+          "expected_urgency": "moyenne",
+          "safety_rail": true,
+          "expected_pg_id_in_suggested": null
+        },
+        "rationale_notes": "Symptôme clair (probable batterie) mais véhicule absent → safety_rail = true par règle DR_SAFETY_VEHICLE_CONTEXT_MISSING. Doit refuser de pousser piece (pg_id 1 batterie) en priorité top-2 sans confirmation véhicule."
+      },
+      {
+        "case_id": "V002",
+        "status": "active",
+        "input": {
+          "system_scope": "freinage",
+          "signal_input": {
+            "primary_signal": "bruit_freinage_chaud",
+            "secondary_signals": []
+          },
+          "vehicle_context": {}
+        },
+        "expected": {
+          "intent": "education",
+          "intent_confidence_bucket_min": "weak",
+          "top_action_type": "assistant_diagnostic",
+          "expected_urgency": "moyenne",
+          "safety_rail": true,
+          "expected_pg_id_in_suggested": null
+        },
+        "rationale_notes": "Plaquettes probables mais sans véhicule connu → pas de recommendation pieces top, safety rail ON, action top = assistant ou VehicleSelector encouraged."
+      }
+    ]
+  },
+  "extension_method": {
+    "to_reach_50_cases": "Human validators run wizard via PREPROD (49.12.233.2:3200) on representative real-world cases, score on 3-criteria rubric (intent_pertinence, gamme_pertinence, urgency_pertinence 1-5), and append validated cases to appropriate bucket. Each bucket must reach ≥10 active cases before V1A.0 ship.",
+    "rubric": {
+      "intent_pertinence": "1=très faux, 3=acceptable, 5=parfait",
+      "gamme_pertinence": "1=mauvaise gamme/pg_id, 3=apparenté, 5=exact",
+      "urgency_pertinence": "1=sous-estimé/sur-estimé, 3=correct, 5=parfait",
+      "minimum_for_active": "moyenne ≥ 3.5/5 sur 3 critères"
+    }
+  }
+}

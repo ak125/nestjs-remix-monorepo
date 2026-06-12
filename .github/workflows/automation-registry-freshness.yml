@@ -1,0 +1,39 @@
+name: Automation Registry — freshness (daily warn-only)
+
+# Daily ratchet : warns if any entry has `last_verified_at` older than 90 days.
+# Warn-only by-design — promotes operational hygiene without blocking PRs.
+#
+# Graceful degradation : if the registry file is missing or unreadable, the
+# job emits a warning but exits 0 (never blocks merges on infrastructure
+# issues — anti-flake posture).
+
+on:
+  schedule:
+    - cron: "0 6 * * *" # 06:00 UTC daily
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  freshness:
+    name: Check last_verified_at freshness
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    continue-on-error: true
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: 🕰️ Freshness check (warn-only, threshold 90 days)
+        id: freshness
+        continue-on-error: true
+        run: |
+          node scripts/audit/check-automation-freshness.js --threshold 90 || echo "stale entries detected (warn-only)"

@@ -40,22 +40,22 @@ const ROLE_CONFIG: Record<
   },
   R4: {
     icon: BookOpen,
-    color: "bg-indigo-50 text-indigo-700 border-indigo-200",
+    color: "bg-muted text-foreground border-indigo-200",
     label: "Reference",
   },
   R4_REFERENCE: {
     icon: BookOpen,
-    color: "bg-indigo-50 text-indigo-700 border-indigo-200",
+    color: "bg-muted text-foreground border-indigo-200",
     label: "Reference",
   },
   R5: {
     icon: Stethoscope,
-    color: "bg-purple-50 text-purple-700 border-purple-200",
+    color: "bg-muted text-foreground border-purple-200",
     label: "Diagnostic",
   },
   R5_DIAGNOSTIC: {
     icon: Stethoscope,
-    color: "bg-purple-50 text-purple-700 border-purple-200",
+    color: "bg-muted text-foreground border-purple-200",
     label: "Diagnostic",
   },
   R6: {

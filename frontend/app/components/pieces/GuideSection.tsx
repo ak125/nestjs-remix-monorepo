@@ -128,7 +128,7 @@ const GuideSection = memo(function GuideSection({
 
                 {/* Badge "Nouveau" si récent - SSR-safe via useEffect */}
                 {isNew && (
-                  <div className="absolute top-4 right-4 bg-yellow-400 text-gray-900 px-3 py-1.5 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">
+                  <div className="absolute top-4 right-4 bg-yellow-400 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">
                     <Sparkles className="w-3 h-3" />
                     Nouveau
                   </div>

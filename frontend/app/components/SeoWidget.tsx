@@ -37,9 +37,9 @@ export const SeoWidget = memo(function SeoWidget({
   };
 
   const getStatusColor = (rate: number) => {
-    if (rate >= 95) return "border-l-4 border-success bg-success/10";
-    if (rate >= 80) return "border-l-4 border-warning bg-warning/10";
-    return "border-l-4 border-destructive bg-destructive/10";
+    if (rate >= 95) return "border-success bg-success/10";
+    if (rate >= 80) return "border-warning bg-warning/10";
+    return "border-destructive bg-destructive/10";
   };
 
   const getStatusIcon = (rate: number) => {
@@ -56,7 +56,7 @@ export const SeoWidget = memo(function SeoWidget({
 
   return (
     <Card
-      className={`${className} border-green-200 bg-gradient-to-br from-green-50 via-teal-50 to-blue-50 hover:shadow-lg transition-all duration-300`}
+      className={`${className} bg-gradient-to-br from-green-50 via-teal-50 to-blue-50 hover:shadow-lg transition-all duration-300`}
     >
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-green-800">

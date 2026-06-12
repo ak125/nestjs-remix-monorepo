@@ -18,6 +18,7 @@ import {
 } from "@remix-run/react";
 import { Car, ChevronRight, Fuel, Gauge, Calendar } from "lucide-react";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
+import { buildCacheHeaders } from "~/utils/cache-control";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { normalizeTypeAlias } from "~/utils/url-builder.utils";
@@ -32,6 +33,17 @@ export const handle = {
     clusterId: "constructeurs",
   }),
 };
+
+// 🔒 Route R1 catch-all : sert du 200 indexable MAIS throw aussi des 404/410
+// (URLs constructeur inconnues). Ses throws sont des `new Response(..., {status})`
+// NUS (sans X-Robots-Tag). Sans ce `headers` export + `defaultErrorRobots`, Remix v2
+// retombe sur root.tsx `headers()` et — l'interceptor supprimant le X-Robots-Tag
+// défaut pour /constructeurs/ — la page d'erreur sort SANS noindex (vérifié live
+// PROD 2026-05-30). Le succès garde `private, max-age=60` (inchangé). Voir le gotcha
+// Remix headers-export (PR #798/#800).
+export const headers = buildCacheHeaders("private, max-age=60", {
+  defaultErrorRobots: "noindex, follow",
+});
 
 interface MotorOption {
   id: number;

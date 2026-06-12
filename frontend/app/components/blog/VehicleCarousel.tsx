@@ -80,17 +80,18 @@ const VehicleCarousel: React.FC<VehicleCarouselProps> = ({
 
   return (
     <LazySection minHeight={400}>
-      <section className="my-12 bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 rounded-2xl p-8 shadow-lg">
+      <section className="my-12 bg-gradient-to-br from-blue-50 via-white dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 rounded-2xl p-8 shadow-lg">
         {/* Header */}
         <div className="mb-8 text-center">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
             {dynamicTitle}
           </h2>
           <p className="text-sm text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mt-2">
+            Voici un échantillon de{" "}
             <strong className="text-gray-800">
               {vehicles.length} motorisations
             </strong>{" "}
-            identifiées d'après les données de compatibilité constructeur —
+            compatibles d'après les données de compatibilité constructeur —
             usure normale, usage spécifique ou kilométrage élevé.
           </p>
         </div>
@@ -194,7 +195,7 @@ const VehicleCard: React.FC<VehicleCardProps> = ({
     >
       <Card className="h-full hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400 transform hover:-translate-y-1">
         {/* Header avec logo marque */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-700 dark:to-indigo-700 p-4 relative overflow-hidden">
+        <div className="bg-gradient-to-r from-blue-600 dark:from-blue-700 dark: p-4 relative overflow-hidden">
           <div className="absolute inset-0 bg-white/10 transform -skew-y-3"></div>
           <div className="relative flex items-center justify-between">
             {vehicle.marque_logo ? (

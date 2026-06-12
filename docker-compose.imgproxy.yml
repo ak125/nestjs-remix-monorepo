@@ -44,8 +44,30 @@ services:
 
       # Cache headers pour navigateur/CDN (Cloudflare cache 1 an)
       IMGPROXY_CACHE_CONTROL_PASSTHROUGH: "false"
-      IMGPROXY_TTL: "31536000"               # 1 an en secondes
+      IMGPROXY_TTL: "31536000"               # 1 an en secondes (SUCCESS uniquement)
       IMGPROXY_SET_CANONICAL_HEADER: "true"
+
+      # ═══════════════════════════════════════════════════════════════
+      # 🛡️ Anti cache-poisoning sur upstream failure (INC-2026-015 / ADR-078/079)
+      # ═══════════════════════════════════════════════════════════════
+      # Sans ces 3 vars, un upstream Supabase 400 (« Source image is unreachable »)
+      # était renvoyé HTTP 200 + cache-control max-age=1an + immutable, et Caddy
+      # ne pouvait pas matcher pour court-cache → tout futur Tier B-rev sous le
+      # même nom serait masqué par le placeholder cached 1 an.
+      #
+      # Architecture finale (corrigée v3.2) :
+      #   1. imgproxy détecte upstream 4xx → sert no.png comme fallback.
+      #   2. imgproxy renvoie HTTP 404 explicite (HTTP_CODE=404) — non plus 200.
+      #   3. Caddy `handle_response @upstream_4xx` (Caddyfile) match le 404 et
+      #      écrase Cache-Control en 5min must-revalidate.
+      # → Le placeholder est servi (UX OK), mais cache court → toute future
+      # vraie image arrive sous 5min sans purge manuelle.
+      IMGPROXY_FALLBACK_IMAGE_URL: "https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/no.png"
+      IMGPROXY_FALLBACK_IMAGE_TTL: "60"        # TTL interne d'imgproxy pour rafraîchir
+                                               # la source fallback en cache mémoire
+                                               # (pas le Cache-Control HTTP renvoyé).
+      IMGPROXY_FALLBACK_IMAGE_HTTP_CODE: "404" # Status explicite 4xx, condition
+                                               # nécessaire pour le matching Caddy.
 
       # Performance
       IMGPROXY_CONCURRENCY: "4"

@@ -29,7 +29,10 @@ export { DeletePolicySchema, type DeletePolicy } from "./shared/delete-policy";
 export { DerivedFromSchema, type DerivedFrom } from "./shared/derived-from";
 export { OwnerIdSchema, type OwnerId } from "./shared/owner";
 export { FamilyIdSchema, type FamilyId } from "./shared/family";
-export { AccessSurfaceSchema, type AccessSurface } from "./shared/access-surface";
+export {
+  AccessSurfaceSchema,
+  type AccessSurface,
+} from "./shared/access-surface";
 
 // ── Layer 1 entries (auto-generated) ──
 export { FileEntrySchema, type FileEntry } from "./entries/file-entry";
@@ -50,6 +53,23 @@ export {
   type RuntimeEntry,
   type RuntimeKind,
 } from "./entries/runtime-entry";
+export {
+  PlanningEntrySchema,
+  PlanningRegistrySchema,
+  PlanningStatusSchema,
+  PlanningPrioritySchema,
+  PlanningWorkTypeSchema,
+  type PlanningEntry,
+  type PlanningRegistry,
+} from "./entries/planning-entry";
+export {
+  DependencyGraphSchema,
+  DepGraphNodeSchema,
+  DepGraphEdgeSchema,
+  type DependencyGraph,
+  type DepGraphNode,
+  type DepGraphEdge,
+} from "./entries/dependency-graph-entry";
 
 // ── Layer 2 overlay (manual) ──
 export {
@@ -77,6 +97,26 @@ export {
   type DeletePolicyEntry,
   type DeletePolicyOverlay,
 } from "./overlay/delete-policy";
+export {
+  AutomationEntrySchema,
+  AutomationRealitySchema,
+  AutomationModeEnum,
+  IntendedModeEnum,
+  AutomationExecutorEnum,
+  EvidenceRefSchema,
+  RuntimeEvidenceItemSchema,
+  RuntimeEvidenceSchema,
+  LastVerifiedMethodEnum,
+  type AutomationEntry,
+  type AutomationReality,
+  type AutomationMode,
+  type IntendedMode,
+  type AutomationExecutor,
+  type EvidenceRef,
+  type RuntimeEvidenceItem,
+  type RuntimeEvidence,
+  type LastVerifiedMethod,
+} from "./overlay/automation-reality";
 
 // ── Layer 3 canonical projection (generated) ──
 export {
@@ -117,3 +157,47 @@ export {
   type TierId,
   type AlertingChannel,
 } from "./canonical/seo-criticality";
+
+// ── VehicleContext cookie (PR-B, OPTION A locked) ──
+export {
+  VehicleContextSchema,
+  VehicleContextPayloadSchema,
+  signVehicleContext,
+  verifyVehicleContext,
+  VEHICLE_CTX_COOKIE_NAME,
+  VEHICLE_CTX_COOKIE_MAX_AGE_SECONDS,
+  type VehicleContext,
+  type VehicleContextPayload,
+} from "./vehicle-context";
+
+// ── Command Center snapshot (admin cockpit projection of the AI Operating Map) ──
+export {
+  CommandCenterSnapshotSchema,
+  CommandCenterResponseSchema,
+  CommandCenterModeSchema,
+  CcActionV2Schema,
+  CcSeoDetailSchema,
+  CertificationSchema,
+  GlobalStatusSchema,
+  StaleStatusSchema,
+  ValidationStatusSchema,
+  CcDepartmentSchema,
+  CcDepartmentLiveSchema,
+  CcCapabilitySchema,
+  CcChainSchema,
+  CcAlertSchema,
+  CcOwnerActionSchema,
+  type CommandCenterSnapshot,
+  type CommandCenterResponse,
+  type CommandCenterMode,
+  type CcActionV2,
+  type CcSeoDetail,
+  type Certification,
+  type GlobalStatus,
+  type CcDepartment,
+  type CcDepartmentLive,
+  type CcCapability,
+  type CcChain,
+  type CcAlert,
+  type CcOwnerAction,
+} from "./command-center/snapshot";

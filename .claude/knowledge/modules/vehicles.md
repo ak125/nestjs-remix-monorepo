@@ -2,16 +2,16 @@
 module: vehicles
 sources:
 - backend/src/modules/vehicles
-last_scan: '2026-05-17'
+last_scan: '2026-05-24'
 primary_files:
 - backend/src/modules/vehicles/brands.controller.ts
 - backend/src/modules/vehicles/controllers/admin-vehicle-cache.controller.ts
 - backend/src/modules/vehicles/decorators/performance-monitoring.decorator.ts
+- backend/src/modules/vehicles/dto/vehicles-query.schema.test.ts
+- backend/src/modules/vehicles/dto/vehicles-query.schema.ts
 - backend/src/modules/vehicles/dto/vehicles-simple-zod.dto.ts
 - backend/src/modules/vehicles/dto/vehicles-zod.dto.ts
 - backend/src/modules/vehicles/dto/vehicles.dto.ts
-- backend/src/modules/vehicles/pipes/vehicle-validation.pipe.ts
-- backend/src/modules/vehicles/services/brand-bestsellers.service.ts
 depends_on:
 - ConfigModule
 - DatabaseModule

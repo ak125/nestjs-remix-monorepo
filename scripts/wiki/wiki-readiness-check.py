@@ -18,10 +18,12 @@ Criteria (each is independent, returns PASS/FAIL with evidence) :
        - .github/workflows/wiki-validate.yml exists in monorepo
        - workflow includes blocking validator step (no continue-on-error)
 
-  C3 — exports/diag-canon-slugs.json à jour :
-       - automecanik-wiki/exports/diag-canon-slugs.json exists
-       - last commit on this file < 7 days old (proof cron is alive)
-       - jq shows ≥ 5 distinct slugs (DB has at least the 5 brake_*)
+  C3 — diag-canon export à jour :
+       - automecanik-wiki/exports/diag-canon-slugs.json + diag-canon.json exist
+       - ≥ 5 distinct slugs (validity, read from diag-canon-slugs.json)
+       - last commit on diag-canon.json < 7 days old (liveness — this file
+         carries `generated_at` so it is re-committed every run; the slugs
+         array is content-stable and not a reliable freshness signal)
 
   C4 — fiches gamme migrées :
        - 0 hits for `entity_data.symptoms:` or `^symptoms:` in
@@ -122,15 +124,26 @@ def c2_validator_ci_active(monorepo_path: Path) -> tuple[bool, str]:
 
 
 def c3_export_diag_canon_slugs_fresh(wiki_path: Path) -> tuple[bool, str]:
-    """C3 — exports/diag-canon-slugs.json exists, commit < 7 days, ≥ 5 slugs."""
-    export_file = wiki_path / "exports" / "diag-canon-slugs.json"
-    if not export_file.exists():
-        return False, f"FAIL: {export_file} missing (PR-D ADR-033 cron not yet wired)"
+    """C3 — diag-canon export is alive: ≥ 5 slugs present AND it ran < 7 days ago.
+
+    Content validity (≥ 5 distinct slugs) is read from the legacy array
+    `diag-canon-slugs.json`. Freshness (liveness) is measured on
+    `diag-canon.json` instead: the flat-map artifact carries a `generated_at`
+    field, so it is re-committed on EVERY nightly run. The legacy array is only
+    re-committed when the slug set itself changes — so its commit age is NOT a
+    reliable "export ran recently" signal (a healthy nightly emitting identical
+    slugs would never re-commit it, ageing out C3 while the export is fine).
+    """
+    slugs_file = wiki_path / "exports" / "diag-canon-slugs.json"
+    fresh_file = wiki_path / "exports" / "diag-canon.json"
+    for f in (slugs_file, fresh_file):
+        if not f.exists():
+            return False, f"FAIL: {f} missing (PR-D ADR-033 cron not yet wired)"
 
     try:
-        data = json.loads(export_file.read_text(encoding="utf-8"))
+        data = json.loads(slugs_file.read_text(encoding="utf-8"))
     except json.JSONDecodeError as e:
-        return False, f"FAIL: {export_file} not valid JSON: {e}"
+        return False, f"FAIL: {slugs_file} not valid JSON: {e}"
 
     if not isinstance(data, list):
         return False, "FAIL: export should be a JSON array"
@@ -138,18 +151,19 @@ def c3_export_diag_canon_slugs_fresh(wiki_path: Path) -> tuple[bool, str]:
     if len(slugs) < 5:
         return False, f"FAIL: only {len(slugs)} distinct slugs (expected ≥ 5)"
 
-    # Check git log freshness — last commit on this file
+    # Freshness measured on diag-canon.json (re-committed every run via
+    # `generated_at`), NOT the content-stable legacy array.
     try:
         result = subprocess.run(
-            ["git", "-C", str(wiki_path), "log", "-1", "--format=%ct", "--", "exports/diag-canon-slugs.json"],
+            ["git", "-C", str(wiki_path), "log", "-1", "--format=%ct", "--", "exports/diag-canon.json"],
             capture_output=True, text=True, check=True
         )
         ts = int(result.stdout.strip())
         last_commit = datetime.datetime.fromtimestamp(ts, tz=datetime.timezone.utc)
         age = datetime.datetime.now(tz=datetime.timezone.utc) - last_commit
         if age.days >= EXPORT_FRESHNESS_DAYS:
-            return False, f"FAIL: last commit on export was {age.days}d ago (expected < {EXPORT_FRESHNESS_DAYS}d)"
-        return True, f"{export_file.relative_to(wiki_path)}: {len(slugs)} slugs, last commit {age.days}d ago ✓"
+            return False, f"FAIL: last export commit was {age.days}d ago (expected < {EXPORT_FRESHNESS_DAYS}d)"
+        return True, f"{len(slugs)} slugs; diag-canon.json last commit {age.days}d ago ✓"
     except (subprocess.CalledProcessError, ValueError) as e:
         return False, f"FAIL: cannot read git log: {e}"
 

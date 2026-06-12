@@ -1,0 +1,20 @@
+id: commerce-no-direct-order-status-write
+language: typescript
+severity: error
+message: |
+  Direct write to ord_ords_id is FORBIDDEN outside OrdersService / OrderStatusService.
+  Canon: .spec/00-canon/commerce-runtime/authority-graph.yaml#authorities.order_lifecycle.status_writes_allowed_in
+  Use OrdersService.{updateOrder, cancelOrder} or RPC cancel_order_atomic.
+note: |
+  This rule prevents the kind of authority fragmentation that caused Vault #301 (silent
+  status drift). Override via // AUTHORITY-OVERRIDE: <reason> + explicit entry in
+  authority-graph.yaml, but expect a P0 review.
+files:
+  - backend/src/**/*.ts
+ignores:
+  - backend/src/modules/orders/services/orders.service.ts
+  - backend/src/modules/orders/services/order-status.service.ts
+rule:
+  any:
+    - pattern: "$X.from('___xtr_order').update({ ord_ords_id: $$$ })"
+    - pattern: '$X.from("___xtr_order").update({ ord_ords_id: $$$ })'

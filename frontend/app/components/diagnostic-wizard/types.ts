@@ -120,6 +120,12 @@ export interface DiagnosticApiResponse {
   session_id?: string;
   evidence_pack?: EvidencePack;
   error?: string;
+  // V1A.0 Intent Resolution fields (present when DIAGNOSTIC_PIPELINE_V1_ENABLED=true)
+  mode?: "reactive";
+  versions?: { pipeline_version: string };
+  intent?: import("./results/v1a-intent-types").IntentLayer;
+  recommended_actions?: import("./results/v1a-intent-types").RecommendedAction[];
+  human_escalation?: import("./results/v1a-intent-types").HumanEscalation;
 }
 
 export interface SymptomOption {

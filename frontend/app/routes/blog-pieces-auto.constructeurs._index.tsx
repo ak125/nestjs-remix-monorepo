@@ -1141,7 +1141,7 @@ export default function ConstructeursHomePage() {
                 to="/blog-pieces-auto/constructeurs/concepts/autonomes"
                 className="group relative overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-all duration-300"
               >
-                <div className="aspect-w-16 aspect-h-9 bg-gradient-to-br from-purple-400 to-purple-600 h-48 flex items-center justify-center">
+                <div className="aspect-w-16 aspect-h-9 bg-gradient-to-br h-48 flex items-center justify-center">
                   <svg
                     className="w-12 h-12 text-white"
                     fill="none"

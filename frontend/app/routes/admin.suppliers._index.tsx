@@ -32,7 +32,7 @@ const TIER_CONFIG: Record<
 > = {
   principal: {
     label: "Principal",
-    badge: "bg-indigo-100 text-indigo-700",
+    badge: "bg-muted text-foreground",
     bar: "bg-indigo-500",
   },
   secondaire: {

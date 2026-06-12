@@ -1,0 +1,87 @@
+name: 🧾 PR Definition-of-Done gate
+
+# Enforces the canonical Engineering Definition of Done (vault rule
+# rules-engineering-definition-of-done, PR #299) at the PR boundary: a PR must
+# carry the DoD self-evaluation section with all 9 invariants (DoD1..DoD9)
+# checked `[x]` or marked `N/A`. Escape hatch: label `dod-skip-justified` with
+# >= 2 approvals (Patch 6 of the Repository Control Plane Operational plan).
+#
+# PHASE 1 (warn-only): the gate step is `continue-on-error: true`, so it posts a
+# verdict comment + logs but never blocks merge — exactly like registry-build.yml
+# / registry-fresh.yml during ADR-058 Phase 1. This avoids retroactively red-X'ing
+# the ~52 in-flight PRs that predate the gate.
+#
+# PROMOTION TO BLOCKING (Etape 3): remove `continue-on-error` AND add this check
+# to the branch-protection required-status-checks (ops decision). The gate script
+# already returns correct exit codes (0 pass / 1 fail), verified by
+# scripts/ci/pr-dod-gate.test.mjs.
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened, labeled, unlabeled]
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  dod-gate:
+    name: 🧾 DoD self-evaluation present
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: 🔢 Count APPROVED reviews
+        id: approvals
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          count=$(gh pr view "${{ github.event.pull_request.number }}" \
+            --repo "${{ github.repository }}" \
+            --json reviews \
+            --jq '[.reviews[] | select(.state == "APPROVED") | .author.login] | unique | length')
+          echo "count=${count:-0}" >> "$GITHUB_OUTPUT"
+
+      - name: 🧾 Evaluate DoD gate (Phase 1 warn-only)
+        id: gate
+        continue-on-error: true
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+          PR_APPROVALS: ${{ steps.approvals.outputs.count }}
+        run: node scripts/ci/pr-dod-gate.mjs
+
+      - name: 💬 Comment on PR (idempotent via marker)
+        if: always()
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const fs = require('fs');
+            const markdown = fs.readFileSync('dod-gate-report.md', 'utf8');
+            const marker = '<!-- pr-dod-gate -->';
+            const body = marker + '\n' + markdown;
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const existing = await github.paginate(
+              github.rest.issues.listComments,
+              { owner, repo, issue_number, per_page: 100 },
+            );
+            const previous = existing.find(c => c.body && c.body.startsWith(marker));
+            if (previous) {
+              await github.rest.issues.updateComment({
+                owner, repo, comment_id: previous.id, body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner, repo, issue_number, body,
+              });
+            }

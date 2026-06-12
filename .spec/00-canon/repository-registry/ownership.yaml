@@ -17,7 +17,127 @@
 
 schemaVersion: 1.0.0
 entries:
+  - glob: .claude/governance/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
   - glob: .claude/rules/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
+  - glob: .claude/skills/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  - glob: .claude/knowledge/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  - glob: .claude/top-priorities.md
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  - glob: .spec/00-canon/ai-registry/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
+  - glob: .spec/00-canon/commerce-runtime/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
+  - glob: .spec/00-canon/seo-runtime/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
+  # ADR-082 Phase 1 — JSON Schema canon improvement-report (.spec/00-canon flat
+  # convention, cf. enrichment-report.schema.json).
+  - glob: .spec/00-canon/improvement-report.schema.json
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  - glob: packages/domain-commerce/**
+    domain: D11
+    owner: '@ak125/payments-team'
+    sourceConfidence: high
+    risk: medium
+  - glob: backend/supabase/migrations/*order_history*
+    domain: D11
+    owner: '@ak125/payments-team'
+    sourceConfidence: high
+    risk: high
+  - glob: backend/supabase/migrations/*cancel_order_atomic*
+    domain: D11
+    owner: '@ak125/payments-team'
+    sourceConfidence: high
+    risk: high
+  # Capture verbatim des fonctions V-Level DB-only (PR vlevel-doctrine-lock, owner GO 2026-06-05).
+  # Glob ultra-ciblé : couvre .sql + .down.sql de CETTE migration uniquement — les futures
+  # migrations vlevel ne sont PAS auto-couvertes (review d'ownership requise à chaque fois).
+  - glob: backend/supabase/migrations/20260605_vlevel_capture_db_only_functions*.sql
+    domain: D14
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
+  # Migration corrective RPCs reference/diagnostic — fix R4 index vide (RPC Gate) +
+  # cible R5→R3 404 (owner GO en session 2026-06-10). Glob exact volontaire — les
+  # migrations ne sont PAS auto-couvertes (review d'ownership requise à chaque fois).
+  - glob: backend/supabase/migrations/20260610_fix_r5_redirect_target_align_reference_rpcs.sql
+    domain: D14
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
+  # Fix get_page_quality_features 22023 (jsonb_array_length sur jsonb non-array) — débloque
+  # le recompute du quality-scoring (de-RAG v2.2 #935). Owner GO session 2026-06-11. Glob exact.
+  - glob: backend/supabase/migrations/20260611_fix_get_page_quality_features_jsonb_array_length_guard.sql
+    domain: D14
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
+  - glob: scripts/governance/validate-authority-graph.js
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
+  - glob: scripts/governance/validate-skills-frontmatter.js
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
+  - glob: scripts/governance/check-diagnostic-engine-boundary.sh
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
+  - glob: scripts/governance/validate-exploration-probe.sh
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  - glob: scripts/governance/check-verdict-expirations.sh
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  - glob: .claude/canon-mirrors/exploration-budget.md
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  - glob: scripts/governance/build-skills-registry.js
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
+  - glob: .github/workflows/skills-canon-gate.yml
     domain: D15
     owner: '@ak125'
     sourceConfidence: high
@@ -32,11 +152,21 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: medium
+  - glob: backend/tests/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
   - glob: .github/CODEOWNERS
     domain: D15
     owner: '@ak125'
     sourceConfidence: high
     risk: critical
+  - glob: .github/PULL_REQUEST_TEMPLATE.md
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
   - glob: .github/workflows/**
     domain: D13
     owner: '@ak125'
@@ -57,6 +187,11 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: high
+  - glob: .npmrc
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
   - glob: frontend/.size-limit.json
     domain: D13
     owner: '@ak125'
@@ -72,6 +207,11 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: high
+  - glob: log*.md
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
   - glob: agents/**
     domain: D15
     owner: '@ak125'
@@ -102,6 +242,89 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: low
+  - glob: audit/impeccable/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  # Audits SEO empiriques (Ahrefs, sitemap V10, etc.) — verdicts read-only,
+  # rangés à plat sous audit/ par convention historique (cf. PR #736).
+  - glob: audit/seo-*.md
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
+  # V-Level doctrine de référence (PR vlevel-doctrine-lock, owner GO 2026-06-05) —
+  # voir audit/levels-doctrine-cgc-vs-vlevel-2026-06-04.md. Préfixe ciblé.
+  - glob: audit/levels-doctrine-*.md
+    domain: D14
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
+  # WIKI bootstrap Phase A (cf. PR #781) — script promote-raw-gammes-to-wiki.py
+  # + tests + fixtures B2/B4 + run logs. D3 / @ak125/seo-team par convention
+  # SEO content pipeline (RAW → WIKI → consumers, ADR-031).
+  - glob: scripts/wiki-generators/**
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
+  - glob: audit/compatibility-*.json
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
+  # `.gitkeep` n'est pas matché par `**` sous micromatch dot-handling (cf. PR-6).
+  # Le glob `audit/wiki-bootstrap-runs/**` sera ajouté quand de vrais run logs (non-dotfiles)
+  # seront committés ; pour l'instant seul `.gitkeep` existe, donc seul le dotfile-glob.
+  - glob: audit/wiki-bootstrap-runs/.*
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
+  # WIKI auto-review (cf. PR auto_review_wiki_proposal.py) — read-only triage
+  # JSON+MD audits per slug. Same dotfile-glob pattern as wiki-bootstrap-runs.
+  - glob: audit/wiki-auto-review/.*
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
+  # RAW evidence inventory (read-only diagnostic upstream of promote-raw-gammes-to-wiki.py).
+  # D3 / @ak125/seo-team — same SEO content pipeline family (RAW → WIKI → consumers, ADR-031).
+  - glob: audit/content/raw-evidence/**
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
+  # ADR-082 Phase 1 — continuous improvement doctrine pilots + cross-validation
+  # (rangés à plat sous audit/ par convention historique, cf. audit/seo-*.md).
+  - glob: audit/pilot-*.md
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  - glob: audit/pilot-*.verdict.json
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  - glob: audit/doctrine-*.md
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  - glob: audit/phase-*.md
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  # ADR-082 Phase 1 doctrine artefacts (continuous improvement) — error patterns
+  # registry derived from failure_map cycles (cf. PR #765 / vault ADR-082).
+  - glob: audit/error-patterns.md
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
   - glob: backend/src/auth/**
     domain: D11
     owner: '@ak125/auth-team'
@@ -117,6 +340,15 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: medium
+  # Shared Nest pipes directly under common/pipes/ (zod-query-validation,
+  # strict-zod-query-validation, zod-validation, …). Added 2026-05-23 with
+  # the smallint-NaN fix (Sentry PROD GET /api/vehicles/brands/:brandId/models)
+  # to formalize ownership of the StrictZodQueryValidationPipe.
+  - glob: backend/src/common/pipes/*.pipe.ts
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
   - glob: backend/src/common/schemas/**
     domain: D13
     owner: '@ak125'
@@ -127,10 +359,37 @@ entries:
     owner: '@ak125'
     sourceConfidence: medium
     risk: medium
+  - glob: backend/src/contract/env-contract/**
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
   - glob: backend/src/modules/admin/**
     domain: D8
     owner: '@ak125/admin-team'
     sourceConfidence: medium
+    risk: medium
+  # D14 Gamme Aggregates & V-Level — the aggregate/V-Level services & controllers
+  # live physically under admin/ (D8) but are SEO-critical (V-Level scoring powers
+  # R1/R2/R8 indexability). These globs are more specific than admin/** so
+  # longest-glob-wins routes them to D14 (seo-team). Only objectively-named
+  # aggregate/V-Level files are mapped; broader gamme-SEO tooling stays D8.
+  - glob: backend/src/modules/admin/services/gamme-{aggregator,vlevel}.service.ts
+    domain: D14
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: high
+  - glob: backend/src/modules/admin/controllers/admin-gammes-seo-{aggregates,vlevel}.controller.ts
+    domain: D14
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: high
+  # D9 Import / ETL / Normalisation — ETL workers. The glob is declared in
+  # domains.yaml but was missing here, leaving the 11 worker files UNKNOWN.
+  - glob: backend/src/workers/**
+    domain: D9
+    owner: '@ak125'
+    sourceConfidence: high
     risk: medium
   - glob: backend/src/modules/agentic-engine/**
     domain: D6
@@ -207,6 +466,11 @@ entries:
     owner: '@ak125'
     sourceConfidence: medium
     risk: medium
+  - glob: backend/src/modules/maintenance/**
+    domain: D16
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
   - glob: backend/src/modules/marketing/**
     domain: D12
     owner: '@ak125/marketing-team'
@@ -227,6 +491,30 @@ entries:
     owner: '@ak125/payments-team'
     sourceConfidence: high
     risk: critical
+  # Pricing Control Plane V1 (PR pricing-control-plane-v1, branch
+  # feat/pricing-control-plane-v1). L0/L0.5/L1/L2/L3/L4/L5a layers,
+  # supplier connector, decision snapshot, observability. Doctrine
+  # canonique : docs/pricing/economic-governance-system.md.
+  - glob: backend/src/modules/pricing/**
+    domain: D11
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
+  - glob: backend/supabase/migrations/2026*_pricing_*.sql
+    domain: D11
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
+  - glob: backend/src/modules/supplier-truth/**
+    domain: D11
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
+  - glob: backend/supabase/migrations/*supplier_truth*
+    domain: D11
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
   - glob: backend/src/modules/products/**
     domain: D1
     owner: '@ak125/catalog-team'
@@ -247,6 +535,15 @@ entries:
     owner: '@ak125/rag-team'
     sourceConfidence: medium
     risk: high
+  # D6 RAG & AI Engine — generic Supabase-Storage + image-processing utility.
+  # Was genuinely unmapped (UNKNOWN/__unassigned__); its only runtime consumer
+  # is rag-proxy (D6), so mapped to its real consumer rather than guessed.
+  # Flagged for owner ratification (like the D14 D8→seo-team reassignment).
+  - glob: backend/src/modules/upload/**
+    domain: D6
+    owner: '@ak125/rag-team'
+    sourceConfidence: medium
+    risk: medium
   - glob: backend/src/modules/rm/**
     domain: D2
     owner: __unassigned__
@@ -278,9 +575,32 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: high
+  - glob: backend/src/modules/merchant-center/**
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
+  - glob: backend/supabase/migrations/*merchant_center_feed*
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
   - glob: backend/supabase/migrations/*seo_snapshot*
     domain: D3
     owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
+  # Support module — customer contact / quote requests / claims / FAQ / legal.
+  # Mini-CRM V0 (PR support-crm-v0-mini-module-2026-05-28) extends ___xtr_msg
+  # with msg_crm_* columns and the /api/admin/leads admin surface.
+  - glob: backend/src/modules/support/**
+    domain: D11
+    owner: '@ak125'
+    sourceConfidence: medium
+    risk: medium
+  - glob: backend/supabase/migrations/*xtr_msg_crm*
+    domain: D11
+    owner: '@ak125'
     sourceConfidence: high
     risk: medium
   - glob: backend/src/modules/users/**
@@ -298,11 +618,81 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: medium
+  - glob: backend/supabase/migrations/*soft_404_events*
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
+  - glob: backend/supabase/migrations/*soft_404_rpcs*
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
   - glob: backend/supabase/migrations/*seo_admin_job*
     domain: D3
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: medium
+  - glob: backend/supabase/migrations/*seo_event_funnel*
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
+  - glob: backend/supabase/migrations/*seo_cwv*
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
+  - glob: backend/supabase/migrations/*seo_event_runtime*
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
+  - glob: backend/supabase/migrations/*seo_control*
+    domain: D8
+    owner: '@ak125/admin-team'
+    sourceConfidence: high
+    risk: medium
+  - glob: backend/supabase/migrations/*seo_sitemap_freshness*
+    domain: D8
+    owner: '@ak125/admin-team'
+    sourceConfidence: high
+    risk: medium
+  - glob: backend/supabase/migrations/*order_landing_attribution*
+    domain: D11
+    owner: '@ak125/payments-team'
+    sourceConfidence: high
+    risk: medium
+  - glob: backend/supabase/migrations/*seo_observability_partition*
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
+  - glob: backend/supabase/migrations/*vehicle_page_cached*
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
+  - glob: backend/supabase/migrations/*default_privileges*
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
+  - glob: docs/seo/audit-orders-cart-link.md
+    domain: D8
+    owner: '@ak125/admin-team'
+    sourceConfidence: high
+    risk: low
+  - glob: docs/seo/explain-analyze-pr-sbd-1.md
+    domain: D8
+    owner: '@ak125/admin-team'
+    sourceConfidence: high
+    risk: low
+  - glob: docs/seo/synthetic-monitoring-decision-pr-sbd-1.md
+    domain: D8
+    owner: '@ak125/admin-team'
+    sourceConfidence: high
+    risk: low
   - glob: backend/supabase/migrations/README.md
     domain: D13
     owner: '@ak125'
@@ -318,7 +708,17 @@ entries:
     owner: '@ak125/frontend-team'
     sourceConfidence: low
     risk: low
+  - glob: frontend/app/hooks/**
+    domain: D8
+    owner: '@ak125/frontend-team'
+    sourceConfidence: low
+    risk: low
   - glob: frontend/app/routes/**
+    domain: D8
+    owner: '@ak125/frontend-team'
+    sourceConfidence: medium
+    risk: medium
+  - glob: frontend/app/utils/**
     domain: D8
     owner: '@ak125/frontend-team'
     sourceConfidence: medium
@@ -343,6 +743,16 @@ entries:
     owner: '@ak125'
     sourceConfidence: medium
     risk: low
+  - glob: packages/eslint-plugin-fafa-ports/**
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  - glob: packages/cwv-taxonomy/**
+    domain: D11
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
   - glob: packages/registry/**
     domain: D15
     owner: '@ak125'
@@ -363,11 +773,26 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: medium
     risk: medium
+  - glob: packages/seo-url-contract/**
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: high
   - glob: packages/typescript-config/**
     domain: D13
     owner: '@ak125'
     sourceConfidence: medium
     risk: low
+  - glob: policies/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
+  - glob: policies/maintenance/**
+    domain: D16
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
   - glob: scripts/**
     domain: D13
     owner: '@ak125'
@@ -406,6 +831,11 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: medium
+  - glob: docs/seo/**
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
   - glob: scripts/ops/**
     domain: D13
     owner: '@ak125'
@@ -436,6 +866,25 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: medium
+  # Fafa Media Factory V1 — dotted paths not matched by the parent globstar
+  # (micromatch dot:false). Explicit globs for the workspace .claude surface
+  # and for .gitkeep placeholders that hold the empty workflow dirs.
+  - glob: workspaces/marketing/.claude/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  - glob: workspaces/marketing/**/.gitkeep
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  # Remotion render microservice (Fafa Media Factory) — video pipeline (D12).
+  - glob: services/remotion-renderer/**
+    domain: D12
+    owner: '@ak125/marketing-team'
+    sourceConfidence: high
+    risk: medium
   - glob: workspaces/wiki/**
     domain: D15
     owner: '@ak125'
@@ -446,6 +895,32 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: medium
+  - glob: docs/superpowers/specs/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  - glob: docs/superpowers/plans/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  # Pricing Economic Governance System doctrine (session 2026-05-23).
+  # Doctrine canon non-executable, référençable depuis vault et toute
+  # ADR pricing future. Voir docs/pricing/economic-governance-system.md.
+  - glob: docs/pricing/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  # Archive de documents legacy (markdown + références historiques type
+  # MARGE_NEW_2021.xls grille pricing owner Yassine). Read-only, jamais
+  # consommé runtime, conservé pour audit/traçabilité.
+  - glob: .archive/docs/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
   # Architecture contract artifact (PR-2) — generated by @repo/registry bin from
   # architecture.yaml. AUTO-GENERATED, DO NOT EDIT. Ownership tracks the generator,
   # not the artifact contents (which are derived).
@@ -454,3 +929,78 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: high
+  # VehicleContext cookie shared schema + JWS helpers (PR-B, OPTION A locked).
+  # Cross-imported by backend (middleware D4) and frontend (Remix loader). Schema
+  # version bumps require an L4 ADR per `vehicle-context-option-a-locked` canon.
+  - glob: packages/registry/src/vehicle-context/**
+    domain: D4
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
+  # Backend D4 implementation of VehicleContextPort (PR-B.2). Middleware +
+  # service + jest spec ; narrow-route mounting on /api/diagnostic/* and
+  # /api/v1/orientation/*. Owner D4 (Vehicle), risk high (cookie security).
+  - glob: backend/src/modules/vehicle-context/**
+    domain: D4
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
+  # Vehicles module — controllers/services/DTOs for marque/modele/type lookup
+  # (auto_marque / auto_modele / auto_type — D4 Vehicle/Compatibility per
+  # .spec/00-canon/db-governance/domain-map.md). Source of truth for the
+  # /api/vehicles/* surface used by VehicleSelector + R8 vehicle-aware
+  # composition. Declared 2026-05-23 with the smallint-NaN fix.
+  - glob: backend/src/modules/vehicles/**
+    domain: D4
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
+  # Remix SSR helper (PR-B.3) — reads/verifies the same JWS cookie on the
+  # Node side of Remix loaders. Lives under app/server/ so the Vite plugin
+  # tree-shakes it out of the client bundle. Same D4 owner.
+  - glob: frontend/app/server/vehicle-context.server.ts
+    domain: D4
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
+  - glob: frontend/tests/unit/vehicle-context.server.test.ts
+    domain: D4
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  # Observability module (PR-C) — Prometheus counters subscribed to NestJS
+  # events emitted by PR-B + scrape endpoint /api/observability/metrics.
+  # D10 (Quality / Monitoring / Observabilité) owns the surface.
+  - glob: backend/src/modules/observability/**
+    domain: D10
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  # AI additive layer (PR #714) — "AI Visibility = couche additive du Search
+  # Control Plane" doctrine. 6 livrables petits extending existing services.
+  # All under D3 (SEO) ownership.
+  - glob: backend/src/modules/trend-signals/**
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
+  - glob: backend/supabase/migrations/*trend_signals*
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
+  - glob: backend/scripts/seo/audit/**
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
+  - glob: workspaces/ai-probe/**
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
+  - glob: docs/audit/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low

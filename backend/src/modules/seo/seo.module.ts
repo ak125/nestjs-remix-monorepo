@@ -76,6 +76,7 @@ import { SitemapDeltaService } from './services/sitemap-delta.service';
 import { SitemapStreamingService } from './services/sitemap-streaming.service';
 import { SitemapV10SchedulerService } from './services/sitemap-v10-scheduler.service';
 import { SitemapRegenerateProcessor } from './processors/sitemap-regenerate.processor';
+import { SitemapEventLogService } from './services/sitemap-event-log.service';
 import { SitemapHygieneService } from './services/sitemap-hygiene.service';
 import { SitemapVehiclePiecesValidator } from './services/sitemap-vehicle-pieces-validator.service';
 
@@ -250,6 +251,7 @@ import { R2V2Module } from './r2/r2-v2.module';
     // Régénération nocturne BullMQ (fix traffic-drop 2026-04-22 → 2026-05-13)
     SitemapV10SchedulerService,
     SitemapRegenerateProcessor,
+    SitemapEventLogService,
     // Content
     ReferenceService,
     DiagnosticService,

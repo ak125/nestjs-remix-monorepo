@@ -33,6 +33,7 @@ export interface CreateCheckoutOrderPayload {
     discount: number;
     consigne_unit: number;
     has_consigne: boolean;
+    website_url?: string; // F1 attribution : source d'ajout par-ligne → orl_website_url
   }>;
   billingAddress: AddressData;
   shippingAddress: AddressData;
@@ -77,6 +78,8 @@ export function buildOrderLines(items: CartItem[]) {
     discount: 0,
     consigne_unit: item.consigne_unit || 0,
     has_consigne: item.has_consigne || false,
+    website_url: item.website_url, // F1 attribution : source d'ajout par-ligne
+
   }));
 }
 

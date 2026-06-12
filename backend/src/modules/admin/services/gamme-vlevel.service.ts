@@ -11,6 +11,14 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
+import {
+  VLEVEL_V2_CAP,
+  vLevelGroupKey,
+  compareV3Champions,
+  isKeywordEligibleForGamme,
+  isVLevelEligibleVehicle,
+  selectV2Tier,
+} from '@repo/seo-roles';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 
 interface VLevelKeywordRow {
@@ -167,26 +175,39 @@ export class GammeVLevelService extends SupabaseBaseService {
       const vehicleKws = allKeywords.filter((kw) => kw.type === 'vehicle');
       const nonVehicleKws = allKeywords.filter((kw) => kw.type !== 'vehicle');
 
-      // 3. V-levels = keywords with motorisation ONLY (never generic)
-      // A keyword is "specific" if it mentions engine/fuel/hp patterns
-      const MOTOR_PATTERN =
-        /(\d+\.\d+|hdi|dci|tdi|cdi|tce|tsi|vti|puretech|tfsi|gti|vtec|mpi|d4d|jtd|cdti|crdi|dtec|\d+\s*ch|\d+\s*cv)/i;
+      // 3. V-Level election eligibility = keyword RESOLVES TO A PRECISE VEHICLE :
+      // motorisation in the TEXT, OR a resolved type_id (a type_id IS a motorisation/
+      // variant). SoT @repo/seo-roles `isVLevelEligibleVehicle` — fixes the historical
+      // TEXT-only gate (`MOTOR_PATTERN`) that wrongly declassed RESOLVED vehicles whose
+      // keyword is model-only (incident 2026-06-08 pg424: 104/284 resolved → NULL).
       const motorKws = vehicleKws.filter((kw) =>
-        MOTOR_PATTERN.test(kw.keyword || ''),
+        isVLevelEligibleVehicle({ keyword: kw.keyword, typeId: kw.type_id }),
       );
       const genericVehicleKws = vehicleKws.filter(
-        (kw) => !MOTOR_PATTERN.test(kw.keyword || ''),
+        (kw) =>
+          !isVLevelEligibleVehicle({ keyword: kw.keyword, typeId: kw.type_id }),
       );
 
-      // CSV motor keywords only (V5 is computed dynamically, not persisted)
-      const csvVehicleKws = motorKws.filter((kw) => kw.v_level !== 'V5');
+      // CSV motor keywords only (V5 is computed dynamically, not persisted).
+      // Gamme-term-aware (anti re-contamination, @repo/seo-roles SoT) : un keyword d'une AUTRE pièce
+      // présent dans cette gamme (ex. « disque de frein clio 3 » dans la gamme plaquette) n'est PAS
+      // éligible à l'élection et sera déclassé (v_level NULL) plus bas avec les génériques.
+      // Gamme NON mappée ⇒ isKeywordEligibleForGamme=true ⇒ comportement strictement inchangé.
+      const eligibleMotorKws = motorKws.filter((kw) => kw.v_level !== 'V5');
+      const csvVehicleKws = eligibleMotorKws.filter((kw) =>
+        isKeywordEligibleForGamme(kw.keyword || '', pgId),
+      );
+      const crossGammeKws = eligibleMotorKws.filter(
+        (kw) => !isKeywordEligibleForGamme(kw.keyword || '', pgId),
+      );
 
       // 4. Group CSV vehicle keywords by [model+energy] or [model] if universelle
       const byModelEnergy = new Map<string, VLevelKeywordRow[]>();
       for (const kw of csvVehicleKws) {
-        const key = gammeUniverselle
-          ? `${kw.model || '_no_model'}`
-          : `${kw.model || '_no_model'}|${kw.energy || 'unknown'}`;
+        // Clé de groupe canonique partagée (@repo/seo-roles) — lowercase, fallbacks
+        // `_no_model`/`unknown`. Neutre ici : la donnée live est déjà lowercase et le
+        // service utilise déjà `energy||'unknown'` (cf. probe G2).
+        const key = vLevelGroupKey(kw.model, kw.energy, { gammeUniverselle });
         if (!byModelEnergy.has(key)) byModelEnergy.set(key, []);
         byModelEnergy.get(key)!.push(kw);
       }
@@ -200,12 +221,8 @@ export class GammeVLevelService extends SupabaseBaseService {
       }> = [];
 
       for (const [, group] of byModelEnergy) {
-        // Sort: volume DESC, keyword length ASC (shorter = better match)
-        group.sort((a: VLevelKeywordRow, b: VLevelKeywordRow) => {
-          if ((b.volume || 0) !== (a.volume || 0))
-            return (b.volume || 0) - (a.volume || 0);
-          return (a.keyword || '').length - (b.keyword || '').length;
-        });
+        // Tri canonique déterministe (volume DESC → longueur ASC → keyword ASC) — @repo/seo-roles.
+        group.sort(compareV3Champions);
 
         // First keyword = V3 (champion), even if volume=0
         const champion = group[0];
@@ -226,30 +243,91 @@ export class GammeVLevelService extends SupabaseBaseService {
         }
       }
 
-      // 6. Promote top 10 V3 -> V2 (dedup by [model + energy])
-      v3Champions.sort((a, b) => (b.score_seo || 0) - (a.score_seo || 0));
-      const seenModelEnergy = new Set<string>();
-      const top10: VLevelKeywordRow[] = [];
-      for (const kw of v3Champions) {
-        const modelEnergy = `${(kw.model || '').toLowerCase()}|${(kw.energy || '').toLowerCase()}`;
-        if (seenModelEnergy.has(modelEnergy)) continue;
-        seenModelEnergy.add(modelEnergy);
-        top10.push(kw);
-        if (top10.length >= 10) break;
+      // 6. Promote top-CAP V3 -> V2 via la SoT du cut (selectV2Tier, @repo/seo-roles).
+      // Même tie-break déterministe que l'in-group (cut V2 reproductible aux volumes ex-aequo)
+      // PUIS garde-fous objectifs validateV2Promotion : un champion type_id NULL ou à énergie
+      // incohérente (mot-clé gasoil ↔ véhicule essence) N'est PAS promu — il reste V3. Plafond
+      // sans backfill (« moins de V2 mais propres », owner 2026-06-08). Invariant V2 ⟹ V3.
+      v3Champions.sort(compareV3Champions);
+
+      // Énergie réelle du véhicule (auto_type.type_fuel) pour détecter energy_mismatch au cut.
+      const championTypeIds = [
+        ...new Set(
+          v3Champions
+            .map((c) => c.type_id)
+            .filter(Boolean)
+            .map(Number),
+        ),
+      ];
+      const championFuelMap = new Map<number, string>();
+      for (let i = 0; i < championTypeIds.length; i += 100) {
+        const batch = championTypeIds.slice(i, i + 100);
+        const { data: types } = await this.supabase
+          .from('auto_type')
+          .select('type_id, type_fuel')
+          .in('type_id', batch.map(String));
+        if (types) {
+          for (const t of types) {
+            if (t.type_fuel)
+              championFuelMap.set(Number(t.type_id), t.type_fuel);
+          }
+        }
       }
-      const top10Ids = new Set(top10.map((c) => c.id));
+
+      const { v2: v2Champions, rejected: v2Rejected } = selectV2Tier(
+        v3Champions,
+        VLEVEL_V2_CAP,
+        (kw) => vLevelGroupKey(kw.model, kw.energy, { gammeUniverselle }),
+        (kw) => ({
+          isChampion: true, // par construction : kw provient de v3Champions (champion in-group)
+          typeId: kw.type_id,
+          keywordEnergy: kw.keyword, // hint énergie depuis le TEXTE du mot-clé (ex. « gasoil »)
+          vehicleEnergy: kw.type_id
+            ? (championFuelMap.get(Number(kw.type_id)) ?? null)
+            : null,
+        }),
+      );
+      const v2Ids = new Set(v2Champions.map((c) => c.id));
 
       for (const update of updates) {
-        if (top10Ids.has(update.id)) {
+        if (v2Ids.has(update.id)) {
           update.v_level = 'V2';
         }
       }
 
-      // 7. Non-vehicle + generic vehicle keywords: clear v_level
+      if (v2Rejected.length > 0) {
+        // No silent fallback : on TRACE les champions élite recalés (restent V3, pas promus).
+        this.logger.log(
+          `V2 cut gamme ${pgId}: ${v2Rejected.length} champion(s) élite recalé(s) (restent V3) — ` +
+            v2Rejected
+              .map((r) => `"${r.champion.keyword}" [${r.violations.join(',')}]`)
+              .join('; '),
+        );
+      }
+
+      // 7. Non-vehicle + generic vehicle + cross-gamme keywords: clear v_level
       for (const kw of nonVehicleKws) {
         updates.push({ id: kw.id, v_level: null, score_seo: null });
       }
       for (const kw of genericVehicleKws) {
+        updates.push({ id: kw.id, v_level: null, score_seo: null });
+      }
+      if (genericVehicleKws.length > 0) {
+        // No silent fallback : un model-only NON résolu (ni motif moteur, ni type_id) n'est pas
+        // élu — il RELÈVE de l'ATTRIBUTION de motorisation (règle owner : Google Trends/Search /
+        // demande, via decision-pack/generics-pack + web-evidence seed), PAS d'un recalc.
+        // On TRACE pour le pipeline d'attribution (jamais un déclassement silencieux).
+        this.logger.log(
+          `V-Level gamme ${pgId}: ${genericVehicleKws.length} keyword(s) model-only NON résolu(s) -> ` +
+            `v_level NULL, EN ATTENTE d'attribution motorisation (decision-pack/generics-pack). ` +
+            `Ex: ${genericVehicleKws
+              .slice(0, 3)
+              .map((k) => `"${k.keyword}"`)
+              .join(', ')}`,
+        );
+      }
+      // cross-gamme (keyword d'une autre pièce) : déclassé, jamais champion de cette gamme (anti re-contamination)
+      for (const kw of crossGammeKws) {
         updates.push({ id: kw.id, v_level: null, score_seo: null });
       }
 

@@ -21,6 +21,11 @@ import { useEffect } from "react";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Alert } from "~/components/ui/alert";
 import { trackPurchase } from "~/utils/analytics";
+import {
+  classifyReferrer,
+  emitFunnel,
+  getFunnelSessionId,
+} from "~/utils/funnel-beacon";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { processPaymentReturn } from "../services/payment.server";
@@ -185,6 +190,26 @@ export default function PaymentReturnPage() {
       const key = `purchase_tracked_${txId}`;
       if (!sessionStorage.getItem(key)) {
         trackPurchase(txId, result.amount);
+        // Commerce-Loop V1 étape 4-B — funnel R2 order_placed (mirror GA4
+        // purchase sur __seo_event_log : canal résilient indépendant de GA4 —
+        // protège la mesure même si GA4 conversions = 0 reste cassé côté GTM).
+        // item_count = 1 par défaut : PaymentResult (interface ligne 51) ne
+        // contient ni totalQuantity ni items[], le loader Paybox transmet
+        // seulement status/transactionId/orderId/amount. À enrichir si un
+        // futur loader expose la quantité totale (follow-up).
+        emitFunnel({
+          event_type: "r2_order_placed",
+          payload: {
+            session_id: getFunnelSessionId() || null,
+            order_id: String(txId),
+            item_count: 1,
+            revenue_cents:
+              typeof result.amount === "number" && Number.isFinite(result.amount)
+                ? Math.round(result.amount * 100)
+                : null,
+            referrer: classifyReferrer(),
+          },
+        });
         sessionStorage.setItem(key, "1");
       }
     }

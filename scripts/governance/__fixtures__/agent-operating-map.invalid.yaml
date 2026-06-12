@@ -1,0 +1,4 @@
+# Intentionally invalid — used by --self-test
+# Missing required top-level keys (last_verified, surfaces, nodes, handoffs)
+# to prove the schema validator catches structural bugs.
+version: 1

@@ -220,9 +220,9 @@ export const SearchFilters = memo(function SearchFilters({
       {/* Card principale des filtres - Glassmorphism premium */}
       <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-900/10 border border-slate-200/80 overflow-hidden flex flex-col flex-1 min-h-0">
         {/* Header avec gradient premium dark - identique à PiecesFilterSidebar */}
-        <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-900 px-5 py-4 relative overflow-hidden">
-          <div className="absolute -top-10 -right-10 w-32 h-32 bg-indigo-500/20 rounded-full blur-3xl"></div>
-          <div className="absolute -bottom-5 -left-5 w-20 h-20 bg-purple-500/20 rounded-full blur-2xl"></div>
+        <div className="bg-gradient-to-r from-slate-900 via-slate-800 px-5 py-4 relative overflow-hidden">
+          <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/20 rounded-full blur-3xl"></div>
+          <div className="absolute -bottom-5 -left-5 w-20 h-20 bg-primary/20 rounded-full blur-2xl"></div>
 
           <div className="relative z-10 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
@@ -266,7 +266,7 @@ export const SearchFilters = memo(function SearchFilters({
                 {activeFilterCount > 0 && (
                   <button
                     onClick={() => setShowPresetModal(true)}
-                    className="w-full py-2 px-3 text-xs font-bold bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all shadow-md flex items-center justify-center gap-2"
+                    className="w-full py-2 px-3 text-xs font-bold bg-gradient-to-r to-pink-500 text-white rounded-lg hover: hover:to-pink-600 transition-all shadow-md flex items-center justify-center gap-2"
                   >
                     <Bookmark className="w-3.5 h-3.5" />
                     Sauvegarder ces filtres
@@ -558,7 +558,7 @@ export const SearchFilters = memo(function SearchFilters({
                           className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                             isSelected
                               ? "bg-emerald-500 text-white"
-                              : "bg-slate-100 text-slate-500"
+                              : "bg-slate-100 text-white"
                           }`}
                         >
                           <Layers className="w-4 h-4" />
@@ -572,7 +572,7 @@ export const SearchFilters = memo(function SearchFilters({
                           className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                             isSelected
                               ? "bg-emerald-500 text-white"
-                              : "bg-slate-100 text-slate-600"
+                              : "bg-slate-100 text-white"
                           }`}
                         >
                           {option.count}
@@ -803,7 +803,7 @@ export const SearchFilters = memo(function SearchFilters({
                             className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
                               isSelected
                                 ? "bg-blue-500 text-white"
-                                : "bg-slate-100 text-slate-600"
+                                : "bg-slate-100 text-white"
                             }`}
                           >
                             {option.count}
@@ -837,7 +837,7 @@ export const SearchFilters = memo(function SearchFilters({
       {/* Modal sauvegarde preset */}
       {showPresetModal && (
         <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
+          className="fixed inset-0 bg-neutral-900/50 backdrop-blur-sm flex items-center justify-center z-50"
           onClick={() => setShowPresetModal(false)}
         >
           <div
@@ -845,7 +845,7 @@ export const SearchFilters = memo(function SearchFilters({
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-lg font-bold mb-4 text-slate-900 flex items-center gap-2">
-              <Bookmark className="w-5 h-5 text-purple-500" />
+              <Bookmark className="w-5 h-5 text-foreground" />
               Sauvegarder ce preset
             </h3>
             <input
@@ -869,7 +869,7 @@ export const SearchFilters = memo(function SearchFilters({
               </button>
               <button
                 onClick={savePreset}
-                className="flex-1 px-4 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl hover:from-purple-600 hover:to-pink-600 font-medium text-sm shadow-md"
+                className="flex-1 px-4 py-2.5 bg-gradient-to-r to-pink-500 text-white rounded-xl hover: hover:to-pink-600 font-medium text-sm shadow-md"
               >
                 ✓ Sauvegarder
               </button>

@@ -34,7 +34,7 @@ jobs:
           cache: "npm"
 
       - name: Restore Turbo cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .turbo
           key: turbo-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -84,7 +84,7 @@ jobs:
           cache: "npm"
 
       - name: Restore Turbo cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .turbo
           key: turbo-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -131,7 +131,7 @@ jobs:
           cache: "npm"
 
       - name: Restore Turbo cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .turbo
           key: turbo-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -189,7 +189,7 @@ jobs:
           cache: "npm"
 
       - name: Restore Turbo cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .turbo
           key: turbo-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -265,7 +265,7 @@ jobs:
           cache: "npm"
 
       - name: Restore Turbo cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: .turbo
           key: turbo-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
@@ -392,7 +392,7 @@ jobs:
 
             # Known bypass files (debug/internal)
             BYPASS_COUNT=$(echo "$DIRECT_RPC_FILES" | \
-              grep -c "googlebot-detector\|enhanced-config\|products.service\|products-catalog.service\|advice.service\|content-refresh.service\|admin-job-health\|conseil-priority.service\|rag-knowledge.service\|rag-image-management\|rm-builder.service\|buying-guide-data.service\|payment-data.service\|orders.service\|r1-keyword-plan-batch\|admin-keyword-planner.controller\|abandoned-cart-data.service\|gamme-rpc.service\|admin-supplier-stats.service\|quality-history-snapshot.service" || echo "0")
+              grep -c "googlebot-detector\|enhanced-config\|products.service\|products-catalog.service\|advice.service\|content-refresh.service\|admin-job-health\|conseil-priority.service\|rag-knowledge.service\|rag-image-management\|rm-builder.service\|buying-guide-data.service\|payment-data.service\|orders.service\|r1-keyword-plan-batch\|admin-keyword-planner.controller\|abandoned-cart-data.service\|gamme-rpc.service\|admin-supplier-stats.service\|quality-history-snapshot.service\|cwv-aggregation.service\|cwv-dashboard.service" || echo "0")
 
             UNEXPECTED=$((DIRECT_RPC - BYPASS_COUNT))
 
@@ -601,6 +601,22 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # Node.js + deps install required by the env-contract preflight step
+      # below: `scripts/ci/preflight-env-contract.ts` runs under tsx and
+      # imports the Zod schema from `backend/src/contract/env-contract/`.
+      # Without `npm ci` on this self-hosted runner, tsx is unavailable and
+      # the preflight cannot enforce the canonical SoT (no auto-install
+      # fallback — `npm install @latest` would be non-deterministic, see
+      # memory feedback_ci_no_dynamic_latest_install).
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: "npm"
+
+      - name: Install dependencies (required for env-contract preflight)
+        run: npm ci
+
       - name: 🧪 Deploy to PREPROD (read-only hardening — ADR-028 Option D)
         env:
           # ADR-028 Option D : couches 1+2 (privilege downgrade + anon key only).
@@ -617,6 +633,17 @@ jobs:
           # donc le fail-fast trigger ici. Source : audit-trail vault
           # 2026-05-07-pr339-deploy-regression.md.
           SESSION_SECRET: ${{ secrets.PREPROD_SESSION_SECRET }}
+          # JWT_SECRET propagation : depuis PR #606, VehicleContextService:37 fait
+          # `configService.getOrThrow<string>('JWT_SECRET')` au constructeur pour
+          # signer le VCP cookie (JWS HS256). Sans ce secret le bootstrap NestJS
+          # crash en boucle dans le container preprod (12 retries × 10s puis
+          # healthcheck fail → tous les deploys main bloqués depuis 2026-05-19
+          # 12:06 UTC, ex. run 26096588258). Fallback sur PREPROD_SESSION_SECRET
+          # si PREPROD_JWT_SECRET pas encore configuré (le repo a déjà
+          # PREPROD_SESSION_SECRET ≥32 chars ; clé partagée acceptable en
+          # preprod read-only où aucun token utilisateur sensible ne circule —
+          # mais idéalement séparé en prod, cf. canon key-rotation).
+          JWT_SECRET: ${{ secrets.PREPROD_JWT_SECRET || secrets.PREPROD_SESSION_SECRET }}
           # ADR-063 — CrUX API key for CWV field monitoring (backend-only, optional).
           # When unset, the CrUX fetcher logs a warning and skips runs (V1 graceful
           # degrade ; cron `seo-monitor` continues without CrUX step). Production
@@ -640,6 +667,9 @@ jobs:
           SUPABASE_URL=${SUPABASE_URL}
           SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
           SESSION_SECRET=${SESSION_SECRET}
+          # JWT_SECRET — required since PR #606 VehicleContextService.getOrThrow.
+          # See env block comment above for rationale.
+          JWT_SECRET=${JWT_SECRET}
           READ_ONLY=true
           # ADR-055 shadow activation: collect real preprod evidence before any
           # mode=on decision. Literal on remains blocked by backend boot guard.
@@ -683,6 +713,34 @@ jobs:
           # shellcheck disable=SC1091
           . "$PREPROD_DIR/.env"
           set +a
+
+          # 🛡️ Preflight env contract check — first projection of the canonical
+          # Zod SoT into CI (backend/src/contract/env-contract/preprod.schema.ts).
+          # Loads the REAL `.env.preprod` in an isolated subshell (not the
+          # ambient GHA env block) to validate EXACTLY what docker-compose
+          # injects into the container. Turns an opaque NestJS boot crash
+          # ("Configuration key X does not exist") into a CI fail immediately
+          # before `docker compose up`, with a structured diff.
+          #
+          # `set -euo pipefail` hardens the subshell against silent interpolation
+          # / sourcing failures (GHA `bash -e {0}` alone can let empty
+          # interpolations through). Determinism: tsx must be present via the
+          # `npm ci` step above — no dynamic `@latest` install (memory
+          # feedback_ci_no_dynamic_latest_install).
+          echo "🛡️ Preflight env contract check (loads real .env.preprod)..."
+          if ! (cd "$GITHUB_WORKSPACE" && npx --no-install tsx --version >/dev/null 2>&1); then
+            echo "::error::tsx not available — the 'Install dependencies' step above must run before this step (no auto-install fallback by design)."
+            exit 1
+          fi
+          (
+            set -euo pipefail
+            cd "$GITHUB_WORKSPACE"
+            set -o allexport
+            # shellcheck disable=SC1091
+            . "$PREPROD_DIR/.env"
+            set +o allexport
+            npx --no-install tsx scripts/ci/preflight-env-contract.ts
+          )
 
           # Arreter anciens conteneurs
           docker stop nestjs-remix-monorepo-preprod redis-preprod 2>/dev/null || true
@@ -793,6 +851,91 @@ jobs:
           echo "- /health: ✅" >> $GITHUB_STEP_SUMMARY
           echo "- /api/catalog/families: ✅" >> $GITHUB_STEP_SUMMARY
           echo "- / (homepage): $STATUS" >> $GITHUB_STEP_SUMMARY
+
+      - name: 🩹 Soft-404 R2 smoke
+        # shell explicite : par défaut `bash -e {0}` (errexit). Or la capture
+        # `ASSERT_OUT=$(python3 ... )` propage l'exit code si le script exit 1
+        # → bash quitte AVANT d'imprimer le motif du FAIL. On force shell sans
+        # errexit pour collecter tous les FAILs + leurs raisons.
+        shell: bash {0}
+        run: |
+          BASE="http://localhost:3200"
+          FAILED=0
+          # Warm per-URL vehicle-alternatives cache before asserting — kills the
+          # cold-start flake seen on #798/#800/#799 (deterministic pre-pass, not a retry).
+          bash scripts/ci/warm-soft-404-fixtures.sh "$BASE"
+          echo "## 🩹 Soft-404 R2 Smoke" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          while IFS= read -r url || [ -n "$url" ]; do
+            # skip blank lines + comments
+            [[ -z "${url// }" ]] && continue
+            case "$url" in \#*) continue ;; esac
+            echo "🔎 $url"
+            HTTP_OUT=$(curl -s -i --max-time 15 "$BASE$url")
+            CURL_RC=$?
+            if [ "$CURL_RC" != "0" ] || [ -z "$HTTP_OUT" ]; then
+              echo "❌ curl failed for $url (rc=$CURL_RC)"
+              echo "- $url: ❌ curl failed (rc=$CURL_RC)" >> $GITHUB_STEP_SUMMARY
+              FAILED=1
+              continue
+            fi
+            ASSERT_OUT=$(echo "$HTTP_OUT" | python3 scripts/ci/assert-soft-404.py 2>&1)
+            ASSERT_RC=$?
+            if [ "$ASSERT_RC" = "0" ]; then
+              echo "✅ $url"
+              echo "- $url: ✅" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "❌ $url"
+              echo "$ASSERT_OUT"
+              echo "- $url: ❌" >> $GITHUB_STEP_SUMMARY
+              echo "  \`\`\`" >> $GITHUB_STEP_SUMMARY
+              echo "$ASSERT_OUT" >> $GITHUB_STEP_SUMMARY
+              echo "  \`\`\`" >> $GITHUB_STEP_SUMMARY
+              FAILED=1
+            fi
+          done < scripts/ci/soft-404-fixtures.txt
+          if [ "$FAILED" = "1" ]; then
+            echo "::error::Soft-404 smoke assertions failed"
+            exit 1
+          fi
+          echo "✅ All soft-404 fixtures passed"
+
+      - name: 🐛 Dump container + rendered HTML on smoke failure (observability)
+        if: failure()
+        run: |
+          set +e
+          # tee duplicates output to BOTH the workflow log (visible via gh run
+          # view --log) AND the GITHUB_STEP_SUMMARY markdown panel — covers the
+          # case where the summary-only redirect of the original step was empty
+          # in API responses (PR #636 run 26106977897). Logs now visible from
+          # the standard workflow output without needing the UI summary.
+          {
+            echo "## 🐛 Soft-404 R2 smoke failure debug"
+            echo ""
+
+            echo "### Backend container logs (last 200 lines, filtered)"
+            echo '```'
+            docker logs nestjs-remix-monorepo-preprod --tail 200 2>&1 \
+              | grep -iE 'rmAlternatives|alternatives|callRpc|rpcGate|supabase|permission|denied|jwt|anon|error|warn' \
+              | tail -80
+            echo '```'
+            echo ""
+
+            echo "### Direct probe of /api/rm/alternatives for fixture #1"
+            echo '```json'
+            curl -s --max-time 10 "http://localhost:3200/api/rm/alternatives?gamme_id=3859&type_id=11836&limit=12" \
+              | python3 -c 'import sys, json; d=json.loads(sys.stdin.read()); print(json.dumps({"alternativeVehicles": len(d.get("alternativeVehicles",[])), "alternativeGammes": len(d.get("alternativeGammes",[])), "relatedModels": len(d.get("relatedModels",[])), "etag": d.get("etag")}, indent=2))' \
+              2>&1
+            echo '```'
+            echo ""
+
+            echo "### First 4-segment /pieces/.../.../...html links in rendered page (fixture #1)"
+            echo '```'
+            curl -s --max-time 15 "http://localhost:3200/pieces/kit-de-freins-arriere-3859/bmw-33/serie-5-f10-f18-33053/2-0-525-d-11836.html" \
+              | grep -oE 'href="/pieces/[^"]+\.html"' \
+              | sort -u | head -10
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: ⏱️ Response Time Baseline
         run: |

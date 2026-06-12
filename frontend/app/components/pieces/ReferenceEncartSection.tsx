@@ -19,16 +19,16 @@ export const ReferenceEncartSection = memo(function ReferenceEncartSection({
   const href = reference.canonicalUrl || `/reference-auto/${reference.slug}`;
 
   return (
-    <section className="py-8 md:py-12 bg-indigo-50/50">
+    <section className="py-8 md:py-12 bg-muted/50">
       <div className="container mx-auto px-4">
         <Card className="border-indigo-200 shadow-sm hover:shadow-md transition-shadow">
           <CardContent className="p-6 md:p-8">
             <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center">
-                <BookOpen className="w-6 h-6 text-indigo-600" />
+              <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-muted flex items-center justify-center">
+                <BookOpen className="w-6 h-6 text-foreground" />
               </div>
               <div className="flex-1 min-w-0">
-                <h2 className="text-lg md:text-xl font-semibold text-indigo-900 mb-2">
+                <h2 className="text-lg md:text-xl font-semibold text-foreground mb-2">
                   En savoir plus
                 </h2>
                 {reference.roleMecanique && (
@@ -41,7 +41,7 @@ export const ReferenceEncartSection = memo(function ReferenceEncartSection({
                 </p>
                 <Link
                   to={href}
-                  className="inline-flex items-center gap-1.5 mt-4 text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
+                  className="inline-flex items-center gap-1.5 mt-4 text-sm font-medium text-foreground hover:text-foreground transition-colors"
                 >
                   Voir la fiche technique complète
                   <ArrowRight className="w-4 h-4" />

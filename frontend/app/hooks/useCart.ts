@@ -9,6 +9,7 @@ import { useState, useCallback } from "react";
 
 import { useRootCart } from "../root";
 import { cartApi, formatPrice, getProductImageUrl } from "../services/cart.api";
+import { emitFunnel, getFunnelSessionId } from "~/utils/funnel-beacon";
 
 // Re-export les utilitaires
 export { formatPrice, getProductImageUrl };
@@ -48,14 +49,40 @@ export function useCart() {
       productId: number,
       quantity: number = 1,
       typeId?: number,
+      unitPriceCents?: number | null,
     ): Promise<boolean> => {
       setIsLoading(true);
       setError(null);
 
       try {
-        const result = await cartApi.addItem(productId, quantity, typeId);
+        // F1 attribution : capture la page d'où l'article est ajouté (source par-ligne).
+        const sourceUrl =
+          typeof window !== "undefined"
+            ? window.location.pathname + window.location.search
+            : undefined;
+        const result = await cartApi.addItem(
+          productId,
+          quantity,
+          typeId,
+          sourceUrl,
+        );
         if (result.success) {
           emitCartUpdated();
+          // Commerce-Loop V1 étape 4-A — intention d'achat (funnel R2).
+          // unit_price_cents + source_url : caller passe le prix produit en cents
+          // (Math.round(price * 100)) et le funnel-beacon récupère la page source
+          // pour corréler page → panier en runtime (cf. investigation 2026-05-25).
+          emitFunnel({
+            event_type: "r2_add_to_cart",
+            payload: {
+              session_id: getFunnelSessionId(),
+              product_id: String(productId),
+              quantity,
+              unit_price_cents:
+                typeof unitPriceCents === "number" ? unitPriceCents : null,
+              source_url: sourceUrl ?? null,
+            },
+          });
           return true;
         } else {
           setError(result.error || "Erreur lors de l'ajout");

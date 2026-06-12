@@ -18,15 +18,26 @@ import { SeoMonitorProcessor } from './processors/seo-monitor.processor';
 import { SeoDailyFetchProcessor } from '../modules/seo-monitoring/processors/seo-daily-fetch.processor';
 import { SeoMonitoringModule } from '../modules/seo-monitoring/seo-monitoring.module';
 
+// CWV aggregation (bloc 4 CWV Runtime Observability)
+import { CwvAggregationProcessor } from '../modules/seo-monitoring/processors/cwv-aggregation.processor';
+import { CwvAggregationSchedulerService } from '../modules/seo-monitoring/services/cwv-aggregation.scheduler.service';
+
 // Services Workers
 import { SeoMonitorSchedulerService } from './services/seo-monitor-scheduler.service';
+
+// Supplier Availability Truth — sync wiring (queue lives here, alongside Bull forRoot)
+import { SupplierTruthReadModule } from '../modules/supplier-truth/supplier-truth-read.module';
+import { SupplierTruthRepository } from '../modules/supplier-truth/supplier-truth.repository';
+import { SupplierSyncProcessor } from '../modules/supplier-truth/supplier-sync.processor';
+import { SupplierSyncRunner } from '../modules/supplier-truth/supplier-sync.runner';
+import { SupplierSyncScheduler } from '../modules/supplier-truth/supplier-sync.scheduler';
+import { SupplierSyncJobProcessor } from '../modules/supplier-truth/supplier-sync.job.processor';
+import { SupplierTruthEventSink } from '../modules/supplier-truth/supplier-truth-event-sink';
 
 // Dependencies for AgenticProcessor
 import { RagProxyModule } from '../modules/rag-proxy/rag-proxy.module';
 import { AgenticProcessor } from './processors/agentic.processor';
 import { PipelineChainProcessor } from './processors/pipeline-chain.processor';
-import { RagChangeWatcherService } from './services/rag-change-watcher.service';
-import { ContentMergerService } from './services/content-merger.service';
 import { AgenticDataService } from '../modules/agentic-engine/services/agentic-data.service';
 import { EvidenceLedgerService } from '../modules/agentic-engine/services/evidence-ledger.service';
 import { RunManagerService } from '../modules/agentic-engine/services/run-manager.service';
@@ -94,6 +105,7 @@ import { AdminJobHealthService } from '../modules/admin/services/admin-job-healt
       // { name: 'video-render' }, // SUPPRIMÉ 2026-04-10
       { name: 'agentic-engine' },
       { name: 'pipeline-chain' },
+      { name: 'supplier-sync' }, // Supplier Availability Truth periodic sync
     ),
 
     // Cart module for AbandonedCartService (used by EmailProcessor)
@@ -105,6 +117,9 @@ import { AdminJobHealthService } from '../modules/admin/services/admin-job-healt
 
     // V0.A — SEO daily-fetch processor needs GSC/GA4/CWV/Links fetcher services
     SeoMonitoringModule,
+
+    // Supplier Availability Truth — read slice (repo + services) for the sync runner
+    SupplierTruthReadModule,
   ],
 
   providers: [
@@ -114,6 +129,8 @@ import { AdminJobHealthService } from '../modules/admin/services/admin-job-healt
     EmailProcessor,
     SeoMonitorProcessor,
     SeoDailyFetchProcessor, // V0.A — daily GSC/GA4/CWV/Links ingestion (cron 04:00 UTC)
+    CwvAggregationProcessor, // CWV bloc 4 — hourly + daily-rum aggregation jobs
+    CwvAggregationSchedulerService, // CWV bloc 4 — repeatable jobs configurator
     // VideoExecutionProcessor — SUPPRIMÉ 2026-04-10
 
     // Agentic engine processor + dependencies (Agent-Native — state management only)
@@ -128,19 +145,39 @@ import { AdminJobHealthService } from '../modules/admin/services/admin-job-healt
     // Job health tracking (shared by all processors)
     AdminJobHealthService,
 
-    // RAG Change → Content Improvement Pipeline (append-only, never replace)
-    RagChangeWatcherService,
-    ContentMergerService,
-
     // Services
     // SitemapStreamingService, // DESACTIVE
     // SitemapDeltaService, // DESACTIVE
     SeoMonitorSchedulerService,
+
+    // Supplier Availability Truth — periodic sync (scheduler + job consumer), read-only
+    SupplierTruthEventSink, // real prod EventSink (replaces implicit noop = no mute sentinel)
+    {
+      provide: SupplierSyncProcessor,
+      useFactory: (
+        repo: SupplierTruthRepository,
+        sink: SupplierTruthEventSink,
+      ) => new SupplierSyncProcessor(repo, sink.emit),
+      inject: [SupplierTruthRepository, SupplierTruthEventSink],
+    },
+    {
+      provide: SupplierSyncRunner,
+      useFactory: (
+        repo: SupplierTruthRepository,
+        proc: SupplierSyncProcessor,
+        sink: SupplierTruthEventSink,
+      ) => new SupplierSyncRunner(repo, proc, undefined, undefined, sink.emit),
+      inject: [
+        SupplierTruthRepository,
+        SupplierSyncProcessor,
+        SupplierTruthEventSink,
+      ],
+    },
+    SupplierSyncScheduler,
+    SupplierSyncJobProcessor,
   ],
   exports: [
     SeoMonitorSchedulerService,
-    ContentMergerService,
-    RagChangeWatcherService,
     BullModule, // 🚀 Export BullModule so AdminModule can inject pipeline-chain queue
   ],
 })

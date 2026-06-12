@@ -20,11 +20,20 @@ export interface OrderEventBase {
   correlationId?: string;
 }
 
+/** F1 attribution : source d'ajout par-ligne propagée sur l'event de création */
+export interface OrderLineSource {
+  lineId: string;
+  productId: string | null;
+  websiteUrl: string | null;
+}
+
 export interface OrderCreatedEvent extends OrderEventBase {
   orderId: string;
   customerId: string;
   totalTtc: number;
   linesCount: number;
+  /** F1 : attribution add-to-cart par-ligne (source d'ajout). Vide si non capturée. */
+  lines?: OrderLineSource[];
 }
 
 export interface OrderPaidEvent extends OrderEventBase {

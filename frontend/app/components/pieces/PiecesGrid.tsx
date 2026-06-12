@@ -235,10 +235,10 @@ const PiecesStats: React.FC<{ pieces: Piece[] }> = ({ pieces }) => {
         <div className="text-sm text-green-800">Prix maximum</div>
       </Alert>
       <Alert className="rounded-lg p-4" variant="default">
-        <div className="text-2xl font-bold text-purple-600">
+        <div className="text-2xl font-bold text-foreground">
           {stats.avgPrice.toFixed(2)}€
         </div>
-        <div className="text-sm text-purple-800">Prix moyen</div>
+        <div className="text-sm text-foreground">Prix moyen</div>
       </Alert>
       <Alert className="rounded-lg p-4" variant="warning">
         <div className="text-2xl font-bold text-orange-600">
@@ -300,6 +300,16 @@ const PieceCard: React.FC<{ piece: Piece; isFirst?: boolean }> = ({
           loading={isFirst ? "eager" : "lazy"}
           decoding="async"
           {...(isFirst && { fetchPriority: "high" })}
+          // Defense-in-depth (INC-2026-015 / ADR-078) : if imgproxy upstream
+          // 4xx or any image fetch fails, swap to no.png instead of showing a
+          // broken-image icon. Closes the regression window between a future
+          // pieces_media_img corruption and the nightly audit catching it.
+          onError={(e) => {
+            const img = e.currentTarget;
+            if (img.src.endsWith('/images/no.png')) return;
+            img.removeAttribute('srcset');
+            img.src = '/images/no.png';
+          }}
         />
       ) : (
         <div className="w-full h-full flex items-center justify-center">

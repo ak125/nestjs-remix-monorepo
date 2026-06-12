@@ -30,23 +30,29 @@
 
 # ===== REDIRECTION .FR VERS .COM =====
 automecanik.fr, www.automecanik.fr {
+    # TLS via Cloudflare Origin CA — plus d'ACME/expiration (incident 2026-06-08)
+    tls /etc/caddy/origin/origin.pem /etc/caddy/origin/origin.key
     redir https://www.automecanik.com{uri} permanent
 }
 
 # ===== SITE PRINCIPAL .COM =====
 automecanik.com, www.automecanik.com {
-    
+
+    # TLS via Cloudflare Origin CA — plus d'ACME/expiration (incident 2026-06-08, cert LE expiré)
+    tls /etc/caddy/origin/origin.pem /etc/caddy/origin/origin.key
+
     # Redirection apex vers www
     @apex host automecanik.com
     redir @apex https://www.automecanik.com{uri} permanent
 
     # ===== IMGPROXY - TRANSFORMATION IMAGES GRATUITE =====
-    # Route: /imgproxy/{processing_options}/plain/{source_url}@{format}
-    # Exemple: /imgproxy/rs:fit:800/q:80/plain/https://supabase.co/.../image.jpg@webp
+    # Route: /imgproxy/{processing_options}/plain/{source_url}[@{format}]
+    # Sans modifier @{format} → imgproxy négocie AVIF > WebP > original via
+    # IMGPROXY_AUTO_AVIF + IMGPROXY_AUTO_WEBP (Accept header navigateur).
     # Documentation: https://docs.imgproxy.net/generating_the_url
     @imgproxy path /imgproxy/*
     handle @imgproxy {
-        # Cache 1 an (Cloudflare edge + navigateur)
+        # Cache 1 an par défaut (success). Overridden pour 4xx ci-dessous.
         header Cache-Control "public, max-age=31536000, immutable"
         header Vary "Accept"
         header X-Robots-Tag "noindex, nofollow"
@@ -57,6 +63,16 @@ automecanik.com, www.automecanik.com {
         reverse_proxy imgproxy:8080 {
             header_up Host imgproxy
             header_down -Server
+
+            # Anti cache-poisoning (INC-2026-015 / ADR-078) — upstream 4xx
+            # (source absente, fallback no.png servi par imgproxy) → cache
+            # court 5min, pas le 1 an immutable du parent (qui piégerait
+            # toute future ingestion sous le même nom).
+            @upstream_4xx status 4xx
+            handle_response @upstream_4xx {
+                header Cache-Control "public, max-age=300, must-revalidate"
+                copy_response
+            }
         }
     }
 
@@ -104,7 +120,9 @@ automecanik.com, www.automecanik.com {
     handle @gamme_images {
         header Cache-Control "public, max-age=31536000, immutable"
         header Vary "Accept"
-        rewrite * /rs:fit:800/q:85/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/gammes-produits/r1/{re.gamme_img.1}@webp
+        # No @webp modifier — imgproxy negotiates AVIF > WebP via Accept header
+        # (IMGPROXY_AUTO_AVIF + IMGPROXY_AUTO_WEBP).
+        rewrite * /rs:fit:800/q:85/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/gammes-produits/r1/{re.gamme_img.1}
         reverse_proxy imgproxy:8080 {
             header_up Host imgproxy
             header_down -Server
@@ -115,13 +133,13 @@ automecanik.com, www.automecanik.com {
     # URLs historiques stockées en base → imgproxy (WebP optimisé)
     # Préserve le PageRank via 301 permanent + images optimisées
 
-    # /rack/{folder}/{file} → imgproxy WebP (800px, q85)
+    # /rack/{folder}/{file} → imgproxy (négocie AVIF > WebP via Accept)
     @rack_legacy path_regexp rack_path ^/rack/(.+)$
-    redir @rack_legacy /imgproxy/rs:fit:800/q:85/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/{re.rack_path.1}@webp permanent
+    redir @rack_legacy /imgproxy/rs:fit:800/q:85/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/{re.rack_path.1} permanent
 
-    # /upload/{path} → imgproxy WebP (800px, q85)
+    # /upload/{path} → imgproxy (négocie AVIF > WebP via Accept)
     @upload_legacy path_regexp upload_path ^/upload/(.+)$
-    redir @upload_legacy /imgproxy/rs:fit:800/q:85/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/{re.upload_path.1}@webp permanent
+    redir @upload_legacy /imgproxy/rs:fit:800/q:85/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/{re.upload_path.1} permanent
 
     # ===== SITEMAPS V10 (par temperature + unifie) =====
     # Servis directement depuis /var/www/sitemaps (volume persistant)

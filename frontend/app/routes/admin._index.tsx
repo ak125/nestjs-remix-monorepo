@@ -27,6 +27,7 @@ import {
   Truck,
   Palette,
   Sparkles,
+  LayoutDashboard,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Alert } from "~/components/ui/alert";
@@ -220,24 +221,24 @@ export default function AdminDashboard() {
         </div>
 
         {/* Revenus */}
-        <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl shadow-lg p-6 border border-purple-200 hover:shadow-xl transition-all">
+        <div className="bg-gradient-to-br rounded-xl shadow-lg p-6 border border-purple-200 hover:shadow-xl transition-all">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-semibold text-purple-700 uppercase tracking-wide">
+              <p className="text-sm font-semibold text-foreground uppercase tracking-wide">
                 Revenus
               </p>
-              <p className="text-3xl font-bold text-purple-900 mt-1">
+              <p className="text-3xl font-bold text-foreground mt-1">
                 {formatNumber(realTimeStats.totalRevenue, "fr-FR", {
                   style: "currency",
                   currency: "EUR",
                 })}
               </p>
-              <p className="text-sm text-purple-600 mt-2">
+              <p className="text-sm text-foreground mt-2">
                 {(realTimeStats.avgOrderValue || 0).toFixed(0)}€ panier moyen
               </p>
             </div>
-            <div className="bg-purple-200 p-3 rounded-full">
-              <CreditCard className="h-8 w-8 text-purple-600" />
+            <div className="bg-muted p-3 rounded-full">
+              <CreditCard className="h-8 w-8 text-foreground" />
             </div>
           </div>
         </div>
@@ -246,19 +247,19 @@ export default function AdminDashboard() {
       {/* Métriques secondaires avec Fournisseurs */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {/* Fournisseurs */}
-        <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl shadow-lg p-6 border border-indigo-200 hover:shadow-xl transition-all">
+        <div className="bg-gradient-to-br rounded-xl shadow-lg p-6 border border-indigo-200 hover:shadow-xl transition-all">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-semibold text-indigo-700 uppercase tracking-wide">
+              <p className="text-sm font-semibold text-foreground uppercase tracking-wide">
                 Fournisseurs
               </p>
-              <p className="text-3xl font-bold text-indigo-900 mt-1">
+              <p className="text-3xl font-bold text-foreground mt-1">
                 {formatNumber(realTimeStats.totalSuppliers)}
               </p>
-              <p className="text-sm text-indigo-600 mt-2">Partenaires actifs</p>
+              <p className="text-sm text-foreground mt-2">Partenaires actifs</p>
             </div>
-            <div className="bg-indigo-200 p-3 rounded-full">
-              <Truck className="h-8 w-8 text-indigo-600" />
+            <div className="bg-muted p-3 rounded-full">
+              <Truck className="h-8 w-8 text-foreground" />
             </div>
           </div>
         </div>
@@ -495,40 +496,40 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 border border-indigo-200 rounded-xl p-6">
+                <div className="bg-gradient-to-br border border-indigo-200 rounded-xl p-6">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="bg-indigo-100 p-2 rounded-lg">
-                      <Truck className="h-6 w-6 text-indigo-600" />
+                    <div className="bg-muted p-2 rounded-lg">
+                      <Truck className="h-6 w-6 text-foreground" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-indigo-900">
+                      <h3 className="text-lg font-semibold text-foreground">
                         Logistique
                       </h3>
-                      <p className="text-sm text-indigo-600">
+                      <p className="text-sm text-foreground">
                         Chaîne d'approvisionnement
                       </p>
                     </div>
                   </div>
                   <div className="space-y-3">
                     <div className="flex justify-between">
-                      <span className="text-indigo-700">
+                      <span className="text-foreground">
                         Fournisseurs actifs
                       </span>
-                      <span className="font-bold text-indigo-900">
+                      <span className="font-bold text-foreground">
                         {formatNumber(realTimeStats.totalSuppliers)}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-indigo-700">
+                      <span className="text-foreground">
                         Commandes en attente
                       </span>
-                      <span className="font-bold text-indigo-900">
+                      <span className="font-bold text-foreground">
                         {formatNumber(realTimeStats.pendingOrders)}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-indigo-700">Delai moyen</span>
-                      <span className="font-bold text-indigo-900">
+                      <span className="text-foreground">Delai moyen</span>
+                      <span className="font-bold text-foreground">
                         {"\u2014"}
                       </span>
                     </div>
@@ -545,10 +546,10 @@ export default function AdminDashboard() {
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                 <div className="bg-white rounded-lg shadow-md p-6 border border-indigo-200">
                   <div className="flex items-center gap-2 mb-3">
-                    <Truck className="h-5 w-5 text-indigo-600" />
+                    <Truck className="h-5 w-5 text-foreground" />
                     <span className="font-medium">Fournisseurs</span>
                   </div>
-                  <div className="text-2xl font-bold text-indigo-900">
+                  <div className="text-2xl font-bold text-foreground">
                     {formatNumber(realTimeStats.totalSuppliers)}
                   </div>
                   <div className="text-sm text-gray-600 mt-2">
@@ -610,7 +611,7 @@ export default function AdminDashboard() {
 
                 <div className="bg-white rounded-lg shadow-md p-6">
                   <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-                    <Truck className="h-5 w-5 text-indigo-600" />
+                    <Truck className="h-5 w-5 text-foreground" />
                     Top Fournisseurs
                   </h3>
                   <p className="text-sm text-gray-500 italic">
@@ -683,7 +684,7 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="bg-white rounded-lg shadow-md p-6 border border-purple-200">
-                  <h3 className="text-lg font-medium mb-4 text-purple-800">
+                  <h3 className="text-lg font-medium mb-4 text-foreground">
                     Performance SEO
                   </h3>
                   <div className="space-y-3">
@@ -748,15 +749,15 @@ export default function AdminDashboard() {
 
                 <div className="bg-white rounded-lg shadow-md p-6">
                   <div className="flex items-center gap-2 mb-3">
-                    <Zap className="h-5 w-5 text-purple-600" />
+                    <Zap className="h-5 w-5 text-foreground" />
                     <span className="font-medium">Disque</span>
                   </div>
-                  <div className="text-2xl font-bold text-purple-900">
+                  <div className="text-2xl font-bold text-foreground">
                     {realTimeStats.systemHealth?.diskUsage || 0}%
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
                     <div
-                      className="bg-purple-600 h-2 rounded-full"
+                      className="bg-primary h-2 rounded-full"
                       style={{
                         width: `${realTimeStats.systemHealth?.diskUsage || 0}%`,
                       }}
@@ -808,7 +809,7 @@ export default function AdminDashboard() {
           {activeTab === "security" && (
             <div className="space-y-6">
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
+                <div className="bg-white rounded-lg shadow-md p-6">
                   <div className="flex items-center gap-2 mb-4">
                     <Shield className="h-5 w-5 text-green-600" />
                     <h3 className="text-lg font-medium">Status Sécurité</h3>
@@ -837,7 +838,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+                <div className="bg-white rounded-lg shadow-md p-6">
                   <div className="flex items-center gap-2 mb-4">
                     <Users className="h-5 w-5 text-blue-600" />
                     <h3 className="text-lg font-medium">Authentification</h3>
@@ -860,9 +861,9 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
-                <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-purple-500">
+                <div className="bg-white rounded-lg shadow-md p-6">
                   <div className="flex items-center gap-2 mb-4">
-                    <Database className="h-5 w-5 text-purple-600" />
+                    <Database className="h-5 w-5 text-foreground" />
                     <h3 className="text-lg font-medium">Sauvegardes</h3>
                   </div>
                   <div className="space-y-3">
@@ -965,10 +966,10 @@ export default function AdminDashboard() {
 
           <Link
             to="/admin/orders"
-            className="block p-4 rounded-lg border-2 border-purple-200 hover:border-purple-400 hover:bg-purple-50 transition-all group"
+            className="block p-4 rounded-lg border-2 border-purple-200 hover:border-purple-400 hover:bg-muted transition-all group"
           >
             <div className="flex items-center gap-3">
-              <ShoppingCart className="h-6 w-6 text-purple-500 group-hover:text-purple-600" />
+              <ShoppingCart className="h-6 w-6 text-foreground group-hover:text-foreground" />
               <div>
                 <p className="font-medium text-gray-900">Commandes</p>
                 <p className="text-sm text-gray-500">
@@ -980,10 +981,10 @@ export default function AdminDashboard() {
 
           <Link
             to="/admin/suppliers"
-            className="block p-4 rounded-lg border-2 border-indigo-200 hover:border-indigo-400 hover:bg-indigo-50 transition-all group"
+            className="block p-4 rounded-lg border-2 border-indigo-200 hover:border-indigo-400 hover:bg-muted transition-all group"
           >
             <div className="flex items-center gap-3">
-              <Truck className="h-6 w-6 text-indigo-500 group-hover:text-indigo-600" />
+              <Truck className="h-6 w-6 text-foreground group-hover:text-foreground" />
               <div>
                 <p className="font-medium text-gray-900">Fournisseurs</p>
                 <p className="text-sm text-gray-500">
@@ -997,12 +998,27 @@ export default function AdminDashboard() {
         {/* Ligne 2 : Fonctionnalités avancées */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Link
-            to="/admin/ai-content"
-            className="block p-4 rounded-lg border-2 border-gradient-to-r from-purple-200 to-pink-200 hover:border-purple-400 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 transition-all group relative overflow-hidden"
+            to="/admin/command-center"
+            className="block p-4 rounded-lg border-2 border-cyan-200 hover:border-cyan-400 hover:bg-muted transition-all group"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div className="flex items-center gap-3">
+              <LayoutDashboard className="h-6 w-6 text-cyan-600 group-hover:text-cyan-700" />
+              <div>
+                <p className="font-medium text-gray-900">Command Center</p>
+                <p className="text-sm text-gray-500">
+                  Cockpit IA — santé départements & actions
+                </p>
+              </div>
+            </div>
+          </Link>
+
+          <Link
+            to="/admin/ai-content"
+            className="block p-4 rounded-lg border-2 border-gradient-to-r to-pink-200 hover:border-purple-400 hover:bg-gradient-to-r hover: hover:to-pink-50 transition-all group relative overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r /5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
             <div className="flex items-center gap-3 relative z-10">
-              <div className="bg-gradient-to-br from-purple-500 to-pink-500 p-2 rounded-lg">
+              <div className="bg-gradient-to-br to-pink-500 p-2 rounded-lg">
                 <Sparkles className="h-6 w-6 text-white group-hover:animate-pulse" />
               </div>
               <div>
@@ -1021,10 +1037,10 @@ export default function AdminDashboard() {
 
           <button
             onClick={() => setActiveTab("design")}
-            className="block p-4 rounded-lg border-2 border-purple-200 hover:border-purple-400 hover:bg-purple-50 transition-all group text-left"
+            className="block p-4 rounded-lg border-2 border-purple-200 hover:border-purple-400 hover:bg-muted transition-all group text-left"
           >
             <div className="flex items-center gap-3">
-              <Palette className="h-6 w-6 text-purple-500 group-hover:text-purple-600" />
+              <Palette className="h-6 w-6 text-foreground group-hover:text-foreground" />
               <div>
                 <p className="font-medium text-gray-900">Design System</p>
                 <p className="text-sm text-gray-500">Tokens & Templates</p>
@@ -1096,7 +1112,7 @@ export default function AdminDashboard() {
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 mt-6">
           <Link
             to="/admin/analytics-test-simple"
-            className="block p-3 rounded-lg border-2 border-blue-200 hover:border-blue-400 hover:bg-info/20 transition-all bg-gradient-to-r from-blue-50 to-purple-50"
+            className="block p-3 rounded-lg border-2 border-blue-200 hover:border-blue-400 hover:bg-info/20 transition-all bg-gradient-to-r from-blue-50"
           >
             <div className="flex items-center gap-3">
               <TrendingUp className="h-5 w-5 text-blue-500" />
@@ -1159,7 +1175,7 @@ export default function AdminDashboard() {
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="border-green-200 hover:shadow-lg transition-all">
+          <Card className="hover:shadow-lg transition-all">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Pages Indexées
@@ -1176,7 +1192,7 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="border-blue-200 hover:shadow-lg transition-all">
+          <Card className="hover:shadow-lg transition-all">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Pages Optimisées
@@ -1191,22 +1207,22 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="border-purple-200 hover:shadow-lg transition-all">
+          <Card className="hover:shadow-lg transition-all">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Taux d'Optimisation
               </CardTitle>
-              <TrendingUp className="h-4 w-4 text-purple-600" />
+              <TrendingUp className="h-4 w-4 text-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-purple-700">
+              <div className="text-2xl font-bold text-foreground">
                 {(realTimeStats.seoStats?.completionRate || 0).toFixed(1)}%
               </div>
-              <p className="text-xs text-purple-600">Performance SEO globale</p>
+              <p className="text-xs text-foreground">Performance SEO globale</p>
             </CardContent>
           </Card>
 
-          <Card className="border-orange-200 hover:shadow-lg transition-all">
+          <Card className="hover:shadow-lg transition-all">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Trafic Organique
@@ -1294,7 +1310,7 @@ export default function AdminDashboard() {
         <Card className="lg:col-span-1">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Monitor className="h-5 w-5 text-purple-600" />
+              <Monitor className="h-5 w-5 text-foreground" />
               Performance Système
             </CardTitle>
           </CardHeader>
@@ -1321,7 +1337,7 @@ export default function AdminDashboard() {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Cache efficace</span>
-                  <span className="font-bold text-purple-600">
+                  <span className="font-bold text-foreground">
                     {realTimeStats.performance?.cacheHitRate ?? "\u2014"}%
                   </span>
                 </div>

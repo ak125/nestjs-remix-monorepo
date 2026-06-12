@@ -11,6 +11,10 @@ import { Module, Logger } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module';
 // Conditional import — RagProxyModule may not be loaded (RAG_ENABLED=false)
 import { RagProxyModule } from '../rag-proxy/rag-proxy.module';
+// PR-B.4 — depends on VehicleContextPort to persist the cookie on diagnostic
+// completion. Imported as a Module (not raw service) to keep the cross-domain
+// boundary explicit and symbol-token-mediated (canon ddd-bounded-contexts).
+import { VehicleContextModule } from '../vehicle-context/vehicle-context.module';
 import { DiagnosticEngineController } from './diagnostic-engine.controller';
 import { DiagnosticEngineOrchestrator } from './diagnostic-engine.orchestrator';
 import { DiagnosticEngineDataService } from './diagnostic-engine.data-service';
@@ -22,10 +26,19 @@ import { MaintenanceIntelligenceEngine } from './engines/maintenance-intelligenc
 import { RagEnrichmentEngine } from './engines/rag-enrichment.engine';
 import { MaintenanceCalculatorService } from './services/maintenance-calculator.service';
 import { DiagnosticContentService } from './services/diagnostic-content.service';
+import { KgShadowService } from './services/kg-shadow.service';
+// V1A.0 — Intent Resolution layer (composition pure)
+import { IntentClassifierService } from './services/intent-classifier.service';
+import { ActionRecommenderService } from './services/action-recommender.service';
+import { HumanEscalationBuilderService } from './services/human-escalation-builder.service';
+import { InvariantAsserterService } from './services/invariant-asserter.service';
+import { OutcomeEmitterService } from './services/outcome-emitter.service';
+import { DiagnosticResolutionPipelineService } from './services/diagnostic-resolution-pipeline.service';
 
 @Module({
   imports: [
     DatabaseModule,
+    VehicleContextModule, // PR-B.4 — VEHICLE_CONTEXT_PORT for cookie persist on analyze
     ...(process.env.RAG_ENABLED === 'true' ? [RagProxyModule] : []),
   ],
   controllers: [DiagnosticEngineController],
@@ -40,18 +53,31 @@ import { DiagnosticContentService } from './services/diagnostic-content.service'
     RagEnrichmentEngine,
     MaintenanceCalculatorService,
     DiagnosticContentService,
+    KgShadowService, // PR-E — shadow KG comparison (fire-and-forget)
+    // V1A.0 — Intent Resolution layer
+    IntentClassifierService,
+    ActionRecommenderService,
+    HumanEscalationBuilderService,
+    InvariantAsserterService,
+    OutcomeEmitterService,
+    DiagnosticResolutionPipelineService,
   ],
   exports: [
     DiagnosticEngineOrchestrator,
     DiagnosticEngineDataService,
     MaintenanceCalculatorService,
     DiagnosticContentService,
+    // V1A.0 — pipeline + emitter exposés pour Controller + future modules
+    DiagnosticResolutionPipelineService,
+    OutcomeEmitterService,
   ],
 })
 export class DiagnosticEngineModule {
   private readonly logger = new Logger(DiagnosticEngineModule.name);
 
   constructor() {
-    this.logger.log('DiagnosticEngine Module actif (Slice 2+8 — 6 engines)');
+    this.logger.log(
+      'DiagnosticEngine Module actif (Slice 2+8 — 6 engines + V1A.0 Intent Resolution pipeline)',
+    );
   }
 }

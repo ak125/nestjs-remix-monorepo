@@ -145,7 +145,7 @@ export const PurchaseGuideSection = memo(function PurchaseGuideSection({
                                   option.outcome === "continue" &&
                                     "border-green-300 text-green-700 bg-green-50",
                                   option.outcome === "stop" &&
-                                    "border-gray-300 text-gray-700 bg-gray-50",
+                                    "border-gray-300 text-red-900 bg-gray-50",
                                 )}
                               >
                                 {option.outcome}
@@ -197,7 +197,7 @@ export const PurchaseGuideSection = memo(function PurchaseGuideSection({
             >
               Criteres de selection selon votre usage
             </h2>
-            <Card className="border-indigo-200 bg-indigo-50/50">
+            <Card className="border-indigo-200 bg-muted/50">
               <CardContent className="pt-6">
                 {requiredCriteria.length > 0 &&
                 recommendedCriteria.length > 0 ? (
@@ -223,7 +223,7 @@ export const PurchaseGuideSection = memo(function PurchaseGuideSection({
 
                 {(guide.useCases || []).length > 0 && (
                   <div className="mt-5 rounded-lg border border-indigo-200 bg-white p-4">
-                    <p className="font-semibold text-indigo-900 mb-2">
+                    <p className="font-semibold text-foreground mb-2">
                       Cas d'usage
                     </p>
                     <ul className="space-y-2">
@@ -238,7 +238,7 @@ export const PurchaseGuideSection = memo(function PurchaseGuideSection({
                 )}
                 {output?.selectedSpec && (
                   <div className="mt-5 rounded-lg border border-indigo-200 bg-white p-4">
-                    <p className="font-semibold text-indigo-900 mb-2">
+                    <p className="font-semibold text-foreground mb-2">
                       Sortie attendue
                     </p>
                     <p className="text-sm text-gray-700">
@@ -310,7 +310,7 @@ function CriteriaGrid({
           key={criterion.key}
           className="rounded-lg border border-indigo-200 bg-white p-4"
         >
-          <p className="font-semibold text-indigo-900">{criterion.label}</p>
+          <p className="font-semibold text-foreground">{criterion.label}</p>
           <p className="text-sm text-gray-700 mt-1">{criterion.guidance}</p>
         </div>
       ))}

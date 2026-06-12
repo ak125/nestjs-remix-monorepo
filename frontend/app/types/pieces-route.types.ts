@@ -63,6 +63,13 @@ export interface PieceData {
   priceFormatted: string;
   brand: string;
   stock: string;
+  /**
+   * Availability code surfaced from the RPC (stock_status: IN_STOCK / LOW_STOCK /
+   * PREORDER / OUT_OF_STOCK ≈ pri_dispo '1'/'2'/'3'/else). Optional: when absent,
+   * sellability falls back to price>0 (the RPC zeroes the price for non-sellable
+   * dispo). Drives the can_sell gate — see utils/stock.utils isSellable.
+   */
+  stockStatus?: string;
   reference: string;
   oemRef?: string; // Référence OEM constructeur (ex: "1109 91")
   matchKind?: number; // 0=direct, 1=OEM équip, 2=OEM constr, 3-4=équivalences croisées
@@ -144,6 +151,9 @@ export interface SEOInfo {
   title: string;
   h1: string;
   description: string;
+  /** Per-pg_id technique variations (`__seo_gamme_car_switch.sgcs_alias=2`)
+   * pour rotation H1 suffix dans PiecesHeader via @repo/seo-types pickH1Suffix. */
+  compSwitch2?: readonly string[];
 }
 
 export interface CatalogueItem {
@@ -175,6 +185,9 @@ export interface LoaderData {
   minPrice: number;
   maxPrice: number;
   prixPasCherText?: string; // Texte dynamique "pas cher"
+  /** Per-pg_id technique variations (__seo_gamme_car_switch.sgcs_alias=2)
+   * pour rotation H1 suffix via @repo/seo-types pickH1Suffix. */
+  compSwitch2?: readonly string[];
 
   // Contenu enrichi V5
   seoContent: SEOEnrichedContent;

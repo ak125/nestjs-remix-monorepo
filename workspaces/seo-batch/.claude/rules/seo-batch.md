@@ -12,6 +12,7 @@ S'applique aux runs depuis `workspaces/seo-batch/`. Complète (sans les remplace
 
 - `gamme_aggregates` (241 lignes, RLS active) : **jamais caster `sgc_id` en `timestamptz`**. Utiliser `sg_updated_at` pour les filtres temporels.
 - **V-Level v5.0** : T = keywords, V = vehicles. V3 = champion, V4 = rest, V5 = sibling, V2 = top10. Le script canon est `scripts/seo/rebuild-type-vlevel.py` (l'ancien `recalculate_vlevel.py` est archivé).
+  - ℹ️ **Réf à jour** : `audit/levels-doctrine-cgc-vs-vlevel-2026-06-04.md` + invariants `@repo/seo-roles` (`vlevel-invariants.ts`). Précisions owner 2026-06-05 : **V5 = union siblings + enfants** (pas seulement frères) ; `v_level` sert le **classement marketing FR**, à ne pas confondre avec `cgc_level` (maillage public). `rebuild-type-vlevel.py` est un **projecteur** (`__seo_keywords → __seo_type_vlevel`), PAS le calculateur des règles V.
 - **Vehicles** : 53 959 types, dont 30 502 legacy (`< 60000`, intacte) + 23 457 remappés (`60000-83456`, noindex). Ne pas mélanger les ranges.
 - **Gammes G1/G2** : 232 gammes éligibles via vue `__pg_gammes` (exclut pg_level=0 + G3/G4 orphelines), 100 % avec alias.
 

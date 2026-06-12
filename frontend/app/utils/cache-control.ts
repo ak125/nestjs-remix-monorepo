@@ -19,15 +19,23 @@ const NO_STORE = "no-cache, no-store, must-revalidate";
  *   3. `successPolicy` → fallback when neither set anything explicit
  *
  * X-Robots-Tag is propagated unchanged from whichever source carried it
- * (loader on success, error response on failure).
+ * (loader on success, error response on failure). Pass `opts.defaultErrorRobots`
+ * (e.g. `"noindex, follow"`) for routes whose error throws are *bare*
+ * (`new Response("Not Found", { status: 404 })` with no headers): the directive
+ * is then asserted on the error response instead of relying on the absence-of-
+ * header default — without overriding an explicit X-Robots-Tag when present.
  */
-export function buildCacheHeaders(successPolicy: string): HeadersFunction {
+export function buildCacheHeaders(
+  successPolicy: string,
+  opts?: { defaultErrorRobots?: string },
+): HeadersFunction {
   return ({ loaderHeaders, errorHeaders }) => {
     const out: Record<string, string> = {};
 
     if (errorHeaders) {
       out["Cache-Control"] = errorHeaders.get("Cache-Control") ?? NO_STORE;
-      const xRobots = errorHeaders.get("X-Robots-Tag");
+      const xRobots =
+        errorHeaders.get("X-Robots-Tag") ?? opts?.defaultErrorRobots;
       if (xRobots) out["X-Robots-Tag"] = xRobots;
       return out;
     }

@@ -133,6 +133,117 @@ def is_non_transactional_header(sql: str) -> bool:
     return bool(NON_TX_MARKER_RE.search(head))
 
 
+def split_sql_statements(sql: str) -> list[str]:
+    """Split a SQL script into top-level statements on semicolons.
+
+    Respects Postgres lexical structure so a ``;`` inside a string, quoted
+    identifier, comment, or dollar-quoted block does NOT split a statement:
+
+      - line comments       ``-- ... <newline>``
+      - block comments      ``/* ... */`` (nestable, per Postgres)
+      - single-quoted text  ``'...'`` with ``''`` escaping
+      - quoted identifiers  ``"..."`` with ``""`` escaping
+      - dollar-quoted text  ``$tag$ ... $tag$`` (tag optional, e.g. ``$$``)
+
+    Why this exists: the non-transactional apply path must send each statement
+    to the server in its OWN ``execute()``. Postgres wraps a multi-statement
+    simple-query string in an implicit transaction even under autocommit, which
+    makes ``CREATE INDEX CONCURRENTLY`` fail with SQLSTATE 25001. Sending one
+    statement per round-trip keeps each command outside any transaction.
+
+    Leading comments stay attached to the following statement (Postgres ignores
+    them); fragments that are only comments / whitespace are dropped. Standard-
+    conforming strings are assumed (PG default since 9.1) — backslash escapes
+    inside ``E'...'`` are not special-cased (rare in DDL migrations).
+    """
+    statements: list[str] = []
+    buf: list[str] = []
+    i, n = 0, len(sql)
+    while i < n:
+        two = sql[i:i + 2]
+        # ── line comment ──
+        if two == "--":
+            j = sql.find("\n", i)
+            j = n if j == -1 else j
+            buf.append(sql[i:j])
+            i = j
+            continue
+        # ── block comment (nestable) ──
+        if two == "/*":
+            depth = 1
+            buf.append(two)
+            i += 2
+            while i < n and depth > 0:
+                t = sql[i:i + 2]
+                if t == "/*":
+                    depth += 1
+                    buf.append(t)
+                    i += 2
+                elif t == "*/":
+                    depth -= 1
+                    buf.append(t)
+                    i += 2
+                else:
+                    buf.append(sql[i])
+                    i += 1
+            continue
+        c = sql[i]
+        # ── single-quoted string / quoted identifier (same '' / "" escape) ──
+        if c in ("'", '"'):
+            quote = c
+            buf.append(c)
+            i += 1
+            while i < n:
+                if sql[i] == quote:
+                    if i + 1 < n and sql[i + 1] == quote:  # doubled escape
+                        buf.append(quote * 2)
+                        i += 2
+                        continue
+                    buf.append(quote)
+                    i += 1
+                    break
+                buf.append(sql[i])
+                i += 1
+            continue
+        # ── dollar-quoted string ──
+        if c == "$":
+            m = re.match(r"\$([A-Za-z_][A-Za-z0-9_]*)?\$", sql[i:])
+            if m:
+                tag = m.group(0)
+                end = sql.find(tag, i + len(tag))
+                if end == -1:  # unterminated — keep the rest verbatim
+                    buf.append(sql[i:])
+                    i = n
+                    continue
+                buf.append(sql[i:end + len(tag)])
+                i = end + len(tag)
+                continue
+            buf.append(c)
+            i += 1
+            continue
+        # ── statement terminator ──
+        if c == ";":
+            stmt = "".join(buf).strip()
+            if stmt:
+                statements.append(stmt)
+            buf = []
+            i += 1
+            continue
+        buf.append(c)
+        i += 1
+
+    tail = "".join(buf).strip()
+    if tail:
+        statements.append(tail)
+
+    def _has_executable_sql(stmt: str) -> bool:
+        stripped = re.sub(r"/\*.*?\*/", "", stmt, flags=re.DOTALL)
+        stripped = re.sub(r"--[^\n]*", "", stripped)
+        return bool(stripped.strip())
+
+    return [s for s in statements if _has_executable_sql(s)]
+
+
 def parse_local_migrations() -> list[LocalMigration]:
     if not MIGRATIONS_DIR.is_dir():
         fail(2, f"migrations directory not found: {MIGRATIONS_DIR}")
@@ -310,8 +421,14 @@ def apply_migration(
         with conn.cursor() as cur:
             insert_applying(cur, mig, runner, git_sha)
         try:
+            # Send each statement in its OWN execute(). A multi-statement
+            # simple-query string is wrapped by Postgres in an implicit
+            # transaction even under autocommit, which makes CREATE INDEX
+            # CONCURRENTLY (and other non-transactional commands) fail with
+            # SQLSTATE 25001. One statement per round-trip avoids that.
             with conn.cursor() as cur:
-                cur.execute(sql)
+                for statement in split_sql_statements(sql):
+                    cur.execute(statement)
         except Exception as e:
             try:
                 with conn.cursor() as cur:
@@ -540,6 +657,60 @@ def run_self_test() -> int:
     assert parse_exclude("a") == {"a"}
     assert parse_exclude("a,b , c , ") == {"a", "b", "c"}
     assert parse_exclude(" , , ") == set()
+
+    # 8. SQL statement splitter (non-transactional apply path) ----------
+    # Simple multi-statement split.
+    assert split_sql_statements("SELECT 1; SELECT 2;") == ["SELECT 1", "SELECT 2"]
+    # Trailing statement without terminator is kept.
+    assert split_sql_statements("SELECT 1;\nSELECT 2") == ["SELECT 1", "SELECT 2"]
+    # CONCURRENTLY-style file : SET + 2 indexes = 3 statements, leading
+    # comment stays attached to the first.
+    concurrent = (
+        "-- @non_transactional\n"
+        "set lock_timeout = '2s';\n"
+        "CREATE INDEX CONCURRENTLY i1 ON t (a);\n"
+        "CREATE INDEX CONCURRENTLY i2 ON t (b);\n"
+    )
+    parts = split_sql_statements(concurrent)
+    assert len(parts) == 3, parts
+    assert parts[0].startswith("-- @non_transactional"), parts[0]
+    assert "set lock_timeout" in parts[0]
+    assert parts[1] == "CREATE INDEX CONCURRENTLY i1 ON t (a)", parts[1]
+    assert parts[2] == "CREATE INDEX CONCURRENTLY i2 ON t (b)", parts[2]
+    # Semicolon inside a single-quoted string must NOT split.
+    assert split_sql_statements("INSERT INTO t VALUES ('a;b');") == [
+        "INSERT INTO t VALUES ('a;b')"
+    ]
+    # Doubled-quote escape inside a string.
+    assert split_sql_statements("SELECT 'it''s; ok';") == ["SELECT 'it''s; ok'"]
+    # Semicolon inside a quoted identifier must NOT split.
+    assert split_sql_statements('CREATE TABLE "we;ird" (a int);') == [
+        'CREATE TABLE "we;ird" (a int)'
+    ]
+    # Semicolon inside a dollar-quoted function body must NOT split.
+    dollar = (
+        "CREATE FUNCTION f() RETURNS int AS $$\n"
+        "BEGIN\n  RETURN 1; -- inner ;\nEND;\n$$ LANGUAGE plpgsql;\n"
+        "SELECT f();"
+    )
+    dparts = split_sql_statements(dollar)
+    assert len(dparts) == 2, dparts
+    assert dparts[0].startswith("CREATE FUNCTION f()") and "$$" in dparts[0]
+    assert dparts[1] == "SELECT f()", dparts[1]
+    # Tagged dollar-quote.
+    tagged = "SELECT $tag$ a; b $tag$; SELECT 2;"
+    assert split_sql_statements(tagged) == ["SELECT $tag$ a; b $tag$", "SELECT 2"]
+    # Semicolon inside a line comment must NOT split; comment-only tail dropped.
+    assert split_sql_statements("SELECT 1; -- a; b\n") == ["SELECT 1"]
+    # Semicolon inside a block comment must NOT split.
+    assert split_sql_statements("SELECT 1 /* x; y */; SELECT 2;") == [
+        "SELECT 1 /* x; y */",
+        "SELECT 2",
+    ]
+    # Comment-only / whitespace-only input yields no statements.
+    assert split_sql_statements("-- just a comment\n") == []
+    assert split_sql_statements("  ;  ;\n") == []
+    assert split_sql_statements("") == []
 
     print("OK — all self-tests passed.")
     return 0

@@ -113,12 +113,12 @@ dependencies:
     owner: "@ak125"
 
   # ── build-tooling (2 entries — D13) ──
-  - id: "npm:tsx@^4.20.6"
+  - id: "npm:tsx@^4.22.3"
     name: "tsx"
     family: build-tooling
     domain: D13
     owner: "@ak125"
-    notes: "Backend version of tsx; root has @^4.7.0 (different version range)."
+    notes: "tsx unified at ^4.22.3 across frontend + 5 workspace packages (L1 deps.json). Contract was pinned ^4.20.6 while package.json already declared ^4.22.3 — main's committed deps.json was stale (warn-only freshness, Phase 1); resynced to L1 truth here."
   - id: "npm:turbo@^2.9.12"
     name: "turbo"
     family: build-tooling
