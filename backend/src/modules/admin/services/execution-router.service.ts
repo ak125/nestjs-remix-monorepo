@@ -65,8 +65,6 @@ export interface ExecutionResult {
 interface EnricherLike {
   enrichSingle?: (...args: unknown[]) => Promise<unknown>;
   enrich?: (...args: unknown[]) => Promise<unknown>;
-  generateFromTemplates?: () => Promise<unknown>;
-  generateFromGammes?: () => Promise<unknown>;
   getBySlug?: (slug: string) => Promise<unknown>;
   getByPgId?: (pgId: number) => Promise<unknown>;
 }
@@ -340,7 +338,7 @@ export class ExecutionRouterService extends SupabaseBaseService {
     }
   }
 
-  // ── Private: R4 single-target dispatch (uses ReferenceService.refreshSingleGamme) ──
+  // ── Private: R4 single-target dispatch (r4_batch 0-LLM audit + dryRun preview only) ──
 
   private async dispatchR4Single(
     enricher: EnricherLike,
@@ -357,9 +355,7 @@ export class ExecutionRouterService extends SupabaseBaseService {
       if (enricher0llm) {
         return enricher0llm.enrichSingle(slug, { dryRun, source });
       }
-      this.logger.warn(
-        '[R4] R4ContentEnricherService not available, falling back to RAG-only',
-      );
+      this.logger.warn('[R4] R4ContentEnricherService not available');
     }
 
     if (dryRun) {
@@ -370,83 +366,31 @@ export class ExecutionRouterService extends SupabaseBaseService {
           dryRun: true,
           exists: !!existing,
           slug,
-          action: existing ? 'skip (already exists)' : 'would create from RAG',
+          action: existing
+            ? 'skip (already exists)'
+            : 'no-op (génération RAG retirée — ADR-031/046)',
         };
       }
       return this.dryRunPreview(RoleId.R4_REFERENCE, targetId, pgAlias);
     }
 
-    // Use ReferenceService.refreshSingleGamme for enriched RAG content (default path)
-    const refService = enricher as unknown as {
-      refreshSingleGamme?: (alias: string) => Promise<{
-        created: boolean;
-        updated: boolean;
-        skipped: boolean;
-        qualityScore?: number;
-        qualityFlags?: string[];
-      }>;
-    };
-
-    if (typeof refService.refreshSingleGamme === 'function') {
-      const result = await refService.refreshSingleGamme(slug);
-      return {
-        targetId,
-        status: result.created || result.updated ? 'enriched' : 'skipped',
-        slug,
-        ...result,
-      };
-    }
-
-    // Fallback: basic insert
-    const { data: gamme } = await this.client
-      .from('pieces_gamme')
-      .select('pg_id, pg_alias, pg_name')
-      .eq('pg_id', targetId)
-      .single();
-
-    if (!gamme) {
-      return { targetId, status: 'skipped', reason: 'gamme not found' };
-    }
-
-    const { count } = await this.client
-      .from('__seo_reference')
-      .select('id', { count: 'exact', head: true })
-      .eq('slug', gamme.pg_alias);
-
-    if ((count ?? 0) > 0) {
-      return {
-        targetId,
-        status: 'skipped',
-        reason: 'reference already exists',
-      };
-    }
-
-    const { error } = await this.client.from('__seo_reference').insert({
-      slug: gamme.pg_alias,
-      title: `${gamme.pg_name} : Définition, rôle et composition`,
-      meta_description: `Définition technique du ${gamme.pg_name}: rôle, composition, fonctionnement.`,
-      definition: `Le ${gamme.pg_name} est une pièce automobile essentielle.`,
-      role_mecanique: `Rôle mécanique du ${gamme.pg_name} dans le véhicule.`,
-      pg_id: parseInt(targetId, 10),
-      is_published: false,
-    });
-
-    if (error) {
-      return { targetId, status: 'failed', reason: error.message };
-    }
-
+    // Génération R4 depuis le filesystem RAG retirée (ADR-031/046 — RAG = chatbot only).
+    // Écritures R4 gouvernées restantes : SeoGeneratorService (writer live) et
+    // R4ContentEnricherService (source='r4_batch', 0-LLM). Pas de fallback d'insert
+    // générique — échec explicite, jamais silencieux.
     return {
       targetId,
-      status: 'enriched',
-      slug: gamme.pg_alias,
-      action: 'created',
+      status: 'failed',
+      slug,
+      reason:
+        'R4 generation-from-RAG removed (ADR-031/046). Use source=r4_batch (0-LLM audit) or the governed seo-generator writer.',
     };
   }
 
   // ── Private: R5 single-target dispatch ──
 
   private async dispatchR5Single(
-    enricher: EnricherLike,
+    _enricher: EnricherLike,
     targetId: string,
     pgAlias: string | null,
     dryRun: boolean,
@@ -467,74 +411,19 @@ export class ExecutionRouterService extends SupabaseBaseService {
         action:
           (count ?? 0) > 0
             ? 'skip (diagnostics exist)'
-            : 'would create from templates (RAG-enriched)',
+            : 'no-op (génération templates/RAG retirée — ADR-031/046)',
       };
     }
 
-    // Use DiagnosticService.generateForSingleGamme for RAG-enriched content
-    const diagService = enricher as unknown as {
-      generateForSingleGamme?: (
-        pgId: number,
-        pgAlias: string,
-      ) => Promise<{ created: number; skipped: number }>;
-    };
-
-    if (typeof diagService.generateForSingleGamme === 'function') {
-      const result = await diagService.generateForSingleGamme(
-        parseInt(targetId, 10),
-        slug,
-      );
-      return {
-        targetId,
-        status: result.created > 0 ? 'enriched' : 'skipped',
-        ...result,
-      };
-    }
-
-    // Fallback: basic check
-    const { count } = await this.client
-      .from('__seo_observable')
-      .select('id', { count: 'exact', head: true })
-      .like('slug', `%-${slug}`);
-
-    if ((count ?? 0) > 0) {
-      return {
-        targetId,
-        status: 'skipped',
-        reason: `${count} diagnostics already exist for ${slug}`,
-      };
-    }
-
-    // Fetch gamme info for basic insert
-    const { data: gammeData } = await this.client
-      .from('pieces_gamme')
-      .select('pg_id, pg_alias, pg_name')
-      .eq('pg_id', targetId)
-      .single();
-
-    if (!gammeData) {
-      return { targetId, status: 'skipped', reason: 'gamme not found' };
-    }
-
-    // Insert basic diagnostic entry for this gamme
-    const { error } = await this.client.from('__seo_observable').insert({
-      slug: `usure-${gammeData.pg_alias}`,
-      label: `Usure ${gammeData.pg_name}`,
-      observable_type: 'symptom',
-      cluster_id: gammeData.pg_alias,
-      related_gammes: [parseInt(targetId, 10)],
-      is_published: false,
-    });
-
-    if (error) {
-      return { targetId, status: 'failed', reason: error.message };
-    }
-
+    // Génération R5 (templates + parsing RAG filesystem) retirée (ADR-031/046 —
+    // RAG = chatbot only). Pas de fallback d'insert générique — échec explicite,
+    // jamais silencieux. Lecture/CRUD R5 (getBySlug, publish, qualityAudit…) intacts.
     return {
       targetId,
-      status: 'enriched',
-      slug: `usure-${gammeData.pg_alias}`,
-      action: 'created',
+      status: 'failed',
+      slug,
+      reason:
+        'R5 template/RAG generation removed (ADR-031/046). No write dispatch for R5_DIAGNOSTIC.',
     };
   }
 
