@@ -92,6 +92,28 @@ ORDER BY sgc_section_type;
 | 40-69 | **REVIEW** | Examen humain requis |
 | < 40 | **BLOCK** | Ne pas écrire, chercher meilleure source |
 
+### Check claims numériques non sourcés (plafonne le verdict)
+
+> Origine : taxonomie de `claim-extractor.util.ts` (chaîne buying-guide legacy, portée ici
+> avant suppression — programme purge RAG-source 2026-06-11, ADR-031/046).
+
+Avant tout verdict WRITE, scanner le contenu proposé avec les 4 familles de claims :
+
+| Kind | Pattern (gi) | Exemple |
+|------|--------------|---------|
+| mileage | `\d[\d\s.,]*\d?\s*(?:-` ou `à` ou `a)\s*\d[\d\s.,]*\d?\s*km` ou `\d[\d\s.,]*\d?\s*km` | « tous les 60 000 km », « 30 000 - 60 000 km » |
+| dimension | `\d+(?:[.,]\d+)?\s*(?:mm` ou `cm` ou `Nm` ou `bar` ou `°C)` | « 22,4 mm », « 110 Nm » |
+| percentage | `\d+(?:[.,]\d+)?\s*%` | « 30 % » |
+| norm | `(?:ISO` ou `ECE` ou `FMVSS` ou `NF` ou `EN)\s*[\w.-]+` | « ECE R90 » |
+
+Normalisation avant comparaison (équivalent `normalizeClaimValue` legacy) : supprimer tous
+les espaces, virgule → point, lowercase, trim.
+
+**Règle** : tout claim détecté dont la valeur normalisée n'a **aucune trace** dans une source
+autoritaire (facts/sources WIKI `exports/seo` de la gamme, ou donnée DB autoritaire citée) ⇒
+**verdict plafonné à REVIEW** (jamais WRITE direct), avec la liste des claims non sourcés
+dans le rapport. Ne jamais inventer ni « corriger » une valeur — signaler uniquement.
+
 ---
 
 ## Module 3 : Guard anti-régression (ex guard pipeline-v5)
