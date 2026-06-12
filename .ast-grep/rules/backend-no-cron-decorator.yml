@@ -1,0 +1,22 @@
+id: backend-no-cron-decorator
+language: typescript
+severity: warning
+message: |
+  @Cron est INERTE dans ce monorepo : ScheduleModule (@nestjs/schedule) est
+  désactivé — le job décoré ne sera JAMAIS exécuté (silent failure, doctrine
+  no-silent-fallback). Pour tout scheduling réel, utiliser BullMQ repeatable
+  (Redis local). Si le décorateur est conservé volontairement en attendant la
+  migration, marquer la ligne précédente avec le marqueur existant
+  `// INERT-OK-NO-SCHEDULER` + TODO de migration.
+
+  Occurrences héritées reconnues (3, toutes marquées INERT-OK-NO-SCHEDULER) :
+    - orders/services/order-cleanup.service.ts (x2)
+    - catalog/services/vehicle-filtered-catalog-v4-hybrid.service.ts (x1)
+
+  Voir .claude/rules/backend.md + mémoire feedback_schedulemodule_disabled_use_bullmq.
+  Règle observe-first (warning) — promotion en error après résorption des 3 hérités
+  (même trajectoire que seo-no-bare-role-literal, PR-3a→3b).
+files:
+  - backend/src/**/*.ts
+rule:
+  pattern: "@Cron($$$ARGS)"

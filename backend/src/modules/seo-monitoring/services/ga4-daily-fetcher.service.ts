@@ -5,7 +5,7 @@
  * Segmentation par groupe URL pour éviter le sampling sur volumes élevés.
  *
  * Réutilise le client BetaAnalyticsDataClient déjà configuré dans
- * GoogleCredentialsService (lui-même aligné sur url-audit.service.ts:50).
+ * GoogleCredentialsService.
  *
  * Refs:
  * - ADR-025-seo-department-architecture

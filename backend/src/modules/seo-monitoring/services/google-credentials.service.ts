@@ -5,7 +5,8 @@
  * Google (GSC + GA4) depuis les ENV vars existantes du codebase :
  *
  *   GSC_CLIENT_EMAIL, GSC_PRIVATE_KEY, GSC_SITE_URL  (lus par crawl-budget-audit.service.ts)
- *   GA4_CLIENT_EMAIL, GA4_PRIVATE_KEY, GA4_PROPERTY_ID  (lus par url-audit.service.ts)
+ *   GA4_CLIENT_EMAIL, GA4_PRIVATE_KEY, GA4_PROPERTY_ID  (lecteur canonique : ce service ;
+ *   pattern hérité de l'ex url-audit.service.ts, supprimé 2026-06-12)
  *
  * Ce service ne crée pas de nouveaux noms d'ENV (cf. AP-11 vault rule).
  * Il fournit juste une API typée pour les fetchers du module.
@@ -57,8 +58,8 @@ export class GoogleCredentialsService {
   }
 
   /**
-   * GA4 client via BetaAnalyticsDataClient (réutilise le pattern de
-   * url-audit.service.ts:50-60).
+   * GA4 client via BetaAnalyticsDataClient (pattern hérité de l'ex
+   * url-audit.service.ts, supprimé 2026-06-12).
    *
    * @returns null si credentials manquantes.
    */
