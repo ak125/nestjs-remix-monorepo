@@ -11,6 +11,7 @@ allowed-tools: Read, mcp__claude_ai_Supabase__execute_sql, Glob
 
 - Ce skill **VÉRIFIE** la qualité et protège le contenu v5 (pollution, régression, scoring)
 - Pour la **GÉNÉRATION** de contenu → utiliser `content-gen`
+- Pour le **NETTOYAGE** des sections polluées → utiliser `surgical-cleaner` (chaîne : v5-guardian détecte → surgical-cleaner nettoie → content-gen regénère si besoin)
 - Pour l'**AUDIT ÉDITORIAL** approfondi (R2D2, E-E-A-T) → utiliser `content-audit`
 - Pour l'**AUDIT SEO GLOBAL** (métriques R1-R8, maillage) → utiliser `seo-gamme-audit`
 - Pour la **MIGRATION** v4→v5 → utiliser `md-v5-migrator`
@@ -40,12 +41,12 @@ allowed-tools: Read, mcp__claude_ai_Supabase__execute_sql, Glob
 ```sql
 SELECT sgc_pg_id, sgc_section_type, LENGTH(sgc_content) as len,
   CASE
-    WHEN sgc_content ~* 'Source:\s*web/|Réf\.\s*:' THEN 'RAG_SCRAPING'
-    WHEN sgc_content ~* 'Skip to main content|Gestion des cookies|Navigation principale' THEN 'NAV_SCRAPING'
-    WHEN sgc_content ~* 'COMBO IDÉAL|MÊME QUALITÉ|PRIX IMBATTABLE' THEN 'OEM_MARKETING'
-    WHEN sgc_content ~* 'Réf\.\s*(OE|OEM)|N°\s*d''article' THEN 'OEM_PRODUCT'
-    WHEN sgc_content ~* '##\s+Comment\s|##\s+Pourquoi\s|##\s+Quel' THEN 'BLOG_H2_INJECTED'
-    WHEN sgc_content ~* 'oscaro\.com|mister-auto|autodoc' THEN 'COMPETITOR_SCRAPING'
+    WHEN sgc_content ~* 'Source:\s*web(-catalog)?/|Réf\.\s*:' THEN 'RAG_SCRAPING'
+    WHEN sgc_content ~* 'Skip to (main content|menu|footer)|Gestion des cookies|Navigation principale|Inscription newsletter|Aller au contenu|Téléchargement →|Partager sur' THEN 'NAV_SCRAPING'
+    WHEN sgc_content ~* 'COMBO IDÉAL|MÊME QUALITÉ|PRIX IMBATTABLE|Reconditionnement des|Formula XT|Essential Line|Technologies de plaquettes' THEN 'OEM_MARKETING'
+    WHEN sgc_content ~* 'Réf\.\s*(OE|OEM)|N°\s*d''article|Brembo.*premium|Verniciatura|Beschichtung' THEN 'OEM_PRODUCT'
+    WHEN sgc_content ~* '##\s+Comment\s|##\s+Pourquoi\s|##\s+Quand\s|##\s+Quel' THEN 'BLOG_H2_INJECTED'
+    WHEN sgc_content ~* '- Vivacar|vroomly|oscaro\.com|mister-auto|autodoc' THEN 'COMPETITOR_SCRAPING'
     WHEN sgc_content ~* 'Textar|ATE|TRW.*force' THEN 'BRAND_SCRAPING'
     WHEN sgc_content ~* '<script|onclick|javascript:' THEN 'XSS_INJECTION'
     WHEN sgc_content ~* 'lorem ipsum|dolor sit amet' THEN 'PLACEHOLDER'
@@ -69,6 +70,43 @@ ORDER BY sgc_section_type;
 | TOO_SHORT | BASSE | Gap à combler via content-gen |
 | CLEAN | OK | Rien à faire |
 
+### Priorité de nettoyage (rapport)
+
+Priorité = **HAUTE** si S4_DEPOSE 100 % scrapé ou taille > 3000 chars, **MOYENNE** sinon.
+Pollution détectée → chaîne de nettoyage : `surgical-cleaner` (nettoyage) → `content-gen` (regénération si besoin).
+
+### Scan grande échelle (--batch, toutes gammes)
+
+Exclure les sections déjà nettoyées (`pipeline-v5-surgical-clean`, `pipeline-v5-replace`) pour ne pas re-flagger le travail validé :
+
+```sql
+SELECT pollution_type, COUNT(*) as section_count, COUNT(DISTINCT sgc_pg_id) as gamme_count
+FROM (
+  SELECT sgc_pg_id,
+    CASE
+      WHEN sgc_content ~* 'Source:\s*web(-catalog)?/' THEN 'RAG_SCRAPING'
+      WHEN sgc_content ~* 'Skip to (main content|menu|footer)|Inscription newsletter|Aller au contenu|Gestion des cookies|Téléchargement →|Partager sur' THEN 'NAV_SCRAPING'
+      WHEN sgc_content ~* 'COMBO IDÉAL|MÊME QUALITÉ|Reconditionnement des|Formula XT|Essential Line|Technologies de plaquettes' THEN 'OEM_MARKETING'
+      WHEN sgc_content ~* 'Textar équipées|Brembo.*premium|Verniciatura|Beschichtung' THEN 'OEM_PRODUCT'
+      WHEN sgc_content ~* '##\s+Comment\s|##\s+Pourquoi\s|##\s+Quand\s|##\s+Quel' THEN 'BLOG_H2_INJECTED'
+      WHEN sgc_content ~* '- Vivacar|vroomly|oscaro\.com|mister-auto' THEN 'COMPETITOR_SCRAPING'
+      ELSE 'CLEAN'
+    END as pollution_type
+  FROM "__seo_gamme_conseil"
+  WHERE sgc_enriched_by IS DISTINCT FROM 'pipeline-v5-surgical-clean'
+    AND sgc_enriched_by IS DISTINCT FROM 'pipeline-v5-replace'
+) sub
+GROUP BY pollution_type
+ORDER BY section_count DESC;
+```
+
+Pour le détail des sections polluées (pg_id, section, preview), reprendre la même clause `WHERE sgc_enriched_by IS DISTINCT FROM …` + le filtre `OR` des patterns ci-dessus.
+
+### Faux positifs connus
+
+- **pg_id=1164 (Accessoires plaquettes) S3** : le regex capte « Brembo » dans un contexte technique légitime de compatibilité étrier. Ce n'est PAS de la pollution.
+- Le contenu technique qui mentionne des marques dans un contexte de comparaison ou de compatibilité est légitime (vaut aussi pour `Textar|ATE|TRW` du pattern BRAND_SCRAPING).
+
 ---
 
 ## Module 2 : Scoring qualité (ex content-quality-gate)
@@ -84,6 +122,38 @@ ORDER BY sgc_section_type;
 | **Cohérence section** | 0-15 | Contenu correspond au type S1/S2/S3/etc. |
 | **Français correct** | 0-15 | Pas de fragments étrangers, phrases complètes |
 
+### Critères spécifiques par type de section (bonus/malus)
+
+| Section | Bonus/Malus spécifiques |
+|---------|------------------------|
+| S1 (fonction) | +10 si explique le rôle mécanique concret, -10 si copié de Wikipedia |
+| S2 (quand changer) | +10 si liste de symptômes concrets, -10 si générique "consultez un pro" |
+| S3 (comment choisir) | +10 si critères d'achat spécifiques (marques, specs), -10 si marketing |
+| S4_DEPOSE | +10 si étapes numérotées avec outils, -10 si blog scrapé |
+| S5 (erreurs) | +10 si erreurs spécifiques au composant, -10 si "ne pas oublier de vérifier" |
+| S6 (vérifications) | +10 si méthode de diagnostic concrète, -10 si conseil vague |
+
+### Requête SQL de scoring rapide
+
+```sql
+SELECT sgc_pg_id, sgc_section_type,
+  LENGTH(sgc_content) as len,
+  sgc_enriched_by,
+  -- Indicateurs pollution
+  CASE WHEN sgc_content ~* 'Source:\s*web(-catalog)?/' THEN 1 ELSE 0 END as has_rag_scraping,
+  CASE WHEN sgc_content ~* 'Skip to main content|Gestion des cookies' THEN 1 ELSE 0 END as has_nav_scraping,
+  CASE WHEN sgc_content ~* 'COMBO IDÉAL|MÊME QUALITÉ' THEN 1 ELSE 0 END as has_oem_marketing,
+  CASE WHEN sgc_content ~* '##\s+Comment\s|##\s+Pourquoi\s' THEN 1 ELSE 0 END as has_blog_h2,
+  -- Indicateurs qualité
+  CASE WHEN LENGTH(sgc_content) BETWEEN 150 AND 1500 THEN 'OK'
+       WHEN LENGTH(sgc_content) < 50 THEN 'VIDE'
+       WHEN LENGTH(sgc_content) > 3000 THEN 'SUSPECT'
+       ELSE 'COURT' END as length_verdict
+FROM "__seo_gamme_conseil"
+WHERE sgc_pg_id = '{pg_id}'
+ORDER BY sgc_section_type;
+```
+
 ### Verdicts
 
 | Score | Verdict | Action |
@@ -91,6 +161,23 @@ ORDER BY sgc_section_type;
 | ≥ 70 | **WRITE** | Prêt pour écriture (avec confirmation rapide) |
 | 40-69 | **REVIEW** | Examen humain requis |
 | < 40 | **BLOCK** | Ne pas écrire, chercher meilleure source |
+
+Principe fondamental : **3 niveaux de vérification, jamais de write automatique** (scorer → comparer → décider). Tout verdict BLOCK ou REVIEW stoppe le pipeline jusqu'à validation humaine.
+
+### Matrice de décision vs existant (anti-régression L2)
+
+Avant toute modification, comparer le contenu proposé avec l'existant. **BLOCK si le nouveau contenu est inférieur à l'existant** (score inférieur, plus court ET moins spécifique, pollué, ou existant déjà nettoyé `pipeline-v5-*`).
+
+| Existant | Nouveau proposé | Verdict |
+|----------|-----------------|---------|
+| Vide / <50 chars | Score >= 70 | WRITE |
+| Vide / <50 chars | Score 40-69 | REVIEW |
+| Vide / <50 chars | Score < 40 | BLOCK |
+| Court (<300) générique | Score >= 70 + spécifique | WRITE |
+| Court (<300) générique | Score 40-69 | REVIEW |
+| Bon (>300, propre) | Score >= 80 + nettement supérieur | REVIEW (validation manuelle) |
+| Bon (>300, propre) | Score < 80 | BLOCK (pas de régression) |
+| Déjà nettoyé (v5-*) | Tout | BLOCK (sauf si score > 90 + REVIEW) |
 
 ### Check claims numériques non sourcés (plafonne le verdict)
 
@@ -113,6 +200,22 @@ les espaces, virgule → point, lowercase, trim.
 autoritaire (facts/sources WIKI `exports/seo` de la gamme, ou donnée DB autoritaire citée) ⇒
 **verdict plafonné à REVIEW** (jamais WRITE direct), avec la liste des claims non sourcés
 dans le rapport. Ne jamais inventer ni « corriger » une valeur — signaler uniquement.
+
+### Check vocabulaire cross-rôle R1 (plafonne le verdict)
+
+> Origine : salvage du script archivé `generate-content-r1.py` (PR #954). La liste vit dans
+> un seul fichier — **pointer, pas duplication**.
+
+Pour du contenu destiné à une page **R1** (routage gamme) : scanner contre les listes
+**FORBIDDEN VOCABULARY** (anglicismes interdits + vocabulaire cross-rôle R3/R4/R5/R6 +
+jargon accepté à ne pas flagger) définies dans
+`.claude/prompts/R1_ROUTER/editorial.md` §FORBIDDEN VOCABULARY (racine monorepo ;
+depuis ce workspace : `../../.claude/prompts/R1_ROUTER/editorial.md`). Ne PAS recopier
+la liste ici — la lire à chaque run (SoT unique).
+
+**Règle** : tout terme interdit détecté ⇒ **verdict plafonné à REVIEW**, avec les termes
+trouvés et leur rôle d'origine (R3 how-to, R5 diagnostic, R4 référence, R6 guide d'achat)
+dans le rapport. Les termes de la section « Jargon technique accepté » ne sont jamais flaggés.
 
 ---
 
