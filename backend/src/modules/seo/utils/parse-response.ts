@@ -105,7 +105,7 @@ export function _resetRoleNormalizationCounters(): void {
  *   async getStatus(): Promise<StatusResponse> {
  *     const raw = await this.service.compute();
  *     return parseResponseOrSoft(statusResponseSchema, raw, {
- *       controller: AdminRagPipelineStatusController.name,
+ *       controller: AdminPipelineController.name,
  *       endpoint: 'getStatus',
  *     }, this.logger) as StatusResponse;
  *   }
