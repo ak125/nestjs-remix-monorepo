@@ -108,6 +108,13 @@ export interface DryRunOptions {
   outlierPct?: number;
   invariants?: InvariantOptions;
   /**
+   * Commercial activation mode for the eventual commit (owner doctrine 2026-06-04).
+   * false (default) = PENDING: the commit puts cost only, pieces stay non-sellable
+   * → willActivate is always false. true = activate (pri_dispo='1'). Makes the
+   * preview's activatedCount truthful instead of always predicting activation.
+   */
+  activate?: boolean;
+  /**
    * L4 grid resolver → the final floored/capped vente_HT (cents) for a cost, or
    * null if no rule matches. Used for APPLY_GRID and for INSERT rows lacking a
    * file marge. Returns the strategy result (floor + cap already applied).
@@ -265,7 +272,7 @@ export function computeDryRun(
       newVenteTtcCents,
       deltaVenteHtCents,
       outlier,
-      willActivate: dispo !== '1',
+      willActivate: (opts.activate ?? false) && dispo !== '1',
     };
 
     matchedCount++;

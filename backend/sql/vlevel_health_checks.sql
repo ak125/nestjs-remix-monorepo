@@ -6,6 +6,16 @@
 --
 -- Tous les checks doivent retourner 0 (sauf distribution qui est informative)
 -- ============================================================================
+--
+-- ⚠️ STALE vs V-Level v5.0 — NE PAS exécuter tel quel comme garde d'intégrité.
+--    Réf à jour : audit/levels-doctrine-cgc-vs-vlevel-2026-06-04.md
+--                 + invariants `@repo/seo-roles` (vlevel-invariants.ts).
+--    Checks contredisant v5.0 (réécriture owner-gated, plan G4) :
+--      • T4 « 0 v_level NULL »   → FAUX : NULL légitime (marque / générique / sans motorisation).
+--      • T6 « V3 volume>0 »      → FAUX : champion solo ou groupe-tout-à-0 peut être volume 0.
+--      • T8 « V4 vol=0 → V5 »    → FAUX : V4 inclut volume 0 (frontière V4/V5 = présence CSV, pas volume).
+--      • T10 réf `vehicule_v1_dominant` → table vide ; V1 non construit (0 ligne).
+-- ============================================================================
 
 -- ============================================================================
 -- T1: 0 V2 non-vehicle (V2 réservé aux véhicules)

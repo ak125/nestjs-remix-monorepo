@@ -1,0 +1,34 @@
+{
+  "$note": "Seed de preuves web (B) — alimenté MANUELLEMENT après recherche frugale (jamais scraping auto). Lu par scripts/seo/vlevel-v3-pipeline.ts pour overrider la puissance diesel-default sur les cas importants. Read-only.",
+  "generated": "2026-06-06",
+  "diesel_default_by_modele": {
+    "140089": { "type_id": "5853",  "label": "Scénic III 1.5 dCi 110", "confidence": 82, "source": "web:fiches-auto,largus" },
+    "128018": { "type_id": "19353", "label": "207 1.6 HDi 109",        "confidence": 80, "source": "web:fiches-auto,wikipedia" },
+    "128021": { "type_id": "76381", "label": "208 I 1.6 BlueHDi 100",  "confidence": 78, "source": "web:largus,caradisiac" },
+    "128022": { "type_id": "30823", "label": "3008 I 1.6 HDi 109",     "confidence": 78, "source": "web:fiches-auto,wikipedia" },
+    "128040": { "type_id": "23383", "label": "308 I 1.6 HDi 109",      "confidence": 80, "source": "web:fiches-auto,carverif" },
+    "140003": { "type_id": "16108", "label": "Clio II 1.5 dCi 65",     "confidence": 78, "source": "web:fiches-auto,wikipedia" },
+    "140004": { "type_id": "19052", "label": "Clio III 1.5 dCi 86",    "confidence": 80, "source": "web:fiches-auto,wikipedia" },
+    "140006": { "type_id": "57281", "label": "Clio IV 1.5 dCi 90",     "confidence": 82, "source": "web:fiches-auto" },
+    "140049": { "type_id": "29956", "label": "Mégane III 1.5 dCi 110", "confidence": 80, "source": "web:fiches-auto" }
+  },
+  "explicit_keyword": {
+    "disque 308 gti": { "type_id": "33864", "v3_type": "EXPLICIT_PETROL_PERFORMANCE", "owner_hint": "APPROVE_DISTINCT", "confidence": 75, "reason": "keyword sportif essence explicite -> V3 distinct, hors diesel-default; volume500 niche" },
+    "plaquette de frein clio 3 1.5 dci": { "type_id": "34746", "v3_type": "DIESEL_EXPLICIT", "owner_hint": "REVIEW", "confidence": 73, "reason": "conflit: clio 3 générique->86 (19052) vs explicite 1.5 dci->88 (34746)" }
+  },
+  "null_resolution_by_keyword": {
+    "$note": "Champions type_id NULL résolus via investigation web curée (resolution-queue). Seulement les cas confirmés ; les NULL ambigus (motorisation/génération inconnue) restent volontairement absents -> REVIEW par défaut. Jamais de devinette.",
+    "disque arriere scenic 3": { "modele_id": "140089", "type_id": "5853", "label": "Scénic III 1.5 dCi 110", "confidence": 82, "source": "web:fiches-auto,largus" }
+  },
+  "review_keyword": {
+    "disque de frein 206": "essence-vs-diesel: diesel défaut 1.4 HDi 69 (30091) mais 206 essence 1.4 75 best-seller -> trancher demande réelle"
+  },
+  "defer_catalog_gap": ["plaquettes de frein bmw serie 1"],
+  "defer_submodel_remap": {
+    "55133": "C4 AIRCROSS (SUV) -> remap C4 I 1.6 HDi 109 (18337)",
+    "11052": "A3 II Décapotable -> remap A3 base",
+    "15997": "A4 Allroad -> remap A4 berline base",
+    "8842":  "Kangoo Be Bop -> remap Kangoo base",
+    "1820":  "Astra F Break (ancien) -> vérifier génération"
+  }
+}

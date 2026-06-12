@@ -1,5 +1,10 @@
 # SEO Batch Workspace
 
+> ⚠️ **LEGACY pour le CONTENU — pour PRODUIRE du contenu, utiliser `workspaces/wiki/`, pas ce workspace.**
+> Ici `content-gen` / `rag-ops` / `r*-content-batch` / `r7-brand-rag-generator` lisent `/opt/automecanik/rag/knowledge/` → DB : ce mode RAG-source-de-contenu est **abandonné** (canon vault ADR-031/046 ; garde ast-grep #923 `seo-no-rag-as-content-source`).
+> **Pipeline contenu MODERNE** = `workspaces/wiki/` (`wiki-proposal-writer`, ADR-033) → wiki-repo `_scripts/` (`build_exports_seo` ADR-059, `promote.py` ADR-083 auto-tiered) → `exports/seo` → DB → R.
+> Les skills **audit/QA** d'ici (`pollution-scanner`, `v5-guardian`, `seo-gamme-audit`, `kw-classify`, `r8-diversity-check`) restent valides. Dépréciation du RAG-contenu = programme owner-sponsorisé séparé (ne pas réécrire réactivement).
+
 Claude Code project root pour les campagnes SEO AutoMecanik. Charge uniquement les 39 agents R0-R8 et les 16 skills SEO, sans les charger dans le workspace dev daily.
 
 ## Pourquoi ce workspace existe

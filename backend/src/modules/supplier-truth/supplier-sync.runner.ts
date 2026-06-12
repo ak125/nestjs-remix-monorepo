@@ -15,6 +15,7 @@ import type {
   SupplierCredentials,
 } from './connectors/supplier-connector.interface';
 import { InoshopConnector } from './connectors/inoshop.connector';
+import { CalConnector } from './connectors/cal.connector';
 
 /**
  * Orchestrates one full sync cycle: bounded working-set → each connectable
@@ -39,6 +40,11 @@ export const defaultConnectorFactory: ConnectorFactory = (cfg) => {
         supplierId: cfg.supplierId,
         baseUrl: cfg.baseUrl,
       });
+    case 'cal':
+      return new CalConnector({
+        supplierId: cfg.supplierId,
+        baseUrl: cfg.baseUrl,
+      });
     default:
       throw new Error(`No connector for platform ${cfg.platform}`);
   }
@@ -51,6 +57,19 @@ export const envCredResolver: CredResolver = (cfg) => {
   return user && password ? { user, password } : null;
 };
 
+/**
+ * Per-supplier refs cap per run — anti-ban guard bounding how many references a
+ * single run queries against a supplier portal (each ref = one authenticated
+ * portal query). Env-overridable via `SUPPLIER_SYNC_MAX_REFS_PER_RUN`; the
+ * working-set is already bounded upstream, this caps the per-supplier slice so a
+ * large overlap can't hammer a portal in one pass (refs cycle across runs via TTL).
+ */
+const DEFAULT_MAX_REFS_PER_RUN = 50;
+export function envMaxRefsPerRun(): number {
+  const raw = Number(process.env.SUPPLIER_SYNC_MAX_REFS_PER_RUN);
+  return Number.isInteger(raw) && raw > 0 ? raw : DEFAULT_MAX_REFS_PER_RUN;
+}
+
 export interface RunSummary {
   suppliersRun: number;
   /** Connector threw (auth/site-down/anti-ban/crash) — a broken supplier, NOT idle. */
@@ -58,7 +77,8 @@ export interface RunSummary {
   /** Benign skip: no credentials configured, or none of the working-set brands carried. */
   suppliersSkipped: number;
   refs: number;
-  projectionsUpserted: number;
+  /** Rows appended to the canonical `supplier_offer_snapshot` this run. */
+  offersInserted: number;
 }
 
 @Injectable()
@@ -71,9 +91,10 @@ export class SupplierSyncRunner {
     private readonly connectorFactory: ConnectorFactory = defaultConnectorFactory,
     private readonly credResolver: CredResolver = envCredResolver,
     private readonly emit: EventSink = noopSink,
+    private readonly maxRefsPerRun: number = envMaxRefsPerRun(),
   ) {}
 
-  async runSync(now: Date = new Date()): Promise<RunSummary> {
+  async runSync(): Promise<RunSummary> {
     const runId = randomUUID();
     const workingSet = await this.repo.getWorkingSet();
     const summary: RunSummary = {
@@ -81,7 +102,7 @@ export class SupplierSyncRunner {
       suppliersFailed: 0,
       suppliersSkipped: 0,
       refs: workingSet.length,
-      projectionsUpserted: 0,
+      offersInserted: 0,
     };
     if (workingSet.length === 0) return summary;
 
@@ -100,13 +121,21 @@ export class SupplierSyncRunner {
       const carriedBrands = new Set(
         await this.repo.getSupplierLinkedBrands(cfg.supplierId),
       );
-      const refs = [
+      const carriedRefs = [
         ...new Set(
           workingSet
             .filter((w) => w.pmId != null && carriedBrands.has(w.pmId))
             .map((w) => w.ref),
         ),
       ];
+      // Anti-ban: cap the per-supplier portal queries for this run; the rest
+      // refresh on subsequent runs (TTL-driven). No silent drop — logged.
+      const refs = carriedRefs.slice(0, this.maxRefsPerRun);
+      if (carriedRefs.length > refs.length) {
+        this.logger.log(
+          `${cfg.supplierName}: capping ${carriedRefs.length} carried refs to ${refs.length} this run (SUPPLIER_SYNC_MAX_REFS_PER_RUN=${this.maxRefsPerRun})`,
+        );
+      }
       if (refs.length === 0) {
         this.logger.log(
           `skip ${cfg.supplierName}: none of the working-set brands are carried`,
@@ -118,11 +147,11 @@ export class SupplierSyncRunner {
       const connector = this.connectorFactory(cfg);
       try {
         await connector.login(creds);
-        const res = await this.processor.syncRefs(connector, refs, now);
-        summary.projectionsUpserted += res.projectionsUpserted;
+        const res = await this.processor.syncRefs(connector, refs);
+        summary.offersInserted += res.offersInserted;
         summary.suppliersRun++;
         this.logger.log(
-          `synced ${cfg.supplierName}: ${res.snapshotsInserted} snapshots, ${res.projectionsUpserted} projections`,
+          `synced ${cfg.supplierName}: ${res.offersInserted} offers, ${res.unresolved} unresolved`,
         );
       } catch (e) {
         const message = (e as Error).message;

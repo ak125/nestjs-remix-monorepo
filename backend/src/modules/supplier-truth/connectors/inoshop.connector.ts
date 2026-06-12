@@ -25,6 +25,7 @@ import {
   type SupplierObservation,
 } from './supplier-connector.interface';
 import { articleToObservation, type InoshopArticle } from './inoshop-parse';
+import { parseSearchHtml, type SearchRow } from './inoshop-search-parse';
 
 export interface InoshopConnectorOptions {
   supplierId: string;
@@ -138,25 +139,41 @@ export class InoshopConnector implements SupplierConnector {
     ref: string,
   ): Promise<SupplierObservation[]> {
     await page.goto(`${this.baseUrl}/`, { waitUntil: 'domcontentloaded' });
-    // type in the reference autocomplete (tagsinput) and submit
-    const input = page.locator(
-      '#autocompletion-invoker input[data-role="tagsinput"]',
-    );
-    await input.fill(ref);
-    await input.press('Enter');
-    await page.waitForLoadState('networkidle');
+    // The reference field is a tagsinput widget whose <input> is HIDDEN — you
+    // click the styled invoker, type the ref, Tab to commit the tag, Enter to
+    // submit, which NAVIGATES to /search where the .ARTICLE rows render.
+    // (The old `input.fill()` hit the hidden node → "element not visible" → no
+    // rows → every ref degraded to parseError.) LIVE_VERIFY 2026-06-02.
+    await page.locator('#autocompletion-invoker').click();
+    await page.keyboard.type(ref);
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Enter');
+    await page
+      .waitForURL((u) => u.toString().includes('/search'), {
+        timeout: this.opts.navigationTimeoutMs,
+      })
+      .catch(() => undefined);
+    await page
+      .waitForLoadState('networkidle', {
+        timeout: this.opts.navigationTimeoutMs,
+      })
+      .catch(() => undefined);
 
     // extract each rendered .ARTICLE row's data attributes (verified-on-first-run)
     const articles = (await page.$$eval('.ARTICLE', (nodes) =>
       nodes.map((n) => {
         const ds = (k: string) => n.getAttribute(k);
-        const priceText =
-          n.querySelector('[class*="prix-achat"], [class*="price-buy"]')
-            ?.textContent ?? '';
+        // Net purchase price (achat HT) is a data-attribute, not row text.
+        const priceText = ds('data-filtreprixachat') ?? ds('data-prix') ?? '';
         const icon =
           n.querySelector('img[src*="/stock/"]')?.getAttribute('src') ?? null;
         return {
-          rawRef: ds('data-filtrecodearticle') || ds('data-ref') || '',
+          // supplier/searched ref (e.g. 314772), not the internal code (SBS314772)
+          rawRef:
+            ds('data-filtrecodearticlefournisseur') ||
+            ds('data-filtrecodearticle') ||
+            ds('data-ref') ||
+            '',
           codeArticle: ds('data-filtrecodearticle'),
           stockRaw: ds('data-stock'),
           dispoType: ds('data-dispo-type'),
@@ -199,6 +216,73 @@ export class InoshopConnector implements SupplierConnector {
       };
       return articleToObservation(article);
     });
+  }
+
+  /**
+   * BULK route (captured 2026-06-05): the Symfony search form's CSRF token, read
+   * from the home page. Required by `POST /search`. Re-fetchable to recover from a
+   * stale token without a full re-login.
+   */
+  async getCsrfToken(): Promise<string> {
+    if (!this.context) throw new Error('getCsrfToken before login');
+    const res = await this.context.request.get(`${this.baseUrl}/`);
+    const html = await res.text();
+    const token =
+      html.match(/name="_token"[^>]*value="([^"]+)"/i)?.[1] ??
+      html.match(/value="([^"]+)"[^>]*name="_token"/i)?.[1];
+    if (!token) throw new Error('CSRF _token not found on home page');
+    return token;
+  }
+
+  /**
+   * BULK route: one `POST /search` with a MULTI-REF `reference_input` array returns
+   * the full results HTML for ALL refs at once (~0.2s/ref vs ~17s/ref page render).
+   * Replays the captured form over the logged-in context's cookies — no browser
+   * render. Returns deduped product rows; the caller brand/EAN-locks per feed ref.
+   * Throws on non-200 (session/CSRF expiry) so the caller can refresh + retry.
+   */
+  async fetchSearchRows(refs: string[], token: string): Promise<SearchRow[]> {
+    return (await this.fetchSearchRaw(refs, token)).rows;
+  }
+
+  /** Same as {@link fetchSearchRows} but also returns the raw HTML (diagnostics/cache). */
+  async fetchSearchRaw(
+    refs: string[],
+    token: string,
+    timeoutMs = 60000,
+  ): Promise<{ html: string; rows: SearchRow[] }> {
+    if (!this.context) throw new Error('fetchSearchRaw before login');
+    const res = await this.context.request.post(`${this.baseUrl}/search`, {
+      // the portal can be slow generating large multi-ref result sets — give it room
+      // (default Playwright request timeout is 30s, which 504/timeouts the big batches)
+      timeout: timeoutMs,
+      form: {
+        _token: token,
+        reference_input: JSON.stringify(
+          refs.map((r) => ({
+            code: r,
+            label: r,
+            type: 'reference',
+            noUpdateSource: false,
+          })),
+        ),
+        tyre_inputs: JSON.stringify({
+          pneu_larg: '',
+          pneu_haut: '',
+          pneu_diam: '',
+          pneu_indc: '',
+          pneu_indv: '',
+        }),
+        quantite: '1',
+        user_filters: '{}',
+        searchTypeDefaut: 'recherche_standard',
+      },
+    });
+    if (res.status() !== 200) {
+      throw new Error(`POST /search status ${res.status()}`);
+    }
+    const html = await res.text();
+    return { html, rows: parseSearchHtml(html) };
   }
 
   private async jitterDelay(): Promise<void> {

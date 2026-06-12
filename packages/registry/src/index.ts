@@ -29,7 +29,10 @@ export { DeletePolicySchema, type DeletePolicy } from "./shared/delete-policy";
 export { DerivedFromSchema, type DerivedFrom } from "./shared/derived-from";
 export { OwnerIdSchema, type OwnerId } from "./shared/owner";
 export { FamilyIdSchema, type FamilyId } from "./shared/family";
-export { AccessSurfaceSchema, type AccessSurface } from "./shared/access-surface";
+export {
+  AccessSurfaceSchema,
+  type AccessSurface,
+} from "./shared/access-surface";
 
 // ── Layer 1 entries (auto-generated) ──
 export { FileEntrySchema, type FileEntry } from "./entries/file-entry";
@@ -166,3 +169,35 @@ export {
   type VehicleContext,
   type VehicleContextPayload,
 } from "./vehicle-context";
+
+// ── Command Center snapshot (admin cockpit projection of the AI Operating Map) ──
+export {
+  CommandCenterSnapshotSchema,
+  CommandCenterResponseSchema,
+  CommandCenterModeSchema,
+  CcActionV2Schema,
+  CcSeoDetailSchema,
+  CertificationSchema,
+  GlobalStatusSchema,
+  StaleStatusSchema,
+  ValidationStatusSchema,
+  CcDepartmentSchema,
+  CcDepartmentLiveSchema,
+  CcCapabilitySchema,
+  CcChainSchema,
+  CcAlertSchema,
+  CcOwnerActionSchema,
+  type CommandCenterSnapshot,
+  type CommandCenterResponse,
+  type CommandCenterMode,
+  type CcActionV2,
+  type CcSeoDetail,
+  type Certification,
+  type GlobalStatus,
+  type CcDepartment,
+  type CcDepartmentLive,
+  type CcCapability,
+  type CcChain,
+  type CcAlert,
+  type CcOwnerAction,
+} from "./command-center/snapshot";

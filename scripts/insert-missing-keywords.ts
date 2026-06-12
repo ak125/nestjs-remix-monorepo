@@ -29,6 +29,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { createClient } from '@supabase/supabase-js';
 import * as dotenv from 'dotenv';
+import { VLEVEL_V2_CAP } from '@repo/seo-roles';
 
 // Load env
 dotenv.config({ path: path.join(__dirname, '../backend/.env') });
@@ -442,11 +443,13 @@ function assignVLevels(keywords: KeywordRecord[], gammeUniverselle: boolean = fa
     const seenModelEnergy = new Set<string>();
     const top10: KeywordRecord[] = [];
     for (const kw of v3Champions) {
+      // NB: clé dedup du script INCHANGÉE en G2 (énergie brute : null ≠ 'unknown').
+      // La converger vers vLevelGroupKey (@repo/seo-roles) est data-affecting → G3.
       const dedupKey = `${(kw.model || '').toLowerCase()}|${kw.energy}`;
       if (seenModelEnergy.has(dedupKey)) continue;
       seenModelEnergy.add(dedupKey);
       top10.push(kw);
-      if (top10.length >= 10) break;
+      if (top10.length >= VLEVEL_V2_CAP) break;
     }
     for (const kw of top10) {
       kw.v_level = 'V2';
@@ -1034,9 +1037,11 @@ Examples:
   // ── Phase V-PROPAGATE: Un V-level par type_id ──────────────────────────────
   console.log(`\n⚙️  Phase V-PROPAGATE: Uniformisation V-level par véhicule...`);
 
-  // For each type_id, propagate the best V-level to all its keywords
-  // V2 vehicles: champion keyword stays V2, others get V3 (unique constraint)
-  // V3/V4/V5 vehicles: all keywords inherit the vehicle's level
+  // propagate_vlevel_per_typeid (fonction DB versionnée dans
+  // backend/supabase/migrations/20260605_vlevel_capture_db_only_functions.sql) :
+  // pour chaque type_id, remplit UNIQUEMENT les keywords dont v_level est NULL avec le
+  // meilleur niveau du véhicule (V2>V3>V4>V5) et PRÉSERVE tout niveau déjà assigné
+  // (backfill non destructif). Ne rétrograde PAS et ne force PAS d'héritage.
   const { data: propResult, error: propError } = await supabase.rpc('propagate_vlevel_per_typeid', {
     p_pg_id: pgId
   });

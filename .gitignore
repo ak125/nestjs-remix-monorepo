@@ -288,3 +288,4 @@ audit/wiki-auto-review/*
 
 # CI gate report artifacts (written by scripts/ci/*-gate.mjs, never committed)
 dod-gate-report.md
+audit-reports/

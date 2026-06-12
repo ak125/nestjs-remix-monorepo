@@ -96,14 +96,25 @@ describe('computeDryRun — UPDATE path', () => {
     expect(r.rows[0].rejectReason).toContain('DELTA_EXCEEDS_MAX');
   });
 
-  it('activates priced-but-inactive rows (pri_dispo≠1)', () => {
+  it('activate=true activates priced-but-inactive rows (pri_dispo≠1)', () => {
+    const r = computeDryRun(
+      [line()],
+      new Map([['BP1', existing({ dispo: '0' })]]),
+      EMPTY_CATALOG,
+      { activate: true },
+    );
+    expect(r.rows[0].willActivate).toBe(true);
+    expect(r.activatedCount).toBe(1);
+  });
+
+  it('PENDING (default): does NOT activate — cost only, willActivate=false', () => {
     const r = computeDryRun(
       [line()],
       new Map([['BP1', existing({ dispo: '0' })]]),
       EMPTY_CATALOG,
     );
-    expect(r.rows[0].willActivate).toBe(true);
-    expect(r.activatedCount).toBe(1);
+    expect(r.rows[0].willActivate).toBe(false);
+    expect(r.activatedCount).toBe(0);
   });
 });
 
@@ -118,12 +129,13 @@ describe('computeDryRun — INSERT / recovery path', () => {
       [{ ...recoveryLine, margePct: 50 }],
       new Map(),
       catalog,
+      { activate: true },
     );
     expect(r.insertedCount).toBe(1);
     expect(r.rows[0].operation).toBe('INSERT');
     expect(r.rows[0].priPieceIdI).toBe(42);
     expect(r.rows[0].newVenteHtCents).toBe(Math.round((2000 * 150) / 100)); // 3000
-    expect(r.rows[0].willActivate).toBe(true); // new piece → activated
+    expect(r.rows[0].willActivate).toBe(true); // activate=true → new piece activated
     expect(r.rows[0].outlier).toBe(false); // no prior price → no delta/outlier
   });
 

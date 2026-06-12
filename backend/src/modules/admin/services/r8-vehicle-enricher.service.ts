@@ -38,6 +38,16 @@ import {
   type SeoRoleTemplatePickResult,
 } from '../../seo/services/chain/seo-role-template-selector.service';
 import type { R8VariantSignature } from '../../../config/page-contract-r8.schema';
+import {
+  R8_OWNED_EDITORIAL_MIN_QUALITY,
+  pickAnchorGamme,
+  buildOwnedSelectionGuide,
+  buildOwnedEntretien,
+  buildOwnedFaq,
+  extractGammeSourceFromRpc,
+  type GammeEditorial,
+  type MotorisationFacts,
+} from './r8-owned-editorial.composer';
 
 // ── Result ──
 
@@ -239,6 +249,28 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       const topGammes = families.slice(0, 5);
       const gammeRags = topGammes.map((g) => this.loadGammeRag(g.pg_alias));
 
+      // Fix B (flag R8_OWNED_EDITORIAL_ENABLED) — owned, quality-gated gamme
+      // editorial from the OWNED DB tables. OFF (default) → [] → existing path.
+      const useOwnedEditorial =
+        this.featureFlags?.r8OwnedEditorialEnabled ?? false;
+      // The cache RPC exposes compatible gammes under popular_parts /
+      // catalog.families[].gammes (NOT compatible_families), so legacy
+      // `families` is often empty. When so, source owned-editorial gammes from
+      // the RPC. Flag-gated only — never touches the legacy families/catalog block.
+      const ownedGammeSource =
+        useOwnedEditorial && topGammes.length === 0
+          ? extractGammeSourceFromRpc(vehicleData)
+          : topGammes;
+      const gammeEditorials: GammeEditorial[] = useOwnedEditorial
+        ? (
+            await Promise.all(
+              ownedGammeSource
+                .slice(0, 5)
+                .map((g) => this.loadGammeEditorial(g)),
+            )
+          ).filter((e): e is GammeEditorial => e !== null)
+        : [];
+
       // Neighbors from DB
       const neighborFamilyKey = buildNeighborFamilyKey({
         brand: v.brand_name || '',
@@ -256,6 +288,9 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
         vehicleRag,
         gammeRags,
         neighbors,
+        useOwnedEditorial,
+        gammeEditorials,
+        pageKey,
       );
 
       // H1 : reste produit par buildR8H1 (format optimisé avec plage d'années,
@@ -550,6 +585,89 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
     }
   }
 
+  // ── Owned editorial (Fix B) ──
+
+  /**
+   * Loads governed, quality-gated gamme editorial from the OWNED DB tables
+   * (`__seo_gamme_purchase_guide` + `__seo_gamme_conseil`) — NOT RAG md, NOT
+   * TecDoc, NOT scraping. Quality floor `R8_OWNED_EDITORIAL_MIN_QUALITY`,
+   * drafts excluded. Returns `null` when the gamme carries no publishable
+   * editorial; the caller logs `R8_OWNED_EDITORIAL_FALLBACK` and uses the
+   * existing path (never silent — CLAUDE.md no-silent-fallback).
+   */
+  private async loadGammeEditorial(family: {
+    pg_id: number;
+    pg_alias: string;
+    pg_name: string;
+    product_count: number;
+  }): Promise<GammeEditorial | null> {
+    const pgKey = String(family.pg_id);
+    const [pgRes, conseilRes] = await Promise.all([
+      this.client
+        .from('__seo_gamme_purchase_guide')
+        .select(
+          'sgpg_how_to_choose, sgpg_selection_criteria, sgpg_symptoms, sgpg_risk_explanation, sgpg_risk_consequences, sgpg_timing_years, sgpg_timing_km, sgpg_timing_note, sgpg_anti_mistakes, sgpg_faq',
+        )
+        .eq('sgpg_pg_id', pgKey)
+        .eq('sgpg_is_draft', false)
+        .gte('sgpg_gatekeeper_score', R8_OWNED_EDITORIAL_MIN_QUALITY)
+        .limit(1),
+      this.client
+        .from('__seo_gamme_conseil')
+        .select('sgc_content, sgc_section_type, sgc_title')
+        .eq('sgc_pg_id', pgKey)
+        .gte('sgc_quality_score', R8_OWNED_EDITORIAL_MIN_QUALITY)
+        .order('sgc_order', { ascending: true })
+        .limit(20),
+    ]);
+
+    if (pgRes.error) {
+      this.logger.warn(
+        `loadGammeEditorial purchase_guide query failed pg_id=${pgKey}: ${pgRes.error.message}`,
+      );
+    }
+    if (conseilRes.error) {
+      this.logger.warn(
+        `loadGammeEditorial conseil query failed pg_id=${pgKey}: ${conseilRes.error.message}`,
+      );
+    }
+
+    const pg = (pgRes.data && pgRes.data[0]) || null;
+    const conseil = (conseilRes.data ?? []).map((c: any) => ({
+      content: c.sgc_content ?? null,
+      section_type: c.sgc_section_type ?? null,
+      title: c.sgc_title ?? null,
+    }));
+
+    if (!pg && conseil.length === 0) return null;
+
+    return {
+      pgId: family.pg_id,
+      pgName: family.pg_name,
+      pgAlias: family.pg_alias,
+      productCount: family.product_count,
+      purchaseGuide: pg
+        ? {
+            how_to_choose: pg.sgpg_how_to_choose ?? null,
+            selection_criteria: pg.sgpg_selection_criteria ?? null,
+            symptoms: Array.isArray(pg.sgpg_symptoms) ? pg.sgpg_symptoms : null,
+            risk_explanation: pg.sgpg_risk_explanation ?? null,
+            risk_consequences: Array.isArray(pg.sgpg_risk_consequences)
+              ? pg.sgpg_risk_consequences
+              : null,
+            timing_years: pg.sgpg_timing_years ?? null,
+            timing_km: pg.sgpg_timing_km ?? null,
+            timing_note: pg.sgpg_timing_note ?? null,
+            anti_mistakes: Array.isArray(pg.sgpg_anti_mistakes)
+              ? pg.sgpg_anti_mistakes
+              : null,
+            faq: pg.sgpg_faq ?? null,
+          }
+        : null,
+      conseil,
+    };
+  }
+
   // ── Neighbors ──
 
   // Sentinel : `R8Neighbor` augmenté avec `variant_signature` pour la
@@ -589,6 +707,9 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       symptoms: string[];
     }>,
     neighbors: R8Neighbor[],
+    useOwnedEditorial = false,
+    gammeEditorials: GammeEditorial[] = [],
+    pageKey = '',
   ): R8Block[] {
     const blocks: R8Block[] = [];
     const brand = v.brand_name || '';
@@ -619,6 +740,20 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
           ? (placeholderCtx as Record<string, string>)[key]
           : `{${key}}`,
       );
+
+    // Fix B — owned editorial × motorisation facts (flag-gated by caller).
+    const facts: MotorisationFacts = {
+      brand,
+      model,
+      type,
+      power: String(power),
+      fuel,
+      yearFrom: String(yearFrom),
+      yearTo: yearTo ? String(yearTo) : '',
+    };
+    const anchorEditorial = useOwnedEditorial
+      ? pickAnchorGamme(gammeEditorials)
+      : null;
 
     // S_IDENTITY (ADR-022 P2d : rotation déterministe pool 7)
     const introTemplate = selectVariation(
@@ -749,32 +884,58 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       ],
     });
 
-    // S_SELECTION_GUIDE
-    const usurePieces = vehicleRag.pieces_usure || [];
-    if (usurePieces.length > 0) {
-      blocks.push({
-        id: 'S_SELECTION_GUIDE',
-        type: 'selection_help',
-        title: `Pièces d'usure courantes`,
-        renderedText: usurePieces.map((p) => `- ${p}`).join('\n'),
-        specificityWeight: 0.85,
-        boilerplateRisk: 0.1,
-        semanticPayload: usurePieces.slice(0, 5),
-      });
+    // S_SELECTION_GUIDE — owned editorial (Fix B) × facts, else pieces_usure path
+    const ownedSelection =
+      useOwnedEditorial && anchorEditorial
+        ? buildOwnedSelectionGuide(anchorEditorial, facts)
+        : null;
+    if (ownedSelection) {
+      blocks.push(ownedSelection);
+    } else {
+      if (useOwnedEditorial) {
+        this.logger.log(
+          `R8_OWNED_EDITORIAL_FALLBACK section=S_SELECTION_GUIDE page=${pageKey} reason=${anchorEditorial ? 'no_owned_selection' : 'no_anchor_editorial'}`,
+        );
+      }
+      const usurePieces = vehicleRag.pieces_usure || [];
+      if (usurePieces.length > 0) {
+        blocks.push({
+          id: 'S_SELECTION_GUIDE',
+          type: 'selection_help',
+          title: `Pièces d'usure courantes`,
+          renderedText: usurePieces.map((p) => `- ${p}`).join('\n'),
+          specificityWeight: 0.85,
+          boilerplateRisk: 0.1,
+          semanticPayload: usurePieces.slice(0, 5),
+        });
+      }
     }
 
-    // S_ENTRETIEN_CONTEXT
-    const problemes = vehicleRag.problemes_connus || [];
-    if (problemes.length > 0) {
-      blocks.push({
-        id: 'S_ENTRETIEN_CONTEXT',
-        type: 'maintenance_context',
-        title: `Problèmes connus ${brand} ${model}`,
-        renderedText: problemes.map((p) => `- ${p}`).join('\n'),
-        specificityWeight: 0.85,
-        boilerplateRisk: 0.1,
-        semanticPayload: problemes.slice(0, 3),
-      });
+    // S_ENTRETIEN_CONTEXT — owned editorial (Fix B) × facts, else problemes_connus path
+    const ownedEntretien =
+      useOwnedEditorial && anchorEditorial
+        ? buildOwnedEntretien(anchorEditorial, facts)
+        : null;
+    if (ownedEntretien) {
+      blocks.push(ownedEntretien);
+    } else {
+      if (useOwnedEditorial) {
+        this.logger.log(
+          `R8_OWNED_EDITORIAL_FALLBACK section=S_ENTRETIEN_CONTEXT page=${pageKey} reason=${anchorEditorial ? 'no_owned_entretien' : 'no_anchor_editorial'}`,
+        );
+      }
+      const problemes = vehicleRag.problemes_connus || [];
+      if (problemes.length > 0) {
+        blocks.push({
+          id: 'S_ENTRETIEN_CONTEXT',
+          type: 'maintenance_context',
+          title: `Problèmes connus ${brand} ${model}`,
+          renderedText: problemes.map((p) => `- ${p}`).join('\n'),
+          specificityWeight: 0.85,
+          boilerplateRisk: 0.1,
+          semanticPayload: problemes.slice(0, 3),
+        });
+      }
     }
 
     // S_CATALOG_ACCESS (dynamic ranking + ADR-022 P2d variation opener)
@@ -802,27 +963,40 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       });
     }
 
-    // S_FAQ_DEDICATED (merge from gamme RAGs + ADR-022 P2d variation opener)
-    const allFaqs = gammeRags.flatMap((g) => g.faq);
-    const uniqueFaqs = this.deduplicateFaqs(allFaqs).slice(0, 6);
-    if (uniqueFaqs.length >= 2) {
-      const faqOpener = renderTemplate(
-        selectVariation(
-          SEO_R8_FAQ_OPENING_VARIATIONS,
-          typeIdInt,
-          0,
-          R8_SLOT_OFFSETS.FAQ_OPENING,
-        ),
-      );
-      blocks.push({
-        id: 'S_FAQ_DEDICATED',
-        type: 'dedicated_faq',
-        title: `Questions fréquentes`,
-        renderedText: `${faqOpener}\n\n${uniqueFaqs.map((f) => `**${f.q}**\n${f.a}`).join('\n\n')}`,
-        specificityWeight: 0.7,
-        boilerplateRisk: 0.2,
-        semanticPayload: uniqueFaqs.map((f) => f.q.slice(0, 30)),
-      });
+    // S_FAQ_DEDICATED — owned FAQ (Fix B) merged across gammes, else gamme-RAG FAQ.
+    // ADR-022 P2d variation opener = connective tissue (used in both paths).
+    const faqOpener = renderTemplate(
+      selectVariation(
+        SEO_R8_FAQ_OPENING_VARIATIONS,
+        typeIdInt,
+        0,
+        R8_SLOT_OFFSETS.FAQ_OPENING,
+      ),
+    );
+    const ownedFaq = useOwnedEditorial
+      ? buildOwnedFaq(gammeEditorials, facts, faqOpener)
+      : null;
+    if (ownedFaq) {
+      blocks.push(ownedFaq);
+    } else {
+      if (useOwnedEditorial) {
+        this.logger.log(
+          `R8_OWNED_EDITORIAL_FALLBACK section=S_FAQ_DEDICATED page=${pageKey} reason=no_owned_faq`,
+        );
+      }
+      const allFaqs = gammeRags.flatMap((g) => g.faq);
+      const uniqueFaqs = this.deduplicateFaqs(allFaqs).slice(0, 6);
+      if (uniqueFaqs.length >= 2) {
+        blocks.push({
+          id: 'S_FAQ_DEDICATED',
+          type: 'dedicated_faq',
+          title: `Questions fréquentes`,
+          renderedText: `${faqOpener}\n\n${uniqueFaqs.map((f) => `**${f.q}**\n${f.a}`).join('\n\n')}`,
+          specificityWeight: 0.7,
+          boilerplateRisk: 0.2,
+          semanticPayload: uniqueFaqs.map((f) => f.q.slice(0, 30)),
+        });
+      }
     }
 
     // S_TRUST (ADR-022 P2d : atténue boilerplate via rotation pool 5)

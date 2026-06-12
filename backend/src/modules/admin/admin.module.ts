@@ -20,6 +20,9 @@ import { DatabaseModule } from '../../database/database.module';
 // Controllers - Stock consolidé ✅
 import { ControlPlaneController } from './controllers/control-plane.controller';
 import { RegistryReaderService } from './services/registry-reader.service';
+import { CommandCenterController } from './controllers/command-center.controller';
+import { CommandCenterReaderService } from './services/command-center-reader.service';
+import { CommandCenterActionsService } from './services/command-center-actions.service';
 import { ConfigurationController } from './controllers/configuration.controller';
 import { StockController } from './controllers/stock.controller'; // 🔥 Controller consolidé unique
 import { AdminController } from './controllers/admin.controller';
@@ -125,7 +128,6 @@ import { AiContentModule } from '../ai-content/ai-content.module'; // 🤖 Pour 
 import { SystemModule } from '../system/system.module';
 import { AdminDbGovernanceController } from './controllers/admin-db-governance.controller';
 import { AdminPipelineController } from './controllers/admin-pipeline.controller'; // 🚀 Unified pipeline execution
-import { AdminRagPipelineStatusController } from './controllers/admin-rag-pipeline-status.controller';
 import { ExecutionRouterService } from './services/execution-router.service'; // 🚀 Enricher dispatch router
 import { R2EnricherService } from './services/r2-enricher.service'; // 🏗️ R2 Product enricher (WriteGate-native)
 import { R1EnricherService } from './services/r1-enricher.service'; // 🏗️ R1 Router enricher (0-LLM, RAG+KP)
@@ -163,6 +165,7 @@ import { SeoControlRefreshProcessor } from './processors/seo-control-refresh.pro
   ],
   controllers: [
     ControlPlaneController,
+    CommandCenterController, // 🛰️ Command Center cockpit - /api/admin/command-center
     ConfigurationController,
     StockController, // 🔥 Un seul controller stock consolidé (13 routes)
     // ❌ StockEnhancedController - SUPPRIMÉ
@@ -202,7 +205,6 @@ import { SeoControlRefreshProcessor } from './processors/seo-control-refresh.pro
     // AdminSupplierStatsController — not ready for prod
     AdminDbGovernanceController, // 📊 DB Governance Phase 2 - /api/admin/db-governance/*
     AdminPipelineController, // 🚀 Unified pipeline execution - /api/admin/pipeline/*
-    AdminRagPipelineStatusController, // 📊 RAG pipeline dashboard - /api/admin/rag-pipeline/status
     InternalPipelineController, // 🚀 Internal pipeline (X-Internal-Key) - /api/internal/pipeline/*
     InternalSeoAuditController, // 📊 Internal SEO audit (X-Internal-Key) - /api/internal/seo/audit/*
     GovernanceMatrixController, // 🛡️ SEO Operating Matrix - /api/admin/governance/seo-operating-matrix
@@ -210,6 +212,8 @@ import { SeoControlRefreshProcessor } from './processors/seo-control-refresh.pro
   ],
   providers: [
     RegistryReaderService,
+    CommandCenterReaderService,
+    CommandCenterActionsService,
     ConfigurationService,
     StockManagementService, // ✅ Service principal stock
     WorkingStockService, // ✅ Service complémentaire (search, export, stats)

@@ -40,210 +40,6 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 
 ---
 
-## 2026-05-09 — pr6-clean (auto)
-
-- **Branche** : `pr6-clean`
-- **Décision** : fix(seo-v9): pr-6 update vehicle-rpc legacy test for shadowObservatory dep (+2 other commits)
-- **Sortie** : PR aucune | commits c4808beb a8df0f53 c230abd4
-
-## 2026-05-09 — feat/seo-v9-r7-router-wire (auto)
-
-- **Branche** : `feat/seo-v9-r7-router-wire`
-- **Décision** : docs(seo-batch): unblock R7 step in seo-gamme-audit skill (+2 other commits)
-- **Sortie** : PR #418 | commits cd329235 b94d51eb 46778759
-
-## 2026-05-10 — monorepo/pr5-url-immutability-gate (auto)
-
-- **Branche** : `monorepo/pr5-url-immutability-gate`
-- **Décision** : feat(seo): add R-SEO-09 URL immutability gate phase 1 surface guard (+1 other commit)
-- **Sortie** : PR #428 | commits 18cc6c59 22ff92fc
-
-## 2026-05-13 — feat/registry-pr-b-schemas (auto)
-
-- **Branche** : `feat/registry-pr-b-schemas`
-- **Décision** : feat(registry): add @repo/registry package — Zod schemas V1 (ADR-058 PR-B)
-- **Sortie** : PR #457 | commits 0504fd38
-
-## 2026-05-13 — feat/registry-pr-c-data-layer (auto)
-
-- **Branche** : `feat/registry-pr-c-data-layer`
-- **Décision** : feat(registry): 5 Layer 1 builders + RPC parse modes + CI warn-only (ADR-058 PR-C) (+2 other commits)
-- **Sortie** : PR #458 | commits b281943b f067e9ec 0504fd38
-
-## 2026-05-13 — feat/registry-pr-d-canon-overlay (auto)
-
-- **Branche** : `feat/registry-pr-d-canon-overlay`
-- **Décision** : feat(registry): Layer 2 overlay manuel + seed/validate + DomainId D1..D15 (ADR-058 PR-D) (+4 other commits)
-- **Sortie** : PR #460 | commits 66d9e64f b08d3e90 b281943b f067e9ec 0504fd38
-
-## 2026-05-13 — feat/registry-pr-e-canonical (auto)
-
-- **Branche** : `feat/registry-pr-e-canonical`
-- **Décision** : feat(registry): canonical projection Layer 3 + freshness CI Phase 1 + 4 invariants (ADR-058 PR-E) (+6 other commits)
-- **Sortie** : PR #462 | commits a1d79d5b 658018c4 66d9e64f b08d3e90 b281943b f067e9ec 0504fd38
-
-## 2026-05-13 — feat/registry-pr-g-block-new (auto)
-
-- **Branche** : `feat/registry-pr-g-block-new`
-- **Décision** : feat(registry): CI Phase 2 block-new gate + pre-push hook (ADR-058 PR-G) (+8 other commits)
-- **Sortie** : PR #464 | commits 27d515d8 77d4b57a a1d79d5b 658018c4 66d9e64f b08d3e90 b281943b f067e9ec 0504fd38
-
-## 2026-05-13 — feat/registry-pr-g-block-new (auto)
-
-- **Branche** : `feat/registry-pr-g-block-new`
-- **Décision** : chore(registry): regen canonical + REPO_MAP after merge main (PR-G recovery) (+12 other commits)
-- **Sortie** : PR #482 | commits 0653d797 00fe3be6 60209305 5828f494 27d515d8 77d4b57a a1d79d5b 658018c4 66d9e64f b08d3e90 b281943b f067e9ec 0504fd38
-
-## 2026-05-13 — feat/registry-pr-g-block-new (auto)
-
-- **Branche** : `feat/registry-pr-g-block-new`
-- **Décision** : fix(registry-new-file-gate): invoke node direct (npm wrapper pollutes JSON stdout) (+14 other commits)
-- **Sortie** : PR #482 | commits 3eb76950 5368dec1 0653d797 00fe3be6 60209305 5828f494 27d515d8 77d4b57a a1d79d5b 658018c4 66d9e64f b08d3e90 b281943b f067e9ec 0504fd38
-
-## 2026-05-13 — feat/registry-pr-g-block-new (auto)
-
-- **Branche** : `feat/registry-pr-g-block-new`
-- **Décision** : fix(check-new-files): sanitize argv ref + execFileSync (CodeQL injection guard) (+16 other commits)
-- **Sortie** : PR #482 | commits f0c6f729 b05435e8 3eb76950 5368dec1 0653d797 00fe3be6 60209305 5828f494 27d515d8 77d4b57a a1d79d5b 658018c4 66d9e64f b08d3e90 b281943b f067e9ec 0504fd38
-
-## 2026-05-14 — feat/ci-workspace-invariants (auto)
-
-- **Branche** : `feat/ci-workspace-invariants`
-- **Décision** : feat(ci): workspace mini-monorepo check (ADR-061 §6)
-- **Sortie** : PR aucune | commits 9331cadd
-
-## 2026-05-14 — feat/canon-mirrors-precommit-hook (auto)
-
-- **Branche** : `feat/canon-mirrors-precommit-hook`
-- **Décision** : feat(canon-mirrors): pre-commit hook blocks manual edits (ADR-061 §3)
-- **Sortie** : PR aucune | commits c725253e
-
-## 2026-05-14 — feat/pr-4-frontend-utils-batch-1 (auto)
-
-- **Branche** : `feat/pr-4-frontend-utils-batch-1`
-- **Décision** : chore(cleanup): drop 4 frontend dead utils (PR-4 batch 1)
-- **Sortie** : PR aucune | commits c24a3fe5
-
-## 2026-05-14 — refactor/registry-zod-validator-extract (auto)
-
-- **Branche** : `refactor/registry-zod-validator-extract`
-- **Décision** : refactor(ci): extract Zod validator to tsx script, remove inline heredoc + build dependency
-- **Sortie** : PR #503 | commits 47dea57f
-
-## 2026-05-14 — refactor/registry-zod-validator-extract (auto)
-
-- **Branche** : `refactor/registry-zod-validator-extract`
-- **Décision** : refactor(registry): convert @repo/registry to source-only workspace (+2 other commits)
-- **Sortie** : PR #503 | commits 90f20f13 9afc7674 47dea57f
-
-## 2026-05-14 — fix/perf-gates-bundle-stats-no-lighthouse (auto)
-
-- **Branche** : `fix/perf-gates-bundle-stats-no-lighthouse`
-- **Décision** : fix(ci): remplace Lighthouse-CI synthétique par bundle-stats déterministe
-- **Sortie** : PR #506 | commits 8b2dfd70
-
-## 2026-05-14 — fix/perf-gates-bundle-stats-no-lighthouse (auto)
-
-- **Branche** : `fix/perf-gates-bundle-stats-no-lighthouse`
-- **Décision** : fix(perf-gates): use turbo build at root, not -w frontend (workspace deps) (+2 other commits)
-- **Sortie** : PR #506 | commits dbb88af1 d2f291a8 8b2dfd70
-
-## 2026-05-14 — feat/db-contract-v1 (auto)
-
-- **Branche** : `feat/db-contract-v1`
-- **Décision** : feat(db-contract): §2 add canon db.yaml — 8 P0/P1 tables (V1 minimal) (+1 other commit)
-- **Sortie** : PR aucune | commits 82a7cede 48330a0d
-
-## 2026-05-14 — feat/db-contract-v1 (auto)
-
-- **Branche** : `feat/db-contract-v1`
-- **Décision** : feat(db-contract): §6 size invariants + doctrine pointer cleanup (+6 other commits)
-- **Sortie** : PR #511 | commits 3a654957 f9aa65a7 e1bc4a24 c27b7035 106c0bb6 82a7cede 48330a0d
-
-## 2026-05-14 — feat/seo-cp-criticality-tiers (auto)
-
-- **Branche** : `feat/seo-cp-criticality-tiers`
-- **Décision** : fix(seo): closure INC-2026-005 — GSC 5xx 30 400 pages recovery + tactical hardening (#510)
-- **Sortie** : PR aucune | commits e118d599
-
-## 2026-05-14 — feat/seo-cp-criticality-tiers (auto)
-
-- **Branche** : `feat/seo-cp-criticality-tiers`
-- **Décision** : chore(registry): renumber ADR-062 → ADR-064 (062 + 063 already taken) (+3 other commits)
-- **Sortie** : PR #515 | commits 815d3307 7fbe8bd1 24e425ab e118d599
-
-## 2026-05-14 — feat/adr-063-cwv-monitoring-crux-api (auto)
-
-- **Branche** : `feat/adr-063-cwv-monitoring-crux-api`
-- **Décision** : fix(seo-crux): reword down.sql comment to avoid migration-safety false positive (+3 other commits)
-- **Sortie** : PR #514 | commits ac7fd3ad feb1d4b0 5d1a7535 15092a48
-
-## 2026-05-14 — feat/seo-cp-synthetic-crawler (auto)
-
-- **Branche** : `feat/seo-cp-synthetic-crawler`
-- **Décision** : feat(seo-cp): synthetic crawler L1 — PR-2A-1 SEO Production Control Plane
-- **Sortie** : PR #516 | commits 78e38791
-
-## 2026-05-14 — feat/seo-cp-synthetic-crawler (auto)
-
-- **Branche** : `feat/seo-cp-synthetic-crawler`
-- **Décision** : fix(seo-cp): extend SupabaseBaseService + correct path resolution (+2 other commits)
-- **Sortie** : PR #516 | commits 764670e0 d148698d 78e38791
-
-## 2026-05-14 — feat/seo-cp-synthetic-crawler (auto)
-
-- **Branche** : `feat/seo-cp-synthetic-crawler`
-- **Décision** : fix(seo-cp): add -- APPROVED: comments to DROP statements (CI migration safety gate) (+4 other commits)
-- **Sortie** : PR #516 | commits b2489e5e d8002a36 824d0dfc 7e84c3ee dba46e79
-
-## 2026-05-14 — feat/adr-063-cwv-ingestion-v2 (auto)
-
-- **Branche** : `feat/adr-063-cwv-ingestion-v2`
-- **Décision** : fix(seo-crux): prettier formatting + jest transformIgnore for @repo/seo-types (+1 other commit)
-- **Sortie** : PR #518 | commits ea602630 dd75d842
-
-## 2026-05-14 — feat/adr-063-cwv-ingestion-v2 (auto)
-
-- **Branche** : `feat/adr-063-cwv-ingestion-v2`
-- **Décision** : fix(seo-crux): jest moduleNameMapper for @repo/seo-types workspace symlink (+3 other commits)
-- **Sortie** : PR #518 | commits f03a0252 26c34086 ea602630 dd75d842
-
-## 2026-05-14 — feat/adr-063-cwv-ingestion-v2 (auto)
-
-- **Branche** : `feat/adr-063-cwv-ingestion-v2`
-- **Décision** : test(seo-crux): skip fake-timer retry+circuit-breaker tests (CI timeout) (+5 other commits)
-- **Sortie** : PR #518 | commits f07a4990 44181f8c f03a0252 26c34086 ea602630 dd75d842
-
-## 2026-05-14 — feat/adr-063-cwv-ingestion-v2 (auto)
-
-- **Branche** : `feat/adr-063-cwv-ingestion-v2`
-- **Décision** : test(seo-crux): minimize to sync-only coverage (3 tests) (+7 other commits)
-- **Sortie** : PR #518 | commits 08142888 e5c6864b f07a4990 44181f8c f03a0252 26c34086 ea602630 dd75d842
-
-## 2026-05-14 — feat/adr-063-cwv-alerting (auto)
-
-- **Branche** : `feat/adr-063-cwv-alerting`
-- **Décision** : feat(seo-crux): alerter service (pr-4 adr-063)
-- **Sortie** : PR #525 | commits a6f3b25f
-
-## 2026-05-14 — feat/pr-w3b-registry-tests-blocking (auto)
-
-- **Branche** : `feat/pr-w3b-registry-tests-blocking`
-- **Décision** : ci(audit): promote @repo/registry contract tests to BLOCKING gate (PR-W3b)
-- **Sortie** : PR aucune | commits fce47ec9
-
-## 2026-05-14 — feat/seo-cp-cf-analytics-collector (auto)
-
-- **Branche** : `feat/seo-cp-cf-analytics-collector`
-- **Décision** : feat(seo-cp): cloudflare analytics collector L1 — PR-2A-2 (ADR-064)
-- **Sortie** : PR #520 | commits 8701fdf4
-
-## 2026-05-14 — feat/seo-cp-cf-analytics-collector (auto)
-
-- **Branche** : `feat/seo-cp-cf-analytics-collector`
-- **Décision** : fix(ci): grant pull-requests:write to migration-safety job (squawk upload-to-github) (+2 other commits)
-- **Sortie** : PR #520 | commits adf76ba3 f240f3b5 8701fdf4
-
 ## 2026-05-14 — feat/seo-cp-cf-analytics-collector (auto)
 
 - **Branche** : `feat/seo-cp-cf-analytics-collector`
@@ -569,8 +365,62 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Décision** : docs(audit): refresh carte 24-départements avec deltas funnel 06-01 (+1 other commit)
 - **Sortie** : PR #820 | commits ed821a72d d88e707ca
 
-## 2026-06-02 — chore/userpromptsubmit-context-hook (auto)
+## 2026-06-02 — feat/supplier-cal-pr1b (auto)
 
-- **Branche** : `chore/userpromptsubmit-context-hook`
-- **Décision** : chore(hooks): add UserPromptSubmit context-push hook (PULL->PUSH)
-- **Sortie** : PR aucune | commits 220a7465c
+- **Branche** : `feat/supplier-cal-pr1b`
+- **Décision** : feat(supplier-truth): wire CAL connector (read-only sentinel, spl_id 19)
+- **Sortie** : PR #828 | commits 136941362
+
+## 2026-06-03 — feat/supplier-truth-runtime-wiring (auto)
+
+- **Branche** : `feat/supplier-truth-runtime-wiring`
+- **Décision** : feat(supplier-truth): runtime wiring (inert mode, scheduler OFF default)
+- **Sortie** : PR #831 | commits 268efea6c
+
+## 2026-06-04 — feat/command-center-exposure-mode (auto)
+
+- **Branche** : `feat/command-center-exposure-mode`
+- **Décision** : fix(command-center): widen NODE_ENV type in mode test (TS2322 'preprod') (PR4) (+1 other commit)
+- **Sortie** : PR #856 | commits 75f42754f d20d75831
+
+## 2026-06-04 — feat/pricing-import-pending-mode (auto)
+
+- **Branche** : `feat/pricing-import-pending-mode`
+- **Décision** : feat(pricing): import-pending mode — commit cost without auto-activating sellability
+- **Sortie** : PR #857 | commits f746ce702
+
+## 2026-06-05 — vlevel-doctrine-lock (auto)
+
+- **Branche** : `vlevel-doctrine-lock`
+- **Décision** : feat(seo-roles): V-Level doctrine — invariants ref + DB-only capture (lock-before-fix) ; + fixes squawk migration + overlay ownership D14
+- **Sortie** : PR #861 | commits 07141fcc4 4f037916a a599763f8 525cfa21d
+
+## 2026-06-05 — feat/content-raw-evidence-inventory (auto)
+
+- **Branche** : `feat/content-raw-evidence-inventory`
+- **Décision** : feat(content): read-only deterministic RAW evidence inventory (pilote filtre-a-air)
+- **Sortie** : PR aucune | commits a9a042483
+
+## 2026-06-05 — g2-vlevel-invariants-runtime-wiring (auto)
+
+- **Branche** : `g2-vlevel-invariants-runtime-wiring`
+- **Décision** : fix(seo-roles): wire V-Level invariants without recalculation
+- **Sortie** : PR #863 | commits 58af79a1f
+
+## 2026-06-06 — feat/seo-r3-consolidation-evidence (auto)
+
+- **Branche** : `feat/seo-r3-consolidation-evidence`
+- **Décision** : feat(seo): read-only GSC-backed R3 consolidation evidence matrix (10-gamme pilot)
+- **Sortie** : PR aucune | commits ca0232d4c
+
+## 2026-06-08 — docs/vlevel-method-freeze (auto)
+
+- **Branche** : `docs/vlevel-method-freeze`
+- **Décision** : docs(seo): vlevel — objectif top-vente (proxy recherche) + dispatch pages constructeur (+1 other commit)
+- **Sortie** : PR #898 | commits 1db293cf8 bd605b606
+
+## 2026-06-10 — fix/r4-reference-list-rpc-gate (auto)
+
+- **Branche** : `fix/r4-reference-list-rpc-gate`
+- **Décision** : chore(registry): glob ownership pour la migration 20260610 (D14, owner GO en session) (+3 other commits)
+- **Sortie** : PR #922 | commits f719e0d1f 5d5cf54c9 c62447acd 974ad3996

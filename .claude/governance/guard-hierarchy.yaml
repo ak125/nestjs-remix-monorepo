@@ -70,9 +70,16 @@ levels:
     branch_protected: true
     requires_adr: false
     guards:
+      # declared-not-wired (constat 2026-06-10) : rego + test existent
+      # (policies/maintenance/) mais aucun job CI ne lance conftest —
+      # policy-gates.yml absent, prérequis générateur de manifest routes
+      # (docs/routes/manifest.json) absent. Voir policies/README.md §CI wiring.
       - rego:maintenance-no-programmatic-seo-pages  # PR-A.4 (anti-SEO-farm Maintenance)
+      # declared-not-implemented (constat 2026-06-10) : aucun fichier .rego
+      # correspondant dans policies/ ni référence dans scripts/ ou .github/.
+      # Implémenter ou retirer = décision owner.
       - rego:control-plane-route-allow-list         # control-plane route lockdown
-      - contract-drift:port-signature               # port contract change without taxonomy bump
+      - contract-drift:port-signature               # port contract change without taxonomy bump — câblé : .github/workflows/contract-drift-ratchet.yml
 
   L4:
     behavior: |

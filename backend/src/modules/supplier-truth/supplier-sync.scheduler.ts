@@ -1,6 +1,8 @@
 import { Injectable, Logger, type OnModuleInit } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectQueue } from '@nestjs/bull';
 import type { Queue } from 'bull';
+import { isSupplierSyncEnabled } from './supplier-sync.flag';
 
 /**
  * Schedules the recurring supplier sync (Task 12) via Bull.
@@ -23,9 +25,26 @@ export class SupplierSyncScheduler implements OnModuleInit {
 
   constructor(
     @InjectQueue(SUPPLIER_SYNC_QUEUE) private readonly queue: Queue,
+    private readonly config: ConfigService,
   ) {}
 
+  /**
+   * Activation flag — INERT by default (owner-gated). The sentinel NEVER syncs
+   * unless `SUPPLIER_TRUTH_SYNC_ENABLED` is explicitly `'true'`. Off → no
+   * repeatable job is ever armed → the @Processor never receives work → no
+   * connector login / portal hit / DB write.
+   */
+  isSyncEnabled(): boolean {
+    return isSupplierSyncEnabled(this.config);
+  }
+
   onModuleInit(): void {
+    if (!this.isSyncEnabled()) {
+      this.logger.log(
+        '⏸️ supplier-sync INERT — SUPPLIER_TRUTH_SYNC_ENABLED!=true: scheduler present, NO repeatable job armed, no portal hit',
+      );
+      return;
+    }
     this.logger.log(
       '🚀 init — deferring repeatable supplier-sync setup (non-blocking)',
     );
