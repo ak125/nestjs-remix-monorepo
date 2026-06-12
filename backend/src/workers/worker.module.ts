@@ -38,8 +38,6 @@ import { SupplierTruthEventSink } from '../modules/supplier-truth/supplier-truth
 import { RagProxyModule } from '../modules/rag-proxy/rag-proxy.module';
 import { AgenticProcessor } from './processors/agentic.processor';
 import { PipelineChainProcessor } from './processors/pipeline-chain.processor';
-import { RagChangeWatcherService } from './services/rag-change-watcher.service';
-import { ContentMergerService } from './services/content-merger.service';
 import { AgenticDataService } from '../modules/agentic-engine/services/agentic-data.service';
 import { EvidenceLedgerService } from '../modules/agentic-engine/services/evidence-ledger.service';
 import { RunManagerService } from '../modules/agentic-engine/services/run-manager.service';
@@ -147,10 +145,6 @@ import { AdminJobHealthService } from '../modules/admin/services/admin-job-healt
     // Job health tracking (shared by all processors)
     AdminJobHealthService,
 
-    // RAG Change → Content Improvement Pipeline (append-only, never replace)
-    RagChangeWatcherService,
-    ContentMergerService,
-
     // Services
     // SitemapStreamingService, // DESACTIVE
     // SitemapDeltaService, // DESACTIVE
@@ -184,8 +178,6 @@ import { AdminJobHealthService } from '../modules/admin/services/admin-job-healt
   ],
   exports: [
     SeoMonitorSchedulerService,
-    ContentMergerService,
-    RagChangeWatcherService,
     BullModule, // 🚀 Export BullModule so AdminModule can inject pipeline-chain queue
   ],
 })
