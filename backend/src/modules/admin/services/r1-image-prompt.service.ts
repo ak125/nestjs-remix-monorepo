@@ -172,7 +172,7 @@ export class R1ImagePromptService extends SupabaseBaseService {
 
   /**
    * Mark all prompts for a gamme as stale (RAG context changed).
-   * Called by RagChangeWatcherService when RAG files change.
+   * No active caller (former RAG change-watcher chain removed — RAG=chatbot only).
    */
   async markStaleByGamme(pgAlias: string): Promise<number> {
     const { data } = await this.supabase
