@@ -179,26 +179,11 @@ export class FeatureFlagsService {
     return this.bool('RAG_VIRTUAL_MERGE_ENABLED', false);
   }
 
-  // ── RAG Change → Content Improvement Pipeline ──
-
-  /** Master switch for RAG change detection pipeline */
-  get ragChangePipelineEnabled(): boolean {
-    return this.bool('RAG_CHANGE_PIPELINE_ENABLED', false);
-  }
-
-  /** Auto-enqueue improvement jobs (false = log only, manual review) */
-  get ragChangeAutoEnqueue(): boolean {
-    return this.bool('RAG_CHANGE_AUTO_ENQUEUE', false);
-  }
+  // ── RAG Merge scope flags (consumed by PipelineChainProcessor) ──
 
   /** Dry run mode for merge operations (preview without DB writes) */
   get ragMergeDryRun(): boolean {
     return this.bool('RAG_MERGE_DRY_RUN', true);
-  }
-
-  /** Polling interval for RAG change events (default: 60s) */
-  get ragChangePollIntervalMs(): number {
-    return this.int('RAG_CHANGE_POLL_INTERVAL_MS', 60_000);
   }
 
   /** CSV of allowed roles for RAG merge (empty = all IMPROVABLE_ROLES) */
@@ -209,11 +194,6 @@ export class FeatureFlagsService {
   /** CSV of allowed gamme aliases for RAG merge (empty = all gammes) */
   get ragMergeAllowedGammes(): string[] {
     return this.csv('RAG_MERGE_ALLOWED_GAMMES');
-  }
-
-  /** Dedup window in minutes — skip enqueue if same gamme+role job exists within this window (default: 60) */
-  get ragDedupWindowMinutes(): number {
-    return this.int('RAG_DEDUP_WINDOW_MINUTES', 60);
   }
 
   // ── Agentic Engine flags ──
@@ -357,12 +337,9 @@ export class FeatureFlagsService {
     'BRIEF_GATES_ENABLED',
     'BRIEF_GATES_OBSERVE_ONLY',
     'RAG_CATCHUP_ENABLED',
-    'RAG_CHANGE_PIPELINE_ENABLED',
-    'RAG_CHANGE_AUTO_ENQUEUE',
     'RAG_MERGE_DRY_RUN',
     'RAG_MERGE_ALLOWED_ROLES',
     'RAG_MERGE_ALLOWED_GAMMES',
-    'RAG_DEDUP_WINDOW_MINUTES',
     'CONSEIL_PACK_ENABLED',
     'KEYWORD_DENSITY_GATE_ENABLED',
     'CANARY_AUTO_PUBLISH',
