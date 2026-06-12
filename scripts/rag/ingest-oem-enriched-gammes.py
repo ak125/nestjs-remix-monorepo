@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
 """
+🚨 DEPRECATED 2026-06-12 — dormant : __rag_knowledge est figée (dernier refresh
+2026-04-11) et le RAG est chatbot-only (ADR-031/046) ; l'enrichissement CONTENU
+passe par RAW → WIKI → exports (ADR-059/083), jamais par ce script.
+Réactiver uniquement pour un refresh corpus CHATBOT explicitement gouverné.
+
 ingest-oem-enriched-gammes.py — Pousse les données OEM phase5_enrichment vers __rag_knowledge.
 
 Pour chaque gamme avec _validation_status: oem_verified, extrait le bloc technique

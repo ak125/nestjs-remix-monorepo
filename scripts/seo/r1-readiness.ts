@@ -1,4 +1,9 @@
 /**
+ * 🚨 DEPRECATED 2026-06-12 — entrée canonique = scripts/seo/seo-readiness.ts
+ * (verdict multi-rôle + batch/ranking, PR #941). Ce cockpit R1 4-dimensions reste
+ * exécutable mais n'évolue plus ; toute nouvelle dimension va dans seo-readiness.ts.
+ * Suppression après absorption complète.
+ *
  * r1-readiness.ts — Cockpit READ-ONLY du verdict R1 par gamme (4 dimensions).
  *
  * Compose le verdict de readiness pour une page R1 gamme :
