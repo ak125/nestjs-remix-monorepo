@@ -1,0 +1,312 @@
+{
+  "title": "PageContractCrossRolePolicy",
+  "description": "Matrice cross-rôle ownership × mode × budgets par section + budgets Gate C (similarité TF-IDF par paire de rôles) + patterns interdits par rôle (Gate A). Document de DONNÉES (pas un JSON Schema d'instance) — référence machine-readable pour les agents seo-batch (r*-execution / r*-validator) et tout consommateur de la famille page-contract. Valeurs reprises 1:1 du legacy avant suppression.",
+  "_source": "backend/src/config/content-section-policy.ts (POLICY_VERSION, SECTION_POLICIES, SECTION_CLAIM_LIMITS, faqIntentPatterns, bridge PageRole→RoleId) + backend/src/modules/admin/services/brief-gates.service.ts (SIMILARITY_BUDGETS Gate C, ROLE_FORBIDDEN_PATTERNS Gate A) — salvage pré-purge RAG 2026-06-11",
+  "policy_version": "1.0",
+
+  "page_role_bridge": {
+    "_comment": "Rôles legacy de la matrice → RoleId canonique (role-ids.ts / role-matrix.md v5). ATTENTION : 'R3_guide' (legacy) = guide d'achat, canoniquement R6_GUIDE_ACHAT — PAS R3 how-to.",
+    "R1": "R1_ROUTER",
+    "R3_guide": "R6_GUIDE_ACHAT",
+    "R3_conseils": "R3_CONSEILS",
+    "R4": "R4_REFERENCE",
+    "R5": "R5_DIAGNOSTIC"
+  },
+
+  "section_policies": {
+    "_comment": "Par section : owner (autorité full), allowed_sources (ordre de priorité), flags IA/evidence, max_words par rôle (0 = interdit), mode par rôle (full | summary | link_only | forbidden), fallback_strategy (empty | static_template | rag_only). Les rôles NON-propriétaires n'ont droit qu'au mode/budget indiqué — c'est la matrice anti-cannibalisation.",
+    "intro_role": {
+      "owner": "R3_guide",
+      "allowed_sources": ["db", "rag"],
+      "ai_allowed": false,
+      "ai_requires_brief": false,
+      "evidence_required": false,
+      "max_words": { "R1": 40, "R3_guide": 200, "R3_conseils": 150, "R4": 100, "R5": 0 },
+      "mode": { "R1": "summary", "R3_guide": "full", "R3_conseils": "summary", "R4": "summary", "R5": "forbidden" },
+      "fallback_strategy": "empty"
+    },
+    "risk": {
+      "owner": "R3_guide",
+      "allowed_sources": ["db", "rag"],
+      "ai_allowed": false,
+      "ai_requires_brief": false,
+      "evidence_required": false,
+      "max_words": { "R1": 60, "R3_guide": 300, "R3_conseils": 0, "R4": 80, "R5": 0 },
+      "mode": { "R1": "summary", "R3_guide": "full", "R3_conseils": "forbidden", "R4": "summary", "R5": "forbidden" },
+      "fallback_strategy": "empty"
+    },
+    "timing": {
+      "owner": "R3_guide",
+      "allowed_sources": ["db", "rag"],
+      "ai_allowed": false,
+      "ai_requires_brief": false,
+      "evidence_required": false,
+      "max_words": { "R1": 60, "R3_guide": 200, "R3_conseils": 150, "R4": 0, "R5": 0 },
+      "mode": { "R1": "summary", "R3_guide": "full", "R3_conseils": "summary", "R4": "forbidden", "R5": "forbidden" },
+      "fallback_strategy": "empty"
+    },
+    "how_to_choose": {
+      "owner": "R3_guide",
+      "allowed_sources": ["db", "rag", "ai"],
+      "ai_allowed": true,
+      "ai_requires_brief": true,
+      "evidence_required": false,
+      "max_words": { "R1": 0, "R3_guide": 400, "R3_conseils": 200, "R4": 0, "R5": 0 },
+      "mode": { "R1": "forbidden", "R3_guide": "full", "R3_conseils": "summary", "R4": "forbidden", "R5": "forbidden" },
+      "fallback_strategy": "static_template"
+    },
+    "selection_criteria": {
+      "owner": "R3_guide",
+      "allowed_sources": ["db", "rag"],
+      "ai_allowed": false,
+      "ai_requires_brief": false,
+      "evidence_required": false,
+      "max_words": { "R1": 0, "R3_guide": 400, "R3_conseils": 0, "R4": 0, "R5": 0 },
+      "mode": { "R1": "forbidden", "R3_guide": "full", "R3_conseils": "forbidden", "R4": "forbidden", "R5": "forbidden" },
+      "fallback_strategy": "empty"
+    },
+    "decision_tree": {
+      "owner": "R3_guide",
+      "allowed_sources": ["db", "rag"],
+      "ai_allowed": false,
+      "ai_requires_brief": false,
+      "evidence_required": false,
+      "max_words": { "R1": 0, "R3_guide": 300, "R3_conseils": 0, "R4": 0, "R5": 0 },
+      "mode": { "R1": "forbidden", "R3_guide": "full", "R3_conseils": "forbidden", "R4": "forbidden", "R5": "forbidden" },
+      "fallback_strategy": "empty"
+    },
+    "anti_mistakes": {
+      "owner": "R3_guide",
+      "allowed_sources": ["db", "rag"],
+      "ai_allowed": false,
+      "ai_requires_brief": false,
+      "evidence_required": false,
+      "max_words": { "R1": 0, "R3_guide": 300, "R3_conseils": 0, "R4": 0, "R5": 0 },
+      "mode": { "R1": "forbidden", "R3_guide": "full", "R3_conseils": "forbidden", "R4": "forbidden", "R5": "forbidden" },
+      "fallback_strategy": "empty"
+    },
+    "use_cases": {
+      "owner": "R3_guide",
+      "allowed_sources": ["db", "rag"],
+      "ai_allowed": false,
+      "ai_requires_brief": false,
+      "evidence_required": false,
+      "max_words": { "R1": 0, "R3_guide": 300, "R3_conseils": 0, "R4": 0, "R5": 0 },
+      "mode": { "R1": "forbidden", "R3_guide": "full", "R3_conseils": "forbidden", "R4": "forbidden", "R5": "forbidden" },
+      "fallback_strategy": "empty"
+    },
+    "faq": {
+      "owner": "R3_guide",
+      "allowed_sources": ["db", "rag", "ai"],
+      "ai_allowed": true,
+      "ai_requires_brief": true,
+      "evidence_required": false,
+      "max_words": { "R1": 200, "R3_guide": 600, "R3_conseils": 400, "R4": 0, "R5": 200 },
+      "mode": { "R1": "summary", "R3_guide": "full", "R3_conseils": "full", "R4": "forbidden", "R5": "summary" },
+      "fallback_strategy": "static_template",
+      "faq_intent_patterns": {
+        "_comment": "Intents FAQ autorisés par rôle (regex source + flags) — partitionnement anti-duplicate des questions.",
+        "R1": [{ "pattern": "achat|prix|livraison|compatibil|garantie", "flags": "i" }],
+        "R3_guide": [{ "pattern": "choisir|comparer|erreur|crit[eè]re|diff[eé]rence", "flags": "i" }],
+        "R5": [{ "pattern": "sympt[oô]me|test|risque|diagnostic|voyant", "flags": "i" }]
+      }
+    },
+    "symptoms": {
+      "owner": "R5",
+      "allowed_sources": ["db", "rag"],
+      "ai_allowed": false,
+      "ai_requires_brief": false,
+      "evidence_required": false,
+      "max_words": { "R1": 60, "R3_guide": 120, "R3_conseils": 120, "R4": 40, "R5": 400 },
+      "mode": { "R1": "link_only", "R3_guide": "summary", "R3_conseils": "summary", "R4": "summary", "R5": "full" },
+      "fallback_strategy": "empty"
+    },
+    "perception": {
+      "owner": "R5",
+      "allowed_sources": ["db", "rag"],
+      "ai_allowed": false,
+      "ai_requires_brief": false,
+      "evidence_required": false,
+      "max_words": { "R1": 0, "R3_guide": 0, "R3_conseils": 0, "R4": 0, "R5": 300 },
+      "mode": { "R1": "forbidden", "R3_guide": "forbidden", "R3_conseils": "forbidden", "R4": "forbidden", "R5": "full" },
+      "fallback_strategy": "empty"
+    },
+    "sign_test": {
+      "owner": "R5",
+      "allowed_sources": ["db", "rag"],
+      "ai_allowed": false,
+      "ai_requires_brief": false,
+      "evidence_required": false,
+      "max_words": { "R1": 0, "R3_guide": 0, "R3_conseils": 0, "R4": 0, "R5": 400 },
+      "mode": { "R1": "forbidden", "R3_guide": "forbidden", "R3_conseils": "forbidden", "R4": "forbidden", "R5": "full" },
+      "fallback_strategy": "empty"
+    },
+    "obd_codes": {
+      "owner": "R5",
+      "allowed_sources": ["db", "rag"],
+      "ai_allowed": false,
+      "ai_requires_brief": false,
+      "evidence_required": false,
+      "max_words": { "R1": 0, "R3_guide": 0, "R3_conseils": 0, "R4": 0, "R5": 300 },
+      "mode": { "R1": "forbidden", "R3_guide": "forbidden", "R3_conseils": "forbidden", "R4": "forbidden", "R5": "full" },
+      "fallback_strategy": "empty"
+    },
+    "costs": {
+      "owner": "R5",
+      "allowed_sources": ["db", "rag"],
+      "ai_allowed": false,
+      "ai_requires_brief": false,
+      "evidence_required": true,
+      "max_words": { "R1": 0, "R3_guide": 0, "R3_conseils": 100, "R4": 0, "R5": 300 },
+      "mode": { "R1": "forbidden", "R3_guide": "forbidden", "R3_conseils": "summary", "R4": "forbidden", "R5": "full" },
+      "fallback_strategy": "empty"
+    },
+    "composition": {
+      "owner": "R4",
+      "allowed_sources": ["db", "rag"],
+      "ai_allowed": false,
+      "ai_requires_brief": false,
+      "evidence_required": false,
+      "max_words": { "R1": 0, "R3_guide": 0, "R3_conseils": 0, "R4": 400, "R5": 0 },
+      "mode": { "R1": "forbidden", "R3_guide": "forbidden", "R3_conseils": "forbidden", "R4": "full", "R5": "forbidden" },
+      "fallback_strategy": "empty"
+    },
+    "confusions": {
+      "owner": "R4",
+      "allowed_sources": ["db", "rag"],
+      "ai_allowed": false,
+      "ai_requires_brief": false,
+      "evidence_required": false,
+      "max_words": { "R1": 0, "R3_guide": 0, "R3_conseils": 0, "R4": 400, "R5": 0 },
+      "mode": { "R1": "forbidden", "R3_guide": "forbidden", "R3_conseils": "forbidden", "R4": "full", "R5": "forbidden" },
+      "fallback_strategy": "empty"
+    },
+    "regles_metier": {
+      "owner": "R4",
+      "allowed_sources": ["db", "rag"],
+      "ai_allowed": false,
+      "ai_requires_brief": false,
+      "evidence_required": false,
+      "max_words": { "R1": 0, "R3_guide": 0, "R3_conseils": 0, "R4": 400, "R5": 0 },
+      "mode": { "R1": "forbidden", "R3_guide": "forbidden", "R3_conseils": "forbidden", "R4": "full", "R5": "forbidden" },
+      "fallback_strategy": "empty"
+    },
+    "buy_args": {
+      "owner": "R1",
+      "allowed_sources": ["db"],
+      "ai_allowed": false,
+      "ai_requires_brief": false,
+      "evidence_required": false,
+      "max_words": { "R1": 400, "R3_guide": 0, "R3_conseils": 0, "R4": 0, "R5": 0 },
+      "mode": { "R1": "full", "R3_guide": "forbidden", "R3_conseils": "forbidden", "R4": "forbidden", "R5": "forbidden" },
+      "fallback_strategy": "empty"
+    },
+    "equipementiers": {
+      "owner": "R1",
+      "allowed_sources": ["db", "rag"],
+      "ai_allowed": false,
+      "ai_requires_brief": false,
+      "evidence_required": false,
+      "max_words": { "R1": 300, "R3_guide": 0, "R3_conseils": 0, "R4": 0, "R5": 0 },
+      "mode": { "R1": "full", "R3_guide": "forbidden", "R3_conseils": "forbidden", "R4": "forbidden", "R5": "forbidden" },
+      "fallback_strategy": "empty"
+    },
+    "motorisations": {
+      "owner": "R1",
+      "allowed_sources": ["db", "rag"],
+      "ai_allowed": false,
+      "ai_requires_brief": false,
+      "evidence_required": false,
+      "max_words": { "R1": 300, "R3_guide": 0, "R3_conseils": 0, "R4": 0, "R5": 0 },
+      "mode": { "R1": "full", "R3_guide": "forbidden", "R3_conseils": "forbidden", "R4": "forbidden", "R5": "forbidden" },
+      "fallback_strategy": "empty"
+    }
+  },
+
+  "section_claim_limits": {
+    "_comment": "Nombre max de claims numériques/factuelles par section × rôle. Sections/rôles absents = pas de limite explicite (défaut runtime legacy : 99).",
+    "default_when_unlisted": 99,
+    "limits": {
+      "intro_role": { "R3_guide": 3, "R1": 1, "R3_conseils": 2, "R4": 1 },
+      "risk": { "R3_guide": 5, "R1": 2 },
+      "timing": { "R3_guide": 3, "R3_conseils": 2 },
+      "how_to_choose": { "R3_guide": 4, "R3_conseils": 2 },
+      "costs": { "R5": 4, "R3_conseils": 2 },
+      "faq": { "R3_guide": 6, "R3_conseils": 4, "R1": 3, "R5": 3 },
+      "symptoms": { "R5": 5 },
+      "composition": { "R4": 4 }
+    }
+  },
+
+  "gate_c_similarity_budgets": {
+    "_comment": "Gate C (similarité sémantique TF-IDF, cosine) — budgets cross-rôle par paire. Seuils warn/fail sur le cosine global du contenu + seuils par section (paire R1↔R3 uniquement dans le legacy). 'default' = budget appliqué à toute paire non listée (fallback legacy brief-gates.service.ts).",
+    "pairs": {
+      "R1↔R3": {
+        "global_threshold": { "warn": 0.7, "fail": 0.8 },
+        "max_sections_above_warn": 1,
+        "per_section_thresholds": {
+          "intro_role": { "warn": 0.8, "fail": 0.9 },
+          "faq": { "warn": 0.6, "fail": 0.75 },
+          "symptoms": { "warn": 0.5, "fail": 0.7 },
+          "how_to_choose": { "warn": 0.55, "fail": 0.7 },
+          "timing": { "warn": 0.7, "fail": 0.85 }
+        }
+      },
+      "R1↔R4": {
+        "global_threshold": { "warn": 0.6, "fail": 0.75 },
+        "max_sections_above_warn": 1,
+        "per_section_thresholds": {}
+      },
+      "R3↔R4": {
+        "global_threshold": { "warn": 0.65, "fail": 0.8 },
+        "max_sections_above_warn": 1,
+        "per_section_thresholds": {}
+      }
+    },
+    "default": {
+      "global_threshold": { "warn": 0.75, "fail": 0.85 },
+      "max_sections_above_warn": 1,
+      "per_section_thresholds": {}
+    }
+  },
+
+  "role_forbidden_patterns": {
+    "_comment": "Gate A (role compliance) — regex (source + flags + raison) détectant du contenu hors-rôle dans une page. Valeurs concrètes NON couvertes par les ban_*/forbidden_terms des page-contracts (ceux-ci définissent la FORME des instances, pas ces valeurs). Verdict legacy : >= fail_at_hits patterns matchés = FAIL, >= warn_at_hits = WARN.",
+    "verdict_rule": { "fail_at_hits": 3, "warn_at_hits": 1 },
+    "R1": [
+      { "pattern": "étape\\s+[0-9]", "flags": "i", "reason": "Procedure = R3" },
+      { "pattern": "étape\\s+(un|deux|trois|quatre|cinq)", "flags": "i", "reason": "Procedure = R3" },
+      { "pattern": "outils?\\s+nécessaires?", "flags": "i", "reason": "Procedure = R3" },
+      { "pattern": "couple\\s+de\\s+serrage", "flags": "i", "reason": "Procedure = R3" },
+      { "pattern": "\\b(démonter|déposer|reposer|remonter)\\b", "flags": "i", "reason": "Procedure = R3" },
+      { "pattern": "\\b(tutoriel|tuto|pas[\\s-]à[\\s-]pas)\\b", "flags": "i", "reason": "Procedure = R3" },
+      { "pattern": "\\b(définition|glossaire|encyclopédie)\\b", "flags": "i", "reason": "Reference = R4" }
+    ],
+    "R3_guide": [
+      { "pattern": "ajouter\\s+au\\s+panier", "flags": "i", "reason": "Transactionnel = R1" },
+      { "pattern": "\\b(commander|achetez)\\b", "flags": "i", "reason": "Transactionnel = R1" },
+      { "pattern": "€\\s*[0-9]", "flags": "i", "reason": "Transactionnel = R1" },
+      { "pattern": "prix\\s+à\\s+partir", "flags": "i", "reason": "Transactionnel = R1" },
+      { "pattern": "\\b(tarif|promotion)\\b", "flags": "i", "reason": "Transactionnel = R1" },
+      { "pattern": "\\b(définition|glossaire|encyclopédie)\\b", "flags": "i", "reason": "Reference = R4" }
+    ],
+    "R3_conseils": [
+      { "pattern": "ajouter\\s+au\\s+panier", "flags": "i", "reason": "Transactionnel = R1" },
+      { "pattern": "\\b(commander|achetez)\\b", "flags": "i", "reason": "Transactionnel = R1" },
+      { "pattern": "€\\s*[0-9]", "flags": "i", "reason": "Transactionnel = R1" },
+      { "pattern": "prix\\s+à\\s+partir", "flags": "i", "reason": "Transactionnel = R1" },
+      { "pattern": "\\b(tarif|promotion)\\b", "flags": "i", "reason": "Transactionnel = R1" },
+      { "pattern": "\\b(définition|glossaire|encyclopédie)\\b", "flags": "i", "reason": "Reference = R4" }
+    ],
+    "R4": [
+      { "pattern": "étape\\s+[0-9]", "flags": "i", "reason": "Procedure = R3" },
+      { "pattern": "\\b(pas[\\s-]à[\\s-]pas)\\b", "flags": "i", "reason": "Procedure = R3" },
+      { "pattern": "\\b(tutoriel|tuto|comment\\s+remplacer)\\b", "flags": "i", "reason": "Procedure = R3" },
+      { "pattern": "ajouter\\s+au\\s+panier", "flags": "i", "reason": "Transactionnel = R1" },
+      { "pattern": "\\b(achetez|commander)\\b", "flags": "i", "reason": "Transactionnel = R1" },
+      { "pattern": "€\\s*[0-9]", "flags": "i", "reason": "Transactionnel = R1" },
+      { "pattern": "\\b(prix|tarif|promotion)\\b", "flags": "i", "reason": "Transactionnel = R1" },
+      { "pattern": "compatible\\s+avec\\s+votre\\s+véhicule", "flags": "i", "reason": "Transactionnel = R1" }
+    ]
+  }
+}
