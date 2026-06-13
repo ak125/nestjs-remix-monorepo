@@ -232,7 +232,9 @@ export class GscDailyFetcherService {
         partialRowsInserted: result.rowsInserted,
         retryScheduled: errorClass === 'quota_exceeded',
       });
-      this.logger.error(`❌ GSC multi-grain ${options.date} failed: ${message}`);
+      this.logger.error(
+        `❌ GSC multi-grain ${options.date} failed: ${message}`,
+      );
       throw err;
     }
   }

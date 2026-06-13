@@ -27,6 +27,11 @@
 -- Pas de BEGIN/COMMIT explicite (squawk assume_in_transaction=true).
 -- =====================================================
 
+-- Squawk require-timeout-settings : ops métadonnées (CREATE TABLE/FUNCTION + pré-création
+-- de partitions sur tables neuves/vides) → timeouts bornés mais généreux.
+set lock_timeout = '5s';
+set statement_timeout = '60s';
+
 -- =====================================================
 -- TABLE 1 : __seo_gsc_daily_property_total  (grain = date)
 -- Vérité volume GLOBALE — 1 ligne/jour, aucune dimension demandée à GSC.
