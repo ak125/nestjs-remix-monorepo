@@ -430,3 +430,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `chore/trim-agent-rules`
 - **Décision** : chore(claude-rules): allège les 2 rules auto-chargées les plus lourdes (−5.5KB/session)
 - **Sortie** : PR #938 | commits c31d995ee
+
+## 2026-06-13 — feat/seo-gsc-multilevel-ingestion (auto)
+
+- **Branche** : `feat/seo-gsc-multilevel-ingestion`
+- **Décision** : feat(seo): GSC ingestion multi-niveaux fidèle (property_total/totals/pages) + couverture
+- **Sortie** : PR aucune | commits 3c4bacb1e
