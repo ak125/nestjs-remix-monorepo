@@ -430,3 +430,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `chore/trim-agent-rules`
 - **Décision** : chore(claude-rules): allège les 2 rules auto-chargées les plus lourdes (−5.5KB/session)
 - **Sortie** : PR #938 | commits c31d995ee
+
+## 2026-06-13 — feat/db-first-generators-dry-run (auto)
+
+- **Branche** : `feat/db-first-generators-dry-run`
+- **Décision** : feat(content): étalon v3 — BRONZE coarse-only (fuel:) + étalon diagnostic fuel-aware (injection) (+4 other commits)
+- **Sortie** : PR #958 | commits 43d05cf46 0485c66c7 6e0b5ffa3 d574d7712 1e6f81a36
