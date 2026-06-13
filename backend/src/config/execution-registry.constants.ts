@@ -202,3 +202,15 @@ export const CONTRACT_SCHEMA_MAP: Record<string, string> = {
   'page-contract-r7.schema': 'page-contract-r7.schema',
   'page-contract-r8.schema': 'page-contract-r8.schema',
 };
+
+// ── Cross-Role Content Policy (salvage pré-purge RAG 2026-06-11) ──
+// Résiduel cross-rôle porté 1:1 depuis content-section-policy.ts (matrice
+// ownership/mode/budget par section × rôle, SECTION_CLAIM_LIMITS,
+// faqIntentPatterns, bridge PageRole→RoleId) et brief-gates.service.ts
+// (budgets Gate C similarité TF-IDF par paire, ROLE_FORBIDDEN_PATTERNS Gate A)
+// — fichiers legacy en cours de suppression (programme purge « RAG = source
+// de contenu »). Surface machine-readable consommée par les agents seo-batch
+// (r*-execution / r*-validator). Données uniquement — aucune logique
+// d'enforcement n'est portée ici.
+
+export const CROSS_ROLE_POLICY_FILE = 'page-contract-cross-role-policy.json';

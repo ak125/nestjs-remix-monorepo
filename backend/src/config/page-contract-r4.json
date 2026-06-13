@@ -2,6 +2,11 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://automecanik.com/schemas/page-contract-r4.media-slots.schema.json",
   "title": "PageContractR4 + MediaSlots",
+  "cross_role_policy": {
+    "_source": "content-section-policy.ts + brief-gates.service.ts Gate C — salvage pré-purge RAG 2026-06-11",
+    "file": "page-contract-cross-role-policy.json",
+    "role_keys": ["R4"]
+  },
   "type": "object",
   "additionalProperties": false,
   "required": ["contract_version", "entity", "page_role", "intents", "headings", "sections", "media_slots", "forbidden", "validation"],
