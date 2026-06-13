@@ -1,0 +1,27 @@
+{
+  "coverage": [],
+  "entity_type": "vehicle",
+  "intent_targets": [],
+  "inventory_status": "DIAGNOSTIC_READY",
+  "missing_for_next_tier": [],
+  "next_action": "CONFIGURE_COMPLETENESS_PROFILE",
+  "pg_id": null,
+  "provenance": {
+    "completeness_profile": null,
+    "source_type": "vehicle",
+    "sources": [
+      {
+        "content_hash": "sha256:45b7c53794d4824b8f5e12cd30bacff5013a8a2ea747a53aaa236a3d15d4f6ce",
+        "kind": "vehicle",
+        "path": "recycled/rag-knowledge/vehicles/renault.md"
+      }
+    ],
+    "truth_level": "L1",
+    "unlinked_source_types": [],
+    "verification_status": "verified"
+  },
+  "raw_verdict": "NOT_CONFIGURED",
+  "schema_version": "raw-evidence.v1",
+  "subject": "renault",
+  "tier": "NOT_CONFIGURED"
+}
