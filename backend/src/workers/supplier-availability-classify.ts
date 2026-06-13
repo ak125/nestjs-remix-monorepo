@@ -45,6 +45,7 @@ import {
   type RefVerdict,
   type SearchRow,
 } from '../modules/supplier-truth/connectors/inoshop-search-parse';
+import { runResilientClassify } from '../modules/supplier-truth/connectors/portal-classify-resilience';
 
 const req = (k: string): string => {
   const v = process.env[k];
@@ -167,11 +168,6 @@ async function main(): Promise<void> {
   }
 
   let attemptErrors = 0;
-  let failedBatches = 0;
-  let consecutiveFails = 0;
-  let batches = 0;
-  let hadSuccess = done.size > 0; // a non-empty checkpoint means the portal already worked
-  let terminalTimeouts = 0;
   const t0 = Date.now();
   const BACKOFF = [4000, 12000, 30000];
 
@@ -210,122 +206,86 @@ async function main(): Promise<void> {
     return null;
   };
 
-  for (let i = 0; i < todo.length; i += BATCH) {
-    const batch = todo.slice(i, i + BATCH);
-    const refs = batch.map((b) => b.ref);
-    const r = await fetchBatch(refs);
-    batches++;
-    if (!r) {
-      failedBatches++;
-      // CONVERGENCE (owner 2026-06-11): a multi-ref batch that fails RIGHT AFTER the
-      // portal proved healthy (hadSuccess && consecutiveFails===0) is a BAD-REF batch,
-      // not an outage. Isolate it ref-by-ref so the run converges instead of re-hitting
-      // it forever on resume. A ref that still fails ALONE → terminal REVIEW_PORTAL_TIMEOUT
-      // (checkpointed). A whole pass with ZERO reachable refs = real outage → discard the
-      // buffered timeouts (so they retry on resume) and STOP resumable — NO false terminals.
-      if (hadSuccess && consecutiveFails === 0 && batch.length > 1) {
-        console.log(
-          `  batch ${batches} failed — isolating ${batch.length} refs (portal healthy → bad-ref bisect)`,
+  // ----- resilient classification: bisect + per-ref budget + circuit breaker -----
+  // Resumable per-ref isolated-attempt budget: a persistently-failing ref accumulates
+  // attempts across resumes too, not only within one run.
+  const ATTEMPTS = `${OUT}/attempts.json`;
+  let refAttempts: Record<string, number> = {};
+  try {
+    refAttempts = JSON.parse(readFileSync(ATTEMPTS, 'utf8')) as Record<
+      string,
+      number
+    >;
+  } catch {
+    /* fresh run — no prior attempts */
+  }
+
+  let classified = 0;
+  let successGroups = 0;
+  let pace = 0;
+  const result = await runResilientClassify(
+    todo,
+    {
+      batchSize: BATCH,
+      maxRefAttempts: Number(process.env.MAX_REF_ATTEMPTS ?? 3),
+      breakerWindow: Number(process.env.BREAKER_WINDOW ?? 8),
+    },
+    {
+      fetchGroup: async (group) => {
+        const r = await fetchBatch(group.map((b) => b.ref));
+        if (!r) return false;
+        writeFileSync(
+          `${HTML_DIR}/${fsSafe(group[0].ref)}_${fsSafe(group[group.length - 1].ref)}.html.gz`,
+          gzipSync(r.html),
         );
-        let isoSuccess = 0;
-        const isoTimeouts: FeedRow[] = [];
-        for (const b of batch) {
-          const one = await fetchBatch([b.ref]);
-          if (one) {
-            writeFileSync(
-              `${HTML_DIR}/${fsSafe(b.ref)}.html.gz`,
-              gzipSync(one.html),
-            );
-            appendFileSync(
-              JSONL,
-              JSON.stringify(verdictForRef(one.rows, b.ref, b.ean, tokens)) +
-                '\n',
-            );
-            isoSuccess++;
-          } else {
-            isoTimeouts.push(b); // buffer — only terminal if the pass proves the portal is up
-          }
-          await sleep(2500);
-        }
-        if (isoSuccess === 0) {
-          // nothing reachable this pass → outage, not bad refs. Drop buffer (retry on resume).
-          console.log(
-            `STOP: isolation pass found 0 reachable refs — portal outage; checkpoint saved, resumable (${isoTimeouts.length} refs left for retry, NOT timed-out)`,
-          );
-          break;
-        }
-        if (isoTimeouts.length) {
-          appendFileSync(
-            JSONL,
-            isoTimeouts.map((b) => JSON.stringify(portalTimeoutVerdict(b))).join('\n') +
-              '\n',
-          );
-          terminalTimeouts += isoTimeouts.length;
-          console.log(
-            `    ↳ ${isoTimeouts.length} ref(s) terminal REVIEW_PORTAL_TIMEOUT: ${isoTimeouts.map((b) => b.ref).join(',')}`,
-          );
-        }
-        hadSuccess = true;
-        continue;
-      }
-      // Single-ref batch, portal healthy, still failing → it IS the problem ref → terminal.
-      if (hadSuccess && consecutiveFails === 0 && batch.length === 1) {
         appendFileSync(
           JSONL,
-          JSON.stringify(portalTimeoutVerdict(batch[0])) + '\n',
+          group
+            .map((b) =>
+              JSON.stringify(verdictForRef(r.rows, b.ref, b.ean, tokens)),
+            )
+            .join('\n') + '\n',
         );
-        terminalTimeouts++;
-        console.log(
-          `  batch ${batches} ${batch[0].ref} terminal REVIEW_PORTAL_TIMEOUT (single-ref persistent fail)`,
+        classified += group.length;
+        successGroups++;
+        const elapsed = Math.round((Date.now() - t0) / 1000);
+        const rate = classified / Math.max(1, elapsed);
+        const etaMin = Math.round(
+          (todo.length - classified) / Math.max(0.01, rate) / 60,
         );
-        await sleep(2500);
-        continue;
-      }
-      // Otherwise (no success yet, or mid-failure-streak): treat as a SUSTAINED outage.
-      // DO NOT checkpoint: refs stay un-done, retried on resume; breaker STOPs eventually.
-      consecutiveFails++;
-      const msg = `batch ${batches} SKIPPED (failed) ${batch[0].ref}..${batch[batch.length - 1].ref} | failed=${failedBatches} consec=${consecutiveFails}`;
-      console.log('  ' + msg);
-      writeFileSync(PROGRESS, msg + '\n');
-      if (consecutiveFails >= 8) {
-        console.log(
-          `STOP: ${consecutiveFails} consecutive failed batches — portal down/throttling; checkpoint saved, resumable`,
+        const msg = `progress ${done.size + classified}/${feed.length} | rows=${r.rows.length} | attErr=${attemptErrors} | ${elapsed}s | ETA ~${etaMin}min`;
+        console.log('  ' + msg);
+        writeFileSync(PROGRESS, msg + '\n');
+        if (successGroups % 30 === 0) {
+          try {
+            token = await connector.getCsrfToken();
+          } catch {
+            /* keep old token */
+          }
+        }
+        return true;
+      },
+      onRefDeadLettered: (item) => {
+        appendFileSync(
+          JSONL,
+          JSON.stringify(portalTimeoutVerdict(item)) + '\n',
         );
-        break;
-      }
-      await sleep(30000 + consecutiveFails * 15000); // escalating cooldown, then continue
-      continue;
-    }
-    consecutiveFails = 0;
-    hadSuccess = true;
-    writeFileSync(
-      `${HTML_DIR}/${fsSafe(batch[0].ref)}_${fsSafe(batch[batch.length - 1].ref)}.html.gz`,
-      gzipSync(r.html),
-    );
-    const lines = batch.map((b) =>
-      JSON.stringify(verdictForRef(r.rows, b.ref, b.ean, tokens)),
-    );
-    appendFileSync(JSONL, lines.join('\n') + '\n');
-    const processed = done.size + i + batch.length;
-    const elapsed = Math.round((Date.now() - t0) / 1000);
-    const rate = (i + batch.length) / Math.max(1, elapsed);
-    const etaMin = Math.round(
-      (todo.length - (i + batch.length)) / Math.max(0.01, rate) / 60,
-    );
-    const msg = `batch ${batches} | ${processed}/${feed.length} | rows=${r.rows.length} | attErr=${attemptErrors} failed=${failedBatches} | ${elapsed}s | ETA ~${etaMin}min`;
-    console.log('  ' + msg);
-    writeFileSync(PROGRESS, msg + '\n');
-    if (batches % 30 === 0) {
-      try {
-        token = await connector.getCsrfToken();
-      } catch {
-        /* keep old */
-      }
-    }
-    await sleep(4000 + Math.floor(Math.random() * 4000)); // 4-8s anti-ban
-    if (batches % 50 === 0)
-      await sleep(20000 + Math.floor(Math.random() * 20000));
-  }
+      },
+      recordRefAttempt: (ref) => {
+        refAttempts[ref] = (refAttempts[ref] ?? 0) + 1;
+        writeFileSync(ATTEMPTS, JSON.stringify(refAttempts));
+        return refAttempts[ref];
+      },
+      sleepBetween: async () => {
+        pace++;
+        await sleep(4000 + Math.floor(Math.random() * 4000)); // 4-8s anti-ban
+        if (pace % 50 === 0)
+          await sleep(20000 + Math.floor(Math.random() * 20000));
+      },
+      log: (m) => console.log('  ' + m),
+    },
+  );
+  const terminalTimeouts = result.deadLettered.length;
   await connector.close();
   const durationS = Math.round((Date.now() - t0) / 1000);
 
@@ -382,7 +342,7 @@ async function main(): Promise<void> {
     ``,
     `supplier: ${cfg.supplierName} (spl ${cfg.supplierId})  |  brand tokens: ${[...tokens].join(',')}`,
     `feed: ${feed.length} refs  |  classified: ${all.length}`,
-    `duration this session: ${durationS}s  |  attempt-errors: ${attemptErrors}  |  skipped (failed, will retry on resume): ${failedBatches} batches / ${batches}  |  terminal portal-timeouts (isolated bad refs): ${terminalTimeouts}`,
+    `duration this session: ${durationS}s  |  attempt-errors: ${attemptErrors}  |  terminal portal-timeouts (dead-lettered): ${terminalTimeouts}  |  outage-stop (resumable): ${result.outage}`,
     `MECE sum_check: ${sumCheck} == ${all.length} → ${sumCheck === all.length ? 'OK' : 'FAIL'}`,
     ``,
     `## Buckets`,

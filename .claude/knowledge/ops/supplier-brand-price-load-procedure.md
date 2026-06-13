@@ -161,15 +161,17 @@ read-only, ne touchent **jamais** `pieces_price` :
   Invariant **no false in-stock** : CONFIRMED seulement si dispo-type **ET** icône verte
   concordent. `SUPPLIER_SPL=71 BRAND_TOKENS=NK,SBS FEED_PATH=… OUT_DIR=… npx tsx …`
   **Convergence `[CRITICAL]` (owner 2026-06-11)** : un portail lent peut 504 en boucle
-  sur certaines réfs (réfs numériques courtes = recherche lourde). Si un batch échoue
-  **alors que le portail vient de répondre** (≥1 succès récent), le worker l'**isole
-  ref-par-ref** : un ref qui échoue **seul** = problème portail/ref non pertinente →
-  bucket terminal **`REVIEW_PORTAL_TIMEOUT`** (checkpointé, plus jamais re-tenté, surfacé
-  en review). Une passe d'isolation **0 succès** = vraie panne portail → STOP **resumable
-  sans faux terminal** (les refs bufferisées retournent au retry). Garantit que le run
-  **CONVERGE** (9 647/9 647) au lieu de boucler. Réduire `BATCH` (ex. `BATCH=10`) allège
-  la recherche sur les plages lourdes. Re-checker les `REVIEW_PORTAL_TIMEOUT` plus tard =
-  les retirer du checkpoint et relancer.
+  sur certaines réfs (numériques courtes = recherche lourde). Le worker délègue la
+  résilience à un **module pur testé** (`portal-classify-resilience.ts`) qui applique le
+  pattern canonique : **bisection** d'un batch en échec (isole le ref fautif en ~log₂(n)
+  appels au lieu de n), **budget de tentatives par-ref** persistant (`attempts.json`,
+  cumulé inter-resume) → au-delà de `MAX_REF_ATTEMPTS` (déf. 3) le ref est **dead-letté**
+  bucket terminal **`REVIEW_PORTAL_TIMEOUT`** (le run **CONVERGE** au lieu de boucler), et
+  un **circuit-breaker** à fenêtre glissante (`BREAKER_WINDOW`, déf. 8) qui **OPEN** sur
+  échec soutenu → STOP **resumable, zéro faux terminal** (un retry d'un ref déjà
+  connu-mauvais n'alimente PAS le breaker, sinon la queue de réfs fautives ouvrirait
+  faussement le circuit). Réduire `BATCH` (ex. `BATCH=10`) allège les plages lourdes.
+  Re-checker les `REVIEW_PORTAL_TIMEOUT` = retirer leurs réfs du checkpoint + `attempts.json` et relancer.
 - **`supplier-price-verify.ts`** *(spot-check prix rapide)* — compare `achat fichier`
   vs `achat portail` sur un **échantillon** risque-pondéré (gros montants). Verdict
   **CONFIRMED / FIX_FEED / REVIEW / BLOCK**. ⚠️ recherche réf **floue** → re-vérifier

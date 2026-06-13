@@ -78,9 +78,10 @@ SUPPLIER_SPL=<spl_id> BRAND_TOKENS=<MARQUE,ALIAS> FEED_PATH=<feed.csv> \
 `OUT_DIR` **obligatoire et durable** (#908 — jamais un tmp OS : il porte le
 checkpoint resumable). Routine : **pilote `LIMIT=30` d'abord** (vérifie login,
 brand tokens, EAN-lock), puis full run en background (resumable). Portail lent →
-baisser `BATCH` (`BATCH=10`). **Convergence** : un ref qui 504 **seul** (portail
-sain) finit en bucket terminal `REVIEW_PORTAL_TIMEOUT` (le run converge au lieu de
-boucler) ; une passe d'isolation 0-succès = panne → STOP resumable sans faux terminal.
+baisser `BATCH` (`BATCH=10`). **Convergence** (module pur `portal-classify-resilience.ts`,
+testé) : bisection du batch en échec + budget par-ref persistant (`attempts.json`,
+`MAX_REF_ATTEMPTS=3`) → dead-letter terminal `REVIEW_PORTAL_TIMEOUT` (converge) ;
+circuit-breaker (`BREAKER_WINDOW=8`) OPEN sur panne soutenue → STOP resumable, zéro faux terminal.
 
 **Spot-check prix (échantillon)** — compare achat fichier vs achat portail sur N réfs
 risque-pondérées :
