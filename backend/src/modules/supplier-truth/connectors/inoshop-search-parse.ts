@@ -210,6 +210,7 @@ export type ActivationBucket =
   | 'REVIEW_CONTRADICTION' // dispo says stock but icon disagrees
   | 'REVIEW_FALSE_MATCH' // ref matched only other brands
   | 'REVIEW_NOT_FOUND' // ref absent from portal results
+  | 'REVIEW_PORTAL_TIMEOUT' // ref persistently fails its OWN search (504s) while the portal is healthy → portal-side problem / irrelevant ref. Terminal skip, NEVER a stock signal.
   | 'BLOCK_NONE'; // none / rouge → future pri_dispo='0'
 
 export interface RefVerdict {
