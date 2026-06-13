@@ -1,9 +1,12 @@
 ---
 name: content-quality-gate
-description: "Quality gate sections __seo_gamme_conseil : scoring + verdicts WRITE/REVIEW/BLOCK. Use when user mentions vérifier qualité, audit qualité section, gap analysis, sections faibles, review queue, détection régressions."
+description: "[DEPRECATED → /v5-guardian] Quality gate sections __seo_gamme_conseil : scoring + verdicts WRITE/REVIEW/BLOCK. Use when user mentions vérifier qualité, audit qualité section, gap analysis, sections faibles, review queue, détection régressions."
 ---
 
 # Content Quality Gate — Scoring et validation de contenu
+
+> 🚨 **DEPRECATED 2026-06-12** — fusionné dans `v5-guardian` (diff de capacités vérifié) ;
+> utiliser `/v5-guardian`. Suppression après 2 cycles.
 
 ## Principe fondamental
 

@@ -1,0 +1,27 @@
+{
+  "coverage": [],
+  "entity_type": "diagnostic",
+  "intent_targets": [],
+  "inventory_status": "DIAGNOSTIC_READY",
+  "missing_for_next_tier": [],
+  "next_action": "CONFIGURE_COMPLETENESS_PROFILE",
+  "pg_id": null,
+  "provenance": {
+    "completeness_profile": null,
+    "source_type": "diagnostic",
+    "sources": [
+      {
+        "content_hash": "sha256:bcae6733936441fb32dc66e0395cfa7502f848872a678be4b2c7a64e49193b63",
+        "kind": "diagnostic",
+        "path": "recycled/rag-knowledge/diagnostic/disque-de-frein.md"
+      }
+    ],
+    "truth_level": "L2",
+    "unlinked_source_types": [],
+    "verification_status": "verified"
+  },
+  "raw_verdict": "NOT_CONFIGURED",
+  "schema_version": "raw-evidence.v1",
+  "subject": "disque-de-frein",
+  "tier": "NOT_CONFIGURED"
+}

@@ -1,0 +1,27 @@
+{
+  "coverage": [],
+  "entity_type": "vehicle",
+  "intent_targets": [],
+  "inventory_status": "DIAGNOSTIC_READY",
+  "missing_for_next_tier": [],
+  "next_action": "CONFIGURE_COMPLETENESS_PROFILE",
+  "pg_id": null,
+  "provenance": {
+    "completeness_profile": null,
+    "source_type": "vehicle",
+    "sources": [
+      {
+        "content_hash": "sha256:0367e904ea1c6faf89113afd9da409fb8f720e943a0864a19311b3d0d6cc7154",
+        "kind": "vehicle",
+        "path": "recycled/rag-knowledge/vehicles/renault-megane-3.md"
+      }
+    ],
+    "truth_level": "L1",
+    "unlinked_source_types": [],
+    "verification_status": "verified"
+  },
+  "raw_verdict": "NOT_CONFIGURED",
+  "schema_version": "raw-evidence.v1",
+  "subject": "renault-megane-3",
+  "tier": "NOT_CONFIGURED"
+}
