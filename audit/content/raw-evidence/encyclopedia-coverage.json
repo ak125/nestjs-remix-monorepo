@@ -1,0 +1,2147 @@
+{
+  "by_family": {
+    "__uncategorized__": {
+      "tiers": {
+        "ARGENT": 0,
+        "BRONZE": 0,
+        "NONE": 0,
+        "NOT_CONFIGURED": 6,
+        "OR": 0
+      },
+      "total": 6
+    },
+    "accessoires": {
+      "tiers": {
+        "ARGENT": 0,
+        "BRONZE": 0,
+        "NONE": 0,
+        "NOT_CONFIGURED": 26,
+        "OR": 0
+      },
+      "total": 26
+    },
+    "alimentation": {
+      "tiers": {
+        "ARGENT": 0,
+        "BRONZE": 0,
+        "NONE": 0,
+        "NOT_CONFIGURED": 21,
+        "OR": 0
+      },
+      "total": 21
+    },
+    "allumage": {
+      "tiers": {
+        "ARGENT": 0,
+        "BRONZE": 0,
+        "NONE": 0,
+        "NOT_CONFIGURED": 6,
+        "OR": 0
+      },
+      "total": 6
+    },
+    "capteurs": {
+      "tiers": {
+        "ARGENT": 0,
+        "BRONZE": 0,
+        "NONE": 0,
+        "NOT_CONFIGURED": 17,
+        "OR": 0
+      },
+      "total": 17
+    },
+    "climatisation": {
+      "tiers": {
+        "ARGENT": 0,
+        "BRONZE": 0,
+        "NONE": 0,
+        "NOT_CONFIGURED": 13,
+        "OR": 0
+      },
+      "total": 13
+    },
+    "direction": {
+      "tiers": {
+        "ARGENT": 0,
+        "BRONZE": 0,
+        "NONE": 0,
+        "NOT_CONFIGURED": 14,
+        "OR": 0
+      },
+      "total": 14
+    },
+    "distribution": {
+      "tiers": {
+        "ARGENT": 0,
+        "BRONZE": 0,
+        "NONE": 0,
+        "NOT_CONFIGURED": 13,
+        "OR": 0
+      },
+      "total": 13
+    },
+    "echappement": {
+      "tiers": {
+        "ARGENT": 0,
+        "BRONZE": 0,
+        "NONE": 0,
+        "NOT_CONFIGURED": 6,
+        "OR": 0
+      },
+      "total": 6
+    },
+    "eclairage": {
+      "tiers": {
+        "ARGENT": 0,
+        "BRONZE": 0,
+        "NONE": 0,
+        "NOT_CONFIGURED": 17,
+        "OR": 0
+      },
+      "total": 17
+    },
+    "electrique": {
+      "tiers": {
+        "ARGENT": 0,
+        "BRONZE": 0,
+        "NONE": 0,
+        "NOT_CONFIGURED": 4,
+        "OR": 0
+      },
+      "total": 4
+    },
+    "embrayage": {
+      "tiers": {
+        "ARGENT": 0,
+        "BRONZE": 0,
+        "NONE": 0,
+        "NOT_CONFIGURED": 9,
+        "OR": 0
+      },
+      "total": 9
+    },
+    "filtration": {
+      "tiers": {
+        "ARGENT": 0,
+        "BRONZE": 0,
+        "NONE": 0,
+        "NOT_CONFIGURED": 5,
+        "OR": 0
+      },
+      "total": 5
+    },
+    "freinage": {
+      "tiers": {
+        "ARGENT": 0,
+        "BRONZE": 0,
+        "NONE": 0,
+        "NOT_CONFIGURED": 20,
+        "OR": 0
+      },
+      "total": 20
+    },
+    "gestion-moteur": {
+      "tiers": {
+        "ARGENT": 0,
+        "BRONZE": 0,
+        "NONE": 0,
+        "NOT_CONFIGURED": 3,
+        "OR": 0
+      },
+      "total": 3
+    },
+    "moteur": {
+      "tiers": {
+        "ARGENT": 0,
+        "BRONZE": 0,
+        "NONE": 0,
+        "NOT_CONFIGURED": 30,
+        "OR": 0
+      },
+      "total": 30
+    },
+    "refroidissement": {
+      "tiers": {
+        "ARGENT": 0,
+        "BRONZE": 0,
+        "NONE": 0,
+        "NOT_CONFIGURED": 11,
+        "OR": 0
+      },
+      "total": 11
+    },
+    "support_moteur": {
+      "tiers": {
+        "ARGENT": 0,
+        "BRONZE": 0,
+        "NONE": 0,
+        "NOT_CONFIGURED": 2,
+        "OR": 0
+      },
+      "total": 2
+    },
+    "suspension": {
+      "tiers": {
+        "ARGENT": 0,
+        "BRONZE": 0,
+        "NONE": 0,
+        "NOT_CONFIGURED": 5,
+        "OR": 0
+      },
+      "total": 5
+    },
+    "tableau-de-bord": {
+      "tiers": {
+        "ARGENT": 0,
+        "BRONZE": 0,
+        "NONE": 0,
+        "NOT_CONFIGURED": 1,
+        "OR": 0
+      },
+      "total": 1
+    },
+    "transmission": {
+      "tiers": {
+        "ARGENT": 0,
+        "BRONZE": 0,
+        "NONE": 0,
+        "NOT_CONFIGURED": 7,
+        "OR": 0
+      },
+      "total": 7
+    },
+    "turbo": {
+      "tiers": {
+        "ARGENT": 0,
+        "BRONZE": 0,
+        "NONE": 0,
+        "NOT_CONFIGURED": 5,
+        "OR": 0
+      },
+      "total": 5
+    }
+  },
+  "by_type": {
+    "diagnostic": {
+      "parse_errors": 0,
+      "tiers": {
+        "ARGENT": 0,
+        "BRONZE": 0,
+        "NONE": 0,
+        "NOT_CONFIGURED": 17,
+        "OR": 0
+      },
+      "total": 17
+    },
+    "gamme": {
+      "parse_errors": 6,
+      "tiers": {
+        "ARGENT": 0,
+        "BRONZE": 0,
+        "NONE": 0,
+        "NOT_CONFIGURED": 241,
+        "OR": 0
+      },
+      "total": 241
+    },
+    "vehicle": {
+      "parse_errors": 0,
+      "tiers": {
+        "ARGENT": 0,
+        "BRONZE": 0,
+        "NONE": 0,
+        "NOT_CONFIGURED": 8,
+        "OR": 0
+      },
+      "total": 8
+    }
+  },
+  "fiches": [
+    {
+      "entity_type": "diagnostic",
+      "family": null,
+      "missing_for_next_tier": [],
+      "subject": "alternateur-diagnostic-mahle",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "diagnostic",
+      "family": null,
+      "missing_for_next_tier": [],
+      "subject": "amortisseurs",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "diagnostic",
+      "family": null,
+      "missing_for_next_tier": [],
+      "subject": "bosch-freinage-brochure-reparation-fad-2020-fr",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "diagnostic",
+      "family": null,
+      "missing_for_next_tier": [],
+      "subject": "bruits-freinage",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "diagnostic",
+      "family": null,
+      "missing_for_next_tier": [],
+      "subject": "climatisation",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "diagnostic",
+      "family": null,
+      "missing_for_next_tier": [],
+      "subject": "demarrage-batterie",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "diagnostic",
+      "family": null,
+      "missing_for_next_tier": [],
+      "subject": "direction-cremaillere",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "diagnostic",
+      "family": null,
+      "missing_for_next_tier": [],
+      "subject": "disque-de-frein",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "diagnostic",
+      "family": null,
+      "missing_for_next_tier": [],
+      "subject": "distribution-courroie",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "diagnostic",
+      "family": null,
+      "missing_for_next_tier": [],
+      "subject": "echappement-catalyseur",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "diagnostic",
+      "family": null,
+      "missing_for_next_tier": [],
+      "subject": "eclairage-voyants",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "diagnostic",
+      "family": null,
+      "missing_for_next_tier": [],
+      "subject": "embrayage",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "diagnostic",
+      "family": null,
+      "missing_for_next_tier": [],
+      "subject": "filtre-a-huile",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "diagnostic",
+      "family": null,
+      "missing_for_next_tier": [],
+      "subject": "injecteurs-pompe",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "diagnostic",
+      "family": null,
+      "missing_for_next_tier": [],
+      "subject": "refroidissement",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "diagnostic",
+      "family": null,
+      "missing_for_next_tier": [],
+      "subject": "temoins-tableau-bord",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "diagnostic",
+      "family": null,
+      "missing_for_next_tier": [],
+      "subject": "transmission-boite",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "freinage",
+      "missing_for_next_tier": [],
+      "subject": "accessoires-de-machoire",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "freinage",
+      "missing_for_next_tier": [],
+      "subject": "accessoires-de-plaquette",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "freinage",
+      "missing_for_next_tier": [],
+      "subject": "accumulateur-de-pression",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "alimentation",
+      "missing_for_next_tier": [],
+      "subject": "accumulateur-de-pression-de-carburant",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "freinage",
+      "missing_for_next_tier": [],
+      "subject": "agregat-de-freinage",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "electrique",
+      "missing_for_next_tier": [],
+      "subject": "alternateur",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "suspension",
+      "missing_for_next_tier": [],
+      "subject": "amortisseur",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "direction",
+      "missing_for_next_tier": [],
+      "subject": "amortisseur-de-direction",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "eclairage",
+      "missing_for_next_tier": [],
+      "subject": "ampoule-eclairage-interieur",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "eclairage",
+      "missing_for_next_tier": [],
+      "subject": "ampoule-feu-arriere",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "eclairage",
+      "missing_for_next_tier": [],
+      "subject": "ampoule-feu-avant",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "eclairage",
+      "missing_for_next_tier": [],
+      "subject": "ampoule-feu-clignotant",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "eclairage",
+      "missing_for_next_tier": [],
+      "subject": "ampoule-feu-de-position",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "eclairage",
+      "missing_for_next_tier": [],
+      "subject": "ampoule-feu-de-recul",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "eclairage",
+      "missing_for_next_tier": [],
+      "subject": "ampoule-feu-eclaireur-de-plaque",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "eclairage",
+      "missing_for_next_tier": [],
+      "subject": "ampoule-feu-stop",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": null,
+      "missing_for_next_tier": [],
+      "subject": "arbre-a-came",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "accessoires",
+      "missing_for_next_tier": [],
+      "subject": "attelage",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "accessoires",
+      "missing_for_next_tier": [],
+      "subject": "avertisseur-sonore",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "moteur",
+      "missing_for_next_tier": [],
+      "subject": "bague-d-etancheite-boite-automatique",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "transmission",
+      "missing_for_next_tier": [],
+      "subject": "bague-d-etancheite-cardan",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "moteur",
+      "missing_for_next_tier": [],
+      "subject": "bagues-d-etancheite-moteur",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "accessoires",
+      "missing_for_next_tier": [],
+      "subject": "balais-d-essuie-glace",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": null,
+      "missing_for_next_tier": [],
+      "subject": "ballast-a-lampe-xenon",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "direction",
+      "missing_for_next_tier": [],
+      "subject": "barre-de-direction",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "direction",
+      "missing_for_next_tier": [],
+      "subject": "barre-stabilisatrice",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": null,
+      "missing_for_next_tier": [],
+      "subject": "batterie",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "direction",
+      "missing_for_next_tier": [],
+      "subject": "biellette-de-barre-stabilisatrice",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": null,
+      "missing_for_next_tier": [],
+      "subject": "bobine-d-allumage",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "allumage",
+      "missing_for_next_tier": [],
+      "subject": "boitier-de-prechauffage",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "moteur",
+      "missing_for_next_tier": [],
+      "subject": "bouchon-d-huile-moteur",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "refroidissement",
+      "missing_for_next_tier": [],
+      "subject": "bouchon-de-radiateur",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "moteur",
+      "missing_for_next_tier": [],
+      "subject": "bouchon-de-vidange",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "accessoires",
+      "missing_for_next_tier": [],
+      "subject": "bouchon-reservoir-de-carburant",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "refroidissement",
+      "missing_for_next_tier": [],
+      "subject": "bouchon-vase-d-expansion",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": null,
+      "missing_for_next_tier": [],
+      "subject": "bougie-d-allumage",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "allumage",
+      "missing_for_next_tier": [],
+      "subject": "bougie-de-prechauffage",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "accessoires",
+      "missing_for_next_tier": [],
+      "subject": "boulon-de-roue",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "climatisation",
+      "missing_for_next_tier": [],
+      "subject": "bouteille-deshydratante",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "accessoires",
+      "missing_for_next_tier": [],
+      "subject": "bras-d-essuie-glace",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "direction",
+      "missing_for_next_tier": [],
+      "subject": "bras-de-suspension",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "refroidissement",
+      "missing_for_next_tier": [],
+      "subject": "bride-de-liquide-de-refroidissement",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "embrayage",
+      "missing_for_next_tier": [],
+      "subject": "butee-d-embrayage",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "suspension",
+      "missing_for_next_tier": [],
+      "subject": "butee-elastique-d-amortisseur",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "accessoires",
+      "missing_for_next_tier": [],
+      "subject": "cable-d-accelerateur",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "embrayage",
+      "missing_for_next_tier": [],
+      "subject": "cable-d-embrayage",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "accessoires",
+      "missing_for_next_tier": [],
+      "subject": "cable-de-capot-moteur",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "tableau-de-bord",
+      "missing_for_next_tier": [],
+      "subject": "cable-de-compteur-de-vitesse",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "freinage",
+      "missing_for_next_tier": [],
+      "subject": "cable-de-frein-a-main",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "capteurs",
+      "missing_for_next_tier": [],
+      "subject": "capteur-abs",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "accessoires",
+      "missing_for_next_tier": [],
+      "subject": "capteur-controle-de-pression-des-pneus",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "allumage",
+      "missing_for_next_tier": [],
+      "subject": "capteur-d-allumage",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "moteur",
+      "missing_for_next_tier": [],
+      "subject": "capteur-d-arbre-a-cames",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "capteurs",
+      "missing_for_next_tier": [],
+      "subject": "capteur-de-cognement",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "capteurs",
+      "missing_for_next_tier": [],
+      "subject": "capteur-de-pedale-d-accelerateur",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "accessoires",
+      "missing_for_next_tier": [],
+      "subject": "capteur-de-pluie",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "capteurs",
+      "missing_for_next_tier": [],
+      "subject": "capteur-de-pression-common-rail",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "turbo",
+      "missing_for_next_tier": [],
+      "subject": "capteur-de-pression-turbo",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "capteurs",
+      "missing_for_next_tier": [],
+      "subject": "capteur-impulsion",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "capteurs",
+      "missing_for_next_tier": [],
+      "subject": "capteur-niveau-d-huile-moteur",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "refroidissement",
+      "missing_for_next_tier": [],
+      "subject": "capteur-niveau-de-liquide-de-refroidissement",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "accessoires",
+      "missing_for_next_tier": [],
+      "subject": "capteur-parctronic",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "moteur",
+      "missing_for_next_tier": [],
+      "subject": "capteur-position-papillon",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "gestion-moteur",
+      "missing_for_next_tier": [],
+      "subject": "capteur-pression-d-huile",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "capteurs",
+      "missing_for_next_tier": [],
+      "subject": "capteur-pression-de-carburant",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "capteurs",
+      "missing_for_next_tier": [],
+      "subject": "capteur-pression-de-gaz-d-echappement",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "capteurs",
+      "missing_for_next_tier": [],
+      "subject": "capteur-pression-du-tuyau-d-admission",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "capteurs",
+      "missing_for_next_tier": [],
+      "subject": "capteur-pression-et-temperature-d-huile",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "capteurs",
+      "missing_for_next_tier": [],
+      "subject": "capteur-temperature-d-air-admission",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "moteur",
+      "missing_for_next_tier": [],
+      "subject": "capteur-temperature-d-huile",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "gestion-moteur",
+      "missing_for_next_tier": [],
+      "subject": "capteur-temperature-de-carburant",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "climatisation",
+      "missing_for_next_tier": [],
+      "subject": "capteur-temperature-de-climatisation",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "climatisation",
+      "missing_for_next_tier": [],
+      "subject": "capteur-temperature-interieure",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "moteur",
+      "missing_for_next_tier": [],
+      "subject": "capteur-vilebrequin",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "transmission",
+      "missing_for_next_tier": [],
+      "subject": "cardan",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "moteur",
+      "missing_for_next_tier": [],
+      "subject": "carter-d-huile",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "echappement",
+      "missing_for_next_tier": [],
+      "subject": "catalyseur",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "distribution",
+      "missing_for_next_tier": [],
+      "subject": "chaine-de-distribution",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "echappement",
+      "missing_for_next_tier": [],
+      "subject": "collecteur-d-echappement",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "direction",
+      "missing_for_next_tier": [],
+      "subject": "colonne-de-direction",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "eclairage",
+      "missing_for_next_tier": [],
+      "subject": "commande-correcteur-de-portee",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "eclairage",
+      "missing_for_next_tier": [],
+      "subject": "commande-d-eclairage",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "accessoires",
+      "missing_for_next_tier": [],
+      "subject": "commande-d-essuie-glace",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "climatisation",
+      "missing_for_next_tier": [],
+      "subject": "commande-de-ventilation",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "climatisation",
+      "missing_for_next_tier": [],
+      "subject": "compresseur-de-climatisation",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "climatisation",
+      "missing_for_next_tier": [],
+      "subject": "condenseur-de-climatisation",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "alimentation",
+      "missing_for_next_tier": [],
+      "subject": "conduite-a-haute-pression-d-injection",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "climatisation",
+      "missing_for_next_tier": [],
+      "subject": "conduite-de-climatisation",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "eclairage",
+      "missing_for_next_tier": [],
+      "subject": "contacteur-de-feu-de-recul",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "electrique",
+      "missing_for_next_tier": [],
+      "subject": "contacteur-demarreur",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "alimentation",
+      "missing_for_next_tier": [],
+      "subject": "corps-papillon",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "eclairage",
+      "missing_for_next_tier": [],
+      "subject": "correcteur-de-portee",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "distribution",
+      "missing_for_next_tier": [],
+      "subject": "courroie-d-accessoire",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "distribution",
+      "missing_for_next_tier": [],
+      "subject": "courroie-de-distribution",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "direction",
+      "missing_for_next_tier": [],
+      "subject": "cremailliere-de-direction",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "moteur",
+      "missing_for_next_tier": [],
+      "subject": "culbuteur",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "freinage",
+      "missing_for_next_tier": [],
+      "subject": "cylindre-de-roue",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "alimentation",
+      "missing_for_next_tier": [],
+      "subject": "debitmetre-d-air",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "electrique",
+      "missing_for_next_tier": [],
+      "subject": "demarreur",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "direction",
+      "missing_for_next_tier": [],
+      "subject": "detecteur-de-l-angle-de-braquage",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "climatisation",
+      "missing_for_next_tier": [],
+      "subject": "detendeur-de-climatisation",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "freinage",
+      "missing_for_next_tier": [],
+      "subject": "disque-de-frein",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "allumage",
+      "missing_for_next_tier": [],
+      "subject": "distributeur-d-allumage",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "refroidissement",
+      "missing_for_next_tier": [],
+      "subject": "durite-de-refroidissement",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": null,
+      "missing_for_next_tier": [],
+      "subject": "electrovanne",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "embrayage",
+      "missing_for_next_tier": [],
+      "subject": "emetteur-d-embrayage",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "freinage",
+      "missing_for_next_tier": [],
+      "subject": "etrier-de-frein",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "climatisation",
+      "missing_for_next_tier": [],
+      "subject": "evaporateur-de-climatisation",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "allumage",
+      "missing_for_next_tier": [],
+      "subject": "faisceau-d-allumage",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "accessoires",
+      "missing_for_next_tier": [],
+      "subject": "faisceau-d-attelage",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "echappement",
+      "missing_for_next_tier": [],
+      "subject": "fap",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "eclairage",
+      "missing_for_next_tier": [],
+      "subject": "feu-arriere",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "eclairage",
+      "missing_for_next_tier": [],
+      "subject": "feu-avant",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "eclairage",
+      "missing_for_next_tier": [],
+      "subject": "feu-clignotant",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "filtration",
+      "missing_for_next_tier": [],
+      "subject": "filtre-a-air",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "filtration",
+      "missing_for_next_tier": [],
+      "subject": "filtre-a-carburant",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "filtration",
+      "missing_for_next_tier": [],
+      "subject": "filtre-a-huile",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "filtration",
+      "missing_for_next_tier": [],
+      "subject": "filtre-d-habitacle",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "filtration",
+      "missing_for_next_tier": [],
+      "subject": "filtre-de-boite-auto",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "freinage",
+      "missing_for_next_tier": [],
+      "subject": "flexible-de-frein",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "embrayage",
+      "missing_for_next_tier": [],
+      "subject": "fourchette-d-embrayage",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "turbo",
+      "missing_for_next_tier": [],
+      "subject": "gaine-de-turbo",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "distribution",
+      "missing_for_next_tier": [],
+      "subject": "galet-enrouleur-de-courroie-d-accessoire",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "distribution",
+      "missing_for_next_tier": [],
+      "subject": "galet-enrouleur-de-courroie-de-distribution",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "distribution",
+      "missing_for_next_tier": [],
+      "subject": "galet-tendeur-de-courroie-d-accessoire",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "distribution",
+      "missing_for_next_tier": [],
+      "subject": "galet-tendeur-de-courroie-de-distribution",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "climatisation",
+      "missing_for_next_tier": [],
+      "subject": "gicleur-detendeur",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "embrayage",
+      "missing_for_next_tier": [],
+      "subject": "guide-d-embrayage",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "moteur",
+      "missing_for_next_tier": [],
+      "subject": "guide-de-soupape",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "alimentation",
+      "missing_for_next_tier": [],
+      "subject": "injecteur",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "turbo",
+      "missing_for_next_tier": [],
+      "subject": "intercooler",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "capteurs",
+      "missing_for_next_tier": [],
+      "subject": "interrupteur-des-feux-de-freins",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "capteurs",
+      "missing_for_next_tier": [],
+      "subject": "interrupteur-position-de-marche",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "accessoires",
+      "missing_for_next_tier": [],
+      "subject": "interrupteur-verrouilage-des-portes",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "moteur",
+      "missing_for_next_tier": [],
+      "subject": "jauge-de-niveau-d-huile",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "transmission",
+      "missing_for_next_tier": [],
+      "subject": "joint-arbre-longitudinal",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "moteur",
+      "missing_for_next_tier": [],
+      "subject": "joint-carter-de-distribution",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "moteur",
+      "missing_for_next_tier": [],
+      "subject": "joint-chemise-de-cylindre",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "echappement",
+      "missing_for_next_tier": [],
+      "subject": "joint-d-echappement",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "alimentation",
+      "missing_for_next_tier": [],
+      "subject": "joint-d-injecteur",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "moteur",
+      "missing_for_next_tier": [],
+      "subject": "joint-de-boite-vitesse",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "moteur",
+      "missing_for_next_tier": [],
+      "subject": "joint-de-cache-culbuteurs",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "moteur",
+      "missing_for_next_tier": [],
+      "subject": "joint-de-carter-d-huile",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "moteur",
+      "missing_for_next_tier": [],
+      "subject": "joint-de-collecteur",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "moteur",
+      "missing_for_next_tier": [],
+      "subject": "joint-de-culasse",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "alimentation",
+      "missing_for_next_tier": [],
+      "subject": "joint-de-pompe-d-injection",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "moteur",
+      "missing_for_next_tier": [],
+      "subject": "joint-tige-de-soupape",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "embrayage",
+      "missing_for_next_tier": [],
+      "subject": "kit-d-embrayage",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "suspension",
+      "missing_for_next_tier": [],
+      "subject": "kit-de-butee-de-suspension",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "distribution",
+      "missing_for_next_tier": [],
+      "subject": "kit-de-chaine-de-distribution",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "distribution",
+      "missing_for_next_tier": [],
+      "subject": "kit-de-distribution",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "freinage",
+      "missing_for_next_tier": [],
+      "subject": "kit-de-freins-arriere",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "moteur",
+      "missing_for_next_tier": [],
+      "subject": "kit-de-poussoir-culbuteur",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "accessoires",
+      "missing_for_next_tier": [],
+      "subject": "leve-vitre",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "freinage",
+      "missing_for_next_tier": [],
+      "subject": "machoires-de-frein",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "freinage",
+      "missing_for_next_tier": [],
+      "subject": "maitre-cylindre-de-frein",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "moteur",
+      "missing_for_next_tier": [],
+      "subject": "mecatronique-boite-automatique",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "allumage",
+      "missing_for_next_tier": [],
+      "subject": "module-d-allumage",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "accessoires",
+      "missing_for_next_tier": [],
+      "subject": "moteur-d-essuie-glace",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "refroidissement",
+      "missing_for_next_tier": [],
+      "subject": "moteur-electrique-de-ventilateur",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "direction",
+      "missing_for_next_tier": [],
+      "subject": "moyeu-de-roue",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "electrique",
+      "missing_for_next_tier": [],
+      "subject": "neiman",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "transmission",
+      "missing_for_next_tier": [],
+      "subject": "palier-d-arbre-de-transmission",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "moteur",
+      "missing_for_next_tier": [],
+      "subject": "palpeur-de-regime-gestion-moteur",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "accessoires",
+      "missing_for_next_tier": [],
+      "subject": "parctronic",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "eclairage",
+      "missing_for_next_tier": [],
+      "subject": "phares-antibrouillard",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "freinage",
+      "missing_for_next_tier": [],
+      "subject": "plaquette-de-frein",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "moteur",
+      "missing_for_next_tier": [],
+      "subject": "pochette-joints-moteur",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "accessoires",
+      "missing_for_next_tier": [],
+      "subject": "poignee-de-porte",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "alimentation",
+      "missing_for_next_tier": [],
+      "subject": "pompe-a-air",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "alimentation",
+      "missing_for_next_tier": [],
+      "subject": "pompe-a-carburant",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "distribution",
+      "missing_for_next_tier": [],
+      "subject": "pompe-a-eau",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "alimentation",
+      "missing_for_next_tier": [],
+      "subject": "pompe-a-haute-pression",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "moteur",
+      "missing_for_next_tier": [],
+      "subject": "pompe-a-huile",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "alimentation",
+      "missing_for_next_tier": [],
+      "subject": "pompe-a-injection",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "freinage",
+      "missing_for_next_tier": [],
+      "subject": "pompe-a-vide-de-freinage",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "alimentation",
+      "missing_for_next_tier": [],
+      "subject": "pompe-d-amorcage",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "direction",
+      "missing_for_next_tier": [],
+      "subject": "pompe-de-direction-assistee",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "freinage",
+      "missing_for_next_tier": [],
+      "subject": "pompe-hydraulique-systeme-de-freinage",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "accessoires",
+      "missing_for_next_tier": [],
+      "subject": "pompe-nettoyage-des-phares",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "accessoires",
+      "missing_for_next_tier": [],
+      "subject": "pompe-nettoyage-des-vitres",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "distribution",
+      "missing_for_next_tier": [],
+      "subject": "poulie-d-alternateur",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "distribution",
+      "missing_for_next_tier": [],
+      "subject": "poulie-d-arbre-a-came",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "distribution",
+      "missing_for_next_tier": [],
+      "subject": "poulie-vilebrequin",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "moteur",
+      "missing_for_next_tier": [],
+      "subject": "poussoir-de-soupape",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "capteurs",
+      "missing_for_next_tier": [],
+      "subject": "pressostat-d-huile",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "climatisation",
+      "missing_for_next_tier": [],
+      "subject": "pressostat-de-climatisation",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "climatisation",
+      "missing_for_next_tier": [],
+      "subject": "pulseur-d-air-d-habitacle",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "moteur",
+      "missing_for_next_tier": [],
+      "subject": "radiateur-d-huile",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "refroidissement",
+      "missing_for_next_tier": [],
+      "subject": "radiateur-de-chauffage",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "refroidissement",
+      "missing_for_next_tier": [],
+      "subject": "radiateur-de-refroidissement",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "embrayage",
+      "missing_for_next_tier": [],
+      "subject": "recepteur-d-embrayage",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "alimentation",
+      "missing_for_next_tier": [],
+      "subject": "refroidisseur-de-carburant",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "alimentation",
+      "missing_for_next_tier": [],
+      "subject": "regulateur-de-pression-carburant",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "eclairage",
+      "missing_for_next_tier": [],
+      "subject": "relais-de-clignotant",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "freinage",
+      "missing_for_next_tier": [],
+      "subject": "repartiteur-de-frein",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "suspension",
+      "missing_for_next_tier": [],
+      "subject": "ressort-de-suspension",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "accessoires",
+      "missing_for_next_tier": [],
+      "subject": "retroviseur-exterieur",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "direction",
+      "missing_for_next_tier": [],
+      "subject": "rotule-de-direction",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "direction",
+      "missing_for_next_tier": [],
+      "subject": "rotule-de-suspension",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "direction",
+      "missing_for_next_tier": [],
+      "subject": "roulement-de-roue",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "accessoires",
+      "missing_for_next_tier": [],
+      "subject": "serrure-de-porte",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "freinage",
+      "missing_for_next_tier": [],
+      "subject": "servo-frein",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "echappement",
+      "missing_for_next_tier": [],
+      "subject": "silencieux",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "capteurs",
+      "missing_for_next_tier": [],
+      "subject": "sonde-de-refroidissement",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "capteurs",
+      "missing_for_next_tier": [],
+      "subject": "sonde-lambda",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "transmission",
+      "missing_for_next_tier": [],
+      "subject": "soufflet-de-cardan",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "direction",
+      "missing_for_next_tier": [],
+      "subject": "soufflet-de-direction",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "moteur",
+      "missing_for_next_tier": [],
+      "subject": "soupape-d-admission",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "alimentation",
+      "missing_for_next_tier": [],
+      "subject": "soupape-d-air-secondaire",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "alimentation",
+      "missing_for_next_tier": [],
+      "subject": "soupape-d-aspiration-d-air-secondaire",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "moteur",
+      "missing_for_next_tier": [],
+      "subject": "soupape-d-echappement",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "alimentation",
+      "missing_for_next_tier": [],
+      "subject": "soupape-de-rampe-commune-d-injection",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "alimentation",
+      "missing_for_next_tier": [],
+      "subject": "soupape-reaspiration-des-gaz-d-echappement",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "suspension",
+      "missing_for_next_tier": [],
+      "subject": "sphere-de-suspension",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "support_moteur",
+      "missing_for_next_tier": [],
+      "subject": "support-de-boite-vitesse",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "support_moteur",
+      "missing_for_next_tier": [],
+      "subject": "support-moteur",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "transmission",
+      "missing_for_next_tier": [],
+      "subject": "suspension-boite-vitesse-automatique",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "freinage",
+      "missing_for_next_tier": [],
+      "subject": "tambour-de-frein",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "freinage",
+      "missing_for_next_tier": [],
+      "subject": "temoin-d-usure",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "refroidissement",
+      "missing_for_next_tier": [],
+      "subject": "thermostat",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "transmission",
+      "missing_for_next_tier": [],
+      "subject": "trepied-arbre-de-commande",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "embrayage",
+      "missing_for_next_tier": [],
+      "subject": "tringle-de-vitesses",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "accessoires",
+      "missing_for_next_tier": [],
+      "subject": "tringlerie-d-essuie-glace",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "echappement",
+      "missing_for_next_tier": [],
+      "subject": "tube-d-echappement",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "alimentation",
+      "missing_for_next_tier": [],
+      "subject": "tube-de-distributeur-carburant",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "turbo",
+      "missing_for_next_tier": [],
+      "subject": "turbo",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "alimentation",
+      "missing_for_next_tier": [],
+      "subject": "tuyau-carburant-de-fuite",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "gestion-moteur",
+      "missing_for_next_tier": [],
+      "subject": "tuyau-ventilation-de-carter-moteur",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "capteurs",
+      "missing_for_next_tier": [],
+      "subject": "valve-de-reglage-du-ralenti",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "turbo",
+      "missing_for_next_tier": [],
+      "subject": "valve-de-turbo",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "climatisation",
+      "missing_for_next_tier": [],
+      "subject": "valve-magnetique",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "alimentation",
+      "missing_for_next_tier": [],
+      "subject": "vanne-egr",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "refroidissement",
+      "missing_for_next_tier": [],
+      "subject": "vase-d-expansion",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "refroidissement",
+      "missing_for_next_tier": [],
+      "subject": "ventilateur-de-refroidissement",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "accessoires",
+      "missing_for_next_tier": [],
+      "subject": "verin-capot-moteur",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "accessoires",
+      "missing_for_next_tier": [],
+      "subject": "verin-de-coffre",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "accessoires",
+      "missing_for_next_tier": [],
+      "subject": "verin-vitre-arriere",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "moteur",
+      "missing_for_next_tier": [],
+      "subject": "vis-de-culasse",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "freinage",
+      "missing_for_next_tier": [],
+      "subject": "vis-de-disque",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "gamme",
+      "family": "embrayage",
+      "missing_for_next_tier": [],
+      "subject": "volant-moteur",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "vehicle",
+      "family": null,
+      "missing_for_next_tier": [],
+      "subject": "citroen-c3",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "vehicle",
+      "family": null,
+      "missing_for_next_tier": [],
+      "subject": "ford-focus-3",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "vehicle",
+      "family": null,
+      "missing_for_next_tier": [],
+      "subject": "peugeot-206",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "vehicle",
+      "family": null,
+      "missing_for_next_tier": [],
+      "subject": "renault",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "vehicle",
+      "family": null,
+      "missing_for_next_tier": [],
+      "subject": "renault-clio-3",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "vehicle",
+      "family": null,
+      "missing_for_next_tier": [],
+      "subject": "renault-clio-iii",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "vehicle",
+      "family": null,
+      "missing_for_next_tier": [],
+      "subject": "renault-megane-3",
+      "tier": "NOT_CONFIGURED"
+    },
+    {
+      "entity_type": "vehicle",
+      "family": null,
+      "missing_for_next_tier": [],
+      "subject": "volkswagen-golf-6",
+      "tier": "NOT_CONFIGURED"
+    }
+  ],
+  "profiles": {
+    "diagnostic": {
+      "content_hash": null,
+      "path": "_schemas/completeness/diagnostic.yaml",
+      "reason": "profile file absent (_schemas/completeness/diagnostic.yaml)",
+      "status": "NOT_CONFIGURED",
+      "warnings": []
+    },
+    "gamme": {
+      "content_hash": null,
+      "path": "_schemas/completeness/gamme.yaml",
+      "reason": "profile file absent (_schemas/completeness/gamme.yaml)",
+      "status": "NOT_CONFIGURED",
+      "warnings": []
+    },
+    "vehicle": {
+      "content_hash": null,
+      "path": "_schemas/completeness/vehicle.yaml",
+      "reason": "profile file absent (_schemas/completeness/vehicle.yaml)",
+      "status": "NOT_CONFIGURED",
+      "warnings": []
+    }
+  },
+  "schema_version": "encyclopedia-coverage.v1"
+}

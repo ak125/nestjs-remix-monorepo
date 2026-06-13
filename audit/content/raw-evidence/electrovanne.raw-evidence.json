@@ -1,0 +1,32 @@
+{
+  "coverage": [],
+  "fold_note": "R4/R6→R3 = direction owner souhaitée, PENDING_ADR (étend ADR-027) ; pas canon. R5 déjà replié (ADR-027).",
+  "fold_readiness": {
+    "R4_to_R3": "BLOCKED_PENDING_ADR",
+    "R5_to_R3": "READY_ADR_027",
+    "R6_to_R3": "BLOCKED_PENDING_ADR"
+  },
+  "intent_targets": [],
+  "inventory_status": "RAW_PARSE_ERROR",
+  "next_action": "FIX_RAW_FRONTMATTER (yaml_parse_error: duplicated mapping key (203:5)\n\n 200 |     source_ref: corpus RAG web OEM\n 201 |   technical_notes:\n 202 |     val_2_v: '2 V'\n 203 |     val_2_v: '2 v'\n-----------^\n 204 |     val_3_v: '3 v'\n 205 |     val_4_v: '4 v')",
+  "pg_id": null,
+  "provenance": {
+    "completeness_profile": null,
+    "source_type": null,
+    "sources": [
+      {
+        "content_hash": "sha256:267d23ee31d7a9f9b21b15c34dee137e1162a376eb47ab0c668afd0c108e972d",
+        "kind": "gamme",
+        "path": "recycled/rag-knowledge/gammes/electrovanne.md"
+      }
+    ],
+    "truth_level": null,
+    "unlinked_source_types": [
+      "guide"
+    ],
+    "verification_status": null
+  },
+  "raw_verdict": "RAW_PARSE_ERROR",
+  "schema_version": "raw-evidence.v1",
+  "subject": "electrovanne"
+}

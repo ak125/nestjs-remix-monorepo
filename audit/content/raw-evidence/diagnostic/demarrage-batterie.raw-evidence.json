@@ -1,0 +1,27 @@
+{
+  "coverage": [],
+  "entity_type": "diagnostic",
+  "intent_targets": [],
+  "inventory_status": "DIAGNOSTIC_READY",
+  "missing_for_next_tier": [],
+  "next_action": "CONFIGURE_COMPLETENESS_PROFILE",
+  "pg_id": null,
+  "provenance": {
+    "completeness_profile": null,
+    "source_type": "diagnostic",
+    "sources": [
+      {
+        "content_hash": "sha256:0fe6af2786132ac0da558e33e0c5333ef24e82ca8edd197b612cf812f8a45f60",
+        "kind": "diagnostic",
+        "path": "recycled/rag-knowledge/diagnostic/demarrage-batterie.md"
+      }
+    ],
+    "truth_level": "L2",
+    "unlinked_source_types": [],
+    "verification_status": "draft"
+  },
+  "raw_verdict": "NOT_CONFIGURED",
+  "schema_version": "raw-evidence.v1",
+  "subject": "demarrage-batterie",
+  "tier": "NOT_CONFIGURED"
+}

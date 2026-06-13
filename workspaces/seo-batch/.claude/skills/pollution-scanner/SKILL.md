@@ -1,9 +1,12 @@
 ---
 name: pollution-scanner
-description: "Scanner pollution OEM/scraping dans __seo_gamme_conseil. Use when user mentions scanner pollution, détecter scraping, fragments OEM, Textar, Brembo, 'Skip to main content', 'Source: web/', ou audit contenu pipeline v5."
+description: "[DEPRECATED → /v5-guardian] Scanner pollution OEM/scraping dans __seo_gamme_conseil. Use when user mentions scanner pollution, détecter scraping, fragments OEM, Textar, Brembo, 'Skip to main content', 'Source: web/', ou audit contenu pipeline v5."
 ---
 
 # Pollution Scanner — Détection de contenu scrapé/pollué
+
+> 🚨 **DEPRECATED 2026-06-12** — fusionné dans `v5-guardian` (diff de capacités vérifié) ;
+> utiliser `/v5-guardian`. Suppression après 2 cycles.
 
 ## Position dans le pipeline
 
