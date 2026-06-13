@@ -556,10 +556,13 @@ def build_fiche(selection: dict, marques: dict[int, dict], generated_at: str) ->
     missing_codes = sum(1 for m in motorizations if not m.get("engine_code"))
     if missing_codes:
         notes.append(
-            f"engine_code absent pour {missing_codes}/{len(motorizations)} motorisations : "
-            "auto_type_motor_code est vide pour ces type_id (constat DB 2026-06-12 : table "
-            "quasi vide, 1 ligne sentinelle). Aucun code moteur inventé — à compléter par "
-            "source éditoriale vérifiée (PR-C.2) ou backfill DB."
+            f"engine_code SPÉCIFIQUE absent pour {missing_codes}/{len(motorizations)} motorisations : "
+            "la table-pont `auto_type_motor_code` (type_id→code) est vide (1 ligne sentinelle). "
+            "Ce n'est PAS « la DB n'a pas les codes » (correction 2026-06-13) : les codes existent "
+            "(`cars_engine` ~35k, dérivation `__seo_r8_pages.engine_family_key`, familles curées "
+            "`kg_engine_families`) mais ne sont pas liés par-type. La FAMILLE moteur est câblée au "
+            "niveau éditorial par PR-C (seed kg + scraping) ; le code spécifique attend un backfill "
+            "du pont ou le scraping. Aucun code inventé."
         )
 
     year_from = to_int(modele.get("modele_year_from"))
@@ -703,8 +706,12 @@ def render_body(ful_name: str, year_from, year_to, generation, bodies, motorizat
         "> les clés `fuel:<carburant>` / `fuel_displacement:<carburant>:<L>` du frontmatter",
         "> `known_issues_by_engine` sont DB-fiables ; le contenu est rempli au scraping PR-C.2",
         "> (pannes PAR motorisation, rappels Rappel Conso) — jamais inventé, divergence DB →",
-        "> validation_notes. Le raffinement famille-moteur (`engine_family:<code>`) viendra avec",
-        "> le code moteur (absent en DB aujourd'hui → engine_code: null honnête).",
+        "> validation_notes. Le raffinement famille-moteur (`engine_family:<code>`) est câblé au",
+        "> niveau ÉDITORIAL par PR-C (seed `kg_engine_families` + scraping) — PAS dans ce squelette",
+        "> BRONZE. Précision (corrigé 2026-06-13) : le code moteur SPÉCIFIQUE par type est null ici",
+        "> car la table-pont `auto_type_motor_code` est vide ; mais les codes EXISTENT (`cars_engine`",
+        "> ~35k, dérivation `__seo_r8_pages.engine_family_key`, familles `kg_engine_families`) —",
+        "> ce n'est PAS « la DB n'a pas les codes », c'est « le pont par-type n'est pas câblé ».",
         "",
     ]
     for fc in fuel_classes_present:
