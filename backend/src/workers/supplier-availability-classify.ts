@@ -59,6 +59,24 @@ const pct = (n: number, d: number): string =>
 // cache filename becomes a nested path and crashes writeFileSync (ENOENT).
 const fsSafe = (ref: string): string => ref.replace(/[^A-Za-z0-9._-]/g, '-');
 
+// Terminal verdict for a ref that persistently fails its OWN single-ref search while
+// the portal is otherwise healthy (owner rule 2026-06-11: "504 sur une ref = la ref a
+// un pb / pas pertinente → skip au lieu de bloquer"). Checkpointed so the run CONVERGES
+// (never re-hit on resume) and surfaced as a REVIEW bucket for human follow-up. It is
+// NOT a stock signal — never auto-activates anything.
+const portalTimeoutVerdict = (b: FeedRow): RefVerdict => ({
+  ref: b.ref,
+  ean: b.ean,
+  bucket: 'REVIEW_PORTAL_TIMEOUT',
+  matchKind: 'NOT_FOUND',
+  reason: 'portal_persistent_timeout',
+  code: null,
+  marque: null,
+  dispoType: null,
+  icon: null,
+  portalPrix: null,
+});
+
 interface FeedRow {
   ref: string;
   ean: string | null;
@@ -152,6 +170,8 @@ async function main(): Promise<void> {
   let failedBatches = 0;
   let consecutiveFails = 0;
   let batches = 0;
+  let hadSuccess = done.size > 0; // a non-empty checkpoint means the portal already worked
+  let terminalTimeouts = 0;
   const t0 = Date.now();
   const BACKOFF = [4000, 12000, 30000];
 
@@ -196,10 +216,73 @@ async function main(): Promise<void> {
     const r = await fetchBatch(refs);
     batches++;
     if (!r) {
-      // failed after all retries → DO NOT checkpoint: these refs stay un-done and are
-      // retried on the next resume (never a false NOT_FOUND from a transient timeout).
-      // Tolerate SPORADIC failures (flaky portal); stop only on a SUSTAINED outage.
       failedBatches++;
+      // CONVERGENCE (owner 2026-06-11): a multi-ref batch that fails RIGHT AFTER the
+      // portal proved healthy (hadSuccess && consecutiveFails===0) is a BAD-REF batch,
+      // not an outage. Isolate it ref-by-ref so the run converges instead of re-hitting
+      // it forever on resume. A ref that still fails ALONE → terminal REVIEW_PORTAL_TIMEOUT
+      // (checkpointed). A whole pass with ZERO reachable refs = real outage → discard the
+      // buffered timeouts (so they retry on resume) and STOP resumable — NO false terminals.
+      if (hadSuccess && consecutiveFails === 0 && batch.length > 1) {
+        console.log(
+          `  batch ${batches} failed — isolating ${batch.length} refs (portal healthy → bad-ref bisect)`,
+        );
+        let isoSuccess = 0;
+        const isoTimeouts: FeedRow[] = [];
+        for (const b of batch) {
+          const one = await fetchBatch([b.ref]);
+          if (one) {
+            writeFileSync(
+              `${HTML_DIR}/${fsSafe(b.ref)}.html.gz`,
+              gzipSync(one.html),
+            );
+            appendFileSync(
+              JSONL,
+              JSON.stringify(verdictForRef(one.rows, b.ref, b.ean, tokens)) +
+                '\n',
+            );
+            isoSuccess++;
+          } else {
+            isoTimeouts.push(b); // buffer — only terminal if the pass proves the portal is up
+          }
+          await sleep(2500);
+        }
+        if (isoSuccess === 0) {
+          // nothing reachable this pass → outage, not bad refs. Drop buffer (retry on resume).
+          console.log(
+            `STOP: isolation pass found 0 reachable refs — portal outage; checkpoint saved, resumable (${isoTimeouts.length} refs left for retry, NOT timed-out)`,
+          );
+          break;
+        }
+        if (isoTimeouts.length) {
+          appendFileSync(
+            JSONL,
+            isoTimeouts.map((b) => JSON.stringify(portalTimeoutVerdict(b))).join('\n') +
+              '\n',
+          );
+          terminalTimeouts += isoTimeouts.length;
+          console.log(
+            `    ↳ ${isoTimeouts.length} ref(s) terminal REVIEW_PORTAL_TIMEOUT: ${isoTimeouts.map((b) => b.ref).join(',')}`,
+          );
+        }
+        hadSuccess = true;
+        continue;
+      }
+      // Single-ref batch, portal healthy, still failing → it IS the problem ref → terminal.
+      if (hadSuccess && consecutiveFails === 0 && batch.length === 1) {
+        appendFileSync(
+          JSONL,
+          JSON.stringify(portalTimeoutVerdict(batch[0])) + '\n',
+        );
+        terminalTimeouts++;
+        console.log(
+          `  batch ${batches} ${batch[0].ref} terminal REVIEW_PORTAL_TIMEOUT (single-ref persistent fail)`,
+        );
+        await sleep(2500);
+        continue;
+      }
+      // Otherwise (no success yet, or mid-failure-streak): treat as a SUSTAINED outage.
+      // DO NOT checkpoint: refs stay un-done, retried on resume; breaker STOPs eventually.
       consecutiveFails++;
       const msg = `batch ${batches} SKIPPED (failed) ${batch[0].ref}..${batch[batch.length - 1].ref} | failed=${failedBatches} consec=${consecutiveFails}`;
       console.log('  ' + msg);
@@ -214,6 +297,7 @@ async function main(): Promise<void> {
       continue;
     }
     consecutiveFails = 0;
+    hadSuccess = true;
     writeFileSync(
       `${HTML_DIR}/${fsSafe(batch[0].ref)}_${fsSafe(batch[batch.length - 1].ref)}.html.gz`,
       gzipSync(r.html),
@@ -259,6 +343,7 @@ async function main(): Promise<void> {
     REVIEW_CONTRADICTION: 0,
     REVIEW_FALSE_MATCH: 0,
     REVIEW_NOT_FOUND: 0,
+    REVIEW_PORTAL_TIMEOUT: 0,
     BLOCK_NONE: 0,
   };
   for (const v of all) buckets[v.bucket]++;
@@ -297,7 +382,7 @@ async function main(): Promise<void> {
     ``,
     `supplier: ${cfg.supplierName} (spl ${cfg.supplierId})  |  brand tokens: ${[...tokens].join(',')}`,
     `feed: ${feed.length} refs  |  classified: ${all.length}`,
-    `duration this session: ${durationS}s  |  attempt-errors: ${attemptErrors}  |  skipped (failed, will retry on resume): ${failedBatches} batches / ${batches}`,
+    `duration this session: ${durationS}s  |  attempt-errors: ${attemptErrors}  |  skipped (failed, will retry on resume): ${failedBatches} batches / ${batches}  |  terminal portal-timeouts (isolated bad refs): ${terminalTimeouts}`,
     `MECE sum_check: ${sumCheck} == ${all.length} → ${sumCheck === all.length ? 'OK' : 'FAIL'}`,
     ``,
     `## Buckets`,
@@ -307,6 +392,7 @@ async function main(): Promise<void> {
     `| CONFIRMED_GRP (grp/vert+) | ${buckets.CONFIRMED_GRP} | ${pct(buckets.CONFIRMED_GRP, all.length)} | '2' |`,
     `| BLOCK_NONE (none/rouge) | ${buckets.BLOCK_NONE} | ${pct(buckets.BLOCK_NONE, all.length)} | '0' |`,
     `| REVIEW_NOT_FOUND | ${buckets.REVIEW_NOT_FOUND} | ${pct(buckets.REVIEW_NOT_FOUND, all.length)} | pending |`,
+    `| REVIEW_PORTAL_TIMEOUT | ${buckets.REVIEW_PORTAL_TIMEOUT} | ${pct(buckets.REVIEW_PORTAL_TIMEOUT, all.length)} | pending (re-check) |`,
     `| REVIEW_FALSE_MATCH | ${buckets.REVIEW_FALSE_MATCH} | ${pct(buckets.REVIEW_FALSE_MATCH, all.length)} | pending |`,
     `| REVIEW_CONTRADICTION | ${buckets.REVIEW_CONTRADICTION} | ${pct(buckets.REVIEW_CONTRADICTION, all.length)} | pending |`,
     `| REVIEW_NO_EAN | ${buckets.REVIEW_NO_EAN} | ${pct(buckets.REVIEW_NO_EAN, all.length)} | pending |`,

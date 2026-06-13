@@ -160,6 +160,16 @@ read-only, ne touchent **jamais** `pieces_price` :
   **reprenable** ; un batch en échec n'est jamais checkpointé (pas de faux NOT_FOUND).
   Invariant **no false in-stock** : CONFIRMED seulement si dispo-type **ET** icône verte
   concordent. `SUPPLIER_SPL=71 BRAND_TOKENS=NK,SBS FEED_PATH=… OUT_DIR=… npx tsx …`
+  **Convergence `[CRITICAL]` (owner 2026-06-11)** : un portail lent peut 504 en boucle
+  sur certaines réfs (réfs numériques courtes = recherche lourde). Si un batch échoue
+  **alors que le portail vient de répondre** (≥1 succès récent), le worker l'**isole
+  ref-par-ref** : un ref qui échoue **seul** = problème portail/ref non pertinente →
+  bucket terminal **`REVIEW_PORTAL_TIMEOUT`** (checkpointé, plus jamais re-tenté, surfacé
+  en review). Une passe d'isolation **0 succès** = vraie panne portail → STOP **resumable
+  sans faux terminal** (les refs bufferisées retournent au retry). Garantit que le run
+  **CONVERGE** (9 647/9 647) au lieu de boucler. Réduire `BATCH` (ex. `BATCH=10`) allège
+  la recherche sur les plages lourdes. Re-checker les `REVIEW_PORTAL_TIMEOUT` plus tard =
+  les retirer du checkpoint et relancer.
 - **`supplier-price-verify.ts`** *(spot-check prix rapide)* — compare `achat fichier`
   vs `achat portail` sur un **échantillon** risque-pondéré (gros montants). Verdict
   **CONFIRMED / FIX_FEED / REVIEW / BLOCK**. ⚠️ recherche réf **floue** → re-vérifier
@@ -271,7 +281,8 @@ prix vendable reste sur le grid mais à prix 0 → le gate `can_sell` l'affiche
 | 4 | Dry-run import | `POST import/dry-run` (fileRows = `confirmed.csv` : `ref,ean,achat_ht=portalPrix`) | **GO owner** | 0 rejet / 0 outlier ; unmatched = hors-catalogue connu |
 | 5 | Commit PENDING | `POST import/commit` `{batchId,…}` | **GO owner** | SQL : n lignes, 100 % `pri_dispo='0'`, `pri_ref` non-vide, 0 vente<achat |
 | 6 | Activation | `POST activate/{dry-run,commit}` rows AG→`'1'` / GRP→`'2'`, `confirm:true` | **GO owner** | SQL : répartition `pri_dispo` 1/2, 0 resté à `'0'` |
-| 7 | Display | `POST display/{dry-run,commit}` `{supplierId=pm_id, confirm:true}` | **GO owner** | décomposition **MECE** : flippées + déjà-affichées + retenues gate gamme |
+| 7 | Display **show** | `POST display/{dry-run,commit}` `{supplierId=pm_id, confirm:true}` | **GO owner** | décomposition **MECE** : flippées + déjà-affichées + retenues gate gamme |
+| 8 | Display **hide** (R2-bruit) | `POST display/quarantine/{dry-run,commit}` `{supplierId=pm_id, confirm:true}` | **GO owner** | `quarantine/dry-run` retombe à `{eligible:0}` (plus de visible non-vendable) |
 
 À l'étape 7, **toujours décomposer** `eligible` vs vendables. Les retenues par le
 gate gamme (`pg_display≠'1'`, #915) sont de deux natures distinctes :
@@ -279,8 +290,20 @@ gate gamme (`pg_display≠'1'`, #915) sont de deux natures distinctes :
 principale (level-1) caché** → **décision owner séparée**, jamais prise par la
 routine (ex. VENEPORTE : pg 26 Silencieux + pg 17 Tube d'échappement restent
 cachés — coût de transport trop cher, à revoir). Les review du classify
-(`ARRIVAGE`/`NOT_FOUND`/`NO_EAN`) restent pending (re-vérification ultérieure).
-MAJ tarifaire ultérieure = §7 INCRÉMENTAL.
+(`ARRIVAGE`/`NOT_FOUND`/`NO_EAN`/`PORTAL_TIMEOUT`) restent pending (re-vérification
+ultérieure). MAJ tarifaire ultérieure = §7 INCRÉMENTAL.
+
+**Étape 8 = règle R2-bruit `[CRITICAL]` (owner 2026-06-11).** Le miroir de
+l'activation : une réf **affichée mais non-vendable** (pas de `pieces_price` avec
+`pri_dispo IN ('1','2','3')` ET `pri_vente_ttc_n>0`) rend à 0 €/indisponible sur
+R2 = **bruit** (page mince, dilue le crawl, dégrade l'UX). `display/quarantine`
+flippe `piece_display` true→false pour ces réfs (brand-locké, **structurellement
+disjoint** du domaine activate — ne touche jamais une réf vendable, réversible par
+le même `catalog_display_rollback_batch`). C'est la **clôture standard** de chaque
+load : après avoir montré les vendables (§7), on cache les non-vendables (§8).
+Complément SEO = flag `R2 noindex si <1 vendable` (#916, **catalogue-wide, owner-gated
+séparé** — pas par-marque). À ne pas confondre avec le gate `pg_display` (§7, niveau
+gamme) ni le NO-GO accessoires.
 
 ## Worked example — VENEPORTE (2026-06-10) — 1er run 100 % gouverné de bout en bout
 `VENEPORTE.xlsx` (9 640 lignes, pm 4900, DCA spl 71) → 7 338 actives → feed

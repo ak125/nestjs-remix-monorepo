@@ -77,7 +77,10 @@ SUPPLIER_SPL=<spl_id> BRAND_TOKENS=<MARQUE,ALIAS> FEED_PATH=<feed.csv> \
 ```
 `OUT_DIR` **obligatoire et durable** (#908 — jamais un tmp OS : il porte le
 checkpoint resumable). Routine : **pilote `LIMIT=30` d'abord** (vérifie login,
-brand tokens, EAN-lock), puis full run en background (resumable).
+brand tokens, EAN-lock), puis full run en background (resumable). Portail lent →
+baisser `BATCH` (`BATCH=10`). **Convergence** : un ref qui 504 **seul** (portail
+sain) finit en bucket terminal `REVIEW_PORTAL_TIMEOUT` (le run converge au lieu de
+boucler) ; une passe d'isolation 0-succès = panne → STOP resumable sans faux terminal.
 
 **Spot-check prix (échantillon)** — compare achat fichier vs achat portail sur N réfs
 risque-pondérées :
@@ -128,11 +131,20 @@ confirm: true }` — flip `piece_display` des vendables cachées, **gate gamme
 = accessoires level-4/5 (NO-GO design) OU hub gamme level-1 caché (**décision owner
 séparée** — ex. transport trop cher, cf. runbook §Séquence figée).
 
-### 9. Rollback gouverné (si besoin, par étape)
-`POST /api/admin/pricing/{import,activate,display}/rollback` `{ batchId, supplierId }`
-→ LIFO restore (dispo + prix antérieurs depuis l'historique).
+### 9. Quarantine R2-bruit (GO owner — cache les non-vendables) `[CRITICAL]`
+**Clôture standard du load** (miroir de l'activation, owner 2026-06-11). Une réf
+**affichée mais non-vendable** rend à 0 €/indisponible sur R2 = bruit (page mince,
+SEO/UX). `POST /api/admin/pricing/display/quarantine/dry-run` puis `commit`
+`{ supplierId: <pm_id>, confirm: true }` → flip `piece_display` true→false pour ces
+réfs (brand-locké, **disjoint du domaine activate**, réversible). Vérif : le
+`quarantine/dry-run` retombe à `{eligible:0}`. Complément SEO = flag #916 (`R2
+noindex si <1 vendable`, **catalogue-wide owner-gated séparé**).
 
-### 10. MAJ suivantes : **INCRÉMENTAL — nouvelles réfs only**, même profil.
+### 10. Rollback gouverné (si besoin, par étape)
+`POST /api/admin/pricing/{import,activate,display,display/quarantine}/rollback`
+`{ batchId, supplierId }` → LIFO restore (dispo / prix / `piece_display`).
+
+### 11. MAJ suivantes : **INCRÉMENTAL — nouvelles réfs only**, même profil.
 
 ---
 
