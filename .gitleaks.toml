@@ -25,6 +25,12 @@ title = "AutoMecanik Gitleaks Config"
     # Test fixtures (synthetic data by convention — no real secrets)
     '''__fixtures__/''',
     '''__tests__/''',
+    # google-credentials.service.ts: header docstring lists ENV VAR NAMES only
+    # (GA4_CLIENT_EMAIL / GA4_PRIVATE_KEY / GA4_PROPERTY_ID), all read via
+    # configService.get — no hardcoded secret value anywhere in the file.
+    # The high-entropy comment line trips generic-api-key. Canonical Google SA
+    # credential reader (AP-11: no new ENV names). Path-scoped to stay narrow.
+    '''backend/src/modules/seo-monitoring/services/google-credentials\.service\.ts$''',
   ]
   regexes = [
     # CI placeholder string used in tests
