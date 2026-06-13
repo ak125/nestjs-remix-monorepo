@@ -118,15 +118,27 @@ export class BotGuardMiddleware implements NestMiddleware {
   }
 
   private getClientIp(req: Request): string {
-    return (
-      // Cloudflare's canonical true-client-IP header (the site sits behind CF),
-      // most reliable for both geo/IP checks and FCrDNS bot verification.
-      (req.headers['cf-connecting-ip'] as string)?.trim() ||
-      (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
-      (req.headers['x-real-ip'] as string) ||
-      req.socket?.remoteAddress ||
-      'unknown'
-    );
+    const peer = req.socket?.remoteAddress || '';
+
+    // SECURITY: forwarding headers (cf-connecting-ip / x-forwarded-for /
+    // x-real-ip) are client-spoofable, so they are trusted ONLY when the
+    // immediate TCP peer is our own co-located reverse proxy (Caddy →
+    // loopback/Docker-internal). Caddy sits behind Cloudflare, which sets
+    // cf-connecting-ip and strips any inbound value, so that chain is authentic.
+    // A connection whose peer is a public IP reached the app directly (bypassing
+    // the edge): its headers are attacker-controlled and MUST be ignored — we
+    // use the socket address. Otherwise an attacker could set
+    // `cf-connecting-ip: <a real Googlebot IP>` and pass FCrDNS to bypass
+    // geo/behavioral blocking and the rate limiter.
+    if (this.isInternalIp(peer)) {
+      const forwarded =
+        (req.headers['cf-connecting-ip'] as string)?.trim() ||
+        (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+        (req.headers['x-real-ip'] as string)?.trim();
+      if (forwarded) return forwarded;
+    }
+
+    return peer || 'unknown';
   }
 
   private isInternalIp(ip: string): boolean {

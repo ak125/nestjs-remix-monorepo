@@ -20,11 +20,12 @@ function makeMiddleware(overrides: ServiceMock = {}) {
 function makeReqRes(
   headers: Record<string, string> = {},
   path = '/pieces/disque-de-frein-82/iveco-84/x-34297.html',
+  peer = '172.18.0.5', // immediate TCP peer = co-located Caddy (Docker-internal)
 ) {
   const req = {
     path,
     headers,
-    socket: { remoteAddress: '66.249.66.1' },
+    socket: { remoteAddress: peer },
   } as never;
   const res = {
     statusCode: 200,
@@ -48,7 +49,10 @@ describe('BotGuardMiddleware ordering', () => {
       isVerifiedSearchEngine: jest.fn(async () => true),
       isCountryBlocked: jest.fn(async () => true), // would block if consulted
     });
-    const { req, res, next } = makeReqRes({ 'cf-ipcountry': 'US' });
+    const { req, res, next } = makeReqRes({
+      'cf-ipcountry': 'US',
+      'cf-connecting-ip': '66.249.66.1',
+    });
 
     await middleware.use(req, res, next);
 
@@ -66,7 +70,10 @@ describe('BotGuardMiddleware ordering', () => {
         isIpBlocked: jest.fn(async () => true),
         isVerifiedSearchEngine: verifySpy,
       });
-      const rr = makeReqRes({ 'cf-ipcountry': 'US' });
+      const rr = makeReqRes({
+        'cf-ipcountry': 'US',
+        'cf-connecting-ip': '66.249.66.1',
+      });
       return { middleware: m.middleware, service: m.service, ...rr };
     })();
 
@@ -84,12 +91,55 @@ describe('BotGuardMiddleware ordering', () => {
       isVerifiedSearchEngine: jest.fn(async () => true),
       isCountryBlocked: jest.fn(async () => true),
     });
-    const { req, res, next } = makeReqRes({ 'cf-ipcountry': 'CN' });
+    const { req, res, next } = makeReqRes({
+      'cf-ipcountry': 'CN',
+      'cf-connecting-ip': '66.249.66.1',
+    });
 
     await middleware.use(req, res, next);
 
     expect(next).toHaveBeenCalledTimes(1);
     expect((res as { statusCode: number }).statusCode).toBe(200);
     expect(service.isCountryBlocked).not.toHaveBeenCalled();
+  });
+});
+
+describe('BotGuardMiddleware client-IP trust (anti-spoof)', () => {
+  it('IGNORES a spoofed cf-connecting-ip when the TCP peer is a public IP (direct-to-app) — verifies the real peer, not the header', async () => {
+    const { middleware, service } = makeMiddleware({
+      isVerifiedSearchEngine: jest.fn(async () => false),
+    });
+    // Attacker connects directly (public peer) and forges a real Googlebot IP.
+    const { req, res, next } = makeReqRes(
+      { 'cf-connecting-ip': '66.249.66.1', 'cf-ipcountry': 'US' },
+      '/pieces/x.html',
+      '203.0.113.50', // public peer = NOT our reverse proxy
+    );
+
+    await middleware.use(req, res, next);
+
+    // FCrDNS must run against the real peer, never the spoofed header.
+    expect(service.isVerifiedSearchEngine).toHaveBeenCalledWith(
+      '203.0.113.50',
+      expect.any(String),
+    );
+  });
+
+  it('TRUSTS cf-connecting-ip when the TCP peer is the internal reverse proxy', async () => {
+    const { middleware, service } = makeMiddleware({
+      isVerifiedSearchEngine: jest.fn(async () => false),
+    });
+    const { req, res, next } = makeReqRes(
+      { 'cf-connecting-ip': '66.249.66.1', 'cf-ipcountry': 'US' },
+      '/pieces/x.html',
+      '172.18.0.5', // internal peer (Caddy)
+    );
+
+    await middleware.use(req, res, next);
+
+    expect(service.isVerifiedSearchEngine).toHaveBeenCalledWith(
+      '66.249.66.1',
+      expect.any(String),
+    );
   });
 });
