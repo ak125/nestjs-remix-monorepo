@@ -1,0 +1,32 @@
+{
+  "coverage": [],
+  "fold_note": "R4/R6→R3 = direction owner souhaitée, PENDING_ADR (étend ADR-027) ; pas canon. R5 déjà replié (ADR-027).",
+  "fold_readiness": {
+    "R4_to_R3": "BLOCKED_PENDING_ADR",
+    "R5_to_R3": "READY_ADR_027",
+    "R6_to_R3": "BLOCKED_PENDING_ADR"
+  },
+  "intent_targets": [],
+  "inventory_status": "RAW_PARSE_ERROR",
+  "next_action": "FIX_RAW_FRONTMATTER (yaml_parse_error: duplicated mapping key (233:5)\n\n 230 |     source_ref: corpus RAG web OEM\n 231 |   technical_notes:\n 232 |     val_000_v: '000 V'\n 233 |     val_000_v: '000 v'\n-----------^\n 234 |     val_000__c: '000 °C'\n 235 |     val_100_a: '100 a')",
+  "pg_id": null,
+  "provenance": {
+    "completeness_profile": null,
+    "source_type": null,
+    "sources": [
+      {
+        "content_hash": "sha256:dfddf215a4af2562210ab0d9f8ae71de18e948e81baa3f61df20a9a3bd44e74b",
+        "kind": "gamme",
+        "path": "recycled/rag-knowledge/gammes/bougie-d-allumage.md"
+      }
+    ],
+    "truth_level": null,
+    "unlinked_source_types": [
+      "guide"
+    ],
+    "verification_status": null
+  },
+  "raw_verdict": "RAW_PARSE_ERROR",
+  "schema_version": "raw-evidence.v1",
+  "subject": "bougie-d-allumage"
+}
