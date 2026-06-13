@@ -430,3 +430,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `chore/trim-agent-rules`
 - **Décision** : chore(claude-rules): allège les 2 rules auto-chargées les plus lourdes (−5.5KB/session)
 - **Sortie** : PR #938 | commits c31d995ee
+
+## 2026-06-13 — feat/vehicle-issues-from-evidence-prc (auto)
+
+- **Branche** : `feat/vehicle-issues-from-evidence-prc`
+- **Décision** : feat(content): injecteur vehicle-issues-from-evidence (éditorial multi-source → RAW, PR-C)
+- **Sortie** : PR #964 | commits b99a106ac
