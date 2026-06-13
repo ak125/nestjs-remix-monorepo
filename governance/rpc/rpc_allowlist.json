@@ -755,6 +755,11 @@
       "reason": "SEO low-CTR v2 honest envelope read-only (Command Center owner-action queue)"
     },
     {
+      "name": "rpc_seo_low_ctr_v3",
+      "volatility": "STABLE",
+      "reason": "SEO low-CTR v3 read-only — grain pages (__seo_gsc_daily_pages, sans query) + coverage envelope (Command Center owner-action queue)"
+    },
+    {
       "name": "search_pieces_fts",
       "volatility": "STABLE",
       "reason": "SELECT only"
