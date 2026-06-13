@@ -35,33 +35,9 @@ export class BotGuardMiddleware implements NestMiddleware {
     const userAgent = (req.headers['user-agent'] as string) || '';
 
     try {
-      // 5. Verified search-engine crawlers (FCrDNS) are NEVER blocked. They
-      // bypass geo + behavioral checks and the rate limiter (the flag below is
-      // read by ThrottlerGuard.skipIf in app.module.ts). UA is not trusted on
-      // its own — identity is proven by forward-confirmed reverse DNS.
-      if (await this.botGuardService.isVerifiedSearchEngine(ip, userAgent)) {
-        (req as Request & { isVerifiedBot?: boolean }).isVerifiedBot = true;
-        this.botGuardService.trackAllowed(country).catch(() => {});
-        return next();
-      }
-
-      if (country && (await this.botGuardService.isCountryBlocked(country))) {
-        await this.botGuardService.logBlocked(
-          ip,
-          country,
-          'geo_block',
-          req.path,
-        );
-        this.logger.warn(
-          `Blocked: ip=${ip} country=${country} path=${req.path} reason=geo_block`,
-        );
-        res
-          .status(HttpStatus.FORBIDDEN)
-          .json({ error: 'Access denied', code: 'GEO_BLOCKED' });
-        return;
-      }
-
-      // 5. IP blocklist check
+      // 5. Explicit operator IP blocklist applies to EVERYONE — including
+      // verified crawlers. An admin IP block is a deliberate, observable action
+      // and must win; checked first so a blocked IP short-circuits before DNS.
       if (await this.botGuardService.isIpBlocked(ip)) {
         await this.botGuardService.logBlocked(
           ip,
@@ -78,7 +54,34 @@ export class BotGuardMiddleware implements NestMiddleware {
         return;
       }
 
-      // 6. Behavioral scoring
+      // 6. Verified search-engine crawlers (FCrDNS) bypass the AUTOMATIC blocks
+      // (geo + behavioral) and the rate limiter (req.isVerifiedBot is read by
+      // ThrottlerGuard.skipIf in app.module.ts). UA is not trusted on its own —
+      // identity is proven by forward-confirmed reverse DNS.
+      if (await this.botGuardService.isVerifiedSearchEngine(ip, userAgent)) {
+        (req as Request & { isVerifiedBot?: boolean }).isVerifiedBot = true;
+        this.botGuardService.trackAllowed(country).catch(() => {});
+        return next();
+      }
+
+      // 7. Geo block (Cloudflare CF-IPCountry header).
+      if (country && (await this.botGuardService.isCountryBlocked(country))) {
+        await this.botGuardService.logBlocked(
+          ip,
+          country,
+          'geo_block',
+          req.path,
+        );
+        this.logger.warn(
+          `Blocked: ip=${ip} country=${country} path=${req.path} reason=geo_block`,
+        );
+        res
+          .status(HttpStatus.FORBIDDEN)
+          .json({ error: 'Access denied', code: 'GEO_BLOCKED' });
+        return;
+      }
+
+      // 8. Behavioral scoring
       const suspicionScore = this.botGuardService.calculateSuspicionScore({
         ip,
         country,
