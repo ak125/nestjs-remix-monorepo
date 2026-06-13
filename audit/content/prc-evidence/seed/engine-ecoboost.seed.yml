@@ -1,0 +1,44 @@
+# Seed DB-first — famille ECOBOOST (1.0 EcoBoost, Ford). Source : kg_engine_families (Internal DB first).
+# applies_to_vehicles à résoudre (matching) ; scraping = augmentation symptômes/sources.
+engine_family: ecoboost
+fuel: essence
+displacement_liter: 1.0
+manufacturer: Ford
+market: FR
+applies_to_vehicles: []
+_seed_provenance: kg_engine_families (Internal DB first) — augmenter par scraping
+faults:
+- issue: turbo
+  label: Turbo — Surchauffe (connu sur la famille ECOBOOST)
+  symptoms:
+  - Surchauffe
+  severity: medium
+  diagnostic_safe: true
+  needs_augmentation: true
+  related_gammes:
+  - turbocompresseur
+  related_diagnostic:
+  - injection
+  sources:
+  - url: internal://kg_engine_families/ECOBOOST
+    source_type: internal_kg
+    source_market: FR
+    lang_original: fr
+    confidence: high
+- issue: pompe_eau
+  label: Pompe eau — Fuite interne (connu sur la famille ECOBOOST)
+  symptoms:
+  - Fuite interne
+  severity: medium
+  diagnostic_safe: true
+  needs_augmentation: true
+  related_gammes:
+  - pompe-a-eau
+  related_diagnostic:
+  - refroidissement
+  sources:
+  - url: internal://kg_engine_families/ECOBOOST
+    source_type: internal_kg
+    source_market: FR
+    lang_original: fr
+    confidence: high

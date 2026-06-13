@@ -1,0 +1,45 @@
+# Seed DB-first — famille PURETECH (1.2 PureTech, PSA). Source : kg_engine_families (Internal DB first).
+# applies_to_vehicles à résoudre (matching) ; scraping = augmentation symptômes/sources.
+engine_family: puretech
+fuel: essence
+displacement_liter: 1.2
+manufacturer: PSA
+market: FR
+applies_to_vehicles: []
+_seed_provenance: kg_engine_families (Internal DB first) — augmenter par scraping
+faults:
+- issue: pompe_huile
+  label: Pompe huile — Défaillance (connu sur la famille PURETECH)
+  symptoms:
+  - Défaillance
+  severity: medium
+  diagnostic_safe: true
+  needs_augmentation: true
+  related_gammes:
+  - pompe-a-huile
+  related_diagnostic:
+  - filtre-a-huile
+  sources:
+  - url: internal://kg_engine_families/PURETECH
+    source_type: internal_kg
+    source_market: FR
+    lang_original: fr
+    confidence: high
+- issue: courroie_distribution
+  label: Courroie distribution — Usure prématurée (connu sur la famille PURETECH)
+  symptoms:
+  - Usure prématurée
+  severity: medium
+  diagnostic_safe: true
+  needs_augmentation: true
+  related_gammes:
+  - kit-de-distribution
+  - courroie-de-distribution
+  related_diagnostic:
+  - distribution-courroie
+  sources:
+  - url: internal://kg_engine_families/PURETECH
+    source_type: internal_kg
+    source_market: FR
+    lang_original: fr
+    confidence: high

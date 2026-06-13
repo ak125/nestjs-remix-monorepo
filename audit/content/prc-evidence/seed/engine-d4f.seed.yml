@@ -1,0 +1,46 @@
+# Seed DB-first — famille D4F (1.2 16v, Renault). Source : kg_engine_families (Internal DB first).
+# applies_to_vehicles à résoudre (matching) ; scraping = augmentation symptômes/sources.
+engine_family: d4f
+fuel: essence
+displacement_liter: 1.1
+manufacturer: Renault
+market: FR
+applies_to_vehicles: []
+_seed_provenance: kg_engine_families (Internal DB first) — augmenter par scraping
+faults:
+- issue: bobines
+  label: Bobines — Défaillance (connu sur la famille D4F)
+  symptoms:
+  - Défaillance
+  severity: medium
+  diagnostic_safe: true
+  needs_augmentation: true
+  related_gammes:
+  - bobine-d-allumage
+  related_diagnostic:
+  - injection
+  sources:
+  - url: internal://kg_engine_families/D4F
+    source_type: internal_kg
+    source_market: FR
+    lang_original: fr
+    confidence: high
+- issue: distribution
+  label: Distribution — Chaîne à vérifier (connu sur la famille D4F)
+  symptoms:
+  - Chaîne à vérifier
+  severity: medium
+  diagnostic_safe: true
+  needs_augmentation: true
+  related_gammes:
+  - kit-de-distribution
+  - courroie-de-distribution
+  - kit-de-chaine-de-distribution
+  related_diagnostic:
+  - distribution-courroie
+  sources:
+  - url: internal://kg_engine_families/D4F
+    source_type: internal_kg
+    source_market: FR
+    lang_original: fr
+    confidence: high

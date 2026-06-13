@@ -1,0 +1,45 @@
+# Seed DB-first — famille THP (1.6 THP, PSA-BMW). Source : kg_engine_families (Internal DB first).
+# applies_to_vehicles à résoudre (matching) ; scraping = augmentation symptômes/sources.
+engine_family: thp
+fuel: essence
+displacement_liter: 1.6
+manufacturer: PSA-BMW
+market: FR
+applies_to_vehicles: []
+_seed_provenance: kg_engine_families (Internal DB first) — augmenter par scraping
+faults:
+- issue: turbo
+  label: Turbo — Casse (connu sur la famille THP)
+  symptoms:
+  - Casse
+  severity: medium
+  diagnostic_safe: true
+  needs_augmentation: true
+  related_gammes:
+  - turbocompresseur
+  related_diagnostic:
+  - injection
+  sources:
+  - url: internal://kg_engine_families/THP
+    source_type: internal_kg
+    source_market: FR
+    lang_original: fr
+    confidence: high
+- issue: chaine_distribution
+  label: Chaine distribution — Allongement (connu sur la famille THP)
+  symptoms:
+  - Allongement
+  severity: medium
+  diagnostic_safe: true
+  needs_augmentation: true
+  related_gammes:
+  - kit-de-chaine-de-distribution
+  - chaine-de-distribution
+  related_diagnostic:
+  - distribution-courroie
+  sources:
+  - url: internal://kg_engine_families/THP
+    source_type: internal_kg
+    source_market: FR
+    lang_original: fr
+    confidence: high

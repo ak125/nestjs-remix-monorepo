@@ -1,0 +1,43 @@
+# Seed DB-first — famille F4R (2.0 16v, Renault). Source : kg_engine_families (Internal DB first).
+# applies_to_vehicles à résoudre (matching) ; scraping = augmentation symptômes/sources.
+engine_family: f4r
+fuel: essence
+displacement_liter: 2.0
+manufacturer: Renault
+market: FR
+applies_to_vehicles: []
+_seed_provenance: kg_engine_families (Internal DB first) — augmenter par scraping
+faults:
+- issue: bobines
+  label: Bobines — Défaillance (connu sur la famille F4R)
+  symptoms:
+  - Défaillance
+  severity: medium
+  diagnostic_safe: true
+  needs_augmentation: true
+  related_gammes:
+  - bobine-d-allumage
+  related_diagnostic:
+  - injection
+  sources:
+  - url: internal://kg_engine_families/F4R
+    source_type: internal_kg
+    source_market: FR
+    lang_original: fr
+    confidence: high
+- issue: joints_spi
+  label: Joints spi — Fuite huile (connu sur la famille F4R)
+  symptoms:
+  - Fuite huile
+  severity: medium
+  diagnostic_safe: true
+  needs_augmentation: true
+  related_gammes:
+  - joint-spi
+  related_diagnostic: []
+  sources:
+  - url: internal://kg_engine_families/F4R
+    source_type: internal_kg
+    source_market: FR
+    lang_original: fr
+    confidence: high
