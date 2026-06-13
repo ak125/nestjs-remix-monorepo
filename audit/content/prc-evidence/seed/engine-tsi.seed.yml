@@ -5,7 +5,15 @@ fuel: essence
 displacement_liter: 1.4
 manufacturer: VAG
 market: FR
-applies_to_vehicles: []
+applies_to_vehicles:
+- audi-a3-i-sportback
+- audi-a3-ii
+- skoda-octavia-ii-combi
+- volkswagen-bora
+- volkswagen-golf-v
+- volkswagen-golf-vi
+- volkswagen-passat-vi-break
+- volkswagen-passat-vi
 _seed_provenance: kg_engine_families (Internal DB first) — augmenter par scraping
 faults:
 - issue: pompe_hp
@@ -43,3 +51,12 @@ faults:
     source_market: FR
     lang_original: fr
     confidence: high
+_match_basis:
+- 'audi-a3-i-sportback: marque∈vag + essence ~1.4L (mot. 1.4L)'
+- 'audi-a3-ii: marque∈vag + essence ~1.4L (mot. 1.4L)'
+- 'skoda-octavia-ii-combi: marque∈vag + essence ~1.4L (mot. 1.4L)'
+- 'volkswagen-bora: marque∈vag + essence ~1.4L (mot. 1.4L)'
+- 'volkswagen-golf-v: marque∈vag + essence ~1.4L (mot. 1.4L)'
+- 'volkswagen-golf-vi: marque∈vag + essence ~1.4L (mot. 1.4L)'
+- 'volkswagen-passat-vi-break: marque∈vag + essence ~1.4L (mot. 1.4L)'
+- 'volkswagen-passat-vi: marque∈vag + essence ~1.4L (mot. 1.4L)'

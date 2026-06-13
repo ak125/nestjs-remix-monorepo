@@ -57,7 +57,10 @@ DIAGNOSTIC_SUBDIR = Path("recycled") / "rag-knowledge" / "diagnostic"
 
 MANAGED_KEYS = ("known_issues_by_engine", "maintenance_by_engine", "recalls", "validation_notes")
 
-HIGH_TRUST_TYPES = {"constructeur", "equipementier", "recall", "base_technique"}
+# internal_kg = connaissance INTERNE curée (kg_engine_families / kg_nodes) = Tier A
+# (Internal DB first). On la consomme comme source autoritaire ; l'éditorial enrichi
+# repart ALIMENTER le diagnostic engine (kg) via le flux gouverné RAW→WIKI→export.
+HIGH_TRUST_TYPES = {"internal_kg", "constructeur", "equipementier", "recall", "base_technique"}
 VALID_SOURCE_TYPES = HIGH_TRUST_TYPES | {"presse", "forum", "fournisseur"}
 CONF_ORDER = ("low", "medium", "high")
 
@@ -268,14 +271,17 @@ def vehicle_has_fuel(existing: str, fuel: str, notes: list[str], slug: str) -> b
 
 
 def build_engine_entry(ev: dict, axis_key_type: str, vehicle_slug: str, issues: list[dict]) -> dict:
+    make = vehicle_slug.split("-", 1)[0]
+    model_generation = vehicle_slug.split("-", 1)[1] if "-" in vehicle_slug else vehicle_slug
     return {
         "axis_key_type": axis_key_type,
         "applies_to": {
-            "make": ev.get("manufacturer"),
-            "model_generation": vehicle_slug.split("-", 1)[-1] if "-" in vehicle_slug else vehicle_slug,
+            "make": make,
+            "model_generation": model_generation,
             "fuel": ev.get("fuel"),
             "engine_family": ev.get("engine_family"),
             "displacement_liter": ev.get("displacement_liter"),
+            "engine_group": ev.get("manufacturer"),
             "market": ev.get("market", "EU"),
         },
         "source": {"type": "editorial", "origin": "scraping PR-C (multi-source par moteur)",
@@ -305,7 +311,7 @@ def build_recalls(ev: dict, valid_issues: list[dict]) -> list[dict]:
     return recalls
 
 
-def inject_vehicle(existing: str, ev: dict, valid_issues: list[dict], valid_ops: list[dict],
+def inject_vehicle(existing: str, ev: dict, vehicle_slug: str, valid_issues: list[dict], valid_ops: list[dict],
                    extra_notes: list[str]) -> tuple[str, int, int, int]:
     code = ev["engine_family"]
     key = f"engine_family:{code}"
@@ -320,8 +326,7 @@ def inject_vehicle(existing: str, ev: dict, valid_issues: list[dict], valid_ops:
 
     # known_issues_by_engine
     if key not in kibe:
-        kibe[key] = build_engine_entry(ev, "engine_family", "x-" + ev.get("manufacturer", ""), [])
-        # applies_to.model_generation corrigé ci-dessous au niveau véhicule
+        kibe[key] = build_engine_entry(ev, "engine_family", vehicle_slug, [])
         created = 1
     kibe[key]["issues"] = kibe[key].get("issues", [])
     seen = {i.get("issue") for i in kibe[key]["issues"]}
@@ -417,14 +422,11 @@ def main() -> int:
             print(f"[skip  ] {vslug} — sanity carburant: pas de '{fuel}' (mis-attribution évitée)")
             continue
         try:
-            content, inj, cre, ops = inject_vehicle(existing, ev, valid_issues, valid_ops, shared_notes + per_notes)
+            content, inj, cre, ops = inject_vehicle(existing, ev, vslug, valid_issues, valid_ops, shared_notes + per_notes)
         except ValueError as e:
             skipped += 1
             print(f"[skip  ] {vslug} — {e}")
             continue
-        # corrige applies_to.model_generation au niveau du véhicule réel
-        content = content.replace(f"model_generation: x-{ev.get('manufacturer','')}",
-                                  f"model_generation: {vslug.split('-',1)[-1]}")
         tgt = out_base / f"{vslug}.md"
         tgt.write_text(content, encoding="utf-8")
         done += 1

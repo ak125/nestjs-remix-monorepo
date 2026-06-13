@@ -5,7 +5,26 @@ fuel: diesel
 displacement_liter: 2.0
 manufacturer: VAG
 market: FR
-applies_to_vehicles: []
+applies_to_vehicles:
+- audi-a3-i-sportback
+- audi-a3-ii
+- audi-a4-iv-break
+- audi-a4-iv
+- audi-a5-decapotable
+- audi-a5-sportback
+- audi-a5
+- audi-a6-iii-break
+- audi-a6-iii
+- audi-q5
+- skoda-octavia-ii-combi
+- volkswagen-bora
+- volkswagen-golf-v
+- volkswagen-golf-vi
+- volkswagen-multivan
+- volkswagen-passat-vi-break
+- volkswagen-passat-vi
+- volkswagen-transporter-v-fourgon
+- volkswagen-transporter-v
 _seed_provenance: kg_engine_families (Internal DB first) — augmenter par scraping
 faults:
 - issue: egr
@@ -63,3 +82,23 @@ faults:
     source_market: FR
     lang_original: fr
     confidence: high
+_match_basis:
+- 'audi-a3-i-sportback: marque∈vag + diesel ~2.0L (mot. 1.9L)'
+- 'audi-a3-ii: marque∈vag + diesel ~2.0L (mot. 1.9L)'
+- 'audi-a4-iv-break: marque∈vag + diesel ~2.0L (mot. 2.0L)'
+- 'audi-a4-iv: marque∈vag + diesel ~2.0L (mot. 2.0L)'
+- 'audi-a5-decapotable: marque∈vag + diesel ~2.0L (mot. 2.0L)'
+- 'audi-a5-sportback: marque∈vag + diesel ~2.0L (mot. 2.0L)'
+- 'audi-a5: marque∈vag + diesel ~2.0L (mot. 2.0L)'
+- 'audi-a6-iii-break: marque∈vag + diesel ~2.0L (mot. 2.0L)'
+- 'audi-a6-iii: marque∈vag + diesel ~2.0L (mot. 2.0L)'
+- 'audi-q5: marque∈vag + diesel ~2.0L (mot. 2.0L)'
+- 'skoda-octavia-ii-combi: marque∈vag + diesel ~2.0L (mot. 1.9L)'
+- 'volkswagen-bora: marque∈vag + diesel ~2.0L (mot. 1.9L)'
+- 'volkswagen-golf-v: marque∈vag + diesel ~2.0L (mot. 1.9L)'
+- 'volkswagen-golf-vi: marque∈vag + diesel ~2.0L (mot. 2.0L)'
+- 'volkswagen-multivan: marque∈vag + diesel ~2.0L (mot. 1.9L)'
+- 'volkswagen-passat-vi-break: marque∈vag + diesel ~2.0L (mot. 1.9L)'
+- 'volkswagen-passat-vi: marque∈vag + diesel ~2.0L (mot. 1.9L)'
+- 'volkswagen-transporter-v-fourgon: marque∈vag + diesel ~2.0L (mot. 1.9L)'
+- 'volkswagen-transporter-v: marque∈vag + diesel ~2.0L (mot. 1.9L)'

@@ -40,6 +40,21 @@ from pathlib import Path
 import yaml
 
 TIMEOUT = 30
+RAW_REPO = Path(os.environ.get("AUTOMECANIK_RAW_PATH", "/opt/automecanik/automecanik-raw"))
+VEHICLES_SUBDIR = Path("recycled") / "rag-knowledge" / "vehicles"
+DISPLACEMENT_TOL_L = 0.15  # tolérance match cylindrée (litres)
+
+# Groupe constructeur (kg.manufacturer) → marques membres (slug). CONSERVATEUR :
+# on n'inclut que les rattachements moteur sûrs (évite la mis-attribution ; la
+# sanity-carburant + le match cylindrée de l'injecteur sont le backstop final).
+GROUP_BRANDS = {
+    "renault-nissan": ["renault", "nissan", "dacia"],
+    "renault": ["renault", "dacia"],
+    "psa": ["peugeot", "citroen", "ds"],
+    "psa-bmw": ["peugeot", "citroen", "ds", "mini"],
+    "vag": ["volkswagen", "audi", "skoda", "seat"],
+    "ford": ["ford"],
+}
 
 # Mapping déterministe topic kg → gamme RAW (pièce vendable) + système diagnostic.
 # Validé ensuite contre les entités RAW réelles par l'injecteur (lien mort → retiré).
@@ -99,6 +114,64 @@ def sb_select(table: str, params: dict[str, str]) -> list[dict]:
     except urllib.error.HTTPError as e:
         sys.stderr.write(f"ERREUR REST {table}: HTTP {e.code} — {e.read()[:300]!r}\n")
         sys.exit(2)
+
+
+def _extract_block(text: str, key: str):
+    pat = re.compile(
+        rf"^# >>> DB-MANAGED BLOCK: {re.escape(key)} .*?\n(.*?)^# <<< END DB-MANAGED BLOCK: {re.escape(key)}\n",
+        re.DOTALL | re.MULTILINE,
+    )
+    m = pat.search(text)
+    if not m:
+        return None
+    try:
+        return (yaml.safe_load(m.group(1)) or {}).get(key)
+    except yaml.YAMLError:
+        return None
+
+
+def load_raw_vehicles() -> list[dict]:
+    """Fiches RAW véhicule → {slug, brand, specs:[(fuel, displacement_liter)]} (filesystem)."""
+    d = RAW_REPO / VEHICLES_SUBDIR
+    out: list[dict] = []
+    if not d.is_dir():
+        return out
+    for p in sorted(d.glob("*.md")):
+        motos = _extract_block(p.read_text(encoding="utf-8"), "motorizations") or []
+        # champ DB réel = displacement_l (fallbacks tolérants)
+        def _disp(m):
+            for k in ("displacement_l", "displacement_liter", "displacement_bucket"):
+                v = m.get(k)
+                if v is not None:
+                    try:
+                        return float(v)
+                    except (TypeError, ValueError):
+                        pass
+            return None
+        specs = [(str(m.get("fuel", "")).strip().lower(), _disp(m)) for m in motos]
+        out.append({"slug": p.stem, "brand": p.stem.split("-", 1)[0], "specs": specs})
+    return out
+
+
+def resolve_vehicles(ev: dict, raw_vehicles: list[dict]) -> tuple[list[str], list[str]]:
+    """Matche une famille moteur → fiches RAW : marque∈groupe + carburant + cylindrée (±tol).
+
+    Déterministe + audité (basis). La sanity-carburant de l'injecteur reste le backstop.
+    """
+    group = (ev.get("manufacturer") or "").strip().lower()
+    brands = GROUP_BRANDS.get(group, [])
+    fuel = (ev.get("fuel") or "").lower()
+    disp = ev.get("displacement_liter")
+    matched, basis = [], []
+    for v in raw_vehicles:
+        if v["brand"] not in brands:
+            continue
+        for mf, md in v["specs"]:
+            if fuel and fuel in mf and md is not None and disp is not None and abs(float(md) - float(disp)) <= DISPLACEMENT_TOL_L:
+                matched.append(v["slug"])
+                basis.append(f"{v['slug']}: marque∈{group} + {fuel} ~{disp}L (mot. {md}L)")
+                break
+    return matched, basis
 
 
 def slugify(s: str) -> str:
@@ -171,22 +244,30 @@ def main() -> int:
         rows = [r for r in rows if (r.get("family_code") or "").lower() == args.family.lower()]
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
+    raw_vehicles = load_raw_vehicles()
 
-    written = skipped = 0
+    written = skipped = total_matched = 0
     for fam in rows:
         ev = family_to_evidence(fam)
         if ev is None:
             skipped += 1
             continue
+        matched, basis = resolve_vehicles(ev, raw_vehicles)
+        ev["applies_to_vehicles"] = matched
+        if basis:
+            ev["_match_basis"] = basis
+        total_matched += len(matched)
         path = out_dir / f"engine-{ev['engine_family']}.seed.yml"
         header = (f"# Seed DB-first — famille {fam.get('family_code')} ({fam.get('family_name')}, "
                   f"{fam.get('manufacturer')}). Source : kg_engine_families (Internal DB first).\n"
                   f"# applies_to_vehicles à résoudre (matching) ; scraping = augmentation symptômes/sources.\n")
         path.write_text(header + yaml.safe_dump(ev, sort_keys=False, allow_unicode=True, width=110), encoding="utf-8")
         written += 1
-        print(f"[seed] {path.name} — {len(ev['faults'])} panne(s) DB-first ({', '.join(f['issue'] for f in ev['faults'])})")
+        print(f"[seed] {path.name} — {len(ev['faults'])} panne(s) · {len(ev['applies_to_vehicles'])} véhicule(s) RAW matché(s)"
+              + (f" → {', '.join(ev['applies_to_vehicles'][:4])}{'…' if len(ev['applies_to_vehicles'])>4 else ''}" if ev['applies_to_vehicles'] else ""))
 
-    print(f"\n== {written} famille(s) seedée(s) depuis le kg (0 scraping) · {skipped} sans common_issues ==")
+    print(f"\n== {written} famille(s) seedée(s) depuis le kg (0 scraping) · {skipped} sans common_issues "
+          f"· {total_matched} rattachement(s) famille→véhicule RAW ==")
     return 0
 
 
