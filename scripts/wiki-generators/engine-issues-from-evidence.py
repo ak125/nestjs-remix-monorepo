@@ -55,7 +55,7 @@ VEHICLES_SUBDIR = Path("recycled") / "rag-knowledge" / "vehicles"
 GAMMES_SUBDIR = Path("recycled") / "rag-knowledge" / "gammes"
 DIAGNOSTIC_SUBDIR = Path("recycled") / "rag-knowledge" / "diagnostic"
 
-MANAGED_KEYS = ("known_issues_by_engine", "maintenance_by_engine", "validation_notes")
+MANAGED_KEYS = ("known_issues_by_engine", "maintenance_by_engine", "recalls", "validation_notes")
 
 HIGH_TRUST_TYPES = {"constructeur", "equipementier", "recall", "base_technique"}
 VALID_SOURCE_TYPES = HIGH_TRUST_TYPES | {"presse", "forum", "fournisseur"}
@@ -138,7 +138,7 @@ def normalize_sources(sources: list[dict]) -> list[dict]:
     } for s in sources]
 
 
-def validate_fault(fault: dict, gammes: set[str], diags: set[str], notes: list[str]) -> dict | None:
+def validate_fault(fault: dict, engine_code: str, gammes: set[str], diags: set[str], notes: list[str]) -> dict | None:
     slug = fault.get("issue")
     label = (fault.get("label") or "").strip()
     symptoms = [s.strip() for s in (fault.get("symptoms") or []) if s and s.strip()]
@@ -163,7 +163,10 @@ def validate_fault(fault: dict, gammes: set[str], diags: set[str], notes: list[s
             notes.append(f"fait '{slug}' : valeur prescriptive à risque sans source OEM → FAIL-CLOSED (non exporté).")
             return None
 
-    issue: dict = {"issue": slug, "label": label, "symptoms": symptoms}
+    # engine_code résolu par le harvest (axe engine_family) — satisfait le profil ARGENT
+    # `known_issues_by_engine.required_fields:[issue, engine_code, source]`. La DB le laisse
+    # null (sparse) ; le scraping le résout — exactement le rôle de PR-C (owner 2026-06-13).
+    issue: dict = {"issue": slug, "engine_code": engine_code, "label": label, "symptoms": symptoms}
     if fault.get("typical_onset_km") is not None:
         issue["typical_onset_km"] = fault["typical_onset_km"]
     if fault.get("severity") in ("low", "medium", "high"):
@@ -281,6 +284,27 @@ def build_engine_entry(ev: dict, axis_key_type: str, vehicle_slug: str, issues: 
     }
 
 
+def build_recalls(ev: dict, valid_issues: list[dict]) -> list[dict]:
+    """Extrait les RAPPELS OFFICIELS (source_type=recall, gouvernemental) en bloc dédié.
+
+    Satisfait le composant ARGENT `recalls_official` (frontmatter:recalls). Le rappel
+    reste AUSSI dans l'issue concernée ; ici on l'expose comme fait autoritaire distinct.
+    """
+    recalls = []
+    for issue in valid_issues:
+        for s in issue.get("sources", []):
+            if s.get("source_type") == "recall":
+                recalls.append({
+                    "related_issue": issue["issue"],
+                    "engine_code": ev.get("engine_family"),
+                    "label": issue["label"],
+                    "authority": _domain_of(s.get("url", "")),
+                    "url": s.get("url"),
+                    "source_market": s.get("source_market", "unknown"),
+                })
+    return recalls
+
+
 def inject_vehicle(existing: str, ev: dict, valid_issues: list[dict], valid_ops: list[dict],
                    extra_notes: list[str]) -> tuple[str, int, int, int]:
     code = ev["engine_family"]
@@ -328,6 +352,13 @@ def inject_vehicle(existing: str, ev: dict, valid_issues: list[dict], valid_ops:
     updated = {"known_issues_by_engine": kibe}
     if valid_ops:
         updated["maintenance_by_engine"] = mbe
+    # Rappels officiels — bloc dédié, fusionné avec l'existant (dédup par url)
+    new_recalls = build_recalls(ev, valid_issues)
+    if new_recalls:
+        existing_recalls = extract_block_value(existing, "recalls") or []
+        seen_urls = {r.get("url") for r in existing_recalls}
+        merged_recalls = existing_recalls + [r for r in new_recalls if r.get("url") not in seen_urls]
+        updated["recalls"] = merged_recalls
     merged_notes = list(notes_existing) + new_notes
     if merged_notes:
         updated["validation_notes"] = merged_notes
@@ -362,7 +393,7 @@ def main() -> int:
 
     # Validation une fois (les faits sont identiques pour tous les véhicules du moteur).
     shared_notes: list[str] = []
-    valid_issues = [i for i in (validate_fault(f, gammes, diags, shared_notes) for f in ev.get("faults", [])) if i]
+    valid_issues = [i for i in (validate_fault(f, code, gammes, diags, shared_notes) for f in ev.get("faults", [])) if i]
     valid_ops = [o for o in (validate_operation(o, gammes, shared_notes) for o in ev.get("maintenance", [])) if o]
     rejected = (len(ev.get("faults", [])) - len(valid_issues)) + (len(ev.get("maintenance", [])) - len(valid_ops))
 
