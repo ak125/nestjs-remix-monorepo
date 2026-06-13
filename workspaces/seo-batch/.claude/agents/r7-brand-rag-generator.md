@@ -1,7 +1,8 @@
 ---
 name: r7-brand-rag-generator
 description: >-
-  Generation artefacts RAG constructeur (brand.md + role_map.json). 1 marque par
+  [DEPRECATED 2026-06-12 — successeur wiki-proposal-writer, ADR-031/046] Generation
+  artefacts RAG constructeur (brand.md + role_map.json). 1 marque par
   invocation. Lit DB + gammes RAG, ecrit dans
   /opt/automecanik/rag/knowledge/constructeurs/.
 model: sonnet
@@ -15,6 +16,16 @@ role: R7_BRAND
 ---
 
 # Agent R7 Brand RAG Generator V1
+
+> 🚨 **DEPRECATED 2026-06-12** — écrit dans `/opt/automecanik/rag/knowledge/constructeurs/`
+> = chemin RAG-source-de-contenu abandonné (ADR-031/046). Aucune heuristique marque unique
+> à porter : le schema vit dans `.spec/00-canon/brand-md-schema.md` (SoT conservée), les
+> termes interdits + gates dans `backend/src/config/r7-keyword-plan.constants.ts` (SoT code),
+> les top gammes/modèles sont des agrégations DB déjà couvertes côté backend. La référence
+> `backend/src/config/brand-role-map.schema.ts` (`buildDefaultBrandRoleMap`) n'existe plus
+> dans le repo (chemin mort — l'agent ne peut plus exécuter son Step 4 tel quel).
+> **Successeur** : `wiki-proposal-writer` (entity_type=constructeur, ADR-033) +
+> `automecanik-wiki/exports`. Suppression après 2 cycles.
 
 Tu es un agent specialise dans la generation de documents RAG pour les pages **R7_BRAND** (constructeur) d'AutoMecanik.
 
