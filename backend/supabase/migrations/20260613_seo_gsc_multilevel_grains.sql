@@ -38,8 +38,8 @@ set statement_timeout = '60s';
 -- =====================================================
 CREATE TABLE IF NOT EXISTS __seo_gsc_daily_property_total (
     date DATE NOT NULL,
-    clicks INT NOT NULL DEFAULT 0 CHECK (clicks >= 0),
-    impressions INT NOT NULL DEFAULT 0 CHECK (impressions >= 0),
+    clicks BIGINT NOT NULL DEFAULT 0 CHECK (clicks >= 0),
+    impressions BIGINT NOT NULL DEFAULT 0 CHECK (impressions >= 0),
     ctr REAL NOT NULL DEFAULT 0 CHECK (ctr >= 0 AND ctr <= 1),
     position REAL NOT NULL DEFAULT 0 CHECK (position >= 0),
     fetched_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -57,8 +57,8 @@ CREATE TABLE IF NOT EXISTS __seo_gsc_daily_totals (
     date DATE NOT NULL,
     country TEXT NOT NULL DEFAULT 'zzz',  -- ISO-3166-1 alpha-3 lowercase GSC (ex. 'fra'), 'zzz' = inconnu
     device TEXT NOT NULL DEFAULT 'all' CHECK (device IN ('all','mobile','desktop','tablet')),
-    clicks INT NOT NULL DEFAULT 0 CHECK (clicks >= 0),
-    impressions INT NOT NULL DEFAULT 0 CHECK (impressions >= 0),
+    clicks BIGINT NOT NULL DEFAULT 0 CHECK (clicks >= 0),
+    impressions BIGINT NOT NULL DEFAULT 0 CHECK (impressions >= 0),
     ctr REAL NOT NULL DEFAULT 0 CHECK (ctr >= 0 AND ctr <= 1),
     position REAL NOT NULL DEFAULT 0 CHECK (position >= 0),
     fetched_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -80,8 +80,8 @@ CREATE TABLE IF NOT EXISTS __seo_gsc_daily_pages (
     page TEXT NOT NULL,
     country TEXT NOT NULL DEFAULT 'zzz',
     device TEXT NOT NULL DEFAULT 'all' CHECK (device IN ('all','mobile','desktop','tablet')),
-    clicks INT NOT NULL DEFAULT 0 CHECK (clicks >= 0),
-    impressions INT NOT NULL DEFAULT 0 CHECK (impressions >= 0),
+    clicks BIGINT NOT NULL DEFAULT 0 CHECK (clicks >= 0),
+    impressions BIGINT NOT NULL DEFAULT 0 CHECK (impressions >= 0),
     ctr REAL NOT NULL DEFAULT 0 CHECK (ctr >= 0 AND ctr <= 1),
     position REAL NOT NULL DEFAULT 0 CHECK (position >= 0),
     fetched_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
