@@ -11,19 +11,15 @@ const D = '2026-06-10';
 
 describe('computeGlobalCoverage', () => {
   it('insufficient_data quand pas de property_total (jamais « 0 opportunité »)', () => {
-    const r = computeGlobalCoverage(D, null, [
-      { clicks: 5, impressions: 100 },
-    ]);
+    const r = computeGlobalCoverage(D, null, [{ clicks: 5, impressions: 100 }]);
     expect(r.status).toBe('insufficient_data');
     expect(r.pagesVsPropertyImpr).toBeNull();
   });
 
   it('insufficient_data quand property_total.impressions = 0', () => {
-    const r = computeGlobalCoverage(
-      D,
-      { clicks: 0, impressions: 0 },
-      [{ clicks: 1, impressions: 10 }],
-    );
+    const r = computeGlobalCoverage(D, { clicks: 0, impressions: 0 }, [
+      { clicks: 1, impressions: 10 },
+    ]);
     expect(r.status).toBe('insufficient_data');
   });
 
