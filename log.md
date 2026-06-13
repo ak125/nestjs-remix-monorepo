@@ -448,3 +448,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/vehicle-issues-from-evidence-prc`
 - **Décision** : feat(content): (c) planner d'alimentation diagnostic engine kg_engine_families (DRY-RUN, 0 write) (+7 other commits)
 - **Sortie** : PR #965 | commits 8060413e4 cf1bb0f14 6d159eb76 b20f2cb0b a825c9c80 a93a8a507 849c17c84 b99a106ac
+
+## 2026-06-13 — fix/botguard-verified-bot-bypass (auto)
+
+- **Branche** : `fix/botguard-verified-bot-bypass`
+- **Décision** : fix(bot-guard): honor explicit ip_block before verified-bot bypass (+1 other commit)
+- **Sortie** : PR #967 | commits 003ce059f b857a0f36
