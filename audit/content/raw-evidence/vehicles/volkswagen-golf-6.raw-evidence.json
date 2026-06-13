@@ -1,0 +1,27 @@
+{
+  "coverage": [],
+  "entity_type": "vehicle",
+  "intent_targets": [],
+  "inventory_status": "DIAGNOSTIC_READY",
+  "missing_for_next_tier": [],
+  "next_action": "CONFIGURE_COMPLETENESS_PROFILE",
+  "pg_id": null,
+  "provenance": {
+    "completeness_profile": null,
+    "source_type": "vehicle",
+    "sources": [
+      {
+        "content_hash": "sha256:fb239ba57765ea1f12ca559fab9489b6c3a725044a64a65d496aa3ccb857f3db",
+        "kind": "vehicle",
+        "path": "recycled/rag-knowledge/vehicles/volkswagen-golf-6.md"
+      }
+    ],
+    "truth_level": "L1",
+    "unlinked_source_types": [],
+    "verification_status": "verified"
+  },
+  "raw_verdict": "NOT_CONFIGURED",
+  "schema_version": "raw-evidence.v1",
+  "subject": "volkswagen-golf-6",
+  "tier": "NOT_CONFIGURED"
+}

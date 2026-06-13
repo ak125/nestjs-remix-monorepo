@@ -15,9 +15,17 @@
  * Pattern: build-command-center-snapshot.js (deterministic builder) + diag-canon
  * Zod→JSON projection. seo-readiness.ts borrowed only for verdict/NEXT_ACTION shape.
  *
+ * 3-types extension (plan « RAW Encyclopédie » PR-B, owner 2026-06-12) : `--all-types`
+ * evaluates gamme + vehicle + diagnostic fiches against the completeness profiles
+ * (`${RAW_ROOT}/_schemas/completeness/*.yaml`, PR-A) → tier NONE/BRONZE/ARGENT/OR per
+ * fiche + aggregate `audit/content/raw-evidence/encyclopedia-coverage.json`. Profile
+ * absent → NOT_CONFIGURED (counted, never a crash/silent skip). Legacy gamme modes and
+ * artefact bytes are untouched.
+ *
  * Usage:
  *   npx tsx scripts/wiki-generators/raw-evidence-inventory.ts <subject> [--json]
  *   npx tsx scripts/wiki-generators/raw-evidence-inventory.ts --all
+ *   npx tsx scripts/wiki-generators/raw-evidence-inventory.ts --all-types     # 3 types (gamme+vehicle+diagnostic) + encyclopedia-coverage.json
  *   npx tsx scripts/wiki-generators/raw-evidence-inventory.ts --emit-schema   # regenerate JSON Schema projection
  *   npx tsx scripts/wiki-generators/raw-evidence-inventory.ts --check         # fail if committed schema drifted
  */
@@ -29,7 +37,13 @@ import { createRequire } from 'node:module';
 import { load as loadYaml } from 'js-yaml';
 import { zodToJsonSchema as _zodToJsonSchema } from 'zod-to-json-schema';
 
-import { RawEvidenceSchema, type RawEvidence } from './raw-evidence.schema';
+import {
+  RawEvidenceSchema,
+  EncyclopediaCoverageSchema,
+  TIER,
+  type RawEvidence,
+  type EncyclopediaCoverage,
+} from './raw-evidence.schema';
 import {
   BLOCK_DEFS,
   SUPERSET_BLOCKS_5_0,
@@ -38,6 +52,12 @@ import {
   pickNextAction,
   type BlockStatus,
 } from './raw-block-schema';
+import {
+  loadCompletenessProfile,
+  evaluateTiers,
+  type ProfileLoad,
+  type TierResult,
+} from './completeness-tiers';
 
 const require = createRequire(import.meta.url);
 // Reuse the shared deterministic writer (sortKeysDeep + 2-space + trailing \n + sha256).
@@ -53,8 +73,26 @@ const KB = path.join(RAW_ROOT, 'recycled', 'rag-knowledge');
 const GAMMES_DIR = path.join(KB, 'gammes');
 const GUIDES_DIR = path.join(KB, 'guides');
 const EVIDENCE_DIR = path.join(KB, '_raw', 'evidence');
+const VEHICLES_DIR = path.join(KB, 'vehicles');
+const DIAGNOSTIC_DIR = path.join(KB, 'diagnostic');
 const OUT_DIR = path.join(MONOREPO_ROOT, 'audit', 'content', 'raw-evidence');
+const COVERAGE_PATH = path.join(OUT_DIR, 'encyclopedia-coverage.json');
 const SCHEMA_PATH = path.join(__dirname, 'raw-evidence.schema.json');
+
+// 3 tiered entity types (plan « RAW Encyclopédie » PR-B). Gamme per-fiche artefacts keep
+// their legacy location + byte-identical format ; vehicle/diagnostic artefacts live in
+// sub-directories (slug collisions exist, e.g. disque-de-frein in gammes/ AND diagnostic/).
+const TIERED_ENTITY_TYPES = ['gamme', 'vehicle', 'diagnostic'] as const;
+type TieredEntityType = (typeof TIERED_ENTITY_TYPES)[number];
+const ENTITY_SRC_DIR: Record<TieredEntityType, string> = {
+  gamme: GAMMES_DIR,
+  vehicle: VEHICLES_DIR,
+  diagnostic: DIAGNOSTIC_DIR,
+};
+const ENTITY_OUT_DIR: Record<'vehicle' | 'diagnostic', string> = {
+  vehicle: path.join(OUT_DIR, 'vehicles'),
+  diagnostic: path.join(OUT_DIR, 'diagnostic'),
+};
 
 const FOLD_READINESS = {
   R4_to_R3: 'BLOCKED_PENDING_ADR',
@@ -220,6 +258,202 @@ export function buildEvidence(subject: string): RawEvidence {
   });
 }
 
+// ————————————————————————————————————————————————————————————————————————————
+// 3-types extension — completeness tiers (plan « RAW Encyclopédie » PR-B).
+// Profiles (PR-A) live in `${RAW_ROOT}/_schemas/completeness/{gamme,vehicle,diagnostic}.yaml`.
+// Profile absent → tier NOT_CONFIGURED (never a crash, never a silent skip — counted
+// in the aggregate report). Legacy gamme modes/artefacts are untouched (byte-identical).
+// ————————————————————————————————————————————————————————————————————————————
+
+/** Markdown body AFTER the `---`-delimited frontmatter block ('' if unterminated). */
+function splitBody(raw: string): string {
+  if (!raw.startsWith('---')) return raw;
+  const end = raw.indexOf('\n---', 3);
+  if (end === -1) return '';
+  const eol = raw.indexOf('\n', end + 4);
+  return eol === -1 ? '' : raw.slice(eol + 1);
+}
+
+interface TieredFiche {
+  subject: string;
+  family: string | null; // gamme frontmatter `category` ; null otherwise
+  tier: TierResult;
+  missing_for_next_tier: string[];
+  parse_error: boolean;
+  fm: any | null;
+  parse_error_msg: string | null;
+}
+
+/** Parse + tier-evaluate one fiche (any entity type). Read-only ; never throws. */
+function evaluateFiche(entityType: TieredEntityType, subject: string, profileLoad: ProfileLoad): TieredFiche {
+  const srcPath = path.join(ENTITY_SRC_DIR[entityType], `${subject}.md`);
+  const raw = fs.readFileSync(srcPath, 'utf8');
+  const { fm, error } = parseFrontmatter(raw);
+  const body = splitBody(raw);
+  const tierEval =
+    profileLoad.status === 'OK'
+      ? evaluateTiers(profileLoad.profile, { slug: subject, fm, body, rawRoot: RAW_ROOT })
+      : { tier: 'NOT_CONFIGURED' as TierResult, missing_for_next_tier: [] as string[] };
+  const family =
+    entityType === 'gamme' && typeof fm?.category === 'string' && fm.category.trim().length > 0
+      ? fm.category.trim()
+      : null;
+  return {
+    subject,
+    family,
+    tier: tierEval.tier,
+    missing_for_next_tier: tierEval.missing_for_next_tier,
+    parse_error: !!error || !fm,
+    fm,
+    parse_error_msg: error ?? (fm ? null : 'empty_frontmatter'),
+  };
+}
+
+function tierVerdict(fiche: TieredFiche): RawEvidence['raw_verdict'] {
+  if (fiche.parse_error) return 'RAW_PARSE_ERROR';
+  if (fiche.tier === 'NOT_CONFIGURED') return 'NOT_CONFIGURED';
+  // ARGENT+ = éligible WIKI candidate (porte ADR-083 ensuite) — BRONZE ≠ publication.
+  return fiche.tier === 'ARGENT' || fiche.tier === 'OR' ? 'READY' : 'PARTIAL_READY';
+}
+
+function tierNextAction(fiche: TieredFiche): string {
+  if (fiche.parse_error) return `FIX_RAW_FRONTMATTER (${fiche.parse_error_msg})`;
+  switch (fiche.tier) {
+    case 'NOT_CONFIGURED':
+      return 'CONFIGURE_COMPLETENESS_PROFILE';
+    case 'NONE':
+      return 'ENRICH_RAW_TO_BRONZE';
+    case 'BRONZE':
+      return 'ENRICH_RAW_TO_ARGENT';
+    default:
+      return 'PROMOTE_RAW_TO_WIKI'; // ARGENT/OR — owner-gated (porte ADR-083)
+  }
+}
+
+/** Build the deterministic per-fiche artefact for a vehicle/diagnostic subject. */
+export function buildEntityEvidence(
+  entityType: 'vehicle' | 'diagnostic',
+  subject: string,
+  profileLoad: ProfileLoad,
+): RawEvidence {
+  const srcPath = path.join(ENTITY_SRC_DIR[entityType], `${subject}.md`);
+  const fiche = evaluateFiche(entityType, subject, profileLoad);
+  return RawEvidenceSchema.parse({
+    schema_version: 'raw-evidence.v1' as const,
+    subject,
+    entity_type: entityType,
+    pg_id: null,
+    inventory_status: fiche.parse_error ? 'RAW_PARSE_ERROR' : 'DIAGNOSTIC_READY',
+    intent_targets: [],
+    provenance: {
+      source_type: fiche.fm?.source_type ?? null,
+      truth_level: fiche.fm?.truth_level ?? null,
+      verification_status: fiche.fm?.verification_status ?? null,
+      completeness_profile: fiche.fm?.completeness_profile ?? null,
+      sources: [{ path: relToRaw(srcPath), kind: entityType, content_hash: sha256File(srcPath) }],
+      unlinked_source_types: [],
+    },
+    coverage: [], // v4 A–E blocks are gamme-specific — tier evaluation carries the signal here
+    tier: fiche.tier,
+    missing_for_next_tier: fiche.missing_for_next_tier,
+    raw_verdict: tierVerdict(fiche),
+    next_action: tierNextAction(fiche),
+  });
+}
+
+function emptyTierCounts(): Record<(typeof TIER)[number], number> {
+  return { NONE: 0, BRONZE: 0, ARGENT: 0, OR: 0, NOT_CONFIGURED: 0 };
+}
+
+function profileState(entityType: TieredEntityType, load: ProfileLoad): EncyclopediaCoverage['profiles']['gamme'] {
+  return {
+    path: `_schemas/completeness/${entityType}.yaml`,
+    status: load.status,
+    content_hash: load.status === 'NOT_CONFIGURED' ? null : load.content_hash,
+    reason: load.status === 'OK' ? null : load.reason,
+    warnings: load.status === 'OK' ? load.warnings : [],
+  };
+}
+
+/** Run the 3-types inventory : per-fiche artefacts (vehicle/diagnostic) + legacy gamme artefacts + aggregate. */
+function runAllTypes(): void {
+  const loads = {
+    gamme: loadCompletenessProfile(RAW_ROOT, 'gamme'),
+    vehicle: loadCompletenessProfile(RAW_ROOT, 'vehicle'),
+    diagnostic: loadCompletenessProfile(RAW_ROOT, 'diagnostic'),
+  } as const;
+
+  const byType = {} as EncyclopediaCoverage['by_type'];
+  const byFamily: EncyclopediaCoverage['by_family'] = {};
+  const fiches: EncyclopediaCoverage['fiches'] = [];
+
+  for (const entityType of TIERED_ENTITY_TYPES) {
+    const subjects = listSubjectsIn(ENTITY_SRC_DIR[entityType]);
+    const tiers = emptyTierCounts();
+    let parseErrors = 0;
+
+    for (const subject of subjects) {
+      const fiche = evaluateFiche(entityType, subject, loads[entityType]);
+      tiers[fiche.tier] += 1;
+      if (fiche.parse_error) parseErrors += 1;
+      fiches.push({
+        entity_type: entityType,
+        subject,
+        family: fiche.family,
+        tier: fiche.tier,
+        missing_for_next_tier: fiche.missing_for_next_tier,
+      });
+      if (entityType === 'gamme') {
+        const familyKey = fiche.family ?? '__uncategorized__';
+        byFamily[familyKey] ??= { total: 0, tiers: emptyTierCounts() };
+        byFamily[familyKey].total += 1;
+        byFamily[familyKey].tiers[fiche.tier] += 1;
+        // Legacy per-fiche artefact — byte-identical to the historic gamme format (`--all`).
+        writeArtefact(buildEvidence(subject));
+      } else {
+        const ev = buildEntityEvidence(entityType, subject, loads[entityType]);
+        writeDeterministicJson(path.join(ENTITY_OUT_DIR[entityType], `${subject}.raw-evidence.json`), ev);
+      }
+    }
+
+    byType[entityType] = { total: subjects.length, parse_errors: parseErrors, tiers };
+    const profileNote = loads[entityType].status === 'OK' ? 'profile OK' : `profile ${loads[entityType].status}`;
+    process.stdout.write(
+      `${entityType}: ${subjects.length} fiches · ${profileNote} · ` +
+        `NONE=${tiers.NONE} BRONZE=${tiers.BRONZE} ARGENT=${tiers.ARGENT} OR=${tiers.OR} NOT_CONFIGURED=${tiers.NOT_CONFIGURED}` +
+        (parseErrors ? ` · parse_errors=${parseErrors}` : '') +
+        '\n',
+    );
+  }
+
+  fiches.sort((a, b) =>
+    a.entity_type < b.entity_type ? -1 : a.entity_type > b.entity_type ? 1 : a.subject < b.subject ? -1 : a.subject > b.subject ? 1 : 0,
+  );
+
+  const coverage = EncyclopediaCoverageSchema.parse({
+    schema_version: 'encyclopedia-coverage.v1' as const,
+    profiles: {
+      gamme: profileState('gamme', loads.gamme),
+      vehicle: profileState('vehicle', loads.vehicle),
+      diagnostic: profileState('diagnostic', loads.diagnostic),
+    },
+    by_type: byType,
+    by_family: byFamily,
+    fiches,
+  });
+  const sha = writeDeterministicJson(COVERAGE_PATH, coverage);
+  process.stdout.write(`\nencyclopedia-coverage: ${path.relative(MONOREPO_ROOT, COVERAGE_PATH)} (sha256:${sha})\n`);
+}
+
+function listSubjectsIn(dir: string): string[] {
+  if (!fs.existsSync(dir)) return []; // honest empty set — counted as total: 0 in the aggregate
+  return fs
+    .readdirSync(dir)
+    .filter((f) => f.endsWith('.md')) // excludes *.manifest.yaml / *.html
+    .map((f) => f.slice(0, -3))
+    .sort();
+}
+
 function buildSchemaJson(): object {
   return zodToJsonSchema(RawEvidenceSchema, { target: 'jsonSchema7', $refStrategy: 'none' });
 }
@@ -229,11 +463,7 @@ function serialize(obj: unknown): string {
 }
 
 function listSubjects(): string[] {
-  return fs
-    .readdirSync(GAMMES_DIR)
-    .filter((f) => f.endsWith('.md')) // excludes *.manifest.yaml / *.html
-    .map((f) => f.slice(0, -3))
-    .sort();
+  return listSubjectsIn(GAMMES_DIR);
 }
 
 function writeArtefact(ev: RawEvidence): string {
@@ -272,9 +502,14 @@ function main(): void {
     return;
   }
 
+  if (args.includes('--all-types')) {
+    runAllTypes();
+    return;
+  }
+
   const subject = args.find((a) => !a.startsWith('--'));
   if (!subject) {
-    process.stderr.write('Usage: raw-evidence-inventory.ts <subject> [--json] | --all | --emit-schema | --check\n');
+    process.stderr.write('Usage: raw-evidence-inventory.ts <subject> [--json] | --all | --all-types | --emit-schema | --check\n');
     process.exit(2);
   }
 
