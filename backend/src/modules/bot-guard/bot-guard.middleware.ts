@@ -30,10 +30,21 @@ export class BotGuardMiddleware implements NestMiddleware {
       return next();
     }
 
-    // 4. Country check via CF-IPCountry header (set by Cloudflare)
+    // 4. Country (Cloudflare CF-IPCountry header) + UA, read once for all checks.
     const country = (req.headers['cf-ipcountry'] as string)?.toUpperCase();
+    const userAgent = (req.headers['user-agent'] as string) || '';
 
     try {
+      // 5. Verified search-engine crawlers (FCrDNS) are NEVER blocked. They
+      // bypass geo + behavioral checks and the rate limiter (the flag below is
+      // read by ThrottlerGuard.skipIf in app.module.ts). UA is not trusted on
+      // its own — identity is proven by forward-confirmed reverse DNS.
+      if (await this.botGuardService.isVerifiedSearchEngine(ip, userAgent)) {
+        (req as Request & { isVerifiedBot?: boolean }).isVerifiedBot = true;
+        this.botGuardService.trackAllowed(country).catch(() => {});
+        return next();
+      }
+
       if (country && (await this.botGuardService.isCountryBlocked(country))) {
         await this.botGuardService.logBlocked(
           ip,
@@ -68,7 +79,6 @@ export class BotGuardMiddleware implements NestMiddleware {
       }
 
       // 6. Behavioral scoring
-      const userAgent = (req.headers['user-agent'] as string) || '';
       const suspicionScore = this.botGuardService.calculateSuspicionScore({
         ip,
         country,
@@ -106,6 +116,9 @@ export class BotGuardMiddleware implements NestMiddleware {
 
   private getClientIp(req: Request): string {
     return (
+      // Cloudflare's canonical true-client-IP header (the site sits behind CF),
+      // most reliable for both geo/IP checks and FCrDNS bot verification.
+      (req.headers['cf-connecting-ip'] as string)?.trim() ||
       (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
       (req.headers['x-real-ip'] as string) ||
       req.socket?.remoteAddress ||
