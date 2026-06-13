@@ -430,3 +430,21 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `chore/trim-agent-rules`
 - **Décision** : chore(claude-rules): allège les 2 rules auto-chargées les plus lourdes (−5.5KB/session)
 - **Sortie** : PR #938 | commits c31d995ee
+
+## 2026-06-13 — feat/vehicle-issues-from-evidence-prc (auto)
+
+- **Branche** : `feat/vehicle-issues-from-evidence-prc`
+- **Décision** : feat(content): injecteur vehicle-issues-from-evidence (éditorial multi-source → RAW, PR-C)
+- **Sortie** : PR #964 | commits b99a106ac
+
+## 2026-06-13 — feat/vehicle-issues-from-evidence-prc (auto)
+
+- **Branche** : `feat/vehicle-issues-from-evidence-prc`
+- **Décision** : feat(content): harness PR-C v2 engine-keyed — graphe véhicule↔moteur↔panne↔pièce↔symptôme (+2 other commits)
+- **Sortie** : PR #965 | commits a93a8a507 849c17c84 b99a106ac
+
+## 2026-06-13 — feat/vehicle-issues-from-evidence-prc (auto)
+
+- **Branche** : `feat/vehicle-issues-from-evidence-prc`
+- **Décision** : feat(content): (c) planner d'alimentation diagnostic engine kg_engine_families (DRY-RUN, 0 write) (+7 other commits)
+- **Sortie** : PR #965 | commits 8060413e4 cf1bb0f14 6d159eb76 b20f2cb0b a825c9c80 a93a8a507 849c17c84 b99a106ac
