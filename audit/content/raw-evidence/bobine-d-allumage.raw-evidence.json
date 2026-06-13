@@ -1,0 +1,37 @@
+{
+  "coverage": [],
+  "fold_note": "R4/R6→R3 = direction owner souhaitée, PENDING_ADR (étend ADR-027) ; pas canon. R5 déjà replié (ADR-027).",
+  "fold_readiness": {
+    "R4_to_R3": "BLOCKED_PENDING_ADR",
+    "R5_to_R3": "READY_ADR_027",
+    "R6_to_R3": "BLOCKED_PENDING_ADR"
+  },
+  "intent_targets": [],
+  "inventory_status": "RAW_PARSE_ERROR",
+  "next_action": "FIX_RAW_FRONTMATTER (yaml_parse_error: duplicated mapping key (228:5)\n\n 225 |     source_ref: corpus RAG web OEM\n 226 |   technical_notes:\n 227 |     val_000_v: '000 V'\n 228 |     val_000_v: '000 v'\n-----------^\n 229 |     val_100_a: '100 a'\n 230 |     val_12_v: '12 V')",
+  "pg_id": null,
+  "provenance": {
+    "completeness_profile": null,
+    "source_type": null,
+    "sources": [
+      {
+        "content_hash": "sha256:f0261fdcf47c13dc2ce93ea29e38ce150be50c497ba53a33791c0ab6375000a3",
+        "kind": "evidence",
+        "path": "recycled/rag-knowledge/_raw/evidence/bobine-d-allumage.yml"
+      },
+      {
+        "content_hash": "sha256:9d890e96c9c7b775973661099a394460d8f6dd8a14d305c534afa727819e60e7",
+        "kind": "gamme",
+        "path": "recycled/rag-knowledge/gammes/bobine-d-allumage.md"
+      }
+    ],
+    "truth_level": null,
+    "unlinked_source_types": [
+      "guide"
+    ],
+    "verification_status": null
+  },
+  "raw_verdict": "RAW_PARSE_ERROR",
+  "schema_version": "raw-evidence.v1",
+  "subject": "bobine-d-allumage"
+}

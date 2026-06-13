@@ -9,6 +9,7 @@ import { buildCertificationActions } from '../../src/modules/admin/services/comm
 import {
   buildSeoOpportunityActions,
   pageKindFromUrl,
+  deriveUrlNextStep,
 } from '../../src/modules/admin/services/command-center-action-rules/seo-action.rules';
 import { buildPricingRiskActions } from '../../src/modules/admin/services/command-center-action-rules/pricing-action.rules';
 
@@ -56,6 +57,8 @@ describe('score caps — honesty invariant', () => {
           impressions: 10,
           clicks: 0,
           ctr: 0,
+          position: 4,
+          next_step: 'x',
         },
       ],
     };
@@ -72,6 +75,8 @@ describe('score caps — honesty invariant', () => {
           impressions: 10,
           clicks: 0,
           ctr: 0,
+          position: 4,
+          next_step: 'x',
         },
       ],
     };
@@ -224,14 +229,39 @@ describe('SEO opportunity rules — real business actions (certified source)', (
     expect(out.find((a) => a.id === 'seo:opportunity:content')).toBeDefined();
   });
 
-  it('returns nothing on empty input', () => {
-    expect(buildSeoOpportunityActions([])).toEqual([]);
+  it('empty input + fraîcheur/couverture vérifiées → rien (vraie bonne nouvelle)', () => {
+    expect(
+      buildSeoOpportunityActions([], {
+        total_qualifying: 0,
+        data_from: '2026-04-01',
+        data_to: '2026-06-08',
+        freshness: 'fresh',
+      }),
+    ).toEqual([]);
   });
 
-  it('PR2: emits a per-URL details payload (sorted desc; ctr = clicks/impressions)', () => {
+  it('empty input SANS fraîcheur vérifiée → action certification data-gap, jamais un silence ambigu', () => {
+    const out = buildSeoOpportunityActions([]).map(finalizeAction);
+    expect(out).toHaveLength(1);
+    expect(out[0].id).toBe('seo:gsc-data-gap');
+    expect(out[0].action_type).toBe('certification');
+    expect(out[0].reason).toMatch(/ingestion/i);
+  });
+
+  it('PR2+PR3: per-URL details (sorted desc; ctr; position + advisory next_step)', () => {
     const out = buildSeoOpportunityActions([
-      { page: 'https://x/pieces/a.html', impressions: 200, clicks: 0 },
-      { page: 'https://x/pieces/b.html', impressions: 50, clicks: 5 },
+      {
+        page: 'https://x/pieces/a.html',
+        impressions: 200,
+        clicks: 0,
+        position: 4,
+      },
+      {
+        page: 'https://x/pieces/b.html',
+        impressions: 50,
+        clicks: 5,
+        position: 30,
+      },
     ]).map(finalizeAction);
     const product = out.find((a) => a.id === 'seo:opportunity:product')!;
     expect(product.details).toHaveLength(2);
@@ -241,8 +271,105 @@ describe('SEO opportunity rules — real business actions (certified source)', (
       impressions: 200,
       clicks: 0,
       ctr: 0,
+      position: 4,
+      next_step: expect.stringMatching(/title\/meta/i), // pos 4 ranked → SERP appeal
     });
     expect(product.details![1].ctr).toBeCloseTo(0.1, 5); // 5/50
+    expect(product.details![1].next_step).toMatch(/maillage/i); // pos 30 → authority
+  });
+
+  it('PR3: position=null + honest next_step when the RPC omits avg_position', () => {
+    const product = buildSeoOpportunityActions([
+      { page: 'https://x/pieces/a.html', impressions: 200, clicks: 0 },
+    ])
+      .map(finalizeAction)
+      .find((a) => a.id === 'seo:opportunity:product')!;
+    expect(product.details![0].position).toBeNull();
+    expect(product.details![0].next_step).toMatch(/inconnue/i);
+  });
+});
+
+describe('PR3: deriveUrlNextStep — deterministic, advisory, honest', () => {
+  it('ranked (pos ≤ 15) → title/meta + intent (SERP appeal)', () => {
+    expect(deriveUrlNextStep('product', 4)).toMatch(/title\/meta/i);
+    expect(deriveUrlNextStep('product', 4)).toMatch(/ranke/i);
+    expect(deriveUrlNextStep('content', 12)).toMatch(/title\/meta/i);
+    expect(deriveUrlNextStep('other', 8)).toMatch(/title\/meta/i);
+  });
+
+  it('not ranked (pos > 15) → maillage / enrich + money link', () => {
+    expect(deriveUrlNextStep('product', 40)).toMatch(/maillage/i);
+    expect(deriveUrlNextStep('content', 40)).toMatch(/transactionnelle/i);
+    expect(deriveUrlNextStep('content', 40)).toMatch(/enrichir/i);
+  });
+
+  it('honest fallback when position unknown — no fabricated SERP diagnosis', () => {
+    for (const pos of [null, 0]) {
+      const s = deriveUrlNextStep('product', pos);
+      expect(s).toMatch(/inconnue/i);
+      expect(s).not.toMatch(/ranke/i);
+    }
+  });
+});
+
+describe('PR4: GSC meta honnêteté — cap divulgué, couverture réelle, fraîcheur', () => {
+  const rows = [
+    {
+      page: 'https://x/pieces/a.html',
+      impressions: 200,
+      clicks: 0,
+      position: 4,
+    },
+    { page: 'https://x/blog-pieces-auto/conseils/c', impressions: 100, clicks: 0 },
+  ];
+
+  it('fresh + cap dépassé → confiance CERTIFIED (90), cap dans le titre, couverture réelle dans la raison', () => {
+    const out = buildSeoOpportunityActions(rows, {
+      total_qualifying: 147,
+      data_from: '2026-04-01',
+      data_to: '2026-06-08',
+      freshness: 'fresh',
+    }).map(finalizeAction);
+    const product = out.find((a) => a.id === 'seo:opportunity:product')!;
+    expect(product.data_confidence).toBe(90);
+    expect(product.action_type).toBe('business');
+    expect(product.title).toMatch(/top 2/); // 147 qualifiantes > 2 affichées → cap divulgué
+    expect(product.reason).toMatch(/147 pages qualifiantes/);
+    expect(product.reason).toMatch(/2026-04-01 au 2026-06-08/);
+    expect(product.reason).not.toMatch(/120j/); // plus de claim de fenêtre non vérifiée
+  });
+
+  it('stale → PARTIAL (55) annoncé, l\'action business survit (≥ floor) marquée prudence', () => {
+    const out = buildSeoOpportunityActions(rows, {
+      total_qualifying: 2,
+      data_from: '2026-04-01',
+      data_to: '2026-05-01',
+      freshness: 'stale',
+    }).map(finalizeAction);
+    const product = out.find((a) => a.id === 'seo:opportunity:product')!;
+    expect(product.data_confidence).toBe(55);
+    expect(product.action_type).toBe('business');
+    expect(product.reason).toMatch(/fraîcheur GSC dégradée/i);
+  });
+
+  it('meta absente (fallback RPC v1) → PARTIAL + couverture et total annoncés inconnus', () => {
+    const out = buildSeoOpportunityActions(rows).map(finalizeAction);
+    const product = out.find((a) => a.id === 'seo:opportunity:product')!;
+    expect(product.data_confidence).toBe(55);
+    expect(product.reason).toMatch(/total qualifiant inconnu/i);
+    expect(product.reason).toMatch(/Couverture réelle des données GSC inconnue/);
+  });
+
+  it('liste complète (total ≤ échantillon) → pas de cap dans le titre, « Liste complète » dans la raison', () => {
+    const out = buildSeoOpportunityActions(rows, {
+      total_qualifying: 2,
+      data_from: '2026-04-01',
+      data_to: '2026-06-08',
+      freshness: 'fresh',
+    }).map(finalizeAction);
+    const product = out.find((a) => a.id === 'seo:opportunity:product')!;
+    expect(product.title).not.toMatch(/top \d/);
+    expect(product.reason).toMatch(/Liste complète \(2 pages qualifiantes/);
   });
 });
 

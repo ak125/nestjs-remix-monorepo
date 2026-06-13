@@ -418,3 +418,15 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `docs/vlevel-method-freeze`
 - **Décision** : docs(seo): vlevel — objectif top-vente (proxy recherche) + dispatch pages constructeur (+1 other commit)
 - **Sortie** : PR #898 | commits 1db293cf8 bd605b606
+
+## 2026-06-10 — fix/r4-reference-list-rpc-gate (auto)
+
+- **Branche** : `fix/r4-reference-list-rpc-gate`
+- **Décision** : chore(registry): glob ownership pour la migration 20260610 (D14, owner GO en session) (+3 other commits)
+- **Sortie** : PR #922 | commits f719e0d1f 5d5cf54c9 c62447acd 974ad3996
+
+## 2026-06-11 — chore/trim-agent-rules (auto)
+
+- **Branche** : `chore/trim-agent-rules`
+- **Décision** : chore(claude-rules): allège les 2 rules auto-chargées les plus lourdes (−5.5KB/session)
+- **Sortie** : PR #938 | commits c31d995ee

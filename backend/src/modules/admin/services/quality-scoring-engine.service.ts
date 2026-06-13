@@ -119,6 +119,19 @@ export interface FeatureRow {
   // Blog
   has_blog_advice: boolean;
   blog_advice_content_length: number;
+  // Sémantique R3_guide (D1/D2/D3 + GENERIC_WITHOUT_ACTION — portage
+  // buying-guide-quality-gates, salvage pré-purge RAG 2026-06-11).
+  // OPTIONNELS : absents tant que la migration
+  // 20260611_quality_features_r3_guide_semantics n'est pas appliquée à la DB —
+  // les penalties correspondantes sont alors skippées (dégradation propre,
+  // aucune erreur ni distorsion de score avec l'ancienne RPC).
+  guide_criteria_count?: number | null;
+  guide_guidance_copies_label_count?: number | null;
+  guide_positive_starter_count?: number | null;
+  guide_use_cases_count?: number | null;
+  guide_profile_marker_count?: number | null;
+  guide_generic_phrase_count?: number | null;
+  guide_action_marker_count?: number | null;
 }
 
 // ── Scoring Result ──
@@ -533,10 +546,9 @@ export class QualityScoringEngineService extends SupabaseBaseService {
         else reasons.push('Image hero (pg_pic) manquante');
         if (row.has_pg_wall) score += 10;
         if (row.has_blog_advice) score += 10;
-        // v2.1: check contenu SEO (description gamme)
-        score += continuousScore(row.seo_content_length, 800, 20);
-        // v2.1: check RAG
-        score += continuousScore(row.rag_content_length, 1500, 10);
+        // v2.2: contenu RÉEL (sg_content). Absorbe les 10 pts de l'ex-signal RAG
+        // (retiré : RAG = chatbot only). 20+15+15+10+10+30 = 100.
+        score += continuousScore(row.seo_content_length, 800, 30);
         return decimalClamp(score);
       }
 
@@ -581,27 +593,19 @@ export class QualityScoringEngineService extends SupabaseBaseService {
     else reasons.push('H1 absent ou trop court');
 
     // Content length (for R4 use content_html, for others use seo_content)
+    // v2.2: contenu RÉEL de la page (sg_content). Absorbe les 15 pts de l'ex-signal
+    // RAG (retiré : RAG = chatbot only, ADR-031/046). 25+25+15+35 = 100.
     const contentLen =
       pageType === 'R4_reference'
         ? row.ref_content_html_length
         : row.seo_content_length;
-    if (contentLen >= t.content_min) score += 20;
+    if (contentLen >= t.content_min) score += 35;
     else if (contentLen > 0) {
-      score += 8;
+      score += 14;
       reasons.push(
         `Contenu page trop court (${contentLen} chars, min ${t.content_min})`,
       );
     } else reasons.push('Contenu page absent');
-
-    // RAG file (shared across types) — continuous
-    const ragPts = continuousScore(
-      row.rag_content_length,
-      t.rag_content_min,
-      15,
-    );
-    score += ragPts;
-    if (ragPts < 7.5)
-      reasons.push(`Fichier RAG court (${row.rag_content_length} chars)`);
 
     return decimalClamp(score);
   }
@@ -610,27 +614,22 @@ export class QualityScoringEngineService extends SupabaseBaseService {
     let score = 0;
 
     // Source verified (guide-specific but important for all)
-    if (row.guide_source_verified) score += 30;
+    // v2.2: +10 pts (absorbe une partie de l'ex-signal "RAG truth" retiré).
+    if (row.guide_source_verified) score += 40;
     else reasons.push('Source non verifiee');
 
-    // Pipeline quality
+    // Pipeline quality — v2.2: +10 pts (absorbe le reste de l'ex-signal RAG).
     const pq = row.pipeline_quality_score;
-    if (pq >= TRUST_THRESHOLDS.pipeline_quality_good) score += 25;
-    else if (pq >= TRUST_THRESHOLDS.pipeline_quality_min) score += 15;
+    if (pq >= TRUST_THRESHOLDS.pipeline_quality_good) score += 35;
+    else if (pq >= TRUST_THRESHOLDS.pipeline_quality_min) score += 25;
     else if (pq > 0) {
-      score += 5;
+      score += 10;
       reasons.push(`Pipeline quality faible (${pq})`);
     }
 
-    // RAG truth level
-    if (
-      row.rag_truth_level &&
-      TRUST_THRESHOLDS.rag_truth_level_good.includes(row.rag_truth_level)
-    ) {
-      score += 20;
-    } else if (row.rag_content_length > 0) {
-      score += 10;
-    }
+    // (ex-signal "RAG truth level" RETIRÉ : RAG = chatbot only, ADR-031/046.
+    //  La confiance s'ancre sur la provenance vérifiée + le pipeline réels.)
+    // Max inchangé : 40 + 35 + 15 = 90 (+10 canonical R4) = identique à l'ex 30+25+20+15.
 
     // Hard gate results (pipeline)
     const hgr = row.pipeline_hard_gate_results;
@@ -751,6 +750,39 @@ export class QualityScoringEngineService extends SupabaseBaseService {
         return !row.has_pg_img;
       case 'checkR1NoHero':
         return !row.has_pg_pic;
+      // ── Penalties sémantiques R3_guide (D1/D2/D3 + GENERIC_WITHOUT_ACTION,
+      //    portage buying-guide-quality-gates — salvage pré-purge RAG 2026-06-11).
+      //    Dégradation propre : si la RPC en DB ne renvoie pas encore ces
+      //    features (migration non appliquée), `== null` couvre undefined ET
+      //    null → skip sans erreur ni distorsion de score. ──
+      case 'checkGuideGuidanceCopiesLabel': {
+        // Legacy D1 : copies > criteria.length / 2
+        const total = row.guide_criteria_count;
+        const copies = row.guide_guidance_copies_label_count;
+        if (total == null || copies == null) return false;
+        return total > 0 && copies > total / 2;
+      }
+      case 'checkGuideAntiMistakesNotErrors': {
+        // Legacy D2 : positiveItems > antiMistakes.length / 2
+        const positive = row.guide_positive_starter_count;
+        const total = row.guide_anti_mistakes_count;
+        if (positive == null || total == null) return false;
+        return total > 0 && positive > total / 2;
+      }
+      case 'checkGuideUseCasesNotProfiles': {
+        // Legacy D3 : use_cases >= 2 ET aucun marqueur de profil conducteur
+        const useCases = row.guide_use_cases_count;
+        const profiles = row.guide_profile_marker_count;
+        if (useCases == null || profiles == null) return false;
+        return useCases >= 2 && profiles === 0;
+      }
+      case 'checkGuideGenericWithoutAction': {
+        // Legacy GENERIC_WITHOUT_ACTION : phrase générique présente ET aucun verbe d'action
+        const generic = row.guide_generic_phrase_count;
+        const action = row.guide_action_marker_count;
+        if (generic == null || action == null) return false;
+        return generic > 0 && action === 0;
+      }
       default:
         return false;
     }
@@ -780,18 +812,12 @@ export class QualityScoringEngineService extends SupabaseBaseService {
             else if (days <= 180) score += signal.weight * 0.2;
           }
           break;
-        case 'rag_available':
-          score += continuousScore(row.rag_content_length, 1000, signal.weight);
-          break;
+        // v2.2: cases 'rag_available' + 'truth_level_high' RETIRÉES (RAG = chatbot only).
         case 'data_completeness': {
           const featuresPct = this.countPresentFeatures(row, _pageType);
           score += (featuresPct / 100) * signal.weight;
           break;
         }
-        case 'truth_level_high':
-          if (row.rag_truth_level && ['L1', 'L2'].includes(row.rag_truth_level))
-            score += signal.weight;
-          break;
       }
     }
 
@@ -817,7 +843,7 @@ export class QualityScoringEngineService extends SupabaseBaseService {
     check(row.seo_title_length, 0);
     check(row.seo_desc_length, 0);
     check(row.seo_h1_length, 0);
-    check(row.rag_content_length, 0);
+    // v2.2: rag_content_length retiré des features de complétude (RAG = chatbot only).
     check(row.pipeline_quality_score, 0);
 
     switch (pageType) {
@@ -897,8 +923,11 @@ export class QualityScoringEngineService extends SupabaseBaseService {
       actions.push('Ajouter un titre SEO');
     if (row.seo_desc_length === 0 && row.ref_meta_desc_length === 0)
       actions.push('Ajouter une meta description');
-    if (row.rag_content_length < 1500)
-      actions.push('Enrichir le fichier RAG (>1500 chars)');
+    // v2.2: action ré-ancrée sur le contenu RÉEL de la page (source RAW→WIKI), plus le RAG.
+    if (row.seo_content_length < 800)
+      actions.push(
+        'Enrichir le contenu éditorial de la page (source RAW→WIKI)',
+      );
 
     return actions;
   }
@@ -926,6 +955,16 @@ export class QualityScoringEngineService extends SupabaseBaseService {
           anti_mistakes_count: row.guide_anti_mistakes_count,
           source_verified: row.guide_source_verified,
           arg_count: row.guide_arg_count,
+          // Sémantique D1/D2/D3 + GWA (null tant que la migration
+          // 20260611_quality_features_r3_guide_semantics n'est pas appliquée)
+          criteria_count: row.guide_criteria_count ?? null,
+          guidance_copies_label_count:
+            row.guide_guidance_copies_label_count ?? null,
+          positive_starter_count: row.guide_positive_starter_count ?? null,
+          use_cases_count: row.guide_use_cases_count ?? null,
+          profile_marker_count: row.guide_profile_marker_count ?? null,
+          generic_phrase_count: row.guide_generic_phrase_count ?? null,
+          action_marker_count: row.guide_action_marker_count ?? null,
         };
       case 'R4_reference':
         return {

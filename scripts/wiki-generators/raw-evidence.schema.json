@@ -58,6 +58,14 @@
       },
       "type": "array"
     },
+    "entity_type": {
+      "enum": [
+        "gamme",
+        "vehicle",
+        "diagnostic"
+      ],
+      "type": "string"
+    },
     "fold_note": {
       "type": "string"
     },
@@ -107,6 +115,12 @@
       ],
       "type": "string"
     },
+    "missing_for_next_tier": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
     "next_action": {
       "minLength": 1,
       "type": "string"
@@ -148,7 +162,9 @@
                 "enum": [
                   "gamme",
                   "guide",
-                  "evidence"
+                  "evidence",
+                  "vehicle",
+                  "diagnostic"
                 ],
                 "type": "string"
               },
@@ -201,7 +217,8 @@
         "PARTIAL_READY",
         "BLOCKED",
         "NO_RAW",
-        "RAW_PARSE_ERROR"
+        "RAW_PARSE_ERROR",
+        "NOT_CONFIGURED"
       ],
       "type": "string"
     },
@@ -211,6 +228,16 @@
     },
     "subject": {
       "minLength": 1,
+      "type": "string"
+    },
+    "tier": {
+      "enum": [
+        "NONE",
+        "BRONZE",
+        "ARGENT",
+        "OR",
+        "NOT_CONFIGURED"
+      ],
       "type": "string"
     }
   },
@@ -222,10 +249,8 @@
     "intent_targets",
     "provenance",
     "coverage",
-    "fold_readiness",
     "raw_verdict",
-    "next_action",
-    "fold_note"
+    "next_action"
   ],
   "type": "object"
 }

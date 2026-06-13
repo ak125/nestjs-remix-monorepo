@@ -9,7 +9,13 @@
  *
  * Réutilise les gates WIKI de validate-gamme-schema.ts (pas de système parallèle).
  *
+ * Mode batch (flotte) : classement des gammes via la vue v_gamme_readiness
+ * (tri final_priority × seo_score + next_action_counts) — port du mode flotte
+ * de l'ex-gamme-readiness.py (salvage A6 pré-purge RAG). Les meilleures
+ * candidates à la promotion WIKI sortent en tête du classement.
+ *
  * Usage: npx tsx scripts/seo/seo-readiness.ts <pg_alias> [--role R1|R3|R4|R6 | --all] [--json]
+ *        npx tsx scripts/seo/seo-readiness.ts --batch [--top N] [--filter READY|PARTIAL|STARTED|BLOCKED] [--json]
  * Ref: spec build seo-readiness-multirole-signal-map (workflow).
  */
 
@@ -157,12 +163,116 @@ function severity(v: RoleVerdict): number {
   return 0;
 }
 
+// ── Mode batch (flotte) — port du tri/agrégats de l'ex-gamme-readiness.py ──
+// Source DB : vue v_gamme_readiness (cross __seo_* + gamme_aggregates, read-only).
+const PRIORITY_ORDER: Record<string, number> = { P1: 0, 'P1-PENDING': 1, P2: 2, P3: 3, 'SOFT-INDEX': 4 };
+const READINESS_LEVELS = ['READY', 'PARTIAL', 'STARTED', 'BLOCKED'] as const;
+
+interface GammeReadinessRow {
+  pg_id: number | null;
+  pg_alias: string | null;
+  final_priority: string | null;
+  seo_score: number | null;
+  conseil_sections: number | null;
+  standard_coverage: number | null;
+  conseil_avg_quality: number | null;
+  readiness_level: string | null;
+  next_action: string | null;
+}
+
+// Cap supabase-js 1000 lignes → pagination .range() systématique.
+async function fetchGammeReadiness(): Promise<GammeReadinessRow[]> {
+  const PAGE = 1000;
+  const rows: GammeReadinessRow[] = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await supabase
+      .from('v_gamme_readiness')
+      .select('pg_id, pg_alias, final_priority, seo_score, conseil_sections, standard_coverage, conseil_avg_quality, readiness_level, next_action')
+      .order('pg_id', { ascending: true })
+      .range(from, from + PAGE - 1);
+    if (error) throw new Error(`v_gamme_readiness: ${error.message}`);
+    rows.push(...((data as GammeReadinessRow[]) ?? []));
+    if (!data || data.length < PAGE) break;
+  }
+  return rows.filter((r) => r.pg_alias);
+}
+
+async function runBatch(args: string[]): Promise<void> {
+  const topArg = (() => { const i = args.indexOf('--top'); return i >= 0 ? parseInt(args[i + 1], 10) : NaN; })();
+  const filterArg = (() => { const i = args.indexOf('--filter'); return i >= 0 ? args[i + 1]?.toUpperCase() : null; })();
+  if (filterArg && !(READINESS_LEVELS as readonly string[]).includes(filterArg)) {
+    console.error(`--filter invalide: ${filterArg}. Dispo: ${READINESS_LEVELS.join('|')}`);
+    process.exit(2);
+  }
+
+  const all = await fetchGammeReadiness();
+
+  // Tri repris du legacy : final_priority ASC (P1 d'abord), seo_score DESC.
+  const ranked = (filterArg ? all.filter((r) => r.readiness_level === filterArg) : [...all]).sort(
+    (a, b) =>
+      (PRIORITY_ORDER[a.final_priority ?? ''] ?? 99) - (PRIORITY_ORDER[b.final_priority ?? ''] ?? 99) ||
+      (b.seo_score ?? 0) - (a.seo_score ?? 0),
+  );
+  const top = Number.isFinite(topArg) && topArg > 0 ? ranked.slice(0, topArg) : ranked;
+
+  // Agrégats (sur le périmètre filtré) : distribution readiness + next_action_counts.
+  const readinessCounts: Record<string, number> = {};
+  const nextActionCounts: Record<string, number> = {};
+  for (const r of ranked) {
+    const rl = r.readiness_level ?? 'BLOCKED';
+    const na = r.next_action ?? '?';
+    readinessCounts[rl] = (readinessCounts[rl] ?? 0) + 1;
+    nextActionCounts[na] = (nextActionCounts[na] ?? 0) + 1;
+  }
+
+  if (process.argv.includes('--json')) {
+    console.log(JSON.stringify({
+      kind: 'gamme_batch',
+      source: 'v_gamme_readiness',
+      total: ranked.length,
+      filter: filterArg,
+      readiness_counts: readinessCounts,
+      next_action_counts: nextActionCounts,
+      ranking: top,
+    }, null, 2));
+    return;
+  }
+
+  console.log(`\nSEO_READINESS --batch (${ranked.length} gammes${filterArg ? `, filter=${filterArg}` : ''}) — read-only, n'exécute rien`);
+  console.log(`Tri: final_priority ASC × seo_score DESC — meilleures candidates promotion WIKI en tête.\n`);
+
+  for (const level of READINESS_LEVELS) {
+    const count = readinessCounts[level] ?? 0;
+    const pct = ranked.length ? Math.round((100 * count) / ranked.length) : 0;
+    console.log(`  ${level.padEnd(10)}: ${String(count).padStart(4)} (${String(pct).padStart(2)}%)`);
+  }
+
+  console.log(`\n  Actions suggérées (next_action_counts) :`);
+  for (const [action, count] of Object.entries(nextActionCounts).sort((a, b) => b[1] - a[1])) {
+    console.log(`    ${action.padEnd(30)}: ${count} gammes`);
+  }
+
+  console.log(`\n  ${'#'.padStart(3)}  ${'Alias'.padEnd(30)} ${'Pri'.padStart(11)} ${'SEO'.padStart(4)} ${'Sect'.padStart(5)} ${'Cov'.padStart(5)} ${'Qual'.padStart(5)} ${'Ready'.padStart(8)}  Action`);
+  console.log(`  ${'-'.repeat(100)}`);
+  top.forEach((r, i) => {
+    const cov = r.standard_coverage != null ? `${Math.round(Number(r.standard_coverage) * 100)}%` : '0%';
+    const qual = r.conseil_avg_quality != null ? `${Math.round(Number(r.conseil_avg_quality))}` : '0';
+    console.log(
+      `  ${String(i + 1).padStart(3)}  ${(r.pg_alias ?? '?').padEnd(30)} ${(r.final_priority ?? '?').padStart(11)} ${String(r.seo_score ?? 0).padStart(4)} ${String(r.conseil_sections ?? 0).padStart(5)} ${cov.padStart(5)} ${qual.padStart(5)} ${(r.readiness_level ?? '?').padStart(8)}  ${r.next_action ?? '?'}`,
+    );
+  });
+}
+
 async function main() {
   const args = process.argv.slice(2);
+
+  // Mode batch (flotte) : classement v_gamme_readiness, pas d'alias requis.
+  if (args.includes('--batch')) { await runBatch(args); return; }
+
   const alias = args.find((a) => !a.startsWith('--'));
   const roleArg = (() => { const i = args.indexOf('--role'); return i >= 0 ? args[i + 1] : null; })();
   const all = args.includes('--all');
-  if (!alias) { console.error('Usage: npx tsx scripts/seo/seo-readiness.ts <pg_alias> [--role R1|R3|R4|R6 | --all] [--json]'); process.exit(2); }
+  if (!alias) { console.error('Usage: npx tsx scripts/seo/seo-readiness.ts <pg_alias> [--role R1|R3|R4|R6 | --all] [--json]\n       npx tsx scripts/seo/seo-readiness.ts --batch [--top N] [--filter READY|PARTIAL|STARTED|BLOCKED] [--json]'); process.exit(2); }
 
   // Entity-kind detection (gamme). Vehicle/R8 deferred V1.1.
   const { data: g } = await supabase.from('pieces_gamme').select('pg_id, pg_name').eq('pg_alias', alias).maybeSingle();

@@ -1,0 +1,28 @@
+id: commerce-no-direct-pieces-price-write
+language: typescript
+severity: error
+message: |
+  Direct write to `pieces_price` via the query builder is FORBIDDEN.
+  Canon: ADR-084 (supplier tariff governance) — pieces_price is written ONLY through the
+  governed PricingModule (RPC pricing_commit_chunk / pricing_activate_chunk), never a raw
+  .from('pieces_price').insert/update/upsert/delete. Use the governed endpoints
+  POST /api/admin/pricing/import|activate|display/* (invariants L2, history, rollback).
+note: |
+  Prevents the regression class behind the NK incident (a standalone worker INSERT into
+  pieces_price with pri_dispo=null → 30 621 invisible prices, no invariants/history/rollback).
+  All current writes go through RPC, so this rule has zero false positives today.
+  Legitimate exception (future): add the file under `ignores` ONLY with owner review.
+files:
+  - backend/src/**/*.ts
+ignores:
+  - backend/src/modules/pricing/**
+rule:
+  any:
+    - pattern: $X.from('pieces_price').insert($$$)
+    - pattern: $X.from("pieces_price").insert($$$)
+    - pattern: $X.from('pieces_price').update($$$)
+    - pattern: $X.from("pieces_price").update($$$)
+    - pattern: $X.from('pieces_price').upsert($$$)
+    - pattern: $X.from("pieces_price").upsert($$$)
+    - pattern: $X.from('pieces_price').delete($$$)
+    - pattern: $X.from("pieces_price").delete($$$)

@@ -87,6 +87,21 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: low
+  # Migration corrective RPCs reference/diagnostic — fix R4 index vide (RPC Gate) +
+  # cible R5→R3 404 (owner GO en session 2026-06-10). Glob exact volontaire — les
+  # migrations ne sont PAS auto-couvertes (review d'ownership requise à chaque fois).
+  - glob: backend/supabase/migrations/20260610_fix_r5_redirect_target_align_reference_rpcs.sql
+    domain: D14
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
+  # Fix get_page_quality_features 22023 (jsonb_array_length sur jsonb non-array) — débloque
+  # le recompute du quality-scoring (de-RAG v2.2 #935). Owner GO session 2026-06-11. Glob exact.
+  - glob: backend/supabase/migrations/20260611_fix_get_page_quality_features_jsonb_array_length_guard.sql
+    domain: D14
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
   - glob: scripts/governance/validate-authority-graph.js
     domain: D15
     owner: '@ak125'

@@ -8,6 +8,8 @@ import {
 } from './command-center-action-rules/certification-action.rules';
 import {
   buildSeoOpportunityActions,
+  UNKNOWN_GSC_META,
+  type GscOpportunityMeta,
   type GscOpportunityRow,
 } from './command-center-action-rules/seo-action.rules';
 import { buildPricingRiskActions } from './command-center-action-rules/pricing-action.rules';
@@ -20,12 +22,22 @@ import {
   type RawAction,
 } from './command-center-action-rules/score-action';
 
+/** Forme brute d'une ligne GSC renvoyée par rpc_seo_low_ctr_v1/v2 (JSONB). */
+interface RawGscRow {
+  page: string;
+  impressions: number | string;
+  clicks: number | string;
+  avg_position?: number | string | null;
+}
+
 /**
  * Command Center — live Owner Action Queue engine (Phase 2).
  * Combines:
  *   - certification/repair actions from the canon snapshot (no DB),
- *   - REAL SEO opportunity actions (GSC, certified — via the governed STABLE
- *     aggregation RPC rpc_seo_low_ctr_v1; server-side GROUP BY, no new RPC/migration),
+ *   - REAL SEO opportunity actions (GSC — via the governed STABLE aggregation
+ *     RPC rpc_seo_low_ctr_v2: synthetic queries filtered server-side, envelope
+ *     discloses the p_limit cap + real data coverage + ingestion freshness;
+ *     explicit logged fallback to v1 while the migration is not applied),
  *   - cautious pricing actions (missing purchase price via count; margin thresholds
  *     + runtime sell-at-loss kept as certification — no fake threshold).
  * Every source is graceful: a failed query yields a "source unavailable" certification
@@ -37,6 +49,8 @@ import {
 export class CommandCenterActionsService extends SupabaseBaseService {
   private static readonly GSC_WINDOW_DAYS = 120;
   private static readonly MIN_IMPRESSIONS = 50;
+  /** SLA fraîcheur GSC : lag normal ≈ 3 j ; au-delà de 7 j = stale → PARTIAL. */
+  private static readonly GSC_FRESH_MAX_LAG_DAYS = 7;
 
   constructor(configService: ConfigService) {
     super(configService);
@@ -59,40 +73,96 @@ export class CommandCenterActionsService extends SupabaseBaseService {
 
   private async seoOpportunities(): Promise<RawAction[]> {
     try {
-      // Reuse the governed STABLE aggregation RPC instead of reinventing GROUP BY
-      // client-side: it computes SUM(impressions)/SUM(clicks) GROUP BY page with
-      // HAVING impressions >= p_min_impressions AND ctr <= p_max_ctr, server-side.
-      // p_max_ctr: 0 → strictly zero-click. This avoids the supabase-js 1000-row
-      // cap and the unindexed client sort; STABLE = read-only (no mutation).
-      // Routed through callRpc (RPC Safety Gate) — internal admin context, not
-      // source:'api', so no allowlist entry is required.
-      const { data, error } = await this.callRpc<
-        Array<{
-          page: string;
-          impressions: number | string;
-          clicks: number | string;
-        }>
-      >('rpc_seo_low_ctr_v1', {
+      // Governed STABLE aggregation, server-side GROUP BY + HAVING (avoids the
+      // supabase-js 1000-row cap). p_max_ctr: 0 → strictly zero-click. Routed
+      // through callRpc (RPC Safety Gate) — v1/v2 sont dans
+      // governance/rpc/rpc_allowlist.json (une fonction inconnue du gate est
+      // BLOCK en PROD enforce ; le « contexte interne » seul ne suffit pas).
+      // v2 = synthetic queries filtered + honest envelope {rows, total_qualifying,
+      // data_from, data_to, last_data_date}. v1 fallback is EXPLICIT and logged
+      // (migration not yet applied): meta stays 'unknown' → the rule degrades
+      // confidence to PARTIAL and the reason says the coverage is unknown —
+      // governed, observable, never a silent green.
+      const rpcParams = {
         p_window_days: CommandCenterActionsService.GSC_WINDOW_DAYS,
         p_min_impressions: CommandCenterActionsService.MIN_IMPRESSIONS,
         p_max_ctr: 0,
         p_limit: 50,
-      });
-      if (error) throw error;
+      };
+      const v2 = await this.callRpc<{
+        rows?: RawGscRow[];
+        total_qualifying?: number | string | null;
+        data_from?: string | null;
+        data_to?: string | null;
+        last_data_date?: string | null;
+      }>('rpc_seo_low_ctr_v2', rpcParams);
 
-      // RPC returns BIGINT sums as JSONB numbers; coerce defensively.
-      const rows: GscOpportunityRow[] = (data ?? []).map((r) => ({
-        page: r.page,
-        impressions: Number(r.impressions) || 0,
-        clicks: Number(r.clicks) || 0,
-      }));
-      return buildSeoOpportunityActions(rows);
+      let rawRows: RawGscRow[];
+      let meta: GscOpportunityMeta;
+      if (!v2.error && v2.data && Array.isArray(v2.data.rows)) {
+        rawRows = v2.data.rows;
+        // null doit RESTER null (Number(null) === 0 fabriquerait « Liste
+        // complète (0 pages qualifiantes) » à côté de lignes non vides).
+        const rawTotal = v2.data.total_qualifying;
+        const total = rawTotal == null ? NaN : Number(rawTotal);
+        meta = {
+          total_qualifying: Number.isFinite(total) ? total : null,
+          data_from: v2.data.data_from ?? null,
+          data_to: v2.data.data_to ?? null,
+          freshness: this.gscFreshness(v2.data.last_data_date ?? null),
+        };
+      } else {
+        this.logger.warn(
+          `[command-center-actions] rpc_seo_low_ctr_v2 indisponible (${v2.error ?? 'enveloppe invalide'}) — fallback v1 : couverture/total inconnus, confiance dégradée`,
+        );
+        const v1 = await this.callRpc<RawGscRow[]>(
+          'rpc_seo_low_ctr_v1',
+          rpcParams,
+        );
+        if (v1.error) throw v1.error;
+        rawRows = v1.data ?? [];
+        meta = UNKNOWN_GSC_META;
+      }
+
+      // RPC returns BIGINT sums as JSONB numbers; coerce defensively. avg_position
+      // → position (PR3): only a real SERP position (>0) survives; 0/NaN/absent → null
+      // (explicit finite check, not a falsy-coerce) so the rule uses its honest fallback.
+      const rows: GscOpportunityRow[] = rawRows.map((r) => {
+        const pos = Number(r.avg_position);
+        return {
+          page: r.page,
+          impressions: Number(r.impressions) || 0,
+          clicks: Number(r.clicks) || 0,
+          position: Number.isFinite(pos) && pos > 0 ? pos : null,
+        };
+      });
+      return buildSeoOpportunityActions(rows, meta);
     } catch (e) {
       this.logger.warn(`[command-center-actions] SEO RPC failed: ${e}`);
       return [
         this.sourceUnavailable('seo', "Requête GSC d'opportunité indisponible"),
       ];
     }
+  }
+
+  /**
+   * Fraîcheur d'ingestion GSC : 'fresh' si la dernière date ingérée est dans le
+   * SLA (lag GSC normal ≈ 3 j) ; au-delà → 'stale' ; date absente/invalide →
+   * 'unknown'. Stale/unknown ⇒ la règle dégrade la confiance à PARTIAL — la
+   * constante « CERTIFIED 90 » n'est plus affichée sans vérification.
+   */
+  private gscFreshness(
+    lastDataDate: string | null,
+  ): 'fresh' | 'stale' | 'unknown' {
+    if (!lastDataDate) return 'unknown';
+    const last = Date.parse(lastDataDate);
+    if (!Number.isFinite(last)) return 'unknown';
+    // Jours calendaires entiers (floor) : 'YYYY-MM-DD' = minuit UTC, un lag
+    // fractionnaire ferait basculer la même date fresh→stale selon l'heure.
+    const lagDays = Math.floor((Date.now() - last) / 86_400_000);
+    return lagDays <= CommandCenterActionsService.GSC_FRESH_MAX_LAG_DAYS
+      ? 'fresh'
+      : 'stale';
   }
 
   private async pricingRisks(): Promise<RawAction[]> {

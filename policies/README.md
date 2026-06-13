@@ -40,7 +40,16 @@ conftest test --policy policies/maintenance --all-namespaces \
 
 ## CI wiring
 
-The CI workflow `policy-gates.yml` (added in a later PR) :
+> **État réel (constat 2026-06-10) : NON câblé.** `policy-gates.yml` n'existe pas
+> dans `.github/workflows/` et le prérequis — le générateur du manifest de routes
+> (`docs/routes/manifest.json`) — n'existe pas non plus. La policy est implémentée
+> et testée (`conftest verify` local) mais **aucun job CI ne l'exécute** : le tier
+> L3 déclaré dans `guard-hierarchy.yaml` est aujourd'hui doctrinal, pas mécanique.
+> Condition de câblage : (1) générateur de manifest routes mergé, (2) workflow
+> `policy-gates.yml` ajouté (airlock `.github/`, owner), (3) job ajouté aux
+> required checks de branch protection.
+
+Cible une fois câblé — le workflow `policy-gates.yml` :
 
 1. Builds the Remix route manifest (`docs/routes/manifest.json`, generated).
 2. Loads `input.adr_overrides` from `governance-vault/adrs/route-overrides.yaml`

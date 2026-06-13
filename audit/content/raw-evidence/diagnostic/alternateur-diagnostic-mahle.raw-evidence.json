@@ -1,0 +1,27 @@
+{
+  "coverage": [],
+  "entity_type": "diagnostic",
+  "intent_targets": [],
+  "inventory_status": "DIAGNOSTIC_READY",
+  "missing_for_next_tier": [],
+  "next_action": "CONFIGURE_COMPLETENESS_PROFILE",
+  "pg_id": null,
+  "provenance": {
+    "completeness_profile": null,
+    "source_type": "diagnostic",
+    "sources": [
+      {
+        "content_hash": "sha256:b7b7b59b521f61fa6f2dba25801dedd9e046e13171e61a308b615dcbf34536e6",
+        "kind": "diagnostic",
+        "path": "recycled/rag-knowledge/diagnostic/alternateur-diagnostic-mahle.md"
+      }
+    ],
+    "truth_level": "L2",
+    "unlinked_source_types": [],
+    "verification_status": "unverified"
+  },
+  "raw_verdict": "NOT_CONFIGURED",
+  "schema_version": "raw-evidence.v1",
+  "subject": "alternateur-diagnostic-mahle",
+  "tier": "NOT_CONFIGURED"
+}
