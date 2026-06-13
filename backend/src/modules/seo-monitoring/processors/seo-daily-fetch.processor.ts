@@ -124,7 +124,12 @@ export class SeoDailyFetchProcessor {
         let message: string | undefined;
 
         if (t === 'gsc') {
-          const r = await this.gscFetcher.fetchAndPersist({ date });
+          // PR1 : ingestion multi-niveaux (property_total/totals/pages/queries)
+          // + fenêtre glissante self-healing (re-upsert J-3..J-6 : GSC révise J-1/J-2).
+          const r = await this.gscFetcher.fetchAndPersistMultiGrain({
+            date,
+            rollingDays: 4,
+          });
           rowsInserted = r.rowsInserted;
           if (
             r.warnings.includes('monitoring_disabled') ||

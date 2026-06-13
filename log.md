@@ -454,3 +454,15 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/botguard-verified-bot-bypass`
 - **Décision** : fix(bot-guard): honor explicit ip_block before verified-bot bypass (+1 other commit)
 - **Sortie** : PR #967 | commits 003ce059f b857a0f36
+
+## 2026-06-13 — feat/seo-gsc-multilevel-ingestion (auto)
+
+- **Branche** : `feat/seo-gsc-multilevel-ingestion`
+- **Décision** : feat(seo): GSC ingestion multi-niveaux fidèle (property_total/totals/pages) + couverture
+- **Sortie** : PR aucune | commits 3c4bacb1e
+
+## 2026-06-13 — feat/seo-gsc-multilevel-ingestion (auto)
+
+- **Branche** : `feat/seo-gsc-multilevel-ingestion`
+- **Décision** : chore(registry): ownership glob D3/seo-team pour migration seo_gsc_multilevel (+2 other commits)
+- **Sortie** : PR #968 | commits b255abb51 128b28316 3c4bacb1e
