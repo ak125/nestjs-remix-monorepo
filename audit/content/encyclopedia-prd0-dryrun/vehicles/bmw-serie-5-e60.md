@@ -5,7 +5,7 @@ domain: vehicule
 source_type: vehicle
 title: Fiche véhicule - BMW Série 5 (E60)
 truth_level: L1
-updated_at: '2026-06-12'
+updated_at: '2026-06-13'
 verification_status: verified
 doc_id: df4abb71-85be-5d68-8ece-42bac08bef8d
 lang: fr
@@ -17,9 +17,9 @@ years:
 - 2010
 provenance:
   ingested_by: script:vehicle-from-db-generator@v1
-  generated_at: '2026-06-12T18:13:30Z'
+  generated_at: '2026-06-13T10:20:35Z'
   source_db: supabase (SELECT only — auto_marque/auto_modele/auto_type/auto_type_motor_code)
-content_hash: sha256:3129159ba7fbd74e
+content_hash: sha256:17b9c40c56576d03
 # >>> DB-MANAGED BLOCK: db_profile — script:vehicle-from-db-generator@v1 (ne pas éditer à la main)
 db_profile:
   modele_id: 33052
@@ -34,7 +34,7 @@ db_profile:
     essence: 25
   bodies:
   - A trois volumes
-  last_db_sync: '2026-06-12T18:13:30Z'
+  last_db_sync: '2026-06-13T10:20:35Z'
   source:
     type: db
     table: auto_modele + auto_type
@@ -47,6 +47,8 @@ motorizations:
   alias: 2-0-520-d
   engine_code: null
   fuel: diesel
+  fuel_class: diesel
+  displacement_bucket: '2.0'
   power_ps: 150
   power_kw: 110
   displacement_l: 2.0
@@ -65,6 +67,8 @@ motorizations:
   alias: 2-0-520-d
   engine_code: null
   fuel: diesel
+  fuel_class: diesel
+  displacement_bucket: '2.0'
   power_ps: 163
   power_kw: 120
   displacement_l: 2.0
@@ -83,6 +87,8 @@ motorizations:
   alias: 2-0-520-d
   engine_code: null
   fuel: diesel
+  fuel_class: diesel
+  displacement_bucket: '2.0'
   power_ps: 177
   power_kw: 130
   displacement_l: 2.0
@@ -101,6 +107,8 @@ motorizations:
   alias: 2-5-525-d
   engine_code: null
   fuel: diesel
+  fuel_class: diesel
+  displacement_bucket: '2.5'
   power_ps: 163
   power_kw: 120
   displacement_l: 2.5
@@ -119,6 +127,8 @@ motorizations:
   alias: 2-5-525-d
   engine_code: null
   fuel: diesel
+  fuel_class: diesel
+  displacement_bucket: '2.5'
   power_ps: 177
   power_kw: 130
   displacement_l: 2.5
@@ -137,6 +147,8 @@ motorizations:
   alias: 3-0-525-d
   engine_code: null
   fuel: diesel
+  fuel_class: diesel
+  displacement_bucket: '3.0'
   power_ps: 197
   power_kw: 145
   displacement_l: 3.0
@@ -155,6 +167,8 @@ motorizations:
   alias: 3-0-525-xd
   engine_code: null
   fuel: diesel
+  fuel_class: diesel
+  displacement_bucket: '3.0'
   power_ps: 197
   power_kw: 145
   displacement_l: 3.0
@@ -173,6 +187,8 @@ motorizations:
   alias: 3-0-525-d-xdrive
   engine_code: null
   fuel: diesel
+  fuel_class: diesel
+  displacement_bucket: '3.0'
   power_ps: 197
   power_kw: 145
   displacement_l: 3.0
@@ -191,6 +207,8 @@ motorizations:
   alias: 3-0-530-d
   engine_code: null
   fuel: diesel
+  fuel_class: diesel
+  displacement_bucket: '3.0'
   power_ps: 211
   power_kw: 155
   displacement_l: 3.0
@@ -209,6 +227,8 @@ motorizations:
   alias: 3-0-530-d
   engine_code: null
   fuel: diesel
+  fuel_class: diesel
+  displacement_bucket: '3.0'
   power_ps: 218
   power_kw: 160
   displacement_l: 3.0
@@ -227,6 +247,8 @@ motorizations:
   alias: 3-0-530-d
   engine_code: null
   fuel: diesel
+  fuel_class: diesel
+  displacement_bucket: '3.0'
   power_ps: 231
   power_kw: 170
   displacement_l: 3.0
@@ -245,6 +267,8 @@ motorizations:
   alias: 3-0-530-xd
   engine_code: null
   fuel: diesel
+  fuel_class: diesel
+  displacement_bucket: '3.0'
   power_ps: 231
   power_kw: 170
   displacement_l: 3.0
@@ -263,6 +287,8 @@ motorizations:
   alias: 3-0-530-d
   engine_code: null
   fuel: diesel
+  fuel_class: diesel
+  displacement_bucket: '3.0'
   power_ps: 235
   power_kw: 173
   displacement_l: 3.0
@@ -281,6 +307,8 @@ motorizations:
   alias: 3-0-530-xd
   engine_code: null
   fuel: diesel
+  fuel_class: diesel
+  displacement_bucket: '3.0'
   power_ps: 235
   power_kw: 173
   displacement_l: 3.0
@@ -299,6 +327,8 @@ motorizations:
   alias: 3-0-530-d-xdrive
   engine_code: null
   fuel: diesel
+  fuel_class: diesel
+  displacement_bucket: '3.0'
   power_ps: 235
   power_kw: 173
   displacement_l: 3.0
@@ -317,6 +347,8 @@ motorizations:
   alias: 3-0-535-d
   engine_code: null
   fuel: diesel
+  fuel_class: diesel
+  displacement_bucket: '3.0'
   power_ps: 272
   power_kw: 200
   displacement_l: 3.0
@@ -335,6 +367,8 @@ motorizations:
   alias: 3-0-535-d
   engine_code: null
   fuel: diesel
+  fuel_class: diesel
+  displacement_bucket: '3.0'
   power_ps: 286
   power_kw: 210
   displacement_l: 3.0
@@ -353,6 +387,8 @@ motorizations:
   alias: 2-0-520-i
   engine_code: null
   fuel: essence
+  fuel_class: essence
+  displacement_bucket: '2.0'
   power_ps: 156
   power_kw: 115
   displacement_l: 2.0
@@ -371,6 +407,8 @@ motorizations:
   alias: 2-0-520-i
   engine_code: null
   fuel: essence
+  fuel_class: essence
+  displacement_bucket: '2.0'
   power_ps: 163
   power_kw: 120
   displacement_l: 2.0
@@ -389,6 +427,8 @@ motorizations:
   alias: 2-0-520-i
   engine_code: null
   fuel: essence
+  fuel_class: essence
+  displacement_bucket: '2.0'
   power_ps: 170
   power_kw: 125
   displacement_l: 2.0
@@ -407,6 +447,8 @@ motorizations:
   alias: 2-2-520-i
   engine_code: null
   fuel: essence
+  fuel_class: essence
+  displacement_bucket: '2.2'
   power_ps: 170
   power_kw: 125
   displacement_l: 2.2
@@ -425,6 +467,8 @@ motorizations:
   alias: 523-i
   engine_code: null
   fuel: essence
+  fuel_class: essence
+  displacement_bucket: '2.5'
   power_ps: 177
   power_kw: 130
   displacement_l: 2.5
@@ -443,6 +487,8 @@ motorizations:
   alias: 523-i
   engine_code: null
   fuel: essence
+  fuel_class: essence
+  displacement_bucket: '2.5'
   power_ps: 190
   power_kw: 140
   displacement_l: 2.5
@@ -461,6 +507,8 @@ motorizations:
   alias: 525-i
   engine_code: null
   fuel: essence
+  fuel_class: essence
+  displacement_bucket: '2.5'
   power_ps: 192
   power_kw: 141
   displacement_l: 2.5
@@ -479,6 +527,8 @@ motorizations:
   alias: 525-i
   engine_code: null
   fuel: essence
+  fuel_class: essence
+  displacement_bucket: '2.5'
   power_ps: 218
   power_kw: 160
   displacement_l: 2.5
@@ -497,6 +547,8 @@ motorizations:
   alias: 525-xi
   engine_code: null
   fuel: essence
+  fuel_class: essence
+  displacement_bucket: '2.5'
   power_ps: 218
   power_kw: 160
   displacement_l: 2.5
@@ -515,6 +567,8 @@ motorizations:
   alias: 525-i
   engine_code: null
   fuel: essence
+  fuel_class: essence
+  displacement_bucket: '3.0'
   power_ps: 218
   power_kw: 160
   displacement_l: 3.0
@@ -533,6 +587,8 @@ motorizations:
   alias: 525-xi
   engine_code: null
   fuel: essence
+  fuel_class: essence
+  displacement_bucket: '3.0'
   power_ps: 218
   power_kw: 160
   displacement_l: 3.0
@@ -551,6 +607,8 @@ motorizations:
   alias: 525-i-xdrive
   engine_code: null
   fuel: essence
+  fuel_class: essence
+  displacement_bucket: '3.0'
   power_ps: 218
   power_kw: 160
   displacement_l: 3.0
@@ -569,6 +627,8 @@ motorizations:
   alias: 530-i-phase-2
   engine_code: null
   fuel: essence
+  fuel_class: essence
+  displacement_bucket: '3.0'
   power_ps: 228
   power_kw: 168
   displacement_l: 3.0
@@ -587,6 +647,8 @@ motorizations:
   alias: 530-i-phase-1
   engine_code: null
   fuel: essence
+  fuel_class: essence
+  displacement_bucket: '3.0'
   power_ps: 231
   power_kw: 170
   displacement_l: 3.0
@@ -605,6 +667,8 @@ motorizations:
   alias: 530-i
   engine_code: null
   fuel: essence
+  fuel_class: essence
+  displacement_bucket: '3.0'
   power_ps: 258
   power_kw: 190
   displacement_l: 3.0
@@ -623,6 +687,8 @@ motorizations:
   alias: 530-xi
   engine_code: null
   fuel: essence
+  fuel_class: essence
+  displacement_bucket: '3.0'
   power_ps: 258
   power_kw: 190
   displacement_l: 3.0
@@ -641,6 +707,8 @@ motorizations:
   alias: 530-i
   engine_code: null
   fuel: essence
+  fuel_class: essence
+  displacement_bucket: '3.0'
   power_ps: 272
   power_kw: 200
   displacement_l: 3.0
@@ -659,6 +727,8 @@ motorizations:
   alias: 530-xi
   engine_code: null
   fuel: essence
+  fuel_class: essence
+  displacement_bucket: '3.0'
   power_ps: 272
   power_kw: 200
   displacement_l: 3.0
@@ -677,6 +747,8 @@ motorizations:
   alias: 530-i-xdrive
   engine_code: null
   fuel: essence
+  fuel_class: essence
+  displacement_bucket: '3.0'
   power_ps: 272
   power_kw: 200
   displacement_l: 3.0
@@ -695,6 +767,8 @@ motorizations:
   alias: 535-i-xdrive
   engine_code: null
   fuel: essence
+  fuel_class: essence
+  displacement_bucket: '3.0'
   power_ps: 305
   power_kw: 224
   displacement_l: 3.0
@@ -713,6 +787,8 @@ motorizations:
   alias: 535-i
   engine_code: null
   fuel: essence
+  fuel_class: essence
+  displacement_bucket: '3.0'
   power_ps: 306
   power_kw: 225
   displacement_l: 3.0
@@ -731,6 +807,8 @@ motorizations:
   alias: 540-i
   engine_code: null
   fuel: essence
+  fuel_class: essence
+  displacement_bucket: '4.0'
   power_ps: 306
   power_kw: 225
   displacement_l: 4.0
@@ -749,6 +827,8 @@ motorizations:
   alias: 545-i
   engine_code: null
   fuel: essence
+  fuel_class: essence
+  displacement_bucket: '4.4'
   power_ps: 333
   power_kw: 245
   displacement_l: 4.4
@@ -767,6 +847,8 @@ motorizations:
   alias: 550-i
   engine_code: null
   fuel: essence
+  fuel_class: essence
+  displacement_bucket: '4.8'
   power_ps: 355
   power_kw: 261
   displacement_l: 4.8
@@ -785,6 +867,8 @@ motorizations:
   alias: 550-i
   engine_code: null
   fuel: essence
+  fuel_class: essence
+  displacement_bucket: '4.8'
   power_ps: 367
   power_kw: 270
   displacement_l: 4.8
@@ -799,6 +883,392 @@ motorizations:
     table: auto_type
     confidence: high
 # <<< END DB-MANAGED BLOCK: motorizations
+# >>> DB-MANAGED BLOCK: known_issues_by_engine — script:vehicle-from-db-generator@v1 (ne pas éditer à la main)
+known_issues_by_engine:
+  fuel:diesel:
+    axis_key_type: fuel
+    applies_to:
+      make: bmw
+      model_generation: serie-5-e60
+      fuel: diesel
+      engine_family: null
+      market: unknown
+    source:
+      type: db
+      table: auto_type
+      axis: type_fuel
+      confidence: high
+      note: axe carburant DB-fiable ; issues/operations remplis au scraping PR-C.2 (jamais inventés).
+    issues: []
+  fuel:essence:
+    axis_key_type: fuel
+    applies_to:
+      make: bmw
+      model_generation: serie-5-e60
+      fuel: essence
+      engine_family: null
+      market: unknown
+    source:
+      type: db
+      table: auto_type
+      axis: type_fuel
+      confidence: high
+      note: axe carburant DB-fiable ; issues/operations remplis au scraping PR-C.2 (jamais inventés).
+    issues: []
+  fuel_displacement:diesel:2.0:
+    axis_key_type: fuel_displacement
+    applies_to:
+      make: bmw
+      model_generation: serie-5-e60
+      fuel: diesel
+      engine_family: null
+      market: unknown
+      displacement_liter: 2.0
+    source:
+      type: db
+      table: auto_type
+      axis: type_fuel
+      confidence: high
+      note: axe carburant DB-fiable ; issues/operations remplis au scraping PR-C.2 (jamais inventés).
+    issues: []
+  fuel_displacement:diesel:2.5:
+    axis_key_type: fuel_displacement
+    applies_to:
+      make: bmw
+      model_generation: serie-5-e60
+      fuel: diesel
+      engine_family: null
+      market: unknown
+      displacement_liter: 2.5
+    source:
+      type: db
+      table: auto_type
+      axis: type_fuel
+      confidence: high
+      note: axe carburant DB-fiable ; issues/operations remplis au scraping PR-C.2 (jamais inventés).
+    issues: []
+  fuel_displacement:diesel:3.0:
+    axis_key_type: fuel_displacement
+    applies_to:
+      make: bmw
+      model_generation: serie-5-e60
+      fuel: diesel
+      engine_family: null
+      market: unknown
+      displacement_liter: 3.0
+    source:
+      type: db
+      table: auto_type
+      axis: type_fuel
+      confidence: high
+      note: axe carburant DB-fiable ; issues/operations remplis au scraping PR-C.2 (jamais inventés).
+    issues: []
+  fuel_displacement:essence:2.0:
+    axis_key_type: fuel_displacement
+    applies_to:
+      make: bmw
+      model_generation: serie-5-e60
+      fuel: essence
+      engine_family: null
+      market: unknown
+      displacement_liter: 2.0
+    source:
+      type: db
+      table: auto_type
+      axis: type_fuel
+      confidence: high
+      note: axe carburant DB-fiable ; issues/operations remplis au scraping PR-C.2 (jamais inventés).
+    issues: []
+  fuel_displacement:essence:2.2:
+    axis_key_type: fuel_displacement
+    applies_to:
+      make: bmw
+      model_generation: serie-5-e60
+      fuel: essence
+      engine_family: null
+      market: unknown
+      displacement_liter: 2.2
+    source:
+      type: db
+      table: auto_type
+      axis: type_fuel
+      confidence: high
+      note: axe carburant DB-fiable ; issues/operations remplis au scraping PR-C.2 (jamais inventés).
+    issues: []
+  fuel_displacement:essence:2.5:
+    axis_key_type: fuel_displacement
+    applies_to:
+      make: bmw
+      model_generation: serie-5-e60
+      fuel: essence
+      engine_family: null
+      market: unknown
+      displacement_liter: 2.5
+    source:
+      type: db
+      table: auto_type
+      axis: type_fuel
+      confidence: high
+      note: axe carburant DB-fiable ; issues/operations remplis au scraping PR-C.2 (jamais inventés).
+    issues: []
+  fuel_displacement:essence:3.0:
+    axis_key_type: fuel_displacement
+    applies_to:
+      make: bmw
+      model_generation: serie-5-e60
+      fuel: essence
+      engine_family: null
+      market: unknown
+      displacement_liter: 3.0
+    source:
+      type: db
+      table: auto_type
+      axis: type_fuel
+      confidence: high
+      note: axe carburant DB-fiable ; issues/operations remplis au scraping PR-C.2 (jamais inventés).
+    issues: []
+  fuel_displacement:essence:4.0:
+    axis_key_type: fuel_displacement
+    applies_to:
+      make: bmw
+      model_generation: serie-5-e60
+      fuel: essence
+      engine_family: null
+      market: unknown
+      displacement_liter: 4.0
+    source:
+      type: db
+      table: auto_type
+      axis: type_fuel
+      confidence: high
+      note: axe carburant DB-fiable ; issues/operations remplis au scraping PR-C.2 (jamais inventés).
+    issues: []
+  fuel_displacement:essence:4.4:
+    axis_key_type: fuel_displacement
+    applies_to:
+      make: bmw
+      model_generation: serie-5-e60
+      fuel: essence
+      engine_family: null
+      market: unknown
+      displacement_liter: 4.4
+    source:
+      type: db
+      table: auto_type
+      axis: type_fuel
+      confidence: high
+      note: axe carburant DB-fiable ; issues/operations remplis au scraping PR-C.2 (jamais inventés).
+    issues: []
+  fuel_displacement:essence:4.8:
+    axis_key_type: fuel_displacement
+    applies_to:
+      make: bmw
+      model_generation: serie-5-e60
+      fuel: essence
+      engine_family: null
+      market: unknown
+      displacement_liter: 4.8
+    source:
+      type: db
+      table: auto_type
+      axis: type_fuel
+      confidence: high
+      note: axe carburant DB-fiable ; issues/operations remplis au scraping PR-C.2 (jamais inventés).
+    issues: []
+# <<< END DB-MANAGED BLOCK: known_issues_by_engine
+# >>> DB-MANAGED BLOCK: maintenance_by_engine — script:vehicle-from-db-generator@v1 (ne pas éditer à la main)
+maintenance_by_engine:
+  fuel:diesel:
+    axis_key_type: fuel
+    applies_to:
+      make: bmw
+      model_generation: serie-5-e60
+      fuel: diesel
+      engine_family: null
+      market: unknown
+    source:
+      type: db
+      table: auto_type
+      axis: type_fuel
+      confidence: high
+      note: axe carburant DB-fiable ; issues/operations remplis au scraping PR-C.2 (jamais inventés).
+    operations: []
+  fuel:essence:
+    axis_key_type: fuel
+    applies_to:
+      make: bmw
+      model_generation: serie-5-e60
+      fuel: essence
+      engine_family: null
+      market: unknown
+    source:
+      type: db
+      table: auto_type
+      axis: type_fuel
+      confidence: high
+      note: axe carburant DB-fiable ; issues/operations remplis au scraping PR-C.2 (jamais inventés).
+    operations: []
+  fuel_displacement:diesel:2.0:
+    axis_key_type: fuel_displacement
+    applies_to:
+      make: bmw
+      model_generation: serie-5-e60
+      fuel: diesel
+      engine_family: null
+      market: unknown
+      displacement_liter: 2.0
+    source:
+      type: db
+      table: auto_type
+      axis: type_fuel
+      confidence: high
+      note: axe carburant DB-fiable ; issues/operations remplis au scraping PR-C.2 (jamais inventés).
+    operations: []
+  fuel_displacement:diesel:2.5:
+    axis_key_type: fuel_displacement
+    applies_to:
+      make: bmw
+      model_generation: serie-5-e60
+      fuel: diesel
+      engine_family: null
+      market: unknown
+      displacement_liter: 2.5
+    source:
+      type: db
+      table: auto_type
+      axis: type_fuel
+      confidence: high
+      note: axe carburant DB-fiable ; issues/operations remplis au scraping PR-C.2 (jamais inventés).
+    operations: []
+  fuel_displacement:diesel:3.0:
+    axis_key_type: fuel_displacement
+    applies_to:
+      make: bmw
+      model_generation: serie-5-e60
+      fuel: diesel
+      engine_family: null
+      market: unknown
+      displacement_liter: 3.0
+    source:
+      type: db
+      table: auto_type
+      axis: type_fuel
+      confidence: high
+      note: axe carburant DB-fiable ; issues/operations remplis au scraping PR-C.2 (jamais inventés).
+    operations: []
+  fuel_displacement:essence:2.0:
+    axis_key_type: fuel_displacement
+    applies_to:
+      make: bmw
+      model_generation: serie-5-e60
+      fuel: essence
+      engine_family: null
+      market: unknown
+      displacement_liter: 2.0
+    source:
+      type: db
+      table: auto_type
+      axis: type_fuel
+      confidence: high
+      note: axe carburant DB-fiable ; issues/operations remplis au scraping PR-C.2 (jamais inventés).
+    operations: []
+  fuel_displacement:essence:2.2:
+    axis_key_type: fuel_displacement
+    applies_to:
+      make: bmw
+      model_generation: serie-5-e60
+      fuel: essence
+      engine_family: null
+      market: unknown
+      displacement_liter: 2.2
+    source:
+      type: db
+      table: auto_type
+      axis: type_fuel
+      confidence: high
+      note: axe carburant DB-fiable ; issues/operations remplis au scraping PR-C.2 (jamais inventés).
+    operations: []
+  fuel_displacement:essence:2.5:
+    axis_key_type: fuel_displacement
+    applies_to:
+      make: bmw
+      model_generation: serie-5-e60
+      fuel: essence
+      engine_family: null
+      market: unknown
+      displacement_liter: 2.5
+    source:
+      type: db
+      table: auto_type
+      axis: type_fuel
+      confidence: high
+      note: axe carburant DB-fiable ; issues/operations remplis au scraping PR-C.2 (jamais inventés).
+    operations: []
+  fuel_displacement:essence:3.0:
+    axis_key_type: fuel_displacement
+    applies_to:
+      make: bmw
+      model_generation: serie-5-e60
+      fuel: essence
+      engine_family: null
+      market: unknown
+      displacement_liter: 3.0
+    source:
+      type: db
+      table: auto_type
+      axis: type_fuel
+      confidence: high
+      note: axe carburant DB-fiable ; issues/operations remplis au scraping PR-C.2 (jamais inventés).
+    operations: []
+  fuel_displacement:essence:4.0:
+    axis_key_type: fuel_displacement
+    applies_to:
+      make: bmw
+      model_generation: serie-5-e60
+      fuel: essence
+      engine_family: null
+      market: unknown
+      displacement_liter: 4.0
+    source:
+      type: db
+      table: auto_type
+      axis: type_fuel
+      confidence: high
+      note: axe carburant DB-fiable ; issues/operations remplis au scraping PR-C.2 (jamais inventés).
+    operations: []
+  fuel_displacement:essence:4.4:
+    axis_key_type: fuel_displacement
+    applies_to:
+      make: bmw
+      model_generation: serie-5-e60
+      fuel: essence
+      engine_family: null
+      market: unknown
+      displacement_liter: 4.4
+    source:
+      type: db
+      table: auto_type
+      axis: type_fuel
+      confidence: high
+      note: axe carburant DB-fiable ; issues/operations remplis au scraping PR-C.2 (jamais inventés).
+    operations: []
+  fuel_displacement:essence:4.8:
+    axis_key_type: fuel_displacement
+    applies_to:
+      make: bmw
+      model_generation: serie-5-e60
+      fuel: essence
+      engine_family: null
+      market: unknown
+      displacement_liter: 4.8
+    source:
+      type: db
+      table: auto_type
+      axis: type_fuel
+      confidence: high
+      note: axe carburant DB-fiable ; issues/operations remplis au scraping PR-C.2 (jamais inventés).
+    operations: []
+# <<< END DB-MANAGED BLOCK: maintenance_by_engine
 # >>> DB-MANAGED BLOCK: validation_notes — script:vehicle-from-db-generator@v1 (ne pas éditer à la main)
 validation_notes:
 - 'engine_code absent pour 42/42 motorisations : auto_type_motor_code est vide pour ces type_id (constat DB 2026-06-12
@@ -874,16 +1344,42 @@ validation_notes:
 | 550 i | — | 355 ch | 261 | 4.8 L | 2005-2010 | 35731 |
 | 550 i | — | 367 ch | 270 | 4.8 L | 2005-2009 | 19021 |
 
-## Spécificités & problèmes connus
+## Problèmes connus
 
-<!-- TODO éditorial — couche web sourcée (PR-C.2) : pannes connues PAR motorisation
-     (known_issues_by_engine), rappels officiels (Rappel Conso), entretien par moteur.
-     Aucune donnée scrapée ne remplace un fait DB ; divergence → validation_notes. -->
+> Organisé PAR CARBURANT (axe motorisation — owner 2026-06-13). Squelette BRONZE :
+> les clés `fuel:<carburant>` / `fuel_displacement:<carburant>:<L>` du frontmatter
+> `known_issues_by_engine` sont DB-fiables ; le contenu est rempli au scraping PR-C.2
+> (pannes PAR motorisation, rappels Rappel Conso) — jamais inventé, divergence DB →
+> validation_notes. Le raffinement famille-moteur (`engine_family:<code>`) viendra avec
+> le code moteur (absent en DB aujourd'hui → engine_code: null honnête).
+
+### Diesel
+
+<!-- TODO éditorial PR-C.2 — pannes connues du bloc diesel (clé `fuel:diesel`). applies_to.{make,model_generation,fuel,engine_family,market} + source.{type,source_market,lang_original,confidence,evidence_id} ; FR-only, reformulé non-verbatim. -->
+
+### Essence
+
+<!-- TODO éditorial PR-C.2 — pannes connues du bloc essence (clé `fuel:essence`). applies_to.{make,model_generation,fuel,engine_family,market} + source.{type,source_market,lang_original,confidence,evidence_id} ; FR-only, reformulé non-verbatim. -->
+
+## Entretien
+
+> Organisé PAR CARBURANT (intervalles fuel-dépendants : filtre gasoil 20-30k vs filtre
+> essence 60k…). Clés normalisées du frontmatter `maintenance_by_engine`. Squelette
+> BRONZE rempli au scraping PR-C.2 (data réparation constructeur) — jamais inventé.
+
+### Diesel
+
+<!-- TODO éditorial PR-C.2 — entretien du bloc diesel (clé `fuel:diesel`) : intervalles par moteur, opérations spécifiques. Valeurs prescriptives (couples…) = fail-closed sans source constructeur/OEM. -->
+
+### Essence
+
+<!-- TODO éditorial PR-C.2 — entretien du bloc essence (clé `fuel:essence`) : intervalles par moteur, opérations spécifiques. Valeurs prescriptives (couples…) = fail-closed sans source constructeur/OEM. -->
 
 ## Pièces fréquentes
 
 <!-- TODO éditorial — croisement gammes ↔ véhicule (compatible_part_families),
-     maillé par les clés DB (PR-D.1+). -->
+     fuel-aware (un FAP ne concerne que les diesels, une bougie d'allumage que
+     l'essence), maillé par les clés DB (PR-D.1+). -->
 
 ## FAQ
 

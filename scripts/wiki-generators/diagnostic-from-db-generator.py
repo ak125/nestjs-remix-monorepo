@@ -24,6 +24,23 @@ Dérivations déterministes (documentées, zéro LLM) :
     le préfixe 2-tokens du slug de cause (ex. brake_pads_worn ↔ brake_pads_replacement)
     → __diag_maintenance_operation.related_gamme_slug. Pas de match → [] + validation_note.
 
+AXE MOTORISATION (raffinement owner 2026-06-13) — dimension carburant CIBLÉE :
+  La motorisation est un axe transverse, MAIS seulement là où elle est réelle.
+  - `fuel_aware: true`  → SYSTÈMES MOTEUR (symptômes/causes fuel-dépendants) :
+    injection (= « Injection et alimentation » en DB, couvre l'alimentation),
+    distribution, refroidissement. La fiche structure ses sections éditoriales
+    (TODO PR-C.2) PAR CARBURANT (diesel/essence/électrique/hybride/gpl).
+  - `fuel_aware: false` → SYSTÈMES CHÂSSIS / SÉCURITÉ (fuel-agnostiques) :
+    freinage, direction, suspension, eclairage, transmission, embrayage,
+    echappement, filtration, climatisation, demarrage_charge. Un frein reste un
+    frein → pas de dimension carburant (ce dry-run = freinage = fuel-agnostic).
+  Source de la liste fuel-aware = slug `__diag_system` (ENGINE_SYSTEM_SLUGS).
+  Provenance des entrées éditoriales scrapées (PR-C.2, hors dry-run) : chaque
+  cause/conseil portera applies_to.{make,model_generation,fuel,engine_family,market}
+  + source.{type,source_market: FR|EU|DE|UK|US|unknown,lang_original,confidence,
+  evidence_id} ; clé moteur normalisée `engine_family:<code minuscule>` ; FR-only,
+  reformulé non-verbatim ; valeurs prescriptives (couples…) = fail-closed.
+
 Deux modes (jamais d'écrasement de l'éditorial humain) :
   - défaut (--create-missing implicite) : crée uniquement les fiches absentes.
   - --merge-managed-blocks : réécrit UNIQUEMENT les blocs frontmatter délimités
@@ -83,6 +100,24 @@ WIKI_SCHEMA_SYSTEM_ENUM = {
     "freinage", "alimentation", "transmission", "moteur", "suspension", "direction",
     "electricite", "echappement", "refroidissement", "climatisation", "eclairage",
     "carrosserie", "habitacle",
+}
+
+# Systèmes MOTEUR (slugs __diag_system) dont les symptômes/causes sont
+# fuel-dépendants → fiche fuel_aware=true, sections éditoriales par carburant
+# (owner 2026-06-13). Liste = systèmes nommés par l'owner mappés sur les slugs DB
+# réels : « injection, alimentation, distribution, refroidissement ». En DB,
+# l'alimentation est fusionnée dans `injection` (label « Injection et alimentation »).
+# Tous les autres systèmes (freinage, direction, suspension, eclairage, transmission,
+# embrayage, echappement, filtration, climatisation, demarrage_charge) sont
+# fuel-agnostiques → fuel_aware=false.
+ENGINE_SYSTEM_SLUGS = {"injection", "distribution", "refroidissement"}
+
+# Carburants canoniques pour structurer les sections éditoriales fuel-aware
+# (clés/sous-titres déterministes — jamais de connaissance inventée en BRONZE).
+FUEL_AXIS_CLASSES = ("diesel", "essence", "electrique", "hybride", "gpl")
+FUEL_AXIS_LABELS = {
+    "diesel": "Diesel", "essence": "Essence", "electrique": "Électrique",
+    "hybride": "Hybride", "gpl": "GPL / Gaz",
 }
 
 
@@ -249,6 +284,9 @@ def build_fiche(system: dict, generated_at: str) -> dict:
             "alignement schéma requis avant promotion WIKI (divergence __diag_system ↔ schéma)."
         )
 
+    # Axe motorisation ciblé (owner 2026-06-13) : systèmes moteur = fuel-dépendants.
+    fuel_aware = slug in ENGINE_SYSTEM_SLUGS
+
     symptoms = [
         {
             "slug": s.get("slug"),
@@ -309,6 +347,10 @@ def build_fiche(system: dict, generated_at: str) -> dict:
         "system": slug,
         "severity": derive_severity(symptoms_db),
         "audience": "client",
+        # Axe motorisation ciblé (owner 2026-06-13) : true = système moteur
+        # (symptômes/causes fuel-dépendants) → sections éditoriales par carburant ;
+        # false = système châssis/sécurité fuel-agnostique (un frein reste un frein).
+        "fuel_aware": fuel_aware,
         "provenance": {
             "ingested_by": SCRIPT_ID,
             "generated_at": generated_at,
@@ -327,7 +369,7 @@ def build_fiche(system: dict, generated_at: str) -> dict:
         "source": {"type": "db", "table": "__diag_system", "confidence": "high"},
     }
 
-    body = render_body(system, symptoms_db, causes_db, ops_db)
+    body = render_body(system, symptoms_db, causes_db, ops_db, fuel_aware)
 
     return {
         "slug": slug,
@@ -351,7 +393,8 @@ def _fmt_range(lo, hi, unit: str) -> str:
     return f"{lo if lo is not None else hi} {unit}"
 
 
-def render_body(system: dict, symptoms: list[dict], causes: list[dict], ops: list[dict]) -> str:
+def render_body(system: dict, symptoms: list[dict], causes: list[dict], ops: list[dict],
+                fuel_aware: bool) -> str:
     label = system.get("label") or system["slug"]
     lines = [
         f"# {label} — Diagnostic (maille système)",
@@ -400,6 +443,38 @@ def render_body(system: dict, symptoms: list[dict], causes: list[dict], ops: lis
             f"| {op.get('label') or '?'} | `{op.get('related_gamme_slug') or '—'}` | "
             f"{op.get('related_pg_id') or '—'} | {interval_label} | {op.get('severity_if_overdue') or '—'} |"
         )
+    # Axe motorisation ciblé (owner 2026-06-13) :
+    if fuel_aware:
+        lines += [
+            "",
+            "## Spécificités par carburant",
+            "",
+            f"> Système MOTEUR (`fuel_aware: true`) : symptômes et causes du système {label}",
+            "> sont fuel-dépendants → sections éditoriales structurées PAR CARBURANT. Squelette",
+            "> BRONZE rempli au scraping PR-C.2 (jamais inventé) ; provenance par entrée :",
+            "> applies_to.{make,model_generation,fuel,engine_family,market} + source.{source_market,",
+            "> lang_original,confidence,evidence_id} ; clé moteur normalisée `engine_family:<code>`.",
+            "",
+        ]
+        for fc in FUEL_AXIS_CLASSES:
+            lines.append(f"### {FUEL_AXIS_LABELS[fc]}")
+            lines.append("")
+            lines.append(
+                f"<!-- TODO éditorial PR-C.2 — pannes/causes spécifiques {fc} du système "
+                f"{system['slug']} (clé `fuel:{fc}`) : symptômes propres au carburant, causes "
+                "fuel-dépendantes, vérifications. FR-only, reformulé non-verbatim ; valeurs "
+                "prescriptives (couples…) = fail-closed sans source constructeur/OEM. -->"
+            )
+            lines.append("")
+    else:
+        lines += [
+            "",
+            "> Système châssis/sécurité (`fuel_aware: false`) : fuel-agnostique — pas de dimension",
+            f"> carburant (le système {label} ne dépend pas de la motorisation). Le contenu",
+            "> éditorial (PR-C.2) reste commun à toutes les motorisations.",
+            "",
+        ]
+
     lines += [
         "",
         "## Conseils sécurité",

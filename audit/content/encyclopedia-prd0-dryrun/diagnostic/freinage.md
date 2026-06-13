@@ -5,18 +5,19 @@ site_section: diagnostic
 source_type: diagnostic
 title: Diagnostic - Système de freinage
 truth_level: L1
-updated_at: '2026-06-12'
+updated_at: '2026-06-13'
 verification_status: verified
 doc_id: c7907089-1ba3-51e1-96cd-5030b3496dba
 lang: fr
 system: freinage
 severity: high
 audience: client
+fuel_aware: false
 provenance:
   ingested_by: script:diagnostic-from-db-generator@v1
-  generated_at: '2026-06-12T18:13:32Z'
+  generated_at: '2026-06-13T10:20:37Z'
   source_db: supabase (SELECT only — __diag_system/__diag_symptom/__diag_cause/__diag_maintenance_operation)
-content_hash: sha256:871d7aaba82304c8
+content_hash: sha256:196a6515e4b15dcf
 # >>> DB-MANAGED BLOCK: db_profile — script:diagnostic-from-db-generator@v1 (ne pas éditer à la main)
 db_profile:
   system_id: 1
@@ -25,7 +26,7 @@ db_profile:
   symptom_count: 5
   cause_count: 5
   maintenance_operation_count: 4
-  last_db_sync: '2026-06-12T18:13:32Z'
+  last_db_sync: '2026-06-13T10:20:37Z'
   source:
     type: db
     table: __diag_system
@@ -288,6 +289,11 @@ Niveau de liquide de frein en dessous du minimum, peut indiquer fuite ou usure p
 | Remplacement disques de frein | `disque-de-frein` | 82 | 40000–80000 km / 36–72 mois | high |
 | Purge/remplacement liquide de frein | `liquide-de-frein` | 479 | 24–36 mois | high |
 | Revision étrier de frein | `etrier-de-frein` | 78 | 80000–150000 km / 60–120 mois | moderate |
+
+> Système châssis/sécurité (`fuel_aware: false`) : fuel-agnostique — pas de dimension
+> carburant (le système Système de freinage ne dépend pas de la motorisation). Le contenu
+> éditorial (PR-C.2) reste commun à toutes les motorisations.
+
 
 ## Conseils sécurité
 

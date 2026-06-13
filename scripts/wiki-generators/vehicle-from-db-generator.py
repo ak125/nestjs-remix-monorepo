@@ -15,11 +15,43 @@ Provenance champ par champ : chaque bloc important porte
 truth_level: L1 (faits DB possédés) · verification_status: verified (blocs db)
 · provenance.ingested_by: 'script:vehicle-from-db-generator@v1'.
 
+MOTORISATION = axe transverse (raffinement owner 2026-06-13) :
+  Granularité PROGRESSIVE « carburant d'abord, famille-moteur ensuite ».
+  - BRONZE (DB, immédiat, zéro invention) : regroupement par CARBURANT
+    (`auto_type.type_fuel` → Diesel/Essence/Électrique/Hybride/GPL) × classe de
+    cylindrée. Les maps `known_issues_by_engine{}` / `maintenance_by_engine{}`
+    (schéma v1.1.0) sont émises avec une entrée par groupe carburant présent et
+    des CLÉS NORMALISÉES + `axis_key_type` (jamais de clé libre). `issues: []` /
+    `operations: []` = squelette BRONZE, rempli au scraping PR-C.2.
+  - ARGENT/OR (scraping) : sous-clés famille-moteur (N47, K9K…) AJOUTÉES quand le
+    code moteur est connu — jamais inventé. `auto_type_motor_code` quasi vide →
+    `engine_code: null` honnête + validation_note.
+
+CLÉS MOTORISATION NORMALISÉES — trois formes seulement, aucune clé libre :
+  - `fuel:<fuel>`                       — ex. `fuel:diesel`, `fuel:essence`
+  - `fuel_displacement:<fuel>:<liter>`  — ex. `fuel_displacement:diesel:2.0`
+                                          (bucket = cylindrée arrondie à 0.1 L)
+  - `engine_family:<code>`              — ex. `engine_family:k9k` (code minuscule,
+                                          réservé au scraping/backfill, jamais ici)
+  Chaque entrée des maps porte `axis_key_type` (fuel | fuel_displacement |
+  engine_family) — lève l'ambiguïté du nom `…_by_engine` quand la clé est en
+  réalité un carburant.
+
+CONVENTION PROVENANCE des entrées éditoriales (scraping PR-C.2 — hors dry-run, mais
+le squelette le prévoit). Chaque issue/operation scrapée portera :
+  applies_to: {make, model_generation, fuel, engine_family, market}
+  source: {type, source_market: FR|EU|DE|UK|US|unknown, lang_original: de|en|fr|it,
+           confidence, evidence_id}
+  (un même modèle a des motorisations ≠ selon le marché ; faits reformulés FR-only,
+   provenance conservée ; valeurs prescriptives = fail-closed). Les clés
+  engine_family sont `engine_family:<code minuscule>`.
+
 Deux modes (jamais d'écrasement de l'éditorial humain) :
   - défaut (--create-missing implicite) : crée uniquement les fiches absentes,
     skip si le fichier existe déjà.
   - --merge-managed-blocks : réécrit UNIQUEMENT les blocs frontmatter délimités
-    `db_profile` / `motorizations` / `validation_notes` (marqueurs
+    `db_profile` / `motorizations` / `known_issues_by_engine` /
+    `maintenance_by_engine` / `validation_notes` (marqueurs
     `# >>> DB-MANAGED BLOCK:` / `# <<< END DB-MANAGED BLOCK:`). L'éditorial et
     toute autre clé frontmatter / le body restent intouchés byte-à-byte.
 
@@ -72,7 +104,13 @@ PAGE_SIZE = 1000  # cap PostgREST — pagination Range obligatoire au-delà
 LEGACY_TYPE_ID_MAX = 60000  # type_id >= 60000 = remappés fournisseur, JAMAIS utilisés ici
 RECENT_YEAR_MIN = 2010
 
-MANAGED_KEYS = ("db_profile", "motorizations", "validation_notes")
+MANAGED_KEYS = (
+    "db_profile",
+    "motorizations",
+    "known_issues_by_engine",
+    "maintenance_by_engine",
+    "validation_notes",
+)
 
 FUEL_NORMALIZATION = {
     "essence": "essence",
@@ -82,6 +120,21 @@ FUEL_NORMALIZATION = {
     "électrique": "electrique",
     "gpl": "gpl",
     "ethanol": "ethanol",
+}
+
+# Classe carburant CANONIQUE pour les clés normalisées des maps fuel-aware
+# (`fuel:<classe>`). Owner 2026-06-13 : Diesel/Essence/Électrique/Hybride/GPL.
+# Les carburants composites DB (`Essence-Électrique`, `Diesel-Électrique`,
+# `Essence-Gaz GPL`, `Essence-Éthanol`…) sont rattachés à leur classe dominante
+# de façon déterministe et documentée — jamais d'invention. Voir fuel_class().
+FUEL_CLASS_NORMALIZATION = {
+    "diesel": "diesel",
+    "essence": "essence",
+    "electrique": "electrique",
+    "électrique": "electrique",
+    "hybride": "hybride",
+    "gpl": "gpl",
+    "ethanol": "essence",  # E85/flex-fuel = bloc essence (carburant alternatif)
 }
 
 
@@ -181,6 +234,49 @@ def normalize_fuel(raw: str | None, notes: list[str], type_id) -> str | None:
             f"type_id {type_id}: carburant DB non normalisé ({raw!r}) — conservé tel quel (lowercase)."
         )
     return fuel
+
+
+def fuel_class(raw: str | None, notes: list[str], type_id) -> str:
+    """Classe carburant canonique (diesel/essence/electrique/hybride/gpl) pour les
+    clés normalisées des maps fuel-aware. Déterministe, documenté, zéro invention.
+
+    Règles de rattachement des composites DB (constat 2026-06-12) :
+      - '<X>-Électrique'      → hybride  (thermique + électrique = hybride)
+      - 'Essence-Gaz GPL/GNC' → gpl      (bivalent gaz, bloc gpl/gaz)
+      - 'Essence-Éthanol'/'Éthanol' → essence (E85/flex-fuel = bloc essence)
+      - sinon mapping direct, accents tolérés (Électrique → electrique).
+    `unknown` retourné + validation_note si non reconnu (no silent fallback).
+    """
+    if not raw:
+        notes.append(f"type_id {type_id}: type_fuel DB vide — fuel_class='unknown' (no silent fallback).")
+        return "unknown"
+    norm = raw.strip().lower()
+    if "électrique" in norm or "electrique" in norm:
+        # 'électrique' seul = electrique ; combiné à un thermique = hybride
+        if norm in ("électrique", "electrique"):
+            return "electrique"
+        return "hybride"
+    if "gpl" in norm or "gnc" in norm or "gaz" in norm:
+        return "gpl"
+    if "diesel" in norm:
+        return "diesel"
+    if "essence" in norm or "éthanol" in norm or "ethanol" in norm:
+        return "essence"
+    direct = FUEL_CLASS_NORMALIZATION.get(norm)
+    if direct is not None:
+        return direct
+    notes.append(
+        f"type_id {type_id}: type_fuel DB '{raw}' non rattaché à une classe canonique "
+        "(diesel/essence/electrique/hybride/gpl) — fuel_class='unknown' (à arbitrer)."
+    )
+    return "unknown"
+
+
+def displacement_bucket(displacement_l: float | None) -> str | None:
+    """Bucket de cylindrée = litres arrondis à 0.1 L (ex. 1.998 → '2.0'). None si absent."""
+    if displacement_l is None:
+        return None
+    return f"{round(displacement_l, 1):.1f}"
 
 
 def extract_generation(modele_name: str | None) -> str | None:
@@ -344,16 +440,21 @@ def build_motorization_entry(t: dict, motor_codes: dict[int, list[str]], notes: 
     type_id = to_int(t.get("type_id"))
     codes = motor_codes.get(type_id, [])
     liter = to_int(t.get("type_liter"))
+    # type_liter DB = centièmes de litre (ex: '200' → 2.0 L)
+    displacement_l = (liter / 100.0) if liter is not None else None
     entry: dict = {
         "type_id": type_id,
         "name": (t.get("type_name") or "").strip() or None,
         "alias": (t.get("type_alias") or "").strip() or None,
         "engine_code": codes[0] if codes else None,
         "fuel": normalize_fuel(t.get("type_fuel"), notes, type_id),
+        # Classe carburant canonique + bucket cylindrée : axes des clés normalisées
+        # des maps fuel-aware (jamais une clé libre dérivée du nom de motorisation).
+        "fuel_class": fuel_class(t.get("type_fuel"), notes, type_id),
+        "displacement_bucket": displacement_bucket(displacement_l),
         "power_ps": to_int(t.get("type_power_ps")),
         "power_kw": to_int(t.get("type_power_kw")),
-        # type_liter DB = centièmes de litre (ex: '200' → 2.0 L)
-        "displacement_l": (liter / 100.0) if liter is not None else None,
+        "displacement_l": displacement_l,
         "body": (t.get("type_body") or "").strip() or None,
         "period": {
             "from_year": to_int(t.get("type_year_from")),
@@ -370,6 +471,86 @@ def build_motorization_entry(t: dict, motor_codes: dict[int, list[str]], notes: 
     if len(codes) > 1:
         entry["engine_codes_all"] = codes
     return entry
+
+
+def build_engine_axis_maps(
+    motorizations: list[dict], make: str, model_generation: str, notes: list[str]
+) -> tuple[dict, dict]:
+    """Émet les maps BRONZE `known_issues_by_engine` / `maintenance_by_engine`.
+
+    Clés NORMALISÉES uniquement (owner 2026-06-13) :
+      - `fuel:<classe>`                      (une entrée par carburant présent)
+      - `fuel_displacement:<classe>:<bucket>` (une entrée par couple carburant×cylindrée)
+    Chaque entrée porte `axis_key_type` + provenance DB-fiable + squelette éditorial
+    vide (`issues: []` / `operations: []`) rempli au scraping PR-C.2.
+
+    BRONZE = aucune connaissance éditoriale inventée : seules les CLÉS (les axes
+    réellement présents dans la flotte DB) sont posées, avec `applies_to` (la base
+    métier/modèle/carburant que le scraping héritera) — jamais de panne devinée.
+    """
+    # Classes carburant présentes + buckets cylindrée par classe (déterministe, trié)
+    fuel_classes: list[str] = sorted({m["fuel_class"] for m in motorizations})
+    fuel_disp_pairs: list[tuple[str, str]] = sorted({
+        (m["fuel_class"], m["displacement_bucket"])
+        for m in motorizations
+        if m.get("displacement_bucket") is not None
+    })
+
+    known_issues: dict[str, dict] = {}
+    maintenance: dict[str, dict] = {}
+
+    def _applies_to(fuel: str, bucket: str | None) -> dict:
+        base = {"make": make, "model_generation": model_generation, "fuel": fuel,
+                "engine_family": None, "market": "unknown"}
+        if bucket is not None:
+            base["displacement_liter"] = float(bucket)
+        return base
+
+    def _src() -> dict:
+        # Squelette BRONZE : axe DB-fiable, contenu éditorial à venir (scraping).
+        return {"type": "db", "table": "auto_type", "axis": "type_fuel",
+                "confidence": "high", "note": "axe carburant DB-fiable ; "
+                "issues/operations remplis au scraping PR-C.2 (jamais inventés)."}
+
+    # Niveau 1 — par carburant (`fuel:<classe>`)
+    for fuel in fuel_classes:
+        key = f"fuel:{fuel}"
+        known_issues[key] = {
+            "axis_key_type": "fuel",
+            "applies_to": _applies_to(fuel, None),
+            "source": _src(),
+            "issues": [],
+        }
+        maintenance[key] = {
+            "axis_key_type": "fuel",
+            "applies_to": _applies_to(fuel, None),
+            "source": _src(),
+            "operations": [],
+        }
+
+    # Niveau 2 — par carburant × cylindrée (`fuel_displacement:<classe>:<bucket>`)
+    for fuel, bucket in fuel_disp_pairs:
+        key = f"fuel_displacement:{fuel}:{bucket}"
+        known_issues[key] = {
+            "axis_key_type": "fuel_displacement",
+            "applies_to": _applies_to(fuel, bucket),
+            "source": _src(),
+            "issues": [],
+        }
+        maintenance[key] = {
+            "axis_key_type": "fuel_displacement",
+            "applies_to": _applies_to(fuel, bucket),
+            "source": _src(),
+            "operations": [],
+        }
+
+    if "unknown" in fuel_classes:
+        notes.append(
+            "fuel_class 'unknown' présente dans les maps known_issues_by_engine/"
+            "maintenance_by_engine (carburant DB non rattaché à une classe canonique) — "
+            "clé `fuel:unknown` à arbitrer avant promotion WIKI."
+        )
+    return known_issues, maintenance
 
 
 def build_fiche(selection: dict, marques: dict[int, dict], generated_at: str) -> dict:
@@ -453,7 +634,13 @@ def build_fiche(selection: dict, marques: dict[int, dict], generated_at: str) ->
         "source": {"type": "db", "table": "auto_modele + auto_type", "confidence": "high"},
     }
 
-    body = render_body(ful_name, year_from, year_to, generation, bodies, motorizations, fuels)
+    # Maps BRONZE par carburant (axe motorisation transverse — owner 2026-06-13)
+    known_issues_by_engine, maintenance_by_engine = build_engine_axis_maps(
+        motorizations, marque_alias, modele_alias, notes
+    )
+
+    body = render_body(ful_name, year_from, year_to, generation, bodies, motorizations,
+                       fuels, known_issues_by_engine)
 
     return {
         "slug": slug,
@@ -461,6 +648,8 @@ def build_fiche(selection: dict, marques: dict[int, dict], generated_at: str) ->
         "managed": {
             "db_profile": db_profile,
             "motorizations": motorizations,
+            "known_issues_by_engine": known_issues_by_engine,
+            "maintenance_by_engine": maintenance_by_engine,
             "validation_notes": notes,
         },
         "body": body,
@@ -474,7 +663,18 @@ def _fmt_period(m: dict) -> str:
     return f"{start}-{end}"
 
 
-def render_body(ful_name: str, year_from, year_to, generation, bodies, motorizations, fuels) -> str:
+FUEL_CLASS_LABELS = {
+    "diesel": "Diesel",
+    "essence": "Essence",
+    "electrique": "Électrique",
+    "hybride": "Hybride",
+    "gpl": "GPL / Gaz",
+    "unknown": "Carburant non classé",
+}
+
+
+def render_body(ful_name: str, year_from, year_to, generation, bodies, motorizations,
+                fuels, known_issues_by_engine: dict) -> str:
     years_label = f"({year_from or '?'}-{year_to or 'en cours'})"
     fuel_label = ", ".join(f"{count} {fuel}" for fuel, count in sorted(fuels.items()))
     lines = [
@@ -510,17 +710,57 @@ def render_body(ful_name: str, year_from, year_to, generation, bodies, motorizat
                 f"{_fmt_period(m)} | {m.get('type_id')} |"
             )
         lines.append("")
+    # Carburants présents (niveau `fuel:` des clés normalisées), ordre déterministe.
+    fuel_classes_present = sorted(
+        k.split(":", 1)[1] for k in known_issues_by_engine if k.startswith("fuel:")
+    )
+
     lines += [
-        "## Spécificités & problèmes connus",
+        "## Problèmes connus",
         "",
-        "<!-- TODO éditorial — couche web sourcée (PR-C.2) : pannes connues PAR motorisation",
-        "     (known_issues_by_engine), rappels officiels (Rappel Conso), entretien par moteur.",
-        "     Aucune donnée scrapée ne remplace un fait DB ; divergence → validation_notes. -->",
+        "> Organisé PAR CARBURANT (axe motorisation — owner 2026-06-13). Squelette BRONZE :",
+        "> les clés `fuel:<carburant>` / `fuel_displacement:<carburant>:<L>` du frontmatter",
+        "> `known_issues_by_engine` sont DB-fiables ; le contenu est rempli au scraping PR-C.2",
+        "> (pannes PAR motorisation, rappels Rappel Conso) — jamais inventé, divergence DB →",
+        "> validation_notes. Le raffinement famille-moteur (`engine_family:<code>`) viendra avec",
+        "> le code moteur (absent en DB aujourd'hui → engine_code: null honnête).",
         "",
+    ]
+    for fc in fuel_classes_present:
+        lines.append(f"### {FUEL_CLASS_LABELS.get(fc, fc.capitalize())}")
+        lines.append("")
+        lines.append(
+            f"<!-- TODO éditorial PR-C.2 — pannes connues du bloc {fc} "
+            f"(clé `fuel:{fc}`). applies_to.{{make,model_generation,fuel,engine_family,market}}"
+            " + source.{type,source_market,lang_original,confidence,evidence_id} ; FR-only,"
+            " reformulé non-verbatim. -->"
+        )
+        lines.append("")
+
+    lines += [
+        "## Entretien",
+        "",
+        "> Organisé PAR CARBURANT (intervalles fuel-dépendants : filtre gasoil 20-30k vs filtre",
+        "> essence 60k…). Clés normalisées du frontmatter `maintenance_by_engine`. Squelette",
+        "> BRONZE rempli au scraping PR-C.2 (data réparation constructeur) — jamais inventé.",
+        "",
+    ]
+    for fc in fuel_classes_present:
+        lines.append(f"### {FUEL_CLASS_LABELS.get(fc, fc.capitalize())}")
+        lines.append("")
+        lines.append(
+            f"<!-- TODO éditorial PR-C.2 — entretien du bloc {fc} (clé `fuel:{fc}`) : "
+            "intervalles par moteur, opérations spécifiques. Valeurs prescriptives (couples…)"
+            " = fail-closed sans source constructeur/OEM. -->"
+        )
+        lines.append("")
+
+    lines += [
         "## Pièces fréquentes",
         "",
         "<!-- TODO éditorial — croisement gammes ↔ véhicule (compatible_part_families),",
-        "     maillé par les clés DB (PR-D.1+). -->",
+        "     fuel-aware (un FAP ne concerne que les diesels, une bougie d'allumage que",
+        "     l'essence), maillé par les clés DB (PR-D.1+). -->",
         "",
         "## FAQ",
         "",
