@@ -3,6 +3,12 @@
   "$id": "https://automecanik.com/schemas/page-contract-r3.json",
   "title": "PageContractR3",
   "description": "Contrat formel pour les pages R3 (guides, conseils, how-to). Aligne avec page-contract-r3.schema.ts Zod.",
+  "cross_role_policy": {
+    "_source": "content-section-policy.ts + brief-gates.service.ts Gate C — salvage pré-purge RAG 2026-06-11",
+    "file": "page-contract-cross-role-policy.json",
+    "role_keys": ["R3_conseils", "R3_guide"],
+    "_note": "R3_guide (legacy) = guide d'achat, canoniquement R6_GUIDE_ACHAT — voir page_role_bridge dans le fichier policy."
+  },
   "type": "object",
   "additionalProperties": false,
   "required": [

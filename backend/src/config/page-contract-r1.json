@@ -3,6 +3,11 @@
   "$id": "https://automecanik.com/schemas/page-contract-r1.json",
   "title": "PageContractR1",
   "description": "Contrat formel pour les pages gamme R1 transactionnelles (v2.4 corrige)",
+  "cross_role_policy": {
+    "_source": "content-section-policy.ts + brief-gates.service.ts Gate C — salvage pré-purge RAG 2026-06-11",
+    "file": "page-contract-cross-role-policy.json",
+    "role_keys": ["R1"]
+  },
   "type": "object",
   "additionalProperties": false,
   "required": [
