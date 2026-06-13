@@ -19,6 +19,10 @@
 -- Pas de BEGIN/COMMIT explicite (squawk assume_in_transaction=true).
 -- =====================================================
 
+-- Squawk require-timeout-settings : CREATE OR REPLACE FUNCTION = op métadonnée → bornée.
+set lock_timeout = '5s';
+set statement_timeout = '60s';
+
 CREATE OR REPLACE FUNCTION public.rpc_seo_low_ctr_v3(
     p_window_days integer,
     p_now timestamptz DEFAULT now(),
