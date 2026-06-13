@@ -245,6 +245,38 @@ export const SCORING_PROFILES: Record<ScoringPageType, ScoringProfile> = {
         points: -10,
         check: 'checkGuideNoSource',
       },
+      // Penalties sémantiques — origine : buying-guide-quality-gates D1/D2/D3 +
+      // GENERIC_WITHOUT_ACTION — salvage pré-purge RAG 2026-06-11.
+      // Features calculées SQL-side (get_page_quality_features) ; si la RPC en DB
+      // ne les renvoie pas encore (migration non appliquée), le check est skippé.
+      {
+        id: 'guide_guidance_copies_label',
+        description:
+          'Guidance des criteres = copie du label (>50%) [legacy D1]',
+        points: -6,
+        check: 'checkGuideGuidanceCopiesLabel',
+      },
+      {
+        id: 'guide_anti_mistakes_not_errors',
+        description:
+          'Anti-erreurs formulees comme actions positives (>50%) [legacy D2]',
+        points: -6,
+        check: 'checkGuideAntiMistakesNotErrors',
+      },
+      {
+        id: 'guide_use_cases_not_profiles',
+        description:
+          'Use cases sans profil conducteur (types produit) [legacy D3]',
+        points: -4,
+        check: 'checkGuideUseCasesNotProfiles',
+      },
+      {
+        id: 'guide_generic_without_action',
+        description:
+          "Phrases generiques sans aucun verbe d'action [legacy GENERIC_WITHOUT_ACTION]",
+        points: -8,
+        check: 'checkGuideGenericWithoutAction',
+      },
     ],
     minDataThreshold: 30, // needs at least 30% of features non-default
   },

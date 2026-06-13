@@ -1,0 +1,27 @@
+{
+  "coverage": [],
+  "entity_type": "vehicle",
+  "intent_targets": [],
+  "inventory_status": "DIAGNOSTIC_READY",
+  "missing_for_next_tier": [],
+  "next_action": "CONFIGURE_COMPLETENESS_PROFILE",
+  "pg_id": null,
+  "provenance": {
+    "completeness_profile": null,
+    "source_type": "vehicle",
+    "sources": [
+      {
+        "content_hash": "sha256:cd91d689971638f7df402b3c2d1b5499837de61e58a0d7f6f729a7ab85754dd8",
+        "kind": "vehicle",
+        "path": "recycled/rag-knowledge/vehicles/ford-focus-3.md"
+      }
+    ],
+    "truth_level": "L1",
+    "unlinked_source_types": [],
+    "verification_status": "verified"
+  },
+  "raw_verdict": "NOT_CONFIGURED",
+  "schema_version": "raw-evidence.v1",
+  "subject": "ford-focus-3",
+  "tier": "NOT_CONFIGURED"
+}
