@@ -22,16 +22,6 @@ const viewports = {
 // Pattern: /pieces/{gamme}/{marque}/{modele}/{typeId}.html
 const TEST_URL = '/pieces/plaquettes-de-frein-1.html';
 
-// Helper pour skip si 404 ou pas de grille produits
-async function skipIf404(page: any): Promise<boolean> {
-  const is404 = await page.getByText(/page non trouvée|404/i).first().isVisible().catch(() => false);
-  if (is404) {
-    console.log('Page 404 - test skipped (no test data)');
-    return true;
-  }
-  return false;
-}
-
 // Helper pour vérifier si la grille de pièces est présente (avec produits réels)
 async function hasPiecesGrid(page: any): Promise<boolean> {
   // Chercher spécifiquement les cards produit (pas les autres grids de la page)
@@ -64,7 +54,7 @@ test.describe('PLP - Stock & Delivery Badges (Gaps 2+6)', () => {
     await page.goto(TEST_URL);
     await page.waitForLoadState('networkidle');
 
-    if (await skipIf404(page)) return;
+    await expect(page.getByText(/page non trouvée|404/i).first()).not.toBeVisible();
 
     // Vérifier présence badge "En stock" ou "Rupture"
     const stockBadge = page.locator('span:has-text("En stock"), span:has-text("Rupture")').first();
@@ -84,7 +74,7 @@ test.describe('PLP - Stock & Delivery Badges (Gaps 2+6)', () => {
     await page.goto(TEST_URL);
     await page.waitForLoadState('networkidle');
 
-    if (await skipIf404(page)) return;
+    await expect(page.getByText(/page non trouvée|404/i).first()).not.toBeVisible();
 
     const stockBadge = page.locator('span:has-text("En stock"), span:has-text("Rupture")').first();
     const hasBadge = await stockBadge.isVisible({ timeout: 3000 }).catch(() => false);
@@ -102,7 +92,7 @@ test.describe('PLP - Stock & Delivery Badges (Gaps 2+6)', () => {
     await page.goto(TEST_URL);
     await page.waitForLoadState('networkidle');
 
-    if (await skipIf404(page)) return;
+    await expect(page.getByText(/page non trouvée|404/i).first()).not.toBeVisible();
 
     // Chercher texte livraison
     const deliveryInfo = page.locator('text=Livré 24-48h').first();
@@ -119,7 +109,7 @@ test.describe('PLP - Stock & Delivery Badges (Gaps 2+6)', () => {
     await page.goto(TEST_URL);
     await page.waitForLoadState('networkidle');
 
-    if (await skipIf404(page)) return;
+    await expect(page.getByText(/page non trouvée|404/i).first()).not.toBeVisible();
 
     // L'icône Truck doit être présente à côté du texte livraison
     const deliveryWithIcon = page.locator('.text-emerald-600:has(svg)').first();
@@ -141,7 +131,7 @@ test.describe('PDP Modal - Sticky CTA avec Prix (Gap 3)', () => {
     await page.goto(TEST_URL);
     await page.waitForLoadState('networkidle');
 
-    if (await skipIf404(page)) return;
+    await expect(page.getByText(/page non trouvée|404/i).first()).not.toBeVisible();
 
     // Cliquer sur première card pour ouvrir modal
     const firstCard = page.locator('.group\\/card, [class*="rounded-xl"][class*="shadow"]').first();
@@ -166,7 +156,7 @@ test.describe('PDP Modal - Sticky CTA avec Prix (Gap 3)', () => {
     await page.goto(TEST_URL);
     await page.waitForLoadState('networkidle');
 
-    if (await skipIf404(page)) return;
+    await expect(page.getByText(/page non trouvée|404/i).first()).not.toBeVisible();
 
     // Ouvrir modal
     const firstCard = page.locator('.group\\/card, [class*="rounded-xl"][class*="shadow"]').first();
@@ -186,7 +176,7 @@ test.describe('PDP Modal - Sticky CTA avec Prix (Gap 3)', () => {
     await page.goto(TEST_URL);
     await page.waitForLoadState('networkidle');
 
-    if (await skipIf404(page)) return;
+    await expect(page.getByText(/page non trouvée|404/i).first()).not.toBeVisible();
     if (!await hasPiecesGrid(page)) return;
 
     // Ouvrir modal
@@ -210,7 +200,7 @@ test.describe('Gallery - Touch Swipe (Gap 5)', () => {
     await page.goto(TEST_URL);
     await page.waitForLoadState('networkidle');
 
-    if (await skipIf404(page)) return;
+    await expect(page.getByText(/page non trouvée|404/i).first()).not.toBeVisible();
 
     // Chercher les indicateurs dots (sm:hidden = visible sur mobile)
     const dotsContainer = page.locator('.sm\\:hidden').filter({ has: page.locator('.rounded-full') }).first();
@@ -230,7 +220,7 @@ test.describe('Gallery - Touch Swipe (Gap 5)', () => {
     await page.goto(TEST_URL);
     await page.waitForLoadState('networkidle');
 
-    if (await skipIf404(page)) return;
+    await expect(page.getByText(/page non trouvée|404/i).first()).not.toBeVisible();
 
     // Les thumbnails hover (hidden sm:flex) ne doivent pas être visibles sur mobile
     const thumbnailsOverlay = page.locator('.hidden.sm\\:flex').first();
@@ -244,7 +234,7 @@ test.describe('Gallery - Touch Swipe (Gap 5)', () => {
     await page.goto(TEST_URL);
     await page.waitForLoadState('networkidle');
 
-    if (await skipIf404(page)) return;
+    await expect(page.getByText(/page non trouvée|404/i).first()).not.toBeVisible();
 
     const gallery = page.locator('.group\\/gallery').first();
 
@@ -269,7 +259,7 @@ test.describe('Gallery - Touch Swipe (Gap 5)', () => {
     await page.goto(TEST_URL);
     await page.waitForLoadState('networkidle');
 
-    if (await skipIf404(page)) return;
+    await expect(page.getByText(/page non trouvée|404/i).first()).not.toBeVisible();
 
     // L'image dans la galerie doit avoir touch-pan-y pour le swipe
     const galleryImage = page.locator('.group\\/gallery img.touch-pan-y').first();
@@ -287,7 +277,7 @@ test.describe('PDP Modal - Accordéons (Gap 4)', () => {
     await page.goto(TEST_URL);
     await page.waitForLoadState('networkidle');
 
-    if (await skipIf404(page)) return;
+    await expect(page.getByText(/page non trouvée|404/i).first()).not.toBeVisible();
 
     // Ouvrir modal produit
     const firstCard = page.locator('.group\\/card, [class*="rounded-xl"][class*="shadow"]').first();
@@ -318,7 +308,7 @@ test.describe('PDP Modal - Accordéons (Gap 4)', () => {
     await page.goto(TEST_URL);
     await page.waitForLoadState('networkidle');
 
-    if (await skipIf404(page)) return;
+    await expect(page.getByText(/page non trouvée|404/i).first()).not.toBeVisible();
 
     // Ouvrir modal
     const firstCard = page.locator('.group\\/card, [class*="rounded-xl"][class*="shadow"]').first();
@@ -345,7 +335,7 @@ test.describe('PDP Modal - Accordéons (Gap 4)', () => {
     await page.goto(TEST_URL);
     await page.waitForLoadState('networkidle');
 
-    if (await skipIf404(page)) return;
+    await expect(page.getByText(/page non trouvée|404/i).first()).not.toBeVisible();
 
     // Ouvrir modal
     const firstCard = page.locator('.group\\/card, [class*="rounded-xl"][class*="shadow"]').first();
@@ -371,7 +361,7 @@ test.describe('Mobile Touch Targets (WCAG)', () => {
     await page.goto(TEST_URL);
     await page.waitForLoadState('networkidle');
 
-    if (await skipIf404(page)) return;
+    await expect(page.getByText(/page non trouvée|404/i).first()).not.toBeVisible();
     if (!await hasPiecesGrid(page)) return;
 
     // Chercher les boutons panier dans la grille
@@ -401,7 +391,7 @@ test.describe('Mobile Touch Targets (WCAG)', () => {
     await page.goto(TEST_URL);
     await page.waitForLoadState('networkidle');
 
-    if (await skipIf404(page)) return;
+    await expect(page.getByText(/page non trouvée|404/i).first()).not.toBeVisible();
 
     // Activer un filtre pour voir les chips
     const filterButton = page.getByRole('button', { name: /filtrer|filtres/i }).first();
@@ -493,7 +483,7 @@ test.describe('Pagination - Load More Button (Gap 1)', () => {
     await page.goto(TEST_URL);
     await page.waitForLoadState('networkidle');
 
-    if (await skipIf404(page)) return;
+    await expect(page.getByText(/page non trouvée|404/i).first()).not.toBeVisible();
     if (!await hasPiecesGrid(page)) return;
 
     // Chercher le bouton "Charger plus"
@@ -515,7 +505,7 @@ test.describe('Pagination - Load More Button (Gap 1)', () => {
     await page.goto(TEST_URL);
     await page.waitForLoadState('networkidle');
 
-    if (await skipIf404(page)) return;
+    await expect(page.getByText(/page non trouvée|404/i).first()).not.toBeVisible();
     if (!await hasPiecesGrid(page)) return;
 
     // Compter les cards visibles avant
@@ -541,7 +531,7 @@ test.describe('Pagination - Load More Button (Gap 1)', () => {
     await page.goto(TEST_URL);
     await page.waitForLoadState('networkidle');
 
-    if (await skipIf404(page)) return;
+    await expect(page.getByText(/page non trouvée|404/i).first()).not.toBeVisible();
     if (!await hasPiecesGrid(page)) return;
 
     // "Voir tout" n'apparaît que si > LOAD_MORE_INCREMENT restants (20+)
@@ -565,7 +555,7 @@ test.describe('Pagination - Load More Button (Gap 1)', () => {
     await page.goto(TEST_URL);
     await page.waitForLoadState('networkidle');
 
-    if (await skipIf404(page)) return;
+    await expect(page.getByText(/page non trouvée|404/i).first()).not.toBeVisible();
     if (!await hasPiecesGrid(page)) return;
 
     // L'indicateur "Affichage de X sur Y produits" apparaît si > 20 produits
@@ -582,7 +572,7 @@ test.describe('Pagination - Load More Button (Gap 1)', () => {
     await page.goto(TEST_URL);
     await page.waitForLoadState('networkidle');
 
-    if (await skipIf404(page)) return;
+    await expect(page.getByText(/page non trouvée|404/i).first()).not.toBeVisible();
     if (!await hasPiecesGrid(page)) return;
 
     const loadMoreButton = page.locator('button:has-text("Charger")').first();
@@ -603,7 +593,7 @@ test.describe('Cross-breakpoint - Responsive Behavior', () => {
     await page.goto(TEST_URL);
     await page.waitForLoadState('networkidle');
 
-    if (await skipIf404(page)) return;
+    await expect(page.getByText(/page non trouvée|404/i).first()).not.toBeVisible();
     if (!await hasPiecesGrid(page)) return;
 
     // Mobile: moins de colonnes
@@ -633,7 +623,7 @@ test.describe('Cross-breakpoint - Responsive Behavior', () => {
     await page.goto(TEST_URL);
     await page.waitForLoadState('networkidle');
 
-    if (await skipIf404(page)) return;
+    await expect(page.getByText(/page non trouvée|404/i).first()).not.toBeVisible();
 
     // Mobile: MobileBottomBar visible
     await page.setViewportSize(viewports.mobile);
@@ -652,7 +642,7 @@ test.describe('Cross-breakpoint - Responsive Behavior', () => {
     await page.goto(TEST_URL);
     await page.waitForLoadState('networkidle');
 
-    if (await skipIf404(page)) return;
+    await expect(page.getByText(/page non trouvée|404/i).first()).not.toBeVisible();
 
     // Desktop: sidebar visible
     await page.setViewportSize(viewports.desktop);

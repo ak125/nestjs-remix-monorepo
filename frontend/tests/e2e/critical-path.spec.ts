@@ -13,7 +13,7 @@
  * Temps d'exécution: ~2min par viewport
  */
 
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 
 // 6 Viewports couvrant 98%+ du trafic réel
 const viewports = {
@@ -31,16 +31,6 @@ const priorityViewports = ['android', 'iphone', 'desktop'] as const;
 // Helper: vérifier si mobile
 function isMobile(width: number): boolean {
   return width < 768;
-}
-
-// Helper: skip si 404
-async function skipIf404(page: Page): Promise<boolean> {
-  const is404 = await page.getByText(/page non trouvée|404/i).first().isVisible().catch(() => false);
-  if (is404) {
-    console.log('Page 404 - test skipped');
-    return true;
-  }
-  return false;
 }
 
 // ============================================
@@ -150,7 +140,7 @@ test.describe('3. Ajout panier', () => {
       await page.goto('/pieces/plaquettes-de-frein-1.html');
       await page.waitForLoadState('load');
 
-      if (await skipIf404(page)) return;
+      await expect(page.getByText(/page non trouvée|404/i).first()).not.toBeVisible();
 
       // Ouvrir modal produit (si cards présentes)
       const productCard = page.locator('.group\\/card').first();
@@ -197,7 +187,7 @@ test.describe('4. Filtres', () => {
       await page.goto('/pieces/plaquettes-de-frein-1.html');
       await page.waitForLoadState('load');
 
-      if (await skipIf404(page)) return;
+      await expect(page.getByText(/page non trouvée|404/i).first()).not.toBeVisible();
 
       // Mobile: ouvrir drawer filtres
       if (isMobile(size.width)) {
@@ -240,7 +230,7 @@ test.describe('5. Navigation retour', () => {
     await page.goto('/pieces/plaquettes-de-frein-1.html');
     await page.waitForLoadState('load');
 
-    if (await skipIf404(page)) return;
+    await expect(page.getByText(/page non trouvée|404/i).first()).not.toBeVisible();
 
     // Ouvrir un produit
     const productCard = page.locator('.group\\/card').first();
@@ -276,7 +266,7 @@ test.describe('6. Orientation', () => {
     await page.goto('/pieces/plaquettes-de-frein-1.html');
     await page.waitForLoadState('load');
 
-    if (await skipIf404(page)) return;
+    await expect(page.getByText(/page non trouvée|404/i).first()).not.toBeVisible();
 
     // En portrait, la page doit charger correctement
     const bodyPortrait = await page.locator('body').isVisible();
@@ -327,7 +317,7 @@ test.describe('7. Checklist qualité', () => {
       await page.goto('/pieces/plaquettes-de-frein-1.html');
       await page.waitForLoadState('load');
 
-      if (await skipIf404(page)) return;
+      await expect(page.getByText(/page non trouvée|404/i).first()).not.toBeVisible();
 
       // Vérifier que la scrollbar horizontale n'est pas visible à l'utilisateur
       // (overflow: hidden est OK, seul le scroll visible compte)
@@ -361,7 +351,7 @@ test.describe('7. Checklist qualité', () => {
       await page.goto('/pieces/plaquettes-de-frein-1.html');
       await page.waitForLoadState('load');
 
-      if (await skipIf404(page)) return;
+      await expect(page.getByText(/page non trouvée|404/i).first()).not.toBeVisible();
 
       const bodyFontSize = await page.evaluate(() =>
         parseFloat(getComputedStyle(document.body).fontSize)
@@ -375,7 +365,7 @@ test.describe('7. Checklist qualité', () => {
       await page.goto('/pieces/plaquettes-de-frein-1.html');
       await page.waitForLoadState('load');
 
-      if (await skipIf404(page)) return;
+      await expect(page.getByText(/page non trouvée|404/i).first()).not.toBeVisible();
 
       // Attendre que les images lazy-load
       await page.waitForTimeout(1000);
