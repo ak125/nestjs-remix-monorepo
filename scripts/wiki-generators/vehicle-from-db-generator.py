@@ -17,22 +17,21 @@ truth_level: L1 (faits DB possédés) · verification_status: verified (blocs db
 
 MOTORISATION = axe transverse (raffinement owner 2026-06-13) :
   Granularité PROGRESSIVE « carburant d'abord, famille-moteur ensuite ».
-  - BRONZE (DB, immédiat, zéro invention) : regroupement par CARBURANT
-    (`auto_type.type_fuel` → Diesel/Essence/Électrique/Hybride/GPL) × classe de
-    cylindrée. Les maps `known_issues_by_engine{}` / `maintenance_by_engine{}`
-    (schéma v1.1.0) sont émises avec une entrée par groupe carburant présent et
-    des CLÉS NORMALISÉES + `axis_key_type` (jamais de clé libre). `issues: []` /
-    `operations: []` = squelette BRONZE, rempli au scraping PR-C.2.
-  - ARGENT/OR (scraping) : sous-clés famille-moteur (N47, K9K…) AJOUTÉES quand le
-    code moteur est connu — jamais inventé. `auto_type_motor_code` quasi vide →
+  - BRONZE (DB, immédiat, zéro invention) : SEUL l'axe CARBURANT
+    (`auto_type.type_fuel` → Diesel/Essence/Électrique/Hybride/GPL) est émis — une
+    entrée `fuel:<classe>` par carburant présent, clé NORMALISÉE + `axis_key_type`.
+    `issues: []` / `operations: []` = squelette, rempli au scraping PR-C.2.
+  - ARGENT/OR (scraping) : les clés plus fines `fuel_displacement:` /
+    `engine_family:` sont CRÉÉES à la demande par le scraping (structure-follows-
+    evidence), jamais pré-émises vides ici. `auto_type_motor_code` quasi vide →
     `engine_code: null` honnête + validation_note.
 
 CLÉS MOTORISATION NORMALISÉES — trois formes seulement, aucune clé libre :
-  - `fuel:<fuel>`                       — ex. `fuel:diesel`, `fuel:essence`
-  - `fuel_displacement:<fuel>:<liter>`  — ex. `fuel_displacement:diesel:2.0`
-                                          (bucket = cylindrée arrondie à 0.1 L)
-  - `engine_family:<code>`              — ex. `engine_family:k9k` (code minuscule,
-                                          réservé au scraping/backfill, jamais ici)
+  - `fuel:<fuel>`                       — ex. `fuel:diesel` (SEULE forme émise en BRONZE)
+  - `fuel_displacement:<fuel>:<liter>`  — ex. `fuel_displacement:diesel:2.0` (bucket
+                                          0.1 L ; créée par le scraping uniquement)
+  - `engine_family:<code>`              — ex. `engine_family:k9k` (code minuscule ;
+                                          scraping/backfill uniquement, jamais ici)
   Chaque entrée des maps porte `axis_key_type` (fuel | fuel_displacement |
   engine_family) — lève l'ambiguïté du nom `…_by_engine` quand la clé est en
   réalité un carburant.
@@ -478,23 +477,17 @@ def build_engine_axis_maps(
 ) -> tuple[dict, dict]:
     """Émet les maps BRONZE `known_issues_by_engine` / `maintenance_by_engine`.
 
-    Clés NORMALISÉES uniquement (owner 2026-06-13) :
-      - `fuel:<classe>`                      (une entrée par carburant présent)
-      - `fuel_displacement:<classe>:<bucket>` (une entrée par couple carburant×cylindrée)
-    Chaque entrée porte `axis_key_type` + provenance DB-fiable + squelette éditorial
-    vide (`issues: []` / `operations: []`) rempli au scraping PR-C.2.
-
-    BRONZE = aucune connaissance éditoriale inventée : seules les CLÉS (les axes
-    réellement présents dans la flotte DB) sont posées, avec `applies_to` (la base
-    métier/modèle/carburant que le scraping héritera) — jamais de panne devinée.
+    BRONZE = seules les clés `fuel:<classe>` (axe carburant DB-CERTAIN, owner 2026-06-13).
+    Granularité PROGRESSIVE, structure-follows-evidence : les clés plus fines
+    `fuel_displacement:<classe>:<bucket>` et `engine_family:<code>` ne sont PAS pré-créées
+    ici (ce serait spéculatif — on ne sait pas encore si une panne diffère par cylindrée /
+    moteur). Le SCRAPING (PR-C.2) les CRÉE à la demande quand il trouve une panne propre à ce
+    niveau ; il déduit les cylindrées disponibles de `motorizations[]` (complet). Clés toujours
+    normalisées + `axis_key_type`. Squelette éditorial vide (`issues: []` / `operations: []`),
+    jamais de panne devinée.
     """
-    # Classes carburant présentes + buckets cylindrée par classe (déterministe, trié)
+    # Classes carburant présentes (déterministe, trié) — SEUL axe émis en BRONZE.
     fuel_classes: list[str] = sorted({m["fuel_class"] for m in motorizations})
-    fuel_disp_pairs: list[tuple[str, str]] = sorted({
-        (m["fuel_class"], m["displacement_bucket"])
-        for m in motorizations
-        if m.get("displacement_bucket") is not None
-    })
 
     known_issues: dict[str, dict] = {}
     maintenance: dict[str, dict] = {}
@@ -528,21 +521,9 @@ def build_engine_axis_maps(
             "operations": [],
         }
 
-    # Niveau 2 — par carburant × cylindrée (`fuel_displacement:<classe>:<bucket>`)
-    for fuel, bucket in fuel_disp_pairs:
-        key = f"fuel_displacement:{fuel}:{bucket}"
-        known_issues[key] = {
-            "axis_key_type": "fuel_displacement",
-            "applies_to": _applies_to(fuel, bucket),
-            "source": _src(),
-            "issues": [],
-        }
-        maintenance[key] = {
-            "axis_key_type": "fuel_displacement",
-            "applies_to": _applies_to(fuel, bucket),
-            "source": _src(),
-            "operations": [],
-        }
+    # Niveau 2+ (`fuel_displacement:` / `engine_family:`) : NON émis en BRONZE.
+    # Créés à la demande par le scraping PR-C.2 quand une panne est propre à ce niveau
+    # (structure-follows-evidence — pas de bucket vide spéculatif).
 
     if "unknown" in fuel_classes:
         notes.append(

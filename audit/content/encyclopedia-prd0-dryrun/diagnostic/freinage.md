@@ -15,7 +15,7 @@ audience: client
 fuel_aware: false
 provenance:
   ingested_by: script:diagnostic-from-db-generator@v1
-  generated_at: '2026-06-13T10:20:37Z'
+  generated_at: '2026-06-13T10:47:21Z'
   source_db: supabase (SELECT only — __diag_system/__diag_symptom/__diag_cause/__diag_maintenance_operation)
 content_hash: sha256:196a6515e4b15dcf
 # >>> DB-MANAGED BLOCK: db_profile — script:diagnostic-from-db-generator@v1 (ne pas éditer à la main)
@@ -26,7 +26,7 @@ db_profile:
   symptom_count: 5
   cause_count: 5
   maintenance_operation_count: 4
-  last_db_sync: '2026-06-13T10:20:37Z'
+  last_db_sync: '2026-06-13T10:47:21Z'
   source:
     type: db
     table: __diag_system

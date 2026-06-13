@@ -17,7 +17,7 @@ years:
 - 2012
 provenance:
   ingested_by: script:vehicle-from-db-generator@v1
-  generated_at: '2026-06-13T10:20:35Z'
+  generated_at: '2026-06-13T10:47:19Z'
   source_db: supabase (SELECT only — auto_marque/auto_modele/auto_type/auto_type_motor_code)
 content_hash: sha256:cc2f370248a3df42
 # >>> DB-MANAGED BLOCK: db_profile — script:vehicle-from-db-generator@v1 (ne pas éditer à la main)
@@ -33,7 +33,7 @@ db_profile:
     diesel: 41
   bodies:
   - Camion plate-forme/Châssis
-  last_db_sync: '2026-06-13T10:20:35Z'
+  last_db_sync: '2026-06-13T10:47:19Z'
   source:
     type: db
     table: auto_modele + auto_type
@@ -879,38 +879,6 @@ known_issues_by_engine:
       confidence: high
       note: axe carburant DB-fiable ; issues/operations remplis au scraping PR-C.2 (jamais inventés).
     issues: []
-  fuel_displacement:diesel:2.3:
-    axis_key_type: fuel_displacement
-    applies_to:
-      make: iveco
-      model_generation: daily-iv-chassis-cabine
-      fuel: diesel
-      engine_family: null
-      market: unknown
-      displacement_liter: 2.3
-    source:
-      type: db
-      table: auto_type
-      axis: type_fuel
-      confidence: high
-      note: axe carburant DB-fiable ; issues/operations remplis au scraping PR-C.2 (jamais inventés).
-    issues: []
-  fuel_displacement:diesel:3.0:
-    axis_key_type: fuel_displacement
-    applies_to:
-      make: iveco
-      model_generation: daily-iv-chassis-cabine
-      fuel: diesel
-      engine_family: null
-      market: unknown
-      displacement_liter: 3.0
-    source:
-      type: db
-      table: auto_type
-      axis: type_fuel
-      confidence: high
-      note: axe carburant DB-fiable ; issues/operations remplis au scraping PR-C.2 (jamais inventés).
-    issues: []
 # <<< END DB-MANAGED BLOCK: known_issues_by_engine
 # >>> DB-MANAGED BLOCK: maintenance_by_engine — script:vehicle-from-db-generator@v1 (ne pas éditer à la main)
 maintenance_by_engine:
@@ -922,38 +890,6 @@ maintenance_by_engine:
       fuel: diesel
       engine_family: null
       market: unknown
-    source:
-      type: db
-      table: auto_type
-      axis: type_fuel
-      confidence: high
-      note: axe carburant DB-fiable ; issues/operations remplis au scraping PR-C.2 (jamais inventés).
-    operations: []
-  fuel_displacement:diesel:2.3:
-    axis_key_type: fuel_displacement
-    applies_to:
-      make: iveco
-      model_generation: daily-iv-chassis-cabine
-      fuel: diesel
-      engine_family: null
-      market: unknown
-      displacement_liter: 2.3
-    source:
-      type: db
-      table: auto_type
-      axis: type_fuel
-      confidence: high
-      note: axe carburant DB-fiable ; issues/operations remplis au scraping PR-C.2 (jamais inventés).
-    operations: []
-  fuel_displacement:diesel:3.0:
-    axis_key_type: fuel_displacement
-    applies_to:
-      make: iveco
-      model_generation: daily-iv-chassis-cabine
-      fuel: diesel
-      engine_family: null
-      market: unknown
-      displacement_liter: 3.0
     source:
       type: db
       table: auto_type
