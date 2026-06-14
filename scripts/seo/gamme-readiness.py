@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 """
+🚨 DEPRECATED 2026-06-12 — entrée canonique = scripts/seo/seo-readiness.ts
+(le mode batch/ranking de ce script a été porté par PR #941, salvage pré-purge RAG).
+Dimension restante unique ici = « RAG V4 completeness » (fichiers .md RAG sur disque) :
+source LEGACY (ADR-031/046, RAG = chatbot only) — ne pas étendre.
+Suppression prévue quand seo-readiness.ts couvre les dimensions restantes.
+
 Vue unifiee de readiness par gamme.
 
 Combine 4 dimensions :
