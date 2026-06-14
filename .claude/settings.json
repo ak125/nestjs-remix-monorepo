@@ -76,6 +76,16 @@
           }
         ]
       }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /opt/automecanik/app/scripts/claude-hooks/userpromptsubmit-context-push.sh"
+          }
+        ]
+      }
     ]
   }
 }
