@@ -11,6 +11,27 @@ import { Queue } from 'bull';
 import { DatabaseException, ErrorCodes } from '@common/exceptions';
 import { getErrorMessage } from '@common/utils/error.utils';
 
+/**
+ * Repeatable job names OWNED by this scheduler on the shared `seo-monitor` queue.
+ *
+ * La queue `seo-monitor` est MUTUALISÉE : d'autres schedulers y enregistrent
+ * leurs propres repeatables (ex. `cwv-aggregation-hourly` / `cwv-aggregation-daily`
+ * via `CwvAggregationSchedulerService`). `cleanOldRepeatableJobs()` ne doit donc
+ * supprimer QUE les jobs possédés par CE service — un prune total efface, de
+ * façon non-déterministe au boot, les jobs des autres schedulers (incident
+ * 2026-05-30 : le prune total effaçait `cwv-aggregation-*` → `__seo_cwv_hourly`
+ * jamais peuplé).
+ *
+ * Même discipline d'allowlist que `CwvAggregationSchedulerService.removeStaleRepeatables()`
+ * et `sitemap-v10-scheduler.service.ts` (suppression filtrée par nom de job).
+ *
+ * Jobs possédés : `check-pages` (critical-urls + random-sample) et `daily-fetch`.
+ */
+const OWNED_REPEATABLE_JOB_NAMES: ReadonlySet<string> = new Set([
+  'check-pages',
+  'daily-fetch',
+]);
+
 @Injectable()
 export class SeoMonitorSchedulerService implements OnModuleInit {
   private readonly logger = new Logger(SeoMonitorSchedulerService.name);
@@ -62,12 +83,19 @@ export class SeoMonitorSchedulerService implements OnModuleInit {
   }
 
   /**
-   * 🗑️ Nettoie les anciens jobs répétitifs
+   * 🗑️ Nettoie les anciens jobs répétitifs POSSÉDÉS par ce scheduler.
+   *
+   * Filtre par `OWNED_REPEATABLE_JOB_NAMES` : la queue `seo-monitor` est
+   * mutualisée, supprimer un repeatable non-possédé (ex. `cwv-aggregation-*`)
+   * casserait un autre scheduler de façon non-déterministe au boot.
    */
   private async cleanOldRepeatableJobs() {
     const repeatableJobs = await this.seoMonitorQueue.getRepeatableJobs();
 
     for (const job of repeatableJobs) {
+      if (!OWNED_REPEATABLE_JOB_NAMES.has(job.name)) {
+        continue; // job d'un autre scheduler sur la queue partagée — ne pas toucher
+      }
       await this.seoMonitorQueue.removeRepeatableByKey(job.key);
       this.logger.log(`🗑️ Ancien job répétitif supprimé: ${job.name}`);
     }
