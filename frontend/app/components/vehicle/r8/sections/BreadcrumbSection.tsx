@@ -14,8 +14,9 @@ interface Props {
 }
 
 export function BreadcrumbSection({ vehicle, breadcrumb }: Props) {
+  // Niveaux "Constructeurs" (index → 404) et "Modèle" (2-seg → 410, ADR-084) retirés :
+  // fil d'ariane R8 = Accueil → Marque → Véhicule.
   const brandHref = `/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}.html`;
-  const modelHref = `/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}.html`;
 
   return (
     <nav
@@ -34,24 +35,8 @@ export function BreadcrumbSection({ vehicle, breadcrumb }: Props) {
             <span className="text-gray-400">→</span>
           </li>
           <li>
-            <a href="/constructeurs" className="hover:underline text-brand">
-              Constructeurs
-            </a>
-          </li>
-          <li>
-            <span className="text-gray-400">→</span>
-          </li>
-          <li>
             <a href={brandHref} className="hover:underline text-brand">
               {breadcrumb.brand}
-            </a>
-          </li>
-          <li>
-            <span className="text-gray-400">→</span>
-          </li>
-          <li>
-            <a href={modelHref} className="hover:underline text-brand">
-              {breadcrumb.model}
             </a>
           </li>
           <li>
