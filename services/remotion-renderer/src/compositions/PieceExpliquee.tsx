@@ -20,7 +20,7 @@ import {
  *   WhenChange (720-960)   : critère objectif (km / signe critique)
  *   Closer     (960-1200)  : brand + CTA
  *
- * Palette: #1a1a2e bg, #e94560 accent, #16213e panel, Liberation Sans.
+ * Palette: #0F1E38 bg, #F97316 accent, #0F4C81 panel, Liberation Sans.
  * Claim safety (ex. freinage compromis) → validation humaine obligatoire (G2 STRICT).
  */
 
@@ -46,8 +46,8 @@ interface PieceExpliqueeProps {
 
 const SEVERITY_COLOR: Record<string, string> = {
   low: 'rgba(255,255,255,0.4)',
-  medium: '#f0a500',
-  high: '#e94560',
+  medium: '#D68910',
+  high: '#F97316',
 };
 
 export const PieceExpliquee: React.FC<PieceExpliqueeProps> = ({
@@ -78,7 +78,7 @@ export const PieceExpliquee: React.FC<PieceExpliqueeProps> = ({
   return (
     <AbsoluteFill
       style={{
-        backgroundColor: '#1a1a2e',
+        backgroundColor: '#0F1E38',
         fontFamily: 'Liberation Sans, Arial, sans-serif',
         overflow: 'hidden',
       }}
@@ -123,7 +123,7 @@ export const PieceExpliquee: React.FC<PieceExpliqueeProps> = ({
           left: 0,
           width: `${progress * 100}%`,
           height: 4,
-          backgroundColor: '#e94560',
+          backgroundColor: '#F97316',
         }}
       />
     </AbsoluteFill>
@@ -202,7 +202,7 @@ const LabelSection: React.FC<{
     >
       <div
         style={{
-          color: '#e94560',
+          color: '#F97316',
           fontSize: 30,
           fontWeight: 'bold',
           letterSpacing: 3,
@@ -232,14 +232,14 @@ const LabelSection: React.FC<{
             display: 'inline-flex',
             alignItems: 'center',
             gap: 10,
-            backgroundColor: '#16213e',
+            backgroundColor: '#0F4C81',
             color: 'rgba(255,255,255,0.6)',
             fontSize: 24,
             padding: '12px 24px',
             borderRadius: 8,
           }}
         >
-          {footLabel && <span style={{ color: '#e94560', fontWeight: 'bold' }}>{footLabel}:</span>}
+          {footLabel && <span style={{ color: '#F97316', fontWeight: 'bold' }}>{footLabel}:</span>}
           {footnote}
         </div>
       )}
@@ -262,7 +262,7 @@ const WearSignsSection: React.FC<{
     <AbsoluteFill style={{ justifyContent: 'center', alignItems: 'center', padding: '0 50px' }}>
       <div
         style={{
-          color: '#e94560',
+          color: '#F97316',
           fontSize: 30,
           fontWeight: 'bold',
           letterSpacing: 3,
@@ -290,7 +290,7 @@ const WearSignsSection: React.FC<{
               style={{
                 opacity: reveal,
                 transform: `translateX(${slideX}px)`,
-                backgroundColor: '#16213e',
+                backgroundColor: '#0F4C81',
                 borderRadius: 12,
                 padding: '26px 30px',
                 display: 'flex',
@@ -328,7 +328,7 @@ const CloserSection: React.FC<{
     <AbsoluteFill style={{ justifyContent: 'center', alignItems: 'center', padding: '0 60px' }}>
       <div
         style={{
-          color: '#e94560',
+          color: '#F97316',
           fontSize: 80,
           fontWeight: 'bold',
           letterSpacing: 5,

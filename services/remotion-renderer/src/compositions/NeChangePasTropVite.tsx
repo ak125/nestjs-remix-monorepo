@@ -20,7 +20,7 @@ import {
  *   Advice   (870-1050)  : conseil de vérification ordonné
  *   Closer   (1050-1140) : brand + CTA
  *
- * Palette: #1a1a2e bg, #e94560 accent, #16213e panel, Liberation Sans.
+ * Palette: #0F1E38 bg, #F97316 accent, #0F4C81 panel, Liberation Sans.
  * Aucun visuel n'est une preuve (G6) — texte animé + schéma stylisé uniquement.
  */
 
@@ -37,6 +37,8 @@ interface NeChangePasTropViteProps {
   hook: string;
   symptom: string;
   pieceWrong: string;
+  /** Optionnel : remplace le texte du bloc Problème (ex. cadrage compatibilité). Défaut = cadrage diagnostic. */
+  problemText?: string;
   causes: Cause[];
   advice: string;
   cta: string;
@@ -49,6 +51,7 @@ export const NeChangePasTropVite: React.FC<NeChangePasTropViteProps> = ({
   hook = 'Perte de puissance ? Ne change pas ta pièce trop vite.',
   symptom = 'Perte de puissance',
   pieceWrong = 'vanne EGR',
+  problemText,
   causes = [
     { cause: 'Filtre à air bouché', check_suggestion: 'Inspection visuelle' },
     { cause: 'Débitmètre fatigué', check_suggestion: 'Test multimètre' },
@@ -73,7 +76,7 @@ export const NeChangePasTropVite: React.FC<NeChangePasTropViteProps> = ({
   return (
     <AbsoluteFill
       style={{
-        backgroundColor: '#1a1a2e',
+        backgroundColor: '#0F1E38',
         fontFamily: 'Liberation Sans, Arial, sans-serif',
         overflow: 'hidden',
       }}
@@ -87,6 +90,7 @@ export const NeChangePasTropVite: React.FC<NeChangePasTropViteProps> = ({
         startFrame={HOOK_END}
         endFrame={PROBLEM_END}
         pieceWrong={pieceWrong}
+        problemText={problemText}
       />
 
       <CausesSection
@@ -114,7 +118,7 @@ export const NeChangePasTropVite: React.FC<NeChangePasTropViteProps> = ({
           left: 0,
           width: `${progress * 100}%`,
           height: 4,
-          backgroundColor: '#e94560',
+          backgroundColor: '#F97316',
         }}
       />
     </AbsoluteFill>
@@ -141,7 +145,7 @@ const HookSection: React.FC<{
     <AbsoluteFill style={{ justifyContent: 'center', alignItems: 'center', padding: '0 60px' }}>
       <div
         style={{
-          color: '#e94560',
+          color: '#F97316',
           fontSize: 28,
           fontWeight: 'bold',
           letterSpacing: 4,
@@ -174,7 +178,8 @@ const ProblemSection: React.FC<{
   startFrame: number;
   endFrame: number;
   pieceWrong: string;
-}> = ({ frame, startFrame, endFrame, pieceWrong }) => {
+  problemText?: string;
+}> = ({ frame, startFrame, endFrame, pieceWrong, problemText }) => {
   if (frame < startFrame || frame >= endFrame) return null;
   const local = frame - startFrame;
   const fadeIn = interpolate(local, [0, 20], [0, 1], { extrapolateRight: 'clamp' });
@@ -189,9 +194,15 @@ const ProblemSection: React.FC<{
     >
       <div style={{ transform: `translateY(${slideY}px)`, textAlign: 'center', maxWidth: 900 }}>
         <div style={{ color: 'rgba(255,255,255,0.85)', fontSize: 44, lineHeight: 1.5 }}>
-          Changer directement{' '}
-          <span style={{ color: '#e94560', fontWeight: 'bold' }}>la {pieceWrong}</span>, c’est
-          tentant. Mais si la vraie cause est ailleurs, tu paies pour rien.
+          {problemText ? (
+            problemText
+          ) : (
+            <>
+              Changer directement{' '}
+              <span style={{ color: '#F97316', fontWeight: 'bold' }}>la {pieceWrong}</span>, c’est
+              tentant. Mais si la vraie cause est ailleurs, tu paies pour rien.
+            </>
+          )}
         </div>
       </div>
     </AbsoluteFill>
@@ -240,8 +251,8 @@ const CausesSection: React.FC<{
               style={{
                 opacity: reveal,
                 transform: `translateX(${slideX}px)`,
-                backgroundColor: '#16213e',
-                borderLeft: '6px solid #e94560',
+                backgroundColor: '#0F4C81',
+                borderLeft: '6px solid #F97316',
                 borderRadius: 12,
                 padding: '28px 32px',
                 display: 'flex',
@@ -249,7 +260,7 @@ const CausesSection: React.FC<{
                 gap: 24,
               }}
             >
-              <span style={{ color: '#e94560', fontSize: 52, fontWeight: 'bold', lineHeight: 1 }}>
+              <span style={{ color: '#F97316', fontSize: 52, fontWeight: 'bold', lineHeight: 1 }}>
                 {i + 1}
               </span>
               <div>
@@ -312,7 +323,7 @@ const CloserSection: React.FC<{
     <AbsoluteFill style={{ justifyContent: 'center', alignItems: 'center', padding: '0 60px' }}>
       <div
         style={{
-          color: '#e94560',
+          color: '#F97316',
           fontSize: 80,
           fontWeight: 'bold',
           letterSpacing: 5,
