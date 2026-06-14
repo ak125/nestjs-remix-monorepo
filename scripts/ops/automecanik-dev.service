@@ -1,0 +1,26 @@
+[Unit]
+Description=AutoMecanik Dev Server (DEV:3000, backend workspace)
+After=network.target
+
+[Service]
+Type=simple
+# backend workspace = the canonical DEV:3000 runtime (run-p dev:compile dev:watch).
+# Must be backend/ (not repo root, which would run `turbo dev` across all workspaces)
+# and so the app loads backend/.env relative to cwd.
+WorkingDirectory=/opt/automecanik/app/backend
+ExecStart=/usr/bin/npm run dev
+Restart=on-failure
+RestartSec=5
+# Kill the ENTIRE cgroup (npm, run-p, tsc --build --watch, tsc-alias --watch, nodemon,
+# wait-and-start.js) on stop/restart. Structural fix for the recurring 0-byte dist crash:
+# no watcher can be orphaned to init and race the next run's tsc-alias rewriting dist/*.js.
+# (control-group is systemd's default; explicit here for intent.)
+KillMode=control-group
+KillSignal=SIGTERM
+TimeoutStopSec=15
+SyslogIdentifier=automecanik-dev
+Environment=NODE_ENV=development
+Environment=NODE_OPTIONS=--max-old-space-size=4096
+
+[Install]
+WantedBy=default.target
