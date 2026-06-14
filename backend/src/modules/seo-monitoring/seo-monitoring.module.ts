@@ -17,6 +17,7 @@ import { GscDailyFetcherService } from './services/gsc-daily-fetcher.service';
 import { Ga4DailyFetcherService } from './services/ga4-daily-fetcher.service';
 import { CwvFetcherService } from './services/cwv-fetcher.service';
 import { GscLinksFetcherService } from './services/gsc-links-fetcher.service';
+import { GscIndexHistoryCollectorService } from './services/gsc-index-history-collector.service';
 import { CruxApiClient } from './services/crux-api-client.service';
 import { CruxFieldFetcherService } from './services/crux-field-fetcher.service';
 import { CruxAlerterService } from './services/crux-alerter.service';
@@ -45,6 +46,7 @@ import { CwvDashboardController } from './controllers/cwv-dashboard.controller';
     Ga4DailyFetcherService,
     CwvFetcherService,
     GscLinksFetcherService,
+    GscIndexHistoryCollectorService, // PR3 — index snapshot pilote (inert-by-default)
     CruxApiClient, // ADR-063 PR-3 — dormant, wired to processor in PR-5
     CruxFieldFetcherService, // ADR-063 PR-3 — dormant, wired to processor in PR-5
     CruxAlerterService, // ADR-063 PR-4 — dormant, wired to processor in PR-5
@@ -74,6 +76,7 @@ import { CwvDashboardController } from './controllers/cwv-dashboard.controller';
     Ga4DailyFetcherService,
     CwvFetcherService,
     GscLinksFetcherService,
+    GscIndexHistoryCollectorService, // PR3 — index snapshot pilote (inert-by-default)
     CruxApiClient, // ADR-063 PR-3 — dormant, wired to processor in PR-5
     CruxFieldFetcherService, // ADR-063 PR-3 — dormant, wired to processor in PR-5
     CruxAlerterService, // ADR-063 PR-4 — dormant, wired to processor in PR-5
