@@ -143,6 +143,24 @@ export class FeatureFlagsService {
     return this.bool('SEO_R6_CONSOLIDATION_ENABLED', false);
   }
 
+  // ── R4 Consolidation (référence → R3 conseils, décision owner 2026-06-10) ──
+
+  /**
+   * Gates the R4→R3 consolidation redirect path: when ON, R4 reference
+   * detail pages 301-redirect to the linked gamme's R3 conseils page — ONLY
+   * for references whose gamme has a live R3 article (self-gated: no pg_id
+   * or no live R3 → the standalone R4 page keeps serving — never a
+   * redirect-to-404). The R4 content stays served inside R3 (sidebar card,
+   * already live) and the data stays in `__seo_reference`.
+   * Mirrors the R5 (live) and R6 (#925) consolidations.
+   *
+   * Activation is owner-gated: same program as R6 (vault ADR + sitemap
+   * exclusion). Default: false (inert — zero behavior change).
+   */
+  get seoR4ConsolidationEnabled(): boolean {
+    return this.bool('SEO_R4_CONSOLIDATION_ENABLED', false);
+  }
+
   // ── Conseil Pack flags ──
 
   get conseilPackEnabled(): boolean {
