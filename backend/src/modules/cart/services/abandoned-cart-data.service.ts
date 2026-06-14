@@ -227,7 +227,9 @@ export class AbandonedCartDataService extends SupabaseBaseService {
     };
     try {
       const countNotNull = async (col?: string): Promise<number> => {
-        let q = this.supabase.from(TABLE).select('*', { count: 'exact', head: true });
+        let q = this.supabase
+          .from(TABLE)
+          .select('*', { count: 'exact', head: true });
         if (col) q = q.not(col, 'is', null);
         const { count, error } = await q;
         if (error) throw error;
@@ -259,7 +261,10 @@ export class AbandonedCartDataService extends SupabaseBaseService {
       if (revErr) throw revErr;
       const revenue_recovered = (recoveredRows ?? []).reduce(
         (sum, r) =>
-          sum + Number((r as { cart_subtotal: number | string | null }).cart_subtotal ?? 0),
+          sum +
+          Number(
+            (r as { cart_subtotal: number | string | null }).cart_subtotal ?? 0,
+          ),
         0,
       );
       return {
