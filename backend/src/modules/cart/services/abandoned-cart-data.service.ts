@@ -212,45 +212,71 @@ export class AbandonedCartDataService extends SupabaseBaseService {
     recovered: number;
     revenue_recovered: number;
   }> {
-    const { data, error } = await this.supabase.rpc('execute_sql', {
-      query: `
-        SELECT
-          count(*) as total_detected,
-          count(email_1h_sent_at) as emails_sent_1h,
-          count(email_24h_sent_at) as emails_sent_24h,
-          count(email_72h_sent_at) as emails_sent_72h,
-          count(email_opened_at) as opened,
-          count(email_clicked_at) as clicked,
-          count(recovered_at) as recovered,
-          coalesce(sum(case when recovered_at is not null then cart_subtotal else 0 end), 0) as revenue_recovered
-        FROM ${TABLE}
-      `,
-    });
-
-    if (error || !data?.[0]) {
-      this.logger.error(`Stats query failed: ${error?.message}`);
-      return {
-        total_detected: 0,
-        emails_sent_1h: 0,
-        emails_sent_24h: 0,
-        emails_sent_72h: 0,
-        opened: 0,
-        clicked: 0,
-        recovered: 0,
-        revenue_recovered: 0,
-      };
-    }
-
-    const row = data[0];
-    return {
-      total_detected: Number(row.total_detected),
-      emails_sent_1h: Number(row.emails_sent_1h),
-      emails_sent_24h: Number(row.emails_sent_24h),
-      emails_sent_72h: Number(row.emails_sent_72h),
-      opened: Number(row.opened),
-      clicked: Number(row.clicked),
-      recovered: Number(row.recovered),
-      revenue_recovered: Number(row.revenue_recovered),
+    // Counts via PostgREST head-count, remplaçant un RPC générique `execute_sql`
+    // inexistant (les stats retournaient toujours 0 + un log d'erreur ; `execute_sql`
+    // = anti-pattern SQL arbitraire). Pas de RPC dédiée : la table est dormante.
+    const zero = {
+      total_detected: 0,
+      emails_sent_1h: 0,
+      emails_sent_24h: 0,
+      emails_sent_72h: 0,
+      opened: 0,
+      clicked: 0,
+      recovered: 0,
+      revenue_recovered: 0,
     };
+    try {
+      const countNotNull = async (col?: string): Promise<number> => {
+        let q = this.supabase.from(TABLE).select('*', { count: 'exact', head: true });
+        if (col) q = q.not(col, 'is', null);
+        const { count, error } = await q;
+        if (error) throw error;
+        return count ?? 0;
+      };
+      const [
+        total_detected,
+        emails_sent_1h,
+        emails_sent_24h,
+        emails_sent_72h,
+        opened,
+        clicked,
+        recovered,
+      ] = await Promise.all([
+        countNotNull(),
+        countNotNull('email_1h_sent_at'),
+        countNotNull('email_24h_sent_at'),
+        countNotNull('email_72h_sent_at'),
+        countNotNull('email_opened_at'),
+        countNotNull('email_clicked_at'),
+        countNotNull('recovered_at'),
+      ]);
+      // Revenu récupéré : somme de cart_subtotal sur les paniers récupérés
+      // (sous-ensemble restreint des paniers récupérés).
+      const { data: recoveredRows, error: revErr } = await this.supabase
+        .from(TABLE)
+        .select('cart_subtotal')
+        .not('recovered_at', 'is', null);
+      if (revErr) throw revErr;
+      const revenue_recovered = (recoveredRows ?? []).reduce(
+        (sum, r) =>
+          sum + Number((r as { cart_subtotal: number | string | null }).cart_subtotal ?? 0),
+        0,
+      );
+      return {
+        total_detected,
+        emails_sent_1h,
+        emails_sent_24h,
+        emails_sent_72h,
+        opened,
+        clicked,
+        recovered,
+        revenue_recovered,
+      };
+    } catch (error) {
+      this.logger.error(
+        `Stats query failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      return zero;
+    }
   }
 }
