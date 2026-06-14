@@ -8,7 +8,6 @@
 // renvoie désormais 410 Gone + noindex (désindexation propre).
 
 import {
-  redirect,
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
@@ -78,17 +77,11 @@ export async function loader({ params }: LoaderFunctionArgs) {
     );
   }
 
-  // Legacy : /constructeurs/{brand}-{id}.html (1-segment) → 301 vers la page marque.
-  // (En pratique servi par la route plus spécifique constructeurs.$brand[.]html.tsx ;
-  //  conservé tel quel — voir note de dette ADR-084 sur la cible sans id.)
-  const brandLegacyMatch = catchAll.match(/^([a-z0-9-]+)-(\d+)\.html$/i);
-  if (brandLegacyMatch) {
-    const [, brandSlug, brandId] = brandLegacyMatch;
-    logger.log("[ConstructeursCatchAll] Legacy brand URL:", brandSlug, brandId);
-    return redirect(`/constructeurs/${brandSlug}`, { status: 301 });
-  }
-
-  // URLs inconnues → 404
+  // Le 1-segment marque (/constructeurs/{brand}-{id}.html) est servi par la route plus
+  // spécifique constructeurs.$brand[.]html.tsx (précédence flat-routes) ; il n'atteint
+  // jamais ce catch-all. L'ancienne branche 301 legacy était donc morte (cible sans id
+  // qui 404 de toute façon) — retirée, ADR-084 suivi. Tout chemin restant → 404.
+  logger.log("[ConstructeursCatchAll] Unknown pattern, returning 404");
   logger.log("[ConstructeursCatchAll] Unknown pattern, returning 404");
   throw new Response("Not Found", { status: 404 });
 }
