@@ -478,3 +478,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/trust-ledger-b0a`
 - **Décision** : feat(audit): runtime-truth pg-stable-write deterministic runner + __gov_m7 RPC (PR-B0a)
 - **Sortie** : PR #978 | commits f8c27b88b
+
+## 2026-06-14 — feat/trust-ledger-rpc-registry-drift (auto)
+
+- **Branche** : `feat/trust-ledger-rpc-registry-drift`
+- **Décision** : feat(audit): runtime-truth rpc-registry-drift runner + __gov_m9 RPC (PR-B0a-3)
+- **Sortie** : PR #981 | commits 72ab73fd6
