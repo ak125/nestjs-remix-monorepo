@@ -16,7 +16,7 @@
  * a false positive — flagged at `medium` so a human triages (some sites have an
  * intentional fallback when the RPC is absent).
  */
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   getServiceClient,
@@ -54,24 +54,33 @@ export interface RpcCallSite {
 export function scanRpcCalls(rootDir: string): RpcCallSite[] {
   const byName = new Map<string, Set<string>>();
   const walk = (dir: string): void => {
-    let entries: string[];
+    // withFileTypes: Dirent carries isDirectory()/isFile() — no separate statSync,
+    // so no time-of-check-to-time-of-use file race (CodeQL js/file-system-race).
+    let entries: import("node:fs").Dirent[];
     try {
-      entries = readdirSync(dir);
+      entries = readdirSync(dir, { withFileTypes: true });
     } catch {
       return;
     }
-    for (const e of entries) {
+    for (const ent of entries) {
+      const e = ent.name;
       if (e === "node_modules" || e === "dist" || e.startsWith(".")) continue;
       const p = join(dir, e);
-      let st;
-      try {
-        st = statSync(p);
-      } catch {
-        continue;
-      }
-      if (st.isDirectory()) walk(p);
-      else if (e.endsWith(".ts") && !e.endsWith(".d.ts") && !e.endsWith(".test.ts") && !e.endsWith(".spec.ts")) {
-        for (const name of extractRpcCalls(readFileSync(p, "utf8"))) {
+      if (ent.isDirectory()) walk(p);
+      else if (
+        ent.isFile() &&
+        e.endsWith(".ts") &&
+        !e.endsWith(".d.ts") &&
+        !e.endsWith(".test.ts") &&
+        !e.endsWith(".spec.ts")
+      ) {
+        let src: string;
+        try {
+          src = readFileSync(p, "utf8");
+        } catch {
+          continue;
+        }
+        for (const name of extractRpcCalls(src)) {
           if (!byName.has(name)) byName.set(name, new Set());
           byName.get(name)!.add(p);
         }
