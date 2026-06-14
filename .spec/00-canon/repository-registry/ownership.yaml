@@ -1014,3 +1014,8 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: low
+  - glob: backend/supabase/migrations/20260614_gov_m7_stable_function_volatility_rpc*.sql
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
