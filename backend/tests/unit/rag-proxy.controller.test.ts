@@ -26,6 +26,7 @@ import { RagVideoManagementService } from '../../src/modules/rag-proxy/services/
 import { RagGammeDetectionService } from '../../src/modules/rag-proxy/services/rag-gamme-detection.service';
 import { RagPhase2aShadowAuditService } from '../../src/modules/rag-proxy/services/rag-phase2a-shadow-audit.service';
 import { RagPipelineService } from '../../src/modules/rag-proxy/rag-pipeline.service';
+import { WebhookAuditService } from '../../src/modules/rag-proxy/services/webhook-audit.service';
 
 describe('RagProxyController', () => {
   let app: INestApplication;
@@ -49,6 +50,13 @@ describe('RagProxyController', () => {
         { provide: RagGammeDetectionService, useValue: {} },
         { provide: RagPhase2aShadowAuditService, useValue: {} },
         { provide: RagPipelineService, useValue: {} },
+        {
+          provide: WebhookAuditService,
+          useValue: {
+            getRecentWebhooks: jest.fn().mockResolvedValue({ data: [], total: 0 }),
+            getWebhookStats: jest.fn().mockResolvedValue({}),
+          },
+        },
         { provide: ConfigService, useValue: { get: jest.fn().mockReturnValue('test-internal-api-key') } },
       ],
     }).compile();
