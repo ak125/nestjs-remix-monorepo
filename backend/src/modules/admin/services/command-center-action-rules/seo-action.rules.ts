@@ -37,6 +37,12 @@ export interface GscOpportunityMeta {
   data_from: string | null; // YYYY-MM-DD — première date réellement couverte
   data_to: string | null; // YYYY-MM-DD — dernière date réellement couverte
   freshness: 'fresh' | 'stale' | 'unknown';
+  /**
+   * Couverture du grain pages vs le total global (rpc_seo_low_ctr_v3 ; absent en
+   * v2/v1). `coverage_gap`/`insufficient_data` dégrade la confiance comme `stale` :
+   * la liste pages est partielle (anonymisation) → PARTIAL, jamais un faux CERTIFIED.
+   */
+  coverage_status?: 'ok' | 'coverage_gap' | 'insufficient_data';
 }
 
 /** Fallback honnête (RPC v1 sans enveloppe) : rien d'affirmé, confiance PARTIAL. */
@@ -161,10 +167,13 @@ export function buildSeoOpportunityActions(
   const sampleSize = rows.length;
   const truncated =
     meta.total_qualifying != null && meta.total_qualifying > sampleSize;
-  // CERTIFIED exige une fraîcheur vérifiée ; stale/unknown → PARTIAL (≥ floor 40 :
-  // l'action business survit mais l'UI la marque « prudence », pas de faux 90).
+  // CERTIFIED exige une fraîcheur vérifiée ET une couverture OK ; stale/unknown
+  // OU coverage_gap/insufficient_data → PARTIAL (≥ floor 40 : l'action business
+  // survit mais l'UI la marque « prudence », pas de faux 90 sur donnée partielle).
+  const coverageOk =
+    meta.coverage_status == null || meta.coverage_status === 'ok';
   const confidence =
-    meta.freshness === 'fresh'
+    meta.freshness === 'fresh' && coverageOk
       ? CONFIDENCE_BY_CERT.CERTIFIED
       : CONFIDENCE_BY_CERT.PARTIAL;
   // sampleSize/total_qualifying sont GLOBAUX (tous types de pages, cap p_limit
@@ -179,11 +188,16 @@ export function buildSeoOpportunityActions(
       ? `Données GSC réellement couvertes du ${meta.data_from} au ${meta.data_to}`
       : 'Couverture réelle des données GSC inconnue';
   const freshnessNote =
-    meta.freshness === 'fresh'
+    (meta.freshness === 'fresh'
       ? ''
       : meta.freshness === 'stale'
         ? ' ; fraîcheur GSC dégradée (ingestion en retard)'
-        : ' ; fraîcheur GSC non vérifiée';
+        : ' ; fraîcheur GSC non vérifiée') +
+    (coverageOk
+      ? ''
+      : meta.coverage_status === 'insufficient_data'
+        ? ' ; couverture GSC indéterminée (total global absent)'
+        : ' ; couverture pages partielle (anonymisation) — opportunités possiblement incomplètes');
 
   const byKind = new Map<PageKind, GscOpportunityRow[]>();
   for (const r of rows) {

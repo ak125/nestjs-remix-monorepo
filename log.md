@@ -466,3 +466,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-gsc-multilevel-ingestion`
 - **Décision** : chore(registry): ownership glob D3/seo-team pour migration seo_gsc_multilevel (+2 other commits)
 - **Sortie** : PR #968 | commits b255abb51 128b28316 3c4bacb1e
+
+## 2026-06-14 — feat/seo-gsc-low-ctr-v3-pages (auto)
+
+- **Branche** : `feat/seo-gsc-low-ctr-v3-pages`
+- **Décision** : feat(seo): rpc_seo_low_ctr_v3 (grain pages fidèle + couverture) → réveille la file command-center (+5 other commits)
+- **Sortie** : PR #969 | commits c124075c3 84f45e18a 26f25aed0 b255abb51 128b28316 3c4bacb1e
