@@ -1,6 +1,5 @@
 import {
   Controller,
-  Get,
   Post,
   Body,
   Logger,
@@ -152,23 +151,8 @@ export class SeoGeneratorController {
     return this.generate({ ...dto, save_draft: true });
   }
 
-  /**
-   * Liste les fichiers RAG gammes disponibles
-   * GET /api/admin/seo/rag-files
-   *
-   * @returns Liste des slugs de gammes avec fichier RAG
-   */
-  @Get('rag-files')
-  async listRagFiles(): Promise<{ files: string[]; count: number }> {
-    this.logger.log('📁 GET /api/admin/seo/rag-files');
-
-    const files = await this.generatorService.listAvailableRagFiles();
-
-    return {
-      files,
-      count: files.length,
-    };
-  }
+  // GET /api/admin/seo/rag-files retiré — ADR-031/046 (programme rag-purge) :
+  // RAG = retrieval chatbot only, jamais source de contenu/SEO.
 
   /**
    * Sauvegarde une R4 générée en draft
