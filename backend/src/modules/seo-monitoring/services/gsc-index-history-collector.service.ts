@@ -25,6 +25,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseClient, createClient } from '@supabase/supabase-js';
 import { getEffectiveSupabaseKey } from '@common/utils';
+import { SITE_ORIGIN } from '@config/site.constants';
 import { google } from 'googleapis';
 import { GoogleCredentialsService } from './google-credentials.service';
 import { SeoMonitoringRunsService } from './seo-monitoring-runs.service';
@@ -51,32 +52,19 @@ export interface IndexHistoryFetchResult {
   warnings: string[];
 }
 
-/** Sitemaps live → pools par strate (cappés/spread avant échantillonnage). */
+/**
+ * Sitemaps par strate (path relatif → base = SITE_ORIGIN canonique, JAMAIS de
+ * domaine hardcodé). Cappés/spread avant échantillonnage.
+ */
 const STRATE_SITEMAPS: Array<{
   strate: IndexStrate;
-  url: string;
+  path: string;
   cap: number;
 }> = [
-  {
-    strate: 'r1_hub',
-    url: 'https://www.automecanik.com/sitemap-categories.xml',
-    cap: 200,
-  },
-  {
-    strate: 'r2_pages',
-    url: 'https://www.automecanik.com/sitemap-pieces-1.xml',
-    cap: 400,
-  },
-  {
-    strate: 'r8_vehicle',
-    url: 'https://www.automecanik.com/sitemap-vehicules.xml',
-    cap: 300,
-  },
-  {
-    strate: 'r3_content',
-    url: 'https://www.automecanik.com/sitemap-blog.xml',
-    cap: 200,
-  },
+  { strate: 'r1_hub', path: '/sitemap-categories.xml', cap: 200 },
+  { strate: 'r2_pages', path: '/sitemap-pieces-1.xml', cap: 400 },
+  { strate: 'r8_vehicle', path: '/sitemap-vehicules.xml', cap: 300 },
+  { strate: 'r3_content', path: '/sitemap-blog.xml', cap: 200 },
 ];
 
 @Injectable()
@@ -165,9 +153,12 @@ export class GscIndexHistoryCollectorService {
     try {
       // 1) pools par strate depuis les sitemaps live (spread → cap)
       const pools: Partial<Record<IndexStrate, string[]>> = {};
-      for (const { strate, url, cap } of STRATE_SITEMAPS) {
+      for (const { strate, path, cap } of STRATE_SITEMAPS) {
         try {
-          pools[strate] = spread(await fetchSitemapLocs(url), cap);
+          pools[strate] = spread(
+            await fetchSitemapLocs(`${SITE_ORIGIN}${path}`),
+            cap,
+          );
         } catch (e) {
           result.warnings.push(
             `sitemap_fetch_failed:${strate}:${e instanceof Error ? e.message : e}`,
