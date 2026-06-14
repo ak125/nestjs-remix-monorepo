@@ -238,19 +238,6 @@ export class FeatureFlagsService {
     return this.bool('SEO_CONTROL_DASHBOARD_ENABLED', false);
   }
 
-  // ── R2 Accessories block (accessory products under main gamme, PR-2) ──
-
-  /**
-   * Master switch for the R2 "Accessoires" block — surfaces an accessory gamme's
-   * PRODUCTS (linked via pieces_gamme.pg_parent_gamme_id) on the main gamme's R2
-   * product page, in the current vehicle context. Default: false (rollout safe).
-   * OFF = the AccessoryProductsService short-circuits to an empty result (no query,
-   * no surface). The accessory gamme stays hidden; no URL/sitemap/indexation change.
-   */
-  get accessoryBlocksOnR2Enabled(): boolean {
-    return this.bool('SHOW_ACCESSORY_BLOCKS_ON_R2', false);
-  }
-
   // ── VehicleContext cookie kill-switch (PR-B.6) ──
 
   /**
@@ -360,7 +347,6 @@ export class FeatureFlagsService {
     'VEHICLE_CTX_ENABLED',
     'DIAGNOSTIC_KG_SHADOW_ENABLED',
     'DIAGNOSTIC_KG_PRIMARY_ENABLED',
-    'SHOW_ACCESSORY_BLOCKS_ON_R2',
   ]);
 
   listFlags(): Record<

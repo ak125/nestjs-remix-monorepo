@@ -30,7 +30,6 @@ import { CatalogDataIntegrityService } from './services/catalog-data-integrity.s
 import { PricingService } from '../products/services/pricing.service';
 import { OemPlatformMappingService } from './services/oem-platform-mapping.service';
 import { UnifiedPageDataService } from './services/unified-page-data.service';
-import { AccessoryProductsService } from './services/accessory-products.service';
 import { SeoTemplateService } from './services/seo-template.service'; // ⚡ SEO processing NestJS (RPC V4)
 import { HomepageRpcService } from './services/homepage-rpc.service';
 import { CatalogHierarchyService } from './services/catalog-hierarchy.service';
@@ -81,7 +80,6 @@ import { GammePricePreviewService } from './services/gamme-price-preview.service
     // PiecesDbController, // DÉSACTIVÉ - service manquant
   ],
   providers: [
-    AccessoryProductsService,
     // 🔧 Services principaux
     CatalogService,
     EnhancedVehicleCatalogService,

@@ -42,20 +42,6 @@ function makeRepo(
       skipped_missing_gamme: 0,
       batch_id: 'batch-1',
     }),
-    accessoryLinkActivate: jest.fn().mockResolvedValue({
-      dry_run: false,
-      main_pg_id: 82,
-      eligible_count: 1,
-      rejected_count: 0,
-      rejected: [],
-      linked: 1,
-    }),
-    accessoryLinkRollback: jest.fn().mockResolvedValue({
-      rolled_back: 1,
-      skipped_value_changed: 0,
-      skipped_missing_gamme: 0,
-      batch_id: 'batch-acc',
-    }),
     ...overrides,
   } as unknown as PricingRepository;
 }
@@ -300,109 +286,6 @@ describe('CatalogDisplayActivationService', () => {
     it('rejects missing args', async () => {
       const svc = new CatalogDisplayActivationService(makeRepo());
       await expect(svc.gammeRollback('', '3410')).rejects.toBeInstanceOf(
-        BadRequestException,
-      );
-    });
-  });
-
-  // ── Accessory commercial link (pg_parent_gamme_id) ────────────────────────────────
-  describe('accessoryLinkDryRun', () => {
-    it('projects eligible/rejected without opening a batch', async () => {
-      const repo = makeRepo({
-        accessoryLinkActivate: jest.fn().mockResolvedValue({
-          dry_run: true,
-          main_pg_id: 82,
-          eligible_count: 1,
-          eligible: [{ pg_id: 1330, pg_name: 'Déflecteur disque de frein' }],
-          rejected_count: 0,
-          rejected: [],
-        }),
-      });
-      const svc = new CatalogDisplayActivationService(repo);
-
-      const res = await svc.accessoryLinkDryRun(82, [1330]);
-
-      expect(res).toEqual({
-        eligibleCount: 1,
-        eligible: [{ pg_id: 1330, pg_name: 'Déflecteur disque de frein' }],
-        rejectedCount: 0,
-        rejected: [],
-      });
-      expect(repo.accessoryLinkActivate).toHaveBeenCalledWith({
-        batchId: null,
-        mainPgId: 82,
-        accessoryPgIds: [1330],
-        operator: null,
-        dryRun: true,
-      });
-    });
-
-    it('rejects a missing mainPgId or empty accessory list', async () => {
-      const svc = new CatalogDisplayActivationService(makeRepo());
-      await expect(svc.accessoryLinkDryRun(0, [1330])).rejects.toBeInstanceOf(
-        BadRequestException,
-      );
-      await expect(svc.accessoryLinkDryRun(82, [])).rejects.toBeInstanceOf(
-        BadRequestException,
-      );
-    });
-  });
-
-  describe('accessoryLinkCommit', () => {
-    it('refuses to write without confirm:true', async () => {
-      const repo = makeRepo();
-      const svc = new CatalogDisplayActivationService(repo);
-
-      await expect(
-        svc.accessoryLinkCommit({ mainPgId: 82, accessoryPgIds: [1330] }),
-      ).rejects.toBeInstanceOf(BadRequestException);
-      expect(repo.accessoryLinkActivate).not.toHaveBeenCalled();
-    });
-
-    it('generates a batchId, commits (dryRun:false), returns linked count', async () => {
-      const repo = makeRepo();
-      const svc = new CatalogDisplayActivationService(repo);
-
-      const res = await svc.accessoryLinkCommit({
-        mainPgId: 82,
-        accessoryPgIds: [1330],
-        operator: 'owner',
-        confirm: true,
-      });
-
-      expect(typeof res.batchId).toBe('string');
-      expect(res.batchId.length).toBeGreaterThan(0);
-      expect(res.linked).toBe(1);
-      expect(repo.accessoryLinkActivate).toHaveBeenCalledWith(
-        expect.objectContaining({
-          batchId: res.batchId,
-          mainPgId: 82,
-          accessoryPgIds: [1330],
-          operator: 'owner',
-          dryRun: false,
-        }),
-      );
-    });
-  });
-
-  describe('accessoryLinkRollback', () => {
-    it('delegates and surfaces classified skip counts', async () => {
-      const repo = makeRepo();
-      const svc = new CatalogDisplayActivationService(repo);
-
-      const res = await svc.accessoryLinkRollback('batch-acc');
-
-      expect(res).toEqual({
-        rolledBack: 1,
-        skippedValueChanged: 0,
-        skippedMissingGamme: 0,
-      });
-      expect(repo.accessoryLinkRollback).toHaveBeenCalledWith('batch-acc');
-    });
-
-    it('rejects a missing batchId', async () => {
-      const svc = new CatalogDisplayActivationService(makeRepo());
-      await expect(svc.accessoryLinkRollback('')).rejects.toBeInstanceOf(
         BadRequestException,
       );
     });

@@ -17,7 +17,6 @@
  *   brand-locked · gated on pri_dispo IN '1','2' (REVIEW/BLOCK excluded) ·
  *   never touches gamme/vehicle/price/dispo · only false -> true.
  */
-import { randomUUID } from 'node:crypto';
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { PricingRepository } from './pricing.repository';
 
@@ -225,113 +224,6 @@ export class CatalogDisplayActivationService {
     const res = await this.repo.gammeDisplayRollback(batchId, supplierId);
     this.logger.log(
       `[CATALOG_GAMME_DISPLAY] rollback batchId=${batchId} ` +
-        `rolled_back=${res.rolled_back} skipped_value_changed=${res.skipped_value_changed} ` +
-        `skipped_missing_gamme=${res.skipped_missing_gamme}`,
-    );
-    return {
-      rolledBack: res.rolled_back,
-      skippedValueChanged: res.skipped_value_changed,
-      skippedMissingGamme: res.skipped_missing_gamme,
-    };
-  }
-
-  // ── Accessory commercial link (pieces_gamme.pg_parent_gamme_id, data layer PR-1) ────
-  // Records accessory(level-4/5, HIDDEN) -> main(level-1/2, visible strategic hub). The hard
-  // guards live in the SQL function; this orchestrates dry-run / owner-gated commit / rollback.
-  // Distinct log prefix [CATALOG_ACCESSORY_LINK]. NO runtime surface here (that is PR-2, flag-gated).
-
-  /** Read-only projection: which accessories WOULD link to the main hub, and which are rejected. */
-  async accessoryLinkDryRun(
-    mainPgId: number,
-    accessoryPgIds: number[],
-  ): Promise<{
-    eligibleCount: number;
-    eligible: { pg_id: number; pg_name: string }[];
-    rejectedCount: number;
-    rejected: { pg_id: number; reason: string }[];
-  }> {
-    if (!mainPgId) {
-      throw new BadRequestException('mainPgId is required');
-    }
-    if (!Array.isArray(accessoryPgIds) || accessoryPgIds.length === 0) {
-      throw new BadRequestException('accessoryPgIds must be a non-empty array');
-    }
-    const res = await this.repo.accessoryLinkActivate({
-      batchId: null,
-      mainPgId,
-      accessoryPgIds,
-      operator: null,
-      dryRun: true,
-    });
-    this.logger.log(
-      `[CATALOG_ACCESSORY_LINK] dry-run main=${mainPgId} ` +
-        `eligible=${res.eligible_count} rejected=${res.rejected_count}`,
-    );
-    return {
-      eligibleCount: res.eligible_count,
-      eligible: res.eligible ?? [],
-      rejectedCount: res.rejected_count,
-      rejected: res.rejected ?? [],
-    };
-  }
-
-  /** Apply the accessory->main link — requires `confirm:true` (owner-gated). */
-  async accessoryLinkCommit(req: {
-    mainPgId: number;
-    accessoryPgIds: number[];
-    operator?: string | null;
-    confirm?: boolean;
-  }): Promise<{
-    batchId: string;
-    linked: number;
-    eligibleCount: number;
-    rejectedCount: number;
-    rejected: { pg_id: number; reason: string }[];
-  }> {
-    if (!req.mainPgId) {
-      throw new BadRequestException('mainPgId is required');
-    }
-    if (!Array.isArray(req.accessoryPgIds) || req.accessoryPgIds.length === 0) {
-      throw new BadRequestException('accessoryPgIds must be a non-empty array');
-    }
-    if (req.confirm !== true) {
-      throw new BadRequestException(
-        'accessory link commit requires confirm:true',
-      );
-    }
-    const batchId = randomUUID();
-    const res = await this.repo.accessoryLinkActivate({
-      batchId,
-      mainPgId: req.mainPgId,
-      accessoryPgIds: req.accessoryPgIds,
-      operator: req.operator ?? null,
-      dryRun: false,
-    });
-    this.logger.log(
-      `[CATALOG_ACCESSORY_LINK] commit batchId=${batchId} main=${req.mainPgId} ` +
-        `linked=${res.linked ?? 0} rejected=${res.rejected_count}`,
-    );
-    return {
-      batchId,
-      linked: res.linked ?? 0,
-      eligibleCount: res.eligible_count,
-      rejectedCount: res.rejected_count,
-      rejected: res.rejected ?? [],
-    };
-  }
-
-  /** Restore the prior pg_parent_gamme_id for a batch (anti-conflict guarded). */
-  async accessoryLinkRollback(batchId: string): Promise<{
-    rolledBack: number;
-    skippedValueChanged: number;
-    skippedMissingGamme: number;
-  }> {
-    if (!batchId) {
-      throw new BadRequestException('batchId is required');
-    }
-    const res = await this.repo.accessoryLinkRollback(batchId);
-    this.logger.log(
-      `[CATALOG_ACCESSORY_LINK] rollback batchId=${batchId} ` +
         `rolled_back=${res.rolled_back} skipped_value_changed=${res.skipped_value_changed} ` +
         `skipped_missing_gamme=${res.skipped_missing_gamme}`,
     );
