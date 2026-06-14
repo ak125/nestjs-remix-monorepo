@@ -247,7 +247,6 @@ export class QualityScoringEngineService extends SupabaseBaseService {
     profile: ScoringProfile,
   ): PageScoreResult {
     const reasons: string[] = [];
-    const nextActions: string[] = [];
     const penalties: PenaltyEntry[] = [];
 
     // 1. Compute dimension subscores (0-100 each)
@@ -258,7 +257,6 @@ export class QualityScoringEngineService extends SupabaseBaseService {
         row,
         profile.pageType,
         reasons,
-        nextActions,
       );
     }
 
@@ -347,7 +345,6 @@ export class QualityScoringEngineService extends SupabaseBaseService {
     row: FeatureRow,
     pageType: ScoringPageType,
     reasons: string[],
-    _nextActions: string[],
   ): number {
     switch (dim) {
       case 'content_depth':

@@ -47,7 +47,9 @@ interface PickVariantInput<TWhere extends Record<string, unknown>> {
  * Logique d'index (pure, testable sans DB) : `computeSeedIndex(seed, length)`.
  *
  * @see plan seo-v9 §3.5 — Seed canonique stable
- * @see seo-v4-switch-engine.service.ts (legacy à déprécier post PR-2c)
+ *
+ * Legacy seo-v4-switch-engine.service.ts supprimé 2026-06-12 (succédé par ce
+ * sélecteur + SeoTemplateRenderer).
  */
 @Injectable()
 export class SeoSwitchSelector extends SupabaseBaseService {

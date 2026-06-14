@@ -2,7 +2,7 @@
  * Content Section Policy v1.0
  *
  * Defines ownership and constraints per section × role.
- * Used by SectionCompilerService to enforce anti-cannibalization.
+ * Used by BriefGatesService (brief-gates.service.ts) to enforce anti-cannibalization.
  *
  * Git-versioned (not in DB) — changes require code review.
  */

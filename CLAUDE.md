@@ -265,7 +265,7 @@ de proposer.
 (`GOOGLE_SA_CLIENT_EMAIL`, `GSC_PROPERTY_URL`, `automecanik.fr`) alors que
 le codebase utilisait déjà `GSC_CLIENT_EMAIL`, `GSC_SITE_URL`,
 `automecanik.com` (lus par `crawl-budget-audit.service.ts:208-216` et
-`url-audit.service.ts:50-60`). Chaque invention = PR à corriger.
+`google-credentials.service.ts`). Chaque invention = PR à corriger.
 
 ---
 
