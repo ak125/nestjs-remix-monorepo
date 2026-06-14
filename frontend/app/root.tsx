@@ -145,6 +145,9 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
         process.env.APP_ENV ||
         process.env.NODE_ENV ||
         "development",
+      // PR-1a — kill-switch UX résultat diagnostic V2 (rollback rapide). OFF par défaut.
+      DIAGNOSTIC_RESULT_UX_V2_ENABLED:
+        process.env.DIAGNOSTIC_RESULT_UX_V2_ENABLED === "true",
     },
   });
 };
