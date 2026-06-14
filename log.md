@@ -484,3 +484,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/trust-ledger-rpc-registry-drift`
 - **Décision** : feat(audit): runtime-truth rpc-registry-drift runner + __gov_m9 RPC (PR-B0a-3)
 - **Sortie** : PR #981 | commits 72ab73fd6
+
+## 2026-06-15 — fix/rpc-drift-silent-bugs (auto)
+
+- **Branche** : `fix/rpc-drift-silent-bugs`
+- **Décision** : fix(rpc-drift): repair advice view counter + drop execute_sql anti-pattern
+- **Sortie** : PR #982 | commits 4bf1dfdef
