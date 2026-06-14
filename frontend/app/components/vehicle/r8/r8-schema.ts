@@ -4,14 +4,14 @@
 
 import { type LoaderData, type VehicleData } from "./r8.types";
 
-// 🌐 SoT des URLs canoniques R8 (réutilisé par BreadcrumbSection microdata)
+// 🌐 SoT des URLs canoniques R8.
+// Note: les niveaux `constructeurs` (index → 404) et `model` (2-seg → 410, ADR-084)
+// ont été retirés — le fil d'ariane R8 est désormais Accueil → Marque → Véhicule.
 export function buildR8CanonicalUrls(vehicle: VehicleData) {
   const baseUrl = "https://www.automecanik.com";
   return {
     home: `${baseUrl}/`,
-    constructeurs: `${baseUrl}/constructeurs`,
     brand: `${baseUrl}/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}.html`,
-    model: `${baseUrl}/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}.html`,
     type: `${baseUrl}/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.type_id}.html`,
   };
 }
@@ -84,24 +84,12 @@ export function generateVehicleSchema(
           {
             "@type": "ListItem",
             position: 2,
-            name: "Constructeurs",
-            item: urls.constructeurs,
-          },
-          {
-            "@type": "ListItem",
-            position: 3,
             name: breadcrumb.brand,
             item: urls.brand,
           },
           {
             "@type": "ListItem",
-            position: 4,
-            name: breadcrumb.model,
-            item: urls.model,
-          },
-          {
-            "@type": "ListItem",
-            position: 5,
+            position: 3,
             name: `${breadcrumb.type} ${vehicle.type_power_ps} ch`,
             item: urls.type,
           },

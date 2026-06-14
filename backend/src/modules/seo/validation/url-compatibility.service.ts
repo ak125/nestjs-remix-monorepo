@@ -705,14 +705,12 @@ export class UrlCompatibilityService extends SupabaseBaseService {
       const constructeurUrls = await this.getAllConstructeurUrls({ limit: 5 });
       const constructeurUrlsSample = constructeurUrls.map((c) => c.url);
 
-      // Stats modèles
-      const { count: totalModeles } = await this.client
-        .from(TABLES.auto_modele)
-        .select('*', { count: 'exact', head: true })
-        .eq('modele_display', 1);
-
-      const modeleUrls = await this.getAllModeleUrls({ limit: 5 });
-      const modeleUrlsSample = modeleUrls.map((m) => m.url);
+      // Niveau-modèle (URLs 2-segments) RETIRÉ du rapport — supprimé en 410 Gone
+      // (ADR-084). On n'annonce plus ces URLs comme "conformes" (elles renvoient 410).
+      // Les méthodes getAllModeleUrls/generateModeleUrl restent (signatures publiques)
+      // mais ne sont plus exposées par ce rapport de compatibilité.
+      const totalModeles = 0;
+      const modeleUrlsSample: string[] = [];
 
       // Stats blog conseils
       const { count: totalConseils } = await this.client
@@ -747,6 +745,9 @@ export class UrlCompatibilityService extends SupabaseBaseService {
       }
 
       recommendations.push('✅ URLs conformes au format ancien sitemap nginx');
+      recommendations.push(
+        'ℹ️ Niveau-modèle (URLs 2-segments) retiré du rapport — supprimé en 410 Gone (ADR-084)',
+      );
 
       return {
         timestamp: new Date().toISOString(),

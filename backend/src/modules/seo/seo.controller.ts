@@ -402,6 +402,10 @@ export class SeoController {
 
       return {
         success: true,
+        // Niveau-modèle (URLs 2-segments) supprimé en 410 Gone (ADR-084).
+        // Ces URLs sont conservées ici à des fins d'audit de migration uniquement :
+        // elles renvoient 410 en runtime et ne sont plus émises au sitemap.
+        gone: true,
         count: urls.length,
         data: urls,
       };
