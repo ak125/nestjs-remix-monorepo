@@ -4,20 +4,12 @@ import { createHash } from 'node:crypto';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { CacheService } from '@cache/cache.service';
 import type { AlternativesV2Response } from '../dto/alternatives-v2.dto';
-
-const CACHE_TTL_SECONDS = 300;
-// Error-path TTL kept low so a transient RPC failure does not poison the cache
-// for 5 minutes. Long-TTL caching of empty responses was the amplifier behind
-// the soft-404 R2 smoke regression detected 2026-05-19 (stale anon publishable
-// key → 'Invalid API key' on every RPC → 300s cache of [] → 5min false-empty).
-const CACHE_TTL_ERROR_SECONDS = 30;
-const CACHE_KEY_PREFIX = 'alt';
-// v1 → v2 (PR #633) : reset stale empty entries from the .from() RLS-bypass era.
-// v2 → v3 (2026-05-19) : reset stale empty entries from the rotated-publishable-key
-// era (preprod ANON_KEY rotated by Supabase but GitHub secret not synced — every RPC
-// returned 'Invalid API key', cached as empty for 5min). Pair with the short
-// CACHE_TTL_ERROR_SECONDS above to prevent the next rotation from repeating this.
-const CACHE_KEY_VERSION = 'v3';
+import {
+  CACHE_TTL_SOFT_404_SUCCESS_SECONDS,
+  CACHE_TTL_SOFT_404_ERROR_SECONDS,
+  CACHE_KEY_PREFIX_SOFT_404,
+  CACHE_KEY_VERSION_SOFT_404,
+} from './soft-404-cache.constants';
 
 interface RpcPayload {
   alternativeVehicles: unknown[];
@@ -54,7 +46,7 @@ export class RmAlternativesService extends SupabaseBaseService {
     pg_id: number,
     limit: number,
   ): Promise<AlternativesV2Response> {
-    const cacheKey = `${CACHE_KEY_PREFIX}:${type_id}:${pg_id}:${CACHE_KEY_VERSION}`;
+    const cacheKey = `${CACHE_KEY_PREFIX_SOFT_404}:${type_id}:${pg_id}:${CACHE_KEY_VERSION_SOFT_404}`;
 
     const cached = await this.cache.get(cacheKey);
     if (cached) {
@@ -101,13 +93,17 @@ export class RmAlternativesService extends SupabaseBaseService {
       await this.cache.set(
         cacheKey,
         JSON.stringify(empty),
-        CACHE_TTL_ERROR_SECONDS,
+        CACHE_TTL_SOFT_404_ERROR_SECONDS,
       );
       return empty;
     }
 
     const response = this.buildResponse(data);
-    await this.cache.set(cacheKey, JSON.stringify(response), CACHE_TTL_SECONDS);
+    await this.cache.set(
+      cacheKey,
+      JSON.stringify(response),
+      CACHE_TTL_SOFT_404_SUCCESS_SECONDS,
+    );
     return response;
   }
 
