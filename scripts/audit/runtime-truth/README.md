@@ -19,8 +19,9 @@ supabase-js layer calling governed read-only `__gov_*` introspection RPCs — no
 | Check | RPC | Severity | Detects |
 |---|---|---|---|
 | `pg-stable-write` | `__gov_m7_stable_function_volatility()` | critical | STABLE/IMMUTABLE functions that write (PostgREST read-only tx ⇒ silent 5xx, incident #693) |
+| `partition-cron-gap` | `__gov_m8_partition_coverage()` | critical | RANGE-partitioned tables about to exhaust partitions, no DEFAULT, no rotation cron ("no partition found", incidents #697/#698) |
 
-_Roadmap (same framework): `partition-cron-gap`, `rpc-registry-drift`, `attribution-write-gap`, `nest-dead-services`, `orphan-runtime-flags`._
+_Roadmap (same framework): `rpc-registry-drift`, `attribution-write-gap`, `nest-dead-services`, `orphan-runtime-flags`._
 
 ## Run
 

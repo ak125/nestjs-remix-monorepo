@@ -1012,6 +1012,14 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: low
+  # __gov_m8 read-only introspection RPC for the partition-cron-gap runtime-truth
+  # runner (Trust Ledger B0a, owner GO 2026-06-14, "A"). Additive, SECURITY DEFINER,
+  # service_role only. Glob exact (.sql + .down.sql of this migration).
+  - glob: backend/supabase/migrations/20260614_gov_m8_partition_coverage_rpc*.sql
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
   - glob: workspaces/ai-probe/**
     domain: D3
     owner: '@ak125/seo-team'
