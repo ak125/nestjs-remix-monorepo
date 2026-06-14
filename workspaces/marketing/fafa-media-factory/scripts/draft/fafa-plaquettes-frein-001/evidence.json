@@ -1,0 +1,23 @@
+{
+  "video_id": "fafa-plaquettes-frein-001",
+  "evidence": [
+    {
+      "doc_id": "catalogue-plaquette-pg402-intro",
+      "source_type": "catalogue_interne",
+      "source_url": "backend/supabase/migrations/20260105_fix_intro_role_plaquettes.sql",
+      "excerpt": "Les plaquettes de frein font partie des éléments essentiels du freinage. Elles se montent sur l'essieu avant ou arrière et sont généralement vendues par jeu de 4. Sélectionnez votre véhicule, puis choisissez l'essieu (avant/arrière) pour afficher les références compatibles.",
+      "confidence": 0.9,
+      "extracted_at": "2026-05-30T00:00:00Z",
+      "claim_refs": ["claim-4"]
+    },
+    {
+      "doc_id": "catalogue-plaquette-pg402-compat",
+      "source_type": "catalogue_interne",
+      "source_url": "https://www.automecanik.com/pieces/plaquette-de-frein-402.html",
+      "excerpt": "Sélecteur de compatibilité AutoMecanik (pg_id 402) : la référence des plaquettes compatibles est déterminée par le véhicule sélectionné (marque, modèle, motorisation) puis l'essieu. Deux véhicules de même modèle peuvent exiger des références différentes selon la motorisation, la dimension de disque et la présence d'un témoin d'usure.",
+      "confidence": 0.75,
+      "extracted_at": "2026-05-30T00:00:00Z",
+      "claim_refs": ["claim-1", "claim-2", "claim-3"]
+    }
+  ]
+}

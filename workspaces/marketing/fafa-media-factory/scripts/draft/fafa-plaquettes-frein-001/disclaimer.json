@@ -1,0 +1,32 @@
+{
+  "video_id": "fafa-plaquettes-frein-001",
+  "disclaimers": [
+    {
+      "disclaimer_id": "disclaimer-1",
+      "type": "informational",
+      "text": "Conseil informatif. Vérifiez la compatibilité avant achat.",
+      "position": "overlay_continuous",
+      "timestamp_start_sec": null,
+      "timestamp_end_sec": null,
+      "linked_claim_id": null
+    },
+    {
+      "disclaimer_id": "disclaimer-2",
+      "type": "ai_generated_notice",
+      "text": "Fafa est un mécano IA d'AutoMecanik.",
+      "position": "overlay_continuous",
+      "timestamp_start_sec": null,
+      "timestamp_end_sec": null,
+      "linked_claim_id": null
+    },
+    {
+      "disclaimer_id": "disclaimer-3",
+      "type": "compatibility_check_required",
+      "text": "Référence à confirmer via le sélecteur véhicule AutoMecanik.",
+      "position": "outro",
+      "timestamp_start_sec": null,
+      "timestamp_end_sec": null,
+      "linked_claim_id": null
+    }
+  ]
+}
