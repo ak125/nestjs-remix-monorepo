@@ -472,3 +472,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-gsc-low-ctr-v3-pages`
 - **Décision** : feat(seo): rpc_seo_low_ctr_v3 (grain pages fidèle + couverture) → réveille la file command-center (+5 other commits)
 - **Sortie** : PR #969 | commits c124075c3 84f45e18a 26f25aed0 b255abb51 128b28316 3c4bacb1e
+
+## 2026-06-14 — feat/trust-ledger-b0a (auto)
+
+- **Branche** : `feat/trust-ledger-b0a`
+- **Décision** : feat(audit): runtime-truth pg-stable-write deterministic runner + __gov_m7 RPC (PR-B0a)
+- **Sortie** : PR #978 | commits f8c27b88b
