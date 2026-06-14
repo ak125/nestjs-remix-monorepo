@@ -282,7 +282,7 @@ export const TrustPage: React.FC<TrustPageProps> = ({
                   key={brand.id}
                   className="bg-white p-lg rounded-lg border border-neutral-200 hover:border-secondary-500 hover:shadow-md transition-all duration-300 flex flex-col items-center justify-center group"
                 >
-                  {/* Placeholder logo (remplacer par <img> en production) */}
+                  {/* Placeholder logo (à remplacer par une vraie image en production) */}
                   <div className="w-full h-20 flex items-center justify-center mb-sm">
                     <div className="font-heading text-xl text-neutral-700 group-hover:text-secondary-500 transition-colors">
                       {brand.name}
