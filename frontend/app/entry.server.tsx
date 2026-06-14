@@ -27,7 +27,7 @@ if (process.env.SENTRY_DSN) {
       process.env.APP_ENV ||
       process.env.NODE_ENV ||
       "development",
-    tracesSampleRate: Number(process.env.SENTRY_TRACES_SAMPLE_RATE ?? 0.1),
+    tracesSampleRate: Number(process.env.SENTRY_TRACES_SAMPLE_RATE ?? 0.02),
   });
 }
 
