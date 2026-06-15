@@ -1,5 +1,5 @@
 {
-  "artifact_immutability_hash": "sha256:66598f29ef27e365d1d86bd3614c4aab26aef6f7e4f28e2a08e1c31c2391b487",
+  "artifact_immutability_hash": "sha256:e4988f2acc049c897fbfc3210f083336529af44192c19011caed0b64be4a317b",
   "divergences": [
     {
       "kind": "specifier",
@@ -52,25 +52,6 @@
       "resolved_versions": [
         "1.2.3",
         "1.2.4"
-      ]
-    },
-    {
-      "kind": "specifier",
-      "name": "@remix-run/eslint-config",
-      "occurrences": [
-        {
-          "declaredIn": "packages/eslint-config/package.json",
-          "specifier": "^2.8.1",
-          "workspace": "@fafa/eslint-config"
-        },
-        {
-          "declaredIn": "frontend/package.json",
-          "specifier": "^2.17.0",
-          "workspace": "@fafa/frontend"
-        }
-      ],
-      "resolved_versions": [
-        "2.17.5"
       ]
     },
     {
@@ -171,6 +152,11 @@
           "workspace": "@fafa/design-tokens"
         },
         {
+          "declaredIn": "packages/cwv-taxonomy/package.json",
+          "specifier": "^20.0.0",
+          "workspace": "@repo/cwv-taxonomy"
+        },
+        {
           "declaredIn": "packages/database-types/package.json",
           "specifier": "^20.0.0",
           "workspace": "@repo/database-types"
@@ -218,17 +204,17 @@
       "occurrences": [
         {
           "declaredIn": "backend/package.json",
-          "specifier": "^8.59.4",
+          "specifier": "^8.60.1",
           "workspace": "@fafa/backend"
         },
         {
           "declaredIn": "frontend/package.json",
-          "specifier": "^8.59.4",
+          "specifier": "^8.60.1",
           "workspace": "@fafa/eslint-config"
         },
         {
           "declaredIn": "packages/eslint-config/package.json",
-          "specifier": "^8.59.4",
+          "specifier": "^8.60.1",
           "workspace": "@fafa/frontend"
         }
       ],
@@ -243,22 +229,22 @@
       "occurrences": [
         {
           "declaredIn": "backend/package.json",
-          "specifier": "^8.59.4",
+          "specifier": "^8.60.1",
           "workspace": "@fafa/backend"
         },
         {
           "declaredIn": "frontend/package.json",
-          "specifier": "^8.59.4",
+          "specifier": "^8.60.1",
           "workspace": "@fafa/eslint-config"
         },
         {
           "declaredIn": "packages/eslint-config/package.json",
-          "specifier": "^8.59.4",
+          "specifier": "^8.60.1",
           "workspace": "@fafa/frontend"
         },
         {
           "declaredIn": "packages/eslint-plugin-fafa-ports/package.json",
-          "specifier": "^8.59.4",
+          "specifier": "^8.60.1",
           "workspace": "eslint-plugin-fafa-ports"
         }
       ],
@@ -274,7 +260,7 @@
       "occurrences": [
         {
           "declaredIn": "packages/eslint-plugin-fafa-ports/package.json",
-          "specifier": "^8.59.4",
+          "specifier": "^8.60.1",
           "workspace": "eslint-plugin-fafa-ports"
         }
       ],
@@ -291,7 +277,7 @@
       "occurrences": [
         {
           "declaredIn": "frontend/package.json",
-          "specifier": "^4.1.6",
+          "specifier": "^4.1.8",
           "workspace": "@fafa/frontend"
         }
       ],
@@ -341,7 +327,7 @@
       "occurrences": [
         {
           "declaredIn": "frontend/package.json",
-          "specifier": "^4.11.0",
+          "specifier": "^4.12.0",
           "workspace": "@fafa/frontend"
         }
       ],
@@ -514,6 +500,25 @@
       "resolved_versions": [
         "2.7.0",
         "3.3.2"
+      ]
+    },
+    {
+      "kind": "specifier",
+      "name": "playwright",
+      "occurrences": [
+        {
+          "declaredIn": "backend/package.json",
+          "specifier": "^1.48.2",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "declaredIn": "frontend/package.json",
+          "specifier": "^1.56.1",
+          "workspace": "@fafa/frontend"
+        }
+      ],
+      "resolved_versions": [
+        "1.60.0"
       ]
     },
     {
@@ -719,47 +724,52 @@
       ]
     },
     {
-      "kind": "specifier",
+      "kind": "resolved",
       "name": "tsx",
       "occurrences": [
         {
           "declaredIn": "frontend/package.json",
-          "specifier": "^4.22.3",
+          "specifier": "^4.22.4",
           "workspace": "@fafa/frontend"
         },
         {
+          "declaredIn": "packages/cwv-taxonomy/package.json",
+          "specifier": "^4.22.4",
+          "workspace": "@repo/cwv-taxonomy"
+        },
+        {
           "declaredIn": "packages/database-types/package.json",
-          "specifier": "^4.22.3",
+          "specifier": "^4.22.4",
           "workspace": "@repo/database-types"
         },
         {
           "declaredIn": "packages/domain-commerce/package.json",
-          "specifier": "^4.7.0",
+          "specifier": "^4.22.4",
           "workspace": "@repo/domain-commerce"
         },
         {
           "declaredIn": "packages/registry/package.json",
-          "specifier": "^4.22.3",
+          "specifier": "^4.22.4",
           "workspace": "@repo/registry"
         },
         {
           "declaredIn": "packages/seo-role-contracts/package.json",
-          "specifier": "^4.22.3",
+          "specifier": "^4.22.4",
           "workspace": "@repo/seo-role-contracts"
         },
         {
           "declaredIn": "packages/seo-roles/package.json",
-          "specifier": "^4.22.3",
+          "specifier": "^4.22.4",
           "workspace": "@repo/seo-roles"
         },
         {
           "declaredIn": "packages/seo-types/package.json",
-          "specifier": "^4.22.3",
+          "specifier": "^4.22.4",
           "workspace": "@repo/seo-types"
         },
         {
           "declaredIn": "packages/seo-url-contract/package.json",
-          "specifier": "^4.7.0",
+          "specifier": "^4.22.4",
           "workspace": "@repo/seo-url-contract"
         }
       ],
@@ -842,6 +852,11 @@
         },
         {
           "declaredIn": "package.json",
+          "specifier": "^3.25.76",
+          "workspace": "@repo/cwv-taxonomy"
+        },
+        {
+          "declaredIn": "packages/cwv-taxonomy/package.json",
           "specifier": "^3.25.76",
           "workspace": "@repo/database-types"
         },
@@ -2707,12 +2722,12 @@
           "occurrences": [
             {
               "declaredIn": "frontend/package.json",
-              "specifier": "^2.17.4",
+              "specifier": "^2.17.5",
               "workspace": "@fafa/frontend"
             },
             {
               "declaredIn": "package.json",
-              "specifier": "^2.17.4",
+              "specifier": "^2.17.5",
               "workspace": "nestjs-remix-monorepo"
             }
           ],
@@ -2722,17 +2737,17 @@
         },
         {
           "divergent_resolved": false,
-          "divergent_specifiers": true,
+          "divergent_specifiers": false,
           "name": "@remix-run/eslint-config",
           "occurrences": [
             {
-              "declaredIn": "packages/eslint-config/package.json",
-              "specifier": "^2.8.1",
+              "declaredIn": "frontend/package.json",
+              "specifier": "^2.17.5",
               "workspace": "@fafa/eslint-config"
             },
             {
-              "declaredIn": "frontend/package.json",
-              "specifier": "^2.17.0",
+              "declaredIn": "packages/eslint-config/package.json",
+              "specifier": "^2.17.5",
               "workspace": "@fafa/frontend"
             }
           ],
@@ -3127,47 +3142,52 @@
         },
         {
           "divergent_resolved": true,
-          "divergent_specifiers": true,
+          "divergent_specifiers": false,
           "name": "tsx",
           "occurrences": [
             {
               "declaredIn": "frontend/package.json",
-              "specifier": "^4.22.3",
+              "specifier": "^4.22.4",
               "workspace": "@fafa/frontend"
             },
             {
+              "declaredIn": "packages/cwv-taxonomy/package.json",
+              "specifier": "^4.22.4",
+              "workspace": "@repo/cwv-taxonomy"
+            },
+            {
               "declaredIn": "packages/database-types/package.json",
-              "specifier": "^4.22.3",
+              "specifier": "^4.22.4",
               "workspace": "@repo/database-types"
             },
             {
               "declaredIn": "packages/domain-commerce/package.json",
-              "specifier": "^4.7.0",
+              "specifier": "^4.22.4",
               "workspace": "@repo/domain-commerce"
             },
             {
               "declaredIn": "packages/registry/package.json",
-              "specifier": "^4.22.3",
+              "specifier": "^4.22.4",
               "workspace": "@repo/registry"
             },
             {
               "declaredIn": "packages/seo-role-contracts/package.json",
-              "specifier": "^4.22.3",
+              "specifier": "^4.22.4",
               "workspace": "@repo/seo-role-contracts"
             },
             {
               "declaredIn": "packages/seo-roles/package.json",
-              "specifier": "^4.22.3",
+              "specifier": "^4.22.4",
               "workspace": "@repo/seo-roles"
             },
             {
               "declaredIn": "packages/seo-types/package.json",
-              "specifier": "^4.22.3",
+              "specifier": "^4.22.4",
               "workspace": "@repo/seo-types"
             },
             {
               "declaredIn": "packages/seo-url-contract/package.json",
-              "specifier": "^4.7.0",
+              "specifier": "^4.22.4",
               "workspace": "@repo/seo-url-contract"
             }
           ],
@@ -3229,7 +3249,7 @@
       ],
       "supports_dual_runtime": "none",
       "target_major": "see source_url",
-      "total_occurrences": 14,
+      "total_occurrences": 15,
       "upgrade_cost_estimate": {
         "estimated_engineer_days": 2,
         "estimated_review_load": "low"
@@ -3298,17 +3318,17 @@
           "occurrences": [
             {
               "declaredIn": "backend/package.json",
-              "specifier": "^8.59.4",
+              "specifier": "^8.60.1",
               "workspace": "@fafa/backend"
             },
             {
               "declaredIn": "frontend/package.json",
-              "specifier": "^8.59.4",
+              "specifier": "^8.60.1",
               "workspace": "@fafa/eslint-config"
             },
             {
               "declaredIn": "packages/eslint-config/package.json",
-              "specifier": "^8.59.4",
+              "specifier": "^8.60.1",
               "workspace": "@fafa/frontend"
             }
           ],
@@ -3324,22 +3344,22 @@
           "occurrences": [
             {
               "declaredIn": "backend/package.json",
-              "specifier": "^8.59.4",
+              "specifier": "^8.60.1",
               "workspace": "@fafa/backend"
             },
             {
               "declaredIn": "frontend/package.json",
-              "specifier": "^8.59.4",
+              "specifier": "^8.60.1",
               "workspace": "@fafa/eslint-config"
             },
             {
               "declaredIn": "packages/eslint-config/package.json",
-              "specifier": "^8.59.4",
+              "specifier": "^8.60.1",
               "workspace": "@fafa/frontend"
             },
             {
               "declaredIn": "packages/eslint-plugin-fafa-ports/package.json",
-              "specifier": "^8.59.4",
+              "specifier": "^8.60.1",
               "workspace": "eslint-plugin-fafa-ports"
             }
           ],
@@ -3466,12 +3486,12 @@
           "occurrences": [
             {
               "declaredIn": "package.json",
-              "specifier": "^5.5.5",
+              "specifier": "^5.5.6",
               "workspace": "@fafa/eslint-config"
             },
             {
               "declaredIn": "packages/eslint-config/package.json",
-              "specifier": "^5.5.5",
+              "specifier": "^5.5.6",
               "workspace": "nestjs-remix-monorepo"
             }
           ],
@@ -3530,9 +3550,14 @@
               "workspace": "@fafa/eslint-config"
             },
             {
-              "declaredIn": "packages/database-types/package.json",
+              "declaredIn": "packages/cwv-taxonomy/package.json",
               "specifier": "^5.9.3",
               "workspace": "@fafa/frontend"
+            },
+            {
+              "declaredIn": "packages/database-types/package.json",
+              "specifier": "^5.9.3",
+              "workspace": "@repo/cwv-taxonomy"
             },
             {
               "declaredIn": "packages/design-tokens/package.json",
@@ -3654,7 +3679,7 @@
       ],
       "supports_dual_runtime": "none",
       "target_major": "locked-at-execution",
-      "total_occurrences": 37,
+      "total_occurrences": 38,
       "upgrade_cost_estimate": {
         "estimated_engineer_days": 5,
         "estimated_review_load": "medium"
@@ -3851,6 +3876,11 @@
             {
               "declaredIn": "package.json",
               "specifier": "^3.25.76",
+              "workspace": "@repo/cwv-taxonomy"
+            },
+            {
+              "declaredIn": "packages/cwv-taxonomy/package.json",
+              "specifier": "^3.25.76",
               "workspace": "@repo/database-types"
             },
             {
@@ -3975,7 +4005,7 @@
       ],
       "supports_dual_runtime": "none",
       "target_major": "4.x",
-      "total_occurrences": 10,
+      "total_occurrences": 11,
       "upgrade_cost_estimate": {
         "estimated_engineer_days": 10,
         "estimated_review_load": "high"
@@ -3989,7 +4019,7 @@
   ],
   "generatedFrom": {
     "deps_registry": "audit/registry/deps.json",
-    "deps_registry_sha": "sha256:ccfbd71d0225371602d43ce9d28f79f480111fc06d78eb98b63312212045edb3",
+    "deps_registry_sha": "sha256:a6b9e71676d3a16c8689b62bfd8c01f355ba811b1eae3e80e1f64264702f4438",
     "lockfile": "package-lock.json",
     "lockfile_sha": "sha256:8aad3585654c7714bbdb6aa368f2ebbf8f09bed251bd759868e4069457888920",
     "overlay": "audit/dependencies/family-overlay.yaml",
@@ -4008,7 +4038,7 @@
       "runtime-backend": 17,
       "runtime-frontend": 10,
       "tooling": 15,
-      "unassigned": 159,
+      "unassigned": 160,
       "validation": 2
     },
     "by_pr_assignment": {
@@ -4022,9 +4052,9 @@
     },
     "divergent_packages_count": 41,
     "families_count": 12,
-    "total_occurrences": 323,
-    "total_packages": 226,
-    "unassigned_count": 159
+    "total_occurrences": 331,
+    "total_packages": 227,
+    "unassigned_count": 160
   },
   "unassigned_packages": [
     {
@@ -4049,7 +4079,7 @@
       "occurrences": [
         {
           "declaredIn": "package.json",
-          "specifier": "0.42.2",
+          "specifier": "0.43.0",
           "workspace": "nestjs-remix-monorepo"
         }
       ],
@@ -4451,6 +4481,26 @@
     {
       "divergent_resolved": false,
       "divergent_specifiers": false,
+      "name": "@repo/cwv-taxonomy",
+      "occurrences": [
+        {
+          "declaredIn": "backend/package.json",
+          "specifier": "*",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "declaredIn": "frontend/package.json",
+          "specifier": "*",
+          "workspace": "@fafa/frontend"
+        }
+      ],
+      "resolved_versions": [
+        "<unresolved>"
+      ]
+    },
+    {
+      "divergent_resolved": false,
+      "divergent_specifiers": false,
       "name": "@repo/domain-commerce",
       "occurrences": [
         {
@@ -4492,6 +4542,11 @@
           "declaredIn": "backend/package.json",
           "specifier": "*",
           "workspace": "@fafa/backend"
+        },
+        {
+          "declaredIn": "frontend/package.json",
+          "specifier": "*",
+          "workspace": "@fafa/frontend"
         }
       ],
       "resolved_versions": [
@@ -4690,7 +4745,7 @@
       "occurrences": [
         {
           "declaredIn": "frontend/package.json",
-          "specifier": "^3.23.1",
+          "specifier": "^3.26.1",
           "workspace": "@fafa/frontend"
         }
       ],
@@ -4705,7 +4760,7 @@
       "occurrences": [
         {
           "declaredIn": "frontend/package.json",
-          "specifier": "^3.23.1",
+          "specifier": "^3.26.1",
           "workspace": "@fafa/frontend"
         }
       ],
@@ -4720,7 +4775,7 @@
       "occurrences": [
         {
           "declaredIn": "frontend/package.json",
-          "specifier": "^3.23.1",
+          "specifier": "^3.26.1",
           "workspace": "@fafa/frontend"
         }
       ],
@@ -4735,7 +4790,7 @@
       "occurrences": [
         {
           "declaredIn": "frontend/package.json",
-          "specifier": "^3.23.1",
+          "specifier": "^3.26.1",
           "workspace": "@fafa/frontend"
         }
       ],
@@ -4750,7 +4805,7 @@
       "occurrences": [
         {
           "declaredIn": "frontend/package.json",
-          "specifier": "^3.23.1",
+          "specifier": "^3.26.1",
           "workspace": "@fafa/frontend"
         }
       ],
@@ -5059,6 +5114,11 @@
           "workspace": "@fafa/design-tokens"
         },
         {
+          "declaredIn": "packages/cwv-taxonomy/package.json",
+          "specifier": "^20.0.0",
+          "workspace": "@repo/cwv-taxonomy"
+        },
+        {
           "declaredIn": "packages/database-types/package.json",
           "specifier": "^20.0.0",
           "workspace": "@repo/database-types"
@@ -5257,7 +5317,7 @@
       "occurrences": [
         {
           "declaredIn": "packages/eslint-plugin-fafa-ports/package.json",
-          "specifier": "^8.0.0",
+          "specifier": "^8.60.1",
           "workspace": "eslint-plugin-fafa-ports"
         }
       ],
@@ -5272,7 +5332,7 @@
       "occurrences": [
         {
           "declaredIn": "packages/eslint-plugin-fafa-ports/package.json",
-          "specifier": "^8.59.4",
+          "specifier": "^8.60.1",
           "workspace": "eslint-plugin-fafa-ports"
         }
       ],
@@ -5290,7 +5350,7 @@
       "occurrences": [
         {
           "declaredIn": "frontend/package.json",
-          "specifier": "^4.1.6",
+          "specifier": "^4.1.8",
           "workspace": "@fafa/frontend"
         }
       ],
@@ -5358,7 +5418,7 @@
       "occurrences": [
         {
           "declaredIn": "frontend/package.json",
-          "specifier": "^4.11.0",
+          "specifier": "^4.12.0",
           "workspace": "@fafa/frontend"
         }
       ],
@@ -5501,7 +5561,7 @@
       "occurrences": [
         {
           "declaredIn": "package.json",
-          "specifier": "17.4.0",
+          "specifier": "17.4.3",
           "workspace": "nestjs-remix-monorepo"
         }
       ],
@@ -5724,7 +5784,7 @@
       "occurrences": [
         {
           "declaredIn": "frontend/package.json",
-          "specifier": "2.1.9",
+          "specifier": "2.3.2",
           "workspace": "@fafa/frontend"
         }
       ],
@@ -5846,7 +5906,7 @@
       "occurrences": [
         {
           "declaredIn": "package.json",
-          "specifier": "6.14.1",
+          "specifier": "6.16.1",
           "workspace": "nestjs-remix-monorepo"
         }
       ],
@@ -6047,9 +6107,14 @@
     },
     {
       "divergent_resolved": false,
-      "divergent_specifiers": false,
+      "divergent_specifiers": true,
       "name": "playwright",
       "occurrences": [
+        {
+          "declaredIn": "backend/package.json",
+          "specifier": "^1.48.2",
+          "workspace": "@fafa/backend"
+        },
         {
           "declaredIn": "frontend/package.json",
           "specifier": "^1.56.1",
@@ -6280,7 +6345,7 @@
       "occurrences": [
         {
           "declaredIn": "package.json",
-          "specifier": "2.53.0",
+          "specifier": "2.57.0",
           "workspace": "nestjs-remix-monorepo"
         }
       ],
@@ -6416,7 +6481,7 @@
       "occurrences": [
         {
           "declaredIn": "backend/package.json",
-          "specifier": "^9.5.7",
+          "specifier": "^9.6.0",
           "workspace": "@fafa/backend"
         }
       ],
@@ -6477,7 +6542,7 @@
       "occurrences": [
         {
           "declaredIn": "package.json",
-          "specifier": "^2.9.12",
+          "specifier": "^2.9.16",
           "workspace": "nestjs-remix-monorepo"
         }
       ],

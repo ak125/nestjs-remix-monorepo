@@ -416,6 +416,13 @@ entries:
     owner: '@ak125/content-team'
     sourceConfidence: medium
     risk: medium
+  # bot-guard = anti-bot access-control middleware (throttling, geo/IP filtering,
+  # GOOD_BOTS allowlist) → Security & Governance. Risk high: can 403 real traffic.
+  - glob: backend/src/modules/bot-guard/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
   - glob: backend/src/modules/cart/**
     domain: D11
     owner: '@ak125/payments-team'
