@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+# ⚠️ DEPRECATED (ADR-031/046 · programme rag-purge 2026-06-15) — RAG = retrieval chatbot only,
+# JAMAIS source de contenu/SEO. Ce script alimente l'ancien pipeline content-RAG
+# (recycled/rag-knowledge // __rag_knowledge) — NE PAS LANCER comme source de contenu.
+# Remplacement = boucle canon scraping -> automecanik-raw/sources/ -> WIKI -> projection
+# (cf. skill seo-content-loop). Conservé pour salvage (non supprimé).
 """
 ingest-oem-enriched-gammes.py — Pousse les données OEM phase5_enrichment vers __rag_knowledge.
 
