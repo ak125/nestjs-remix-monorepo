@@ -1,5 +1,5 @@
 {
-  "artifact_immutability_hash": "sha256:272286b862320859b63ba2146fc3c863ec9f8bacb2e699b32f5a4e1349e624b7",
+  "artifact_immutability_hash": "sha256:66598f29ef27e365d1d86bd3614c4aab26aef6f7e4f28e2a08e1c31c2391b487",
   "divergences": [
     {
       "kind": "specifier",
@@ -70,7 +70,47 @@
         }
       ],
       "resolved_versions": [
-        "2.17.4"
+        "2.17.5"
+      ]
+    },
+    {
+      "kind": "resolved",
+      "name": "@remix-run/node",
+      "occurrences": [
+        {
+          "declaredIn": "frontend/package.json",
+          "specifier": "^2.17.4",
+          "workspace": "@fafa/frontend"
+        },
+        {
+          "declaredIn": "package.json",
+          "specifier": "^2.17.4",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
+      "resolved_versions": [
+        "2.17.4",
+        "2.17.5"
+      ]
+    },
+    {
+      "kind": "resolved",
+      "name": "@remix-run/server-runtime",
+      "occurrences": [
+        {
+          "declaredIn": "frontend/package.json",
+          "specifier": "^2.17.4",
+          "workspace": "@fafa/frontend"
+        },
+        {
+          "declaredIn": "package.json",
+          "specifier": "^2.17.4",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
+      "resolved_versions": [
+        "2.17.4",
+        "2.17.5"
       ]
     },
     {
@@ -193,8 +233,8 @@
         }
       ],
       "resolved_versions": [
-        "8.59.4",
-        "8.60.0"
+        "5.62.0",
+        "8.60.1"
       ]
     },
     {
@@ -223,8 +263,9 @@
         }
       ],
       "resolved_versions": [
-        "8.59.4",
-        "8.60.0"
+        "5.62.0",
+        "8.60.0",
+        "8.60.1"
       ]
     },
     {
@@ -240,7 +281,8 @@
       "resolved_versions": [
         "5.62.0",
         "8.59.4",
-        "8.60.0"
+        "8.60.0",
+        "8.60.1"
       ]
     },
     {
@@ -256,7 +298,7 @@
       "resolved_versions": [
         "2.1.9",
         "4.1.6",
-        "4.1.7"
+        "4.1.8"
       ]
     },
     {
@@ -271,7 +313,7 @@
       ],
       "resolved_versions": [
         "4.1.6",
-        "4.1.7"
+        "4.1.8"
       ]
     },
     {
@@ -291,6 +333,21 @@
       ],
       "resolved_versions": [
         "10.5.0"
+      ]
+    },
+    {
+      "kind": "resolved",
+      "name": "axe-core",
+      "occurrences": [
+        {
+          "declaredIn": "frontend/package.json",
+          "specifier": "^4.11.0",
+          "workspace": "@fafa/frontend"
+        }
+      ],
+      "resolved_versions": [
+        "4.11.4",
+        "4.12.0"
       ]
     },
     {
@@ -708,7 +765,7 @@
       ],
       "resolved_versions": [
         "4.22.2",
-        "4.22.3"
+        "4.22.4"
       ]
     },
     {
@@ -723,6 +780,7 @@
       ],
       "resolved_versions": [
         "6.25.0",
+        "6.26.0",
         "7.25.0"
       ]
     },
@@ -744,7 +802,7 @@
       "resolved_versions": [
         "5.4.21",
         "8.0.13",
-        "8.0.14"
+        "8.0.16"
       ]
     },
     {
@@ -765,7 +823,7 @@
       "resolved_versions": [
         "2.1.9",
         "4.1.6",
-        "4.1.7"
+        "4.1.8"
       ]
     },
     {
@@ -2659,7 +2717,7 @@
             }
           ],
           "resolved_versions": [
-            "2.17.4"
+            "2.17.5"
           ]
         },
         {
@@ -2679,7 +2737,7 @@
             }
           ],
           "resolved_versions": [
-            "2.17.4"
+            "2.17.5"
           ]
         },
         {
@@ -2708,7 +2766,7 @@
           ]
         },
         {
-          "divergent_resolved": false,
+          "divergent_resolved": true,
           "divergent_specifiers": false,
           "name": "@remix-run/node",
           "occurrences": [
@@ -2724,7 +2782,8 @@
             }
           ],
           "resolved_versions": [
-            "2.17.4"
+            "2.17.4",
+            "2.17.5"
           ]
         },
         {
@@ -2768,7 +2827,7 @@
           ]
         },
         {
-          "divergent_resolved": false,
+          "divergent_resolved": true,
           "divergent_specifiers": false,
           "name": "@remix-run/server-runtime",
           "occurrences": [
@@ -2784,7 +2843,8 @@
             }
           ],
           "resolved_versions": [
-            "2.17.4"
+            "2.17.4",
+            "2.17.5"
           ]
         },
         {
@@ -2846,7 +2906,7 @@
           "resolved_versions": [
             "5.4.21",
             "8.0.13",
-            "8.0.14"
+            "8.0.16"
           ]
         }
       ],
@@ -3113,7 +3173,7 @@
           ],
           "resolved_versions": [
             "4.22.2",
-            "4.22.3"
+            "4.22.4"
           ]
         }
       ],
@@ -3253,8 +3313,8 @@
             }
           ],
           "resolved_versions": [
-            "8.59.4",
-            "8.60.0"
+            "5.62.0",
+            "8.60.1"
           ]
         },
         {
@@ -3284,8 +3344,9 @@
             }
           ],
           "resolved_versions": [
-            "8.59.4",
-            "8.60.0"
+            "5.62.0",
+            "8.60.0",
+            "8.60.1"
           ]
         },
         {
@@ -3415,7 +3476,7 @@
             }
           ],
           "resolved_versions": [
-            "5.5.5"
+            "5.5.6"
           ]
         },
         {
@@ -3930,7 +3991,7 @@
     "deps_registry": "audit/registry/deps.json",
     "deps_registry_sha": "sha256:ccfbd71d0225371602d43ce9d28f79f480111fc06d78eb98b63312212045edb3",
     "lockfile": "package-lock.json",
-    "lockfile_sha": "sha256:e3c6a0764a1c06e9c3db1c3c9496cf33d76a548481eb747d6ba26b8512f9ea26",
+    "lockfile_sha": "sha256:8aad3585654c7714bbdb6aa368f2ebbf8f09bed251bd759868e4069457888920",
     "overlay": "audit/dependencies/family-overlay.yaml",
     "overlay_sha": "sha256:4067a5535b22d0d6c98fa6f3c980189b2a68f9837edd7f7caf1e7b1e10c44746"
   },
@@ -3959,7 +4020,7 @@
       "pr-9f": 17,
       "pr-9g": 0
     },
-    "divergent_packages_count": 38,
+    "divergent_packages_count": 41,
     "families_count": 12,
     "total_occurrences": 323,
     "total_packages": 226,
@@ -4634,7 +4695,7 @@
         }
       ],
       "resolved_versions": [
-        "3.23.6"
+        "3.26.1"
       ]
     },
     {
@@ -4649,7 +4710,7 @@
         }
       ],
       "resolved_versions": [
-        "3.23.6"
+        "3.26.1"
       ]
     },
     {
@@ -4664,7 +4725,7 @@
         }
       ],
       "resolved_versions": [
-        "3.23.6"
+        "3.26.1"
       ]
     },
     {
@@ -4679,7 +4740,7 @@
         }
       ],
       "resolved_versions": [
-        "3.23.6"
+        "3.26.1"
       ]
     },
     {
@@ -4694,7 +4755,7 @@
         }
       ],
       "resolved_versions": [
-        "3.23.6"
+        "3.26.1"
       ]
     },
     {
@@ -5218,7 +5279,8 @@
       "resolved_versions": [
         "5.62.0",
         "8.59.4",
-        "8.60.0"
+        "8.60.0",
+        "8.60.1"
       ]
     },
     {
@@ -5235,7 +5297,7 @@
       "resolved_versions": [
         "2.1.9",
         "4.1.6",
-        "4.1.7"
+        "4.1.8"
       ]
     },
     {
@@ -5251,7 +5313,7 @@
       ],
       "resolved_versions": [
         "4.1.6",
-        "4.1.7"
+        "4.1.8"
       ]
     },
     {
@@ -5290,7 +5352,7 @@
       ]
     },
     {
-      "divergent_resolved": false,
+      "divergent_resolved": true,
       "divergent_specifiers": false,
       "name": "axe-core",
       "occurrences": [
@@ -5301,7 +5363,8 @@
         }
       ],
       "resolved_versions": [
-        "4.11.4"
+        "4.11.4",
+        "4.12.0"
       ]
     },
     {
@@ -5443,7 +5506,7 @@
         }
       ],
       "resolved_versions": [
-        "17.4.2"
+        "17.4.3"
       ]
     },
     {
@@ -5666,7 +5729,7 @@
         }
       ],
       "resolved_versions": [
-        "2.1.9"
+        "2.3.2"
       ]
     },
     {
@@ -5788,7 +5851,7 @@
         }
       ],
       "resolved_versions": [
-        "6.14.2"
+        "6.16.1"
       ]
     },
     {
@@ -6222,7 +6285,7 @@
         }
       ],
       "resolved_versions": [
-        "2.54.0"
+        "2.57.0"
       ]
     },
     {
@@ -6358,7 +6421,7 @@
         }
       ],
       "resolved_versions": [
-        "9.5.7"
+        "9.6.0"
       ]
     },
     {
@@ -6419,7 +6482,7 @@
         }
       ],
       "resolved_versions": [
-        "2.9.14"
+        "2.9.16"
       ]
     },
     {
@@ -6450,6 +6513,7 @@
       ],
       "resolved_versions": [
         "6.25.0",
+        "6.26.0",
         "7.25.0"
       ]
     },
@@ -6502,7 +6566,7 @@
       "resolved_versions": [
         "2.1.9",
         "4.1.6",
-        "4.1.7"
+        "4.1.8"
       ]
     },
     {
