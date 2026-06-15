@@ -20,14 +20,14 @@
       "declaredIn": [
         "package.json"
       ],
-      "id": "npm:@ast-grep/cli@0.42.2",
+      "id": "npm:@ast-grep/cli@0.43.0",
       "name": "@ast-grep/cli",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "0.42.2",
+      "version": "0.43.0",
       "workspaces": [
         "nestjs-remix-monorepo"
       ]
@@ -789,14 +789,14 @@
         "frontend/package.json",
         "package.json"
       ],
-      "id": "npm:@remix-run/dev@^2.17.4",
+      "id": "npm:@remix-run/dev@^2.17.5",
       "name": "@remix-run/dev",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^2.17.4",
+      "version": "^2.17.5",
       "workspaces": [
         "@fafa/frontend",
         "nestjs-remix-monorepo"
@@ -804,34 +804,20 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
-      ],
-      "id": "npm:@remix-run/eslint-config@^2.17.0",
-      "name": "@remix-run/eslint-config",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^2.17.0",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
-    },
-    {
-      "declaredIn": [
+        "frontend/package.json",
         "packages/eslint-config/package.json"
       ],
-      "id": "npm:@remix-run/eslint-config@^2.8.1",
+      "id": "npm:@remix-run/eslint-config@^2.17.5",
       "name": "@remix-run/eslint-config",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^2.8.1",
+      "version": "^2.17.5",
       "workspaces": [
-        "@fafa/eslint-config"
+        "@fafa/eslint-config",
+        "@fafa/frontend"
       ]
     },
     {
@@ -1124,14 +1110,14 @@
       "declaredIn": [
         "frontend/package.json"
       ],
-      "id": "npm:@tiptap/extension-bold@^3.23.1",
+      "id": "npm:@tiptap/extension-bold@^3.26.1",
       "name": "@tiptap/extension-bold",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^3.23.1",
+      "version": "^3.26.1",
       "workspaces": [
         "@fafa/frontend"
       ]
@@ -1140,14 +1126,14 @@
       "declaredIn": [
         "frontend/package.json"
       ],
-      "id": "npm:@tiptap/extension-italic@^3.23.1",
+      "id": "npm:@tiptap/extension-italic@^3.26.1",
       "name": "@tiptap/extension-italic",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^3.23.1",
+      "version": "^3.26.1",
       "workspaces": [
         "@fafa/frontend"
       ]
@@ -1156,14 +1142,14 @@
       "declaredIn": [
         "frontend/package.json"
       ],
-      "id": "npm:@tiptap/pm@^3.23.1",
+      "id": "npm:@tiptap/pm@^3.26.1",
       "name": "@tiptap/pm",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^3.23.1",
+      "version": "^3.26.1",
       "workspaces": [
         "@fafa/frontend"
       ]
@@ -1172,14 +1158,14 @@
       "declaredIn": [
         "frontend/package.json"
       ],
-      "id": "npm:@tiptap/react@^3.23.1",
+      "id": "npm:@tiptap/react@^3.26.1",
       "name": "@tiptap/react",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^3.23.1",
+      "version": "^3.26.1",
       "workspaces": [
         "@fafa/frontend"
       ]
@@ -1188,14 +1174,14 @@
       "declaredIn": [
         "frontend/package.json"
       ],
-      "id": "npm:@tiptap/starter-kit@^3.23.1",
+      "id": "npm:@tiptap/starter-kit@^3.26.1",
       "name": "@tiptap/starter-kit",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^3.23.1",
+      "version": "^3.26.1",
       "workspaces": [
         "@fafa/frontend"
       ]
@@ -1524,6 +1510,7 @@
     },
     {
       "declaredIn": [
+        "packages/cwv-taxonomy/package.json",
         "packages/database-types/package.json",
         "packages/domain-commerce/package.json",
         "packages/registry/package.json",
@@ -1541,6 +1528,7 @@
       "status": "LIVE",
       "version": "^20.0.0",
       "workspaces": [
+        "@repo/cwv-taxonomy",
         "@repo/database-types",
         "@repo/domain-commerce",
         "@repo/registry",
@@ -1748,14 +1736,14 @@
         "frontend/package.json",
         "packages/eslint-config/package.json"
       ],
-      "id": "npm:@typescript-eslint/eslint-plugin@^8.59.4",
+      "id": "npm:@typescript-eslint/eslint-plugin@^8.60.1",
       "name": "@typescript-eslint/eslint-plugin",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^8.59.4",
+      "version": "^8.60.1",
       "workspaces": [
         "@fafa/backend",
         "@fafa/eslint-config",
@@ -1769,14 +1757,14 @@
         "packages/eslint-config/package.json",
         "packages/eslint-plugin-fafa-ports/package.json"
       ],
-      "id": "npm:@typescript-eslint/parser@^8.59.4",
+      "id": "npm:@typescript-eslint/parser@^8.60.1",
       "name": "@typescript-eslint/parser",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^8.59.4",
+      "version": "^8.60.1",
       "workspaces": [
         "@fafa/backend",
         "@fafa/eslint-config",
@@ -1788,14 +1776,14 @@
       "declaredIn": [
         "packages/eslint-plugin-fafa-ports/package.json"
       ],
-      "id": "npm:@typescript-eslint/rule-tester@^8.0.0",
+      "id": "npm:@typescript-eslint/rule-tester@^8.60.1",
       "name": "@typescript-eslint/rule-tester",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^8.0.0",
+      "version": "^8.60.1",
       "workspaces": [
         "eslint-plugin-fafa-ports"
       ]
@@ -1804,14 +1792,14 @@
       "declaredIn": [
         "packages/eslint-plugin-fafa-ports/package.json"
       ],
-      "id": "npm:@typescript-eslint/utils@^8.59.4",
+      "id": "npm:@typescript-eslint/utils@^8.60.1",
       "name": "@typescript-eslint/utils",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^8.59.4",
+      "version": "^8.60.1",
       "workspaces": [
         "eslint-plugin-fafa-ports"
       ]
@@ -1820,14 +1808,14 @@
       "declaredIn": [
         "frontend/package.json"
       ],
-      "id": "npm:@vitest/browser@^4.1.6",
+      "id": "npm:@vitest/browser@^4.1.8",
       "name": "@vitest/browser",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^4.1.6",
+      "version": "^4.1.8",
       "workspaces": [
         "@fafa/frontend"
       ]
@@ -1900,14 +1888,14 @@
       "declaredIn": [
         "frontend/package.json"
       ],
-      "id": "npm:axe-core@^4.11.0",
+      "id": "npm:axe-core@^4.12.0",
       "name": "axe-core",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^4.11.0",
+      "version": "^4.12.0",
       "workspaces": [
         "@fafa/frontend"
       ]
@@ -2128,14 +2116,14 @@
       "declaredIn": [
         "package.json"
       ],
-      "id": "npm:dependency-cruiser@17.4.0",
+      "id": "npm:dependency-cruiser@17.4.3",
       "name": "dependency-cruiser",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "17.4.0",
+      "version": "17.4.3",
       "workspaces": [
         "nestjs-remix-monorepo"
       ]
@@ -2265,14 +2253,14 @@
         "package.json",
         "packages/eslint-config/package.json"
       ],
-      "id": "npm:eslint-plugin-prettier@^5.5.5",
+      "id": "npm:eslint-plugin-prettier@^5.5.6",
       "name": "eslint-plugin-prettier",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^5.5.5",
+      "version": "^5.5.6",
       "workspaces": [
         "@fafa/eslint-config",
         "nestjs-remix-monorepo"
@@ -2534,14 +2522,14 @@
       "declaredIn": [
         "frontend/package.json"
       ],
-      "id": "npm:impeccable@2.1.9",
+      "id": "npm:impeccable@2.3.2",
       "name": "impeccable",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "2.1.9",
+      "version": "2.3.2",
       "workspaces": [
         "@fafa/frontend"
       ]
@@ -2682,14 +2670,14 @@
       "declaredIn": [
         "package.json"
       ],
-      "id": "npm:knip@6.14.1",
+      "id": "npm:knip@6.16.1",
       "name": "knip",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "6.14.1",
+      "version": "6.16.1",
       "workspaces": [
         "nestjs-remix-monorepo"
       ]
@@ -2984,6 +2972,22 @@
       "sourceConfidence": "high",
       "status": "LIVE",
       "version": "^10.3.0",
+      "workspaces": [
+        "@fafa/backend"
+      ]
+    },
+    {
+      "declaredIn": [
+        "backend/package.json"
+      ],
+      "id": "npm:playwright@^1.48.2",
+      "name": "playwright",
+      "owner": "__unassigned__",
+      "schemaVersion": "1.0.0",
+      "source": "npm",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "version": "^1.48.2",
       "workspaces": [
         "@fafa/backend"
       ]
@@ -3368,14 +3372,14 @@
       "declaredIn": [
         "package.json"
       ],
-      "id": "npm:squawk-cli@2.53.0",
+      "id": "npm:squawk-cli@2.57.0",
       "name": "squawk-cli",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "2.53.0",
+      "version": "2.57.0",
       "workspaces": [
         "nestjs-remix-monorepo"
       ]
@@ -3530,14 +3534,14 @@
       "declaredIn": [
         "backend/package.json"
       ],
-      "id": "npm:ts-loader@^9.5.7",
+      "id": "npm:ts-loader@^9.6.0",
       "name": "ts-loader",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^9.5.7",
+      "version": "^9.6.0",
       "workspaces": [
         "@fafa/backend"
       ]
@@ -3609,44 +3613,32 @@
     {
       "declaredIn": [
         "frontend/package.json",
+        "packages/cwv-taxonomy/package.json",
         "packages/database-types/package.json",
+        "packages/domain-commerce/package.json",
         "packages/registry/package.json",
         "packages/seo-role-contracts/package.json",
         "packages/seo-roles/package.json",
-        "packages/seo-types/package.json"
+        "packages/seo-types/package.json",
+        "packages/seo-url-contract/package.json"
       ],
-      "id": "npm:tsx@^4.22.3",
+      "id": "npm:tsx@^4.22.4",
       "name": "tsx",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^4.22.3",
+      "version": "^4.22.4",
       "workspaces": [
         "@fafa/frontend",
+        "@repo/cwv-taxonomy",
         "@repo/database-types",
+        "@repo/domain-commerce",
         "@repo/registry",
         "@repo/seo-role-contracts",
         "@repo/seo-roles",
-        "@repo/seo-types"
-      ]
-    },
-    {
-      "declaredIn": [
-        "packages/domain-commerce/package.json",
-        "packages/seo-url-contract/package.json"
-      ],
-      "id": "npm:tsx@^4.7.0",
-      "name": "tsx",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^4.7.0",
-      "workspaces": [
-        "@repo/domain-commerce",
+        "@repo/seo-types",
         "@repo/seo-url-contract"
       ]
     },
@@ -3654,14 +3646,14 @@
       "declaredIn": [
         "package.json"
       ],
-      "id": "npm:turbo@^2.9.12",
+      "id": "npm:turbo@^2.9.16",
       "name": "turbo",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^2.9.12",
+      "version": "^2.9.16",
       "workspaces": [
         "nestjs-remix-monorepo"
       ]
@@ -3671,6 +3663,7 @@
         "backend/package.json",
         "frontend/package.json",
         "package.json",
+        "packages/cwv-taxonomy/package.json",
         "packages/database-types/package.json",
         "packages/design-tokens/package.json",
         "packages/domain-commerce/package.json",
@@ -3694,6 +3687,7 @@
         "@fafa/design-tokens",
         "@fafa/eslint-config",
         "@fafa/frontend",
+        "@repo/cwv-taxonomy",
         "@repo/database-types",
         "@repo/domain-commerce",
         "@repo/registry",
@@ -3871,6 +3865,7 @@
         "backend/package.json",
         "frontend/package.json",
         "package.json",
+        "packages/cwv-taxonomy/package.json",
         "packages/database-types/package.json",
         "packages/registry/package.json",
         "packages/seo-role-contracts/package.json",
@@ -3888,6 +3883,7 @@
       "workspaces": [
         "@fafa/backend",
         "@fafa/frontend",
+        "@repo/cwv-taxonomy",
         "@repo/database-types",
         "@repo/registry",
         "@repo/seo-role-contracts",
@@ -3947,6 +3943,24 @@
       "workspaces": [
         "@fafa/backend",
         "@fafa/design-tokens",
+        "@fafa/frontend"
+      ]
+    },
+    {
+      "declaredIn": [
+        "backend/package.json",
+        "frontend/package.json"
+      ],
+      "id": "workspace:@repo/cwv-taxonomy@*",
+      "name": "@repo/cwv-taxonomy",
+      "owner": "__unassigned__",
+      "schemaVersion": "1.0.0",
+      "source": "workspace",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "version": "*",
+      "workspaces": [
+        "@fafa/backend",
         "@fafa/frontend"
       ]
     },
@@ -4042,7 +4056,8 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend/package.json",
+        "frontend/package.json"
       ],
       "id": "workspace:@repo/seo-types@*",
       "name": "@repo/seo-types",
@@ -4053,7 +4068,8 @@
       "status": "LIVE",
       "version": "*",
       "workspaces": [
-        "@fafa/backend"
+        "@fafa/backend",
+        "@fafa/frontend"
       ]
     },
     {
