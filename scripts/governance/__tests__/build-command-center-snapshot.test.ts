@@ -157,6 +157,55 @@ test("AJV self-test: invalid snapshots are rejected", () => {
   assert.equal(validate(leak), false, "should reject baked generated_at");
 });
 
+// ── skills.registry resolution (audit 2026-06-11 — fix du drop silencieux) ──
+const SKILLS_REG = { skills: [{ name: "skill-cap", path: "present/b" }] };
+
+test("resolution: a departments[].capabilities slug missing from declared_capabilities resolves via skills.registry (same declared shape → CERTIFIED)", () => {
+  const canon = JSON.parse(JSON.stringify(FIXTURE));
+  canon.departments[1].capabilities = ["partial-cap", "skill-cap"]; // seo
+  const snap = buildSnapshot(canon, present, SKILLS_REG);
+  const cap = snap.capabilities.find((c: any) => c.id === "skill-cap");
+  assert.ok(cap, "synthesized capability present");
+  assert.equal(cap.owner, "seo");
+  assert.equal(cap.type, "skill");
+  assert.equal(cap.certification, "CERTIFIED"); // live + verified path (LOCKED ladder)
+  const seo = snap.departments.find((d: any) => d.id === "seo");
+  assert.ok(seo.capabilities.includes("skill-cap"));
+  assert.equal(snap.summary.capabilities_total, 5);
+  assert.equal(snap.alerts.some((a: any) => a.code === "DROPPED_CAPABILITY"), false);
+  assert.ok(validate(snap), "AJV: " + JSON.stringify(validate.errors));
+  CommandCenterSnapshotSchema.parse(snap);
+});
+
+test("resolution: a registry path MISSING on disk becomes BROKEN (pessimism, never silent green)", () => {
+  const canon = JSON.parse(JSON.stringify(FIXTURE));
+  canon.departments[1].capabilities = ["partial-cap", "ghost-skill"];
+  const snap = buildSnapshot(canon, present, { skills: [{ name: "ghost-skill", path: "missing/skill" }] });
+  const cap = snap.capabilities.find((c: any) => c.id === "ghost-skill");
+  assert.equal(cap.certification, "BROKEN");
+  assert.equal(snap.alerts.some((a: any) => a.code === "BROKEN_EVIDENCE" && a.target_id === "ghost-skill"), true);
+});
+
+test("drop: an unresolvable slug raises DROPPED_CAPABILITY (error) — never a silent drop", () => {
+  const canon = JSON.parse(JSON.stringify(FIXTURE));
+  canon.departments[2].capabilities = ["unknown-cap", "nowhere-cap"]; // support
+  const snap = buildSnapshot(canon, present, SKILLS_REG);
+  const alert = snap.alerts.find((a: any) => a.code === "DROPPED_CAPABILITY");
+  assert.ok(alert, "DROPPED_CAPABILITY alert emitted");
+  assert.equal(alert.severity, "error");
+  assert.equal(alert.target_id, "support:nowhere-cap");
+  assert.ok(snap.owner_actions.some((o: any) => o.from_alert === "DROPPED_CAPABILITY" && o.target_id === "support:nowhere-cap"));
+  assert.equal(snap.capabilities.some((c: any) => c.id === "nowhere-cap"), false);
+  // Zod accepte le nouveau code ; l'enum du schéma AJV canon (.spec/00-canon, owner-only)
+  // a son diff préparé dans audit/cc-wiring-owner-actions-2026-06-11.md.
+  CommandCenterSnapshotSchema.parse(snap);
+});
+
+test("back-compat: buildSnapshot without a skills registry behaves like before (no synth, no crash)", () => {
+  const snap = buildSnapshot(FIXTURE, present);
+  assert.equal(snap.summary.capabilities_total, 4);
+});
+
 test("integration: the committed snapshot satisfies AJV + Zod", () => {
   const file = path.join(ROOT, "audit/registry/command-center-snapshot.json");
   if (!fs.existsSync(file)) return; // generated artifact may be absent in a fresh checkout
