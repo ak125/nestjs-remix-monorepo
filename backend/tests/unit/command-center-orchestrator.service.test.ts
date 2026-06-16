@@ -114,4 +114,23 @@ describe('CommandCenterOrchestratorService — squelette inerte', () => {
     s.registerPlanner(fakePlanner);
     expect(() => s.registerPlanner(fakePlanner)).toThrow(/déjà enregistré/);
   });
+
+  it('onModuleInit : sync, ne throw jamais ; silencieux en off, log en shadow', () => {
+    // off (défaut) → aucun log de confirmation
+    setEnv(undefined, 'development');
+    const off = new CommandCenterOrchestratorService();
+    const warnOff = jest
+      .spyOn((off as never)['logger'], 'warn')
+      .mockImplementation();
+    expect(() => off.onModuleInit()).not.toThrow();
+    expect(warnOff).not.toHaveBeenCalled();
+    // shadow → exactement 1 log de confirmation
+    setEnv('shadow', 'development');
+    const on = new CommandCenterOrchestratorService();
+    const warnOn = jest
+      .spyOn((on as never)['logger'], 'warn')
+      .mockImplementation();
+    expect(() => on.onModuleInit()).not.toThrow();
+    expect(warnOn).toHaveBeenCalledTimes(1);
+  });
 });

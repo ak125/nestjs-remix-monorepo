@@ -9,7 +9,13 @@
  *   - flag défaut OFF · PROD forcé OFF (orchestration PROD = décision owner séparée)
  *   - le canon décide : on n'oriente QUE des actions déjà gouvernées (OwnerActionQueue)
  *   - réversibilité obligatoire : un plan exécutable porte un inverse (Phase 2)
- *   - no-silent-fallback : tout run sera tracé au ledger (admin_audit) en Phase 2
+ *   - no-silent-fallback : tout run shadow sera tracé au ledger (admin_audit)
+ *
+ * Scope du ledger (ADR-087 shadow-1 = « mode resolution + ledger admin_audit ») :
+ * shadow-1 fige ICI le *type* `ExecutionLedgerEntry` (le contrat). Le *write path* vers
+ * `admin_audit` est CONSCIEMMENT déféré à shadow-2 — premier PR où `planShadow` produit
+ * un plan réel à tracer. Le câbler dès shadow-1 = code mort non exercé + dépendance
+ * Supabase injectée dans un squelette inerte (blast radius inutile). Déféré ≠ abandonné.
  *
  * Ce fichier ne contient AUCUN planner et AUCUNE I/O — c'est le squelette de typage +
  * la résolution de mode. Les planners (① regen-artifact, ② pr-proposition) arrivent en

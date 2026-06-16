@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, type OnModuleInit } from '@nestjs/common';
 import {
   resolveOrchestrationMode,
   type ExecutableActionKind,
@@ -41,9 +41,23 @@ export interface ShadowPlanner {
  * gated séparément (mode `approved`), avec ledger `admin_audit` + réversibilité.
  */
 @Injectable()
-export class CommandCenterOrchestratorService {
+export class CommandCenterOrchestratorService implements OnModuleInit {
   private readonly logger = new Logger(CommandCenterOrchestratorService.name);
   private readonly planners = new Map<ExecutableActionKind, ShadowPlanner>();
+
+  /**
+   * Boot : log SYNC (aucune I/O distante) du mode UNIQUEMENT s'il est ≠ off, pour
+   * qu'un opérateur qui pose `COMMAND_CENTER_ORCHESTRATION=shadow` voie que le flag a
+   * pris effet. Silencieux par défaut (off) → ne pollue pas les logs en nominal.
+   */
+  onModuleInit(): void {
+    const mode = this.getMode();
+    if (mode !== 'off') {
+      this.logger.warn(
+        `Orchestration shadow ACTIVE (mode=${mode}, planners=${this.planners.size}) — calcul would-be uniquement, 0 mutation (ADR-087).`,
+      );
+    }
+  }
 
   /** Mode courant (défaut OFF ; PROD toujours OFF). */
   getMode(): OrchestrationMode {
