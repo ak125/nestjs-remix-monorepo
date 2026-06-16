@@ -6,7 +6,6 @@ export {
   buildPieceVehicleUrlRaw,
   buildConstructeurUrl,
   buildConstructeurTypeUrl,
-  buildConstructeurModeleUrl,
   extractIdFromSlug,
   extractAliasFromSlug,
 } from './url-builder.utils';

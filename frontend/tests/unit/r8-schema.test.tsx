@@ -46,16 +46,27 @@ const breadcrumbFixture: LoaderData["breadcrumb"] = {
 };
 
 describe("buildR8CanonicalUrls", () => {
-  it("produit les 5 URLs canoniques au format attendu", () => {
+  // ADR-084 : les niveaux `constructeurs` (index → 404) et `model` (2-seg → 410)
+  // ont été retirés. Le fil d'ariane R8 est désormais Accueil → Marque → Véhicule.
+  it("produit les 3 URLs canoniques au format attendu (home, brand, type)", () => {
     const urls = buildR8CanonicalUrls(vehicleFixture);
     expect(urls).toEqual({
       home: "https://www.automecanik.com/",
-      constructeurs: "https://www.automecanik.com/constructeurs",
       brand: "https://www.automecanik.com/constructeurs/renault-140.html",
-      model:
-        "https://www.automecanik.com/constructeurs/renault-140/safrane-i-140082.html",
       type: "https://www.automecanik.com/constructeurs/renault-140/safrane-i-140082/2-1-td-3766.html",
     });
+  });
+
+  it("n'expose PLUS d'URL niveau-modèle (2-seg) ni d'index /constructeurs — anti-régression ADR-084", () => {
+    const urls = buildR8CanonicalUrls(vehicleFixture) as Record<string, string>;
+    expect(urls.model).toBeUndefined();
+    expect(urls.constructeurs).toBeUndefined();
+    // Aucune URL émise ne doit être l'URL modèle 2-seg (qui renvoie 410).
+    for (const url of Object.values(urls)) {
+      expect(url).not.toBe(
+        "https://www.automecanik.com/constructeurs/renault-140/safrane-i-140082.html",
+      );
+    }
   });
 
   it("toutes les URLs sont absolues HTTPS", () => {
@@ -72,12 +83,12 @@ describe("generateVehicleSchema — BreadcrumbList", () => {
     (n) => (n as { "@type": string })["@type"] === "BreadcrumbList",
   ) as { itemListElement: Array<Record<string, unknown>> };
 
-  it("expose un nœud BreadcrumbList dans @graph", () => {
+  it("expose un nœud BreadcrumbList dans @graph (3 items : Accueil → Marque → Véhicule)", () => {
     expect(breadcrumbNode).toBeDefined();
-    expect(breadcrumbNode.itemListElement).toHaveLength(5);
+    expect(breadcrumbNode.itemListElement).toHaveLength(3);
   });
 
-  it("tous les itemListElement (positions 1-5) ont position, name et item", () => {
+  it("tous les itemListElement (positions 1-3) ont position, name et item", () => {
     for (const li of breadcrumbNode.itemListElement) {
       expect(li["@type"]).toBe("ListItem");
       expect(typeof li.position).toBe("number");
@@ -88,27 +99,35 @@ describe("generateVehicleSchema — BreadcrumbList", () => {
     }
   });
 
-  it("position 5 (type) référence l'URL canonique de la page courante — régression GSC", () => {
-    const last = breadcrumbNode.itemListElement[4];
-    expect(last.position).toBe(5);
+  it("position 3 (type) référence l'URL canonique de la page courante — régression GSC", () => {
+    const last = breadcrumbNode.itemListElement[2];
+    expect(last.position).toBe(3);
     expect(last.item).toBe(
       "https://www.automecanik.com/constructeurs/renault-140/safrane-i-140082/2-1-td-3766.html",
     );
   });
 
-  it("positions ordonnées 1..5 sans trou", () => {
+  it("positions ordonnées 1..3 sans trou", () => {
     expect(
       breadcrumbNode.itemListElement.map((li) => li.position),
-    ).toEqual([1, 2, 3, 4, 5]);
+    ).toEqual([1, 2, 3]);
   });
 
-  it("chaque URL est imbriquée dans la précédente (cohérence hiérarchique)", () => {
+  it("aucun item ne pointe vers l'URL modèle 2-seg (410) ni l'index /constructeurs (404) — ADR-084", () => {
+    const items = breadcrumbNode.itemListElement.map((li) => li.item as string);
+    expect(items).not.toContain(
+      "https://www.automecanik.com/constructeurs/renault-140/safrane-i-140082.html",
+    );
+    expect(items).not.toContain("https://www.automecanik.com/constructeurs");
+    expect(items).not.toContain("https://www.automecanik.com/constructeurs/");
+  });
+
+  it("la hiérarchie reste cohérente : Véhicule imbriqué dans Marque", () => {
     const items = breadcrumbNode.itemListElement.map(
       (li) => li.item as string,
     );
-    expect(items[2].startsWith(items[1])).toBe(true);
-    expect(items[3].startsWith(items[2].replace(/\.html$/, ""))).toBe(true);
-    expect(items[4].startsWith(items[3].replace(/\.html$/, ""))).toBe(true);
+    // items[0]=Accueil, items[1]=Marque, items[2]=Véhicule
+    expect(items[2].startsWith(items[1].replace(/\.html$/, ""))).toBe(true);
   });
 });
 
@@ -123,14 +142,12 @@ describe("BreadcrumbSection — structural guard (single SoT, JSON-LD only)", ()
 
     // Garde anti-régression : interdit le retour de la dual-surface qui a causé
     // les incidents GSC 2026-05-23 et 2026-05-26 (PR #729 + alert suivante).
-    // Le BreadcrumbList structuré est émis EXCLUSIVEMENT via JSON-LD
-    // (generateVehicleSchema → Remix meta script:ld+json).
     expect(container.querySelectorAll("[itemscope]")).toHaveLength(0);
     expect(container.querySelectorAll("[itemtype]")).toHaveLength(0);
     expect(container.querySelectorAll("[itemprop]")).toHaveLength(0);
   });
 
-  it("le rendu visuel reste intact : 5 niveaux navigables, page courante mise en évidence", () => {
+  it("rendu visuel : Accueil → Marque cliquables (2 liens) + page courante non-clickable — ADR-084", () => {
     const { container, getByText } = render(
       <BreadcrumbSection
         vehicle={vehicleFixture}
@@ -138,8 +155,18 @@ describe("BreadcrumbSection — structural guard (single SoT, JSON-LD only)", ()
       />,
     );
 
-    // 4 liens cliquables (Accueil, Constructeurs, Renault, Safrane I) + 1 page courante non-clickable
-    expect(container.querySelectorAll("a")).toHaveLength(4);
+    // 2 liens cliquables (Accueil, Renault) — niveaux "Constructeurs" (404) et
+    // "Modèle" (410) retirés. + 1 page courante (type) non-clickable.
+    expect(container.querySelectorAll("a")).toHaveLength(2);
+
+    // Aucun lien ne pointe vers l'URL modèle 2-seg (410).
+    const hrefs = Array.from(container.querySelectorAll("a")).map((a) =>
+      a.getAttribute("href"),
+    );
+    expect(hrefs).not.toContain(
+      "/constructeurs/renault-140/safrane-i-140082.html",
+    );
+    expect(hrefs).not.toContain("/constructeurs");
 
     // Page courante = type, non clickable, en gras
     const current = getByText(/2\.1 TD\s*88\s*ch/);

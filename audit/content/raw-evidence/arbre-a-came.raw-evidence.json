@@ -1,0 +1,32 @@
+{
+  "coverage": [],
+  "fold_note": "R4/R6→R3 = direction owner souhaitée, PENDING_ADR (étend ADR-027) ; pas canon. R5 déjà replié (ADR-027).",
+  "fold_readiness": {
+    "R4_to_R3": "BLOCKED_PENDING_ADR",
+    "R5_to_R3": "READY_ADR_027",
+    "R6_to_R3": "BLOCKED_PENDING_ADR"
+  },
+  "intent_targets": [],
+  "inventory_status": "RAW_PARSE_ERROR",
+  "next_action": "FIX_RAW_FRONTMATTER (yaml_parse_error: duplicated mapping key (193:5)\n\n 190 |     source_ref: corpus RAG web OEM\n 191 |   technical_notes:\n 192 |     val_2_a: '2 A'\n 193 |     val_2_a: '2 a'\n-----------^\n 194 |     val_7_6_litres: '7,6 litres'\n 195 |     val_800_v: '800 V')",
+  "pg_id": null,
+  "provenance": {
+    "completeness_profile": null,
+    "source_type": null,
+    "sources": [
+      {
+        "content_hash": "sha256:c905118c7b442239413fb8d0ef0020917894f126fd04e89ff7352e7bc256f1cc",
+        "kind": "gamme",
+        "path": "recycled/rag-knowledge/gammes/arbre-a-came.md"
+      }
+    ],
+    "truth_level": null,
+    "unlinked_source_types": [
+      "guide"
+    ],
+    "verification_status": null
+  },
+  "raw_verdict": "RAW_PARSE_ERROR",
+  "schema_version": "raw-evidence.v1",
+  "subject": "arbre-a-came"
+}

@@ -1,10 +1,18 @@
 ---
 name: rag-check
-description: "Vérification couverture RAG par rôle R* pour une gamme OU un véhicule. Détecte automatiquement le type d'input. Usage : /rag-check <pg_alias|vehicle_slug> [--fix] [--batch top10]"
+description: "[DEPRECATED — RAG=chatbot only, ADR-031/046] Vérification couverture RAG par rôle R* pour une gamme OU un véhicule. Détecte automatiquement le type d'input. Usage : /rag-check <pg_alias|vehicle_slug> [--fix] [--batch top10]"
 argument-hint: "<pg_alias ou vehicle_slug> [--fix] [--batch top10] [--diff]"
 ---
 
 # RAG Check — Skill v2.0 (gamme + véhicule unifié)
+
+> 🚨 **DEPRECATED 2026-06-12** — concept « couverture par rôle R* » = bonne idée, **mauvaise
+> source** : ce skill mesure la couverture du RAG, or RAG = chatbot only (ADR-031/046) —
+> jamais source de contenu. Ne plus l'utiliser pour décider d'une génération R*.
+> **Successeur** : validation de couverture sur les **exports WIKI** (ADR-033/059) —
+> `scripts/seo/r1-readiness.ts` valide déjà l'export WIKI d'une gamme via
+> `wikiExportReadiness` de `scripts/validate-gamme-schema.ts` ; le validateur de couverture
+> wiki-exports complet (multi-rôles) = PR séparée. Suppression après 2 cycles.
 
 ## Usage
 - `/rag-check filtre-a-huile` — diagnostic RAG gamme (R1/R3/R4/R5/R6)

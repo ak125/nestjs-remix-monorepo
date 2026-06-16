@@ -2,22 +2,22 @@
   "_generated_by": "scripts/audit/build-db-usage-map.js",
   "note": "Candidates only — never a \"dead\" verdict. A real DROP table/function goes through the RPC Gate + a vault ADR, never from this map.",
   "important_caveats": [
-    "894 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
+    "893 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
     "Migration parsing is regex-based and tracks last CREATE vs last DROP per object (date-prefixed filenames ≈ chronological); re-create-after-drop edge cases may slip through.",
     "RLS-only / dashboard / external-cron / RPC-internal usage is invisible here — see per-candidate caveats."
   ],
   "summary": {
-    "tables_seen": 257,
-    "tables_with_callsites": 184,
-    "candidate_orphan_tables": 73,
-    "rpc_seen": 199,
-    "rpc_with_callsites": 13,
-    "trigger_functions": 27,
-    "candidate_orphan_rpc": 159,
-    "dynamic_from_callsites": 894,
+    "tables_seen": 296,
+    "tables_with_callsites": 190,
+    "candidate_orphan_tables": 106,
+    "rpc_seen": 238,
+    "rpc_with_callsites": 16,
+    "trigger_functions": 30,
+    "candidate_orphan_rpc": 192,
+    "dynamic_from_callsites": 893,
     "dynamic_rpc_callsites": 3,
-    "migrations_scanned": 243,
-    "backend_files_scanned": 1158
+    "migrations_scanned": 308,
+    "backend_files_scanned": 1295
   },
   "tables": {
     "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7": {
@@ -77,11 +77,21 @@
       "rls_present": false,
       "in_knowledge_db": false
     },
+    "___xtr_order_history": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260523_001_create_order_history.sql"
+      ],
+      "rls_present": true,
+      "in_knowledge_db": false
+    },
     "___xtr_order_line": {
       "used_by": [
-        "backend/src/modules/payments/controllers/paybox-callback.controller.ts"
+        "backend/src/modules/payments/controllers/paybox-callback.controller.ts",
+        "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
       ],
-      "used_by_count": 1,
+      "used_by_count": 2,
       "in_migrations": [],
       "rls_present": false,
       "in_knowledge_db": false
@@ -104,15 +114,6 @@
       "rls_present": false,
       "in_knowledge_db": false
     },
-    "___xtr_order_line_status": {
-      "used_by": [
-        "backend/src/modules/orders/services/order-status.service.ts"
-      ],
-      "used_by_count": 1,
-      "in_migrations": [],
-      "rls_present": true,
-      "in_knowledge_db": false
-    },
     "___xtr_order_status_history": {
       "used_by": [
         "backend/src/modules/orders/services/order-actions.service.ts"
@@ -120,6 +121,15 @@
       "used_by_count": 1,
       "in_migrations": [],
       "rls_present": false,
+      "in_knowledge_db": false
+    },
+    "___xtr_supplier_link_pm": {
+      "used_by": [
+        "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
+      ],
+      "used_by_count": 1,
+      "in_migrations": [],
+      "rls_present": true,
       "in_knowledge_db": false
     },
     "__abandoned_cart_emails": {
@@ -133,10 +143,9 @@
     },
     "__admin_audit_log": {
       "used_by": [
-        "backend/src/modules/orders/listeners/order-audit.listener.ts",
-        "backend/src/modules/orders/services/order-status.service.ts"
+        "backend/src/modules/orders/listeners/order-audit.listener.ts"
       ],
-      "used_by_count": 2,
+      "used_by_count": 1,
       "in_migrations": [],
       "rls_present": false,
       "in_knowledge_db": false
@@ -232,11 +241,12 @@
         "backend/src/modules/admin/services/gamme-detail-enricher.service.ts",
         "backend/src/modules/admin/services/seo-cockpit.service.ts",
         "backend/src/modules/blog/services/blog-article-data.service.ts",
+        "backend/src/modules/blog/services/r6-guide.service.ts",
         "backend/src/modules/catalog/services/homepage-rpc.service.ts",
         "backend/src/modules/marketing/services/marketing-data.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts"
       ],
-      "used_by_count": 6,
+      "used_by_count": 7,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": true
@@ -529,12 +539,10 @@
     },
     "__pipeline_chain_queue": {
       "used_by": [
-        "backend/src/modules/admin/controllers/admin-rag-pipeline-status.controller.ts",
         "backend/src/modules/admin/services/execution-router.service.ts",
-        "backend/src/workers/processors/pipeline-chain.processor.ts",
-        "backend/src/workers/services/rag-change-watcher.service.ts"
+        "backend/src/workers/processors/pipeline-chain.processor.ts"
       ],
-      "used_by_count": 4,
+      "used_by_count": 2,
       "in_migrations": [],
       "rls_present": false,
       "in_knowledge_db": false
@@ -607,16 +615,6 @@
       "rls_present": true,
       "in_knowledge_db": false
     },
-    "__rag_change_events": {
-      "used_by": [
-        "backend/src/modules/admin/controllers/admin-rag-pipeline-status.controller.ts",
-        "backend/src/workers/services/rag-change-watcher.service.ts"
-      ],
-      "used_by_count": 2,
-      "in_migrations": [],
-      "rls_present": true,
-      "in_knowledge_db": false
-    },
     "__rag_content_refresh_log": {
       "used_by": [
         "backend/src/modules/admin/services/brief-gates.service.ts",
@@ -647,11 +645,8 @@
       "in_knowledge_db": true
     },
     "__rag_pipeline_incidents": {
-      "used_by": [
-        "backend/src/modules/admin/controllers/admin-rag-pipeline-status.controller.ts",
-        "backend/src/workers/services/rag-change-watcher.service.ts"
-      ],
-      "used_by_count": 2,
+      "used_by": [],
+      "used_by_count": 0,
       "in_migrations": [
         "20260324_rag_pipeline_hardening.sql"
       ],
@@ -877,6 +872,40 @@
       "rls_present": false,
       "in_knowledge_db": false
     },
+    "__seo_cwv_daily_rum": {
+      "used_by": [
+        "backend/src/modules/seo-monitoring/services/cwv-dashboard.service.ts"
+      ],
+      "used_by_count": 1,
+      "in_migrations": [
+        "20260527_seo_cwv_aggregation.sql"
+      ],
+      "rls_present": true,
+      "in_knowledge_db": false
+    },
+    "__seo_cwv_hourly": {
+      "used_by": [
+        "backend/src/modules/seo-monitoring/services/cwv-dashboard.service.ts"
+      ],
+      "used_by_count": 1,
+      "in_migrations": [
+        "20260527_seo_cwv_aggregation.sql"
+      ],
+      "rls_present": true,
+      "in_knowledge_db": false
+    },
+    "__seo_cwv_raw": {
+      "used_by": [
+        "backend/src/modules/seo-monitoring/services/cwv-beacon.service.ts",
+        "backend/src/modules/seo-monitoring/services/cwv-dashboard.service.ts"
+      ],
+      "used_by_count": 2,
+      "in_migrations": [
+        "20260526_seo_cwv_raw.sql"
+      ],
+      "rls_present": true,
+      "in_knowledge_db": false
+    },
     "__seo_entity": {
       "used_by": [],
       "used_by_count": 0,
@@ -914,11 +943,15 @@
     "__seo_event_log": {
       "used_by": [
         "backend/src/modules/admin/services/seo-control.service.ts",
+        "backend/src/modules/diagnostic-engine/services/outcome-emitter.service.ts",
         "backend/src/modules/seo-monitoring/controllers/seo-monitoring.controller.ts",
+        "backend/src/modules/seo-monitoring/services/cwv-beacon.service.ts",
         "backend/src/modules/seo-monitoring/services/funnel-events.service.ts",
-        "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts"
+        "backend/src/modules/seo-monitoring/services/runtime-events.service.ts",
+        "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts",
+        "backend/src/modules/seo/services/sitemap-event-log.service.ts"
       ],
-      "used_by_count": 4,
+      "used_by_count": 8,
       "in_migrations": [
         "20260425_seo_event_log.sql"
       ],
@@ -928,9 +961,10 @@
     "__seo_family_gamme_car_switch": {
       "used_by": [
         "backend/src/modules/admin/services/gamme-detail-enricher.service.ts",
-        "backend/src/modules/blog/services/guide.service.ts"
+        "backend/src/modules/blog/services/guide.service.ts",
+        "backend/src/modules/seo/services/reference.service.ts"
       ],
-      "used_by_count": 2,
+      "used_by_count": 3,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false
@@ -977,7 +1011,6 @@
     "__seo_gamme": {
       "used_by": [
         "backend/src/modules/admin/controllers/admin-keyword-planner.controller.ts",
-        "backend/src/modules/admin/services/buying-guide/buying-guide-seo-draft.service.ts",
         "backend/src/modules/admin/services/conseil-enricher.service.ts",
         "backend/src/modules/admin/services/gamme-detail-enricher.service.ts",
         "backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts",
@@ -985,7 +1018,7 @@
         "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts",
         "backend/src/modules/marketing/services/marketing-hub-data.service.ts"
       ],
-      "used_by_count": 8,
+      "used_by_count": 7,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false
@@ -1006,13 +1039,14 @@
         "backend/src/modules/admin/services/conseil-quality-scorer.service.ts",
         "backend/src/modules/admin/services/gamme-detail-enricher.service.ts",
         "backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
         "backend/src/modules/blog/services/blog-seo.service.ts",
         "backend/src/modules/marketing/services/marketing-data.service.ts",
         "backend/src/modules/seo-monitoring/services/r-content-auditor.service.ts",
         "backend/src/modules/seo/r2/services/r1-gamme-completeness-audit.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts"
       ],
-      "used_by_count": 10,
+      "used_by_count": 11,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": true
@@ -1032,13 +1066,13 @@
         "backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts",
         "backend/src/modules/admin/services/conseil-priority.service.ts",
         "backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts",
+        "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
         "backend/src/modules/blog/services/blog-seo.service.ts",
         "backend/src/modules/blog/services/guide.service.ts",
         "backend/src/modules/blog/services/r6-guide.service.ts",
         "backend/src/modules/diagnostic-engine/diagnostic-engine.data-service.ts",
         "backend/src/modules/gamme-rest/services/buying-guide-data.service.ts",
         "backend/src/modules/gamme-rest/services/purchase-guide-data.service.ts",
-        "backend/src/modules/gamme-rest/services/r1-related-resources.service.ts",
         "backend/src/modules/marketing/services/marketing-data.service.ts",
         "backend/src/modules/seo-monitoring/services/r-content-auditor.service.ts",
         "backend/src/modules/seo/services/reference.service.ts",
@@ -1072,10 +1106,9 @@
     "__seo_gsc_daily": {
       "used_by": [
         "backend/src/modules/seo-monitoring/controllers/seo-monitoring.controller.ts",
-        "backend/src/modules/seo-monitoring/services/crux-field-fetcher.service.ts",
-        "backend/src/modules/seo-monitoring/services/gsc-daily-fetcher.service.ts"
+        "backend/src/modules/seo-monitoring/services/crux-field-fetcher.service.ts"
       ],
-      "used_by_count": 3,
+      "used_by_count": 2,
       "in_migrations": [
         "20260425_seo_observability_timeseries.sql"
       ],
@@ -1109,6 +1142,33 @@
       "rls_present": false,
       "in_knowledge_db": false
     },
+    "__seo_gsc_daily_pages": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260613_seo_gsc_multilevel_grains.sql"
+      ],
+      "rls_present": false,
+      "in_knowledge_db": false
+    },
+    "__seo_gsc_daily_property_total": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260613_seo_gsc_multilevel_grains.sql"
+      ],
+      "rls_present": false,
+      "in_knowledge_db": false
+    },
+    "__seo_gsc_daily_totals": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260613_seo_gsc_multilevel_grains.sql"
+      ],
+      "rls_present": false,
+      "in_knowledge_db": false
+    },
     "__seo_gsc_links_weekly": {
       "used_by": [],
       "used_by_count": 0,
@@ -1120,9 +1180,10 @@
     },
     "__seo_index_history": {
       "used_by": [
-        "backend/src/modules/admin/services/seo-cockpit.service.ts"
+        "backend/src/modules/admin/services/seo-cockpit.service.ts",
+        "backend/src/modules/seo-monitoring/services/gsc-index-history-collector.service.ts"
       ],
-      "used_by_count": 1,
+      "used_by_count": 2,
       "in_migrations": [
         "20260122_sitemap_v10_dashboard.sql"
       ],
@@ -1497,10 +1558,9 @@
         "backend/src/modules/admin/services/conseil-enricher.service.ts",
         "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
         "backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts",
-        "backend/src/modules/blog/services/blog-seo.service.ts",
-        "backend/src/modules/gamme-rest/services/r1-related-resources.service.ts"
+        "backend/src/modules/blog/services/blog-seo.service.ts"
       ],
-      "used_by_count": 6,
+      "used_by_count": 5,
       "in_migrations": [],
       "rls_present": false,
       "in_knowledge_db": false
@@ -1700,21 +1760,21 @@
       "rls_present": true,
       "in_knowledge_db": false
     },
+    "__seo_type_vlevel": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260605_vlevel_capture_db_only_functions.sql"
+      ],
+      "rls_present": false,
+      "in_knowledge_db": false
+    },
     "__sitemap_blog": {
       "used_by": [
         "backend/src/modules/seo/services/sitemap-v10-hubs-priority.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-static.service.ts"
       ],
       "used_by_count": 2,
-      "in_migrations": [],
-      "rls_present": true,
-      "in_knowledge_db": false
-    },
-    "__sitemap_motorisation": {
-      "used_by": [
-        "backend/src/modules/seo/services/sitemap-v10-hubs-vehicle.service.ts"
-      ],
-      "used_by_count": 1,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false
@@ -1756,6 +1816,17 @@
       "used_by_count": 1,
       "in_migrations": [],
       "rls_present": false,
+      "in_knowledge_db": false
+    },
+    "__trend_signals": {
+      "used_by": [
+        "backend/src/modules/trend-signals/trend-signals.service.ts"
+      ],
+      "used_by_count": 1,
+      "in_migrations": [
+        "20260524_create_trend_signals.sql"
+      ],
+      "rls_present": true,
       "in_knowledge_db": false
     },
     "__ux_captures": {
@@ -1832,12 +1903,49 @@
       "rls_present": true,
       "in_knowledge_db": false
     },
+    "_acc_eligible": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260607_pricing_catalog_accessory_link.sql"
+      ],
+      "rls_present": false,
+      "in_knowledge_db": false
+    },
     "_cache_redis": {
       "used_by": [
         "backend/src/modules/products/services/cross-selling.service.ts"
       ],
       "used_by_count": 1,
       "in_migrations": [],
+      "rls_present": false,
+      "in_knowledge_db": false
+    },
+    "_disp_eligible": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260607_pricing_catalog_display_activate.sql",
+        "20260608_pricing_catalog_display_activate_respect_pg_display.sql"
+      ],
+      "rls_present": false,
+      "in_knowledge_db": false
+    },
+    "_disp_quarantine_eligible": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260607_pricing_catalog_display_quarantine.sql"
+      ],
+      "rls_present": false,
+      "in_knowledge_db": false
+    },
+    "_gamme_disp_eligible": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260607_pricing_catalog_gamme_display_activate.sql"
+      ],
       "rls_present": false,
       "in_knowledge_db": false
     },
@@ -1962,6 +2070,24 @@
       "used_by_count": 6,
       "in_migrations": [],
       "rls_present": true,
+      "in_knowledge_db": false
+    },
+    "catalog_pricing_baseline": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260522_pricing_control_plane_v1.sql"
+      ],
+      "rls_present": false,
+      "in_knowledge_db": false
+    },
+    "catalog_pricing_baseline_meta": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260522_pricing_control_plane_v1.sql"
+      ],
+      "rls_present": false,
       "in_knowledge_db": false
     },
     "crawl_budget_experiments": {
@@ -2297,15 +2423,25 @@
         "backend/src/modules/admin/services/admin-gammes-seo.service.ts",
         "backend/src/modules/admin/services/gamme-detail-enricher.service.ts",
         "backend/src/modules/catalog/controllers/pieces-diagnostic.controller.ts",
+        "backend/src/modules/pricing/services/pricing.repository.ts",
         "backend/src/modules/products/controllers/products-admin.controller.ts",
         "backend/src/modules/search/controllers/search-debug.controller.ts",
         "backend/src/modules/search/controllers/search-enhanced-existing.controller.ts",
         "backend/src/modules/seo/services/reference.service.ts"
       ],
-      "used_by_count": 7,
+      "used_by_count": 8,
       "in_migrations": [],
       "rls_present": false,
       "in_knowledge_db": true
+    },
+    "pieces_display_history": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260607_pricing_catalog_display_activate.sql"
+      ],
+      "rls_present": false,
+      "in_knowledge_db": false
     },
     "pieces_gamme": {
       "used_by": [
@@ -2333,9 +2469,8 @@
         "backend/src/modules/blog/controllers/advice-hierarchy.controller.ts",
         "backend/src/modules/blog/services/guide.service.ts",
         "backend/src/modules/blog/services/r6-guide.service.ts",
+        "backend/src/modules/catalog/services/accessory-products.service.ts",
         "backend/src/modules/catalog/services/homepage-rpc.service.ts",
-        "backend/src/modules/gamme-rest/controllers/admin-r1-related-blocks-cache.controller.ts",
-        "backend/src/modules/gamme-rest/services/r1-related-resources.service.ts",
         "backend/src/modules/marketing/services/marketing-data.service.ts",
         "backend/src/modules/marketing/services/marketing-hub-data.service.ts",
         "backend/src/modules/rag-proxy/services/rag-image-management.service.ts",
@@ -2343,16 +2478,34 @@
         "backend/src/modules/search/controllers/search-debug.controller.ts",
         "backend/src/modules/search/controllers/search-enhanced-existing.controller.ts",
         "backend/src/modules/seo/r2/services/r1-gamme-completeness-audit.service.ts",
+        "backend/src/modules/seo/services/reference.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-data.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-cluster.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-hubs-vehicle.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
-        "backend/src/modules/seo/services/sitemap-v10-static.service.ts",
-        "backend/src/workers/services/rag-change-watcher.service.ts"
+        "backend/src/modules/seo/services/sitemap-v10-static.service.ts"
       ],
-      "used_by_count": 40,
+      "used_by_count": 39,
       "in_migrations": [],
       "rls_present": true,
+      "in_knowledge_db": false
+    },
+    "pieces_gamme_display_history": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260607_pricing_catalog_gamme_display_activate.sql"
+      ],
+      "rls_present": false,
+      "in_knowledge_db": false
+    },
+    "pieces_gamme_link_history": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260607_pricing_catalog_accessory_link.sql"
+      ],
+      "rls_present": false,
       "in_knowledge_db": false
     },
     "pieces_linkage": {
@@ -2387,15 +2540,62 @@
     },
     "pieces_price": {
       "used_by": [
+        "backend/src/modules/admin/services/command-center-actions.service.ts",
         "backend/src/modules/cart/services/shipping-calculator.service.ts",
         "backend/src/modules/catalog/controllers/pieces-diagnostic.controller.ts",
         "backend/src/modules/mcp-validation/services/mcp-query.service.ts",
+        "backend/src/modules/pricing/services/pricing.repository.ts",
         "backend/src/modules/search/controllers/search-debug.controller.ts",
         "backend/src/modules/search/controllers/search-enhanced-existing.controller.ts"
       ],
-      "used_by_count": 5,
+      "used_by_count": 7,
       "in_migrations": [],
       "rls_present": true,
+      "in_knowledge_db": false
+    },
+    "pieces_price_history": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260522_pricing_control_plane_v1.sql"
+      ],
+      "rls_present": false,
+      "in_knowledge_db": false
+    },
+    "pieces_price_history_2026_05": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260522_pricing_control_plane_v1.sql"
+      ],
+      "rls_present": false,
+      "in_knowledge_db": false
+    },
+    "pieces_price_history_2026_06": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260522_pricing_control_plane_v1.sql"
+      ],
+      "rls_present": false,
+      "in_knowledge_db": false
+    },
+    "pieces_price_history_2026_07": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260522_pricing_control_plane_v1.sql"
+      ],
+      "rls_present": false,
+      "in_knowledge_db": false
+    },
+    "pieces_price_history_default": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260522_pricing_control_plane_v1.sql"
+      ],
+      "rls_present": false,
       "in_knowledge_db": false
     },
     "pieces_ref_brand": {
@@ -2409,9 +2609,10 @@
     },
     "pieces_ref_oem": {
       "used_by": [
-        "backend/src/modules/search/controllers/search-debug.controller.ts"
+        "backend/src/modules/search/controllers/search-debug.controller.ts",
+        "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
       ],
-      "used_by_count": 1,
+      "used_by_count": 2,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false
@@ -2420,9 +2621,10 @@
       "used_by": [
         "backend/src/modules/catalog/services/vehicle-pieces-compatibility.service.ts",
         "backend/src/modules/mcp-validation/services/mcp-query.service.ts",
-        "backend/src/modules/search/controllers/search-debug.controller.ts"
+        "backend/src/modules/search/controllers/search-debug.controller.ts",
+        "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
       ],
-      "used_by_count": 3,
+      "used_by_count": 4,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false
@@ -2444,6 +2646,84 @@
       ],
       "used_by_count": 1,
       "in_migrations": [],
+      "rls_present": false,
+      "in_knowledge_db": false
+    },
+    "price_import_batch_chunks": {
+      "used_by": [
+        "backend/src/modules/pricing/services/pricing.repository.ts"
+      ],
+      "used_by_count": 1,
+      "in_migrations": [
+        "20260522_pricing_control_plane_v1.sql"
+      ],
+      "rls_present": false,
+      "in_knowledge_db": false
+    },
+    "price_import_batches": {
+      "used_by": [
+        "backend/src/modules/pricing/services/pricing.repository.ts"
+      ],
+      "used_by_count": 1,
+      "in_migrations": [
+        "20260522_pricing_control_plane_v1.sql"
+      ],
+      "rls_present": false,
+      "in_knowledge_db": false
+    },
+    "pricing_decision_snapshot": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260523_pricing_decision_snapshot_and_offers.sql"
+      ],
+      "rls_present": false,
+      "in_knowledge_db": false
+    },
+    "pricing_decision_snapshot_2026_05": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260523_pricing_decision_snapshot_and_offers.sql"
+      ],
+      "rls_present": false,
+      "in_knowledge_db": false
+    },
+    "pricing_decision_snapshot_2026_06": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260523_pricing_decision_snapshot_and_offers.sql"
+      ],
+      "rls_present": false,
+      "in_knowledge_db": false
+    },
+    "pricing_decision_snapshot_2026_07": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260523_pricing_decision_snapshot_and_offers.sql"
+      ],
+      "rls_present": false,
+      "in_knowledge_db": false
+    },
+    "pricing_decision_snapshot_default": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260523_pricing_decision_snapshot_and_offers.sql"
+      ],
+      "rls_present": false,
+      "in_knowledge_db": false
+    },
+    "pricing_rules": {
+      "used_by": [
+        "backend/src/modules/pricing/services/pricing.repository.ts"
+      ],
+      "used_by_count": 1,
+      "in_migrations": [
+        "20260522_pricing_control_plane_v1.sql"
+      ],
       "rls_present": false,
       "in_knowledge_db": false
     },
@@ -2587,6 +2867,100 @@
       "used_by_count": 2,
       "in_migrations": [],
       "rls_present": false,
+      "in_knowledge_db": false
+    },
+    "supplier_import_raw": {
+      "used_by": [
+        "backend/src/modules/pricing/services/pricing.repository.ts"
+      ],
+      "used_by_count": 1,
+      "in_migrations": [
+        "20260522_pricing_control_plane_v1.sql"
+      ],
+      "rls_present": false,
+      "in_knowledge_db": false
+    },
+    "supplier_inventory_snapshots": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260520_supplier_truth_v1.sql"
+      ],
+      "rls_present": true,
+      "in_knowledge_db": false
+    },
+    "supplier_offer_snapshot": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260523_pricing_decision_snapshot_and_offers.sql"
+      ],
+      "rls_present": false,
+      "in_knowledge_db": false
+    },
+    "supplier_offer_snapshot_2026_05": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260523_pricing_decision_snapshot_and_offers.sql"
+      ],
+      "rls_present": false,
+      "in_knowledge_db": false
+    },
+    "supplier_offer_snapshot_2026_06": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260523_pricing_decision_snapshot_and_offers.sql"
+      ],
+      "rls_present": false,
+      "in_knowledge_db": false
+    },
+    "supplier_offer_snapshot_2026_07": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260523_pricing_decision_snapshot_and_offers.sql"
+      ],
+      "rls_present": false,
+      "in_knowledge_db": false
+    },
+    "supplier_offer_snapshot_default": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260523_pricing_decision_snapshot_and_offers.sql"
+      ],
+      "rls_present": false,
+      "in_knowledge_db": false
+    },
+    "supplier_price_profiles": {
+      "used_by": [
+        "backend/src/modules/pricing/services/pricing.repository.ts"
+      ],
+      "used_by_count": 1,
+      "in_migrations": [
+        "20260522_pricing_control_plane_v1.sql"
+      ],
+      "rls_present": false,
+      "in_knowledge_db": false
+    },
+    "supplier_runtime_profile": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260520_supplier_truth_v1.sql"
+      ],
+      "rls_present": true,
+      "in_knowledge_db": false
+    },
+    "supplier_truth_projection": {
+      "used_by": [],
+      "used_by_count": 0,
+      "in_migrations": [
+        "20260520_supplier_truth_v1.sql"
+      ],
+      "rls_present": true,
       "in_knowledge_db": false
     },
     "system_config": {
@@ -2748,6 +3122,30 @@
       ],
       "is_trigger_function": false
     },
+    "__gov_m7_stable_function_volatility": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260614_gov_m7_stable_function_volatility_rpc.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "__gov_m8_partition_coverage": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260614_gov_m8_partition_coverage_rpc.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "__gov_m9_callable_functions": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260614_gov_m9_callable_functions_rpc.sql"
+      ],
+      "is_trigger_function": false
+    },
     "__seo_admin_job_accept": {
       "called_by": [],
       "called_by_count": 0,
@@ -2771,6 +3169,14 @@
         "20260420_seo_brand_editorial_table.sql"
       ],
       "is_trigger_function": true
+    },
+    "__seo_ensure_monthly_partitions": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260613_seo_gsc_multilevel_grains.sql"
+      ],
+      "is_trigger_function": false
     },
     "__seo_observable_updated_at": {
       "called_by": [],
@@ -2812,6 +3218,14 @@
       ],
       "is_trigger_function": true
     },
+    "_seo_is_synthetic_query": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260611_seo_control_004_synthetic_filter.sql"
+      ],
+      "is_trigger_function": false
+    },
     "_seo_resolve_operational_domain": {
       "called_by": [],
       "called_by_count": 0,
@@ -2832,7 +3246,29 @@
       "called_by": [],
       "called_by_count": 0,
       "defined_in_migrations": [
-        "20260518_seo_control_001_helpers.sql"
+        "20260518_seo_control_001_helpers.sql",
+        "20260611_seo_control_004_synthetic_filter.down.sql",
+        "20260611_seo_control_004_synthetic_filter.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "aggregate_cwv_daily_rum": {
+      "called_by": [
+        "backend/src/modules/seo-monitoring/services/cwv-aggregation.service.ts"
+      ],
+      "called_by_count": 1,
+      "defined_in_migrations": [
+        "20260527_seo_cwv_aggregation.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "aggregate_cwv_hourly": {
+      "called_by": [
+        "backend/src/modules/seo-monitoring/services/cwv-aggregation.service.ts"
+      ],
+      "called_by_count": 1,
+      "defined_in_migrations": [
+        "20260527_seo_cwv_aggregation.sql"
       ],
       "is_trigger_function": false
     },
@@ -2842,6 +3278,14 @@
       ],
       "called_by_count": 1,
       "defined_in_migrations": [],
+      "is_trigger_function": false
+    },
+    "append_order_event": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260523_001_create_order_history.sql"
+      ],
       "is_trigger_function": false
     },
     "assign_page_role_from_url": {
@@ -2920,6 +3364,71 @@
       ],
       "is_trigger_function": false
     },
+    "cancel_order_atomic": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260523_002_cancel_order_atomic.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "catalog_accessory_link_activate": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260607_pricing_catalog_accessory_link.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "catalog_accessory_link_rollback_batch": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260607_pricing_catalog_accessory_link.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "catalog_display_activate": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260607_pricing_catalog_display_activate.sql",
+        "20260608_pricing_catalog_display_activate_respect_pg_display.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "catalog_display_quarantine": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260607_pricing_catalog_display_quarantine.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "catalog_display_rollback_batch": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260607_pricing_catalog_display_activate.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "catalog_gamme_display_activate": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260607_pricing_catalog_gamme_display_activate.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "catalog_gamme_display_rollback_batch": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260607_pricing_catalog_gamme_display_activate.sql"
+      ],
+      "is_trigger_function": false
+    },
     "check_breakglass": {
       "called_by": [],
       "called_by_count": 0,
@@ -2969,6 +3478,32 @@
       ],
       "is_trigger_function": false
     },
+    "create_order_atomic": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260522160000_order_line_website_url_attribution.sql",
+        "20260523_002_cancel_order_atomic.down.sql",
+        "20260523_002_cancel_order_atomic.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "detect_cwv_aggregation_coverage_gap": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260601_seo_cwv_aggregation_coverage_alert.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "detect_cwv_trend_divergence": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260529_seo_cwv_dashboard_rpcs.sql"
+      ],
+      "is_trigger_function": false
+    },
     "detect_quality_outliers": {
       "called_by": [
         "backend/src/modules/seo-monitoring/services/quality-history-snapshot.service.ts"
@@ -3013,14 +3548,6 @@
       ],
       "is_trigger_function": false
     },
-    "execute_sql": {
-      "called_by": [
-        "backend/src/modules/cart/services/abandoned-cart-data.service.ts"
-      ],
-      "called_by_count": 1,
-      "defined_in_migrations": [],
-      "is_trigger_function": false
-    },
     "extract_vehicle_keywords": {
       "called_by": [],
       "called_by_count": 0,
@@ -3053,6 +3580,14 @@
       ],
       "is_trigger_function": true
     },
+    "fn_xtr_msg_touch_crm_updated_at": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260528_xtr_msg_crm_v0.sql"
+      ],
+      "is_trigger_function": true
+    },
     "get_all_seo_observables_for_sitemap": {
       "called_by": [],
       "called_by_count": 0,
@@ -3065,7 +3600,8 @@
       "called_by": [],
       "called_by_count": 0,
       "defined_in_migrations": [
-        "20260125_create_seo_reference.sql"
+        "20260125_create_seo_reference.sql",
+        "20260610_fix_r5_redirect_target_align_reference_rpcs.sql"
       ],
       "is_trigger_function": false
     },
@@ -3124,6 +3660,26 @@
       ],
       "called_by_count": 1,
       "defined_in_migrations": [],
+      "is_trigger_function": false
+    },
+    "get_cwv_dashboard": {
+      "called_by": [
+        "backend/src/modules/seo-monitoring/services/cwv-dashboard.service.ts"
+      ],
+      "called_by_count": 1,
+      "defined_in_migrations": [
+        "20260529_seo_cwv_dashboard_rpcs.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "get_cwv_funnel_correlation": {
+      "called_by": [
+        "backend/src/modules/seo-monitoring/services/cwv-dashboard.service.ts"
+      ],
+      "called_by_count": 1,
+      "defined_in_migrations": [
+        "20260529_seo_cwv_dashboard_rpcs.sql"
+      ],
       "is_trigger_function": false
     },
     "get_cwv_summary_by_role": {
@@ -3250,6 +3806,14 @@
       ],
       "is_trigger_function": false
     },
+    "get_r5_redirect_target": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260610_fix_r5_redirect_target_align_reference_rpcs.sql"
+      ],
+      "is_trigger_function": false
+    },
     "get_rm_listing": {
       "called_by": [],
       "called_by_count": 0,
@@ -3358,7 +3922,9 @@
       "called_by": [],
       "called_by_count": 0,
       "defined_in_migrations": [
-        "20260420_vehicle_page_cache_build_fn.sql"
+        "20260420_vehicle_page_cache_build_fn.sql",
+        "20260522_vehicle_page_cached_volatile.down.sql",
+        "20260522_vehicle_page_cached_volatile.sql"
       ],
       "is_trigger_function": false
     },
@@ -3887,6 +4453,62 @@
       ],
       "is_trigger_function": false
     },
+    "maintain_cwv_daily_rum_partitions": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260527_seo_cwv_aggregation.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "maintain_cwv_hourly_partitions": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260527_seo_cwv_aggregation.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "maintain_cwv_raw_partitions": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260526_seo_cwv_raw.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "maintain_observability_partitions": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260522_seo_observability_partition_rotation.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "maintain_pricing_decision_snapshot_partitions": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260523_pricing_decision_snapshot_and_offers.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "maintain_snapshot_partitions": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260522_seo_snapshot_partition_rotation.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "maintain_supplier_offer_snapshot_partitions": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260523_pricing_decision_snapshot_and_offers.sql"
+      ],
+      "is_trigger_function": false
+    },
     "mark_order_paid_atomic": {
       "called_by": [
         "backend/src/modules/payments/repositories/payment-data.service.ts"
@@ -3953,6 +4575,40 @@
       ],
       "is_trigger_function": false
     },
+    "pricing_activate_chunk": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260606_pricing_activate_chunk.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "pricing_commit_chunk": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260522_pricing_control_plane_v1_functions.sql",
+        "20260604_pricing_commit_chunk_import_pending_mode.sql",
+        "20260608_pricing_commit_chunk_persist_pri_ref.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "pricing_cost_bucket_aggregates": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260522_pricing_cost_bucket_aggregates.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "pricing_rollback_batch": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260522_pricing_control_plane_v1_functions.sql"
+      ],
+      "is_trigger_function": false
+    },
     "process_prix_pas_cher": {
       "called_by": [],
       "called_by_count": 0,
@@ -3974,6 +4630,14 @@
       "called_by_count": 0,
       "defined_in_migrations": [
         "20260120_rm_seo_template.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "propagate_vlevel_per_typeid": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260605_vlevel_capture_db_only_functions.sql"
       ],
       "is_trigger_function": false
     },
@@ -4091,7 +4755,10 @@
       "called_by": [],
       "called_by_count": 0,
       "defined_in_migrations": [
-        "20260518_seo_control_002_rpcs.sql"
+        "20260518_seo_control_002_rpcs.sql",
+        "20260521_seo_sitemap_freshness_001_alert_rpc.sql",
+        "20260611_seo_control_004_synthetic_filter.down.sql",
+        "20260611_seo_control_004_synthetic_filter.sql"
       ],
       "is_trigger_function": false
     },
@@ -4115,7 +4782,25 @@
       "called_by": [],
       "called_by_count": 0,
       "defined_in_migrations": [
-        "20260518_seo_control_002_rpcs.sql"
+        "20260518_seo_control_002_rpcs.sql",
+        "20260611_seo_control_004_synthetic_filter.down.sql",
+        "20260611_seo_control_004_synthetic_filter.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "rpc_seo_low_ctr_v2": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260611_seo_control_004_synthetic_filter.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "rpc_seo_low_ctr_v3": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260614_seo_control_005_low_ctr_v3_pages.sql"
       ],
       "is_trigger_function": false
     },
@@ -4123,7 +4808,9 @@
       "called_by": [],
       "called_by_count": 0,
       "defined_in_migrations": [
-        "20260518_seo_control_002_rpcs.sql"
+        "20260518_seo_control_002_rpcs.sql",
+        "20260611_seo_control_004_synthetic_filter.down.sql",
+        "20260611_seo_control_004_synthetic_filter.sql"
       ],
       "is_trigger_function": false
     },
@@ -4131,7 +4818,18 @@
       "called_by": [],
       "called_by_count": 0,
       "defined_in_migrations": [
-        "20260518_seo_control_002_rpcs.sql"
+        "20260518_seo_control_002_rpcs.sql",
+        "20260611_seo_control_004_synthetic_filter.down.sql",
+        "20260611_seo_control_004_synthetic_filter.sql"
+      ],
+      "is_trigger_function": false
+    },
+    "safe_jsonb_array_length": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260611_fix_get_page_quality_features_jsonb_array_length_guard.sql",
+        "20260611_quality_features_r3_guide_semantics.sql"
       ],
       "is_trigger_function": false
     },
@@ -4166,6 +4864,14 @@
         "20260107_clean_html_from_seo_descriptions.sql"
       ],
       "is_trigger_function": false
+    },
+    "supplier_offer_snapshot_reject_mutation": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260523_pricing_decision_snapshot_and_offers.sql"
+      ],
+      "is_trigger_function": true
     },
     "sync_entity_health_from_scores": {
       "called_by": [],
@@ -4310,6 +5016,14 @@
         "20260124_add_page_role.sql"
       ],
       "is_trigger_function": false
+    },
+    "validate_vlevel_integrity": {
+      "called_by": [],
+      "called_by_count": 0,
+      "defined_in_migrations": [
+        "20260605_vlevel_capture_db_only_functions.sql"
+      ],
+      "is_trigger_function": true
     }
   },
   "trigger_functions": [
@@ -4353,6 +5067,12 @@
       "name": "fn_warn_orphan_pg_id",
       "defined_in_migrations": [
         "20260424_fix_fn_warn_orphan_pg_id_polyglot.sql"
+      ]
+    },
+    {
+      "name": "fn_xtr_msg_touch_crm_updated_at",
+      "defined_in_migrations": [
+        "20260528_xtr_msg_crm_v0.sql"
       ]
     },
     {
@@ -4401,6 +5121,12 @@
       "name": "kg_update_updated_at",
       "defined_in_migrations": [
         "20251230_knowledge_graph.sql"
+      ]
+    },
+    {
+      "name": "supplier_offer_snapshot_reject_mutation",
+      "defined_in_migrations": [
+        "20260523_pricing_decision_snapshot_and_offers.sql"
       ]
     },
     {
@@ -4474,9 +5200,35 @@
       "defined_in_migrations": [
         "20260128_backfill_v2_repetitions.sql"
       ]
+    },
+    {
+      "name": "validate_vlevel_integrity",
+      "defined_in_migrations": [
+        "20260605_vlevel_capture_db_only_functions.sql"
+      ]
     }
   ],
   "candidate_orphan_tables": [
+    {
+      "name": "___xtr_order_history",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": true,
+      "in_migrations": [
+        "20260523_001_create_order_history.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
     {
       "name": "__abandoned_cart_emails",
       "confidence": "low",
@@ -4607,6 +5359,26 @@
       "rls_present": true,
       "in_migrations": [
         "20260310_qa_audit_tables.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "__rag_pipeline_incidents",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": true,
+      "in_migrations": [
+        "20260324_rag_pipeline_hardening.sql"
       ],
       "in_knowledge_db": false,
       "caveats": [
@@ -4907,6 +5679,66 @@
       "rls_present": false,
       "in_migrations": [
         "20260425_seo_observability_timeseries.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "__seo_gsc_daily_pages",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": false,
+      "in_migrations": [
+        "20260613_seo_gsc_multilevel_grains.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "__seo_gsc_daily_property_total",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": false,
+      "in_migrations": [
+        "20260613_seo_gsc_multilevel_grains.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "__seo_gsc_daily_totals",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": false,
+      "in_migrations": [
+        "20260613_seo_gsc_multilevel_grains.sql"
       ],
       "in_knowledge_db": false,
       "caveats": [
@@ -5379,6 +6211,26 @@
       ]
     },
     {
+      "name": "__seo_type_vlevel",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": false,
+      "in_migrations": [
+        "20260605_vlevel_capture_db_only_functions.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
       "name": "__soft_404_events",
       "confidence": "low",
       "derived_from": [
@@ -5479,6 +6331,87 @@
       ]
     },
     {
+      "name": "_acc_eligible",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": false,
+      "in_migrations": [
+        "20260607_pricing_catalog_accessory_link.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "_disp_eligible",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": false,
+      "in_migrations": [
+        "20260607_pricing_catalog_display_activate.sql",
+        "20260608_pricing_catalog_display_activate_respect_pg_display.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "_disp_quarantine_eligible",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": false,
+      "in_migrations": [
+        "20260607_pricing_catalog_display_quarantine.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "_gamme_disp_eligible",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": false,
+      "in_migrations": [
+        "20260607_pricing_catalog_gamme_display_activate.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
       "name": "_killswitch_audit",
       "confidence": "low",
       "derived_from": [
@@ -5510,6 +6443,46 @@
       "in_migrations": [
         "20260204_breakglass_mechanism.sql",
         "20260204_killswitch_all_in_one.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "catalog_pricing_baseline",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": false,
+      "in_migrations": [
+        "20260522_pricing_control_plane_v1.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "catalog_pricing_baseline_meta",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": false,
+      "in_migrations": [
+        "20260522_pricing_control_plane_v1.sql"
       ],
       "in_knowledge_db": false,
       "caveats": [
@@ -5883,6 +6856,266 @@
       ]
     },
     {
+      "name": "pieces_display_history",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": false,
+      "in_migrations": [
+        "20260607_pricing_catalog_display_activate.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "pieces_gamme_display_history",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": false,
+      "in_migrations": [
+        "20260607_pricing_catalog_gamme_display_activate.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "pieces_gamme_link_history",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": false,
+      "in_migrations": [
+        "20260607_pricing_catalog_accessory_link.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "pieces_price_history",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": false,
+      "in_migrations": [
+        "20260522_pricing_control_plane_v1.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "pieces_price_history_2026_05",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": false,
+      "in_migrations": [
+        "20260522_pricing_control_plane_v1.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "pieces_price_history_2026_06",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": false,
+      "in_migrations": [
+        "20260522_pricing_control_plane_v1.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "pieces_price_history_2026_07",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": false,
+      "in_migrations": [
+        "20260522_pricing_control_plane_v1.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "pieces_price_history_default",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": false,
+      "in_migrations": [
+        "20260522_pricing_control_plane_v1.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "pricing_decision_snapshot",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": false,
+      "in_migrations": [
+        "20260523_pricing_decision_snapshot_and_offers.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "pricing_decision_snapshot_2026_05",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": false,
+      "in_migrations": [
+        "20260523_pricing_decision_snapshot_and_offers.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "pricing_decision_snapshot_2026_06",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": false,
+      "in_migrations": [
+        "20260523_pricing_decision_snapshot_and_offers.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "pricing_decision_snapshot_2026_07",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": false,
+      "in_migrations": [
+        "20260523_pricing_decision_snapshot_and_offers.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "pricing_decision_snapshot_default",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": false,
+      "in_migrations": [
+        "20260523_pricing_decision_snapshot_and_offers.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
       "name": "rag_document_versions",
       "confidence": "low",
       "derived_from": [
@@ -5934,6 +7167,166 @@
       "rls_present": false,
       "in_migrations": [
         "20260115_rm_tables.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "supplier_inventory_snapshots",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": true,
+      "in_migrations": [
+        "20260520_supplier_truth_v1.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "supplier_offer_snapshot",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": false,
+      "in_migrations": [
+        "20260523_pricing_decision_snapshot_and_offers.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "supplier_offer_snapshot_2026_05",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": false,
+      "in_migrations": [
+        "20260523_pricing_decision_snapshot_and_offers.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "supplier_offer_snapshot_2026_06",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": false,
+      "in_migrations": [
+        "20260523_pricing_decision_snapshot_and_offers.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "supplier_offer_snapshot_2026_07",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": false,
+      "in_migrations": [
+        "20260523_pricing_decision_snapshot_and_offers.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "supplier_offer_snapshot_default",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": false,
+      "in_migrations": [
+        "20260523_pricing_decision_snapshot_and_offers.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "supplier_runtime_profile",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": true,
+      "in_migrations": [
+        "20260520_supplier_truth_v1.sql"
+      ],
+      "in_knowledge_db": false,
+      "caveats": [
+        "may be read/written by Supabase internals (auth, storage, realtime)",
+        "may be used by ad-hoc SQL / psql / dashboard",
+        "may be referenced only inside an RPC/function body (not detected by .from() scan)",
+        "may be RLS-protected and accessed only through PostgREST without an explicit .from() in backend",
+        "may be written by an external cron / ETL outside this repo"
+      ]
+    },
+    {
+      "name": "supplier_truth_projection",
+      "confidence": "low",
+      "derived_from": [
+        "migrations",
+        "no-literal-from-callsite"
+      ],
+      "rls_present": true,
+      "in_migrations": [
+        "20260520_supplier_truth_v1.sql"
       ],
       "in_knowledge_db": false,
       "caveats": [
@@ -6043,6 +7436,54 @@
       ]
     },
     {
+      "name": "__gov_m7_stable_function_volatility",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260614_gov_m7_stable_function_volatility_rpc.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "__gov_m8_partition_coverage",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260614_gov_m8_partition_coverage_rpc.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "__gov_m9_callable_functions",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260614_gov_m9_callable_functions_rpc.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
       "name": "__seo_admin_job_accept",
       "confidence": "medium",
       "derived_from": [
@@ -6075,6 +7516,22 @@
       ]
     },
     {
+      "name": "__seo_ensure_monthly_partitions",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260613_seo_gsc_multilevel_grains.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
       "name": "__seo_outbox_claim_batch",
       "confidence": "medium",
       "derived_from": [
@@ -6099,6 +7556,22 @@
       ],
       "defined_in_migrations": [
         "20260517_seo_r2_v2_outbox_relay_rpc.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "_seo_is_synthetic_query",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260611_seo_control_004_synthetic_filter.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",
@@ -6146,7 +7619,25 @@
         "no-rpc-callsite"
       ],
       "defined_in_migrations": [
-        "20260518_seo_control_001_helpers.sql"
+        "20260518_seo_control_001_helpers.sql",
+        "20260611_seo_control_004_synthetic_filter.down.sql",
+        "20260611_seo_control_004_synthetic_filter.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "append_order_event",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260523_001_create_order_history.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",
@@ -6303,6 +7794,135 @@
       ]
     },
     {
+      "name": "cancel_order_atomic",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260523_002_cancel_order_atomic.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "catalog_accessory_link_activate",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260607_pricing_catalog_accessory_link.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "catalog_accessory_link_rollback_batch",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260607_pricing_catalog_accessory_link.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "catalog_display_activate",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260607_pricing_catalog_display_activate.sql",
+        "20260608_pricing_catalog_display_activate_respect_pg_display.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "catalog_display_quarantine",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260607_pricing_catalog_display_quarantine.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "catalog_display_rollback_batch",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260607_pricing_catalog_display_activate.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "catalog_gamme_display_activate",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260607_pricing_catalog_gamme_display_activate.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "catalog_gamme_display_rollback_batch",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260607_pricing_catalog_gamme_display_activate.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
       "name": "check_breakglass",
       "confidence": "medium",
       "derived_from": [
@@ -6376,6 +7996,56 @@
       ],
       "defined_in_migrations": [
         "20260122_sitemap_v10_enterprise.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "create_order_atomic",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260522160000_order_line_website_url_attribution.sql",
+        "20260523_002_cancel_order_atomic.down.sql",
+        "20260523_002_cancel_order_atomic.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "detect_cwv_aggregation_coverage_gap",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260601_seo_cwv_aggregation_coverage_alert.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "detect_cwv_trend_divergence",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260529_seo_cwv_dashboard_rpcs.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",
@@ -6471,7 +8141,8 @@
         "no-rpc-callsite"
       ],
       "defined_in_migrations": [
-        "20260125_create_seo_reference.sql"
+        "20260125_create_seo_reference.sql",
+        "20260610_fix_r5_redirect_target_align_reference_rpcs.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",
@@ -6789,6 +8460,22 @@
       ]
     },
     {
+      "name": "get_r5_redirect_target",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260610_fix_r5_redirect_target_align_reference_rpcs.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
       "name": "get_rm_listing",
       "confidence": "medium",
       "derived_from": [
@@ -6988,7 +8675,9 @@
         "no-rpc-callsite"
       ],
       "defined_in_migrations": [
-        "20260420_vehicle_page_cache_build_fn.sql"
+        "20260420_vehicle_page_cache_build_fn.sql",
+        "20260522_vehicle_page_cached_volatile.down.sql",
+        "20260522_vehicle_page_cached_volatile.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",
@@ -7898,6 +9587,118 @@
       ]
     },
     {
+      "name": "maintain_cwv_daily_rum_partitions",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260527_seo_cwv_aggregation.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "maintain_cwv_hourly_partitions",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260527_seo_cwv_aggregation.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "maintain_cwv_raw_partitions",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260526_seo_cwv_raw.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "maintain_observability_partitions",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260522_seo_observability_partition_rotation.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "maintain_pricing_decision_snapshot_partitions",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260523_pricing_decision_snapshot_and_offers.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "maintain_snapshot_partitions",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260522_seo_snapshot_partition_rotation.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "maintain_supplier_offer_snapshot_partitions",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260523_pricing_decision_snapshot_and_offers.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
       "name": "mark_stale_with_followup_rebuild",
       "confidence": "medium",
       "derived_from": [
@@ -8010,6 +9811,72 @@
       ]
     },
     {
+      "name": "pricing_activate_chunk",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260606_pricing_activate_chunk.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "pricing_commit_chunk",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260522_pricing_control_plane_v1_functions.sql",
+        "20260604_pricing_commit_chunk_import_pending_mode.sql",
+        "20260608_pricing_commit_chunk_persist_pri_ref.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "pricing_cost_bucket_aggregates",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260522_pricing_cost_bucket_aggregates.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "pricing_rollback_batch",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260522_pricing_control_plane_v1_functions.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
       "name": "process_prix_pas_cher",
       "confidence": "medium",
       "derived_from": [
@@ -8050,6 +9917,22 @@
       ],
       "defined_in_migrations": [
         "20260120_rm_seo_template.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "propagate_vlevel_per_typeid",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260605_vlevel_capture_db_only_functions.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",
@@ -8263,7 +10146,10 @@
         "no-rpc-callsite"
       ],
       "defined_in_migrations": [
-        "20260518_seo_control_002_rpcs.sql"
+        "20260518_seo_control_002_rpcs.sql",
+        "20260521_seo_sitemap_freshness_001_alert_rpc.sql",
+        "20260611_seo_control_004_synthetic_filter.down.sql",
+        "20260611_seo_control_004_synthetic_filter.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",
@@ -8311,7 +10197,41 @@
         "no-rpc-callsite"
       ],
       "defined_in_migrations": [
-        "20260518_seo_control_002_rpcs.sql"
+        "20260518_seo_control_002_rpcs.sql",
+        "20260611_seo_control_004_synthetic_filter.down.sql",
+        "20260611_seo_control_004_synthetic_filter.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "rpc_seo_low_ctr_v2",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260611_seo_control_004_synthetic_filter.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "rpc_seo_low_ctr_v3",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260614_seo_control_005_low_ctr_v3_pages.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",
@@ -8327,7 +10247,9 @@
         "no-rpc-callsite"
       ],
       "defined_in_migrations": [
-        "20260518_seo_control_002_rpcs.sql"
+        "20260518_seo_control_002_rpcs.sql",
+        "20260611_seo_control_004_synthetic_filter.down.sql",
+        "20260611_seo_control_004_synthetic_filter.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",
@@ -8343,7 +10265,26 @@
         "no-rpc-callsite"
       ],
       "defined_in_migrations": [
-        "20260518_seo_control_002_rpcs.sql"
+        "20260518_seo_control_002_rpcs.sql",
+        "20260611_seo_control_004_synthetic_filter.down.sql",
+        "20260611_seo_control_004_synthetic_filter.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "safe_jsonb_array_length",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260611_fix_get_page_quality_features_jsonb_array_length_guard.sql",
+        "20260611_quality_features_r3_guide_semantics.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",
@@ -8547,35 +10488,35 @@
     },
     {
       "file": "backend/src/database/services/cart-data.service.ts",
-      "line": 430
+      "line": 433
     },
     {
       "file": "backend/src/database/services/cart-data.service.ts",
-      "line": 438
+      "line": 441
     },
     {
       "file": "backend/src/database/services/cart-data.service.ts",
-      "line": 446
+      "line": 449
     },
     {
       "file": "backend/src/database/services/cart-data.service.ts",
-      "line": 496
+      "line": 499
     },
     {
       "file": "backend/src/database/services/cart-data.service.ts",
-      "line": 573
+      "line": 576
     },
     {
       "file": "backend/src/database/services/cart-data.service.ts",
-      "line": 591
+      "line": 594
     },
     {
       "file": "backend/src/database/services/cart-data.service.ts",
-      "line": 607
+      "line": 610
     },
     {
       "file": "backend/src/database/services/cart-data.service.ts",
-      "line": 669
+      "line": 672
     },
     {
       "file": "backend/src/database/services/meta-tags-ariane-data.service.ts",
@@ -8819,39 +10760,39 @@
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 561
+      "line": 679
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1197
+      "line": 1371
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1222
+      "line": 1396
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1245
+      "line": 1419
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1253
+      "line": 1427
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1278
+      "line": 1452
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1320
+      "line": 1494
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1340
+      "line": 1514
     },
     {
       "file": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts",
-      "line": 1351
+      "line": 1525
     },
     {
       "file": "backend/src/modules/admin/services/stock-management.service.ts",
@@ -8991,11 +10932,15 @@
     },
     {
       "file": "backend/src/modules/blog/services/advice.service.ts",
-      "line": 515
+      "line": 518
     },
     {
       "file": "backend/src/modules/blog/services/advice.service.ts",
-      "line": 667
+      "line": 525
+    },
+    {
+      "file": "backend/src/modules/blog/services/advice.service.ts",
+      "line": 680
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
@@ -9087,31 +11032,31 @@
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-relation.service.ts",
-      "line": 92
+      "line": 201
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-relation.service.ts",
-      "line": 124
+      "line": 233
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-relation.service.ts",
-      "line": 155
+      "line": 264
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-relation.service.ts",
-      "line": 270
+      "line": 379
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-relation.service.ts",
-      "line": 282
+      "line": 391
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-relation.service.ts",
-      "line": 318
+      "line": 427
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-relation.service.ts",
-      "line": 334
+      "line": 443
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-transform.service.ts",
@@ -9379,7 +11324,7 @@
     },
     {
       "file": "backend/src/modules/blog/services/r3-guide.service.test.ts",
-      "line": 193
+      "line": 215
     },
     {
       "file": "backend/src/modules/cart/services/abandoned-cart-data.service.ts",
@@ -9416,6 +11361,14 @@
     {
       "file": "backend/src/modules/cart/services/abandoned-cart-data.service.ts",
       "line": 181
+    },
+    {
+      "file": "backend/src/modules/cart/services/abandoned-cart-data.service.ts",
+      "line": 230
+    },
+    {
+      "file": "backend/src/modules/cart/services/abandoned-cart-data.service.ts",
+      "line": 257
     },
     {
       "file": "backend/src/modules/cart/services/cart-validation.service.ts",
@@ -10118,72 +12071,40 @@
       "line": 476
     },
     {
-      "file": "backend/src/modules/orders/services/order-status.service.ts",
-      "line": 49
-    },
-    {
-      "file": "backend/src/modules/orders/services/order-status.service.ts",
-      "line": 67
-    },
-    {
-      "file": "backend/src/modules/orders/services/order-status.service.ts",
-      "line": 155
-    },
-    {
-      "file": "backend/src/modules/orders/services/order-status.service.ts",
-      "line": 173
-    },
-    {
-      "file": "backend/src/modules/orders/services/order-status.service.ts",
-      "line": 186
-    },
-    {
-      "file": "backend/src/modules/orders/services/order-status.service.ts",
-      "line": 288
+      "file": "backend/src/modules/orders/services/orders.service.ts",
+      "line": 359
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 336
+      "line": 369
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 346
+      "line": 449
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 413
+      "line": 498
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 462
+      "line": 503
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 467
+      "line": 519
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 483
+      "line": 554
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 518
+      "line": 673
     },
     {
       "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 630
-    },
-    {
-      "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 695
-    },
-    {
-      "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 701
-    },
-    {
-      "file": "backend/src/modules/orders/services/orders.service.ts",
-      "line": 734
+      "line": 815
     },
     {
       "file": "backend/src/modules/orders/services/tickets.service.ts",
@@ -10288,6 +12209,10 @@
     {
       "file": "backend/src/modules/payments/services/payment-validation.service.ts",
       "line": 139
+    },
+    {
+      "file": "backend/src/modules/pricing/services/__tests__/pricing-strategy.test.ts",
+      "line": 197
     },
     {
       "file": "backend/src/modules/products/products.service.ts",
@@ -10443,51 +12368,51 @@
     },
     {
       "file": "backend/src/modules/products/services/products-admin.service.ts",
-      "line": 42
+      "line": 46
     },
     {
       "file": "backend/src/modules/products/services/products-admin.service.ts",
-      "line": 65
+      "line": 69
     },
     {
       "file": "backend/src/modules/products/services/products-admin.service.ts",
-      "line": 106
+      "line": 110
     },
     {
       "file": "backend/src/modules/products/services/products-admin.service.ts",
-      "line": 226
+      "line": 230
     },
     {
       "file": "backend/src/modules/products/services/products-admin.service.ts",
-      "line": 291
+      "line": 295
     },
     {
       "file": "backend/src/modules/products/services/products-admin.service.ts",
-      "line": 300
+      "line": 304
     },
     {
       "file": "backend/src/modules/products/services/products-admin.service.ts",
-      "line": 307
+      "line": 311
     },
     {
       "file": "backend/src/modules/products/services/products-admin.service.ts",
-      "line": 419
+      "line": 425
     },
     {
       "file": "backend/src/modules/products/services/products-admin.service.ts",
-      "line": 518
+      "line": 524
     },
     {
       "file": "backend/src/modules/products/services/products-admin.service.ts",
-      "line": 538
+      "line": 544
     },
     {
       "file": "backend/src/modules/products/services/products-admin.service.ts",
-      "line": 573
+      "line": 579
     },
     {
       "file": "backend/src/modules/products/services/products-admin.service.ts",
-      "line": 593
+      "line": 599
     },
     {
       "file": "backend/src/modules/products/services/products-catalog.service.ts",
@@ -10898,6 +12823,10 @@
       "line": 114
     },
     {
+      "file": "backend/src/modules/seo-monitoring/services/gsc-daily-fetcher.service.ts",
+      "line": 438
+    },
+    {
       "file": "backend/src/modules/seo-shadow-observatory/seo-shadow-event-sink.service.ts",
       "line": 76
     },
@@ -11099,15 +13028,11 @@
     },
     {
       "file": "backend/src/modules/seo/validation/url-compatibility.service.ts",
-      "line": 709
+      "line": 716
     },
     {
       "file": "backend/src/modules/seo/validation/url-compatibility.service.ts",
-      "line": 718
-    },
-    {
-      "file": "backend/src/modules/seo/validation/url-compatibility.service.ts",
-      "line": 726
+      "line": 724
     },
     {
       "file": "backend/src/modules/shipping/shipping.service.ts",
@@ -11166,96 +13091,96 @@
       "line": 253
     },
     {
-      "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 141
+      "file": "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
+      "line": 112
+    },
+    {
+      "file": "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
+      "line": 125
+    },
+    {
+      "file": "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
+      "line": 136
+    },
+    {
+      "file": "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
+      "line": 150
+    },
+    {
+      "file": "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
+      "line": 160
+    },
+    {
+      "file": "backend/src/modules/supplier-truth/supplier-truth.repository.ts",
+      "line": 253
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 172
+      "line": 85
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 216
+      "line": 129
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 257
+      "line": 158
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 280
+      "line": 247
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 314
+      "line": 283
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 416
+      "line": 294
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 488
+      "line": 319
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 528
+      "line": 356
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 636
+      "line": 371
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 672
+      "line": 380
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 683
+      "line": 485
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 708
+      "line": 519
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 745
+      "line": 554
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 760
+      "line": 574
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 769
+      "line": 618
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 874
+      "line": 671
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 908
-    },
-    {
-      "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 943
-    },
-    {
-      "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 963
-    },
-    {
-      "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 1007
-    },
-    {
-      "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 1060
-    },
-    {
-      "file": "backend/src/modules/suppliers/suppliers.service.ts",
-      "line": 1070
+      "line": 681
     },
     {
       "file": "backend/src/modules/support/services/claim.service.ts",
@@ -11299,63 +13224,63 @@
     },
     {
       "file": "backend/src/modules/support/services/contact.service.ts",
-      "line": 108
+      "line": 129
     },
     {
       "file": "backend/src/modules/support/services/contact.service.ts",
-      "line": 128
+      "line": 149
     },
     {
       "file": "backend/src/modules/support/services/contact.service.ts",
-      "line": 156
+      "line": 189
     },
     {
       "file": "backend/src/modules/support/services/contact.service.ts",
-      "line": 198
+      "line": 231
     },
     {
       "file": "backend/src/modules/support/services/contact.service.ts",
-      "line": 246
+      "line": 279
     },
     {
       "file": "backend/src/modules/support/services/contact.service.ts",
-      "line": 329
+      "line": 362
     },
     {
       "file": "backend/src/modules/support/services/contact.service.ts",
-      "line": 387
+      "line": 420
     },
     {
       "file": "backend/src/modules/support/services/contact.service.ts",
-      "line": 409
+      "line": 442
     },
     {
       "file": "backend/src/modules/support/services/contact.service.ts",
-      "line": 446
+      "line": 479
     },
     {
       "file": "backend/src/modules/support/services/contact.service.ts",
-      "line": 484
+      "line": 517
     },
     {
       "file": "backend/src/modules/support/services/contact.service.ts",
-      "line": 491
+      "line": 524
     },
     {
       "file": "backend/src/modules/support/services/contact.service.ts",
-      "line": 500
+      "line": 533
     },
     {
       "file": "backend/src/modules/support/services/contact.service.ts",
-      "line": 702
+      "line": 735
     },
     {
       "file": "backend/src/modules/support/services/contact.service.ts",
-      "line": 730
+      "line": 774
     },
     {
       "file": "backend/src/modules/support/services/contact.service.ts",
-      "line": 787
+      "line": 831
     },
     {
       "file": "backend/src/modules/support/services/faq.service.ts",
@@ -11376,6 +13301,22 @@
     {
       "file": "backend/src/modules/support/services/faq.service.ts",
       "line": 399
+    },
+    {
+      "file": "backend/src/modules/support/services/leads.service.ts",
+      "line": 113
+    },
+    {
+      "file": "backend/src/modules/support/services/leads.service.ts",
+      "line": 152
+    },
+    {
+      "file": "backend/src/modules/support/services/leads.service.ts",
+      "line": 198
+    },
+    {
+      "file": "backend/src/modules/support/services/leads.service.ts",
+      "line": 240
     },
     {
       "file": "backend/src/modules/support/services/legal-version.service.ts",
@@ -12084,10 +14025,6 @@
     {
       "file": "backend/src/shared/crypto/password-crypto.service.ts",
       "line": 246
-    },
-    {
-      "file": "backend/src/workers/services/rag-change-watcher.service.ts",
-      "line": 293
     }
   ],
   "dynamic_rpc_callsites": [

@@ -89,39 +89,63 @@ export class CommandCenterActionsService extends SupabaseBaseService {
         p_max_ctr: 0,
         p_limit: 50,
       };
-      const v2 = await this.callRpc<{
+      // Enveloppe honnête partagée v3/v2 (v3 ajoute coverage_status). v1 = sans enveloppe.
+      type Envelope = {
         rows?: RawGscRow[];
         total_qualifying?: number | string | null;
         data_from?: string | null;
         data_to?: string | null;
         last_data_date?: string | null;
-      }>('rpc_seo_low_ctr_v2', rpcParams);
+        coverage_status?: 'ok' | 'coverage_gap' | 'insufficient_data' | null;
+      };
+      const toMeta = (d: Envelope): GscOpportunityMeta => {
+        // null doit RESTER null (Number(null) === 0 fabriquerait « Liste complète
+        // (0 pages qualifiantes) » à côté de lignes non vides).
+        const rawTotal = d.total_qualifying;
+        const total = rawTotal == null ? NaN : Number(rawTotal);
+        return {
+          total_qualifying: Number.isFinite(total) ? total : null,
+          data_from: d.data_from ?? null,
+          data_to: d.data_to ?? null,
+          freshness: this.gscFreshness(d.last_data_date ?? null),
+          coverage_status: d.coverage_status ?? undefined,
+        };
+      };
 
+      // Chaîne v3 → v2 → v1 (dégradation gracieuse, chaque repli loggué — no silent
+      // fallback). v3 = grain pages FIDÈLE (__seo_gsc_daily_pages, sans query) +
+      // couverture ; v2 = enveloppe honnête sans couverture ; v1 = sans enveloppe.
+      // Toutes 3 dans rpc_allowlist.json (RPC Safety Gate). Une fonction non encore
+      // déployée (migration non appliquée) → repli explicite, jamais un faux-vert.
       let rawRows: RawGscRow[];
       let meta: GscOpportunityMeta;
-      if (!v2.error && v2.data && Array.isArray(v2.data.rows)) {
-        rawRows = v2.data.rows;
-        // null doit RESTER null (Number(null) === 0 fabriquerait « Liste
-        // complète (0 pages qualifiantes) » à côté de lignes non vides).
-        const rawTotal = v2.data.total_qualifying;
-        const total = rawTotal == null ? NaN : Number(rawTotal);
-        meta = {
-          total_qualifying: Number.isFinite(total) ? total : null,
-          data_from: v2.data.data_from ?? null,
-          data_to: v2.data.data_to ?? null,
-          freshness: this.gscFreshness(v2.data.last_data_date ?? null),
-        };
+      const v3 = await this.callRpc<Envelope>('rpc_seo_low_ctr_v3', rpcParams);
+      if (!v3.error && v3.data && Array.isArray(v3.data.rows)) {
+        rawRows = v3.data.rows;
+        meta = toMeta(v3.data);
       } else {
         this.logger.warn(
-          `[command-center-actions] rpc_seo_low_ctr_v2 indisponible (${v2.error ?? 'enveloppe invalide'}) — fallback v1 : couverture/total inconnus, confiance dégradée`,
+          `[command-center-actions] rpc_seo_low_ctr_v3 indisponible (${v3.error ?? 'enveloppe invalide'}) — fallback v2 : couverture inconnue`,
         );
-        const v1 = await this.callRpc<RawGscRow[]>(
-          'rpc_seo_low_ctr_v1',
+        const v2 = await this.callRpc<Envelope>(
+          'rpc_seo_low_ctr_v2',
           rpcParams,
         );
-        if (v1.error) throw v1.error;
-        rawRows = v1.data ?? [];
-        meta = UNKNOWN_GSC_META;
+        if (!v2.error && v2.data && Array.isArray(v2.data.rows)) {
+          rawRows = v2.data.rows;
+          meta = toMeta(v2.data);
+        } else {
+          this.logger.warn(
+            `[command-center-actions] rpc_seo_low_ctr_v2 indisponible (${v2.error ?? 'enveloppe invalide'}) — fallback v1 : couverture/total inconnus, confiance dégradée`,
+          );
+          const v1 = await this.callRpc<RawGscRow[]>(
+            'rpc_seo_low_ctr_v1',
+            rpcParams,
+          );
+          if (v1.error) throw v1.error;
+          rawRows = v1.data ?? [];
+          meta = UNKNOWN_GSC_META;
+        }
       }
 
       // RPC returns BIGINT sums as JSONB numbers; coerce defensively. avg_position

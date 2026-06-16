@@ -1,0 +1,27 @@
+{
+  "coverage": [],
+  "entity_type": "diagnostic",
+  "intent_targets": [],
+  "inventory_status": "DIAGNOSTIC_READY",
+  "missing_for_next_tier": [],
+  "next_action": "CONFIGURE_COMPLETENESS_PROFILE",
+  "pg_id": null,
+  "provenance": {
+    "completeness_profile": null,
+    "source_type": "diagnostic",
+    "sources": [
+      {
+        "content_hash": "sha256:2b6174f8d046b4541d0a7a645d869aaea2a1e827847e64c6495d7c2d87d6c8cf",
+        "kind": "diagnostic",
+        "path": "recycled/rag-knowledge/diagnostic/embrayage.md"
+      }
+    ],
+    "truth_level": "L2",
+    "unlinked_source_types": [],
+    "verification_status": "verified"
+  },
+  "raw_verdict": "NOT_CONFIGURED",
+  "schema_version": "raw-evidence.v1",
+  "subject": "embrayage",
+  "tier": "NOT_CONFIGURED"
+}

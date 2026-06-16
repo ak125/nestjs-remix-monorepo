@@ -66,16 +66,8 @@ export default function BrandsGrid({
         </div>
       )}
 
-      {showAllBrands && (
-        <div className="mt-4 lg:hidden">
-          <Link
-            to="/constructeurs"
-            className="inline-flex h-11 w-full items-center justify-center rounded-full bg-gradient-to-r from-orange-500 to-orange-600 px-5 text-sm font-semibold text-white shadow-[0_12px_24px_rgba(249,115,22,0.25)] transition active:scale-[0.99]"
-          >
-            Voir toutes les marques
-          </Link>
-        </div>
-      )}
+      {/* CTA "Voir toutes les marques" → /constructeurs retiré (index → 404, ADR-084) ;
+          la grille affiche déjà toutes les marques une fois dépliée. */}
 
       {/* Équipementiers marquee */}
       {equipList.length > 0 && (

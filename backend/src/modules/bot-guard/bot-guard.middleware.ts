@@ -30,27 +30,14 @@ export class BotGuardMiddleware implements NestMiddleware {
       return next();
     }
 
-    // 4. Country check via CF-IPCountry header (set by Cloudflare)
+    // 4. Country (Cloudflare CF-IPCountry header) + UA, read once for all checks.
     const country = (req.headers['cf-ipcountry'] as string)?.toUpperCase();
+    const userAgent = (req.headers['user-agent'] as string) || '';
 
     try {
-      if (country && (await this.botGuardService.isCountryBlocked(country))) {
-        await this.botGuardService.logBlocked(
-          ip,
-          country,
-          'geo_block',
-          req.path,
-        );
-        this.logger.warn(
-          `Blocked: ip=${ip} country=${country} path=${req.path} reason=geo_block`,
-        );
-        res
-          .status(HttpStatus.FORBIDDEN)
-          .json({ error: 'Access denied', code: 'GEO_BLOCKED' });
-        return;
-      }
-
-      // 5. IP blocklist check
+      // 5. Explicit operator IP blocklist applies to EVERYONE — including
+      // verified crawlers. An admin IP block is a deliberate, observable action
+      // and must win; checked first so a blocked IP short-circuits before DNS.
       if (await this.botGuardService.isIpBlocked(ip)) {
         await this.botGuardService.logBlocked(
           ip,
@@ -67,8 +54,34 @@ export class BotGuardMiddleware implements NestMiddleware {
         return;
       }
 
-      // 6. Behavioral scoring
-      const userAgent = (req.headers['user-agent'] as string) || '';
+      // 6. Verified search-engine crawlers (FCrDNS) bypass the AUTOMATIC blocks
+      // (geo + behavioral) and the rate limiter (req.isVerifiedBot is read by
+      // ThrottlerGuard.skipIf in app.module.ts). UA is not trusted on its own —
+      // identity is proven by forward-confirmed reverse DNS.
+      if (await this.botGuardService.isVerifiedSearchEngine(ip, userAgent)) {
+        (req as Request & { isVerifiedBot?: boolean }).isVerifiedBot = true;
+        this.botGuardService.trackAllowed(country).catch(() => {});
+        return next();
+      }
+
+      // 7. Geo block (Cloudflare CF-IPCountry header).
+      if (country && (await this.botGuardService.isCountryBlocked(country))) {
+        await this.botGuardService.logBlocked(
+          ip,
+          country,
+          'geo_block',
+          req.path,
+        );
+        this.logger.warn(
+          `Blocked: ip=${ip} country=${country} path=${req.path} reason=geo_block`,
+        );
+        res
+          .status(HttpStatus.FORBIDDEN)
+          .json({ error: 'Access denied', code: 'GEO_BLOCKED' });
+        return;
+      }
+
+      // 8. Behavioral scoring
       const suspicionScore = this.botGuardService.calculateSuspicionScore({
         ip,
         country,
@@ -105,12 +118,27 @@ export class BotGuardMiddleware implements NestMiddleware {
   }
 
   private getClientIp(req: Request): string {
-    return (
-      (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
-      (req.headers['x-real-ip'] as string) ||
-      req.socket?.remoteAddress ||
-      'unknown'
-    );
+    const peer = req.socket?.remoteAddress || '';
+
+    // SECURITY: forwarding headers (cf-connecting-ip / x-forwarded-for /
+    // x-real-ip) are client-spoofable, so they are trusted ONLY when the
+    // immediate TCP peer is our own co-located reverse proxy (Caddy →
+    // loopback/Docker-internal). Caddy sits behind Cloudflare, which sets
+    // cf-connecting-ip and strips any inbound value, so that chain is authentic.
+    // A connection whose peer is a public IP reached the app directly (bypassing
+    // the edge): its headers are attacker-controlled and MUST be ignored — we
+    // use the socket address. Otherwise an attacker could set
+    // `cf-connecting-ip: <a real Googlebot IP>` and pass FCrDNS to bypass
+    // geo/behavioral blocking and the rate limiter.
+    if (this.isInternalIp(peer)) {
+      const forwarded =
+        (req.headers['cf-connecting-ip'] as string)?.trim() ||
+        (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
+        (req.headers['x-real-ip'] as string)?.trim();
+      if (forwarded) return forwarded;
+    }
+
+    return peer || 'unknown';
   }
 
   private isInternalIp(ip: string): boolean {

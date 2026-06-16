@@ -1,0 +1,27 @@
+{
+  "coverage": [],
+  "entity_type": "diagnostic",
+  "intent_targets": [],
+  "inventory_status": "DIAGNOSTIC_READY",
+  "missing_for_next_tier": [],
+  "next_action": "CONFIGURE_COMPLETENESS_PROFILE",
+  "pg_id": null,
+  "provenance": {
+    "completeness_profile": null,
+    "source_type": "diagnostic",
+    "sources": [
+      {
+        "content_hash": "sha256:5e989b89d0121ee00182ee9d5269801ae47a9f953917d1d4cfa867eb93e9e90d",
+        "kind": "diagnostic",
+        "path": "recycled/rag-knowledge/diagnostic/temoins-tableau-bord.md"
+      }
+    ],
+    "truth_level": "L1",
+    "unlinked_source_types": [],
+    "verification_status": "verified"
+  },
+  "raw_verdict": "NOT_CONFIGURED",
+  "schema_version": "raw-evidence.v1",
+  "subject": "temoins-tableau-bord",
+  "tier": "NOT_CONFIGURED"
+}

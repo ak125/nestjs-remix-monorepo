@@ -123,6 +123,8 @@ export interface RmProductV2 extends RmProduct {
   image: string;
   filtre_gamme: string;
   is_accessory: boolean;
+  /** RM stock status from pri_dispo: IN_STOCK | LOW_STOCK | PREORDER | OUT_OF_STOCK. */
+  stock_status?: string;
 }
 
 export interface RmGroupedPiece {

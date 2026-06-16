@@ -41,6 +41,67 @@ export const GSCTimeseriesResponseSchema = z.object({
 });
 export type GSCTimeseriesResponse = z.infer<typeof GSCTimeseriesResponseSchema>;
 
+// ─── GSC multi-grain (PR1 — ingestion fidèle, anti-anonymisation) ──────────
+//
+// `__seo_gsc_daily` (date+page+query+device) sous-capture ~4× les totaux car la
+// dimension `query` déclenche l'anonymisation Google. On NE dérive PAS un total
+// d'un grain page/query. 3 grains explicites (1 table/grain → les RPC ne
+// mélangent jamais les grains), cf. 20260613_seo_gsc_multilevel_grains.sql.
+
+const GSC_ISO_DATE = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "ISO date YYYY-MM-DD");
+const GSC_DEVICE = z
+  .enum(["all", "mobile", "desktop", "tablet"])
+  .default("all");
+/**
+ * GSC country = ISO-3166-1 alpha-3 lowercase (ex. "fra"). "zzz" = inconnu.
+ * Permissif (string) — l'API peut renvoyer des codes hors-liste ; le contrat
+ * absorbe sans casser (cf. philosophie GA4_CHANNEL_CANON ci-dessous).
+ */
+const GSC_COUNTRY = z.string().min(2).max(8).default("zzz");
+
+/** Grain GLOBAL : date seule (aucune dimension) → volume le plus complet. */
+export const GSCDailyPropertyTotalRowSchema = z.object({
+  date: GSC_ISO_DATE,
+  clicks: z.number().int().nonnegative(),
+  impressions: z.number().int().nonnegative(),
+  ctr: z.number().min(0).max(1),
+  position: z.number().min(0),
+});
+export type GSCDailyPropertyTotalRow = z.infer<
+  typeof GSCDailyPropertyTotalRowSchema
+>;
+
+/** Grain SEGMENTÉ : date+country+device (sans page ni query). */
+export const GSCDailyTotalsRowSchema = z.object({
+  date: GSC_ISO_DATE,
+  country: GSC_COUNTRY,
+  device: GSC_DEVICE,
+  clicks: z.number().int().nonnegative(),
+  impressions: z.number().int().nonnegative(),
+  ctr: z.number().min(0).max(1),
+  position: z.number().min(0),
+});
+export type GSCDailyTotalsRow = z.infer<typeof GSCDailyTotalsRowSchema>;
+
+/** Grain PAGE : date+page+country+device (sans query) → réactions par URL. */
+export const GSCDailyPagesRowSchema = z.object({
+  date: GSC_ISO_DATE,
+  page: z.string().url(),
+  country: GSC_COUNTRY,
+  device: GSC_DEVICE,
+  clicks: z.number().int().nonnegative(),
+  impressions: z.number().int().nonnegative(),
+  ctr: z.number().min(0).max(1),
+  position: z.number().min(0),
+});
+export type GSCDailyPagesRow = z.infer<typeof GSCDailyPagesRowSchema>;
+
+/** Grain de couverture GSC (date seule en sortie de l'API, dim `date`). */
+export const GSC_GRAIN = ["property_total", "totals", "pages", "queries"] as const;
+export type GscGrain = (typeof GSC_GRAIN)[number];
+
 // ─── GA4 Data API ────────────────────────────────────────────────────────
 
 /**
