@@ -75,7 +75,7 @@
 6. **Pas de psql direct** — Python chunks/streaming/workers + connexion directe port 5432
 7. **Pas de gammes hors les 242 actives** — `gamme_aggregates`
 8. **Pas de DELETE** de pieces/vehicules/modeles existants
-9. **Conventions massdoc** — modele_id=marque_id*1000+seq, type_id=sequentiel global 60000+ (remappe depuis KTYPNR TecDoc via `tecdoc_map.type_id_remap`), colonnes doubles (name/name_url/name_meta/alias)
+9. **Conventions massdoc** — modele_id=marque_id*1000+seq, type_id=sequentiel global 60000+ (remappe depuis KTYPNR TecDoc via `tecdoc_map.type_id_remap`), colonnes doubles (name/name_url/name_meta/alias). **Gouvernance (canon ADR-085) : toute nouvelle allocation via `tecdoc_map.allocate_massdoc_type_id` (sequence `type_id_seq` >= 83457, idempotent/reversible) — jamais adopter le KTYPNR comme id, jamais reutiliser un trou legacy 0-59999, jamais renumeroter. Migration `20260615_massdoc_type_id_allocator.sql` (#998).**
 10. **Scope enrichissement** = pieces avec linkage uniquement (76K), JAMAIS les 43K sans linkage
 
 ---
