@@ -1042,6 +1042,14 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: low
+  # __gov_m10 read-only introspection RPC for the rpc-overload-ambiguity runtime-truth
+  # runner (Trust Ledger B0a-4; PGRST203 class, #993/#997). Additive, SECURITY DEFINER,
+  # service_role only. Glob exact (.sql + .down.sql of this migration).
+  - glob: backend/supabase/migrations/20260615_gov_m10_overload_ambiguity_rpc*.sql
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
   - glob: workspaces/ai-probe/**
     domain: D3
     owner: '@ak125/seo-team'

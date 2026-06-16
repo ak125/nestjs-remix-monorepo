@@ -490,3 +490,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/rpc-drift-silent-bugs`
 - **Décision** : fix(rpc-drift): repair advice view counter + drop execute_sql anti-pattern
 - **Sortie** : PR #982 | commits 4bf1dfdef
+
+## 2026-06-16 — feat/runtime-truth-overload-runner (auto)
+
+- **Branche** : `feat/runtime-truth-overload-runner`
+- **Décision** : feat(audit): runtime-truth rpc-overload-ambiguity runner + __gov_m10 RPC (PR-B0a-4)
+- **Sortie** : PR aucune | commits 4e659dfee
