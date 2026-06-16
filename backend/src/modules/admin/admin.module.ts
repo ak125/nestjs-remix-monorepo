@@ -23,6 +23,7 @@ import { RegistryReaderService } from './services/registry-reader.service';
 import { CommandCenterController } from './controllers/command-center.controller';
 import { CommandCenterReaderService } from './services/command-center-reader.service';
 import { CommandCenterActionsService } from './services/command-center-actions.service';
+import { CommandCenterOrchestratorService } from './services/command-center-orchestrator/orchestrator.service';
 import { ConfigurationController } from './controllers/configuration.controller';
 import { StockController } from './controllers/stock.controller'; // 🔥 Controller consolidé unique
 import { AdminController } from './controllers/admin.controller';
@@ -211,6 +212,7 @@ import { SeoControlRefreshProcessor } from './processors/seo-control-refresh.pro
     RegistryReaderService,
     CommandCenterReaderService,
     CommandCenterActionsService,
+    CommandCenterOrchestratorService,
     ConfigurationService,
     StockManagementService, // ✅ Service principal stock
     WorkingStockService, // ✅ Service complémentaire (search, export, stats)
