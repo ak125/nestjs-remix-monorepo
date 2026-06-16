@@ -7,7 +7,7 @@
 
 ---
 
-## Contrat d'exécution (comportement de l'agent) `[CRITICAL]`
+## Contrat d'exécution (comportement de l'agent)
 
 Ce repo est **gouverné** : ADRs, contracts, registries déterministes, ratchets CI.
 L'assistant **ÉTEND** l'architecture existante — il ne crée **JAMAIS** de système
@@ -37,7 +37,7 @@ ADR-058/062. **L1** data auto (`audit/registry/*.json`) + **L2** overlay manuel
 `audit/registry/canonical.json` = projection générée, **jamais éditée**. L'enforcement
 (ratchets / CI / ast-grep) entoure ces 3 couches. Détail : `packages/registry/README.md`.
 
-`[CRITICAL]` **Generated artifacts are projections, never sources of truth** :
+`[HIGH]` **Generated artifacts are projections, never sources of truth** :
 ne jamais éditer un artefact généré (`canonical.json`, blocs
 `<!-- AUTO-GENERATED -->`, `REPO_MAP.md`, canon mirrors hash-lockés) — corriger
 L1+L2, puis rebuild.
