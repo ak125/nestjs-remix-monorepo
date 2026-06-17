@@ -44,6 +44,25 @@
 
 BEGIN;
 
+-- Self-verify (fail-closed): the 7 "trigger" functions MUST be RETURNS trigger before we
+-- revoke their EXECUTE. A non-trigger here could be a PostgREST-exposed RPC with an anon
+-- read-path caller (the exact trap that sank the broad #5) → abort rather than risk it.
+-- (Verified 2026-06-16: all 7 have prorettype = trigger; this asserts it at apply time.)
+DO $assert$
+DECLARE n integer;
+BEGIN
+  SELECT count(*) INTO n
+  FROM pg_proc p JOIN pg_namespace ns ON ns.oid = p.pronamespace
+  WHERE ns.nspname = 'public'
+    AND p.proname IN ('enforce_agent_write_scope','fn_kp_validated_enqueue','trg_auto_type_rebuild_cache',
+      'trg_invalidate_r1_from_gamme_links','trg_invalidate_r1_from_image_prompts',
+      'trg_invalidate_r1_from_purchase_guide','trg_invalidate_r1_from_seo_gamme')
+    AND p.prorettype <> 'pg_catalog.trigger'::regtype;
+  IF n > 0 THEN
+    RAISE EXCEPTION 'vague5b abort: % of the 7 "trigger" fns are NOT RETURNS trigger — re-verify read-path before revoke', n;
+  END IF;
+END $assert$;
+
 REVOKE EXECUTE ON FUNCTION public.detect_cwv_trend_divergence() FROM PUBLIC, anon, authenticated;
 GRANT  EXECUTE ON FUNCTION public.detect_cwv_trend_divergence() TO service_role;
 REVOKE EXECUTE ON FUNCTION public.enforce_agent_write_scope() FROM PUBLIC, anon, authenticated;

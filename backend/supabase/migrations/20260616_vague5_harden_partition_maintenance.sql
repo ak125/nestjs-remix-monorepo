@@ -85,8 +85,9 @@ SECURITY DEFINER
 SET search_path = public, pg_catalog
 AS $fn$
 DECLARE
-  r       record;
-  v_count integer := 0;
+  r        record;
+  v_count  integer := 0;
+  v_failed integer := 0;
 BEGIN
   FOR r IN
     SELECT c.relname
@@ -101,11 +102,20 @@ BEGIN
       v_count := v_count + 1;
       RAISE NOTICE '[rls-reconcile] hardened public.%', r.relname;
     EXCEPTION WHEN OTHERS THEN
+      v_failed := v_failed + 1;
       RAISE WARNING '[rls-reconcile] skipped public.% (%) — retry next run', r.relname, SQLERRM;
     END;
   END LOOP;
   IF v_count > 0 THEN
     RAISE NOTICE '[rls-reconcile] locked % drift-tail internal table(s)', v_count;
+  END IF;
+  -- no-silent-fallback (CLAUDE.md [CRITICAL]): a SYSTEMIC failure (≥1 error AND nothing
+  -- locked) fails the cron job loudly → surfaces in cron.job_run_details. Transient
+  -- per-table skips (some locked, some errored) self-heal on the next hourly run.
+  IF v_failed > 0 AND v_count = 0 THEN
+    RAISE EXCEPTION '[rls-reconcile] systemic failure: % table(s) errored, 0 locked', v_failed;
+  ELSIF v_failed > 0 THEN
+    RAISE WARNING '[rls-reconcile] % table(s) skipped this run (transient) — retry next run', v_failed;
   END IF;
   RETURN v_count;
 END;

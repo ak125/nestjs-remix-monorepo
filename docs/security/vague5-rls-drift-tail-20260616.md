@@ -239,7 +239,8 @@ GRANT EXECUTE / unschedule+DROP). `main` est branch-protected — jamais de forc
 | 215 ERROR | **Migrations préparées + lintées** (#1+#2, non appliquées) |
 | ~350/541 WARN | **Migrations préparées** (#4 search_path 334 + #2 matview 1 + #5b 13 prouvés-safe) |
 | ~190 WARN restants | ~186 RPC read-path **déférés vague-5b-full** (mapping read-path PREPROD) · 3 carveout (§7) · 3 ext (§6a) · 1 pg (§6b) |
-| Revue adversariale PR #1012 | 1 BLOQUANT (#5 → déféré) + 1 HAUTE (#4 carveout → exclu) **corrigés** |
+| Revue adversariale (passe 1) | 1 BLOQUANT (#5 → déféré) + 1 HAUTE (#4 carveout → exclu) **corrigés** |
+| Re-revue adversariale (passe 2) | **APPROVE** (0 BLOQUANT/HAUTE) ; 2 SUGGESTION corrigées : #5b self-assert `prorettype=trigger` (fail-closed) + #3 reconcileur escalade no-silent-fallback (échec systémique → cron job rouge) |
 | 20 INFO | Intentionnel (closure optionnelle §6c) |
 | Anti-régression rotation | Migration #3 (pg_cron reconcileur) |
 | Smoke-test live (BEGIN/ROLLBACK) | **NON exécuté** (psql refusé par garde ; à faire à l'apply) |
