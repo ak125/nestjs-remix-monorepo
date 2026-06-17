@@ -40,18 +40,24 @@ function make(opts: {
     getMode: () => opts.orchMode ?? 'off',
     isShadowEnabled: () => (opts.orchMode ?? 'off') === 'shadow',
     supportedKinds: () => ['regen-artifact', 'pr-proposition'],
+    availableActions: () => [
+      { kind: 'regen-artifact', action_id: 'regen:command-center-snapshot' },
+    ],
     planShadow: opts.planShadow ?? jest.fn().mockResolvedValue(plan),
   } as never;
   return new CommandCenterController(reader, orchestrator);
 }
 
 describe('CommandCenterController — orchestration', () => {
-  it('getOrchestrationStatus reporte mode + kinds (même en off)', () => {
+  it('getOrchestrationStatus reporte mode + kinds + catalogue (même en off)', () => {
     const c = make({ orchMode: 'off' });
     expect(c.getOrchestrationStatus()).toEqual({
       mode: 'off',
       shadow_enabled: false,
       supported_kinds: ['regen-artifact', 'pr-proposition'],
+      available_actions: [
+        { kind: 'regen-artifact', action_id: 'regen:command-center-snapshot' },
+      ],
     });
   });
 

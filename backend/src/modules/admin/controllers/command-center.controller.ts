@@ -46,6 +46,8 @@ interface OrchestrationStatus {
   mode: OrchestrationMode;
   shadow_enabled: boolean;
   supported_kinds: string[];
+  /** Catalogue (kind × action_id) prévisualisable — backend SoT, l'UI consomme. */
+  available_actions: { kind: string; action_id: string }[];
 }
 
 /**
@@ -97,6 +99,7 @@ export class CommandCenterController {
       mode: this.orchestrator.getMode(),
       shadow_enabled: this.orchestrator.isShadowEnabled(),
       supported_kinds: this.orchestrator.supportedKinds(),
+      available_actions: this.orchestrator.availableActions(),
     };
   }
 

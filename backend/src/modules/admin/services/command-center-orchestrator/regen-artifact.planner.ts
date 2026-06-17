@@ -107,6 +107,11 @@ export class RegenArtifactShadowPlanner implements ShadowPlanner {
     return Object.keys(REGEN_TARGETS);
   }
 
+  /** Catalogue exposé à l'orchestrateur (ShadowPlanner.listActionIds). */
+  listActionIds(): string[] {
+    return RegenArtifactShadowPlanner.knownTargets();
+  }
+
   /**
    * Repo root, ancré EXACTEMENT comme `CommandCenterReaderService` (REGISTRY_DIR/../..),
    * pour éviter le piège cwd=backend/ en Docker (start.sh fait `cd backend`).
