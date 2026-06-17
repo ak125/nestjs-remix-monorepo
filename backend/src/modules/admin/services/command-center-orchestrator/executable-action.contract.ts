@@ -22,6 +22,8 @@
  * shadow-2/3 ; l'exécution réelle (HITL) en Phase 2 (`approved`), gated séparément.
  */
 
+import { createHash } from 'node:crypto';
+
 /** Modes d'orchestration (ADR-087). Défaut OFF ; Phase 1 = off|shadow seulement. */
 export type OrchestrationMode = 'off' | 'shadow' | 'approved' | 'auto';
 
@@ -77,4 +79,20 @@ export function resolveOrchestrationMode(): OrchestrationMode {
     return raw === 'approved' || raw === 'auto' ? 'off' : raw;
   }
   return 'off';
+}
+
+/**
+ * Hash déterministe d'un plan, porté par `ExecutionLedgerEntry.plan_hash` (dédup /
+ * idempotence : deux runs shadow du même plan produisent le même hash). On ne hashe que
+ * les champs signifiants de l'effet would-be — `summary`/`reversible` sont dérivés et
+ * n'altèrent pas l'identité du changement décrit.
+ */
+export function computePlanHash(plan: ExecutionPlan): string {
+  const canonical = JSON.stringify({
+    action_id: plan.action_id,
+    kind: plan.kind,
+    would_change: plan.would_change,
+    details: plan.details,
+  });
+  return createHash('sha256').update(canonical).digest('hex');
 }
