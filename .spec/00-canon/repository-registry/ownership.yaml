@@ -1060,3 +1060,15 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: low
+
+  # Vague 5 — sécurité : RLS drift-tail + durcissement fonctions (advisor 215→0).
+  - glob: backend/supabase/migrations/20260616_vague5_*.sql
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
+  - glob: docs/security/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
