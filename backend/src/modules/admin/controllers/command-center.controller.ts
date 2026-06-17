@@ -5,6 +5,7 @@ import {
   Controller,
   Get,
   NotFoundException,
+  NotImplementedException,
   Post,
   UnprocessableEntityException,
   UseGuards,
@@ -21,7 +22,9 @@ import {
 } from '../services/command-center-reader.service';
 import {
   CommandCenterOrchestratorService,
+  NoExecutorError,
   OrchestrationDisabledError,
+  PlanHashMismatchError,
   UnsupportedExecutableActionError,
 } from '../services/command-center-orchestrator/orchestrator.service';
 import {
@@ -31,6 +34,7 @@ import {
 import { UnknownPrPropositionError } from '../services/command-center-orchestrator/pr-proposition.planner';
 import {
   type ExecutionPlan,
+  type ExecutionReceipt,
   type OrchestrationMode,
 } from '../services/command-center-orchestrator/executable-action.contract';
 
@@ -39,6 +43,16 @@ const ShadowPlanRequestSchema = z
   .object({
     kind: z.enum(['regen-artifact', 'pr-proposition']),
     action_id: z.string().min(1),
+  })
+  .strict();
+
+/** Corps validé d'une exécution approuvée (HITL) : preview → approve avec le plan_hash. */
+const ApproveRequestSchema = z
+  .object({
+    kind: z.enum(['regen-artifact', 'pr-proposition']),
+    action_id: z.string().min(1),
+    /** hash du plan prévisualisé que l'humain approuve (garde TOCTOU). */
+    plan_hash: z.string().min(1),
   })
   .strict();
 
@@ -145,6 +159,61 @@ export class CommandCenterController {
       }
       if (e instanceof RegenDryRunError) {
         throw new UnprocessableEntityException(e.message); // 422 : dry-run impossible
+      }
+      throw e;
+    }
+  }
+
+  /**
+   * Exécute une action APPROUVÉE (Phase 2, HITL). Étape 2 du flux preview→approve :
+   * l'opérateur renvoie le `plan_hash` du plan qu'il a prévisualisé. Mapping HTTP :
+   * mode ≠ approved → 409 ; plan_hash périmé → 409 ; kind/cible inconnu → 400 ;
+   * dry-run KO → 422 ; aucun executor branché (Phase 2a) → 501 Not Implemented.
+   */
+  @Post('orchestration/approve')
+  async approveExecution(
+    @Body() body: unknown,
+    @User('email') actorEmail?: string,
+  ): Promise<ExecutionReceipt> {
+    this.assertExposed();
+
+    let parsed: z.infer<typeof ApproveRequestSchema>;
+    try {
+      parsed = ApproveRequestSchema.parse(body);
+    } catch (e) {
+      if (e instanceof ZodError) {
+        throw new BadRequestException(
+          `Requête invalide : ${e.issues.map((i) => i.message).join(', ')}`,
+        );
+      }
+      throw e;
+    }
+
+    try {
+      return await this.orchestrator.executeApproved(
+        parsed.kind,
+        parsed.action_id,
+        { actor: actorEmail ?? 'admin', plan_hash: parsed.plan_hash },
+      );
+    } catch (e) {
+      if (
+        e instanceof OrchestrationDisabledError ||
+        e instanceof PlanHashMismatchError
+      ) {
+        throw new ConflictException(e.message); // 409 : mode≠approved ou plan périmé
+      }
+      if (
+        e instanceof UnsupportedExecutableActionError ||
+        e instanceof UnknownRegenTargetError ||
+        e instanceof UnknownPrPropositionError
+      ) {
+        throw new BadRequestException(e.message); // 400 : kind/cible inconnu
+      }
+      if (e instanceof RegenDryRunError) {
+        throw new UnprocessableEntityException(e.message); // 422 : recalcul impossible
+      }
+      if (e instanceof NoExecutorError) {
+        throw new NotImplementedException(e.message); // 501 : aucun executor (Phase 2a)
       }
       throw e;
     }

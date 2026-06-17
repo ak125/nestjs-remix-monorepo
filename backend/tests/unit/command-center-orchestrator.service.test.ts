@@ -8,10 +8,13 @@ import {
   computePlanHash,
   resolveOrchestrationMode,
   type ExecutionPlan,
+  type ExecutionReceipt,
 } from '../../src/modules/admin/services/command-center-orchestrator/executable-action.contract';
 import {
   CommandCenterOrchestratorService,
+  NoExecutorError,
   OrchestrationDisabledError,
+  PlanHashMismatchError,
   UnsupportedExecutableActionError,
   type ShadowLedgerSink,
   type ShadowPlanner,
@@ -51,10 +54,15 @@ describe('resolveOrchestrationMode — défaut OFF, PROD toujours OFF', () => {
     expect(resolveOrchestrationMode()).toBe('off');
   });
 
-  it('approved/auto = off en Phase 1 (inerte, non implémentés)', () => {
+  it('approved résolu (Phase 2a, HITL) ; auto reste inerte → off', () => {
     setEnv('approved', 'development');
+    expect(resolveOrchestrationMode()).toBe('approved');
+    setEnv('AUTO', 'preprod'); // auto non implémenté → off
     expect(resolveOrchestrationMode()).toBe('off');
-    setEnv('auto', 'development');
+  });
+
+  it('PROD = off même si le flag dit approved', () => {
+    setEnv('approved', 'production');
     expect(resolveOrchestrationMode()).toBe('off');
   });
 
@@ -257,6 +265,106 @@ describe('computePlanHash — déterministe & sensible', () => {
     );
     expect(computePlanHash({ ...base, details: { a: 2 } })).not.toBe(
       computePlanHash(base),
+    );
+  });
+});
+
+describe('executeApproved — HITL Phase 2a (inerte : 0 executor branché)', () => {
+  const changingPlan: ExecutionPlan = {
+    action_id: 'regen:x',
+    kind: 'regen-artifact',
+    summary: 's',
+    would_change: true,
+    details: { a: 1 },
+    reversible: true,
+  };
+  const noopPlan: ExecutionPlan = { ...changingPlan, would_change: false };
+  const HASH = computePlanHash(changingPlan);
+
+  function plannerFor(
+    plan: ExecutionPlan,
+    apply?: ShadowPlanner['apply'],
+  ): ShadowPlanner {
+    return { kind: 'regen-artifact', plan: async () => plan, apply };
+  }
+  function svc(planner: ShadowPlanner, ledger?: ShadowLedgerSink) {
+    const s = new CommandCenterOrchestratorService([planner], ledger);
+    s.onModuleInit();
+    return s;
+  }
+
+  it('mode ≠ approved → OrchestrationDisabledError', async () => {
+    setEnv('shadow', 'development');
+    const s = svc(plannerFor(changingPlan));
+    await expect(
+      s.executeApproved('regen-artifact', 'regen:x', {
+        actor: 'a',
+        plan_hash: HASH,
+      }),
+    ).rejects.toBeInstanceOf(OrchestrationDisabledError);
+  });
+
+  it('plan_hash périmé → PlanHashMismatchError (garde TOCTOU)', async () => {
+    setEnv('approved', 'development');
+    const s = svc(plannerFor(changingPlan));
+    await expect(
+      s.executeApproved('regen-artifact', 'regen:x', {
+        actor: 'a',
+        plan_hash: 'stale-hash',
+      }),
+    ).rejects.toBeInstanceOf(PlanHashMismatchError);
+  });
+
+  it('would_change=false → no-op (applied:false), 0 executor appelé', async () => {
+    setEnv('approved', 'development');
+    const apply = jest.fn();
+    const s = svc(plannerFor(noopPlan, apply));
+    const receipt = await s.executeApproved('regen-artifact', 'regen:x', {
+      actor: 'a',
+      plan_hash: computePlanHash(noopPlan),
+    });
+    expect(receipt.applied).toBe(false);
+    expect(receipt.reverted_by).toBeNull();
+    expect(apply).not.toHaveBeenCalled();
+  });
+
+  it('would_change=true SANS apply → NoExecutorError (Phase 2a inerte)', async () => {
+    setEnv('approved', 'development');
+    const s = svc(plannerFor(changingPlan)); // pas d'apply
+    await expect(
+      s.executeApproved('regen-artifact', 'regen:x', {
+        actor: 'a',
+        plan_hash: HASH,
+      }),
+    ).rejects.toBeInstanceOf(NoExecutorError);
+  });
+
+  it('would_change=true AVEC apply → exécute + trace executed:true', async () => {
+    setEnv('approved', 'development');
+    const receiptOut: ExecutionReceipt = {
+      action_id: 'regen:x',
+      kind: 'regen-artifact',
+      applied: true,
+      plan_hash: HASH,
+      reverted_by: 'git checkout file',
+      details: {},
+    };
+    const apply = jest.fn().mockResolvedValue(receiptOut);
+    const record = jest.fn().mockResolvedValue({ recorded: true });
+    const s = svc(plannerFor(changingPlan, apply), { record });
+    const out = await s.executeApproved('regen-artifact', 'regen:x', {
+      actor: 'fafa',
+      plan_hash: HASH,
+    });
+    expect(out).toEqual(receiptOut);
+    expect(apply).toHaveBeenCalledWith('regen:x');
+    expect(record).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actor: 'fafa',
+        mode: 'approved',
+        executed: true,
+        plan_hash: HASH,
+      }),
     );
   });
 });
