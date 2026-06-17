@@ -11,6 +11,7 @@ import {
   type ExecutableActionKind,
   type ExecutionLedgerEntry,
   type ExecutionPlan,
+  type ExecutionReceipt,
   type OrchestrationMode,
 } from './executable-action.contract';
 
@@ -54,12 +55,45 @@ export class UnsupportedExecutableActionError extends Error {
   }
 }
 
-/** Un planner calcule un ExecutionPlan *would-be* pour une action (0 mutation). */
+/**
+ * Levée si le `plan_hash` approuvé ne correspond plus au plan recalculé (Phase 2, HITL) :
+ * l'état a changé entre la prévisualisation et l'approbation → on REFUSE d'exécuter
+ * (garde TOCTOU — l'humain a approuvé un plan qui n'est plus à jour).
+ */
+export class PlanHashMismatchError extends Error {
+  constructor() {
+    super(
+      "Le plan a changé depuis l'approbation (plan_hash ≠) — exécution refusée, re-prévisualisez.",
+    );
+    this.name = 'PlanHashMismatchError';
+  }
+}
+
+/**
+ * Levée si une exécution approuvée est demandée mais que le planner n'expose aucun
+ * `apply` (Phase 2a : aucun executor branché → rien ne mute). No-silent-fallback.
+ */
+export class NoExecutorError extends Error {
+  constructor(kind: ExecutableActionKind) {
+    super(
+      `Aucun executor branché pour le kind « ${kind} » — exécution réelle indisponible (Phase 2a).`,
+    );
+    this.name = 'NoExecutorError';
+  }
+}
+
+/**
+ * Un planner calcule un ExecutionPlan *would-be* (0 mutation) et, en Phase 2, peut
+ * OPTIONNELLEMENT exposer `apply` pour exécuter réellement (HITL). Absence d'`apply` =
+ * pas d'exécution possible pour ce kind.
+ */
 export interface ShadowPlanner {
   readonly kind: ExecutableActionKind;
   plan(actionId: string): Promise<ExecutionPlan>;
   /** action_id que ce planner sait traiter (catalogue exposé à l'UI). Optionnel. */
   listActionIds?(): string[];
+  /** Phase 2 : exécute réellement l'action (mute). Absent = exécution indisponible. */
+  apply?(actionId: string): Promise<ExecutionReceipt>;
 }
 
 /** Une action exécutable disponible (kind + action_id) — catalogue pour l'UI. */
@@ -159,8 +193,9 @@ export class CommandCenterOrchestratorService implements OnModuleInit {
 
   /**
    * Calcule un plan *would-be* (0 mutation) PUIS le trace au ledger (append-only).
-   * Throws si l'orchestration n'est pas en `shadow`, ou si aucun planner n'existe pour
-   * ce kind — jamais de fallback silencieux.
+   * Autorisé en `shadow` ET `approved` (la prévisualisation précède toujours l'exécution).
+   * Throws si l'orchestration est `off`, ou si aucun planner n'existe pour ce kind —
+   * jamais de fallback silencieux.
    *
    * L'append ledger est best-effort-MAIS-surfacé : un échec de trace (READ_ONLY PREPROD,
    * erreur DB) n'invalide PAS le plan (le calcul a réussi) → on log un warn, on ne throw
@@ -172,7 +207,9 @@ export class CommandCenterOrchestratorService implements OnModuleInit {
     opts?: { actor?: string },
   ): Promise<ExecutionPlan> {
     const mode = this.getMode();
-    if (mode !== 'shadow') throw new OrchestrationDisabledError(mode);
+    if (mode !== 'shadow' && mode !== 'approved') {
+      throw new OrchestrationDisabledError(mode);
+    }
     const planner = this.planners.get(kind);
     if (!planner) throw new UnsupportedExecutableActionError(kind);
 
@@ -194,5 +231,79 @@ export class CommandCenterOrchestratorService implements OnModuleInit {
     }
 
     return plan;
+  }
+
+  /**
+   * Exécute RÉELLEMENT une action approuvée (Phase 2, HITL, mode `approved`). Suite de
+   * gardes, dans l'ordre (no-silent-fallback) :
+   *   1. mode === `approved` (sinon `OrchestrationDisabledError`) ;
+   *   2. planner existe (sinon `UnsupportedExecutableActionError`) ;
+   *   3. on RECALCULE le plan et on vérifie `plan_hash` ⇒ l'humain a approuvé CE plan
+   *      exact ; s'il a changé depuis (état muté) → `PlanHashMismatchError` (garde TOCTOU) ;
+   *   4. `would_change=false` ⇒ no-op : on renvoie un reçu `applied=false` SANS muter ;
+   *   5. le planner doit exposer `apply` (sinon `NoExecutorError` — Phase 2a n'en branche
+   *      AUCUN, donc rien ne mute tant qu'un executor n'est pas ajouté en Phase 2b).
+   * L'exécution réelle + son reçu sont tracés au ledger (`executed:true`).
+   */
+  async executeApproved(
+    kind: ExecutableActionKind,
+    actionId: string,
+    opts: { actor: string; plan_hash: string },
+  ): Promise<ExecutionReceipt> {
+    const mode = this.getMode();
+    if (mode !== 'approved') throw new OrchestrationDisabledError(mode);
+    const planner = this.planners.get(kind);
+    if (!planner) throw new UnsupportedExecutableActionError(kind);
+
+    // Recalcul + garde TOCTOU : l'approbation porte sur un plan figé (plan_hash).
+    const plan = await planner.plan(actionId);
+    if (computePlanHash(plan) !== opts.plan_hash) {
+      throw new PlanHashMismatchError();
+    }
+
+    // No-op : rien à appliquer (déjà à jour) → reçu applied=false, AUCUNE mutation.
+    if (!plan.would_change) {
+      const receipt: ExecutionReceipt = {
+        action_id: actionId,
+        kind,
+        applied: false,
+        plan_hash: opts.plan_hash,
+        reverted_by: null,
+        details: { reason: 'no-op (would_change=false)' },
+      };
+      await this.recordExecution(opts.actor, receipt, mode);
+      return receipt;
+    }
+
+    // Exécution réelle — requiert un executor (Phase 2a : aucun → throw, 0 mutation).
+    if (!planner.apply) throw new NoExecutorError(kind);
+    const receipt = await planner.apply(actionId);
+    this.logger.warn(
+      `EXÉCUTION approuvée appliquée : ${actionId} (applied=${receipt.applied}, revert=${receipt.reverted_by ?? 'n/a'})`,
+    );
+    await this.recordExecution(opts.actor, receipt, mode);
+    return receipt;
+  }
+
+  /** Trace une exécution approuvée au ledger (executed:true), échec surfacé. */
+  private async recordExecution(
+    actor: string,
+    receipt: ExecutionReceipt,
+    mode: OrchestrationMode,
+  ): Promise<void> {
+    if (!this.ledger) return;
+    const result = await this.ledger.record({
+      actor,
+      action_id: receipt.action_id,
+      mode,
+      plan_hash: receipt.plan_hash,
+      would_change: receipt.applied,
+      executed: true,
+    });
+    if (!result.recorded) {
+      this.logger.warn(
+        `exécution NON tracée (${receipt.action_id}) : ${result.reason ?? 'raison inconnue'}`,
+      );
+    }
   }
 }
