@@ -19,11 +19,15 @@ GRANT anon/authenticated par défaut de Supabase (411 tables), n'importe quel
 détenteur de la clé publique `SUPABASE_ANON_KEY` pouvait **lire ET écrire** ces
 tables via PostgREST.
 
-Vague 5 = 5 migrations préparées (réversibles, idempotentes, gouvernées) qui ferment
-**215 ERROR → 0** et **541 WARN → 18** (les 18 restants : 14 carveout owner-gated
-auth/commerce/paiement + 3 extensions acceptées + 1 upgrade Postgres dashboard),
-plus une **anti-régression** qui empêche les 207 erreurs de réapparaître à chaque
-rotation de partition.
+Vague 5 = **4 migrations** préparées (réversibles, idempotentes, gouvernées) qui ferment
+**215 ERROR → 0** et **541 WARN → 206** (334 `search_path` + 1 matview). Le durcissement
+EXECUTE des RPC `SECURITY DEFINER` (199 WARN) est **déféré à vague-5b** : la revue
+adversariale (PR #1012) a montré qu'en mode READ_ONLY (PREPROD) le backend bascule
+**tout** son client Supabase sur la clé `anon` (ADR-028 Option D), donc les RPC de rendu
+de page `SECURITY DEFINER` **doivent rester anon-exécutables** — un `REVOKE EXECUTE …
+FROM PUBLIC` global casserait le smoke E2E (cache PREPROD froid → RPC live en anon →
+`permission denied`). Inclut une **anti-régression** qui empêche les 207 erreurs de
+réapparaître à chaque rotation de partition.
 
 ### Tableau de fermeture
 
@@ -32,9 +36,9 @@ rotation de partition.
 | ERROR | `rls_disabled_in_public` | 207 | **Migration #1** (REVOKE+RLS+policy sur 216 tables) → 0 |
 | ERROR | `sensitive_columns_exposed` (`session_id`, CWV raw) | 6 | **Migration #1** (sous-ensemble des 216) → 0 |
 | ERROR | `security_definer_view` | 2 | **Migration #2** (→ `security_invoker`) → 0 |
-| WARN | `function_search_path_mutable` | 337 | **Migration #4** (`SET search_path = public`) → 0 |
-| WARN | `authenticated_security_definer_function_executable` | 137 | **Migration #5** (REVOKE EXECUTE) → 7 (carveout) |
-| WARN | `anon_security_definer_function_executable` | 62 | **Migration #5** → 7 (carveout) |
+| WARN | `function_search_path_mutable` | 337 | **Migration #4** (`SET search_path = public`, −3 carveout) → 3 |
+| WARN | `authenticated_security_definer_function_executable` | 137 | **Déféré vague-5b** (read-path PREPROD anon, voir §5) → 137 |
+| WARN | `anon_security_definer_function_executable` | 62 | **Déféré vague-5b** → 62 |
 | WARN | `materialized_view_in_api` | 1 | **Migration #2** (REVOKE anon) → 0 |
 | WARN | `extension_in_public` | 3 | **Accepté** (rationale §6) |
 | WARN | `vulnerable_postgres_version` | 1 | **Action owner** dashboard (§6) |
@@ -99,19 +103,25 @@ Additif-only, allowlist-scopé, non anon-exécutable, `search_path` épinglé, o
 partition ≤ ~1h. *(Option 0-fenêtre : appeler le helper inline dans chaque
 `maintain_*` — différée pour ne pas toucher la logique de rotation dans ce PR.)*
 
-## 5. Migrations #4 / #5 — durcissement fonctions
+## 5. Migration #4 — durcissement search_path ; #5 (revoke EXECUTE) DÉFÉRÉ vague-5b
 
-- **#4** `…_vague5_pin_function_search_path.sql` — `SET search_path = public` sur **337**
-  fonctions/procédures non-extension sans path épinglé. Valeur = convention projet
-  (38/44 déjà en `public`). Sûr : toute fonction marche aujourd'hui sous le path par
-  défaut (public) → l'épingler à `public` préserve la résolution. Aucun changement de
-  comportement ni de privilège. **Ferme 337 WARN.**
-- **#5** `…_vague5_revoke_anon_execute_definer_rpcs.sql` — `REVOKE EXECUTE FROM
-  PUBLIC, anon, authenticated` (EXECUTE est accordé via PUBLIC par défaut → revoke
-  anon seul serait inefficace) + `GRANT EXECUTE TO service_role` sur **130** fonctions
-  SECURITY DEFINER. `service_role` garde EXECUTE. **Preuve d'impact nul** : aucun appelant anon/authd au
-  runtime (frontend 0 RPC anon ; scripts = service_role). **Ferme 185 lints** (55 anon +
-  130 authd). Réversible (`GRANT EXECUTE … TO authenticated`).
+- **#4** `…_vague5_pin_function_search_path.sql` — `SET search_path = public` sur **334**
+  fonctions/procédures non-extension sans path épinglé (337 − 3 carveout paiement/auth,
+  §7). Valeur = convention projet (38/44 déjà en `public`). Sûr : toute fonction marche
+  aujourd'hui sous le path par défaut (public) → l'épingler préserve la résolution. Aucun
+  changement de comportement ni de privilège. **Ferme 334 WARN.**
+- **#5 (REVOKE EXECUTE) — DÉFÉRÉ à vague-5b.** L'hypothèse initiale « aucun appelant
+  anon » a été **réfutée par la revue adversariale (PR #1012)** : en READ_ONLY (PREPROD),
+  `backend/src/database/services/supabase-base.service.ts` bascule **tout** le client
+  backend sur la clé `anon` (ADR-028 Option D), donc **chaque `.rpc()` du backend tourne
+  en anon** dans PREPROD. Les ~10 RPC de rendu de page `SECURITY DEFINER`
+  (`get_gamme_page_data_cached`, `rm_get_page_complete_v2`, `get_homepage_data_optimized`…)
+  ne sont anon-exécutables **que via le grant PUBLIC** — un `REVOKE … FROM PUBLIC` global
+  les casserait (cache PREPROD froid → RPC live en anon → `permission denied` → smoke E2E
+  rouge à chaque merge). vague-5b doit d'abord **cartographier le read-path** (quels
+  DEFINER le backend invoque en anon, route par route) puis ne revoke que le complément
+  (gov/import/kg write-path) ou re-GRANT explicitement le read-path. Les **199 WARN
+  restent ouverts** jusque-là — assumé (WARN, pas ERROR).
 
 ---
 
@@ -150,10 +160,12 @@ chacune (additif, sûr) si on veut une cohérence parfaite. Non bloquant.
 ## 7. ⚠️ Findings CRITIQUES — actions owner (NON auto-appliquées)
 
 7 fonctions **SECURITY DEFINER anon-exécutables** touchant auth/commerce/**paiement**.
-Carve-out délibéré (`.claude/rules/payments.md` — jamais de modif paiement sans demande
-nominative). **Un attaquant avec la clé anon peut aujourd'hui les invoquer en bypassant
-RLS** (DEFINER) — potentiellement créer/annuler/marquer-payées des commandes. À arbitrer
-en priorité. REVOKEs préparés (à autoriser explicitement) :
+Carve-out délibéré (`.claude/rules/payments.md`) : **ni #4 (search_path) ni #5 (revoke)
+ne les touchent** — `auth_email_exists`, `auth_resolve_user`, `mark_order_paid_atomic`
+sont explicitement exclues de la migration #4. **Un attaquant avec la clé anon peut
+aujourd'hui les invoquer en bypassant RLS** (DEFINER) — potentiellement créer/annuler/
+marquer-payées des commandes. À arbitrer en priorité. Bloc owner-autorisé (revoke
+EXECUTE **+** pin search_path des 3 exclues de #4) :
 
 ```sql
 -- OWNER-AUTHORIZED ONLY (commerce/paiement) — appliquer après revue nominative.
@@ -167,7 +179,15 @@ REVOKE EXECUTE ON FUNCTION public.auth_email_exists(text)                       
 REVOKE EXECUTE ON FUNCTION public.auth_resolve_user(text)                        FROM PUBLIC, anon, authenticated;
 REVOKE EXECUTE ON FUNCTION public.check_payment_tunnel_health(integer)           FROM PUBLIC, anon, authenticated; -- script monitoring = service_role, donc safe
 -- puis, pour chacune : GRANT EXECUTE ON FUNCTION public.<fn>(<args>) TO service_role;
+-- + épingler le search_path des 3 fonctions exclues de la migration #4 :
+ALTER FUNCTION public.auth_email_exists(text)            SET search_path = public;
+ALTER FUNCTION public.auth_resolve_user(text)            SET search_path = public;
+ALTER FUNCTION public.mark_order_paid_atomic(text, text) SET search_path = public;
 ```
+
+> ⚠️ **NB read-path PREPROD** : avant de revoke ces 7 (ou tout DEFINER), vérifier qu'aucune
+> n'est invoquée par le backend-en-anon (READ_ONLY/PREPROD) sur une route smokée — sinon
+> re-GRANT à anon. `check_payment_tunnel_health` = script monitoring service_role, safe.
 
 > Signatures exactes à confirmer :
 > `SELECT proname, pg_get_function_identity_arguments(oid) FROM pg_proc WHERE proname IN
@@ -181,8 +201,9 @@ REVOKE EXECUTE ON FUNCTION public.check_payment_tunnel_health(integer)          
 > Les migrations ne sont **pas** auto-appliquées à la DB partagée (cf.
 > `.claude/rules/deployment.md` axe 4). Apply manuel réviewé.
 
-**Ordre** : #1 (RLS) → #2 (vues) → #4 (search_path) → #5 (revoke) → #3 (anti-régression
-en dernier). #3 dépend de l'état post-#1 (reconcile = 0 après #1).
+**Ordre** : #1 (RLS) → #2 (vues) → #4 (search_path) → #3 (anti-régression en dernier).
+#3 dépend de l'état post-#1 (reconcile = 0 après #1). *(#5 revoke EXECUTE = vague-5b
+séparée, après cartographie read-path PREPROD.)*
 
 **Pour chaque migration, avant apply** — smoke-test transactionnel (méthode canonique
 vagues 1-4) :
@@ -199,7 +220,7 @@ ROLLBACK;                 -- valide la syntaxe + l'idempotence sans rien changer
 
 **Validation finale** : `get_advisors(security)` →
 - ERROR : 215 → **0**
-- WARN : 541 → **18** (14 carveout §7 + 3 ext §6a + 1 pg §6b)
+- WARN : 541 → **206** (199 RPC EXECUTE déférés vague-5b + 3 carveout search_path §7 + 3 ext §6a + 1 pg §6b)
 
 **Rollback** : chaque fichier porte son bloc ROLLBACK (DISABLE RLS / RESET search_path /
 GRANT EXECUTE / unschedule+DROP). `main` est branch-protected — jamais de force-push.
@@ -210,9 +231,10 @@ GRANT EXECUTE / unschedule+DROP). `main` est branch-protected — jamais de forc
 
 | Item | État |
 |---|---|
-| 215 ERROR | **Migrations préparées + lintées** (non appliquées) |
-| 523/541 WARN | **Migrations préparées** (#2,#4,#5) |
-| 18 WARN restants | 14 owner-gated (§7) · 3 acceptés (§6a) · 1 owner-upgrade (§6b) |
+| 215 ERROR | **Migrations préparées + lintées** (#1+#2, non appliquées) |
+| 335/541 WARN | **Migrations préparées** (#4 search_path 334 + #2 matview 1) |
+| 206 WARN restants | 199 RPC EXECUTE **déférés vague-5b** (read-path PREPROD anon) · 3 carveout search_path (§7) · 3 ext (§6a) · 1 pg (§6b) |
+| Revue adversariale PR #1012 | 1 BLOQUANT (#5 → déféré) + 1 HAUTE (#4 carveout → exclu) **corrigés** |
 | 20 INFO | Intentionnel (closure optionnelle §6c) |
 | Anti-régression rotation | Migration #3 (pg_cron reconcileur) |
 | Smoke-test live (BEGIN/ROLLBACK) | **NON exécuté** (psql refusé par garde ; à faire à l'apply) |

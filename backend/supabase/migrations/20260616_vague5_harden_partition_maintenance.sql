@@ -46,6 +46,10 @@ AS $fn$
 DECLARE
   v_policy text := p_relname || '_service_role_all';
 BEGIN
+  -- bound the ENABLE RLS (ACCESS EXCLUSIVE) lock wait so the hourly reconcile never
+  -- queues behind a long-running on-demand import on the same table.
+  SET LOCAL lock_timeout = '3s';
+
   -- operate only on an existing public base/partition table
   IF NOT EXISTS (
     SELECT 1 FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
@@ -90,9 +94,15 @@ BEGIN
     WHERE n.nspname = 'public' AND c.relkind IN ('r','p') AND NOT c.relrowsecurity
       AND c.relname ~ '^(__seo_|__soft_404_events|pieces_price_history|pieces_display_history|pieces_gamme_display_history|pieces_gamme_link_history|pieces_media_img_|pricing_|price_import_|supplier_|catalog_pricing_baseline|audit_vlevel_)'
   LOOP
-    PERFORM public.__rls_lock_internal_table(r.relname);
-    v_count := v_count + 1;
-    RAISE NOTICE '[rls-reconcile] hardened public.%', r.relname;
+    -- isolate each table: a lock_timeout / transient error on one must not abort the
+    -- whole reconcile — the next hourly run retries it.
+    BEGIN
+      PERFORM public.__rls_lock_internal_table(r.relname);
+      v_count := v_count + 1;
+      RAISE NOTICE '[rls-reconcile] hardened public.%', r.relname;
+    EXCEPTION WHEN OTHERS THEN
+      RAISE WARNING '[rls-reconcile] skipped public.% (%) — retry next run', r.relname, SQLERRM;
+    END;
   END LOOP;
   IF v_count > 0 THEN
     RAISE NOTICE '[rls-reconcile] locked % drift-tail internal table(s)', v_count;

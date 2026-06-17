@@ -51,8 +51,7 @@ ALTER FUNCTION public.analyze_duplicates() SET search_path = public;
 ALTER FUNCTION public.append_gamme_alias(p_source_prefix text, p_alias text) SET search_path = public;
 ALTER FUNCTION public.apply_decisions_shadow(p_batch_id integer, p_entity_type character varying) SET search_path = public;
 ALTER FUNCTION public.apply_quarantine_rules(p_batch_id integer) SET search_path = public;
-ALTER FUNCTION public.auth_email_exists(p_email text) SET search_path = public;
-ALTER FUNCTION public.auth_resolve_user(p_email text) SET search_path = public;
+-- auth_email_exists / auth_resolve_user EXCLUDED — payments.md carveout (owner-gated, doc §7)
 ALTER FUNCTION public.auto_promote_to_v1() SET search_path = public;
 ALTER FUNCTION public.backfill_seo_keywords_type_ids(p_batch_size integer, p_pg_id integer) SET search_path = public;
 ALTER FUNCTION public.build_article_decisions(p_batch_id integer) SET search_path = public;
@@ -276,7 +275,7 @@ ALTER FUNCTION public.log_sitemap_generation(p_run_id uuid, p_bucket text, p_sta
 ALTER FUNCTION public.maintain_pricing_decision_snapshot_partitions() SET search_path = public;
 ALTER FUNCTION public.maintain_supplier_offer_snapshot_partitions() SET search_path = public;
 ALTER FUNCTION public.map_facets_to_filter_keys(p_enabled_facets jsonb) SET search_path = public;
-ALTER FUNCTION public.mark_order_paid_atomic(p_ord_id text, p_date_pay text) SET search_path = public;
+-- mark_order_paid_atomic EXCLUDED — payments.md carveout (Paybox callback, owner-gated, doc §7)
 ALTER FUNCTION public.mark_stale_with_followup_rebuild(p_type_ids integer[], p_reason text, p_rebuild_immediately boolean) SET search_path = public;
 ALTER FUNCTION public.match_keyword_text_to_vehicle(p_text text) SET search_path = public;
 ALTER FUNCTION public.match_keyword_text_to_vehicle_batch(p_texts text[]) SET search_path = public;
