@@ -26,8 +26,10 @@ import { CommandCenterActionsService } from './services/command-center-actions.s
 import {
   CommandCenterOrchestratorService,
   SHADOW_PLANNERS,
+  SHADOW_LEDGER,
 } from './services/command-center-orchestrator/orchestrator.service';
 import { RegenArtifactShadowPlanner } from './services/command-center-orchestrator/regen-artifact.planner';
+import { CommandCenterExecutionLedgerService } from './services/command-center-orchestrator/execution-ledger.service';
 import { ConfigurationController } from './controllers/configuration.controller';
 import { StockController } from './controllers/stock.controller'; // 🔥 Controller consolidé unique
 import { AdminController } from './controllers/admin.controller';
@@ -224,6 +226,12 @@ import { SeoControlRefreshProcessor } from './processors/seo-control-refresh.pro
       provide: SHADOW_PLANNERS,
       useFactory: (regen: RegenArtifactShadowPlanner) => [regen],
       inject: [RegenArtifactShadowPlanner],
+    },
+    CommandCenterExecutionLedgerService, // shadow-2b ledger admin_audit (ADR-087)
+    {
+      // Sink ledger injecté dans l'orchestrateur (append-only __admin_audit_log).
+      provide: SHADOW_LEDGER,
+      useExisting: CommandCenterExecutionLedgerService,
     },
     ConfigurationService,
     StockManagementService, // ✅ Service principal stock

@@ -6,8 +6,10 @@ import {
   type OnModuleInit,
 } from '@nestjs/common';
 import {
+  computePlanHash,
   resolveOrchestrationMode,
   type ExecutableActionKind,
+  type ExecutionLedgerEntry,
   type ExecutionPlan,
   type OrchestrationMode,
 } from './executable-action.contract';
@@ -18,6 +20,23 @@ import {
  * de test peut construire l'orchestrateur sans (defaut `[]`) → reste découplé.
  */
 export const SHADOW_PLANNERS = Symbol('CC_SHADOW_PLANNERS');
+
+/** Token DI pour le sink ledger (optionnel — l'unité de test construit sans). */
+export const SHADOW_LEDGER = Symbol('CC_SHADOW_LEDGER');
+
+/** Résultat d'un append ledger, surfacé (no-silent-fallback). */
+export interface ShadowLedgerResult {
+  recorded: boolean;
+  reason?: string;
+}
+
+/**
+ * Abstraction du ledger : l'orchestrateur ne dépend QUE de cette interface, pas du
+ * service Supabase concret (découplage + testabilité sans DB).
+ */
+export interface ShadowLedgerSink {
+  record(entry: ExecutionLedgerEntry): Promise<ShadowLedgerResult>;
+}
 
 /** Levée quand on tente un plan alors que l'orchestration n'est pas en mode `shadow`. */
 export class OrchestrationDisabledError extends Error {
@@ -62,6 +81,9 @@ export class CommandCenterOrchestratorService implements OnModuleInit {
     @Optional()
     @Inject(SHADOW_PLANNERS)
     private readonly injectedPlanners: ShadowPlanner[] = [],
+    @Optional()
+    @Inject(SHADOW_LEDGER)
+    private readonly ledger?: ShadowLedgerSink,
   ) {}
 
   /**
@@ -113,17 +135,41 @@ export class CommandCenterOrchestratorService implements OnModuleInit {
   }
 
   /**
-   * Calcule un plan *would-be* (0 mutation). Throws si l'orchestration n'est pas en
-   * `shadow`, ou si aucun planner n'existe pour ce kind — jamais de fallback silencieux.
+   * Calcule un plan *would-be* (0 mutation) PUIS le trace au ledger (append-only).
+   * Throws si l'orchestration n'est pas en `shadow`, ou si aucun planner n'existe pour
+   * ce kind — jamais de fallback silencieux.
+   *
+   * L'append ledger est best-effort-MAIS-surfacé : un échec de trace (READ_ONLY PREPROD,
+   * erreur DB) n'invalide PAS le plan (le calcul a réussi) → on log un warn, on ne throw
+   * pas. `actor` par défaut = `system` (un appelant Phase 2 passera l'opérateur réel).
    */
   async planShadow(
     kind: ExecutableActionKind,
     actionId: string,
+    opts?: { actor?: string },
   ): Promise<ExecutionPlan> {
     const mode = this.getMode();
     if (mode !== 'shadow') throw new OrchestrationDisabledError(mode);
     const planner = this.planners.get(kind);
     if (!planner) throw new UnsupportedExecutableActionError(kind);
-    return planner.plan(actionId);
+
+    const plan = await planner.plan(actionId);
+
+    if (this.ledger) {
+      const result = await this.ledger.record({
+        actor: opts?.actor ?? 'system',
+        action_id: actionId,
+        mode,
+        plan_hash: computePlanHash(plan),
+        would_change: plan.would_change,
+      });
+      if (!result.recorded) {
+        this.logger.warn(
+          `shadow run NON tracé (${actionId}) : ${result.reason ?? 'raison inconnue'}`,
+        );
+      }
+    }
+
+    return plan;
   }
 }

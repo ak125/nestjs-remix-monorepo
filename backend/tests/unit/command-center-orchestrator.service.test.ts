@@ -5,6 +5,7 @@
  * fallback silencieux (throws explicites), jamais de mutation.
  */
 import {
+  computePlanHash,
   resolveOrchestrationMode,
   type ExecutionPlan,
 } from '../../src/modules/admin/services/command-center-orchestrator/executable-action.contract';
@@ -12,6 +13,7 @@ import {
   CommandCenterOrchestratorService,
   OrchestrationDisabledError,
   UnsupportedExecutableActionError,
+  type ShadowLedgerSink,
   type ShadowPlanner,
 } from '../../src/modules/admin/services/command-center-orchestrator/orchestrator.service';
 
@@ -143,5 +145,100 @@ describe('CommandCenterOrchestratorService — squelette inerte', () => {
     expect(s.supportedKinds()).toEqual([]); // pas encore : onModuleInit non appelé
     s.onModuleInit();
     expect(s.supportedKinds()).toEqual(['regen-artifact']);
+  });
+});
+
+describe('planShadow — trace ledger (shadow-2b)', () => {
+  const fakePlan: ExecutionPlan = {
+    action_id: 'regen:x',
+    kind: 'regen-artifact',
+    summary: 'fake',
+    would_change: true,
+    details: { a: 1 },
+    reversible: true,
+  };
+  const fakePlanner: ShadowPlanner = {
+    kind: 'regen-artifact',
+    plan: async () => fakePlan,
+  };
+
+  it('trace au ledger l’entrée attendue (actor défaut=system, plan_hash, would_change)', async () => {
+    setEnv('shadow', 'development');
+    const record = jest.fn().mockResolvedValue({ recorded: true });
+    const ledger: ShadowLedgerSink = { record };
+    const s = new CommandCenterOrchestratorService([fakePlanner], ledger);
+    s.onModuleInit();
+    await s.planShadow('regen-artifact', 'regen:x');
+    expect(record).toHaveBeenCalledTimes(1);
+    expect(record).toHaveBeenCalledWith({
+      actor: 'system',
+      action_id: 'regen:x',
+      mode: 'shadow',
+      plan_hash: computePlanHash(fakePlan),
+      would_change: true,
+    });
+  });
+
+  it('actor explicite propagé', async () => {
+    setEnv('shadow', 'development');
+    const record = jest.fn().mockResolvedValue({ recorded: true });
+    const s = new CommandCenterOrchestratorService([fakePlanner], { record });
+    s.onModuleInit();
+    await s.planShadow('regen-artifact', 'regen:x', { actor: 'fafa' });
+    expect(record).toHaveBeenCalledWith(
+      expect.objectContaining({ actor: 'fafa' }),
+    );
+  });
+
+  it('échec ledger (recorded:false) → warn, mais le plan est renvoyé (pas de throw)', async () => {
+    setEnv('shadow', 'development');
+    const record = jest
+      .fn()
+      .mockResolvedValue({ recorded: false, reason: 'read_only' });
+    const s = new CommandCenterOrchestratorService([fakePlanner], { record });
+    s.onModuleInit();
+    const warn = jest.spyOn((s as never)['logger'], 'warn').mockImplementation();
+    const plan = await s.planShadow('regen-artifact', 'regen:x');
+    expect(plan).toEqual(fakePlan);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('read_only'));
+  });
+
+  it('sans ledger injecté → planShadow marche quand même (0 trace)', async () => {
+    setEnv('shadow', 'development');
+    const s = new CommandCenterOrchestratorService([fakePlanner]);
+    s.onModuleInit();
+    await expect(s.planShadow('regen-artifact', 'regen:x')).resolves.toEqual(
+      fakePlan,
+    );
+  });
+});
+
+describe('computePlanHash — déterministe & sensible', () => {
+  const base: ExecutionPlan = {
+    action_id: 'regen:x',
+    kind: 'regen-artifact',
+    summary: 's',
+    would_change: false,
+    details: { a: 1 },
+    reversible: true,
+  };
+
+  it('même plan signifiant → même hash (idempotence)', () => {
+    expect(computePlanHash(base)).toBe(computePlanHash({ ...base }));
+  });
+
+  it('summary/reversible n’altèrent PAS le hash (champs dérivés)', () => {
+    expect(computePlanHash({ ...base, summary: 'autre', reversible: false })).toBe(
+      computePlanHash(base),
+    );
+  });
+
+  it('would_change ou details différents → hash différent', () => {
+    expect(computePlanHash({ ...base, would_change: true })).not.toBe(
+      computePlanHash(base),
+    );
+    expect(computePlanHash({ ...base, details: { a: 2 } })).not.toBe(
+      computePlanHash(base),
+    );
   });
 });
