@@ -26,6 +26,8 @@ describe('RegenArtifactShadowPlanner', () => {
     expect(RegenArtifactShadowPlanner.knownTargets()).toContain(
       'regen:command-center-snapshot',
     );
+    // listActionIds (catalogue orchestrateur) = mêmes cibles
+    expect(p.listActionIds()).toContain('regen:command-center-snapshot');
   });
 
   it('action_id inconnu → UnknownRegenTargetError (jamais de faux plan)', async () => {

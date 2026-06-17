@@ -58,6 +58,14 @@ export class UnsupportedExecutableActionError extends Error {
 export interface ShadowPlanner {
   readonly kind: ExecutableActionKind;
   plan(actionId: string): Promise<ExecutionPlan>;
+  /** action_id que ce planner sait traiter (catalogue exposé à l'UI). Optionnel. */
+  listActionIds?(): string[];
+}
+
+/** Une action exécutable disponible (kind + action_id) — catalogue pour l'UI. */
+export interface AvailableAction {
+  kind: ExecutableActionKind;
+  action_id: string;
 }
 
 /**
@@ -132,6 +140,21 @@ export class CommandCenterOrchestratorService implements OnModuleInit {
   /** Liste des kinds actuellement supportés (vide en shadow-1). */
   supportedKinds(): ExecutableActionKind[] {
     return [...this.planners.keys()];
+  }
+
+  /**
+   * Catalogue des actions disponibles (kind × action_id), agrégé depuis les planners
+   * enregistrés — le backend est SoT, l'UI consomme (pas de liste dupliquée côté front).
+   * Un planner sans `listActionIds` n'expose aucune action (mais reste appelable par id).
+   */
+  availableActions(): AvailableAction[] {
+    const out: AvailableAction[] = [];
+    for (const planner of this.planners.values()) {
+      for (const action_id of planner.listActionIds?.() ?? []) {
+        out.push({ kind: planner.kind, action_id });
+      }
+    }
+    return out;
   }
 
   /**

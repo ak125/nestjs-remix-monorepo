@@ -117,6 +117,24 @@ describe('CommandCenterOrchestratorService — squelette inerte', () => {
     expect(() => s.registerPlanner(fakePlanner)).toThrow(/déjà enregistré/);
   });
 
+  it('availableActions agrège listActionIds des planners (vide si non implémenté)', () => {
+    // fakePlanner n'a PAS listActionIds → aucune action exposée
+    const s0 = new CommandCenterOrchestratorService();
+    s0.registerPlanner(fakePlanner);
+    expect(s0.availableActions()).toEqual([]);
+    // planner avec catalogue → agrégé
+    const s1 = new CommandCenterOrchestratorService();
+    s1.registerPlanner({
+      kind: 'regen-artifact',
+      plan: async () => fakePlan,
+      listActionIds: () => ['regen:a', 'regen:b'],
+    });
+    expect(s1.availableActions()).toEqual([
+      { kind: 'regen-artifact', action_id: 'regen:a' },
+      { kind: 'regen-artifact', action_id: 'regen:b' },
+    ]);
+  });
+
   it('onModuleInit : sync, ne throw jamais ; silencieux en off, log en shadow', () => {
     // off (défaut) → aucun log de confirmation
     setEnv(undefined, 'development');

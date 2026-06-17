@@ -34,6 +34,7 @@ describe('PrPropositionShadowPlanner', () => {
     const p = new PrPropositionShadowPlanner(regenStub({}));
     expect(p.kind).toBe('pr-proposition');
     expect(PrPropositionShadowPlanner.knownTemplates()).toContain(TARGET);
+    expect(p.listActionIds()).toContain(TARGET);
   });
 
   it('action_id inconnu → UnknownPrPropositionError', async () => {
