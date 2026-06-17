@@ -19,14 +19,15 @@ GRANT anon/authenticated par défaut de Supabase (411 tables), n'importe quel
 détenteur de la clé publique `SUPABASE_ANON_KEY` pouvait **lire ET écrire** ces
 tables via PostgREST.
 
-Vague 5 = **4 migrations** préparées (réversibles, idempotentes, gouvernées) qui ferment
-**215 ERROR → 0** et **541 WARN → 206** (334 `search_path` + 1 matview). Le durcissement
-EXECUTE des RPC `SECURITY DEFINER` (199 WARN) est **déféré à vague-5b** : la revue
-adversariale (PR #1012) a montré qu'en mode READ_ONLY (PREPROD) le backend bascule
-**tout** son client Supabase sur la clé `anon` (ADR-028 Option D), donc les RPC de rendu
-de page `SECURITY DEFINER` **doivent rester anon-exécutables** — un `REVOKE EXECUTE …
-FROM PUBLIC` global casserait le smoke E2E (cache PREPROD froid → RPC live en anon →
-`permission denied`). Inclut une **anti-régression** qui empêche les 207 erreurs de
+Vague 5 = **5 migrations** préparées (réversibles, idempotentes, gouvernées) qui ferment
+**215 ERROR → 0** et **541 WARN → ~190** (334 `search_path` + 1 matview + 13 fonctions
+DEFINER prouvées-safe). Le durcissement EXECUTE des **199** RPC `SECURITY DEFINER` est
+traité **en deux temps** : la migration **#5b** revoke les **13 prouvées-safe** (triggers +
+fonctions pg_cron, jamais exécutées en anon) ; les **~186 restantes** (read-path + 8
+ambiguës) sont **déférées à vague-5b-full** — la revue adversariale (PR #1012) a montré
+qu'en READ_ONLY (PREPROD) le backend bascule **tout** son client sur `anon` (ADR-028
+Option D), donc les RPC de rendu de page DEFINER **doivent rester anon-exécutables**
+(sinon smoke E2E rouge). Inclut une **anti-régression** qui empêche les 207 erreurs de
 réapparaître à chaque rotation de partition.
 
 ### Tableau de fermeture
@@ -37,8 +38,8 @@ réapparaître à chaque rotation de partition.
 | ERROR | `sensitive_columns_exposed` (`session_id`, CWV raw) | 6 | **Migration #1** (sous-ensemble des 216) → 0 |
 | ERROR | `security_definer_view` | 2 | **Migration #2** (→ `security_invoker`) → 0 |
 | WARN | `function_search_path_mutable` | 337 | **Migration #4** (`SET search_path = public`, −3 carveout) → 3 |
-| WARN | `authenticated_security_definer_function_executable` | 137 | **Déféré vague-5b** (read-path PREPROD anon, voir §5) → 137 |
-| WARN | `anon_security_definer_function_executable` | 62 | **Déféré vague-5b** → 62 |
+| WARN | `authenticated_security_definer_function_executable` | 137 | **#5b** 13 prouvés-safe (triggers+cron) ; reste read-path **déféré 5b-full** |
+| WARN | `anon_security_definer_function_executable` | 62 | **#5b** (idem) ; reste **déféré 5b-full** |
 | WARN | `materialized_view_in_api` | 1 | **Migration #2** (REVOKE anon) → 0 |
 | WARN | `extension_in_public` | 3 | **Accepté** (rationale §6) |
 | WARN | `vulnerable_postgres_version` | 1 | **Action owner** dashboard (§6) |
@@ -103,7 +104,7 @@ Additif-only, allowlist-scopé, non anon-exécutable, `search_path` épinglé, o
 partition ≤ ~1h. *(Option 0-fenêtre : appeler le helper inline dans chaque
 `maintain_*` — différée pour ne pas toucher la logique de rotation dans ce PR.)*
 
-## 5. Migration #4 — durcissement search_path ; #5 (revoke EXECUTE) DÉFÉRÉ vague-5b
+## 5. Migration #4 (search_path) + #5b (revoke EXECUTE prouvé-safe) ; reste DÉFÉRÉ
 
 - **#4** `…_vague5_pin_function_search_path.sql` — `SET search_path = public` sur **334**
   fonctions/procédures non-extension sans path épinglé (337 − 3 carveout paiement/auth,
@@ -118,10 +119,14 @@ partition ≤ ~1h. *(Option 0-fenêtre : appeler le helper inline dans chaque
   (`get_gamme_page_data_cached`, `rm_get_page_complete_v2`, `get_homepage_data_optimized`…)
   ne sont anon-exécutables **que via le grant PUBLIC** — un `REVOKE … FROM PUBLIC` global
   les casserait (cache PREPROD froid → RPC live en anon → `permission denied` → smoke E2E
-  rouge à chaque merge). vague-5b doit d'abord **cartographier le read-path** (quels
-  DEFINER le backend invoque en anon, route par route) puis ne revoke que le complément
-  (gov/import/kg write-path) ou re-GRANT explicitement le read-path. Les **199 WARN
-  restent ouverts** jusque-là — assumé (WARN, pas ERROR).
+  rouge à chaque merge).
+- **#5b (`…_vague5_revoke_safe_trigger_cron_execute.sql`)** revoke le sous-ensemble
+  **prouvé-safe** : **13 fonctions** = 7 triggers (l'EXECUTE est sans effet sur le
+  déclenchement, et PostgREST n'expose pas les trigger-functions en RPC) + 6 fonctions
+  pg_cron (exécutées par le scheduler, **jamais** en anon, 0 référence backend). **vague-5b-full**
+  (les ~186 restantes) doit cartographier le read-path route par route avant tout revoke —
+  **non deviné** : ex. `build_vehicle_page_payload` n'a 0 référence backend mais reste un
+  builder de page (read-path) → gardé. ~186 WARN restent — assumé (WARN, pas ERROR).
 
 ---
 
@@ -201,9 +206,9 @@ ALTER FUNCTION public.mark_order_paid_atomic(text, text) SET search_path = publi
 > Les migrations ne sont **pas** auto-appliquées à la DB partagée (cf.
 > `.claude/rules/deployment.md` axe 4). Apply manuel réviewé.
 
-**Ordre** : #1 (RLS) → #2 (vues) → #4 (search_path) → #3 (anti-régression en dernier).
-#3 dépend de l'état post-#1 (reconcile = 0 après #1). *(#5 revoke EXECUTE = vague-5b
-séparée, après cartographie read-path PREPROD.)*
+**Ordre** : #1 (RLS) → #2 (vues) → #4 (search_path) → #5b (revoke prouvé-safe) → #3
+(anti-régression en dernier). #3 dépend de l'état post-#1 (reconcile = 0 après #1).
+*(vague-5b-full = read-path mapping, effort séparé.)*
 
 **Pour chaque migration, avant apply** — smoke-test transactionnel (méthode canonique
 vagues 1-4) :
@@ -220,7 +225,7 @@ ROLLBACK;                 -- valide la syntaxe + l'idempotence sans rien changer
 
 **Validation finale** : `get_advisors(security)` →
 - ERROR : 215 → **0**
-- WARN : 541 → **206** (199 RPC EXECUTE déférés vague-5b + 3 carveout search_path §7 + 3 ext §6a + 1 pg §6b)
+- WARN : 541 → **~190** (#5b 13 prouvés-safe fermés ; ~186 RPC read-path déférés 5b-full + 3 carveout §7 + 3 ext §6a + 1 pg §6b)
 
 **Rollback** : chaque fichier porte son bloc ROLLBACK (DISABLE RLS / RESET search_path /
 GRANT EXECUTE / unschedule+DROP). `main` est branch-protected — jamais de force-push.
@@ -232,8 +237,8 @@ GRANT EXECUTE / unschedule+DROP). `main` est branch-protected — jamais de forc
 | Item | État |
 |---|---|
 | 215 ERROR | **Migrations préparées + lintées** (#1+#2, non appliquées) |
-| 335/541 WARN | **Migrations préparées** (#4 search_path 334 + #2 matview 1) |
-| 206 WARN restants | 199 RPC EXECUTE **déférés vague-5b** (read-path PREPROD anon) · 3 carveout search_path (§7) · 3 ext (§6a) · 1 pg (§6b) |
+| ~350/541 WARN | **Migrations préparées** (#4 search_path 334 + #2 matview 1 + #5b 13 prouvés-safe) |
+| ~190 WARN restants | ~186 RPC read-path **déférés vague-5b-full** (mapping read-path PREPROD) · 3 carveout (§7) · 3 ext (§6a) · 1 pg (§6b) |
 | Revue adversariale PR #1012 | 1 BLOQUANT (#5 → déféré) + 1 HAUTE (#4 carveout → exclu) **corrigés** |
 | 20 INFO | Intentionnel (closure optionnelle §6c) |
 | Anti-régression rotation | Migration #3 (pg_cron reconcileur) |
