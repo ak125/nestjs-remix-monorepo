@@ -1,10 +1,23 @@
-import { Injectable, Logger, type OnModuleInit } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  Logger,
+  Optional,
+  type OnModuleInit,
+} from '@nestjs/common';
 import {
   resolveOrchestrationMode,
   type ExecutableActionKind,
   type ExecutionPlan,
   type OrchestrationMode,
 } from './executable-action.contract';
+
+/**
+ * Token DI pour la liste des planners shadow à auto-enregistrer au boot. Le module
+ * fournit ce tableau (regen-artifact en shadow-2, pr-proposition en shadow-3) ; l'unité
+ * de test peut construire l'orchestrateur sans (defaut `[]`) → reste découplé.
+ */
+export const SHADOW_PLANNERS = Symbol('CC_SHADOW_PLANNERS');
 
 /** Levée quand on tente un plan alors que l'orchestration n'est pas en mode `shadow`. */
 export class OrchestrationDisabledError extends Error {
@@ -45,12 +58,23 @@ export class CommandCenterOrchestratorService implements OnModuleInit {
   private readonly logger = new Logger(CommandCenterOrchestratorService.name);
   private readonly planners = new Map<ExecutableActionKind, ShadowPlanner>();
 
+  constructor(
+    @Optional()
+    @Inject(SHADOW_PLANNERS)
+    private readonly injectedPlanners: ShadowPlanner[] = [],
+  ) {}
+
   /**
-   * Boot : log SYNC (aucune I/O distante) du mode UNIQUEMENT s'il est ≠ off, pour
-   * qu'un opérateur qui pose `COMMAND_CENTER_ORCHESTRATION=shadow` voie que le flag a
-   * pris effet. Silencieux par défaut (off) → ne pollue pas les logs en nominal.
+   * Boot : (1) enregistre les planners injectés (DI), puis (2) log SYNC (aucune I/O
+   * distante) du mode UNIQUEMENT s'il est ≠ off, pour qu'un opérateur qui pose
+   * `COMMAND_CENTER_ORCHESTRATION=shadow` voie que le flag a pris effet. Silencieux par
+   * défaut (off). L'enregistrement est inoffensif même en off : `planShadow` throws tant
+   * que le mode ≠ shadow.
    */
   onModuleInit(): void {
+    for (const planner of this.injectedPlanners) {
+      this.registerPlanner(planner);
+    }
     const mode = this.getMode();
     if (mode !== 'off') {
       this.logger.warn(

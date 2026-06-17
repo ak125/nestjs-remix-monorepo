@@ -23,7 +23,11 @@ import { RegistryReaderService } from './services/registry-reader.service';
 import { CommandCenterController } from './controllers/command-center.controller';
 import { CommandCenterReaderService } from './services/command-center-reader.service';
 import { CommandCenterActionsService } from './services/command-center-actions.service';
-import { CommandCenterOrchestratorService } from './services/command-center-orchestrator/orchestrator.service';
+import {
+  CommandCenterOrchestratorService,
+  SHADOW_PLANNERS,
+} from './services/command-center-orchestrator/orchestrator.service';
+import { RegenArtifactShadowPlanner } from './services/command-center-orchestrator/regen-artifact.planner';
 import { ConfigurationController } from './controllers/configuration.controller';
 import { StockController } from './controllers/stock.controller'; // 🔥 Controller consolidé unique
 import { AdminController } from './controllers/admin.controller';
@@ -213,6 +217,14 @@ import { SeoControlRefreshProcessor } from './processors/seo-control-refresh.pro
     CommandCenterReaderService,
     CommandCenterActionsService,
     CommandCenterOrchestratorService,
+    RegenArtifactShadowPlanner, // shadow-2 ① planner regen-artifact (ADR-087)
+    {
+      // Liste des planners shadow auto-enregistrés au boot de l'orchestrateur.
+      // shadow-3 ajoutera ici le planner pr-proposition.
+      provide: SHADOW_PLANNERS,
+      useFactory: (regen: RegenArtifactShadowPlanner) => [regen],
+      inject: [RegenArtifactShadowPlanner],
+    },
     ConfigurationService,
     StockManagementService, // ✅ Service principal stock
     WorkingStockService, // ✅ Service complémentaire (search, export, stats)

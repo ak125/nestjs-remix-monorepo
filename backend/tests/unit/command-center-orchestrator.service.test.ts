@@ -133,4 +133,15 @@ describe('CommandCenterOrchestratorService — squelette inerte', () => {
     expect(() => on.onModuleInit()).not.toThrow();
     expect(warnOn).toHaveBeenCalledTimes(1);
   });
+
+  it('onModuleInit enregistre les planners injectés par DI (shadow-2 wiring)', () => {
+    setEnv(undefined, 'development');
+    // sans injection (défaut) → toujours vide (rétro-compat shadow-1)
+    expect(new CommandCenterOrchestratorService().supportedKinds()).toEqual([]);
+    // avec injection → enregistrés au boot
+    const s = new CommandCenterOrchestratorService([fakePlanner]);
+    expect(s.supportedKinds()).toEqual([]); // pas encore : onModuleInit non appelé
+    s.onModuleInit();
+    expect(s.supportedKinds()).toEqual(['regen-artifact']);
+  });
 });
