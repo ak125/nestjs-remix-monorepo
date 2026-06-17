@@ -70,12 +70,9 @@
 -- docs/security/vague5-rls-drift-tail-20260616.md runbook).
 -- =============================================================================
 
-BEGIN;
+SET lock_timeout = '4s';
+SET statement_timeout = '120s';
 
--- SET LOCAL = transaction-scoped: the timeout does NOT leak into the Supabase
--- connection pooler (PgBouncer transaction mode reuses connections).
-SET LOCAL lock_timeout = '4s';
-SET LOCAL statement_timeout = '120s';
 
 REVOKE ALL ON TABLE public.__seo_audit_findings FROM anon, authenticated;
 ALTER TABLE public.__seo_audit_findings ENABLE ROW LEVEL SECURITY;
@@ -1804,7 +1801,6 @@ DO $b$ BEGIN
     CREATE POLICY supplier_price_profiles_service_role_all ON public.supplier_price_profiles AS PERMISSIVE FOR ALL TO service_role USING (true) WITH CHECK (true);
   END IF;
 END $b$;
-COMMIT;
 
 -- =============================================================================
 -- Post-apply verification (run after apply)

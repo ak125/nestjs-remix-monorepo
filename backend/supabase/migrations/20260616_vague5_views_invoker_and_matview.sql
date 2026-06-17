@@ -40,7 +40,8 @@
 -- docs/security/vague5-rls-drift-tail-20260616.md).
 -- =============================================================================
 
-BEGIN;
+SET lock_timeout = '2s';
+SET statement_timeout = '30s';
 
 -- 1) Convert the 2 SECURITY DEFINER views to SECURITY INVOKER ------------------
 ALTER VIEW public.__seo_content_assets_current_v SET (security_invoker = true);
@@ -56,7 +57,6 @@ GRANT SELECT ON public.v_soft_404_demand_30d          TO service_role;
 REVOKE ALL ON public.mv_equipementier_article_counts FROM anon, authenticated;
 GRANT SELECT ON public.mv_equipementier_article_counts TO service_role;
 
-COMMIT;
 
 -- =============================================================================
 -- Post-apply verification

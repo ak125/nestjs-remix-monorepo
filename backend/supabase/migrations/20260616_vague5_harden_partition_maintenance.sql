@@ -34,7 +34,8 @@
 -- touching rotation logic in this PR.
 -- =============================================================================
 
-BEGIN;
+SET lock_timeout = '5s';
+SET statement_timeout = '60s';
 
 -- 1) Reusable per-table hardening helper (canonical vague-2d block, parameterized)
 CREATE OR REPLACE FUNCTION public.__rls_lock_internal_table(p_relname text)
@@ -131,7 +132,6 @@ COMMENT ON FUNCTION public.__rls_reconcile_internal_tables() IS
 SELECT cron.schedule('rls-reconcile-internal-tables', '15 * * * *',
   $cron$ SELECT public.__rls_reconcile_internal_tables(); $cron$);
 
-COMMIT;
 
 -- =============================================================================
 -- Post-apply verification

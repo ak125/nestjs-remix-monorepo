@@ -30,7 +30,8 @@
 -- docs/security/vague5-rls-drift-tail-20260616.md).
 -- =============================================================================
 
-BEGIN;
+SET lock_timeout = '5s';
+SET statement_timeout = '120s';
 
 ALTER FUNCTION public.__marketing_set_updated_at() SET search_path = public;
 ALTER FUNCTION public.__seo_brand_editorial_set_updated_at() SET search_path = public;
@@ -368,7 +369,6 @@ ALTER FUNCTION public.validate_content_full(p_context character varying, p_pg_id
 ALTER FUNCTION public.validate_shadow(p_batch_id integer, p_entity_type character varying) SET search_path = public;
 ALTER FUNCTION public.validate_staging_brands(p_import_id integer) SET search_path = public;
 ALTER FUNCTION public.validate_vlevel_integrity() SET search_path = public;
-COMMIT;
 
 -- Post-apply: re-run advisor (security) → function_search_path_mutable rows = 0.
 -- Verify : SELECT count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace

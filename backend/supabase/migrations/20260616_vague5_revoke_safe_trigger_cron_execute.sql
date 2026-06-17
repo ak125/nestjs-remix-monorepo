@@ -42,7 +42,8 @@
 -- NOT auto-applied: shared DB → owner-gated apply (runbook in the vague-5 doc).
 -- =============================================================================
 
-BEGIN;
+SET lock_timeout = '5s';
+SET statement_timeout = '60s';
 
 -- Self-verify (fail-closed): the 7 "trigger" functions MUST be RETURNS trigger before we
 -- revoke their EXECUTE. A non-trigger here could be a PostgREST-exposed RPC with an anon
@@ -90,7 +91,6 @@ GRANT  EXECUTE ON FUNCTION public.trg_invalidate_r1_from_purchase_guide() TO ser
 REVOKE EXECUTE ON FUNCTION public.trg_invalidate_r1_from_seo_gamme() FROM PUBLIC, anon, authenticated;
 GRANT  EXECUTE ON FUNCTION public.trg_invalidate_r1_from_seo_gamme() TO service_role;
 
-COMMIT;
 
 -- Post-apply: advisor anon_/authenticated_security_definer_function_executable drops by
 -- these 13 functions. Verify backend smoke still green (these are never called as anon).
