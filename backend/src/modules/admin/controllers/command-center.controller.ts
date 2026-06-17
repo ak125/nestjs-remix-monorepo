@@ -7,6 +7,7 @@ import {
   NotFoundException,
   NotImplementedException,
   Post,
+  ServiceUnavailableException,
   UnprocessableEntityException,
   UseGuards,
   UseInterceptors,
@@ -31,6 +32,10 @@ import {
   RegenDryRunError,
   UnknownRegenTargetError,
 } from '../services/command-center-orchestrator/regen-artifact.planner';
+import {
+  ExecutorDisabledError,
+  ExecutorUnavailableError,
+} from '../services/command-center-orchestrator/regen-artifact.executor';
 import { UnknownPrPropositionError } from '../services/command-center-orchestrator/pr-proposition.planner';
 import {
   type ExecutionPlan,
@@ -214,6 +219,12 @@ export class CommandCenterController {
       }
       if (e instanceof NoExecutorError) {
         throw new NotImplementedException(e.message); // 501 : aucun executor (Phase 2a)
+      }
+      if (e instanceof ExecutorDisabledError) {
+        throw new ConflictException(e.message); // 409 : executor non activé (flag 2 off)
+      }
+      if (e instanceof ExecutorUnavailableError) {
+        throw new ServiceUnavailableException(e.message); // 503 : git/gh indispo/échec
       }
       throw e;
     }
