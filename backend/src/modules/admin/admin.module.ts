@@ -29,6 +29,7 @@ import {
   SHADOW_LEDGER,
 } from './services/command-center-orchestrator/orchestrator.service';
 import { RegenArtifactShadowPlanner } from './services/command-center-orchestrator/regen-artifact.planner';
+import { RegenArtifactExecutor } from './services/command-center-orchestrator/regen-artifact.executor';
 import { PrPropositionShadowPlanner } from './services/command-center-orchestrator/pr-proposition.planner';
 import { CommandCenterExecutionLedgerService } from './services/command-center-orchestrator/execution-ledger.service';
 import { ConfigurationController } from './controllers/configuration.controller';
@@ -220,6 +221,7 @@ import { SeoControlRefreshProcessor } from './processors/seo-control-refresh.pro
     CommandCenterReaderService,
     CommandCenterActionsService,
     CommandCenterOrchestratorService,
+    RegenArtifactExecutor, // Phase 2b : executor PR-based (double-gardé, inerte par défaut)
     RegenArtifactShadowPlanner, // shadow-2 ① planner regen-artifact (ADR-087)
     {
       // shadow-3 ② planner pr-proposition : réutilise le planner regen comme source

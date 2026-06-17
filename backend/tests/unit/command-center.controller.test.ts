@@ -9,6 +9,7 @@ import {
   ConflictException,
   NotFoundException,
   NotImplementedException,
+  ServiceUnavailableException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { CommandCenterController } from '../../src/modules/admin/controllers/command-center.controller';
@@ -22,6 +23,10 @@ import {
   RegenDryRunError,
   UnknownRegenTargetError,
 } from '../../src/modules/admin/services/command-center-orchestrator/regen-artifact.planner';
+import {
+  ExecutorDisabledError,
+  ExecutorUnavailableError,
+} from '../../src/modules/admin/services/command-center-orchestrator/regen-artifact.executor';
 import { type ExecutionPlan } from '../../src/modules/admin/services/command-center-orchestrator/executable-action.contract';
 
 const plan: ExecutionPlan = {
@@ -203,6 +208,26 @@ describe('CommandCenterController — approve (Phase 2a HITL)', () => {
     });
     await expect(c.approveExecution(okBody)).rejects.toBeInstanceOf(
       NotImplementedException,
+    );
+  });
+
+  it('executor non activé (flag 2 off) → 409', async () => {
+    const c = make({
+      executeApproved: jest.fn().mockRejectedValue(new ExecutorDisabledError()),
+    });
+    await expect(c.approveExecution(okBody)).rejects.toBeInstanceOf(
+      ConflictException,
+    );
+  });
+
+  it('git/gh indisponible → 503', async () => {
+    const c = make({
+      executeApproved: jest
+        .fn()
+        .mockRejectedValue(new ExecutorUnavailableError('git not found')),
+    });
+    await expect(c.approveExecution(okBody)).rejects.toBeInstanceOf(
+      ServiceUnavailableException,
     );
   });
 
