@@ -532,3 +532,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-action-outcome-attribution`
 - **Décision** : Merge remote-tracking branch 'origin/main' into feat/seo-action-outcome-attribution (+7 other commits)
 - **Sortie** : PR #1025 | commits 989ff8809 43c470f02 e6c86fa57 3184b0660 2f4d8592c fb052bb6f a1985e0ea 1ce534a2c
+
+## 2026-06-18 — feat/seo-action-outcome-attribution (auto)
+
+- **Branche** : `feat/seo-action-outcome-attribution`
+- **Décision** : fix(ci): squawk timeouts/ignores + RPC-gate allowlist seo-action-outcome (boucle OBSERVE) (+9 other commits)
+- **Sortie** : PR #1025 | commits 8bbde1757 d3e2392c6 989ff8809 43c470f02 e6c86fa57 3184b0660 2f4d8592c fb052bb6f a1985e0ea 1ce534a2c
