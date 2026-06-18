@@ -105,6 +105,18 @@ def extract_core_words(text: str) -> list[str]:
     return [w for w in normalized.split() if w not in STOP_WORDS and len(w) >= 3]
 
 
+def singular_fold(w: str) -> str:
+    """Light FR plural folding for token matching: drop a trailing 's'/'x' on
+    tokens of length >= 4 ('accessoires'->'accessoire', 'courroies'->'courroie',
+    'freins'->'frein'). Short tokens ('vis', len < 4) are left intact.
+
+    Applied SYMMETRICALLY to gamme core words AND keyword tokens, so it only
+    widens recall on plural variants — it never relaxes WHICH concepts must be
+    present (no contamination risk, no RAG, no alias guessing).
+    """
+    return w[:-1] if (len(w) >= 4 and w[-1] in ('s', 'x')) else w
+
+
 def slug_from_filename(filepath: str) -> Optional[str]:
     """Extract gamme slug from filename like 'filtre-a-huile_2026-04-11.csv'."""
     base = os.path.basename(filepath).replace('.csv', '')
@@ -239,7 +251,7 @@ def check_relevance(
 
     Returns: (is_relevant, reject_reason)
     """
-    kw_words = set(kw_normalized.split())
+    kw_words = set(singular_fold(w) for w in kw_normalized.split())
 
     # Rule 1: hard exclusion (hydraulique, industriel, universel...)
     for bad in must_not_contain:
@@ -251,8 +263,10 @@ def check_relevance(
         if alias and alias in kw_normalized:
             return True, None
 
-    # Rule 3: all core words present
-    core_match = gamme_core_words and all(w in kw_words for w in gamme_core_words)
+    # Rule 3: all core words present (plural-tolerant via singular_fold)
+    core_match = gamme_core_words and all(
+        singular_fold(w) in kw_words for w in gamme_core_words
+    )
     if not core_match:
         return False, 'no_core_match'
 
