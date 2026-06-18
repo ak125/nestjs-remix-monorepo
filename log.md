@@ -502,3 +502,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/cc-orchestration-shadow-phase1`
 - **Décision** : feat(command-center): orchestration Phase 1 « shadow » — fondation inerte (ADR-087)
 - **Sortie** : PR #1010 | commits ed3c3be20
+
+## 2026-06-18 — feat/seo-action-outcome-attribution (auto)
+
+- **Branche** : `feat/seo-action-outcome-attribution`
+- **Décision** : feat(seo-observability): PR-2 mesure outcomes 7/14/28j (boucle OBSERVE) (+1 other commit)
+- **Sortie** : PR aucune | commits a1985e0ea 1ce534a2c
