@@ -420,6 +420,9 @@ def process_file(
     verbose: bool,
     suggest_aliases: bool = False,
     suggest_threshold_vol: int = 50,
+    no_rag: bool = False,
+    emit: Optional[str] = None,
+    no_write: bool = False,
 ) -> dict:
     print(f"\n{'='*60}")
     print(f"  {os.path.basename(filepath)}")
@@ -443,8 +446,13 @@ def process_file(
     pg_name = gamme_info['pg_name']
     print(f"  Gamme: {pg_name} (pg_id={pg_id}, slug={pg_alias})")
 
-    # 2. Load RAG signals
-    rag = load_gamme_rag(pg_alias)
+    # 2. Load relevance signals.
+    #    --no-rag : pertinence = mots-cœur du DB pg_name uniquement (zéro RAG,
+    #    identique au gate R2 pickGammeKeywordModifier). RAG = chatbot only.
+    if no_rag:
+        rag = {'aliases': set(), 'must_not_contain': set(), 'confusion_terms': set()}
+    else:
+        rag = load_gamme_rag(pg_alias)
     core_words = extract_core_words(pg_name)
     print(f"  [RAG] Core words: {core_words}")
     print(f"  [RAG] Aliases: {len(rag['aliases'])} | Must-not: {len(rag['must_not_contain'])} | Confusion: {len(rag['confusion_terms'])}")
@@ -529,8 +537,42 @@ def process_file(
             # PAS de content_type — sera rempli par /content-gen
         })
 
-    n = upsert_to_db('__seo_keywords', records, 'keyword,gamme', dry_run)
-    print(f"        {'[DRY RUN]' if dry_run else f'{n} rows upserted'}")
+    # --emit : sortie transform-only (lignes RAW filtrées + stats) pour l'UPSERT
+    # V-Level-safe en aval (MCP gouverné). RAG-free, 0 écriture DB ici.
+    if emit:
+        emit_payload = {
+            'pg_id': pg_id,
+            'pg_alias': pg_alias,
+            'gamme_pg_name': pg_name,
+            'no_rag': bool(no_rag),
+            'stats': {
+                'raw': len(rows),
+                'deduped': len(deduped),
+                'relevant': len(relevant),
+                'rejects': dict(reject_counts),
+                'accepted_volume': sum((r.get('volume') or 0) for r in relevant),
+                'rejected_volume': sum((r.get('volume') or 0) for r in rejects_detail),
+            },
+            'rejects_detail_top': sorted(
+                [
+                    {'keyword': r.get('keyword'), 'normalized': r.get('normalized'),
+                     'volume': r.get('volume'), 'reason': r.get('reason')}
+                    for r in rejects_detail
+                ],
+                key=lambda r: -(r.get('volume') or 0),
+            )[:100],
+            'rows': records,
+        }
+        with open(emit, 'w', encoding='utf-8') as ef:
+            json.dump(emit_payload, ef, ensure_ascii=False, indent=2)
+        print(f"        [EMIT] {len(relevant)} rows + stats -> {emit}")
+
+    if no_write:
+        n = 0
+        print("        [NO-WRITE] DB intacte (transform-only ; UPSERT V-Level-safe en aval).")
+    else:
+        n = upsert_to_db('__seo_keywords', records, 'keyword,gamme', dry_run)
+        print(f"        {'[DRY RUN]' if dry_run else f'{n} rows upserted'}")
 
     return {
         'status': 'success',
@@ -562,6 +604,24 @@ def main():
         default=50,
         help='Min monthly volume for --suggest-aliases candidates (default: 50)',
     )
+    parser.add_argument(
+        '--no-rag',
+        action='store_true',
+        help='RAG-free : ignore load_gamme_rag + alias-expansions. Pertinence = mots-coeur '
+             'du DB pg_name uniquement (identique au gate R2 pickGammeKeywordModifier).',
+    )
+    parser.add_argument(
+        '--emit',
+        type=str,
+        default=None,
+        help='Ecrit les lignes RAW filtrees + stats en JSON (transform-only, pour UPSERT aval). '
+             'Usage fichier unique recommande.',
+    )
+    parser.add_argument(
+        '--no-write',
+        action='store_true',
+        help="N'ecrit PAS en DB (transform-only ; UPSERT V-Level-safe fait en aval). A combiner avec --emit.",
+    )
     args = parser.parse_args()
 
     if not SUPABASE_URL or not SUPABASE_KEY:
@@ -591,6 +651,9 @@ def main():
             args.verbose,
             suggest_aliases=args.suggest_aliases,
             suggest_threshold_vol=args.threshold_vol,
+            no_rag=args.no_rag,
+            emit=args.emit,
+            no_write=args.no_write,
         )
         for f in files
     ]
