@@ -1,3 +1,10 @@
+-- squawk-ignore-file require-concurrent-index-creation
+-- squawk-ignore-file prefer-bigint-over-int
+--   Plain CREATE INDEX (table neuve, volume faible ; CONCURRENTLY interdit en transaction).
+--   window_days/data_lag_days = INT bornés (∈ {7,14,28} / jours) — bigint inutile.
+set lock_timeout = '5s';
+set statement_timeout = '60s';
+
 -- ============================================================================
 -- PR-2 — Table d'outcomes matérialisés (boucle OBSERVE : … → MESURE 7/14/28 j)
 -- ----------------------------------------------------------------------------

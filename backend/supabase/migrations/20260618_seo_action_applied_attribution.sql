@@ -1,3 +1,10 @@
+-- squawk-ignore-file require-concurrent-index-creation
+--   Plain CREATE INDEX (pas CONCURRENTLY) : __admin_audit_log ≈ 34 lignes → aucun bénéfice,
+--   et CONCURRENTLY ne peut pas tourner en transaction (assume_in_transaction). Même
+--   politique que 20260518_seo_control_003_indexes.sql.
+set lock_timeout = '5s';
+set statement_timeout = '60s';
+
 -- ============================================================================
 -- PR-1 — Attribution « seo_action_applied » (boucle OBSERVE : DATA → … → MESURE)
 -- ----------------------------------------------------------------------------
