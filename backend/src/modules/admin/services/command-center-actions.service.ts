@@ -170,6 +170,33 @@ export class CommandCenterActionsService extends SupabaseBaseService {
   }
 
   /**
+   * PR-3 — Outcomes SEO matérialisés (boucle OBSERVE), lecture additive.
+   * Enveloppe honnête via le RPC STABLE allowlisté `rpc_seo_action_outcomes_v1`
+   * (lit la table projetée, JAMAIS l'audit-log). Gracieux : indisponibilité
+   * SURFACÉE (`source_unavailable`), jamais un faux-vert.
+   */
+  async seoActionOutcomes(): Promise<Record<string, unknown>> {
+    try {
+      const res = await this.callRpc<Record<string, unknown>>(
+        'rpc_seo_action_outcomes_v1',
+        { p_lookback_days: 90, p_limit: 100 },
+      );
+      if (res.error || !res.data) {
+        this.logger.warn(
+          `[command-center-actions] rpc_seo_action_outcomes_v1 indisponible (${res.error ?? 'donnée absente'})`,
+        );
+        return { rows: [], source_unavailable: true };
+      }
+      return res.data;
+    } catch (e) {
+      this.logger.warn(
+        `[command-center-actions] SEO outcomes RPC failed: ${e}`,
+      );
+      return { rows: [], source_unavailable: true };
+    }
+  }
+
+  /**
    * Fraîcheur d'ingestion GSC : 'fresh' si la dernière date ingérée est dans le
    * SLA (lag GSC normal ≈ 3 j) ; au-delà → 'stale' ; date absente/invalide →
    * 'unknown'. Stale/unknown ⇒ la règle dégrade la confiance à PARTIAL — la

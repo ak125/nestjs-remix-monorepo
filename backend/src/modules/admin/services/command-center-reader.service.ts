@@ -95,7 +95,12 @@ export class CommandCenterReaderService {
             built.chains,
             mode,
           );
-      result = { ...built, mode, action_queue };
+      // PR-3 boucle OBSERVE : champ additif, full mode + flag ON uniquement.
+      const seo_outcomes =
+        !built.degraded && mode === 'full' && isSeoOutcomesEnabled()
+          ? await this.actions.seoActionOutcomes()
+          : null;
+      result = { ...built, mode, action_queue, seo_outcomes };
     }
     await this.cacheService.set(
       cacheKey,
@@ -107,7 +112,10 @@ export class CommandCenterReaderService {
     return result;
   }
 
-  private build(): Omit<CommandCenterResponse, 'mode' | 'action_queue'> {
+  private build(): Omit<
+    CommandCenterResponse,
+    'mode' | 'action_queue' | 'seo_outcomes'
+  > {
     const now = new Date();
     const gitSha = process.env.GIT_SHA || process.env.SOURCE_COMMIT || null;
     const snapshot = this.readJson<SnapshotFile>(
@@ -372,6 +380,19 @@ export function resolveCommandCenterMode(): CommandCenterMode {
 }
 
 /**
+ * PR-3 boucle OBSERVE — flag du champ additif `seo_outcomes`. Défaut OFF ;
+ * **PROD toujours OFF** (mirror resolveOrchestrationMode, ADR-087). Hors-prod,
+ * `COMMAND_CENTER_SEO_OUTCOMES=true` explicite requis.
+ */
+export function isSeoOutcomesEnabled(): boolean {
+  if (process.env.NODE_ENV === 'production') return false;
+  return (
+    (process.env.COMMAND_CENTER_SEO_OUTCOMES || '').trim().toLowerCase() ===
+    'true'
+  );
+}
+
+/**
  * Light projection: top-line health only. Strips ALL internal detail
  * (departments, capabilities, chains, alerts, owner_actions, evidence paths,
  * canon_path, git_sha, global_status.reasons) so PROD can show "is it healthy?"
@@ -379,7 +400,7 @@ export function resolveCommandCenterMode(): CommandCenterMode {
  * (numbers, no internal identifiers).
  */
 function toLightResponse(
-  full: Omit<CommandCenterResponse, 'mode' | 'action_queue'>,
+  full: Omit<CommandCenterResponse, 'mode' | 'action_queue' | 'seo_outcomes'>,
 ): CommandCenterResponse {
   return {
     degraded: full.degraded,
@@ -406,6 +427,7 @@ function toLightResponse(
     },
     mode: 'light',
     action_queue: [],
+    seo_outcomes: null,
   };
 }
 
@@ -416,6 +438,8 @@ export interface CommandCenterResponse extends Omit<
   degraded: boolean;
   mode: CommandCenterMode;
   action_queue: OwnerActionV2[];
+  /** PR-3 boucle OBSERVE — outcomes SEO (flag COMMAND_CENTER_SEO_OUTCOMES, full mode) ; null sinon. */
+  seo_outcomes: Record<string, unknown> | null;
   departments: Array<
     SnapshotFile['departments'][number] & {
       health_score_current: number;
