@@ -28,6 +28,7 @@ CREATE OR REPLACE FUNCTION public.rpc_seo_action_outcomes_materialize_v1(
 RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = ''
 AS $function$
 DECLARE
   v_last_data_date date;
@@ -161,7 +162,10 @@ BEGIN
 END;
 $function$;
 
-REVOKE ALL ON FUNCTION public.rpc_seo_action_outcomes_materialize_v1(timestamptz, integer) FROM PUBLIC;
+-- FROM PUBLIC seul NE SUFFIT PAS : les default privileges Supabase accordent EXECUTE
+-- aux roles anon/authenticated sur toute fonction de public → on les retire explicitement.
+-- materialize = VOLATILE + SECURITY DEFINER (écrit + lit le ledger admin) → service_role ONLY.
+REVOKE ALL ON FUNCTION public.rpc_seo_action_outcomes_materialize_v1(timestamptz, integer) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.rpc_seo_action_outcomes_materialize_v1(timestamptz, integer) TO service_role;
 
 COMMENT ON FUNCTION public.rpc_seo_action_outcomes_materialize_v1(timestamptz, integer) IS
@@ -181,6 +185,7 @@ RETURNS jsonb
 LANGUAGE sql
 STABLE
 SECURITY DEFINER
+SET search_path = ''
 AS $function$
   WITH sel AS (
     SELECT o.*
