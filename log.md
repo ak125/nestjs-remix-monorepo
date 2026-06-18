@@ -502,3 +502,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/cc-orchestration-shadow-phase1`
 - **Décision** : feat(command-center): orchestration Phase 1 « shadow » — fondation inerte (ADR-087)
 - **Sortie** : PR #1010 | commits ed3c3be20
+
+## 2026-06-18 — feat/kw-csv-raw-ingest (auto)
+
+- **Branche** : `feat/kw-csv-raw-ingest`
+- **Décision** : feat(seo): import-gads-kp --no-rag/--emit/--no-write (KW CSV RAW-only, V-Level-safe)
+- **Sortie** : PR #1026 | commits b5fd933a4
