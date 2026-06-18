@@ -30,12 +30,15 @@ import { CwvBeaconService } from './services/cwv-beacon.service';
 import { CwvAggregationService } from './services/cwv-aggregation.service';
 import { RuntimeEventsService } from './services/runtime-events.service';
 import { CwvDashboardService } from './services/cwv-dashboard.service';
+import { SeoActionAttributionService } from './services/seo-action-attribution.service';
+import { SeoActionOutcomeService } from './services/seo-action-outcome.service';
 import { SeoMonitoringController } from './controllers/seo-monitoring.controller';
 import { QualityHistoryController } from './controllers/quality-history.controller';
 import { FunnelEventsController } from './controllers/funnel-events.controller';
 import { CwvBeaconController } from './controllers/cwv-beacon.controller';
 import { RuntimeEventsController } from './controllers/runtime-events.controller';
 import { CwvDashboardController } from './controllers/cwv-dashboard.controller';
+import { SeoActionAttributionController } from './controllers/seo-action-attribution.controller';
 
 @Module({
   imports: [ConfigModule],
@@ -59,6 +62,8 @@ import { CwvDashboardController } from './controllers/cwv-dashboard.controller';
     CwvAggregationService, // CWV bloc 4 — RPCs aggregate_cwv_hourly/daily_rum
     RuntimeEventsService, // CWV bloc 5 — wrapper __seo_event_log pour 4 runtime events
     CwvDashboardService, // CWV bloc 6 — wraps STABLE RPCs get_cwv_dashboard/funnel_correlation + health
+    SeoActionAttributionService, // PR-1 boucle OBSERVE — attribution seo_action_applied (ledger __admin_audit_log)
+    SeoActionOutcomeService, // PR-2 boucle OBSERVE — materialize + read outcomes (__seo_action_outcome)
     // CwvAggregationSchedulerService + CwvAggregationProcessor : wired in workers/worker.module.ts
     // (queue 'seo-monitor' registered there ; pattern mirror SeoDailyFetchProcessor)
   ],
@@ -69,6 +74,7 @@ import { CwvDashboardController } from './controllers/cwv-dashboard.controller';
     CwvBeaconController, // POST /api/seo/cwv/beacon (public beacon, bloc 3)
     RuntimeEventsController, // POST /api/seo/runtime-event (public beacon, bloc 5)
     CwvDashboardController, // GET /api/seo/cwv/{dashboard,funnel-correlation,health} (admin, bloc 6)
+    SeoActionAttributionController, // POST /api/admin/seo/action/applied (admin, PR-1 boucle OBSERVE)
   ],
   exports: [
     GoogleCredentialsService,

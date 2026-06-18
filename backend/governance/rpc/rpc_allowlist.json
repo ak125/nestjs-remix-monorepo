@@ -2,7 +2,7 @@
   "version": "1.0.0",
   "generated_at": "2026-02-03T14:00:00Z",
   "description": "RPC READ_SAFE - Autorisees pour tous les roles",
-  "total": 181,
+  "total": 182,
   "functions": [
     {
       "name": "__gov_m1_table_sizes",
@@ -828,6 +828,11 @@
       "name": "rpc_seo_low_ctr_v3",
       "volatility": "STABLE",
       "reason": "SEO low-CTR v3 read-only — grain pages (__seo_gsc_daily_pages, sans query) + coverage envelope (Command Center owner-action queue)"
+    },
+    {
+      "name": "rpc_seo_action_outcomes_v1",
+      "volatility": "STABLE",
+      "reason": "SEO action outcomes read-only (boucle OBSERVE PR-2) — lit __seo_action_outcome (table projetee), jamais __admin_audit_log ; anon-safe ; enveloppe honnete + disclaimer OBSERVATIONNEL"
     },
     {
       "name": "search_pieces_fts",

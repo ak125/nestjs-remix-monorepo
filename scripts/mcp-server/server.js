@@ -132,6 +132,29 @@ class SupabaseMCPServer {
             required: ["table"],
           },
         },
+        {
+          name: "seo_outcomes",
+          description: "Outcomes SEO matérialisés (delta baseline vs fenêtre 7/14/28j par action, boucle OBSERVE). Lecture seule via rpc_seo_action_outcomes_v1.",
+          inputSchema: {
+            type: "object",
+            properties: {
+              lookback_days: { type: "number", description: "Fenêtre de recherche des actions en jours (défaut 90)", default: 90 },
+              limit: { type: "number", description: "Nombre max de lignes (défaut 100)", default: 100 }
+            }
+          },
+        },
+        {
+          name: "seo_low_ctr",
+          description: "Opportunités SEO : pages à fortes impressions et ~0 clic (CTR à récupérer). Lecture seule via rpc_seo_low_ctr_v3.",
+          inputSchema: {
+            type: "object",
+            properties: {
+              window_days: { type: "number", description: "Fenêtre GSC en jours (défaut 120)", default: 120 },
+              min_impressions: { type: "number", description: "Seuil d'impressions (défaut 50)", default: 50 },
+              limit: { type: "number", description: "Nombre max de lignes (défaut 50)", default: 50 }
+            }
+          },
+        },
       ],
     }));
 
@@ -243,6 +266,36 @@ class SupabaseMCPServer {
                   }, null, 2),
                 },
               ],
+            };
+          }
+
+          case "seo_outcomes": {
+            const { lookback_days = 90, limit = 100 } = args;
+            const { data, error } = await supabase.rpc('rpc_seo_action_outcomes_v1', {
+              p_lookback_days: lookback_days,
+              p_limit: limit,
+            });
+            if (error) {
+              throw new Error(`Erreur Supabase: ${error.message}`);
+            }
+            return {
+              content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
+            };
+          }
+
+          case "seo_low_ctr": {
+            const { window_days = 120, min_impressions = 50, limit = 50 } = args;
+            const { data, error } = await supabase.rpc('rpc_seo_low_ctr_v3', {
+              p_window_days: window_days,
+              p_min_impressions: min_impressions,
+              p_max_ctr: 0.01,
+              p_limit: limit,
+            });
+            if (error) {
+              throw new Error(`Erreur Supabase: ${error.message}`);
+            }
+            return {
+              content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
             };
           }
 

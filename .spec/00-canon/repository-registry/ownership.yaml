@@ -652,6 +652,11 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: medium
+  - glob: backend/supabase/migrations/*seo_action_*
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
   - glob: backend/supabase/migrations/*seo_event_funnel*
     domain: D3
     owner: '@ak125/seo-team'
