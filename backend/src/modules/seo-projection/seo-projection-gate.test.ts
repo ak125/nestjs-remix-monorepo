@@ -41,17 +41,23 @@ describe('SeoProjectionGateService', () => {
     exp.blocks = [{ role: 'R8', block_kind: 'k', content: {} }]; // R8 absent de roles_allowed=[R1]
     const v = gate.canonGate(exp);
     expect(v.ok).toBe(false);
-    expect(v.reasons.some((r) => r.includes("R8"))).toBe(true);
+    expect(v.reasons.some((r) => r.includes('R8'))).toBe(true);
   });
 
   it('CanonGate KO si entity_type hors canon', () => {
-    const v = gate.canonGate({ ...validExport(), entity_type: 'bogus' as never });
+    const v = gate.canonGate({
+      ...validExport(),
+      entity_type: 'bogus' as never,
+    });
     expect(v.ok).toBe(false);
   });
 
   it('QualityGate KO si un champ requis du contrat manque', () => {
     // content_hash absent du contrat → qualityGate doit lever "champ requis absent" (fail-closed).
-    const broken = { ...validExport(), content_hash: undefined } as unknown as SeoProjectionExport;
+    const broken = {
+      ...validExport(),
+      content_hash: undefined,
+    } as unknown as SeoProjectionExport;
     const v = gate.qualityGate(broken);
     expect(v.ok).toBe(false);
     expect(v.reasons.some((r) => r.includes('content_hash'))).toBe(true);

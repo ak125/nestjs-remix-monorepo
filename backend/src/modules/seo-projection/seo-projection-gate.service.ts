@@ -58,14 +58,19 @@ export class SeoProjectionGateService {
     if (!Array.isArray(exp.roles_allowed) || exp.roles_allowed.length === 0) {
       reasons.push('roles_allowed vide (aucun rôle autorisé)');
     }
-    if (!Array.isArray(exp.consumers_allowed) || exp.consumers_allowed.length === 0) {
+    if (
+      !Array.isArray(exp.consumers_allowed) ||
+      exp.consumers_allowed.length === 0
+    ) {
       reasons.push('consumers_allowed vide');
     }
     // Pureté : tout rôle d'un block doit être déclaré dans roles_allowed.
     const allowed = new Set(exp.roles_allowed ?? []);
     for (const b of exp.blocks ?? []) {
       if (b?.role && !allowed.has(b.role)) {
-        reasons.push(`block role '${b.role}' absent de roles_allowed (impureté de rôle)`);
+        reasons.push(
+          `block role '${b.role}' absent de roles_allowed (impureté de rôle)`,
+        );
       }
     }
     return { gate: 'canon', ok: reasons.length === 0, reasons };
@@ -76,11 +81,18 @@ export class SeoProjectionGateService {
     const reasons: string[] = [];
     for (const f of REQUIRED_EXPORT_FIELDS) {
       const v = exp[f];
-      if (v === undefined || v === null || (typeof v === 'string' && v.trim() === '')) {
+      if (
+        v === undefined ||
+        v === null ||
+        (typeof v === 'string' && v.trim() === '')
+      ) {
         reasons.push(`champ requis absent: ${String(f)}`);
       }
     }
-    if (typeof exp.content_hash === 'string' && exp.content_hash.trim() === '') {
+    if (
+      typeof exp.content_hash === 'string' &&
+      exp.content_hash.trim() === ''
+    ) {
       reasons.push('content_hash vide (no-op detection impossible)');
     }
     // Un export sans aucun bloc projetable n'est pas une régression mais n'apporte rien : noop aval, pas un fail.

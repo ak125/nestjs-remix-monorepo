@@ -24,7 +24,9 @@ export class SeoProjectionRefreshProcessor {
   constructor(private readonly writer: SeoProjectionWriterService) {}
 
   @Process(PROJECTION_REFRESH_JOB)
-  async handle(job: Job<ProjectionRefreshJobData>): Promise<{ refreshed: boolean; error?: string }> {
+  async handle(
+    job: Job<ProjectionRefreshJobData>,
+  ): Promise<{ refreshed: boolean; error?: string }> {
     const res = await this.writer.refreshViews();
     this.logger.log(
       `projection refresh (run=${job?.data?.runId ?? 'n/a'}) → refreshed=${res.refreshed}` +
@@ -35,6 +37,8 @@ export class SeoProjectionRefreshProcessor {
 
   @OnQueueFailed()
   onFailed(job: Job, err: Error): void {
-    this.logger.error(`projection-refresh job ${job?.id} failed: ${err?.message}`);
+    this.logger.error(
+      `projection-refresh job ${job?.id} failed: ${err?.message}`,
+    );
   }
 }

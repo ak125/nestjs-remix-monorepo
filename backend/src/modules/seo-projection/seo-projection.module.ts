@@ -13,13 +13,19 @@ import { SeoProjectionGateService } from './seo-projection-gate.service';
 import { SeoProjectionWriterService } from './seo-projection-writer.service';
 import { SeoProjectionWriteProcessor } from './seo-projection-write.processor';
 import { SeoProjectionRefreshProcessor } from './seo-projection-refresh.processor';
-import { PROJECTION_REFRESH_QUEUE, PROJECTION_WRITE_QUEUE } from './seo-projection.types';
+import {
+  PROJECTION_REFRESH_QUEUE,
+  PROJECTION_WRITE_QUEUE,
+} from './seo-projection.types';
 
 @Module({
   imports: [
     ConfigModule,
     DatabaseModule,
-    BullModule.registerQueue({ name: PROJECTION_WRITE_QUEUE }, { name: PROJECTION_REFRESH_QUEUE }),
+    BullModule.registerQueue(
+      { name: PROJECTION_WRITE_QUEUE },
+      { name: PROJECTION_REFRESH_QUEUE },
+    ),
   ],
   providers: [
     SeoProjectionGateService,

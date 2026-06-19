@@ -30,15 +30,28 @@ export class SeoProjectionWriteProcessor {
 
   @Process(PROJECTION_WRITE_JOB)
   async handle(job: Job<ProjectionWriteJobData>): Promise<ProjectionRunResult> {
-    const { exportPaths = [], triggeredBy = 'manual', runMeta = {} } = job.data ?? ({} as ProjectionWriteJobData);
-    const result = await this.writer.projectExports(exportPaths, triggeredBy, runMeta);
+    const {
+      exportPaths = [],
+      triggeredBy = 'manual',
+      runMeta = {},
+    } = job.data ?? ({} as ProjectionWriteJobData);
+    const result = await this.writer.projectExports(
+      exportPaths,
+      triggeredBy,
+      runMeta,
+    );
 
     if (!result.readOnlySkipped && result.entitiesWritten > 0) {
       // Coalescing : jobId fixe → un seul refresh en attente à la fois (single-flight, debounce 5s).
       await this.refreshQueue.add(
         PROJECTION_REFRESH_JOB,
         { triggeredBy, runId: result.runId },
-        { jobId: 'projection-refresh-singleton', delay: REFRESH_DEBOUNCE_MS, removeOnComplete: true, removeOnFail: true },
+        {
+          jobId: 'projection-refresh-singleton',
+          delay: REFRESH_DEBOUNCE_MS,
+          removeOnComplete: true,
+          removeOnFail: true,
+        },
       );
       result.refreshEnqueued = true;
     }
@@ -51,6 +64,8 @@ export class SeoProjectionWriteProcessor {
 
   @OnQueueFailed()
   onFailed(job: Job, err: Error): void {
-    this.logger.error(`projection-write job ${job?.id} failed: ${err?.message}`);
+    this.logger.error(
+      `projection-write job ${job?.id} failed: ${err?.message}`,
+    );
   }
 }

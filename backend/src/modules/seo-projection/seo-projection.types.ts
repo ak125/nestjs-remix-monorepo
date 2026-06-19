@@ -28,7 +28,11 @@ export const WRITER_CONTRACT_VERSION = '1.0.0';
 export const REFRESH_DEBOUNCE_MS = 5_000;
 
 export type ProjectionTriggeredBy = 'cron' | 'manual' | 'replay' | 'test';
-export type ProjectionEntityType = 'gamme' | 'vehicle' | 'constructeur' | 'diagnostic';
+export type ProjectionEntityType =
+  | 'gamme'
+  | 'vehicle'
+  | 'constructeur'
+  | 'diagnostic';
 
 /** Données du job write : la liste des chemins d'exports à projeter pour ce run. */
 export interface ProjectionWriteJobData {
