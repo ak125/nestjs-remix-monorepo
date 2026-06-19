@@ -5,7 +5,7 @@
  * (déjà TIER A côté wiki) et enqueue un write-job sur PROJECTION_WRITE_QUEUE → le write-processor
  * existant (PR-6b) projette + enqueue le refresh débouncé. Aucune logique d'écriture ici.
  *
- * Pourquoi BullMQ repeatable et pas `@Cron` : `@nestjs/schedule` est désactivé monorepo
+ * Choix BullMQ repeatable plutôt que `@Cron` : `@nestjs/schedule` est désactivé monorepo
  * (conflit de versions, cf. app.module.ts) → tous les `@Cron` sont inertes. Pattern canon =
  * repeatable jobs (cf. SitemapV10SchedulerService).
  *
