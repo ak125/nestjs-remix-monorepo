@@ -19,8 +19,6 @@ import request from 'supertest';
 import { RagProxyController } from '../../src/modules/rag-proxy/rag-proxy.controller';
 import { RagProxyService } from '../../src/modules/rag-proxy/rag-proxy.service';
 import { RagCleanupService } from '../../src/modules/rag-proxy/services/rag-cleanup.service';
-import { RagWebIngestDbService } from '../../src/modules/rag-proxy/services/rag-web-ingest-db.service';
-import { RagIngestionService } from '../../src/modules/rag-proxy/services/rag-ingestion.service';
 import { RagImageManagementService } from '../../src/modules/rag-proxy/services/rag-image-management.service';
 import { RagVideoManagementService } from '../../src/modules/rag-proxy/services/rag-video-management.service';
 import { RagGammeDetectionService } from '../../src/modules/rag-proxy/services/rag-gamme-detection.service';
@@ -42,8 +40,6 @@ describe('RagProxyController', () => {
       providers: [
         { provide: RagProxyService, useValue: mockRagProxyService },
         { provide: RagCleanupService, useValue: {} },
-        { provide: RagWebIngestDbService, useValue: {} },
-        { provide: RagIngestionService, useValue: {} },
         { provide: RagImageManagementService, useValue: {} },
         { provide: RagVideoManagementService, useValue: {} },
         { provide: RagGammeDetectionService, useValue: {} },

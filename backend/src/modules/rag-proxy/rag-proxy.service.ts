@@ -2,14 +2,8 @@ import { Injectable } from '@nestjs/common';
 import type { Response } from 'express';
 import { ChatRequestDto, ChatResponseDto } from './dto/chat.dto';
 import { SearchRequestDto, SearchResponseDto } from './dto/search.dto';
-import {
-  PdfIngestSingleRequestDto,
-  PdfIngestRunResponseDto,
-  PdfIngestJobStatusResponseDto,
-} from './dto/pdf-ingest.dto';
 import { RagChatService } from './services/rag-chat.service';
 import { RagKnowledgeService } from './services/rag-knowledge.service';
-import { RagIngestionService } from './services/rag-ingestion.service';
 import { RagWebhookCompletionService } from './services/rag-webhook-completion.service';
 import { RagImageManagementService } from './services/rag-image-management.service';
 
@@ -37,7 +31,6 @@ export class RagProxyService {
   constructor(
     private readonly chatService: RagChatService,
     private readonly knowledgeService: RagKnowledgeService,
-    private readonly ingestionService: RagIngestionService,
     private readonly webhookService: RagWebhookCompletionService,
     private readonly imageService: RagImageManagementService,
   ) {}
@@ -96,29 +89,6 @@ export class RagProxyService {
 
   health() {
     return this.knowledgeService.health();
-  }
-
-  // ── Ingestion ──
-
-  ingestSinglePdf(
-    request: PdfIngestSingleRequestDto,
-  ): Promise<PdfIngestRunResponseDto> {
-    return this.ingestionService.ingestSinglePdf(request);
-  }
-
-  getSinglePdfJobStatus(
-    jobId: string,
-    tailLines?: number,
-  ): Promise<PdfIngestJobStatusResponseDto> {
-    return this.ingestionService.getSinglePdfJobStatus(jobId, tailLines);
-  }
-
-  ingestWebUrl(request: {
-    url?: string;
-    truthLevel?: string;
-    force?: boolean;
-  }): Promise<{ jobId: string; status: string }> {
-    return this.ingestionService.ingestWebUrl(request);
   }
 
   // ── Webhook / Admin ──
