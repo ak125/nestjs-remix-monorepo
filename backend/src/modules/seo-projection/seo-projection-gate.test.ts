@@ -50,10 +50,9 @@ describe('SeoProjectionGateService', () => {
   });
 
   it('QualityGate KO si un champ requis du contrat manque', () => {
-    const exp = validExport();
-    // @ts-expect-error suppression volontaire d'un champ requis
-    delete exp.content_hash;
-    const v = gate.qualityGate(exp);
+    // content_hash absent du contrat → qualityGate doit lever "champ requis absent" (fail-closed).
+    const broken = { ...validExport(), content_hash: undefined } as unknown as SeoProjectionExport;
+    const v = gate.qualityGate(broken);
     expect(v.ok).toBe(false);
     expect(v.reasons.some((r) => r.includes('content_hash'))).toBe(true);
   });
