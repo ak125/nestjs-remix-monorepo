@@ -508,3 +508,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-content-loop-source-discovery`
 - **Décision** : feat(skill): seo-content-loop — découverte de sources data-driven par gamme/véhicule/diagnostic (+ track)
 - **Sortie** : PR aucune | commits 171a23158
+
+## 2026-06-19 — chore/rag-purge-b8-pipeline-service (auto)
+
+- **Branche** : `chore/rag-purge-b8-pipeline-service`
+- **Décision** : chore(rag-proxy): retire RagPipelineService + endpoints pipeline (rag-purge B8)
+- **Sortie** : PR aucune | commits f5d45041f
