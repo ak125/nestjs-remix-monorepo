@@ -197,15 +197,16 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
     return { written, regressed };
   }
 
-  /** REFRESH MATERIALIZED VIEW CONCURRENTLY (hors-tx) via RPC service_role. Fail-closed. */
+  /**
+   * REFRESH MATERIALIZED VIEW CONCURRENTLY (hors-tx). La RPC gouvernée `refresh_seo_projection_mvs`
+   * (SECURITY DEFINER, service_role) + son appel via `callRpc()` sont livrés en PR-6c. Tant qu'absente,
+   * on N'APPELLE RIEN (fail-close propre) — pas de `.rpc()` direct (RPC Safety Gate), pas d'appel à une RPC
+   * inexistante. Le worker refresh reste donc dormant (no-op observable) jusqu'à PR-6c.
+   */
   async refreshViews(): Promise<{ refreshed: boolean; error?: string }> {
     if (this.readOnly) return { refreshed: false, error: 'READ_ONLY' };
-    const { error } = await this.supabase.rpc('refresh_seo_projection_mvs');
-    if (error) {
-      this.log.error(`refresh MVs failed: ${error.message}`);
-      return { refreshed: false, error: error.message };
-    }
-    return { refreshed: true };
+    this.log.log('refreshViews: RPC refresh_seo_projection_mvs livrée en PR-6c — refresh différé (no-op).');
+    return { refreshed: false, error: 'refresh RPC pending PR-6c' };
   }
 
   private async openRun(triggeredBy: ProjectionTriggeredBy, meta: Partial<ProjectionRunMeta>): Promise<string | null> {
