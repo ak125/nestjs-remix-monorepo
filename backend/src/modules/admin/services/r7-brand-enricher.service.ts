@@ -2,10 +2,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
-import * as yaml from 'js-yaml';
-import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { EnricherTextUtils } from './enricher-text-utils.service';
 import {
@@ -17,10 +13,7 @@ import {
   R7_SITEMAP_RULES,
   type R7SeoDecision,
 } from '../../../config/r7-keyword-plan.constants';
-import {
-  safeParseBrandRagFrontmatter,
-  type BrandRagFrontmatter,
-} from '../../../config/brand-rag-frontmatter.schema';
+import { type BrandRagFrontmatter } from '../../../config/brand-rag-frontmatter.schema';
 import { BrandEditorialService } from './brand-editorial.service';
 import { PageRoleValidatorService } from '../../seo/validation/page-role-validator.service';
 
@@ -98,7 +91,7 @@ function countryToAdjective(country: string | undefined): string | null {
 @Injectable()
 export class R7BrandEnricherService extends SupabaseBaseService {
   protected override readonly logger = new Logger(R7BrandEnricherService.name);
-  private readonly RAG_BRANDS_DIR = `${RAG_KNOWLEDGE_PATH}/constructeurs`;
+  // RAG_BRANDS_DIR retiré (ADR-031/046) — éditorial marque = BrandEditorialService (DB).
 
   constructor(
     configService: ConfigService,
@@ -155,8 +148,10 @@ export class R7BrandEnricherService extends SupabaseBaseService {
       const relatedBrands: any[] = brandData.related_brands || [];
       const blogContent = brandData.blog_content;
 
-      // RAG: brand file (facts stables) + editorial DB (contenu curé live)
-      const brandRag: BrandRagData = this.loadBrandRag(brandAlias);
+      // ADR-031/046 : éditorial marque depuis BrandEditorialService (DB), plus de RAG.
+      // `country` viendra de auto_marque (DB) — TODO ; absent ⇒ countryToAdjective(undefined)=null
+      // (dégradation gracieuse, pas de fallback silencieux ; le gate() arbitre si contenu insuffisant).
+      const brandRag: BrandRagData = {};
       const editorialRow = await this.editorial
         .findOne(marqueId)
         .catch(() => null);
@@ -332,37 +327,8 @@ export class R7BrandEnricherService extends SupabaseBaseService {
     }
   }
 
-  // ── RAG Loader ──
-
-  private loadBrandRag(brandAlias: string): BrandRagData {
-    const filePath = join(this.RAG_BRANDS_DIR, `${brandAlias}.md`);
-    if (!existsSync(filePath)) return {};
-    try {
-      const raw = readFileSync(filePath, 'utf-8');
-      const match = raw.match(/^---\n([\s\S]*?)\n---/);
-      if (!match) return {};
-      const parsed = yaml.load(match[1]);
-      // Validate against canonical Zod schema. Fail-safe : si le .md n'est pas conforme,
-      // on renvoie {} (enricher fonctionne sur templates + DB) plutôt que planter.
-      // Les écarts sont logués pour permettre un fix rapide via build-brand-rag.py.
-      const result = safeParseBrandRagFrontmatter(parsed);
-      if (!result.success) {
-        this.logger.warn(
-          `RAG frontmatter non conforme (${brandAlias}) : ${result.error.issues
-            .slice(0, 3)
-            .map((i) => `${i.path.join('.')}: ${i.message}`)
-            .join(' | ')}`,
-        );
-        return {};
-      }
-      return result.data;
-    } catch (e) {
-      this.logger.warn(
-        `loadBrandRag(${brandAlias}) failed : ${(e as Error).message}`,
-      );
-      return {};
-    }
-  }
+  // ── RAG Loader retiré (ADR-031/046) — RAG = retrieval chatbot only.
+  //    L'éditorial marque vient de BrandEditorialService (DB) ; voir enrichSingle.
 
   // ── Compose Blocks ──
 
