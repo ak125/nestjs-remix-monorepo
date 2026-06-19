@@ -515,8 +515,8 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Décision** : chore(rag-proxy): retire RagPipelineService + endpoints pipeline (rag-purge B8)
 - **Sortie** : PR aucune | commits f5d45041f
 
-## 2026-06-19 — feat/adr059-pr6b-projection-workers (auto)
+## 2026-06-19 — feat/adr059-pr6-seo-projection-schema (auto)
 
-- **Branche** : `feat/adr059-pr6b-projection-workers`
-- **Décision** : feat(seo-projection): PR-6b forward-writer workers (2-gate + wouldRegress, BullMQ)
-- **Sortie** : PR aucune | commits a80d712c0
+- **Branche** : `feat/adr059-pr6-seo-projection-schema`
+- **Décision** : feat(db): ADR-059 PR-6 — SEO projection schema (7 tables + 2 MV, kg_v3 pattern)
+- **Sortie** : PR aucune | commits 3771252c1
