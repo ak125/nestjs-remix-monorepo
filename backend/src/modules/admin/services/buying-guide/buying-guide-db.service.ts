@@ -6,6 +6,7 @@ import {
   MIN_QUALITY_SCORE,
   FAMILY_MARKERS,
 } from '../../../../config/buying-guide-quality.constants';
+import { SOURCE_TIER } from '../../../../config/source-provenance.constants';
 import type { SectionValidationResult } from './buying-guide.types';
 import { BuyingGuideSectionExtractor } from './buying-guide-section-extractor.service';
 import { FeatureFlagsService } from '../../../../config/feature-flags.service';
@@ -86,7 +87,9 @@ export class BuyingGuideDbService extends SupabaseBaseService {
     qualityScore: number,
   ): Record<string, unknown> {
     const payload: Record<string, unknown> = {
-      sgpg_source_type: 'rag',
+      // Honest provenance tier: parsed from the legacy RAG knowledge doc
+      // (decommissioned source), not bare 'rag'. See ADR-031/046.
+      sgpg_source_type: SOURCE_TIER.RAG_LEGACY,
       sgpg_source_uri: sourceUri,
       sgpg_source_ref: sourceRef,
       sgpg_source_verified:
