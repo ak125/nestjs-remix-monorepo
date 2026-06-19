@@ -430,3 +430,87 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `chore/trim-agent-rules`
 - **Décision** : chore(claude-rules): allège les 2 rules auto-chargées les plus lourdes (−5.5KB/session)
 - **Sortie** : PR #938 | commits c31d995ee
+
+## 2026-06-13 — feat/vehicle-issues-from-evidence-prc (auto)
+
+- **Branche** : `feat/vehicle-issues-from-evidence-prc`
+- **Décision** : feat(content): injecteur vehicle-issues-from-evidence (éditorial multi-source → RAW, PR-C)
+- **Sortie** : PR #964 | commits b99a106ac
+
+## 2026-06-13 — feat/vehicle-issues-from-evidence-prc (auto)
+
+- **Branche** : `feat/vehicle-issues-from-evidence-prc`
+- **Décision** : feat(content): harness PR-C v2 engine-keyed — graphe véhicule↔moteur↔panne↔pièce↔symptôme (+2 other commits)
+- **Sortie** : PR #965 | commits a93a8a507 849c17c84 b99a106ac
+
+## 2026-06-13 — feat/vehicle-issues-from-evidence-prc (auto)
+
+- **Branche** : `feat/vehicle-issues-from-evidence-prc`
+- **Décision** : feat(content): (c) planner d'alimentation diagnostic engine kg_engine_families (DRY-RUN, 0 write) (+7 other commits)
+- **Sortie** : PR #965 | commits 8060413e4 cf1bb0f14 6d159eb76 b20f2cb0b a825c9c80 a93a8a507 849c17c84 b99a106ac
+
+## 2026-06-13 — fix/botguard-verified-bot-bypass (auto)
+
+- **Branche** : `fix/botguard-verified-bot-bypass`
+- **Décision** : fix(bot-guard): honor explicit ip_block before verified-bot bypass (+1 other commit)
+- **Sortie** : PR #967 | commits 003ce059f b857a0f36
+
+## 2026-06-13 — feat/seo-gsc-multilevel-ingestion (auto)
+
+- **Branche** : `feat/seo-gsc-multilevel-ingestion`
+- **Décision** : feat(seo): GSC ingestion multi-niveaux fidèle (property_total/totals/pages) + couverture
+- **Sortie** : PR aucune | commits 3c4bacb1e
+
+## 2026-06-13 — feat/seo-gsc-multilevel-ingestion (auto)
+
+- **Branche** : `feat/seo-gsc-multilevel-ingestion`
+- **Décision** : chore(registry): ownership glob D3/seo-team pour migration seo_gsc_multilevel (+2 other commits)
+- **Sortie** : PR #968 | commits b255abb51 128b28316 3c4bacb1e
+
+## 2026-06-14 — feat/seo-gsc-low-ctr-v3-pages (auto)
+
+- **Branche** : `feat/seo-gsc-low-ctr-v3-pages`
+- **Décision** : feat(seo): rpc_seo_low_ctr_v3 (grain pages fidèle + couverture) → réveille la file command-center (+5 other commits)
+- **Sortie** : PR #969 | commits c124075c3 84f45e18a 26f25aed0 b255abb51 128b28316 3c4bacb1e
+
+## 2026-06-14 — feat/trust-ledger-b0a (auto)
+
+- **Branche** : `feat/trust-ledger-b0a`
+- **Décision** : feat(audit): runtime-truth pg-stable-write deterministic runner + __gov_m7 RPC (PR-B0a)
+- **Sortie** : PR #978 | commits f8c27b88b
+
+## 2026-06-14 — feat/trust-ledger-rpc-registry-drift (auto)
+
+- **Branche** : `feat/trust-ledger-rpc-registry-drift`
+- **Décision** : feat(audit): runtime-truth rpc-registry-drift runner + __gov_m9 RPC (PR-B0a-3)
+- **Sortie** : PR #981 | commits 72ab73fd6
+
+## 2026-06-15 — fix/rpc-drift-silent-bugs (auto)
+
+- **Branche** : `fix/rpc-drift-silent-bugs`
+- **Décision** : fix(rpc-drift): repair advice view counter + drop execute_sql anti-pattern
+- **Sortie** : PR #982 | commits 4bf1dfdef
+
+## 2026-06-16 — feat/runtime-truth-overload-runner (auto)
+
+- **Branche** : `feat/runtime-truth-overload-runner`
+- **Décision** : feat(audit): runtime-truth rpc-overload-ambiguity runner + __gov_m10 RPC (PR-B0a-4)
+- **Sortie** : PR aucune | commits 4e659dfee
+
+## 2026-06-16 — feat/cc-orchestration-shadow-phase1 (auto)
+
+- **Branche** : `feat/cc-orchestration-shadow-phase1`
+- **Décision** : feat(command-center): orchestration Phase 1 « shadow » — fondation inerte (ADR-087)
+- **Sortie** : PR #1010 | commits ed3c3be20
+
+## 2026-06-18 — feat/seo-content-loop-source-discovery (auto)
+
+- **Branche** : `feat/seo-content-loop-source-discovery`
+- **Décision** : feat(skill): seo-content-loop — découverte de sources data-driven par gamme/véhicule/diagnostic (+ track)
+- **Sortie** : PR aucune | commits 171a23158
+
+## 2026-06-19 — chore/rag-purge-b8-pipeline-service (auto)
+
+- **Branche** : `chore/rag-purge-b8-pipeline-service`
+- **Décision** : chore(rag-proxy): retire RagPipelineService + endpoints pipeline (rag-purge B8)
+- **Sortie** : PR aucune | commits f5d45041f

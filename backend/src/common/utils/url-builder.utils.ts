@@ -129,18 +129,8 @@ export function buildConstructeurTypeUrl(
   return `/constructeurs/${normalizeAlias(marqueAlias)}-${marqueId}/${normalizeAlias(modeleAlias)}-${modeleId}/${normalizeTypeAlias(typeAlias, typeName, typeId)}-${typeId}.html`;
 }
 
-/**
- * Construit une URL de modèle pour un constructeur
- * Format: /constructeurs/{marque_alias}-{marque_id}/{modele_alias}-{modele_id}.html
- */
-export function buildConstructeurModeleUrl(
-  marqueAlias: string,
-  marqueId: number,
-  modeleAlias: string,
-  modeleId: number,
-): string {
-  return `/constructeurs/${normalizeAlias(marqueAlias)}-${marqueId}/${normalizeAlias(modeleAlias)}-${modeleId}.html`;
-}
+// buildConstructeurModeleUrl (niveau-modèle 2-segments) RETIRÉ — URL supprimée
+// en 410 Gone (ADR-084), 0 appelant. Le niveau véhicule = buildConstructeurTypeUrl.
 
 /**
  * Extrait l'ID d'un slug

@@ -97,10 +97,18 @@ export class Ga4DailyFetcherService {
     const rowLimit = options.rowLimit ?? 100000;
     const allRows: Array<Record<string, unknown>> = [];
 
+    // GA4 moderne : la métrique `conversions` est remplacée par `keyEvents`
+    // (rename Google 2024). On lit `keyEvents` et on l'écrit dans la colonne
+    // `conversions` (compat — sémantique = nombre de key events). Fallback
+    // gracieux + loggué vers la métrique legacy `conversions` si la propriété
+    // rejette `keyEvents` (no silent fallback). NB NON-RÉTROACTIF : un event
+    // marqué key event aujourd'hui n'alimente que les jours suivants.
+    let keyEventsFallback = false;
+
     try {
       for (const pattern of segments) {
         result.apiCalls += 1;
-        const [resp] = await client.runReport({
+        const mkReq = (metric: string) => ({
           property,
           dateRanges: [{ startDate: options.date, endDate: options.date }],
           dimensions: [
@@ -109,7 +117,7 @@ export class Ga4DailyFetcherService {
           ],
           metrics: [
             { name: 'sessions' },
-            { name: 'conversions' },
+            { name: metric },
             { name: 'bounceRate' },
             { name: 'averageSessionDuration' },
           ],
@@ -117,12 +125,38 @@ export class Ga4DailyFetcherService {
             ? {
                 filter: {
                   fieldName: 'pagePath',
-                  stringFilter: { matchType: 'CONTAINS', value: pattern },
+                  stringFilter: {
+                    matchType: 'CONTAINS' as const,
+                    value: pattern,
+                  },
                 },
               }
             : undefined,
           limit: rowLimit,
         });
+
+        let resp;
+        try {
+          [resp] = await client.runReport(
+            mkReq(keyEventsFallback ? 'conversions' : 'keyEvents'),
+          );
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          if (
+            !keyEventsFallback &&
+            /keyevents|valid metric|metric/i.test(msg)
+          ) {
+            this.logger.warn(
+              `[ga4] métrique keyEvents rejetée (${msg}) — fallback legacy conversions`,
+            );
+            result.warnings.push('keyEvents_unavailable_fallback_conversions');
+            keyEventsFallback = true;
+            result.apiCalls += 1;
+            [resp] = await client.runReport(mkReq('conversions'));
+          } else {
+            throw e;
+          }
+        }
 
         for (const row of resp.rows ?? []) {
           const dims = row.dimensionValues ?? [];
@@ -132,6 +166,7 @@ export class Ga4DailyFetcherService {
             page: dims[0]?.value ?? '',
             channel: (dims[1]?.value ?? 'organic').toLowerCase(),
             sessions: parseInt(mets[0]?.value ?? '0', 10),
+            // colonne `conversions` = nb de GA4 key events (source : metric keyEvents).
             conversions: parseInt(mets[1]?.value ?? '0', 10),
             bounce_rate: mets[2]?.value ? parseFloat(mets[2].value) : null,
             avg_session_duration: mets[3]?.value

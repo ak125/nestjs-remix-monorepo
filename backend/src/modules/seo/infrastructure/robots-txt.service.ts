@@ -44,7 +44,9 @@ export class RobotsTxtService {
    * - /account/ retiré du Disallow (pages ont noindex meta tag, robots.txt empêchait GSC de le lire)
    *
    * ✅ Ce qui N'EST PAS bloqué (stratégie positive):
-   * - /constructeurs/ → Indexé (sitemap constructeurs)
+   * - /constructeurs/ → R7 marque + R8 véhicule indexés (Allow de section).
+   *   L'index /constructeurs et le niveau-modèle 2-seg renvoient 404/410 (ADR-084) ;
+   *   l'Allow doit rester pour laisser Googlebot lire le noindex/410.
    * - /pieces/ → Indexé (sitemap gammes produits)
    * - /blog-pieces-auto/ → Indexé (sitemap blog)
    * - / → Indexé (homepage)

@@ -25,8 +25,15 @@ import { CruxFieldFetcherService } from '../services/crux-field-fetcher.service'
 import { Ga4DailyFetcherService } from '../services/ga4-daily-fetcher.service';
 import { GscDailyFetcherService } from '../services/gsc-daily-fetcher.service';
 import { GscLinksFetcherService } from '../services/gsc-links-fetcher.service';
+import { GscIndexHistoryCollectorService } from '../services/gsc-index-history-collector.service';
 
-export type DailyFetchTask = 'all' | 'gsc' | 'ga4' | 'gsc_links' | 'crux';
+export type DailyFetchTask =
+  | 'all'
+  | 'gsc'
+  | 'ga4'
+  | 'gsc_links'
+  | 'crux'
+  | 'indexation';
 
 export interface SeoDailyFetchJobData {
   /** Date à fetcher au format ISO (YYYY-MM-DD). Si absent, J-3 par défaut (latence GSC/GA4). */
@@ -45,7 +52,7 @@ export interface SeoDailyFetchJobData {
 }
 
 export interface SeoDailyFetchPerSourceResult {
-  source: 'gsc' | 'ga4' | 'gsc_links' | 'crux';
+  source: 'gsc' | 'ga4' | 'gsc_links' | 'crux' | 'indexation';
   status: 'ok' | 'skipped' | 'failed';
   rowsInserted: number;
   durationSeconds: number;
@@ -75,6 +82,7 @@ export class SeoDailyFetchProcessor {
     private readonly gscLinksFetcher: GscLinksFetcherService,
     private readonly cruxFetcher: CruxFieldFetcherService,
     private readonly cruxAlerter: CruxAlerterService,
+    private readonly indexCollector: GscIndexHistoryCollectorService,
     private readonly jobHealth: AdminJobHealthService,
   ) {
     this.readOnly = getAppConfig().supabase.readOnly;
@@ -111,7 +119,9 @@ export class SeoDailyFetchProcessor {
 
     const perSource: SeoDailyFetchPerSourceResult[] = [];
     const tasks =
-      task === 'all' ? (['gsc', 'ga4', 'gsc_links', 'crux'] as const) : [task];
+      task === 'all'
+        ? (['gsc', 'ga4', 'gsc_links', 'crux', 'indexation'] as const)
+        : [task];
 
     let progressBase = 0;
     const progressStep = Math.floor(100 / tasks.length);
@@ -124,7 +134,12 @@ export class SeoDailyFetchProcessor {
         let message: string | undefined;
 
         if (t === 'gsc') {
-          const r = await this.gscFetcher.fetchAndPersist({ date });
+          // PR1 : ingestion multi-niveaux (property_total/totals/pages/queries)
+          // + fenêtre glissante self-healing (re-upsert J-3..J-6 : GSC révise J-1/J-2).
+          const r = await this.gscFetcher.fetchAndPersistMultiGrain({
+            date,
+            rollingDays: 4,
+          });
           rowsInserted = r.rowsInserted;
           if (
             r.warnings.includes('monitoring_disabled') ||
@@ -183,6 +198,21 @@ export class SeoDailyFetchProcessor {
               noteParts.push(`errors=${evalResult.errors.length}`);
             }
             message = noteParts.join(' ');
+          }
+        } else if (t === 'indexation') {
+          // PR3 — snapshot d'indexation stratifié, échantillonné, quota-safe.
+          // INERT-BY-DEFAULT (SEO_INDEX_HISTORY_ENABLED) : skip propre tant qu'off.
+          const r = await this.indexCollector.fetchAndPersist({});
+          rowsInserted = r.rowsInserted;
+          if (
+            r.warnings.includes('index_history_disabled') ||
+            r.warnings.includes('monitoring_disabled') ||
+            r.warnings.includes('credentials_missing')
+          ) {
+            status = 'skipped';
+            message = r.warnings.join(',');
+          } else {
+            message = `inspected=${r.inspected} ${JSON.stringify(r.byStatus)}`;
           }
         }
 

@@ -107,12 +107,15 @@ function handleBotRequest(
         },
         onError(error: unknown) {
           responseStatusCode = 500;
-          // Log streaming rendering errors from inside the shell.  Don't log
-          // errors encountered during initial shell rendering since they'll
-          // reject and get logged in handleDocumentRequest.
-          if (shellRendered) {
-            logger.error(error);
-          }
+          // Surface ALL streaming render errors. On the bot path (onAllReady)
+          // `shellRendered` only flips at the very end, so a render error that
+          // React recovers from (via an ErrorBoundary) — or a render that hits
+          // the ABORT_DELAY timeout — would otherwise be SILENT: a Googlebot-only
+          // 500 with no log and no Sentry event. Non-shell errors never
+          // double-log (true shell errors go through onShellError -> reject ->
+          // handleError).
+          logger.error("[SSR onError]", error);
+          Sentry.captureException(error);
         },
       },
     );
@@ -174,9 +177,9 @@ function handleBrowserRequest(
         },
         onError(error: unknown) {
           responseStatusCode = 500;
-          if (shellRendered) {
-            logger.error(error);
-          }
+          // Same rationale as the bot path: never swallow a render error silently.
+          logger.error("[SSR onError]", error);
+          Sentry.captureException(error);
         },
       },
     );
