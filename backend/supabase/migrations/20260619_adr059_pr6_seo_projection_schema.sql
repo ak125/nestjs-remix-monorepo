@@ -15,7 +15,7 @@
 -- ⚠️ NON auto-appliquée à la DB partagée (deployment.md axe 4) : revue owner + `apply_migration` manuel.
 -- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-BEGIN;
+-- (transaction gérée par l'outil de migration — assume_in_transaction=true, squawk)
 
 -- ╔═══════════════════════════════════════════════════════════════════════════╗
 -- ║ 1. __seo_projection_runs — audit trail (1 row / run), versioning replay     ║
@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS __seo_projection_runs (
   extractor_version            text,
   runner_version               text,
   replayed_from_run_id         uuid REFERENCES __seo_projection_runs(run_id) ON DELETE SET NULL,
-  entities_written             integer NOT NULL DEFAULT 0,
+  entities_written             bigint  NOT NULL DEFAULT 0,
   started_at                   timestamptz NOT NULL DEFAULT now(),
   finished_at                  timestamptz
 );
@@ -230,7 +230,6 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_mv_seo_content_blocks_current ON mv_seo_con
 COMMENT ON MATERIALIZED VIEW mv_seo_content_blocks_current IS
   'ADR-059 PR-6 : MV courante blocks rôle-aware. Lecture via RPC PR-7 (GRANT EXECUTE anon là-bas, pas ici).';
 
-COMMIT;
 
 -- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 -- ROLLBACK (down) — réversible : aucune donnée applicative perdue (tables neuves).
