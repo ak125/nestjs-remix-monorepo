@@ -15,7 +15,12 @@
 -- ⚠️ NON auto-appliquée à la DB partagée (deployment.md axe 4) : revue owner + `apply_migration` manuel.
 -- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
--- (transaction gérée par l'outil de migration — assume_in_transaction=true, squawk)
+-- squawk-ignore-file require-concurrent-index-creation
+--   assume_in_transaction=true (.squawk.toml) → CONCURRENTLY interdit en transaction ; toutes les
+--   tables + MV sont NEUVES dans la transaction gérée par l'outil → 0 lock contention / 0 blocage writes.
+-- Transaction gérée par l'outil de migration (assume_in_transaction=true). Timeouts requis (require-timeout-settings) :
+SET lock_timeout = '5s';
+SET statement_timeout = '60s';
 
 -- ╔═══════════════════════════════════════════════════════════════════════════╗
 -- ║ 1. __seo_projection_runs — audit trail (1 row / run), versioning replay     ║
