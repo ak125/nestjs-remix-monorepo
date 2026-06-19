@@ -180,8 +180,8 @@ ${links}
         this.logger.log(`   Found ${marques.length} car brand pages`);
       }
 
-      // 2. Pages modèle (via __sitemap_p_link pour avoir les combinaisons actives)
-      // Format: /constructeurs/{marque}/{modele}/{type}.html
+      // 2. Pages véhicule 3-segments (via __sitemap_p_link pour les combinaisons actives)
+      // Format: /constructeurs/{marque}/{modele}/{type}.html (R8 — niveau-modèle 2-seg supprimé, ADR-084)
       // ⚠️ PAGINATION COMPLÈTE - récupérer TOUS les véhicules puis dédupliquer
       // Anti-404 : filtrer les orphelins TecDoc V1 (type_ids absents d'auto_type)
       const validTypeIds = await getValidTypeIds(this.supabase);
@@ -468,7 +468,7 @@ ${indexLinks}
         const brandDir = path.join(constructeursDir, brandAlias);
         await fs.mkdir(brandDir, { recursive: true });
 
-        // Récupérer les URLs de cette marque (N1 + N2 uniquement)
+        // Récupérer les URLs de cette marque (N1 marque uniquement)
         const urls: string[] = [];
 
         // N1: Page marque principale
@@ -476,35 +476,8 @@ ${indexLinks}
           `${this.BASE_URL}/constructeurs/${brand.marque_alias}-${brand.marque_id}.html`,
         );
 
-        // N2: Modèles de cette marque (DISTINCT, pas de motorisations N3)
-        const { data: models, error: modelsError } = await this.supabase
-          .from('__sitemap_motorisation')
-          .select(
-            'map_marque_alias, map_marque_id, map_modele_alias, map_modele_id',
-          )
-          .eq('map_marque_id', brand.marque_id);
-
-        if (modelsError) {
-          this.logger.warn(
-            `   ⚠️ Error fetching models for ${brandAlias}: ${modelsError.message}`,
-          );
-        } else if (models && models.length > 0) {
-          // Dédupliquer les modèles (même modèle peut avoir plusieurs motorisations)
-          const seenModels = new Set<string>();
-          for (const m of models) {
-            const key = `${m.map_marque_id}-${m.map_modele_id}`;
-            if (
-              !seenModels.has(key) &&
-              m.map_marque_alias &&
-              m.map_modele_alias
-            ) {
-              seenModels.add(key);
-              urls.push(
-                `${this.BASE_URL}/constructeurs/${normalizeAlias(m.map_marque_alias)}-${m.map_marque_id}/${normalizeAlias(m.map_modele_alias)}-${m.map_modele_id}.html`,
-              );
-            }
-          }
-        }
+        // N2 (niveau-modèle, URLs 2-segments) RETIRÉ — supprimé en 410 Gone (ADR-084).
+        // Les pages véhicule (3-seg) restent émises par generateVehiclesHub() (autre canal).
 
         if (urls.length === 0) {
           continue; // Skip empty brands

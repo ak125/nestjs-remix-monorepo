@@ -226,16 +226,13 @@ export function transformRpcToLoaderData(
       canonical: canonicalLink,
     },
     breadcrumb: {
+      // Niveaux "Constructeurs" (index → 404) et "Modèle" (2-seg → 410, ADR-084)
+      // retirés : Accueil → Marque → Véhicule.
       items: [
         { name: "Accueil", url: "/" },
-        { name: "Constructeurs", url: "/constructeurs" },
         {
           name: vehicleData.marque_name,
           url: `/constructeurs/${vehicleData.marque_alias}-${vehicleData.marque_id}.html`,
-        },
-        {
-          name: vehicleData.modele_name,
-          url: "",
         },
         {
           name: `${vehicleData.type_name} ${vehicleData.type_power_ps} ch`,

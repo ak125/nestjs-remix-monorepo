@@ -14,7 +14,7 @@ Vocabulaire de lecture/sortie — **PAS** un orchestrateur, PAS un gate CI, PAS 
 |---|---|
 | **DISCOVER** | [CLAUDE.md](../../CLAUDE.md) « analyser AVANT muter » → `canonical.json → REPO_MAP → knowledge → ADR vault → grep` |
 | **DECIDE** | [continuous-improvement-global](../skills/continuous-improvement-global/SKILL.md) + CLAUDE.md « Prefer extension over creation » |
-| **PLAN** | CLAUDE.md « Discipline de périmètre » + worktree dédié ([deployment.md](deployment.md)) |
+| **PLAN** | CLAUDE.md « Discipline de périmètre » + worktree dédié ([deployment.md](../rules/deployment.md)) |
 | **PATCH** | CLAUDE.md « périmètre minimal » |
 | **VERIFY** | champ *Test* de continuous-improvement + vérification runtime PRE-PR / POST-MERGE |
 | **HANDOFF** | [agent-exit-contract.md](../canon-mirrors/agent-exit-contract.md) (coverage manifest, anti-overclaim) |
@@ -36,9 +36,9 @@ Niveaux : **BLOCK** (refusé, guard local) · **WARN** (averti, autorisé) · **
 | `backend/src/modules/rm/` | **BLOCK** | file-guard G5 |
 | `supabase.rpc` direct (commerce) / order-cart status writes | **BLOCK** *(code)* | ast-grep `commerce-*` |
 | `ALTER TABLE DROP COLUMN` / `CREATE TABLE` sans RLS | **WARN** | supabase-guard G4-G5 |
-| `payments/` edits | **WARN** | file-guard G3 + [payments.md](payments.md) |
+| `payments/` edits | **WARN** | file-guard G3 + [payments.md](../rules/payments.md) |
 | `gh pr merge` → main | **GATED (CI)** | branch protection : checks stricts + `enforce_admins` (merge = PREPROD ; PROD tag-gated) |
-| `git tag v*` / `push --tags` / deploy-prod | **BLOCK** | bash-guard G6 (#879) — tag = décision opérateur ([deployment.md](deployment.md)) |
+| `git tag v*` / `push --tags` / deploy-prod | **BLOCK** | bash-guard G6 (#879) — tag = décision opérateur ([deployment.md](../rules/deployment.md)) |
 | `UPDATE`/`DELETE` `pieces` / `pieces_price` / `__seo_*` via execute_sql | **BLOCK** | supabase-guard G6 (#879) — passer par module/RPC gouverné |
 
 > #879 = durcissement owner-gated — **renforcer, jamais affaiblir** un guard.
@@ -77,7 +77,7 @@ cassé ? `DONE` sur-déclaré alors que `PARTIAL` ?
 ## 6. Mémoire & routing — pointers
 
 - Mémoire = aide au rappel, **jamais** source de vérité — couches `MEMORY.md` / `CLAUDE.md` /
-  vault / WIKI / DB / RAG : voir [agent-doc-search.md](agent-doc-search.md).
+  vault / WIKI / DB / RAG : voir [agent-doc-search.md](../rules/agent-doc-search.md).
 - Routing autoritaire = [agent-operating-map.yaml](../../.spec/00-canon/ai-registry/agent-operating-map.yaml)
   + [role-matrix.md](../../.spec/00-canon/role-matrix.md) + [departments-map](../../audit/automecanik-departments-map.md).
 

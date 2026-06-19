@@ -51,13 +51,7 @@ const BrandHero = memo(function BrandHero({
             <Home className="w-4 h-4 mr-1" />
             Accueil
           </Link>
-          <ChevronRight className="w-4 h-4 text-gray-400" />
-          <Link
-            to="/constructeurs"
-            className="text-gray-600 hover:text-blue-600 transition-colors duration-200"
-          >
-            Constructeurs
-          </Link>
+          {/* Niveau "Constructeurs" retiré (index /constructeurs → 404, ADR-084) */}
           <ChevronRight className="w-4 h-4 text-gray-400" />
           <span className="text-blue-600 font-semibold">
             {brand.marque_name}

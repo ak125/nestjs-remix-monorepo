@@ -7,15 +7,25 @@
  * global_status/health_score_current). Never throws on a data error — renders a
  * degraded banner so the page is always reachable (the backend already returns
  * 200 + degraded:true when the snapshot file is absent).
+ *
+ * Onglet « Orchestration » (ADR-087) : statut read-only + preview d'un plan shadow
+ * *would-be* (action POST → backend). 0 mutation d'artefact ; le backend valide.
  */
 import {
+  type ActionFunctionArgs,
   type LoaderFunctionArgs,
   json,
   type MetaFunction,
 } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { useActionData, useLoaderData } from "@remix-run/react";
 import { type CommandCenterResponse } from "@repo/registry";
-import { AlertTriangle, Boxes, GitBranch, FileWarning } from "lucide-react";
+import {
+  AlertTriangle,
+  Boxes,
+  GitBranch,
+  FileWarning,
+  Workflow,
+} from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
@@ -36,6 +46,12 @@ import { GlobalHealthBar } from "~/components/command-center/GlobalHealthBar";
 import { OwnerActionQueue } from "~/components/command-center/OwnerActionQueue";
 import { ModuleGrid } from "~/components/command-center/ModuleGrid";
 import { CertBadge } from "~/components/command-center/badges";
+import {
+  OrchestrationPanel,
+  type OrchestrationActionData,
+  type OrchestrationStatus,
+  type ShadowPlanView,
+} from "~/components/command-center/OrchestrationPanel";
 
 export const meta: MetaFunction = () =>
   createNoIndexMeta("Command Center — Admin");
@@ -74,6 +90,34 @@ function degraded(
   };
 }
 
+/** Best-effort fetch du statut orchestration (null si indisponible — surfacé dans l'UI). */
+async function fetchOrchestration(
+  request: Request,
+): Promise<OrchestrationStatus | null> {
+  try {
+    const res = await fetch(
+      getInternalApiUrlFromRequest(
+        "/api/admin/command-center/orchestration",
+        request,
+      ),
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: request.headers.get("Cookie") || "",
+        },
+      },
+    );
+    if (!res.ok) return null;
+    const body = (await res.json()) as {
+      data?: OrchestrationStatus;
+    } & OrchestrationStatus;
+    return body.data ?? (body as OrchestrationStatus);
+  } catch (e) {
+    logger.warn(`[command-center] orchestration status failed: ${e}`);
+    return null;
+  }
+}
+
 export async function loader({ request, context }: LoaderFunctionArgs) {
   await requireAdmin({ context }); // 401/403 → redirect (auth errors are NOT degraded)
 
@@ -89,30 +133,87 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     );
     if (res.status === 404) {
       // COMMAND_CENTER_MODE=disabled (prod-safe default) → endpoint 404s.
-      return json(
-        degraded(
+      return json({
+        cc: degraded(
           "Command Center désactivé dans cet environnement.",
           "disabled",
         ),
-      );
+        orchestration: null as OrchestrationStatus | null,
+      });
     }
     if (!res.ok) {
       logger.warn(`[command-center] API ${res.status} — rendering degraded`);
-      return json(degraded(`backend API ${res.status}`));
+      return json({
+        cc: degraded(`backend API ${res.status}`),
+        orchestration: null as OrchestrationStatus | null,
+      });
     }
     const body = (await res.json()) as {
       data?: CommandCenterResponse;
     } & CommandCenterResponse;
     // AdminResponseInterceptor wraps as { success, data, meta }.
-    return json(body.data ?? (body as CommandCenterResponse));
+    const cc = body.data ?? (body as CommandCenterResponse);
+    const orchestration =
+      cc.mode === "disabled" ? null : await fetchOrchestration(request);
+    return json({ cc, orchestration });
   } catch (e) {
     logger.error(`[command-center] fetch failed: ${e}`);
-    return json(degraded("backend unreachable"));
+    return json({
+      cc: degraded("backend unreachable"),
+      orchestration: null as OrchestrationStatus | null,
+    });
+  }
+}
+
+export async function action({
+  request,
+  context,
+}: ActionFunctionArgs): Promise<
+  ReturnType<typeof json<OrchestrationActionData>>
+> {
+  await requireAdmin({ context });
+  const form = await request.formData();
+  const kind = String(form.get("kind") ?? "");
+  const action_id = String(form.get("action_id") ?? "");
+
+  try {
+    const res = await fetch(
+      getInternalApiUrlFromRequest(
+        "/api/admin/command-center/orchestration/shadow",
+        request,
+      ),
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: request.headers.get("Cookie") || "",
+        },
+        body: JSON.stringify({ kind, action_id }),
+      },
+    );
+    const body = (await res.json().catch(() => ({}))) as {
+      data?: ShadowPlanView;
+      message?: string | string[];
+    } & ShadowPlanView;
+    if (!res.ok) {
+      const msg = Array.isArray(body.message)
+        ? body.message.join(", ")
+        : (body.message ?? `Erreur backend ${res.status}`);
+      return json({ ok: false, error: msg }, { status: res.status });
+    }
+    const plan = body.data ?? (body as ShadowPlanView);
+    return json({ ok: true, plan });
+  } catch (e) {
+    logger.error(`[command-center] shadow preview failed: ${e}`);
+    return json({ ok: false, error: "Backend injoignable." }, { status: 502 });
   }
 }
 
 export default function AdminCommandCenter() {
-  const data = useLoaderData<typeof loader>() as CommandCenterResponse;
+  const { cc, orchestration } = useLoaderData<typeof loader>();
+  const result = useActionData<typeof action>() as
+    | OrchestrationActionData
+    | undefined;
 
   return (
     <div className="space-y-6 p-4 sm:p-6">
@@ -120,13 +221,13 @@ export default function AdminCommandCenter() {
         <h1 className="text-2xl font-bold tracking-tight">AI Command Center</h1>
         <p className="text-sm text-muted-foreground">
           Projection lecture-seule de la carte opérationnelle IA —{" "}
-          {data.summary.departments_total} départements ·{" "}
-          {data.summary.capabilities_certified}/
-          {data.summary.capabilities_total} capacités certifiées
+          {cc.summary.departments_total} départements ·{" "}
+          {cc.summary.capabilities_certified}/{cc.summary.capabilities_total}{" "}
+          capacités certifiées
         </p>
       </header>
 
-      {data.mode === "disabled" ? (
+      {cc.mode === "disabled" ? (
         <Alert
           variant="info"
           icon={<AlertTriangle className="h-5 w-5" aria-hidden />}
@@ -137,22 +238,22 @@ export default function AdminCommandCenter() {
             Le correctif Docker registry reste actif partout.
           </AlertDescription>
         </Alert>
-      ) : data.degraded ? (
+      ) : cc.degraded ? (
         <Alert
           variant="error"
           icon={<AlertTriangle className="h-5 w-5" aria-hidden />}
         >
           <AlertTitle>Command Center indisponible</AlertTitle>
           <AlertDescription>
-            {data.global_status.reasons[0] ??
+            {cc.global_status.reasons[0] ??
               "Snapshot absent. Générez-le (npm run governance:command-center) puis rechargez."}
           </AlertDescription>
         </Alert>
       ) : (
         <>
-          <GlobalHealthBar data={data} />
+          <GlobalHealthBar data={cc} />
 
-          {data.mode === "light" ? (
+          {cc.mode === "light" ? (
             <p className="text-sm text-muted-foreground">
               Mode light — synthèse de santé uniquement. Le détail
               (départements, capacités, handoffs, actions) est disponible en
@@ -165,22 +266,30 @@ export default function AdminCommandCenter() {
                 <TabsTrigger value="departments">Départements</TabsTrigger>
                 <TabsTrigger value="handoffs">Handoffs</TabsTrigger>
                 <TabsTrigger value="capabilities">Capacités</TabsTrigger>
+                <TabsTrigger value="orchestration">
+                  <Workflow className="mr-1 h-4 w-4" aria-hidden />
+                  Orchestration
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="actions" className="mt-4">
-                <OwnerActionQueue data={data} />
+                <OwnerActionQueue data={cc} />
               </TabsContent>
 
               <TabsContent value="departments" className="mt-4">
-                <ModuleGrid data={data} />
+                <ModuleGrid data={cc} />
               </TabsContent>
 
               <TabsContent value="handoffs" className="mt-4">
-                <HandoffList data={data} />
+                <HandoffList data={cc} />
               </TabsContent>
 
               <TabsContent value="capabilities" className="mt-4">
-                <CapabilityTable data={data} />
+                <CapabilityTable data={cc} />
+              </TabsContent>
+
+              <TabsContent value="orchestration" className="mt-4">
+                <OrchestrationPanel status={orchestration} result={result} />
               </TabsContent>
             </Tabs>
           )}
