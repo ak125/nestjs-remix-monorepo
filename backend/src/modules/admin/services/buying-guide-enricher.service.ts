@@ -15,7 +15,6 @@ import {
   BuyingGuideRagFetcherService,
   BuyingGuideQualityGatesService,
   BuyingGuideDbService,
-  BuyingGuideSeoDraftService,
   ClaimExtractor,
   type EnrichDryRunSection,
   type EnrichDryRunResult,
@@ -32,7 +31,6 @@ export type { EnrichDryRunSection, EnrichDryRunResult } from './buying-guide';
  * - BuyingGuideRagFetcherService: RAG content fetching + parsing
  * - BuyingGuideQualityGatesService: quality validation gates
  * - BuyingGuideDbService: DB read/write operations
- * - BuyingGuideSeoDraftService: SEO draft generation
  * - ClaimExtractor: static claims/evidence extraction
  */
 @Injectable()
@@ -43,7 +41,6 @@ export class BuyingGuideEnricherService {
     private readonly ragFetcher: BuyingGuideRagFetcherService,
     private readonly qualityGates: BuyingGuideQualityGatesService,
     private readonly dbService: BuyingGuideDbService,
-    private readonly seoDraft: BuyingGuideSeoDraftService,
     private readonly flags: FeatureFlagsService,
     @Optional() private readonly pageBriefService?: PageBriefService,
     @Optional()

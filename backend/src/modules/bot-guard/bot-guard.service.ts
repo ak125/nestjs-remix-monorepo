@@ -1,3 +1,4 @@
+import { promises as dns } from 'node:dns';
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { CacheService } from '@cache/cache.service';
@@ -28,6 +29,9 @@ export class BotGuardService implements OnModuleInit {
   private blockedIps: Set<string> = new Set();
   private enabled = true;
   private suspicionThreshold = 80;
+  // When true, forward-confirmed search-engine crawlers bypass geo/behavioral
+  // blocking (feature-flag for instant rollback). See isVerifiedSearchEngine().
+  private verifiedBotBypass = true;
   private lastConfigRefresh = 0;
   private readonly CONFIG_REFRESH_MS = 60_000;
 
@@ -58,7 +62,10 @@ export class BotGuardService implements OnModuleInit {
     'CM', // Francophone
   ]);
 
-  // Verified search engine bots (never block)
+  // Known-good crawler UA tokens — only used to *waive the UA-suspicion sub-score*.
+  // NOTE: a UA match alone NEVER exempts from geo/ip/behavioral blocking. Real
+  // "never block" for search engines is enforced by isVerifiedSearchEngine()
+  // below, which proves identity by IP (FCrDNS), not by the spoofable UA string.
   private readonly GOOD_BOTS = [
     'googlebot',
     'bingbot',
@@ -74,6 +81,58 @@ export class BotGuardService implements OnModuleInit {
     'pinterest',
     'semrushbot',
     'ahrefsbot',
+  ];
+
+  // IP-verifiable search engines. A crawler is trusted ONLY when its UA matches
+  // one of these families AND its reverse-DNS resolves to an allowed suffix AND
+  // that hostname forward-resolves back to the same IP (FCrDNS — Google's
+  // canonical verification method). Engines without stable reverse-DNS
+  // (e.g. SEMrush/Ahrefs) are intentionally absent: they fall through to scoring.
+  private readonly VERIFIED_BOT_RDNS: ReadonlyArray<{
+    name: string;
+    ua: string[];
+    suffixes: string[];
+  }> = [
+    {
+      name: 'Googlebot',
+      ua: [
+        'googlebot',
+        'google-inspectiontool',
+        'storebot-google',
+        'adsbot-google',
+        'mediapartners-google',
+        'apis-google',
+        'feedfetcher-google',
+        'googleother',
+        'google-extended',
+      ],
+      suffixes: ['.googlebot.com', '.google.com'],
+    },
+    {
+      name: 'Bingbot',
+      ua: ['bingbot', 'adidxbot', 'msnbot'],
+      suffixes: ['.search.msn.com'],
+    },
+    {
+      name: 'Applebot',
+      ua: ['applebot'],
+      suffixes: ['.applebot.apple.com'],
+    },
+    {
+      name: 'DuckDuckBot',
+      ua: ['duckduckbot', 'duckduckgo'],
+      suffixes: ['.duckduckgo.com'],
+    },
+    {
+      name: 'YandexBot',
+      ua: ['yandexbot', 'yandeximages', 'yandex.com/bots'],
+      suffixes: ['.yandex.com', '.yandex.net', '.yandex.ru'],
+    },
+    {
+      name: 'Yahoo',
+      ua: ['slurp'],
+      suffixes: ['.crawl.yahoo.net'],
+    },
   ];
 
   // Suspicious user-agent patterns
@@ -108,6 +167,9 @@ export class BotGuardService implements OnModuleInit {
     // Load initial config from env
     this.enabled =
       this.configService.get('BOT_GUARD_ENABLED', 'true') === 'true';
+    this.verifiedBotBypass =
+      this.configService.get('BOT_GUARD_VERIFIED_BOT_BYPASS', 'true') ===
+      'true';
     this.suspicionThreshold = parseInt(
       this.configService.get('BOT_GUARD_SUSPICION_THRESHOLD', '80'),
       10,
@@ -135,6 +197,7 @@ export class BotGuardService implements OnModuleInit {
         blockedCountries?: string[];
         blockedIps?: string[];
         suspicionThreshold?: number;
+        verifiedBotBypass?: boolean;
       }>('bot-guard:config');
 
       if (config) {
@@ -147,6 +210,9 @@ export class BotGuardService implements OnModuleInit {
         }
         if (config.suspicionThreshold) {
           this.suspicionThreshold = config.suspicionThreshold;
+        }
+        if (config.verifiedBotBypass !== undefined) {
+          this.verifiedBotBypass = config.verifiedBotBypass;
         }
       }
       this.lastConfigRefresh = Date.now();
@@ -163,6 +229,108 @@ export class BotGuardService implements OnModuleInit {
 
   isEnabled(): boolean {
     return this.enabled;
+  }
+
+  /**
+   * Forward-confirmed reverse DNS (FCrDNS) check for legitimate search-engine
+   * crawlers. Returns true only when ALL hold:
+   *   1. the UA matches a known crawler family (cheap prefilter — no UA = no DNS),
+   *   2. the IP's reverse-DNS hostname ends with an allowed suffix for that family,
+   *   3. that hostname forward-resolves back to the same IP.
+   *
+   * UA is never trusted on its own (trivially spoofable). The verdict is cached
+   * per-IP in Redis so a crawler costs at most one reverse + one forward lookup
+   * per IP per TTL; human traffic costs zero DNS (step 1 short-circuits).
+   *
+   * Failsafe: any DNS/cache error yields `false` (the request then falls through
+   * to the normal scoring path, which already lets default-config crawlers pass)
+   * — a verification failure must never *block* a crawler.
+   */
+  async isVerifiedSearchEngine(
+    ip: string,
+    userAgent: string,
+  ): Promise<boolean> {
+    if (!this.verifiedBotBypass) return false;
+
+    const ua = (userAgent || '').toLowerCase();
+    const family = this.VERIFIED_BOT_RDNS.find((f) =>
+      f.ua.some((token) => ua.includes(token)),
+    );
+    if (!family) return false;
+
+    const normIp = this.normalizeIp(ip);
+    if (!normIp) return false;
+
+    const cacheKey = `bot-guard:vbot:${normIp}`;
+    try {
+      const cached = await this.cacheService.get<boolean>(cacheKey);
+      if (cached !== null && cached !== undefined) return cached;
+    } catch {
+      // cache unavailable → verify live
+    }
+
+    let verified = false;
+    try {
+      const hosts = await this.reverseDnsLookup(normIp);
+      const match = hosts
+        .map((h) => h.toLowerCase().replace(/\.$/, ''))
+        .find((h) =>
+          family.suffixes.some(
+            (suffix) => h === suffix.slice(1) || h.endsWith(suffix),
+          ),
+        );
+      if (match) {
+        const forwardIps = await this.forwardDnsLookup(match);
+        verified = forwardIps.some((fip) => this.normalizeIp(fip) === normIp);
+      }
+    } catch (err) {
+      this.logger.debug(
+        `FCrDNS verification failed ip=${normIp} family=${family.name}: ${
+          err instanceof Error ? err.message : String(err)
+        }`,
+      );
+      verified = false;
+    }
+
+    try {
+      // Cache positives longer; recheck negatives sooner (an IP could be reassigned).
+      await this.cacheService.set(cacheKey, verified, verified ? 21600 : 3600);
+    } catch {
+      // non-blocking
+    }
+
+    if (verified) {
+      this.logger.debug(
+        `Verified search bot allowed: ip=${normIp} family=${family.name}`,
+      );
+    }
+    return verified;
+  }
+
+  /** Strip an IPv4-mapped IPv6 prefix so reverse/forward IPs compare equal. */
+  private normalizeIp(ip: string): string {
+    if (!ip) return '';
+    return ip
+      .replace(/^::ffff:/i, '')
+      .trim()
+      .toLowerCase();
+  }
+
+  /** Reverse-DNS lookup (overridable for tests). */
+  protected async reverseDnsLookup(ip: string): Promise<string[]> {
+    return dns.reverse(ip);
+  }
+
+  /** Forward A/AAAA lookup (overridable for tests). */
+  protected async forwardDnsLookup(host: string): Promise<string[]> {
+    const [v4, v6] = await Promise.allSettled([
+      dns.resolve4(host),
+      dns.resolve6(host),
+    ]);
+    const out: string[] = [];
+    if (v4.status === 'fulfilled') out.push(...v4.value);
+    if (v6.status === 'fulfilled') out.push(...v6.value);
+    return out;
   }
 
   async isCountryBlocked(country: string): Promise<boolean> {
@@ -329,6 +497,7 @@ export class BotGuardService implements OnModuleInit {
       blockedCountries: [...this.blockedCountries],
       blockedIps: [...this.blockedIps],
       suspicionThreshold: this.suspicionThreshold,
+      verifiedBotBypass: this.verifiedBotBypass,
       targetCountries: [...this.TARGET_COUNTRIES],
     };
   }
@@ -338,6 +507,7 @@ export class BotGuardService implements OnModuleInit {
     blockedCountries?: string[];
     blockedIps?: string[];
     suspicionThreshold?: number;
+    verifiedBotBypass?: boolean;
   }): Promise<void> {
     if (config.enabled !== undefined) this.enabled = config.enabled;
     if (config.blockedCountries) {
@@ -349,6 +519,9 @@ export class BotGuardService implements OnModuleInit {
     if (config.suspicionThreshold) {
       this.suspicionThreshold = config.suspicionThreshold;
     }
+    if (config.verifiedBotBypass !== undefined) {
+      this.verifiedBotBypass = config.verifiedBotBypass;
+    }
 
     // Persist to Redis
     await this.cacheService.set(
@@ -358,6 +531,7 @@ export class BotGuardService implements OnModuleInit {
         blockedCountries: [...this.blockedCountries],
         blockedIps: [...this.blockedIps],
         suspicionThreshold: this.suspicionThreshold,
+        verifiedBotBypass: this.verifiedBotBypass,
       },
       86400 * 30, // 30 days
     );

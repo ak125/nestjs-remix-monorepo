@@ -33,8 +33,14 @@ export class CommandCenterReaderService {
   private readonly logger = new Logger(CommandCenterReaderService.name);
   private readonly registryDir =
     process.env.REGISTRY_DIR || join(process.cwd(), 'audit', 'registry');
+  // Ancré sur registryDir (<root>/audit/registry → <root>/audit-reports), PAS sur
+  // process.cwd() : le backend tourne avec cwd=backend/ (start.sh) où le rapport
+  // n'existe pas → validation_status restait UNKNOWN alors que le rapport disait
+  // 0 erreur (audit 2026-06-11). Même piège que REGISTRY_DIR en Docker.
   private readonly reportPath = join(
-    process.cwd(),
+    this.registryDir,
+    '..',
+    '..',
     'audit-reports',
     'agent-operating-map-report.json',
   );

@@ -119,6 +119,19 @@ export interface FeatureRow {
   // Blog
   has_blog_advice: boolean;
   blog_advice_content_length: number;
+  // Sémantique R3_guide (D1/D2/D3 + GENERIC_WITHOUT_ACTION — portage
+  // buying-guide-quality-gates, salvage pré-purge RAG 2026-06-11).
+  // OPTIONNELS : absents tant que la migration
+  // 20260611_quality_features_r3_guide_semantics n'est pas appliquée à la DB —
+  // les penalties correspondantes sont alors skippées (dégradation propre,
+  // aucune erreur ni distorsion de score avec l'ancienne RPC).
+  guide_criteria_count?: number | null;
+  guide_guidance_copies_label_count?: number | null;
+  guide_positive_starter_count?: number | null;
+  guide_use_cases_count?: number | null;
+  guide_profile_marker_count?: number | null;
+  guide_generic_phrase_count?: number | null;
+  guide_action_marker_count?: number | null;
 }
 
 // ── Scoring Result ──
@@ -737,6 +750,39 @@ export class QualityScoringEngineService extends SupabaseBaseService {
         return !row.has_pg_img;
       case 'checkR1NoHero':
         return !row.has_pg_pic;
+      // ── Penalties sémantiques R3_guide (D1/D2/D3 + GENERIC_WITHOUT_ACTION,
+      //    portage buying-guide-quality-gates — salvage pré-purge RAG 2026-06-11).
+      //    Dégradation propre : si la RPC en DB ne renvoie pas encore ces
+      //    features (migration non appliquée), `== null` couvre undefined ET
+      //    null → skip sans erreur ni distorsion de score. ──
+      case 'checkGuideGuidanceCopiesLabel': {
+        // Legacy D1 : copies > criteria.length / 2
+        const total = row.guide_criteria_count;
+        const copies = row.guide_guidance_copies_label_count;
+        if (total == null || copies == null) return false;
+        return total > 0 && copies > total / 2;
+      }
+      case 'checkGuideAntiMistakesNotErrors': {
+        // Legacy D2 : positiveItems > antiMistakes.length / 2
+        const positive = row.guide_positive_starter_count;
+        const total = row.guide_anti_mistakes_count;
+        if (positive == null || total == null) return false;
+        return total > 0 && positive > total / 2;
+      }
+      case 'checkGuideUseCasesNotProfiles': {
+        // Legacy D3 : use_cases >= 2 ET aucun marqueur de profil conducteur
+        const useCases = row.guide_use_cases_count;
+        const profiles = row.guide_profile_marker_count;
+        if (useCases == null || profiles == null) return false;
+        return useCases >= 2 && profiles === 0;
+      }
+      case 'checkGuideGenericWithoutAction': {
+        // Legacy GENERIC_WITHOUT_ACTION : phrase générique présente ET aucun verbe d'action
+        const generic = row.guide_generic_phrase_count;
+        const action = row.guide_action_marker_count;
+        if (generic == null || action == null) return false;
+        return generic > 0 && action === 0;
+      }
       default:
         return false;
     }
@@ -909,6 +955,16 @@ export class QualityScoringEngineService extends SupabaseBaseService {
           anti_mistakes_count: row.guide_anti_mistakes_count,
           source_verified: row.guide_source_verified,
           arg_count: row.guide_arg_count,
+          // Sémantique D1/D2/D3 + GWA (null tant que la migration
+          // 20260611_quality_features_r3_guide_semantics n'est pas appliquée)
+          criteria_count: row.guide_criteria_count ?? null,
+          guidance_copies_label_count:
+            row.guide_guidance_copies_label_count ?? null,
+          positive_starter_count: row.guide_positive_starter_count ?? null,
+          use_cases_count: row.guide_use_cases_count ?? null,
+          profile_marker_count: row.guide_profile_marker_count ?? null,
+          generic_phrase_count: row.guide_generic_phrase_count ?? null,
+          action_marker_count: row.guide_action_marker_count ?? null,
         };
       case 'R4_reference':
         return {

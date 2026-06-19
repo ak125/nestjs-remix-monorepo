@@ -23,6 +23,15 @@ import { RegistryReaderService } from './services/registry-reader.service';
 import { CommandCenterController } from './controllers/command-center.controller';
 import { CommandCenterReaderService } from './services/command-center-reader.service';
 import { CommandCenterActionsService } from './services/command-center-actions.service';
+import {
+  CommandCenterOrchestratorService,
+  SHADOW_PLANNERS,
+  SHADOW_LEDGER,
+} from './services/command-center-orchestrator/orchestrator.service';
+import { RegenArtifactShadowPlanner } from './services/command-center-orchestrator/regen-artifact.planner';
+import { RegenArtifactExecutor } from './services/command-center-orchestrator/regen-artifact.executor';
+import { PrPropositionShadowPlanner } from './services/command-center-orchestrator/pr-proposition.planner';
+import { CommandCenterExecutionLedgerService } from './services/command-center-orchestrator/execution-ledger.service';
 import { ConfigurationController } from './controllers/configuration.controller';
 import { StockController } from './controllers/stock.controller'; // 🔥 Controller consolidé unique
 import { AdminController } from './controllers/admin.controller';
@@ -63,7 +72,6 @@ import {
   BuyingGuideSectionExtractor,
   BuyingGuideQualityGatesService,
   BuyingGuideDbService,
-  BuyingGuideSeoDraftService,
 } from './services/buying-guide'; // 📖 RAG enrichment sub-services
 // R1ContentPipelineService SUPPRIME — pipeline Groq remplace par skills /content-gen
 // ContentRefreshService SUPPRIME — pipeline auto remplace par skills /content-gen
@@ -82,7 +90,6 @@ import { EnricherYamlParser } from './services/enricher-yaml-parser.service'; //
 import { RagGammeReaderService } from './services/rag-gamme-reader.service'; // 🔧 Centralized RAG gamme reading
 import { QualityScoringEngineService } from './services/quality-scoring-engine.service'; // 📊 Quality scoring engine (multi-page)
 import { GammeAggregatorService } from './services/gamme-aggregator.service'; // 📊 Gamme-level score aggregation
-import { RagSafeDistillService } from './services/rag-safe-distill.service'; // 🔒 RAG Safe Distill (pre-enricher filter)
 import { ConseilQualityScorerService } from './services/conseil-quality-scorer.service'; // 📊 Conseil section quality scorer
 import { ConseilPriorityService } from './services/conseil-priority.service'; // 📊 Conseil priority queue
 import { KeywordPlanGatesService } from './services/keyword-plan-gates.service'; // 🚦 Keyword plan gates G1-G6
@@ -124,14 +131,13 @@ import { ProductsModule } from '../products/products.module';
 import { WorkerModule } from '../../workers/worker.module'; // 📊 Pour SeoMonitorSchedulerService
 import { SeoModule } from '../seo/seo.module'; // 🚀 Pour RiskFlagsEngineService + GooglebotDetectorService
 import { RagProxyModule } from '../rag-proxy/rag-proxy.module'; // 📖 Pour RagProxyService (enrichissement buying guide)
-import { AiContentModule } from '../ai-content/ai-content.module'; // 🤖 Pour ConseilEnricher + BuyingGuideSEODraft (optional LLM polish)
+import { AiContentModule } from '../ai-content/ai-content.module'; // 🤖 Pour ConseilEnricher (optional LLM polish)
 import { SystemModule } from '../system/system.module';
 import { AdminDbGovernanceController } from './controllers/admin-db-governance.controller';
 import { AdminPipelineController } from './controllers/admin-pipeline.controller'; // 🚀 Unified pipeline execution
 import { ExecutionRouterService } from './services/execution-router.service'; // 🚀 Enricher dispatch router
 import { R2EnricherService } from './services/r2-enricher.service'; // 🏗️ R2 Product enricher (WriteGate-native)
 import { R1EnricherService } from './services/r1-enricher.service'; // 🏗️ R1 Router enricher (0-LLM, RAG+KP)
-import { ContentQualityGateService } from './services/content-quality-gate.service'; // 🚦 Cross-role quality gates
 import { R4ContentEnricherService } from './services/r4-content-enricher.service'; // 🏗️ R4 Reference enricher (0-LLM audit + lint)
 import { R4LintGatesService } from './services/r4-lint-gates.service'; // 🚦 R4 content lint gates LG1-LG8
 import { InternalPipelineController } from './controllers/internal-pipeline.controller'; // 🚀 Internal pipeline (X-Internal-Key auth)
@@ -157,7 +163,7 @@ import { SeoControlRefreshProcessor } from './processors/seo-control-refresh.pro
     SeoModule, // 🚀 Import pour accès aux services SEO (risk flags, googlebot)
     RagProxyModule, // 📖 Import pour accès à RagProxyService (enrichissement buying guide)
     SystemModule, // DB governance Phase 2 (DbGovernanceService)
-    AiContentModule, // 🤖 Pour ConseilEnricher + BuyingGuideSEODraft (optional LLM polish)
+    AiContentModule, // 🤖 Pour ConseilEnricher (optional LLM polish)
     VehiclesModule, // 🚗 INC-2026-007 — pour AdminVehicleCacheController (VehicleRpcService)
     OperatingMatrixModule, // 🛡️ Read-only governance matrix (zero infra deps)
     FeatureFlagsModule, // 🎛️ PR-SBD-1 — feature.seoControlDashboardEnabled kill-switch
@@ -214,6 +220,32 @@ import { SeoControlRefreshProcessor } from './processors/seo-control-refresh.pro
     RegistryReaderService,
     CommandCenterReaderService,
     CommandCenterActionsService,
+    CommandCenterOrchestratorService,
+    RegenArtifactExecutor, // Phase 2b : executor PR-based (double-gardé, inerte par défaut)
+    RegenArtifactShadowPlanner, // shadow-2 ① planner regen-artifact (ADR-087)
+    {
+      // shadow-3 ② planner pr-proposition : réutilise le planner regen comme source
+      // du would-be (composition). Fourni via factory car son ctor prend un ShadowPlanner.
+      provide: PrPropositionShadowPlanner,
+      useFactory: (regen: RegenArtifactShadowPlanner) =>
+        new PrPropositionShadowPlanner(regen),
+      inject: [RegenArtifactShadowPlanner],
+    },
+    {
+      // Liste des planners shadow auto-enregistrés au boot de l'orchestrateur.
+      provide: SHADOW_PLANNERS,
+      useFactory: (
+        regen: RegenArtifactShadowPlanner,
+        prProp: PrPropositionShadowPlanner,
+      ) => [regen, prProp],
+      inject: [RegenArtifactShadowPlanner, PrPropositionShadowPlanner],
+    },
+    CommandCenterExecutionLedgerService, // shadow-2b ledger admin_audit (ADR-087)
+    {
+      // Sink ledger injecté dans l'orchestrateur (append-only __admin_audit_log).
+      provide: SHADOW_LEDGER,
+      useExisting: CommandCenterExecutionLedgerService,
+    },
     ConfigurationService,
     StockManagementService, // ✅ Service principal stock
     WorkingStockService, // ✅ Service complémentaire (search, export, stats)
@@ -236,7 +268,6 @@ import { SeoControlRefreshProcessor } from './processors/seo-control-refresh.pro
     BuyingGuideSectionExtractor, // 📖 Markdown section extraction
     BuyingGuideQualityGatesService, // 📖 Quality validation gates
     BuyingGuideDbService, // 📖 DB operations (anti-regression)
-    BuyingGuideSeoDraftService, // 📖 SEO draft generation
     ConseilEnricherService, // 🔄 R3 Conseils S1-S8 enricher
     CanonObservabilityService, // 🛡️ Canon violation Sentry emitter (R3 PR-E)
     PageBriefService, // 📋 Page Briefs CRUD + overlap detection
@@ -251,7 +282,6 @@ import { SeoControlRefreshProcessor } from './processors/seo-control-refresh.pro
     RagGammeReaderService, // 🔧 Centralized RAG gamme disk reading + parsing
     QualityScoringEngineService, // 📊 Quality scoring engine (multi-page, 4 dimensions)
     GammeAggregatorService, // 📊 Gamme-level weighted score aggregation
-    RagSafeDistillService, // 🔒 RAG Safe Distill (pre-enricher chunk filter, 0-LLM)
     ConseilQualityScorerService, // 📊 Section quality scoring + pack coverage
     ConseilPriorityService, // 📊 Priority queue for conseil enrichment
     KeywordPlanGatesService, // 🚦 Keyword plan gates G1-G6 (keyword-planner agent)
@@ -269,7 +299,6 @@ import { SeoControlRefreshProcessor } from './processors/seo-control-refresh.pro
     ExecutionRouterService, // 🚀 Unified enricher dispatch router (ExecutionRegistry-based)
     R2EnricherService, // 🏗️ R2 Product enricher (WriteGate-native, 0-LLM)
     R1EnricherService, // 🏗️ R1 Router enricher (0-LLM, RAG+KP → r1_gamme_slots)
-    ContentQualityGateService, // 🚦 Cross-role quality gates (R1/R3/R4/R6 min lengths + vocab)
     R4ContentEnricherService, // 🏗️ R4 Reference enricher (0-LLM audit + lint gates)
     R4LintGatesService, // 🚦 R4 content lint gates LG1-LG8
     // PR-SBD-1 Task 4 — SEO Business Control Dashboard
@@ -293,7 +322,6 @@ import { SeoControlRefreshProcessor } from './processors/seo-control-refresh.pro
     HardGatesService, // 🚦 Export for WorkerModule (hard gates)
     ImageGatesService, // 🚦 Export for WorkerModule (image gates)
     AdminJobHealthService, // 🏥 Export for WorkerModule (job health tracking)
-    RagSafeDistillService, // 🔒 Export for WorkerModule (RAG safe distill)
     KeywordPlanGatesService, // 🚦 Export for keyword-planner agent
     R1KeywordPlanGatesService, // 🚦 Export for R1 pipeline + keyword-planner R1 mode
     R8VehicleEnricherService, // 🚗 Export for content-refresh processor

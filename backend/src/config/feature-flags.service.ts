@@ -92,12 +92,6 @@ export class FeatureFlagsService {
     return this.bool('BEST_VERSION_PROTECTION_ENABLED', false);
   }
 
-  // ── RAG Safe Distill flag ──
-
-  get ragSafeDistillEnabled(): boolean {
-    return this.bool('RAG_SAFE_DISTILL_ENABLED', false);
-  }
-
   // ── R1 Content Pipeline flag ──
 
   /**

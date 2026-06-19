@@ -1,0 +1,27 @@
+{
+  "coverage": [],
+  "entity_type": "vehicle",
+  "intent_targets": [],
+  "inventory_status": "DIAGNOSTIC_READY",
+  "missing_for_next_tier": [],
+  "next_action": "CONFIGURE_COMPLETENESS_PROFILE",
+  "pg_id": null,
+  "provenance": {
+    "completeness_profile": null,
+    "source_type": "vehicle",
+    "sources": [
+      {
+        "content_hash": "sha256:af3f051be83365af0437a789bbf0eb65e012a7aaaf067706b93939f2580c82d0",
+        "kind": "vehicle",
+        "path": "recycled/rag-knowledge/vehicles/renault-clio-iii.md"
+      }
+    ],
+    "truth_level": "L2",
+    "unlinked_source_types": [],
+    "verification_status": "draft"
+  },
+  "raw_verdict": "NOT_CONFIGURED",
+  "schema_version": "raw-evidence.v1",
+  "subject": "renault-clio-iii",
+  "tier": "NOT_CONFIGURED"
+}

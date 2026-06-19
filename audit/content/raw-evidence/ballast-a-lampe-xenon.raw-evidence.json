@@ -1,0 +1,32 @@
+{
+  "coverage": [],
+  "fold_note": "R4/R6→R3 = direction owner souhaitée, PENDING_ADR (étend ADR-027) ; pas canon. R5 déjà replié (ADR-027).",
+  "fold_readiness": {
+    "R4_to_R3": "BLOCKED_PENDING_ADR",
+    "R5_to_R3": "READY_ADR_027",
+    "R6_to_R3": "BLOCKED_PENDING_ADR"
+  },
+  "intent_targets": [],
+  "inventory_status": "RAW_PARSE_ERROR",
+  "next_action": "FIX_RAW_FRONTMATTER (yaml_parse_error: duplicated mapping key (219:5)\n\n 216 |     val_2_kw: '2 kW'\n 217 |     val_220_v: '220 v'\n 218 |     val_25_a: '25 A'\n 219 |     val_25_a: '25 a'\n-----------^\n 220 |     val_30_a: '30 a'\n 221 |     val_7_kw: '7 kW')",
+  "pg_id": null,
+  "provenance": {
+    "completeness_profile": null,
+    "source_type": null,
+    "sources": [
+      {
+        "content_hash": "sha256:f848a5e7db938e972e68c46ed9a9aaa97959db6a5997b998ef8fa5d1d4e228e4",
+        "kind": "gamme",
+        "path": "recycled/rag-knowledge/gammes/ballast-a-lampe-xenon.md"
+      }
+    ],
+    "truth_level": null,
+    "unlinked_source_types": [
+      "guide"
+    ],
+    "verification_status": null
+  },
+  "raw_verdict": "RAW_PARSE_ERROR",
+  "schema_version": "raw-evidence.v1",
+  "subject": "ballast-a-lampe-xenon"
+}

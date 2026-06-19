@@ -1,0 +1,32 @@
+{
+  "coverage": [],
+  "fold_note": "R4/R6→R3 = direction owner souhaitée, PENDING_ADR (étend ADR-027) ; pas canon. R5 déjà replié (ADR-027).",
+  "fold_readiness": {
+    "R4_to_R3": "BLOCKED_PENDING_ADR",
+    "R5_to_R3": "READY_ADR_027",
+    "R6_to_R3": "BLOCKED_PENDING_ADR"
+  },
+  "intent_targets": [],
+  "inventory_status": "RAW_PARSE_ERROR",
+  "next_action": "FIX_RAW_FRONTMATTER (yaml_parse_error: duplicated mapping key (252:5)\n\n 249 |     val_115_nm: '115 Nm'\n 250 |     val_12_v: '12 V'\n 251 |     val_12_a: '12 a'\n 252 |     val_12_v: '12 v'\n-----------^\n 253 | conseil_v5:\n 254 |   _sync_source: __seo_gamme_conseil)",
+  "pg_id": null,
+  "provenance": {
+    "completeness_profile": null,
+    "source_type": null,
+    "sources": [
+      {
+        "content_hash": "sha256:599e82f29ae97b1142daf6722d11dbea381f6389345f17ed191594243e20a153",
+        "kind": "gamme",
+        "path": "recycled/rag-knowledge/gammes/batterie.md"
+      }
+    ],
+    "truth_level": null,
+    "unlinked_source_types": [
+      "guide"
+    ],
+    "verification_status": null
+  },
+  "raw_verdict": "RAW_PARSE_ERROR",
+  "schema_version": "raw-evidence.v1",
+  "subject": "batterie"
+}

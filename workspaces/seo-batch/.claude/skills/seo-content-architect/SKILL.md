@@ -1,6 +1,6 @@
 ---
 name: seo-content-architect
-description: "Rédaction SEO rigoureuse v2.4 — RAG-integrated, GEO-optimized, E-E-A-T compliant. Featured Snippets, Batch mode, Page Contract, Content-Audit feedback loop. Phase 0 triage + Phase 1 visible."
+description: "[DEPRECATED → /seo-content-loop · RAG ≠ source de contenu (ADR-031/046)] LEGACY RAG-integrated — ne plus utiliser : le contenu vient de WIKI (RAW→WIKI→projection), pas du corpus RAG. Réécriture no-RAG à faire. (v2.4 GEO/E-E-A-T/Featured Snippets/Page Contract conservés pour le rewrite.)"
 license: Internal - Automecanik
 version: "2.4"
 argument-hint: "[gamme-name or page-role]"

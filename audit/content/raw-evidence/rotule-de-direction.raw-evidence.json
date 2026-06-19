@@ -1,0 +1,125 @@
+{
+  "coverage": [
+    {
+      "block": "A.domain",
+      "canon_role": "R4",
+      "fold_status": "PENDING_ADR",
+      "r3_section": "reference",
+      "status": "PRESENT",
+      "warnings": [
+        "domain.confusion_with < 2 (1)"
+      ]
+    },
+    {
+      "block": "B.selection",
+      "canon_role": "R6",
+      "fold_status": "PENDING_ADR",
+      "r3_section": "guide-achat",
+      "status": "PRESENT",
+      "warnings": [
+        "selection.checklist < 3 (0)"
+      ]
+    },
+    {
+      "block": "C.diagnostic",
+      "canon_role": "R5",
+      "fold_status": "LIVE",
+      "r3_section": "diagnostic-rapide",
+      "status": "PRESENT",
+      "warnings": []
+    },
+    {
+      "block": "D.maintenance",
+      "canon_role": "R3",
+      "fold_status": "NATIVE",
+      "r3_section": "maintenance",
+      "status": "PRESENT",
+      "warnings": [
+        "maintenance.usage_factors required when unit != km"
+      ]
+    },
+    {
+      "block": "E.installation",
+      "canon_role": "R3",
+      "fold_status": "NATIVE",
+      "r3_section": "installation",
+      "status": "PRESENT",
+      "warnings": [
+        "installation.steps < 3 (0)"
+      ]
+    },
+    {
+      "block": "5.0:variants",
+      "canon_role": "—",
+      "fold_status": "NOT_FOLDED",
+      "r3_section": null,
+      "status": "NOT_MAPPED",
+      "warnings": []
+    },
+    {
+      "block": "5.0:location_on_vehicle",
+      "canon_role": "—",
+      "fold_status": "NOT_FOLDED",
+      "r3_section": null,
+      "status": "NOT_MAPPED",
+      "warnings": []
+    },
+    {
+      "block": "5.0:purchase_guardrails",
+      "canon_role": "—",
+      "fold_status": "NOT_FOLDED",
+      "r3_section": null,
+      "status": "NOT_MAPPED",
+      "warnings": []
+    },
+    {
+      "block": "5.0:conseil_v5",
+      "canon_role": "—",
+      "fold_status": "NOT_FOLDED",
+      "r3_section": null,
+      "status": "NOT_MAPPED",
+      "warnings": []
+    },
+    {
+      "block": "compatibility",
+      "canon_role": "R1/R2",
+      "fold_status": "NOT_FOLDED",
+      "r3_section": null,
+      "status": "BLOCKED_CATALOG_REQUIRED",
+      "warnings": []
+    }
+  ],
+  "fold_note": "R4/R6→R3 = direction owner souhaitée, PENDING_ADR (étend ADR-027) ; pas canon. R5 déjà replié (ADR-027).",
+  "fold_readiness": {
+    "R4_to_R3": "BLOCKED_PENDING_ADR",
+    "R5_to_R3": "READY_ADR_027",
+    "R6_to_R3": "BLOCKED_PENDING_ADR"
+  },
+  "intent_targets": [
+    "diagnostic",
+    "achat",
+    "compatibilite"
+  ],
+  "inventory_status": "DIAGNOSTIC_READY",
+  "next_action": "PROMOTE_RAW_TO_WIKI",
+  "pg_id": 2066,
+  "provenance": {
+    "completeness_profile": null,
+    "source_type": "gamme",
+    "sources": [
+      {
+        "content_hash": "sha256:4ad1567339b9d027f99d1bc5f88fde3d9b214d2b5d278f764170cd5e4bfcdc71",
+        "kind": "gamme",
+        "path": "recycled/rag-knowledge/gammes/rotule-de-direction.md"
+      }
+    ],
+    "truth_level": "L2",
+    "unlinked_source_types": [
+      "guide"
+    ],
+    "verification_status": "draft"
+  },
+  "raw_verdict": "READY",
+  "schema_version": "raw-evidence.v1",
+  "subject": "rotule-de-direction"
+}

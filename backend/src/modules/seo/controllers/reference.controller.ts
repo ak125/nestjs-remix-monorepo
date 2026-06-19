@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  Post,
   Patch,
   Delete,
   Param,
@@ -167,19 +166,6 @@ export class ReferenceController {
       r4Health: audit.r4Health,
       worstPages: audit.details.slice(0, 10),
     };
-  }
-
-  /**
-   * Génère des références R4 depuis les gammes existantes
-   * POST /api/seo/reference/generate
-   * Crée les entrées en mode DRAFT (is_published: false)
-   * ADMIN ONLY
-   */
-  @Post('generate')
-  @UseGuards(IsAdminGuard)
-  async generateFromGammes(): Promise<{ created: number; skipped: number }> {
-    this.logger.log('🏭 POST /api/seo/reference/generate');
-    return this.referenceService.generateFromGammes();
   }
 
   /**

@@ -124,6 +124,13 @@ import { TrendSignalsModule } from './modules/trend-signals/trend-signals.module
         const ip = request.ip || request.connection?.remoteAddress;
         const user = request.user;
 
+        // Skip forward-confirmed search-engine crawlers (flag set upstream by
+        // BotGuardMiddleware via FCrDNS) — they must never hit the rate limiter
+        // and get a 429 mid-crawl.
+        if (request.isVerifiedBot === true) {
+          return true;
+        }
+
         // Skip for admin users (level >= 7)
         if (user?.isAdmin === true || parseInt(user?.level) >= 7) {
           return true;
