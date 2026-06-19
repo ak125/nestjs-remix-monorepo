@@ -25,7 +25,6 @@ import { RagImageManagementService } from '../../src/modules/rag-proxy/services/
 import { RagVideoManagementService } from '../../src/modules/rag-proxy/services/rag-video-management.service';
 import { RagGammeDetectionService } from '../../src/modules/rag-proxy/services/rag-gamme-detection.service';
 import { RagPhase2aShadowAuditService } from '../../src/modules/rag-proxy/services/rag-phase2a-shadow-audit.service';
-import { RagPipelineService } from '../../src/modules/rag-proxy/rag-pipeline.service';
 import { WebhookAuditService } from '../../src/modules/rag-proxy/services/webhook-audit.service';
 
 describe('RagProxyController', () => {
@@ -49,7 +48,6 @@ describe('RagProxyController', () => {
         { provide: RagVideoManagementService, useValue: {} },
         { provide: RagGammeDetectionService, useValue: {} },
         { provide: RagPhase2aShadowAuditService, useValue: {} },
-        { provide: RagPipelineService, useValue: {} },
         {
           provide: WebhookAuditService,
           useValue: {

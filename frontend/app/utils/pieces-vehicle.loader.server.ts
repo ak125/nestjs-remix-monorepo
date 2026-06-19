@@ -36,6 +36,12 @@ import {
   validateVehicleIds,
 } from "~/utils/pieces-route.utils";
 import { mapRmV2ToLoaderData, isRmV2DataUsable } from "~/utils/rm-mapper";
+import { loadCatalogGammeIds } from "~/utils/seo/catalog-gammes.server";
+import {
+  countSellableProducts,
+  readR2SellableGateConfig,
+  resolveR2Robots,
+} from "~/utils/seo/r2-indexability";
 import { stripHtmlForMeta } from "~/utils/seo-clean.utils";
 import {
   buildTypeSlug,
@@ -484,6 +490,29 @@ export async function piecesVehicleLoader({
         }
       : null;
 
+    // 🔎 R2 indexability (owner rule 2026-06-10): pre-compute the served robots
+    // directive server-side (sync scalar — Remix meta() cannot read deferred data).
+    // Gate OFF by default → byte-identical to the legacy count/dataQuality rule.
+    const rmCount = rmV2Response.count || piecesData.length;
+    const rmDataQuality = rmV2Response.validation?.dataQuality?.quality ?? 0;
+    const sellableCount = countSellableProducts(rmV2Response.products);
+    const { enabled: sellableGateEnabled, minSellable } =
+      readR2SellableGateConfig();
+    // Borne stricte aux 232 gammes catalogue (pg_level 1/2). On ne charge le set
+    // (cached) QUE si le gate est activé → zéro overhead/fetch quand OFF
+    // (byte-identique). Échec de chargement → false → règle legacy (fail-safe).
+    const isCatalogGamme = sellableGateEnabled
+      ? ((await loadCatalogGammeIds())?.has(gammeId) ?? false)
+      : false;
+    const robots = resolveR2Robots({
+      sellableGateEnabled,
+      isCatalogGamme,
+      sellableCount,
+      minSellable,
+      count: rmCount,
+      dataQuality: rmDataQuality,
+    });
+
     // LCP OPTIMIZATION V6: defer() pour streamer donnees non-critiques
     // Donnees critiques (vehicle, pieces, seo) : retournees immediatement
     // Donnees non-critiques (relatedArticles, blogArticle) : streamees apres le first paint
@@ -499,7 +528,11 @@ export async function piecesVehicleLoader({
           ...g,
           filtre_side: g.filtre_side ?? undefined, // Convert null to undefined
         })),
-        count: rmV2Response.count || piecesData.length,
+        count: rmCount,
+        // R2 indexability (owner rule 2026-06-10) — served robots directive +
+        // the sellable signal it is derived from (observability / debug).
+        robots,
+        sellableCount,
         minPrice: loaderData.minPrice,
         maxPrice: loaderData.maxPrice,
         filtersData,
@@ -541,7 +574,7 @@ export async function piecesVehicleLoader({
           cacheHit: rmV2Response.cacheHit || false,
           rmDuration: rmV2Response.duration_ms,
         },
-        dataQuality: rmV2Response.validation?.dataQuality?.quality ?? 0,
+        dataQuality: rmDataQuality,
 
         // === DONNEES STREAMEES (non-bloquantes, chargees en background) ===
         // LCP: blogData deferred (below-fold, Googlebot execute JS)

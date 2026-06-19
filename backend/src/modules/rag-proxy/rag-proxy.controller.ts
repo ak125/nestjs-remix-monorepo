@@ -23,7 +23,6 @@ import type { Response } from 'express';
 import { createHash } from 'crypto';
 import { execSync } from 'child_process';
 import { RagProxyService } from './rag-proxy.service';
-import { RagPipelineService } from './rag-pipeline.service';
 import { RagCleanupService } from './services/rag-cleanup.service';
 import { RagWebIngestDbService } from './services/rag-web-ingest-db.service';
 import { RagIngestionService } from './services/rag-ingestion.service';
@@ -58,7 +57,6 @@ import {
   ManualIngestRequestSchema,
   ManualIngestRequestDto,
 } from './dto/manual-ingest.dto';
-import { PipelineLaunchSchema, PipelineLaunchDto } from './dto/pipeline.dto';
 import {
   WebhookIngestionCompleteSchema,
   WebhookIngestionCompleteDto,
@@ -76,7 +74,6 @@ import { RAG_KNOWLEDGE_PATH } from '../../config/rag.config';
 export class RagProxyController {
   constructor(
     private readonly ragProxyService: RagProxyService,
-    private readonly ragPipelineService: RagPipelineService,
     private readonly ragCleanupService: RagCleanupService,
     private readonly ragWebIngestDbService: RagWebIngestDbService,
     private readonly ragIngestionService: RagIngestionService,
@@ -874,77 +871,13 @@ export class RagProxyController {
     return { ...result, filesMatched: files.length };
   }
 
-  // ── Pipeline endpoints (async job orchestration) ──────────
-
-  @Post('admin/pipeline/launch')
-  @HttpCode(HttpStatus.ACCEPTED)
-  @UseGuards(InternalApiKeyGuard)
-  @UsePipes(new ZodValidationPipe(PipelineLaunchSchema))
-  @ApiOperation({
-    summary: 'Launch a pipeline step (audit / enrich / reindex)',
-  })
-  @ApiResponse({
-    status: 202,
-    description: 'Job queued — poll GET /runs/:runId',
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Invalid payload or scope not found',
-  })
-  @ApiResponse({ status: 409, description: 'Pipeline already running' })
-  async launchPipeline(
-    @Body() dto: PipelineLaunchDto,
-  ): Promise<{ run_id: string; status: string }> {
-    return this.ragPipelineService.launch(dto);
-  }
-
-  @Get('admin/pipeline/status')
-  @UseGuards(InternalApiKeyGuard)
-  @ApiOperation({
-    summary: 'Global pipeline status: lock + last runs + corpus metrics',
-  })
-  @ApiResponse({ status: 200, description: 'Pipeline status' })
-  async getPipelineStatus(): Promise<object> {
-    return this.ragPipelineService.getStatus();
-  }
-
-  @Get('admin/pipeline/runs/:runId')
-  @UseGuards(InternalApiKeyGuard)
-  @ApiOperation({ summary: 'Get a specific pipeline run state' })
-  @ApiResponse({ status: 200, description: 'Pipeline run' })
-  @ApiResponse({ status: 404, description: 'Run not found' })
-  async getPipelineRun(@Param('runId') runId: string) {
-    return this.ragPipelineService.getRunById(runId);
-  }
-
-  @Get('admin/pipeline/runs/:runId/logs')
-  @UseGuards(InternalApiKeyGuard)
-  @ApiOperation({ summary: 'Get pipeline run logs (snapshot, not streamed)' })
-  @ApiResponse({ status: 200, description: 'Log lines snapshot' })
-  @ApiResponse({ status: 404, description: 'Run not found' })
-  async getPipelineRunLogs(
-    @Param('runId') runId: string,
-    @Query('tail') tail?: string,
-  ) {
-    const tailLines = tail
-      ? Math.min(10_000, Math.max(1, parseInt(tail, 10) || 200))
-      : 200;
-    return this.ragPipelineService.getRunLogs(runId, tailLines);
-  }
-
-  @Post('admin/pipeline/runs/:runId/cancel')
-  @HttpCode(HttpStatus.OK)
-  @UseGuards(InternalApiKeyGuard)
-  @ApiOperation({ summary: 'Cancel a running or queued pipeline run' })
-  @ApiResponse({ status: 200, description: 'Run cancelled' })
-  @ApiResponse({
-    status: 400,
-    description: 'Run not cancellable in current status',
-  })
-  @ApiResponse({ status: 404, description: 'Run not found' })
-  async cancelPipelineRun(@Param('runId') runId: string) {
-    return this.ragPipelineService.cancelRun(runId);
-  }
+  // ── Pipeline endpoints RETIRÉS — rag-purge B8 (ADR-031/046) ──────────
+  // Les endpoints admin/pipeline/* (launch/status/runs/logs/cancel) pilotaient
+  // RagPipelineService = ingestion/reindex RAG « propre » (spawn de scripts → Weaviate).
+  // Architecture cible : RAG = consommateur du wiki, pour le chat seulement ; sa seule
+  // entrée d'ingestion = le sync wiki→rag (scripts/rag-sync/sync-wiki-exports-to-rag.py).
+  // L'application ne déclenche plus aucune ingestion RAG. RagPipelineService est conservé
+  // pour salvage (bannerisé, non câblé) — voir rag-pipeline.service.ts.
 
   // ── Phase 2A — Legacy Adapted Shadow Audit ──────────────
 

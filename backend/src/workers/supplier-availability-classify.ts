@@ -45,6 +45,7 @@ import {
   type RefVerdict,
   type SearchRow,
 } from '../modules/supplier-truth/connectors/inoshop-search-parse';
+import { runResilientClassify } from '../modules/supplier-truth/connectors/portal-classify-resilience';
 
 const req = (k: string): string => {
   const v = process.env[k];
@@ -58,6 +59,24 @@ const pct = (n: number, d: number): string =>
 // Supplier refs can contain `/` (e.g. VDO "2910000102400/483") — a raw ref in the
 // cache filename becomes a nested path and crashes writeFileSync (ENOENT).
 const fsSafe = (ref: string): string => ref.replace(/[^A-Za-z0-9._-]/g, '-');
+
+// Terminal verdict for a ref that persistently fails its OWN single-ref search while
+// the portal is otherwise healthy (owner rule 2026-06-11: "504 sur une ref = la ref a
+// un pb / pas pertinente → skip au lieu de bloquer"). Checkpointed so the run CONVERGES
+// (never re-hit on resume) and surfaced as a REVIEW bucket for human follow-up. It is
+// NOT a stock signal — never auto-activates anything.
+const portalTimeoutVerdict = (b: FeedRow): RefVerdict => ({
+  ref: b.ref,
+  ean: b.ean,
+  bucket: 'REVIEW_PORTAL_TIMEOUT',
+  matchKind: 'NOT_FOUND',
+  reason: 'portal_persistent_timeout',
+  code: null,
+  marque: null,
+  dispoType: null,
+  icon: null,
+  portalPrix: null,
+});
 
 interface FeedRow {
   ref: string;
@@ -149,9 +168,6 @@ async function main(): Promise<void> {
   }
 
   let attemptErrors = 0;
-  let failedBatches = 0;
-  let consecutiveFails = 0;
-  let batches = 0;
   const t0 = Date.now();
   const BACKOFF = [4000, 12000, 30000];
 
@@ -190,58 +206,86 @@ async function main(): Promise<void> {
     return null;
   };
 
-  for (let i = 0; i < todo.length; i += BATCH) {
-    const batch = todo.slice(i, i + BATCH);
-    const refs = batch.map((b) => b.ref);
-    const r = await fetchBatch(refs);
-    batches++;
-    if (!r) {
-      // failed after all retries → DO NOT checkpoint: these refs stay un-done and are
-      // retried on the next resume (never a false NOT_FOUND from a transient timeout).
-      // Tolerate SPORADIC failures (flaky portal); stop only on a SUSTAINED outage.
-      failedBatches++;
-      consecutiveFails++;
-      const msg = `batch ${batches} SKIPPED (failed) ${batch[0].ref}..${batch[batch.length - 1].ref} | failed=${failedBatches} consec=${consecutiveFails}`;
-      console.log('  ' + msg);
-      writeFileSync(PROGRESS, msg + '\n');
-      if (consecutiveFails >= 8) {
-        console.log(
-          `STOP: ${consecutiveFails} consecutive failed batches — portal down/throttling; checkpoint saved, resumable`,
-        );
-        break;
-      }
-      await sleep(30000 + consecutiveFails * 15000); // escalating cooldown, then continue
-      continue;
-    }
-    consecutiveFails = 0;
-    writeFileSync(
-      `${HTML_DIR}/${fsSafe(batch[0].ref)}_${fsSafe(batch[batch.length - 1].ref)}.html.gz`,
-      gzipSync(r.html),
-    );
-    const lines = batch.map((b) =>
-      JSON.stringify(verdictForRef(r.rows, b.ref, b.ean, tokens)),
-    );
-    appendFileSync(JSONL, lines.join('\n') + '\n');
-    const processed = done.size + i + batch.length;
-    const elapsed = Math.round((Date.now() - t0) / 1000);
-    const rate = (i + batch.length) / Math.max(1, elapsed);
-    const etaMin = Math.round(
-      (todo.length - (i + batch.length)) / Math.max(0.01, rate) / 60,
-    );
-    const msg = `batch ${batches} | ${processed}/${feed.length} | rows=${r.rows.length} | attErr=${attemptErrors} failed=${failedBatches} | ${elapsed}s | ETA ~${etaMin}min`;
-    console.log('  ' + msg);
-    writeFileSync(PROGRESS, msg + '\n');
-    if (batches % 30 === 0) {
-      try {
-        token = await connector.getCsrfToken();
-      } catch {
-        /* keep old */
-      }
-    }
-    await sleep(4000 + Math.floor(Math.random() * 4000)); // 4-8s anti-ban
-    if (batches % 50 === 0)
-      await sleep(20000 + Math.floor(Math.random() * 20000));
+  // ----- resilient classification: bisect + per-ref budget + circuit breaker -----
+  // Resumable per-ref isolated-attempt budget: a persistently-failing ref accumulates
+  // attempts across resumes too, not only within one run.
+  const ATTEMPTS = `${OUT}/attempts.json`;
+  let refAttempts: Record<string, number> = {};
+  try {
+    refAttempts = JSON.parse(readFileSync(ATTEMPTS, 'utf8')) as Record<
+      string,
+      number
+    >;
+  } catch {
+    /* fresh run — no prior attempts */
   }
+
+  let classified = 0;
+  let successGroups = 0;
+  let pace = 0;
+  const result = await runResilientClassify(
+    todo,
+    {
+      batchSize: BATCH,
+      maxRefAttempts: Number(process.env.MAX_REF_ATTEMPTS ?? 3),
+      breakerWindow: Number(process.env.BREAKER_WINDOW ?? 8),
+    },
+    {
+      fetchGroup: async (group) => {
+        const r = await fetchBatch(group.map((b) => b.ref));
+        if (!r) return false;
+        writeFileSync(
+          `${HTML_DIR}/${fsSafe(group[0].ref)}_${fsSafe(group[group.length - 1].ref)}.html.gz`,
+          gzipSync(r.html),
+        );
+        appendFileSync(
+          JSONL,
+          group
+            .map((b) =>
+              JSON.stringify(verdictForRef(r.rows, b.ref, b.ean, tokens)),
+            )
+            .join('\n') + '\n',
+        );
+        classified += group.length;
+        successGroups++;
+        const elapsed = Math.round((Date.now() - t0) / 1000);
+        const rate = classified / Math.max(1, elapsed);
+        const etaMin = Math.round(
+          (todo.length - classified) / Math.max(0.01, rate) / 60,
+        );
+        const msg = `progress ${done.size + classified}/${feed.length} | rows=${r.rows.length} | attErr=${attemptErrors} | ${elapsed}s | ETA ~${etaMin}min`;
+        console.log('  ' + msg);
+        writeFileSync(PROGRESS, msg + '\n');
+        if (successGroups % 30 === 0) {
+          try {
+            token = await connector.getCsrfToken();
+          } catch {
+            /* keep old token */
+          }
+        }
+        return true;
+      },
+      onRefDeadLettered: (item) => {
+        appendFileSync(
+          JSONL,
+          JSON.stringify(portalTimeoutVerdict(item)) + '\n',
+        );
+      },
+      recordRefAttempt: (ref) => {
+        refAttempts[ref] = (refAttempts[ref] ?? 0) + 1;
+        writeFileSync(ATTEMPTS, JSON.stringify(refAttempts));
+        return refAttempts[ref];
+      },
+      sleepBetween: async () => {
+        pace++;
+        await sleep(4000 + Math.floor(Math.random() * 4000)); // 4-8s anti-ban
+        if (pace % 50 === 0)
+          await sleep(20000 + Math.floor(Math.random() * 20000));
+      },
+      log: (m) => console.log('  ' + m),
+    },
+  );
+  const terminalTimeouts = result.deadLettered.length;
   await connector.close();
   const durationS = Math.round((Date.now() - t0) / 1000);
 
@@ -259,6 +303,7 @@ async function main(): Promise<void> {
     REVIEW_CONTRADICTION: 0,
     REVIEW_FALSE_MATCH: 0,
     REVIEW_NOT_FOUND: 0,
+    REVIEW_PORTAL_TIMEOUT: 0,
     BLOCK_NONE: 0,
   };
   for (const v of all) buckets[v.bucket]++;
@@ -297,7 +342,7 @@ async function main(): Promise<void> {
     ``,
     `supplier: ${cfg.supplierName} (spl ${cfg.supplierId})  |  brand tokens: ${[...tokens].join(',')}`,
     `feed: ${feed.length} refs  |  classified: ${all.length}`,
-    `duration this session: ${durationS}s  |  attempt-errors: ${attemptErrors}  |  skipped (failed, will retry on resume): ${failedBatches} batches / ${batches}`,
+    `duration this session: ${durationS}s  |  attempt-errors: ${attemptErrors}  |  terminal portal-timeouts (dead-lettered): ${terminalTimeouts}  |  outage-stop (resumable): ${result.outage}`,
     `MECE sum_check: ${sumCheck} == ${all.length} → ${sumCheck === all.length ? 'OK' : 'FAIL'}`,
     ``,
     `## Buckets`,
@@ -307,6 +352,7 @@ async function main(): Promise<void> {
     `| CONFIRMED_GRP (grp/vert+) | ${buckets.CONFIRMED_GRP} | ${pct(buckets.CONFIRMED_GRP, all.length)} | '2' |`,
     `| BLOCK_NONE (none/rouge) | ${buckets.BLOCK_NONE} | ${pct(buckets.BLOCK_NONE, all.length)} | '0' |`,
     `| REVIEW_NOT_FOUND | ${buckets.REVIEW_NOT_FOUND} | ${pct(buckets.REVIEW_NOT_FOUND, all.length)} | pending |`,
+    `| REVIEW_PORTAL_TIMEOUT | ${buckets.REVIEW_PORTAL_TIMEOUT} | ${pct(buckets.REVIEW_PORTAL_TIMEOUT, all.length)} | pending (re-check) |`,
     `| REVIEW_FALSE_MATCH | ${buckets.REVIEW_FALSE_MATCH} | ${pct(buckets.REVIEW_FALSE_MATCH, all.length)} | pending |`,
     `| REVIEW_CONTRADICTION | ${buckets.REVIEW_CONTRADICTION} | ${pct(buckets.REVIEW_CONTRADICTION, all.length)} | pending |`,
     `| REVIEW_NO_EAN | ${buckets.REVIEW_NO_EAN} | ${pct(buckets.REVIEW_NO_EAN, all.length)} | pending |`,

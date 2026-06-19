@@ -180,9 +180,10 @@ describe('r4-family-guard — detectOffFamilyArtifacts (guard flag)', () => {
   });
 });
 
-describe('r4-family-guard — anti-reintroduction (shared by both R4 writers)', () => {
-  // Both ReferenceService.refreshSingleGamme (primary) and SeoGeneratorService.buildR4FromRag
-  // (secondary) route frontmatter.composition through filterOffFamilyParts before persisting.
+describe('r4-family-guard — anti-reintroduction (R4 writer)', () => {
+  // SeoGeneratorService.buildR4FromRag (writer R4 live, via
+  // ReferenceService.filterCompositionByFamily) routes frontmatter.composition through
+  // filterOffFamilyParts before persisting.
   // This is the single point preventing re-introduction of the cross-family pollution.
   it('drops the off-family bare-slug tail from a frontmatter-style composition, keeps prose + same-family', () => {
     const frontmatterComposition = [

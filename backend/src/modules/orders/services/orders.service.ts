@@ -407,7 +407,12 @@ export class OrdersService extends SupabaseBaseService {
       // p_correlation_id is explicit (instead of relying on PG DEFAULT gen_random_uuid()) to
       // satisfy ast-grep `commerce-correlation-id-required-on-mutations` and to preserve
       // causality lineage from day 1 (Vault #301 canon, Operational Knowledge Graph prep).
-      const correlationId = orderData.idempotencyKey ?? randomUUID();
+      // MUST be a UUID (p_correlation_id is typed `uuid`). The idempotency key (ik-<ts>-<rand>)
+      // is a DIFFERENT identifier — NOT a uuid — and is handled separately by the controller
+      // (checkIdempotency / order_idempotency dedup). Wiring it here raised
+      // "invalid input syntax for type uuid". One fresh uuid per creation, matching the
+      // `?? randomUUID()` convention used elsewhere (updateOrder L638, order-status.service).
+      const correlationId = randomUUID();
       const { error: rpcError } = await this.callRpc(
         'create_order_atomic',
         {
