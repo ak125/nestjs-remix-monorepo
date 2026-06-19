@@ -200,7 +200,7 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
   /**
    * REFRESH MATERIALIZED VIEW CONCURRENTLY (hors-tx). La RPC gouvernée `refresh_seo_projection_mvs`
    * (SECURITY DEFINER, service_role) + son appel via `callRpc()` sont livrés en PR-6c. Tant qu'absente,
-   * on N'APPELLE RIEN (fail-close propre) — pas de `.rpc()` direct (RPC Safety Gate), pas d'appel à une RPC
+   * on N'APPELLE RIEN (fail-close propre) — aucun appel RPC direct (RPC Safety Gate), pas d'appel à une RPC
    * inexistante. Le worker refresh reste donc dormant (no-op observable) jusqu'à PR-6c.
    */
   async refreshViews(): Promise<{ refreshed: boolean; error?: string }> {
