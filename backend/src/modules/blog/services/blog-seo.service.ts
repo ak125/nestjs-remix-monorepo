@@ -9,6 +9,10 @@ import {
 import { SEO_LINK_LIMITS } from '../../../config/seo-link-limits.config';
 import { GENERIC_PHRASES } from '../../../config/conseil-pack.constants';
 import { restoreAccents } from '../../../config/fr-accent-map';
+import {
+  humanizeProvenance,
+  humanizeProvenanceRef,
+} from '../utils/source-provenance.util';
 
 /**
  * 🔍 BlogSeoService - SEO et liens internes du blog
@@ -324,23 +328,14 @@ export class BlogSeoService {
     }
   }
 
-  /** Convert internal source metadata into user-facing labels */
+  /** Convert internal source metadata into user-facing labels (shared util). */
   private humanizeSource(s: { type?: string; ref?: string }): string {
-    if (s.type === 'rag' && s.ref?.startsWith('gammes/'))
-      return 'Équipe technique AutoMecanik';
-    if (s.type === 'rag') return 'Documentation technique';
-    if (s.ref?.includes('OEM') || s.ref === 'OEM_manual')
-      return 'Manuel constructeur';
-    if (s.ref?.endsWith('.pdf')) return 'Documentation technique';
-    return 'Source vérifiée';
+    return humanizeProvenance(s);
   }
 
-  /** Convert raw string source refs into user-facing labels */
+  /** Convert raw string source refs into user-facing labels (shared util). */
   private humanizeSourceRef(ref: string): string {
-    if (ref.startsWith('gammes/')) return 'Équipe technique AutoMecanik';
-    if (ref.includes('OEM')) return 'Manuel constructeur';
-    if (ref.endsWith('.pdf')) return 'Documentation technique';
-    return ref;
+    return humanizeProvenanceRef(ref);
   }
 
   /**
