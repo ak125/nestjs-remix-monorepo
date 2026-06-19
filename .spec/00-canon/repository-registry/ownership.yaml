@@ -102,6 +102,13 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: low
+  # ADR-059 PR-6 — SEO projection write-side schema (7 tables + 2 MV). Owner GO session 2026-06-19.
+  # Glob exact volontaire — les migrations ne sont PAS auto-couvertes (review ownership à chaque fois).
+  - glob: backend/supabase/migrations/20260619_adr059_pr6_seo_projection_schema.sql
+    domain: D14
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
   # Allocateur gouverné Massdoc-séquentiel type_id (ADR-085, owner GO session 2026-06-15).
   # Glob exact volontaire — les migrations ne sont PAS auto-couvertes (review ownership à chaque fois).
   - glob: backend/supabase/migrations/20260615_massdoc_type_id_allocator.sql
