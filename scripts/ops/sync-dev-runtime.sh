@@ -113,6 +113,17 @@ if [ "$local_sha" = "$remote_sha" ]; then
 fi
 
 # 4. Fast-forward only (jamais reset --hard ; une divergence = réconciliation manuelle).
+# La garde l.96 "tolère" le bruit log.md dans le check de propreté, mais
+# `git merge --ff-only` butait QUAND MÊME dessus quand log.md a aussi avancé en
+# amont (refus d'écraser une modif locale) → le cron avortait en boucle ici =
+# drift silencieux (31 commits observés le 2026-06-16, violation no-silent-fallback).
+# On matérialise donc la tolérance : reset du SEUL log.md (régénéré par le hook
+# session-log) avant le ff. Sûr — la garde l.96-97 a déjà refusé tout autre fichier
+# sale ; jamais de `reset --hard`, seul ce fichier auto-généré est touché.
+if ! git diff --quiet -- log.md 2>/dev/null; then
+  git checkout --quiet -- log.md \
+    && log "bruit log.md local réinitialisé avant ff (toléré, régénéré par session-log)"
+fi
 git merge --ff-only origin/main || abort "non fast-forwardable (lignée divergente) — réconcilier main à la main"
 log "synced $local_sha → $remote_sha"
 

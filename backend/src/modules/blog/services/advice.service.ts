@@ -511,11 +511,24 @@ export class AdviceService {
         advice_id: adviceId,
       });
     } catch {
-      // Fallback - mise a jour manuelle si la fonction RPC n'existe pas
-      await this.supabaseService.client
-        .from(TABLES.blog_advice)
-        .update({ ba_visit: 'ba_visit::int + 1' })
-        .eq('ba_id', adviceId);
+      // Fallback (non-atomic, best-effort) si la RPC increment_advice_views est absente.
+      // NB: supabase-js .update() écrit une valeur littérale — il faut donc lire puis
+      // réécrire le compteur (un `'ba_visit::int + 1'` littéral n'incrémentait rien).
+      try {
+        const { data } = await this.supabaseService.client
+          .from(TABLES.blog_advice)
+          .select('ba_visit')
+          .eq('ba_id', adviceId)
+          .maybeSingle();
+        const current = Number.parseInt(data?.ba_visit ?? '0', 10);
+        const next = (Number.isNaN(current) ? 0 : current) + 1;
+        await this.supabaseService.client
+          .from(TABLES.blog_advice)
+          .update({ ba_visit: String(next) })
+          .eq('ba_id', adviceId);
+      } catch {
+        // Comptage de vues non-critique — ne jamais casser la requête.
+      }
     }
   }
 

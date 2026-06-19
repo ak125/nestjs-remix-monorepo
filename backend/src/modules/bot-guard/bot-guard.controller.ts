@@ -33,6 +33,7 @@ export class BotGuardController {
       enabled?: boolean;
       blockedCountries?: string[];
       suspicionThreshold?: number;
+      verifiedBotBypass?: boolean;
     },
   ) {
     await this.botGuardService.updateConfig(body);

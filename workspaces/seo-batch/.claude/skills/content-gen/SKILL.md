@@ -1,6 +1,7 @@
 ---
 name: content-gen
-description: "Générateur de contenu SEO par rôle R* via Claude Code (sans clé API payante). Lit RAG + KP → génère le contenu → écrit en DB. Usage : /content-gen <pg_alias|vehicle_slug> [--r1|--r3|--r4|--r5|--r6|--r8|--meta|--all]"
+disable-model-invocation: true
+description: "[DEPRECATED → /seo-content-loop · RAG ≠ source de contenu (ADR-031/046)] LEGACY : lit RAG + KP → écrit en DB. NE PLUS UTILISER comme source de contenu — le contenu vient de WIKI (RAW→WIKI→projection ADR-059). Réécriture no-RAG requise. Usage historique : /content-gen <pg_alias|vehicle_slug> [--r1|--r3|--r4|--r5|--r6|--r8|--meta|--all]"
 argument-hint: "<pg_alias ou vehicle_slug> [--r1|--r3|--r4|--r5|--r6|--r8|--meta|--all]"
 allowed-tools: Read, mcp__claude_ai_Supabase__execute_sql, Glob
 ---

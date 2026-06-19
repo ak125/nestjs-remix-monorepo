@@ -121,15 +121,10 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
                 name: "Accueil",
                 item: "https://www.automecanik.com/",
               },
+              // Niveau "Constructeurs" retiré (index /constructeurs → 404, ADR-084)
               {
                 "@type": "ListItem",
                 position: 2,
-                name: "Constructeurs",
-                item: "https://www.automecanik.com/constructeurs/",
-              },
-              {
-                "@type": "ListItem",
-                position: 3,
                 name: `Pièces ${brand.marque_name}`,
                 item: canonicalUrl,
               },
@@ -440,17 +435,7 @@ export default function BrandCatalogPage() {
             <li>
               <ChevronRight className="w-4 h-4 text-gray-400" />
             </li>
-            <li>
-              <Link
-                to="/constructeurs/"
-                className="text-blue-600 hover:underline"
-              >
-                Constructeurs
-              </Link>
-            </li>
-            <li>
-              <ChevronRight className="w-4 h-4 text-gray-400" />
-            </li>
+            {/* Niveau "Constructeurs" retiré (index /constructeurs → 404, ADR-084) */}
             <li className="font-semibold text-gray-900">
               {manufacturer.marque_name}
             </li>
