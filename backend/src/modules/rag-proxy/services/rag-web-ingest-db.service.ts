@@ -1,3 +1,6 @@
+// ⚠️ DEPRECATED (ADR-031/046 · programme rag-purge B9 2026-06-19) — RAG = retrieval chatbot only.
+// Persistance des jobs d'ingestion web RAG (__rag_web_ingest_jobs), orpheline depuis le retrait des
+// endpoints admin/ingest/web/* (B9). Plus aucun câblage DI. Conservée pour salvage (non supprimée).
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';

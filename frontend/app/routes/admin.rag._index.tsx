@@ -3,7 +3,7 @@ import {
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
-import { Link, useFetcher, useLoaderData, useNavigate } from "@remix-run/react";
+import { Link, useFetcher, useLoaderData } from "@remix-run/react";
 import {
   FileText,
   ShieldCheck,
@@ -13,7 +13,6 @@ import {
   RefreshCw,
   Image,
 } from "lucide-react";
-import { AdminDataTable, type DataColumn } from "~/components/admin/patterns";
 import {
   DashboardShell,
   KpiGrid,
@@ -50,18 +49,10 @@ interface IntentStats {
   }>;
 }
 
-interface IngestionJob {
-  jobId: string;
-  status: string;
-  startedAt: number | null;
-  finishedAt: number | null;
-  returnCode: number | null;
-}
-
 export async function loader({ request }: LoaderFunctionArgs) {
   const cookie = request.headers.get("Cookie") || "";
 
-  const [corpusRes, intentsRes, jobsRes] = await Promise.allSettled([
+  const [corpusRes, intentsRes] = await Promise.allSettled([
     fetch(
       getInternalApiUrlFromRequest("/api/rag/admin/corpus/stats", request),
       { headers: { Cookie: cookie } },
@@ -69,10 +60,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
     fetch(getInternalApiUrlFromRequest("/api/rag/intents/stats", request), {
       headers: { Cookie: cookie },
     }),
-    fetch(
-      getInternalApiUrlFromRequest("/api/rag/admin/ingest/pdf/jobs", request),
-      { headers: { Cookie: cookie } },
-    ),
   ]);
 
   const rawCorpus =
@@ -93,12 +80,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       ? await intentsRes.value.json()
       : { totalMessages: 0, intents: [] };
 
-  const jobs: IngestionJob[] =
-    jobsRes.status === "fulfilled" && jobsRes.value.ok
-      ? await jobsRes.value.json()
-      : [];
-
-  return json({ corpus, intents, jobs });
+  return json({ corpus, intents });
 }
 
 const TRUTH_STATUS: Record<string, StatusType> = {
@@ -108,88 +90,16 @@ const TRUTH_STATUS: Record<string, StatusType> = {
   L4: "FAIL",
 };
 
-const JOB_STATUS: Record<string, StatusType> = {
-  done: "PASS",
-  completed: "PASS",
-  running: "INFO",
-  processing: "INFO",
-  queued: "PENDING",
-  failed: "FAIL",
-  error: "FAIL",
-};
-
-function formatTimestamp(ts: number | null): string {
-  if (!ts) return "\u2014";
-  return new Date(ts * 1000).toLocaleString("fr-FR", {
-    day: "2-digit",
-    month: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-const jobColumns: DataColumn<IngestionJob>[] = [
-  {
-    key: "jobId",
-    header: "Identifiant",
-    render: (_val, row) => (
-      <Badge variant="outline" className="font-mono text-xs">
-        {row.jobId.slice(0, 12)}
-      </Badge>
-    ),
-  },
-  {
-    key: "status",
-    header: "Statut",
-    render: (_val, row) => (
-      <StatusBadge
-        status={JOB_STATUS[row.status] || "NEUTRAL"}
-        label={row.status}
-        size="sm"
-      />
-    ),
-  },
-  {
-    key: "startedAt",
-    header: "Demarre",
-    render: (_val, row) => (
-      <span className="text-sm text-muted-foreground">
-        {formatTimestamp(row.startedAt)}
-      </span>
-    ),
-  },
-  {
-    key: "finishedAt",
-    header: "Termine",
-    render: (_val, row) => (
-      <span className="text-sm text-muted-foreground">
-        {formatTimestamp(row.finishedAt)}
-      </span>
-    ),
-  },
-  {
-    key: "returnCode",
-    header: "Code retour",
-    align: "right" as const,
-    render: (_val, row) => (
-      <span className="font-mono text-sm">{row.returnCode ?? "\u2014"}</span>
-    ),
-  },
-];
-
 export default function AdminRagDashboard() {
-  const { corpus, intents, jobs } = useLoaderData<typeof loader>();
+  const { corpus, intents } = useLoaderData<typeof loader>();
   const refreshFetcher = useFetcher<typeof loader>();
-  const navigate = useNavigate();
 
   const displayData = refreshFetcher.data ?? {
     corpus,
     intents,
-    jobs,
   };
   const c = displayData.corpus;
   const i = displayData.intents;
-  const j = displayData.jobs;
 
   const isLoading = refreshFetcher.state !== "idle";
 
@@ -231,7 +141,7 @@ export default function AdminRagDashboard() {
         </div>
       }
       kpis={
-        <KpiGrid columns={4}>
+        <KpiGrid columns={3}>
           <KpiCard
             title="Documents"
             value={c.total}
@@ -250,12 +160,6 @@ export default function AdminRagDashboard() {
             icon={AlertTriangle}
             variant="warning"
           />
-          <KpiCard
-            title="Jobs ingestion"
-            value={j.length}
-            icon={Upload}
-            variant="default"
-          />
         </KpiGrid>
       }
     >
@@ -270,7 +174,7 @@ export default function AdminRagDashboard() {
         <Button variant="outline" size="sm" asChild>
           <Link to="/admin/rag/ingest">
             <Upload className="mr-1.5 h-3.5 w-3.5" />
-            Ingestion
+            PDF Merge
           </Link>
         </Button>
         <Button variant="outline" size="sm" asChild>
@@ -402,27 +306,6 @@ export default function AdminRagDashboard() {
               </CardContent>
             </Card>
           </div>
-
-          {/* D5+D6+D7: Jobs recents — empty state + Badge ID + en-tetes FR */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-medium">
-                Jobs d&apos;ingestion recents
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <AdminDataTable<IngestionJob>
-                data={j.slice(0, 10) as IngestionJob[]}
-                columns={jobColumns}
-                getRowKey={(row) => row.jobId}
-                onRowClick={(job) =>
-                  navigate(`/admin/rag/ingest/${encodeURIComponent(job.jobId)}`)
-                }
-                emptyMessage="Aucun job d'ingestion recent"
-                isLoading={isLoading}
-              />
-            </CardContent>
-          </Card>
         </div>
       </div>
     </DashboardShell>
