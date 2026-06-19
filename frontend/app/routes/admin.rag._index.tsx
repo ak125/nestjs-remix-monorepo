@@ -12,11 +12,6 @@ import {
   Brain,
   RefreshCw,
   Image,
-  Activity,
-  CheckCircle2,
-  XCircle,
-  SkipForward,
-  FilePen,
 } from "lucide-react";
 import { AdminDataTable, type DataColumn } from "~/components/admin/patterns";
 import {
@@ -66,29 +61,19 @@ interface IngestionJob {
 export async function loader({ request }: LoaderFunctionArgs) {
   const cookie = request.headers.get("Cookie") || "";
 
-  const [corpusRes, intentsRes, jobsRes, pipelineRes] =
-    await Promise.allSettled([
-      fetch(
-        getInternalApiUrlFromRequest("/api/rag/admin/corpus/stats", request),
-        {
-          headers: { Cookie: cookie },
-        },
-      ),
-      fetch(getInternalApiUrlFromRequest("/api/rag/intents/stats", request), {
-        headers: { Cookie: cookie },
-      }),
-      fetch(
-        getInternalApiUrlFromRequest("/api/rag/admin/ingest/pdf/jobs", request),
-        { headers: { Cookie: cookie } },
-      ),
-      fetch(
-        getInternalApiUrlFromRequest(
-          "/api/admin/content-refresh/dashboard",
-          request,
-        ),
-        { headers: { Cookie: cookie } },
-      ),
-    ]);
+  const [corpusRes, intentsRes, jobsRes] = await Promise.allSettled([
+    fetch(
+      getInternalApiUrlFromRequest("/api/rag/admin/corpus/stats", request),
+      { headers: { Cookie: cookie } },
+    ),
+    fetch(getInternalApiUrlFromRequest("/api/rag/intents/stats", request), {
+      headers: { Cookie: cookie },
+    }),
+    fetch(
+      getInternalApiUrlFromRequest("/api/rag/admin/ingest/pdf/jobs", request),
+      { headers: { Cookie: cookie } },
+    ),
+  ]);
 
   const rawCorpus =
     corpusRes.status === "fulfilled" && corpusRes.value.ok
@@ -113,15 +98,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       ? await jobsRes.value.json()
       : [];
 
-  const rawPipeline =
-    pipelineRes.status === "fulfilled" && pipelineRes.value.ok
-      ? await pipelineRes.value.json()
-      : { counts: {} };
-  // Handle AdminApiResponse wrapper: { success, data, meta }
-  const pipeline: { counts: Record<string, number> } =
-    rawPipeline?.data ?? rawPipeline;
-
-  return json({ corpus, intents, jobs, pipeline });
+  return json({ corpus, intents, jobs });
 }
 
 const TRUTH_STATUS: Record<string, StatusType> = {
@@ -201,7 +178,7 @@ const jobColumns: DataColumn<IngestionJob>[] = [
 ];
 
 export default function AdminRagDashboard() {
-  const { corpus, intents, jobs, pipeline } = useLoaderData<typeof loader>();
+  const { corpus, intents, jobs } = useLoaderData<typeof loader>();
   const refreshFetcher = useFetcher<typeof loader>();
   const navigate = useNavigate();
 
@@ -209,12 +186,10 @@ export default function AdminRagDashboard() {
     corpus,
     intents,
     jobs,
-    pipeline,
   };
   const c = displayData.corpus;
   const i = displayData.intents;
   const j = displayData.jobs;
-  const p = displayData.pipeline?.counts ?? {};
 
   const isLoading = refreshFetcher.state !== "idle";
 
@@ -226,7 +201,7 @@ export default function AdminRagDashboard() {
   return (
     <DashboardShell
       title="RAG & Knowledge"
-      description="Tableau de bord du corpus de connaissances et du pipeline d'enrichissement"
+      description="Tableau de bord du corpus de connaissances du chatbot"
       breadcrumb={
         <div className="flex items-center gap-1 text-sm text-muted-foreground">
           <Link to="/admin" className="hover:text-foreground">
@@ -284,7 +259,7 @@ export default function AdminRagDashboard() {
         </KpiGrid>
       }
     >
-      {/* D4: Actions rapides — SEO Drafts ajoute */}
+      {/* D4: Actions rapides — corpus chatbot (ingest / documents / images) */}
       <div className="flex flex-wrap gap-3">
         <Button variant="outline" size="sm" asChild>
           <Link to="/admin/rag/documents">
@@ -296,24 +271,6 @@ export default function AdminRagDashboard() {
           <Link to="/admin/rag/ingest">
             <Upload className="mr-1.5 h-3.5 w-3.5" />
             Ingestion
-          </Link>
-        </Button>
-        <Button variant="outline" size="sm" asChild>
-          <Link to="/admin/rag/pipeline">
-            <Activity className="mr-1.5 h-3.5 w-3.5" />
-            Pipeline
-          </Link>
-        </Button>
-        <Button variant="outline" size="sm" asChild>
-          <Link to="/admin/rag/qa-gate">
-            <ShieldCheck className="mr-1.5 h-3.5 w-3.5" />
-            QA Gate
-          </Link>
-        </Button>
-        <Button variant="outline" size="sm" asChild>
-          <Link to="/admin/rag/seo-drafts">
-            <FilePen className="mr-1.5 h-3.5 w-3.5" />
-            Brouillons SEO
           </Link>
         </Button>
         <Button variant="outline" size="sm" asChild>
@@ -445,61 +402,6 @@ export default function AdminRagDashboard() {
               </CardContent>
             </Card>
           </div>
-
-          {/* D2: Pipeline Content Refresh — couleurs semantiques + FR */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-sm font-medium">
-                <div className="flex items-center gap-2">
-                  <Activity className="h-4 w-4" />
-                  Pipeline Content Refresh
-                </div>
-              </CardTitle>
-              <Button variant="outline" size="sm" asChild className="gap-1">
-                <Link to="/admin/rag/pipeline">Voir tout &rarr;</Link>
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                <div className="rounded-lg border p-3 text-center">
-                  <div className="text-2xl font-bold text-info">
-                    {p.draft || 0}
-                  </div>
-                  <div className="mt-1 flex items-center justify-center gap-1 text-xs text-muted-foreground">
-                    <FileText className="h-3 w-3" />
-                    Brouillon
-                  </div>
-                </div>
-                <div className="rounded-lg border p-3 text-center">
-                  <div className="text-2xl font-bold text-success">
-                    {(p.published || 0) + (p.auto_published || 0)}
-                  </div>
-                  <div className="mt-1 flex items-center justify-center gap-1 text-xs text-muted-foreground">
-                    <CheckCircle2 className="h-3 w-3" />
-                    Publie
-                  </div>
-                </div>
-                <div className="rounded-lg border p-3 text-center">
-                  <div className="text-2xl font-bold text-muted-foreground">
-                    {p.skipped || 0}
-                  </div>
-                  <div className="mt-1 flex items-center justify-center gap-1 text-xs text-muted-foreground">
-                    <SkipForward className="h-3 w-3" />
-                    Ignore
-                  </div>
-                </div>
-                <div className="rounded-lg border p-3 text-center">
-                  <div className="text-2xl font-bold text-destructive">
-                    {p.failed || 0}
-                  </div>
-                  <div className="mt-1 flex items-center justify-center gap-1 text-xs text-muted-foreground">
-                    <XCircle className="h-3 w-3" />
-                    Echoue
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
 
           {/* D5+D6+D7: Jobs recents — empty state + Badge ID + en-tetes FR */}
           <Card>

@@ -7,7 +7,7 @@
 
 ---
 
-## Contrat d'exécution (comportement de l'agent) `[CRITICAL]`
+## Contrat d'exécution (comportement de l'agent)
 
 Ce repo est **gouverné** : ADRs, contracts, registries déterministes, ratchets CI.
 L'assistant **ÉTEND** l'architecture existante — il ne crée **JAMAIS** de système
@@ -32,26 +32,21 @@ bounded context → **grep en dernier recours**).
 
 ### Repository Control Plane — 3 couches `[HIGH]`
 
-ADR-058 / ADR-062. **L1** data auto (`audit/registry/*.json`) + **L2** overlay
-manuel (`.spec/00-canon/repository-registry/*.yaml`) = **SoT (le couple)**.
-**L3** projection canonique (`audit/registry/canonical.json`) = générée,
-**jamais éditée**. L'enforcement (ratchets / CI / ast-grep) **entoure** ces 3
-couches — ce **n'est pas** une 4ᵉ couche. Détail : `packages/registry/README.md`.
+ADR-058/062. **L1** data auto (`audit/registry/*.json`) + **L2** overlay manuel
+(`.spec/00-canon/repository-registry/*.yaml`) = **SoT (le couple)** ; **L3**
+`audit/registry/canonical.json` = projection générée, **jamais éditée**. L'enforcement
+(ratchets / CI / ast-grep) entoure ces 3 couches. Détail : `packages/registry/README.md`.
 
-`[CRITICAL]` **Generated artifacts are projections, never sources of truth** :
+`[HIGH]` **Generated artifacts are projections, never sources of truth** :
 ne jamais éditer un artefact généré (`canonical.json`, blocs
 `<!-- AUTO-GENERATED -->`, `REPO_MAP.md`, canon mirrors hash-lockés) — corriger
 L1+L2, puis rebuild.
 
-**AI Operating Map (reference projection, non-canon).** Carte d'interopérabilité
-des surfaces IA (root, seo-batch, marketing, wiki, paperclip) et de leurs
-handoffs `RAW → WIKI → SEO → marketing → runtime` taggés
-`EXISTS | PARTIAL | ASPIRATIONAL`. Fichier :
-`.spec/00-canon/ai-registry/agent-operating-map.yaml`. Schéma :
-`agent-operating-map.schema.json`. Validateur warn-only :
-`scripts/governance/validate-agent-operating-map.js` (CI dans
-`skills-canon-gate.yml`). Reference projection, pas orchestrateur ; mutation
-autoritaire (hard-fail) = vault ADR requis.
+**AI Operating Map** (reference projection, non-canon) : carte d'interop des surfaces IA +
+handoffs `RAW → WIKI → SEO → marketing → runtime`. Fichier
+`.spec/00-canon/ai-registry/agent-operating-map.yaml` (validateur warn-only
+`scripts/governance/validate-agent-operating-map.js`, CI `skills-canon-gate.yml`) ;
+pas orchestrateur, mutation autoritaire = vault ADR requis.
 
 ### Heuristiques de décision (en cas de doute) `[HIGH]`
 
@@ -132,13 +127,7 @@ par défaut ≠ « COMPLETE » / « DONE », coverage manifest obligatoire.
 
 ## Vocabulaire déploiement — lire `.claude/rules/deployment.md` AVANT toute action infra
 
-Le vocabulaire **DEV / PREPROD / PROD** est strict. Trois environnements distincts coexistent sur deux machines physiques (mapping IP × port × tag dans la rule canon, jamais hardcodé ici) :
-
-- **DEV** : poste opérateur, pas de container deploy
-- **PREPROD** : container CI éphémère sur le runner self-hosted, READ_ONLY=true, E2E Smoke + Lighthouse seulement
-- **PROD** : container live derrière Caddy, trafic réel utilisateurs
-
-Formulations **interdites** par lint CI `scripts/lint/check-preprod-vocabulary.sh` : "DEV pré-prod", "preprod.automecanik.com" (hostname inexistant), "preprod miroir", "staging soak/env/server/VPS/deploy/deployment/gate". Voir [`.claude/rules/deployment.md`](.claude/rules/deployment.md) pour le glossary canon complet (matrice machine × port × tag) + ADR-075 vault pour la décision gouvernance.
+Vocabulaire **DEV / PREPROD / PROD** strict (3 environnements, 2 machines physiques ; mapping IP × port × tag jamais hardcodé). Glossary canon complet (matrice machine × port × tag), formulations interdites (lint CI `scripts/lint/check-preprod-vocabulary.sh`) + décision gouvernance ADR-075 : **[`.claude/rules/deployment.md`](.claude/rules/deployment.md)** — à charger AVANT toute action infra.
 
 ---
 
@@ -163,42 +152,22 @@ Délimitation explicite :
 
 ## Workspaces Claude Code — séparation dev / SEO / marketing / wiki
 
-Le monorepo expose **quatre racines de session** Claude Code distinctes :
-
-| cwd | Surface chargée | Usage |
-|-----|-----------------|-------|
-| `/opt/automecanik/app/` | 8 skills DEV (`code-review`, `db-migration`, `frontend-design`, `governance-vault-ops`, `responsive-audit`, `session-log`, `ui-ux-pro-max`, `vehicle-ops`) — **0 agents** R*, **0 skills SEO** | dev backend/frontend, refactor, CI, ADR, governance |
-| `/opt/automecanik/app/workspaces/seo-batch/` | 39 agents R0-R8 + 16 skills SEO (`content-gen`, `kw-classify`, `pollution-scanner`, `seo-gamme-audit`, `r8-diversity-check`, `rag-check`, `v5-guardian`, …) | campagnes SEO, KW planning, content gen R*, RAG enrich |
-| `/opt/automecanik/app/workspaces/marketing/` | 3 agents G1 marketing (LEAD/LOCAL/RETENTION en Phase 1-2 ADR-036) + canon brand voice + AEC | briefs marketing orientés conversion, posts GBP, retention, plan hebdo cross-units |
-| `/opt/automecanik/app/workspaces/wiki/` | skill `wiki-proposal-writer` + canon ADR-033 + AEC | sas wiki documentaire (Phase 2 ADR-033), proposals frontmatter v2.0.0 |
-
-Pour les batchs SEO : `cd workspaces/seo-batch && claude`. Voir `workspaces/seo-batch/README.md`.
-Pour les sessions marketing : `cd workspaces/marketing && claude`. Voir `workspaces/marketing/README.md` (ADR-036).
-Pour le sas wiki : `cd workspaces/wiki && claude`. Voir `workspaces/wiki/README.md` (ADR-033).
+Le monorepo expose **quatre racines de session** Claude Code distinctes (dev `/opt/automecanik/app/`,
+`workspaces/seo-batch/`, `workspaces/marketing/`, `workspaces/wiki/`) — chacune charge une surface
+différente (skills/agents). Table complète cwd × surface × usage + commandes `cd` :
+**[`.claude/knowledge/workspaces.md`](.claude/knowledge/workspaces.md)** (on-demand).
 
 ---
 
 ## Agents Paperclip AI-COS
 
-Les agents Paperclip sont documentés dans `agents/*/AGENTS.md`. Chaque fichier
-décrit rôle, périmètre, protocole et format de sortie. Les UUID Paperclip
-restent dans le registre Paperclip (SoT mapping) — pas ici, pour éviter
-duplication et dérive.
+Agents Paperclip documentés dans **`agents/*/AGENTS.md`** (rôle, périmètre, protocole,
+format de sortie — CEO / CTO / CMO / CPO / RAG Lead / SEO Content / SEO QA). UUID dans le
+registre Paperclip (SoT mapping), pas ici.
 
-| Domaine | Fichier |
-|---------|---------|
-| CEO | `agents/ceo/AGENTS.md` |
-| CTO | `agents/cto/AGENTS.md` |
-| CMO | `agents/cmo/AGENTS.md` |
-| CPO | `agents/cpo/AGENTS.md` |
-| RAG Lead | `agents/rag-lead/AGENTS.md` |
-| SEO Content | `agents/seo-content/AGENTS.md` |
-| SEO QA | `agents/seo-qa/AGENTS.md` |
-
-**Validation** : tout commit modifiant `agents/*/AGENTS.md` ou `**/CLAUDE.md`
-passe par `scripts/agents/validate-agents-md.sh` (pre-commit + CI). Voir
-mémoire `feedback_no_hardcoded_infra_in_agentsmd.md` pour les règles
-(pas d'IP / URL / UUID / clé hardcodée — env vars + contrats d'usage).
+**Validation** : tout commit modifiant `agents/*/AGENTS.md` ou `**/CLAUDE.md` passe par
+`scripts/agents/validate-agents-md.sh` (pre-commit + CI) — pas d'IP / URL / UUID / clé en dur
+(voir mémoire `feedback_no_hardcoded_infra_in_agentsmd.md`).
 
 ---
 
@@ -240,32 +209,12 @@ et `audit/registry/` ne la dupliquent pas, ils la référencent.
 > table, nom de service, path de fichier), **GREP** systématiquement la
 > racine du codebase. **Tout est déjà documenté à la racine.**
 
-**Commandes obligatoires avant chaque proposition** :
+**Si grep retourne du code qui résout déjà le problème → étendre l'existant**, jamais créer
+de nouveau ; gap réel → confirmer par 2-3 patterns différents avant de proposer.
 
-| Si je propose… | Je dois d'abord exécuter… |
-|-----------------|---------------------------|
-| Une nouvelle ENV var | `grep -rE "process\.env\.\|configService\.get" backend/src \| grep -i "<topic>"` + `cat backend/.env.example \| grep -i "<topic>"` |
-| Un domaine canonique | `cat backend/src/config/site.constants.ts` + `grep -rE "automecanik\." backend/src/config frontend/app/root.tsx` |
-| Une nouvelle table DB | `ls backend/supabase/migrations/ \| grep -i "<topic>"` + `git ls-files \| grep -E "schemas?\.ts$"` |
-| Un nouveau service NestJS | `find backend/src/modules -name "*.ts" \| xargs grep -l "<keyword>"` |
-| Un nouveau skill | `ls .claude/skills/` + lire les SKILL.md frontmatters concernés |
-
-**Si grep retourne du code qui résout déjà le problème → étendre l'existant**,
-pas créer de nouveau. Si gap réel → confirmer par 2-3 patterns différents avant
-de proposer.
-
-**Règles dérivées** :
-
-- Pas de nouvelle ENV var sans avoir grep `process.env` et `.env.example`
-- Pas de nouvelle table sans avoir grep les migrations existantes
-- Pas de nouveau domaine/URL sans avoir lu `site.constants.ts`
-- Pas de nouveau service sans avoir cherché les services équivalents
-
-**Pourquoi cette règle** : incidents répétés où conventions inventées
-(`GOOGLE_SA_CLIENT_EMAIL`, `GSC_PROPERTY_URL`, `automecanik.fr`) alors que
-le codebase utilisait déjà `GSC_CLIENT_EMAIL`, `GSC_SITE_URL`,
-`automecanik.com` (lus par `crawl-budget-audit.service.ts:208-216` et
-`url-audit.service.ts:50-60`). Chaque invention = PR à corriger.
+Table de commandes obligatoires par type de proposition (ENV var / domaine / table DB / service /
+skill), règles dérivées + « Pourquoi » détaillé (incidents de conventions inventées) :
+**[`.claude/knowledge/verify-before-invent.md`](.claude/knowledge/verify-before-invent.md)** (on-demand).
 
 ---
 

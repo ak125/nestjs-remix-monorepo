@@ -273,6 +273,7 @@ export class SeoController {
    * Vérifie que les URLs générées sont identiques à l'ancien format nginx
    */
   @Get('url-compatibility/report')
+  @UseGuards(AuthenticatedGuard)
   async getUrlCompatibilityReport() {
     try {
       const report =
@@ -298,6 +299,7 @@ export class SeoController {
    * Query params: type (gammes|constructeurs|modeles|all), sampleSize (number)
    */
   @Get('url-compatibility/verify')
+  @UseGuards(AuthenticatedGuard)
   async verifyUrlCompatibility(
     @Query('type') type?: 'gammes' | 'constructeurs' | 'modeles' | 'all',
     @Query('sampleSize') sampleSize?: number,
@@ -328,6 +330,7 @@ export class SeoController {
    * Query params: limit, offset
    */
   @Get('url-compatibility/gammes')
+  @UseGuards(AuthenticatedGuard)
   async getGammeUrls(
     @Query('limit') limit?: number,
     @Query('offset') offset?: number,
@@ -358,6 +361,7 @@ export class SeoController {
    * GET /seo/url-compatibility/constructeurs - Liste toutes les URLs de constructeurs
    */
   @Get('url-compatibility/constructeurs')
+  @UseGuards(AuthenticatedGuard)
   async getConstructeurUrls(
     @Query('limit') limit?: number,
     @Query('offset') offset?: number,
@@ -388,6 +392,7 @@ export class SeoController {
    * GET /seo/url-compatibility/modeles - Liste toutes les URLs de modèles
    */
   @Get('url-compatibility/modeles')
+  @UseGuards(AuthenticatedGuard)
   async getModeleUrls(
     @Query('limit') limit?: number,
     @Query('offset') offset?: number,
@@ -402,6 +407,10 @@ export class SeoController {
 
       return {
         success: true,
+        // Niveau-modèle (URLs 2-segments) supprimé en 410 Gone (ADR-084).
+        // Ces URLs sont conservées ici à des fins d'audit de migration uniquement :
+        // elles renvoient 410 en runtime et ne sont plus émises au sitemap.
+        gone: true,
         count: urls.length,
         data: urls,
       };
@@ -421,6 +430,7 @@ export class SeoController {
    * Pour vérifier le format : /pieces/{pg_alias}-{pg_id}/{marque}-{id}/{modele}-{id}/{type}-{id}.html
    */
   @Get('url-compatibility/test-vehicule')
+  @UseGuards(AuthenticatedGuard)
   async testVehiculeUrl(
     @Query('pgId') pgId?: number,
     @Query('pgAlias') pgAlias?: string,
@@ -501,6 +511,7 @@ export class SeoController {
    * GET /seo/url-compatibility/test-constructeur - Tester génération URL constructeur+type
    */
   @Get('url-compatibility/test-constructeur')
+  @UseGuards(AuthenticatedGuard)
   async testConstructeurUrl(
     @Query('marqueId') marqueId?: number,
     @Query('marqueAlias') marqueAlias?: string,

@@ -1,0 +1,27 @@
+{
+  "coverage": [],
+  "entity_type": "diagnostic",
+  "intent_targets": [],
+  "inventory_status": "DIAGNOSTIC_READY",
+  "missing_for_next_tier": [],
+  "next_action": "CONFIGURE_COMPLETENESS_PROFILE",
+  "pg_id": null,
+  "provenance": {
+    "completeness_profile": null,
+    "source_type": "diagnostic",
+    "sources": [
+      {
+        "content_hash": "sha256:aaa3744f6a6f3d89637ffa039c563257382c6ddec263479ee7caae00043b1ac1",
+        "kind": "diagnostic",
+        "path": "recycled/rag-knowledge/diagnostic/bosch-freinage-brochure-reparation-fad-2020-fr.md"
+      }
+    ],
+    "truth_level": "L2",
+    "unlinked_source_types": [],
+    "verification_status": "unverified"
+  },
+  "raw_verdict": "NOT_CONFIGURED",
+  "schema_version": "raw-evidence.v1",
+  "subject": "bosch-freinage-brochure-reparation-fad-2020-fr",
+  "tier": "NOT_CONFIGURED"
+}

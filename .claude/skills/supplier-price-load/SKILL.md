@@ -1,18 +1,18 @@
 ---
 name: supplier-price-load
-description: Use when loading a supplier/brand tariff into pieces_price — drives the GOVERNED Pricing Control Plane import (portal verification → supplier profile → dry-run → commit → rollback), never a standalone INSERT. Triggers — "charger les tarifs de <marque>", "importer le tarif <fournisseur>", "mettre à jour les prix d'achat de <marque>", or any prepared supplier feed destined for pieces_price.
+description: Use when loading a supplier/brand tariff into pieces_price — drives the GOVERNED Pricing Control Plane import (feed + EAN-13 → portal classify → supplier profile → dry-run → commit PENDING → activation → display → rollback), never a standalone INSERT. Triggers — "charger les tarifs de <marque>", "importer le tarif <fournisseur>", "mettre à jour les prix d'achat de <marque>", or any prepared supplier feed destined for pieces_price.
 type: discipline
 status: stable
 owners: ['@ak125']
 domain: D15
 runtime_class: privileged
 llm_safe: false
-last_verified: '2026-06-04'
+last_verified: '2026-06-10'
 license: Internal - Automecanik
 compatibility: Designed for Claude Code in the AutoMecanik monorepo. Stack — Supabase + PostgreSQL + Playwright supplier connectors + the governed PricingModule (Pricing Control Plane V1). Touches pieces_price (live client cost) via the governed import API only. Privileged — drives prod price writes + does real supplier-portal logins.
 tags: [pricing, supplier, pieces_price, tariff, import, pricing-control-plane, dca, governance]
 metadata:
-  version: "2.0"
+  version: "2.1"
   argument-hint: "[brand] [supplier]"
   disable-model-invocation: true
   spec: agentskills.io/specification v1
@@ -33,12 +33,14 @@ PR #707/#709), de façon vérifiée et réversible. Doctrine = runbook
 > parallèle interdit** (anti-bricolage). Le run réel exige un **GO owner par
 > étape**.
 
-> **Invariant dispo `[CRITICAL]`** : importer un tarif **active** la pièce —
-> `pricing_commit_chunk` met `pri_dispo='1'` (= vendable). Tous les chemins de
-> lecture de prix filtrent `pri_dispo='1'` (R2 RPC, search, products). Donc
-> **`pri_dispo=null` rend le prix INVISIBLE partout** — ne jamais charger un prix
-> qu'on veut voir avec `dispo` null. La nuance « rupture » se gère **après** via
-> le toggle admin `working-stock` / la sentinelle, pas en laissant le prix muet.
+> **Invariant dispo `[CRITICAL]`** : le commit gouverné écrit en **PENDING par
+> défaut** (`ImportRequest.activate:false` → `pri_dispo='0'` +
+> `pending_stock_check`, non vendable ; **`pri_ref` persisté** #913 = clé de
+> l'activation). Tous les chemins de lecture filtrent `pri_dispo IN ('1','2','3')`
+> → un prix pending/null est **INVISIBLE partout** (0,00 €). Rendre vendable =
+> étape séparée `activate/{dry-run,commit}` sur les seules réfs
+> **portal-CONFIRMED** (AG→`'1'`, GRP→`'2'`), puis visible = `display/commit`
+> (gate gamme `pg_display` #915). Chaque étape = **GO owner** + rollback batch.
 
 ## Quand proposer ce skill
 
@@ -52,21 +54,44 @@ PR #707/#709), de façon vérifiée et réversible. Doctrine = runbook
 
 ## Workflow (OBLIGATOIRE — chaque étape gated)
 
-### 1. Localiser le fichier fournisseur
-Fichier brut ou feed préparé sous `/opt/automecanik/data/tecdoc/`. ⚠️ **Valider
-l'unité `px_base`** (pack vs pièce) — risque d'erreur ×N.
+### 1. Localiser / générer le feed
+Feed préparé sous `/opt/automecanik/data/tecdoc/`, nommage générique
+`<fournisseur>-<marque>-<AAAAMM>-feed.csv`. ⚠️ **Valider l'unité `px_base`**
+(pack vs pièce) — risque d'erreur ×N. ⚠️ **EAN depuis la DB = reconstruire le
+check digit** (`pieces_ref_ean` stocke 12 chars ; EAN-lock parser = égalité
+stricte EAN-13) ; EAN absent = champ vide **non-quoté** (jamais `""`) — SQL +
+règles dans le runbook §1bis.
 
 ### 2. Vérif live portail (login RÉEL, lecture seule — GO owner)
+Deux outils **génériques** (tout `SUPPLIER_SPL` + `BRAND_TOKENS`), read-only, ne
+touchent jamais `pieces_price`. C'est la **seule** brique hors-module (le
+`PricingModule` n'a pas de vérif portail).
+
+**Full-feed (recommandé au 1er load d'une marque)** — classifie TOUT le feed via la
+route bulk `POST /search` (~0,2 s/réf), buckets `CONFIRMED_AG`/`CONFIRMED_GRP`/
+`BLOCK_NONE`/`REVIEW_*`, cache + checkpoint reprenable, invariant *no false in-stock* :
+```bash
+SUPPLIER_SPL=<spl_id> BRAND_TOKENS=<MARQUE,ALIAS> FEED_PATH=<feed.csv> \
+  OUT_DIR=/opt/automecanik/data/tecdoc/<fournisseur>-<marque> [LIMIT=30] \
+  npx tsx -r dotenv/config backend/src/workers/supplier-availability-classify.ts dotenv_config_path=backend/.env
+```
+`OUT_DIR` **obligatoire et durable** (#908 — jamais un tmp OS : il porte le
+checkpoint resumable). Routine : **pilote `LIMIT=30` d'abord** (vérifie login,
+brand tokens, EAN-lock), puis full run en background (resumable). Portail lent →
+baisser `BATCH` (`BATCH=10`). **Convergence** (module pur `portal-classify-resilience.ts`,
+testé) : bisection du batch en échec + budget par-ref persistant (`attempts.json`,
+`MAX_REF_ATTEMPTS=3`) → dead-letter terminal `REVIEW_PORTAL_TIMEOUT` (converge) ;
+circuit-breaker (`BREAKER_WINDOW=8`) OPEN sur panne soutenue → STOP resumable, zéro faux terminal.
+
+**Spot-check prix (échantillon)** — compare achat fichier vs achat portail sur N réfs
+risque-pondérées :
 ```bash
 SUPPLIER_SPL=<spl_id> FEED_PATH=<feed.csv> VERIFY_N=200 \
   node -r dotenv/config dist/workers/supplier-price-verify.js dotenv_config_path=.env
 ```
-- Compare achat fichier vs achat **portail** + **dispo**. Verdict
-  **CONFIRMED / FIX_FEED / REVIEW / BLOCK(indispo)**.
+- Verdict **CONFIRMED / FIX_FEED / REVIEW / BLOCK(indispo)**.
 - ⚠️ recherche réf **floue** → re-vérifier les FIX_FEED avec `BY_EAN=true` (exact)
   AVANT de conclure. *Fournisseur sans portail → fichier seul.*
-- C'est la **seule** brique hors-module : le `PricingModule` n'a pas de vérif
-  portail. Read-only, ne touche jamais `pieces_price`.
 
 ### 3. Profil fournisseur gouverné (`supplier_price_profiles`)
 Le module **exige** un profil actif pour le `supplierId` (sinon
@@ -88,15 +113,39 @@ DSL caché**. Profil = donnée gouvernée, à confirmer avec l'owner.
 0 `VENTE_BELOW_ACHAT`, examiner `DELTA_EXCEEDS_MAX` (outliers), rejets, comptes
 INSERT vs UPDATE. **Présenter à l'owner.**
 
-### 6. Commit gouverné (GO owner explicite — écrit `pieces_price`)
-`POST /api/admin/pricing/import/commit` `{ batchId }` → chunks atomiques 5000,
-`pri_dispo='1'`, écrit `pieces_price_history`, batch `COMMITTED`.
+### 6. Commit gouverné PENDING (GO owner explicite — écrit `pieces_price`)
+`POST /api/admin/pricing/import/commit` `{ batchId, ...ImportRequest }` → chunks
+atomiques 5000, **`pri_dispo='0'` PENDING** (défaut `activate:false`), `pri_ref`
+persisté, écrit `pieces_price_history`, batch `COMMITTED`. **Vérif SQL** : n lignes,
+100 % `'0'`, `pri_ref` non-vide, 0 vente<achat.
 
-### 7. Rollback gouverné (si besoin)
-`POST /api/admin/pricing/import/rollback` `{ batchId, supplierId }` → LIFO restore
-via `pricing_rollback_batch` (restaure dispo + prix antérieurs depuis l'historique).
+### 7. Activation dispo (GO owner — rend les prix lisibles)
+`POST /api/admin/pricing/activate/dry-run` puis `commit` `{ supplierId: <pm_id>,
+rows: [{ref, dispo}], confirm: true }` — rows depuis `confirmed.csv` du classify :
+AG→`'1'`, GRP→`'2'`. Missing attendu = hors-catalogue du dry-run import.
+**Vérif SQL** : répartition `pri_dispo`, 0 resté à `'0'`.
 
-### 8. MAJ suivantes : **INCRÉMENTAL — nouvelles réfs only**, même profil.
+### 8. Display (GO owner — rend les pièces visibles/achetables)
+`POST /api/admin/pricing/display/dry-run` puis `commit` `{ supplierId: <pm_id>,
+confirm: true }` — flip `piece_display` des vendables cachées, **gate gamme
+`pg_display='1'` (#915)**. **Décomposer TOUJOURS** eligible vs vendables : retenues
+= accessoires level-4/5 (NO-GO design) OU hub gamme level-1 caché (**décision owner
+séparée** — ex. transport trop cher, cf. runbook §Séquence figée).
+
+### 9. Quarantine R2-bruit (GO owner — cache les non-vendables) `[CRITICAL]`
+**Clôture standard du load** (miroir de l'activation, owner 2026-06-11). Une réf
+**affichée mais non-vendable** rend à 0 €/indisponible sur R2 = bruit (page mince,
+SEO/UX). `POST /api/admin/pricing/display/quarantine/dry-run` puis `commit`
+`{ supplierId: <pm_id>, confirm: true }` → flip `piece_display` true→false pour ces
+réfs (brand-locké, **disjoint du domaine activate**, réversible). Vérif : le
+`quarantine/dry-run` retombe à `{eligible:0}`. Complément SEO = flag #916 (`R2
+noindex si <1 vendable`, **catalogue-wide owner-gated séparé**).
+
+### 10. Rollback gouverné (si besoin, par étape)
+`POST /api/admin/pricing/{import,activate,display,display/quarantine}/rollback`
+`{ batchId, supplierId }` → LIFO restore (dispo / prix / `piece_display`).
+
+### 11. MAJ suivantes : **INCRÉMENTAL — nouvelles réfs only**, même profil.
 
 ---
 

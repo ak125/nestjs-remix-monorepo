@@ -3,7 +3,7 @@
  * GET /api/r6-guide/:pg_alias → R6GuidePayload
  */
 
-import { Controller, Get, Param, Logger } from '@nestjs/common';
+import { Controller, Get, Header, Param, Logger } from '@nestjs/common';
 import { R6GuideService } from '../services/r6-guide.service';
 import {
   DomainNotFoundException,
@@ -16,6 +16,22 @@ export class R6GuideController {
   private readonly logger = new Logger(R6GuideController.name);
 
   constructor(private readonly r6GuideService: R6GuideService) {}
+
+  /**
+   * Cible de redirection 301 pour les pages R6 guide-achat → R3 conseils
+   * (consolidation R6→R3, flag-gated OFF — mirror de /api/seo/diagnostic/redirect).
+   * Cache court : doit se propager vite quand l'owner active le flag.
+   * IMPORTANT : doit rester déclaré AVANT @Get(':pg_alias') qui capture tout.
+   * GET /api/r6-guide/redirect/:pg_alias
+   */
+  @Get('redirect/:pg_alias')
+  @Header('Cache-Control', 'public, max-age=300')
+  async getRedirectTarget(
+    @Param('pg_alias') pgAlias: string,
+  ): Promise<{ redirect_to: string | null; pg_alias: string | null }> {
+    const result = await this.r6GuideService.getRedirectTarget(pgAlias);
+    return result ?? { redirect_to: null, pg_alias: null };
+  }
 
   /**
    * GET /api/r6-guide/:pg_alias

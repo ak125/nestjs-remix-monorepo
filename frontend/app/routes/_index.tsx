@@ -108,26 +108,40 @@ export const meta: MetaFunction = () => [
 // Layer 2 perf: families + below-fold come from NestJS DI (no HTTP loopback).
 // FAQ stays on internal HTTP because FaqService isn't exported by SupportModule
 // — separate scope, deferred so non-blocking anyway.
+// Budget temps (ms) des données différées below-fold de la home. Doit rester
+// < ABORT_DELAY (5 s, entry.server.tsx) : sur le chemin bot (onAllReady), React
+// attend les frontières <Await> belowFold/faqs avant d'émettre le HTML ; un fetch
+// non borné les ferait dépasser la fenêtre d'abort → tout le rendu bot avorte.
+// Même classe que PR #979 (cascade blog).
+const HOME_DEFER_BUDGET_MS = 3000;
+
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const remixApi = await getRemixApiService(context);
 
   // Below-fold: direct service call wrapped in a Promise so Remix can
   // still defer-stream it via <Await>. The await is captured *inside* the
   // Promise chain — the loader proceeds without blocking.
-  const belowFoldPromise = Promise.resolve(remixApi.getHomepageBelowFold())
-    .then((data: any) => {
-      if (!data) return { brands: [], equipementiers: [], blogArticles: [] };
-      return mapBelowFoldData(data);
-    })
-    .catch(() => ({
-      brands: [] as BrandItem[],
-      equipementiers: [] as Array<{ name: string; logo?: string }>,
-      blogArticles: [] as any[],
-    }));
+  const belowFoldEmpty = {
+    brands: [] as BrandItem[],
+    equipementiers: [] as Array<{ name: string; logo?: string }>,
+    blogArticles: [] as any[],
+  };
+  const belowFoldPromise = Promise.race([
+    Promise.resolve(remixApi.getHomepageBelowFold()).then((data: any) =>
+      data ? mapBelowFoldData(data) : belowFoldEmpty,
+    ),
+    // Deadline : si le service DI dépasse le budget, on RÉSOUT le fallback vide
+    // (jamais un reject) → la frontière <Await> bot se résout avant l'abort.
+    new Promise<typeof belowFoldEmpty>((resolve) =>
+      setTimeout(() => resolve(belowFoldEmpty), HOME_DEFER_BUDGET_MS),
+    ),
+  ]).catch(() => belowFoldEmpty);
 
-  // FAQ: kept on HTTP (FaqService not exported by SupportModule yet)
+  // FAQ: kept on HTTP (FaqService not exported by SupportModule yet).
+  // Borné par une deadline partagée (< ABORT_DELAY) — le .catch rend [].
   const faqPromise = fetch(
     getInternalApiUrl("/api/support/faq?status=published&limit=5"),
+    { signal: AbortSignal.timeout(HOME_DEFER_BUDGET_MS) },
   )
     .then((res) => (res.ok ? res.json() : null))
     .then(

@@ -48,6 +48,10 @@ const log = makeLogger("command-center");
 const SCHEMA_VERSION = "command-center.v1";
 const CANON_REL = ".spec/00-canon/ai-registry/agent-operating-map.yaml";
 const REPORT_REL = "audit-reports/agent-operating-map-report.json";
+// Skills registry (canon, built by build-skills-registry.js) — resolves the
+// departments[].capabilities slugs annotated « via skills.registry » that are
+// NOT in declared_capabilities (e.g. vehicle-ops, governance-vault-ops).
+const SKILLS_REGISTRY_REL = ".spec/00-canon/ai-registry/skills.registry.json";
 const OUT_PATH = path.join(REGISTRY_DIR, "command-center-snapshot.json");
 
 const BASE_SCORE = { CERTIFIED: 90, PARTIAL: 55, UNKNOWN: 30, BROKEN: 10 };
@@ -162,13 +166,17 @@ function computeHealthScoreBase(department, caps) {
  * Build the full snapshot object from the parsed canon. `pathExists` injected.
  * Pure — no disk writes, no wall-clock.
  */
-function buildSnapshot(canon, pathExists) {
+function buildSnapshot(canon, pathExists, skillsRegistry) {
   const departments = Array.isArray(canon.departments) ? canon.departments : [];
   const declared = Array.isArray(canon.declared_capabilities) ? canon.declared_capabilities : [];
   const deptHandoffs = Array.isArray(canon.department_handoffs) ? canon.department_handoffs : [];
+  const skillsByName = new Map();
+  for (const s of (skillsRegistry && Array.isArray(skillsRegistry.skills)) ? skillsRegistry.skills : []) {
+    if (s && s.name) skillsByName.set(s.name, s);
+  }
 
   // capabilities — certification + module resolution
-  const capabilities = declared.map((cap) => {
+  const toCapabilityEntry = (cap) => {
     const verdict = computeCertification(cap, pathExists);
     const slug = extractModuleSlug(cap.evidence && cap.evidence.scripts) || cap.owner;
     return {
@@ -182,9 +190,49 @@ function buildSnapshot(canon, pathExists) {
       has_evidence: hasAnyEvidence(cap),
       evidence: cap.evidence || null,
     };
-  });
+  };
+  const capabilities = declared.map(toCapabilityEntry);
   const capsByOwner = {};
   for (const c of capabilities) (capsByOwner[c.owner] = capsByOwner[c.owner] || []).push(c);
+
+  // Resolution pass — departments[].capabilities slugs not in declared_capabilities.
+  // The canon annotates these « via skills.registry » : resolve them through the
+  // skills registry into the SAME declared shape as the existing convention
+  // (cf. continuous-improvement-global, agent-operating-map.yaml — type: skill,
+  // status: live, evidence: { scripts: [<skill path>] }). The path is then
+  // verified by the LOCKED ladder like any other evidence (BROKEN if absent).
+  // A slug resolving NOWHERE is a canon inconsistency → DROPPED_CAPABILITY alert
+  // (error) — never a silent drop (the pre-fix behaviour: governance rendered
+  // UNKNOWN/30 while its real capability existed).
+  const droppedAlerts = [];
+  for (const d of departments) {
+    const annotated = Array.isArray(d.capabilities) ? d.capabilities : [];
+    const ownedIds = new Set((capsByOwner[d.id] || []).map((c) => c.id));
+    for (const slug of annotated) {
+      if (ownedIds.has(slug)) continue;
+      const skill = skillsByName.get(slug);
+      if (skill && skill.path) {
+        const synth = toCapabilityEntry({
+          id: slug,
+          type: "skill",
+          owner: d.id,
+          status: "live",
+          evidence: { scripts: [skill.path] },
+        });
+        capabilities.push(synth);
+        (capsByOwner[d.id] = capsByOwner[d.id] || []).push(synth);
+        ownedIds.add(slug);
+      } else {
+        droppedAlerts.push({
+          code: "DROPPED_CAPABILITY",
+          severity: "error",
+          target_kind: "capability",
+          target_id: `${d.id}:${slug}`,
+          message: `Department capability '${slug}' resolves neither in declared_capabilities nor in skills.registry — it would be silently dropped from the snapshot.`,
+        });
+      }
+    }
+  }
 
   // departments — health score base + family + worst certification
   const deptOut = departments.map((d) => {
@@ -218,7 +266,7 @@ function buildSnapshot(canon, pathExists) {
   }));
 
   // alerts — structural only (live alerts like STALE_MAP added by the reader).
-  const alerts = [];
+  const alerts = [...droppedAlerts];
   for (const c of capabilities) {
     if (c.certification === "BROKEN") {
       alerts.push({ code: "BROKEN_EVIDENCE", severity: "error", target_kind: "capability", target_id: c.id, message: `Evidence path absent: ${c.reason}` });
@@ -243,6 +291,7 @@ function buildSnapshot(canon, pathExists) {
     if (a.code === "BROKEN_EVIDENCE") return { from_alert: a.code, target_id: a.target_id, action: "Fix or remove the missing evidence path", owner: "ia-agents", file: CANON, decision: `Is ${a.target_id} still backed by that path?` };
     if (a.code === "OVERCLAIM_RISK") return { from_alert: a.code, target_id: a.target_id, action: "Add evidence (scripts/tables) or downgrade status from live", owner: capById(capabilities, a.target_id, "owner"), file: CANON, decision: `Is ${a.target_id} truly live? cite an artifact or set status=partial.` };
     if (a.code === "P0_NO_KPI") return { from_alert: a.code, target_id: a.target_id, action: "Define kpi_primary for the P0 department", owner: a.target_id, file: CANON, decision: `What single KPI governs ${a.target_id}?` };
+    if (a.code === "DROPPED_CAPABILITY") return { from_alert: a.code, target_id: a.target_id, action: "Declare the capability in declared_capabilities, or register the skill in skills.registry, or remove the slug", owner: a.target_id.split(":")[0], file: CANON, decision: `Where does ${a.target_id} really resolve?` };
     return { from_alert: a.code, target_id: a.target_id, action: "Wire the contract or document why it stays PARTIAL/ASPIRATIONAL", owner: chainFrom(chains, a.target_id), file: CANON, decision: `Promote ${a.target_id} to EXISTS or keep with evidence.` };
   });
 
@@ -318,7 +367,8 @@ function makePathExists() {
 
 function build() {
   const canon = loadCanon();
-  const snapshot = buildSnapshot(canon, makePathExists());
+  const skillsRegistry = readJsonSafe(path.join(MONOREPO_ROOT, SKILLS_REGISTRY_REL)) || { skills: [] };
+  const snapshot = buildSnapshot(canon, makePathExists(), skillsRegistry);
   // Note: validation report is consumed by the READER (live validation_status),
   // not baked here — keeps the file deterministic.
   return snapshot;

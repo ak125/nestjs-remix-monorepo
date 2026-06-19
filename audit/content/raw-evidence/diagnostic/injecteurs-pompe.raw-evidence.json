@@ -1,0 +1,27 @@
+{
+  "coverage": [],
+  "entity_type": "diagnostic",
+  "intent_targets": [],
+  "inventory_status": "DIAGNOSTIC_READY",
+  "missing_for_next_tier": [],
+  "next_action": "CONFIGURE_COMPLETENESS_PROFILE",
+  "pg_id": null,
+  "provenance": {
+    "completeness_profile": null,
+    "source_type": "diagnostic",
+    "sources": [
+      {
+        "content_hash": "sha256:f1291d8d85e82677ad9273c20605e76eeb1a2298a7f212090e212deec42b398e",
+        "kind": "diagnostic",
+        "path": "recycled/rag-knowledge/diagnostic/injecteurs-pompe.md"
+      }
+    ],
+    "truth_level": "L2",
+    "unlinked_source_types": [],
+    "verification_status": "verified"
+  },
+  "raw_verdict": "NOT_CONFIGURED",
+  "schema_version": "raw-evidence.v1",
+  "subject": "injecteurs-pompe",
+  "tier": "NOT_CONFIGURED"
+}

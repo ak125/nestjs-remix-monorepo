@@ -8,6 +8,18 @@ version: "1.2"
 
 # RAG Operations Skill — v1.2
 
+> ⚠️ **PARTIELLEMENT LEGACY 2026-06-12** — RAG = chatbot only (ADR-031/046).
+>
+> - **LÉGITIME (reste)** : les ops du retrieval **chatbot** — `/rag-ops diagnose`,
+>   `/rag-ops monitor`, `/rag-ops test`, `/rag-ops audit` (santé service, circuit breaker,
+>   intents, sync, corpus du chatbot).
+> - **LEGACY (ne plus utiliser)** : toute ingestion/enrichissement servant la production de
+>   **CONTENU** (pages SEO/R*, blog, conseils) — `/rag-ops ingest` comme source de contenu,
+>   `describe-images` pour alimenter des pages. Le chemin contenu moderne =
+>   RAW → WIKI → exports (ADR-033/059/083, `workspaces/wiki/` + `wiki-proposal-writer`).
+>   Le corpus chatbot s'alimente depuis le WIKI (sync-from-wiki), pas par ingestion directe
+>   de contenu métier.
+
 Skill opérationnel pour le système RAG AutoMecanik. Gère le debug, l'ingestion de contenu, le monitoring du corpus, les tests d'endpoints et l'audit de couverture.
 
 **Architecture modulaire :**

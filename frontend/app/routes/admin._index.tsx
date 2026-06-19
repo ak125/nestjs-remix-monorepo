@@ -27,6 +27,7 @@ import {
   Truck,
   Palette,
   Sparkles,
+  LayoutDashboard,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Alert } from "~/components/ui/alert";
@@ -996,6 +997,21 @@ export default function AdminDashboard() {
 
         {/* Ligne 2 : Fonctionnalités avancées */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Link
+            to="/admin/command-center"
+            className="block p-4 rounded-lg border-2 border-cyan-200 hover:border-cyan-400 hover:bg-muted transition-all group"
+          >
+            <div className="flex items-center gap-3">
+              <LayoutDashboard className="h-6 w-6 text-cyan-600 group-hover:text-cyan-700" />
+              <div>
+                <p className="font-medium text-gray-900">Command Center</p>
+                <p className="text-sm text-gray-500">
+                  Cockpit IA — santé départements & actions
+                </p>
+              </div>
+            </div>
+          </Link>
+
           <Link
             to="/admin/ai-content"
             className="block p-4 rounded-lg border-2 border-gradient-to-r to-pink-200 hover:border-purple-400 hover:bg-gradient-to-r hover: hover:to-pink-50 transition-all group relative overflow-hidden"

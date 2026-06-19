@@ -13,6 +13,7 @@ interface DeptView {
   label: string;
   certification: string; // CERTIFIED|PARTIAL|UNKNOWN|BROKEN
   kpi_primary: string | null;
+  priority?: string | null; // P0|P1|P2|P3 (canon) — drives generic repair coverage
 }
 interface ChainView {
   id: string;
@@ -68,7 +69,20 @@ const REPAIR_PLAYBOOK: Record<
   },
 };
 
-const CRITICAL_DEPTS = new Set(Object.keys(REPAIR_PLAYBOOK));
+/**
+ * Conservative generic weights for a non-curated P0 department. Lower than the
+ * curated playbooks (so the funnel/supplier P0s stay on top) but high enough to
+ * surface — an uncertified P0 department must NEVER be invisible in the queue.
+ * 'governance' is the only valid catch-all source in the action contract enum
+ * (same fallback the wire rule already uses below).
+ */
+const GENERIC_P0_REPAIR = {
+  source: 'governance' as RawAction['source'],
+  impact: 6,
+  urgency: 6,
+  effort: 4,
+  risk: 2,
+};
 
 export function buildCertificationActions(
   departments: DeptView[],
@@ -76,29 +90,38 @@ export function buildCertificationActions(
 ): RawAction[] {
   const out: RawAction[] = [];
 
+  // Repair coverage is canon-priority-driven, NOT a hardcoded allowlist. Before,
+  // CRITICAL_DEPTS = Object.keys(REPAIR_PLAYBOOK) silently skipped every other
+  // uncertified P0 (audit 2026-06-11 angle mort: catalog, finance, logistics,
+  // support, governance had no action at all). Now: every uncertified department
+  // that is curated OR P0 gets a repair/certification action.
   for (const d of departments) {
-    if (!CRITICAL_DEPTS.has(d.id)) continue;
     if (d.certification === 'CERTIFIED') continue; // already trustworthy
 
     const pb = REPAIR_PLAYBOOK[d.id];
+    if (!pb && d.priority !== 'P0') continue; // curated always; generic only for P0
+    const w = pb ?? GENERIC_P0_REPAIR;
+
     out.push({
       id: `repair:${d.id}`,
       title: `Fiabiliser « ${d.label} » (source ${d.certification})`,
       department: d.id,
-      source: pb.source,
+      source: w.source,
       action_type: d.certification === 'BROKEN' ? 'repair' : 'certification',
-      impact: pb.impact,
-      urgency: pb.urgency,
+      impact: w.impact,
+      urgency: w.urgency,
       // canon is reliable about WHAT is broken → high confidence in the need to fix
       data_confidence: CONFIDENCE_BY_CERT.CERTIFIED,
-      effort: pb.effort,
-      risk: pb.risk,
+      effort: w.effort,
+      risk: w.risk,
       reason: `Le département est ${d.certification} dans la carte opérationnelle — ses signaux ne sont pas fiables tant qu'il n'est pas certifié.`,
       evidence: [
         '.spec/00-canon/ai-registry/agent-operating-map.yaml',
         `dept:${d.id}`,
       ],
-      next_step: pb.step,
+      next_step:
+        pb?.step ??
+        `Définir le verdict de fiabilité de « ${d.label} » (preuve + certification au canon) avant d'exploiter ses signaux.`,
     });
   }
 

@@ -111,6 +111,9 @@ export const CcAlertCodeSchema = z.enum([
   "OVERCLAIM_RISK",
   "P0_NO_KPI",
   "HANDOFF_INCOMPLETE",
+  // A departments[].capabilities slug resolving neither in declared_capabilities
+  // nor in skills.registry — surfaced instead of silently dropped (audit 2026-06-11).
+  "DROPPED_CAPABILITY",
 ]);
 export const CcAlertSchema = z
   .object({
@@ -239,6 +242,8 @@ export const CcSeoDetailSchema = z
     impressions: z.number(),
     clicks: z.number(),
     ctr: z.number(), // clicks/impressions (0..1)
+    position: z.number().nullable(), // PR3: avg SERP position (rpc_seo_low_ctr_v1.avg_position); null if absent
+    next_step: z.string(), // PR3: advisory per-URL editorial action (deterministic, rule-based)
   })
   .strict();
 export type CcSeoDetail = z.infer<typeof CcSeoDetailSchema>;

@@ -2,7 +2,7 @@
   "version": "1.0.0",
   "generated_at": "2026-02-03T14:00:00Z",
   "description": "RPC READ_SAFE - Autorisees pour tous les roles",
-  "total": 157,
+  "total": 169,
   "functions": [
     {
       "name": "auth_email_exists",
@@ -425,6 +425,16 @@
       "reason": "SELECT only"
     },
     {
+      "name": "get_all_seo_references",
+      "volatility": "STABLE",
+      "reason": "SELECT only — liste R4 /reference-auto (231 refs publiées) ; absent de l'allowlist → RpcBlockedError en PROD enforce P2 → index vide (fix 2026-06-10)"
+    },
+    {
+      "name": "get_r5_redirect_target",
+      "volatility": "STABLE",
+      "reason": "SELECT only — résout la redirection 301 détail R5 → R3 conseils#diagnostic-rapide (consolidation R5)"
+    },
+    {
       "name": "get_seo_reference_by_slug",
       "volatility": "VOLATILE",
       "reason": "SELECT only"
@@ -733,6 +743,21 @@
       "name": "rm_get_page_complete_v2",
       "volatility": "VOLATILE",
       "reason": "Read-only cache (migrated from P2)"
+    },
+    {
+      "name": "rpc_seo_low_ctr_v1",
+      "volatility": "STABLE",
+      "reason": "SEO low-CTR aggregation read-only (Command Center + seo-control dashboard)"
+    },
+    {
+      "name": "rpc_seo_low_ctr_v2",
+      "volatility": "STABLE",
+      "reason": "SEO low-CTR v2 honest envelope read-only (Command Center owner-action queue)"
+    },
+    {
+      "name": "rpc_seo_low_ctr_v3",
+      "volatility": "STABLE",
+      "reason": "SEO low-CTR v3 read-only — grain pages (__seo_gsc_daily_pages, sans query) + coverage envelope (Command Center owner-action queue)"
     },
     {
       "name": "search_pieces_fts",
