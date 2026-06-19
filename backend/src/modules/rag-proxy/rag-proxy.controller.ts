@@ -30,6 +30,7 @@ import { RagImageManagementService } from './services/rag-image-management.servi
 import { RagVideoManagementService } from './services/rag-video-management.service';
 import { RagGammeDetectionService } from './services/rag-gamme-detection.service';
 import { RagPhase2aShadowAuditService } from './services/rag-phase2a-shadow-audit.service';
+import { WebhookAuditService } from './services/webhook-audit.service';
 import type { Phase2aArtifactType } from './types/rag-phase2a.types';
 import type { RagDocInput, IngestDecision } from './types/rag-ingest.types';
 import {
@@ -80,6 +81,7 @@ export class RagProxyController {
     private readonly ragVideoManagementService: RagVideoManagementService,
     private readonly ragGammeDetectionService: RagGammeDetectionService,
     private readonly ragPhase2aShadowAuditService: RagPhase2aShadowAuditService,
+    private readonly webhookAuditService: WebhookAuditService,
   ) {}
 
   @Post('chat')
@@ -668,6 +670,34 @@ export class RagProxyController {
   @ApiResponse({ status: 403, description: 'Invalid X-Internal-Key' })
   async webhookIngestionComplete(@Body() body: WebhookIngestionCompleteDto) {
     return this.ragProxyService.handleWebhookCompletion(body);
+  }
+
+  @Get('admin/webhook-audit')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
+  @ApiOperation({
+    summary: 'List recent ingestion webhook audit records (read-only)',
+  })
+  @ApiResponse({ status: 200, description: 'Recent webhook audit entries' })
+  async getWebhookAudit(@Query('limit') limit?: string) {
+    const parsedLimit = Number.parseInt(limit || '30', 10);
+    const safeLimit = Number.isFinite(parsedLimit)
+      ? Math.min(100, Math.max(1, parsedLimit))
+      : 30;
+    return this.webhookAuditService.getRecentWebhooks(safeLimit, 0);
+  }
+
+  @Get('admin/webhook-stats')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
+  @ApiOperation({
+    summary: 'Aggregated ingestion webhook stats over last N days (read-only)',
+  })
+  @ApiResponse({ status: 200, description: 'Webhook stats' })
+  async getWebhookStats(@Query('days') days?: string) {
+    const parsedDays = Number.parseInt(days || '7', 10);
+    const safeDays = Number.isFinite(parsedDays)
+      ? Math.min(90, Math.max(1, parsedDays))
+      : 7;
+    return this.webhookAuditService.getWebhookStats(safeDays);
   }
 
   // ── Gamme detection admin ─────────────────────
