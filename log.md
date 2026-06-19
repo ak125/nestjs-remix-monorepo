@@ -520,3 +520,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/adr059-pr6-seo-projection-schema`
 - **Décision** : feat(db): ADR-059 PR-6 — SEO projection schema (7 tables + 2 MV, kg_v3 pattern)
 - **Sortie** : PR aucune | commits 3771252c1
+
+## 2026-06-19 — feat/adr059-pr6c-projection-refresh-wiring (auto)
+
+- **Branche** : `feat/adr059-pr6c-projection-refresh-wiring`
+- **Décision** : fix(seo-projection): role-purity — reword 'Pourquoi' in R1 feeder doc-comment (+1 other commit)
+- **Sortie** : PR #1033 | commits 433c97ec7 607c1d671
