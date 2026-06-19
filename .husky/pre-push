@@ -86,13 +86,17 @@ while IFS=' ' read -r local_ref local_sha remote_ref remote_sha; do
   # ── Check 3 : Registry block-new gate (ADR-058 PR-G, Phase 2) ──────────
   # Verify every newly-added file matches an ownership.yaml glob with a
   # resolved domain (D1..D15). Mirrors the CI gate
-  # `registry-new-file-gate.yml`. Skip via `SKIP_REGISTRY_GATE=1`.
+  # `registry-new-file-gate.yml` (which uses `--base origin/main`).
+  # Skip via `SKIP_REGISTRY_GATE=1`.
+  #
+  # Base = origin/main for parity with CI. Previous logic used `$remote_sha`
+  # which was rebase-unsafe: after `git rebase main` + force-push, every
+  # file added on main between the old remote tip and the new HEAD was
+  # reported as "new in this push", yielding false positives on routine
+  # rebases of long-lived branches. The gate still enforces what it should
+  # (files introduced by the branch since main) — just measured correctly.
   if [ "${SKIP_REGISTRY_GATE:-0}" != "1" ] && [ -f scripts/registry/check-new-files.js ]; then
-    if [ "$remote_sha" = "$zero" ]; then
-      base="origin/main"
-    else
-      base="$remote_sha"
-    fi
+    base="origin/main"
     if ! node scripts/registry/check-new-files.js --base "$base" --quiet >/tmp/pre-push-registry-gate.log 2>&1; then
       echo
       echo "✗ Refused by .husky/pre-push: registry block-new gate (ADR-058 PR-G)."
