@@ -37,6 +37,7 @@ import { InvoicesModule } from './modules/invoices/invoices.module'; // 🧾 NOU
 import { SeoModule } from './modules/seo/seo.module'; // 🔍 NOUVEAU - Module SEO avec services intégrés !
 import { SeoMonitoringModule } from './modules/seo-monitoring/seo-monitoring.module'; // 📊 Phase 1 — Observability GSC/GA4/CWV daily ingestion
 import { SeoControlPlaneModule } from './modules/seo-control-plane/seo-control-plane.module'; // 🤖 ADR-064 — SEO Production Control Plane (L1 synthetic crawler q15min)
+import { SeoProjectionModule } from './modules/seo-projection/seo-projection.module'; // 🗄️ ADR-059 PR-6c — forward-writer exports/seo → DB versionnée (write-side actif, feed R1 flag-gated OFF)
 import { MerchantCenterModule } from './modules/merchant-center/merchant-center.module'; // 🛒 PR commerce-loop V1 step 5B — Google Shopping XML feed
 import { SupplierTruthModule } from './modules/supplier-truth/supplier-truth.module'; // 🔌 Supplier-truth read-only observability endpoint (sync side lives in WorkerModule)
 import { SearchModule } from './modules/search/search.module'; // 🔍 NOUVEAU - Module de recherche optimisé v3.0 !
@@ -210,6 +211,7 @@ import { TrendSignalsModule } from './modules/trend-signals/trend-signals.module
     SeoModule, // 🔍 NOUVEAU - Module SEO avec SeoService et SitemapService !
     SeoMonitoringModule, // 📊 Phase 1 — Observability GSC/GA4/CWV daily ingestion (cf. ADR-025)
     SeoControlPlaneModule, // 🤖 ADR-064 — SEO Production Control Plane (L1 synthetic crawler q15min)
+    SeoProjectionModule, // 🗄️ ADR-059 PR-6c — forward-writer (write-side actif ; feed R1 flag-gated OFF ; read-path dark PR-7)
     MerchantCenterModule, // 🛒 PR commerce-loop V1 step 5B — Google Shopping XML feed /api/feed/merchant-center.xml
     SupplierTruthModule, // 🔌 Read-only observability for the supplier-truth sentinel (admin status + projection); the inert-gated sync runtime lives in WorkerModule
     SearchModule, // 🔍 NOUVEAU - Module de recherche optimisé v3.0 avec Meilisearch !

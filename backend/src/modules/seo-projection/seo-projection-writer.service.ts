@@ -293,17 +293,32 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
   }
 
   /**
-   * REFRESH MATERIALIZED VIEW CONCURRENTLY (hors-tx). La RPC gouvernée `refresh_seo_projection_mvs`
-   * (SECURITY DEFINER, service_role) + son appel via `callRpc()` sont livrés en PR-6c. Tant qu'absente,
-   * on N'APPELLE RIEN (fail-close propre) — aucun appel RPC direct (RPC Safety Gate), pas d'appel à une RPC
-   * inexistante. Le worker refresh reste donc dormant (no-op observable) jusqu'à PR-6c.
+   * Refresh des 2 MV de projection via la RPC gouvernée `refresh_seo_projection_mvs`
+   * (SECURITY DEFINER, service_role only — migration PR-6c `20260619_adr059_pr6c_*`).
+   * Appel via le wrapper gouverné `callRpc()` (RPC Safety Gate : jamais d'appel Supabase RPC
+   * direct ; `source='internal'` = déclenché par le worker refresh, pas une requête API publique).
+   * Le REFRESH est NON-concurrent côté SQL (CONCURRENTLY impossible dans la transaction PostgREST
+   * et sur une MV `WITH NO DATA`) ; lock ACCESS EXCLUSIVE bref, acceptable tant que le read-path
+   * est dark (flag seo_projection_read_v1 OFF, RPC read = PR-7).
+   * Fail-closed : toute erreur RPC → `{ refreshed:false, error }` loggé, jamais de throw.
    */
   async refreshViews(): Promise<{ refreshed: boolean; error?: string }> {
     if (this.readOnly) return { refreshed: false, error: 'READ_ONLY' };
+    const { data, error } = await this.callRpc<
+      Array<{ view_name: string; refreshed: boolean }>
+    >('refresh_seo_projection_mvs', {}, { source: 'internal' });
+    if (error) {
+      this.log.error(
+        `refreshViews: RPC refresh_seo_projection_mvs KO — ${error.message}`,
+      );
+      return { refreshed: false, error: error.message };
+    }
+    const refreshed =
+      Array.isArray(data) && data.length > 0 && data.every((r) => r.refreshed);
     this.log.log(
-      'refreshViews: RPC refresh_seo_projection_mvs livrée en PR-6c — refresh différé (no-op).',
+      `refreshViews: ${data?.length ?? 0} MV rafraîchie(s) (refreshed=${refreshed}).`,
     );
-    return { refreshed: false, error: 'refresh RPC pending PR-6c' };
+    return { refreshed };
   }
 
   private async openRun(
