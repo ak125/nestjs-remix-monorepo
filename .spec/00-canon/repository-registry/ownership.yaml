@@ -303,6 +303,12 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: low
+  # PRC evidence samples (#964 vehicle-issues-from-evidence) — meme famille SEO content
+  - glob: audit/content/prc-evidence-*.yml
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
   # ADR-082 Phase 1 — continuous improvement doctrine pilots + cross-validation
   # (rangés à plat sous audit/ par convention historique, cf. audit/seo-*.md).
   - glob: audit/pilot-*.md
