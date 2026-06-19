@@ -62,7 +62,7 @@ export const links: LinksFunction = () => [
   // 🚀 LCP: Preload CSS critique
   { rel: "preload", href: stylesheet, as: "style" },
 
-  // Fonts: Outfit (headings) + DM Sans (body) — above-fold critical
+  // Fonts: Outfit (headings) + DM Sans (body) - above-fold critical
   {
     rel: "preload",
     href: "/fonts/outfit-latin.woff2",
@@ -94,7 +94,7 @@ export const links: LinksFunction = () => [
 ];
 
 export const meta: MetaFunction = () => [
-  // charset et viewport sont hardcodés dans le Layout JSX — pas de doublon ici
+  // charset et viewport sont hardcodés dans le Layout JSX - pas de doublon ici
   { title: "Automecanik - Pièces auto à prix pas cher" },
   {
     name: "description",
@@ -112,19 +112,19 @@ export const meta: MetaFunction = () => [
   },
 ];
 
-// Bot UA regex — aligned with BotGuard patterns (server-side only)
+// Bot UA regex - aligned with BotGuard patterns (server-side only)
 const BOT_UA_PATTERN =
   /bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduck|semrush|ahrefs|mj12|dotbot|blexbot|gptbot|chatgpt|claude|perplexity|bytespider|python|curl|wget|scrapy|phantom|headless|selenium|puppeteer/i;
 
 export const loader = async ({ request, context }: LoaderFunctionArgs) => {
-  // User synchrone (Redis, rapide) — nécessaire pour Navbar SSR
+  // User synchrone (Redis, rapide) - nécessaire pour Navbar SSR
   const user = await getOptionalUser({ context });
 
-  // Bot detection — empêche le chargement de gtag.js pour les bots
+  // Bot detection - empêche le chargement de gtag.js pour les bots
   const userAgent = request.headers.get("user-agent") || "";
   const isBot = BOT_UA_PATTERN.test(userAgent);
 
-  // Cart deferred — ne bloque PAS le rendu SSR (P0 perf: -1-2s FCP)
+  // Cart deferred - ne bloque PAS le rendu SSR (P0 perf: -1-2s FCP)
   const cartPromise = getCart(request).catch((err) => {
     logger.warn("⚠️ [root.loader] Erreur chargement panier:", err.message);
     return null;
@@ -153,7 +153,7 @@ export const headers: HeadersFunction = () => ({
   "Cache-Control": "private, max-age=60",
 });
 
-// Reject POST requests from bots/crawlers — root route has no forms
+// Reject POST requests from bots/crawlers - root route has no forms
 export const action = async (_args: ActionFunctionArgs) => {
   return json(
     { error: "Method not allowed" },
@@ -418,8 +418,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
             }}
           />
         ) : null}
-        {/* 🚀 LCP Phase 2: Fonts self-hosted — @font-face dans global.css, preloads dans links() */}
-        {/* 🚀 LCP: Animations CSS — non-render-blocking (not needed for first paint) */}
+        {/* 🚀 LCP Phase 2: Fonts self-hosted - @font-face dans global.css, preloads dans links() */}
+        {/* 🚀 LCP: Animations CSS - non-render-blocking (not needed for first paint) */}
         <link
           rel="stylesheet"
           href={animationsStylesheet}

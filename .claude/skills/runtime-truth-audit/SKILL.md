@@ -1,6 +1,6 @@
 ---
 name: runtime-truth-audit
-description: Use when auditing runtime drift vs spec/registry (dead services, RPC drift, STABLE functions that write, partitions without rotation, attribution columns never written, orphan feature flags). Triggers — "audit runtime drift", "detect dead service", "check partition rotation", "verify attribution write path", "audit feature flags". 6 atomic checks, each tied to a real PR incident or MEMORY reference. Informational only (autofixable=false strict V1).
+description: Use when auditing runtime drift vs spec/registry (dead services, RPC drift, STABLE functions that write, partitions without rotation, attribution columns never written, orphan feature flags, PGRST203 overload ambiguity, massdoc type_id invariant integrity). Triggers — "audit runtime drift", "detect dead service", "check partition rotation", "verify attribution write path", "audit feature flags", "detect ambiguous RPC overloads", "verify massdoc type_id invariant". 8 atomic checks, each tied to a real PR incident or MEMORY reference. Informational only (autofixable=false strict V1).
 type: technique
 status: experimental
 owners: ['@ak125']
@@ -43,7 +43,7 @@ Ce skill **ne fait que lire**. Il **ne modifie aucun fichier**, **ne crée
 aucune PR**, **n'écrit en DB que via supabase MCP read-only**. Output =
 rapport markdown structuré listant les findings par check.
 
-## Architecture atomique (6 checks)
+## Architecture atomique (8 checks)
 
 ```
 .claude/skills/runtime-truth-audit/
@@ -55,6 +55,8 @@ rapport markdown structuré listant les findings par check.
     partition-cron-gap.md           # partitions sans cron.job (#697, #698)
     attribution-write-gap.md        # colonnes attribution sans writer (#695)
     orphan-runtime-flags.md         # feature flags morts (préventif)
+    rpc-overload-ambiguity.md       # overloads PostgREST ambigus → PGRST203 (#993)
+    massdoc-typeid-invariant.md     # invariant numérotation type_id Massdoc / ADR-085 (#998)
 ```
 
 **Un check = une responsabilité** (≤ 100 lignes). Pas de check "mega"
@@ -121,14 +123,14 @@ conditionnée à 6 mois de mesure + `FPR < 0.01` + autofix trivial.
 ## Procédure (orchestrateur)
 
 1. Si l'utilisateur demande "audit runtime drift" sans préciser :
-   exécuter les 6 checks dans l'ordre listé ci-dessus, agréger les findings.
+   exécuter les 8 checks dans l'ordre listé ci-dessus, agréger les findings.
 2. Si l'utilisateur cite un check spécifique (ex: "check partition rotation") :
    exécuter uniquement ce check.
 3. Format de sortie attendu :
    ```markdown
    # Runtime Truth Audit Report
    Date : YYYY-MM-DD
-   Checks exécutés : N/6
+   Checks exécutés : N/8
 
    ## Findings par severity
    - critical : X

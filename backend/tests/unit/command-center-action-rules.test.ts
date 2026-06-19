@@ -202,6 +202,96 @@ describe('certification rules — broken/partial sources → repair/certify, NOT
   });
 });
 
+describe('repair coverage — canon-priority-driven (audit 2026-06-11 angle mort)', () => {
+  it('an uncertified P0 department WITHOUT a curated playbook still gets a repair action (no silent skip)', () => {
+    const out = buildCertificationActions(
+      [
+        {
+          id: 'finance',
+          label: 'Finance',
+          certification: 'PARTIAL',
+          kpi_primary: 'k',
+          priority: 'P0',
+        },
+      ],
+      [],
+    ).map(finalizeAction);
+    const fin = out.find((a) => a.id === 'repair:finance');
+    expect(fin).toBeDefined(); // before the fix: finance was invisible
+    expect(fin!.action_type).toBe('certification');
+    expect(fin!.source).toBe('governance'); // catch-all source (enum-valid)
+    expect(fin!.department).toBe('finance'); // real department shown in UI
+    expect(fin!.next_step).toMatch(/verdict de fiabilité/i); // generic honest step
+  });
+
+  it('a curated P0 keeps its specific playbook weights/step (not the generic ones)', () => {
+    const out = buildCertificationActions(
+      [
+        {
+          id: 'sales',
+          label: 'Ventes',
+          certification: 'PARTIAL',
+          kpi_primary: 'k',
+          priority: 'P0',
+        },
+      ],
+      [],
+    ).map(finalizeAction);
+    const sales = out.find((a) => a.id === 'repair:sales')!;
+    expect(sales.impact).toBe(10); // curated, not generic 6
+    expect(sales.next_step).toMatch(/funnel/i); // curated step preserved
+  });
+
+  it('a non-P0 department without a curated playbook is NOT covered (conservative scope)', () => {
+    const out = buildCertificationActions(
+      [
+        {
+          id: 'media',
+          label: 'Média',
+          certification: 'PARTIAL',
+          kpi_primary: 'k',
+          priority: 'P2',
+        },
+      ],
+      [],
+    );
+    expect(out.find((a) => a.id === 'repair:media')).toBeUndefined();
+  });
+
+  it('a CERTIFIED P0 department gets no action even via the generic path', () => {
+    const out = buildCertificationActions(
+      [
+        {
+          id: 'finance',
+          label: 'Finance',
+          certification: 'CERTIFIED',
+          kpi_primary: 'k',
+          priority: 'P0',
+        },
+      ],
+      [],
+    );
+    expect(out.find((a) => a.id === 'repair:finance')).toBeUndefined();
+  });
+
+  it('a generic P0 that is BROKEN escalates to a repair action', () => {
+    const out = buildCertificationActions(
+      [
+        {
+          id: 'support',
+          label: 'Support',
+          certification: 'BROKEN',
+          kpi_primary: 'k',
+          priority: 'P0',
+        },
+      ],
+      [],
+    ).map(finalizeAction);
+    const sup = out.find((a) => a.id === 'repair:support')!;
+    expect(sup.action_type).toBe('repair');
+  });
+});
+
 describe('SEO opportunity rules — real business actions (certified source)', () => {
   it('classifies URLs by page kind', () => {
     expect(pageKindFromUrl('https://x/pieces/filtre/a/b.html')).toBe('product');

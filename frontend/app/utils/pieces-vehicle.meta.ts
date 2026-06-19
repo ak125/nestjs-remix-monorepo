@@ -125,15 +125,11 @@ export function buildPiecesVehicleMeta(
     { property: "og:title", content: d.seo.title },
     { property: "og:description", content: d.seo.description },
     { property: "og:url", content: canonicalUrl },
-    // Robots: index si 2+ produits, OU si 1 produit avec qualite donnees suffisante
-    // Pages 2+ produits ont ~300 mots SSR (FAQ, guide, compatibilite)
-    {
-      name: "robots",
-      content:
-        d.count >= 2 || (d.count === 1 && (d.dataQuality ?? 0) >= 50)
-          ? "index, follow"
-          : "noindex, follow",
-    },
+    // Robots: directive décidée server-side dans le loader (owner rule 2026-06-10).
+    // Gate OFF → règle legacy (count>=2 || count===1 && dataQuality>=50) ;
+    // Gate ON → index seulement si sellableCount >= seuil. Toujours `follow`.
+    // Source unique = pieces-vehicle.loader.server.ts / utils/seo/r2-indexability.ts.
+    { name: "robots", content: d.robots ?? "index, follow" },
 
     // Canonical URL
     { tagName: "link", rel: "canonical", href: canonicalUrl },

@@ -30,6 +30,15 @@ const BACKEND_URL =
       "http://localhost:3000"
     : "";
 
+// ⏱️ Budget temps TOTAL (ms) pour la cascade blog différée `blogData` (below-fold).
+// `blogData` est consommée côté bot via le chemin onAllReady de `entry.server.tsx`,
+// qui attend TOUTES les frontières <Suspense> avant d'émettre le HTML, sous un
+// `ABORT_DELAY` global de 5 s. Un timeout PAR endpoint (4 × 2 s = 8 s cumulés)
+// dépassait cette fenêtre → tout le rendu bot avortait ("render was aborted by the
+// server without a reason", Googlebot inclus). Ce budget borne la cascade ENTIÈRE
+// sous l'abort ; il doit rester strictement < ABORT_DELAY (entry.server.tsx).
+const BLOG_FETCH_BUDGET_MS = 2500;
+
 // ✅ Migration /img/* : Utiliser le proxy Caddy au lieu d'URLs Supabase directes
 function normalizeImageUrl(url: string | null | undefined): string {
   if (!url || typeof url !== "string") return "";
@@ -390,11 +399,16 @@ export async function fetchBlogArticleWithRelated(
     `${BACKEND_URL}/api/blog/homepage`,
   ];
 
+  // Deadline UNIQUE partagée par tous les endpoints (et non par-endpoint) :
+  // la cascade entière est bornée à BLOG_FETCH_BUDGET_MS, pas N × timeout.
+  // L'ordre de préférence des endpoints est préservé ; on s'arrête dès que le
+  // budget est épuisé et on retourne le fallback (toujours résolu, jamais rejeté).
+  const budget = AbortSignal.timeout(BLOG_FETCH_BUDGET_MS);
+
   for (const endpoint of endpoints) {
+    if (budget.aborted) break; // budget épuisé → ne pas lancer un fetch voué à l'abort
     try {
-      const response = await fetch(endpoint, {
-        signal: AbortSignal.timeout(2000),
-      });
+      const response = await fetch(endpoint, { signal: budget });
 
       if (!response.ok) continue;
 
@@ -436,7 +450,10 @@ export async function fetchBlogArticleWithRelated(
 
       return { article, relatedArticles };
     } catch {
-      // Continuer vers le prochain endpoint
+      // Deadline atteinte pendant un fetch → arrêter la cascade (les endpoints
+      // suivants partageraient le même signal déjà aborté). Sinon (erreur réseau
+      // ponctuelle sur cet endpoint) → essayer le suivant.
+      if (budget.aborted) break;
     }
   }
 
