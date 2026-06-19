@@ -15,13 +15,10 @@ import {
   UploadedFile,
   BadRequestException,
   NotFoundException,
-  ConflictException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import type { Response } from 'express';
-import { createHash } from 'crypto';
-import { execSync } from 'child_process';
 import { RagProxyService } from './rag-proxy.service';
 import { RagCleanupService } from './services/rag-cleanup.service';
 import { RagImageManagementService } from './services/rag-image-management.service';
