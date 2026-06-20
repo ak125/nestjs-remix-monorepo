@@ -113,8 +113,11 @@ export class ScriptGeneratorService extends SupabaseBaseService {
       }
     }
 
-    // Load RAG context
-    const ragContext = await this.loadRagContext(vertical, gammeAlias ?? null);
+    // Load GOVERNED content context (DB __seo_*, NEVER RAG — canon ADR-031/046/086 : RAG=chatbot only).
+    const contentContext = await this.loadContentContext(
+      vertical,
+      gammeAlias ?? null,
+    );
 
     // Get system prompt
     const systemPrompt = SCRIPT_SYSTEM_PROMPTS[videoType];
@@ -126,7 +129,7 @@ export class ScriptGeneratorService extends SupabaseBaseService {
       vertical,
       videoType,
       gammeAlias ?? null,
-      ragContext,
+      contentContext,
     );
 
     this.logger.log(
@@ -258,57 +261,75 @@ export class ScriptGeneratorService extends SupabaseBaseService {
     return { updatedFields };
   }
 
-  private async loadRagContext(
+  /**
+   * Load GOVERNED content context from the canonical content DB (__seo_gamme + __seo_gamme_conseil),
+   * resolved by gamme alias. NEVER reads the RAG store (__rag_knowledge) — canon ADR-031/046/086 :
+   * RAG = retrieval chatbot only, jamais source de contenu/SEO. Le script vidéo STRUCTURE ce contenu
+   * déjà sourcé/gouverné ; il n'invente pas (ADR-086 « le contenu ne crée jamais l'information »).
+   */
+  private async loadContentContext(
     vertical: string,
-    _gammeAlias: string | null,
+    gammeAlias: string | null,
   ): Promise<string> {
-    // Load relevant RAG knowledge docs for the vertical
-    let query = this.client
-      .from('__rag_knowledge')
-      .select('doc_id, title, content, truth_level, domain')
-      .in('truth_level', ['L1', 'L2'])
-      .order('truth_level', { ascending: true })
-      .limit(10);
-
-    // Filter by domain matching the vertical
-    if (vertical) {
-      query = query.ilike('domain', `%${vertical}%`);
+    if (!gammeAlias) {
+      return 'Aucun contexte contenu gouverné (gammeAlias absent).';
     }
 
-    const { data, error } = await query;
+    // Resolve gamme alias -> pg_id (pieces_gamme) — même pattern que le reste du backend.
+    const { data: gammeRow, error: gammeErr } = await this.client
+      .from('pieces_gamme')
+      .select('pg_id')
+      .eq('pg_alias', gammeAlias)
+      .maybeSingle();
 
-    if (error) {
+    if (gammeErr || !gammeRow?.pg_id) {
       this.logger.warn(
-        `Failed to load RAG context for ${vertical}: ${error.message}`,
+        `loadContentContext: alias "${gammeAlias}" non résolu (${gammeErr?.message ?? 'introuvable'}).`,
       );
-      return 'Aucun contexte RAG disponible.';
+      return 'Aucun contexte contenu gouverné (gamme non résolue).';
+    }
+    const pgId = String(gammeRow.pg_id);
+    const parts: string[] = [];
+
+    // Contenu gamme R1 gouverné (__seo_gamme.sg_content)
+    const { data: seoGamme } = await this.client
+      .from('__seo_gamme')
+      .select('sg_content')
+      .eq('sg_pg_id', pgId)
+      .maybeSingle();
+    if (seoGamme?.sg_content) {
+      parts.push(
+        `## Contenu gamme (R1)\n${this.stripHtml(String(seoGamme.sg_content)).slice(0, 4000)}`,
+      );
     }
 
-    if (!data || data.length === 0) {
-      // Fallback: try broader search
-      const { data: fallback } = await this.client
-        .from('__rag_knowledge')
-        .select('doc_id, title, content, truth_level')
-        .in('truth_level', ['L1', 'L2'])
-        .limit(5);
-
-      if (!fallback || fallback.length === 0) {
-        return 'Aucun contexte RAG disponible.';
+    // Sections conseil R3 gouvernées (__seo_gamme_conseil.sgc_content)
+    const { data: conseils } = await this.client
+      .from('__seo_gamme_conseil')
+      .select('sgc_section_type, sgc_content')
+      .eq('sgc_pg_id', pgId)
+      .limit(12);
+    for (const row of (conseils ?? []) as Record<string, unknown>[]) {
+      if (row.sgc_content) {
+        parts.push(
+          `## ${row.sgc_section_type ?? 'conseil'}\n${this.stripHtml(String(row.sgc_content)).slice(0, 2000)}`,
+        );
       }
-
-      return fallback
-        .map(
-          (doc: Record<string, unknown>) =>
-            `## ${doc.title ?? doc.doc_id}\n${String(doc.content ?? '').slice(0, 2000)}`,
-        )
-        .join('\n\n---\n\n');
     }
 
-    return data
-      .map(
-        (doc: Record<string, unknown>) =>
-          `## ${doc.title ?? doc.doc_id} (${doc.truth_level})\n${String(doc.content ?? '').slice(0, 2000)}`,
-      )
-      .join('\n\n---\n\n');
+    if (parts.length === 0) {
+      return `Aucun contenu gouverné publié pour la gamme "${gammeAlias}" (vertical: ${vertical}).`;
+    }
+
+    return parts.join('\n\n---\n\n');
+  }
+
+  /** Strip HTML for a clean LLM context (sg_content/sgc_content sont du HTML). */
+  private stripHtml(html: string): string {
+    return html
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
   }
 }

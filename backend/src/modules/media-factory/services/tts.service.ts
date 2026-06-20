@@ -1,8 +1,13 @@
 /**
- * TtsService — Text-to-Speech generation via Microsoft Edge TTS (free, no API key).
+ * TtsService — Text-to-Speech via Microsoft Neural voices over the **Azure Speech REST API**.
  *
- * Uses edge-tts-universal for high-quality Neural TTS voices.
- * Caches by content hash to avoid redundant synthesis.
+ * SECURITY (revival 2026-06-20): the previous implementation used `msedge-tts` +
+ * `edge-tts-universal`, which transitively pulled a vulnerable `axios` (critical SSRF CVE) and
+ * led to the whole MediaFactory module being deleted (#7468868f2). House convention is `fetch`,
+ * not axios. This rewrite uses **native `fetch`** against the official Azure Speech REST endpoint
+ * with the SAME Microsoft Neural voices (`fr-FR-HenriNeural`, …) — **zero new npm dependency,
+ * zero axios, zero WebSocket**. Provider is config-gated: disabled unless `AZURE_SPEECH_KEY` is
+ * set (mirrors the Groq `script-generator` guard). The S3/MinIO upload is also `fetch`-based.
  *
  * Called from dashboard: POST /api/admin/video/productions/:briefId/generate-audio
  */
@@ -10,14 +15,13 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHash, createHmac } from 'crypto';
-import * as http from 'http';
-import { MsEdgeTTS, OUTPUT_FORMAT } from 'msedge-tts';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { AudioCacheService } from './audio-cache.service';
 
 export type TtsVoice = 'onyx' | 'nova' | 'alloy' | 'echo' | 'shimmer' | 'fable';
 
-// Map legacy OpenAI voice names to Microsoft Neural TTS voices (French)
+// Map legacy OpenAI voice names to Microsoft Neural TTS voices (French).
+// Valid for both the legacy edge-tts path AND the Azure Speech REST API (same voice catalog).
 const VOICE_MAP: Record<TtsVoice, string> = {
   onyx: 'fr-FR-HenriNeural', // Masculin, grave, documentaire
   nova: 'fr-FR-DeniseNeural', // Feminin, chaleureuse
@@ -27,10 +31,20 @@ const VOICE_MAP: Record<TtsVoice, string> = {
   fable: 'fr-FR-HenriNeural', // Fallback masculin
 };
 
-// Map speed (0.5-2.0) to edge-tts rate format (e.g. '-10%', '+20%')
+// Map speed (0.5-2.0) to SSML prosody rate format (e.g. '-10%', '+20%') — identical on Azure.
 function speedToRate(speed: number): string {
   const pct = Math.round((speed - 1.0) * 100);
   return pct >= 0 ? `+${pct}%` : `${pct}%`;
+}
+
+// Minimal XML escaping for SSML payload (defense against malformed/injected text).
+function escapeXml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
 }
 
 export interface GenerateAudioInput {
@@ -58,6 +72,8 @@ export class TtsService extends SupabaseBaseService {
   private readonly defaultVoice: TtsVoice;
   private readonly defaultSpeed: number;
   private readonly enabled: boolean;
+  private readonly azureKey: string;
+  private readonly azureRegion: string;
 
   constructor(
     private readonly cfg: ConfigService,
@@ -67,16 +83,22 @@ export class TtsService extends SupabaseBaseService {
 
     this.defaultVoice = (cfg.get<string>('TTS_VOICE') || 'onyx') as TtsVoice;
     this.defaultSpeed = parseFloat(cfg.get<string>('TTS_SPEED') || '0.9');
-    this.enabled = cfg.get<string>('TTS_ENABLED') !== 'false';
+    this.azureKey = cfg.get<string>('AZURE_SPEECH_KEY') ?? '';
+    this.azureRegion = cfg.get<string>('AZURE_SPEECH_REGION') ?? 'francecentral';
+    // Off by default unless explicitly enabled AND a key is present (fetch-only, no axios).
+    this.enabled =
+      cfg.get<string>('TTS_ENABLED') !== 'false' && this.azureKey !== '';
   }
 
   /**
-   * Generate TTS audio from text using Microsoft Edge Neural TTS.
+   * Generate TTS audio from text using Microsoft Neural voices via Azure Speech REST (fetch).
    * Returns cached version if same text+voice+speed already exists.
    */
   async generateAudio(input: GenerateAudioInput): Promise<GenerateAudioResult> {
     if (!this.enabled) {
-      throw new BadRequestException('TTS is disabled (TTS_ENABLED=false)');
+      throw new BadRequestException(
+        'TTS désactivé : configurer AZURE_SPEECH_KEY (fetch-only, sans axios) ou TTS_ENABLED=false.',
+      );
     }
 
     const voice = input.voice || this.defaultVoice;
@@ -100,7 +122,6 @@ export class TtsService extends SupabaseBaseService {
           `[TTS] Cache hit for ${input.briefId} (key=${cacheKey.slice(0, 12)}...)`,
         );
 
-        // Update production with cached URL
         await this.updateProductionAudio(
           input.briefId,
           cached.url,
@@ -115,38 +136,26 @@ export class TtsService extends SupabaseBaseService {
           costChars,
           voice,
           speed,
-          model: 'edge-tts',
+          model: 'azure-neural',
         };
       }
     }
 
-    // Generate with msedge-tts
-    const edgeVoice = VOICE_MAP[voice] || 'fr-FR-HenriNeural';
+    // Generate via Azure Speech REST (fetch, native — no axios / no WebSocket).
+    const azureVoice = VOICE_MAP[voice] || 'fr-FR-HenriNeural';
     const rate = speedToRate(speed);
 
     this.logger.log(
-      `[TTS] Generating audio for ${input.briefId}: ${costChars} chars, voice=${edgeVoice}, rate=${rate}`,
+      `[TTS] Generating audio for ${input.briefId}: ${costChars} chars, voice=${azureVoice}, rate=${rate}`,
     );
 
-    const tts = new MsEdgeTTS();
-    await tts.setMetadata(
-      edgeVoice,
-      OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3,
-    );
-    const { audioStream } = tts.toStream(text, { rate });
-
-    // Collect stream into buffer
-    const chunks: Buffer[] = [];
-    for await (const chunk of audioStream) {
-      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-    }
-    const buffer = Buffer.concat(chunks);
+    const buffer = await this.synthesizeAzure(text, azureVoice, rate);
 
     if (buffer.length === 0) {
-      throw new Error('edge-tts returned empty audio');
+      throw new Error('Azure Speech returned empty audio');
     }
 
-    // Upload to S3 via Supabase Storage
+    // Upload to S3/MinIO via Supabase Storage-compatible endpoint (fetch + AWS SigV4).
     const s3Path = `tts/${cacheKey}.mp3`;
     const audioUrl = await this.uploadToStorage(s3Path, buffer);
 
@@ -154,16 +163,14 @@ export class TtsService extends SupabaseBaseService {
     const wordCount = text.split(/\s+/).length;
     const estimatedDurationSecs = Math.round(((wordCount / 150) * 60) / speed);
 
-    // Store in cache
     await this.audioCache.set(cacheKey, {
       url: audioUrl,
       durationSecs: estimatedDurationSecs,
-      voice: edgeVoice,
+      voice: azureVoice,
       speed,
       charCount: costChars,
     });
 
-    // Update production with audio URL
     await this.updateProductionAudio(input.briefId, audioUrl, voice, speed);
 
     this.logger.log(
@@ -177,8 +184,53 @@ export class TtsService extends SupabaseBaseService {
       costChars,
       voice,
       speed,
-      model: 'edge-tts',
+      model: 'azure-neural',
     };
+  }
+
+  /**
+   * Synthesize speech via the Azure Speech REST API using native fetch.
+   * Same Microsoft Neural voice catalog as the legacy edge-tts path. No npm dependency.
+   */
+  private async synthesizeAzure(
+    text: string,
+    azureVoice: string,
+    rate: string,
+  ): Promise<Buffer> {
+    const endpoint = `https://${this.azureRegion}.tts.speech.microsoft.com/cognitiveservices/v1`;
+    const ssml =
+      `<speak version='1.0' xml:lang='fr-FR'>` +
+      `<voice name='${azureVoice}'>` +
+      `<prosody rate='${rate}'>${escapeXml(text)}</prosody>` +
+      `</voice></speak>`;
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30_000);
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Ocp-Apim-Subscription-Key': this.azureKey,
+          'Content-Type': 'application/ssml+xml',
+          'X-Microsoft-OutputFormat': 'audio-24khz-48kbitrate-mono-mp3',
+          'User-Agent': 'automecanik-media-factory',
+        },
+        body: ssml,
+        signal: controller.signal,
+      });
+
+      if (!res.ok) {
+        const errText = await res.text().catch(() => '');
+        throw new Error(
+          `Azure Speech error (${res.status}): ${errText.slice(0, 200)}`,
+        );
+      }
+
+      const arrayBuf = await res.arrayBuffer();
+      return Buffer.from(arrayBuf);
+    } finally {
+      clearTimeout(timeout);
+    }
   }
 
   private computeCacheKey(text: string, voice: string, speed: number): string {
@@ -208,6 +260,9 @@ export class TtsService extends SupabaseBaseService {
     }
   }
 
+  /**
+   * Upload audio to S3/MinIO using native fetch + AWS Signature V4 (no axios, no node:http).
+   */
   private async uploadToStorage(path: string, buffer: Buffer): Promise<string> {
     const endpoint =
       this.cfg.get<string>('S3_ENDPOINT') ?? 'http://localhost:9000';
@@ -280,38 +335,24 @@ export class TtsService extends SupabaseBaseService {
     headers['Authorization'] =
       `AWS4-HMAC-SHA256 Credential=${accessKey}/${scope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
 
-    return new Promise<string>((resolve, reject) => {
-      const req = http.request(
-        {
-          hostname: url.hostname,
-          port: url.port || 9000,
-          path: url.pathname,
-          method: 'PUT',
-          headers,
-        },
-        (res) => {
-          const chunks: Buffer[] = [];
-          res.on('data', (c) => chunks.push(c));
-          res.on('end', () => {
-            if (
-              res.statusCode &&
-              res.statusCode >= 200 &&
-              res.statusCode < 300
-            ) {
-              resolve(`${endpoint}/${bucket}/${path}`);
-            } else {
-              const body = Buffer.concat(chunks).toString();
-              reject(
-                new Error(
-                  `MinIO PUT failed (${res.statusCode}): ${body.slice(0, 200)}`,
-                ),
-              );
-            }
-          });
-        },
-      );
-      req.on('error', reject);
-      req.end(buffer);
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30_000);
+    try {
+      const res = await fetch(url, {
+        method: 'PUT',
+        headers,
+        body: new Uint8Array(buffer),
+        signal: controller.signal,
+      });
+      if (!res.ok) {
+        const body = await res.text().catch(() => '');
+        throw new Error(
+          `MinIO PUT failed (${res.status}): ${body.slice(0, 200)}`,
+        );
+      }
+      return `${endpoint}/${bucket}/${path}`;
+    } finally {
+      clearTimeout(timeout);
+    }
   }
 }
