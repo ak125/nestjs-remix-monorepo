@@ -84,7 +84,8 @@ export class TtsService extends SupabaseBaseService {
     this.defaultVoice = (cfg.get<string>('TTS_VOICE') || 'onyx') as TtsVoice;
     this.defaultSpeed = parseFloat(cfg.get<string>('TTS_SPEED') || '0.9');
     this.azureKey = cfg.get<string>('AZURE_SPEECH_KEY') ?? '';
-    this.azureRegion = cfg.get<string>('AZURE_SPEECH_REGION') ?? 'francecentral';
+    this.azureRegion =
+      cfg.get<string>('AZURE_SPEECH_REGION') ?? 'francecentral';
     // Off by default unless explicitly enabled AND a key is present (fetch-only, no axios).
     this.enabled =
       cfg.get<string>('TTS_ENABLED') !== 'false' && this.azureKey !== '';
