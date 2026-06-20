@@ -3,7 +3,7 @@
  * Affiche toutes les informations d'une commande spécifique avec adresses
  */
 
-import { json, type LoaderFunction, type MetaFunction } from "@remix-run/node";
+import { type LoaderFunction, type MetaFunction } from "@remix-run/node";
 import {
   useLoaderData,
   Link,
@@ -119,7 +119,7 @@ export const loader: LoaderFunction = async ({ params, request }) => {
   const orderId = params.id;
 
   if (!orderId) {
-    return json<LoaderData>({ order: null, error: "ID de commande manquant" });
+    return { order: null, error: "ID de commande manquant" };
   }
 
   logger.log(`🔍 [Frontend] Chargement commande avec ID: ${orderId}`);
@@ -144,10 +144,10 @@ export const loader: LoaderFunction = async ({ params, request }) => {
         errorText,
       );
 
-      return json<LoaderData>({
+      return {
         order: null,
         error: `Commande non trouvée avec l'ID: ${orderId}`,
-      });
+      };
     }
 
     const data = await response.json();
@@ -155,23 +155,23 @@ export const loader: LoaderFunction = async ({ params, request }) => {
 
     if (!order || !order.ord_id) {
       logger.error(`❌ [Frontend] Commande non trouvée ou structure invalide`);
-      return json<LoaderData>({
+      return {
         order: null,
         error: "Commande non trouvée",
-      });
+      };
     }
 
     logger.log(`✅ [Frontend] Commande ${orderId} chargée (format BDD)`);
-    return json<LoaderData>({
+    return {
       order: order,
       error: undefined,
-    });
+    };
   } catch (error) {
     logger.error("❌ [Frontend] Error loading order:", error);
-    return json<LoaderData>({
+    return {
       order: null,
       error: "Erreur lors du chargement de la commande",
-    });
+    };
   }
 };
 

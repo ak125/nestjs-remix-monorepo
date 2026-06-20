@@ -8,11 +8,7 @@
  * - URLs à risque
  */
 
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, useSearchParams } from "@remix-run/react";
 import {
   Activity,
@@ -104,20 +100,20 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const indexData = indexRes.ok ? await indexRes.json() : null;
     const atRiskData = atRiskRes.ok ? await atRiskRes.json() : null;
 
-    return json({
+    return {
       crawlActivity: (crawlData?.data || []) as CrawlActivity[],
       indexChanges: (indexData?.data || []) as IndexChange[],
       urlsAtRisk: (atRiskData?.data || []) as UrlAtRisk[],
       error: null,
-    });
+    };
   } catch (error) {
     logger.error("[SEO Monitoring] Loader error:", error);
-    return json({
+    return {
       crawlActivity: [],
       indexChanges: [],
       urlsAtRisk: [],
       error: "Erreur connexion backend",
-    });
+    };
   }
 }
 

@@ -6,11 +6,7 @@
  * Intention : Découvrir des conseils pratiques
  */
 
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import {
   useLoaderData,
   Link,
@@ -197,7 +193,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     const endTime = Date.now();
     logger.log(`[PERF] Advice loader completed in ${endTime - startTime}ms`);
 
-    return json({
+    return {
       articles,
       total: data.data?.total || 0,
       page: data.data?.page || 1,
@@ -209,10 +205,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       popularTags,
       stats,
       success: true,
-    });
+    };
   } catch (error) {
     logger.error("[ERROR] Advice loader failed:", error);
-    return json({
+    return {
       articles: [],
       total: 0,
       page: 1,
@@ -225,7 +221,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       stats: { totalViews: 0, avgReadingTime: 3, totalArticles: 0 },
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
-    });
+    };
   }
 };
 

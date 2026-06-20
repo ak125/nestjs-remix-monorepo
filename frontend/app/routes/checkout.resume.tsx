@@ -7,7 +7,6 @@
  */
 
 import {
-  json,
   redirect,
   type LoaderFunctionArgs,
   type MetaFunction,
@@ -56,22 +55,22 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     // Mode check : afficher l'état sans consommer le token
     if (isCheck) {
-      return json({
+      return {
         mode: "check" as const,
         orderId,
         isPaid: isPaid === "1" || isPaid === true,
         orderStatus,
-      });
+      };
     }
 
     // Si déjà payé, afficher la confirmation
     if (isPaid === "1" || isPaid === true) {
-      return json({
+      return {
         mode: "already_paid" as const,
         orderId,
         isPaid: true,
         orderStatus,
-      });
+      };
     }
 
     // Rediriger vers Paybox (le token sera marqué used_at par le backend)

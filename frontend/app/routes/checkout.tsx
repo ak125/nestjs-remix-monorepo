@@ -5,11 +5,11 @@
  */
 
 import {
-  json,
   redirect,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
   type MetaFunction,
+  data,
 } from "@remix-run/node";
 import {
   Form,
@@ -110,10 +110,10 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     const cart = await getCart(request, context);
 
     if (!cart || !cart.items) {
-      return json({
+      return {
         cart: null,
         error: "Erreur de structure du panier. Veuillez recharger.",
-      });
+      };
     }
 
     const itemsCount = Array.isArray(cart.items) ? cart.items.length : 0;
@@ -133,20 +133,20 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
 
     const googleClientId = process.env.VITE_GOOGLE_CLIENT_ID || "";
 
-    return json({
+    return {
       cart,
       user,
       userProfile,
       paymentMethods,
       vehicle,
       googleClientId,
-    });
+    };
   } catch (error) {
     logger.error("[Checkout] Erreur chargement:", error);
-    return json({
+    return {
       cart: null,
       error: "Erreur lors du chargement du panier. Veuillez reessayer.",
-    });
+    };
   }
 };
 
@@ -179,7 +179,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
         .map(([k, msgs]) => `${labelMap[k] || k} : ${(msgs as string[])[0]}`)
         .join(" | ");
       logger.warn("[Checkout] Validation failed:", details);
-      return json(
+      return data(
         {
           ok: false,
           error: details || "Veuillez corriger les informations du formulaire.",
@@ -227,7 +227,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
     const cartData = await getCart(request);
 
     if (!cartData.items || cartData.items.length === 0) {
-      return json(
+      return data(
         {
           ok: false,
           error: "Votre panier est vide.",
@@ -282,7 +282,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
       }
       // Handle email conflict
       if (orderResult.emailConflict) {
-        return json(
+        return data(
           {
             ok: false,
             error: orderResult.error,
@@ -293,7 +293,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
           { status: orderResult.status },
         );
       }
-      return json(
+      return data(
         {
           ok: false,
           error: orderResult.error,
@@ -310,7 +310,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
 
     if (!orderDetails) {
       logger.error("[Checkout] getOrderForPayment returned null for:", orderId);
-      return json(
+      return data(
         {
           ok: false,
           error: "Commande creee mais impossible de recuperer les details.",
@@ -325,7 +325,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
     }
 
     if (orderDetails.totalTTC <= 0) {
-      return json(
+      return data(
         {
           ok: false,
           error: "Montant de commande invalide.",
@@ -337,7 +337,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
 
     const customerEmail = orderDetails.customerEmail || guestEmail || "";
     if (!customerEmail) {
-      return json(
+      return data(
         {
           ok: false,
           error: "Email client manquant sur la commande.",
@@ -362,10 +362,10 @@ export async function action({ request, context }: ActionFunctionArgs) {
     const resumeToken = orderResult.success
       ? orderResult.resumeToken
       : undefined;
-    return json({ ok: true, redirectUrl, orderId, resumeToken });
+    return { ok: true, redirectUrl, orderId, resumeToken };
   } catch (error) {
     logger.error("[Checkout] Action error:", error);
-    return json(
+    return data(
       {
         ok: false,
         error: error instanceof Error ? error.message : "Erreur inconnue",

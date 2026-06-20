@@ -5,7 +5,6 @@
  */
 
 import {
-  json,
   redirect,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
@@ -81,16 +80,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const gammesData = gammesRes.ok ? await gammesRes.json() : { data: [] };
     const r5Data = r5Res.ok ? await r5Res.json() : { data: [] };
 
-    return json<LoaderData>({
+    return {
       gammes: gammesData.data || [],
       r5Slugs: r5Data.data || [],
-    });
+    };
   } catch (error) {
     logger.error("[R4 New] Loader error:", error);
-    return json<LoaderData>({
+    return {
       gammes: [],
       r5Slugs: [],
-    });
+    };
   }
 }
 
@@ -124,7 +123,7 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   if (errors.length > 0) {
-    return json({ success: false, errors });
+    return { success: false, errors };
   }
 
   // Parse arrays
@@ -166,16 +165,16 @@ export async function action({ request }: ActionFunctionArgs) {
 
     if (!res.ok) {
       const error = await res.json();
-      return json({
+      return {
         success: false,
         errors: [error.message || "Erreur lors de la création"],
-      });
+      };
     }
 
     return redirect(`/admin/seo-hub/content/references/${slug}`);
   } catch (error) {
     logger.error("[R4 New] Action error:", error);
-    return json({ success: false, errors: ["Erreur serveur"] });
+    return { success: false, errors: ["Erreur serveur"] };
   }
 }
 

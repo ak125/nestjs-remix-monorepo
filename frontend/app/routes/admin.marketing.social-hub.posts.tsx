@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, useSearchParams } from "@remix-run/react";
 import {
   FileText,
@@ -222,12 +218,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
       ? await statusRes.value.json()
       : null;
 
-  return json({
+  return {
     posts: (postsData.data || []) as SocialPost[],
     total: postsData.total || 0,
     filters: { week, status },
     pipeline: pipelineData as PipelineStatus | null,
-  });
+  };
 }
 
 // ── Post Actions ──

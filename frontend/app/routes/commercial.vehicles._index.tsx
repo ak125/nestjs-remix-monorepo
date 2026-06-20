@@ -6,7 +6,6 @@
  */
 
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
   redirect,
@@ -77,18 +76,18 @@ export async function loader({ context }: LoaderFunctionArgs) {
       error = "Erreur lors du chargement des statistiques";
     }
 
-    return json<LoaderData>({
+    return {
       user,
       stats,
       error,
-    });
+    };
   } catch (err) {
     logger.error("Erreur loader véhicules:", err);
-    return json<LoaderData>({
+    return {
       user,
       stats: null,
       error: "Erreur serveur",
-    });
+    };
   }
 }
 

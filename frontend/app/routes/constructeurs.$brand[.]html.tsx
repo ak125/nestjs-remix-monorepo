@@ -6,7 +6,6 @@
 // Intention : Hub marque constructeur
 
 import {
-  defer,
   type HeadersFunction,
   type LinksFunction,
   type LoaderFunctionArgs,
@@ -353,7 +352,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
     // 🏭 R7 enriched content (optional overlay)
     const r7Content = await brandApi.getR7Content(marque_id);
 
-    return defer({ ...bestsellersResponse.data, r7Content });
+    return { ...bestsellersResponse.data, r7Content };
   } catch (error) {
     // Propager les Response HTTP (404, etc.) telles quelles
     if (error instanceof Response) {
@@ -1070,7 +1069,7 @@ function VehicleCard({ vehicle }: { vehicle: PopularVehicle }) {
           {/* Badge carburant */}
           {fuelLabel && (
             <span
-              className={`px-2 py-0.5 rounded-full text-[10px] font-semibold shadow-md ${ fuelLabel === "Diesel" ? "bg-gray-800 text-white" : fuelLabel === "Essence" ? "bg-green-600 text-white" : fuelLabel === "Hybride" ? "bg-blue-500 text-white" : "bg-primary text-white" }`}
+              className={`px-2 py-0.5 rounded-full text-[10px] font-semibold shadow-md ${fuelLabel === "Diesel" ? "bg-gray-800 text-white" : fuelLabel === "Essence" ? "bg-green-600 text-white" : fuelLabel === "Hybride" ? "bg-blue-500 text-white" : "bg-primary text-white"}`}
             >
               {fuelLabel}
             </span>

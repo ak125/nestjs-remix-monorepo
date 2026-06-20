@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import {
   Link,
   useLoaderData,
@@ -93,7 +89,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     ? await coverageRes.json()
     : [];
 
-  return json({ documents, coverage });
+  return { documents, coverage };
 }
 
 const TRUTH_STATUS: Record<string, StatusType> = {

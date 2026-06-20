@@ -10,9 +10,9 @@
  */
 
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
+  data,
 } from "@remix-run/node";
 import {
   Link,
@@ -361,7 +361,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
       // Silently ignore — related refs are optional
     }
 
-    return json<LoaderData>(
+    return data(
       { reference, relatedRefs },
       {
         headers: {

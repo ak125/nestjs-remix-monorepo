@@ -2,11 +2,7 @@
  * 📦 Gestion des expéditions - Interface principale
  */
 
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link, useSearchParams, Form } from "@remix-run/react";
 import {
   Truck,
@@ -398,7 +394,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       },
     };
 
-    return json({
+    return {
       orders: filteredOrders,
       stats,
       totalOrders: filteredOrders.length,
@@ -410,10 +406,10 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         zone,
         trackingStatus,
       },
-    });
+    };
   } catch (error) {
     logger.error("Erreur chargement expéditions commercial:", error);
-    return json({
+    return {
       orders: [],
       stats: {
         totalShipments: 0,
@@ -434,7 +430,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       currentPage: 1,
       limit: 20,
       filters: { search: "", status: "", zone: "", trackingStatus: "" },
-    });
+    };
   }
 }
 

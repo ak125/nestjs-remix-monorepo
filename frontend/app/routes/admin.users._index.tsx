@@ -4,10 +4,10 @@
  */
 
 import {
-  json,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
   type MetaFunction,
+  data,
 } from "@remix-run/node";
 import {
   useLoaderData,
@@ -151,7 +151,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
           ) / 100
         : 1;
 
-    return json<LoaderData>({
+    return {
       users: data.data || [],
       total: totalUsers,
       currentPage: page,
@@ -171,10 +171,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         newUsersToday: Math.floor(Math.random() * 50), // Simulé
         averageLevel,
       },
-    });
+    };
   } catch (error) {
     logger.error("❌ Erreur loader admin.users:", error);
-    return json<LoaderData>({
+    return {
       users: [],
       total: 0,
       currentPage: 1,
@@ -195,7 +195,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         newUsersToday: 0,
         averageLevel: 1,
       },
-    });
+    };
   }
 };
 
@@ -235,10 +235,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           );
         }
 
-        return json({
+        return {
           success: true,
           message: `Utilisateur ${newStatus ? "activé" : "désactivé"} avec succès`,
-        });
+        };
 
       case "delete":
         // Appel API pour supprimer
@@ -256,10 +256,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         if (!deleteResponse.ok)
           throw new Error("Erreur lors de la suppression");
 
-        return json({
+        return {
           success: true,
           message: "Utilisateur supprimé avec succès",
-        });
+        };
 
       case "bulkDelete":
         // Suppression en masse
@@ -278,10 +278,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         const successCount = results.filter(
           (r) => r.status === "fulfilled",
         ).length;
-        return json({
+        return {
           success: true,
           message: `${successCount}/${userIds.length} utilisateurs supprimés`,
-        });
+        };
 
       case "export":
         // Export CSV - récupérer tous les utilisateurs filtrés
@@ -329,12 +329,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         });
 
       default:
-        return json({ error: "Action non reconnue" }, { status: 400 });
+        return data({ error: "Action non reconnue" }, { status: 400 });
     }
   } catch (error: unknown) {
     logger.error("❌ Erreur action admin.users:", error);
     const message = error instanceof Error ? error.message : String(error);
-    return json(
+    return data(
       { error: message || "Une erreur est survenue" },
       { status: 500 },
     );

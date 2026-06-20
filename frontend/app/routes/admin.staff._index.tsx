@@ -5,11 +5,7 @@
  * Module admin moderne avec API REST et nouveau StaffService
  */
 
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link, Form, useNavigation } from "@remix-run/react";
 import { useState } from "react";
 import { Alert } from "~/components/ui/alert";
@@ -158,7 +154,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       ),
     };
 
-    return json({
+    return {
       staff,
       stats,
       pagination: {
@@ -169,12 +165,12 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       },
       fallbackMode: false,
       timestamp: new Date().toISOString(),
-    });
+    };
   } catch (error) {
     logger.error("Erreur loader staff:", error);
 
     // Fallback en cas d'erreur
-    return json({
+    return {
       staff: [],
       stats: {
         total: 0,
@@ -185,7 +181,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       pagination: { page: 1, totalPages: 1, totalItems: 0 },
       error: "Erreur lors du chargement du staff",
       fallbackMode: true,
-    });
+    };
   }
 }
 

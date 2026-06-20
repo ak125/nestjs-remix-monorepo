@@ -3,11 +3,12 @@
  * Affichage complet et modération d'un avis spécifique
  */
 import {
-  json,
   redirect,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
   type MetaFunction,
+  type TypedResponse,
+  data,
 } from "@remix-run/node";
 import {
   Form,
@@ -71,49 +72,54 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   try {
     const review = await getReviewById(Number(reviewId), request);
-    return json<LoaderData>({ review });
+    return { review };
   } catch (error) {
     logger.error("Erreur lors du chargement de l'avis:", error);
     throw new Response("Avis non trouvé", { status: 404 });
   }
 }
 
-export async function action({ params, request }: ActionFunctionArgs) {
+export async function action({
+  params,
+  request,
+}: ActionFunctionArgs): Promise<
+  ActionData | ReturnType<typeof data<ActionData>> | TypedResponse<never>
+> {
   const reviewId = params.reviewId;
   const formData = await request.formData();
   const intent = formData.get("intent");
 
   if (!reviewId) {
-    return json<ActionData>({ error: "ID d'avis manquant" }, { status: 400 });
+    return data<ActionData>({ error: "ID d'avis manquant" }, { status: 400 });
   }
 
   try {
     switch (intent) {
       case "approve":
         await updateReviewStatus(Number(reviewId), "approved", request);
-        return json<ActionData>({ success: true });
+        return { success: true };
 
       case "reject":
         await updateReviewStatus(Number(reviewId), "rejected", request);
-        return json<ActionData>({ success: true });
+        return { success: true };
 
       case "pending":
         await updateReviewStatus(Number(reviewId), "pending", request);
-        return json<ActionData>({ success: true });
+        return { success: true };
 
       case "delete":
         await deleteReview(Number(reviewId), request);
         return redirect("/reviews?deleted=true");
 
       default:
-        return json<ActionData>(
+        return data<ActionData>(
           { error: "Action non reconnue" },
           { status: 400 },
         );
     }
   } catch (error) {
     logger.error("Erreur lors de l'action:", error);
-    return json<ActionData>(
+    return data<ActionData>(
       { error: "Erreur lors de l'action" },
       { status: 500 },
     );

@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import {
   useLoaderData,
   Link,
@@ -113,7 +109,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       }
     }
 
-    return json({
+    return {
       result: {
         status: derivedStatus,
         transactionId: auto,
@@ -122,7 +118,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         date: new Date().toISOString(),
         errorCode: erreur !== "00000" ? erreur : undefined,
       } satisfies PaymentResult,
-    });
+    };
   }
 
   // --- SystemPay / Cyberplus return ---
@@ -137,7 +133,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     logger.warn("[PaymentReturn] Missing transactionId", {
       keys: Array.from(url.searchParams.keys()),
     });
-    return json({
+    return {
       result: {
         status: "ERROR" as const,
         transactionId: "",
@@ -147,7 +143,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         errorMessage:
           "Transaction introuvable. Verifiez votre email de confirmation ou contactez le support.",
       } satisfies PaymentResult,
-    });
+    };
   }
 
   try {
@@ -166,7 +162,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       status: (result as PaymentResult).status,
     });
 
-    return json({ result: result as PaymentResult });
+    return { result: result as PaymentResult };
   } catch (error) {
     if (error instanceof Response) {
       throw error;
@@ -204,7 +200,8 @@ export default function PaymentReturnPage() {
             order_id: String(txId),
             item_count: 1,
             revenue_cents:
-              typeof result.amount === "number" && Number.isFinite(result.amount)
+              typeof result.amount === "number" &&
+              Number.isFinite(result.amount)
                 ? Math.round(result.amount * 100)
                 : null,
             referrer: classifyReferrer(),

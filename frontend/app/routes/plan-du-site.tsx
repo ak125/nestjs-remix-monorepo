@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import {
   Home,
@@ -92,13 +88,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
       0,
     );
 
-    return json({ families, brands, totalGammes });
+    return { families, brands, totalGammes };
   } catch {
-    return json({
+    return {
       families: [] as Family[],
       brands: [] as Brand[],
       totalGammes: 0,
-    });
+    };
   }
 }
 

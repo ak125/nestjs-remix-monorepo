@@ -1,7 +1,6 @@
 // app/routes/admin.seo-content.tsx
 // Dashboard de validation du contenu SEO R4 (References) et R5 (Diagnostics)
 import {
-  json,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
   type MetaFunction,
@@ -100,15 +99,15 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       ? r5Data
       : r5Data.drafts || [];
 
-    return json({
+    return {
       r4Drafts,
       r5Drafts,
       success: true,
       error: null,
-    });
+    };
   } catch (error) {
     logger.error("[SEO Content] Erreur:", error);
-    return json({
+    return {
       r4Drafts: [],
       r5Drafts: [],
       error:
@@ -116,7 +115,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
           ? error.message
           : "Erreur de connexion au backend",
       success: false,
-    });
+    };
   }
 }
 
@@ -143,7 +142,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
           },
         );
         if (!response.ok) throw new Error(`API Error: ${response.status}`);
-        return json({ success: true, message: `R4 "${slug}" publié` });
+        return { success: true, message: `R4 "${slug}" publié` };
       }
 
       case "publish-r5": {
@@ -159,7 +158,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
           },
         );
         if (!response.ok) throw new Error(`API Error: ${response.status}`);
-        return json({ success: true, message: `R5 "${slug}" publié` });
+        return { success: true, message: `R5 "${slug}" publié` };
       }
 
       case "delete-r4": {
@@ -175,7 +174,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
           },
         );
         if (!response.ok) throw new Error(`API Error: ${response.status}`);
-        return json({ success: true, message: `R4 "${slug}" supprimé` });
+        return { success: true, message: `R4 "${slug}" supprimé` };
       }
 
       case "delete-r5": {
@@ -191,7 +190,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
           },
         );
         if (!response.ok) throw new Error(`API Error: ${response.status}`);
-        return json({ success: true, message: `R5 "${slug}" supprimé` });
+        return { success: true, message: `R5 "${slug}" supprimé` };
       }
 
       case "publish-all-r4": {
@@ -210,7 +209,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
           );
           if (response.ok) published++;
         }
-        return json({ success: true, message: `${published} R4 publiés` });
+        return { success: true, message: `${published} R4 publiés` };
       }
 
       case "publish-all-r5": {
@@ -229,18 +228,18 @@ export async function action({ request, context }: ActionFunctionArgs) {
           );
           if (response.ok) published++;
         }
-        return json({ success: true, message: `${published} R5 publiés` });
+        return { success: true, message: `${published} R5 publiés` };
       }
 
       default:
-        return json({ success: false, message: "Action inconnue" });
+        return { success: false, message: "Action inconnue" };
     }
   } catch (error) {
     logger.error("[SEO Content Action] Erreur:", error);
-    return json({
+    return {
       success: false,
       message: error instanceof Error ? error.message : "Erreur",
-    });
+    };
   }
 }
 

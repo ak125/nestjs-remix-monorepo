@@ -2,11 +2,7 @@
  * 🔍 SEARCH RESULTS PAGE - Page de résultats de recherche v3.0
  */
 
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import {
   useLoaderData,
   useNavigation,
@@ -69,14 +65,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const version = (url.searchParams.get("version") as "v7" | "v8") || "v8";
 
   if (!query) {
-    return json<SearchResultsData>({
+    return {
       query: "",
       results: [],
       totalCount: 0,
       searchTime: 0,
       version,
       suggestions: [],
-    });
+    };
   }
 
   // Simulation d'appel API (en réalité, ceci ferait appel au SearchService backend)
@@ -113,7 +109,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       result.description.toLowerCase().includes(query.toLowerCase()),
   );
 
-  return json<SearchResultsData>({
+  return {
     query,
     results: mockResults,
     totalCount: mockResults.length,
@@ -123,7 +119,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       query.length > 2
         ? [`${query} compatible`, `${query} original`, `${query} haute qualité`]
         : [],
-  });
+  };
 }
 
 export default function SearchResults() {

@@ -10,11 +10,7 @@
  * Intention : Sélection de marque
  */
 
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { Search, Car, ArrowRight } from "lucide-react";
 import { useState } from "react";
@@ -174,21 +170,21 @@ export async function loader({ request }: LoaderFunctionArgs) {
       logger.error("Erreur chargement logos:", error);
     }
 
-    return json({
+    return {
       brands: brands.sort((a, b) => a.marque_name.localeCompare(b.marque_name)),
       total: brands.length,
       popularModels,
       brandLogos,
-    } as LoaderData);
+    } as LoaderData;
   } catch (error) {
     logger.error("Erreur chargement marques:", error);
-    return json({
+    return {
       brands: [],
       total: 0,
       popularModels: [],
       brandLogos: [],
       error: "Impossible de charger les marques",
-    } as LoaderData);
+    } as LoaderData;
   }
 }
 

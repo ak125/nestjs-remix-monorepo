@@ -11,11 +11,7 @@
  * Route: /products/gammes/:gammeId
  */
 
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import {
   useLoaderData,
   Link,
@@ -181,7 +177,7 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
       logger.error(`❌ API error ${response.status} for gamme ${gammeId}`);
 
       // Au lieu de lancer une erreur, retournons des données par défaut
-      return json<GammeDetailData>({
+      return {
         user: {
           id: user.id,
           name: userName,
@@ -207,7 +203,7 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
         },
         enhanced,
         error: `Erreur API: ${response.status}`,
-      });
+      };
     }
 
     const apiData = await response.json();
@@ -225,7 +221,7 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
     // Adapter les données de notre nouvelle API au format attendu
     const gammeData = apiData.success ? apiData.data : null;
 
-    return json<GammeDetailData>({
+    return {
       user: {
         id: user.id,
         name: userName,
@@ -251,11 +247,11 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
         sortOrder: "asc",
       },
       enhanced,
-    });
+    };
   } catch (error) {
     logger.error("❌ Erreur loader gamme detail:", error);
 
-    return json<GammeDetailData>({
+    return {
       user: {
         id: "error",
         name: "Erreur",
@@ -271,7 +267,7 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
         error instanceof Error
           ? error.message
           : "Impossible de charger la gamme",
-    });
+    };
   }
 }
 

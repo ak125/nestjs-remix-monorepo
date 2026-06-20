@@ -6,7 +6,6 @@
  */
 
 import {
-  json,
   redirect,
   type LoaderFunctionArgs,
   type MetaFunction,
@@ -137,21 +136,21 @@ export async function loader({ context, request }: LoaderFunctionArgs) {
       }
     }
 
-    return json<CompatibilityData>({
+    return {
       user,
       compatibilityResult,
       partsByVehicle,
       vehicleInfo,
       searchMode,
       error,
-    });
+    };
   } catch (err) {
     logger.error("Erreur loader compatibilité:", err);
-    return json<CompatibilityData>({
+    return {
       user,
       searchMode: null,
       error: "Erreur serveur",
-    });
+    };
   }
 }
 

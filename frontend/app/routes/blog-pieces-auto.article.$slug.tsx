@@ -1,5 +1,4 @@
 import {
-  defer,
   redirect,
   type LoaderFunctionArgs,
   type MetaFunction,
@@ -283,10 +282,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       return redirect("/blog-pieces-auto", 301);
     }
 
-    return defer({
+    return {
       article,
       relatedArticles,
-    });
+    };
   } catch (error) {
     clearTimeout(timeoutId);
 

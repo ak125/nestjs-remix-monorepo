@@ -1,11 +1,7 @@
 // 🎨 PAGE ADMIN - VISUALISATION DES COULEURS CONSTRUCTEURS
 // Affiche tous les gradients de couleurs par marque automobile
 
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { ChevronLeft, Car } from "lucide-react";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
@@ -41,7 +37,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     a.marque_name.localeCompare(b.marque_name),
   );
 
-  return json<LoaderData>({ brands });
+  return { brands };
 }
 
 export default function CouleursConstructeursAdminPage() {

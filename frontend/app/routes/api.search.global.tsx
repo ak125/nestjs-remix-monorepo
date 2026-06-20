@@ -2,13 +2,13 @@
  * 🔍 API GLOBAL SEARCH - Endpoint pour la recherche globale
  */
 
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { type LoaderFunctionArgs } from "@remix-run/node";
 
 interface SearchResult {
   id: string;
   title: string;
   description?: string;
-  category: 'products' | 'users' | 'orders' | 'pages' | 'settings';
+  category: "products" | "users" | "orders" | "pages" | "settings";
   url: string;
   metadata?: {
     badge?: string;
@@ -27,8 +27,8 @@ const MOCK_RESULTS: SearchResult[] = [
     url: "/admin/products/prod-1",
     metadata: {
       price: "89,99€",
-      badge: "En stock"
-    }
+      badge: "En stock",
+    },
   },
   {
     id: "user-1",
@@ -38,8 +38,8 @@ const MOCK_RESULTS: SearchResult[] = [
     url: "/admin/users/user-1",
     metadata: {
       status: "Actif",
-      badge: "Pro"
-    }
+      badge: "Pro",
+    },
   },
   {
     id: "order-1",
@@ -49,8 +49,8 @@ const MOCK_RESULTS: SearchResult[] = [
     url: "/admin/orders/order-1",
     metadata: {
       status: "En traitement",
-      price: "125,99€"
-    }
+      price: "125,99€",
+    },
   },
   {
     id: "page-1",
@@ -74,8 +74,8 @@ const MOCK_RESULTS: SearchResult[] = [
     url: "/admin/products/prod-2",
     metadata: {
       price: "45,50€",
-      badge: "Stock faible"
-    }
+      badge: "Stock faible",
+    },
   },
   {
     id: "user-2",
@@ -84,9 +84,9 @@ const MOCK_RESULTS: SearchResult[] = [
     category: "users",
     url: "/admin/users/user-2",
     metadata: {
-      status: "Nouveau"
-    }
-  }
+      status: "Nouveau",
+    },
+  },
 ];
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -96,25 +96,28 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const limit = parseInt(url.searchParams.get("limit") || "20");
 
   if (!query.trim()) {
-    return json({ results: [] });
+    return { results: [] };
   }
 
   // Filtrer par recherche textuelle
-  let filteredResults = MOCK_RESULTS.filter(result => 
-    result.title.toLowerCase().includes(query.toLowerCase()) ||
-    result.description?.toLowerCase().includes(query.toLowerCase())
+  let filteredResults = MOCK_RESULTS.filter(
+    (result) =>
+      result.title.toLowerCase().includes(query.toLowerCase()) ||
+      result.description?.toLowerCase().includes(query.toLowerCase()),
   );
 
   // Filtrer par catégorie
   if (category && category !== "all") {
-    filteredResults = filteredResults.filter(result => result.category === category);
+    filteredResults = filteredResults.filter(
+      (result) => result.category === category,
+    );
   }
 
   // Limiter les résultats
   const results = filteredResults.slice(0, limit);
 
   // Simuler un délai de recherche
-  await new Promise(resolve => setTimeout(resolve, 200));
+  await new Promise((resolve) => setTimeout(resolve, 200));
 
-  return json({ results });
+  return { results };
 }
