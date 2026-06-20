@@ -544,3 +544,15 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-projection-block-content-adapter`
 - **Décision** : fix(migration): D1 columns — squawk gate (timeouts + text/bigint) (+7 other commits)
 - **Sortie** : PR #1045 | commits cec9dca92 e4df62251 1e61e0792 6350b71ff 1d8c45715 b4a226f6a 4961b59fa a8b79cd87
+
+## 2026-06-20 — feat/media-factory-revive-fetch (auto)
+
+- **Branche** : `feat/media-factory-revive-fetch`
+- **Décision** : chore(governance): restore main's deterministic baseline — do NOT bless main's pre-existing SEO ast-grep debt (+11 other commits)
+- **Sortie** : PR #1043 | commits c95c5c113 79bd9fb96 66a8a906e 8c2a5e5a8 ef7a98b7f 0b2fade99 03f308e68 b6d0907bc cb857874f 7ff079f64 a0e645f53 e410a5194
+
+## 2026-06-20 — feat/media-factory-revive-fetch (auto)
+
+- **Branche** : `feat/media-factory-revive-fetch`
+- **Décision** : Merge remote-tracking branch 'origin/main' into feat/media-factory-revive-fetch (+13 other commits)
+- **Sortie** : PR #1043 | commits 341285c3c 029e2eac3 c95c5c113 79bd9fb96 66a8a906e 8c2a5e5a8 ef7a98b7f 0b2fade99 03f308e68 b6d0907bc cb857874f 7ff079f64 a0e645f53 e410a5194

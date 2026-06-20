@@ -67,7 +67,8 @@ import { RagProxyModule } from './modules/rag-proxy/rag-proxy.module';
 import { RagKnowledgeBootstrapModule } from './modules/rag-knowledge-bootstrap/rag-knowledge-bootstrap.module'; // 🛡️ ADR-046/050 — fail-fast L3 mirror state au boot
 import { RmModule } from './modules/rm/rm.module'; // ✅ RÉACTIVÉ - Fix Dockerfile: shared-types copié (2026-02-02)
 import { MarketingModule } from './modules/marketing/marketing.module'; // 📊 NOUVEAU - Module marketing avec backlinks, content roadmap et KPIs !
-// MediaFactoryModule — SUPPRIMÉ 2026-04-10 (prototype P1, axios vuln critique, 0 usage prod)
+import { MediaFactoryModule } from './modules/media-factory/media-factory.module'; // 🎬 REVIVE 2026-06-20 — fetch-only TTS (Azure REST), dé-RAG, flag-gated
+import { isMediaFactoryEnabled } from './modules/media-factory/media-factory.flag';
 import { DiagnosticEngineModule } from './modules/diagnostic-engine/diagnostic-engine.module'; // 🔧 NOUVEAU - Moteur diagnostic mecanique MVP !
 import { TrendSignalsModule } from './modules/trend-signals/trend-signals.module'; // 📈 NOUVEAU - Middle-ground trend signals ingestion (Tasks 1.9-1.11 ai-additive-layer)
 
@@ -232,7 +233,7 @@ import { TrendSignalsModule } from './modules/trend-signals/trend-signals.module
     // CatalogModuleSimple, // 🔧 TEMPORAIREMENT DÉSACTIVÉ - Version simplifiée pour test pièces !
     GammeRestModule, // 🎯 ACTIVÉ - API REST simple pour gammes avec vraies tables !
     MarketingModule, // 📊 ACTIVÉ - Module marketing avec backlinks, content roadmap et KPIs !
-    // MediaFactoryModule — SUPPRIMÉ 2026-04-10
+    ...(isMediaFactoryEnabled() ? [MediaFactoryModule] : []), // 🎬 REVIVE flag-gated (MEDIA_FACTORY_ENABLED, off par défaut → 0 prod)
     DiagnosticEngineModule, // 🔧 ACTIVÉ - Moteur diagnostic mecanique MVP (Slice 1) !
     TrendSignalsModule, // 📈 ACTIVÉ - Middle-ground trend signals ingestion (Tasks 1.9-1.11)
     // AgenticEngineModule — ARCHIVÉ 2026-04-02 (tables → _archive schema, remplacé par Paperclip)

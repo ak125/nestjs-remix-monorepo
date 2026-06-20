@@ -22,7 +22,7 @@
     "build": "NODE_OPTIONS='--max-old-space-size=4096' tsc --build && tsc-alias -p tsconfig.json",
     "start": "node dist/main",
     "lint": "NODE_OPTIONS='--max-old-space-size=4096' eslint --cache --cache-location .eslintcache 'src/**/*.ts'",
-    "typecheck": "NODE_OPTIONS='--max-old-space-size=4096' tsc --noEmit",
+    "typecheck": "NODE_OPTIONS='--max-old-space-size=4096' tsc --noEmit --incremental --tsBuildInfoFile node_modules/.cache/tsc/backend-typecheck.tsbuildinfo",
     "test": "NODE_OPTIONS='--max-old-space-size=4096' jest --maxWorkers=2",
     "test:watch": "NODE_OPTIONS='--max-old-space-size=4096' jest --watch --maxWorkers=2",
     "test:cov": "NODE_OPTIONS='--max-old-space-size=4096' jest --coverage --maxWorkers=2",

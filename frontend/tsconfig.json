@@ -21,7 +21,9 @@
 		"paths": {
 			"~/*": ["./app/*"]
 		},
-		"noEmit": true
+		"noEmit": true,
+		"incremental": true,
+		"tsBuildInfoFile": "./node_modules/.cache/tsc/frontend.tsbuildinfo"
 	},
 	
 }

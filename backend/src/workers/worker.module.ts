@@ -12,7 +12,12 @@ import { getAppConfig } from '../config/app.config';
 // import { CacheProcessor } from './processors/cache.processor'; // DESACTIVE - Besoin IORedis Module
 import { EmailProcessor } from './processors/email.processor';
 import { SeoMonitorProcessor } from './processors/seo-monitor.processor';
-// VideoExecutionProcessor — SUPPRIMÉ 2026-04-10 (MediaFactory supprimé)
+// VideoExecutionProcessor + deps — 🎬 REVIVE 2026-06-20 (flag-gated MEDIA_FACTORY_ENABLED, 0 prod par défaut)
+import { VideoExecutionProcessor } from './processors/video-execution.processor';
+import { VideoDataService } from '../modules/media-factory/services/video-data.service';
+import { VideoGatesService } from '../modules/media-factory/services/video-gates.service';
+import { RenderAdapterService } from '../modules/media-factory/render/render-adapter.service';
+import { isMediaFactoryEnabled } from '../modules/media-factory/media-factory.flag';
 
 // SEO daily-fetch processor (orchestre GSC/GA4/CWV/Links daily) — V0.A
 import { SeoDailyFetchProcessor } from '../modules/seo-monitoring/processors/seo-daily-fetch.processor';
@@ -131,7 +136,15 @@ import { AdminJobHealthService } from '../modules/admin/services/admin-job-healt
     SeoDailyFetchProcessor, // V0.A — daily GSC/GA4/CWV/Links ingestion (cron 04:00 UTC)
     CwvAggregationProcessor, // CWV bloc 4 — hourly + daily-rum aggregation jobs
     CwvAggregationSchedulerService, // CWV bloc 4 — repeatable jobs configurator
-    // VideoExecutionProcessor — SUPPRIMÉ 2026-04-10
+    // 🎬 REVIVE flag-gated (off par défaut → 0 prod) : processor + ses 3 deps
+    ...(isMediaFactoryEnabled()
+      ? [
+          VideoExecutionProcessor,
+          VideoDataService,
+          VideoGatesService,
+          RenderAdapterService,
+        ]
+      : []),
 
     // Agentic engine processor + dependencies (Agent-Native — state management only)
     // NOTE: Stateless services, safe duplicate (same pattern as enricher services above)
