@@ -526,3 +526,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/media-factory-revive-fetch`
 - **Décision** : feat(media-factory): revive deleted module — fetch-only TTS (Azure REST) + de-RAG script-gen, flag-gated 0-prod
 - **Sortie** : PR aucune | commits e410a5194
+
+## 2026-06-20 — feat/media-factory-revive-fetch (auto)
+
+- **Branche** : `feat/media-factory-revive-fetch`
+- **Décision** : Merge remote-tracking branch 'origin/main' into feat/media-factory-revive-fetch (+3 other commits)
+- **Sortie** : PR #1043 | commits cb857874f 7ff079f64 a0e645f53 e410a5194
