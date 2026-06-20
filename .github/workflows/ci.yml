@@ -1117,6 +1117,20 @@ jobs:
           echo "::group::container logs (tail 120, post-restart)"
           docker logs --tail 120 "$C" 2>&1 | tail -120 || true
           echo "::endgroup::"
+          # Le SMOKING GUN : les événements de cycle de vie du conteneur sur les
+          # dernières 25 min (couvre deploy + E2E + le restart). Capturés ICI, juste
+          # après l'échec → encore dans le buffer du démon (qui purge vite sous le
+          # spam healthcheck 30s). `kill signal=N` = stop externe ; `die exitCode=0`
+          # seul = sortie interne ; `oom` = mémoire ; `health_status: unhealthy` =
+          # santé. `--until now` borne la requête pour qu'elle SORTE (sinon stream).
+          NOW=$(date -u +%Y-%m-%dT%H:%M:%S)
+          echo "::group::docker events — cycle de vie conteneur (25m, until $NOW)"
+          docker events --since 25m --until "$NOW" \
+            --filter container="$C" \
+            --filter event=kill --filter event=die --filter event=stop \
+            --filter event=start --filter event=restart --filter event=oom \
+            --filter event=health_status 2>&1 | tail -50 || echo "(aucun événement / buffer purgé)"
+          echo "::endgroup::"
           echo "::group::kernel OOM (dmesg, best-effort)"
           (dmesg 2>/dev/null | grep -iE 'oom|killed process|out of memory' | tail -25) || echo "dmesg unavailable (no perm)"
           echo "::endgroup::"
