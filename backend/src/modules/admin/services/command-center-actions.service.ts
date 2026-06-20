@@ -20,6 +20,7 @@ import {
   buildImprovementCandidateActions,
   type SizeBudgetMeasure,
 } from './command-center-action-rules/improvement-candidate.rules';
+import { resolveOrchestrationMode } from './command-center-orchestrator/executable-action.contract';
 import {
   CONFIDENCE_BY_CERT,
   finalizeAction,
@@ -253,6 +254,11 @@ export class CommandCenterActionsService extends SupabaseBaseService {
    * never a crash (the source is advisory).
    */
   private improvementCandidates(): RawAction[] {
+    // SHADOW by default: reuse the governed COMMAND_CENTER_ORCHESTRATION flag
+    // (PROD forced 'off'; default 'off') — no new ungoverned flag. The read-only
+    // perf candidates only surface in the shadow envelope (DEV/PREPROD, opt-in),
+    // so existing behaviour/tests are unchanged until deliberately enabled.
+    if (resolveOrchestrationMode() === 'off') return [];
     const now = Date.now();
     if (
       this.sizeMemo &&
