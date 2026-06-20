@@ -1,5 +1,5 @@
-import { Link, useNavigate } from "@remix-run/react";
 import { ScanLine } from "lucide-react";
+import { Link, useNavigate } from "react-router";
 
 import { Button } from "~/components/ui/button";
 

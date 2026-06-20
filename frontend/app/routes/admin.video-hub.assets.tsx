@@ -1,14 +1,12 @@
 import {
-  json,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
-} from "@remix-run/node";
-import {
+  data,
   useLoaderData,
   Link,
   useSearchParams,
   useFetcher,
-} from "@remix-run/react";
+} from "react-router";
 import { Image, CheckCircle, XCircle, Loader2, Clock } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -74,15 +72,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
       headers: { Cookie: cookieHeader },
     });
 
-    if (!res.ok) return json({ assets: [], error: "Erreur chargement" });
+    if (!res.ok) return data({ assets: [], error: "Erreur chargement" });
 
-    const data = await res.json();
-    return json({
-      assets: (data.data ?? []) as VideoAsset[],
+    const payload = await res.json();
+    return data({
+      assets: (payload.data ?? []) as VideoAsset[],
       error: null,
     });
   } catch {
-    return json({ assets: [], error: "Erreur reseau" });
+    return data({ assets: [], error: "Erreur reseau" });
   }
 }
 
@@ -104,14 +102,14 @@ export async function action({ request }: ActionFunctionArgs) {
         body: JSON.stringify({ validatedBy: "admin" }),
       },
     );
-    const data = await res.json();
-    return json({
-      ok: res.ok && data.success,
-      error: data.error ?? null,
+    const payload = await res.json();
+    return data({
+      ok: res.ok && payload.success,
+      error: payload.error ?? null,
       assetKey,
     });
   } catch {
-    return json({ ok: false, error: "Erreur reseau", assetKey });
+    return data({ ok: false, error: "Erreur reseau", assetKey });
   }
 }
 

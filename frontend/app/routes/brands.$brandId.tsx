@@ -8,9 +8,14 @@
  * Intention : Navigation vers modèles d'une marque
  */
 
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { useLoaderData, Link, useParams } from "@remix-run/react";
 import { ArrowLeft, Car, Calendar, Settings } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+  useParams,
+} from "react-router";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 import { Alert } from "~/components/ui/alert";

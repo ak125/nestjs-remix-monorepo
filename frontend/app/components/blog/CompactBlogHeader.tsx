@@ -3,9 +3,9 @@
  * Design minimaliste et efficace en espace
  */
 
-import { Link } from "@remix-run/react";
 import { type LucideIcon } from "lucide-react";
 import * as React from "react";
+import { Link } from "react-router";
 
 interface Stat {
   icon: LucideIcon;

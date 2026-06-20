@@ -6,16 +6,17 @@
  * Intention : Découvrir l'histoire des marques automobiles
  */
 
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import React, { useState, useMemo } from "react";
 import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
   useLoaderData,
   Link,
   useSearchParams,
   useNavigation,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import React, { useState, useMemo } from "react";
+} from "react-router";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 

@@ -7,8 +7,6 @@
  * ✅ Données réelles de pieces_price
  */
 
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { useLoaderData, useSearchParams, Form, Link } from "@remix-run/react";
 import {
   Package,
   AlertTriangle,
@@ -20,6 +18,14 @@ import {
   Search,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  useSearchParams,
+  Form,
+  Link,
+} from "react-router";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 import { Badge } from "../components/ui/badge";

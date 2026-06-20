@@ -5,20 +5,6 @@
 // .spec/00-canon/role-matrix.md §R8 et @repo/seo-roles forbidden-overlap.ts.
 
 import {
-  redirect,
-  type LinksFunction,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import {
-  type ShouldRevalidateFunctionArgs,
-  useLoaderData,
-  isRouteErrorResponse,
-  useRouteError,
-} from "@remix-run/react";
-
-// SEO Page Role (Phase 5 - Quasi-Incopiable)
-import {
   Award,
   Car,
   CheckCircle,
@@ -36,6 +22,18 @@ import {
   Truck,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import {
+  redirect,
+  type LinksFunction,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  type ShouldRevalidateFunctionArgs,
+  useLoaderData,
+  isRouteErrorResponse,
+  useRouteError,
+} from "react-router";
+
+// SEO Page Role (Phase 5 - Quasi-Incopiable)
 import brandColorsStyles from "~/styles/brand-colors.css?url";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
@@ -535,9 +533,7 @@ export default function VehicleDetailPage() {
       data-brand={vehicle.marque_alias?.toLowerCase()}
     >
       <BreadcrumbSection vehicle={vehicle} breadcrumb={breadcrumb} />
-
       <HeroSection vehicle={vehicle} />
-
       {/* Vehicle image + specs (hors hero — SELECTION = gradient-only) */}
       <section className="bg-white border-b" data-section="S_IDENTITY">
         <div className="container mx-auto px-4 max-w-7xl py-6">
@@ -586,7 +582,6 @@ export default function VehicleDetailPage() {
           </div>
         </div>
       </section>
-
       {/* Contenu principal */}
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Acces rapide + Recherche */}
@@ -674,7 +669,6 @@ export default function VehicleDetailPage() {
                     {vehicle.type_year_to || "Auj."}
                   </p>
                 </div>
-
                 {/* View toggle + count */}
                 <div className="flex items-center justify-between mb-6">
                   <p className="text-sm text-gray-500">
@@ -701,7 +695,6 @@ export default function VehicleDetailPage() {
                     </button>
                   </div>
                 </div>
-
                 {viewMode === "cards" ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                     {filteredFamilies.map((family, index) => {
@@ -1228,7 +1221,6 @@ export default function VehicleDetailPage() {
           </a>
         </div>
       </div>
-
       {/* Sticky vehicle bar - top */}
       {showStickyCta && (
         <div className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm py-2 px-4 animate-in slide-in-from-top duration-300">
@@ -1265,7 +1257,6 @@ export default function VehicleDetailPage() {
           </div>
         </div>
       )}
-
       {/* Footer avec liens utiles */}
       <footer className="bg-gray-800 text-white py-8 mt-12">
         <div className="max-w-7xl mx-auto px-4">

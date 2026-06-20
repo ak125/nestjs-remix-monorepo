@@ -5,12 +5,12 @@
  * Genere title, description, OG, robots, canonical, Schema.org JSON-LD (Product + FAQPage)
  */
 
-import { type MetaDescriptor } from "@remix-run/node";
+import { type MetaDescriptor } from "react-router";
+import { type NoProductsData } from "~/components/pieces/NoProductsAlternatives";
 import {
   buildHeroImagePreload,
   buildPiecesProductSchema,
 } from "~/utils/seo/pieces-schema.utils";
-import type { NoProductsData } from "~/components/pieces/NoProductsAlternatives";
 
 const SITE = "AutoMecanik";
 

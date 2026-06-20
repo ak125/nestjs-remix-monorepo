@@ -1,6 +1,9 @@
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
 import { Zap, RefreshCw, CheckCircle2, Activity, Clock } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+} from "react-router";
 import {
   DashboardShell,
   KpiGrid,

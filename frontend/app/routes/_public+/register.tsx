@@ -1,10 +1,4 @@
 import {
-  type LoaderFunctionArgs,
-  type MetaFunction,
-  redirect,
-} from "@remix-run/node";
-import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
-import {
   Car,
   CheckCircle2,
   ClipboardList,
@@ -17,6 +11,14 @@ import {
   Zap,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  redirect,
+  Link,
+  useLoaderData,
+  useSearchParams,
+} from "react-router";
 import { z } from "zod";
 import { GoogleSignInButton } from "~/components/auth/GoogleSignInButton";
 import { Button } from "~/components/ui/button";

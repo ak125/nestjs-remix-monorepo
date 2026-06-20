@@ -1,8 +1,8 @@
 // 🚗 VehicleCard - Composant moderne pour l'affichage des véhicules
 // Design moderne avec animations et informations enrichies
 
-import { Link } from "@remix-run/react";
 import { Calendar, Car, Fuel, Zap } from "lucide-react";
+import { Link } from "react-router";
 import { getOptimizedModelImageUrl } from "~/utils/image-optimizer";
 import { normalizeTypeAlias } from "~/utils/url-builder.utils";
 

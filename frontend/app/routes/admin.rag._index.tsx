@@ -1,5 +1,3 @@
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { Link, useFetcher, useLoaderData } from "@remix-run/react";
 import {
   FileText,
   ShieldCheck,
@@ -9,6 +7,13 @@ import {
   RefreshCw,
   Image,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  Link,
+  useFetcher,
+  useLoaderData,
+} from "react-router";
 import {
   DashboardShell,
   KpiGrid,

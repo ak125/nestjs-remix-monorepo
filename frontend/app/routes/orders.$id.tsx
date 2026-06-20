@@ -3,14 +3,6 @@
  * Affiche toutes les informations d'une commande spécifique avec adresses
  */
 
-import { type LoaderFunction, type MetaFunction } from "@remix-run/node";
-import {
-  useLoaderData,
-  Link,
-  useNavigate,
-  useRouteError,
-  isRouteErrorResponse,
-} from "@remix-run/react";
 import {
   ArrowLeft,
   Package,
@@ -21,6 +13,15 @@ import {
   Phone,
   Mail,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+  useNavigate,
+  useRouteError,
+  isRouteErrorResponse,
+} from "react-router";
 import { OrderLineActions } from "~/components/admin/OrderLineActions";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { HtmlContent } from "~/components/seo/HtmlContent";
@@ -115,7 +116,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) =>
     data?.order?.ord_id ? `Commande #${data.order.ord_id}` : "Commande",
   );
 
-export const loader: LoaderFunction = async ({ params, request }) => {
+export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   const orderId = params.id;
 
   if (!orderId) {

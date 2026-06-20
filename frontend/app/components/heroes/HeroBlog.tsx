@@ -8,7 +8,7 @@
  * @see .spec/00-canon/image-matrix-v1.md §2
  */
 
-import { Link } from "@remix-run/react";
+import { Link } from "react-router";
 
 interface BreadcrumbItem {
   label: string;

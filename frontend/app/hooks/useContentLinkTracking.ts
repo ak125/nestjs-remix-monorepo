@@ -19,8 +19,8 @@
  * ```
  */
 
-import { useLocation } from "@remix-run/react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router";
 import { postJsonBeacon } from "~/utils/beacon";
 import { safeSessionStorage } from "~/utils/safe-storage";
 

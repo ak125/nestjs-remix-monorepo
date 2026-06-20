@@ -3,7 +3,7 @@
  * Sert les sitemaps racine: /sitemap-racine.xml, /sitemap-categories.xml, etc.
  */
 import { promises as fs } from "fs";
-import { type LoaderFunctionArgs } from "@remix-run/node";
+import { type LoaderFunctionArgs } from "react-router";
 
 const SITEMAP_DIR = process.env.SITEMAP_OUTPUT_DIR || "/var/www/sitemaps";
 

@@ -1,3 +1,13 @@
+import { ChevronUp } from "lucide-react";
+import {
+  Component,
+  lazy,
+  Suspense,
+  useEffect,
+  useRef,
+  type ErrorInfo,
+  type ReactNode,
+} from "react";
 import {
   type ActionFunctionArgs,
   type HeadersFunction,
@@ -5,8 +15,6 @@ import {
   type LoaderFunctionArgs,
   type MetaFunction,
   data,
-} from "@remix-run/node";
-import {
   Links,
   Meta,
   Outlet,
@@ -19,18 +27,8 @@ import {
   useLocation,
   useMatches,
   useNavigation,
-} from "@remix-run/react";
+} from "react-router";
 
-import { ChevronUp } from "lucide-react";
-import {
-  Component,
-  lazy,
-  Suspense,
-  useEffect,
-  useRef,
-  type ErrorInfo,
-  type ReactNode,
-} from "react";
 import { logger } from "~/utils/logger";
 import { getOptionalUser } from "./auth/unified.server";
 import { ErrorGeneric } from "./components/errors";
@@ -133,7 +131,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     user,
     cart: cartPromise,
     isBot,
-    cspNonce: ((context as Record<string, unknown>)?.cspNonce as string) || "",
+    cspNonce: context.cspNonce || "",
     // Public runtime env exposed to the browser via `window.ENV` (see <script>
     // injection below). Same image runs in DEV/PROD with different values, so
     // these MUST be read at request time, not inlined at build time.
@@ -163,12 +161,13 @@ export const action = async (_args: ActionFunctionArgs) => {
 // Re-exports depuis module neutre pour éviter la dépendance circulaire root ↔ Navbar
 export { useOptionalUser, useRootCart } from "./hooks/useRootData";
 
-declare module "@remix-run/node" {
+declare module "react-router" {
   interface AppLoadContext {
     remixService: any;
     remixIntegration?: any; // injection côté Nest: RemixApiService
     parsedBody?: any;
     user: unknown;
+    cspNonce?: string; // injecté par le handler NestJS (response.locals.cspNonce)
   }
 }
 

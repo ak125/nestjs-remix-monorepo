@@ -9,8 +9,6 @@
  * Si pas fournis : calendrier générique (sans personnalisation véhicule).
  */
 
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { Link, useLoaderData } from "@remix-run/react";
 import {
   AlertTriangle,
   Battery,
@@ -24,6 +22,12 @@ import {
   Wrench,
   type LucideIcon,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  Link,
+  useLoaderData,
+} from "react-router";
 
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { CompactBlogHeader } from "~/components/blog/CompactBlogHeader";

@@ -8,12 +8,6 @@
  */
 
 import {
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, Form, useNavigation, Link } from "@remix-run/react";
-import {
   Package,
   Truck,
   Calculator,
@@ -24,6 +18,15 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  Form,
+  useNavigation,
+  Link,
+} from "react-router";
 import { Button } from "~/components/ui/button";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";

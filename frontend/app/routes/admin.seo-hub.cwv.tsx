@@ -11,8 +11,8 @@
  *  - Backend : @repo/cwv-taxonomy + cwv-dashboard.controller.ts
  *  - Migrations : 20260526 (raw), 20260527 (agg), 20260528 (runtime), 20260529 (RPCs)
  */
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { useLoaderData, useSearchParams } from "@remix-run/react";
+import { type LoaderFunctionArgs, type MetaFunction } from "react-router";
+import { useLoaderData, useSearchParams } from "react-router";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import {

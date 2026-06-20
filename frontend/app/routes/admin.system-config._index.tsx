@@ -10,13 +10,6 @@
  */
 
 import {
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  type MetaFunction,
-  data,
-} from "@remix-run/node";
-import { useLoaderData, useFetcher } from "@remix-run/react";
-import {
   Settings,
   Database,
   BarChart3,
@@ -35,6 +28,14 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  type MetaFunction,
+  data,
+  useLoaderData,
+  useFetcher,
+} from "react-router";
 import { Button } from "~/components/ui/button";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";

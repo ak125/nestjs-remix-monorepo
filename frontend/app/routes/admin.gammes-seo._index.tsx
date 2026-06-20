@@ -8,17 +8,6 @@
  */
 
 import {
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import {
-  useLoaderData,
-  useNavigation,
-  useSearchParams,
-  Link,
-} from "@remix-run/react";
-import {
   AlertTriangle,
   ArrowUpDown,
   CheckCircle,
@@ -38,6 +27,15 @@ import {
   XCircle,
 } from "lucide-react";
 import React, { useState, useCallback, useEffect } from "react";
+import {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  useNavigation,
+  useSearchParams,
+  Link,
+} from "react-router";
 import { toast } from "sonner";
 
 import { Alert } from "~/components/ui/alert";
@@ -758,7 +756,6 @@ export default function AdminGammesSeo() {
           </a>
         </div>
       </div>
-
       {/* Panel Configuration des Seuils */}
       {showThresholdsPanel && (
         <Card className="bg-gradient-to-r to-blue-50">
@@ -910,7 +907,6 @@ export default function AdminGammesSeo() {
           </CardContent>
         </Card>
       )}
-
       {/* Panel Historique des Actions */}
       {showAuditPanel && (
         <Card className="bg-gradient-to-r to-pink-50">
@@ -972,7 +968,6 @@ export default function AdminGammesSeo() {
           </CardContent>
         </Card>
       )}
-
       {/* Instructions / Légende - EN HAUT */}
       <Card className="bg-slate-50">
         <CardHeader className="py-3">
@@ -1354,7 +1349,6 @@ export default function AdminGammesSeo() {
           </div>
         </CardContent>
       </Card>
-
       {/* KPIs */}
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -1434,7 +1428,6 @@ export default function AdminGammesSeo() {
           </Card>
         </div>
       )}
-
       {/* Sitemap Regeneration Card */}
       <Card className="bg-blue-50">
         <CardHeader className="pb-2">
@@ -1481,7 +1474,6 @@ export default function AdminGammesSeo() {
           )}
         </CardContent>
       </Card>
-
       {/* Smart Actions KPIs - Click to filter */}
       <Card className="bg-gradient-to-r">
         <CardHeader className="pb-2">
@@ -1579,7 +1571,6 @@ export default function AdminGammesSeo() {
           </div>
         </CardContent>
       </Card>
-
       {/* Filters */}
       <Card>
         <CardHeader>
@@ -1730,7 +1721,6 @@ export default function AdminGammesSeo() {
           </div>
         </CardContent>
       </Card>
-
       {/* Batch Actions */}
       {selectedIds.length > 0 && (
         <Card className="bg-blue-50">
@@ -1792,7 +1782,6 @@ export default function AdminGammesSeo() {
           </CardContent>
         </Card>
       )}
-
       {/* Table */}
       <Card>
         <CardHeader>

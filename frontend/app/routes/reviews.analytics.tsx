@@ -2,12 +2,6 @@
  * Page Analytics des Avis Clients
  * Tableaux de bord et statistiques avancées
  */
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import {
-  useLoaderData,
-  useRouteError,
-  isRouteErrorResponse,
-} from "@remix-run/react";
 import {
   TrendingUp,
   Star,
@@ -19,6 +13,13 @@ import {
   Filter,
   Download,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  useRouteError,
+  isRouteErrorResponse,
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Button } from "~/components/ui/button";
 import { logger } from "~/utils/logger";

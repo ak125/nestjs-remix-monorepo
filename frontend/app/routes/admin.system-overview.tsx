@@ -2,8 +2,6 @@
 // Tableau de bord complet du système optimisé
 // Applique "vérifier existant et utiliser le meilleur"
 
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
 import {
   Shield,
   CheckCircle,
@@ -16,6 +14,11 @@ import {
   MonitorSpeaker,
   Award,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+} from "react-router";
 import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { createNoIndexMeta } from "~/utils/meta-helpers";

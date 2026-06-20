@@ -1,18 +1,16 @@
 // app/routes/admin.seo.tsx
+import { CheckCircle, XCircle } from "lucide-react";
+import { useState } from "react";
 import {
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import {
   Form,
   Link,
   useLoaderData,
   useActionData,
   useNavigation,
-} from "@remix-run/react";
-import { CheckCircle, XCircle } from "lucide-react";
-import { useState } from "react";
+} from "react-router";
 import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";

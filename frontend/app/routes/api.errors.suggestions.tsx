@@ -1,4 +1,4 @@
-import { type ActionFunctionArgs, data } from "@remix-run/node";
+import { type ActionFunctionArgs, data } from "react-router";
 import { logger } from "~/utils/logger";
 
 export async function action({ request }: ActionFunctionArgs) {

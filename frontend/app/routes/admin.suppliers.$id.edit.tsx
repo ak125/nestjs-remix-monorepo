@@ -4,7 +4,7 @@
  * ✅ Redirige vers le composant de formulaire unifié
  */
 
-import { type MetaFunction } from "@remix-run/node";
+import { type MetaFunction } from "react-router";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 export const meta: MetaFunction = () =>

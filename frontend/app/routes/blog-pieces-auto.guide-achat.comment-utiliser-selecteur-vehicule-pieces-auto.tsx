@@ -8,8 +8,6 @@
  *   d'immatriculation, trouver piece auto avec numero de chassis, reference OEM
  */
 
-import { type MetaFunction } from "@remix-run/node";
-import { Link } from "@remix-run/react";
 import {
   AlertTriangle,
   ArrowRight,
@@ -28,6 +26,7 @@ import {
   Wrench,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { type MetaFunction, Link } from "react-router";
 
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { CompactBlogHeader } from "~/components/blog/CompactBlogHeader";

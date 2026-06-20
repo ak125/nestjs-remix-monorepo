@@ -1,5 +1,5 @@
-import { Link } from "@remix-run/react";
 import { memo } from "react";
+import { Link } from "react-router";
 
 interface EquipementierItem {
   pm_id: number;

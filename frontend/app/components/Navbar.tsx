@@ -1,4 +1,3 @@
-import { Link, useNavigate } from "@remix-run/react";
 import {
   Bell,
   BookOpen,
@@ -14,6 +13,7 @@ import {
   X,
 } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router";
 
 import { registerCartSidebarSetter } from "~/hooks/useCartSidebar";
 import { useNativeDialog } from "~/hooks/useNativeDialog";
@@ -374,114 +374,114 @@ export const Navbar = memo(function Navbar() {
         aria-label="Menu de navigation"
         className="navdrawer navdrawer-left fixed inset-y-0 left-0 m-0 h-full max-h-none w-[85vw] sm:max-w-sm bg-navy text-white p-0 backdrop:bg-neutral-900/80 open:flex flex-col"
       >
-          <div className="p-4 border-b border-white/10">
-            <div className="text-white font-heading font-extrabold tracking-tight text-left text-lg font-semibold">
-              <span className="text-white">AUTO</span>
-              <span className="text-cta">MECANIK</span>
-            </div>
+        <div className="p-4 border-b border-white/10">
+          <div className="text-white font-heading font-extrabold tracking-tight text-left text-lg font-semibold">
+            <span className="text-white">AUTO</span>
+            <span className="text-cta">MECANIK</span>
           </div>
+        </div>
 
-          <nav className="flex flex-col py-2" aria-label="Menu mobile">
-            <Link
-              to="/#catalogue"
-              onClick={closeMenu}
-              className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
-            >
-              <Package className="w-4 h-4" />
-              Catalogue pièces auto
-            </Link>
-            <Link
-              to="/#marques"
-              onClick={closeMenu}
-              className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
-            >
-              <Search className="w-4 h-4" />
-              Marques &amp; Constructeurs
-            </Link>
-            <Link
-              to="/blog-pieces-auto"
-              onClick={closeMenu}
-              className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
-            >
-              <BookOpen className="w-4 h-4" />
-              Blog
-            </Link>
-            <Link
-              to="/diagnostic-auto"
-              onClick={closeMenu}
-              className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-cta hover:text-cta-light hover:bg-white/[0.06] transition-colors"
-            >
-              <ScanLine className="w-4 h-4" />
-              Diagnostic
-              <span className="text-[10px] font-bold bg-cta/20 text-cta px-1.5 py-0.5 rounded-md ml-auto">
-                GRATUIT
-              </span>
-            </Link>
+        <nav className="flex flex-col py-2" aria-label="Menu mobile">
+          <Link
+            to="/#catalogue"
+            onClick={closeMenu}
+            className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
+          >
+            <Package className="w-4 h-4" />
+            Catalogue pièces auto
+          </Link>
+          <Link
+            to="/#marques"
+            onClick={closeMenu}
+            className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
+          >
+            <Search className="w-4 h-4" />
+            Marques &amp; Constructeurs
+          </Link>
+          <Link
+            to="/blog-pieces-auto"
+            onClick={closeMenu}
+            className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
+          >
+            <BookOpen className="w-4 h-4" />
+            Blog
+          </Link>
+          <Link
+            to="/diagnostic-auto"
+            onClick={closeMenu}
+            className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-cta hover:text-cta-light hover:bg-white/[0.06] transition-colors"
+          >
+            <ScanLine className="w-4 h-4" />
+            Diagnostic
+            <span className="text-[10px] font-bold bg-cta/20 text-cta px-1.5 py-0.5 rounded-md ml-auto">
+              GRATUIT
+            </span>
+          </Link>
 
-            <div className="border-t border-white/10 my-2" />
+          <div className="border-t border-white/10 my-2" />
 
-            {user ? (
-              <>
-                {user.level && user.level >= 3 && (
-                  <Link
-                    to="/commercial"
-                    onClick={closeMenu}
-                    className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-cta hover:text-cta-light hover:bg-white/[0.06] transition-colors"
-                  >
-                    <Package className="w-4 h-4" />
-                    Espace Commercial
-                  </Link>
-                )}
+          {user ? (
+            <>
+              {user.level && user.level >= 3 && (
                 <Link
-                  to="/account/dashboard"
+                  to="/commercial"
                   onClick={closeMenu}
-                  className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
+                  className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-cta hover:text-cta-light hover:bg-white/[0.06] transition-colors"
                 >
-                  <User className="w-4 h-4" />
-                  Mon compte
+                  <Package className="w-4 h-4" />
+                  Espace Commercial
                 </Link>
-                <Link
-                  to="/notifications"
-                  onClick={closeMenu}
-                  className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
-                >
-                  <Bell className="w-4 h-4" />
-                  Notifications
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link
-                  to="/login"
-                  rel="nofollow"
-                  onClick={closeMenu}
-                  className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
-                >
-                  <User className="w-4 h-4" />
-                  Connexion
-                </Link>
-                <Link
-                  to="/register"
-                  rel="nofollow"
-                  onClick={closeMenu}
-                  className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
-                >
-                  <User className="w-4 h-4" />
-                  Inscription
-                </Link>
-              </>
-            )}
+              )}
+              <Link
+                to="/account/dashboard"
+                onClick={closeMenu}
+                className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
+              >
+                <User className="w-4 h-4" />
+                Mon compte
+              </Link>
+              <Link
+                to="/notifications"
+                onClick={closeMenu}
+                className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
+              >
+                <Bell className="w-4 h-4" />
+                Notifications
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                rel="nofollow"
+                onClick={closeMenu}
+                className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
+              >
+                <User className="w-4 h-4" />
+                Connexion
+              </Link>
+              <Link
+                to="/register"
+                rel="nofollow"
+                onClick={closeMenu}
+                className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
+              >
+                <User className="w-4 h-4" />
+                Inscription
+              </Link>
+            </>
+          )}
 
-            <div className="border-t border-white/10 my-2" />
+          <div className="border-t border-white/10 my-2" />
 
-            <a
-              href={`tel:${SITE_CONFIG.contact.phone.raw}`}
-              className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
-            >
-              <Phone className="w-4 h-4" />
-              {SITE_CONFIG.contact.phone.display}
-            </a>
-          </nav>
+          <a
+            href={`tel:${SITE_CONFIG.contact.phone.raw}`}
+            className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
+          >
+            <Phone className="w-4 h-4" />
+            {SITE_CONFIG.contact.phone.display}
+          </a>
+        </nav>
       </dialog>
 
       {/* Cart Sidebar (portail, hors du flex) */}

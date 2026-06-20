@@ -1,6 +1,6 @@
-import { Link } from "@remix-run/react";
 import { ChevronDown, ChevronUp, Loader2, Search, X } from "lucide-react";
 import { memo, useCallback, useMemo, useState } from "react";
+import { Link } from "react-router";
 import {
   CATALOG_DOMAINS,
   type CatalogFamily,

@@ -8,9 +8,9 @@
  * - Lazy loading des images
  */
 
-import { Await } from "@remix-run/react";
 import { ChevronDown, Eye, Package } from "lucide-react";
 import { Suspense, useState, memo } from "react";
+import { Await } from "react-router";
 
 import { hierarchyApi } from "../../services/api/hierarchy.api";
 

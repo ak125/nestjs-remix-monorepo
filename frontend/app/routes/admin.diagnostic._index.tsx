@@ -1,14 +1,4 @@
 import {
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-} from "@remix-run/node";
-import {
-  useLoaderData,
-  useFetcher,
-  Link,
-  useNavigation,
-} from "@remix-run/react";
-import {
   Search,
   Plus,
   Edit,
@@ -21,6 +11,14 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  useLoaderData,
+  useFetcher,
+  Link,
+  useNavigation,
+} from "react-router";
 import { AdminDataTable, type DataColumn } from "~/components/admin/patterns";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";

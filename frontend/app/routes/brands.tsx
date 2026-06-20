@@ -5,8 +5,12 @@
  * Route: /brands/*
  */
 
-import { type MetaFunction } from "@remix-run/node";
-import { Outlet, useRouteError, isRouteErrorResponse } from "@remix-run/react";
+import {
+  type MetaFunction,
+  Outlet,
+  useRouteError,
+  isRouteErrorResponse,
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 
 export const meta: MetaFunction = () => [

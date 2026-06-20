@@ -8,9 +8,13 @@
  * - Évolution journalière
  */
 
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { useLoaderData, useRevalidator } from "@remix-run/react";
 import { useEffect, useState } from "react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  useRevalidator,
+} from "react-router";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 

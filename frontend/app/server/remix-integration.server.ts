@@ -3,7 +3,7 @@
  * Ce fichier ne doit être importé que dans les loaders et actions de Remix.
  */
 // import "reflect-metadata"; // Désactivé - géré par le backend
-import { type AppLoadContext } from "@remix-run/node";
+import { type AppLoadContext } from "react-router";
 
 /**
  * Récupère une instance du service d'intégration Remix.

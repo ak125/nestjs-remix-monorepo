@@ -3,8 +3,8 @@
  * Encapsule toute la logique métier liée au catalogue et aux marques
  */
 
-import { useLoaderData } from "@remix-run/react";
 import { useState } from "react";
+import { useLoaderData } from "react-router";
 
 import { type FamilyWithGammes } from "~/services/api/hierarchy.api";
 

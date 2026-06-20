@@ -5,7 +5,7 @@
  * Compatible avec l'architecture existante RemixApiService
  */
 
-import { type AppLoadContext } from "@remix-run/node";
+import { type AppLoadContext } from "react-router";
 import { logger } from "~/utils/logger";
 import {
   type CartItem,

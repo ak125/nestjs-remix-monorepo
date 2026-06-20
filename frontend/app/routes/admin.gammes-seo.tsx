@@ -6,8 +6,7 @@
  * - /admin/gammes-seo/:pgId (detail) → admin.gammes-seo.$pgId.tsx
  */
 
-import { type MetaFunction } from "@remix-run/node";
-import { Outlet } from "@remix-run/react";
+import { type MetaFunction, Outlet } from "react-router";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 export const meta: MetaFunction = () => createNoIndexMeta("Gammes SEO - Admin");

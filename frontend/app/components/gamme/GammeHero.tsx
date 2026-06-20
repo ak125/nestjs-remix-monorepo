@@ -1,4 +1,3 @@
-import { Link, useNavigate } from "@remix-run/react";
 import {
   BookOpen,
   Car,
@@ -8,6 +7,7 @@ import {
   Search,
 } from "lucide-react";
 import { useState } from "react";
+import { Link, useNavigate } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import VehicleSelector from "~/components/vehicle/VehicleSelector";
@@ -71,7 +71,6 @@ export default function GammeHero({
           {gammeName}
         </h1>
       </div>
-
       {/* Desktop: 2 columns (image + selector), Mobile: stacked */}
       <div className="max-w-7xl mx-auto px-page pb-5 lg:pb-8">
         <div className="flex flex-col lg:flex-row lg:items-stretch lg:gap-8">
@@ -317,7 +316,6 @@ export default function GammeHero({
           </div>
         </div>
       </div>
-
       {/* Trust strip supprimé — R1TrustStrip est affiché après le hero */}
     </section>
   );

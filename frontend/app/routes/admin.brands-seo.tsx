@@ -6,19 +6,17 @@
  * Éditeur: TipTap WYSIWYG
  */
 
+import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
+import { useState, lazy, Suspense } from "react";
 import {
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import {
   useLoaderData,
   Form,
   useNavigation,
   useActionData,
-} from "@remix-run/react";
-import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
-import { useState, lazy, Suspense } from "react";
+} from "react-router";
 import { HtmlContent } from "~/components/seo/HtmlContent";
 import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";

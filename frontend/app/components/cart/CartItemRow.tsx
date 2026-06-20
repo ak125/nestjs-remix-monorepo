@@ -1,6 +1,6 @@
-import { useFetcher } from "@remix-run/react";
 import { Info, Minus, Package, Plus, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useFetcher } from "react-router";
 import {
   Tooltip,
   TooltipContent,

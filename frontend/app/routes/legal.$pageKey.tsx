@@ -1,13 +1,13 @@
 // app/routes/legal.$pageKey.tsx - Pages légales dynamiques
 // Fetches from ___META_TAGS_ARIANE via API with fallback to static content
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "react-router";
 import {
   Link,
   useLoaderData,
   useParams,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import Container from "~/components/layout/Container";
 import { HtmlContent } from "~/components/seo/HtmlContent";

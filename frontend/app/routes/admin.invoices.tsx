@@ -5,8 +5,7 @@
  * Fournit navigation et structure commune
  */
 
-import { type MetaFunction } from "@remix-run/node";
-import { Outlet, Link, useLocation } from "@remix-run/react";
+import { type MetaFunction, Outlet, Link, useLocation } from "react-router";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 export const meta: MetaFunction = () => createNoIndexMeta("Factures - Admin");

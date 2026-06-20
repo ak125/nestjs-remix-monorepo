@@ -71,6 +71,7 @@ export default [
       "build/**",
       "public/build/**",
       ".cache/**",
+      ".react-router/**",
       "storybook-static/**",
       "node_modules/**",
       "!**/.server",

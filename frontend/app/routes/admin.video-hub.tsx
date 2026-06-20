@@ -1,9 +1,12 @@
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import { Outlet, Link, useLocation, useLoaderData } from "@remix-run/react";
+  data,
+  Outlet,
+  Link,
+  useLocation,
+  useLoaderData,
+} from "react-router";
 import {
   LayoutDashboard,
   Film,
@@ -63,12 +66,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     const dashboard = res.ok ? await res.json() : null;
 
-    return json({
+    return data({
       stats: dashboard?.data || null,
       error: null,
     });
   } catch {
-    return json({
+    return data({
       stats: null,
       error: "Erreur chargement dashboard video",
     });

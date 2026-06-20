@@ -4,8 +4,8 @@ import {
   type LoaderFunctionArgs,
   type MetaFunction,
   data,
-} from "@remix-run/node";
-import { useRouteError, isRouteErrorResponse } from "@remix-run/react";
+} from "react-router";
+import { useRouteError, isRouteErrorResponse } from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { buildCacheHeaders } from "~/utils/cache-control";
 import { logger } from "~/utils/logger";

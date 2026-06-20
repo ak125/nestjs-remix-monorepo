@@ -8,12 +8,6 @@
  */
 
 import {
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, Link, Form, useNavigation } from "@remix-run/react";
-import {
   AlertTriangle,
   Edit,
   Eye,
@@ -29,6 +23,15 @@ import {
   RefreshCw,
   ExternalLink,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+  Form,
+  useNavigation,
+} from "react-router";
 import { AdminDataTable, type DataColumn } from "~/components/admin/patterns";
 import {
   Accordion,

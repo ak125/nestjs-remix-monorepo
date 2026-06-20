@@ -1,11 +1,10 @@
+import { useState } from "react";
 import {
-  type ActionFunction,
-  type LoaderFunction,
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
   type MetaFunction,
   redirect,
   data,
-} from "@remix-run/node";
-import {
   Form,
   useActionData,
   useLoaderData,
@@ -13,8 +12,7 @@ import {
   Link,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { useState } from "react";
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
@@ -34,7 +32,7 @@ export const meta: MetaFunction = () => [
   { name: "robots", content: "noindex, nofollow" },
 ];
 
-export const loader: LoaderFunction = async ({ params }) => {
+export const loader = async ({ params }: LoaderFunctionArgs) => {
   const { token } = params;
 
   if (!token) {
@@ -44,7 +42,7 @@ export const loader: LoaderFunction = async ({ params }) => {
   return { token };
 };
 
-export const action: ActionFunction = async ({ params, request }) => {
+export const action = async ({ params, request }: ActionFunctionArgs) => {
   const token = params.token;
 
   if (!token) {

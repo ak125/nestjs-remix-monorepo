@@ -5,13 +5,15 @@
  * Route: /commercial/vehicles/brands/$brandId/models
  */
 
+import { ArrowLeft, Car, Settings, Search } from "lucide-react";
 import {
   type LoaderFunctionArgs,
   type MetaFunction,
   redirect,
-} from "@remix-run/node";
-import { useLoaderData, Link, useParams } from "@remix-run/react";
-import { ArrowLeft, Car, Settings, Search } from "lucide-react";
+  useLoaderData,
+  Link,
+  useParams,
+} from "react-router";
 import { Alert } from "~/components/ui/alert";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";

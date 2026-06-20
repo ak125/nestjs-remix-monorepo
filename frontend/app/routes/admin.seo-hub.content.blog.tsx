@@ -9,7 +9,7 @@ import {
   redirect,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
+} from "react-router";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 export const meta: MetaFunction = () => createNoIndexMeta("Blog SEO - Admin");

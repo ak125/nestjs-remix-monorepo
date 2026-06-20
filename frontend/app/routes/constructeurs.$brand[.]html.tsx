@@ -6,18 +6,6 @@
 // Intention : Hub marque constructeur
 
 import {
-  type HeadersFunction,
-  type LinksFunction,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import {
-  useLoaderData,
-  Link,
-  useRouteError,
-  isRouteErrorResponse,
-} from "@remix-run/react";
-import {
   Car,
   Wrench,
   Zap,
@@ -26,6 +14,16 @@ import {
   TrendingUp,
   Package,
 } from "lucide-react";
+import {
+  type HeadersFunction,
+  type LinksFunction,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+  useRouteError,
+  isRouteErrorResponse,
+} from "react-router";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
@@ -441,7 +439,6 @@ export default function BrandCatalogPage() {
           </ol>
         </div>
       </nav>
-
       {/* 🏎️ Hero Section - Couleur thématique du constructeur */}
       <section
         className="relative overflow-hidden text-white py-12 md:py-16 lg:py-20"
@@ -590,7 +587,6 @@ export default function BrandCatalogPage() {
           </div>
         </div>
       </section>
-
       {/* 📦 Pièces populaires depuis l'API */}
       {apiParts.length > 0 && (
         <div className="bg-gradient-to-b from-gray-50 to-white py-12 md:py-16 border-b border-gray-100">
@@ -667,7 +663,6 @@ export default function BrandCatalogPage() {
           </div>
         </div>
       )}
-
       {/* 🚗 Véhicules les plus recherchés */}
       {apiVehicles.length > 0 && (
         <div className="bg-gradient-to-b from-white to-gray-50 py-10 md:py-16 border-b border-gray-100">
@@ -726,7 +721,6 @@ export default function BrandCatalogPage() {
           </div>
         </div>
       )}
-
       {/* 🔗 Maillage interne - Gammes populaires pour cette marque */}
       {popularGammes.length > 0 && (
         <PopularGammesSection
@@ -737,7 +731,6 @@ export default function BrandCatalogPage() {
           className="bg-white border-b border-gray-100"
         />
       )}
-
       {/* 🏭 R7 Enriched Sections */}
       {r7Blocks.length > 0 && (
         <>
@@ -949,7 +942,6 @@ export default function BrandCatalogPage() {
             )}
         </>
       )}
-
       {/* 📘 Présentation Constructeur */}
       <div className="bg-white py-8 md:py-12 border-t border-gray-200">
         <div className="container mx-auto px-4">
@@ -995,7 +987,6 @@ export default function BrandCatalogPage() {
           </div>
         </div>
       </div>
-
       {/* JSON-LD unifié dans meta function - voir brandSchema */}
     </div>
   );

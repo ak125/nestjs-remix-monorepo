@@ -11,13 +11,6 @@
  * Onglet « Orchestration » (ADR-087) : statut read-only + preview d'un plan shadow
  * *would-be* (action POST → backend). 0 mutation d'artefact ; le backend valide.
  */
-import {
-  type ActionFunctionArgs,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-  data,
-} from "@remix-run/node";
-import { useActionData, useLoaderData } from "@remix-run/react";
 import { type CommandCenterResponse } from "@repo/registry";
 import {
   AlertTriangle,
@@ -26,6 +19,14 @@ import {
   FileWarning,
   Workflow,
 } from "lucide-react";
+import {
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  data,
+  useActionData,
+  useLoaderData,
+} from "react-router";
 import { CertBadge } from "~/components/command-center/badges";
 import { GlobalHealthBar } from "~/components/command-center/GlobalHealthBar";
 import { ModuleGrid } from "~/components/command-center/ModuleGrid";

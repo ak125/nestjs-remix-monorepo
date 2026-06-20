@@ -15,15 +15,6 @@
  * - /products/catalog?enhanced=true (advanced interface)
  */
 
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import {
-  useLoaderData,
-  Link,
-  useSearchParams,
-  Form,
-  useRouteError,
-  isRouteErrorResponse,
-} from "@remix-run/react";
 import {
   ArrowLeft,
   Search,
@@ -34,6 +25,16 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+  useSearchParams,
+  Form,
+  useRouteError,
+  isRouteErrorResponse,
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";

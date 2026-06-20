@@ -13,7 +13,6 @@
  * ✅ Raccourcis catégories (Cmd+1-6)
  */
 
-import { useFetcher } from "@remix-run/react";
 import {
   Search,
   X,
@@ -27,6 +26,7 @@ import {
   Command,
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback, memo } from "react";
+import { useFetcher } from "react-router";
 
 import { Badge } from "~/components/ui/badge";
 import { logger } from "~/utils/logger";
@@ -497,7 +497,7 @@ export const GlobalSearch = memo(function GlobalSearch({
                           <div
                             key={result.id}
                             onClick={() => handleSelectResult(result)}
-                            className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all ${ selectedIndex === globalIndex ? "bg-blue-50 border-blue-600 shadow-sm scale-[1.02]" : "hover:bg-gray-50 border-transparent" }`}
+                            className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all ${selectedIndex === globalIndex ? "bg-blue-50 border-blue-600 shadow-sm scale-[1.02]" : "hover:bg-gray-50 border-transparent"}`}
                           >
                             <div className="flex items-center space-x-3 flex-1 min-w-0">
                               <Icon

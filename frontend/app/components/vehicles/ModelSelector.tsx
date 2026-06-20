@@ -1,6 +1,9 @@
-import { useFetcher } from "@remix-run/react";
 import { useState, useEffect, useCallback } from "react";
-import  { type VehicleModel, type ModelSelectorProps } from "../../types/vehicle.types";
+import { useFetcher } from "react-router";
+import {
+  type VehicleModel,
+  type ModelSelectorProps,
+} from "../../types/vehicle.types";
 import { Combobox, type ComboboxItem } from "../ui/combobox";
 
 // Garder la compatibilité avec l'ancienne interface Model
@@ -15,37 +18,40 @@ export function ModelSelector({
   disabled = false,
   className,
   allowClear = true,
-  autoLoadOnMount = true
+  autoLoadOnMount = true,
 }: ModelSelectorProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isInitialLoad, setIsInitialLoad] = useState(autoLoadOnMount);
-  
+
   // Utilise useFetcher pour les appels API
-  const fetcher = useFetcher<{ 
+  const fetcher = useFetcher<{
     data?: Model[];
     total?: number;
     error?: string;
   }>();
 
   // Charge les modèles avec useCallback pour éviter les re-créations
-  const loadModels = useCallback((search: string = "") => {
-    const params = new URLSearchParams();
-    
-    if (search.trim()) {
-      params.append('search', search.trim());
-    }
-    
-    if (brandId) {
-      params.append('brandId', brandId.toString());
-    }
-    
-    // Limite plus élevée pour une meilleure expérience utilisateur
-    params.append('limit', '100');
-    params.append('onlyActive', 'true');
+  const loadModels = useCallback(
+    (search: string = "") => {
+      const params = new URLSearchParams();
 
-    const queryString = params.toString();
-    fetcher.load(`/api/vehicles/forms/models?${queryString}`);
-  }, [brandId, fetcher]);
+      if (search.trim()) {
+        params.append("search", search.trim());
+      }
+
+      if (brandId) {
+        params.append("brandId", brandId.toString());
+      }
+
+      // Limite plus élevée pour une meilleure expérience utilisateur
+      params.append("limit", "100");
+      params.append("onlyActive", "true");
+
+      const queryString = params.toString();
+      fetcher.load(`/api/vehicles/forms/models?${queryString}`);
+    },
+    [brandId, fetcher],
+  );
 
   // Charge au montage si activé
   useEffect(() => {
@@ -64,30 +70,33 @@ export function ModelSelector({
 
   // Convertit les modèles en items pour le Combobox
   const models = fetcher.data?.data || [];
-  const items: ComboboxItem[] = models.map(model => ({
+  const items: ComboboxItem[] = models.map((model) => ({
     value: model.modele_id.toString(),
-    label: model.modele_ful_name || 
-           `${model.auto_marque?.marque_name || ''} ${model.modele_name}`.trim() ||
-           model.modele_name,
-    data: model // Stocke le modèle complet
+    label:
+      model.modele_ful_name ||
+      `${model.auto_marque?.marque_name || ""} ${model.modele_name}`.trim() ||
+      model.modele_name,
+    data: model, // Stocke le modèle complet
   }));
 
   // Gestionnaire de recherche avec debounce
-  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
-  
+  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(
+    null,
+  );
+
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-    
+
     // Annule le timeout précédent
     if (searchTimeout) {
       clearTimeout(searchTimeout);
     }
-    
+
     // Démarre un nouveau timeout pour debounce
     const timeout = setTimeout(() => {
       loadModels(query);
     }, 300); // 300ms de delay
-    
+
     setSearchTimeout(timeout);
   };
 
@@ -111,19 +120,19 @@ export function ModelSelector({
     if (fetcher.state === "loading") {
       return "Chargement des modèles...";
     }
-    
+
     if (fetcher.data?.error) {
       return `Erreur: ${fetcher.data.error}`;
     }
-    
+
     if (searchQuery.trim()) {
       return `Aucun modèle trouvé pour "${searchQuery}"`;
     }
-    
+
     if (brandId) {
       return "Aucun modèle disponible pour cette marque";
     }
-    
+
     return "Aucun modèle disponible";
   };
 

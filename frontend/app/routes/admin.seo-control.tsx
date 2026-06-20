@@ -25,10 +25,14 @@
  *   - backend/src/modules/admin/controllers/seo-control.controller.ts (endpoint)
  *   - packages/seo-types/src/control-dashboard.ts (Zod contract)
  */
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { Link, useLoaderData } from "@remix-run/react";
 import { SeoControlSnapshotSchema, RangeSchema } from "@repo/seo-types";
 import { ExternalLink } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  Link,
+  useLoaderData,
+} from "react-router";
 import { Button } from "~/components/ui/button";
 import {
   Table,

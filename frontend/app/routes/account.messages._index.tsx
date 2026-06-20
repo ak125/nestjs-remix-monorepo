@@ -1,12 +1,13 @@
-import { type LoaderFunction, type MetaFunction } from "@remix-run/node";
+import { Mail, MailOpen, Package } from "lucide-react";
 import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
   useLoaderData,
   Link,
   useSearchParams,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { Mail, MailOpen, Package } from "lucide-react";
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { logger } from "~/utils/logger";
 import { requireUser } from "../auth/unified.server";
@@ -46,7 +47,7 @@ interface Message {
   MSG_OPEN: number;
 }
 
-export const loader: LoaderFunction = async ({ request, context }) => {
+export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const user = await requireUser({ context });
 
   // Récupérer tous les messages du client

@@ -1,10 +1,9 @@
+import { MapPin, Trash2, Home, Building, Star, Loader2 } from "lucide-react";
 import {
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
   type MetaFunction,
   data,
-} from "@remix-run/node";
-import {
   useLoaderData,
   useActionData,
   Link,
@@ -12,8 +11,7 @@ import {
   useNavigation,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { MapPin, Trash2, Home, Building, Star, Loader2 } from "lucide-react";
+} from "react-router";
 
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { logger } from "~/utils/logger";

@@ -9,12 +9,6 @@
  */
 
 import {
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, useFetcher, Link } from "@remix-run/react";
-import {
   ArrowLeft,
   ArrowRight,
   Wand2,
@@ -30,6 +24,14 @@ import {
   Save,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  useFetcher,
+  Link,
+} from "react-router";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";

@@ -1,4 +1,3 @@
-import { Link, useLocation } from "@remix-run/react";
 import {
   Home,
   Users,
@@ -36,6 +35,7 @@ import {
 } from "lucide-react";
 import * as React from "react";
 import { memo } from "react";
+import { Link, useLocation } from "react-router";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 

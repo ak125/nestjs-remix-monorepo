@@ -1,7 +1,6 @@
 /**
  * NewsletterCTA — CTA newsletter + contact/catalogue
  */
-import { Link, Form } from "@remix-run/react";
 import {
   Mail,
   Sparkles,
@@ -11,6 +10,7 @@ import {
   ExternalLink,
   ArrowRight,
 } from "lucide-react";
+import { Link, Form } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 

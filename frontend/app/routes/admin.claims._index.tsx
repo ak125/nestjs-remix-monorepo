@@ -1,10 +1,9 @@
+import { AlertTriangle, CheckCircle, UserCheck, Filter } from "lucide-react";
 import {
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
   type MetaFunction,
   data,
-} from "@remix-run/node";
-import {
   useLoaderData,
   useActionData,
   Form,
@@ -12,8 +11,7 @@ import {
   useSearchParams,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { AlertTriangle, CheckCircle, UserCheck, Filter } from "lucide-react";
+} from "react-router";
 
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { logger } from "~/utils/logger";

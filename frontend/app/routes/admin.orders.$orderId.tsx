@@ -4,12 +4,6 @@
  */
 
 import {
-  type ActionFunctionArgs,
-  type LoaderFunctionArgs,
-  data,
-} from "@remix-run/node";
-import { Link, useFetcher, useLoaderData } from "@remix-run/react";
-import {
   ArrowLeft,
   CheckCircle,
   Copy,
@@ -24,6 +18,14 @@ import {
   XCircle,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+  data,
+  Link,
+  useFetcher,
+  useLoaderData,
+} from "react-router";
 import { toast } from "sonner";
 
 import { Badge } from "~/components/ui/badge";

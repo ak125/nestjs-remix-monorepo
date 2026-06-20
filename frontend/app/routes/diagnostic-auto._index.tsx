@@ -6,13 +6,6 @@
  * Intention : Identifier un symptôme automobile
  */
 
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import {
-  Link,
-  useLoaderData,
-  useRouteError,
-  isRouteErrorResponse,
-} from "@remix-run/react";
 import {
   AlertTriangle,
   ArrowRight,
@@ -35,6 +28,14 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  Link,
+  useLoaderData,
+  useRouteError,
+  isRouteErrorResponse,
+} from "react-router";
 
 import { DiagnosticWizard } from "~/components/diagnostic-wizard/DiagnosticWizard";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
@@ -330,14 +331,12 @@ export default function DiagnosticAutoIndex() {
           />
         </Container>
       </div>
-
       {/* ═══ HERO ═══ */}
       <HeroDiagnostic
         title="Identifiez votre panne auto"
         description="Décrivez le symptôme, notre outil identifie les causes probables et vous oriente vers la bonne pièce. Gratuit, sans inscription."
         severity="warning"
       />
-
       {/* ═══ WIZARD DIAGNOSTIC INTELLIGENT ═══ */}
       <section className="bg-white border-b py-8">
         <Container>
@@ -346,7 +345,6 @@ export default function DiagnosticAutoIndex() {
           </div>
         </Container>
       </section>
-
       {/* ═══ RECHERCHE + OBD ═══ */}
       <section className="bg-white border-b py-4">
         <Container>
@@ -380,7 +378,6 @@ export default function DiagnosticAutoIndex() {
           </div>
         </Container>
       </section>
-
       {/* ═══ CLUSTERS ═══ */}
       <Container as="section" className="py-12">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Par catégorie</h2>
@@ -423,7 +420,6 @@ export default function DiagnosticAutoIndex() {
           </p>
         )}
       </Container>
-
       {/* ═══ GUIDE : COMMENT IDENTIFIER SA PANNE ═══ */}
       <Container as="section" className="py-14">
         <div className="grid lg:grid-cols-3 gap-10">
@@ -587,7 +583,6 @@ export default function DiagnosticAutoIndex() {
           </div>
         </div>
       </Container>
-
       {/* ═══ SIGNES AVANT-COUREURS ═══ */}
       <section className="bg-gray-50 border-y py-14">
         <Container>
@@ -635,7 +630,6 @@ export default function DiagnosticAutoIndex() {
           )}
         </Container>
       </section>
-
       {/* ═══ MÉCANIQUE VS ÉLECTRIQUE ═══ */}
       <Container as="section" className="py-14">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">
@@ -747,7 +741,6 @@ export default function DiagnosticAutoIndex() {
           </div>
         </div>
       </Container>
-
       {/* ═══ DIAGNOSTICS POPULAIRES ═══ */}
       <section className="bg-white border-y">
         <Container className="py-12">
@@ -822,7 +815,6 @@ export default function DiagnosticAutoIndex() {
           )}
         </Container>
       </section>
-
       {/* ═══ URGENCE : PANNE SUR AUTOROUTE ═══ */}
       <section className="bg-gradient-to-br from-red-950 to-red-900 text-white py-12">
         <Container>
@@ -904,7 +896,6 @@ export default function DiagnosticAutoIndex() {
           </div>
         </Container>
       </section>
-
       {/* ═══ FAQ ═══ */}
       <Container as="section" className="py-14">
         <div className="flex items-center gap-3 mb-8">
@@ -947,7 +938,6 @@ export default function DiagnosticAutoIndex() {
           )}
         </div>
       </Container>
-
       {/* ═══ CTA BOTTOM ═══ */}
       <Container as="section" className="py-12">
         <div className="rounded-2xl bg-navy text-white p-8 md:p-12 flex flex-col md:flex-row items-center gap-8">
@@ -984,7 +974,6 @@ export default function DiagnosticAutoIndex() {
           </form>
         </div>
       </Container>
-
       {/* Cross-link glossaire */}
       <Container className="pb-12 flex items-center justify-center gap-2 text-sm text-gray-500">
         <BookOpen className="w-4 h-4 text-foreground" />

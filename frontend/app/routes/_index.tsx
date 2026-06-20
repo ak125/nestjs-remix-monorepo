@@ -1,10 +1,11 @@
+import { Suspense } from "react";
 import {
   type HeadersFunction,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import { Await, useLoaderData } from "@remix-run/react";
-import { Suspense } from "react";
+  Await,
+  useLoaderData,
+} from "react-router";
 
 import {
   HomepageJsonLd,

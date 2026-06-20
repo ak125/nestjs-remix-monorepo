@@ -6,13 +6,12 @@
  * Intention : Rassurer / informer
  */
 
+import { useState, useRef, useEffect } from "react";
 import {
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
   type MetaFunction,
   data,
-} from "@remix-run/node";
-import {
   useLoaderData,
   useActionData,
   Form,
@@ -20,8 +19,7 @@ import {
   Link,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { useState, useRef, useEffect } from "react";
+} from "react-router";
 import { toast } from "sonner";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import Container from "~/components/layout/Container";

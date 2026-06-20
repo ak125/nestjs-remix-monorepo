@@ -5,16 +5,17 @@
  * Route: /search/cnit
  */
 
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import { Search, Car, AlertCircle, ArrowRight, Info } from "lucide-react";
+import { useState } from "react";
 import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
   useLoaderData,
   Form,
   Link,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { Search, Car, AlertCircle, ArrowRight, Info } from "lucide-react";
-import { useState } from "react";
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";

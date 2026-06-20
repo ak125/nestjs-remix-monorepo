@@ -1,5 +1,3 @@
-import { type LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData, useSearchParams } from "@remix-run/react";
 import {
   Map,
   AlertCircle,
@@ -12,6 +10,11 @@ import {
   GitBranch,
   FileText,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  useLoaderData,
+  useSearchParams,
+} from "react-router";
 import {
   DashboardShell,
   KpiGrid,

@@ -5,16 +5,17 @@
  * Route: /search/mine
  */
 
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import { Search, Car, AlertCircle, ArrowRight } from "lucide-react";
+import { useState } from "react";
 import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
   useLoaderData,
   Form,
   Link,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { Search, Car, AlertCircle, ArrowRight } from "lucide-react";
-import { useState } from "react";
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";

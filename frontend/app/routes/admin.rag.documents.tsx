@@ -1,10 +1,3 @@
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import {
-  Link,
-  useLoaderData,
-  useNavigate,
-  useSearchParams,
-} from "@remix-run/react";
 import {
   FileText,
   Search,
@@ -17,6 +10,14 @@ import {
   PackageOpen,
 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  Link,
+  useLoaderData,
+  useNavigate,
+  useSearchParams,
+} from "react-router";
 import {
   DashboardShell,
   KpiGrid,

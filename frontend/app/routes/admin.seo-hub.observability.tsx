@@ -19,8 +19,6 @@
  * - PR #166 : recharts ^2.15.4 ajouté en Phase 0
  */
 
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
 import {
   AlertCircle,
   Clock,
@@ -33,6 +31,13 @@ import {
   Zap,
 } from "lucide-react";
 import { useMemo } from "react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  Link,
+  useLoaderData,
+  useSearchParams,
+} from "react-router";
 import {
   CartesianGrid,
   Line,
@@ -686,9 +691,7 @@ function EmptyState({ message }: { message: string }) {
   );
 }
 
-function aggregateByDate(
-  rows: GscRow[],
-): Array<{
+function aggregateByDate(rows: GscRow[]): Array<{
   date: string;
   clicks: number;
   impressions: number;

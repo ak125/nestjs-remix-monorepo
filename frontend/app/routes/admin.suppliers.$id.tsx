@@ -10,8 +10,10 @@ import {
   type LoaderFunctionArgs,
   type MetaFunction,
   data,
-} from "@remix-run/node";
-import { useLoaderData, Link, useFetcher } from "@remix-run/react";
+  useLoaderData,
+  Link,
+  useFetcher,
+} from "react-router";
 import { toast } from "sonner";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";

@@ -10,17 +10,6 @@
  */
 
 import {
-  type LoaderFunctionArgs,
-  type MetaFunction,
-  data,
-} from "@remix-run/node";
-import {
-  Link,
-  useLoaderData,
-  useRouteError,
-  isRouteErrorResponse,
-} from "@remix-run/react";
-import {
   ArrowLeft,
   BookOpen,
   AlertTriangle,
@@ -38,6 +27,15 @@ import {
   Tag,
 } from "lucide-react";
 import { type ReactNode } from "react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  data,
+  Link,
+  useLoaderData,
+  useRouteError,
+  isRouteErrorResponse,
+} from "react-router";
 
 // UI Components
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
@@ -559,7 +557,6 @@ export default function ReferenceDetailPage() {
       <BlogPiecesAutoNavigation />
       {/* Schema.org JSON-LD (DefinedTerm + TechArticle + Breadcrumbs) */}
       <SchemaJsonLd reference={reference} />
-
       {/* Breadcrumb */}
       <nav className="bg-white border-b" aria-label="Breadcrumb">
         <div className="container mx-auto px-4 py-3">
@@ -580,7 +577,6 @@ export default function ReferenceDetailPage() {
           </ol>
         </div>
       </nav>
-
       {/* Hero — S16: HeroRole (pedagogique) si role riche, sinon HeroReference (neutre) */}
       {shouldUseHeroRole(reference.roleMecanique, relatedRefs.length) ? (
         <HeroRole
@@ -604,7 +600,6 @@ export default function ReferenceDetailPage() {
           slogan={resolveSlogan("glossaire-reference", reference.gamme.name)}
         />
       )}
-
       {/* Back Button */}
       <section className="py-4 border-b bg-white">
         <div className="container mx-auto px-4">
@@ -617,7 +612,6 @@ export default function ReferenceDetailPage() {
           </Link>
         </div>
       </section>
-
       <div className="mx-auto max-w-7xl px-4 py-12">
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_360px]">
           {/* Main Content - article tag for R4 semantic signal */}

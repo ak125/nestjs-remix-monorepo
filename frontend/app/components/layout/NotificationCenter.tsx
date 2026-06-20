@@ -12,7 +12,6 @@
  * ✅ Interface responsive avec dropdown
  */
 
-import { useFetcher } from "@remix-run/react";
 import {
   Bell,
   X,
@@ -27,6 +26,7 @@ import {
   EyeOff,
 } from "lucide-react";
 import { memo, useState, useEffect, useRef, useCallback } from "react";
+import { useFetcher } from "react-router";
 
 interface Notification {
   id: string;

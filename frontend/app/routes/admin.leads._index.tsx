@@ -6,13 +6,17 @@
  */
 
 import {
+  LEAD_TRANSITIONS,
+  isValidLeadTransition,
+  type LeadStatus,
+} from "@repo/database-types";
+import { Bell, Filter, ChevronLeft, ChevronRight } from "lucide-react";
+import {
   redirect,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
   type MetaFunction,
   data,
-} from "@remix-run/node";
-import {
   useLoaderData,
   Form,
   useNavigation,
@@ -20,13 +24,7 @@ import {
   useRouteError,
   isRouteErrorResponse,
   Link,
-} from "@remix-run/react";
-import {
-  LEAD_TRANSITIONS,
-  isValidLeadTransition,
-  type LeadStatus,
-} from "@repo/database-types";
-import { Bell, Filter, ChevronLeft, ChevronRight } from "lucide-react";
+} from "react-router";
 
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { logger } from "~/utils/logger";

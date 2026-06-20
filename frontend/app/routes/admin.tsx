@@ -8,13 +8,11 @@ import {
   type LoaderFunctionArgs,
   type MetaFunction,
   redirect,
-} from "@remix-run/node";
-import {
   Outlet,
   useLoaderData,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";

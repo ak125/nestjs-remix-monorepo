@@ -5,8 +5,8 @@
  * Extrait de la route pour reduire le fichier principal a un thin orchestrator.
  */
 
-import { redirect, type LoaderFunctionArgs, data } from "@remix-run/node";
 import { enrichTypeNameForHeadings } from "@repo/seo-types";
+import { redirect, type LoaderFunctionArgs, data } from "react-router";
 import { type NoProductsData } from "~/components/pieces/NoProductsAlternatives";
 import { type FiltersData } from "~/components/pieces/PiecesFilterSidebar";
 import { fetchRmPageV2 } from "~/services/api/rm-api.service";

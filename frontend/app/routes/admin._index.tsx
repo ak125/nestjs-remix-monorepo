@@ -2,8 +2,6 @@
  * Dashboard Admin - Page d'administration
  */
 
-import { type MetaFunction } from "@remix-run/node";
-import { Link, useRouteLoaderData } from "@remix-run/react";
 import {
   Users,
   ShoppingCart,
@@ -30,6 +28,7 @@ import {
   LayoutDashboard,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { type MetaFunction, Link, useRouteLoaderData } from "react-router";
 import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";

@@ -20,18 +20,6 @@
  */
 
 import {
-  type ActionFunctionArgs,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import {
-  Form,
-  useActionData,
-  useLoaderData,
-  useNavigation,
-  useSearchParams,
-} from "@remix-run/react";
-import {
   AlertCircle,
   AlertTriangle,
   BarChart3,
@@ -40,6 +28,16 @@ import {
   Play,
   XCircle,
 } from "lucide-react";
+import {
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  Form,
+  useActionData,
+  useLoaderData,
+  useNavigation,
+  useSearchParams,
+} from "react-router";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";

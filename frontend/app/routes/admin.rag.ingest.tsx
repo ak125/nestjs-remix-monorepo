@@ -1,7 +1,6 @@
-import { type MetaFunction } from "@remix-run/node";
-import { Link } from "@remix-run/react";
 import { RefreshCw, FlaskConical, Eye } from "lucide-react";
 import { useState } from "react";
+import { type MetaFunction, Link } from "react-router";
 import { DashboardShell } from "~/components/admin/patterns/DashboardShell";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";

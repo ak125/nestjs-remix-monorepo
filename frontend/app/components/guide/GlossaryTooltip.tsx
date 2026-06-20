@@ -3,7 +3,7 @@
  * Post-processes HTML to wrap first occurrence of known terms with shadcn Tooltip.
  */
 
-import { Link } from "@remix-run/react";
+import { Link } from "react-router";
 import {
   Tooltip,
   TooltipContent,

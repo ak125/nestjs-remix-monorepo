@@ -5,15 +5,16 @@
  */
 
 import { PassThrough } from "node:stream";
-import {
-  createReadableStreamFromReadable,
-  type AppLoadContext,
-  type EntryContext,
-} from "@remix-run/node";
-import { RemixServer } from "@remix-run/react";
-import * as Sentry from "@sentry/remix";
+import { createReadableStreamFromReadable } from "@react-router/node";
+import * as Sentry from "@sentry/react-router";
 import { isbot } from "isbot";
 import { renderToPipeableStream } from "react-dom/server";
+import {
+  ServerRouter,
+  type AppLoadContext,
+  type EntryContext,
+  type HandleErrorFunction,
+} from "react-router";
 import { logger } from "~/utils/logger";
 
 // Sentry server SDK init — picks up DSN from process.env populated by NestJS
@@ -31,13 +32,27 @@ if (process.env.SENTRY_DSN) {
   });
 }
 
-export const handleError = Sentry.wrapHandleErrorWithSentry(
-  (error: unknown, _details: { request: unknown }) => {
-    if (error instanceof Error) {
-      logger.error("[Remix SSR]", error.message);
-    }
-  },
-);
+// Capture Sentry (`createSentryHandleError` = équivalent RR7 de l'ancien
+// `wrapHandleErrorWithSentry`) + logging applicatif préservé. `logErrors: false`
+// évite le double-log (on garde notre propre logger).
+const captureErrorToSentry = Sentry.createSentryHandleError({
+  logErrors: false,
+});
+
+export const handleError: HandleErrorFunction = (error, details) => {
+  captureErrorToSentry(error, details);
+  if (error instanceof Error) {
+    logger.error("[Remix SSR]", error.message);
+  }
+};
+
+// Instrumentation serveur RR7 (loaders / actions / middleware / request handlers) —
+// équivalent de l'auto-instrumentation @sentry/remix. Requiert React Router ≥ 7.15.
+// Annotation explicite : le type inféré référence un module interne @sentry non
+// portable (TS2742) ; `ReturnType<…>[]` le nomme via la fonction.
+export const instrumentations: ReturnType<
+  typeof Sentry.createSentryServerInstrumentation
+>[] = [Sentry.createSentryServerInstrumentation()];
 
 // Single Fetch : `streamTimeout` borne le rejet des promesses différées côté serveur ;
 // l'abort du flux React doit être strictement au-dessus (streamTimeout + 1s).
@@ -48,25 +63,24 @@ export default function handleRequest(
   request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
-  remixContext: EntryContext,
+  reactRouterContext: EntryContext,
   loadContext: AppLoadContext,
 ) {
-  const nonce =
-    ((loadContext as Record<string, unknown>)?.cspNonce as string) || "";
+  const nonce = loadContext.cspNonce || "";
 
   return isbot(request.headers.get("user-agent") || "")
     ? handleBotRequest(
         request,
         responseStatusCode,
         responseHeaders,
-        remixContext,
+        reactRouterContext,
         nonce,
       )
     : handleBrowserRequest(
         request,
         responseStatusCode,
         responseHeaders,
-        remixContext,
+        reactRouterContext,
         nonce,
       );
 }
@@ -75,16 +89,15 @@ function handleBotRequest(
   request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
-  remixContext: EntryContext,
+  reactRouterContext: EntryContext,
   nonce: string,
 ) {
   return new Promise((resolve, reject) => {
     let shellRendered = false;
     const { pipe, abort } = renderToPipeableStream(
-      <RemixServer
-        context={remixContext}
+      <ServerRouter
+        context={reactRouterContext}
         url={request.url}
-        abortDelay={ABORT_DELAY}
         nonce={nonce}
       />,
       {
@@ -131,16 +144,15 @@ function handleBrowserRequest(
   request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
-  remixContext: EntryContext,
+  reactRouterContext: EntryContext,
   nonce: string,
 ) {
   return new Promise((resolve, reject) => {
     let shellRendered = false;
     const { pipe, abort } = renderToPipeableStream(
-      <RemixServer
-        context={remixContext}
+      <ServerRouter
+        context={reactRouterContext}
         url={request.url}
-        abortDelay={ABORT_DELAY}
         nonce={nonce}
       />,
       {

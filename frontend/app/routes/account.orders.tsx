@@ -1,12 +1,3 @@
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import {
-  useLoaderData,
-  Link,
-  useSearchParams,
-  Form,
-  useRouteError,
-  isRouteErrorResponse,
-} from "@remix-run/react";
 import {
   Package,
   Clock,
@@ -15,6 +6,16 @@ import {
   Truck,
   ShoppingBag,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+  useSearchParams,
+  Form,
+  useRouteError,
+  isRouteErrorResponse,
+} from "react-router";
 
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { logger } from "~/utils/logger";

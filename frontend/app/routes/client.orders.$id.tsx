@@ -1,4 +1,4 @@
-import { redirect, type LoaderFunctionArgs } from "@remix-run/node";
+import { redirect, type LoaderFunctionArgs } from "react-router";
 
 /**
  * Redirect legacy /client/orders/:id URLs to /account/orders/:id

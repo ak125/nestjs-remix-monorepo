@@ -1,10 +1,3 @@
-import { type LoaderFunction, type MetaFunction } from "@remix-run/node";
-import {
-  useLoaderData,
-  Link,
-  useRouteError,
-  isRouteErrorResponse,
-} from "@remix-run/react";
 import {
   Shield,
   Key,
@@ -14,6 +7,14 @@ import {
   Clock,
   Lock,
 } from "lucide-react";
+import {
+  type LoaderFunction,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+  useRouteError,
+  isRouteErrorResponse,
+} from "react-router";
 
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { logger } from "~/utils/logger";

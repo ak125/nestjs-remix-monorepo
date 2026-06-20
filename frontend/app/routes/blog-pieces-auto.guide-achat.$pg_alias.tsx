@@ -11,21 +11,6 @@
  */
 
 import {
-  redirect,
-  type HeadersFunction,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-  data,
-} from "@remix-run/node";
-import {
-  Link,
-  useLoaderData,
-  useNavigate,
-  useRouteError,
-  isRouteErrorResponse,
-  type ShouldRevalidateFunction,
-} from "@remix-run/react";
-import {
   ArrowLeft,
   BookOpen,
   AlertTriangle,
@@ -37,6 +22,19 @@ import {
   CheckCircle2,
   ExternalLink,
 } from "lucide-react";
+import {
+  redirect,
+  type HeadersFunction,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  data,
+  Link,
+  useLoaderData,
+  useNavigate,
+  useRouteError,
+  isRouteErrorResponse,
+  type ShouldRevalidateFunction,
+} from "react-router";
 
 // V2 components
 

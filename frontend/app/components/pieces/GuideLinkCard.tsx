@@ -3,8 +3,8 @@
  * Lightweight card that links from /pieces/{slug} to /blog-pieces-auto/conseils/{pgAlias}
  */
 
-import { Link } from "@remix-run/react";
 import { BookOpen, ArrowRight } from "lucide-react";
+import { Link } from "react-router";
 
 interface GuideLinkCardProps {
   pgAlias: string;

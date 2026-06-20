@@ -1,5 +1,5 @@
-import { Link } from "@remix-run/react";
 import { Phone, Stethoscope } from "lucide-react";
+import { Link } from "react-router";
 import { SITE_CONFIG } from "~/config/site";
 
 export function CartHelpBlock() {

@@ -4,12 +4,6 @@
  */
 
 import {
-  type ActionFunctionArgs,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import { useFetcher, useLoaderData, useRevalidator } from "@remix-run/react";
-import {
   AlertTriangle,
   CheckCircle2,
   ChevronRight,
@@ -26,6 +20,14 @@ import {
   Zap,
 } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
+import {
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useFetcher,
+  useLoaderData,
+  useRevalidator,
+} from "react-router";
 import { toast } from "sonner";
 import { GammeActionBar } from "~/components/admin/GammeActionBar";
 import {

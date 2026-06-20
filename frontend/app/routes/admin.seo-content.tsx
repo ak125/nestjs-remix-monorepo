@@ -1,18 +1,16 @@
 // app/routes/admin.seo-content.tsx
 // Dashboard de validation du contenu SEO R4 (References) et R5 (Diagnostics)
+import { CheckCircle, Eye, Trash2, FolderOpen } from "lucide-react";
+import { useMemo, useState } from "react";
 import {
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import {
   Form,
   useLoaderData,
   useActionData,
   useNavigation,
-} from "@remix-run/react";
-import { CheckCircle, Eye, Trash2, FolderOpen } from "lucide-react";
-import { useMemo, useState } from "react";
+} from "react-router";
 import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";

@@ -1,4 +1,3 @@
-import { Form, Link } from "@remix-run/react";
 import {
   Award,
   Bell,
@@ -10,8 +9,9 @@ import {
   Settings,
   Truck,
 } from "lucide-react";
+import { Form, Link } from "react-router";
 import { Button } from "~/components/ui/button";
-import type { MenuSection } from "./account.types";
+import { type MenuSection } from "./account.types";
 
 const MENU_SECTIONS: MenuSection[] = [
   {
@@ -109,9 +109,7 @@ export function AccountMenuSections({ isPro }: AccountMenuSectionsProps) {
               <Award size={20} className="text-white" />
             </div>
             <div className="flex-1">
-              <div className="text-[13px] font-bold text-white">
-                Espace Pro
-              </div>
+              <div className="text-[13px] font-bold text-white">Espace Pro</div>
               <div className="text-[11px] text-slate-400 mt-0.5">
                 Tarifs préférentiels &amp; facturation
               </div>

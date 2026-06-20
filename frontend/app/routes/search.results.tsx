@@ -2,13 +2,14 @@
  * 🔍 SEARCH RESULTS PAGE - Page de résultats de recherche v3.0
  */
 
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
   useLoaderData,
   useNavigation,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import Container from "~/components/layout/Container";
 import { Badge } from "~/components/ui/badge";

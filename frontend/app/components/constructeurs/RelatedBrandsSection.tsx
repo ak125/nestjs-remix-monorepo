@@ -6,7 +6,7 @@
  *
  * @author Automecanik SEO Team
  */
-import { Link } from "@remix-run/react";
+import { Link } from "react-router";
 
 import { type RelatedBrand } from "~/types/brand.types";
 

@@ -6,13 +6,14 @@
  * GET /checkout/resume?token=xxx&check=1  → vérifie l'état (read-only, ne consomme PAS le token)
  */
 
+import { CheckCircle, CreditCard, AlertTriangle } from "lucide-react";
 import {
   redirect,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
-import { CheckCircle, CreditCard, AlertTriangle } from "lucide-react";
+  useLoaderData,
+  Link,
+} from "react-router";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { buildPayboxRedirectUrl } from "~/services/order.server";

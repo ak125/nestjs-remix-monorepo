@@ -1,5 +1,11 @@
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData, Link, useSearchParams, Form } from "@remix-run/react";
+import {
+  type LoaderFunctionArgs,
+  data,
+  useLoaderData,
+  Link,
+  useSearchParams,
+  Form,
+} from "react-router";
 import {
   Activity,
   Search,
@@ -80,17 +86,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
     );
 
     if (!res.ok) {
-      return json({ executions: [], total: 0, error: "Erreur chargement" });
+      return data({ executions: [], total: 0, error: "Erreur chargement" });
     }
 
-    const data = await res.json();
-    return json({
-      executions: (data.data ?? []) as Execution[],
-      total: (data.total ?? 0) as number,
+    const payload = await res.json();
+    return data({
+      executions: (payload.data ?? []) as Execution[],
+      total: (payload.total ?? 0) as number,
       error: null,
     });
   } catch {
-    return json({ executions: [], total: 0, error: "Erreur reseau" });
+    return data({ executions: [], total: 0, error: "Erreur reseau" });
   }
 }
 

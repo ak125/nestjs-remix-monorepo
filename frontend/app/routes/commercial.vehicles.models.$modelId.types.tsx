@@ -5,13 +5,15 @@
  * Route: /commercial/vehicles/models/$modelId/types
  */
 
+import { ArrowLeft, Zap, Fuel, Settings, Calendar } from "lucide-react";
 import {
   type LoaderFunctionArgs,
   type MetaFunction,
   redirect,
-} from "@remix-run/node";
-import { useLoaderData, Link, useParams } from "@remix-run/react";
-import { ArrowLeft, Zap, Fuel, Settings, Calendar } from "lucide-react";
+  useLoaderData,
+  Link,
+  useParams,
+} from "react-router";
 import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { type VehicleType } from "~/types/vehicle.types";

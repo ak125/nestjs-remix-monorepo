@@ -1,5 +1,3 @@
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { useLoaderData, useSubmit } from "@remix-run/react";
 import {
   Search,
   Download,
@@ -13,6 +11,12 @@ import {
   Eye,
 } from "lucide-react";
 import { useState, useMemo, useCallback } from "react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  useSubmit,
+} from "react-router";
 import { toast } from "sonner";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";

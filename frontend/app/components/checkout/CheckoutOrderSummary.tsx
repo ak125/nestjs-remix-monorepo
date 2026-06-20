@@ -1,4 +1,3 @@
-import { Link } from "@remix-run/react";
 import {
   Car,
   CheckCircle,
@@ -8,6 +7,7 @@ import {
   Shield,
   Truck,
 } from "lucide-react";
+import { Link } from "react-router";
 
 import {
   type CartItem as CartItemType,

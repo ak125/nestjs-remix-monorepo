@@ -31,14 +31,15 @@
  *
  * @meta noindex, nofollow - Admin only
  */
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import { useState } from "react";
 import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
   useLoaderData,
   useRouteLoaderData,
   Link,
   Form,
-} from "@remix-run/react";
-import { useState } from "react";
+} from "react-router";
 import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";

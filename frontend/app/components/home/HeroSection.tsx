@@ -1,4 +1,3 @@
-import { useNavigate } from "@remix-run/react";
 import {
   Award,
   BookOpen,
@@ -9,6 +8,7 @@ import {
   Truck,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
 
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";

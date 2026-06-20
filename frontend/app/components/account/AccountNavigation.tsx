@@ -1,4 +1,3 @@
-import { Link, useLocation } from "@remix-run/react";
 import {
   User,
   ShoppingBag,
@@ -11,6 +10,7 @@ import {
   ChevronRight,
   AlertTriangle,
 } from "lucide-react";
+import { Link, useLocation } from "react-router";
 
 import { cn } from "../../lib/utils";
 import { Badge } from "../ui/badge";

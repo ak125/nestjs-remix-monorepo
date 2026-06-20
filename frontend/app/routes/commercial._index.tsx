@@ -4,13 +4,14 @@
  * Route: /commercial
  */
 
+import { ShoppingCart, Truck, CheckCircle, TrendingUp } from "lucide-react";
 import {
   type LoaderFunctionArgs,
   type MetaFunction,
   redirect,
-} from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
-import { ShoppingCart, Truck, CheckCircle, TrendingUp } from "lucide-react";
+  useLoaderData,
+  Link,
+} from "react-router";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";

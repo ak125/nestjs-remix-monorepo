@@ -9,8 +9,12 @@
  * son contenu et sa sidebar selon les permissions.
  */
 
-import { redirect, type LoaderFunctionArgs } from "@remix-run/node";
-import { useRouteError, isRouteErrorResponse } from "@remix-run/react";
+import {
+  redirect,
+  type LoaderFunctionArgs,
+  useRouteError,
+  isRouteErrorResponse,
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { requireUser } from "../auth/unified.server";
 

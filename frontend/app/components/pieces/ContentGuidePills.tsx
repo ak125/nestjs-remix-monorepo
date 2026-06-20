@@ -1,6 +1,6 @@
-import { Link } from "@remix-run/react";
 import { BookOpen, Wrench, FileText, HelpCircle } from "lucide-react";
 import { memo } from "react";
+import { Link } from "react-router";
 
 interface ContentGuidePillsProps {
   /** Alias gamme (ex: "disque-frein") — utilisé pour construire les URLs */

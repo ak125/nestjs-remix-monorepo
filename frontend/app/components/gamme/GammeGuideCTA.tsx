@@ -1,5 +1,5 @@
-import { Link } from "@remix-run/react";
 import { ArrowRight, BookOpen } from "lucide-react";
+import { Link } from "react-router";
 import { Section } from "~/components/layout";
 
 interface GammeGuideCTAProps {

@@ -8,8 +8,8 @@
  * 2. Session storage (véhicule sélectionné dans le sélecteur)
  */
 
-import { useLocation, useParams } from "@remix-run/react";
 import { useEffect, useMemo, useState } from "react";
+import { useLocation, useParams } from "react-router";
 
 export interface VehicleContext {
   brand?: string;

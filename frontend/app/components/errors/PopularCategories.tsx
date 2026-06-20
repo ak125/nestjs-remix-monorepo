@@ -1,4 +1,3 @@
-import { Link } from "@remix-run/react";
 import {
   Disc,
   Filter,
@@ -10,6 +9,7 @@ import {
   Wrench,
 } from "lucide-react";
 import { memo } from "react";
+import { Link } from "react-router";
 
 interface Category {
   name: string;

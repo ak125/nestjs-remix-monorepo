@@ -11,15 +11,6 @@
  * Route: /products/gammes/:gammeId
  */
 
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import {
-  useLoaderData,
-  Link,
-  Form,
-  useSearchParams,
-  useRouteError,
-  isRouteErrorResponse,
-} from "@remix-run/react";
 import {
   ArrowLeft,
   Search,
@@ -35,6 +26,16 @@ import {
   ChevronRight,
   RefreshCw,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+  Form,
+  useSearchParams,
+  useRouteError,
+  isRouteErrorResponse,
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";

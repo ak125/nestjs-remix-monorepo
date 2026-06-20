@@ -1,20 +1,18 @@
+import { AlertCircle, CheckCircle2, Eye, EyeOff } from "lucide-react";
+import { useState } from "react";
 import {
   redirect,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
   type MetaFunction,
   data as dataResponse,
-} from "@remix-run/node";
-import {
   Form,
   Link,
   useActionData,
   useLoaderData,
   useNavigation,
   useSearchParams,
-} from "@remix-run/react";
-import { AlertCircle, CheckCircle2, Eye, EyeOff } from "lucide-react";
-import { useState } from "react";
+} from "react-router";
 import { GoogleSignInButton } from "~/components/auth/GoogleSignInButton";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";

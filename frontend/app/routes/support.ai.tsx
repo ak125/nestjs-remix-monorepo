@@ -1,11 +1,12 @@
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import { useState } from "react";
 import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
   useLoaderData,
   Link,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { useState } from "react";
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
