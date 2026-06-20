@@ -1,8 +1,8 @@
 import {
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
-  json,
   type MetaFunction,
+  data,
 } from "@remix-run/node";
 import {
   useLoaderData,
@@ -56,10 +56,10 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
 
   try {
     const payment = await getPaymentById(paymentId);
-    return json<LoaderData>({ payment });
+    return { payment };
   } catch (error) {
     logger.error("❌ Error loading payment:", error);
-    return json<LoaderData>({ payment: null });
+    return { payment: null };
   }
 }
 
@@ -77,13 +77,13 @@ export async function action({ request, context }: ActionFunctionArgs) {
 
       await processRefund(paymentId, amount, reason);
 
-      return json({
+      return {
         success: true,
         message: "Remboursement traité avec succès",
-      });
+      };
     }
 
-    return json(
+    return data(
       {
         success: false,
         message: "Action non reconnue",
@@ -92,7 +92,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
     );
   } catch (error) {
     logger.error("❌ Error processing action:", error);
-    return json(
+    return data(
       {
         success: false,
         message: "Erreur lors du traitement de l'action",

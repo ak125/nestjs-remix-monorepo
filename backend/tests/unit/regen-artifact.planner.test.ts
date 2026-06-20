@@ -12,6 +12,8 @@ import {
   UnknownRegenTargetError,
   summarizeDiff,
 } from '../../src/modules/admin/services/command-center-orchestrator/regen-artifact.planner';
+import { ExecutorUnavailableError } from '../../src/modules/admin/services/command-center-orchestrator/regen-artifact.executor';
+import { type ExecutionPlan } from '../../src/modules/admin/services/command-center-orchestrator/executable-action.contract';
 
 const env = process.env as Record<string, string | undefined>;
 const REGISTRY = env.REGISTRY_DIR;
@@ -44,6 +46,51 @@ describe('RegenArtifactShadowPlanner', () => {
     await expect(p.plan('regen:command-center-snapshot')).rejects.toBeInstanceOf(
       RegenDryRunError,
     );
+  });
+});
+
+describe('RegenArtifactShadowPlanner.apply (Phase 2b)', () => {
+  const fakePlan: ExecutionPlan = {
+    action_id: 'regen:command-center-snapshot',
+    kind: 'regen-artifact',
+    summary: 's',
+    would_change: true,
+    details: { a: 1 },
+    reversible: true,
+  };
+
+  it('apply délègue à l’executor (cible + plan_hash recalculé)', async () => {
+    const receipt = {
+      action_id: 'regen:command-center-snapshot',
+      kind: 'regen-artifact' as const,
+      applied: true,
+      plan_hash: 'h',
+      reverted_by: 'gh pr close X',
+      details: {},
+    };
+    const execute = jest.fn().mockResolvedValue(receipt);
+    const p = new RegenArtifactShadowPlanner({ execute } as never);
+    jest.spyOn(p, 'plan').mockResolvedValue(fakePlan); // évite le spawn générateur
+    const out = await p.apply('regen:command-center-snapshot');
+    expect(out).toEqual(receipt);
+    const [execTarget, , hash] = execute.mock.calls[0];
+    expect(execTarget.action_id).toBe('regen:command-center-snapshot');
+    expect(execTarget.base).toBe('main');
+    expect(typeof hash).toBe('string');
+  });
+
+  it('apply action_id inconnu → UnknownRegenTargetError', async () => {
+    const p = new RegenArtifactShadowPlanner({ execute: jest.fn() } as never);
+    await expect(p.apply('regen:nope')).rejects.toBeInstanceOf(
+      UnknownRegenTargetError,
+    );
+  });
+
+  it('apply sans executor câblé → ExecutorUnavailableError', async () => {
+    const p = new RegenArtifactShadowPlanner(); // pas d'executor injecté
+    await expect(
+      p.apply('regen:command-center-snapshot'),
+    ).rejects.toBeInstanceOf(ExecutorUnavailableError);
   });
 });
 

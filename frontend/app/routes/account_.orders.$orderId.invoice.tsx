@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import {
   useLoaderData,
   Link,
@@ -177,7 +173,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     })),
   };
 
-  return json({ invoice, user });
+  return { invoice, user };
 }
 
 export default function OrderInvoice() {

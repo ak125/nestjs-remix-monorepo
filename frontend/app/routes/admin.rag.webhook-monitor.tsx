@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { Zap, RefreshCw, CheckCircle2, Activity, Clock } from "lucide-react";
 import {
@@ -24,7 +20,6 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 
@@ -56,45 +51,23 @@ interface WebhookStats {
   avgProcessingMs: number;
 }
 
-interface RefreshItem {
-  id: number;
-  pg_alias: string;
-  page_type: string;
-  status: string;
-  trigger_source: string;
-  quality_score: number | null;
-  created_at: string;
-}
-
-interface DashboardData {
-  counts: Record<string, number>;
-  recent: RefreshItem[];
-}
-
 // ── Loader ──
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const cookie = request.headers.get("Cookie") || "";
   const headers = { Cookie: cookie };
 
-  const [statsRes, auditRes, dashboardRes] = await Promise.allSettled([
+  const [statsRes, auditRes] = await Promise.allSettled([
     fetch(
       getInternalApiUrlFromRequest(
-        "/api/admin/content-refresh/webhook-stats?days=7",
+        "/api/rag/admin/webhook-stats?days=7",
         request,
       ),
       { headers },
     ),
     fetch(
       getInternalApiUrlFromRequest(
-        "/api/admin/content-refresh/webhook-audit?limit=30",
-        request,
-      ),
-      { headers },
-    ),
-    fetch(
-      getInternalApiUrlFromRequest(
-        "/api/admin/content-refresh/dashboard",
+        "/api/rag/admin/webhook-audit?limit=30",
         request,
       ),
       { headers },
@@ -118,14 +91,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       ? await auditRes.value.json()
       : { data: [], total: 0 };
 
-  const dashboardRaw =
-    dashboardRes.status === "fulfilled" && dashboardRes.value.ok
-      ? await dashboardRes.value.json()
-      : null;
-  const dashboard: DashboardData = dashboardRaw?.data ??
-    dashboardRaw ?? { counts: {}, recent: [] };
-
-  return json({ stats, audit: auditData, dashboard });
+  return { stats, audit: auditData };
 }
 
 // ── Helpers ──
@@ -149,59 +115,15 @@ function webhookStatusToType(status: string, emitted: boolean): StatusType {
   return "WARN";
 }
 
-function pipelineStatusToType(status: string): StatusType {
-  switch (status) {
-    case "auto_published":
-    case "published":
-      return "PASS";
-    case "failed":
-      return "FAIL";
-    case "draft":
-    case "pending":
-    case "processing":
-      return "PENDING";
-    case "skipped":
-      return "NEUTRAL";
-    default:
-      return "INFO";
-  }
-}
-
-function qualityBadgeVariant(
-  score: number | null,
-): "default" | "secondary" | "destructive" | "outline" {
-  if (score === null) return "outline";
-  if (score >= 70) return "default";
-  if (score >= 50) return "secondary";
-  return "destructive";
-}
-
 // ── Component ──
 
 export default function WebhookMonitorPage() {
-  const { stats, audit, dashboard } = useLoaderData<typeof loader>();
-
-  const pipelineTotal = Object.values(dashboard.counts).reduce(
-    (a, b) => a + b,
-    0,
-  );
-  const avgQuality =
-    dashboard.recent.length > 0
-      ? Math.round(
-          dashboard.recent
-            .filter((r) => r.quality_score !== null)
-            .reduce((sum, r) => sum + (r.quality_score || 0), 0) /
-            Math.max(
-              dashboard.recent.filter((r) => r.quality_score !== null).length,
-              1,
-            ),
-        )
-      : 0;
+  const { stats, audit } = useLoaderData<typeof loader>();
 
   return (
     <DashboardShell
-      title="Webhook & Pipeline Monitor"
-      description="Suivi des webhooks RAG et de l'execution du pipeline content-refresh"
+      title="Webhook Monitor"
+      description="Suivi des webhooks d'ingestion RAG (chatbot)"
       breadcrumb={
         <span className="text-muted-foreground">
           Admin &gt; RAG &gt; Webhook Monitor
@@ -236,194 +158,104 @@ export default function WebhookMonitorPage() {
             }
           />
           <KpiCard
-            title="Qualite moyenne"
-            value={avgQuality}
+            title="Temps moyen"
+            value={`${stats.avgProcessingMs}ms`}
             icon={Activity}
-            variant={
-              avgQuality >= 70
-                ? "success"
-                : avgQuality >= 50
-                  ? "warning"
-                  : "danger"
-            }
-            subtitle={`${pipelineTotal} jobs total`}
+            variant="info"
+            subtitle="traitement webhook"
           />
         </KpiGrid>
       }
     >
-      <Tabs defaultValue="webhooks" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="webhooks" className="gap-1.5">
-            <Zap className="h-4 w-4" />
-            Webhooks recents
-          </TabsTrigger>
-          <TabsTrigger value="pipeline" className="gap-1.5">
-            <Activity className="h-4 w-4" />
-            Pipeline runs
-          </TabsTrigger>
-        </TabsList>
-
-        {/* ── Tab 1: Webhooks recents ── */}
-        <TabsContent value="webhooks">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">
-                Historique webhooks ({audit.total})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {audit.data.length === 0 ? (
-                <p className="text-sm text-muted-foreground py-4 text-center">
-                  Aucun webhook enregistre
-                </p>
-              ) : (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Job ID</TableHead>
-                        <TableHead>Source</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Gammes</TableHead>
-                        <TableHead>Temps</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {audit.data.map((item) => (
-                        <TableRow key={item.id}>
-                          <TableCell className="text-sm whitespace-nowrap">
-                            {formatDate(item.received_at)}
-                          </TableCell>
-                          <TableCell className="font-mono text-xs max-w-[140px] truncate">
-                            {item.job_id}
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{item.source}</Badge>
-                          </TableCell>
-                          <TableCell>
-                            <StatusBadge
-                              status={webhookStatusToType(
-                                item.status,
-                                item.event_emitted,
-                              )}
-                              label={
-                                item.event_emitted
-                                  ? "Emis"
-                                  : item.status === "failed"
-                                    ? "Echec"
-                                    : "Skip"
-                              }
-                              size="sm"
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex flex-wrap gap-1">
-                              {item.gammes_detected.length > 0 ? (
-                                item.gammes_detected.map((g) => (
-                                  <Badge
-                                    key={g}
-                                    variant="secondary"
-                                    className="text-xs"
-                                  >
-                                    {g}
-                                  </Badge>
-                                ))
-                              ) : (
-                                <span className="text-muted-foreground text-xs">
-                                  -
-                                </span>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-sm whitespace-nowrap">
-                            {item.processing_ms != null ? (
-                              <span className="flex items-center gap-1">
-                                <Clock className="h-3 w-3 text-muted-foreground" />
-                                {item.processing_ms}ms
-                              </span>
-                            ) : (
-                              "-"
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* ── Tab 2: Pipeline runs ── */}
-        <TabsContent value="pipeline">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">
-                Derniers jobs pipeline ({dashboard.recent.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {dashboard.recent.length === 0 ? (
-                <p className="text-sm text-muted-foreground py-4 text-center">
-                  Aucun job recent
-                </p>
-              ) : (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Gamme</TableHead>
-                        <TableHead>Page type</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Score</TableHead>
-                        <TableHead>Source</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {dashboard.recent.map((item) => (
-                        <TableRow key={item.id}>
-                          <TableCell className="text-sm whitespace-nowrap">
-                            {formatDate(item.created_at)}
-                          </TableCell>
-                          <TableCell className="font-medium text-sm">
-                            {item.pg_alias}
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="text-xs">
-                              {item.page_type}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <StatusBadge
-                              status={pipelineStatusToType(item.status)}
-                              label={item.status}
-                              size="sm"
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              variant={qualityBadgeVariant(item.quality_score)}
-                              className="text-xs"
-                            >
-                              {item.quality_score ?? "-"}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-xs text-muted-foreground">
-                            {item.trigger_source || "-"}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">
+            Historique webhooks ({audit.total})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {audit.data.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">
+              Aucun webhook enregistre
+            </p>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Job ID</TableHead>
+                    <TableHead>Source</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Gammes</TableHead>
+                    <TableHead>Temps</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {audit.data.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell className="text-sm whitespace-nowrap">
+                        {formatDate(item.received_at)}
+                      </TableCell>
+                      <TableCell className="font-mono text-xs max-w-[140px] truncate">
+                        {item.job_id}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{item.source}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <StatusBadge
+                          status={webhookStatusToType(
+                            item.status,
+                            item.event_emitted,
+                          )}
+                          label={
+                            item.event_emitted
+                              ? "Emis"
+                              : item.status === "failed"
+                                ? "Echec"
+                                : "Skip"
+                          }
+                          size="sm"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {item.gammes_detected.length > 0 ? (
+                            item.gammes_detected.map((g) => (
+                              <Badge
+                                key={g}
+                                variant="secondary"
+                                className="text-xs"
+                              >
+                                {g}
+                              </Badge>
+                            ))
+                          ) : (
+                            <span className="text-muted-foreground text-xs">
+                              -
+                            </span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-sm whitespace-nowrap">
+                        {item.processing_ms != null ? (
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-3 w-3 text-muted-foreground" />
+                            {item.processing_ms}ms
+                          </span>
+                        ) : (
+                          "-"
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </DashboardShell>
   );
 }

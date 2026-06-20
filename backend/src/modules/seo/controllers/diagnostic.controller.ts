@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  Post,
   Patch,
   Delete,
   Param,
@@ -69,19 +68,6 @@ export class DiagnosticController {
     this.logger.debug('📝 GET /api/seo/diagnostic/drafts');
     const drafts = await this.diagnosticService.getDrafts();
     return { drafts, total: drafts.length };
-  }
-
-  /**
-   * Génère des diagnostics R5 depuis les templates
-   * POST /api/seo/diagnostic/generate
-   * Crée les entrées en mode DRAFT (is_published: false)
-   * ADMIN ONLY
-   */
-  @Post('generate')
-  @UseGuards(IsAdminGuard)
-  async generateFromTemplates(): Promise<{ created: number; skipped: number }> {
-    this.logger.log('🏭 POST /api/seo/diagnostic/generate');
-    return this.diagnosticService.generateFromTemplates();
   }
 
   /**

@@ -7,11 +7,11 @@
  */
 
 import {
-  json,
   redirect,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
   type MetaFunction,
+  data,
 } from "@remix-run/node";
 import {
   useLoaderData,
@@ -22,12 +22,12 @@ import {
   isRouteErrorResponse,
   Link,
 } from "@remix-run/react";
-import { ArrowLeft, Save } from "lucide-react";
 import {
   LEAD_TRANSITIONS,
   LEAD_STATUSES,
   type LeadStatus,
 } from "@repo/database-types";
+import { ArrowLeft, Save } from "lucide-react";
 
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { logger } from "~/utils/logger";
@@ -95,7 +95,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const cookie = request.headers.get("Cookie") || "";
   const id = params.id;
 
-  if (!id) throw json({ error: "Lead id manquant" }, { status: 400 });
+  if (!id) throw data({ error: "Lead id manquant" }, { status: 400 });
 
   try {
     const res = await fetch(`${baseUrl}/api/admin/leads/${id}`, {
@@ -103,13 +103,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     });
 
     if (res.status === 401 || res.status === 403) {
-      throw json(
+      throw data(
         { error: "Authentification admin requise" },
         { status: res.status },
       );
     }
     if (res.status === 404) {
-      throw json(
+      throw data(
         { error: "Lead introuvable ou non-trackable" },
         { status: 404 },
       );
@@ -120,15 +120,15 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         status: res.status,
         errText,
       });
-      throw json({ error: `API leads failed: ${res.status}` }, { status: 502 });
+      throw data({ error: `API leads failed: ${res.status}` }, { status: 502 });
     }
 
     const lead = (await res.json()) as LeadDetail;
-    return json<LoaderData>({ lead });
+    return { lead };
   } catch (err) {
     if (err instanceof Response) throw err;
     logger.error("admin.leads.$id loader exception", { err });
-    throw json({ error: "API leads unreachable" }, { status: 502 });
+    throw data({ error: "API leads unreachable" }, { status: 502 });
   }
 }
 
@@ -136,7 +136,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
   const cookie = request.headers.get("Cookie") || "";
   const id = params.id;
-  if (!id) return json({ error: "Lead id manquant" }, { status: 400 });
+  if (!id) return data({ error: "Lead id manquant" }, { status: 400 });
 
   const formData = await request.formData();
   const intent = String(formData.get("intent") || "");
@@ -144,7 +144,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   if (intent === "status") {
     const nextStatus = String(formData.get("status") || "") as LeadStatus;
     if (!LEAD_STATUSES.includes(nextStatus)) {
-      return json({ error: "Status invalide" }, { status: 400 });
+      return data({ error: "Status invalide" }, { status: 400 });
     }
     const res = await fetch(`${baseUrl}/api/admin/leads/${id}/status`, {
       method: "PATCH",
@@ -159,7 +159,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const errBody = await res
         .json()
         .catch(() => ({ message: "Transition échouée" }));
-      return json(
+      return data(
         { error: errBody.message || `Status update failed: ${res.status}` },
         { status: res.status },
       );
@@ -199,7 +199,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
       const errBody = await res
         .json()
         .catch(() => ({ message: "Mise à jour échouée" }));
-      return json(
+      return data(
         { error: errBody.message || `Fields update failed: ${res.status}` },
         { status: res.status },
       );
@@ -213,7 +213,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
       headers: { Accept: "application/json", Cookie: cookie },
     });
     if (!res.ok) {
-      return json(
+      return data(
         { error: `Clear follow-up failed: ${res.status}` },
         { status: res.status },
       );
@@ -221,7 +221,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
     return redirect(`/admin/leads/${id}`);
   }
 
-  return json({ error: "Intent inconnu" }, { status: 400 });
+  return data({ error: "Intent inconnu" }, { status: 400 });
 }
 
 export default function AdminLeadDetail() {
@@ -273,12 +273,8 @@ export default function AdminLeadDetail() {
         <CardContent className="space-y-3 text-sm">
           <div>
             <span className="font-medium">Client :</span> {customerName}
-            {lead.customer?.cst_mail && (
-              <> — {lead.customer.cst_mail}</>
-            )}
-            {lead.customer?.cst_phone && (
-              <> — {lead.customer.cst_phone}</>
-            )}
+            {lead.customer?.cst_mail && <> — {lead.customer.cst_mail}</>}
+            {lead.customer?.cst_phone && <> — {lead.customer.cst_phone}</>}
           </div>
           {lead.msg_crm_source_page && (
             <div className="text-muted-foreground">
@@ -385,11 +381,7 @@ export default function AdminLeadDetail() {
               </Button>
               {lead.msg_crm_next_follow_up_at && (
                 <Form method="post">
-                  <input
-                    type="hidden"
-                    name="intent"
-                    value="clear_follow_up"
-                  />
+                  <input type="hidden" name="intent" value="clear_follow_up" />
                   <Button
                     type="submit"
                     variant="ghost"

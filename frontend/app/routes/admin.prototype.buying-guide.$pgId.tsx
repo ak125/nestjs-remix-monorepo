@@ -4,11 +4,7 @@
  * Admin only, noindex.
  */
 
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import {
   AlertTriangle,
@@ -68,7 +64,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   }
 
   const data: PreviewData = await response.json();
-  return json(data);
+  return data;
 }
 
 function QualityBadge({

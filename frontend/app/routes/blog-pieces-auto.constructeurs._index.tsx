@@ -6,11 +6,7 @@
  * Intention : Découvrir l'histoire des marques automobiles
  */
 
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import {
   useLoaderData,
   Link,
@@ -379,7 +375,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       const paginatedItems = filtered.slice(startIndex, startIndex + limit);
 
       // Enrichir avec les données manquantes
-      return json({
+      return {
         constructeurs: paginatedItems.map((m: any) => ({
           id: m.id,
           title: m.name,
@@ -413,7 +409,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         },
         success: true,
         source: "api",
-      });
+      };
     }
   } catch (error) {
     logger.warn("[API] Error, using fallback data:", error);
@@ -517,7 +513,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     totalModels: DEMO_CONSTRUCTEURS.reduce((sum, c) => sum + c.modelsCount, 0),
   };
 
-  return json({
+  return {
     constructeurs: paginatedConstructeurs,
     total: filteredConstructeurs.length,
     page,
@@ -531,7 +527,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     popularBrands,
     stats,
     success: true,
-  });
+  };
 }
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {

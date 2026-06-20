@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import {
   useLoaderData,
   Link,
@@ -133,7 +129,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       updatedAt: data.updatedAt || data.clm_updated_at || "",
       resolvedAt: data.resolvedAt || data.clm_resolved_at || undefined,
     };
-    return json<LoaderData>({ claim, user });
+    return { claim, user };
   } catch (error) {
     if (error instanceof Response) throw error;
     logger.error("Erreur chargement réclamation:", error);

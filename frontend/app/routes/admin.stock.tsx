@@ -1,5 +1,4 @@
 import {
-  json,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
   type MetaFunction,
@@ -123,21 +122,21 @@ export async function loader({ request }: LoaderFunctionArgs) {
       stats: statsData?.data || {},
     };
 
-    return json({
+    return {
       dashboard,
       stockData,
       filters,
       success: true,
-    });
+    };
   } catch (error) {
     logger.error("Erreur chargement stock:", error);
-    return json({
+    return {
       dashboard: null,
       stockData: { items: [], total: 0, stats: {} },
       filters,
       error: "Erreur de chargement des données stock",
       success: false,
-    });
+    };
   }
 }
 
@@ -169,13 +168,13 @@ export async function action({ request }: ActionFunctionArgs) {
         );
 
         if (response.ok) {
-          return json({
+          return {
             success: true,
             message: "Mouvement enregistré avec succès",
-          });
+          };
         } else {
           const error = await response.json();
-          return json({ success: false, error: error.message });
+          return { success: false, error: error.message };
         }
       }
 
@@ -198,22 +197,22 @@ export async function action({ request }: ActionFunctionArgs) {
 
         if (response.ok) {
           const result = await response.json();
-          return json({ success: true, message: result.message });
+          return { success: true, message: result.message };
         } else {
           const error = await response.json();
-          return json({ success: false, error: error.message });
+          return { success: false, error: error.message };
         }
       }
 
       default:
-        return json({ success: false, error: "Action non reconnue" });
+        return { success: false, error: "Action non reconnue" };
     }
   } catch (error) {
     logger.error("Erreur action stock:", error);
-    return json({
+    return {
       success: false,
       error: "Erreur lors de l'exécution de l'action",
-    });
+    };
   }
 }
 

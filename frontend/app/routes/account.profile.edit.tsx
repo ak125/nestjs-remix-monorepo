@@ -1,9 +1,9 @@
 import {
-  json,
   redirect,
   type ActionFunction,
   type LoaderFunction,
   type MetaFunction,
+  data,
 } from "@remix-run/node";
 import {
   useLoaderData,
@@ -70,7 +70,7 @@ export const loader: LoaderFunction = async ({ request, context }) => {
       status: "active",
     };
 
-    return json<LoaderData>({ user });
+    return { user };
   } catch (error) {
     logger.error("Erreur chargement profil:", error);
     throw redirect("/account/profile");
@@ -102,7 +102,7 @@ export const action: ActionFunction = async ({ request, context }) => {
   }
 
   if (Object.keys(fieldErrors).length > 0) {
-    return json<ActionData>({ fieldErrors }, { status: 400 });
+    return data({ fieldErrors }, { status: 400 });
   }
 
   try {
@@ -125,7 +125,7 @@ export const action: ActionFunction = async ({ request, context }) => {
 
     if (!response.ok) {
       logger.error(`Update profile API error: ${response.status}`);
-      return json<ActionData>(
+      return data(
         {
           error: "Erreur lors de la mise à jour du profil",
         },
@@ -136,7 +136,7 @@ export const action: ActionFunction = async ({ request, context }) => {
     return redirect("/account/profile?updated=true");
   } catch (error) {
     logger.error("Erreur mise à jour profil:", error);
-    return json<ActionData>(
+    return data(
       {
         error: "Erreur lors de la mise à jour du profil",
       },

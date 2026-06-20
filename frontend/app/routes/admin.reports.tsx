@@ -2,7 +2,7 @@
  * Page Rapports - Analyses et rapports avec Context7
  */
 
-import { type LoaderFunction, json, type MetaFunction } from "@remix-run/node";
+import { type LoaderFunction, type MetaFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import {
   BarChart3,
@@ -126,14 +126,14 @@ export const loader: LoaderFunction = async ({ request, context }) => {
       scheduledReports: reports.filter((r) => r.status === "scheduled").length,
     };
 
-    return json({
+    return {
       reports,
       analytics,
       context7: {
         servicesAvailable: !!ordersResult?.success,
         fallbackMode: !ordersResult?.success,
       },
-    });
+    };
   } catch (error) {
     logger.error("❌ Erreur lors du chargement des rapports:", error);
 
@@ -152,7 +152,7 @@ export const loader: LoaderFunction = async ({ request, context }) => {
       },
     ];
 
-    return json({
+    return {
       reports: fallbackReports,
       analytics: {
         totalReports: 1,
@@ -166,7 +166,7 @@ export const loader: LoaderFunction = async ({ request, context }) => {
         fallbackMode: true,
         errorMode: true,
       },
-    });
+    };
   }
 };
 

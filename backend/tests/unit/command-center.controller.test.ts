@@ -8,17 +8,25 @@ import {
   BadRequestException,
   ConflictException,
   NotFoundException,
+  NotImplementedException,
+  ServiceUnavailableException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { CommandCenterController } from '../../src/modules/admin/controllers/command-center.controller';
 import {
+  NoExecutorError,
   OrchestrationDisabledError,
+  PlanHashMismatchError,
   UnsupportedExecutableActionError,
 } from '../../src/modules/admin/services/command-center-orchestrator/orchestrator.service';
 import {
   RegenDryRunError,
   UnknownRegenTargetError,
 } from '../../src/modules/admin/services/command-center-orchestrator/regen-artifact.planner';
+import {
+  ExecutorDisabledError,
+  ExecutorUnavailableError,
+} from '../../src/modules/admin/services/command-center-orchestrator/regen-artifact.executor';
 import { type ExecutionPlan } from '../../src/modules/admin/services/command-center-orchestrator/executable-action.contract';
 
 const plan: ExecutionPlan = {
@@ -34,6 +42,7 @@ function make(opts: {
   mode?: 'full' | 'light' | 'disabled';
   orchMode?: string;
   planShadow?: jest.Mock;
+  executeApproved?: jest.Mock;
 }) {
   const reader = { getMode: () => opts.mode ?? 'full' } as never;
   const orchestrator = {
@@ -44,6 +53,16 @@ function make(opts: {
       { kind: 'regen-artifact', action_id: 'regen:command-center-snapshot' },
     ],
     planShadow: opts.planShadow ?? jest.fn().mockResolvedValue(plan),
+    executeApproved:
+      opts.executeApproved ??
+      jest.fn().mockResolvedValue({
+        action_id: 'regen:command-center-snapshot',
+        kind: 'regen-artifact',
+        applied: false,
+        plan_hash: 'h',
+        reverted_by: null,
+        details: {},
+      }),
   } as never;
   return new CommandCenterController(reader, orchestrator);
 }
@@ -143,6 +162,92 @@ describe('CommandCenterController — orchestration', () => {
       'pr-proposition',
       'pr:command-center-snapshot-refresh',
       { actor: 'admin' },
+    );
+  });
+});
+
+describe('CommandCenterController — approve (Phase 2a HITL)', () => {
+  const okBody = {
+    kind: 'regen-artifact',
+    action_id: 'regen:command-center-snapshot',
+    plan_hash: 'h',
+  };
+
+  it('body invalide (plan_hash manquant) → 400', async () => {
+    const c = make({});
+    await expect(
+      c.approveExecution({ kind: 'regen-artifact', action_id: 'x' }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('mode ≠ approved → 409', async () => {
+    const c = make({
+      executeApproved: jest
+        .fn()
+        .mockRejectedValue(new OrchestrationDisabledError('shadow')),
+    });
+    await expect(c.approveExecution(okBody)).rejects.toBeInstanceOf(
+      ConflictException,
+    );
+  });
+
+  it('plan_hash périmé → 409', async () => {
+    const c = make({
+      executeApproved: jest.fn().mockRejectedValue(new PlanHashMismatchError()),
+    });
+    await expect(c.approveExecution(okBody)).rejects.toBeInstanceOf(
+      ConflictException,
+    );
+  });
+
+  it('aucun executor (Phase 2a) → 501 Not Implemented', async () => {
+    const c = make({
+      executeApproved: jest
+        .fn()
+        .mockRejectedValue(new NoExecutorError('regen-artifact')),
+    });
+    await expect(c.approveExecution(okBody)).rejects.toBeInstanceOf(
+      NotImplementedException,
+    );
+  });
+
+  it('executor non activé (flag 2 off) → 409', async () => {
+    const c = make({
+      executeApproved: jest.fn().mockRejectedValue(new ExecutorDisabledError()),
+    });
+    await expect(c.approveExecution(okBody)).rejects.toBeInstanceOf(
+      ConflictException,
+    );
+  });
+
+  it('git/gh indisponible → 503', async () => {
+    const c = make({
+      executeApproved: jest
+        .fn()
+        .mockRejectedValue(new ExecutorUnavailableError('git not found')),
+    });
+    await expect(c.approveExecution(okBody)).rejects.toBeInstanceOf(
+      ServiceUnavailableException,
+    );
+  });
+
+  it('succès → renvoie le reçu + propage actor + plan_hash', async () => {
+    const receipt = {
+      action_id: 'regen:command-center-snapshot',
+      kind: 'regen-artifact',
+      applied: false,
+      plan_hash: 'h',
+      reverted_by: null,
+      details: {},
+    };
+    const executeApproved = jest.fn().mockResolvedValue(receipt);
+    const c = make({ orchMode: 'approved', executeApproved });
+    const res = await c.approveExecution(okBody, 'fafa@automecanik.com');
+    expect(res).toEqual(receipt);
+    expect(executeApproved).toHaveBeenCalledWith(
+      'regen-artifact',
+      'regen:command-center-snapshot',
+      { actor: 'fafa@automecanik.com', plan_hash: 'h' },
     );
   });
 });

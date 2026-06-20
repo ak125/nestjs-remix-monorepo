@@ -13,6 +13,7 @@ import { BlogArticleTransformService } from './blog-article-transform.service';
 import { InternalLinkingService } from '../../seo/internal-linking.service';
 import { PRIX_PAS_CHER } from '../../seo/seo-v4.types';
 import { deduplicateWords } from '../utils/html-normalize.utils';
+import { humanizeProvenance } from '../utils/source-provenance.util';
 import type {
   R6GuidePayload,
   R6GuidePage,
@@ -430,7 +431,12 @@ export class R6GuideService {
       faq,
       ctaFinal,
       mediaSlots,
-      sourceType: (row.sgpg_source_type as string) || null,
+      sourceType: row.sgpg_source_type
+        ? humanizeProvenance({
+            type: row.sgpg_source_type as string,
+            ref: row.sgpg_source_ref as string | undefined,
+          })
+        : null,
       sourceVerified: (row.sgpg_source_verified as boolean) ?? false,
     };
   }
@@ -511,7 +517,12 @@ export class R6GuideService {
       familyCrossSellIntro:
         (row.sgpg_family_cross_sell_intro as string) || null,
       microSeoBlock: (row.sgpg_micro_seo_block as string) || null,
-      sourceType: (row.sgpg_source_type as string) || null,
+      sourceType: row.sgpg_source_type
+        ? humanizeProvenance({
+            type: row.sgpg_source_type as string,
+            ref: row.sgpg_source_ref as string | undefined,
+          })
+        : null,
       sourceVerified: (row.sgpg_source_verified as boolean) ?? false,
     };
   }

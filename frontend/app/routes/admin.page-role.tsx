@@ -8,11 +8,7 @@
  * - Visualiser la matrice des liens
  */
 
-import {
-  type LoaderFunctionArgs,
-  type MetaFunction,
-  json,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import {
   Shield,
@@ -110,13 +106,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
       : { hierarchy: [] };
     const rules = rulesRes.ok ? await rulesRes.json() : { rules: {} };
 
-    return json({ matrix, hierarchy, rules });
+    return { matrix, hierarchy, rules };
   } catch {
-    return json({
+    return {
       matrix: { matrix: {}, table: {}, roles: [] },
       hierarchy: { hierarchy: [] },
       rules: { rules: {} },
-    });
+    };
   }
 }
 

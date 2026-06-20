@@ -4,7 +4,6 @@
  */
 
 import {
-  json,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
   redirect,
@@ -183,14 +182,14 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 
       logger.log(`✅ ${messagesData.messages?.length || 0} messages récupérés`);
 
-      return json({
+      return {
         messages: messagesData.messages || [],
         total: messagesData.total || 0,
         page: messagesData.page || 1,
         totalPages: messagesData.totalPages || 1,
         stats: statsData || { total: 0, open: 0, closed: 0 },
         fallbackMode: false,
-      } as MessageData);
+      } as MessageData;
     } else {
       logger.error(
         "❌ Erreur API messages:",
@@ -198,7 +197,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         statsResponse.status,
       );
 
-      return json({
+      return {
         messages: [],
         total: 0,
         page: 1,
@@ -206,12 +205,12 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         stats: { total: 0, open: 0, closed: 0 },
         error: `Erreur API (${messagesResponse.status})`,
         fallbackMode: true,
-      } as MessageData);
+      } as MessageData;
     }
   } catch (error: unknown) {
     logger.error("❌ Erreur lors du chargement des messages:", error);
 
-    return json({
+    return {
       messages: [],
       total: 0,
       page: 1,
@@ -219,7 +218,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       stats: { total: 0, open: 0, closed: 0 },
       error: "Erreur de connexion à l'API messages",
       fallbackMode: true,
-    } as MessageData);
+    } as MessageData;
   }
 }
 
@@ -311,7 +310,7 @@ export default function AdminMessages() {
 
       {/* Indicateur de source */}
       <div
-        className={`mb-6 p-4 rounded-lg ${ fallbackMode ? "border-warning bg-warning/10" : "border-success bg-success/10" }`}
+        className={`mb-6 p-4 rounded-lg ${fallbackMode ? "border-warning bg-warning/10" : "border-success bg-success/10"}`}
       >
         <div className="flex items-center gap-2">
           {fallbackMode ? (

@@ -25,10 +25,10 @@
  *   - backend/src/modules/admin/controllers/seo-control.controller.ts (endpoint)
  *   - packages/seo-types/src/control-dashboard.ts (Zod contract)
  */
-import { json, type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
-import { ExternalLink } from "lucide-react";
 import { SeoControlSnapshotSchema, RangeSchema } from "@repo/seo-types";
+import { ExternalLink } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import {
   Table,
@@ -69,15 +69,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   // 404 = feature flag OFF or admin not enrolled — show empty state, don't crash
   if (res.status === 404) {
-    return json({ snapshot: null, range, status: 404 });
+    return { snapshot: null, range, status: 404 };
   }
   if (!res.ok) {
-    throw new Response(`snapshot unavailable (${res.status})`, { status: res.status });
+    throw new Response(`snapshot unavailable (${res.status})`, {
+      status: res.status,
+    });
   }
 
   // Fail-loud Zod parse — anti-bricolage
   const snapshot = SeoControlSnapshotSchema.parse(await res.json());
-  return json({ snapshot, range, status: 200 });
+  return { snapshot, range, status: 200 };
 }
 
 // ─── Component (UI minimal Phase A — 2 blocs visibles) ──────────────
@@ -92,7 +94,8 @@ export default function SeoControlDashboard() {
         <h1 className="text-2xl font-bold mb-2">SEO Business Control</h1>
         <p className="text-muted-foreground text-sm">
           Dashboard non activé pour cet utilisateur. Contactez l&apos;admin pour
-          override <code className="font-mono">SEO_CONTROL_DASHBOARD_ENABLED</code>.
+          override{" "}
+          <code className="font-mono">SEO_CONTROL_DASHBOARD_ENABLED</code>.
         </p>
       </main>
     );
@@ -122,9 +125,8 @@ export default function SeoControlDashboard() {
           <p className="text-sm mt-1">
             <strong>Trafic {range}</strong> ·{" "}
             {tw.clicks.toLocaleString("fr-FR")} clics ·{" "}
-            {tw.impressions.toLocaleString("fr-FR")} imp ·{" "}
-            CTR {tw.ctr.toFixed(2)}% ·{" "}
-            pos {tw.avg_position.toFixed(1)} ·{" "}
+            {tw.impressions.toLocaleString("fr-FR")} imp · CTR{" "}
+            {tw.ctr.toFixed(2)}% · pos {tw.avg_position.toFixed(1)} ·{" "}
             <span className={directionColor}>
               Δ clics {tw.delta_vs_previous.clicks_pct ?? "—"}%
             </span>
@@ -170,7 +172,10 @@ export default function SeoControlDashboard() {
           <TableBody>
             {snapshot.topLosers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center text-muted-foreground">
+                <TableCell
+                  colSpan={8}
+                  className="text-center text-muted-foreground"
+                >
                   Aucune page en perte cette semaine.
                 </TableCell>
               </TableRow>
@@ -181,15 +186,19 @@ export default function SeoControlDashboard() {
                     <a
                       href={row.page}
                       target="_blank"
-                      rel="noopener nofollow"
+                      rel="noopener nofollow noreferrer"
                       className="text-blue-600 hover:underline inline-flex items-center gap-1"
                     >
                       {row.page}
                       <ExternalLink className="w-3 h-3" />
                     </a>
                   </TableCell>
-                  <TableCell className="font-mono text-xs">{row.surface_key}</TableCell>
-                  <TableCell className="text-right">{row.clicks_current}</TableCell>
+                  <TableCell className="font-mono text-xs">
+                    {row.surface_key}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {row.clicks_current}
+                  </TableCell>
                   <TableCell className="text-right text-red-600">
                     {row.delta_clicks} ({row.delta_pct ?? "—"}%)
                   </TableCell>
@@ -205,7 +214,9 @@ export default function SeoControlDashboard() {
                   <TableCell className="font-mono text-[10px]">
                     {row.decisions.decision_rule_ids.join(", ")}
                   </TableCell>
-                  <TableCell className="text-xs">{row.decisions.role_id}</TableCell>
+                  <TableCell className="text-xs">
+                    {row.decisions.role_id}
+                  </TableCell>
                 </TableRow>
               ))
             )}
@@ -233,7 +244,10 @@ export default function SeoControlDashboard() {
           <TableBody>
             {criticalAlerts.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-muted-foreground">
+                <TableCell
+                  colSpan={7}
+                  className="text-center text-muted-foreground"
+                >
                   Aucune alerte critique active.
                 </TableCell>
               </TableRow>
@@ -241,7 +255,9 @@ export default function SeoControlDashboard() {
               criticalAlerts.map((a, i) => (
                 <TableRow key={`${a.source}-${a.detected_at}-${i}`}>
                   <TableCell>{a.operational_domain}</TableCell>
-                  <TableCell className="font-mono text-xs">{a.alert_type}</TableCell>
+                  <TableCell className="font-mono text-xs">
+                    {a.alert_type}
+                  </TableCell>
                   <TableCell className="font-mono text-xs">
                     {a.entity_url ?? "—"}
                   </TableCell>
@@ -252,7 +268,9 @@ export default function SeoControlDashboard() {
                   <TableCell className="font-mono text-[10px]">
                     {a.decisions.decision_rule_ids.join(", ")}
                   </TableCell>
-                  <TableCell className="text-xs">{a.decisions.role_id}</TableCell>
+                  <TableCell className="text-xs">
+                    {a.decisions.role_id}
+                  </TableCell>
                 </TableRow>
               ))
             )}
@@ -268,9 +286,8 @@ export default function SeoControlDashboard() {
           log.md.
         </p>
         <p>
-          Format trace :{" "}
-          <code>## YYYY-MM-DD — Décision dashboard</code> avec champs Bloc /
-          Signal / Décision / Verdict rule_id / Mesure prévue.
+          Format trace : <code>## YYYY-MM-DD — Décision dashboard</code> avec
+          champs Bloc / Signal / Décision / Verdict rule_id / Mesure prévue.
         </p>
       </footer>
     </main>

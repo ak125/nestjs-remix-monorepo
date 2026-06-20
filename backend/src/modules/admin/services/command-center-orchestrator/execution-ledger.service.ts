@@ -46,6 +46,8 @@ export class CommandCenterExecutionLedgerService extends SupabaseBaseService {
           mode: entry.mode,
           plan_hash: entry.plan_hash,
           would_change: entry.would_change,
+          // Phase 2 : distingue une exécution réelle approuvée d'un run shadow.
+          ...(entry.executed ? { executed: true } : {}),
         },
         aal_metadata: null,
       });

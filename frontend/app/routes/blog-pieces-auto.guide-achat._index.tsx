@@ -16,9 +16,9 @@
  */
 
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
+  data,
 } from "@remix-run/node";
 import {
   Link,
@@ -164,7 +164,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     `Guides: ${guides.length}, Conseils: ${relatedAdvice.length}/${totalAdvice}`,
   );
 
-  return json<LoaderData>(
+  return data(
     { guides, relatedAdvice, totalAdvice },
     {
       headers: {

@@ -1,11 +1,7 @@
 // app/routes/admin.payments.tsx
 // Tableau de bord paiements optimisé appliquant "vérifier existant et utiliser le meilleur"
 
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { Outlet, useLoaderData, NavLink } from "@remix-run/react";
 import {
   CreditCard,
@@ -63,7 +59,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     conversionRate: 94.2,
   };
 
-  return json({ user, paymentStats });
+  return { user, paymentStats };
 }
 
 export default function AdminPaymentsLayout() {

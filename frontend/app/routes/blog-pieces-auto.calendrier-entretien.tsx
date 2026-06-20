@@ -9,11 +9,7 @@
  * Si pas fournis : calendrier générique (sans personnalisation véhicule).
  */
 
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import {
   AlertTriangle,
@@ -120,9 +116,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const res = await fetch(apiUrl);
     if (!res.ok) throw new Error(`API ${res.status}`);
     const calendar = (await res.json()) as CalendarPayload;
-    return json({ calendar });
+    return { calendar };
   } catch {
-    return json({
+    return {
       calendar: {
         type_id: null,
         current_km: 0,
@@ -131,7 +127,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         alerts: [],
         controles_mensuels: [],
       } as CalendarPayload,
-    });
+    };
   }
 }
 
@@ -416,10 +412,7 @@ export default function CalendrierEntretienPage() {
               ) : (
                 <div className="space-y-6">
                   {calendar.alerts.map((palier) => (
-                    <div
-                      key={palier.milestone_km}
-                      className="pl-4"
-                    >
+                    <div key={palier.milestone_km} className="pl-4">
                       <h3 className="font-semibold text-lg flex items-center gap-2 mb-2">
                         <Badge className="bg-muted text-foreground text-sm">
                           {palier.milestone_km.toLocaleString("fr-FR")} km

@@ -1,4 +1,4 @@
-import { json, type LoaderFunction, type MetaFunction } from "@remix-run/node";
+import { type LoaderFunction, type MetaFunction } from "@remix-run/node";
 import { Outlet, useRouteError, isRouteErrorResponse } from "@remix-run/react";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
@@ -14,7 +14,7 @@ export const meta: MetaFunction = () => createNoIndexMeta("Mon Compte");
 
 export const loader: LoaderFunction = async ({ context }) => {
   const user = await requireUser({ context });
-  return json({ user });
+  return { user };
 };
 
 export default function AccountLayout() {

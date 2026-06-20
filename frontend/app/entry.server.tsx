@@ -39,7 +39,10 @@ export const handleError = Sentry.wrapHandleErrorWithSentry(
   },
 );
 
-const ABORT_DELAY = 5_000;
+// Single Fetch : `streamTimeout` borne le rejet des promesses différées côté serveur ;
+// l'abort du flux React doit être strictement au-dessus (streamTimeout + 1s).
+export const streamTimeout = 5_000;
+const ABORT_DELAY = streamTimeout + 1_000;
 
 export default function handleRequest(
   request: Request,

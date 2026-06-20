@@ -19,7 +19,8 @@
  * entries and unknown slugs are kept (conservative: never drop on uncertainty).
  *
  * Shared by:
- *  - ReferenceService.refreshSingleGamme()  (write-time prevention: filter composition)
+ *  - ReferenceService.filterCompositionByFamily()  (write-time prevention — consommé par
+ *    SeoGeneratorService.buildR4FromRag, writer R4 live)
  *  - ReferenceService.validateReferenceQuality() / auditAllReferences()  (detection flag)
  */
 

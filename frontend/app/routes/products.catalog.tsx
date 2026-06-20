@@ -15,11 +15,7 @@
  * - /products/catalog?enhanced=true (advanced interface)
  */
 
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import {
   useLoaderData,
   Link,
@@ -103,7 +99,10 @@ interface CatalogData {
   error?: string;
 }
 
-export async function loader({ request, context }: LoaderFunctionArgs) {
+export async function loader({
+  request,
+  context,
+}: LoaderFunctionArgs): Promise<CatalogData> {
   const user = await requireUser({ context });
 
   // Determine user role and check access
@@ -185,7 +184,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       totalPages: Math.ceil((catalogData.total || products.length) / limit),
     };
 
-    return json<CatalogData>({
+    return {
       user: {
         id: user.id,
         name: userName,
@@ -201,10 +200,10 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         activeOnly,
       },
       enhanced,
-    });
+    };
   } catch (error) {
     logger.error("Catalog loading error:", error);
-    return json<CatalogData>({
+    return {
       user: {
         id: user.id,
         name: userName,
@@ -216,7 +215,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       filters: { searchTerm, activeOnly: false },
       enhanced,
       error: "Erreur lors du chargement du catalogue",
-    });
+    };
   }
 }
 

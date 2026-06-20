@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import {
   useLoaderData,
   Link,
@@ -221,7 +217,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
       );
     }
 
-    return json<LoaderData>({
+    return {
       targetUser: {
         ...user,
         totalOrders: stats.totalOrders,
@@ -229,7 +225,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
       },
       stats,
       recentOrders,
-    });
+    };
   } catch (error) {
     logger.error("Erreur lors du chargement de l'utilisateur:", error);
     throw new Response("Erreur lors du chargement de l'utilisateur", {

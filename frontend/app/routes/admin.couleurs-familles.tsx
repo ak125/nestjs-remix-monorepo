@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
@@ -21,16 +17,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
     // Charger toutes les familles
     const catalogData = await hierarchyApi.getHomepageData();
 
-    return json({
+    return {
       families: catalogData.families || [],
       success: true,
-    });
+    };
   } catch (error) {
     logger.error("Erreur chargement familles:", error);
-    return json({
+    return {
       families: [],
       success: false,
-    });
+    };
   }
 }
 

@@ -2,7 +2,7 @@
  * Admin Blog Analytics — /admin/blog-analytics
  * Dashboard avec stats détaillées, top articles, distribution, intent breakdown
  */
-import { type LoaderFunction, json, type MetaFunction } from "@remix-run/node";
+import { type LoaderFunction, type MetaFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import {
   BarChart3,
@@ -99,25 +99,25 @@ export const loader: LoaderFunction = async ({ request, context }) => {
 
     if (!response.ok) {
       logger.warn(`Blog analytics API returned ${response.status}`);
-      return json<LoaderData>({
+      return {
         analytics: null,
         isError: true,
         errorMessage: `API error: ${response.status}`,
-      });
+      };
     }
 
     const result = await response.json();
-    return json<LoaderData>({
+    return {
       analytics: result.data || null,
       isError: false,
-    });
+    };
   } catch (error) {
     logger.error("Blog analytics loader error:", error);
-    return json<LoaderData>({
+    return {
       analytics: null,
       isError: true,
       errorMessage: error instanceof Error ? error.message : "Erreur inconnue",
-    });
+    };
   }
 };
 

@@ -10,10 +10,10 @@
  */
 
 import {
-  defer,
   redirect,
   type LoaderFunctionArgs,
   type MetaFunction,
+  data,
 } from "@remix-run/node";
 import {
   Await,
@@ -50,11 +50,11 @@ import {
 } from "~/types/gamme-page-contract.types";
 import { type R1ImagesBySlot } from "~/types/r1-images.types";
 import { type R1RelatedBlocksPayload } from "~/types/r1-related.types";
+import { buildCacheHeaders } from "~/utils/cache-control";
 import {
   extractEditorialBlocks,
   mergeFaqBlocks,
 } from "~/utils/editorial-parser";
-import { buildCacheHeaders } from "~/utils/cache-control";
 import { parseGammePageData } from "~/utils/gamme-page-contract.utils";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
@@ -365,7 +365,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     });
     const r1Sources = buildSourceMapFromPack(sectionPack);
 
-    return defer(
+    return data(
       {
         // === SYNC (above-fold + meta/JSON-LD) — ~5-10KB ===
         _v: pageData._v,
@@ -870,7 +870,10 @@ export default function PiecesDetailPage() {
            H2 #2 — Qualité, prix et marques
            Image PRICE, marques, fiche technique
            ═══════════════════════════════════════════════════════ */}
-      <section id="qualite-prix" className="py-10 px-4 sm:px-6 bg-slate-50 cv-auto">
+      <section
+        id="qualite-prix"
+        className="py-10 px-4 sm:px-6 bg-slate-50 cv-auto"
+      >
         <div className="max-w-[1280px] mx-auto">
           <h2 className="text-2xl font-bold text-slate-900 mb-6">
             Qualité, prix et marques
@@ -993,7 +996,10 @@ export default function PiecesDetailPage() {
            H2 #4 — Trouver la bonne référence
            Compatibilités, motorisations, commande
            ═══════════════════════════════════════════════════════ */}
-      <section id="reference" className="py-10 px-4 sm:px-6 bg-slate-50 cv-auto">
+      <section
+        id="reference"
+        className="py-10 px-4 sm:px-6 bg-slate-50 cv-auto"
+      >
         <div className="max-w-[1280px] mx-auto">
           <h2 className="text-2xl font-bold text-slate-900 mb-6">
             Trouver la bonne référence pour votre véhicule
@@ -1049,7 +1055,10 @@ export default function PiecesDetailPage() {
            H2 #6 — Aller plus loin
            Maillage, famille, guide CTA
            ═══════════════════════════════════════════════════════ */}
-      <section id="aller-plus-loin" className="py-10 px-4 sm:px-6 bg-slate-50 cv-auto">
+      <section
+        id="aller-plus-loin"
+        className="py-10 px-4 sm:px-6 bg-slate-50 cv-auto"
+      >
         <div className="max-w-[1280px] mx-auto">
           <h2 className="text-2xl font-bold text-slate-900 mb-6">
             Aller plus loin

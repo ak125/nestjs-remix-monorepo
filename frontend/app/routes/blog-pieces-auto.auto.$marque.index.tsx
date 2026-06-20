@@ -1,9 +1,5 @@
 // app/routes/blog-pieces-auto.auto.$marque.tsx
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import {
   Link,
   useLoaderData,
@@ -152,11 +148,11 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
         }
       : null;
 
-    return json<LoaderData>({
+    return {
       brand,
       models: mappedModels,
       metadata,
-    });
+    };
   } catch (e) {
     logger.error("Erreur loader marque:", e);
     if (e instanceof Response) throw e;

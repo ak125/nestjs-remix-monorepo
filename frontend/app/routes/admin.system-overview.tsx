@@ -2,11 +2,7 @@
 // Tableau de bord complet du système optimisé
 // Applique "vérifier existant et utiliser le meilleur"
 
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import {
   Shield,
@@ -88,7 +84,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     },
   };
 
-  return json({ systemData });
+  return { systemData };
 }
 
 export default function SystemOverview() {

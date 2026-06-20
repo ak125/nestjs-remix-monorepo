@@ -3,10 +3,10 @@
  * Formulaire pour soumettre un nouvel avis client
  */
 import {
-  json,
   redirect,
   type ActionFunctionArgs,
   type MetaFunction,
+  data,
 } from "@remix-run/node";
 import {
   Form,
@@ -85,7 +85,7 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   if (Object.keys(errors).length > 0) {
-    return json<ActionData>({ errors }, { status: 400 });
+    return data({ errors }, { status: 400 });
   }
 
   try {
@@ -93,14 +93,10 @@ export async function action({ request }: ActionFunctionArgs) {
     return redirect(`/reviews?created=true`);
   } catch (error) {
     logger.error("Erreur lors de la création de l'avis:", error);
-    return json<ActionData>(
-      {
-        errors: {
-          general: "Erreur lors de la création de l'avis. Veuillez réessayer.",
-        },
-      },
-      { status: 500 },
-    );
+    const generalError: ActionData["errors"] = {
+      general: "Erreur lors de la création de l'avis. Veuillez réessayer.",
+    };
+    return data({ errors: generalError }, { status: 500 });
   }
 }
 

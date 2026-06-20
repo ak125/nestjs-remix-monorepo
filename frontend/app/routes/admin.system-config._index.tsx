@@ -10,10 +10,10 @@
  */
 
 import {
-  json,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
   type MetaFunction,
+  data,
 } from "@remix-run/node";
 import { useLoaderData, useFetcher } from "@remix-run/react";
 import {
@@ -140,12 +140,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
       }
     }
 
-    return json({
+    return {
       overview: overviewData.data,
       moduleData,
       environment,
       currentModule: _module,
-    });
+    };
   } catch (error) {
     throw new Response("Erreur lors du chargement des configurations", {
       status: 500,
@@ -210,9 +210,9 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     const result = await response.json();
-    return json({ success: true, data: result });
+    return { success: true, data: result };
   } catch (error) {
-    return json(
+    return data(
       {
         success: false,
         error: error instanceof Error ? error.message : "Erreur inconnue",
@@ -333,7 +333,7 @@ export default function SystemConfigurationDashboard() {
               {/* Vue d'ensemble */}
               <button
                 onClick={() => setActiveModule("overview")}
-                className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-md ${ activeModule === "overview" ? "bg-primary/15 text-blue-700 " : "text-gray-600 hover:bg-gray-50 hover:text-gray-900" }`}
+                className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-md ${activeModule === "overview" ? "bg-primary/15 text-blue-700 " : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"}`}
               >
                 <Activity className="mr-3 h-5 w-5" />
                 Vue d'ensemble
@@ -642,7 +642,7 @@ function OverviewPanel({
               </dt>
               <dd className="mt-1">
                 <span
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${ overview.health.overall === "healthy" ? "text-success bg-success/10 " : overview.health.overall === "warning" ? "text-warning bg-warning/10 " : overview.health.overall === "error" ? "text-destructive bg-destructive/10 " : "text-gray-600 bg-gray-50 " }`}
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${overview.health.overall === "healthy" ? "text-success bg-success/10 " : overview.health.overall === "warning" ? "text-warning bg-warning/10 " : overview.health.overall === "error" ? "text-destructive bg-destructive/10 " : "text-gray-600 bg-gray-50 "}`}
                 >
                   {overview.health.overall}
                 </span>

@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import {
   useLoaderData,
   Link,
@@ -84,7 +80,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       `${baseUrl}/api/support/claims?customerId=${userId}`,
       { headers: { Accept: "application/json", Cookie: cookie } },
     );
-    if (!res.ok) return json<LoaderData>({ claims: [], user });
+    if (!res.ok) return { claims: [], user };
 
     const data = await res.json();
     const claims = (Array.isArray(data) ? data : data.data || []).map(
@@ -99,10 +95,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
         updatedAt: c.updatedAt || c.clm_updated_at || "",
       }),
     );
-    return json<LoaderData>({ claims, user });
+    return { claims, user };
   } catch (error) {
     logger.error("Erreur chargement réclamations:", error);
-    return json<LoaderData>({ claims: [], user });
+    return { claims: [], user };
   }
 }
 

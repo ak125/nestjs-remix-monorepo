@@ -102,6 +102,13 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: low
+  # ADR-059 PR-6 — SEO projection write-side schema (7 tables + 2 MV). Owner GO session 2026-06-19.
+  # Glob exact volontaire — les migrations ne sont PAS auto-couvertes (review ownership à chaque fois).
+  - glob: backend/supabase/migrations/20260619_adr059_pr6_seo_projection_schema.sql
+    domain: D14
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
   # Allocateur gouverné Massdoc-séquentiel type_id (ADR-085, owner GO session 2026-06-15).
   # Glob exact volontaire — les migrations ne sont PAS auto-couvertes (review ownership à chaque fois).
   - glob: backend/supabase/migrations/20260615_massdoc_type_id_allocator.sql
@@ -303,6 +310,12 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: low
+  # PRC evidence samples (#964 vehicle-issues-from-evidence) — meme famille SEO content
+  - glob: audit/content/prc-evidence-*.yml
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
   # ADR-082 Phase 1 — continuous improvement doctrine pilots + cross-validation
   # (rangés à plat sous audit/ par convention historique, cf. audit/seo-*.md).
   - glob: audit/pilot-*.md
@@ -369,6 +382,12 @@ entries:
   - glob: backend/src/contract/env-contract/**
     domain: D13
     owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  # ADR-059 PR-6b — SEO projection forward-writer module (workers BullMQ, NON wiré AppModule). Owner GO 2026-06-19.
+  - glob: backend/src/modules/seo-projection/**
+    domain: D14
+    owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: medium
   - glob: backend/src/modules/admin/**
@@ -915,6 +934,11 @@ entries:
     sourceConfidence: high
     risk: medium
   - glob: workspaces/seo-batch/**
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
+  - glob: workspaces/seo-batch/.claude/**
     domain: D3
     owner: '@ak125/seo-team'
     sourceConfidence: high

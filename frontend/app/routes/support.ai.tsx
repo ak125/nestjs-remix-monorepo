@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import {
   useLoaderData,
   Link,
@@ -91,7 +87,7 @@ interface _ContactTicket {
 
 export async function loader({ request }: LoaderFunctionArgs) {
   // Version simplifiée pour démo
-  return json({
+  return {
     tickets: [
       {
         msg_id: "demo-1",
@@ -127,7 +123,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         predictive: "ok",
       },
     },
-  });
+  };
 }
 
 // Fonctions utilitaires simplifiées

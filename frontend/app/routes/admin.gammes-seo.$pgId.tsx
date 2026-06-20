@@ -12,7 +12,6 @@
  */
 
 import {
-  json,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
   type MetaFunction,
@@ -160,7 +159,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     ),
   };
 
-  return json({ detail, freshness });
+  return { detail, freshness };
 }
 
 // Action
@@ -191,7 +190,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
         },
       );
 
-      return json(await response.json());
+      return await response.json();
     }
 
     if (intent === "updateSwitch") {
@@ -207,7 +206,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
         },
       );
 
-      return json(await response.json());
+      return await response.json();
     }
 
     if (intent === "updatePurchaseGuide") {
@@ -223,7 +222,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
         },
       );
 
-      return json(await response.json());
+      return await response.json();
     }
 
     // === TOGGLE INDEX/NOINDEX ===
@@ -242,15 +241,15 @@ export async function action({ request, params }: ActionFunctionArgs) {
         },
       );
 
-      return json(await response.json());
+      return await response.json();
     }
 
-    return json({ success: false, message: "Action non reconnue" });
+    return { success: false, message: "Action non reconnue" };
   } catch (error) {
-    return json({
+    return {
       success: false,
       message: error instanceof Error ? error.message : "Erreur",
-    });
+    };
   }
 }
 

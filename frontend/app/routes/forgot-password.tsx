@@ -1,8 +1,8 @@
 import {
-  json,
   type ActionFunction,
   type MetaFunction,
   redirect,
+  data,
 } from "@remix-run/node";
 import {
   Form,
@@ -36,7 +36,7 @@ export const action: ActionFunction = async ({ request }) => {
   const email = formData.get("email");
 
   if (!email) {
-    return json({ error: "Email is required" }, { status: 400 });
+    return data({ error: "Email is required" }, { status: 400 });
   }
 
   try {
@@ -54,7 +54,7 @@ export const action: ActionFunction = async ({ request }) => {
       return redirect("/forgot-password?status=sent");
     }
 
-    return json(
+    return data(
       { error: result.message || "Une erreur est survenue" },
       { status: response.status },
     );
