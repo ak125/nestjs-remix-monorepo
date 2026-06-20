@@ -1,5 +1,5 @@
 {
-  "_comment": "Règles préservées 1:1 de @remix-run/eslint-config@2.17.5 (retiré en PR-9h F/C0). Source de vérité figée pour zéro drift de lint vs legacy. Voir eslint.config.js.",
+  "_comment": "Règles préservées 1:1 de @remix-run/eslint-config@2.17.5 (retiré en PR-9h F/C0). Source de vérité figée pour zéro drift de lint vs legacy. Clés consommées par eslint.config.js : base, typescript, settingsReact. Les settings import (resolvers/parsers) sont re-dérivés inline dans eslint.config.js (le snapshot @remix-run contenait des chemins absolus non portables).",
   "base": {
     "array-callback-return": 1,
     "getter-return": 1,
@@ -265,32 +265,6 @@
           "linkAttribute": "to"
         }
       ]
-    }
-  },
-  "settingsImport": {
-    "import/ignore": [
-      "node_modules",
-      "\\.(css|md|svg|json)$"
-    ],
-    "import/parsers": {
-      "/opt/automecanik/app/.claude/worktrees/pr9h-f-eslint-flat/packages/eslint-config/node_modules/@remix-run/eslint-config/node_modules/@typescript-eslint/parser/dist/index.js": [
-        ".ts",
-        ".tsx",
-        ".d.ts"
-      ]
-    },
-    "import/resolver": {
-      "/opt/automecanik/app/.claude/worktrees/pr9h-f-eslint-flat/node_modules/eslint-import-resolver-node/index.js": {
-        "extensions": [
-          ".js",
-          ".jsx",
-          ".ts",
-          ".tsx"
-        ]
-      },
-      "/opt/automecanik/app/.claude/worktrees/pr9h-f-eslint-flat/node_modules/eslint-import-resolver-typescript/lib/index.cjs": {
-        "alwaysTryTypes": true
-      }
     }
   }
 }

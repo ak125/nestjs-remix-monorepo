@@ -1,5 +1,5 @@
 {
-  "artifact_immutability_hash": "sha256:40c08f264a3c429f7fc053b1de3f86aa638c02c3b0c9e693b2c3448b9a56b200",
+  "artifact_immutability_hash": "sha256:4d4c0de0e2911a4c5a9875b76137bca827ec1fd9c0419a796919de14ae3599eb",
   "divergences": [
     {
       "kind": "specifier",
@@ -442,21 +442,6 @@
       ],
       "resolved_versions": [
         "8.57.1"
-      ]
-    },
-    {
-      "kind": "resolved",
-      "name": "eslint-plugin-react-hooks",
-      "occurrences": [
-        {
-          "declaredIn": "frontend/package.json",
-          "specifier": "^4.6.2",
-          "workspace": "@fafa/frontend"
-        }
-      ],
-      "resolved_versions": [
-        "4.6.2",
-        "7.1.1"
       ]
     },
     {
@@ -3527,7 +3512,7 @@
           ]
         },
         {
-          "divergent_resolved": true,
+          "divergent_resolved": false,
           "divergent_specifiers": false,
           "name": "eslint-plugin-react-hooks",
           "occurrences": [
@@ -3538,8 +3523,7 @@
             }
           ],
           "resolved_versions": [
-            "4.6.2",
-            "7.1.1"
+            "4.6.2"
           ]
         },
         {
@@ -4034,7 +4018,7 @@
     "deps_registry": "audit/registry/deps.json",
     "deps_registry_sha": "sha256:a6b9e71676d3a16c8689b62bfd8c01f355ba811b1eae3e80e1f64264702f4438",
     "lockfile": "package-lock.json",
-    "lockfile_sha": "sha256:3b5907a33e8b6e2f2d7ec1593584e286d031b894b3d78773ddb72ef8ea51569d",
+    "lockfile_sha": "sha256:017b31ebce3d0b6e8c9d9530e56ba1efd0c786083eb89221e8e31770694d951b",
     "overlay": "audit/dependencies/family-overlay.yaml",
     "overlay_sha": "sha256:4067a5535b22d0d6c98fa6f3c980189b2a68f9837edd7f7caf1e7b1e10c44746"
   },
@@ -4063,7 +4047,7 @@
       "pr-9f": 17,
       "pr-9g": 0
     },
-    "divergent_packages_count": 42,
+    "divergent_packages_count": 41,
     "families_count": 12,
     "total_occurrences": 331,
     "total_packages": 227,
