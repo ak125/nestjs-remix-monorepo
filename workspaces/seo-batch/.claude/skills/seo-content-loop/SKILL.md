@@ -62,9 +62,11 @@ SCRAPING LARGE (RUN_TARGETED_RAW_TO_WIKI) → RAW → WIKI → CONSUMER (R1/R2/R
      - **Diagnostic** : sources symptômes→causes (codes OBD/VAG, constructeur, forums techniques) — à découvrir de même.
      - **Dédup + refresh** : chaque cible scrapée **une seule fois** (manifest type `app/audit/scrape-targets-*.md`) ;
        rafraîchir périodiquement. Sortie toujours **`.md`** par `target_wiki_field` (cf. ci-dessus).
-   - **Mesure de la substance produite (complète l'étape 5)** : le **scorer shadow ADR-088**
-     (`automecanik-wiki/_scripts/shadow_score.py`, 6 dimensions à **planchers entity-type-aware**) note
-     `claim`/`applies_to`/`evidence`/`related_gammes` par engineBlock → re-scraper jusqu'au TIER A.
+   - **Mesure de la substance produite (complète l'étape 5)** : scorer **réel** =
+     `automecanik-wiki/_scripts/compute-confidence-score.py` (4 composantes) + promotion `promote.py`
+     (TIER A/B, ADR-083 ; seuil auto NO-OP par défaut → revue humaine). Le scorer **6-dimensions à planchers**
+     (`claim`/`applies_to`/`evidence`/`related_gammes` par engineBlock) est la **cible ADR-088** —
+     **pas encore bâti** (`shadow_score.py` n'existe pas) → re-scraper jusqu'au TIER A.
 2. **RAW** (`automecanik-raw/`) — normaliser/recycler le scrape en fiches sourcées (frontmatter contrat
    `_schemas/recycled-frontmatter.schema.json`), `verification_status` `to_verify`→`verified` (humain).
    `recycled/` n'est **jamais** canon (canon RAW `CLAUDE.md`).
