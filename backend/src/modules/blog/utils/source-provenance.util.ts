@@ -13,6 +13,7 @@
  * the wiki→projection writer produces wiki content). RAG is a chatbot consumer, never
  * a content source — these labels never expose "rag" to the public.
  */
+import { isLegacyRagTier } from '../../../config/source-provenance.constants';
 
 /** Object-shaped source descriptor (sgc_sources JSON array entries, sgpg_source_*). */
 export interface ProvenanceDescriptor {
@@ -20,8 +21,8 @@ export interface ProvenanceDescriptor {
   ref?: string | null;
 }
 
-const isLegacyRag = (type?: string | null): boolean =>
-  type === 'rag' || type === 'rag-legacy';
+/** Legacy-RAG predicate — sourced from the single provenance vocabulary. */
+const isLegacyRag = isLegacyRagTier;
 
 /** Convert internal source metadata into a user-facing label. */
 export function humanizeProvenance(s: ProvenanceDescriptor): string {
