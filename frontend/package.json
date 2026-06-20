@@ -10,7 +10,7 @@
     "size": "size-limit",
     "dev": "echo 'Frontend dev handled by backend startDevServer on :3000'",
     "old-dev": "remix vite:dev",
-    "lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
+    "lint": "ESLINT_USE_FLAT_CONFIG=true eslint --cache --cache-location ./node_modules/.cache/eslint .",
     "start": "remix-serve ./build/server/index.js",
     "typecheck": "tsc",
     "test:a11y": "playwright test tests/a11y --project=chromium",
@@ -22,6 +22,12 @@
     "test:qa": "npm run test:a11y && npm run test:visual",
     "design:detect": "impeccable detect --fast app",
     "design:detect:json": "impeccable detect --fast --json app"
+  },
+  "lint-staged": {
+    "app/**/*.{ts,tsx}": [
+      "eslint --cache --fix --max-warnings=0",
+      "prettier --write"
+    ]
   },
   "dependencies": {
     "@fafa/design-tokens": "^1.0.0",
@@ -86,7 +92,6 @@
     "@fafa/typescript-config": "*",
     "@playwright/test": "^1.59.1",
     "@remix-run/dev": "^2.17.5",
-    "@remix-run/eslint-config": "^2.17.5",
     "@size-limit/file": "^12.1.0",
     "@storybook/addon-a11y": "^9.1.13",
     "@storybook/addon-docs": "^9.1.13",
@@ -108,10 +113,14 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-jest": "^28.14.0",
+    "eslint-plugin-jest-dom": "^5.5.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-storybook": "^9.1.13",
+    "eslint-plugin-testing-library": "^7.16.2",
+    "globals": "^14.0.0",
     "husky": "^9.1.7",
     "impeccable": "2.3.2",
     "lint-staged": "^16.4.0",
