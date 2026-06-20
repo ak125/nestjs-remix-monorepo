@@ -11,9 +11,20 @@ import { VideoExecutionController } from '../../src/modules/media-factory/contro
 
 function createMockJobService() {
   return {
-    submitExecution: jest.fn().mockResolvedValue({ executionLogId: 1, bullmqJobId: 'bull-1' }),
-    getCanaryStats: jest.fn().mockResolvedValue({ engineName: 'stub', dailyUsageCount: 0 }),
-    getExecutionStats: jest.fn().mockResolvedValue({ total: 10, byStatus: { completed: 8 } }),
+    submitExecution: jest
+      .fn()
+      .mockResolvedValue({ executionLogId: 1, bullmqJobId: 'bull-1' }),
+    submitBatchExecution: jest.fn().mockResolvedValue({
+      batchId: 'batch-001',
+      submitted: [{ briefId: 'b1', executionLogId: 1 }],
+      skipped: [],
+    }),
+    getCanaryStats: jest
+      .fn()
+      .mockResolvedValue({ engineName: 'stub', dailyUsageCount: 0 }),
+    getExecutionStats: jest
+      .fn()
+      .mockResolvedValue({ total: 10, byStatus: { completed: 8 } }),
     listExecutions: jest.fn().mockResolvedValue([{ id: 1 }, { id: 2 }]),
     getExecutionStatus: jest.fn().mockResolvedValue({
       id: 1,
@@ -21,7 +32,9 @@ function createMockJobService() {
       status: 'completed',
       renderOutputPath: null,
     }),
-    retryExecution: jest.fn().mockResolvedValue({ newExecutionLogId: 2, bullmqJobId: 'bull-2' }),
+    retryExecution: jest
+      .fn()
+      .mockResolvedValue({ newExecutionLogId: 2, bullmqJobId: 'bull-2' }),
   };
 }
 
@@ -46,7 +59,10 @@ describe('VideoExecutionController', () => {
 
   it('executeProduction should delegate briefId with api trigger', async () => {
     const result = await controller.executeProduction('brief-001');
-    expect(mockJobService.submitExecution).toHaveBeenCalledWith('brief-001', 'api');
+    expect(mockJobService.submitExecution).toHaveBeenCalledWith(
+      'brief-001',
+      'api',
+    );
     expect(result.success).toBe(true);
     expect(result.message).toContain('brief-001');
     expect(result.data.executionLogId).toBe(1);
@@ -57,6 +73,35 @@ describe('VideoExecutionController', () => {
     expect(mockJobService.getCanaryStats).toHaveBeenCalled();
     expect(result.success).toBe(true);
     expect(result.data.engineName).toBe('stub');
+  });
+
+  describe('batchExecute (P15) — input validation + size cap', () => {
+    it('rejects an empty briefIds array without calling the service', async () => {
+      const result = await controller.batchExecute({ briefIds: [] });
+      expect(result.success).toBe(false);
+      expect(result.error).toMatch(/must not be empty/);
+      expect(mockJobService.submitBatchExecution).not.toHaveBeenCalled();
+    });
+
+    it('rejects a batch above VIDEO_MAX_BATCH_SIZE without calling the service', async () => {
+      process.env.VIDEO_MAX_BATCH_SIZE = '2';
+      const result = await controller.batchExecute({
+        briefIds: ['a', 'b', 'c'],
+      });
+      expect(result.success).toBe(false);
+      expect(result.error).toMatch(/exceeds maximum \(2\)/);
+      expect(mockJobService.submitBatchExecution).not.toHaveBeenCalled();
+    });
+
+    it('delegates a within-cap batch to the service with the api trigger', async () => {
+      const result = await controller.batchExecute({ briefIds: ['a', 'b'] });
+      expect(mockJobService.submitBatchExecution).toHaveBeenCalledWith(
+        ['a', 'b'],
+        'api',
+      );
+      expect(result.success).toBe(true);
+      expect(result.message).toContain('batch-001');
+    });
   });
 
   describe('getExecutionStats', () => {
@@ -119,7 +164,8 @@ describe('VideoExecutionController', () => {
     it('should return success=false when VIDEO_RENDER_BASE_URL missing', async () => {
       mockJobService.getExecutionStatus.mockResolvedValue({
         id: 1,
-        renderOutputPath: 's3://automecanik-renders/renders/brief-001/1/output.mp4',
+        renderOutputPath:
+          's3://automecanik-renders/renders/brief-001/1/output.mp4',
       });
       const result = await controller.getPresignedUrl(1);
       expect(result.success).toBe(false);
