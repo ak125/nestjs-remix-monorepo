@@ -102,6 +102,12 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: low
+  # D1 brief-from-wiki — colonnes audit provenance __seo_page_brief (additif, non auto-appliqué). Owner GO 2026-06-20. Glob exact.
+  - glob: backend/supabase/migrations/20260620_d1_brief_from_wiki_evidence_columns.sql
+    domain: D14
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
   # ADR-059 PR-6 — SEO projection write-side schema (7 tables + 2 MV). Owner GO session 2026-06-19.
   # Glob exact volontaire — les migrations ne sont PAS auto-couvertes (review ownership à chaque fois).
   - glob: backend/supabase/migrations/20260619_adr059_pr6_seo_projection_schema.sql

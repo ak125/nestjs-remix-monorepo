@@ -521,26 +521,26 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Décision** : feat(db): ADR-059 PR-6 — SEO projection schema (7 tables + 2 MV, kg_v3 pattern)
 - **Sortie** : PR aucune | commits 3771252c1
 
-## 2026-06-20 — feat/media-factory-revive-fetch (auto)
+## 2026-06-20 — feat/seo-projection-block-content-adapter (auto)
 
-- **Branche** : `feat/media-factory-revive-fetch`
-- **Décision** : feat(media-factory): revive deleted module — fetch-only TTS (Azure REST) + de-RAG script-gen, flag-gated 0-prod
-- **Sortie** : PR aucune | commits e410a5194
+- **Branche** : `feat/seo-projection-block-content-adapter`
+- **Décision** : fix(seo-projection): PR-0 — adapt flat wiki export blocks to DB content shape
+- **Sortie** : PR aucune | commits a8b79cd87
 
-## 2026-06-20 — feat/media-factory-revive-fetch (auto)
+## 2026-06-20 — feat/seo-projection-block-content-adapter (auto)
 
-- **Branche** : `feat/media-factory-revive-fetch`
-- **Décision** : Merge remote-tracking branch 'origin/main' into feat/media-factory-revive-fetch (+3 other commits)
-- **Sortie** : PR #1043 | commits cb857874f 7ff079f64 a0e645f53 e410a5194
+- **Branche** : `feat/seo-projection-block-content-adapter`
+- **Décision** : feat(seo-brief): D1 — WIKI evidence-driven brief generator core (SeoBriefService, dark) (+2 other commits)
+- **Sortie** : PR aucune | commits b4a226f6a 4961b59fa a8b79cd87
 
-## 2026-06-20 — feat/media-factory-revive-fetch (auto)
+## 2026-06-20 — feat/seo-projection-block-content-adapter (auto)
 
-- **Branche** : `feat/media-factory-revive-fetch`
-- **Décision** : style(media-factory): eslint --fix (prettier) sur tts.service.ts (+5 other commits)
-- **Sortie** : PR #1043 | commits 03f308e68 b6d0907bc cb857874f 7ff079f64 a0e645f53 e410a5194
+- **Branche** : `feat/seo-projection-block-content-adapter`
+- **Décision** : feat(seo-brief): D1 wiring — brief-template uses WIKI evidence brief when flag ON (dark) (+4 other commits)
+- **Sortie** : PR aucune | commits 6350b71ff 1d8c45715 b4a226f6a 4961b59fa a8b79cd87
 
-## 2026-06-20 — feat/media-factory-revive-fetch (auto)
+## 2026-06-20 — feat/seo-projection-block-content-adapter (auto)
 
-- **Branche** : `feat/media-factory-revive-fetch`
-- **Décision** : chore(governance): green revival gates — ownership D12 + baseline refresh (owner-authorized) (+7 other commits)
-- **Sortie** : PR #1043 | commits ef7a98b7f 0b2fade99 03f308e68 b6d0907bc cb857874f 7ff079f64 a0e645f53 e410a5194
+- **Branche** : `feat/seo-projection-block-content-adapter`
+- **Décision** : fix(migration): D1 columns — squawk gate (timeouts + text/bigint) (+7 other commits)
+- **Sortie** : PR #1045 | commits cec9dca92 e4df62251 1e61e0792 6350b71ff 1d8c45715 b4a226f6a 4961b59fa a8b79cd87
