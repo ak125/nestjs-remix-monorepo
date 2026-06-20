@@ -191,6 +191,22 @@ export class ReferenceController {
     };
   }
 
+  /**
+   * Cible de redirection 301 pour les pages R4 référence → R3 conseils
+   * (consolidation R4→R3, flag-gated OFF — mirror de R5 et R6 #925).
+   * Cache court : doit se propager vite quand l'owner active le flag.
+   * IMPORTANT : doit rester déclaré AVANT @Get(':slug') qui capture tout.
+   * GET /api/seo/reference/redirect/:slug
+   */
+  @Get('redirect/:slug')
+  @Header('Cache-Control', 'public, max-age=300')
+  async getRedirectTarget(
+    @Param('slug') slug: string,
+  ): Promise<{ redirect_to: string | null; pg_alias: string | null }> {
+    const result = await this.referenceService.getRedirectTarget(slug);
+    return result ?? { redirect_to: null, pg_alias: null };
+  }
+
   // ============================================
   // ROUTES AVEC :slug (sous-routes d'abord)
   // ============================================

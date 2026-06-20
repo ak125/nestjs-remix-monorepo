@@ -130,6 +130,49 @@ export class ReferenceService extends SupabaseBaseService {
   }
 
   /**
+   * R4→R3 consolidation redirect target (mirror des patterns R5 et R6 #925).
+   * Auto-gaté : retourne une cible UNIQUEMENT si la référence est liée à une
+   * gamme (pg_id) dont l'article R3 conseils existe — sinon null et la page
+   * R4 standalone continue de servir (jamais de redirect-vers-404).
+   * Inerte tant que SEO_R4_CONSOLIDATION_ENABLED=false (défaut).
+   */
+  async getRedirectTarget(
+    slug: string,
+  ): Promise<{ redirect_to: string; pg_alias: string } | null> {
+    if (!this.featureFlags?.seoR4ConsolidationEnabled) return null;
+
+    const { data: ref } = await this.supabase
+      .from('__seo_reference')
+      .select('pg_id')
+      .eq('slug', slug)
+      .eq('is_published', true)
+      .single();
+    if (!ref?.pg_id) return null;
+
+    // Self-gate : ne rediriger que si la page R3 de la gamme existe
+    // (ba_pg_id est TEXT legacy — comparaison via chaîne).
+    const { data: advice } = await this.supabase
+      .from('__blog_advice')
+      .select('ba_pg_id')
+      .eq('ba_pg_id', String(ref.pg_id))
+      .limit(1)
+      .single();
+    if (!advice) return null;
+
+    const { data: gamme } = await this.supabase
+      .from('pieces_gamme')
+      .select('pg_alias')
+      .eq('pg_id', ref.pg_id)
+      .single();
+    if (!gamme?.pg_alias) return null;
+
+    return {
+      redirect_to: `/blog-pieces-auto/conseils/${gamme.pg_alias}`,
+      pg_alias: gamme.pg_alias as string,
+    };
+  }
+
+  /**
    * Récupère toutes les références publiées
    * @returns Liste des références (version légère)
    */
