@@ -524,6 +524,20 @@ export class VideoJobService extends SupabaseBaseService {
       );
     }
 
+    // Bound the user-controlled batch against a configured maximum before
+    // iterating, so a caller cannot force an unbounded loop of DB round-trips
+    // (CodeQL js/loop-bound-injection). Reject explicitly — never truncate
+    // silently (canon: no silent fallback).
+    const maxBatchSize = parseInt(
+      process.env.VIDEO_MAX_BATCH_SIZE || '100',
+      10,
+    );
+    if (briefIds.length > maxBatchSize) {
+      throw new BadRequestException(
+        `Batch size ${briefIds.length} exceeds maximum (${maxBatchSize})`,
+      );
+    }
+
     const batchId = `batch-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const staggerMs = parseInt(
       process.env.VIDEO_BATCH_STAGGER_MS || '5000',

@@ -110,6 +110,18 @@ export class VideoExecutionController {
       };
     }
 
+    const maxBatchSize = parseInt(
+      process.env.VIDEO_MAX_BATCH_SIZE || '100',
+      10,
+    );
+    if (body.briefIds.length > maxBatchSize) {
+      return {
+        success: false,
+        error: `briefIds length ${body.briefIds.length} exceeds maximum (${maxBatchSize})`,
+        timestamp: new Date().toISOString(),
+      };
+    }
+
     const result = await this.jobService.submitBatchExecution(
       body.briefIds,
       'api',
