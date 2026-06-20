@@ -532,3 +532,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/media-factory-revive-fetch`
 - **Décision** : Merge remote-tracking branch 'origin/main' into feat/media-factory-revive-fetch (+3 other commits)
 - **Sortie** : PR #1043 | commits cb857874f 7ff079f64 a0e645f53 e410a5194
+
+## 2026-06-20 — feat/media-factory-revive-fetch (auto)
+
+- **Branche** : `feat/media-factory-revive-fetch`
+- **Décision** : style(media-factory): eslint --fix (prettier) sur tts.service.ts (+5 other commits)
+- **Sortie** : PR #1043 | commits 03f308e68 b6d0907bc cb857874f 7ff079f64 a0e645f53 e410a5194
