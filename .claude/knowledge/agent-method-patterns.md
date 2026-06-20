@@ -87,6 +87,37 @@ cassé ? `DONE` sur-déclaré alors que `PARTIAL` ?
 mémoire externe comme canon · browser agent mutant sans garde-fou · continuous checkpoint push
 (le push est une action gouvernée).
 
+## 8. Boucle d'amélioration mesurée (keep/revert gouverné)
+
+Pour une amélioration **pilotée par une métrique** (taille de bundle, temps de build/typecheck,
+vitesse des tests). **PAS** un runner autonome, **PAS** un nouveau gate, **PAS** de `score-runner`
+maison — réutilise l'existant. Décision = [continuous-improvement-global](../skills/continuous-improvement-global/SKILL.md) (§DECIDE).
+
+| Étape | Mécanisme (déjà là) |
+|---|---|
+| Cible + métrique | 1 surface où la mesure est **rapide + déterministe + difficile à tricher** ; sinon → *advisory* |
+| Juge = gate existant | [.size-limit.json](../../frontend/.size-limit.json) · `tsc` · ratchets [audit-compare-baseline.js](../../scripts/cleanup/audit-compare-baseline.js) / `*-ratchet.yml` |
+| Isolation | worktree dédié ([deployment.md](../rules/deployment.md)) — jamais éditer `main` ni un chemin servi par DEV:3000 |
+| Mesure | baseline → change → re-mesure (métrique bruitée → médiane de N + delta minimum) |
+| Verdict | [improvement-report.schema.json](../../.spec/00-canon/improvement-report.schema.json) + [agent-exit-contract.md](../canon-mirrors/agent-exit-contract.md) |
+| Promotion | **PR owner-gated** (branch protection §2) — **jamais d'auto-merge d'une boucle** |
+
+**Garde-fou n°1 — anti-faux-vert : holdout LARGE + contrôle baseline.** Un test étroit vert ne
+prouve RIEN. Rejouer l'ensemble pertinent **et** comparer à un run *baseline* (avant-change) sur le
+**même** ensemble ; ne garder que si métrique↑ **ET** 0 régression vs baseline. *(2026-06-20 : un
+holdout 8-fichiers vert aurait livré 73 tests cassés — détail dans `audit/karpathy-loop-pilot-*.verdict.json`.)*
+
+**Règle d'autonomie (par qualité de métrique) :**
+
+- **Auto** uniquement si métrique rapide + déterministe + intriquable : perf / build / typecheck / tests.
+- **Advisory** (propose, ne publie jamais) : contenu R2/R8, SEO — métrique lente/triable → surapprentissage
+  → contenu générique (interdit par CLAUDE.md « filler SEO générique » + invariant rank #1).
+- **Owner GO** obligatoire : prix · panier/commande/paiement · auth/RLS · migration · publication/indexation
+  SEO · promotion WIKI canon (cf. danger-zone §2).
+
+> La boucle **garde** le gain réel et sûr, **rejette** le reste : améliorer le chiffre en cassant
+> autre chose (SEO, tests, DI) = surapprentissage, refusé. Le « keep » exige score↑ **et** holdout vert.
+
 ---
 
 _Non-canon. Pour toute règle qui fait foi, voir la source pointée (vault · `.spec/00-canon/` ·
