@@ -8,11 +8,7 @@
  * - Filtres par disponibilité, prix, etc.
  */
 
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link, useSearchParams, Form } from "@remix-run/react";
 import {
   ArrowLeft,
@@ -240,7 +236,7 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
 
       const totalPages = Math.ceil(totalFiltered / limit);
 
-      return json<ProductsByRangeData>({
+      return {
         user: {
           id: user.id,
           name: userName,
@@ -273,7 +269,7 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
           view: viewMode,
         },
         enhanced,
-      });
+      };
     }
 
     throw new Error("Impossible de charger les produits");
@@ -284,7 +280,7 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
       throw error;
     }
 
-    return json<ProductsByRangeData>({
+    return {
       user: { id: "error", name: "Erreur", level: 1, role: "commercial" },
       range: { id: "", name: "Erreur", description: "Erreur de chargement" },
       products: [],
@@ -293,7 +289,7 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
       filters: { search: "", status: "all", sort: "name", view: "grid" },
       enhanced: false,
       error: "Impossible de charger les produits de cette gamme",
-    });
+    };
   }
 }
 
@@ -386,9 +382,7 @@ export default function ProductsByRange() {
         )}
 
         {user.role === "pro" && (
-          <Badge className="bg-gradient-to-r to-pink-500">
-            💎 PRO
-          </Badge>
+          <Badge className="bg-gradient-to-r to-pink-500">💎 PRO</Badge>
         )}
       </div>
 

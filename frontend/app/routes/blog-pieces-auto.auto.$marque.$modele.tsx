@@ -1,9 +1,5 @@
 // app/routes/blog-pieces-auto.auto.$marque.$modele.tsx
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import {
   Link,
   useLoaderData,
@@ -124,12 +120,12 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
         ]
       : [];
 
-    return json<LoaderData>({
+    return {
       brand: response.data.brand,
       modelGroup: response.data.model,
       models: models,
       metadata: response.data.metadata || null,
-    });
+    };
   } catch (e) {
     clearTimeout(timeoutId);
 
@@ -550,7 +546,7 @@ export default function BlogPiecesAutoMarqueModele() {
                   <div className="flex flex-wrap gap-1.5">
                     <button
                       onClick={() => setSelectedFuel(null)}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${ selectedFuel === null ? "bg-primary text-white shadow-md scale-105 border-indigo-700" : "bg-white text-gray-700 hover:bg-gray-50 hover:scale-105 border-gray-300" }`}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${selectedFuel === null ? "bg-primary text-white shadow-md scale-105 border-indigo-700" : "bg-white text-gray-700 hover:bg-gray-50 hover:scale-105 border-gray-300"}`}
                     >
                       <span>🔍</span>
                       <span>Tous</span>
@@ -623,7 +619,7 @@ export default function BlogPiecesAutoMarqueModele() {
                             selectedPowerRange === range.id ? null : range.id,
                           )
                         }
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${ selectedPowerRange === range.id ? "bg-gradient-to-r text-white shadow-md shadow-purple-200 scale-105 border-purple-600" : "bg-muted text-foreground border-purple-300 hover:bg-muted hover:scale-105" }`}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${selectedPowerRange === range.id ? "bg-gradient-to-r text-white shadow-md shadow-purple-200 scale-105 border-purple-600" : "bg-muted text-foreground border-purple-300 hover:bg-muted hover:scale-105"}`}
                       >
                         <Gauge className="w-3 h-3" />
                         <span>{range.label}</span>

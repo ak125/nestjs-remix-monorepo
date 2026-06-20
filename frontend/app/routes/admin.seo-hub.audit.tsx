@@ -8,11 +8,7 @@
  * - Preview validations
  */
 
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, useSearchParams } from "@remix-run/react";
 import {
   Calendar,
@@ -85,18 +81,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const historyData = historyRes.ok ? await historyRes.json() : null;
     const statsData = statsRes.ok ? await statsRes.json() : null;
 
-    return json({
+    return {
       history: (historyData?.data || []) as AuditEntry[],
       stats: statsData?.data as AuditStats | null,
       error: null,
-    });
+    };
   } catch (error) {
     logger.error("[SEO Audit] Loader error:", error);
-    return json({
+    return {
       history: [],
       stats: null,
       error: "Erreur connexion backend",
-    });
+    };
   }
 }
 

@@ -1,9 +1,5 @@
 // app/routes/blog-pieces-auto.auto._index.tsx
-import {
-  defer,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import {
   Link,
   useLoaderData,
@@ -130,7 +126,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       }),
     );
 
-    return defer({
+    return {
       brands: mappedBrands,
       popularModels: mappedModels,
       metadata: metadataData?.success ? metadataData.data : null,
@@ -138,14 +134,14 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         totalBrands: mappedBrands.length,
         totalModels: mappedModels.length,
       },
-    });
+    };
   } catch (e) {
     logger.error("Erreur loader auto:", e);
-    return defer({
+    return {
       brands: [],
       popularModels: [],
       stats: { totalBrands: 0, totalModels: 0 },
-    });
+    };
   }
 };
 

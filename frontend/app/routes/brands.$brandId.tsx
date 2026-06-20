@@ -8,11 +8,7 @@
  * Intention : Navigation vers modèles d'une marque
  */
 
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link, useParams } from "@remix-run/react";
 import { ArrowLeft, Car, Calendar, Settings } from "lucide-react";
 
@@ -128,15 +124,15 @@ export async function loader({ params }: LoaderFunctionArgs) {
     // Récupérer quelques types pour affichage (optionnel)
     const types: any[] = [];
 
-    return json({ models, brand, types } as LoaderData);
+    return { models, brand, types } as LoaderData;
   } catch (error) {
     logger.error("Erreur chargement marque:", error);
-    return json({
+    return {
       models: [],
       brand: null,
       types: [],
       error: "Impossible de charger les données",
-    } as LoaderData);
+    } as LoaderData;
   }
 }
 

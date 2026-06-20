@@ -4,7 +4,6 @@
  */
 
 import {
-  json,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
   type MetaFunction,
@@ -176,14 +175,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
     /* loader error — empty state */
   }
 
-  return json<LoaderData>({
+  return {
     coverage,
     gammes,
     totalGammes,
     totalKeywords,
     fullyCoveredCount,
     rag,
-  });
+  };
 }
 
 // ── Action ──
@@ -208,9 +207,9 @@ export async function action({ request }: ActionFunctionArgs) {
     try {
       keywords = JSON.parse(cleaned);
       if (!Array.isArray(keywords))
-        return json({ _action: "import", error: "JSON doit etre un array" });
+        return { _action: "import", error: "JSON doit etre un array" };
     } catch (e) {
-      return json({ _action: "import", error: `JSON invalide: ${e}` });
+      return { _action: "import", error: `JSON invalide: ${e}` };
     }
 
     try {
@@ -225,9 +224,9 @@ export async function action({ request }: ActionFunctionArgs) {
           body: JSON.stringify({ pg_id, pg_alias, keywords, dry_run: dryRun }),
         },
       );
-      return json({ _action: "import", ...(await resp.json()) });
+      return { _action: "import", ...(await resp.json()) };
     } catch (e) {
-      return json({ _action: "import", error: String(e) });
+      return { _action: "import", error: String(e) };
     }
   }
 
@@ -248,14 +247,14 @@ export async function action({ request }: ActionFunctionArgs) {
         },
       );
       if (resp.ok) {
-        return json({ _action: "generate_content", ...(await resp.json()) });
+        return { _action: "generate_content", ...(await resp.json()) };
       }
-      return json({
+      return {
         _action: "generate_content",
         error: `Backend ${resp.status}: ${await resp.text()}`,
-      });
+      };
     } catch (e) {
-      return json({ _action: "generate_content", error: String(e) });
+      return { _action: "generate_content", error: String(e) };
     }
   }
 
@@ -279,10 +278,10 @@ export async function action({ request }: ActionFunctionArgs) {
         body: JSON.stringify({ pg_id, roles }),
       },
     );
-    if (resp.ok) return json({ _action: "generate", ...(await resp.json()) });
-    return json({ _action: "generate", error: `Backend ${resp.status}` });
+    if (resp.ok) return { _action: "generate", ...(await resp.json()) };
+    return { _action: "generate", error: `Backend ${resp.status}` };
   } catch (e) {
-    return json({ _action: "generate", error: String(e) });
+    return { _action: "generate", error: String(e) };
   }
 }
 
@@ -1996,10 +1995,7 @@ function GammeAuditRow({
         </TableCell>
         <TableCell className="py-1 px-2 text-right">
           {g.kw_count > 0 ? (
-            <Badge
-              variant="secondary"
-              className="bg-muted text-foreground"
-            >
+            <Badge variant="secondary" className="bg-muted text-foreground">
               {g.kw_count}
             </Badge>
           ) : (

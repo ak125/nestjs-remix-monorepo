@@ -1,5 +1,4 @@
 import {
-  json,
   redirect,
   type LoaderFunction,
   type MetaFunction,
@@ -96,7 +95,7 @@ export const loader: LoaderFunction = async ({ request, context, params }) => {
       });
     }
 
-    return json({ message, user });
+    return { message, user };
   } catch (error) {
     logger.error("Erreur chargement message:", error);
     throw redirect("/account/messages?error=not_found");

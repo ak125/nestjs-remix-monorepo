@@ -19,7 +19,7 @@ const fetchMock = vi.fn(() =>
  * des 404 (`/wp-admin/`, `/panier`, etc.) ce qui contredit la doctrine SEO.
  *
  * Empirique 2026-05-25 : audit GSC automecanik.com confirme bug sur 3/3 URLs sondées.
- * Fix : tout throw json(..., status 404|410) du catch-all DOIT inclure
+ * Fix : tout throw data(..., { status: 404|410 }) du catch-all DOIT inclure
  * `"X-Robots-Tag": "noindex, follow"` (canon : `noindex` + `follow` pour permettre
  * crawl des liens internes existants tout en empêchant l'indexation).
  */
@@ -35,16 +35,17 @@ describe("catch-all $.tsx — 404/410 X-Robots-Tag noindex,follow", () => {
   it("404 catch-all émet X-Robots-Tag: noindex, follow", async () => {
     const request = new Request("https://www.automecanik.com/wp-admin/");
 
-    let thrown: Response | undefined;
+    let thrown: { init?: { status?: number; headers?: HeadersInit } } | undefined;
     try {
       await loader({ request, params: {}, context: {} } as never);
     } catch (e) {
-      thrown = e as Response;
+      thrown = e as { init?: { status?: number; headers?: HeadersInit } };
     }
 
-    expect(thrown).toBeInstanceOf(Response);
-    expect(thrown?.status).toBe(404);
-    expect(thrown?.headers.get("X-Robots-Tag")).toBe("noindex, follow");
+    expect(thrown?.init?.status).toBe(404);
+    expect(new Headers(thrown?.init?.headers).get("X-Robots-Tag")).toBe(
+      "noindex, follow",
+    );
   });
 
   it("410 garbage URL émet X-Robots-Tag: noindex, follow (pas noindex seul)", async () => {
@@ -53,16 +54,17 @@ describe("catch-all $.tsx — 404/410 X-Robots-Tag noindex,follow", () => {
       "https://www.automecanik.com/wl8k5m6HsSkVW3cXi61ZQ==",
     );
 
-    let thrown: Response | undefined;
+    let thrown: { init?: { status?: number; headers?: HeadersInit } } | undefined;
     try {
       await loader({ request, params: {}, context: {} } as never);
     } catch (e) {
-      thrown = e as Response;
+      thrown = e as { init?: { status?: number; headers?: HeadersInit } };
     }
 
-    expect(thrown).toBeInstanceOf(Response);
-    expect(thrown?.status).toBe(410);
-    expect(thrown?.headers.get("X-Robots-Tag")).toBe("noindex, follow");
+    expect(thrown?.init?.status).toBe(410);
+    expect(new Headers(thrown?.init?.headers).get("X-Robots-Tag")).toBe(
+      "noindex, follow",
+    );
   });
 
   it("404 de fallback (error path) émet X-Robots-Tag: noindex, follow", async () => {
@@ -74,16 +76,17 @@ describe("catch-all $.tsx — 404/410 X-Robots-Tag noindex,follow", () => {
       "https://www.automecanik.com/this-page-does-not-exist-12345",
     );
 
-    let thrown: Response | undefined;
+    let thrown: { init?: { status?: number; headers?: HeadersInit } } | undefined;
     try {
       await loader({ request, params: {}, context: {} } as never);
     } catch (e) {
-      thrown = e as Response;
+      thrown = e as { init?: { status?: number; headers?: HeadersInit } };
     }
 
-    expect(thrown).toBeInstanceOf(Response);
-    expect(thrown?.status).toBe(404);
-    expect(thrown?.headers.get("X-Robots-Tag")).toBe("noindex, follow");
+    expect(thrown?.init?.status).toBe(404);
+    expect(new Headers(thrown?.init?.headers).get("X-Robots-Tag")).toBe(
+      "noindex, follow",
+    );
   });
 });
 

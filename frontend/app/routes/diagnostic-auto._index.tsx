@@ -6,11 +6,7 @@
  * Intention : Identifier un symptôme automobile
  */
 
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import {
   Link,
   useLoaderData,
@@ -39,11 +35,6 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useState, useEffect } from "react";
-import {
-  emitFunnel,
-  getFunnelDevice,
-  getFunnelSessionId,
-} from "~/utils/funnel-beacon";
 
 import { DiagnosticWizard } from "~/components/diagnostic-wizard/DiagnosticWizard";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
@@ -59,6 +50,11 @@ import { Badge } from "~/components/ui/badge";
 import { Input } from "~/components/ui/input";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { Separator } from "~/components/ui/separator";
+import {
+  emitFunnel,
+  getFunnelDevice,
+  getFunnelSessionId,
+} from "~/utils/funnel-beacon";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
@@ -270,14 +266,14 @@ export async function loader({ request: _request }: LoaderFunctionArgs) {
       ),
     ]);
 
-  return json({
+  return {
     featured: (featuredJson?.data ?? []) as DiagnosticItem[],
     clusters: vocab?.clusters ?? [],
     perceptionIcons: vocab?.perception_icons ?? {},
     signs: signsData?.signs ?? [],
     faq: faqData?.faq ?? [],
     riskLevels: safetyData?.risk_levels ?? {},
-  });
+  };
 }
 
 export default function DiagnosticAutoIndex() {

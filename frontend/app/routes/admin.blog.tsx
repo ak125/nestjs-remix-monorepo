@@ -4,11 +4,7 @@
  * @route /admin/blog-simple
  */
 
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { useState } from "react";
 import { Alert } from "~/components/ui/alert";
@@ -152,7 +148,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       );
 
       // Données de fallback si API en erreur
-      return json<LoaderData>({
+      return {
         stats: {
           totalArticles: 91, // Valeurs de démonstration
           totalViews: 245680,
@@ -167,7 +163,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
           status: response.status,
           statusText: response.statusText,
         },
-      });
+      };
     }
 
     const data = await response.json();
@@ -189,7 +185,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         overview?.totalGuides || data?.data?.byType?.guide?.total || 0,
     };
 
-    return json<LoaderData>({
+    return {
       stats,
       isError: false,
       apiStatus: "success",
@@ -198,12 +194,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
         status: response.status,
         dataKeys: Object.keys(data),
       },
-    });
+    };
   } catch (error) {
     logger.error("[ADMIN BLOG SIMPLE] Erreur loader:", error);
 
     // Fallback complet en cas d'erreur
-    return json<LoaderData>({
+    return {
       stats: {
         totalArticles: 91,
         totalViews: 245680,
@@ -222,7 +218,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         error: error instanceof Error ? error.message : String(error),
         timestamp: new Date().toISOString(),
       },
-    });
+    };
   }
 }
 

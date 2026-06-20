@@ -9,10 +9,10 @@
  */
 
 import {
-  json,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
   type MetaFunction,
+  data,
 } from "@remix-run/node";
 import {
   Link,
@@ -158,18 +158,18 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     const effectiveVehicle =
       cartTypeId && vehicle && cartTypeId !== vehicle.type_id ? null : vehicle;
 
-    return json({
+    return {
       cart: cartData,
       vehicle: effectiveVehicle,
       crossSellGammes,
       success: true,
       error: null,
-    });
+    };
   } catch {
     const vehicle = await getVehicleFromCookie(
       request.headers.get("Cookie"),
     ).catch(() => null);
-    return json({
+    return {
       cart: {
         items: [],
         summary: {
@@ -186,7 +186,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       crossSellGammes: [] as CrossSellGamme[],
       success: false,
       error: "Erreur lors du chargement du panier",
-    });
+    };
   }
 };
 
@@ -195,7 +195,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const parsed = cartActionSchema.safeParse(Object.fromEntries(formData));
 
   if (!parsed.success) {
-    return json(
+    return data(
       {
         success: false,
         error: "Donnees invalides",
@@ -210,17 +210,15 @@ export async function action({ request }: ActionFunctionArgs) {
   try {
     switch (input.intent) {
       case "update":
-        return json(
-          await updateQuantity(request, input.productId, input.quantity),
-        );
+        return await updateQuantity(request, input.productId, input.quantity);
       case "remove":
-        return json(await removeFromCart(request, input.productId));
+        return await removeFromCart(request, input.productId);
       case "clear":
-        return json(await clearCart(request));
+        return await clearCart(request);
     }
   } catch (error) {
     logger.error("[Cart Action] Erreur:", error);
-    return json(
+    return data(
       { success: false, error: "Erreur serveur panier" },
       { status: 500 },
     );

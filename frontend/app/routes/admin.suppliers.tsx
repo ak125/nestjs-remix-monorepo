@@ -1,11 +1,7 @@
 // app/routes/admin.suppliers.tsx
 // Dashboard fournisseurs avec stats réelles depuis pieces_marque (pm_display breakdown)
 
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { Outlet, useLoaderData, Link } from "@remix-run/react";
 import {
   Building2,
@@ -110,7 +106,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     apiError = "API supplier-stats indisponible";
   }
 
-  return json({ user, stats, listItems, listTotal, search, display, apiError });
+  return { user, stats, listItems, listTotal, search, display, apiError };
 }
 
 export default function AdminSuppliersLayout() {

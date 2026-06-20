@@ -5,11 +5,7 @@
  * Route: /brands/$brandId/models/$modelId/types
  */
 
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link, useParams } from "@remix-run/react";
 import {
   ArrowLeft,
@@ -197,10 +193,10 @@ export async function loader({ params }: LoaderFunctionArgs) {
           : { min: 0, max: 0 },
     };
 
-    return json({ types, model, brand, stats } as LoaderData);
+    return { types, model, brand, stats } as LoaderData;
   } catch (error) {
     logger.error("Erreur chargement types:", error);
-    return json({
+    return {
       types: [],
       model: null,
       brand: null,
@@ -211,7 +207,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
         powerRange: { min: 0, max: 0 },
       },
       error: "Impossible de charger les types",
-    } as LoaderData);
+    } as LoaderData;
   }
 }
 

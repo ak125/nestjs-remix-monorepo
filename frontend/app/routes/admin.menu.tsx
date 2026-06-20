@@ -2,11 +2,7 @@
  * Route Admin Menu - Navigation principale
  */
 
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { Button } from "~/components/ui/button";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
@@ -19,7 +15,7 @@ export const meta: MetaFunction = () =>
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const user = await requireAdmin({ context });
 
-  return json({
+  return {
     user,
     menu: {
       title: "Administration",
@@ -62,7 +58,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         },
       ],
     },
-  });
+  };
 }
 
 export default function AdminMenu() {

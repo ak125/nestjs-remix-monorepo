@@ -6,7 +6,6 @@
  */
 
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
   redirect,
@@ -120,14 +119,14 @@ export async function loader({ context, params }: LoaderFunctionArgs) {
       }
     }
 
-    return json({ types, model } as LoaderData);
+    return { types, model } as LoaderData;
   } catch (error) {
     logger.error("Erreur chargement types:", error);
-    return json({
+    return {
       types: [],
       model: null,
       error: "Impossible de charger les types de véhicule",
-    } as LoaderData);
+    } as LoaderData;
   }
 }
 

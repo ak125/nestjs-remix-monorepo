@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import {
   useLoaderData,
   Link,
@@ -108,21 +104,21 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
       ? await statsResponse.json()
       : { success: false, data: { total: 0, open: 0, closed: 0, unread: 0 } };
 
-    return json<LoaderData>({
+    return {
       messages: messagesResult.success ? messagesResult.data : [],
       stats: statsResult.success
         ? statsResult.data
         : { total: 0, open: 0, closed: 0, unread: 0 },
       user,
-    });
+    };
   } catch (error) {
     logger.error("Erreur API messages:", error);
 
-    return json<LoaderData>({
+    return {
       messages: [],
       stats: { total: 0, open: 0, closed: 0, unread: 0 },
       user,
-    });
+    };
   }
 };
 

@@ -12,7 +12,6 @@
  */
 
 import {
-  json,
   redirect,
   type LoaderFunctionArgs,
   type MetaFunction,
@@ -255,10 +254,10 @@ export async function loader({ params }: LoaderFunctionArgs) {
     const safetyConfig = (safetyJson?.entity_data ??
       null) as SafetyConfigData | null;
 
-    return json({
+    return {
       diagnostic: data.data as DiagnosticData,
       safetyConfig,
-    });
+    };
   } catch (error) {
     if (error instanceof Response) throw error;
     logger.error("[diagnostic-auto.$slug] Loader error:", error);

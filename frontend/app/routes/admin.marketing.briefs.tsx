@@ -10,7 +10,7 @@
  * Filtres : `?unit=ECOMMERCE|LOCAL|HYBRID`, `?status=draft|reviewed|...`,
  * `?agent_id=...`. Pagination simple.
  */
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link, Form, useSubmit } from "@remix-run/react";
 import { Calendar, FileText, MapPin, ShoppingBag, Zap } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
@@ -73,7 +73,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       headers: { Cookie: request.headers.get("Cookie") || "" },
     });
     if (!res.ok) {
-      return json({
+      return {
         items: [] as BriefRow[],
         total: 0,
         page: 1,
@@ -81,10 +81,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
         unit,
         status,
         error: `Backend ${res.status}`,
-      });
+      };
     }
     const result = (await res.json()) as BriefsResponse;
-    return json({
+    return {
       items: result.data.items,
       total: result.data.total,
       page: result.data.page,
@@ -92,10 +92,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
       unit,
       status,
       error: null,
-    });
+    };
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
-    return json({
+    return {
       items: [] as BriefRow[],
       total: 0,
       page: 1,
@@ -103,7 +103,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       unit,
       status,
       error: message,
-    });
+    };
   }
 }
 

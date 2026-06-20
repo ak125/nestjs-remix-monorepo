@@ -7,11 +7,7 @@
  * ✅ Données réelles de pieces_price
  */
 
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, useSearchParams, Form, Link } from "@remix-run/react";
 import {
   Package,
@@ -97,7 +93,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const dashboardResponse = await fetch(dashboardUrl.toString());
     const dashboardData = await dashboardResponse.json();
 
-    return json({
+    return {
       stats: statsData.success
         ? statsData.data
         : {
@@ -111,10 +107,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
       currentPage: page,
       limit,
       filters: { search, available, minPrice, maxPrice },
-    });
+    };
   } catch (error) {
     logger.error("Erreur chargement stock commercial:", error);
-    return json({
+    return {
       stats: {
         availableItems: 0,
         unavailableItems: 0,
@@ -126,7 +122,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       currentPage: 1,
       limit: 20,
       filters: { search: "", available: "", minPrice: "", maxPrice: "" },
-    });
+    };
   }
 }
 

@@ -1,5 +1,4 @@
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
   redirect,
@@ -158,9 +157,9 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     const redirectTo = url.searchParams.get("redirectTo") || "/profile";
     return redirect(redirectTo);
   }
-  return json({
+  return {
     googleClientId: process.env.VITE_GOOGLE_CLIENT_ID || "",
-  });
+  };
 };
 
 // --- Composants internes ---

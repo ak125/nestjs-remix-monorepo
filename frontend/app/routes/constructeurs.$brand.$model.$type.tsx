@@ -5,7 +5,6 @@
 // .spec/00-canon/role-matrix.md §R8 et @repo/seo-roles forbidden-overlap.ts.
 
 import {
-  defer,
   redirect,
   type LinksFunction,
   type LoaderFunctionArgs,
@@ -183,7 +182,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
   const cached = loaderCache.get(cacheKey);
   if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
     logger.log("✅ [CACHE HIT] Données véhicule en cache:", cacheKey);
-    return defer(cached.data as unknown as Record<string, unknown>);
+    return cached.data as unknown as Record<string, unknown>;
   }
 
   logger.log("🚀 [RPC] Vehicle detail loader avec params:", params);
@@ -287,7 +286,10 @@ export async function loader({ params }: LoaderFunctionArgs) {
     const code = isTimeout
       ? "LOADER_503_RPC_TIMEOUT"
       : "LOADER_503_RPC_FETCH_ERROR";
-    logger.error(`${isTimeout ? "⏱️" : "❌"} [RPC] ${code} type_id=${type_id}:`, error);
+    logger.error(
+      `${isTimeout ? "⏱️" : "❌"} [RPC] ${code} type_id=${type_id}:`,
+      error,
+    );
     await notify503ToErrorLog(
       `/constructeurs/${brand}/${model}/${type}`,
       code,
@@ -384,7 +386,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
     parts: loaderData.popularParts.length,
   });
 
-  return defer(loaderData as unknown as Record<string, unknown>);
+  return loaderData as unknown as Record<string, unknown>;
 }
 
 // 🎯 Meta function avec SEO optimisé (logique PHP)
@@ -1194,9 +1196,7 @@ export default function VehicleDetailPage() {
                   </button>
                   {openFaqIndex === index && (
                     <div className="px-5 pb-5 text-gray-600 animate-in slide-in-from-top-2 duration-200">
-                      <div className="pl-4 border-brand">
-                        {item.answer}
-                      </div>
+                      <div className="pl-4 border-brand">{item.answer}</div>
                     </div>
                   )}
                 </div>

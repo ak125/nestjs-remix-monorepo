@@ -1,9 +1,9 @@
 import {
-  json,
   redirect,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
   type MetaFunction,
+  data as dataResponse,
 } from "@remix-run/node";
 import {
   Form,
@@ -53,9 +53,9 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     if (user.isPro) return redirect("/commercial");
     return redirect("/account/dashboard");
   }
-  return json({
+  return {
     googleClientId: process.env.VITE_GOOGLE_CLIENT_ID || "",
-  });
+  };
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -67,7 +67,7 @@ export async function action({ request }: ActionFunctionArgs) {
   });
 
   if (!parsed.success) {
-    return json(
+    return dataResponse(
       { ok: false as const, errors: parsed.error.flatten().fieldErrors },
       { status: 400 },
     );
@@ -96,7 +96,7 @@ export async function action({ request }: ActionFunctionArgs) {
       }),
     });
   } catch {
-    return json(
+    return dataResponse(
       {
         ok: false as const,
         formError: "Erreur de connexion au serveur. Veuillez réessayer.",
@@ -107,7 +107,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   // Gérer les redirects inattendus du backend (Passport)
   if (backendResponse.status >= 300 && backendResponse.status < 400) {
-    return json(
+    return dataResponse(
       {
         ok: false as const,
         formError: "Email ou mot de passe incorrect.",
@@ -118,7 +118,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   if (!backendResponse.ok) {
     const body = await backendResponse.json().catch(() => null);
-    return json(
+    return dataResponse(
       {
         ok: false as const,
         formError: body?.message || "Email ou mot de passe incorrect.",

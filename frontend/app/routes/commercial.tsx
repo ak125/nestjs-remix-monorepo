@@ -2,7 +2,6 @@ import {
   type LoaderFunctionArgs,
   type MetaFunction,
   redirect,
-  json,
 } from "@remix-run/node";
 import {
   Outlet,
@@ -41,7 +40,7 @@ export async function loader({ context }: LoaderFunctionArgs) {
     logger.log("Erreur récupération stats sidebar commercial:", error);
   }
 
-  return json({ user, stats });
+  return { user, stats };
 }
 
 export default function CommercialLayout() {

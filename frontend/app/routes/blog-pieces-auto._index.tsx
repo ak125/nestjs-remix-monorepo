@@ -18,10 +18,10 @@
  */
 
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
   type ActionFunctionArgs,
+  data,
 } from "@remix-run/node";
 import {
   useLoaderData,
@@ -197,7 +197,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     logger.warn({ err: error, url: request.url }, "Blog API error");
   }
 
-  return json(
+  return data(
     { blogData, searchParams },
     {
       headers: {
@@ -216,14 +216,14 @@ export async function action({ request }: ActionFunctionArgs) {
   try {
     switch (actionType) {
       case "bookmark":
-        return json({ success: true, message: "Article ajouté aux favoris" });
+        return { success: true, message: "Article ajouté aux favoris" };
       case "share":
-        return json({ success: true, message: "Article partagé" });
+        return { success: true, message: "Article partagé" };
       default:
-        return json({ success: false, error: "Action non reconnue" });
+        return { success: false, error: "Action non reconnue" };
     }
   } catch {
-    return json(
+    return data(
       { success: false, error: "Erreur lors de l'action" },
       { status: 500 },
     );

@@ -1,9 +1,9 @@
 import {
-  json,
   type ActionFunction,
   type LoaderFunction,
   type MetaFunction,
   redirect,
+  data,
 } from "@remix-run/node";
 import {
   Form,
@@ -37,7 +37,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     throw new Response("Token manquant", { status: 400 });
   }
 
-  return json({ token });
+  return { token };
 };
 
 export const action: ActionFunction = async ({ request }) => {
@@ -45,7 +45,7 @@ export const action: ActionFunction = async ({ request }) => {
   const token = url.searchParams.get("token");
 
   if (!token) {
-    return json({ error: "Token manquant" }, { status: 400 });
+    return data({ error: "Token manquant" }, { status: 400 });
   }
 
   const formData = await request.formData();
@@ -53,11 +53,11 @@ export const action: ActionFunction = async ({ request }) => {
   const confirmPassword = formData.get("confirmPassword");
 
   if (!password || !confirmPassword) {
-    return json({ error: "Tous les champs sont requis" }, { status: 400 });
+    return data({ error: "Tous les champs sont requis" }, { status: 400 });
   }
 
   if (password !== confirmPassword) {
-    return json(
+    return data(
       { error: "Les mots de passe ne correspondent pas" },
       { status: 400 },
     );
@@ -66,7 +66,7 @@ export const action: ActionFunction = async ({ request }) => {
   const pwd = password.toString();
 
   if (pwd.length < 6) {
-    return json(
+    return data(
       { error: "Le mot de passe doit contenir au moins 6 caracteres" },
       { status: 400 },
     );
@@ -87,12 +87,12 @@ export const action: ActionFunction = async ({ request }) => {
       return redirect("/login?activated=success");
     }
 
-    return json(
+    return data(
       { error: result.message || "Token invalide ou expire" },
       { status: 400 },
     );
   } catch {
-    return json(
+    return data(
       { error: "Une erreur est survenue. Veuillez reessayer." },
       { status: 500 },
     );

@@ -4,11 +4,7 @@
  * /admin/seo-hub/keyword-clusters
  */
 
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import {
   AlertTriangle,
@@ -87,17 +83,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const clustersData = clustersRes.ok ? await clustersRes.json() : null;
     const statsData = statsRes.ok ? await statsRes.json() : null;
 
-    return json({
+    return {
       clusters: (clustersData?.data ?? []) as ClusterRow[],
       stats: (statsData?.data ?? null) as ClusterStats | null,
       error: null,
-    });
+    };
   } catch (error) {
-    return json({
+    return {
       clusters: [] as ClusterRow[],
       stats: null as ClusterStats | null,
       error: `Erreur chargement: ${error instanceof Error ? error.message : "inconnu"}`,
-    });
+    };
   }
 }
 

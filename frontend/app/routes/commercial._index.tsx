@@ -5,7 +5,6 @@
  */
 
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
   redirect,
@@ -104,18 +103,18 @@ export async function loader({ context }: LoaderFunctionArgs) {
       };
     }
 
-    return json({
+    return {
       dashboardData,
       user: {
         name: `${user.firstName} ${user.lastName}`,
         email: user.email,
         level: user.level,
       },
-    });
+    };
   } catch (error) {
     logger.error("Erreur dashboard commercial:", error);
 
-    return json({
+    return {
       dashboardData: {
         orders: {
           totalOrders: 0,
@@ -130,7 +129,7 @@ export async function loader({ context }: LoaderFunctionArgs) {
         email: user.email,
         level: user.level,
       },
-    });
+    };
   }
 }
 

@@ -9,11 +9,7 @@
  * - Audit (Historique unifié)
  */
 
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { Outlet, Link, useLocation, useLoaderData } from "@remix-run/react";
 import {
   LayoutDashboard,
@@ -104,16 +100,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     const summary = summaryRes.ok ? await summaryRes.json() : null;
 
-    return json({
+    return {
       summary: summary?.data || null,
       error: null,
-    });
+    };
   } catch (error) {
     logger.error("[SEO Hub] Loader error:", error);
-    return json({
+    return {
       summary: null,
       error: "Erreur chargement summary",
-    });
+    };
   }
 }
 

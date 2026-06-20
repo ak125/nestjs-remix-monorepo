@@ -1,9 +1,9 @@
 // app/routes/$.tsx - Catch-all route pour 404 - Version Optimisée
 import {
-  json,
   redirect,
   type LoaderFunctionArgs,
   type MetaFunction,
+  data,
 } from "@remix-run/node";
 import { useRouteError, isRouteErrorResponse } from "@remix-run/react";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
@@ -32,7 +32,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   // 0a. Short-circuit URLs garbage (base64 spam, bots) — évite 3 appels API inutiles
   if (isGarbageUrl(pathname)) {
-    throw json(
+    throw data(
       { url: pathname, message: "Contenu supprimé" },
       {
         status: 410,
@@ -156,7 +156,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
             logger.log(
               `[SEO] Legacy URL not resolved, returning 410: ${pathname}`,
             );
-            throw json(
+            throw data(
               {
                 url: pathname,
                 message:
@@ -220,7 +220,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     // 5. Vérifier si c'est un ancien lien connu (logique 410)
     if (errorResponseData.isOldLink) {
-      throw json(
+      throw data(
         {
           ...errorResponseData,
           message: "Ce contenu a été définitivement supprimé ou déplacé",
@@ -239,7 +239,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     // X-Robots-Tag obligatoire : sans ce header, SeoHeadersInterceptor.intercept()
     // applique le default `index, follow` pour les paths non-matchés (ex /wp-admin/,
     // /panier inexistant). Canon SEO : un 404 ne s'indexe jamais.
-    throw json(
+    throw data(
       {
         ...errorResponseData,
         message: "Page non trouvée",
@@ -260,7 +260,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     // Pour toute autre erreur, fallback vers 404 basique
     logger.error("Erreur dans catch-all route:", error);
-    throw json(
+    throw data(
       {
         url: pathname,
         message: "Page non trouvée",

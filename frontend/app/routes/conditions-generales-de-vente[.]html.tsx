@@ -1,9 +1,5 @@
 // Route: /conditions-generales-de-vente.html -> CGV
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
@@ -50,7 +46,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     if (response.ok) {
       const dbPage = await response.json();
-      return json({
+      return {
         page: {
           key: "cgv",
           title: dbPage.h1 || dbPage.title,
@@ -61,13 +57,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
           indexable: false,
         },
         fromDB: true,
-      });
+      };
     }
   } catch (error) {
     logger.warn("Failed to fetch CGV:", error);
   }
 
-  return json({
+  return {
     page: {
       key: "cgv",
       title: "Conditions Générales de Vente",
@@ -78,7 +74,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       indexable: false,
     },
     fromDB: false,
-  });
+  };
 }
 
 export { default } from "./legal.$pageKey";

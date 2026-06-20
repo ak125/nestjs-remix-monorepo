@@ -5,7 +5,6 @@
  */
 
 import {
-  json,
   redirect,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
@@ -74,13 +73,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const gammesData = gammesRes.ok ? await gammesRes.json() : { data: [] };
     const r4Data = r4Res.ok ? await r4Res.json() : { references: [] };
 
-    return json<LoaderData>({
+    return {
       gammes: gammesData.data || [],
       r4Slugs: (r4Data.references || []).map((r: { slug: string }) => r.slug),
-    });
+    };
   } catch (error) {
     logger.error("[R5 New] Loader error:", error);
-    return json<LoaderData>({ gammes: [], r4Slugs: [] });
+    return { gammes: [], r4Slugs: [] };
   }
 }
 
@@ -116,7 +115,7 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   if (errors.length > 0) {
-    return json({ success: false, errors });
+    return { success: false, errors };
   }
 
   // Parse arrays
@@ -160,16 +159,16 @@ export async function action({ request }: ActionFunctionArgs) {
 
     if (!res.ok) {
       const error = await res.json();
-      return json({
+      return {
         success: false,
         errors: [error.message || "Erreur lors de la création"],
-      });
+      };
     }
 
     return redirect(`/admin/seo-hub/content/diagnostics/${slug}`);
   } catch (error) {
     logger.error("[R5 New] Action error:", error);
-    return json({ success: false, errors: ["Erreur serveur"] });
+    return { success: false, errors: ["Erreur serveur"] };
   }
 }
 

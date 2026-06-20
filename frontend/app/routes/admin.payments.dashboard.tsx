@@ -1,8 +1,4 @@
-import {
-  type LoaderFunctionArgs,
-  json,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, useSearchParams, useNavigate } from "@remix-run/react";
 import {
   Clock,
@@ -138,16 +134,16 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       statsRevenue: stats.totalRevenue,
     });
 
-    return json<LoaderData>({
+    return {
       payments: paymentsResult.payments,
       stats,
       pagination: paymentsResult.pagination,
       payboxMonitoring,
       payboxHealth,
-    });
+    };
   } catch (error) {
     logger.error("❌ Error loading admin payments:", error);
-    return json<LoaderData>({
+    return {
       payments: [],
       stats: {
         totalRevenue: 0,
@@ -179,7 +175,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       },
       payboxMonitoring: null,
       payboxHealth: null,
-    });
+    };
   }
 }
 

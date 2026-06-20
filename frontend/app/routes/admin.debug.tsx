@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
@@ -13,14 +9,14 @@ export const meta: MetaFunction = () => createNoIndexMeta("Debug - Admin");
 export async function loader({ context }: LoaderFunctionArgs) {
   const user = await getOptionalUser({ context });
 
-  return json({
+  return {
     user: user,
     context: {
       hasUser: !!context.user,
       userType: typeof context.user,
       userKeys: context.user ? Object.keys(context.user) : [],
     },
-  });
+  };
 }
 
 export default function AdminDebug() {

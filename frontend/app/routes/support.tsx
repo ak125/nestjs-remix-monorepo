@@ -2,11 +2,7 @@
  * Dashboard Support - Vue d'ensemble des tickets et statistiques
  * Page principale pour la gestion du support client
  */
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import {
   Link,
   useLoaderData,
@@ -58,14 +54,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
       (ticket) => ticket.priority === "urgent" || ticket.priority === "high",
     );
 
-    return json<LoaderData>({
+    return {
       stats,
       recentTickets: recentTicketsData.tickets,
       urgentTickets: urgentTickets.slice(0, 5),
-    });
+    };
   } catch (error) {
     logger.error("Erreur lors du chargement du dashboard:", error);
-    return json<LoaderData>({
+    return {
       stats: {
         total_tickets: 0,
         open_tickets: 0,
@@ -74,7 +70,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       },
       recentTickets: [],
       urgentTickets: [],
-    });
+    };
   }
 }
 

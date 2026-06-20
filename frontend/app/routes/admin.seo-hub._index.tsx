@@ -9,7 +9,6 @@
  */
 
 import {
-  json,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
   type MetaFunction,
@@ -104,18 +103,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const dashboardData = dashboardRes.ok ? await dashboardRes.json() : null;
     const alertsData = alertsRes.ok ? await alertsRes.json() : null;
 
-    return json({
+    return {
       dashboard: dashboardData?.data as DashboardKpis | null,
       alerts: (alertsData?.data || []) as Alert[],
       error: dashboardData?.success === false ? dashboardData.error : null,
-    });
+    };
   } catch (error) {
     logger.error("[SEO Hub Index] Loader error:", error);
-    return json({
+    return {
       dashboard: null,
       alerts: [],
       error: "Erreur connexion backend",
-    });
+    };
   }
 }
 
@@ -135,10 +134,10 @@ export async function action({ request }: ActionFunctionArgs) {
         },
       );
       const result = await res.json();
-      return json({
+      return {
         success: result.success,
         message: result.data?.message || "Risks refreshed",
-      });
+      };
     }
 
     if (intent === "trigger-monitor") {
@@ -150,15 +149,15 @@ export async function action({ request }: ActionFunctionArgs) {
         },
       );
       const result = await res.json();
-      return json({
+      return {
         success: result.success,
         message: result.data?.message || "Monitor triggered",
-      });
+      };
     }
 
-    return json({ success: false, message: "Unknown action" });
+    return { success: false, message: "Unknown action" };
   } catch (error) {
-    return json({ success: false, message: "Erreur réseau" });
+    return { success: false, message: "Erreur réseau" };
   }
 }
 

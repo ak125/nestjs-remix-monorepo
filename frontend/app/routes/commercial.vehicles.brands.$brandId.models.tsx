@@ -6,7 +6,6 @@
  */
 
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
   redirect,
@@ -101,14 +100,14 @@ export async function loader({ context, params }: LoaderFunctionArgs) {
         null;
     }
 
-    return json({ models, brand } as LoaderData);
+    return { models, brand } as LoaderData;
   } catch (error) {
     logger.error("Erreur chargement modèles:", error);
-    return json({
+    return {
       models: [],
       brand: null,
       error: "Impossible de charger les modèles",
-    } as LoaderData);
+    } as LoaderData;
   }
 }
 

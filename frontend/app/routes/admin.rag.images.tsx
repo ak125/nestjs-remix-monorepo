@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import {
   Image,
@@ -68,7 +64,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   );
 
   const images: RagImage[] = res.ok ? await res.json() : [];
-  return json({ images });
+  return { images };
 }
 
 function formatSize(bytes: number): string {
