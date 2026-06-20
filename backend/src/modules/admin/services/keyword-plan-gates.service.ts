@@ -25,6 +25,7 @@ import {
   MEDIA_BUDGET,
   R3_ALLOWED_INTENTS,
   VALID_ANCHOR_PREFIXES,
+  reduceQualityGateScore,
 } from '../../../config/keyword-plan.constants';
 import { R3PageContractSchema } from '../../../config/page-contract-r3.schema';
 import {
@@ -455,18 +456,15 @@ export class KeywordPlanGatesService {
       gateReport[r.gate] = r;
     }
 
-    // Compute quality score (100 - sum of penalties for failed gates)
-    let qualityScore = 100;
-    for (const r of results) {
-      if (r.status === 'fail') {
-        const def = GATE_DEFINITIONS[r.gate];
-        qualityScore -= def?.penalty ?? 0;
-      } else if (r.status === 'warn') {
-        const def = GATE_DEFINITIONS[r.gate];
-        qualityScore -= Math.floor((def?.penalty ?? 0) / 2);
-      }
-    }
-    qualityScore = Math.max(0, qualityScore);
+    // Compute quality score (100 - sum of penalties for failed/warn gates).
+    // Penalties stay role-private (GATE_DEFINITIONS); the start-100/subtract/
+    // clamp arithmetic is the shared reducer.
+    const qualityScore = reduceQualityGateScore(
+      results.map((r) => ({
+        status: r.status,
+        penalty: GATE_DEFINITIONS[r.gate]?.penalty ?? 0,
+      })),
+    );
 
     // Compute sub-scores
     const duplicationScore = this.computeDuplicationScore(plan);

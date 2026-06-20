@@ -46,6 +46,48 @@ export interface GateDefinition {
   penalty: number;
 }
 
+// ── Shared QualityGate penalty reducer (pure arithmetic) ──
+//
+// Single source of truth for the start-100 / subtract-penalty / clamp
+// arithmetic shared by KeywordPlanGatesService (R3, tri-state) and
+// R4LintGatesService (R4, binary). Role-private config (gate definitions,
+// penalty inventories, thresholds, verdict cut-offs) stays in each role's
+// own constants — this util only does the score math, never the verdict.
+//
+// Semantics (preserves the exact pre-extraction behavior of both callers):
+//   - status 'fail'  → subtract the full penalty
+//   - status 'warn'  → subtract Math.floor(penalty / 2)
+//   - status 'pass'  → subtract nothing
+//   - final score clamped to >= 0
+// Binary callers (R4) only ever pass 'pass' | 'fail', so the warn branch is
+// inert for them and the output stays byte-identical.
+
+export type GatePenaltyStatus = 'pass' | 'warn' | 'fail';
+
+export interface GatePenaltyItem {
+  status: GatePenaltyStatus;
+  /** Penalty points for this gate (full on fail, half on warn). */
+  penalty: number;
+}
+
+/**
+ * Reduce a list of gate outcomes to a quality score in [0, 100].
+ *
+ * @param items per-gate { status, penalty }
+ * @returns Math.max(0, 100 - Σ penalties)
+ */
+export function reduceQualityGateScore(items: GatePenaltyItem[]): number {
+  let score = 100;
+  for (const item of items) {
+    if (item.status === 'fail') {
+      score -= item.penalty;
+    } else if (item.status === 'warn') {
+      score -= Math.floor(item.penalty / 2);
+    }
+  }
+  return Math.max(0, score);
+}
+
 export const GATE_DEFINITIONS: Record<string, GateDefinition> = {
   G1_INTENT_ALIGNMENT: {
     description: 'Primary intent matches R3 role (informational/how-to)',
