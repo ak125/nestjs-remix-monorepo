@@ -34,5 +34,17 @@
     "path": "build/client/assets/react-vendor-*.js",
     "limit": "110 KB",
     "gzip": true
+  },
+  {
+    "name": "Route R2 produit-véhicule (pieces/.../$type.html) chunk, gzip",
+    "path": "build/client/assets/pieces._gamme._marque._modele._type_*.js",
+    "limit": "34 KB",
+    "gzip": true
+  },
+  {
+    "name": "Route R1 gamme (pieces/$slug) chunk, gzip",
+    "path": "build/client/assets/pieces._slug-*.js",
+    "limit": "16 KB",
+    "gzip": true
   }
 ]
