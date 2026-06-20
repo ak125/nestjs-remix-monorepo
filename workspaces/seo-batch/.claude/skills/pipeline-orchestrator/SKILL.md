@@ -1,28 +1,45 @@
 ---
 name: pipeline-orchestrator
-description: "Orchestrateur SEO pipelines. Interroge la DB, detecte l'etat de chaque pipeline (R1/R3/R4/R6/R7), propose le prochain agent a invoquer."
-argument-hint: "[status|next|run R4|run R3|run R6|run R7]"
+description: "Détecteur READ-ONLY d'état des pipelines SEO. Interroge la DB, affiche un dashboard de couverture (R1/R3/R4/R6/R7) et la prochaine action recommandée. Ne génère AUCUN contenu — la doctrine 'comment produire du contenu' = skill seo-content-loop."
+argument-hint: "[status|next]"
 disable-model-invocation: false
 allowed-tools: mcp__claude_ai_Supabase__execute_sql, Read, Glob, Grep
 version: "1.0"
 ---
 
-# Pipeline Orchestrator — SEO Content Pipelines
+# Pipeline Orchestrator — Détecteur READ-ONLY d'état des pipelines SEO
 
-Tu es un orchestrateur leger pour les pipelines SEO d'AutoMecanik. Tu interroges la DB pour determiner l'etat de chaque pipeline et proposes le prochain agent a invoquer.
+> **⚠️ Skill READ-ONLY (détecteur d'état/couverture).** Ce skill **n'orchestre plus**
+> et **ne génère aucun contenu**. Il interroge la DB et affiche un dashboard de
+> couverture (`status`) + la prochaine action recommandée (`next`). Les anciennes
+> sous-commandes `run R3/R4/R6/R7` ont été **retirées** : elles pilotaient des
+> content-batch lisant le RAG comme **source de contenu**, chemin **mort**
+> (**ADR-031 / ADR-046** : RAG = consommateur de retrieval pour le **chatbot
+> uniquement**, jamais source de vérité ni générateur de contenu).
+>
+> **Doctrine canonique « quoi produire ensuite »** = skill **`seo-content-loop`**.
+> Toute génération de contenu DOIT suivre la boucle **SCRAPING → RAW → WIKI →
+> projection (consumer)**, jamais RAG-as-content. Ce skill se limite à **mesurer**
+> l'état ; il **ne déclenche aucune écriture**.
+
+Tu es un détecteur léger d'état pour les pipelines SEO d'AutoMecanik. Tu interroges la DB (lecture seule) pour determiner l'etat de chaque pipeline et afficher la couverture.
 
 **Projet Supabase** : `cxpojprgwgubzjyqzmoq`
 
 ---
 
-## Pipelines declares
+## Pipelines observés (carte de couverture)
+
+Référence des grains mesurés par ce détecteur (les tables KP/contenu suivies par
+pipeline). Ce skill ne pilote aucun de ces agents — la production de contenu suit
+la doctrine `seo-content-loop`.
 
 ```
-R1 : r1-content-batch (lit __seo_r1_keyword_plan)
-R3 : research-agent → keyword-planner → brief-enricher → conseil-batch
-R4 : r4-keyword-planner (optionnel) → r4-content-batch (skip-kp possible)
-R6 : r6-keyword-planner → r6-content-batch
-R7 : r7-keyword-planner → (pas de content-batch R7 pour l'instant)
+R1 : grain transactionnel (__seo_r1_keyword_plan)
+R3 : grain conseils       (__seo_r3_keyword_plan)
+R4 : grain reference      (__seo_r4_keyword_plan)
+R6 : grain guide d'achat  (__seo_r6_keyword_plan)
+R7 : grain constructeurs  (__seo_r7_keyword_plan)
 ```
 
 ## Tables de reference
@@ -105,15 +122,17 @@ FROM __seo_r7_keyword_plan;
 
 ## Sous-commande : `next`
 
-Determiner la prochaine action optimale selon ces priorites :
+Détecter (lecture seule) le plus gros gap de couverture et **recommander** la prochaine
+gamme à traiter. Cette commande **ne lance rien** : elle pointe vers la doctrine
+`seo-content-loop` (boucle SCRAPING → RAW → WIKI → projection). Priorités d'observation :
 
-1. **R4 content-batch skip-kp** — gammes publiees sans keyword plan (le plus gros gap)
-2. **R4 content-batch complet** — gammes avec KP validated mais sans page_pack
-3. **R3 keyword-planner** — gammes sans R3 KP
-4. **R6 keyword-planner** — gammes sans R6 KP
-5. **R7 keyword-planner** — gammes sans R7 KP
+1. **R4 sans keyword plan** — gammes publiées sans KP (le plus gros gap)
+2. **R4 KP validé sans page_pack** — gammes avec KP validated mais sans page_pack
+3. **R3 sans KP** — gammes sans R3 keyword plan
+4. **R6 sans KP** — gammes sans R6 keyword plan
+5. **R7 sans KP** — constructeurs sans R7 keyword plan
 
-Pour chaque priorite, verifier s'il reste des gammes a traiter. Proposer la premiere priorite non-vide.
+Pour chaque priorité, vérifier s'il reste des gammes non couvertes. Recommander (sans lancer) la première priorité non-vide.
 
 **Query pour trouver la prochaine gamme R4 skip-kp** :
 ```sql
@@ -129,91 +148,24 @@ LIMIT 1;
 **Format de sortie** :
 
 ```
-## Prochaine action recommandee
+## Prochaine action recommandee (observation, lecture seule)
 
 **Pipeline** : R4 Reference
-**Mode** : unitaire-skip-kp
-**Gamme** : {{gamme_name}} (pg_id={{pg_id}}, slug={{slug}})
-**Agent** : r4-content-batch
+**Gamme prioritaire** : {{gamme_name}} (pg_id={{pg_id}}, slug={{slug}})
 **Raison** : {{X}} gammes sans keyword plan, {{Y}} sections vides
 
-Pour lancer :
-> Invoquer l'agent `r4-content-batch` en mode unitaire-skip-kp pour pg_id={{pg_id}}
+> Pour produire le contenu : suivre la doctrine canonique **`seo-content-loop`**
+> (SCRAPING → RAW → WIKI → projection). Ce skill ne déclenche aucune génération.
 ```
-
----
-
-## Sous-commande : `run R4`
-
-1. Executer la query `next` pour R4
-2. Detecter le mode :
-   - Si la gamme a un KP validated → mode complet
-   - Sinon → mode skip-kp
-3. Invoquer l'agent `r4-content-batch` via Agent tool :
-
-```
-Agent tool:
-  subagent_type: r4-content-batch
-  prompt: "Mode unitaire-skip-kp pour la gamme {{gamme_name}} (pg_id={{pg_id}}, slug={{slug}}).
-  Suivre le pipeline complet : etapes 0 → 1 → 1-bis (auto-extract) → 2 (audit) → 3 (blueprint) → 4 (improve) → 5 (lint) → 6 (write).
-  Afficher le resultat de chaque etape. Ecrire en DB uniquement si lint PASS (score >= 70)."
-```
-
-4. Apres execution, afficher le rapport de cloture
-
----
-
-## Sous-commande : `run R3`
-
-1. Trouver la prochaine gamme sans R3 KP :
-```sql
-SELECT g.pg_id, g.pg_name, g.pg_alias
-FROM __seo_gamme_purchase_guide gpg
-JOIN pieces_gamme g ON g.pg_id = gpg.sgpg_pg_id
-LEFT JOIN __seo_r3_keyword_plan kp ON kp.skp_pg_id = g.pg_id
-WHERE kp.skp_id IS NULL
-LIMIT 1;
-```
-2. Invoquer `keyword-planner` (stage 1.5) pour cette gamme
-3. Apres validation KP → proposer `conseil-batch`
-
----
-
-## Sous-commande : `run R6`
-
-1. Trouver la prochaine gamme sans R6 KP :
-```sql
-SELECT g.pg_id, g.pg_name, g.pg_alias
-FROM __seo_gamme_purchase_guide gpg
-JOIN pieces_gamme g ON g.pg_id = gpg.sgpg_pg_id
-LEFT JOIN __seo_r6_keyword_plan kp ON kp.r6kp_pg_id = g.pg_id::text
-WHERE kp.r6kp_id IS NULL
-LIMIT 1;
-```
-2. Invoquer `r6-keyword-planner` pour cette gamme
-3. Apres validation → proposer `r6-content-batch`
-
----
-
-## Sous-commande : `run R7`
-
-1. Trouver le prochain constructeur sans R7 KP :
-```sql
-SELECT DISTINCT b.brand_id, b.brand_name
-FROM brands b
-LEFT JOIN __seo_r7_keyword_plan kp ON kp.r7kp_brand_id = b.brand_id
-WHERE kp.r7kp_id IS NULL AND b.brand_name IS NOT NULL
-ORDER BY b.brand_name
-LIMIT 1;
-```
-2. Invoquer `r7-keyword-planner` pour ce constructeur
 
 ---
 
 ## Regles
 
-1. TOUJOURS interroger la DB avant de proposer une action
-2. TOUJOURS afficher l'etat actuel avant de lancer un agent
-3. Mode **unitaire** par defaut (1 gamme a la fois)
-4. JAMAIS lancer un agent sans afficher la gamme cible et demander confirmation
-5. Apres chaque run, proposer `/pipeline-orchestrator next` pour la suite
+1. **Lecture seule** : ce skill interroge la DB et affiche un état ; il ne déclenche
+   **aucune écriture** ni génération de contenu.
+2. TOUJOURS interroger la DB avant d'afficher un dashboard ou une recommandation.
+3. La doctrine « comment produire du contenu » vit dans le skill **`seo-content-loop`**
+   (boucle SCRAPING → RAW → WIKI → projection). Le contenu ne se génère **jamais**
+   depuis le RAG (ADR-031 / ADR-046 : RAG = retrieval chatbot uniquement).
+4. Après `status`, proposer `/pipeline-orchestrator next` pour la prochaine observation.
