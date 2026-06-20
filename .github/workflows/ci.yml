@@ -1083,6 +1083,33 @@ jobs:
           CI: true
           PLAYWRIGHT_BASE_URL: http://localhost:3200
 
+      # Diagnostic root-cause sur échec E2E. Le runner self-hosted EST l'hôte
+      # PREPROD (49.12.233.2) : on capture l'état exact du container + la mémoire
+      # hôte au moment de l'échec. Sert à distinguer OOM-kill (capacité) vs crash
+      # applicatif vs prioritisation kernel — sans deviner. Tout best-effort
+      # (`|| true`), n'altère pas le verdict du job (déjà en échec). Observabilité
+      # pure (canon : prefer observability ; no silent fallback).
+      - name: 🩺 Capture PREPROD container diagnostics (root-cause)
+        if: failure()
+        run: |
+          C=nestjs-remix-monorepo-preprod
+          echo "::group::container state"
+          docker ps -a --filter "name=preprod" --format '{{.Names}}\t{{.Status}}\t{{.RunningFor}}' || true
+          docker inspect "$C" --format 'OOMKilled={{.State.OOMKilled}} ExitCode={{.State.ExitCode}} Status={{.State.Status}} RestartCount={{.RestartCount}} StartedAt={{.State.StartedAt}} FinishedAt={{.State.FinishedAt}}' || true
+          echo "::endgroup::"
+          echo "::group::host memory (free -m)"
+          free -m || true
+          echo "::endgroup::"
+          echo "::group::per-container memory (docker stats)"
+          docker stats --no-stream --format '{{.Name}}\t{{.MemUsage}}\t{{.MemPerc}}' || true
+          echo "::endgroup::"
+          echo "::group::container logs (tail 150)"
+          docker logs --tail 150 "$C" 2>&1 | tail -150 || true
+          echo "::endgroup::"
+          echo "::group::kernel OOM (dmesg, best-effort)"
+          (dmesg 2>/dev/null | grep -iE 'oom|killed process|out of memory' | tail -25) || echo "dmesg unavailable (no perm)"
+          echo "::endgroup::"
+
       - name: Upload test results
         if: failure()
         uses: actions/upload-artifact@v4
