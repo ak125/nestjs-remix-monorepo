@@ -520,3 +520,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/adr059-pr6-seo-projection-schema`
 - **Décision** : feat(db): ADR-059 PR-6 — SEO projection schema (7 tables + 2 MV, kg_v3 pattern)
 - **Sortie** : PR aucune | commits 3771252c1
+
+## 2026-06-20 — feat/media-factory-revive-fetch (auto)
+
+- **Branche** : `feat/media-factory-revive-fetch`
+- **Décision** : feat(media-factory): revive deleted module — fetch-only TTS (Azure REST) + de-RAG script-gen, flag-gated 0-prod
+- **Sortie** : PR aucune | commits e410a5194
