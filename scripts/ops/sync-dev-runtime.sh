@@ -124,6 +124,27 @@ if ! git diff --quiet -- log.md 2>/dev/null; then
   git checkout --quiet -- log.md \
     && log "bruit log.md local réinitialisé avant ff (toléré, régénéré par session-log)"
 fi
+# Généralisation de la tolérance log.md (ci-dessus) à TOUTE collision de fichier
+# untracked : `git merge --ff-only` avorte si un fichier AJOUTÉ en amont existe
+# déjà localement en untracked (ex. skill workspace créé hors-git, observé le
+# 2026-06-20 : DEV figé 3j / 34 commits). Sans ça = cron qui avorte en boucle =
+# drift silencieux (même classe que l'incident log.md). On SAUVEGARDE (réversible,
+# zéro perte) puis on continue ; l'alerte (stderr → MAILTO) rend l'éviction
+# observable. Jamais de suppression : seulement un déplacement vers /tmp.
+collisions=$(git diff --name-only --diff-filter=A "$local_sha".."$remote_sha" 2>/dev/null \
+  | while IFS= read -r f; do
+      [ -n "$f" ] && [ -e "$f" ] \
+        && ! git ls-files --error-unmatch "$f" >/dev/null 2>&1 \
+        && printf '%s\n' "$f"
+    done)
+if [ -n "$collisions" ]; then
+  bkdir="/tmp/${LOG_TAG}-untracked-backup-$(date +%Y%m%d-%H%M%S)"
+  while IFS= read -r f; do
+    [ -z "$f" ] && continue
+    mkdir -p "$bkdir/$(dirname "$f")" && mv "$f" "$bkdir/$f"
+  done <<< "$collisions"
+  alert "fichiers untracked en collision avec le ff — sauvegardés dans $bkdir puis écartés : $(printf '%s ' $collisions)"
+fi
 git merge --ff-only origin/main || abort "non fast-forwardable (lignée divergente) — réconcilier main à la main"
 log "synced $local_sha → $remote_sha"
 
