@@ -1103,8 +1103,19 @@ jobs:
           echo "::group::per-container memory (docker stats)"
           docker stats --no-stream --format '{{.Name}}\t{{.MemUsage}}\t{{.MemPerc}}' || true
           echo "::endgroup::"
-          echo "::group::container logs (tail 150)"
-          docker logs --tail 150 "$C" 2>&1 | tail -150 || true
+          # FinishedAt = horodatage d'arrêt du run PRÉCÉDENT (avant le restart auto).
+          # On capture les logs JUSTE AVANT cet instant = la raison de l'arrêt (exit 0
+          # observé = sortie propre/SIGTERM, pas un OOM). Sans ça, `--tail` ne montre
+          # que le bruit post-restart (requêtes) et masque la cause.
+          FIN=$(docker inspect "$C" --format '{{.State.FinishedAt}}' 2>/dev/null || true)
+          echo "::group::logs JUSTE AVANT le dernier restart (raison de l'arrêt) [until=$FIN]"
+          docker logs --until "$FIN" --tail 80 "$C" 2>&1 | tail -80 || true
+          echo "::endgroup::"
+          echo "::group::lifecycle markers (tail 800 filtré)"
+          docker logs --tail 800 "$C" 2>&1 | grep -iE 'Nest application|SIGTERM|SIGINT|signal|shutdown|closed|bootstrap|Démarrage|Starting Nest|listening|FATAL|uncaught|unhandledRejection|heap out of memory|Killed|process exit|beforeExit|enableShutdownHooks' | tail -60 || echo "(aucun marqueur lifecycle)"
+          echo "::endgroup::"
+          echo "::group::container logs (tail 120, post-restart)"
+          docker logs --tail 120 "$C" 2>&1 | tail -120 || true
           echo "::endgroup::"
           echo "::group::kernel OOM (dmesg, best-effort)"
           (dmesg 2>/dev/null | grep -iE 'oom|killed process|out of memory' | tail -25) || echo "dmesg unavailable (no perm)"
