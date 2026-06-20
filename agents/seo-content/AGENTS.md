@@ -95,7 +95,7 @@ Si `kw_missing_count > 50` (gap batch) — **1 seul ticket global** (pas de tick
 229+ gammes sans données Google Ads dans __seo_keywords.
 
 **Informatif uniquement — non bloquant.**
-Le pipeline /content-gen fonctionne normalement depuis le RAG.
+Le contenu est produit par le pipeline WIKI gouverné (RAW → WIKI → projection, ADR-031/059) ; les données Google Ads sont un signal non bloquant, jamais une source.
 
 Action DEV requise :
 1. Créer scripts/seo/import-gads-kp-to-db.py
@@ -127,7 +127,7 @@ Pour chaque gap P2 (max 3 tickets par heartbeat) :
 Contenu R3 manquant pour "<pg_nom>" (<pg_alias>). KP validé ✅.
 
 **Action DEV requise :**
-cd /opt/automecanik/app && claude --print "/content-gen <pg_alias> --r3"
+cd /opt/automecanik/app && claude --print "/seo-content-loop <pg_alias>"
 
 Priorité : P2
 Gamme : <pg_alias>
@@ -158,23 +158,29 @@ Format :
 
 ## Types de tickets (référence)
 
+> **Provenance du contenu (canon)** : le contenu R* est produit par le pipeline **WIKI gouverné**
+> (RAW → WIKI → projection → DB ; ADR-031 / ADR-059 / ADR-083), méthode opératoire `/seo-content-loop`.
+> Le **RAG n'est jamais source de contenu** (RAG = chatbot only, ADR-046) ; le mode RAG-source
+> `/content-gen` est **legacy/abandonné pour le contenu** (cf. `workspaces/seo-batch/README.md`).
+> Les données Google Ads (`__seo_keywords`) sont un **signal non bloquant**, jamais une source.
+
 ### KP_GAMME — Keyword plan manquant
 Action DEV : `claude --print "/kp <alias> --r3"` dans `/opt/automecanik/app`
 
 ### CONTENT_R3 — Contenu R3 manquant (KP ok)
-Action DEV : `claude --print "/content-gen <alias> --r3"` dans `/opt/automecanik/app`
+Action DEV : `claude --print "/seo-content-loop <alias>"` dans `/opt/automecanik/app` (cible : sections conseil R3)
 
 ### CONTENT_R6 — Guide d'achat R6 manquant
-Action DEV : `claude --print "/content-gen <alias> --r6"` dans `/opt/automecanik/app`
+Action DEV : `claude --print "/seo-content-loop <alias>"` dans `/opt/automecanik/app` (cible : guide d'achat R6)
 
 ### KW_BATCH_IMPORT — Import batch Google Ads manquant (informatif, P3)
 Créer si `kw_missing_count > 50`. **1 seul ticket global** — pas de ticket par gamme.
 Action DEV : créer `scripts/seo/import-gads-kp-to-db.py` + fournir CSV Google Ads.
-**Non bloquant** — le pipeline génère depuis le RAG même sans cette donnée.
+**Non bloquant** — le contenu vient du pipeline WIKI gouverné (RAW → WIKI → projection, ADR-031/059), pas de cette donnée KW.
 
 ### KW_MANQUANT — Données Google Ads absentes pour une gamme (informatif, low)
 Créer si `kw_missing_count <= 50`. Max 3 tickets/heartbeat.
-**Non bloquant** — le pipeline génère depuis le RAG même sans cette donnée.
+**Non bloquant** — le contenu vient du pipeline WIKI gouverné (RAW → WIKI → projection, ADR-031/059), pas de cette donnée KW.
 
 ### AUDIT_SEO — Audit qualité d'une gamme
 Action DEV : `claude --print "/seo-gamme-audit <alias>"` dans `/opt/automecanik/app`
