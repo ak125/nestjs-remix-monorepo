@@ -16,7 +16,15 @@ const validExport = (): SeoProjectionExport => ({
   generated_at: '2026-06-19T00:00:00Z',
   facts: [{ k: 'v' }],
   sources: [{ url: 'https://x' }],
-  blocks: [{ role: 'R1', block_kind: 'quality_tiers', content: { md: 'x' } }],
+  blocks: [
+    {
+      role: 'R1',
+      content_md: 'x',
+      source_ids: [],
+      truth_level: 'editorial',
+      section: 'quality_tiers',
+    },
+  ],
   roles_allowed: ['R1'],
   consumers_allowed: ['seo'],
 });
@@ -38,7 +46,10 @@ describe('SeoProjectionGateService', () => {
 
   it('CanonGate KO si un block a un rôle hors roles_allowed (impureté)', () => {
     const exp = validExport();
-    exp.blocks = [{ role: 'R8', block_kind: 'k', content: {} }]; // R8 absent de roles_allowed=[R1]
+    // R8 absent de roles_allowed=[R1] (bloc FLAT valide ; le gate ne lit que role).
+    exp.blocks = [
+      { role: 'R8', content_md: 'k', source_ids: [], truth_level: 'editorial' },
+    ];
     const v = gate.canonGate(exp);
     expect(v.ok).toBe(false);
     expect(v.reasons.some((r) => r.includes('R8'))).toBe(true);

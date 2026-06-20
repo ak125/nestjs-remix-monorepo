@@ -70,6 +70,15 @@ export class FeatureFlagsService {
     return this.bool('BRIEF_AWARE_ENABLED', false);
   }
 
+  /**
+   * Gate le générateur de briefs **evidence-driven** (D1, SeoBriefService) : ON → le brief est composé
+   * depuis la projection WIKI (get_active_seo_projection) au lieu du chemin keyword-first. OFF (défaut) →
+   * comportement keyword-first inchangé. Dégrade observable (wiki_available=false) si projection absente.
+   */
+  get seoBriefWikiEnabled(): boolean {
+    return this.bool('SEO_BRIEF_WIKI_ENABLED', false);
+  }
+
   // ── Phase 2 Orchestration flags ──
 
   get executionRegistryEnabled(): boolean {
@@ -330,6 +339,7 @@ export class FeatureFlagsService {
     'R8_OWNED_EDITORIAL_ENABLED',
     'BRIEF_GATES_ENABLED',
     'BRIEF_GATES_OBSERVE_ONLY',
+    'SEO_BRIEF_WIKI_ENABLED',
     'RAG_CATCHUP_ENABLED',
     'RAG_MERGE_DRY_RUN',
     'RAG_MERGE_ALLOWED_ROLES',
