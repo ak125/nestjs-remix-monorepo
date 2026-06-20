@@ -65,6 +65,17 @@ const SKIP_PATTERNS: readonly RegExp[] = [
   /^scripts\/governance\/check-role-purity\.ts$/,
 ];
 
+// Admin operator dashboards (back-office) orchestrate / observe MULTIPLE R-roles
+// by design — e.g. the SEO HUB layout and content-validation cockpits whose
+// headers legitimately legend "R4 References et R5 Diagnostics". They render no
+// public, role-bound SEO surface, so cross-role vocabulary in their comments is
+// documentation, not contamination. Exempt them (the rule protects public
+// content surfaces; `admin.*` routes are never one). Same intent as the existing
+// SKIP_PATTERNS — kept as a distinct, named constant for review clarity.
+const CROSS_ROLE_OPERATOR_SURFACES: readonly RegExp[] = [
+  /^frontend\/app\/routes\/admin\./,
+];
+
 const OPT_OUT_DIRECTIVE = /\/\/\s*@role-purity-skip\b/;
 
 interface Violation {
@@ -76,9 +87,40 @@ interface Violation {
   readonly commentSnippet: string;
 }
 
-function isSkipped(relPath: string): boolean {
+export function isSkipped(relPath: string): boolean {
   const normalized = relPath.replace(/\\/g, "/");
-  return SKIP_PATTERNS.some((p) => p.test(normalized));
+  return (
+    SKIP_PATTERNS.some((p) => p.test(normalized)) ||
+    CROSS_ROLE_OPERATOR_SURFACES.some((p) => p.test(normalized))
+  );
+}
+
+// Escape a string for safe interpolation into a RegExp source.
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+// Match a forbidden term at a WORD START (left boundary) instead of as a raw
+// substring. `normalizePhrase` yields lowercased, accent-stripped,
+// space-separated tokens, so the left edge of a token is `^` or whitespace.
+// This prevents a short term being matched mid-word — e.g. "use" (usé/usure,
+// R5 wear vocab) inside "car·ouse·l" or "be·cause" — while leaving the right
+// edge unanchored so inflections still match ("diagnostic" in "diagnostics")
+// and multi-word phrases ("guide d achat") match as before.
+const TERM_REGEX_CACHE = new Map<string, RegExp>();
+
+function commentContainsTerm(
+  normalizedComment: string,
+  normalizedTerm: string,
+): boolean {
+  if (normalizedTerm.length === 0) return false;
+  let re = TERM_REGEX_CACHE.get(normalizedTerm);
+  if (!re) {
+    // Non-global → stateless `.test()`, safe to memoize and reuse.
+    re = new RegExp(`(?:^|\\s)${escapeRegExp(normalizedTerm)}`);
+    TERM_REGEX_CACHE.set(normalizedTerm, re);
+  }
+  return re.test(normalizedComment);
 }
 
 function collectFilesRecursive(dir: string, out: string[]): void {
@@ -240,7 +282,7 @@ export function checkSource(filePath: string, source: string): Violation[] {
       for (const term of forbidden) {
         const normalizedTerm = normalizePhrase(term);
         if (normalizedTerm.length === 0) continue;
-        if (normalizedComment.includes(normalizedTerm)) {
+        if (commentContainsTerm(normalizedComment, normalizedTerm)) {
           const { line, column } = lineColumnFromPos(source, comment.pos);
           violations.push({
             file: filePath,
