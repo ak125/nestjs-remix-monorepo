@@ -7,9 +7,14 @@
 -- Ces colonnes ne sont écrites QUE par le chemin `brief_source='wiki_evidence'` (flag SEO_BRIEF_WIKI_ENABLED ON,
 -- qui requiert cette migration appliquée au préalable). Chemin keyword-first inchangé → comportement actuel intact.
 
+-- Timeouts bornés (squawk require-timeout-settings ; convention migrations récentes).
+SET lock_timeout = '5s';
+SET statement_timeout = '15s';
+
+-- Types : text / bigint (squawk prefer-text-field + prefer-bigint-over-int — best practice PG17).
 ALTER TABLE public.__seo_page_brief
-  ADD COLUMN IF NOT EXISTS brief_source varchar(20) DEFAULT 'keyword',
-  ADD COLUMN IF NOT EXISTS substance_count integer DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS brief_source text DEFAULT 'keyword',
+  ADD COLUMN IF NOT EXISTS substance_count bigint DEFAULT 0,
   ADD COLUMN IF NOT EXISTS substance_elements jsonb DEFAULT '[]'::jsonb,
   ADD COLUMN IF NOT EXISTS evidence_source_mix jsonb DEFAULT '{}'::jsonb,
   ADD COLUMN IF NOT EXISTS demand_signal jsonb DEFAULT '{}'::jsonb;
