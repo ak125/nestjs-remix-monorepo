@@ -227,6 +227,11 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: low
+  - glob: frontend/react-router.config.ts
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
   - glob: CLAUDE.md
     domain: D15
     owner: '@ak125'
@@ -788,6 +793,11 @@ entries:
     owner: '@ak125/frontend-team'
     sourceConfidence: medium
     risk: medium
+  - glob: frontend/app/routes.ts
+    domain: D8
+    owner: '@ak125/frontend-team'
+    sourceConfidence: medium
+    risk: low
   - glob: frontend/app/utils/**
     domain: D8
     owner: '@ak125/frontend-team'
