@@ -1,15 +1,13 @@
 import {
-  json,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
-} from "@remix-run/node";
-import {
+  data,
   useLoaderData,
   Link,
   useSearchParams,
   Form,
   useFetcher,
-} from "@remix-run/react";
+} from "react-router";
 import {
   Film,
   ExternalLink,
@@ -72,22 +70,22 @@ export async function loader({ request }: LoaderFunctionArgs) {
     );
 
     if (!res.ok)
-      return json({
+      return data({
         productions: [],
         total: 0,
         currentPage: 1,
         currentSearch: "",
       });
 
-    const data = await res.json();
-    return json({
-      productions: (data.data ?? []) as Production[],
-      total: data.total ?? 0,
+    const payload = await res.json();
+    return data({
+      productions: (payload.data ?? []) as Production[],
+      total: payload.total ?? 0,
       currentPage: parseInt(page, 10),
       currentSearch: search,
     });
   } catch {
-    return json({
+    return data({
       productions: [],
       total: 0,
       currentPage: 1,
@@ -119,16 +117,16 @@ export async function action({ request }: ActionFunctionArgs) {
       },
       body: JSON.stringify(body),
     });
-    const data = await res.json();
-    if (!res.ok || !data.success) {
-      return json({
+    const payload = await res.json();
+    if (!res.ok || !payload.success) {
+      return data({
         ok: false,
-        error: data.error ?? data.message ?? "Erreur creation",
+        error: payload.error ?? payload.message ?? "Erreur creation",
       });
     }
-    return json({ ok: true, briefId: data.data?.briefId ?? null });
+    return data({ ok: true, briefId: payload.data?.briefId ?? null });
   } catch {
-    return json({ ok: false, error: "Erreur reseau" });
+    return data({ ok: false, error: "Erreur reseau" });
   }
 }
 

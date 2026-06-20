@@ -4,7 +4,6 @@ import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 const MODE = process.env.NODE_ENV;
-const isProduction = MODE === "production";
 const isAnalyze = process.env.ANALYZE === "true";
 // Note: installGlobals() supprimé - Node 20+ a fetch natif, évite conflits undici
 

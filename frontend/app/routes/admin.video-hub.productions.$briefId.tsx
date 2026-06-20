@@ -1,10 +1,12 @@
 import {
-  json,
-  redirect,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
-} from "@remix-run/node";
-import { useLoaderData, Link, useFetcher } from "@remix-run/react";
+  data,
+  redirect,
+  useLoaderData,
+  Link,
+  useFetcher,
+} from "react-router";
 import {
   ArrowLeft,
   CheckCircle,
@@ -189,7 +191,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     ]);
 
     if (!prodRes.ok)
-      return json({
+      return data({
         production: null,
         executions: [],
         derivatives: [],
@@ -208,14 +210,14 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       derivatives = (derivData.data ?? []) as DerivativeRow[];
     }
 
-    return json({
+    return data({
       production: prodData.data as Production,
       executions,
       derivatives,
       error: null,
     });
   } catch {
-    return json({
+    return data({
       production: null,
       executions: [],
       derivatives: [],
@@ -240,7 +242,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
         { headers: { Cookie: cookieHeader } },
       );
       if (!prodRes.ok)
-        return json({
+        return data({
           _intent: "dry-run" as const,
           ok: false,
           error: "Production introuvable",
@@ -263,10 +265,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
         headers: { Cookie: cookieHeader, "Content-Type": "application/json" },
         body: JSON.stringify(gateInput),
       });
-      const data = await res.json();
-      return json({ _intent: "dry-run" as const, ok: true, result: data });
+      const payload = await res.json();
+      return data({ _intent: "dry-run" as const, ok: true, result: payload });
     } catch {
-      return json({
+      return data({
         _intent: "dry-run" as const,
         ok: false,
         error: "Erreur reseau",
@@ -285,16 +287,16 @@ export async function action({ request, params }: ActionFunctionArgs) {
           body: JSON.stringify({ scriptText }),
         },
       );
-      const data = await res.json();
-      if (!res.ok || !data.success)
-        return json({
+      const payload = await res.json();
+      if (!res.ok || !payload.success)
+        return data({
           _intent: "save-script" as const,
           ok: false,
-          error: data.error ?? "Erreur sauvegarde",
+          error: payload.error ?? "Erreur sauvegarde",
         });
       return redirect(`/admin/video-hub/productions/${briefId}`);
     } catch {
-      return json({
+      return data({
         _intent: "save-script" as const,
         ok: false,
         error: "Erreur reseau",
@@ -313,20 +315,20 @@ export async function action({ request, params }: ActionFunctionArgs) {
           body: JSON.stringify({ regenerate }),
         },
       );
-      const data = await res.json();
-      if (!res.ok || !data.success)
-        return json({
+      const payload = await res.json();
+      if (!res.ok || !payload.success)
+        return data({
           _intent: "generate-script" as const,
           ok: false,
-          error: data.error ?? data.message ?? "Erreur generation",
+          error: payload.error ?? payload.message ?? "Erreur generation",
         });
-      return json({
+      return data({
         _intent: "generate-script" as const,
         ok: true,
-        data: data.data,
+        data: payload.data,
       });
     } catch {
-      return json({
+      return data({
         _intent: "generate-script" as const,
         ok: false,
         error: "Erreur reseau",
@@ -345,20 +347,20 @@ export async function action({ request, params }: ActionFunctionArgs) {
           body: JSON.stringify({ voice: voice || "onyx" }),
         },
       );
-      const data = await res.json();
-      if (!res.ok || !data.success)
-        return json({
+      const payload = await res.json();
+      if (!res.ok || !payload.success)
+        return data({
           _intent: "generate-audio" as const,
           ok: false,
-          error: data.error ?? data.message ?? "Erreur TTS",
+          error: payload.error ?? payload.message ?? "Erreur TTS",
         });
-      return json({
+      return data({
         _intent: "generate-audio" as const,
         ok: true,
-        data: data.data,
+        data: payload.data,
       });
     } catch {
-      return json({
+      return data({
         _intent: "generate-audio" as const,
         ok: false,
         error: "Erreur reseau",
@@ -376,16 +378,16 @@ export async function action({ request, params }: ActionFunctionArgs) {
           body: JSON.stringify({}),
         },
       );
-      const data = await res.json();
-      if (!res.ok || !data.success)
-        return json({
+      const payload = await res.json();
+      if (!res.ok || !payload.success)
+        return data({
           _intent: "derive" as const,
           ok: false,
-          error: data.error ?? data.message ?? "Erreur derivation",
+          error: payload.error ?? payload.message ?? "Erreur derivation",
         });
-      return json({ _intent: "derive" as const, ok: true, data: data.data });
+      return data({ _intent: "derive" as const, ok: true, data: payload.data });
     } catch {
-      return json({
+      return data({
         _intent: "derive" as const,
         ok: false,
         error: "Erreur reseau",
@@ -402,20 +404,20 @@ export async function action({ request, params }: ActionFunctionArgs) {
         headers: { Cookie: cookieHeader, "Content-Type": "application/json" },
         body: JSON.stringify({ briefIds: briefIdsArr }),
       });
-      const data = await res.json();
-      if (!res.ok || !data.success)
-        return json({
+      const payload = await res.json();
+      if (!res.ok || !payload.success)
+        return data({
           _intent: "batch-execute" as const,
           ok: false,
-          error: data.error ?? data.message ?? "Erreur batch",
+          error: payload.error ?? payload.message ?? "Erreur batch",
         });
-      return json({
+      return data({
         _intent: "batch-execute" as const,
         ok: true,
-        data: data.data,
+        data: payload.data,
       });
     } catch {
-      return json({
+      return data({
         _intent: "batch-execute" as const,
         ok: false,
         error: "Erreur reseau",
@@ -431,20 +433,20 @@ export async function action({ request, params }: ActionFunctionArgs) {
         headers: { Cookie: cookieHeader },
       },
     );
-    const data = await res.json();
-    if (!res.ok || !data.success)
-      return json({
+    const payload = await res.json();
+    if (!res.ok || !payload.success)
+      return data({
         _intent: "execute" as const,
         ok: false,
-        error: data.error ?? "Erreur execution",
+        error: payload.error ?? "Erreur execution",
       });
-    return json({
+    return data({
       _intent: "execute" as const,
       ok: true,
-      executionId: data.data?.id ?? null,
+      executionId: payload.data?.id ?? null,
     });
   } catch {
-    return json({
+    return data({
       _intent: "execute" as const,
       ok: false,
       error: "Erreur reseau",
@@ -505,7 +507,7 @@ export default function VideoProductionDetail() {
     _intent: "generate-script";
     ok: boolean;
     error?: string;
-    data?: {
+    payload?: {
       scriptText: string;
       claimCount: number;
       evidenceCount: number;
@@ -517,7 +519,7 @@ export default function VideoProductionDetail() {
     _intent: "generate-audio";
     ok: boolean;
     error?: string;
-    data?: { audioUrl: string; durationSecs: number; cached: boolean };
+    payload?: { audioUrl: string; durationSecs: number; cached: boolean };
   }>();
   const dryRunFetcher = useFetcher<{
     _intent: "dry-run";
@@ -535,7 +537,7 @@ export default function VideoProductionDetail() {
     _intent: "derive";
     ok: boolean;
     error?: string;
-    data?: {
+    payload?: {
       derivativesCreated: number;
       derivatives: Array<{ briefId: string; claimText: string }>;
     };
@@ -544,7 +546,7 @@ export default function VideoProductionDetail() {
     _intent: "batch-execute";
     ok: boolean;
     error?: string;
-    data?: {
+    payload?: {
       batchId: string;
       submitted: Array<{ briefId: string }>;
       skipped: Array<{ briefId: string; reason: string }>;

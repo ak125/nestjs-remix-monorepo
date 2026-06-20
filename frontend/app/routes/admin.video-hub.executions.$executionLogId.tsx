@@ -1,9 +1,11 @@
 import {
-  json,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
-} from "@remix-run/node";
-import { useLoaderData, Link, useFetcher } from "@remix-run/react";
+  data,
+  useLoaderData,
+  Link,
+  useFetcher,
+} from "react-router";
 import {
   ArrowLeft,
   CheckCircle,
@@ -97,10 +99,10 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     );
 
     if (!res.ok)
-      return json({ execution: null, variants: [], error: "Not found" });
+      return data({ execution: null, variants: [], error: "Not found" });
 
-    const data = await res.json();
-    const execution = data.data as ExecutionLog;
+    const body = await res.json();
+    const execution = body.data as ExecutionLog;
 
     // Fetch variants if execution completed
     let variants: VariantRecord[] = [];
@@ -119,9 +121,9 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       }
     }
 
-    return json({ execution, variants, error: null });
+    return data({ execution, variants, error: null });
   } catch {
-    return json({ execution: null, variants: [], error: "Erreur chargement" });
+    return data({ execution: null, variants: [], error: "Erreur chargement" });
   }
 }
 
@@ -135,16 +137,16 @@ export async function action({ request, params }: ActionFunctionArgs) {
       `${backendUrl}/api/admin/video/executions/${executionLogId}/retry`,
       { method: "POST", headers: { Cookie: cookieHeader } },
     );
-    const data = await res.json();
-    if (!res.ok || !data.success) {
-      return json({
+    const body = await res.json();
+    if (!res.ok || !body.success) {
+      return data({
         ok: false,
-        error: data.error ?? data.message ?? "Erreur retry",
+        error: body.error ?? body.message ?? "Erreur retry",
       });
     }
-    return json({ ok: true, newExecutionId: data.data?.id ?? null });
+    return data({ ok: true, newExecutionId: body.data?.id ?? null });
   } catch {
-    return json({ ok: false, error: "Erreur reseau" });
+    return data({ ok: false, error: "Erreur reseau" });
   }
 }
 

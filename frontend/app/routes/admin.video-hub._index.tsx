@@ -1,5 +1,4 @@
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData, useSearchParams } from "@remix-run/react";
+import { type LoaderFunctionArgs, data, useLoaderData, useSearchParams } from "react-router";
 import {
   Film,
   CheckCircle,
@@ -102,7 +101,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     ],
   );
 
-  return json({
+  return data({
     stats,
     executionStats,
     canaryPolicy,

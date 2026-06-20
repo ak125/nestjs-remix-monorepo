@@ -1,5 +1,4 @@
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { type LoaderFunctionArgs, data, useLoaderData } from "react-router";
 import { FileVideo, Clock, Film } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
@@ -27,15 +26,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
       headers: { Cookie: cookieHeader },
     });
 
-    if (!res.ok) return json({ templates: [], error: "Erreur chargement" });
+    if (!res.ok) return data({ templates: [], error: "Erreur chargement" });
 
-    const data = await res.json();
-    return json({
-      templates: (data.data ?? []) as VideoTemplate[],
+    const payload = await res.json();
+    return data({
+      templates: (payload.data ?? []) as VideoTemplate[],
       error: null,
     });
   } catch {
-    return json({ templates: [], error: "Erreur reseau" });
+    return data({ templates: [], error: "Erreur reseau" });
   }
 }
 
