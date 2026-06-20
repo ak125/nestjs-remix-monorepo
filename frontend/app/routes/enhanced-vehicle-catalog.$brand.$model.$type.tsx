@@ -1,7 +1,7 @@
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
+  data,
 } from "@remix-run/node";
 import {
   useLoaderData,
@@ -110,15 +110,15 @@ export async function loader({ params: _params }: LoaderFunctionArgs) {
       },
     ];
 
-    return json({
+    return {
       vehicle: vehicleData,
       parts: mockParts,
       success: true,
       timestamp: new Date().toISOString(),
-    });
+    };
   } catch (error) {
     logger.error("Erreur dans le loader:", error);
-    throw json({ error: "Véhicule non trouvé" }, { status: 404 });
+    throw data({ error: "Véhicule non trouvé" }, { status: 404 });
   }
 }
 

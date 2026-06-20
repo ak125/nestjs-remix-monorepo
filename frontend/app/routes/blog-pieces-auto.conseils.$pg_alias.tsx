@@ -7,11 +7,10 @@
  */
 
 import {
-  defer,
-  json,
   type HeadersFunction,
   type LoaderFunctionArgs,
   type MetaFunction,
+  data,
 } from "@remix-run/node";
 import {
   Await,
@@ -145,7 +144,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const { pg_alias } = params;
 
   if (!pg_alias) {
-    throw json({ message: "Alias manquant" }, { status: 404 });
+    throw data({ message: "Alias manquant" }, { status: 404 });
   }
 
   const controller = new AbortController();
@@ -164,7 +163,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
     if (!response.ok) {
       if (response.status === 404) {
-        throw json(
+        throw data(
           { message: `Guide R3 introuvable: ${pg_alias}` },
           { status: 404 },
         );
@@ -176,7 +175,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const guide = result?.data as R3GuidePayload | null;
 
     if (!guide) {
-      throw json(
+      throw data(
         { message: `Pas de donnees R3 pour: ${pg_alias}` },
         { status: 404 },
       );
@@ -237,7 +236,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       }
     })();
 
-    return defer(
+    return data(
       { guide, pg_alias, r4Reference: r4ReferencePromise },
       {
         headers: {
@@ -249,7 +248,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     clearTimeout(timeoutId);
     if (error instanceof Response) throw error;
     logger.error(`[R3 Guide] Error loading guide for: ${pg_alias}`, error);
-    throw json(
+    throw data(
       { message: `Erreur chargement guide R3: ${pg_alias}` },
       { status: 404 },
     );

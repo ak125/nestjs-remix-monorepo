@@ -1,10 +1,6 @@
 // app/routes/legal.$pageKey.tsx - Pages légales dynamiques
 // Fetches from ___META_TAGS_ARIANE via API with fallback to static content
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import {
   Link,
   useLoaderData,
@@ -293,7 +289,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
       if (response.ok) {
         const dbPage: LegalPageFromDB = await response.json();
 
-        return json({
+        return {
           page: {
             key: pageKey,
             title: dbPage.h1 || dbPage.title,
@@ -304,7 +300,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
             indexable: dbPage.indexable,
           },
           fromDB: true,
-        });
+        };
       }
     } catch (error) {
       logger.warn(`Failed to fetch legal page from API for ${pageKey}:`, error);
@@ -317,7 +313,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
     throw new Response("Page légale non trouvée", { status: 404 });
   }
 
-  return json({
+  return {
     page: {
       key: staticPage.key,
       title: staticPage.title,
@@ -328,7 +324,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
       indexable: true,
     },
     fromDB: false,
-  });
+  };
 }
 
 export default function LegalPage() {

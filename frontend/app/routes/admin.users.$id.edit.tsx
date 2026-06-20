@@ -1,5 +1,4 @@
 import {
-  json,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
   type MetaFunction,
@@ -63,7 +62,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
     notes: "Client privilégié, excellent historique de commandes.",
   };
 
-  return json<LoaderData>({ user: mockUser });
+  return { user: mockUser };
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -72,9 +71,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   // Simuler la sauvegarde
   try {
     // En production : await updateUser(userId, formData);
-    return json<ActionData>({ success: true });
+    return { success: true };
   } catch (error) {
-    return json<ActionData>({ error: "Erreur lors de la sauvegarde" });
+    return { error: "Erreur lors de la sauvegarde" };
   }
 };
 

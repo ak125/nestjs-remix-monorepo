@@ -31,11 +31,7 @@
  *
  * @meta noindex, nofollow - Admin only
  */
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import {
   useLoaderData,
   useRouteLoaderData,
@@ -109,14 +105,14 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     logger.log(`✅ Produits chargés: ${productsData.data.length} items`);
 
-    return json({
+    return {
       products: productsData,
       searchQuery: search,
-    });
+    };
   } catch (error) {
     logger.error("❌ Erreur chargement produits:", error);
 
-    return json({
+    return {
       products: {
         success: false,
         data: [],
@@ -125,7 +121,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       },
       searchQuery: "",
       error: String(error),
-    });
+    };
   }
 };
 

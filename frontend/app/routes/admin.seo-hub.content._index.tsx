@@ -7,11 +7,7 @@
  * - Articles Blog
  */
 
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import {
   BookOpen,
@@ -80,16 +76,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     const data = res.ok ? await res.json() : null;
 
-    return json({
+    return {
       stats: data?.data as ContentStats | null,
       error: data?.success === false ? "Erreur chargement stats" : null,
-    });
+    };
   } catch (error) {
     logger.error("[SEO Content] Loader error:", error);
-    return json({
+    return {
       stats: null,
       error: "Erreur connexion backend",
-    });
+    };
   }
 }
 

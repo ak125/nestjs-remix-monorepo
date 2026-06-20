@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import {
   useLoaderData,
   Link,
@@ -71,7 +67,7 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
       throw new Response("Commande introuvable", { status: 404 });
     }
 
-    return json({ order, user });
+    return { order, user };
   } catch (error) {
     // Propager les Response HTTP (404, etc.) telles quelles
     if (error instanceof Response) {

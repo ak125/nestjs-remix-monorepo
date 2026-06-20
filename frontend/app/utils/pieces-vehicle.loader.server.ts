@@ -5,12 +5,7 @@
  * Extrait de la route pour reduire le fichier principal a un thin orchestrator.
  */
 
-import {
-  defer,
-  json,
-  redirect,
-  type LoaderFunctionArgs,
-} from "@remix-run/node";
+import { redirect, type LoaderFunctionArgs, data } from "@remix-run/node";
 import { enrichTypeNameForHeadings } from "@repo/seo-types";
 import { type NoProductsData } from "~/components/pieces/NoProductsAlternatives";
 import { type FiltersData } from "~/components/pieces/PiecesFilterSidebar";
@@ -266,11 +261,11 @@ export async function piecesVehicleLoader({
     // long-TTL caching of a transient blip (canon: no silent fallback).
     type RmAlternativesResponse = {
       success: boolean;
-      version?: 'v2';
+      version?: "v2";
       etag?: string;
-      alternativeGammes: NoProductsData['alternativeGammes'];
-      alternativeVehicles: NoProductsData['alternativeVehicles'];
-      relatedModels: NoProductsData['relatedModels'];
+      alternativeGammes: NoProductsData["alternativeGammes"];
+      alternativeVehicles: NoProductsData["alternativeVehicles"];
+      relatedModels: NoProductsData["relatedModels"];
     };
     let alternativesData: RmAlternativesResponse | null = null;
     let alternativesFetchOk = false;
@@ -278,7 +273,7 @@ export async function piecesVehicleLoader({
       const altResp = await fetch(
         `http://127.0.0.1:3000/api/rm/alternatives?gamme_id=${gammeId}&type_id=${vehicleIds.typeId}&limit=12`,
         {
-          headers: { Accept: 'application/json' },
+          headers: { Accept: "application/json" },
           signal: AbortSignal.timeout(3000),
         },
       );
@@ -311,19 +306,19 @@ export async function piecesVehicleLoader({
       marqueName: vi?.marqueName ?? _marqueData.alias.replace(/-/g, " "),
       modeleName: vi?.modeleName ?? _modeleData.alias.replace(/-/g, " "),
       typeName: vi?.typeName ?? _typeData.alias.replace(/-/g, " "),
-      typeFuel: vi?.typeFuel ?? '',
-      typePowerPs: vi?.typePowerPs ?? '',
-      yearFrom: vi?.typeYearFrom ?? '',
-      yearTo: vi?.typeYearTo ?? '',
+      typeFuel: vi?.typeFuel ?? "",
+      typePowerPs: vi?.typePowerPs ?? "",
+      yearFrom: vi?.typeYearFrom ?? "",
+      yearTo: vi?.typeYearTo ?? "",
     };
 
     // Beacon télémétrie fire-and-forget (n'attend jamais)
-    void fetch('http://127.0.0.1:3000/api/rm/alternatives/track-soft-404', {
-      method: 'POST',
+    void fetch("http://127.0.0.1:3000/api/rm/alternatives/track-soft-404", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'user-agent': request.headers.get('user-agent') ?? '',
-        referer: request.headers.get('referer') ?? '',
+        "Content-Type": "application/json",
+        "user-agent": request.headers.get("user-agent") ?? "",
+        referer: request.headers.get("referer") ?? "",
       },
       body: JSON.stringify({ pg_id: gammeId, type_id: vehicleIds.typeId }),
     }).catch(() => {
@@ -334,7 +329,10 @@ export async function piecesVehicleLoader({
     const alternativeVehicles = alternativesData?.alternativeVehicles ?? [];
     const relatedModels = alternativesData?.relatedModels ?? [];
     const hasAlternatives =
-      alternativeGammes.length + alternativeVehicles.length + relatedModels.length > 0;
+      alternativeGammes.length +
+        alternativeVehicles.length +
+        relatedModels.length >
+      0;
 
     // Canon: cache TTL must reflect payload confidence — no silent fallback,
     // no long-TTL on error paths (feedback_no_long_ttl_cache_on_error_paths).
@@ -347,7 +345,7 @@ export async function piecesVehicleLoader({
         ? "public, max-age=300, s-maxage=3600"
         : "public, max-age=30, s-maxage=30";
 
-    return json(
+    return data(
       {
         noProducts: true as const,
         gammeId,
@@ -516,7 +514,7 @@ export async function piecesVehicleLoader({
     // LCP OPTIMIZATION V6: defer() pour streamer donnees non-critiques
     // Donnees critiques (vehicle, pieces, seo) : retournees immediatement
     // Donnees non-critiques (relatedArticles, blogArticle) : streamees apres le first paint
-    return defer(
+    return data(
       {
         // === DONNEES CRITIQUES (bloquantes, necessaires pour LCP) ===
         canonicalPath,

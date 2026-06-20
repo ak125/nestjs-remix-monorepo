@@ -1,4 +1,4 @@
-import { json, type LoaderFunction, type MetaFunction } from "@remix-run/node";
+import { type LoaderFunction, type MetaFunction, data } from "@remix-run/node";
 import {
   useLoaderData,
   useRouteError,
@@ -130,7 +130,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     // Auth stricte si demandée
     if (authenticated && !authResult) {
       logger.log("🔒 Strict auth required - redirecting");
-      return json({ authenticated: false }, { status: 401 });
+      return data({ authenticated: false }, { status: 401 });
     }
 
     // API Call - même endpoint que les versions précédentes
@@ -205,7 +205,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     };
 
     logger.log("✅ Dashboard unifié - Data loaded successfully");
-    return json(responseData);
+    return responseData;
   } catch (error) {
     logger.error("❌ Dashboard unifié - Error:", error);
 

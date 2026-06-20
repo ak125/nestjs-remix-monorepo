@@ -11,11 +11,7 @@
  *  - Backend : @repo/cwv-taxonomy + cwv-dashboard.controller.ts
  *  - Migrations : 20260526 (raw), 20260527 (agg), 20260528 (runtime), 20260529 (RPCs)
  */
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, useSearchParams } from "@remix-run/react";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
@@ -137,13 +133,13 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     apiError = err instanceof Error ? err.message : "Unknown fetch error";
   }
 
-  return json<LoaderData>({
+  return {
     dashboard,
     funnel,
     health,
     priorityTier,
     apiError,
-  });
+  };
 };
 
 function formatMs(value: number | null, metric: string): string {

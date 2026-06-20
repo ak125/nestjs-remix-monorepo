@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import {
   Image,
@@ -124,7 +120,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     });
   }
 
-  return json({ gammeData });
+  return { gammeData };
 }
 
 function ScoreBadge({ score }: { score: number }) {

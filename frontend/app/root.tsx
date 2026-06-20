@@ -1,11 +1,10 @@
 import {
   type ActionFunctionArgs,
-  defer,
   type HeadersFunction,
   type LinksFunction,
   type LoaderFunctionArgs,
-  json,
   type MetaFunction,
+  data,
 } from "@remix-run/node";
 import {
   Links,
@@ -130,7 +129,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     return null;
   });
 
-  return defer({
+  return {
     user,
     cart: cartPromise,
     isBot,
@@ -146,7 +145,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
         process.env.NODE_ENV ||
         "development",
     },
-  });
+  };
 };
 
 export const headers: HeadersFunction = () => ({
@@ -155,7 +154,7 @@ export const headers: HeadersFunction = () => ({
 
 // Reject POST requests from bots/crawlers - root route has no forms
 export const action = async (_args: ActionFunctionArgs) => {
-  return json(
+  return data(
     { error: "Method not allowed" },
     { status: 405, headers: { Allow: "GET" } },
   );

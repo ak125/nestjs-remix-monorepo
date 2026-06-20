@@ -11,11 +11,11 @@
  */
 
 import {
-  json,
   redirect,
   type HeadersFunction,
   type LoaderFunctionArgs,
   type MetaFunction,
+  data,
 } from "@remix-run/node";
 import {
   Link,
@@ -138,7 +138,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const { pg_alias } = params;
 
   if (!pg_alias) {
-    throw json({ message: "Alias manquant" }, { status: 404 });
+    throw data({ message: "Alias manquant" }, { status: 404 });
   }
 
   try {
@@ -190,7 +190,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
       if (guide && (!guide.intentType || guide.intentType === "R6")) {
         const r4Reference = await fetchR4Reference(guide.page.pg_id, request);
-        return json({ guide, pg_alias, r4Reference });
+        return { guide, pg_alias, r4Reference };
       }
     }
 
@@ -204,7 +204,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     clearTimeout(timeoutId);
 
     if (!blogResponse.ok) {
-      throw json(
+      throw data(
         { message: `Guide "${pg_alias}" non trouve` },
         { status: 404 },
       );
@@ -214,7 +214,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const blogGuide = blogResult?.data;
 
     if (!blogGuide) {
-      throw json(
+      throw data(
         { message: `Guide "${pg_alias}" non disponible` },
         { status: 404 },
       );
@@ -261,12 +261,12 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     };
 
     const r4Reference = await fetchR4Reference(guide.page.pg_id, request);
-    return json({ guide, pg_alias, r4Reference });
+    return { guide, pg_alias, r4Reference };
   } catch (error) {
     clearTimeout(timeoutId);
     if (error instanceof Response) throw error;
     logger.error(`[R6 Guide] Error loading guide for: ${pg_alias}`, error);
-    throw json(
+    throw data(
       { message: `Erreur chargement guide "${pg_alias}"` },
       { status: 500 },
     );

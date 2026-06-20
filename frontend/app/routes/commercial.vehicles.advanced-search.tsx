@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, useSubmit } from "@remix-run/react";
 import {
   Search,
@@ -170,7 +166,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     compatibleProducts = productVariations.slice(0, numProducts);
   }
 
-  return json<LoaderData>({
+  return {
     compatibleProducts,
     stats,
     searchParams: {
@@ -178,7 +174,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       typeId: typeId || undefined,
       year: year || undefined,
     },
-  });
+  };
 }
 
 export default function AdvancedVehicleSearch() {

@@ -1,4 +1,4 @@
-import { json, type LoaderFunction, type MetaFunction } from "@remix-run/node";
+import { type LoaderFunction, type MetaFunction } from "@remix-run/node";
 import {
   useLoaderData,
   Link,
@@ -135,7 +135,7 @@ export const loader: LoaderFunction = async ({ request }) => {
       ],
     };
 
-    return json<LoaderData>({ security, user });
+    return { security, user };
   } catch (error) {
     // Propager les Response HTTP (404, etc.) telles quelles
     if (error instanceof Response) {

@@ -8,7 +8,6 @@
  */
 
 import {
-  json,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
   type MetaFunction,
@@ -222,7 +221,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const thresholdsData = thresholdsRes.ok ? await thresholdsRes.json() : null;
     const auditData = auditRes.ok ? await auditRes.json() : null;
 
-    return json({
+    return {
       gammes: gammesData?.data || [],
       total: gammesData?.total || 0,
       page: gammesData?.page || 1,
@@ -246,10 +245,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
         sortOrder,
       },
       error: null,
-    });
+    };
   } catch (error) {
     logger.error("[Admin Gammes SEO] Error:", error);
-    return json({
+    return {
       gammes: [],
       total: 0,
       page: 1,
@@ -273,7 +272,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         sortOrder: "desc",
       },
       error: "Erreur chargement données",
-    });
+    };
   }
 }
 
@@ -304,7 +303,7 @@ export async function action({ request }: ActionFunctionArgs) {
         );
 
         const result = await response.json();
-        return json({ success: result.success, message: result.message });
+        return { success: result.success, message: result.message };
       }
 
       case "batch-action": {
@@ -324,11 +323,11 @@ export async function action({ request }: ActionFunctionArgs) {
         );
 
         const result = await response.json();
-        return json({
+        return {
           success: result.success,
           message: result.message,
           updated: result.updated,
-        });
+        };
       }
 
       case "regenerate-sitemap": {
@@ -345,26 +344,26 @@ export async function action({ request }: ActionFunctionArgs) {
 
         const result = await response.json();
         if (result.success) {
-          return json({
+          return {
             success: true,
             message: `Sitemap régénéré: ${result.data?.totalUrls || 0} URLs dans ${result.data?.files?.length || 0} fichiers`,
             sitemapData: result.data,
-          });
+          };
         }
-        return json({
+        return {
           success: false,
           message: result.message || "Erreur lors de la régénération",
-        });
+        };
       }
 
       default:
-        return json({ success: false, message: "Action inconnue" });
+        return { success: false, message: "Action inconnue" };
     }
   } catch (error) {
-    return json({
+    return {
       success: false,
       message: error instanceof Error ? error.message : "Erreur",
-    });
+    };
   }
 }
 
@@ -734,9 +733,7 @@ export default function AdminGammesSeo() {
           <Button
             variant="outline"
             onClick={() => setShowThresholdsPanel(!showThresholdsPanel)}
-            className={
-              showThresholdsPanel ? "bg-muted border-indigo-400" : ""
-            }
+            className={showThresholdsPanel ? "bg-muted border-indigo-400" : ""}
           >
             <Settings className="h-4 w-4 mr-2" />
             Seuils
@@ -958,7 +955,7 @@ export default function AdminGammesSeo() {
                         </td>
                         <td className="px-3 py-2">
                           <Badge
-                            className={`text-xs ${ entry.action_type.includes("THRESHOLD") ? "bg-muted text-foreground" : entry.action_type.includes("PROMOTE") ? "bg-green-100 text-green-700" : entry.action_type.includes("DEMOTE") ? "bg-red-100 text-red-700" : entry.action_type.includes("G1") ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-green-900" }`}
+                            className={`text-xs ${entry.action_type.includes("THRESHOLD") ? "bg-muted text-foreground" : entry.action_type.includes("PROMOTE") ? "bg-green-100 text-green-700" : entry.action_type.includes("DEMOTE") ? "bg-red-100 text-red-700" : entry.action_type.includes("G1") ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-green-900"}`}
                           >
                             {entry.action_type.replace(/_/g, " ")}
                           </Badge>
@@ -1901,7 +1898,7 @@ export default function AdminGammesSeo() {
                       )}
                       {/* Ligne de gamme - Highlighting basé sur Execution status */}
                       <tr
-                        className={`hover:bg-gray-100 transition-colors ${ gamme.pg_top === "1" ? "bg-emerald-50 border-l-emerald-500" : gamme.execution_status === "PASS" ? "bg-green-50 border-l-green-400" : gamme.execution_status === "WARN" ? "bg-amber-50 border-l-amber-400" : gamme.execution_status === "FAIL" ? "bg-red-50 border-l-red-400" : "" }`}
+                        className={`hover:bg-gray-100 transition-colors ${gamme.pg_top === "1" ? "bg-emerald-50 border-l-emerald-500" : gamme.execution_status === "PASS" ? "bg-green-50 border-l-green-400" : gamme.execution_status === "WARN" ? "bg-amber-50 border-l-amber-400" : gamme.execution_status === "FAIL" ? "bg-red-50 border-l-red-400" : ""}`}
                       >
                         <td className="px-2 py-3">
                           <Checkbox

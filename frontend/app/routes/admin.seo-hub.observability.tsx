@@ -19,11 +19,7 @@
  * - PR #166 : recharts ^2.15.4 ajouté en Phase 0
  */
 
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
 import {
   AlertCircle,
@@ -176,27 +172,27 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const cwvData = cwvRes.ok ? await cwvRes.json() : null;
     const runsData = runsRes.ok ? await runsRes.json() : null;
 
-    return json({
+    return {
       health,
-      gscRows: ((gscData?.rows ?? []) as GscRow[]),
+      gscRows: (gscData?.rows ?? []) as GscRow[],
       gscTotals: gscData?.totals ?? {
         clicks: 0,
         impressions: 0,
         ctr: 0,
         avg_position: 0,
       },
-      ga4Rows: ((ga4Data?.rows ?? []) as Ga4Row[]),
+      ga4Rows: (ga4Data?.rows ?? []) as Ga4Row[],
       ga4Totals: ga4Data?.totals ?? { sessions: 0, conversions: 0 },
-      cwvRows: ((cwvData?.rows ?? []) as CwvRow[]),
-      runs: ((runsData?.rows ?? []) as RunRow[]),
+      cwvRows: (cwvData?.rows ?? []) as CwvRow[],
+      runs: (runsData?.rows ?? []) as RunRow[],
       dateFrom,
       dateTo,
       days,
       error: null as string | null,
-    });
+    };
   } catch (error) {
     logger.error("[SEO Observability] Loader error:", error);
-    return json({
+    return {
       health: null,
       gscRows: [] as GscRow[],
       gscTotals: { clicks: 0, impressions: 0, ctr: 0, avg_position: 0 },
@@ -210,7 +206,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       dateTo: new Date().toISOString().slice(0, 10),
       days: 30,
       error: "Erreur connexion backend SEO Monitoring",
-    });
+    };
   }
 }
 
@@ -228,7 +224,10 @@ export default function SeoHubObservability() {
 
   // Aggrégation par jour pour les line charts
   const gscByDay = useMemo(() => aggregateByDate(data.gscRows), [data.gscRows]);
-  const ga4ByDay = useMemo(() => aggregateGa4ByDate(data.ga4Rows), [data.ga4Rows]);
+  const ga4ByDay = useMemo(
+    () => aggregateGa4ByDate(data.ga4Rows),
+    [data.ga4Rows],
+  );
 
   return (
     <div className="container mx-auto p-6 max-w-7xl space-y-6">
@@ -239,8 +238,8 @@ export default function SeoHubObservability() {
             SEO Observability
           </h1>
           <p className="text-muted-foreground mt-1">
-            GSC + GA4 + Core Web Vitals timeseries · {data.days} jours
-            ({data.dateFrom} → {data.dateTo})
+            GSC + GA4 + Core Web Vitals timeseries · {data.days} jours (
+            {data.dateFrom} → {data.dateTo})
           </p>
         </div>
         <Select
@@ -277,8 +276,8 @@ export default function SeoHubObservability() {
           <AlertTitle>Configuration requise</AlertTitle>
           <AlertDescription className="space-y-2">
             <p>
-              Avant que la donnée Google soit ingérée, suivre la procédure
-              setup Service Account dans{" "}
+              Avant que la donnée Google soit ingérée, suivre la procédure setup
+              Service Account dans{" "}
               <code className="text-xs">
                 .spec/runbooks/seo/observability-setup.md
               </code>
@@ -291,7 +290,8 @@ export default function SeoHubObservability() {
                   <span className="text-green-600">✓</span>
                 ) : (
                   <span className="text-amber-600">
-                    ✗ {data.health?.readiness.gsc.reason ?? "credentials missing"}
+                    ✗{" "}
+                    {data.health?.readiness.gsc.reason ?? "credentials missing"}
                   </span>
                 )}
               </li>
@@ -301,7 +301,8 @@ export default function SeoHubObservability() {
                   <span className="text-green-600">✓</span>
                 ) : (
                   <span className="text-amber-600">
-                    ✗ {data.health?.readiness.ga4.reason ?? "credentials missing"}
+                    ✗{" "}
+                    {data.health?.readiness.ga4.reason ?? "credentials missing"}
                   </span>
                 )}
               </li>
@@ -361,9 +362,7 @@ export default function SeoHubObservability() {
           <Card>
             <CardHeader>
               <CardTitle>Position moyenne & CTR (GSC)</CardTitle>
-              <CardDescription>
-                Évolution sur {data.days} jours
-              </CardDescription>
+              <CardDescription>Évolution sur {data.days} jours</CardDescription>
             </CardHeader>
             <CardContent>
               {hasGscData ? (
@@ -399,9 +398,7 @@ export default function SeoHubObservability() {
           <Card>
             <CardHeader>
               <CardTitle>Sessions & conversions (GA4)</CardTitle>
-              <CardDescription>
-                Évolution sur {data.days} jours
-              </CardDescription>
+              <CardDescription>Évolution sur {data.days} jours</CardDescription>
             </CardHeader>
             <CardContent>
               {hasGa4Data ? (
@@ -440,9 +437,7 @@ export default function SeoHubObservability() {
           <Card>
             <CardHeader>
               <CardTitle>Top pages GSC</CardTitle>
-              <CardDescription>
-                Triées par clicks décroissants
-              </CardDescription>
+              <CardDescription>Triées par clicks décroissants</CardDescription>
             </CardHeader>
             <CardContent>
               {hasGscData ? (
@@ -693,7 +688,13 @@ function EmptyState({ message }: { message: string }) {
 
 function aggregateByDate(
   rows: GscRow[],
-): Array<{ date: string; clicks: number; impressions: number; position: number; ctr_pct: number }> {
+): Array<{
+  date: string;
+  clicks: number;
+  impressions: number;
+  position: number;
+  ctr_pct: number;
+}> {
   const m = new Map<
     string,
     { clicks: number; impressions: number; position_sum: number }

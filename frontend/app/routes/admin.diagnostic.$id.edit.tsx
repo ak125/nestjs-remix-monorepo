@@ -1,5 +1,4 @@
 import {
-  json,
   redirect,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
@@ -73,7 +72,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
     const observable: Observable = await res.json();
 
-    return json({ observable });
+    return { observable };
   } catch (error) {
     logger.error("Loader error:", error);
     throw new Response("Erreur serveur", { status: 500 });
@@ -117,13 +116,13 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
     if (!res.ok) {
       const error = await res.text();
-      return json({ success: false, error: `Erreur mise a jour: ${error}` });
+      return { success: false, error: `Erreur mise a jour: ${error}` };
     }
 
     return redirect("/admin/diagnostic?updated=true");
   } catch (error) {
     logger.error("Action error:", error);
-    return json({ success: false, error: "Erreur serveur" });
+    return { success: false, error: "Erreur serveur" };
   }
 }
 

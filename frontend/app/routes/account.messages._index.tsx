@@ -1,4 +1,4 @@
-import { json, type LoaderFunction, type MetaFunction } from "@remix-run/node";
+import { type LoaderFunction, type MetaFunction } from "@remix-run/node";
 import {
   useLoaderData,
   Link,
@@ -78,14 +78,14 @@ export const loader: LoaderFunction = async ({ request, context }) => {
       withOrder: messages.filter((msg) => msg.MSG_ORD_ID !== null).length,
     };
 
-    return json({ messages, stats, user });
+    return { messages, stats, user };
   } catch (error) {
     logger.error("Erreur chargement messages:", error);
-    return json({
+    return {
       messages: [],
       stats: { total: 0, unread: 0, withOrder: 0 },
       user,
-    });
+    };
   }
 };
 

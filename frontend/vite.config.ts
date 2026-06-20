@@ -5,6 +5,13 @@ import { visualizer } from 'rollup-plugin-visualizer';
 import { defineConfig } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
+// Single Fetch (v3_singleFetch) — active les types Single Fetch côté loaders/actions.
+declare module '@remix-run/server-runtime' {
+	interface Future {
+		v3_singleFetch: true;
+	}
+}
+
 const MODE = process.env.NODE_ENV;
 const isProduction = MODE === 'production';
 const isAnalyze = process.env.ANALYZE === 'true';
@@ -120,9 +127,9 @@ export default defineConfig({
 				// use absolute Links only — flag is a no-op for current
 				// code, opt-in for v3 readiness.
 				v3_relativeSplatPath: true,
-				// NOTE: v3_singleFetch deferred to a follow-up PR. Audit
-				// surfaced 18 useFetcher() and 6 headers() exports that
-				// need coordinated review before flipping this flag.
+				// Single Fetch activé (PR-9h Phase A) : json()/defer() migrés vers
+				// data() (status/headers) ou retours bruts ; entry.server passe à streamTimeout.
+				v3_singleFetch: true,
 			},
 
 			// When running locally in development mode, we use the built in remix

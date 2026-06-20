@@ -10,9 +10,8 @@
  * so the WIP section degrades gracefully when the file is absent (e.g. a fresh
  * container) — the repo section (committed canonical.json) always renders.
  */
-import { type LoaderFunctionArgs, json, type MetaFunction } from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { type ReactNode } from "react";
 import {
   GitPullRequest,
   Skull,
@@ -23,6 +22,7 @@ import {
   ExternalLink,
   AlertTriangle,
 } from "lucide-react";
+import { type ReactNode } from "react";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import {
@@ -76,7 +76,8 @@ interface ControlPlaneSummary {
   };
 }
 
-export const meta: MetaFunction = () => createNoIndexMeta("Control Plane — Admin");
+export const meta: MetaFunction = () =>
+  createNoIndexMeta("Control Plane — Admin");
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   await requireAdmin({ context });
@@ -96,10 +97,12 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     throw new Response("Control Plane API error", { status: res.status });
   }
 
-  const body = (await res.json()) as { data?: ControlPlaneSummary } & ControlPlaneSummary;
+  const body = (await res.json()) as {
+    data?: ControlPlaneSummary;
+  } & ControlPlaneSummary;
   // AdminResponseInterceptor wraps as { success, data, meta }.
   const summary = body.data ?? (body as ControlPlaneSummary);
-  return json(summary);
+  return summary;
 }
 
 function Stat({
@@ -163,7 +166,11 @@ export default function AdminControlPlane() {
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">WIP (PRs ouvertes)</h2>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          <Stat icon={<GitPullRequest className="h-4 w-4" />} label="PRs ouvertes" value={wip.prCount} />
+          <Stat
+            icon={<GitPullRequest className="h-4 w-4" />}
+            label="PRs ouvertes"
+            value={wip.prCount}
+          />
           <Stat
             icon={<Skull className="h-4 w-4" />}
             label="Zombies (>14j)"
@@ -187,7 +194,9 @@ export default function AdminControlPlane() {
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Top staleness</CardTitle>
-              <CardDescription>PRs triées par jours sans activité</CardDescription>
+              <CardDescription>
+                PRs triées par jours sans activité
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
@@ -215,7 +224,9 @@ export default function AdminControlPlane() {
                           <ExternalLink className="h-3 w-3" />
                         </a>
                       </TableCell>
-                      <TableCell className="max-w-md truncate">{pr.title}</TableCell>
+                      <TableCell className="max-w-md truncate">
+                        {pr.title}
+                      </TableCell>
                       <TableCell>
                         <Badge variant="outline">{pr.status}</Badge>
                       </TableCell>
@@ -245,7 +256,11 @@ export default function AdminControlPlane() {
         <h2 className="text-lg font-semibold">Dépôt (canonical.json)</h2>
         {repo ? (
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            <Stat icon={<Boxes className="h-4 w-4" />} label="Domaines" value={repo.domainCount} />
+            <Stat
+              icon={<Boxes className="h-4 w-4" />}
+              label="Domaines"
+              value={repo.domainCount}
+            />
             <Stat
               icon={<ShieldAlert className="h-4 w-4" />}
               label="Ownership gaps"
@@ -253,7 +268,12 @@ export default function AdminControlPlane() {
               tone={repo.ownershipGaps > 0 ? "warn" : "default"}
             />
             {Object.entries(repo.counts).map(([kind, n]) => (
-              <Stat key={kind} icon={<Boxes className="h-4 w-4" />} label={kind} value={n} />
+              <Stat
+                key={kind}
+                icon={<Boxes className="h-4 w-4" />}
+                label={kind}
+                value={n}
+              />
             ))}
           </div>
         ) : (

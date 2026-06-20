@@ -20,7 +20,6 @@
  */
 
 import {
-  json,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
   type MetaFunction,
@@ -88,7 +87,13 @@ interface FindingRow {
   audit_type: AuditType;
   entity_url: string;
   severity: Severity;
-  payload: Record<string, unknown>;
+  payload: {
+    gap_type?: string;
+    source_table?: string;
+    field?: string;
+    section_type?: string;
+    content_length?: number;
+  };
   detected_at: string;
   resolved_at: string | null;
   fixed_at: string | null;
@@ -115,7 +120,8 @@ export const meta: MetaFunction = () =>
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
-  const auditType = (url.searchParams.get("type") ?? "r_content_gap") as AuditType;
+  const auditType = (url.searchParams.get("type") ??
+    "r_content_gap") as AuditType;
   const limitParam = parseInt(url.searchParams.get("limit") ?? "200", 10);
   const limit = Math.min(Math.max(limitParam, 1), 1000);
 
@@ -140,22 +146,22 @@ export async function loader({ request }: LoaderFunctionArgs) {
       : null;
     const findingsData = findingsRes.ok ? await findingsRes.json() : null;
 
-    return json({
+    return {
       auditType,
       limit,
       summary,
-      findings: ((findingsData?.rows ?? []) as FindingRow[]),
+      findings: (findingsData?.rows ?? []) as FindingRow[],
       error: null as string | null,
-    });
+    };
   } catch (error) {
     logger.error("[SEO Findings] Loader error:", error);
-    return json({
+    return {
       auditType,
       limit,
       summary: null,
       findings: [] as FindingRow[],
       error: "Erreur connexion backend SEO Monitoring",
-    });
+    };
   }
 }
 
@@ -182,23 +188,22 @@ export async function action({ request }: ActionFunctionArgs) {
     );
 
     if (!res.ok) {
-      return json({
+      return {
         ok: false,
         message: `Backend ${res.status}: ${await res.text()}`,
         result: null as RContentRunResult | null,
-      });
+      };
     }
 
     const result: RContentRunResult = await res.json();
-    return json({ ok: true, message: null as string | null, result });
+    return { ok: true, message: null as string | null, result };
   } catch (error) {
     logger.error("[SEO Findings] Action error:", error);
-    return json({
+    return {
       ok: false,
-      message:
-        error instanceof Error ? error.message : "Erreur trigger audit",
+      message: error instanceof Error ? error.message : "Erreur trigger audit",
       result: null as RContentRunResult | null,
-    });
+    };
   }
 }
 
@@ -236,12 +241,18 @@ export default function SeoHubFindings() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="r_content_gap">R-content gap (Phase 2a')</SelectItem>
+              <SelectItem value="r_content_gap">
+                R-content gap (Phase 2a')
+              </SelectItem>
               <SelectItem value="schema_violation">Schema violation</SelectItem>
               <SelectItem value="image_seo">Image SEO</SelectItem>
-              <SelectItem value="canonical_conflict">Canonical conflict</SelectItem>
+              <SelectItem value="canonical_conflict">
+                Canonical conflict
+              </SelectItem>
               <SelectItem value="meta_experiment">Meta experiment</SelectItem>
-              <SelectItem value="internal_link_suggestion">Internal linking</SelectItem>
+              <SelectItem value="internal_link_suggestion">
+                Internal linking
+              </SelectItem>
             </SelectContent>
           </Select>
           <Form method="post">
@@ -273,15 +284,14 @@ export default function SeoHubFindings() {
           <AlertDescription className="space-y-1 text-sm">
             <p>
               <strong>{actionData.result.findingsDetected}</strong> findings
-              détectés ·{" "}
-              <strong>{actionData.result.findingsInserted}</strong> insérés ·{" "}
-              {actionData.result.durationSeconds.toFixed(2)}s
+              détectés · <strong>{actionData.result.findingsInserted}</strong>{" "}
+              insérés · {actionData.result.durationSeconds.toFixed(2)}s
             </p>
             <p className="text-muted-foreground">
-              Sources : conseil={actionData.result.bySource.conseil ?? 0} ·
-              R6={actionData.result.bySource.purchase_guide ?? 0} ·
-              R4={actionData.result.bySource.reference ?? 0} ·
-              R7={actionData.result.bySource.brand_editorial ?? 0}
+              Sources : conseil={actionData.result.bySource.conseil ?? 0} · R6=
+              {actionData.result.bySource.purchase_guide ?? 0} · R4=
+              {actionData.result.bySource.reference ?? 0} · R7=
+              {actionData.result.bySource.brand_editorial ?? 0}
             </p>
           </AlertDescription>
         </Alert>
@@ -356,12 +366,9 @@ export default function SeoHubFindings() {
               </TableHeader>
               <TableBody>
                 {data.findings.map((f) => {
-                  const gapType = (f.payload.gap_type as string) ?? "—";
-                  const source = (f.payload.source_table as string) ?? "—";
-                  const field =
-                    (f.payload.field as string) ??
-                    (f.payload.section_type as string) ??
-                    "";
+                  const gapType = f.payload.gap_type ?? "—";
+                  const source = f.payload.source_table ?? "—";
+                  const field = f.payload.field ?? f.payload.section_type ?? "";
                   const contentLen =
                     typeof f.payload.content_length === "number"
                       ? ` (${f.payload.content_length}c)`
