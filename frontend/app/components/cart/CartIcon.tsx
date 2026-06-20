@@ -4,9 +4,9 @@
  * Source unique : useRootCart() (SSR + revalidation automatique)
  * Pas de fetch independant — root.tsx revalide sur cart:updated (300ms debounce)
  */
-import { Link } from "@remix-run/react";
 import { ShoppingCart } from "lucide-react";
 import { memo } from "react";
+import { Link } from "react-router";
 
 import { useRootCart } from "~/hooks/useRootData";
 import { Badge } from "../ui/badge";

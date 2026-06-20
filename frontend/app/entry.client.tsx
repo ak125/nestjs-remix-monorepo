@@ -10,12 +10,12 @@
 // See ~/utils/array-at-polyfill.client for the full rationale.
 import "~/utils/array-at-polyfill.client";
 
-import { RemixBrowser } from "@remix-run/react";
 import { startTransition } from "react";
 import { hydrateRoot } from "react-dom/client";
+import { HydratedRouter } from "react-router/dom";
 import { logger } from "~/utils/logger";
-import { reportWebVitals } from "~/utils/web-vitals.client";
 import { startRuntimeErrorReporter } from "~/utils/runtime-errors.client";
+import { reportWebVitals } from "~/utils/web-vitals.client";
 
 // Service worker cleanup — sync, no Sentry dep
 if ("serviceWorker" in navigator) {
@@ -42,7 +42,7 @@ window.addEventListener("error", onError);
 window.addEventListener("unhandledrejection", onRejection);
 
 startTransition(() => {
-  hydrateRoot(document, <RemixBrowser />, {
+  hydrateRoot(document, <HydratedRouter />, {
     onRecoverableError(error) {
       if (error instanceof Error) {
         console.warn("[Hydration]", error.message);
@@ -77,19 +77,12 @@ const initObservability = async (): Promise<void> => {
     return;
   }
 
-  const [
-    Sentry,
-    { sentryBeforeSend },
-    { setSentryInstance },
-    { useEffect },
-    { useLocation, useMatches },
-  ] = await Promise.all([
-    import("@sentry/remix"),
-    import("~/utils/analytics-sanitize"),
-    import("~/utils/web-vitals.client"),
-    import("react"),
-    import("@remix-run/react"),
-  ]);
+  const [Sentry, { sentryBeforeSend }, { setSentryInstance }] =
+    await Promise.all([
+      import("@sentry/react-router"),
+      import("~/utils/analytics-sanitize"),
+      import("~/utils/web-vitals.client"),
+    ]);
 
   Sentry.init({
     dsn,
@@ -111,11 +104,9 @@ const initObservability = async (): Promise<void> => {
     // défauts, ne les remplace pas).
     allowUrls: [/\/assets\//],
     integrations: [
-      Sentry.browserTracingIntegration({
-        useEffect,
-        useLocation,
-        useMatches,
-      }),
+      // RR7 : auto-instrumente le routing (remplace browserTracingIntegration
+      // qui prenait useEffect/useLocation/useMatches en Remix v2).
+      Sentry.reactRouterTracingIntegration(),
     ],
     // V0.B / S10 — RGPD scrubbing PII en defense-in-depth.
     // Strip immat FR, emails, tels des URL, query-string, breadcrumbs, extra.

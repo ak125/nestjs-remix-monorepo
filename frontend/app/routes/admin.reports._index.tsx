@@ -2,8 +2,6 @@
  * Page Rapports - Analyses et statistiques détaillées
  */
 
-import { type LoaderFunction, type MetaFunction } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
 import {
   BarChart3,
   Download,
@@ -14,6 +12,7 @@ import {
   AlertTriangle,
   CheckCircle,
 } from "lucide-react";
+import { type MetaFunction, useLoaderData } from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
@@ -51,7 +50,7 @@ interface ReportOrder {
   total?: string;
 }
 
-export const loader: LoaderFunction = async () => {
+export const loader = async () => {
   try {
     logger.log("📊 Chargement des données pour les rapports...");
 

@@ -1,10 +1,12 @@
-import { type LoaderFunction, type MetaFunction, data } from "@remix-run/node";
+import { User, ShoppingBag, Mail, Key } from "lucide-react";
 import {
+  type LoaderFunction,
+  type MetaFunction,
+  data,
   useLoaderData,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { User, ShoppingBag, Mail, Key } from "lucide-react";
+} from "react-router";
 import { z } from "zod";
 
 import AccountDashboard from "~/components/account/AccountDashboard";

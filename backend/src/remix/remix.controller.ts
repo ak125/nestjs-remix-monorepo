@@ -8,7 +8,7 @@ import {
   Req,
   Res,
 } from '@nestjs/common';
-import { createRequestHandler } from '@remix-run/express';
+import { createRequestHandler } from '@react-router/express';
 import { NextFunction, Request, Response } from 'express';
 import { RemixService } from './remix.service';
 import { RemixApiService } from './remix-api.service';

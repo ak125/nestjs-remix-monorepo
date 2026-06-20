@@ -4,8 +4,6 @@
  * /admin/seo-hub/keyword-clusters
  */
 
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -17,6 +15,11 @@ import {
   Tag,
 } from "lucide-react";
 import { Fragment, useState } from "react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+} from "react-router";
 import { Badge } from "~/components/ui/badge";
 import {
   Card,

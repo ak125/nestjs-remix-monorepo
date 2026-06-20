@@ -1,6 +1,5 @@
-import { type LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
 import { Link2, TrendingUp, FileText, Target } from "lucide-react";
+import { type LoaderFunctionArgs, useLoaderData } from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";

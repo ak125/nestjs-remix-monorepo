@@ -1,4 +1,3 @@
-import { Link } from "@remix-run/react";
 import {
   Search,
   ArrowRight,
@@ -8,6 +7,7 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { memo } from "react";
+import { Link } from "react-router";
 import { ErrorSearchBar } from "~/components/errors/ErrorSearchBar";
 import { PopularCategories } from "~/components/errors/PopularCategories";
 

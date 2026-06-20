@@ -1,7 +1,6 @@
 // 📁 frontend/app/components/vehicle/VehicleSelector.tsx
 // 🚗 VehicleSelector unifié - Un seul composant pour tous les besoins
 
-import { useNavigate } from "@remix-run/react";
 import {
   type VehicleBrand,
   type VehicleModel,
@@ -16,6 +15,7 @@ import {
   FileText,
 } from "lucide-react";
 import { memo, useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router";
 import { logger } from "~/utils/logger";
 import { enhancedVehicleApi } from "../../services/api/enhanced-vehicle.api";
 import { Button } from "../ui/button";
@@ -693,7 +693,7 @@ const VehicleSelector = memo(function VehicleSelector({
             </button>
             <button
               onClick={() => setSearchMode("mine")}
-              className={`flex-1 px-4 py-2.5 min-h-[44px] rounded-md text-sm font-medium transition-all duration-200 ${ searchMode === "mine" ? "bg-white text-foreground shadow-sm" : "text-gray-600 hover:text-gray-900" }`}
+              className={`flex-1 px-4 py-2.5 min-h-[44px] rounded-md text-sm font-medium transition-all duration-200 ${searchMode === "mine" ? "bg-white text-foreground shadow-sm" : "text-gray-600 hover:text-gray-900"}`}
             >
               <FileText className="w-4 h-4 inline mr-2" />
               Type Mine

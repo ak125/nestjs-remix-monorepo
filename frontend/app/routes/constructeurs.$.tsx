@@ -10,8 +10,9 @@
 import {
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import { useRouteError, isRouteErrorResponse } from "@remix-run/react";
+  useRouteError,
+  isRouteErrorResponse,
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { buildCacheHeaders } from "~/utils/cache-control";
 import { logger } from "~/utils/logger";

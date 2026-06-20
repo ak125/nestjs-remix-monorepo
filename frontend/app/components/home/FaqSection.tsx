@@ -1,6 +1,6 @@
-import { Await } from "@remix-run/react";
 import { HelpCircle, Search, Shield, Stethoscope, Truck } from "lucide-react";
 import { Suspense } from "react";
+import { Await } from "react-router";
 import { FAQ_DATA } from "~/components/home/constants";
 
 function getFaqIcon(question: string) {

@@ -1,11 +1,12 @@
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import { ArrowLeft, Clock } from "lucide-react";
 import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
   useLoaderData,
   Link,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { ArrowLeft, Clock } from "lucide-react";
+} from "react-router";
 
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { logger } from "~/utils/logger";

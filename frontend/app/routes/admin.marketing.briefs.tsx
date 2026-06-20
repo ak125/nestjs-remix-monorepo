@@ -10,9 +10,14 @@
  * Filtres : `?unit=ECOMMERCE|LOCAL|HYBRID`, `?status=draft|reviewed|...`,
  * `?agent_id=...`. Pagination simple.
  */
-import { type LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData, Link, Form, useSubmit } from "@remix-run/react";
 import { Calendar, FileText, MapPin, ShoppingBag, Zap } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  useLoaderData,
+  Link,
+  Form,
+  useSubmit,
+} from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import {

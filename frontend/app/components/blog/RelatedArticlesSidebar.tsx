@@ -3,8 +3,8 @@
  * Displays cross-linked related articles with thumbnails, views, and dates.
  */
 
-import { Link } from "@remix-run/react";
 import { Eye, Calendar } from "lucide-react";
+import { Link } from "react-router";
 import { Card } from "~/components/ui/card";
 
 interface RelatedArticle {

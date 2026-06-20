@@ -1,8 +1,8 @@
 // 📁 frontend/app/components/catalog/PiecesCatalogGrid.tsx
 // 🎨 Catalogue de pièces avec le design de FamilyGammeHierarchy
 
-import { Link } from "@remix-run/react";
 import { useState, useEffect } from "react";
+import { Link } from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 

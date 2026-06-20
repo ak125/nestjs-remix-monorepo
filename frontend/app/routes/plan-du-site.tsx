@@ -1,5 +1,3 @@
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
 import {
   Home,
   Wrench,
@@ -14,6 +12,12 @@ import {
   Package,
   Search,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+} from "react-router";
 import Container from "~/components/layout/Container";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 

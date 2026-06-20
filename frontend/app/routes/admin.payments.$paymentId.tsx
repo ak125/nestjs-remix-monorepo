@@ -1,16 +1,4 @@
 import {
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  type MetaFunction,
-  data,
-} from "@remix-run/node";
-import {
-  useLoaderData,
-  useNavigate,
-  Form,
-  useNavigation,
-} from "@remix-run/react";
-import {
   ArrowLeft,
   DollarSign,
   CreditCard,
@@ -25,6 +13,16 @@ import {
   Download,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  type MetaFunction,
+  data,
+  useLoaderData,
+  useNavigate,
+  Form,
+  useNavigation,
+} from "react-router";
 import { Button } from "~/components/ui/button";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";

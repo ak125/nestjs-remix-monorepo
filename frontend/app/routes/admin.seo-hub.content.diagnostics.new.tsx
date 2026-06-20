@@ -4,20 +4,18 @@
  * Formulaire de création d'une nouvelle page R5 Diagnostic
  */
 
+import { ArrowLeft, AlertTriangle, Save, AlertCircle } from "lucide-react";
 import {
   redirect,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import {
   useLoaderData,
   useNavigation,
   Form,
   Link,
   useActionData,
-} from "@remix-run/react";
-import { ArrowLeft, AlertTriangle, Save, AlertCircle } from "lucide-react";
+} from "react-router";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import {

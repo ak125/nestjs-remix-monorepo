@@ -3,13 +3,6 @@
  */
 
 import {
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  type MetaFunction,
-  data,
-} from "@remix-run/node";
-import { useLoaderData, useActionData, Form, Link } from "@remix-run/react";
-import {
   Settings,
   Database,
   Mail,
@@ -25,6 +18,16 @@ import {
   Search,
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
+import {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  type MetaFunction,
+  data,
+  useLoaderData,
+  useActionData,
+  Form,
+  Link,
+} from "react-router";
 import { requireAdmin } from "~/auth/unified.server";
 import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";

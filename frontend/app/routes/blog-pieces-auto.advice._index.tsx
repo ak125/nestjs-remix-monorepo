@@ -6,16 +6,17 @@
  * Intention : Découvrir des conseils pratiques
  */
 
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import React, { useState, useMemo } from "react";
 import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
   useLoaderData,
   Link,
   useSearchParams,
   useNavigation,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import React, { useState, useMemo } from "react";
+} from "react-router";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 
@@ -609,7 +610,6 @@ export default function AdviceIndex() {
     <div className="min-h-screen bg-gray-50">
       {/* Navigation Blog */}
       <BlogNavigation />
-
       {/* Breadcrumb */}
       <div className="container mx-auto px-4 pt-6">
         <PublicBreadcrumb
@@ -619,7 +619,6 @@ export default function AdviceIndex() {
           ]}
         />
       </div>
-
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-blue-600 to-blue-800 text-white">
         <div className="container mx-auto px-4 py-16">
@@ -659,7 +658,6 @@ export default function AdviceIndex() {
           </div>
         </div>
       </section>
-
       <div className="container mx-auto px-4 py-8">
         {/* Search and Filters */}
         <Card className="mb-8">
@@ -973,7 +971,6 @@ export default function AdviceIndex() {
           </Card>
         )}
       </div>
-
       <style
         dangerouslySetInnerHTML={{
           __html: `

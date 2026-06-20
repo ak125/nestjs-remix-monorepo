@@ -2,12 +2,10 @@ import {
   type LoaderFunctionArgs,
   type MetaFunction,
   data,
-} from "@remix-run/node";
-import {
   useLoaderData,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
+} from "react-router";
 import { z } from "zod";
 import { ErrorGeneric } from "~/components/errors";
 

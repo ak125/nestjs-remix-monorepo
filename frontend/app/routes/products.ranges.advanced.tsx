@@ -9,8 +9,6 @@
  * - Mode Pro avec analytics
  */
 
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { useLoaderData, Link, useSearchParams, Form } from "@remix-run/react";
 import {
   ArrowLeft,
   Package,
@@ -23,6 +21,14 @@ import {
   List,
   RefreshCw,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+  useSearchParams,
+  Form,
+} from "react-router";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";

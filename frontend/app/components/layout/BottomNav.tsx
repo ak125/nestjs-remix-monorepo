@@ -1,6 +1,6 @@
-import { Link, useLocation } from "@remix-run/react";
 import { Home, Package, ShoppingCart, Stethoscope, User } from "lucide-react";
 import { useEffect, useRef } from "react";
+import { Link, useLocation } from "react-router";
 
 import { openCartSidebar } from "~/hooks/useCartSidebar";
 import { useRootCart } from "~/hooks/useRootData";

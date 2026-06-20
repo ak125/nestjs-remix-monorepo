@@ -10,7 +10,6 @@
  * ⚡ Optimisé INP: localStorage différé avec scheduleIdleCallback
  */
 
-import { Form, useNavigate } from "@remix-run/react";
 import {
   Search,
   X,
@@ -24,6 +23,7 @@ import {
   Command,
 } from "lucide-react";
 import { useState, useEffect, useRef, memo } from "react";
+import { Form, useNavigate } from "react-router";
 
 import { logger } from "~/utils/logger";
 import {

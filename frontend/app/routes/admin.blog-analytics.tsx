@@ -2,8 +2,6 @@
  * Admin Blog Analytics — /admin/blog-analytics
  * Dashboard avec stats détaillées, top articles, distribution, intent breakdown
  */
-import { type LoaderFunction, type MetaFunction } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
 import {
   BarChart3,
   TrendingUp,
@@ -14,6 +12,11 @@ import {
   Clock,
   Zap,
 } from "lucide-react";
+import {
+  type LoaderFunction,
+  type MetaFunction,
+  useLoaderData,
+} from "react-router";
 import { Badge } from "~/components/ui/badge";
 import {
   Card,

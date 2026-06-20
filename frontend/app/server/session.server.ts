@@ -1,6 +1,7 @@
-import { createCookieSessionStorage } from "@remix-run/node";
+import { createCookieSessionStorage } from "react-router";
 
-const sessionSecret = process.env.SESSION_SECRET || "default-secret-change-in-production";
+const sessionSecret =
+  process.env.SESSION_SECRET || "default-secret-change-in-production";
 
 export const sessionStorage = createCookieSessionStorage({
   cookie: {

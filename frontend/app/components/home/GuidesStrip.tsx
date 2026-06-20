@@ -1,4 +1,3 @@
-import { Link } from "@remix-run/react";
 import {
   BookMarked,
   Layers,
@@ -7,6 +6,7 @@ import {
   ArrowRight,
   Wrench,
 } from "lucide-react";
+import { Link } from "react-router";
 import { cn } from "~/lib/utils";
 
 type ResourceCard = {

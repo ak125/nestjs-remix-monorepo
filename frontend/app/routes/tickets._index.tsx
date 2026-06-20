@@ -2,15 +2,16 @@
  * Page de gestion des tickets - Liste et recherche
  * Remix Route Component pour la gestion des tickets de support
  */
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import { useState } from "react";
 import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
   Link,
   useLoaderData,
   useSearchParams,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { useState } from "react";
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Alert } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";

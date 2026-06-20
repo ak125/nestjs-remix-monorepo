@@ -1,4 +1,4 @@
-import { type MetaFunction } from "@remix-run/node";
+import { type MetaFunction } from "react-router";
 
 /**
  * Helper for noindex/nofollow routes (admin, commercial, account, staff).

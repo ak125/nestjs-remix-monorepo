@@ -1,11 +1,4 @@
 // app/routes/blog-pieces-auto.auto._index.tsx
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import {
-  Link,
-  useLoaderData,
-  useRouteError,
-  isRouteErrorResponse,
-} from "@remix-run/react";
 import {
   ArrowRight,
   Car,
@@ -15,6 +8,14 @@ import {
   TrendingUp,
 } from "lucide-react";
 import * as React from "react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  Link,
+  useLoaderData,
+  useRouteError,
+  isRouteErrorResponse,
+} from "react-router";
 
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { CompactBlogHeader } from "~/components/blog/CompactBlogHeader";

@@ -3,23 +3,6 @@
  * Affichage complet et modération d'un avis spécifique
  */
 import {
-  redirect,
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  type MetaFunction,
-  type TypedResponse,
-  data,
-} from "@remix-run/node";
-import {
-  Form,
-  Link,
-  useLoaderData,
-  useActionData,
-  useNavigation,
-  useRouteError,
-  isRouteErrorResponse,
-} from "@remix-run/react";
-import {
   Star,
   ArrowLeft,
   Check,
@@ -32,6 +15,20 @@ import {
   Package,
   MessageSquare,
 } from "lucide-react";
+import {
+  redirect,
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  type MetaFunction,
+  data,
+  Form,
+  Link,
+  useLoaderData,
+  useActionData,
+  useNavigation,
+  useRouteError,
+  isRouteErrorResponse,
+} from "react-router";
 import { toast } from "sonner";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Alert } from "~/components/ui/alert";
@@ -79,12 +76,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   }
 }
 
-export async function action({
-  params,
-  request,
-}: ActionFunctionArgs): Promise<
-  ActionData | ReturnType<typeof data<ActionData>> | TypedResponse<never>
-> {
+export async function action({ params, request }: ActionFunctionArgs) {
   const reviewId = params.reviewId;
   const formData = await request.formData();
   const intent = formData.get("intent");
@@ -97,15 +89,15 @@ export async function action({
     switch (intent) {
       case "approve":
         await updateReviewStatus(Number(reviewId), "approved", request);
-        return { success: true };
+        return data<ActionData>({ success: true });
 
       case "reject":
         await updateReviewStatus(Number(reviewId), "rejected", request);
-        return { success: true };
+        return data<ActionData>({ success: true });
 
       case "pending":
         await updateReviewStatus(Number(reviewId), "pending", request);
-        return { success: true };
+        return data<ActionData>({ success: true });
 
       case "delete":
         await deleteReview(Number(reviewId), request);

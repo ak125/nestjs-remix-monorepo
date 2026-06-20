@@ -2,7 +2,6 @@
  * ThemeExplorer — Grille "Explorer par thème" (10 familles de pièces)
  * Section SEO entre les tabs de contenu et la FAQ
  */
-import { Link } from "@remix-run/react";
 import {
   Disc,
   Settings,
@@ -15,6 +14,7 @@ import {
   Snowflake,
   RotateCcw,
 } from "lucide-react";
+import { Link } from "react-router";
 
 const THEMES = [
   { name: "Freinage", slug: "plaquette-de-frein", icon: Disc },

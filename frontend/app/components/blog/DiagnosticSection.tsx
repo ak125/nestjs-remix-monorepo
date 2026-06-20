@@ -2,8 +2,8 @@
  * DiagnosticSection — "Diagnostiquer par symptôme"
  * Affiche les articles diagnostic les plus populaires avec des chips symptômes
  */
-import { Link } from "@remix-run/react";
 import { Stethoscope, ArrowRight, Eye } from "lucide-react";
+import { Link } from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";

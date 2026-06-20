@@ -10,8 +10,6 @@
  * so the WIP section degrades gracefully when the file is absent (e.g. a fresh
  * container) — the repo section (committed canonical.json) always renders.
  */
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
 import {
   GitPullRequest,
   Skull,
@@ -23,6 +21,11 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { type ReactNode } from "react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+} from "react-router";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import {

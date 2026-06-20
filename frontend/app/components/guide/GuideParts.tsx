@@ -3,8 +3,8 @@
  * Parses the parts list from HTML and renders as visual link cards.
  */
 
-import { Link } from "@remix-run/react";
 import { Package, ArrowRight } from "lucide-react";
+import { Link } from "react-router";
 import { type GammeConseil } from "~/components/blog/conseil/section-config";
 import { GuideCard } from "./GuideCard";
 

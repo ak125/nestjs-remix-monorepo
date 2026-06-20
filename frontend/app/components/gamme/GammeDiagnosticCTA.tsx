@@ -1,5 +1,5 @@
-import { Link } from "@remix-run/react";
 import { CheckCircle, Clock, SearchCheck, User } from "lucide-react";
+import { Link } from "react-router";
 import { Section } from "~/components/layout";
 import { Badge } from "~/components/ui/badge";
 

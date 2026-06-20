@@ -1,10 +1,12 @@
+import { ArrowLeft, Save, AlertTriangle } from "lucide-react";
 import {
   redirect,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
-} from "@remix-run/node";
-import { useLoaderData, useFetcher, Link } from "@remix-run/react";
-import { ArrowLeft, Save, AlertTriangle } from "lucide-react";
+  useLoaderData,
+  useFetcher,
+  Link,
+} from "react-router";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";

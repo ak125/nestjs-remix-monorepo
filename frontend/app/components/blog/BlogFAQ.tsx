@@ -2,9 +2,9 @@
  * BlogFAQ — 5 questions fréquentes statiques (SEO + UX)
  * Apparaît sur la page index blog pour donner du contenu utile sans cliquer
  */
-import { Link } from "@remix-run/react";
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router";
 
 interface FAQItem {
   question: string;

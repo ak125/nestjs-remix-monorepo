@@ -3,8 +3,8 @@
  * Replaces the generic risk/timing hero from V1.
  */
 
-import { Link } from "@remix-run/react";
 import { CheckCircle2 } from "lucide-react";
+import { Link } from "react-router";
 import { type R6HeroDecision } from "~/types/r6-guide.types";
 
 interface Props {

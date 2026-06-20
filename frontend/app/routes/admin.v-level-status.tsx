@@ -8,8 +8,6 @@
  * - Validation rules
  */
 
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { useLoaderData, useRevalidator } from "@remix-run/react";
 import {
   BarChart3,
   RefreshCw,
@@ -19,6 +17,12 @@ import {
   TrendingUp,
   Layers,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  useRevalidator,
+} from "react-router";
 
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";

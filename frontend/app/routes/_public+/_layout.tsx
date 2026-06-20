@@ -1,5 +1,5 @@
-import { Link, Outlet, useLocation } from "@remix-run/react";
 import { Phone } from "lucide-react";
+import { Link, Outlet, useLocation } from "react-router";
 
 /**
  * Layout tunnel auth : header navy premium + footer navy

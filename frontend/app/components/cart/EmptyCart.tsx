@@ -1,4 +1,3 @@
-import { Link } from "@remix-run/react";
 import {
   ArrowRight,
   Car,
@@ -10,6 +9,7 @@ import {
   Stethoscope,
   Wind,
 } from "lucide-react";
+import { Link } from "react-router";
 import { Button } from "~/components/ui/button";
 import {
   type VehicleCookie,

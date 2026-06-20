@@ -3,8 +3,6 @@
  * Utilise les vraies données et inclut la gestion des messages
  */
 
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
 import {
   Shield,
   Users,
@@ -14,6 +12,12 @@ import {
   MessageSquare,
   Mail,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+} from "react-router";
 import { Alert } from "~/components/ui/alert";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";

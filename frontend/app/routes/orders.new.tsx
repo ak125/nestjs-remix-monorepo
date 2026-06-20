@@ -4,20 +4,6 @@
  */
 
 import {
-  redirect,
-  type ActionFunction,
-  type LoaderFunction,
-  type MetaFunction,
-  data,
-} from "@remix-run/node";
-import {
-  Form,
-  useActionData,
-  useNavigate,
-  useRouteError,
-  isRouteErrorResponse,
-} from "@remix-run/react";
-import {
   ArrowLeft,
   Plus,
   Trash2,
@@ -26,6 +12,18 @@ import {
   CreditCard,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  redirect,
+  type ActionFunction,
+  type LoaderFunction,
+  type MetaFunction,
+  data,
+  Form,
+  useActionData,
+  useNavigate,
+  useRouteError,
+  isRouteErrorResponse,
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";

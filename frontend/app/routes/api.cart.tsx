@@ -9,7 +9,7 @@ import {
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
   data as dataResponse,
-} from "@remix-run/node";
+} from "react-router";
 import { logger } from "~/utils/logger";
 
 const API_BASE = process.env.API_BASE_URL || "http://127.0.0.1:3000";

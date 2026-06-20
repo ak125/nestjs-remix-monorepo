@@ -4,14 +4,13 @@
  * Flow: /cart → /checkout → Paybox (2 etapes au lieu de 4)
  */
 
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   redirect,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
   type MetaFunction,
   data,
-} from "@remix-run/node";
-import {
   Form,
   useLoaderData,
   useNavigation,
@@ -20,8 +19,7 @@ import {
   Link,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+} from "react-router";
 import { toast } from "sonner";
 
 import { GoogleSignInButton } from "~/components/auth/GoogleSignInButton";

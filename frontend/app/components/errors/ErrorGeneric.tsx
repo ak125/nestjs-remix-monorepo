@@ -1,5 +1,5 @@
-import { Link } from "@remix-run/react";
 import { useEffect, memo } from "react";
+import { Link } from "react-router";
 
 interface ErrorGenericProps {
   status?: number;

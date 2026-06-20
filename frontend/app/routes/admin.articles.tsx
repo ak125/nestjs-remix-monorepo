@@ -4,19 +4,17 @@
  * @route /admin/articles
  */
 
+import { useState } from "react";
 import {
   type LoaderFunctionArgs,
   type MetaFunction,
   type ActionFunctionArgs,
-} from "@remix-run/node";
-import {
   useLoaderData,
   Link,
   Form,
   useFetcher,
   useNavigation,
-} from "@remix-run/react";
-import { useState } from "react";
+} from "react-router";
 import { toast } from "sonner";
 import { Alert } from "~/components/ui/alert";
 import { getInternalApiUrl } from "~/utils/internal-api.server";

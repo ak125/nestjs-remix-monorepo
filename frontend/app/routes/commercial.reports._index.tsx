@@ -5,8 +5,6 @@
  * Utilise les APIs existantes dashboard et legacy-orders
  */
 
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
 import {
   BarChart3,
   TrendingUp,
@@ -17,6 +15,12 @@ import {
   Package,
   Users,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+} from "react-router";
 import { Button } from "~/components/ui/button";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";

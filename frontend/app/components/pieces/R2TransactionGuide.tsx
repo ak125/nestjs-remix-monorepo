@@ -1,4 +1,3 @@
-import { Link } from "@remix-run/react";
 import {
   ShieldCheck,
   AlertTriangle,
@@ -6,6 +5,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { memo } from "react";
+import { Link } from "react-router";
 import { Card, CardContent, CardHeader } from "~/components/ui/card";
 
 interface SelectionCriterion {

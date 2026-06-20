@@ -1,4 +1,3 @@
-import { Link } from "@remix-run/react";
 import {
   Car,
   ChevronRight,
@@ -8,6 +7,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useEffect, useState, memo } from "react";
+import { Link } from "react-router";
 import { Input } from "~/components/ui/input";
 import { pluralizePieceName } from "~/lib/seo-utils";
 import { getOptimizedLogoUrl } from "~/utils/image-optimizer";
@@ -128,7 +128,6 @@ const MotorisationsSection = memo(function MotorisationsSection({
           </div>
         </div>
       </div>
-
       {/* Grid de cartes - responsive et optimisé */}
       <div className="p-6 md:p-8 bg-gradient-to-b from-gray-50/50 to-white">
         {/* Recherche motorisation */}

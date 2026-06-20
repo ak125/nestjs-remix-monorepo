@@ -4,19 +4,6 @@
  */
 
 import {
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  type MetaFunction,
-  data,
-} from "@remix-run/node";
-import {
-  useLoaderData,
-  Link,
-  useSearchParams,
-  useNavigate,
-  useFetcher,
-} from "@remix-run/react";
-import {
   Users,
   UserPlus,
   Search,
@@ -37,6 +24,17 @@ import {
   Star,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  type MetaFunction,
+  data,
+  useLoaderData,
+  Link,
+  useSearchParams,
+  useNavigate,
+  useFetcher,
+} from "react-router";
 import { toast } from "sonner";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";

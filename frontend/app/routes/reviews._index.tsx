@@ -3,21 +3,6 @@
  * Interface complète pour la modération et gestion des avis
  */
 import {
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  type MetaFunction,
-  data,
-} from "@remix-run/node";
-import {
-  Form,
-  Link,
-  useLoaderData,
-  useSubmit,
-  useNavigation,
-  useRouteError,
-  isRouteErrorResponse,
-} from "@remix-run/react";
-import {
   Star,
   Plus,
   Filter,
@@ -30,6 +15,19 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  type MetaFunction,
+  data,
+  Form,
+  Link,
+  useLoaderData,
+  useSubmit,
+  useNavigation,
+  useRouteError,
+  isRouteErrorResponse,
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";

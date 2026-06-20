@@ -1,4 +1,3 @@
-import { Link } from "@remix-run/react";
 import {
   ArrowRight,
   BookOpen,
@@ -6,6 +5,7 @@ import {
   ShoppingCart,
   Wrench,
 } from "lucide-react";
+import { Link } from "react-router";
 import { type BlogArticle } from "~/components/home/constants";
 import { Card, CardContent } from "~/components/ui/card";
 

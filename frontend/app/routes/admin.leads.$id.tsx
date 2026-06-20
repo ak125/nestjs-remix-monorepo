@@ -7,13 +7,17 @@
  */
 
 import {
+  LEAD_TRANSITIONS,
+  LEAD_STATUSES,
+  type LeadStatus,
+} from "@repo/database-types";
+import { ArrowLeft, Save } from "lucide-react";
+import {
   redirect,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
   type MetaFunction,
   data,
-} from "@remix-run/node";
-import {
   useLoaderData,
   useActionData,
   Form,
@@ -21,13 +25,7 @@ import {
   useRouteError,
   isRouteErrorResponse,
   Link,
-} from "@remix-run/react";
-import {
-  LEAD_TRANSITIONS,
-  LEAD_STATUSES,
-  type LeadStatus,
-} from "@repo/database-types";
-import { ArrowLeft, Save } from "lucide-react";
+} from "react-router";
 
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { logger } from "~/utils/logger";

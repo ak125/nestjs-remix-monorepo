@@ -1,7 +1,6 @@
 /**
  * PillarArticlesGrid — 3 articles en vedette (piliers)
  */
-import { Link, useFetcher } from "@remix-run/react";
 import {
   Clock,
   Eye,
@@ -11,6 +10,7 @@ import {
   Bookmark,
   Star,
 } from "lucide-react";
+import { Link, useFetcher } from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";

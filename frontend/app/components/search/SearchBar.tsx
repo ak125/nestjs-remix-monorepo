@@ -9,7 +9,6 @@
  * ✅ Historique local
  */
 
-import { Form, useNavigate, useSearchParams } from "@remix-run/react";
 import {
   Search,
   X,
@@ -20,6 +19,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback, memo } from "react";
+import { Form, useNavigate, useSearchParams } from "react-router";
 
 import { logger } from "~/utils/logger";
 import {

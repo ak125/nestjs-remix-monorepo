@@ -9,8 +9,6 @@
  * - Audit (Historique unifié)
  */
 
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { Outlet, Link, useLocation, useLoaderData } from "@remix-run/react";
 import {
   LayoutDashboard,
   Package,
@@ -24,6 +22,14 @@ import {
   Layers,
   ClipboardList,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  Outlet,
+  Link,
+  useLocation,
+  useLoaderData,
+} from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { cn } from "~/lib/utils";

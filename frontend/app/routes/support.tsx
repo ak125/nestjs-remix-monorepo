@@ -2,13 +2,13 @@
  * Dashboard Support - Vue d'ensemble des tickets et statistiques
  * Page principale pour la gestion du support client
  */
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "react-router";
 import {
   Link,
   useLoaderData,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Button } from "~/components/ui/button";
 import { logger } from "~/utils/logger";

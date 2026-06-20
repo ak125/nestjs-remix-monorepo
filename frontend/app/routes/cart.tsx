@@ -9,20 +9,6 @@
  */
 
 import {
-  type ActionFunctionArgs,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-  data,
-} from "@remix-run/node";
-import {
-  Link,
-  isRouteErrorResponse,
-  useFetcher,
-  useFetchers,
-  useLoaderData,
-  useRouteError,
-} from "@remix-run/react";
-import {
   ArrowRight,
   Car,
   ChevronLeft,
@@ -30,6 +16,18 @@ import {
   Trash2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import {
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  data,
+  Link,
+  isRouteErrorResponse,
+  useFetcher,
+  useFetchers,
+  useLoaderData,
+  useRouteError,
+} from "react-router";
 import {
   formatPrice,
   saveCartToLocalStorage,

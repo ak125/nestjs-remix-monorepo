@@ -1,5 +1,5 @@
-import { Link } from "@remix-run/react";
 import { Award, Bell, Package, Pencil, Settings } from "lucide-react";
+import { Link } from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { type AccountUser, type AccountStats } from "./account.types";
 

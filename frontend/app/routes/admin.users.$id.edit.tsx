@@ -1,10 +1,13 @@
+import { ArrowLeft, User, Save, Mail, Phone, MapPin } from "lucide-react";
 import {
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, useActionData, Form, Link } from "@remix-run/react";
-import { ArrowLeft, User, Save, Mail, Phone, MapPin } from "lucide-react";
+  useLoaderData,
+  useActionData,
+  Form,
+  Link,
+} from "react-router";
 import { Alert } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { createNoIndexMeta } from "~/utils/meta-helpers";

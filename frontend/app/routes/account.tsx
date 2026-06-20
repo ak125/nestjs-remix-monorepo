@@ -1,5 +1,10 @@
-import { type LoaderFunction, type MetaFunction } from "@remix-run/node";
-import { Outlet, useRouteError, isRouteErrorResponse } from "@remix-run/react";
+import {
+  type LoaderFunction,
+  type MetaFunction,
+  Outlet,
+  useRouteError,
+  isRouteErrorResponse,
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 import { requireUser } from "../auth/unified.server";

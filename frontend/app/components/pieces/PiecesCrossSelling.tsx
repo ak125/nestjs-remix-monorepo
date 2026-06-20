@@ -6,8 +6,8 @@
  * 📊 TRACKING: Intégration du hook useSeoLinkTracking pour analytics
  */
 
-import { Link } from "@remix-run/react";
 import React, { useEffect, memo } from "react";
+import { Link } from "react-router";
 
 import { useSeoLinkTracking } from "../../hooks/useSeoLinkTracking";
 import {
@@ -74,7 +74,6 @@ export const PiecesCrossSelling = memo(function PiecesCrossSelling({
           Découvrez d'autres gammes pour votre {vehicle.marque} {vehicle.modele}
         </p>
       </div>
-
       <div className="p-6">
         {/* Grid des gammes */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -249,7 +248,6 @@ export const PiecesCrossSellingCompact = memo(
             Autres pièces
           </h3>
         </div>
-
         <div className="p-3 space-y-2">
           {limitedGammes.map((gamme) => {
             // ⚠️ CRITIQUE: Construction URL préservée

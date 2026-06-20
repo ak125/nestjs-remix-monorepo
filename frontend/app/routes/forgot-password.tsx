@@ -1,17 +1,15 @@
 import {
-  type ActionFunction,
+  type ActionFunctionArgs,
   type MetaFunction,
   redirect,
   data,
-} from "@remix-run/node";
-import {
   Form,
   useActionData,
   useSearchParams,
   Link,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
@@ -31,7 +29,7 @@ export const meta: MetaFunction = () => [
   { name: "robots", content: "noindex, nofollow" },
 ];
 
-export const action: ActionFunction = async ({ request }) => {
+export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData();
   const email = formData.get("email");
 

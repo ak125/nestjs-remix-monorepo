@@ -1,10 +1,10 @@
 // app/routes/products.$category.$subcategory.tsx - Exemple d'usage optimisé
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "react-router";
 import {
   useLoaderData,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { getSeoMetadata, createSeoMeta } from "../utils/seo.server";
 

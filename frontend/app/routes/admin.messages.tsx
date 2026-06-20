@@ -4,13 +4,6 @@
  */
 
 import {
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  redirect,
-  type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, Link, Form, useNavigation } from "@remix-run/react";
-import {
   MessageSquare,
   Users,
   Clock,
@@ -26,6 +19,16 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  redirect,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+  Form,
+  useNavigation,
+} from "react-router";
 import { Alert } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";

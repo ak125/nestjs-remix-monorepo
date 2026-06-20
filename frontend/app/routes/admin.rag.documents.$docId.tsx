@@ -1,6 +1,10 @@
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { Link, useLoaderData } from "@remix-run/react";
 import { ArrowLeft, FileText } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  Link,
+  useLoaderData,
+} from "react-router";
 import { DashboardShell } from "~/components/admin/patterns/DashboardShell";
 import {
   StatusBadge,

@@ -2,9 +2,9 @@
 // 🔍 Composant de recherche produits UNIVERSEL avec dropdown de résultats
 // Utilisable partout : Hero, Navbar, Catalogue, etc.
 
-import { useNavigate } from "@remix-run/react";
 import { Search, Package, TrendingUp, X } from "lucide-react";
 import { useState, useEffect, useRef, memo } from "react";
+import { useNavigate } from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { PartImage } from "~/components/ui/ResponsiveImage";
 import {

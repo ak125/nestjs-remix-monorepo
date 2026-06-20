@@ -1,5 +1,3 @@
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { useLoaderData, useSearchParams } from "@remix-run/react";
 import {
   FileText,
   CheckCircle2,
@@ -18,6 +16,12 @@ import {
   CalendarDays,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  useSearchParams,
+} from "react-router";
 import { toast } from "sonner";
 import { AdminDataTable } from "~/components/admin/patterns/AdminDataTable";
 import {

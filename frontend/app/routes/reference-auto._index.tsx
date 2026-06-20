@@ -6,15 +6,16 @@
  * Intention : Hub des définitions officielles / vérités mécaniques
  */
 
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
+import { BookOpen, Search, ChevronRight, ShoppingCart } from "lucide-react";
+import { useState, useMemo, useCallback } from "react";
 import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
   Link,
   useLoaderData,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { BookOpen, Search, ChevronRight, ShoppingCart } from "lucide-react";
-import { useState, useMemo, useCallback } from "react";
+} from "react-router";
 
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
@@ -260,20 +261,17 @@ export default function ReferenceIndexPage() {
     <div className="min-h-screen bg-gray-50" data-page-role="R4">
       <BlogPiecesAutoNavigation />
       <SchemaJsonLd references={references} />
-
       {/* ═══ BREADCRUMB ═══ */}
       <div className="bg-white border-b">
         <Container className="py-3">
           <PublicBreadcrumb items={[{ label: "Référence Auto" }]} />
         </Container>
       </div>
-
       {/* ═══ HERO ═══ */}
       <HeroReference
         title="Encyclopédie Pièces Auto"
         subtitle="Glossaire complet des pièces automobiles. Définitions techniques, rôles mécaniques et compositions détaillées."
       />
-
       {/* ═══ RECHERCHE + STATS ═══ */}
       <section className="bg-white border-b py-4">
         <Container>
@@ -301,7 +299,6 @@ export default function ReferenceIndexPage() {
           </div>
         </Container>
       </section>
-
       {/* ═══ FILTRES GAMMES (STICKY) ═══ */}
       <section className="sticky top-0 z-10 bg-white border-b shadow-sm">
         <Container className="py-3">
@@ -356,7 +353,6 @@ export default function ReferenceIndexPage() {
           </div>
         </Container>
       </section>
-
       {/* ═══ NAVIGATION ALPHABÉTIQUE ═══ */}
       <nav
         className="py-3 bg-gray-50 border-b"
@@ -384,7 +380,6 @@ export default function ReferenceIndexPage() {
           </ScrollArea>
         </Container>
       </nav>
-
       {/* ═══ GRILLE DE CARTES ═══ */}
       <section className="py-12 bg-gradient-to-br from-slate-50 via-white /30">
         <Container>
@@ -477,7 +472,6 @@ export default function ReferenceIndexPage() {
           )}
         </Container>
       </section>
-
       {/* ═══ CTA BOTTOM ═══ */}
       <section className="py-12">
         <Container>

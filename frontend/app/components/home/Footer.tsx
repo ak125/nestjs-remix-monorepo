@@ -1,4 +1,3 @@
-import { Link } from "@remix-run/react";
 import {
   Facebook,
   Instagram,
@@ -7,6 +6,7 @@ import {
   Phone,
   Youtube,
 } from "lucide-react";
+import { Link } from "react-router";
 import { SITE_CONFIG } from "~/config/site";
 
 const USEFUL_LINKS = [

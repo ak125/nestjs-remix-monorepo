@@ -3,7 +3,6 @@
  * Remplace CompactBlogHeader sur la page index blog
  * Parcours : Diagnostiquer → Réparer → Choisir → Comprendre
  */
-import { Link } from "@remix-run/react";
 import {
   Stethoscope,
   Wrench,
@@ -13,6 +12,7 @@ import {
   BookMarked,
   Eye,
 } from "lucide-react";
+import { Link } from "react-router";
 import { Card, CardContent } from "~/components/ui/card";
 
 interface IntentHeroProps {

@@ -1,4 +1,3 @@
-import { useFetcher } from "@remix-run/react";
 import {
   ShoppingCart,
   CheckCircle,
@@ -12,6 +11,7 @@ import {
   Filter,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useFetcher } from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";

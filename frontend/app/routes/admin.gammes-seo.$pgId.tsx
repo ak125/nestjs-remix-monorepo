@@ -12,17 +12,6 @@
  */
 
 import {
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import {
-  useLoaderData,
-  useNavigation,
-  Link,
-  useFetcher,
-} from "@remix-run/react";
-import {
   ArrowLeft,
   BarChart3,
   Eye,
@@ -44,6 +33,15 @@ import {
   Save,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  useNavigation,
+  Link,
+  useFetcher,
+} from "react-router";
 
 import {
   type GammeDetail,

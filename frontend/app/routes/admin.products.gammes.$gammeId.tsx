@@ -11,8 +11,6 @@
  * Route: /admin/products/gammes/:gammeId
  */
 
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { useLoaderData, Link, Form, useSearchParams } from "@remix-run/react";
 import {
   ArrowLeft,
   Search,
@@ -31,6 +29,14 @@ import {
   Download,
   Upload,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+  Form,
+  useSearchParams,
+} from "react-router";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";

@@ -12,17 +12,6 @@
  */
 
 import {
-  redirect,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import {
-  Link,
-  useLoaderData,
-  useRouteError,
-  isRouteErrorResponse,
-} from "@remix-run/react";
-import {
   AlertTriangle,
   ArrowLeft,
   BookOpen,
@@ -43,6 +32,15 @@ import {
   AlertOctagon,
   type LucideIcon,
 } from "lucide-react";
+import {
+  redirect,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  Link,
+  useLoaderData,
+  useRouteError,
+  isRouteErrorResponse,
+} from "react-router";
 
 // UI Components
 import {
@@ -289,7 +287,6 @@ export default function DiagnosticAutoDetail() {
           }}
         />
       )}
-
       {/* Breadcrumbs */}
       <div className="bg-white border-b">
         <Container className="py-3">
@@ -305,7 +302,6 @@ export default function DiagnosticAutoDetail() {
           />
         </Container>
       </div>
-
       {/* Safety Gate Alert (si critique) */}
       {diagnostic.safety_gate !== "none" && (
         <div
@@ -329,7 +325,6 @@ export default function DiagnosticAutoDetail() {
           </Container>
         </div>
       )}
-
       {/* Hero Diagnostic — H1 unique (image-matrix-v1 §7) */}
       <HeroDiagnostic
         title={diagnostic.title}
@@ -346,7 +341,6 @@ export default function DiagnosticAutoDetail() {
               : "info"
         }
       />
-
       {/* Back link + badges */}
       <div className="bg-white border-b">
         <Container className="py-3 flex items-center justify-between">
@@ -369,7 +363,6 @@ export default function DiagnosticAutoDetail() {
           </div>
         </Container>
       </div>
-
       <Container className="py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Colonne principale */}

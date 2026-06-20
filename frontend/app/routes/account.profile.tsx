@@ -1,11 +1,12 @@
-import { type LoaderFunction, type MetaFunction } from "@remix-run/node";
+import { User, Mail, Phone, Calendar, Shield, Edit } from "lucide-react";
 import {
+  type LoaderFunction,
+  type MetaFunction,
   useLoaderData,
   Link,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { User, Mail, Phone, Calendar, Shield, Edit } from "lucide-react";
+} from "react-router";
 
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { getInternalApiUrl } from "~/utils/internal-api.server";

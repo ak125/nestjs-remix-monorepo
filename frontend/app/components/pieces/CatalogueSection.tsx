@@ -1,5 +1,5 @@
-import { Link } from "@remix-run/react";
 import React, { useState, memo } from "react";
+import { Link } from "react-router";
 import { sanitizeForR1Router } from "~/utils/r1-copy-gate";
 
 interface CatalogueItem {

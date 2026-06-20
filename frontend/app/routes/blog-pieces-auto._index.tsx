@@ -17,18 +17,16 @@
  * - BlogInternalLinks (mini sitemap thématique)
  */
 
+import { useState, useMemo } from "react";
 import {
   type LoaderFunctionArgs,
   type MetaFunction,
   type ActionFunctionArgs,
   data,
-} from "@remix-run/node";
-import {
   useLoaderData,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { useState, useMemo } from "react";
+} from "react-router";
 
 // Blog Components
 import {

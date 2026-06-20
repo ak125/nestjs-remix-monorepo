@@ -1,4 +1,3 @@
-import { Link } from "@remix-run/react";
 import {
   ChevronDown,
   ChevronRight,
@@ -7,6 +6,7 @@ import {
   Truck,
 } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router";
 import { Button } from "~/components/ui/button";
 import { formatPrice } from "~/utils/format";
 import { type OrderStatus, type RecentOrder } from "./account.types";

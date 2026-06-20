@@ -6,13 +6,13 @@
  * Intention : Comprendre comment installer/entretenir une pièce
  */
 
+import { ArrowLeft, Tag, BookOpen, ExternalLink } from "lucide-react";
+import { lazy, Suspense, useEffect, useRef } from "react";
 import {
   type HeadersFunction,
   type LoaderFunctionArgs,
   type MetaFunction,
   data,
-} from "@remix-run/node";
-import {
   Await,
   Link,
   useLoaderData,
@@ -20,9 +20,7 @@ import {
   useRouteError,
   isRouteErrorResponse,
   type ShouldRevalidateFunction,
-} from "@remix-run/react";
-import { ArrowLeft, Tag, BookOpen, ExternalLink } from "lucide-react";
-import { lazy, Suspense, useEffect, useRef } from "react";
+} from "react-router";
 
 // Components
 import { ArticleActionsBar } from "~/components/blog/ArticleActionsBar";

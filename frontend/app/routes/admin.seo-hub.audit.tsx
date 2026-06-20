@@ -8,8 +8,6 @@
  * - Preview validations
  */
 
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { useLoaderData, useSearchParams } from "@remix-run/react";
 import {
   Calendar,
   Clock,
@@ -19,6 +17,12 @@ import {
   Settings,
   User,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  useSearchParams,
+} from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
@@ -149,7 +153,6 @@ export default function SeoHubAudit() {
           Rafraîchir
         </Button>
       </div>
-
       {/* Stats Cards */}
       {stats && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -199,7 +202,6 @@ export default function SeoHubAudit() {
           </Card>
         </div>
       )}
-
       {/* By Admin & By Type breakdown */}
       {stats && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -265,7 +267,6 @@ export default function SeoHubAudit() {
           </Card>
         </div>
       )}
-
       {/* Filter & History Table */}
       <Card>
         <CardHeader>

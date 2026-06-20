@@ -5,8 +5,6 @@
  * Route: /brands/$brandId/models/$modelId/types
  */
 
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { useLoaderData, Link, useParams } from "@remix-run/react";
 import {
   ArrowLeft,
   Car,
@@ -16,6 +14,13 @@ import {
   Settings,
   Info,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+  useParams,
+} from "react-router";
 import { Alert } from "~/components/ui/alert";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";

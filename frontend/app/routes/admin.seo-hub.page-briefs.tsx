@@ -8,12 +8,6 @@
  */
 
 import {
-  type ActionFunctionArgs,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, useSearchParams, useFetcher } from "@remix-run/react";
-import {
   ROLE_BADGE_COLORS,
   getRoleDisplayLabel,
   getRoleShortLabel,
@@ -30,6 +24,14 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { Fragment, useState } from "react";
+import {
+  useLoaderData,
+  useSearchParams,
+  useFetcher,
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "react-router";
 import { Badge } from "~/components/ui/badge";
 import {
   Card,

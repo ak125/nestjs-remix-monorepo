@@ -1,15 +1,13 @@
+import { ArrowLeft } from "lucide-react";
 import {
   redirect,
-  type LoaderFunction,
+  type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import {
   useLoaderData,
   Link,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { ArrowLeft } from "lucide-react";
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
@@ -42,7 +40,11 @@ interface Message {
   MSG_OPEN: number;
 }
 
-export const loader: LoaderFunction = async ({ request, context, params }) => {
+export const loader = async ({
+  request,
+  context,
+  params,
+}: LoaderFunctionArgs) => {
   const user = await requireUser({ context });
   const { messageId } = params;
 

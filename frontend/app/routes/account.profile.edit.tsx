@@ -1,19 +1,17 @@
+import { User, Save, ArrowLeft } from "lucide-react";
 import {
   redirect,
   type ActionFunction,
   type LoaderFunction,
   type MetaFunction,
   data,
-} from "@remix-run/node";
-import {
   useLoaderData,
   Form,
   useActionData,
   useNavigation,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { User, Save, ArrowLeft } from "lucide-react";
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Alert } from "~/components/ui/alert";
 import { logger } from "~/utils/logger";

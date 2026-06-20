@@ -9,13 +9,6 @@
  *              → Par intention → Securite → FAQ → CTA
  */
 
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import {
-  useLoaderData,
-  Link,
-  useRouteError,
-  isRouteErrorResponse,
-} from "@remix-run/react";
 import { FAMILY_REGISTRY, findFamilyIdByKeyword } from "@repo/database-types";
 import {
   Wrench,
@@ -28,6 +21,14 @@ import {
   Package,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  useLoaderData,
+  Link,
+  useRouteError,
+  isRouteErrorResponse,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "react-router";
 
 import { ArticleCardEnhanced } from "~/components/blog/ArticleCardEnhanced";
 import {

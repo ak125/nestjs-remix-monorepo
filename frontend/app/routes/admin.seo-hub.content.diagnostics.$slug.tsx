@@ -5,18 +5,6 @@
  */
 
 import {
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import {
-  useLoaderData,
-  useNavigation,
-  Form,
-  Link,
-  useActionData,
-} from "@remix-run/react";
-import {
   ArrowLeft,
   AlertTriangle,
   Save,
@@ -26,6 +14,16 @@ import {
   ExternalLink,
   StopCircle,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  useNavigation,
+  Form,
+  Link,
+  useActionData,
+} from "react-router";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";

@@ -9,22 +9,20 @@
  * /pieces/kit-d-embrayage-479.html
  */
 
+import { useEffect, useState, Suspense } from "react";
 import {
   redirect,
   type LoaderFunctionArgs,
   type MetaFunction,
   data,
-} from "@remix-run/node";
-import {
   Await,
   useLoaderData,
   useNavigation,
   useNavigate,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
+} from "react-router";
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
-import { useEffect, useState, Suspense } from "react";
 
 import { ErrorGeneric } from "~/components/errors";
 import {
@@ -683,7 +681,6 @@ export default function PiecesDetailPage() {
       >
         Aller au contenu principal
       </a>
-
       {/* ⏳ Indicateur de chargement */}
       {isLoading && (
         <div
@@ -692,7 +689,6 @@ export default function PiecesDetailPage() {
           className="fixed top-0 left-0 right-0 z-[60] h-1 bg-blue-500 animate-pulse"
         />
       )}
-
       <GammeHero
         gammeName={
           data.sectionPack?.sections.hero.data.h1Override?.replace(
@@ -750,7 +746,6 @@ export default function PiecesDetailPage() {
         }}
         selectedVehicle={selectedVehicle}
       />
-
       {/* Hero secondaire — Réassurance compacte + liens utiles (1 seul bloc, pas de redondance) */}
       <div className="py-4 px-4 sm:px-6 bg-slate-50 border-b border-slate-100">
         <div className="max-w-[1280px] mx-auto flex flex-wrap items-center justify-between gap-3">
@@ -805,11 +800,8 @@ export default function PiecesDetailPage() {
           </div>
         </div>
       </div>
-
       <GammeQuickNav />
-
       <GammeDiagnosticCTA />
-
       {/* ═══════════════════════════════════════════════════════
            H2 #1 — Bien choisir votre {gamme}
            Types, critères, vérifications, erreurs à éviter
@@ -865,7 +857,6 @@ export default function PiecesDetailPage() {
           />
         </div>
       </section>
-
       {/* ═══════════════════════════════════════════════════════
            H2 #2 — Qualité, prix et marques
            Image PRICE, marques, fiche technique
@@ -936,7 +927,6 @@ export default function PiecesDetailPage() {
             )}
         </div>
       </section>
-
       {/* ═══════════════════════════════════════════════════════
            H2 #3 — Où se trouve et quand remplacer
            Image LOCATION, rôle, symptômes, entretien
@@ -991,7 +981,6 @@ export default function PiecesDetailPage() {
           })()}
         </div>
       </section>
-
       {/* ═══════════════════════════════════════════════════════
            H2 #4 — Trouver la bonne référence
            Compatibilités, motorisations, commande
@@ -1038,7 +1027,6 @@ export default function PiecesDetailPage() {
           </Suspense>
         </div>
       </section>
-
       {/* ═══════════════════════════════════════════════════════
            H2 #5 — Questions fréquentes (UNE SEULE)
            ═══════════════════════════════════════════════════════ */}
@@ -1050,7 +1038,6 @@ export default function PiecesDetailPage() {
           />
         </div>
       </section>
-
       {/* ═══════════════════════════════════════════════════════
            H2 #6 — Aller plus loin
            Maillage, famille, guide CTA
@@ -1100,7 +1087,6 @@ export default function PiecesDetailPage() {
           )}
         </div>
       </section>
-
       <Footer />
     </div>
   );

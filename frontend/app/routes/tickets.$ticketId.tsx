@@ -7,7 +7,7 @@ import {
   type ActionFunctionArgs,
   type MetaFunction,
   data,
-} from "@remix-run/node";
+} from "react-router";
 import {
   Form,
   Link,
@@ -16,7 +16,7 @@ import {
   useNavigation,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";

@@ -1,8 +1,8 @@
 // Redirection pour les anciennes URLs sans .html vers les nouvelles avec .html
 // Format ancien: /constructeurs/{marque}-{id}/{modele}-{id}/{type}-{id}
 // Format nouveau: /constructeurs/{marque}-{id}/{modele}-{id}/{type}-{id}.html
-import { redirect, type LoaderFunctionArgs } from "@remix-run/node";
-import { useRouteError, isRouteErrorResponse } from "@remix-run/react";
+import { redirect, type LoaderFunctionArgs } from "react-router";
+import { useRouteError, isRouteErrorResponse } from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { buildCacheHeaders } from "~/utils/cache-control";
 import { detectMalformedSegment } from "~/utils/pieces-route.utils";

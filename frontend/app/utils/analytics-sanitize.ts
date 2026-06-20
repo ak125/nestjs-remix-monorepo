@@ -86,7 +86,7 @@ export function sanitizeParams<T = unknown>(input: T, depth = 0): T {
 /**
  * Sentry `beforeSend` callback — sanitize les request data + breadcrumbs.
  *
- * Compatible `@sentry/remix` (ErrorEvent) et `@sentry/nestjs`. Le param est
+ * Compatible `@sentry/react-router` (ErrorEvent) et `@sentry/nestjs`. Le param est
  * typé générique pour s'adapter aux différentes signatures SDK ; on opère
  * via accès propriété défensifs pour ne pas couplar à un type SDK précis.
  *

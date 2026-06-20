@@ -9,18 +9,6 @@
  */
 
 import {
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import {
-  useLoaderData,
-  useSearchParams,
-  Link,
-  Form,
-  useNavigation,
-} from "@remix-run/react";
-import {
   BookOpen,
   Edit,
   Eye,
@@ -33,6 +21,16 @@ import {
   ExternalLink,
   RefreshCw,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  useSearchParams,
+  Link,
+  Form,
+  useNavigation,
+} from "react-router";
 import {
   AlertDialog,
   AlertDialogAction,

@@ -1,8 +1,6 @@
 // app/routes/admin.payments.tsx
 // Tableau de bord paiements optimisé appliquant "vérifier existant et utiliser le meilleur"
 
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { Outlet, useLoaderData, NavLink } from "@remix-run/react";
 import {
   CreditCard,
   TrendingUp,
@@ -13,6 +11,13 @@ import {
   Users,
   Calendar,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  Outlet,
+  useLoaderData,
+  NavLink,
+} from "react-router";
 import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { requireAuth } from "../auth/unified.server";

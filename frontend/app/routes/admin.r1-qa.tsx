@@ -1,5 +1,3 @@
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
 import {
   Image,
   ExternalLink,
@@ -12,6 +10,11 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { useState, useCallback, useEffect } from "react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+} from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
@@ -265,7 +268,6 @@ function GammeDetail({
           </Button>
         </div>
       </div>
-
       {/* Status badges */}
       <div className="flex gap-3 text-xs">
         <span>
@@ -278,7 +280,6 @@ function GammeDetail({
         )}
         <span>Slots: {data.prompts.length}/5</span>
       </div>
-
       {/* Image slots */}
       <div className="grid grid-cols-5 gap-2">
         {["HERO", "TYPES", "PRICE", "LOCATION", "OG"].map((slot) => {
@@ -314,7 +315,6 @@ function GammeDetail({
           );
         })}
       </div>
-
       {/* Related blocks */}
       {data.relatedBlocks.length > 0 && (
         <div className="space-y-2">
@@ -336,7 +336,6 @@ function GammeDetail({
           ))}
         </div>
       )}
-
       {/* QA Scoring grid */}
       <div className="border-t pt-3">
         <p className="text-xs font-semibold text-slate-600 mb-2">

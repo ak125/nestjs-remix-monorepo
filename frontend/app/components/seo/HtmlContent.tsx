@@ -12,7 +12,6 @@
  * ```
  */
 
-import { Link, useLocation } from "@remix-run/react";
 import parse, {
   domToReact,
   type HTMLReactParserOptions,
@@ -21,6 +20,7 @@ import parse, {
 } from "html-react-parser";
 import DOMPurify from "isomorphic-dompurify";
 import { memo } from "react";
+import { Link, useLocation } from "react-router";
 
 import { useSeoLinkTracking } from "~/hooks/useSeoLinkTracking";
 

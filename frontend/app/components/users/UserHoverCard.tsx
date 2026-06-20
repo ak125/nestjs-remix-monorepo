@@ -9,9 +9,9 @@
  * - Lien vers profil
  */
 
-import { Link } from "@remix-run/react";
 import { CalendarDays, ExternalLink, Mail, Shield, User } from "lucide-react";
 import { memo } from "react";
+import { Link } from "react-router";
 
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";

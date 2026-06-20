@@ -1,7 +1,6 @@
 /**
  * CategoriesSection — 4 grandes cartes catégories (Montage, Constructeurs, Guide d'Achat, Glossaire)
  */
-import { Link } from "@remix-run/react";
 import {
   Wrench,
   Car,
@@ -11,6 +10,7 @@ import {
   CheckCircle2,
   Hash,
 } from "lucide-react";
+import { Link } from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";

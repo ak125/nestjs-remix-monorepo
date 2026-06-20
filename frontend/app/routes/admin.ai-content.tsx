@@ -1,5 +1,5 @@
-import { type MetaFunction } from "@remix-run/node";
 import { useState, useEffect } from "react";
+import { type MetaFunction } from "react-router";
 import { AiContentGenerator } from "~/components/ai/AiContentGenerator";
 import { ProductDescriptionGenerator } from "~/components/ai/ProductDescriptionGenerator";
 import { SEOMetaGenerator } from "~/components/ai/SEOMetaGenerator";

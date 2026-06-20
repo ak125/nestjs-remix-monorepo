@@ -1,6 +1,6 @@
-import { Link } from "@remix-run/react";
 import { BookOpen, ArrowRight } from "lucide-react";
 import { memo } from "react";
+import { Link } from "react-router";
 import { Card, CardContent } from "~/components/ui/card";
 
 interface ReferenceEncartProps {

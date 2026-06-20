@@ -30,14 +30,6 @@
  * - /products/admin?enhanced=true (interface avancée)
  */
 
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import {
-  useLoaderData,
-  Link,
-  useSearchParams,
-  useRouteError,
-  isRouteErrorResponse,
-} from "@remix-run/react";
 import {
   ShoppingCart,
   Eye,
@@ -45,6 +37,15 @@ import {
   AlertTriangle,
   BarChart3,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+  useSearchParams,
+  useRouteError,
+  isRouteErrorResponse,
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";

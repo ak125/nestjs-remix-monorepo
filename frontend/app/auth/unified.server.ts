@@ -1,4 +1,4 @@
-import { redirect, type AppLoadContext } from "@remix-run/node";
+import { redirect, type AppLoadContext } from "react-router";
 import { z } from "zod";
 import { logger } from "~/utils/logger";
 import { getProxyHeaders } from "~/utils/proxy-headers.server";

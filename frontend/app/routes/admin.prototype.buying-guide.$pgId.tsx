@@ -4,8 +4,6 @@
  * Admin only, noindex.
  */
 
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -14,6 +12,11 @@ import {
   Database,
   Layers,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+} from "react-router";
 
 import { AntiMistakesSection } from "~/components/seo/AntiMistakesSection";
 import { FAQSection } from "~/components/seo/FAQSection";

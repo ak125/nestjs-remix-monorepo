@@ -1,5 +1,5 @@
-import { useFetcher } from "@remix-run/react";
 import { useEffect, useState, memo } from "react";
+import { useFetcher } from "react-router";
 import { Alert } from "~/components/ui/alert";
 
 interface YearData {

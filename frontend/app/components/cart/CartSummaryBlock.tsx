@@ -1,4 +1,3 @@
-import { Link } from "@remix-run/react";
 import {
   ArrowRight,
   Info,
@@ -8,6 +7,7 @@ import {
   ShoppingBag,
   Truck,
 } from "lucide-react";
+import { Link } from "react-router";
 import { Badge } from "~/components/ui/badge";
 import {
   Tooltip,

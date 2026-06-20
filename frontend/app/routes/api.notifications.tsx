@@ -2,7 +2,7 @@
  * 🔔 API NOTIFICATIONS - Mock endpoint pour tester NotificationCenter
  */
 
-import { type LoaderFunctionArgs } from "@remix-run/node";
+import { type LoaderFunctionArgs } from "react-router";
 
 interface Notification {
   id: string;

@@ -1,8 +1,6 @@
 // app/routes/admin.suppliers.tsx
 // Dashboard fournisseurs avec stats réelles depuis pieces_marque (pm_display breakdown)
 
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { Outlet, useLoaderData, Link } from "@remix-run/react";
 import {
   Building2,
   Users,
@@ -12,6 +10,13 @@ import {
   Star,
   Layers,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  Outlet,
+  useLoaderData,
+  Link,
+} from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
