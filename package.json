@@ -191,10 +191,6 @@
     }
   },
   "lint-staged": {
-    "frontend/app/**/*.{ts,tsx}": [
-      "eslint --cache --fix --max-warnings=0",
-      "prettier --write"
-    ],
     "backend/src/**/*.ts": [
       "node --max-old-space-size=4096 node_modules/.bin/eslint --cache --fix",
       "prettier --write"

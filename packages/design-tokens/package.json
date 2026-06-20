@@ -28,13 +28,14 @@
     "dev": "npm run build -- --watch",
     "build": "node scripts/build-tokens.js && tsup",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src --ext ts",
-    "lint:fix": "eslint src --ext ts --fix",
+    "lint": "ESLINT_USE_FLAT_CONFIG=true eslint src",
+    "lint:fix": "ESLINT_USE_FLAT_CONFIG=true eslint src --fix",
     "test": "vitest",
     "test:run": "vitest run",
     "clean": "rm -rf dist .turbo node_modules/.cache"
   },
   "devDependencies": {
+    "@fafa/eslint-config": "*",
     "@fafa/typescript-config": "*",
     "@types/node": "^20.17.6",
     "eslint": "^8.57.1",
