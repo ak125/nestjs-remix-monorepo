@@ -93309,8 +93309,8 @@
     "inputHashes": {
       ".spec/00-canon/repository-registry/automation-reality.yaml": "351240bac221fed13bbf87f4ffb050a4f72dbbb25120c8bb50f1b9303b4fd2fe",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
-      ".spec/00-canon/repository-registry/domains.yaml": "94cd4cc3f8a6142d4f104ed3b1ed7d77b9e6b30e284f8074f30da27f7750499d",
-      ".spec/00-canon/repository-registry/ownership.yaml": "731736846698272d763e1c0b6d3d2b56da14ad45dbf996f4d40e2abd513e299e",
+      ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
+      ".spec/00-canon/repository-registry/ownership.yaml": "7d0d98a9a7731c519b9e2ee7823c3020feb046535b4f2ffaaa850d39c625e520",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "27d4820fde7fb6319d7d07a16bc079cc13392c10e84e4c35565389dd90eec72c",
       "audit/registry/deps.json": "a6b9e71676d3a16c8689b62bfd8c01f355ba811b1eae3e80e1f64264702f4438",
@@ -93318,7 +93318,7 @@
       "audit/registry/rpc.json": "574a13b76f5c82b8cafddf343f54e4274c1d443353246a5508f3754021030fdf",
       "audit/registry/runtime.json": "f73b24fa52901e6cac08e668b754eebe066f2ff28883f4a6126faf8598cd74d5"
     },
-    "sotFingerprint": "a97fa5ede799"
+    "sotFingerprint": "a8f1be337c3b"
   },
   "runtime": [
     {

@@ -390,6 +390,22 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: medium
+  # MediaFactory video-production module — revival 2026-06-20 (flag-gated MEDIA_FACTORY_ENABLED, fetch-only TTS Azure, de-RAG). Owner autorise 2026-06-20.
+  - glob: backend/src/modules/media-factory/**
+    domain: D12
+    owner: '@ak125/marketing-team'
+    sourceConfidence: high
+    risk: medium
+  - glob: backend/src/workers/processors/video-execution.processor.ts
+    domain: D12
+    owner: '@ak125/marketing-team'
+    sourceConfidence: high
+    risk: medium
+  - glob: backend/src/workers/types/video-execution.types.ts
+    domain: D12
+    owner: '@ak125/marketing-team'
+    sourceConfidence: high
+    risk: medium
   - glob: backend/src/modules/admin/**
     domain: D8
     owner: '@ak125/admin-team'
