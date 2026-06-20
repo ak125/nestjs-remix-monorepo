@@ -532,3 +532,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-projection-block-content-adapter`
 - **Décision** : feat(seo-brief): D1 — WIKI evidence-driven brief generator core (SeoBriefService, dark) (+2 other commits)
 - **Sortie** : PR aucune | commits b4a226f6a 4961b59fa a8b79cd87
+
+## 2026-06-20 — feat/seo-projection-block-content-adapter (auto)
+
+- **Branche** : `feat/seo-projection-block-content-adapter`
+- **Décision** : feat(seo-brief): D1 wiring — brief-template uses WIKI evidence brief when flag ON (dark) (+4 other commits)
+- **Sortie** : PR aucune | commits 6350b71ff 1d8c45715 b4a226f6a 4961b59fa a8b79cd87
