@@ -2,11 +2,7 @@
  * Page Analytics des Avis Clients
  * Tableaux de bord et statistiques avancées
  */
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import {
   useLoaderData,
   useRouteError,
@@ -137,14 +133,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
         stats.total > 0 ? Math.round((item.count / stats.total) * 100) : 0,
     }));
 
-    return json<LoaderData>({
+    return {
       stats,
       trends,
       ratingBreakdown,
-    });
+    };
   } catch (error) {
     logger.error("Erreur lors du chargement des analytics:", error);
-    return json<LoaderData>({
+    return {
       stats: {
         total: 0,
         pending: 0,
@@ -162,7 +158,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         growthRate: 0,
       },
       ratingBreakdown: [],
-    });
+    };
   }
 }
 

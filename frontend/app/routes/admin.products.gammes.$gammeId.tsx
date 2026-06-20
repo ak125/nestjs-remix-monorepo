@@ -11,11 +11,7 @@
  * Route: /admin/products/gammes/:gammeId
  */
 
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link, Form, useSearchParams } from "@remix-run/react";
 import {
   ArrowLeft,
@@ -180,7 +176,7 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
       ).length,
     };
 
-    return json<AdminGammeData>({
+    return {
       user: {
         id: user.id,
         name: userName,
@@ -202,11 +198,11 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
       },
       enhanced,
       stats,
-    });
+    };
   } catch (error) {
     logger.error("❌ Erreur loader admin gamme:", error);
 
-    return json<AdminGammeData>({
+    return {
       user: {
         id: "error",
         name: "Erreur",
@@ -223,7 +219,7 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
         error instanceof Error
           ? error.message
           : "Impossible de charger la gamme",
-    });
+    };
   }
 }
 

@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { Zap, RefreshCw, CheckCircle2, Activity, Clock } from "lucide-react";
 import {
@@ -63,7 +59,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const [statsRes, auditRes] = await Promise.allSettled([
     fetch(
-      getInternalApiUrlFromRequest("/api/rag/admin/webhook-stats?days=7", request),
+      getInternalApiUrlFromRequest(
+        "/api/rag/admin/webhook-stats?days=7",
+        request,
+      ),
       { headers },
     ),
     fetch(
@@ -92,7 +91,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       ? await auditRes.value.json()
       : { data: [], total: 0 };
 
-  return json({ stats, audit: auditData });
+  return { stats, audit: auditData };
 }
 
 // ── Helpers ──

@@ -5,11 +5,7 @@
  * Intégration avec le service InvoicesService nouvellement créé
  */
 
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link, Form, useNavigation } from "@remix-run/react";
 import { Button } from "~/components/ui/button";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
@@ -117,19 +113,19 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       totalItems: invoicesData.total,
     };
 
-    return json({
+    return {
       invoices: invoicesData.invoices,
       stats,
       pagination,
       user,
       selectedStatus: status,
       searchTerm: search,
-    });
+    };
   } catch (error) {
     logger.error("Erreur lors de la récupération des factures:", error);
 
     // Données par défaut en cas d'erreur
-    return json({
+    return {
       invoices: [],
       stats: {
         totalInvoices: 0,
@@ -149,7 +145,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       user,
       selectedStatus: "",
       searchTerm: "",
-    });
+    };
   }
 }
 

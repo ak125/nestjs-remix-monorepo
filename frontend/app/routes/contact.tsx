@@ -7,10 +7,10 @@
  */
 
 import {
-  json,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
   type MetaFunction,
+  data,
 } from "@remix-run/node";
 import {
   useLoaderData,
@@ -141,9 +141,7 @@ interface LoaderData {
   };
 }
 
-export async function loader({
-  request,
-}: LoaderFunctionArgs): Promise<Response> {
+export async function loader({ request }: LoaderFunctionArgs) {
   const session = await getSession(request);
   const userId = session.get("userId");
 
@@ -160,12 +158,28 @@ export async function loader({
     },
   };
 
-  return json(loaderData);
+  return loaderData;
+}
+
+/**
+ * Forme unifiée de la réponse de l'action.
+ * Chaque branche (validation, succès, erreur serveur) ne renseigne qu'un
+ * sous-ensemble des champs ; les consommateurs lisent par présence (`?.`),
+ * exactement comme le runtime le fait déjà.
+ */
+interface ActionData {
+  success: boolean;
+  fieldErrors?: Record<string, string>;
+  error?: string;
+  ticketNumber?: string;
+  ticket?: unknown;
 }
 
 export async function action({
   request,
-}: ActionFunctionArgs): Promise<Response> {
+}: ActionFunctionArgs): Promise<
+  ActionData | ReturnType<typeof data<ActionData>>
+> {
   const formData = await request.formData();
   const session = await getSession(request);
 
@@ -199,7 +213,8 @@ export async function action({
   }
 
   if (Object.keys(fieldErrors).length > 0) {
-    return json({ success: false, fieldErrors }, { status: 400 });
+    const validationData: ActionData = { success: false, fieldErrors };
+    return data(validationData, { status: 400 });
   }
 
   // Préparer les données de contact
@@ -233,23 +248,22 @@ export async function action({
 
   try {
     const result = await createContact(contactData);
-    return json({
+    const successData: ActionData = {
       success: true,
       ticketNumber: result.ticketNumber,
       ticket: result.ticket,
-    });
+    };
+    return successData;
   } catch (error) {
     logger.error("Erreur lors de la création du ticket:", error);
-    return json(
-      {
-        success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : "Une erreur est survenue lors de l'envoi du message",
-      },
-      { status: 500 },
-    );
+    const errorData: ActionData = {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Une erreur est survenue lors de l'envoi du message",
+    };
+    return data(errorData, { status: 500 });
   }
 }
 

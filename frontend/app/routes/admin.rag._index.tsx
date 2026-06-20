@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { Link, useFetcher, useLoaderData } from "@remix-run/react";
 import {
   FileText,
@@ -80,7 +76,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       ? await intentsRes.value.json()
       : { totalMessages: 0, intents: [] };
 
-  return json({ corpus, intents });
+  return { corpus, intents };
 }
 
 const TRUTH_STATUS: Record<string, StatusType> = {

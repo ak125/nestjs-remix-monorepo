@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import {
   Image,
@@ -79,7 +75,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     prompts = res.ok ? await res.json() : [];
   }
 
-  return json({ pgAlias, prompts });
+  return { pgAlias, prompts };
 }
 
 function StatusBadge({

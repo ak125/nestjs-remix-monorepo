@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
@@ -64,7 +60,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
       throw new Response("Produit non trouvé", { status: 404 });
     }
 
-    return json({ product: productData.data });
+    return { product: productData.data };
   } catch (error) {
     // Propager les Response HTTP (404, etc.) telles quelles
     if (error instanceof Response) {

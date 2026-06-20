@@ -6,11 +6,7 @@
  * Architecture moderne alignée avec orders, users, suppliers
  */
 
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import {
   useLoaderData,
   Link,
@@ -99,7 +95,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
       );
     }
 
-    return json({
+    return {
       staff: staffResult.staff || [],
       statistics: statisticsResult.statistics || {
         total: 0,
@@ -110,11 +106,11 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
       pagination: staffResult.pagination,
       success: true,
       timestamp: new Date().toISOString(),
-    });
+    };
   } catch (error) {
     logger.error("Erreur loader staff:", error);
 
-    return json({
+    return {
       staff: [],
       statistics: {
         total: 0,
@@ -126,7 +122,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
       success: false,
       error: error instanceof Error ? error.message : "Erreur inconnue",
       timestamp: new Date().toISOString(),
-    });
+    };
   }
 };
 

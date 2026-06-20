@@ -1,9 +1,5 @@
 // app/routes/products.$category.$subcategory.tsx - Exemple d'usage optimisé
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import {
   useLoaderData,
   useRouteError,
@@ -38,13 +34,13 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     },
   ];
 
-  return json({
+  return {
     seoData,
     metaTags, // ✅ Passer les métadonnées créées côté serveur
     products,
     category: category,
     subcategory: subcategory,
-  });
+  };
 }
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {

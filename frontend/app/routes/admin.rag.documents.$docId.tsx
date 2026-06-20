@@ -1,8 +1,4 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { ArrowLeft, FileText } from "lucide-react";
 import { DashboardShell } from "~/components/admin/patterns/DashboardShell";
@@ -48,7 +44,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   const doc: KnowledgeDocFull = await response.json();
 
-  return json({ doc });
+  return { doc };
 }
 
 const TRUTH_STATUS: Record<string, StatusType> = {

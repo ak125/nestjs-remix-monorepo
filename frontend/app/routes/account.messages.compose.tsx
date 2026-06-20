@@ -1,9 +1,9 @@
 import {
-  json,
   redirect,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
   type MetaFunction,
+  data,
 } from "@remix-run/node";
 import {
   Form,
@@ -44,11 +44,11 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const orderId = url.searchParams.get("order");
   const parentId = url.searchParams.get("reply");
 
-  return json<LoaderData>({
+  return {
     user,
     orderId: orderId || undefined,
     parentId: parentId || undefined,
-  });
+  };
 };
 
 export const action = async ({ request, context }: ActionFunctionArgs) => {
@@ -90,7 +90,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
     }
   } catch (error) {
     logger.error("Erreur envoi message:", error);
-    return json(
+    return data(
       { error: "Erreur lors de l'envoi du message" },
       { status: 500 },
     );

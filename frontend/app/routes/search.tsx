@@ -15,11 +15,7 @@
  * - Mobile-first responsive
  */
 
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import {
   useLoaderData,
   useSearchParams,
@@ -133,7 +129,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   // Retour rapide si pas de requête
   if (!query) {
-    return json<SearchPageData>({
+    return {
       results: null,
       pieces: [],
       groupedPieces: [],
@@ -141,7 +137,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       filters: {},
       hasError: false,
       performance: { loadTime: Date.now() - startTime },
-    });
+    };
   }
 
   try {
@@ -193,7 +189,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     const loadTime = Date.now() - startTime;
 
-    return json<SearchPageData>({
+    return {
       results: {
         ...results,
         page,
@@ -209,11 +205,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
         searchTime: results?.executionTime || 0,
         totalItems: total,
       },
-    });
+    };
   } catch (error) {
     logger.error("Erreur lors de la recherche:", error);
 
-    return json<SearchPageData>({
+    return {
       results: null,
       pieces: [],
       groupedPieces: [],
@@ -222,7 +218,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       hasError: true,
       errorMessage: error instanceof Error ? error.message : "Erreur inconnue",
       performance: { loadTime: Date.now() - startTime },
-    });
+    };
   }
 }
 
@@ -826,7 +822,7 @@ export default function SearchPage() {
                       </button>
                       <button
                         onClick={() => setSortBy("brand")}
-                        className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${ sortBy === "brand" ? "bg-primary text-white shadow-md" : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200" }`}
+                        className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${sortBy === "brand" ? "bg-primary text-white shadow-md" : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"}`}
                         title="Trier par marque"
                       >
                         <ArrowUpDown className="w-5 h-5" />

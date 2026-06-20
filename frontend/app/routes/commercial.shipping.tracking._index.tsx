@@ -2,11 +2,7 @@
  * 📦 Suivi des expéditions - Interface commerciale
  */
 
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import {
   Clock,
@@ -297,7 +293,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       exceptions: shipments.filter((s) => s.status === "exception").length,
     };
 
-    return json({ shipments, stats });
+    return { shipments, stats };
   } catch (error) {
     logger.error("❌ Erreur tracking:", error);
 
@@ -311,7 +307,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       exceptions: shipments.filter((s) => s.status === "exception").length,
     };
 
-    return json({ shipments, stats });
+    return { shipments, stats };
   }
 }
 

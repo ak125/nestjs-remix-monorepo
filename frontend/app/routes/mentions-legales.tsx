@@ -1,9 +1,5 @@
 // Route: /mentions-legales -> Mentions légales
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
@@ -48,7 +44,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     if (response.ok) {
       const dbPage = await response.json();
-      return json({
+      return {
         page: {
           key: "legal-notice",
           title: dbPage.h1 || dbPage.title,
@@ -59,13 +55,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
           indexable: false,
         },
         fromDB: true,
-      });
+      };
     }
   } catch (error) {
     logger.warn("Failed to fetch mentions légales:", error);
   }
 
-  return json({
+  return {
     page: {
       key: "legal-notice",
       title: "Mentions légales",
@@ -76,7 +72,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       indexable: false,
     },
     fromDB: false,
-  });
+  };
 }
 
 export { default } from "./legal.$pageKey";

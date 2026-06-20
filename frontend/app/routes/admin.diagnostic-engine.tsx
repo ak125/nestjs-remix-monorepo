@@ -4,7 +4,7 @@
  * Admin dashboard for the Diagnostic Engine.
  * Shows stats, recent sessions, system coverage.
  */
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import {
   Activity,
@@ -58,7 +58,7 @@ export const loader = async ({ request: _request }: LoaderFunctionArgs) => {
     ? await sessionsRes.json()
     : { sessions: [] };
 
-  return json({ stats, sessions: sessionsData.sessions || [] });
+  return { stats, sessions: sessionsData.sessions || [] };
 };
 
 const SYSTEM_LABELS: Record<string, string> = {

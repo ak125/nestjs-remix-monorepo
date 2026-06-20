@@ -9,11 +9,7 @@
  * - Mode Pro avec analytics
  */
 
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link, useSearchParams, Form } from "@remix-run/react";
 import {
   ArrowLeft,
@@ -225,7 +221,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 
     const totalPages = Math.ceil(totalFound / limit);
 
-    return json<RangesAdvancedData>({
+    return {
       user: {
         id: user.id,
         name: userName,
@@ -253,11 +249,11 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         view: viewMode,
       },
       enhanced,
-    });
+    };
   } catch (error) {
     logger.error("❌ Erreur loader products.ranges.advanced:", error);
 
-    return json<RangesAdvancedData>({
+    return {
       user: { id: "error", name: "Erreur", level: 1, role: "commercial" },
       ranges: [],
       stats: { total: 0, active: 0, top: 0, totalProducts: 0, filtered: 0 },
@@ -265,7 +261,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       filters: { search: "", status: "all", sort: "name", view: "grid" },
       enhanced: false,
       error: "Impossible de charger les gammes",
-    });
+    };
   }
 }
 
@@ -365,9 +361,7 @@ export default function ProductsRangesAdvanced() {
         )}
 
         {user.role === "pro" && (
-          <Badge className="bg-gradient-to-r to-pink-500">
-            💎 PRO
-          </Badge>
+          <Badge className="bg-gradient-to-r to-pink-500">💎 PRO</Badge>
         )}
       </div>
 

@@ -3,10 +3,10 @@
  * Interface complète pour la modération et gestion des avis
  */
 import {
-  json,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
   type MetaFunction,
+  data,
 } from "@remix-run/node";
 import {
   Form,
@@ -90,7 +90,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       })),
     ]);
 
-    return json<LoaderData>({
+    return {
       reviews: reviewsData.reviews || [],
       stats,
       pagination:
@@ -104,10 +104,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
                 (reviewsData.total || 0) / (reviewsData.limit || 10),
               ),
             },
-    });
+    };
   } catch (error) {
     logger.error("Erreur lors du chargement des avis:", error);
-    return json<LoaderData>({
+    return {
       reviews: [],
       stats: {
         total: 0,
@@ -118,7 +118,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         ratingDistribution: { "5": 0, "4": 0, "3": 0, "2": 0, "1": 0 },
       },
       pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
-    });
+    };
   }
 }
 
@@ -137,20 +137,35 @@ export async function action({ request }: ActionFunctionArgs) {
         : "pending";
     try {
       await updateReviewStatus(Number(reviewId), status, request);
-      return json({ success: true });
+      return { success: true };
     } catch (error) {
-      return json(
+      return data(
         { error: "Erreur lors de la mise à jour du statut" },
         { status: 500 },
       );
     }
   }
 
-  return json({ error: "Action non reconnue" }, { status: 400 });
+  return data({ error: "Action non reconnue" }, { status: 400 });
 }
 
 export default function ReviewsPage() {
   const { reviews, stats, pagination } = useLoaderData<typeof loader>();
+  // Le payload runtime de l'endpoint stats est en camelCase (cf. backend
+  // ReviewService.getReviewStats). Le type snake_case `ReviewStats` du service
+  // frontend est obsolète ; on sélectionne ici la forme camelCase réellement
+  // servie — la branche snake_case ne se produit jamais à l'exécution.
+  const statsView =
+    "averageRating" in stats
+      ? stats
+      : {
+          total: stats.total_reviews,
+          pending: stats.pending_reviews,
+          approved: stats.approved_reviews,
+          rejected: stats.rejected_reviews,
+          averageRating: stats.average_rating,
+          ratingDistribution: stats.rating_distribution,
+        };
   const submit = useSubmit();
   const navigation = useNavigation();
   const [selectedReviews, setSelectedReviews] = useState<number[]>([]);
@@ -272,7 +287,7 @@ export default function ReviewsPage() {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Total</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {stats.total}
+                {statsView.total}
               </p>
             </div>
           </div>
@@ -289,9 +304,9 @@ export default function ReviewsPage() {
               <p className="text-sm font-medium text-gray-500">Moyenne</p>
               <div className="flex items-center">
                 <p className="text-2xl font-semibold text-gray-900 mr-2">
-                  {stats.averageRating.toFixed(1)}
+                  {statsView.averageRating.toFixed(1)}
                 </p>
-                {renderStars(Math.round(stats.averageRating))}
+                {renderStars(Math.round(statsView.averageRating))}
               </div>
             </div>
           </div>
@@ -309,7 +324,7 @@ export default function ReviewsPage() {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">En attente</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {stats.pending}
+                {statsView.pending}
               </p>
             </div>
           </div>
@@ -325,7 +340,7 @@ export default function ReviewsPage() {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Approuvés</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {stats.approved}
+                {statsView.approved}
               </p>
             </div>
           </div>
@@ -341,7 +356,7 @@ export default function ReviewsPage() {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Rejetés</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {stats.rejected}
+                {statsView.rejected}
               </p>
             </div>
           </div>

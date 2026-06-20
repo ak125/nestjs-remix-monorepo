@@ -4,11 +4,11 @@
  */
 
 import {
-  json,
   redirect,
   type ActionFunction,
   type LoaderFunction,
   type MetaFunction,
+  data,
 } from "@remix-run/node";
 import {
   Form,
@@ -82,14 +82,14 @@ export const loader: LoaderFunction = async ({ context }) => {
   // const user = await requireUser({ context });
 
   // Ici, vous pourriez charger des données nécessaires comme les produits disponibles
-  return json({
+  return {
     // Ajouter des données de test pour les produits disponibles
     products: [
       { id: "1", name: "Produit A", price: 10.99, sku: "PROD-A" },
       { id: "2", name: "Produit B", price: 15.99, sku: "PROD-B" },
       { id: "3", name: "Produit C", price: 20.99, sku: "PROD-C" },
     ],
-  });
+  };
 };
 
 export const action: ActionFunction = async ({ request, context }) => {
@@ -120,7 +120,7 @@ export const action: ActionFunction = async ({ request, context }) => {
 
     // Validation côté client
     if (!items || items.length === 0) {
-      return json<ActionData>(
+      return data(
         {
           error: "Au moins un article est requis",
         },
@@ -134,7 +134,7 @@ export const action: ActionFunction = async ({ request, context }) => {
       !deliveryAddress.postalCode ||
       !deliveryAddress.country
     ) {
-      return json<ActionData>(
+      return data(
         {
           error: "Tous les champs de l'adresse de livraison sont requis",
         },
@@ -149,7 +149,7 @@ export const action: ActionFunction = async ({ request, context }) => {
     const result = await integration.createOrderForRemix?.(orderData);
 
     if (!result.success) {
-      return json<ActionData>(
+      return data(
         {
           error: result.error || "Erreur lors de la création de la commande",
         },
@@ -160,7 +160,7 @@ export const action: ActionFunction = async ({ request, context }) => {
     return redirect(`/orders/${result.order.id}`);
   } catch (error) {
     logger.error("Error creating order:", error);
-    return json<ActionData>(
+    return data(
       {
         error: "Erreur lors de la création de la commande",
       },

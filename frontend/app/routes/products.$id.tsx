@@ -15,11 +15,7 @@
  * - /products/:id?enhanced=true (advanced interface)
  */
 
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import {
   useLoaderData,
   Link,
@@ -152,7 +148,11 @@ interface ProductDetailData {
   error?: string;
 }
 
-export async function loader({ params, request, context }: LoaderFunctionArgs) {
+export async function loader({
+  params,
+  request,
+  context,
+}: LoaderFunctionArgs): Promise<ProductDetailData> {
   const user = await requireUser({ context });
 
   // Determine user role and check access
@@ -225,7 +225,7 @@ export async function loader({ params, request, context }: LoaderFunctionArgs) {
         }
       : null;
 
-    return json<ProductDetailData>({
+    return {
       user: {
         id: user.id,
         name: userName,
@@ -234,7 +234,7 @@ export async function loader({ params, request, context }: LoaderFunctionArgs) {
       },
       product,
       enhanced,
-    });
+    };
   } catch (error) {
     logger.error("Product detail loading error:", error);
 
@@ -242,7 +242,7 @@ export async function loader({ params, request, context }: LoaderFunctionArgs) {
       throw error;
     }
 
-    return json<ProductDetailData>({
+    return {
       user: {
         id: user.id,
         name: userName,
@@ -252,7 +252,7 @@ export async function loader({ params, request, context }: LoaderFunctionArgs) {
       product: null,
       enhanced,
       error: "Erreur lors du chargement du produit",
-    });
+    };
   }
 }
 

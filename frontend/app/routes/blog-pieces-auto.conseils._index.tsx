@@ -9,11 +9,7 @@
  *              → Par intention → Securite → FAQ → CTA
  */
 
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
 import {
   useLoaderData,
   Link,
@@ -119,12 +115,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     if (!data?.success || !data.data?.families) {
       logger.error("Format de r\u00e9ponse inattendu:", data);
-      return json<LoaderData>({
+      return {
         groupedArticles: [],
         allArticles: [],
         totalArticles: 0,
         stats: { totalViews: 0, totalCategories: 0 },
-      });
+      };
     }
 
     const allArticles: BlogArticle[] = [];
@@ -158,7 +154,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       0,
     );
 
-    return json<LoaderData>({
+    return {
       groupedArticles,
       allArticles,
       totalArticles,
@@ -166,15 +162,15 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         totalViews,
         totalCategories: groupedArticles.length,
       },
-    });
+    };
   } catch (e) {
     logger.error("Erreur loader conseils:", e);
-    return json<LoaderData>({
+    return {
       groupedArticles: [],
       allArticles: [],
       totalArticles: 0,
       stats: { totalViews: 0, totalCategories: 0 },
-    });
+    };
   }
 };
 

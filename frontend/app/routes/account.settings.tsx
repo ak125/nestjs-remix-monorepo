@@ -1,9 +1,9 @@
 import {
-  json,
   redirect,
   type ActionFunction,
   type LoaderFunction,
   type MetaFunction,
+  data,
 } from "@remix-run/node";
 import {
   Form,
@@ -60,7 +60,7 @@ export const loader: LoaderFunction = async ({ context }) => {
     currency: "EUR",
   };
 
-  return json({ user, preferences });
+  return { user, preferences };
 };
 
 export const action: ActionFunction = async ({ request, context }) => {
@@ -70,25 +70,25 @@ export const action: ActionFunction = async ({ request, context }) => {
 
   if (action === "updatePreferences") {
     // TODO: Implémenter la mise à jour des préférences
-    return json({
+    return {
       success: true,
       message: "Préférences mises à jour avec succès",
-    });
+    };
   }
 
   if (action === "exportData") {
     // TODO: Implémenter l'export des données
-    return json({
+    return {
       success: true,
       message: "Export des données en cours... Vous recevrez un email",
-    });
+    };
   }
 
   if (action === "deleteAccount") {
     // TODO: Implémenter la suppression du compte
     const confirmation = formData.get("confirmation");
     if (confirmation !== "SUPPRIMER") {
-      return json(
+      return data(
         {
           success: false,
           error: "Veuillez taper SUPPRIMER pour confirmer",
@@ -101,7 +101,7 @@ export const action: ActionFunction = async ({ request, context }) => {
     return redirect("/account/deleted");
   }
 
-  return json({ success: false, error: "Action non reconnue" });
+  return { success: false, error: "Action non reconnue" };
 };
 
 export default function AccountSettings() {

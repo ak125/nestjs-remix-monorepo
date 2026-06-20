@@ -17,7 +17,6 @@
  */
 
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
   redirect,
@@ -96,17 +95,17 @@ export async function loader({ context, request }: LoaderFunctionArgs) {
     // Trier par nom de marque
     brands.sort((a, b) => a.marque_name.localeCompare(b.marque_name));
 
-    return json({
+    return {
       brands,
       totalBrands: brands.length,
-    } as LoaderData);
+    } as LoaderData;
   } catch (error) {
     logger.error("Erreur chargement marques:", error);
-    return json({
+    return {
       brands: [],
       totalBrands: 0,
       error: "Impossible de charger les marques de véhicules",
-    } as LoaderData);
+    } as LoaderData;
   }
 }
 

@@ -9,7 +9,6 @@
  */
 
 import {
-  json,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
   type MetaFunction,
@@ -342,14 +341,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
     returnRate: 2.1, // Pourcentage de retour par rapport aux commandes
   };
 
-  return json({
+  return {
     returns: filteredReturns,
     stats,
     totalReturns: filteredReturns.length,
     currentPage: page,
     limit,
     filters: { search, status, reason },
-  });
+  };
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -359,21 +358,21 @@ export async function action({ request }: ActionFunctionArgs) {
   switch (action) {
     case "approve":
       // Logique d'approbation du retour
-      return json({ success: true, message: "Retour approuvé avec succès" });
+      return { success: true, message: "Retour approuvé avec succès" };
 
     case "reject":
       // Logique de refus du retour
-      return json({ success: true, message: "Retour refusé" });
+      return { success: true, message: "Retour refusé" };
 
     case "generate_label":
       // Générer l'étiquette de retour
-      return json({
+      return {
         success: true,
         message: "Étiquette générée et envoyée au client",
-      });
+      };
 
     default:
-      return json({ success: false, error: "Action non reconnue" });
+      return { success: false, error: "Action non reconnue" };
   }
 }
 
