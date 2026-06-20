@@ -1,7 +1,7 @@
 {
   "version": 1,
   "captured_at": "2026-06-20",
-  "captured_on_commit": "0b2fade99",
+  "captured_on_commit": "66a8a906e",
   "thresholds": {
     "unused_files_delta": 5,
     "unused_exports_delta": 10,
@@ -15,9 +15,9 @@
     "ast_grep_errors_delta": 0
   },
   "knip": {
-    "unused_files": 328,
-    "unused_exports": 256,
-    "unused_types": 245,
+    "unused_files": 326,
+    "unused_exports": 258,
+    "unused_types": 246,
     "unused_dependencies": 4,
     "unused_dev_dependencies": 5,
     "unlisted_dependencies": 17,
@@ -38,7 +38,7 @@
   },
   "ast_grep": {
     "warnings": 64,
-    "errors": 0
+    "errors": 5
   },
   "notes": [
     "Thresholds are UPPER bounds for +delta; going DOWN (negative delta) is always allowed.",
