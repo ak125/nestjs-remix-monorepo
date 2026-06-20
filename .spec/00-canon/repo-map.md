@@ -1,7 +1,7 @@
 # Repo Map - AutoMecanik Monorepo
 
-> **Source de verite** - Structure reelle du code au 2026-05-25
-> **Version**: 2.0.2 | **Status**: CANON
+> **Source de verite** - Structure reelle du code au 2026-06-20
+> **Version**: 2.1.0 | **Status**: CANON
 
 ---
 
@@ -9,8 +9,8 @@
 
 ```
 /opt/automecanik/app/
-├── backend/          # NestJS API (54 modules)
-├── frontend/         # Remix SSR (235 fichiers routes top-level)
+├── backend/          # NestJS API (modules : voir REPO_MAP genere)
+├── frontend/         # Remix SSR (Remix flat-routes)
 ├── packages/         # 12 packages partages
 ├── .spec/            # Documentation technique
 ├── scripts/          # Scripts utilitaires
@@ -24,7 +24,7 @@
 ## Backend - NestJS API
 
 **Chemin**: `backend/src/modules/`
-**Total**: 54 modules
+**Inventaire vivant** : voir [`.claude/knowledge/REPO_MAP.md`](../../.claude/knowledge/REPO_MAP.md) (genere depuis `audit/registry/canonical.json`, ADR-058 — jamais a la main). Ce canon n'epingle PAS le compte de modules (derive FS garantie).
 
 ### Modules par domaine
 
@@ -34,9 +34,9 @@
 | **Auth** | `auth`, `users`, `staff` |
 | **Catalog** | `products`, `catalog`, `vehicles`, `gamme-rest`, `substitution`, `vehicle-context` |
 | **Commerce** | `cart`, `orders`, `payments`, `invoices`, `promo`, `commercial`, `pricing` |
-| **Logistics** | `shipping`, `suppliers`, `customers` |
+| **Logistics** | `shipping`, `suppliers`, `supplier-truth`, `customers` |
 | **Content** | `blog`, `blog-metadata`, `ai-content`, `marketing`, `merchant-center` |
-| **SEO** | `seo`, `seo-logs`, `seo-monitoring`, `seo-shadow-observatory`, `seo-control-plane`, `trend-signals` |
+| **SEO** | `seo`, `seo-logs`, `seo-monitoring`, `seo-projection`, `seo-shadow-observatory`, `seo-control-plane`, `trend-signals` |
 | **Support** | `messages`, `support` |
 | **Analytics** | `analytics`, `dashboard`, `observability` |
 | **Search/RAG** | `search`, `knowledge-graph`, `rag-proxy`, `rag-knowledge-bootstrap` |
@@ -48,41 +48,22 @@
 | **Ops** | `maintenance` |
 | **Legacy/DEV** | `rm` (DEV uniquement — cf. CLAUDE.md backend.md) |
 
-### Liste complete
+### Inventaire complet
 
-```
-admin                       agentic-engine              ai-content
-analytics                   auth                        blog
-blog-metadata               bot-guard                   cart
-catalog                     commercial                  config
-customers                   dashboard                   diagnostic-engine
-errors                      gamme-rest                  health
-invoices                    knowledge-graph             layout
-maintenance                 marketing                   mcp-validation
-merchant-center             messages                    metadata
-navigation                  observability               orders
-payments                    pricing                     products
-promo                       rag-knowledge-bootstrap     rag-proxy
-rm                          search                      seo
-seo-control-plane           seo-logs                    seo-monitoring
-seo-shadow-observatory      shipping                    staff
-substitution                suppliers                   support
-system                      trend-signals               upload
-users                       vehicle-context             vehicles
-```
+Liste exhaustive et a jour des modules : [`.claude/knowledge/REPO_MAP.md`](../../.claude/knowledge/REPO_MAP.md) (projection generee du registry, ADR-058). La table par domaine ci-dessus est une **classification curee** (intention metier), pas un inventaire mecanique — ne pas la traiter comme source du compte.
 
 ---
 
 ## Frontend - Remix SSR
 
 **Chemin**: `frontend/app/`
-**Routes**: 235 fichiers top-level (.ts/.tsx, hors sous-dossiers)
+**Routes**: Remix flat-routes — ce canon n'epingle PAS de compte (comptage de fichiers = proxy trompeur, et churn permanent avec la migration React Router). Inventaire vivant : carte generee `.claude/knowledge/REPO_MAP.md`.
 
 ### Structure
 
 ```
 frontend/app/
-├── routes/           # 235 fichiers top-level (flat routes)
+├── routes/           # Remix flat-routes
 ├── components/       # Composants React
 │   ├── ui/          # shadcn/ui components
 │   └── ...          # Composants metier
@@ -158,13 +139,13 @@ frontend/app/
 
 | Metrique | Valeur |
 |----------|--------|
-| Backend modules | 54 |
-| Frontend routes | 235 |
 | Shared packages | 12 |
 | Docker configs | 10 |
 | Produits DB | 4M+ |
 | Utilisateurs | 59k+ |
 | Categories | 9k+ |
+
+> **Comptes modules / routes retires de ce canon** (ADR-048 follow-up 2026-06-20) : derivables du filesystem, ils derivaient en permanence et dupliquaient le registry (ADR-058). Inventaire vivant = `.claude/knowledge/REPO_MAP.md`. Le detecteur de drift ne suit plus que les metriques structurelles stables (Shared packages, Docker configs).
 
 ---
 
@@ -189,5 +170,5 @@ Voir `.spec/bmad/output/rag_diagnosis.md` pour details.
 
 ---
 
-_Derniere mise a jour: 2026-05-25_
+_Derniere mise a jour: 2026-06-20_
 _Status: CANON - Source de verite_
