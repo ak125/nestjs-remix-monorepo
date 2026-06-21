@@ -34,16 +34,11 @@ export class SitemapStaticMiddleware implements NestMiddleware {
     if (req.method !== 'GET' && req.method !== 'HEAD') return next();
     if (!SITEMAP_PATH_RE.test(req.path)) return next();
 
-    // req.path is URL-decoded and normalized by Express; the regex already
-    // forbids '/' so no traversal is possible. The containment assertion below
-    // is belt-and-suspenders.
-    const filePath = nodePath.join(this.dir, req.path);
-    if (
-      filePath !== this.dir &&
-      !filePath.startsWith(this.dir + nodePath.sep)
-    ) {
-      return next();
-    }
+    // basename() strips any directory / traversal component (a recognized path
+    // sanitizer); combined with SITEMAP_PATH_RE (single root segment) the
+    // resolved file is always directly under the sitemap dir.
+    const fileName = nodePath.basename(req.path);
+    const filePath = nodePath.join(this.dir, fileName);
 
     let xml: string;
     try {
@@ -55,7 +50,7 @@ export class SitemapStaticMiddleware implements NestMiddleware {
           .status(404)
           .setHeader('Content-Type', 'application/xml; charset=utf-8');
         res.send(
-          `<?xml version="1.0" encoding="UTF-8"?><error>Sitemap ${req.path} not found</error>`,
+          `<?xml version="1.0" encoding="UTF-8"?><error>Sitemap ${fileName} not found</error>`,
         );
         return;
       }

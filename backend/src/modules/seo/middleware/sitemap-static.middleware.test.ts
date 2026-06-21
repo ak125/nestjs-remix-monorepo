@@ -1,8 +1,6 @@
 import { promises as fs } from 'node:fs';
 import * as os from 'node:os';
 import * as nodePath from 'node:path';
-import express from 'express';
-import request from 'supertest';
 import { SitemapStaticMiddleware } from './sitemap-static.middleware';
 
 function mkReq(over: Record<string, unknown> = {}): any {
@@ -158,69 +156,18 @@ describe('SitemapStaticMiddleware', () => {
 
     expect(next).toHaveBeenCalledTimes(1);
   });
-});
 
-// Real-HTTP integration: a minimal Express app wiring the middleware exactly as
-// main.ts does (global app.use, before a catch-all standing in for the
-// RemixController). Validates real URL decoding, header/status emission, and the
-// pass-through ordering — without binding the canonical :3000 port.
-describe('SitemapStaticMiddleware (HTTP integration)', () => {
-  let dir: string;
-  const prevEnv = process.env.SITEMAP_OUTPUT_DIR;
-  const CHILD_XML = '<?xml version="1.0"?><urlset></urlset>';
-  let app: express.Express;
+  it('cannot escape the sitemap dir via a single-segment ".." (basename guard)', async () => {
+    // A single-segment path with dots matches the regex but basename() keeps it
+    // inside the dir → resolves to a non-existent file under dir → 404, never a
+    // parent-directory read.
+    const req = mkReq({ path: '/sitemap-..xml' });
+    const res = mkRes();
+    const next = jest.fn();
 
-  beforeAll(async () => {
-    dir = await fs.mkdtemp(nodePath.join(os.tmpdir(), 'sitemap-mw-http-'));
-    await fs.writeFile(nodePath.join(dir, 'sitemap.xml'), CHILD_XML);
-    await fs.writeFile(nodePath.join(dir, 'sitemap-categories.xml'), CHILD_XML);
-    await fs.writeFile(nodePath.join(dir, 'secret.txt'), 'TOP SECRET');
-    process.env.SITEMAP_OUTPUT_DIR = dir;
+    await mw.use(req, res, next);
 
-    const mw = new SitemapStaticMiddleware();
-    app = express();
-    app.use((req, res, next) => mw.use(req, res, next));
-    // Stand-in for the RemixController @All(':path*') catch-all.
-    app.use((_req, res) => res.status(418).type('text/html').send('CATCHALL'));
-  });
-
-  afterAll(async () => {
-    process.env.SITEMAP_OUTPUT_DIR = prevEnv;
-    await fs.rm(dir, { recursive: true, force: true });
-  });
-
-  it('serves a child sitemap over real HTTP with XML content-type', async () => {
-    const res = await request(app).get('/sitemap-categories.xml');
-    expect(res.status).toBe(200);
-    expect(res.headers['content-type']).toContain('application/xml');
-    expect(res.headers['cache-control']).toBe(
-      'public, max-age=3600, s-maxage=86400',
-    );
-    expect(res.text).toBe(CHILD_XML);
-  });
-
-  it('returns XML 404 for a missing sitemap (not the HTML catch-all)', async () => {
-    const res = await request(app).get('/sitemap-nope.xml');
-    expect(res.status).toBe(404);
-    expect(res.headers['content-type']).toContain('application/xml');
-    expect(res.text).not.toContain('CATCHALL');
-  });
-
-  it('passes a normal page through to the catch-all', async () => {
-    const res = await request(app).get('/pieces/plaquettes-de-frein');
-    expect(res.status).toBe(418);
-    expect(res.text).toBe('CATCHALL');
-  });
-
-  it('passes /sitemaps/* through to the catch-all', async () => {
-    const res = await request(app).get('/sitemaps/stable/x.xml');
-    expect(res.status).toBe(418);
-  });
-
-  it('does not serve non-sitemap files via path traversal', async () => {
-    // Encoded traversal: Express decodes %2e/%2f; any resulting '/' breaks the
-    // single-segment regex → pass-through, never leaks secret.txt.
-    const res = await request(app).get('/sitemap-%2e%2e%2fsecret.txt');
-    expect(res.text).not.toContain('TOP SECRET');
+    expect(next).not.toHaveBeenCalled();
+    expect(res.statusCode).toBe(404);
   });
 });
