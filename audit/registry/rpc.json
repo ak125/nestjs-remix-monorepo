@@ -3,6 +3,27 @@
     {
       "args": [],
       "definedInMigrations": [
+        "20260615_gov_m10_overload_ambiguity_rpc.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.__gov_m10_overload_ambiguity",
+      "language": "sql",
+      "name": "__gov_m10_overload_ambiguity",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "table (function_name text, ambiguity_kind text, overload_count integer)",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
         "20260320_phase2_db_governance.sql"
       ],
       "domain": "UNKNOWN",
@@ -217,6 +238,60 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "searchPath": [],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_relname",
+          "type": "text"
+        }
+      ],
+      "definedInMigrations": [
+        "20260616_vague5_harden_partition_maintenance.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.__rls_lock_internal_table",
+      "language": "plpgsql",
+      "name": "__rls_lock_internal_table",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "void",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public",
+        "pg_catalog"
+      ],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260616_vague5_harden_partition_maintenance.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.__rls_reconcile_internal_tables",
+      "language": "plpgsql",
+      "name": "__rls_reconcile_internal_tables",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "integer",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public",
+        "pg_catalog"
+      ],
       "securityDefiner": true,
       "sourceConfidence": "high",
       "status": "UNKNOWN",
@@ -2527,6 +2602,29 @@
       "schema": "public",
       "schemaVersion": "1.0.0",
       "searchPath": [],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260621_get_homepage_families_definer_rpc.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_homepage_families",
+      "language": "sql",
+      "name": "get_homepage_families",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "jsonb",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public"
+      ],
       "securityDefiner": true,
       "sourceConfidence": "high",
       "status": "UNKNOWN",
@@ -6092,6 +6190,29 @@
     {
       "args": [],
       "definedInMigrations": [
+        "20260621_pricing_partition_rotation_cron.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.maintain_pieces_price_history_partitions",
+      "language": "plpgsql",
+      "name": "maintain_pieces_price_history_partitions",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "TEXT",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public"
+      ],
+      "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
         "20260523_pricing_decision_snapshot_and_offers.sql"
       ],
       "domain": "UNKNOWN",
@@ -8187,6 +8308,36 @@
       "schemaVersion": "1.0.0",
       "searchPath": [],
       "securityDefiner": false,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_source_ktypnr",
+          "type": "integer"
+        }
+      ],
+      "definedInMigrations": [
+        "20260615_massdoc_type_id_allocator.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "tecdoc_map.allocate_massdoc_type_id",
+      "language": "plpgsql",
+      "name": "allocate_massdoc_type_id",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "integer",
+      "schema": "tecdoc_map",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "tecdoc_map",
+        "public"
+      ],
+      "securityDefiner": true,
       "sourceConfidence": "high",
       "status": "UNKNOWN",
       "usedBy": []

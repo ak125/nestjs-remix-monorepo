@@ -80,16 +80,6 @@
     {
       "members": [
         "backend/src/modules/rag-proxy/rag-proxy.service.ts",
-        "backend/src/modules/rag-proxy/services/rag-ingestion.service.ts",
-        "backend/src/modules/rag-proxy/services/rag-redis-job.service.ts"
-      ],
-      "domain": "rag-proxy",
-      "suggested_fix": "invert-dep",
-      "priority": 3
-    },
-    {
-      "members": [
-        "backend/src/modules/rag-proxy/rag-proxy.service.ts",
         "backend/src/modules/rag-proxy/services/rag-webhook-completion.service.ts"
       ],
       "domain": "rag-proxy",
@@ -98,9 +88,19 @@
     },
     {
       "members": [
+        "backend/src/modules/rag-proxy/rag-proxy.service.ts",
+        "backend/src/modules/rag-proxy/services/rag-webhook-completion.service.ts",
+        "backend/src/modules/rag-proxy/services/rag-redis-job.service.ts"
+      ],
+      "domain": "rag-proxy",
+      "suggested_fix": "invert-dep",
+      "priority": 3
+    },
+    {
+      "members": [
+        "backend/src/modules/rag-proxy/services/rag-knowledge.service.ts",
         "backend/src/modules/rag-proxy/services/rag-cleanup.service.ts",
-        "backend/src/modules/rag-proxy/services/rag-gamme-detection.service.ts",
-        "backend/src/modules/rag-proxy/services/rag-knowledge.service.ts"
+        "backend/src/modules/rag-proxy/services/rag-gamme-detection.service.ts"
       ],
       "domain": "rag-proxy",
       "suggested_fix": "invert-dep",

@@ -54,6 +54,7 @@
         "runtime:backend/src/modules/invoices/invoices.module.ts",
         "runtime:backend/src/modules/layout/layout.module.ts",
         "runtime:backend/src/modules/marketing/marketing.module.ts",
+        "runtime:backend/src/modules/media-factory/media-factory.module.ts",
         "runtime:backend/src/modules/merchant-center/merchant-center.module.ts",
         "runtime:backend/src/modules/messages/messages.module.ts",
         "runtime:backend/src/modules/metadata/metadata.module.ts",
@@ -360,6 +361,10 @@
         "runtime:backend/src/modules/admin/services/buying-guide-enricher.service.ts",
         "runtime:backend/src/modules/admin/services/canon-observability.service.ts",
         "runtime:backend/src/modules/admin/services/command-center-actions.service.ts",
+        "runtime:backend/src/modules/admin/services/command-center-orchestrator/execution-ledger.service.ts",
+        "runtime:backend/src/modules/admin/services/command-center-orchestrator/orchestrator.service.ts",
+        "runtime:backend/src/modules/admin/services/command-center-orchestrator/regen-artifact.executor.ts",
+        "runtime:backend/src/modules/admin/services/command-center-orchestrator/regen-artifact.planner.ts",
         "runtime:backend/src/modules/admin/services/command-center-reader.service.ts",
         "runtime:backend/src/modules/admin/services/configuration.service.ts",
         "runtime:backend/src/modules/admin/services/conseil-enricher.service.ts",
@@ -395,6 +400,7 @@
         "runtime:backend/src/modules/admin/services/rag-proposal.service.ts",
         "runtime:backend/src/modules/admin/services/registry-reader.service.ts",
         "runtime:backend/src/modules/admin/services/reporting.service.ts",
+        "runtime:backend/src/modules/admin/services/seo-brief.service.ts",
         "runtime:backend/src/modules/admin/services/seo-cockpit.service.ts",
         "runtime:backend/src/modules/admin/services/seo-control-decisions.service.ts",
         "runtime:backend/src/modules/admin/services/seo-control-refresher.service.ts",
@@ -694,6 +700,9 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/modules/admin/services/command-center-orchestrator/orchestrator.service.ts",
+        "runtime:backend/src/modules/admin/services/command-center-orchestrator/regen-artifact.executor.ts",
+        "runtime:backend/src/modules/admin/services/command-center-orchestrator/regen-artifact.planner.ts",
         "runtime:backend/src/modules/admin/services/command-center-reader.service.ts"
       ],
       "id": "runtime:backend/src/modules/admin/controllers/command-center.controller.ts",
@@ -919,15 +928,6 @@
       "id": "runtime:backend/src/modules/api.module.ts",
       "kind": "nestjs-module",
       "path": "backend/src/modules/api.module.ts",
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
-      "dependsOn": [],
-      "id": "runtime:backend/src/modules/blog-metadata/blog-metadata.module.ts",
-      "kind": "nestjs-module",
-      "path": "backend/src/modules/blog-metadata/blog-metadata.module.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
@@ -1754,6 +1754,83 @@
     },
     {
       "dependsOn": [
+        "runtime:backend/src/auth/is-admin.guard.ts",
+        "runtime:backend/src/modules/media-factory/services/postprocess.service.ts",
+        "runtime:backend/src/modules/media-factory/services/video-job.service.ts"
+      ],
+      "id": "runtime:backend/src/modules/media-factory/controllers/video-execution.controller.ts",
+      "kind": "nestjs-controller",
+      "path": "backend/src/modules/media-factory/controllers/video-execution.controller.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/auth/is-admin.guard.ts",
+        "runtime:backend/src/modules/media-factory/services/video-data.service.ts",
+        "runtime:backend/src/modules/media-factory/services/video-gates.service.ts"
+      ],
+      "id": "runtime:backend/src/modules/media-factory/controllers/video-gate-check.controller.ts",
+      "kind": "nestjs-controller",
+      "path": "backend/src/modules/media-factory/controllers/video-gate-check.controller.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/auth/is-admin.guard.ts",
+        "runtime:backend/src/modules/media-factory/services/derivative-engine.service.ts",
+        "runtime:backend/src/modules/media-factory/services/script-generator.service.ts",
+        "runtime:backend/src/modules/media-factory/services/tts.service.ts",
+        "runtime:backend/src/modules/media-factory/services/video-data.service.ts"
+      ],
+      "id": "runtime:backend/src/modules/media-factory/controllers/video-pipeline.controller.ts",
+      "kind": "nestjs-controller",
+      "path": "backend/src/modules/media-factory/controllers/video-pipeline.controller.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/auth/is-admin.guard.ts",
+        "runtime:backend/src/modules/media-factory/services/video-data.service.ts"
+      ],
+      "id": "runtime:backend/src/modules/media-factory/controllers/video-production.controller.ts",
+      "kind": "nestjs-controller",
+      "path": "backend/src/modules/media-factory/controllers/video-production.controller.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/database/database.module.ts",
+        "runtime:backend/src/modules/media-factory/controllers/video-execution.controller.ts",
+        "runtime:backend/src/modules/media-factory/controllers/video-gate-check.controller.ts",
+        "runtime:backend/src/modules/media-factory/controllers/video-pipeline.controller.ts",
+        "runtime:backend/src/modules/media-factory/controllers/video-production.controller.ts",
+        "runtime:backend/src/modules/media-factory/render/render-adapter.service.ts",
+        "runtime:backend/src/modules/media-factory/services/audio-cache.service.ts",
+        "runtime:backend/src/modules/media-factory/services/derivative-engine.service.ts",
+        "runtime:backend/src/modules/media-factory/services/postprocess.service.ts",
+        "runtime:backend/src/modules/media-factory/services/script-generator.service.ts",
+        "runtime:backend/src/modules/media-factory/services/tts.service.ts",
+        "runtime:backend/src/modules/media-factory/services/video-data.service.ts",
+        "runtime:backend/src/modules/media-factory/services/video-gates.service.ts",
+        "runtime:backend/src/modules/media-factory/services/video-job.service.ts"
+      ],
+      "id": "runtime:backend/src/modules/media-factory/media-factory.module.ts",
+      "kind": "nestjs-module",
+      "path": "backend/src/modules/media-factory/media-factory.module.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
         "runtime:backend/src/modules/merchant-center/services/merchant-center-feed.service.ts"
       ],
       "id": "runtime:backend/src/modules/merchant-center/controllers/merchant-center.controller.ts",
@@ -2278,15 +2355,13 @@
     {
       "dependsOn": [
         "runtime:backend/src/auth/internal-api-key.guard.ts",
-        "runtime:backend/src/modules/rag-proxy/rag-pipeline.service.ts",
         "runtime:backend/src/modules/rag-proxy/rag-proxy.service.ts",
         "runtime:backend/src/modules/rag-proxy/services/rag-cleanup.service.ts",
         "runtime:backend/src/modules/rag-proxy/services/rag-gamme-detection.service.ts",
         "runtime:backend/src/modules/rag-proxy/services/rag-image-management.service.ts",
-        "runtime:backend/src/modules/rag-proxy/services/rag-ingestion.service.ts",
         "runtime:backend/src/modules/rag-proxy/services/rag-phase2a-shadow-audit.service.ts",
         "runtime:backend/src/modules/rag-proxy/services/rag-video-management.service.ts",
-        "runtime:backend/src/modules/rag-proxy/services/rag-web-ingest-db.service.ts"
+        "runtime:backend/src/modules/rag-proxy/services/webhook-audit.service.ts"
       ],
       "id": "runtime:backend/src/modules/rag-proxy/rag-proxy.controller.ts",
       "kind": "nestjs-controller",
@@ -2297,7 +2372,6 @@
     },
     {
       "dependsOn": [
-        "runtime:backend/src/modules/rag-proxy/rag-pipeline.service.ts",
         "runtime:backend/src/modules/rag-proxy/rag-proxy.controller.ts",
         "runtime:backend/src/modules/rag-proxy/rag-proxy.service.ts",
         "runtime:backend/src/modules/rag-proxy/services/frontmatter-validator.service.ts",
@@ -2311,7 +2385,6 @@
         "runtime:backend/src/modules/rag-proxy/services/rag-foundation-gate.service.ts",
         "runtime:backend/src/modules/rag-proxy/services/rag-gamme-detection.service.ts",
         "runtime:backend/src/modules/rag-proxy/services/rag-image-management.service.ts",
-        "runtime:backend/src/modules/rag-proxy/services/rag-ingestion.service.ts",
         "runtime:backend/src/modules/rag-proxy/services/rag-knowledge.service.ts",
         "runtime:backend/src/modules/rag-proxy/services/rag-md-merger.service.ts",
         "runtime:backend/src/modules/rag-proxy/services/rag-normalization.service.ts",
@@ -2319,7 +2392,6 @@
         "runtime:backend/src/modules/rag-proxy/services/rag-redis-job.service.ts",
         "runtime:backend/src/modules/rag-proxy/services/rag-validation.service.ts",
         "runtime:backend/src/modules/rag-proxy/services/rag-video-management.service.ts",
-        "runtime:backend/src/modules/rag-proxy/services/rag-web-ingest-db.service.ts",
         "runtime:backend/src/modules/rag-proxy/services/rag-webhook-completion.service.ts",
         "runtime:backend/src/modules/rag-proxy/services/webhook-audit.service.ts",
         "runtime:backend/src/modules/upload/services/supabase-storage.service.ts"
@@ -2586,6 +2658,19 @@
       "id": "runtime:backend/src/modules/seo-monitoring/seo-monitoring.module.ts",
       "kind": "nestjs-module",
       "path": "backend/src/modules/seo-monitoring/seo-monitoring.module.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/database/database.module.ts",
+        "runtime:backend/src/modules/seo-projection/seo-projection-refresh.processor.ts",
+        "runtime:backend/src/modules/seo-projection/seo-projection-write.processor.ts"
+      ],
+      "id": "runtime:backend/src/modules/seo-projection/seo-projection.module.ts",
+      "kind": "nestjs-module",
+      "path": "backend/src/modules/seo-projection/seo-projection.module.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
@@ -3578,6 +3663,9 @@
         "runtime:backend/src/modules/agentic-engine/services/evidence-ledger.service.ts",
         "runtime:backend/src/modules/agentic-engine/services/run-manager.service.ts",
         "runtime:backend/src/modules/cart/cart.module.ts",
+        "runtime:backend/src/modules/media-factory/render/render-adapter.service.ts",
+        "runtime:backend/src/modules/media-factory/services/video-data.service.ts",
+        "runtime:backend/src/modules/media-factory/services/video-gates.service.ts",
         "runtime:backend/src/modules/rag-proxy/rag-proxy.module.ts",
         "runtime:backend/src/modules/seo-monitoring/processors/cwv-aggregation.processor.ts",
         "runtime:backend/src/modules/seo-monitoring/processors/seo-daily-fetch.processor.ts",
@@ -3592,6 +3680,7 @@
         "runtime:backend/src/workers/processors/email.processor.ts",
         "runtime:backend/src/workers/processors/pipeline-chain.processor.ts",
         "runtime:backend/src/workers/processors/seo-monitor.processor.ts",
+        "runtime:backend/src/workers/processors/video-execution.processor.ts",
         "runtime:backend/src/workers/services/seo-monitor-scheduler.service.ts"
       ],
       "id": "runtime:backend/src/workers/worker.module.ts",
@@ -3624,6 +3713,15 @@
       "id": "runtime:frontend/app/root.tsx",
       "kind": "other",
       "path": "frontend/app/root.tsx",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [],
+      "id": "runtime:frontend/app/routes.ts",
+      "kind": "other",
+      "path": "frontend/app/routes.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
       "status": "LIVE"
@@ -4350,15 +4448,6 @@
     },
     {
       "dependsOn": [],
-      "id": "runtime:frontend/app/routes/admin.rag.ingest.$jobId.tsx",
-      "kind": "remix-route",
-      "path": "frontend/app/routes/admin.rag.ingest.$jobId.tsx",
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
-      "dependsOn": [],
       "id": "runtime:frontend/app/routes/admin.rag.ingest.tsx",
       "kind": "remix-route",
       "path": "frontend/app/routes/admin.rag.ingest.tsx",
@@ -4778,6 +4867,78 @@
       "id": "runtime:frontend/app/routes/admin.v-level-status.tsx",
       "kind": "remix-route",
       "path": "frontend/app/routes/admin.v-level-status.tsx",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [],
+      "id": "runtime:frontend/app/routes/admin.video-hub._index.tsx",
+      "kind": "remix-route",
+      "path": "frontend/app/routes/admin.video-hub._index.tsx",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [],
+      "id": "runtime:frontend/app/routes/admin.video-hub.assets.tsx",
+      "kind": "remix-route",
+      "path": "frontend/app/routes/admin.video-hub.assets.tsx",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [],
+      "id": "runtime:frontend/app/routes/admin.video-hub.executions.$executionLogId.tsx",
+      "kind": "remix-route",
+      "path": "frontend/app/routes/admin.video-hub.executions.$executionLogId.tsx",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [],
+      "id": "runtime:frontend/app/routes/admin.video-hub.executions._index.tsx",
+      "kind": "remix-route",
+      "path": "frontend/app/routes/admin.video-hub.executions._index.tsx",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [],
+      "id": "runtime:frontend/app/routes/admin.video-hub.productions.$briefId.tsx",
+      "kind": "remix-route",
+      "path": "frontend/app/routes/admin.video-hub.productions.$briefId.tsx",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [],
+      "id": "runtime:frontend/app/routes/admin.video-hub.productions._index.tsx",
+      "kind": "remix-route",
+      "path": "frontend/app/routes/admin.video-hub.productions._index.tsx",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [],
+      "id": "runtime:frontend/app/routes/admin.video-hub.templates.tsx",
+      "kind": "remix-route",
+      "path": "frontend/app/routes/admin.video-hub.templates.tsx",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [],
+      "id": "runtime:frontend/app/routes/admin.video-hub.tsx",
+      "kind": "remix-route",
+      "path": "frontend/app/routes/admin.video-hub.tsx",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
@@ -5717,24 +5878,6 @@
       "id": "runtime:frontend/app/routes/search.tsx",
       "kind": "remix-route",
       "path": "frontend/app/routes/search.tsx",
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
-      "dependsOn": [],
-      "id": "runtime:frontend/app/routes/sitemap-$.tsx",
-      "kind": "remix-route",
-      "path": "frontend/app/routes/sitemap-$.tsx",
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
-      "dependsOn": [],
-      "id": "runtime:frontend/app/routes/sitemap[.]xml.tsx",
-      "kind": "remix-route",
-      "path": "frontend/app/routes/sitemap[.]xml.tsx",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
