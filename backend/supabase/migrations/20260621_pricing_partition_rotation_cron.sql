@@ -15,10 +15,12 @@
 -- Pattern aligné sur 20260522_seo_snapshot_partition_rotation.sql (cron quotidien
 -- idempotent `cron.schedule(...) WHERE NOT EXISTS`) + maintain_*_partitions +1 mois.
 -- Additive, idempotente, reversible (cf. .down.sql). search_path pinné (advisor).
+-- assume_in_transaction (squawk) : PAS de BEGIN/COMMIT explicite.
 -- Rollback : 20260621_pricing_partition_rotation_cron.down.sql
 -- ============================================================================
 
-BEGIN;
+SET lock_timeout = '5s';
+SET statement_timeout = '15s';
 
 -- ----------------------------------------------------------------------------
 -- 1) Fonction de maintenance manquante pour pieces_price_history
@@ -83,8 +85,6 @@ SELECT cron.schedule(
 ) WHERE NOT EXISTS (
   SELECT 1 FROM cron.job WHERE jobname = 'supplier-offer-snapshot-partition-rotation'
 );
-
-COMMIT;
 
 -- ----------------------------------------------------------------------------
 -- Vérification post-apply (manuelle) :
