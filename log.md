@@ -562,3 +562,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/sitemap-children-dev-parity`
 - **Décision** : fix(sitemap): serve /sitemap*.xml from Node for DEV/PROD edge parity
 - **Sortie** : PR #1068 | commits 05ca12857
+
+## 2026-06-21 — fix/sitemap-children-dev-parity (auto)
+
+- **Branche** : `fix/sitemap-children-dev-parity`
+- **Décision** : Merge remote-tracking branch 'origin/main' into fix/sitemap-children-dev-parity (+3 other commits)
+- **Sortie** : PR #1068 | commits e0bd733a0 77a4a82ca 59b7e510f 05ca12857
