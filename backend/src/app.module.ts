@@ -56,6 +56,7 @@ import { ApiModule as ErrorsApiModule } from './api/api.module'; // 🔌 NOUVEAU
 import { ConfigModule as CustomConfigModule } from './modules/config/config.module'; // 🔧 NOUVEAU - Module config enhanced !
 import { MetadataModule } from './modules/metadata/metadata.module'; // 🔍 NOUVEAU - Module metadata optimisé !
 import { CatalogModule } from './modules/catalog/catalog.module'; // ✅ ACTIVÉ - Catalogue automobile complet !
+import { SubstitutionModule } from './modules/substitution/substitution.module'; // 🔁 ACTIVÉ - moteur substitution: 404/410 SEO sur pages pièces vides (owner GO 2026-06-21)
 // import { CatalogModuleSimple } from './modules/catalog/catalog-simple.module'; // 🔧 TEMPORAIREMENT DÉSACTIVÉ - Version simplifiée pour test pièces !
 import { GammeRestModule } from './modules/gamme-rest/gamme-rest.module'; // 🎯 NOUVEAU - API REST simple pour gammes !
 import { WorkerModule } from './workers/worker.module'; // 🔄 NOUVEAU - Module Workers BullMQ pour jobs asynchrones !
@@ -230,6 +231,7 @@ import { TrendSignalsModule } from './modules/trend-signals/trend-signals.module
 
     // 🚗 CATALOGUE AUTOMOBILE
     CatalogModule, // ✅ ACTIVÉ - Catalogue automobile complet avec logique PHP exacte !
+    SubstitutionModule, // 🔁 ACTIVÉ - moteur substitution (404/410 SEO sur pages pièces vides) — owner GO 2026-06-21
     // CatalogModuleSimple, // 🔧 TEMPORAIREMENT DÉSACTIVÉ - Version simplifiée pour test pièces !
     GammeRestModule, // 🎯 ACTIVÉ - API REST simple pour gammes avec vraies tables !
     MarketingModule, // 📊 ACTIVÉ - Module marketing avec backlinks, content roadmap et KPIs !
