@@ -136,8 +136,18 @@ jobs:
         run: |
           echo "Validating OpenAPI specifications..."
           
-          # Find all OpenAPI spec files
-          API_SPECS=$(find .spec/api -name "*.yaml" -o -name "*.yml" || true)
+          # OpenAPI 3.x specs: per-domain contracts under .spec/apis/ plus the
+          # aggregate root .spec/openapi.yaml. (.spec/asyncapi.yaml is AsyncAPI —
+          # a different schema — and is intentionally NOT fed to
+          # openapi-spec-validator.) The previous glob pointed at .spec/api
+          # (singular), a non-existent directory, so this step silently
+          # validated nothing while 3 real specs drifted unchecked.
+          API_SPECS=$(
+            {
+              find .spec/apis \( -name "*.yaml" -o -name "*.yml" \) 2>/dev/null
+              [ -f .spec/openapi.yaml ] && echo .spec/openapi.yaml
+            } || true
+          )
           
           if [ -z "$API_SPECS" ]; then
             echo "ℹ️ No OpenAPI specs found yet"
@@ -245,7 +255,7 @@ jobs:
           # `set -e` crashes the whole step otherwise (observed on .spec/api).
           FEATURE_COUNT=$(find .spec/features -name "*.md" 2>/dev/null | wc -l)
           ARCH_COUNT=$(find .spec/architecture -name "*.md" 2>/dev/null | wc -l)
-          API_COUNT=$(find .spec/api \( -name "*.yaml" -o -name "*.yml" \) 2>/dev/null | wc -l)
+          API_COUNT=$( { find .spec/apis \( -name "*.yaml" -o -name "*.yml" \) 2>/dev/null; [ -f .spec/openapi.yaml ] && echo x; } | wc -l)
           TYPE_COUNT=$(find .spec/types -name "*.ts" 2>/dev/null | wc -l)
           WORKFLOW_COUNT=$(find .spec/workflows -name "*.md" 2>/dev/null | wc -l)
           
