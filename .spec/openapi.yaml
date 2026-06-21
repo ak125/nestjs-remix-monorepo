@@ -435,7 +435,7 @@ paths:
                 properties:
                   error:
                     type: string
-                    example: Stock insuffisant (disponible: 1)
+                    example: "Stock insuffisant (disponible: 1)"
 
   /api/cart/items/{productId}:
     delete:
