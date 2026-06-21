@@ -20,12 +20,12 @@ on:
       - "knip.json"
       - ".dependency-cruiser.cjs"
       - "sgconfig.yml"
-      - "package.json"
+      - "**/package.json"   # root + backend/ + frontend/ + all workspaces (was root-only -> #1052 skip)
       - "package-lock.json"
       - "audit-reports/phase0-baseline.json"
       - ".github/workflows/audit.yml"
-      - ".spec/00-canon/repository-registry/architecture.yaml"
-      - ".spec/00-canon/repository-registry/db.yaml"
+      - ".spec/00-canon/repository-registry/**"   # ALL L2 overlays the contract suite reads (was architecture+db only)
+      - "audit/registry/**"                        # L1 projections the contract tests assert against
       - ".dependency-cruiser.generated.cjs"
 
 permissions:
