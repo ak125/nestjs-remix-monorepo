@@ -1,3 +1,7 @@
+-- squawk-ignore-file require-concurrent-index-creation
+--   Justification : SECTION 0 crée un index unique PARTIEL sur kg_nodes (table
+--   minuscule ~83 lignes → lock sub-ms). CONCURRENTLY est incompatible avec
+--   assume_in_transaction (.squawk.toml, l'outil enveloppe la migration) → impossible ici.
 -- =============================================================================
 -- ADR-032 — Diagnostic & Maintenance Unification (Phase 1 PR-1)
 -- Migration : kg_* canon for maintenance + DTC view + RPCs (pas de DROP, audit
@@ -44,7 +48,12 @@
 -- Idempotent : IF NOT EXISTS / CREATE OR REPLACE / ON CONFLICT DO NOTHING.
 -- =============================================================================
 
-BEGIN;
+-- assume_in_transaction (squawk) : PAS de BEGIN/COMMIT explicite — l'outil de
+-- migration enveloppe le fichier dans une transaction. Timeouts avant opérations
+-- potentiellement lentes (squawk require-timeout-settings ; convention
+-- 20260621_pricing_partition_rotation_cron).
+SET lock_timeout = '5s';
+SET statement_timeout = '15s';
 
 -- =============================================================================
 -- SECTION 0 — Contrainte natural-key MaintenanceInterval (préalable ON CONFLICT)
@@ -453,7 +462,7 @@ COMMENT ON FUNCTION public.kg_get_dtc_lookup(TEXT) IS
 -- Voir mémoire `diag-safety-rule-canonical-distinct.md`.
 -- =============================================================================
 
-COMMIT;
+-- (pas de COMMIT explicite : assume_in_transaction — l'outil de migration committe)
 
 -- =============================================================================
 -- ANCIEN backfill V1 (commenté, conservé pour traçabilité du mapping
