@@ -37,7 +37,7 @@
   "devDependencies": {
     "@fafa/eslint-config": "*",
     "@fafa/typescript-config": "*",
-    "@types/node": "^20.17.6",
+    "@types/node": "^24",
     "eslint": "^8.57.1",
     "tsup": "^8.3.5",
     "typescript": "^5.9.3",
