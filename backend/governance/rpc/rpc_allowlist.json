@@ -390,6 +390,11 @@
       "reason": "Read-only optimization (migrated from P2)"
     },
     {
+      "name": "get_homepage_families",
+      "volatility": "STABLE",
+      "reason": "Homepage families read-path (SECURITY DEFINER) — replaces direct catalog_family/.from() reads broken under anon (ADR-028, DB row_security=off)"
+    },
+    {
       "name": "get_listing_products_extended",
       "volatility": "STABLE",
       "reason": "SELECT only"
