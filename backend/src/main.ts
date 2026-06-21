@@ -44,6 +44,7 @@ import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
 import { SITE_ORIGIN } from './config/app.config';
 import { LandingAttributionMiddleware } from './modules/analytics/landing-attribution.middleware';
+import { SitemapStaticMiddleware } from './modules/seo/middleware/sitemap-static.middleware';
 
 import RedisStore from 'connect-redis';
 import session from 'express-session';
@@ -196,6 +197,17 @@ async function bootstrap() {
       index: false,
     });
     logger.log('Assets statiques configurés');
+
+    // Sitemaps statiques racine (/sitemap.xml, /sitemap-*.xml) servis depuis
+    // /var/www/sitemaps — miroir du bloc Caddy @sitemaps (config/caddy/Caddyfile).
+    // Indispensable en DEV (pas de Caddy) où aucune route React Router ne peut
+    // matcher un splat préfixé `sitemap-*`. Lecture seule (compatible READ_ONLY).
+    // Doit précéder le catch-all RemixController @All(':path*').
+    const sitemapStatic = new SitemapStaticMiddleware();
+    app.use((req: any, res: any, nextFn: any) =>
+      sitemapStatic.use(req, res, nextFn),
+    );
+    logger.log('Middleware sitemaps statiques initialisé');
 
     // GlobalErrorFilter is registered via APP_FILTER in ErrorsModule (DI-based)
     // It catches ALL exceptions: DomainException, HttpException, and raw Errors

@@ -556,3 +556,15 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/media-factory-revive-fetch`
 - **Décision** : Merge remote-tracking branch 'origin/main' into feat/media-factory-revive-fetch (+13 other commits)
 - **Sortie** : PR #1043 | commits 341285c3c 029e2eac3 c95c5c113 79bd9fb96 66a8a906e 8c2a5e5a8 ef7a98b7f 0b2fade99 03f308e68 b6d0907bc cb857874f 7ff079f64 a0e645f53 e410a5194
+
+## 2026-06-21 — fix/sitemap-children-dev-parity (auto)
+
+- **Branche** : `fix/sitemap-children-dev-parity`
+- **Décision** : fix(sitemap): serve /sitemap*.xml from Node for DEV/PROD edge parity
+- **Sortie** : PR #1068 | commits 05ca12857
+
+## 2026-06-21 — fix/sitemap-children-dev-parity (auto)
+
+- **Branche** : `fix/sitemap-children-dev-parity`
+- **Décision** : Merge remote-tracking branch 'origin/main' into fix/sitemap-children-dev-parity (+3 other commits)
+- **Sortie** : PR #1068 | commits e0bd733a0 77a4a82ca 59b7e510f 05ca12857
