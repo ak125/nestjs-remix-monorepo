@@ -574,3 +574,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `chore/node24-align-types-node-24`
 - **Décision** : chore(node24): align @types/node to ^24
 - **Sortie** : PR aucune | commits 915dd3b05
+
+## 2026-06-21 — chore/node24-align-types-node-24 (auto)
+
+- **Branche** : `chore/node24-align-types-node-24`
+- **Décision** : chore(node24): regenerate dependency-modernization-inventory after @types/node@24 (+2 other commits)
+- **Sortie** : PR #1087 | commits 6ae2d6336 29a9c49e8 915dd3b05
