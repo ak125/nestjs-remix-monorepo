@@ -16,8 +16,8 @@
   },
   "knip": {
     "unused_files": 334,
-    "unused_exports": 247,
-    "unused_types": 231,
+    "unused_exports": 258,
+    "unused_types": 247,
     "unused_dependencies": 4,
     "unused_dev_dependencies": 5,
     "unlisted_dependencies": 11,
@@ -37,7 +37,7 @@
     "warnings": 148
   },
   "ast_grep": {
-    "warnings": 34,
+    "warnings": 64,
     "errors": 0
   },
   "notes": [
