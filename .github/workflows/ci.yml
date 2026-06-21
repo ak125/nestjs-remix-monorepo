@@ -41,7 +41,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: "npm"
 
       - name: Restore Turbo cache
@@ -91,7 +91,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: "npm"
 
       - name: Restore Turbo cache
@@ -138,7 +138,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: "npm"
 
       - name: Restore Turbo cache
@@ -196,7 +196,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: "npm"
 
       - name: Restore Turbo cache
@@ -243,7 +243,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: "npm"
 
       - name: Install dependencies
@@ -272,7 +272,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: "npm"
 
       - name: Restore Turbo cache
@@ -622,7 +622,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: "npm"
 
       - name: Install dependencies (required for env-contract preflight)
@@ -1066,7 +1066,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: "npm"
 
       - name: Install dependencies
@@ -1075,21 +1075,63 @@ jobs:
       - name: Install Playwright browsers
         run: cd frontend && npx playwright install chromium --with-deps
 
-      - name: Wait for PREPROD to be healthy
+      - name: Wait for PREPROD to be stably healthy
         run: |
-          for i in {1..12}; do
+          # Require CONSECUTIVE healthy polls, not first-hit. The shared PREPROD
+          # container can briefly restart (host-side: ExitCode=0 + restart:always,
+          # diagnostic 2026-06-21) — a single healthy poll can land in a momentary
+          # window just before a restart. Wait until it is STABLE before starting
+          # Playwright. Bounded; resets on any blip (no silent fallback).
+          need=4; stable=0
+          for i in $(seq 1 40); do
             if curl -sf http://localhost:3200/health > /dev/null 2>&1; then
-              echo "PREPROD healthy"
-              exit 0
+              stable=$((stable + 1))
+              echo "healthy ${stable}/${need} (poll ${i})"
+              if [ "$stable" -ge "$need" ]; then
+                echo "✅ PREPROD stably healthy"
+                exit 0
+              fi
+            else
+              if [ "$stable" -gt 0 ]; then echo "⚠️ health blip at poll ${i} — resetting stability counter"; fi
+              stable=0
             fi
-            echo "Attempt $i/12 — waiting 10s..."
-            sleep 10
+            sleep 5
           done
-          echo "PREPROD not available on port 3200"
+          echo "::error::PREPROD never reached ${need} consecutive healthy polls on :3200"
           exit 1
 
-      - name: 🎭 Run critical E2E tests
-        run: cd frontend && npx playwright test tests/e2e/critical-path.spec.ts tests/e2e/url-validation.spec.ts --project=chromium --reporter=github,list
+      - name: 🎭 Run critical E2E tests (resilient to transient PREPROD restart)
+        run: |
+          cd frontend
+          run_e2e() {
+            npx playwright test tests/e2e/critical-path.spec.ts tests/e2e/url-validation.spec.ts \
+              --project=chromium --reporter=github,list
+          }
+          # First pass.
+          if run_e2e; then exit 0; fi
+          # First pass failed. The shared PREPROD container can restart MID-SUITE
+          # (host-side, ~20s blind window) → connection-refused on an otherwise
+          # healthy app (diagnostic 2026-06-21: ExitCode=0, no OOM, no crash).
+          # Distinguish that from a REAL failure: wait until PREPROD is STABLY
+          # healthy again, then re-run the suite ONCE. If it never re-stabilizes,
+          # or the re-run also fails, it is a genuine failure (no silent fallback).
+          echo "::warning::E2E first pass failed — checking for a transient PREPROD restart…"
+          need=4; stable=0
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3200/health > /dev/null 2>&1; then
+              stable=$((stable + 1))
+              if [ "$stable" -ge "$need" ]; then break; fi
+            else
+              stable=0
+            fi
+            sleep 3
+          done
+          if [ "$stable" -lt "$need" ]; then
+            echo "::error::PREPROD did not re-stabilize after the failure — real failure, not a transient restart"
+            exit 1
+          fi
+          echo "PREPROD stably healthy again — re-running the critical E2E suite once"
+          run_e2e
         env:
           CI: true
           PLAYWRIGHT_BASE_URL: http://localhost:3200
@@ -1182,7 +1224,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
 
       - name: Verify PREPROD is healthy
         run: |

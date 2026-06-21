@@ -36,7 +36,7 @@ jobs:
         # canonical pattern used by the other self-hosted jobs in ci.yml.
         uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
 
       - name: 🏥 Health endpoint
         id: health-check

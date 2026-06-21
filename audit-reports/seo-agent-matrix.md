@@ -1,7 +1,7 @@
 # SEO Agent Operating Matrix
 
-> Généré le : 2026-05-05T14:12:53.331Z
-> Sources hash : registry=8efeb1b3 types=6c585a30 catalog=de4b23f1 roleIds=1e6f6ff6
+> Généré le : 2026-06-21T20:06:15.256Z
+> Sources hash : registry=4236eaa3 types=6c585a30 catalog=de4b23f1 roleIds=1e6f6ff6
 > Registry version : 1.0.0 — Field catalog : 141 entrées
 
 ## Matrice principale
