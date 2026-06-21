@@ -46,7 +46,7 @@ const GENERATED_MODULE_FORMAT: 'cjs' | 'mjs' = 'cjs';
 
 // Supported Node majors. util.inspect()'s output is NOT stable across untested majors.
 // Extend after re-running determinism tests.
-const SUPPORTED_NODE_MAJORS = ['22'];
+const SUPPORTED_NODE_MAJORS = ['22', '24'];
 
 {
   const currentMajor = process.versions.node.split('.')[0];

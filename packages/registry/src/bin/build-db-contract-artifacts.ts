@@ -35,7 +35,7 @@ function fail(msg: string): never {
 // over zodToJsonSchema()'s deterministic output — no util.inspect() dependency,
 // so output is byte-identical across 20.x and 22.x. Extend after re-running
 // determinism on any new major (Node 24+ should be re-verified).
-const SUPPORTED_NODE_MAJORS = ['20', '22'];
+const SUPPORTED_NODE_MAJORS = ['20', '22', '24'];
 
 {
   const currentMajor = process.versions.node.split('.')[0];

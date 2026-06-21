@@ -5,7 +5,7 @@
  * Source SHA-256:              096d0bdd137e677d8a5cbefa7db1c8b1e9bb68724a59c067368911cd08a30588
  * Generated format version:    1
  * Generated module format:     cjs
- * Generated with Node:         v22.x
+ * Generated with Node:         v22|v24.x
  * Targets depcruise:           16.x
  * Ownership:                   @repo/registry (PR review required for any change to the generator)
  * Generator:                   @repo/registry bin "build-architecture-artifacts"

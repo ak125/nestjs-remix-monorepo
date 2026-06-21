@@ -35,7 +35,7 @@ function fail(msg: string): never {
 // deterministic output — byte-identical across 20.x and 22.x. Empirically
 // verified by PR-W4 #513 on db-contract (same pattern); re-verify on new
 // majors before extending.
-const SUPPORTED_NODE_MAJORS = ["20", "22"];
+const SUPPORTED_NODE_MAJORS = ["20", "22", "24"];
 
 {
   const currentMajor = process.versions.node.split(".")[0];
