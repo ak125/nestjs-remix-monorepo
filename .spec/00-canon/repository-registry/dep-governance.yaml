@@ -172,8 +172,8 @@ dependencies:
     family: observability
     domain: D10
     owner: "@ak125"
-  - id: "npm:@sentry/remix@^10.51.0"
-    name: "@sentry/remix"
+  - id: "npm:@sentry/react-router@^10.51.0"
+    name: "@sentry/react-router"
     family: observability
     domain: D10
     owner: "@ak125"
