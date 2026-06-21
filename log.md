@@ -568,3 +568,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/sitemap-children-dev-parity`
 - **Décision** : Merge remote-tracking branch 'origin/main' into fix/sitemap-children-dev-parity (+3 other commits)
 - **Sortie** : PR #1068 | commits e0bd733a0 77a4a82ca 59b7e510f 05ca12857
+
+## 2026-06-21 — chore/node24-remotion-types-node-24 (auto)
+
+- **Branche** : `chore/node24-remotion-types-node-24`
+- **Décision** : fix(remotion): align @types/node to ^24 + make composition props optional
+- **Sortie** : PR #1089 | commits 6348dac8d
