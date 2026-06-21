@@ -34,12 +34,12 @@ interface NeChangePasTropViteProps {
   briefId?: string;
   videoType?: string;
   vertical?: string;
-  hook: string;
-  symptom: string;
-  pieceWrong: string;
-  causes: Cause[];
-  advice: string;
-  cta: string;
+  hook?: string;
+  symptom?: string;
+  pieceWrong?: string;
+  causes?: Cause[];
+  advice?: string;
+  cta?: string;
   disclaimer?: string;
   audioUrl?: string;
   brandName?: string;
