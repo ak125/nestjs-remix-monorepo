@@ -30,7 +30,7 @@ function fail(msg: string): never {
   throw new DepGovernanceBuildError(msg);
 }
 
-const SUPPORTED_NODE_MAJORS = ["20", "22"];
+const SUPPORTED_NODE_MAJORS = ["20", "22", "24"];
 
 {
   const currentMajor = process.versions.node.split(".")[0];
