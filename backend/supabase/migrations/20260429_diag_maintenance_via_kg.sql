@@ -23,9 +23,42 @@
 -- Voir mémoire `diag-safety-rule-canonical-distinct.md` + ADR-032 amendement D1.
 --
 -- Safe to apply: OUI (pas de DROP destructif, juste backfill kg_nodes + RPCs).
+--
+-- DURCISSEMENT 2026-06-21 (application réelle — runtime-truth-p0 drift fix) :
+--   a) SECTION 0 : index unique partiel `uq_kg_nodes_maintenance_alias`
+--      (node_alias WHERE node_type='MaintenanceInterval') — node_alias n'est PAS
+--      unique globalement en DB → l'`ON CONFLICT` original aurait échoué.
+--   b) SECTION 1 : `ON CONFLICT (node_alias) WHERE node_type='MaintenanceInterval'`
+--      pour inférer l'index partiel.
+--   c) Les 3 RPCs : `SET search_path = public` (convention kg_* uniforme + advisor
+--      function_search_path_mutable) ; vue `v_dtc_lookup` en `security_invoker`
+--      (convention 20260422_views_invoker_kg). Aucun changement de logique.
+--   d) SECTION 1 : enums du backfill alignés sur les CHECK constraints réelles de
+--      kg_nodes (interval_type ∈ {km,months,both}, source_type='oem',
+--      validation_status='pending') — les valeurs d'origine
+--      'fixed'/'time_based'/'editorial'/'validated' violaient les contraintes.
+--   e) maintenance_priority : la colonne préexiste (kg_v3_maintenance, taxonomie
+--      CANON anglaise {critical,important,recommended,optional}) → on ne re-backfille
+--      PAS (SECTION 2 neutralisée) ; les 3 RPCs mappent anglais→français en sortie
+--      pour le contrat TS/frontend. Reconciliation-by-adapter à ratifier ADR-032.
+-- Idempotent : IF NOT EXISTS / CREATE OR REPLACE / ON CONFLICT DO NOTHING.
 -- =============================================================================
 
 BEGIN;
+
+-- =============================================================================
+-- SECTION 0 — Contrainte natural-key MaintenanceInterval (préalable ON CONFLICT)
+-- =============================================================================
+-- Le backfill SECTION 1 s'appuie sur `ON CONFLICT (node_alias)` pour rester
+-- idempotent, mais `kg_nodes.node_alias` N'EST PAS unique globalement (audit DB
+-- 2026-06-21 : 83 rows / 81 alias distincts → 2 doublons sur d'autres node_type).
+-- On pose donc un index unique *partiel* scopé au seul type MaintenanceInterval
+-- (les 13 alias maintenance actuels sont distincts) — ce qui (a) rend le
+-- `ON CONFLICT (node_alias) WHERE node_type='MaintenanceInterval'` inférable, et
+-- (b) matérialise l'invariant réel : un alias maintenance = une seule entrée.
+CREATE UNIQUE INDEX IF NOT EXISTS uq_kg_nodes_maintenance_alias
+  ON public.kg_nodes (node_alias)
+  WHERE node_type = 'MaintenanceInterval';
 
 -- =============================================================================
 -- SECTION 1 — Backfill 6 MaintenanceInterval missing
@@ -46,38 +79,49 @@ INSERT INTO public.kg_nodes (
   node_id, node_type, node_label, node_alias,
   km_interval, month_interval, interval_type,
   confidence, validation_status, status, is_active,
-  source_type, created_at, updated_at, created_by
+  source_type, maintenance_priority, created_at, updated_at, created_by
+-- NB enums alignés sur le schéma kg_nodes réel (audit DB 2026-06-21) :
+--   interval_type ∈ {km,months,both} (dérivé km/mois) · source_type='oem'
+--   (intervalles OEM-standard ; provenance éditoriale tracée via created_by) ·
+--   validation_status='pending' (convention des 13 nodes existants ; les RPCs ne
+--   filtrent PAS sur validation_status). L'ancien migration utilisait
+--   'fixed'/'time_based'/'editorial'/'validated' — INVALIDES vs CHECK constraints.
+--   maintenance_priority utilise la taxonomie CANON existante (anglais 4 niveaux
+--   {critical,important,recommended,optional}, posée par kg_v3_maintenance) — PAS
+--   la taxonomie française de l'ADR-032 d'origine : la colonne préexiste et est
+--   déjà backfillée. Mapping anglais→français fait à la SORTIE des RPCs (voir
+--   SECTION 3/4) pour honorer le contrat TS/frontend sans muter le canon.
 ) VALUES
   (gen_random_uuid(), 'MaintenanceInterval', 'Remplacement filtre à huile',
-   'filtre-huile', 15000, 12, 'fixed',
-   0.90, 'validated', 'active', TRUE,
-   'editorial', NOW(), NOW(), 'adr-032-pr-1'),
+   'filtre-huile', 15000, 12, 'both',
+   0.90, 'pending', 'active', TRUE,
+   'oem', 'critical', NOW(), NOW(), 'adr-032-pr-1'),
 
   (gen_random_uuid(), 'MaintenanceInterval', 'Remplacement batterie',
-   'batterie', NULL, 60, 'time_based',
-   0.85, 'validated', 'active', TRUE,
-   'editorial', NOW(), NOW(), 'adr-032-pr-1'),
+   'batterie', NULL, 60, 'months',
+   0.85, 'pending', 'active', TRUE,
+   'oem', 'important', NOW(), NOW(), 'adr-032-pr-1'),
 
   (gen_random_uuid(), 'MaintenanceInterval', 'Remplacement amortisseurs',
-   'amortisseur', 90000, 72, 'fixed',
-   0.85, 'validated', 'active', TRUE,
-   'editorial', NOW(), NOW(), 'adr-032-pr-1'),
+   'amortisseur', 90000, 72, 'both',
+   0.85, 'pending', 'active', TRUE,
+   'oem', 'important', NOW(), NOW(), 'adr-032-pr-1'),
 
   (gen_random_uuid(), 'MaintenanceInterval', 'Remplacement pneus',
-   'pneu', 45000, 60, 'fixed',
-   0.85, 'validated', 'active', TRUE,
-   'editorial', NOW(), NOW(), 'adr-032-pr-1'),
+   'pneu', 45000, 60, 'both',
+   0.85, 'pending', 'active', TRUE,
+   'oem', 'critical', NOW(), NOW(), 'adr-032-pr-1'),
 
   (gen_random_uuid(), 'MaintenanceInterval', 'Remplacement plaquettes de frein avant',
-   'remplacement-plaquettes-frein-avant', 40000, NULL, 'fixed',
-   0.90, 'validated', 'active', TRUE,
-   'editorial', NOW(), NOW(), 'adr-032-pr-1'),
+   'remplacement-plaquettes-frein-avant', 40000, NULL, 'km',
+   0.90, 'pending', 'active', TRUE,
+   'oem', 'critical', NOW(), NOW(), 'adr-032-pr-1'),
 
   (gen_random_uuid(), 'MaintenanceInterval', 'Remplacement disques de frein avant',
-   'remplacement-disques-frein-avant', 70000, NULL, 'fixed',
-   0.90, 'validated', 'active', TRUE,
-   'editorial', NOW(), NOW(), 'adr-032-pr-1')
-ON CONFLICT (node_alias) DO NOTHING;
+   'remplacement-disques-frein-avant', 70000, NULL, 'km',
+   0.90, 'pending', 'active', TRUE,
+   'oem', 'critical', NOW(), NOW(), 'adr-032-pr-1')
+ON CONFLICT (node_alias) WHERE node_type = 'MaintenanceInterval' DO NOTHING;
 
 -- Validation gate post-insert : 19 MaintenanceInterval attendus (13 actuels + 6).
 DO $$
@@ -96,49 +140,23 @@ BEGIN
 END $$;
 
 -- =============================================================================
--- SECTION 2 — Colonne maintenance_priority + backfill 19 nodes
+-- SECTION 2 — maintenance_priority (CANON préexistant — pas de re-backfill)
 -- =============================================================================
--- Aligne sur les 3 niveaux frontend hardcoded actuels (calendrier-entretien.tsx
--- field "importance"). Conforme ADR-032 D7.
+-- ⚠️ Divergence vs ADR-032 d'origine : la colonne `maintenance_priority` est
+-- déjà créée et backfillée par `kg_v3_maintenance` (appliquée 2026-01-26) avec une
+-- taxonomie ANGLAISE 4 niveaux {critical,important,recommended,optional} (CHECK
+-- `kg_nodes_maintenance_priority_check`). L'ADR-032 d'origine voulait une colonne
+-- FRANÇAISE 3 niveaux — assumption invalidée par la réalité DB.
+--   → On NE re-backfille PAS les 13 nodes existants (canon préservé). Les 6 nouveaux
+--     reçoivent leur priority anglaise directement dans l'INSERT SECTION 1.
+--   → Le contrat TS/frontend (français 3 niveaux) est honoré par un mapping
+--     anglais→français à la SORTIE des RPCs (SECTION 3/4), pas en mutant le canon.
+--   → Suivi gouvernance : ratifier ce reconciliation-by-adapter dans ADR-032
+--     (l'option "migrer la colonne en français" reste possible mais a un blast
+--     radius supérieur : remap data + frontend + autres consumers kg).
+-- (La colonne préexiste → aucun ALTER ; aucun UPDATE de re-backfill.)
 
-ALTER TABLE public.kg_nodes
-  ADD COLUMN IF NOT EXISTS maintenance_priority TEXT
-    CHECK (maintenance_priority IN ('critique', 'important', 'normal'));
-
-COMMENT ON COLUMN public.kg_nodes.maintenance_priority IS
-  'ADR-032 D7: priorité maintenance (critique|important|normal) alignée sur '
-  'le frontend calendrier-entretien.tsx. NULL pour nodes non-maintenance.';
-
--- Backfill éditorial des 19 MaintenanceInterval. Mapping basé sur
--- frontend snapshot 2026-04-29 :
-UPDATE public.kg_nodes SET maintenance_priority = CASE node_alias
-  -- critique (sécurité / casse moteur si négligé)
-  WHEN 'vidange-essence'                    THEN 'critique'
-  WHEN 'vidange-diesel'                     THEN 'critique'
-  WHEN 'filtre-huile'                       THEN 'critique'
-  WHEN 'liquide-frein'                      THEN 'critique'
-  WHEN 'remplacement-plaquettes-frein-avant' THEN 'critique'
-  WHEN 'remplacement-disques-frein-avant'   THEN 'critique'
-  WHEN 'distribution'                       THEN 'critique'
-  WHEN 'controle-freinage'                  THEN 'critique'
-  WHEN 'pneu'                               THEN 'critique'
-  -- important (impact performance/longévité, pas immédiatement critique)
-  WHEN 'filtre-air'                         THEN 'important'
-  WHEN 'bougies-essence'                    THEN 'important'
-  WHEN 'bougies-prechauffage'               THEN 'important'
-  WHEN 'liquide-refroidissement'            THEN 'important'
-  WHEN 'batterie'                           THEN 'important'
-  WHEN 'amortisseur'                        THEN 'important'
-  WHEN 'vidange-bvm'                        THEN 'important'
-  WHEN 'vidange-bva'                        THEN 'important'
-  -- normal (confort, hygiène)
-  WHEN 'filtre-habitacle'                   THEN 'normal'
-  WHEN 'recharge-clim'                      THEN 'normal'
-  ELSE NULL
-END
-WHERE node_type = 'MaintenanceInterval';
-
--- Validation gate : tous les 19 doivent avoir maintenance_priority NOT NULL.
+-- Validation gate : les 19 MaintenanceInterval doivent avoir maintenance_priority NOT NULL.
 DO $$
 DECLARE
   v_unset INT;
@@ -183,6 +201,7 @@ RETURNS TABLE (
 )
 LANGUAGE plpgsql
 STABLE
+SET search_path = public
 AS $$
 DECLARE
   v_fuel_type TEXT;
@@ -214,7 +233,15 @@ BEGIN
     n.node_label::TEXT AS rule_label,
     n.km_interval,
     n.month_interval,
-    n.maintenance_priority,
+    -- maintenance_priority : mapping canon anglais (kg_v3_maintenance) → contrat
+    -- TS/frontend français 3 niveaux (recommended+optional collapse → normal).
+    CASE n.maintenance_priority
+      WHEN 'critical'    THEN 'critique'
+      WHEN 'important'   THEN 'important'
+      WHEN 'recommended' THEN 'normal'
+      WHEN 'optional'    THEN 'normal'
+      ELSE NULL
+    END AS maintenance_priority,
     -- détecte fuel-aware nodes par convention de nommage
     CASE
       WHEN n.node_alias LIKE '%-essence%' THEN 'essence'
@@ -244,10 +271,11 @@ BEGIN
     )
   ORDER BY
     CASE n.maintenance_priority
-      WHEN 'critique' THEN 1
-      WHEN 'important' THEN 2
-      WHEN 'normal' THEN 3
-      ELSE 4
+      WHEN 'critical'    THEN 1
+      WHEN 'important'   THEN 2
+      WHEN 'recommended' THEN 3
+      WHEN 'optional'    THEN 4
+      ELSE 5
     END,
     n.node_label;
 END;
@@ -277,6 +305,7 @@ RETURNS TABLE (
 )
 LANGUAGE plpgsql
 STABLE
+SET search_path = public
 AS $$
 DECLARE
   v_fuel_type TEXT;
@@ -291,15 +320,21 @@ BEGIN
         jsonb_build_object(
           'rule_alias',           n.node_alias,
           'rule_label',           n.node_label,
-          'maintenance_priority', n.maintenance_priority,
+          'maintenance_priority', CASE n.maintenance_priority
+                                    WHEN 'critical'    THEN 'critique'
+                                    WHEN 'recommended' THEN 'normal'
+                                    WHEN 'optional'    THEN 'normal'
+                                    ELSE n.maintenance_priority
+                                  END,
           'km_interval',          n.km_interval
         )
         ORDER BY
           CASE n.maintenance_priority
-            WHEN 'critique' THEN 1
-            WHEN 'important' THEN 2
-            WHEN 'normal' THEN 3
-            ELSE 4
+            WHEN 'critical'    THEN 1
+            WHEN 'important'   THEN 2
+            WHEN 'recommended' THEN 3
+            WHEN 'optional'    THEN 4
+            ELSE 5
           END,
           n.node_label
       ) FILTER (WHERE n.node_id IS NOT NULL),
@@ -336,7 +371,8 @@ COMMENT ON FUNCTION public.kg_get_maintenance_alerts_by_milestone(INT[], TEXT) I
 -- Consolide kg_nodes.dtc_code + __seo_observable.dtc_codes[] avec colonne
 -- source ENUM. DISTINCT ON privilégie kg.
 
-CREATE OR REPLACE VIEW public.v_dtc_lookup AS
+CREATE OR REPLACE VIEW public.v_dtc_lookup
+WITH (security_invoker = true) AS
 WITH kg_dtc AS (
   SELECT
     n.dtc_code      AS code,
@@ -391,6 +427,7 @@ RETURNS TABLE (
 )
 LANGUAGE sql
 STABLE
+SET search_path = public
 AS $$
   SELECT v.code, v.description, v.system, v.severity, v.kg_node_id, v.source
   FROM public.v_dtc_lookup v
