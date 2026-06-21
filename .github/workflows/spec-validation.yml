@@ -37,19 +37,16 @@ jobs:
           node-version: '22'
           cache: 'npm'
 
-      - name: Install uv
-        run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-
-      - name: Install specify-cli
-        run: |
-          uv tool install specify-cli --from git+https://github.com/github/spec-kit.git
-
-      - name: Check specify installation
-        run: |
-          export PATH="$HOME/.local/bin:$PATH"
-          specify check
+      # NOTE: `specify check` (spec-kit CLI) was removed here. It validated the
+      # *developer's local tool environment* (git, agent CLIs), never our specs,
+      # so it added zero value in CI. It was installed unpinned from
+      # `git+https://github.com/github/spec-kit.git` (git HEAD) and, on
+      # 2026-06-19, an upstream packaging regression
+      # (`ModuleNotFoundError: No module named 'specify_cli.bundler.lib'`)
+      # made `specify check` exit 1 under `bash -e`, which fast-failed the job
+      # and blocked every real validation step below from ever running.
+      # The actual spec validation (structure / metadata / OpenAPI / ADR /
+      # TypeScript schemas) is self-contained and needs neither uv nor specify.
 
       - name: Validate spec structure
         run: |
