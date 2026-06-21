@@ -464,11 +464,6 @@ entries:
     owner: '@ak125'
     sourceConfidence: medium
     risk: medium
-  - glob: backend/src/modules/blog-metadata/**
-    domain: D5
-    owner: '@ak125/content-team'
-    sourceConfidence: medium
-    risk: low
   - glob: backend/src/modules/blog/**
     domain: D5
     owner: '@ak125/content-team'
