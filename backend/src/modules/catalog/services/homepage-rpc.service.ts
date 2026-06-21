@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { TABLES } from '@repo/database-types';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { CacheService } from '@cache/cache.service';
 import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
@@ -163,11 +162,17 @@ export class HomepageRpcService extends SupabaseBaseService {
 
   /**
    * ⚡ Families-only pour above-fold SSR (Phase 1 perf: split RPC)
-   * Requête Supabase directe — plus rapide que le RPC complet (~50ms vs ~150ms)
+   *
+   * Lecture via la fonction SECURITY DEFINER `get_homepage_families()` — et non plus
+   * via des `.from()` directs sur catalog_family/catalog_gamme/pieces_gamme. Raison :
+   * en READ_ONLY (container PREPROD, ADR-028 Option D) le backend tourne en rôle `anon`,
+   * qui ne peut PAS lire les tables RLS en direct (réglage base `row_security=off` →
+   * erreur 42501). La fonction DEFINER bypasse la RLS, comme tout le reste du read-path
+   * catalogue. La forme de sortie ({ success, catalog: { families } }) est inchangée.
    */
   async getHomepageFamilies() {
     const startTime = performance.now();
-    const cacheKey = 'homepage:families:v1';
+    const cacheKey = 'homepage:families:v2';
 
     const cached = await this.cacheService.get<unknown>(cacheKey);
     if (cached) {
@@ -177,64 +182,28 @@ export class HomepageRpcService extends SupabaseBaseService {
       return cached;
     }
 
-    this.logger.debug('❌ CACHE MISS families, requête Supabase...');
+    this.logger.debug(
+      '❌ CACHE MISS families, appel RPC get_homepage_families...',
+    );
 
-    // Parallel: fetch families + catalog_gamme mapping
-    const [familiesRes, catalogGammesRes] = await Promise.all([
-      this.supabase
-        .from(TABLES.catalog_family)
-        .select('mf_id, mf_name, mf_pic, mf_description, mf_sort')
-        .eq('mf_display', '1'),
-      this.supabase
-        .from(TABLES.catalog_gamme)
-        .select('mc_pg_id, mc_mf_prime, mc_sort'),
-    ]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await this.callRpc<any>(
+      'get_homepage_families',
+      {},
+      {
+        source: 'api',
+        role: 'service_role',
+      },
+    );
 
-    if (familiesRes.error) {
+    if (error || !data?.success) {
       throw new DatabaseException({
         code: ErrorCodes.CATALOG.RPC_FAILED,
-        message: `Families query failed: ${familiesRes.error.message}`,
+        message: `Families RPC failed: ${error?.message ?? 'invalid data'}`,
       });
     }
 
-    // Get gamme IDs from catalog_gamme mapping
-    const gammeIds = (catalogGammesRes.data || []).map((cg) => cg.mc_pg_id);
-
-    const { data: gammes, error: gammesError } = await this.supabase
-      .from(TABLES.pieces_gamme)
-      .select('pg_id, pg_name, pg_alias, pg_img')
-      .in('pg_id', gammeIds);
-
-    if (gammesError) {
-      this.logger.warn('⚠️ Gammes query failed, continuing without gammes');
-    }
-
-    // Build gamme lookup map (String keys to handle type mismatches from Supabase)
-    const gammeMap = new Map((gammes || []).map((g) => [String(g.pg_id), g]));
-
-    // Build families with gammes hierarchy (sort numerically — mf_sort is TEXT in DB)
-    const families = (familiesRes.data || [])
-      .sort((a, b) => Number(a.mf_sort || 0) - Number(b.mf_sort || 0))
-      .map((family) => {
-        const familyGammeLinks = (catalogGammesRes.data || [])
-          .filter((cg) => String(cg.mc_mf_prime) === String(family.mf_id))
-          .sort((a, b) => Number(a.mc_sort || 0) - Number(b.mc_sort || 0));
-
-        const familyGammes = familyGammeLinks
-          .map((cg) => gammeMap.get(String(cg.mc_pg_id)))
-          .filter(Boolean);
-
-        return {
-          mf_id: family.mf_id,
-          mf_name: family.mf_name,
-          mf_pic: family.mf_pic,
-          mf_description: family.mf_description,
-          gammes: familyGammes,
-          gammes_count: familyGammes.length,
-        };
-      });
-
-    const result = { success: true, catalog: { families } };
+    const result = data;
 
     // Cache asynchronously
     this.cacheService
@@ -242,7 +211,7 @@ export class HomepageRpcService extends SupabaseBaseService {
       .catch((err) => this.logger.error('Erreur cache families:', err));
 
     this.logger.log(
-      `✅ Families query en ${(performance.now() - startTime).toFixed(1)}ms (${families.length} familles)`,
+      `✅ Families RPC en ${(performance.now() - startTime).toFixed(1)}ms (${result?.catalog?.families?.length ?? 0} familles)`,
     );
     return result;
   }
