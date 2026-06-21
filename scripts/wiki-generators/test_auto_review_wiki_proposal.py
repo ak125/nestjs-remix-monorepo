@@ -234,6 +234,18 @@ def test_check_source_quality_data_weak():
     assert r["verdict"] == "DATA_WEAK"
 
 
+def test_check_source_quality_web_research_oe_recognized():
+    # web_research_oe (fiches reconstruites depuis l'OE, ex. disque-de-frein) doit être
+    # RECONNU comme source valide -> DATA_WEAK (revue humaine), pas droppé en NOT_APPLICABLE
+    # (sinon NOT_REVIEWABLE pour les meilleures fiches OE). Jamais auto-promu (DATA_WEAK).
+    brief = _data_weak_clear_brief()
+    brief["source_kind"] = "web_research_oe"
+    fm, body = _make_proposal(decision_brief=brief)
+    r = review.check_source_quality(fm, body)
+    assert r["pass"] is True
+    assert r["verdict"] == "DATA_WEAK"
+
+
 # === Scores tests ===
 
 def test_scores_strong_clear_high():
