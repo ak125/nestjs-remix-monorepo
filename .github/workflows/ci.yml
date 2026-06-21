@@ -6,6 +6,17 @@ on:
       - dev
   pull_request: {}
 
+# Garde de concurrence — le container PREPROD (49.12.233.2:3200) est PARTAGÉ (un seul).
+# Sans ça, des pushes `main` rapprochés lancent des `docker compose up` (job `deploy`)
+# qui se chevauchent et SIGTERM le container PENDANT le `e2e-smoke` d'un autre run
+# → "socket hang up" sur la homepage = gate rouge intermittent (ExitCode=0 = restart
+# infra, PAS un crash applicatif — diagnostic 2026-06-21). On sérialise par workflow+ref
+# et on annule le run superséded : seul le DERNIER commit se déploie/teste (sémantique
+# du tag flottant `:preprod` = dernier `main`). PROD (deploy-prod.yml) = workflow distinct, non affecté.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   actions: write
   contents: read
