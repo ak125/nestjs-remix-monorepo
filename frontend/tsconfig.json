@@ -7,7 +7,6 @@
 		"skipLibCheck": true,
 		"lib": ["DOM", "DOM.Iterable", "ES2019"],
 		"isolatedModules": true,
-		"esModuleInterop": false,
 		"jsx": "react-jsx",
 		"noImplicitAny": false,
 		"moduleResolution": "bundler",
@@ -17,7 +16,7 @@
 		"useUnknownInCatchVariables": true,
 		"allowJs": true,
 		"forceConsistentCasingInFileNames": true,
-		"baseUrl": ".",
+		"types": ["vite/client", "vitest/globals", "node"],
 		"rootDirs": [".", "./.react-router/types"],
 		"paths": {
 			"~/*": ["./app/*"]
@@ -25,6 +24,5 @@
 		"noEmit": true,
 		"incremental": true,
 		"tsBuildInfoFile": "./node_modules/.cache/tsc/frontend.tsbuildinfo"
-	},
-	
+	}
 }

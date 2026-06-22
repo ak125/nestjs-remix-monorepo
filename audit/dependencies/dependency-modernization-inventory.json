@@ -1,5 +1,5 @@
 {
-  "artifact_immutability_hash": "sha256:e4cb97fe6ffc5ad883bda4367713ceff7eed2f55216b21d1f314f0e35ca3cb91",
+  "artifact_immutability_hash": "sha256:9745f66e1ff999e7e9bdd7616a74485765f35c7a934a78417284a46682769a0b",
   "divergences": [
     {
       "kind": "specifier",
@@ -178,21 +178,6 @@
       ],
       "resolved_versions": [
         "24.13.2"
-      ]
-    },
-    {
-      "kind": "resolved",
-      "name": "@vitest/browser",
-      "occurrences": [
-        {
-          "declaredIn": "frontend/package.json",
-          "specifier": "^4.1.8",
-          "workspace": "@fafa/frontend"
-        }
-      ],
-      "resolved_versions": [
-        "2.1.9",
-        "4.1.9"
       ]
     },
     {
@@ -536,7 +521,7 @@
         }
       ],
       "resolved_versions": [
-        "18.3.1"
+        "19.2.7"
       ]
     },
     {
@@ -555,7 +540,7 @@
         }
       ],
       "resolved_versions": [
-        "18.3.1"
+        "19.2.7"
       ]
     },
     {
@@ -704,6 +689,81 @@
       "resolved_versions": [
         "3.15.0",
         "4.2.0"
+      ]
+    },
+    {
+      "kind": "resolved",
+      "name": "typescript",
+      "occurrences": [
+        {
+          "declaredIn": "backend/package.json",
+          "specifier": "^5.9.3",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "declaredIn": "frontend/package.json",
+          "specifier": "^5.9.3",
+          "workspace": "@fafa/design-tokens"
+        },
+        {
+          "declaredIn": "package.json",
+          "specifier": "^5.9.3",
+          "workspace": "@fafa/eslint-config"
+        },
+        {
+          "declaredIn": "packages/cwv-taxonomy/package.json",
+          "specifier": "^5.9.3",
+          "workspace": "@fafa/frontend"
+        },
+        {
+          "declaredIn": "packages/database-types/package.json",
+          "specifier": "^5.9.3",
+          "workspace": "@repo/cwv-taxonomy"
+        },
+        {
+          "declaredIn": "packages/design-tokens/package.json",
+          "specifier": "^5.9.3",
+          "workspace": "@repo/database-types"
+        },
+        {
+          "declaredIn": "packages/domain-commerce/package.json",
+          "specifier": "^5.9.3",
+          "workspace": "@repo/domain-commerce"
+        },
+        {
+          "declaredIn": "packages/eslint-config/package.json",
+          "specifier": "^5.9.3",
+          "workspace": "@repo/registry"
+        },
+        {
+          "declaredIn": "packages/registry/package.json",
+          "specifier": "^5.9.3",
+          "workspace": "@repo/seo-role-contracts"
+        },
+        {
+          "declaredIn": "packages/seo-role-contracts/package.json",
+          "specifier": "^5.9.3",
+          "workspace": "@repo/seo-roles"
+        },
+        {
+          "declaredIn": "packages/seo-roles/package.json",
+          "specifier": "^5.9.3",
+          "workspace": "@repo/seo-types"
+        },
+        {
+          "declaredIn": "packages/seo-types/package.json",
+          "specifier": "^5.9.3",
+          "workspace": "@repo/seo-url-contract"
+        },
+        {
+          "declaredIn": "packages/seo-url-contract/package.json",
+          "specifier": "^5.9.3",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
+      "resolved_versions": [
+        "5.7.2",
+        "6.0.3"
       ]
     },
     {
@@ -2565,9 +2625,9 @@
       "blast_radius": "runtime-frontend",
       "canary_abort_conditions": [],
       "compatibility_contracts": [
-        "remix-v2",
+        "react-router-v7",
         "vite-v5",
-        "react-v18"
+        "react-v19"
       ],
       "data_migration_required": false,
       "dependency_lineage": {
@@ -2588,31 +2648,31 @@
         "seo-rendering",
         "frontend-ssr"
       ],
-      "family": "runtime-frontend-remix-vite",
+      "family": "runtime-frontend-react-router-vite",
       "incident_comm_protocol": [
         "status-page",
         "banner"
       ],
       "known_incompatible_families": [],
       "members": [
-        "@remix-run/dev",
-        "@remix-run/eslint-config",
-        "@remix-run/express",
-        "@remix-run/node",
-        "@remix-run/react",
-        "@remix-run/serve",
-        "@remix-run/server-runtime",
+        "@react-router/dev",
+        "@react-router/express",
+        "@react-router/node",
+        "@react-router/remix-routes-option-adapter",
+        "@react-router/serve",
+        "@types/react",
+        "@types/react-dom",
         "react",
         "react-dom",
+        "react-router",
         "vite"
       ],
       "migration_blockers": [
-        "React19Stable",
-        "Vite6EcosystemReady",
-        "Node20Required"
+        "Vite7MigrationReady",
+        "ReactRouter8MigrationReady"
       ],
-      "node_runtime_requirement": ">=20",
-      "notes": "Remix v2 → Vite 6 → React 19 chain. Deferred until React 19 stable + Vite 6 ecosystem caught up. Not in PR-9 scope.\n",
+      "node_runtime_requirement": ">=24",
+      "notes": "React Router 7 + React 19 (migré) + Vite 5. Remix retiré (RR7). Prochaines marches gouvernées par blockers : Vite 7 puis React Router 8. Hors PR-9.\n",
       "observability_requirements": [
         "sentry",
         "structured-logs",
@@ -2634,6 +2694,136 @@
       "packages": [
         {
           "divergent_resolved": false,
+          "divergent_specifiers": false,
+          "name": "@react-router/dev",
+          "occurrences": [
+            {
+              "declaredIn": "frontend/package.json",
+              "specifier": "^7.15.0",
+              "workspace": "@fafa/frontend"
+            },
+            {
+              "declaredIn": "package.json",
+              "specifier": "^7.15.0",
+              "workspace": "nestjs-remix-monorepo"
+            }
+          ],
+          "resolved_versions": [
+            "7.18.0"
+          ]
+        },
+        {
+          "divergent_resolved": false,
+          "divergent_specifiers": true,
+          "name": "@react-router/express",
+          "occurrences": [
+            {
+              "declaredIn": "backend/package.json",
+              "specifier": "^7.0.0",
+              "workspace": "@fafa/backend"
+            },
+            {
+              "declaredIn": "frontend/package.json",
+              "specifier": "^7.15.0",
+              "workspace": "@fafa/frontend"
+            },
+            {
+              "declaredIn": "package.json",
+              "specifier": "^7.15.0",
+              "workspace": "nestjs-remix-monorepo"
+            }
+          ],
+          "resolved_versions": [
+            "7.18.0"
+          ]
+        },
+        {
+          "divergent_resolved": false,
+          "divergent_specifiers": false,
+          "name": "@react-router/node",
+          "occurrences": [
+            {
+              "declaredIn": "frontend/package.json",
+              "specifier": "^7.15.0",
+              "workspace": "@fafa/frontend"
+            },
+            {
+              "declaredIn": "package.json",
+              "specifier": "^7.15.0",
+              "workspace": "nestjs-remix-monorepo"
+            }
+          ],
+          "resolved_versions": [
+            "7.18.0"
+          ]
+        },
+        {
+          "divergent_resolved": false,
+          "divergent_specifiers": false,
+          "name": "@react-router/remix-routes-option-adapter",
+          "occurrences": [
+            {
+              "declaredIn": "frontend/package.json",
+              "specifier": "^7.15.0",
+              "workspace": "@fafa/frontend"
+            }
+          ],
+          "resolved_versions": [
+            "7.18.0"
+          ]
+        },
+        {
+          "divergent_resolved": false,
+          "divergent_specifiers": false,
+          "name": "@react-router/serve",
+          "occurrences": [
+            {
+              "declaredIn": "frontend/package.json",
+              "specifier": "^7.15.0",
+              "workspace": "@fafa/frontend"
+            },
+            {
+              "declaredIn": "package.json",
+              "specifier": "^7.15.0",
+              "workspace": "nestjs-remix-monorepo"
+            }
+          ],
+          "resolved_versions": [
+            "7.18.0"
+          ]
+        },
+        {
+          "divergent_resolved": false,
+          "divergent_specifiers": false,
+          "name": "@types/react",
+          "occurrences": [
+            {
+              "declaredIn": "frontend/package.json",
+              "specifier": "^18.2.20",
+              "workspace": "@fafa/frontend"
+            }
+          ],
+          "resolved_versions": [
+            "19.2.17"
+          ]
+        },
+        {
+          "divergent_resolved": false,
+          "divergent_specifiers": false,
+          "name": "@types/react-dom",
+          "occurrences": [
+            {
+              "declaredIn": "frontend/package.json",
+              "specifier": "^18.2.7",
+              "workspace": "@fafa/frontend"
+            }
+          ],
+          "resolved_versions": [
+            "19.2.3"
+          ]
+        },
+        {
+          "divergent_resolved": false,
           "divergent_specifiers": true,
           "name": "react",
           "occurrences": [
@@ -2649,7 +2839,7 @@
             }
           ],
           "resolved_versions": [
-            "18.3.1"
+            "19.2.7"
           ]
         },
         {
@@ -2669,7 +2859,32 @@
             }
           ],
           "resolved_versions": [
-            "18.3.1"
+            "19.2.7"
+          ]
+        },
+        {
+          "divergent_resolved": false,
+          "divergent_specifiers": true,
+          "name": "react-router",
+          "occurrences": [
+            {
+              "declaredIn": "backend/package.json",
+              "specifier": "^7.0.0",
+              "workspace": "@fafa/backend"
+            },
+            {
+              "declaredIn": "frontend/package.json",
+              "specifier": "^7.15.0",
+              "workspace": "@fafa/frontend"
+            },
+            {
+              "declaredIn": "package.json",
+              "specifier": "^7.15.0",
+              "workspace": "nestjs-remix-monorepo"
+            }
+          ],
+          "resolved_versions": [
+            "7.18.0"
           ]
         },
         {
@@ -2695,12 +2910,21 @@
         }
       ],
       "peer_dependency_cluster": [
-        "@remix-run/*",
+        "@react-router/*",
         "react",
         "react-dom",
+        "@types/react",
+        "@types/react-dom",
         "vite"
       ],
       "peer_dependency_cluster_resolved": [
+        "@react-router/dev",
+        "@react-router/express",
+        "@react-router/node",
+        "@react-router/remix-routes-option-adapter",
+        "@react-router/serve",
+        "@types/react",
+        "@types/react-dom",
         "react",
         "react-dom",
         "vite"
@@ -2764,7 +2988,7 @@
         "dom"
       ],
       "safe_parallel_window_minutes": 0,
-      "source_url": "https://github.com/remix-run/remix/releases",
+      "source_url": "https://github.com/remix-run/react-router/releases",
       "staging_soak_hours": 72,
       "state_compatibility_window_minutes": 0,
       "state_reconciliation_strategy": {
@@ -2777,7 +3001,7 @@
       ],
       "supports_dual_runtime": "none",
       "target_major": "see source_url",
-      "total_occurrences": 6,
+      "total_occurrences": 21,
       "upgrade_cost_estimate": {
         "estimated_engineer_days": 21,
         "estimated_review_load": "extreme"
@@ -3303,7 +3527,7 @@
           ]
         },
         {
-          "divergent_resolved": false,
+          "divergent_resolved": true,
           "divergent_specifiers": false,
           "name": "typescript",
           "occurrences": [
@@ -3374,7 +3598,8 @@
             }
           ],
           "resolved_versions": [
-            "5.9.3"
+            "5.7.2",
+            "6.0.3"
           ]
         }
       ],
@@ -3797,9 +4022,9 @@
     "deps_registry": "audit/registry/deps.json",
     "deps_registry_sha": "sha256:20a1be4e31fee1e65206581c2cea743ca9f11712edf6d8586dce988c5959a811",
     "lockfile": "package-lock.json",
-    "lockfile_sha": "sha256:3b4460fb4270d41652f4988dcca5feb5abf2680171cbf2db4c3010e32c85efe1",
+    "lockfile_sha": "sha256:48084457985c294b257aa9de38b4eabc834719f529948c524c8cba52d0919146",
     "overlay": "audit/dependencies/family-overlay.yaml",
-    "overlay_sha": "sha256:4067a5535b22d0d6c98fa6f3c980189b2a68f9837edd7f7caf1e7b1e10c44746"
+    "overlay_sha": "sha256:5125f1f9db2d1c2be0a86a27da41c4d3823f2ebec82a7623466c74696dbe075d"
   },
   "inventoryFormat": "pr-9-modernization-inventory",
   "matrixVersion": "pr9-v1",
@@ -3812,13 +4037,13 @@
       "observability": 2,
       "queues": 5,
       "runtime-backend": 17,
-      "runtime-frontend": 3,
+      "runtime-frontend": 11,
       "tooling": 15,
-      "unassigned": 171,
+      "unassigned": 163,
       "validation": 2
     },
     "by_pr_assignment": {
-      "deferred": 18,
+      "deferred": 26,
       "pr-9b": 10,
       "pr-9c": 2,
       "pr-9d": 5,
@@ -3830,7 +4055,7 @@
     "families_count": 12,
     "total_occurrences": 339,
     "total_packages": 231,
-    "unassigned_count": 171
+    "unassigned_count": 163
   },
   "unassigned_packages": [
     {
@@ -3860,7 +4085,7 @@
         }
       ],
       "resolved_versions": [
-        "0.43.0"
+        "0.44.0"
       ]
     },
     {
@@ -4251,106 +4476,6 @@
       ],
       "resolved_versions": [
         "1.2.10"
-      ]
-    },
-    {
-      "divergent_resolved": false,
-      "divergent_specifiers": false,
-      "name": "@react-router/dev",
-      "occurrences": [
-        {
-          "declaredIn": "frontend/package.json",
-          "specifier": "^7.15.0",
-          "workspace": "@fafa/frontend"
-        },
-        {
-          "declaredIn": "package.json",
-          "specifier": "^7.15.0",
-          "workspace": "nestjs-remix-monorepo"
-        }
-      ],
-      "resolved_versions": [
-        "7.18.0"
-      ]
-    },
-    {
-      "divergent_resolved": false,
-      "divergent_specifiers": true,
-      "name": "@react-router/express",
-      "occurrences": [
-        {
-          "declaredIn": "backend/package.json",
-          "specifier": "^7.0.0",
-          "workspace": "@fafa/backend"
-        },
-        {
-          "declaredIn": "frontend/package.json",
-          "specifier": "^7.15.0",
-          "workspace": "@fafa/frontend"
-        },
-        {
-          "declaredIn": "package.json",
-          "specifier": "^7.15.0",
-          "workspace": "nestjs-remix-monorepo"
-        }
-      ],
-      "resolved_versions": [
-        "7.18.0"
-      ]
-    },
-    {
-      "divergent_resolved": false,
-      "divergent_specifiers": false,
-      "name": "@react-router/node",
-      "occurrences": [
-        {
-          "declaredIn": "frontend/package.json",
-          "specifier": "^7.15.0",
-          "workspace": "@fafa/frontend"
-        },
-        {
-          "declaredIn": "package.json",
-          "specifier": "^7.15.0",
-          "workspace": "nestjs-remix-monorepo"
-        }
-      ],
-      "resolved_versions": [
-        "7.18.0"
-      ]
-    },
-    {
-      "divergent_resolved": false,
-      "divergent_specifiers": false,
-      "name": "@react-router/remix-routes-option-adapter",
-      "occurrences": [
-        {
-          "declaredIn": "frontend/package.json",
-          "specifier": "^7.15.0",
-          "workspace": "@fafa/frontend"
-        }
-      ],
-      "resolved_versions": [
-        "7.18.0"
-      ]
-    },
-    {
-      "divergent_resolved": false,
-      "divergent_specifiers": false,
-      "name": "@react-router/serve",
-      "occurrences": [
-        {
-          "declaredIn": "frontend/package.json",
-          "specifier": "^7.15.0",
-          "workspace": "@fafa/frontend"
-        },
-        {
-          "declaredIn": "package.json",
-          "specifier": "^7.15.0",
-          "workspace": "nestjs-remix-monorepo"
-        }
-      ],
-      "resolved_versions": [
-        "7.18.0"
       ]
     },
     {
@@ -5097,36 +5222,6 @@
     {
       "divergent_resolved": false,
       "divergent_specifiers": false,
-      "name": "@types/react",
-      "occurrences": [
-        {
-          "declaredIn": "frontend/package.json",
-          "specifier": "^18.2.20",
-          "workspace": "@fafa/frontend"
-        }
-      ],
-      "resolved_versions": [
-        "18.3.31"
-      ]
-    },
-    {
-      "divergent_resolved": false,
-      "divergent_specifiers": false,
-      "name": "@types/react-dom",
-      "occurrences": [
-        {
-          "declaredIn": "frontend/package.json",
-          "specifier": "^18.2.7",
-          "workspace": "@fafa/frontend"
-        }
-      ],
-      "resolved_versions": [
-        "18.3.7"
-      ]
-    },
-    {
-      "divergent_resolved": false,
-      "divergent_specifiers": false,
       "name": "@types/sharp",
       "occurrences": [
         {
@@ -5215,7 +5310,7 @@
       ]
     },
     {
-      "divergent_resolved": true,
+      "divergent_resolved": false,
       "divergent_specifiers": false,
       "name": "@vitest/browser",
       "occurrences": [
@@ -5226,7 +5321,6 @@
         }
       ],
       "resolved_versions": [
-        "2.1.9",
         "4.1.9"
       ]
     },
@@ -5849,7 +5943,7 @@
         }
       ],
       "resolved_versions": [
-        "6.16.1"
+        "6.17.1"
       ]
     },
     {
@@ -6130,31 +6224,6 @@
     },
     {
       "divergent_resolved": false,
-      "divergent_specifiers": true,
-      "name": "react-router",
-      "occurrences": [
-        {
-          "declaredIn": "backend/package.json",
-          "specifier": "^7.0.0",
-          "workspace": "@fafa/backend"
-        },
-        {
-          "declaredIn": "frontend/package.json",
-          "specifier": "^7.15.0",
-          "workspace": "@fafa/frontend"
-        },
-        {
-          "declaredIn": "package.json",
-          "specifier": "^7.15.0",
-          "workspace": "nestjs-remix-monorepo"
-        }
-      ],
-      "resolved_versions": [
-        "7.18.0"
-      ]
-    },
-    {
-      "divergent_resolved": false,
       "divergent_specifiers": false,
       "name": "recharts",
       "occurrences": [
@@ -6312,7 +6381,7 @@
         }
       ],
       "resolved_versions": [
-        "2.57.0"
+        "2.58.0"
       ]
     },
     {
@@ -6448,7 +6517,7 @@
         }
       ],
       "resolved_versions": [
-        "9.6.1"
+        "9.6.2"
       ]
     },
     {

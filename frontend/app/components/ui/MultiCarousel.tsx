@@ -33,7 +33,7 @@ const MultiCarousel: React.FC<MultiCarouselProps> = ({
   const [isPaused, setIsPaused] = useState(false);
   
   const carouselRef = useRef<HTMLDivElement>(null);
-  const intervalRef = useRef<NodeJS.Timeout>();
+  const intervalRef = useRef<NodeJS.Timeout>(undefined);
 
   const childrenArray = React.Children.toArray(children);
   const totalItems = childrenArray.length;

@@ -1,5 +1,5 @@
 {
-  "extends": "@fafa/typescript-config/base.json",
+  "extends": "@fafa/typescript-config/node-cjs-legacy.json",
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",

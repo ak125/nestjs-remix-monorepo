@@ -121,7 +121,7 @@
     "packages/*"
   ],
   "devDependencies": {
-    "@ast-grep/cli": "0.43.0",
+    "@ast-grep/cli": "0.44.0",
     "@changesets/cli": "^2.31.0",
     "@commitlint/cli": "^20.5.3",
     "@commitlint/config-conventional": "^20.5.3",
@@ -139,16 +139,16 @@
     "eslint-plugin-prettier": "^5.5.6",
     "fast-json-stable-stringify": "^2.1.0",
     "js-yaml": "^4.1.1",
-    "knip": "6.16.1",
+    "knip": "6.17.1",
     "lint-staged": "^16.4.0",
     "madge": "8.0.0",
     "micromatch": "^4.0.8",
     "prettier": "^3.8.3",
     "reflect-metadata": "^0.1.14",
     "rxjs": "^7.8.2",
-    "squawk-cli": "2.57.0",
+    "squawk-cli": "2.58.0",
     "turbo": "^2.9.16",
-    "typescript": "^5.9.3"
+    "typescript": "6.0.3"
   },
   "dependencies": {
     "@react-router/express": "^7.15.0",
@@ -164,8 +164,8 @@
     "nestjs-zod": "^4.3.1",
     "node-fetch": "^3.3.2",
     "postcss": "^8.4.24",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
     "react-router": "^7.15.0",
     "remix-flat-routes": "^0.8.5",
     "sharp": "^0.34.3",
@@ -178,13 +178,15 @@
   },
   "overrides": {
     "@types/node": "^24",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
     "path-to-regexp": "3.3.0",
     "zod": "^3.25.76",
-    "typescript": "^5.9.3",
+    "typescript": "6.0.3",
     "eslint": "^8.57.1",
-    "@typescript-eslint/parser": "^8.59.4",
-    "@typescript-eslint/eslint-plugin": "^8.59.4",
-    "@typescript-eslint/utils": "^8.59.4",
+    "@typescript-eslint/parser": "8.61.1",
+    "@typescript-eslint/eslint-plugin": "8.61.1",
+    "@typescript-eslint/utils": "8.61.1",
     "handlebars": "4.7.9",
     "knip": {
       "zod": "^4.0.0"

@@ -3,7 +3,7 @@
  *
  * Capture côté navigateur des évènements runtime qui ne sont PAS des Web
  * Vitals mais corrèlent avec l'expérience utilisateur :
- *   - hydration_error    : React/Remix hydration mismatch (warning console)
+ *   - hydration_error    : React 19 hydration mismatch (via onRecoverableError)
  *   - long_task          : PerformanceObserver longtask > 200ms (CPU stall)
  *   - navigation_abort   : useNavigation interrompue (user back ou error boundary)
  *   - chunk_load_error   : import() dynamique échoue (deploy gap, network drop)
@@ -129,32 +129,16 @@ function sendEvent(
 // Captures
 // ---------------------------------------------------------------------------
 
-function captureHydrationFromConsole(): void {
-  // React émet ses hydration mismatches via console.error avec messages typés
-  // ("Hydration failed", "Text content does not match", "There was an error
-  // while hydrating"...). On hook console.error en proxy léger (jamais break
-  // la console — wrap try/catch + appel original).
-  const originalError = console.error;
-  console.error = (...args: unknown[]): void => {
-    try {
-      const first = args[0];
-      const msg = typeof first === "string" ? first : "";
-      if (
-        msg.includes("Hydration") ||
-        msg.includes("hydrat") ||
-        msg.includes("does not match")
-      ) {
-        sendEvent(
-          "seo.runtime.hydration_error",
-          { args_count: args.length },
-          msg,
-        );
-      }
-    } catch {
-      // ignore
-    }
-    originalError.apply(console, args as []);
-  };
+/**
+ * Émet l'évènement interne `seo.runtime.hydration_error` avec un message
+ * **normalisé** + métadonnées bornées. JAMAIS le diff React brut (server/client
+ * mismatch peut contenir du texte rendu dynamiquement → fuite si persisté dans
+ * `__seo_event_log`). La classification "hydration" se fait en amont via
+ * `isHydrationRecoverableError` (cf. `react-error-handlers.client`), branchée
+ * sur `onRecoverableError` de React 19 — plus de proxy `console.error`.
+ */
+export function reportHydrationError(meta: Record<string, unknown> = {}): void {
+  sendEvent("seo.runtime.hydration_error", meta, "React hydration mismatch");
 }
 
 function captureLongTasks(): void {
@@ -228,7 +212,8 @@ export function startRuntimeErrorReporter(): void {
   if (typeof window === "undefined") return;
 
   try {
-    captureHydrationFromConsole();
+    // hydration_error n'est plus capturé via console.error : il est émis par
+    // `reportHydrationError()` depuis `onRecoverableError` (React 19).
     captureLongTasks();
     captureChunkLoadErrors();
   } catch {

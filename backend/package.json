@@ -148,11 +148,11 @@
     "source-map-support": "^0.5.21",
     "supertest": "^7.0.0",
     "ts-jest": "^29.4.10",
-    "ts-loader": "^9.6.0",
+    "ts-loader": "^9.6.2",
     "ts-node": "^10.9.1",
     "tsc-alias": "^1.8.17",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.9.3",
+    "typescript": "~6.0.3",
     "zod-to-json-schema": "^3.25.2"
   }
 }

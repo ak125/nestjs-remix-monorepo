@@ -26,6 +26,7 @@ import {
   useFetcher,
   useFetchers,
   useLoaderData,
+  useRevalidator,
   useRouteError,
 } from "react-router";
 import {
@@ -57,6 +58,7 @@ import {
 } from "~/schemas/cart.schemas";
 import { trackViewCart } from "~/utils/analytics";
 import { logger } from "~/utils/logger";
+import { reportLoaderError } from "~/utils/observability.server";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import {
   getVehicleFromCookie,
@@ -163,7 +165,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       success: true,
       error: null,
     };
-  } catch {
+  } catch (err) {
+    // Observabilité : un getCart en échec est rattrapé ici (dégradation
+    // gracieuse) → invisible pour Sentry sans remontée explicite.
+    reportLoaderError("cart_load_failed", err);
     const vehicle = await getVehicleFromCookie(
       request.headers.get("Cookie"),
     ).catch(() => null);
@@ -228,6 +233,7 @@ export default function CartPage() {
     useLoaderData<typeof loader>();
   const clearFetcher = useFetcher();
   const fetchers = useFetchers();
+  const revalidator = useRevalidator();
   const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   const isClearPending = clearFetcher.state !== "idle";
@@ -285,29 +291,8 @@ export default function CartPage() {
     }
   }, [cart.items]);
 
-  if (!success || error) {
-    return (
-      <div className="min-h-[100dvh] bg-slate-50 py-8">
-        <Container>
-          <div className="text-center py-12">
-            <div className="text-6xl mb-4">&#9888;</div>
-            <h2 className="text-xl font-semibold mb-2">Erreur de chargement</h2>
-            <p className="text-slate-600 mb-6">
-              {error || "Une erreur est survenue"}
-            </p>
-            <Button
-              className="inline-block px-6 py-3 rounded-lg"
-              variant="blue"
-              asChild
-            >
-              <Link to="/">Retour à l'accueil</Link>
-            </Button>
-          </div>
-        </Container>
-      </div>
-    );
-  }
-
+  // Défini avant les retours conditionnels pour être réutilisable depuis la
+  // branche erreur ET la branche panier-vide (restauration localStorage).
   const handleRestoreCart = async () => {
     if (!backupItems) return;
     setIsRestoring(true);
@@ -329,6 +314,59 @@ export default function CartPage() {
       setIsRestoring(false);
     }
   };
+
+  if (!success || error) {
+    const isRetrying = revalidator.state !== "idle";
+    return (
+      <div className="min-h-[100dvh] bg-slate-50 py-8">
+        <Container>
+          {backupItems && backupItems.length > 0 && (
+            <div className="mb-6 rounded-xl border border-blue-200 bg-blue-50 p-4">
+              <p className="text-sm text-blue-800 mb-2">
+                Votre panier précédent (sauvegarde locale) contenait{" "}
+                {backupItems.length} article{backupItems.length > 1 ? "s" : ""}.
+                Vous pouvez le restaurer.
+              </p>
+              <Button
+                variant="blue"
+                size="sm"
+                disabled={isRestoring}
+                onClick={handleRestoreCart}
+              >
+                {isRestoring ? "Restauration..." : "Restaurer mon panier"}
+              </Button>
+            </div>
+          )}
+          <div className="text-center py-12">
+            <div className="text-6xl mb-4">&#9888;</div>
+            <h2 className="text-xl font-semibold mb-2">Erreur de chargement</h2>
+            <p className="text-slate-600 mb-6">
+              {error || "Une erreur est survenue"}
+            </p>
+            <div className="flex items-center justify-center gap-3">
+              {/* Erreur souvent transitoire (blip backend) : retenter recharge
+                  le loader sans perdre la page. */}
+              <Button
+                className="px-6 py-3 rounded-lg"
+                variant="blue"
+                onClick={() => revalidator.revalidate()}
+                disabled={isRetrying}
+              >
+                {isRetrying ? "Nouvelle tentative…" : "Réessayer"}
+              </Button>
+              <Button
+                className="px-6 py-3 rounded-lg"
+                variant="outline"
+                asChild
+              >
+                <Link to="/">Retour à l'accueil</Link>
+              </Button>
+            </div>
+          </div>
+        </Container>
+      </div>
+    );
+  }
 
   if (!cart.items || cart.items.length === 0) {
     return (

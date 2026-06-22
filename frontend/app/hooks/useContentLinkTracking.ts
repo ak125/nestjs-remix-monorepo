@@ -54,7 +54,7 @@ interface UseContentLinkTrackingReturn {
   /**
    * Ref à attacher au container du contenu HTML
    */
-  containerRef: React.RefObject<HTMLDivElement>;
+  containerRef: React.RefObject<HTMLDivElement | null>;
 
   /**
    * Formulas des liens détectés dans le contenu
