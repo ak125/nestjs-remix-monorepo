@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 
 import {
   captureReactErrorToSentry,
+  createDeferredReactErrorBuffer,
   createReactErrorHandlers,
   isHydrationRecoverableError,
   type BufferedReactError,
@@ -154,5 +155,57 @@ describe("captureReactErrorToSentry", () => {
     });
     expect(extras).not.toHaveProperty("react.cause_name");
     expect(extras).not.toHaveProperty("react.component_stack");
+  });
+});
+
+describe("createDeferredReactErrorBuffer", () => {
+  const entry: BufferedReactError = {
+    kind: "reactError",
+    channel: "uncaught",
+    error: new Error("boom"),
+  };
+
+  it("drops the error when observability is disabled (no leak)", () => {
+    const buffered: BufferedReactError[] = [];
+    const captureException = vi.fn();
+    const sink = createDeferredReactErrorBuffer({
+      isDisabled: () => true,
+      getLive: () => ({
+        withScope: (cb) => cb({ setTag() {}, setExtra() {} }),
+        captureException,
+      }),
+      bufferPush: (e) => buffered.push(e),
+    });
+    sink(entry);
+    expect(buffered).toHaveLength(0);
+    expect(captureException).not.toHaveBeenCalled();
+  });
+
+  it("captures directly when Sentry is live (post-init path)", () => {
+    const buffered: BufferedReactError[] = [];
+    const captureException = vi.fn();
+    const live: SentryLike = {
+      withScope: (cb) => cb({ setTag() {}, setExtra() {} }),
+      captureException,
+    };
+    const sink = createDeferredReactErrorBuffer({
+      isDisabled: () => false,
+      getLive: () => live,
+      bufferPush: (e) => buffered.push(e),
+    });
+    sink(entry);
+    expect(captureException).toHaveBeenCalledTimes(1);
+    expect(buffered).toHaveLength(0); // direct, not buffered
+  });
+
+  it("buffers when Sentry is not yet live (pre-init path)", () => {
+    const buffered: BufferedReactError[] = [];
+    const sink = createDeferredReactErrorBuffer({
+      isDisabled: () => false,
+      getLive: () => null,
+      bufferPush: (e) => buffered.push(e),
+    });
+    sink(entry);
+    expect(buffered).toEqual([entry]);
   });
 });

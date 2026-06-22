@@ -129,6 +129,38 @@ export interface SentryScopeLike {
   setExtra: (key: string, value: unknown) => void;
 }
 
+/**
+ * Lifecycle sink for React-channel errors. React's error callbacks are NOT
+ * hooked by Sentry's native global handlers, so this is the only path:
+ *   - observability disabled (no DSN) → DROP (never buffer unbounded);
+ *   - Sentry live → capture DIRECTLY (post-init path);
+ *   - otherwise → buffer for one-shot replay at init (pre-init path).
+ * Injected as the `buffer` sink of `createReactErrorHandlers`.
+ */
+export interface DeferredSinkDeps {
+  isDisabled: () => boolean;
+  getLive: () => SentryLike | null;
+  bufferPush: (entry: BufferedReactError) => void;
+}
+
+export function createDeferredReactErrorBuffer(
+  deps: DeferredSinkDeps,
+): (entry: BufferedReactError) => void {
+  return (entry) => {
+    if (deps.isDisabled()) return;
+    const live = deps.getLive();
+    if (live) {
+      try {
+        captureReactErrorToSentry(live, entry);
+      } catch {
+        // passive reporter — never propagate
+      }
+      return;
+    }
+    deps.bufferPush(entry);
+  };
+}
+
 const MAX_COMPONENT_STACK = 4000;
 const MAX_CAUSE_MESSAGE = 500;
 

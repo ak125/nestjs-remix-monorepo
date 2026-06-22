@@ -16,8 +16,10 @@ import { HydratedRouter } from "react-router/dom";
 import { logger } from "~/utils/logger";
 import {
   captureReactErrorToSentry,
+  createDeferredReactErrorBuffer,
   createReactErrorHandlers,
   type BufferedReactError,
+  type SentryLike,
 } from "~/utils/react-error-handlers.client";
 import {
   reportHydrationError,
@@ -44,17 +46,33 @@ type BufferedEvent =
   | { kind: "rejection"; ev: PromiseRejectionEvent }
   | BufferedReactError;
 const errorBuffer: BufferedEvent[] = [];
-const onError = (ev: ErrorEvent) => errorBuffer.push({ kind: "error", ev });
+// Bound the pre-init buffer so it can never grow unbounded if Sentry init is
+// very delayed or never fires (e.g. no-DSN PROD / SENTRY_LIVE_BLOCKED).
+const MAX_BUFFER = 50;
+const bufferPush = (entry: BufferedEvent): void => {
+  if (errorBuffer.length < MAX_BUFFER) errorBuffer.push(entry);
+};
+const onError = (ev: ErrorEvent) => bufferPush({ kind: "error", ev });
 const onRejection = (ev: PromiseRejectionEvent) =>
-  errorBuffer.push({ kind: "rejection", ev });
+  bufferPush({ kind: "rejection", ev });
 window.addEventListener("error", onError);
 window.addEventListener("unhandledrejection", onRejection);
 
-// React 19 root error handlers. All three channels feed the same Sentry buffer
-// (replayed on lazy init below) via the single `BufferedReactError` variant;
-// only a hydration-classified recoverable error emits the internal SEO event.
+// Observability lifecycle for React-channel errors. Unlike window 'error'
+// events (captured post-init by Sentry's native global handlers), React's
+// onRecoverableError/onCaughtError/onUncaughtError are NOT hooked by Sentry —
+// these handlers are the ONLY path. So: buffer BEFORE init (replayed once),
+// capture DIRECTLY once Sentry is live, and DROP if observability is disabled
+// (no DSN) — never buffer unbounded.
+let liveSentry: SentryLike | null = null;
+let observabilityDisabled = false;
+
 const reactErrorHandlers = createReactErrorHandlers({
-  buffer: (entry) => errorBuffer.push(entry),
+  buffer: createDeferredReactErrorBuffer({
+    isDisabled: () => observabilityDisabled,
+    getLive: () => liveSentry,
+    bufferPush: (entry) => bufferPush(entry),
+  }),
   reportHydration: () => reportHydrationError({ source: "onRecoverableError" }),
 });
 
@@ -86,6 +104,9 @@ const initObservability = async (): Promise<void> => {
   const dsn = (window as unknown as { ENV?: { VITE_SENTRY_DSN?: string } }).ENV
     ?.VITE_SENTRY_DSN;
   if (!dsn) {
+    // No DSN → observability is off. Stop React-channel buffering so it can't
+    // leak, and detach the window listeners.
+    observabilityDisabled = true;
     window.removeEventListener("error", onError);
     window.removeEventListener("unhandledrejection", onRejection);
     errorBuffer.length = 0;
@@ -130,6 +151,11 @@ const initObservability = async (): Promise<void> => {
   });
 
   setSentryInstance(Sentry);
+
+  // Mark Sentry live BEFORE replay so React-channel errors fired from now on are
+  // captured DIRECTLY (the buffer below only holds pre-init entries — no double,
+  // no miss).
+  liveSentry = Sentry;
 
   // Replay any errors buffered during hydration → init gap, then detach
   for (const item of errorBuffer) {
