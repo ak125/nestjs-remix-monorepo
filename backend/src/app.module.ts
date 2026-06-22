@@ -1,6 +1,7 @@
 import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { CloudflareThrottlerGuard } from './common/guards/cloudflare-throttler.guard';
 import { ConfigModule } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { LoggerModule } from 'nestjs-pino';
@@ -254,10 +255,12 @@ import { TrendSignalsModule } from './modules/trend-signals/trend-signals.module
     AnalyticsController, // 📊 Analytics avancées
   ], // Plus besoin du controller temporaire
   providers: [
-    // 🛡️ Rate Limiting global - Protège toutes les routes
+    // 🛡️ Rate Limiting global - Protège toutes les routes.
+    // CloudflareThrottlerGuard clé sur la vraie IP client (Cf-Connecting-Ip)
+    // au lieu de l'IP edge Cloudflare partagée — sinon 429 sur /cart & co.
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard,
+      useClass: CloudflareThrottlerGuard,
     },
   ],
 })

@@ -66,6 +66,7 @@ import { getUserProfile } from "~/services/profile.server";
 import { type PaymentMethod } from "~/types/payment";
 import { trackBeginCheckout, trackAddPaymentInfo } from "~/utils/analytics";
 import { logger } from "~/utils/logger";
+import { reportLoaderError } from "~/utils/observability.server";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import {
   getVehicleFromCookie,
@@ -141,6 +142,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     };
   } catch (error) {
     logger.error("[Checkout] Erreur chargement:", error);
+    reportLoaderError("checkout_cart_load_failed", error);
     return {
       cart: null,
       error: "Erreur lors du chargement du panier. Veuillez reessayer.",
