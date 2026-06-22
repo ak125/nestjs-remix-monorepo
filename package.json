@@ -148,7 +148,7 @@
     "rxjs": "^7.8.2",
     "squawk-cli": "2.57.0",
     "turbo": "^2.9.16",
-    "typescript": "^5.9.3"
+    "typescript": "6.0.3"
   },
   "dependencies": {
     "@react-router/express": "^7.15.0",
@@ -180,11 +180,11 @@
     "@types/node": "^24",
     "path-to-regexp": "3.3.0",
     "zod": "^3.25.76",
-    "typescript": "^5.9.3",
+    "typescript": "6.0.3",
     "eslint": "^8.57.1",
-    "@typescript-eslint/parser": "^8.59.4",
-    "@typescript-eslint/eslint-plugin": "^8.59.4",
-    "@typescript-eslint/utils": "^8.59.4",
+    "@typescript-eslint/parser": "8.61.1",
+    "@typescript-eslint/eslint-plugin": "8.61.1",
+    "@typescript-eslint/utils": "8.61.1",
     "handlebars": "4.7.9",
     "knip": {
       "zod": "^4.0.0"
