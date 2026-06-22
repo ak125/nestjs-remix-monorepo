@@ -1,5 +1,5 @@
 {
-  "artifact_immutability_hash": "sha256:a104242b3564070503f287ea2c6484bb9f142b66a49bb0c287f980c9bc23bc22",
+  "artifact_immutability_hash": "sha256:2e8321c4a6c18ae8e4cc419bd053e01cc5cb89f51baceb9517cca8735acf225f",
   "divergences": [
     {
       "kind": "specifier",
@@ -119,6 +119,21 @@
       ],
       "resolved_versions": [
         "4.0.10"
+      ]
+    },
+    {
+      "kind": "resolved",
+      "name": "@vitest/browser",
+      "occurrences": [
+        {
+          "declaredIn": "frontend/package.json",
+          "specifier": "^4.1.8",
+          "workspace": "@fafa/frontend"
+        }
+      ],
+      "resolved_versions": [
+        "2.1.9",
+        "4.1.9"
       ]
     },
     {
@@ -268,21 +283,6 @@
     },
     {
       "kind": "resolved",
-      "name": "file-type",
-      "occurrences": [
-        {
-          "declaredIn": "backend/package.json",
-          "specifier": "^20.4.1",
-          "workspace": "@fafa/backend"
-        }
-      ],
-      "resolved_versions": [
-        "20.4.1",
-        "20.5.0"
-      ]
-    },
-    {
-      "kind": "resolved",
       "name": "globals",
       "occurrences": [
         {
@@ -343,7 +343,7 @@
       ],
       "resolved_versions": [
         "4.4.0",
-        "5.1.43"
+        "5.1.44"
       ]
     },
     {
@@ -665,7 +665,6 @@
         }
       ],
       "resolved_versions": [
-        "5.7.2",
         "6.0.3"
       ]
     },
@@ -675,18 +674,19 @@
       "occurrences": [
         {
           "declaredIn": "frontend/package.json",
-          "specifier": "^5.4.11",
+          "specifier": "7.3.5",
           "workspace": "@fafa/frontend"
         },
         {
           "declaredIn": "package.json",
-          "specifier": "^5.4.11",
+          "specifier": "7.3.5",
           "workspace": "nestjs-remix-monorepo"
         }
       ],
       "resolved_versions": [
         "5.4.21",
-        "8.0.16"
+        "6.4.3",
+        "7.3.5"
       ]
     },
     {
@@ -1796,7 +1796,7 @@
             }
           ],
           "resolved_versions": [
-            "5.79.0"
+            "5.79.1"
           ]
         },
         {
@@ -2797,18 +2797,19 @@
           "occurrences": [
             {
               "declaredIn": "frontend/package.json",
-              "specifier": "^5.4.11",
+              "specifier": "7.3.5",
               "workspace": "@fafa/frontend"
             },
             {
               "declaredIn": "package.json",
-              "specifier": "^5.4.11",
+              "specifier": "7.3.5",
               "workspace": "nestjs-remix-monorepo"
             }
           ],
           "resolved_versions": [
             "5.4.21",
-            "8.0.16"
+            "6.4.3",
+            "7.3.5"
           ]
         }
       ],
@@ -3429,7 +3430,7 @@
           ]
         },
         {
-          "divergent_resolved": true,
+          "divergent_resolved": false,
           "divergent_specifiers": true,
           "name": "typescript",
           "occurrences": [
@@ -3500,7 +3501,6 @@
             }
           ],
           "resolved_versions": [
-            "5.7.2",
             "6.0.3"
           ]
         }
@@ -3922,9 +3922,9 @@
   ],
   "generatedFrom": {
     "deps_registry": "audit/registry/deps.json",
-    "deps_registry_sha": "sha256:6fd309862d50cc07affebfe1a5d441e2745a7a9fb2d40a3f98789bfb91b8b394",
+    "deps_registry_sha": "sha256:2a6047f3e71796e30d341e5360be2f1935be12f768599243041060e477a9e9d3",
     "lockfile": "package-lock.json",
-    "lockfile_sha": "sha256:48084457985c294b257aa9de38b4eabc834719f529948c524c8cba52d0919146",
+    "lockfile_sha": "sha256:4623b12342e4da3761e13a4c6d5d9db9993436202d55baebdf358f52a1c4d98c",
     "overlay": "audit/dependencies/family-overlay.yaml",
     "overlay_sha": "sha256:42597019658ecd86a9df3c4f64505542d2f89192ab1eef12b9ae218ea5df4728"
   },
@@ -5212,7 +5212,7 @@
       ]
     },
     {
-      "divergent_resolved": false,
+      "divergent_resolved": true,
       "divergent_specifiers": false,
       "name": "@vitest/browser",
       "occurrences": [
@@ -5223,6 +5223,7 @@
         }
       ],
       "resolved_versions": [
+        "2.1.9",
         "4.1.9"
       ]
     },
@@ -5597,7 +5598,7 @@
       ]
     },
     {
-      "divergent_resolved": true,
+      "divergent_resolved": false,
       "divergent_specifiers": false,
       "name": "file-type",
       "occurrences": [
@@ -5608,8 +5609,7 @@
         }
       ],
       "resolved_versions": [
-        "20.4.1",
-        "20.5.0"
+        "20.4.1"
       ]
     },
     {
@@ -5752,7 +5752,7 @@
       ],
       "resolved_versions": [
         "4.4.0",
-        "5.1.43"
+        "5.1.44"
       ]
     },
     {

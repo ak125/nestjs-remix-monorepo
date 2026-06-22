@@ -26638,14 +26638,14 @@
         "frontend/package.json",
         "package.json"
       ],
-      "id": "npm:vite@^5.4.11",
+      "id": "npm:vite@7.3.5",
       "name": "vite",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^5.4.11",
+      "version": "7.3.5",
       "workspaces": [
         "@fafa/frontend",
         "nestjs-remix-monorepo"
@@ -95170,12 +95170,12 @@
       ".spec/00-canon/repository-registry/ownership.yaml": "9c243c28ac174f5470f9d054359bafd8d95a2c08a14981069fa3c23d2eebf94e",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "4221fce2a80e5a9dbee75d87424bf08d18cc97cfdb120d655ad4c6ddf2e9e3b5",
-      "audit/registry/deps.json": "6fd309862d50cc07affebfe1a5d441e2745a7a9fb2d40a3f98789bfb91b8b394",
+      "audit/registry/deps.json": "2a6047f3e71796e30d341e5360be2f1935be12f768599243041060e477a9e9d3",
       "audit/registry/files.json": "72d2f47cfd5a3fcbae7f4a9435f323d953faca1c5329a5d9a7d69affe1736be1",
       "audit/registry/rpc.json": "6e5c182566d80733d4186f734032a1b52a0816ed932c20dba8c82900b34084e5",
       "audit/registry/runtime.json": "43e79a9fb7feb07c2bb0519da2f18b46f0263f176441a88e4e304982ea119660"
     },
-    "sotFingerprint": "c011d7a7d55d"
+    "sotFingerprint": "8cbce221d55f"
   },
   "runtime": [
     {

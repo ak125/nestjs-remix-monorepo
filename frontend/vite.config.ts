@@ -23,6 +23,16 @@ export default defineConfig({
   },
   build: {
     cssMinify: MODE === "production",
+    // Browser-target lock = exact expansion of Vite 5's old 'modules' default
+    // (ESBUILD_MODULES_TARGET, verified in node_modules/vite/dist/node/constants.js).
+    // Vite 7 changed the default to 'baseline-widely-available'
+    // (chrome107/edge107/firefox104/safari16) → more modern output but a narrower
+    // browser baseline. We freeze the old baseline so this PR stays strictly
+    // attributable: only the build tool changes, NOT browser support. Consistent
+    // with the Array.prototype.at polyfill in entry.client.tsx (covers Safari < 15.4
+    // and old WebViews). cssTarget intentionally left unset (it inherits target).
+    // Remove in a follow-up PR after Analytics review of the real browser mix.
+    target: ["es2020", "edge88", "firefox78", "chrome87", "safari14"],
     sourcemap: false, // Désactivé pour réduire la taille du bundle
     commonjsOptions: {
       include: [/frontend/, /backend/, /node_modules/],

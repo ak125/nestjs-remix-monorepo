@@ -16,6 +16,7 @@
     "test:a11y": "playwright test tests/a11y --project=chromium",
     "test:visual": "playwright test tests/visual --project=chromium",
     "test:visual:update": "playwright test tests/visual --project=chromium --update-snapshots",
+    "test:sentry-lazy": "playwright test tests/e2e/sentry-lazy-loading.spec.ts --project=chromium",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
@@ -132,7 +133,7 @@
     "tailwindcss": "^3.4.15",
     "tsx": "^4.22.4",
     "typescript": "~6.0.3",
-    "vite": "^5.4.11",
+    "vite": "7.3.5",
     "vite-tsconfig-paths": "^4.2.1",
     "vitest": "^4.0.2"
   },
