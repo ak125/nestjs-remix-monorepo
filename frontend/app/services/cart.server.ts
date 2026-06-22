@@ -51,38 +51,87 @@ class CartServerService {
     const cookie = request.headers.get("Cookie") || "";
 
     // ⚠️ Pas de fallback silencieux (CLAUDE.md « No silent fallback »).
-    // Un échec backend ne doit JAMAIS retourner un panier factice : on propage
-    // l'erreur pour que le loader (cart.tsx) rende l'état « Erreur de chargement »
-    // au lieu d'afficher de faux articles. Un panier vide = réponse 200 du
-    // backend (OptionalAuthGuard couvre l'invité) → géré normalement ci-dessous.
-    let response: Response;
-    try {
-      response = await fetch(`${backendUrl}/api/cart`, {
-        method: "GET",
-        headers: {
-          Cookie: cookie,
-          "Content-Type": "application/json",
-          "User-Agent": "RemixCartService/1.0",
-        },
-      });
-    } catch (error) {
-      logger.error("[CartServer] Échec réseau vers /api/cart:", error);
-      throw new Error(
-        `Cart backend unreachable: ${
-          error instanceof Error ? error.message : String(error)
-        }`,
-      );
-    }
+    // Un échec backend ne doit JAMAIS retourner un panier factice. GET idempotent
+    // → on retente UNE fois sur erreur transitoire (réseau ou 429/502/503/504,
+    // ex. fenêtre de redémarrage), puis on PROPAGE l'erreur → le loader (cart.tsx)
+    // rend l'état « Erreur de chargement » (+ bouton Réessayer). Un panier vide =
+    // réponse 200 du backend (OptionalAuthGuard couvre l'invité) → géré ci-dessous.
+    const TRANSIENT_STATUS = new Set([429, 502, 503, 504]);
+    const MAX_ATTEMPTS = 2; // 1 retry borné
+    let lastError: unknown;
 
-    if (!response.ok) {
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      let response: Response;
+      try {
+        response = await fetch(`${backendUrl}/api/cart`, {
+          method: "GET",
+          headers: {
+            Cookie: cookie,
+            "Content-Type": "application/json",
+            "User-Agent": "RemixCartService/1.0",
+          },
+        });
+      } catch (error) {
+        lastError = error;
+        if (attempt < MAX_ATTEMPTS) {
+          await this.delay(200);
+          continue;
+        }
+        logger.error("[CartServer] Échec réseau vers /api/cart:", error);
+        throw new Error(
+          `Cart backend unreachable: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
+      }
+
+      if (response.ok) {
+        let backendData: unknown;
+        try {
+          backendData = await response.json();
+        } catch (error) {
+          logger.error("[CartServer] /api/cart JSON illisible:", error);
+          throw new Error(
+            `Cart backend returned invalid JSON (${response.status})`,
+          );
+        }
+        if (
+          !backendData ||
+          typeof backendData !== "object" ||
+          Array.isArray(backendData)
+        ) {
+          logger.error(
+            "[CartServer] /api/cart a renvoyé un corps non-objet:",
+            backendData,
+          );
+          throw new Error("Cart backend returned a non-object body");
+        }
+        return this.normalizeBackendData(backendData as Record<string, any>);
+      }
+
+      if (TRANSIENT_STATUS.has(response.status) && attempt < MAX_ATTEMPTS) {
+        lastError = new Error(`transient ${response.status}`);
+        await this.delay(200);
+        continue;
+      }
+
       logger.error(
         `[CartServer] /api/cart a répondu ${response.status} ${response.statusText}`,
       );
       throw new Error(`Cart backend responded ${response.status}`);
     }
 
-    const backendData = await response.json();
-    return this.normalizeBackendData(backendData);
+    // Inatteignable (chaque branche retourne ou jette) — garde de type.
+    throw new Error(
+      `Cart backend failed after ${MAX_ATTEMPTS} attempts: ${
+        lastError instanceof Error ? lastError.message : String(lastError)
+      }`,
+    );
+  }
+
+  /** Petit délai pour le backoff du retry (GET idempotent uniquement). */
+  private delay(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**

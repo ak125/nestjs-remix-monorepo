@@ -77,4 +77,48 @@ describe("cartServerService.getCart — no silent fallback", () => {
 
     await expect(getCart(makeRequest())).rejects.toThrow(/unreachable/);
   });
+
+  it("RETENTE une fois sur erreur transitoire (503) puis réussit", async () => {
+    const ok = new Response(
+      JSON.stringify({ items: [], totals: {}, metadata: {} }),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(new Response("busy", { status: 503 }))
+      .mockResolvedValueOnce(ok);
+    vi.stubGlobal("fetch", fetchMock);
+
+    const cart = await getCart(makeRequest());
+    expect(cart.items).toEqual([]);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("PROPAGE une erreur si le corps 200 est un JSON illisible", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response("{ not json", {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      ),
+    );
+
+    await expect(getCart(makeRequest())).rejects.toThrow(/invalid JSON/);
+  });
+
+  it("PROPAGE une erreur si le corps 200 n'est pas un objet (jamais de panier démo)", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify("unexpected"), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      ),
+    );
+
+    await expect(getCart(makeRequest())).rejects.toThrow(/non-object body/);
+  });
 });

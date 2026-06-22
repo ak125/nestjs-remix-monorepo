@@ -26,6 +26,7 @@ import {
   useFetcher,
   useFetchers,
   useLoaderData,
+  useRevalidator,
   useRouteError,
 } from "react-router";
 import {
@@ -228,6 +229,7 @@ export default function CartPage() {
     useLoaderData<typeof loader>();
   const clearFetcher = useFetcher();
   const fetchers = useFetchers();
+  const revalidator = useRevalidator();
   const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   const isClearPending = clearFetcher.state !== "idle";
@@ -286,6 +288,7 @@ export default function CartPage() {
   }, [cart.items]);
 
   if (!success || error) {
+    const isRetrying = revalidator.state !== "idle";
     return (
       <div className="min-h-[100dvh] bg-slate-50 py-8">
         <Container>
@@ -295,13 +298,25 @@ export default function CartPage() {
             <p className="text-slate-600 mb-6">
               {error || "Une erreur est survenue"}
             </p>
-            <Button
-              className="inline-block px-6 py-3 rounded-lg"
-              variant="blue"
-              asChild
-            >
-              <Link to="/">Retour à l'accueil</Link>
-            </Button>
+            <div className="flex items-center justify-center gap-3">
+              {/* Erreur souvent transitoire (blip backend) : retenter recharge
+                  le loader sans perdre la page. */}
+              <Button
+                className="px-6 py-3 rounded-lg"
+                variant="blue"
+                onClick={() => revalidator.revalidate()}
+                disabled={isRetrying}
+              >
+                {isRetrying ? "Nouvelle tentative…" : "Réessayer"}
+              </Button>
+              <Button
+                className="px-6 py-3 rounded-lg"
+                variant="outline"
+                asChild
+              >
+                <Link to="/">Retour à l'accueil</Link>
+              </Button>
+            </div>
           </div>
         </Container>
       </div>
