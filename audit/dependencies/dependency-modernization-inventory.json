@@ -1,5 +1,5 @@
 {
-  "artifact_immutability_hash": "sha256:236587e4f4572efabffdddfba80fac4bf654f76c08289a71508e924751203198",
+  "artifact_immutability_hash": "sha256:9745f66e1ff999e7e9bdd7616a74485765f35c7a934a78417284a46682769a0b",
   "divergences": [
     {
       "kind": "specifier",
@@ -178,21 +178,6 @@
       ],
       "resolved_versions": [
         "24.13.2"
-      ]
-    },
-    {
-      "kind": "resolved",
-      "name": "@vitest/browser",
-      "occurrences": [
-        {
-          "declaredIn": "frontend/package.json",
-          "specifier": "^4.1.8",
-          "workspace": "@fafa/frontend"
-        }
-      ],
-      "resolved_versions": [
-        "2.1.9",
-        "4.1.9"
       ]
     },
     {
@@ -704,6 +689,81 @@
       "resolved_versions": [
         "3.15.0",
         "4.2.0"
+      ]
+    },
+    {
+      "kind": "resolved",
+      "name": "typescript",
+      "occurrences": [
+        {
+          "declaredIn": "backend/package.json",
+          "specifier": "^5.9.3",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "declaredIn": "frontend/package.json",
+          "specifier": "^5.9.3",
+          "workspace": "@fafa/design-tokens"
+        },
+        {
+          "declaredIn": "package.json",
+          "specifier": "^5.9.3",
+          "workspace": "@fafa/eslint-config"
+        },
+        {
+          "declaredIn": "packages/cwv-taxonomy/package.json",
+          "specifier": "^5.9.3",
+          "workspace": "@fafa/frontend"
+        },
+        {
+          "declaredIn": "packages/database-types/package.json",
+          "specifier": "^5.9.3",
+          "workspace": "@repo/cwv-taxonomy"
+        },
+        {
+          "declaredIn": "packages/design-tokens/package.json",
+          "specifier": "^5.9.3",
+          "workspace": "@repo/database-types"
+        },
+        {
+          "declaredIn": "packages/domain-commerce/package.json",
+          "specifier": "^5.9.3",
+          "workspace": "@repo/domain-commerce"
+        },
+        {
+          "declaredIn": "packages/eslint-config/package.json",
+          "specifier": "^5.9.3",
+          "workspace": "@repo/registry"
+        },
+        {
+          "declaredIn": "packages/registry/package.json",
+          "specifier": "^5.9.3",
+          "workspace": "@repo/seo-role-contracts"
+        },
+        {
+          "declaredIn": "packages/seo-role-contracts/package.json",
+          "specifier": "^5.9.3",
+          "workspace": "@repo/seo-roles"
+        },
+        {
+          "declaredIn": "packages/seo-roles/package.json",
+          "specifier": "^5.9.3",
+          "workspace": "@repo/seo-types"
+        },
+        {
+          "declaredIn": "packages/seo-types/package.json",
+          "specifier": "^5.9.3",
+          "workspace": "@repo/seo-url-contract"
+        },
+        {
+          "declaredIn": "packages/seo-url-contract/package.json",
+          "specifier": "^5.9.3",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
+      "resolved_versions": [
+        "5.7.2",
+        "6.0.3"
       ]
     },
     {
@@ -3467,7 +3527,7 @@
           ]
         },
         {
-          "divergent_resolved": false,
+          "divergent_resolved": true,
           "divergent_specifiers": false,
           "name": "typescript",
           "occurrences": [
@@ -3538,7 +3598,8 @@
             }
           ],
           "resolved_versions": [
-            "5.9.3"
+            "5.7.2",
+            "6.0.3"
           ]
         }
       ],
@@ -3961,7 +4022,7 @@
     "deps_registry": "audit/registry/deps.json",
     "deps_registry_sha": "sha256:20a1be4e31fee1e65206581c2cea743ca9f11712edf6d8586dce988c5959a811",
     "lockfile": "package-lock.json",
-    "lockfile_sha": "sha256:348daff12cce1a6a420b55a7ae25a7f3acdda6ef75f9f1a5accad82d4eaa575e",
+    "lockfile_sha": "sha256:48084457985c294b257aa9de38b4eabc834719f529948c524c8cba52d0919146",
     "overlay": "audit/dependencies/family-overlay.yaml",
     "overlay_sha": "sha256:5125f1f9db2d1c2be0a86a27da41c4d3823f2ebec82a7623466c74696dbe075d"
   },
@@ -4024,7 +4085,7 @@
         }
       ],
       "resolved_versions": [
-        "0.43.0"
+        "0.44.0"
       ]
     },
     {
@@ -5249,7 +5310,7 @@
       ]
     },
     {
-      "divergent_resolved": true,
+      "divergent_resolved": false,
       "divergent_specifiers": false,
       "name": "@vitest/browser",
       "occurrences": [
@@ -5260,7 +5321,6 @@
         }
       ],
       "resolved_versions": [
-        "2.1.9",
         "4.1.9"
       ]
     },
@@ -5883,7 +5943,7 @@
         }
       ],
       "resolved_versions": [
-        "6.16.1"
+        "6.17.1"
       ]
     },
     {
@@ -6321,7 +6381,7 @@
         }
       ],
       "resolved_versions": [
-        "2.57.0"
+        "2.58.0"
       ]
     },
     {
@@ -6457,7 +6517,7 @@
         }
       ],
       "resolved_versions": [
-        "9.6.1"
+        "9.6.2"
       ]
     },
     {
