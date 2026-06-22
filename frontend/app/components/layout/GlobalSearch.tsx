@@ -106,7 +106,7 @@ export const GlobalSearch = memo(function GlobalSearch({
 
   const inputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
-  const debounceRef = useRef<NodeJS.Timeout>();
+  const debounceRef = useRef<NodeJS.Timeout>(undefined);
 
   // Charger l'historique depuis localStorage
   useEffect(() => {

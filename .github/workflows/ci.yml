@@ -1104,7 +1104,7 @@ jobs:
         run: |
           cd frontend
           run_e2e() {
-            npx playwright test tests/e2e/critical-path.spec.ts tests/e2e/url-validation.spec.ts \
+            npx playwright test tests/e2e/critical-path.spec.ts tests/e2e/url-validation.spec.ts tests/e2e/react19-hydration.spec.ts \
               --project=chromium --reporter=github,list
           }
           # First pass.
