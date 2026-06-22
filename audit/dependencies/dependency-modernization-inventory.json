@@ -1,5 +1,5 @@
 {
-  "artifact_immutability_hash": "sha256:e4cb97fe6ffc5ad883bda4367713ceff7eed2f55216b21d1f314f0e35ca3cb91",
+  "artifact_immutability_hash": "sha256:5faa9653fa126967ca21beeba0e803a88a1de7dfaea964fc3e1e9464bfc5dd8e",
   "divergences": [
     {
       "kind": "specifier",
@@ -178,21 +178,6 @@
       ],
       "resolved_versions": [
         "24.13.2"
-      ]
-    },
-    {
-      "kind": "resolved",
-      "name": "@vitest/browser",
-      "occurrences": [
-        {
-          "declaredIn": "frontend/package.json",
-          "specifier": "^4.1.8",
-          "workspace": "@fafa/frontend"
-        }
-      ],
-      "resolved_versions": [
-        "2.1.9",
-        "4.1.9"
       ]
     },
     {
@@ -704,6 +689,81 @@
       "resolved_versions": [
         "3.15.0",
         "4.2.0"
+      ]
+    },
+    {
+      "kind": "resolved",
+      "name": "typescript",
+      "occurrences": [
+        {
+          "declaredIn": "backend/package.json",
+          "specifier": "^5.9.3",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "declaredIn": "frontend/package.json",
+          "specifier": "^5.9.3",
+          "workspace": "@fafa/design-tokens"
+        },
+        {
+          "declaredIn": "package.json",
+          "specifier": "^5.9.3",
+          "workspace": "@fafa/eslint-config"
+        },
+        {
+          "declaredIn": "packages/cwv-taxonomy/package.json",
+          "specifier": "^5.9.3",
+          "workspace": "@fafa/frontend"
+        },
+        {
+          "declaredIn": "packages/database-types/package.json",
+          "specifier": "^5.9.3",
+          "workspace": "@repo/cwv-taxonomy"
+        },
+        {
+          "declaredIn": "packages/design-tokens/package.json",
+          "specifier": "^5.9.3",
+          "workspace": "@repo/database-types"
+        },
+        {
+          "declaredIn": "packages/domain-commerce/package.json",
+          "specifier": "^5.9.3",
+          "workspace": "@repo/domain-commerce"
+        },
+        {
+          "declaredIn": "packages/eslint-config/package.json",
+          "specifier": "^5.9.3",
+          "workspace": "@repo/registry"
+        },
+        {
+          "declaredIn": "packages/registry/package.json",
+          "specifier": "^5.9.3",
+          "workspace": "@repo/seo-role-contracts"
+        },
+        {
+          "declaredIn": "packages/seo-role-contracts/package.json",
+          "specifier": "^5.9.3",
+          "workspace": "@repo/seo-roles"
+        },
+        {
+          "declaredIn": "packages/seo-roles/package.json",
+          "specifier": "^5.9.3",
+          "workspace": "@repo/seo-types"
+        },
+        {
+          "declaredIn": "packages/seo-types/package.json",
+          "specifier": "^5.9.3",
+          "workspace": "@repo/seo-url-contract"
+        },
+        {
+          "declaredIn": "packages/seo-url-contract/package.json",
+          "specifier": "^5.9.3",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
+      "resolved_versions": [
+        "5.7.2",
+        "6.0.3"
       ]
     },
     {
@@ -3303,7 +3363,7 @@
           ]
         },
         {
-          "divergent_resolved": false,
+          "divergent_resolved": true,
           "divergent_specifiers": false,
           "name": "typescript",
           "occurrences": [
@@ -3374,7 +3434,8 @@
             }
           ],
           "resolved_versions": [
-            "5.9.3"
+            "5.7.2",
+            "6.0.3"
           ]
         }
       ],
@@ -3797,7 +3858,7 @@
     "deps_registry": "audit/registry/deps.json",
     "deps_registry_sha": "sha256:20a1be4e31fee1e65206581c2cea743ca9f11712edf6d8586dce988c5959a811",
     "lockfile": "package-lock.json",
-    "lockfile_sha": "sha256:3b4460fb4270d41652f4988dcca5feb5abf2680171cbf2db4c3010e32c85efe1",
+    "lockfile_sha": "sha256:aaa47222b70883f736cb7bdaf6a4f6042a07b9ca4698f355d19e0d4cdc98b196",
     "overlay": "audit/dependencies/family-overlay.yaml",
     "overlay_sha": "sha256:4067a5535b22d0d6c98fa6f3c980189b2a68f9837edd7f7caf1e7b1e10c44746"
   },
@@ -5215,7 +5276,7 @@
       ]
     },
     {
-      "divergent_resolved": true,
+      "divergent_resolved": false,
       "divergent_specifiers": false,
       "name": "@vitest/browser",
       "occurrences": [
@@ -5226,7 +5287,6 @@
         }
       ],
       "resolved_versions": [
-        "2.1.9",
         "4.1.9"
       ]
     },

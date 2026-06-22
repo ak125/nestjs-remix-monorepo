@@ -1,6 +1,5 @@
 {
     "compilerOptions": {
-    "module": "CommonJS",
     "declaration": true,
     "removeComments": true,
     "allowSyntheticDefaultImports": true,
@@ -11,9 +10,10 @@
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
     "isolatedModules": false,
-    "moduleResolution": "Node",
     "resolveJsonModule": false,
     "allowJs": false,
-    "lib": ["ES2023"]
+    "lib": ["ES2023"],
+    "types": [],
+    "noUncheckedSideEffectImports": true
     }
 }
