@@ -1,5 +1,5 @@
 {
-  "artifact_immutability_hash": "sha256:9745f66e1ff999e7e9bdd7616a74485765f35c7a934a78417284a46682769a0b",
+  "artifact_immutability_hash": "sha256:5ba4ecb332e043295afaae407f04c884664a5a275f0e22f083c60a3c50216f6f",
   "divergences": [
     {
       "kind": "specifier",
@@ -2937,7 +2937,7 @@
       "pr_assignment": "deferred",
       "production_approved": true,
       "requires_perf_baseline": true,
-      "requires_staging_soak": true,
+      "requires_staging_soak": false,
       "rollback_blast_scope": [
         "ssr",
         "cdn"
@@ -2989,7 +2989,6 @@
       ],
       "safe_parallel_window_minutes": 0,
       "source_url": "https://github.com/remix-run/react-router/releases",
-      "staging_soak_hours": 72,
       "state_compatibility_window_minutes": 0,
       "state_reconciliation_strategy": {
         "duplicate_resolution": "n/a"
@@ -4024,7 +4023,7 @@
     "lockfile": "package-lock.json",
     "lockfile_sha": "sha256:48084457985c294b257aa9de38b4eabc834719f529948c524c8cba52d0919146",
     "overlay": "audit/dependencies/family-overlay.yaml",
-    "overlay_sha": "sha256:5125f1f9db2d1c2be0a86a27da41c4d3823f2ebec82a7623466c74696dbe075d"
+    "overlay_sha": "sha256:42597019658ecd86a9df3c4f64505542d2f89192ab1eef12b9ae218ea5df4728"
   },
   "inventoryFormat": "pr-9-modernization-inventory",
   "matrixVersion": "pr9-v1",

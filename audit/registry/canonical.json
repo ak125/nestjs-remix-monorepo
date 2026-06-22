@@ -95209,7 +95209,7 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "351240bac221fed13bbf87f4ffb050a4f72dbbb25120c8bb50f1b9303b4fd2fe",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "469ffbb4a23f28d8d9c085a8d50a5d832883288d05edf61b5ac1049c5da08149",
+      ".spec/00-canon/repository-registry/ownership.yaml": "9c243c28ac174f5470f9d054359bafd8d95a2c08a14981069fa3c23d2eebf94e",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "4221fce2a80e5a9dbee75d87424bf08d18cc97cfdb120d655ad4c6ddf2e9e3b5",
       "audit/registry/deps.json": "20a1be4e31fee1e65206581c2cea743ca9f11712edf6d8586dce988c5959a811",
@@ -95217,7 +95217,7 @@
       "audit/registry/rpc.json": "6e5c182566d80733d4186f734032a1b52a0816ed932c20dba8c82900b34084e5",
       "audit/registry/runtime.json": "43e79a9fb7feb07c2bb0519da2f18b46f0263f176441a88e4e304982ea119660"
     },
-    "sotFingerprint": "d0ff78f48b28"
+    "sotFingerprint": "70c12838d747"
   },
   "runtime": [
     {
