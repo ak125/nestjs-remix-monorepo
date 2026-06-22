@@ -47,14 +47,17 @@ class CartServerService {
    * Obtenir le panier complet
    */
   async getCart(request: Request, context?: AppLoadContext): Promise<CartData> {
+    const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
+    const cookie = request.headers.get("Cookie") || "";
+
+    // ⚠️ Pas de fallback silencieux (CLAUDE.md « No silent fallback »).
+    // Un échec backend ne doit JAMAIS retourner un panier factice : on propage
+    // l'erreur pour que le loader (cart.tsx) rende l'état « Erreur de chargement »
+    // au lieu d'afficher de faux articles. Un panier vide = réponse 200 du
+    // backend (OptionalAuthGuard couvre l'invité) → géré normalement ci-dessous.
+    let response: Response;
     try {
-      // Tentative d'appel au backend réel
-      const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
-
-      // Récupérer les cookies de session depuis la requête
-      const cookie = request.headers.get("Cookie") || "";
-
-      const response = await fetch(`${backendUrl}/api/cart`, {
+      response = await fetch(`${backendUrl}/api/cart`, {
         method: "GET",
         headers: {
           Cookie: cookie,
@@ -62,76 +65,24 @@ class CartServerService {
           "User-Agent": "RemixCartService/1.0",
         },
       });
-
-      if (response.ok) {
-        const backendData = await response.json();
-
-        // Normaliser les données du backend vers notre format
-        const normalized = this.normalizeBackendData(backendData);
-        return normalized;
-      } else {
-        logger.warn(
-          "⚠️ [CartServer] Backend non disponible, utilisation des données de démo",
-        );
-      }
     } catch (error) {
-      logger.warn("⚠️ [CartServer] Erreur backend, fallback vers démo:", error);
+      logger.error("[CartServer] Échec réseau vers /api/cart:", error);
+      throw new Error(
+        `Cart backend unreachable: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
     }
 
-    // Fallback : simulation avec données de démo
-    return {
-      items: [
-        {
-          id: "demo-item-1",
-          user_id: "demo-user",
-          product_id: "prod-123",
-          quantity: 2,
-          price: 29.99,
-          unit_price: 29.99,
-          total_price: 59.98,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          product_name: "T-Shirt Premium",
-          product_sku: "TS-001",
-          product_ref: "REF-TS-001",
-          product_image: "/images/tshirt-premium.jpg",
-          stock_available: 15,
-          weight: 0.2,
-        },
-        {
-          id: "demo-item-2",
-          user_id: "demo-user",
-          product_id: "prod-456",
-          quantity: 1,
-          price: 89.99,
-          unit_price: 89.99,
-          total_price: 89.99,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          product_name: "Sweat à Capuche",
-          product_sku: "SW-002",
-          product_ref: "REF-SW-002",
-          product_image: "/images/sweat-capuche.jpg",
-          stock_available: 5,
-          weight: 0.5,
-        },
-      ],
-      summary: {
-        total_items: 2,
-        total_price: 149.97,
-        subtotal: 149.97,
-        tax_amount: 0,
-        shipping_cost: 0,
-        discount_amount: 0,
-        consigne_total: 0,
-        currency: "EUR",
-      },
-      metadata: {
-        user_id: "demo-user",
-        session_id: "demo-session",
-        last_updated: new Date().toISOString(),
-      },
-    };
+    if (!response.ok) {
+      logger.error(
+        `[CartServer] /api/cart a répondu ${response.status} ${response.statusText}`,
+      );
+      throw new Error(`Cart backend responded ${response.status}`);
+    }
+
+    const backendData = await response.json();
+    return this.normalizeBackendData(backendData);
   }
 
   /**
