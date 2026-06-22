@@ -1,5 +1,5 @@
 {
-  "artifact_immutability_hash": "sha256:5ba4ecb332e043295afaae407f04c884664a5a275f0e22f083c60a3c50216f6f",
+  "artifact_immutability_hash": "sha256:a104242b3564070503f287ea2c6484bb9f142b66a49bb0c287f980c9bc23bc22",
   "divergences": [
     {
       "kind": "specifier",
@@ -119,65 +119,6 @@
       ],
       "resolved_versions": [
         "4.0.10"
-      ]
-    },
-    {
-      "kind": "specifier",
-      "name": "@types/node",
-      "occurrences": [
-        {
-          "declaredIn": "backend/package.json",
-          "specifier": "^20.19.24",
-          "workspace": "@fafa/backend"
-        },
-        {
-          "declaredIn": "packages/design-tokens/package.json",
-          "specifier": "^20.17.6",
-          "workspace": "@fafa/design-tokens"
-        },
-        {
-          "declaredIn": "packages/cwv-taxonomy/package.json",
-          "specifier": "^20.0.0",
-          "workspace": "@repo/cwv-taxonomy"
-        },
-        {
-          "declaredIn": "packages/database-types/package.json",
-          "specifier": "^20.0.0",
-          "workspace": "@repo/database-types"
-        },
-        {
-          "declaredIn": "packages/domain-commerce/package.json",
-          "specifier": "^20.0.0",
-          "workspace": "@repo/domain-commerce"
-        },
-        {
-          "declaredIn": "packages/registry/package.json",
-          "specifier": "^20.0.0",
-          "workspace": "@repo/registry"
-        },
-        {
-          "declaredIn": "packages/seo-role-contracts/package.json",
-          "specifier": "^20.0.0",
-          "workspace": "@repo/seo-role-contracts"
-        },
-        {
-          "declaredIn": "packages/seo-roles/package.json",
-          "specifier": "^20.0.0",
-          "workspace": "@repo/seo-roles"
-        },
-        {
-          "declaredIn": "packages/seo-types/package.json",
-          "specifier": "^20.0.0",
-          "workspace": "@repo/seo-types"
-        },
-        {
-          "declaredIn": "packages/seo-url-contract/package.json",
-          "specifier": "^20.0.0",
-          "workspace": "@repo/seo-url-contract"
-        }
-      ],
-      "resolved_versions": [
-        "24.13.2"
       ]
     },
     {
@@ -507,44 +448,6 @@
     },
     {
       "kind": "specifier",
-      "name": "react",
-      "occurrences": [
-        {
-          "declaredIn": "frontend/package.json",
-          "specifier": "18.3.1",
-          "workspace": "@fafa/frontend"
-        },
-        {
-          "declaredIn": "package.json",
-          "specifier": "^18.3.1",
-          "workspace": "nestjs-remix-monorepo"
-        }
-      ],
-      "resolved_versions": [
-        "19.2.7"
-      ]
-    },
-    {
-      "kind": "specifier",
-      "name": "react-dom",
-      "occurrences": [
-        {
-          "declaredIn": "frontend/package.json",
-          "specifier": "18.3.1",
-          "workspace": "@fafa/frontend"
-        },
-        {
-          "declaredIn": "package.json",
-          "specifier": "^18.3.1",
-          "workspace": "nestjs-remix-monorepo"
-        }
-      ],
-      "resolved_versions": [
-        "19.2.7"
-      ]
-    },
-    {
-      "kind": "specifier",
       "name": "react-router",
       "occurrences": [
         {
@@ -692,72 +595,72 @@
       ]
     },
     {
-      "kind": "resolved",
+      "kind": "specifier",
       "name": "typescript",
       "occurrences": [
         {
           "declaredIn": "backend/package.json",
-          "specifier": "^5.9.3",
+          "specifier": "~6.0.3",
           "workspace": "@fafa/backend"
         },
         {
           "declaredIn": "frontend/package.json",
-          "specifier": "^5.9.3",
+          "specifier": "~6.0.3",
           "workspace": "@fafa/design-tokens"
         },
         {
-          "declaredIn": "package.json",
-          "specifier": "^5.9.3",
+          "declaredIn": "packages/cwv-taxonomy/package.json",
+          "specifier": "~6.0.3",
           "workspace": "@fafa/eslint-config"
         },
         {
-          "declaredIn": "packages/cwv-taxonomy/package.json",
-          "specifier": "^5.9.3",
+          "declaredIn": "packages/database-types/package.json",
+          "specifier": "~6.0.3",
           "workspace": "@fafa/frontend"
         },
         {
-          "declaredIn": "packages/database-types/package.json",
-          "specifier": "^5.9.3",
+          "declaredIn": "packages/design-tokens/package.json",
+          "specifier": "~6.0.3",
           "workspace": "@repo/cwv-taxonomy"
         },
         {
-          "declaredIn": "packages/design-tokens/package.json",
-          "specifier": "^5.9.3",
+          "declaredIn": "packages/domain-commerce/package.json",
+          "specifier": "~6.0.3",
           "workspace": "@repo/database-types"
         },
         {
-          "declaredIn": "packages/domain-commerce/package.json",
-          "specifier": "^5.9.3",
+          "declaredIn": "packages/eslint-config/package.json",
+          "specifier": "~6.0.3",
           "workspace": "@repo/domain-commerce"
         },
         {
-          "declaredIn": "packages/eslint-config/package.json",
-          "specifier": "^5.9.3",
+          "declaredIn": "packages/registry/package.json",
+          "specifier": "~6.0.3",
           "workspace": "@repo/registry"
         },
         {
-          "declaredIn": "packages/registry/package.json",
-          "specifier": "^5.9.3",
+          "declaredIn": "packages/seo-role-contracts/package.json",
+          "specifier": "~6.0.3",
           "workspace": "@repo/seo-role-contracts"
         },
         {
-          "declaredIn": "packages/seo-role-contracts/package.json",
-          "specifier": "^5.9.3",
+          "declaredIn": "packages/seo-roles/package.json",
+          "specifier": "~6.0.3",
           "workspace": "@repo/seo-roles"
         },
         {
-          "declaredIn": "packages/seo-roles/package.json",
-          "specifier": "^5.9.3",
+          "declaredIn": "packages/seo-types/package.json",
+          "specifier": "~6.0.3",
           "workspace": "@repo/seo-types"
         },
         {
-          "declaredIn": "packages/seo-types/package.json",
-          "specifier": "^5.9.3",
+          "declaredIn": "packages/seo-url-contract/package.json",
+          "specifier": "~6.0.3",
           "workspace": "@repo/seo-url-contract"
         },
         {
-          "declaredIn": "packages/seo-url-contract/package.json",
-          "specifier": "^5.9.3",
+          "declaredIn": "package.json",
+          "specifier": "6.0.3",
           "workspace": "nestjs-remix-monorepo"
         }
       ],
@@ -2799,7 +2702,7 @@
           "occurrences": [
             {
               "declaredIn": "frontend/package.json",
-              "specifier": "^18.2.20",
+              "specifier": "19.2.17",
               "workspace": "@fafa/frontend"
             }
           ],
@@ -2814,7 +2717,7 @@
           "occurrences": [
             {
               "declaredIn": "frontend/package.json",
-              "specifier": "^18.2.7",
+              "specifier": "19.2.3",
               "workspace": "@fafa/frontend"
             }
           ],
@@ -2824,17 +2727,17 @@
         },
         {
           "divergent_resolved": false,
-          "divergent_specifiers": true,
+          "divergent_specifiers": false,
           "name": "react",
           "occurrences": [
             {
               "declaredIn": "frontend/package.json",
-              "specifier": "18.3.1",
+              "specifier": "19.2.7",
               "workspace": "@fafa/frontend"
             },
             {
               "declaredIn": "package.json",
-              "specifier": "^18.3.1",
+              "specifier": "19.2.7",
               "workspace": "nestjs-remix-monorepo"
             }
           ],
@@ -2844,17 +2747,17 @@
         },
         {
           "divergent_resolved": false,
-          "divergent_specifiers": true,
+          "divergent_specifiers": false,
           "name": "react-dom",
           "occurrences": [
             {
               "declaredIn": "frontend/package.json",
-              "specifier": "18.3.1",
+              "specifier": "19.2.7",
               "workspace": "@fafa/frontend"
             },
             {
               "declaredIn": "package.json",
-              "specifier": "^18.3.1",
+              "specifier": "19.2.7",
               "workspace": "nestjs-remix-monorepo"
             }
           ],
@@ -3527,72 +3430,72 @@
         },
         {
           "divergent_resolved": true,
-          "divergent_specifiers": false,
+          "divergent_specifiers": true,
           "name": "typescript",
           "occurrences": [
             {
               "declaredIn": "backend/package.json",
-              "specifier": "^5.9.3",
+              "specifier": "~6.0.3",
               "workspace": "@fafa/backend"
             },
             {
               "declaredIn": "frontend/package.json",
-              "specifier": "^5.9.3",
+              "specifier": "~6.0.3",
               "workspace": "@fafa/design-tokens"
             },
             {
-              "declaredIn": "package.json",
-              "specifier": "^5.9.3",
+              "declaredIn": "packages/cwv-taxonomy/package.json",
+              "specifier": "~6.0.3",
               "workspace": "@fafa/eslint-config"
             },
             {
-              "declaredIn": "packages/cwv-taxonomy/package.json",
-              "specifier": "^5.9.3",
+              "declaredIn": "packages/database-types/package.json",
+              "specifier": "~6.0.3",
               "workspace": "@fafa/frontend"
             },
             {
-              "declaredIn": "packages/database-types/package.json",
-              "specifier": "^5.9.3",
+              "declaredIn": "packages/design-tokens/package.json",
+              "specifier": "~6.0.3",
               "workspace": "@repo/cwv-taxonomy"
             },
             {
-              "declaredIn": "packages/design-tokens/package.json",
-              "specifier": "^5.9.3",
+              "declaredIn": "packages/domain-commerce/package.json",
+              "specifier": "~6.0.3",
               "workspace": "@repo/database-types"
             },
             {
-              "declaredIn": "packages/domain-commerce/package.json",
-              "specifier": "^5.9.3",
+              "declaredIn": "packages/eslint-config/package.json",
+              "specifier": "~6.0.3",
               "workspace": "@repo/domain-commerce"
             },
             {
-              "declaredIn": "packages/eslint-config/package.json",
-              "specifier": "^5.9.3",
+              "declaredIn": "packages/registry/package.json",
+              "specifier": "~6.0.3",
               "workspace": "@repo/registry"
             },
             {
-              "declaredIn": "packages/registry/package.json",
-              "specifier": "^5.9.3",
+              "declaredIn": "packages/seo-role-contracts/package.json",
+              "specifier": "~6.0.3",
               "workspace": "@repo/seo-role-contracts"
             },
             {
-              "declaredIn": "packages/seo-role-contracts/package.json",
-              "specifier": "^5.9.3",
+              "declaredIn": "packages/seo-roles/package.json",
+              "specifier": "~6.0.3",
               "workspace": "@repo/seo-roles"
             },
             {
-              "declaredIn": "packages/seo-roles/package.json",
-              "specifier": "^5.9.3",
+              "declaredIn": "packages/seo-types/package.json",
+              "specifier": "~6.0.3",
               "workspace": "@repo/seo-types"
             },
             {
-              "declaredIn": "packages/seo-types/package.json",
-              "specifier": "^5.9.3",
+              "declaredIn": "packages/seo-url-contract/package.json",
+              "specifier": "~6.0.3",
               "workspace": "@repo/seo-url-contract"
             },
             {
-              "declaredIn": "packages/seo-url-contract/package.json",
-              "specifier": "^5.9.3",
+              "declaredIn": "package.json",
+              "specifier": "6.0.3",
               "workspace": "nestjs-remix-monorepo"
             }
           ],
@@ -4019,7 +3922,7 @@
   ],
   "generatedFrom": {
     "deps_registry": "audit/registry/deps.json",
-    "deps_registry_sha": "sha256:20a1be4e31fee1e65206581c2cea743ca9f11712edf6d8586dce988c5959a811",
+    "deps_registry_sha": "sha256:6fd309862d50cc07affebfe1a5d441e2745a7a9fb2d40a3f98789bfb91b8b394",
     "lockfile": "package-lock.json",
     "lockfile_sha": "sha256:48084457985c294b257aa9de38b4eabc834719f529948c524c8cba52d0919146",
     "overlay": "audit/dependencies/family-overlay.yaml",
@@ -4050,7 +3953,7 @@
       "pr-9f": 17,
       "pr-9g": 0
     },
-    "divergent_packages_count": 39,
+    "divergent_packages_count": 36,
     "families_count": 12,
     "total_occurrences": 339,
     "total_packages": 231,
@@ -4079,7 +3982,7 @@
       "occurrences": [
         {
           "declaredIn": "package.json",
-          "specifier": "0.43.0",
+          "specifier": "0.44.0",
           "workspace": "nestjs-remix-monorepo"
         }
       ],
@@ -5100,57 +5003,57 @@
     },
     {
       "divergent_resolved": false,
-      "divergent_specifiers": true,
+      "divergent_specifiers": false,
       "name": "@types/node",
       "occurrences": [
         {
           "declaredIn": "backend/package.json",
-          "specifier": "^20.19.24",
+          "specifier": "^24",
           "workspace": "@fafa/backend"
         },
         {
-          "declaredIn": "packages/design-tokens/package.json",
-          "specifier": "^20.17.6",
+          "declaredIn": "packages/cwv-taxonomy/package.json",
+          "specifier": "^24",
           "workspace": "@fafa/design-tokens"
         },
         {
-          "declaredIn": "packages/cwv-taxonomy/package.json",
-          "specifier": "^20.0.0",
+          "declaredIn": "packages/database-types/package.json",
+          "specifier": "^24",
           "workspace": "@repo/cwv-taxonomy"
         },
         {
-          "declaredIn": "packages/database-types/package.json",
-          "specifier": "^20.0.0",
+          "declaredIn": "packages/design-tokens/package.json",
+          "specifier": "^24",
           "workspace": "@repo/database-types"
         },
         {
           "declaredIn": "packages/domain-commerce/package.json",
-          "specifier": "^20.0.0",
+          "specifier": "^24",
           "workspace": "@repo/domain-commerce"
         },
         {
           "declaredIn": "packages/registry/package.json",
-          "specifier": "^20.0.0",
+          "specifier": "^24",
           "workspace": "@repo/registry"
         },
         {
           "declaredIn": "packages/seo-role-contracts/package.json",
-          "specifier": "^20.0.0",
+          "specifier": "^24",
           "workspace": "@repo/seo-role-contracts"
         },
         {
           "declaredIn": "packages/seo-roles/package.json",
-          "specifier": "^20.0.0",
+          "specifier": "^24",
           "workspace": "@repo/seo-roles"
         },
         {
           "declaredIn": "packages/seo-types/package.json",
-          "specifier": "^20.0.0",
+          "specifier": "^24",
           "workspace": "@repo/seo-types"
         },
         {
           "declaredIn": "packages/seo-url-contract/package.json",
-          "specifier": "^20.0.0",
+          "specifier": "^24",
           "workspace": "@repo/seo-url-contract"
         }
       ],
@@ -5937,7 +5840,7 @@
       "occurrences": [
         {
           "declaredIn": "package.json",
-          "specifier": "6.16.1",
+          "specifier": "6.17.1",
           "workspace": "nestjs-remix-monorepo"
         }
       ],
@@ -6375,7 +6278,7 @@
       "occurrences": [
         {
           "declaredIn": "package.json",
-          "specifier": "2.57.0",
+          "specifier": "2.58.0",
           "workspace": "nestjs-remix-monorepo"
         }
       ],
@@ -6511,7 +6414,7 @@
       "occurrences": [
         {
           "declaredIn": "backend/package.json",
-          "specifier": "^9.6.0",
+          "specifier": "^9.6.2",
           "workspace": "@fafa/backend"
         }
       ],

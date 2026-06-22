@@ -22835,14 +22835,14 @@
       "declaredIn": [
         "package.json"
       ],
-      "id": "npm:@ast-grep/cli@0.43.0",
+      "id": "npm:@ast-grep/cli@0.44.0",
       "name": "@ast-grep/cli",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "0.43.0",
+      "version": "0.44.0",
       "workspaces": [
         "nestjs-remix-monorepo"
       ]
@@ -24301,8 +24301,10 @@
     },
     {
       "declaredIn": [
+        "backend/package.json",
         "packages/cwv-taxonomy/package.json",
         "packages/database-types/package.json",
+        "packages/design-tokens/package.json",
         "packages/domain-commerce/package.json",
         "packages/registry/package.json",
         "packages/seo-role-contracts/package.json",
@@ -24310,15 +24312,17 @@
         "packages/seo-types/package.json",
         "packages/seo-url-contract/package.json"
       ],
-      "id": "npm:@types/node@^20.0.0",
+      "id": "npm:@types/node@^24",
       "name": "@types/node",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^20.0.0",
+      "version": "^24",
       "workspaces": [
+        "@fafa/backend",
+        "@fafa/design-tokens",
         "@repo/cwv-taxonomy",
         "@repo/database-types",
         "@repo/domain-commerce",
@@ -24327,38 +24331,6 @@
         "@repo/seo-roles",
         "@repo/seo-types",
         "@repo/seo-url-contract"
-      ]
-    },
-    {
-      "declaredIn": [
-        "packages/design-tokens/package.json"
-      ],
-      "id": "npm:@types/node@^20.17.6",
-      "name": "@types/node",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^20.17.6",
-      "workspaces": [
-        "@fafa/design-tokens"
-      ]
-    },
-    {
-      "declaredIn": [
-        "backend/package.json"
-      ],
-      "id": "npm:@types/node@^20.19.24",
-      "name": "@types/node",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^20.19.24",
-      "workspaces": [
-        "@fafa/backend"
       ]
     },
     {
@@ -24429,14 +24401,14 @@
       "declaredIn": [
         "frontend/package.json"
       ],
-      "id": "npm:@types/react-dom@^18.2.7",
+      "id": "npm:@types/react-dom@19.2.3",
       "name": "@types/react-dom",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^18.2.7",
+      "version": "19.2.3",
       "workspaces": [
         "@fafa/frontend"
       ]
@@ -24445,14 +24417,14 @@
       "declaredIn": [
         "frontend/package.json"
       ],
-      "id": "npm:@types/react@^18.2.20",
+      "id": "npm:@types/react@19.2.17",
       "name": "@types/react",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^18.2.20",
+      "version": "19.2.17",
       "workspaces": [
         "@fafa/frontend"
       ]
@@ -25533,14 +25505,14 @@
       "declaredIn": [
         "package.json"
       ],
-      "id": "npm:knip@6.16.1",
+      "id": "npm:knip@6.17.1",
       "name": "knip",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "6.16.1",
+      "version": "6.17.1",
       "workspaces": [
         "nestjs-remix-monorepo"
       ]
@@ -25955,33 +25927,19 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
-      ],
-      "id": "npm:react-dom@18.3.1",
-      "name": "react-dom",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "18.3.1",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
-    },
-    {
-      "declaredIn": [
+        "frontend/package.json",
         "package.json"
       ],
-      "id": "npm:react-dom@^18.3.1",
+      "id": "npm:react-dom@19.2.7",
       "name": "react-dom",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^18.3.1",
+      "version": "19.2.7",
       "workspaces": [
+        "@fafa/frontend",
         "nestjs-remix-monorepo"
       ]
     },
@@ -26037,33 +25995,19 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
-      ],
-      "id": "npm:react@18.3.1",
-      "name": "react",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "18.3.1",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
-    },
-    {
-      "declaredIn": [
+        "frontend/package.json",
         "package.json"
       ],
-      "id": "npm:react@^18.3.1",
+      "id": "npm:react@19.2.7",
       "name": "react",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^18.3.1",
+      "version": "19.2.7",
       "workspaces": [
+        "@fafa/frontend",
         "nestjs-remix-monorepo"
       ]
     },
@@ -26269,14 +26213,14 @@
       "declaredIn": [
         "package.json"
       ],
-      "id": "npm:squawk-cli@2.57.0",
+      "id": "npm:squawk-cli@2.58.0",
       "name": "squawk-cli",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "2.57.0",
+      "version": "2.58.0",
       "workspaces": [
         "nestjs-remix-monorepo"
       ]
@@ -26431,14 +26375,14 @@
       "declaredIn": [
         "backend/package.json"
       ],
-      "id": "npm:ts-loader@^9.6.0",
+      "id": "npm:ts-loader@^9.6.2",
       "name": "ts-loader",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^9.6.0",
+      "version": "^9.6.2",
       "workspaces": [
         "@fafa/backend"
       ]
@@ -26573,9 +26517,24 @@
     },
     {
       "declaredIn": [
+        "package.json"
+      ],
+      "id": "npm:typescript@6.0.3",
+      "name": "typescript",
+      "owner": "__unassigned__",
+      "schemaVersion": "1.0.0",
+      "source": "npm",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "version": "6.0.3",
+      "workspaces": [
+        "nestjs-remix-monorepo"
+      ]
+    },
+    {
+      "declaredIn": [
         "backend/package.json",
         "frontend/package.json",
-        "package.json",
         "packages/cwv-taxonomy/package.json",
         "packages/database-types/package.json",
         "packages/design-tokens/package.json",
@@ -26587,14 +26546,14 @@
         "packages/seo-types/package.json",
         "packages/seo-url-contract/package.json"
       ],
-      "id": "npm:typescript@^5.9.3",
+      "id": "npm:typescript@~6.0.3",
       "name": "typescript",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^5.9.3",
+      "version": "~6.0.3",
       "workspaces": [
         "@fafa/backend",
         "@fafa/design-tokens",
@@ -26607,8 +26566,7 @@
         "@repo/seo-role-contracts",
         "@repo/seo-roles",
         "@repo/seo-types",
-        "@repo/seo-url-contract",
-        "nestjs-remix-monorepo"
+        "@repo/seo-url-contract"
       ]
     },
     {
@@ -95212,12 +95170,12 @@
       ".spec/00-canon/repository-registry/ownership.yaml": "9c243c28ac174f5470f9d054359bafd8d95a2c08a14981069fa3c23d2eebf94e",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "4221fce2a80e5a9dbee75d87424bf08d18cc97cfdb120d655ad4c6ddf2e9e3b5",
-      "audit/registry/deps.json": "20a1be4e31fee1e65206581c2cea743ca9f11712edf6d8586dce988c5959a811",
+      "audit/registry/deps.json": "6fd309862d50cc07affebfe1a5d441e2745a7a9fb2d40a3f98789bfb91b8b394",
       "audit/registry/files.json": "72d2f47cfd5a3fcbae7f4a9435f323d953faca1c5329a5d9a7d69affe1736be1",
       "audit/registry/rpc.json": "6e5c182566d80733d4186f734032a1b52a0816ed932c20dba8c82900b34084e5",
       "audit/registry/runtime.json": "43e79a9fb7feb07c2bb0519da2f18b46f0263f176441a88e4e304982ea119660"
     },
-    "sotFingerprint": "70c12838d747"
+    "sotFingerprint": "c011d7a7d55d"
   },
   "runtime": [
     {
