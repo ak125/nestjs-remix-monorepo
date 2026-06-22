@@ -58,6 +58,7 @@ import {
 } from "~/schemas/cart.schemas";
 import { trackViewCart } from "~/utils/analytics";
 import { logger } from "~/utils/logger";
+import { reportLoaderError } from "~/utils/observability.server";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import {
   getVehicleFromCookie,
@@ -164,7 +165,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       success: true,
       error: null,
     };
-  } catch {
+  } catch (err) {
+    // Observabilité : un getCart en échec est rattrapé ici (dégradation
+    // gracieuse) → invisible pour Sentry sans remontée explicite.
+    reportLoaderError("cart_load_failed", err);
     const vehicle = await getVehicleFromCookie(
       request.headers.get("Cookie"),
     ).catch(() => null);
@@ -287,11 +291,52 @@ export default function CartPage() {
     }
   }, [cart.items]);
 
+  // Défini avant les retours conditionnels pour être réutilisable depuis la
+  // branche erreur ET la branche panier-vide (restauration localStorage).
+  const handleRestoreCart = async () => {
+    if (!backupItems) return;
+    setIsRestoring(true);
+    try {
+      for (const item of backupItems) {
+        await fetch("/api/cart/items", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            product_id: item.product_id,
+            quantity: item.quantity,
+          }),
+        });
+      }
+      clearCartLocalStorage();
+      window.location.reload();
+    } catch {
+      setIsRestoring(false);
+    }
+  };
+
   if (!success || error) {
     const isRetrying = revalidator.state !== "idle";
     return (
       <div className="min-h-[100dvh] bg-slate-50 py-8">
         <Container>
+          {backupItems && backupItems.length > 0 && (
+            <div className="mb-6 rounded-xl border border-blue-200 bg-blue-50 p-4">
+              <p className="text-sm text-blue-800 mb-2">
+                Votre panier précédent (sauvegarde locale) contenait{" "}
+                {backupItems.length} article{backupItems.length > 1 ? "s" : ""}.
+                Vous pouvez le restaurer.
+              </p>
+              <Button
+                variant="blue"
+                size="sm"
+                disabled={isRestoring}
+                onClick={handleRestoreCart}
+              >
+                {isRestoring ? "Restauration..." : "Restaurer mon panier"}
+              </Button>
+            </div>
+          )}
           <div className="text-center py-12">
             <div className="text-6xl mb-4">&#9888;</div>
             <h2 className="text-xl font-semibold mb-2">Erreur de chargement</h2>
@@ -322,28 +367,6 @@ export default function CartPage() {
       </div>
     );
   }
-
-  const handleRestoreCart = async () => {
-    if (!backupItems) return;
-    setIsRestoring(true);
-    try {
-      for (const item of backupItems) {
-        await fetch("/api/cart/items", {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            product_id: item.product_id,
-            quantity: item.quantity,
-          }),
-        });
-      }
-      clearCartLocalStorage();
-      window.location.reload();
-    } catch {
-      setIsRestoring(false);
-    }
-  };
 
   if (!cart.items || cart.items.length === 0) {
     return (
