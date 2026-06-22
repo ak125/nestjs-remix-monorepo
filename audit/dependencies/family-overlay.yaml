@@ -761,27 +761,28 @@ families:
   # ====================================================================
   # Deferred (roadmap-approved, visibility only)
   # ====================================================================
-  - family: runtime-frontend-remix-vite
+  - family: runtime-frontend-react-router-vite
     blast_radius: runtime-frontend
     target_major: "see source_url"
     pr_assignment: deferred
-    source_url: https://github.com/remix-run/remix/releases
+    source_url: https://github.com/remix-run/react-router/releases
     upgrade_strategy: staged-rollout
     runtime_criticality: critical
     requires_staging_soak: true
     staging_soak_hours: 72
-    node_runtime_requirement: ">=20"
+    node_runtime_requirement: ">=24"
     peer_dependency_cluster:
-      - "@remix-run/*"
+      - "@react-router/*"
       - react
       - react-dom
+      - "@types/react"
+      - "@types/react-dom"
       - vite
     production_approved: true
     rollback_complexity: dangerous
     migration_blockers:
-      - React19Stable
-      - Vite6EcosystemReady
-      - Node20Required
+      - Vite7MigrationReady
+      - ReactRouter8MigrationReady
     observability_requirements:
       - sentry
       - structured-logs
@@ -854,9 +855,9 @@ families:
       - status-page
       - banner
     compatibility_contracts:
-      - remix-v2
+      - react-router-v7
       - vite-v5
-      - react-v18
+      - react-v19
     runtime_freeze_window:
       start: "22:00"
       end: "06:00"
@@ -877,18 +878,19 @@ families:
     rollback_observability_grace_period_minutes: 30
     runtime_contract_expiry: null
     notes: >
-      Remix v2 → Vite 6 → React 19 chain. Deferred until React 19 stable +
-      Vite 6 ecosystem caught up. Not in PR-9 scope.
+      React Router 7 + React 19 (migré) + Vite 5. Remix retiré (RR7). Prochaines
+      marches gouvernées par blockers : Vite 7 puis React Router 8. Hors PR-9.
     members:
-      - "@remix-run/dev"
-      - "@remix-run/eslint-config"
-      - "@remix-run/express"
-      - "@remix-run/node"
-      - "@remix-run/react"
-      - "@remix-run/serve"
-      - "@remix-run/server-runtime"
+      - "@react-router/dev"
+      - "@react-router/express"
+      - "@react-router/node"
+      - "@react-router/remix-routes-option-adapter"
+      - "@react-router/serve"
+      - react-router
       - react
       - react-dom
+      - "@types/react"
+      - "@types/react-dom"
       - vite
 
   - family: observability-otel

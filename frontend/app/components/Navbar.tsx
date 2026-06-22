@@ -65,7 +65,7 @@ export const Navbar = memo(function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const progressBarRef = useRef<HTMLDivElement>(null);
-  const rafIdRef = useRef<number>();
+  const rafIdRef = useRef<number>(undefined);
   const navRef = useRef<HTMLElement>(null);
 
   // Scroll detection + progress bar (P3 perf: refs pour éviter setState inutiles)

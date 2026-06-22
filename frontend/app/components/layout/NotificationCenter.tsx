@@ -88,7 +88,7 @@ export const NotificationCenter = memo(function NotificationCenter({
   const [showActions, setShowActions] = useState<string | null>(null);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const refreshIntervalRef = useRef<NodeJS.Timeout>();
+  const refreshIntervalRef = useRef<NodeJS.Timeout>(undefined);
 
   // Charger les notifications
   const loadNotifications = useCallback(() => {
