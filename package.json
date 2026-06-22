@@ -121,7 +121,7 @@
     "packages/*"
   ],
   "devDependencies": {
-    "@ast-grep/cli": "0.43.0",
+    "@ast-grep/cli": "0.44.0",
     "@changesets/cli": "^2.31.0",
     "@commitlint/cli": "^20.5.3",
     "@commitlint/config-conventional": "^20.5.3",
@@ -139,14 +139,14 @@
     "eslint-plugin-prettier": "^5.5.6",
     "fast-json-stable-stringify": "^2.1.0",
     "js-yaml": "^4.1.1",
-    "knip": "6.16.1",
+    "knip": "6.17.1",
     "lint-staged": "^16.4.0",
     "madge": "8.0.0",
     "micromatch": "^4.0.8",
     "prettier": "^3.8.3",
     "reflect-metadata": "^0.1.14",
     "rxjs": "^7.8.2",
-    "squawk-cli": "2.57.0",
+    "squawk-cli": "2.58.0",
     "turbo": "^2.9.16",
     "typescript": "6.0.3"
   },
