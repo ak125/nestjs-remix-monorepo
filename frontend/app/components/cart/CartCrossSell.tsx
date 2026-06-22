@@ -1,5 +1,9 @@
 import { ChevronRight, Package } from "lucide-react";
 import { Link } from "react-router";
+import {
+  getOptimizedPartImageUrl,
+  isValidImagePath,
+} from "~/utils/image-optimizer";
 import { normalizeTypeAlias } from "~/utils/url-builder.utils";
 import { type VehicleCookie } from "~/utils/vehicle-cookie";
 
@@ -54,9 +58,9 @@ export function CartCrossSell({
             className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
           >
             <div className="flex h-36 items-center justify-center rounded-xl bg-slate-50 p-4">
-              {gamme.pg_img ? (
+              {isValidImagePath(gamme.pg_img) ? (
                 <img
-                  src={gamme.pg_img}
+                  src={getOptimizedPartImageUrl(gamme.pg_img)}
                   alt=""
                   className="max-h-full max-w-full object-contain"
                   loading="lazy"
