@@ -3823,14 +3823,14 @@
         "frontend/package.json",
         "package.json"
       ],
-      "id": "npm:vite@^5.4.11",
+      "id": "npm:vite@7.3.5",
       "name": "vite",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^5.4.11",
+      "version": "7.3.5",
       "workspaces": [
         "@fafa/frontend",
         "nestjs-remix-monorepo"
