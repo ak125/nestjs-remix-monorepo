@@ -574,3 +574,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/client-ip-429-throttle`
 - **Décision** : fix(infra): forward real client IP (Caddy {client_ip}) + Cloudflare-aware throttler — 429 sur /cart
 - **Sortie** : PR #1097 | commits 1334a4234
+
+## 2026-06-22 — fix/client-ip-429-throttle (auto)
+
+- **Branche** : `fix/client-ip-429-throttle`
+- **Décision** : fix(cart): supprime le repli silencieux sur panier démo + chore(infra): épingle l'image Caddy (+2 other commits)
+- **Sortie** : PR #1097 | commits 3ad43e1f4 6047cf3c9 1334a4234
