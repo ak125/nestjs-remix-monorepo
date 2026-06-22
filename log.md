@@ -592,3 +592,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/client-ip-429-throttle`
 - **Décision** : feat(cart/checkout): observabilité des échecs de chargement + restore sur la branche erreur (+6 other commits)
 - **Sortie** : PR #1097 | commits 349d7653b 9414165c8 f74cac270 2c8179fa0 3ad43e1f4 6047cf3c9 1334a4234
+
+## 2026-06-22 — fix/client-ip-429-throttle (auto)
+
+- **Branche** : `fix/client-ip-429-throttle`
+- **Décision** : docs(caddy): align {client_ip} comment with the pinned tag (caddy:2.11-alpine = v2.11.4) (+8 other commits)
+- **Sortie** : PR #1097 | commits 951bb51ab fb7fe4dff 349d7653b 9414165c8 f74cac270 2c8179fa0 3ad43e1f4 6047cf3c9 1334a4234
