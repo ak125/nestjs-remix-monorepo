@@ -42,7 +42,7 @@ Prose surrounding the tables (reading guides, callouts) is human-edited.
 | queues-bullmq | 48 | >=20 | workers-first, api-second, full-rollout | ✓ |
 | runtime-backend-nest | 72 | >=20 | canary, full-rollout | ✓ |
 | runtime-backend-platform-fastify | 0 | >=20 | n/a | ✗ |
-| runtime-frontend-react-router-vite | 72 | >=24 | n/a | ✓ |
+| runtime-frontend-react-router-vite | 0 | >=24 | n/a | ✓ |
 | tooling-prettier-husky | 0 | >=20 | n/a | ✓ |
 | tooling-typescript-eslint | 0 | >=20 | n/a | ✓ |
 | tooling-typescript-go | 0 | >=20 | n/a | ✗ |
