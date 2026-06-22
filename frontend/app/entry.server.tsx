@@ -20,7 +20,23 @@ import { logger } from "~/utils/logger";
 // Sentry server SDK init — picks up DSN from process.env populated by NestJS
 // before SSR runs. In the monorepo, Remix is mounted inside NestJS so process.env
 // is already populated by the backend's `dotenv/config` (via `instrument.ts`).
-if (process.env.SENTRY_DSN) {
+//
+// Guard `!Sentry.getClient()` — DO NOT REMOVE (PROD incident 2026-06-22).
+// When Remix is embedded in NestJS, the backend has ALREADY called Sentry.init()
+// (@sentry/nestjs → CJS @sentry/core) and registered the client on the shared
+// `globalThis.__SENTRY__[SDK_VERSION]` carrier, which both the CJS and ESM builds
+// of @sentry/core read. This ESM bundle (@sentry/react-router → @sentry/node) must
+// NOT init a second client: a second init re-runs the `Http` integration, which
+// re-subscribes to the `http.server.request.start` diagnostics channel. Because
+// @sentry/core's `lastSentryEmitMap` dedup guard is module-scoped (one WeakMap per
+// CJS/ESM build), neither realm sees the other's wrapper, so `server.emit` is
+// re-wrapped in a new Proxy on every request — the chain grows unbounded until
+// `RangeError: Maximum call stack size exceeded` (surfaced after the @sentry
+// 10.53→10.59 bump in #1052). Skipping the redundant init keeps a single HTTP-server
+// instrumentation; the capture below (handleError / captureException / instrumentations)
+// transparently uses the shared client. Standalone (non-embedded) frontend: no client
+// yet → init runs normally, so observability is preserved either way.
+if (process.env.SENTRY_DSN && !Sentry.getClient()) {
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
     environment:
