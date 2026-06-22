@@ -17,7 +17,10 @@ describe('CloudflareThrottlerGuard.getTracker', () => {
 
   it('priorise Cf-Connecting-Ip (IP client réelle posée par Cloudflare)', async () => {
     const req = {
-      headers: { 'cf-connecting-ip': '203.0.113.7', 'x-real-ip': '198.51.100.9' },
+      headers: {
+        'cf-connecting-ip': '203.0.113.7',
+        'x-real-ip': '198.51.100.9',
+      },
       ips: ['162.158.1.1'],
       ip: '162.158.1.1',
     };
@@ -40,12 +43,18 @@ describe('CloudflareThrottlerGuard.getTracker', () => {
   });
 
   it('ne prend que la première IP si la valeur est une liste', async () => {
-    const req = { headers: { 'cf-connecting-ip': '203.0.113.7, 70.41.3.18' }, ip: 'x' };
+    const req = {
+      headers: { 'cf-connecting-ip': '203.0.113.7, 70.41.3.18' },
+      ip: 'x',
+    };
     await expect(guard.getTracker(req)).resolves.toBe('203.0.113.7');
   });
 
   it('ignore un en-tête vide/espaces et passe au repli suivant', async () => {
-    const req = { headers: { 'cf-connecting-ip': '   ', 'x-real-ip': '198.51.100.9' }, ip: 'x' };
+    const req = {
+      headers: { 'cf-connecting-ip': '   ', 'x-real-ip': '198.51.100.9' },
+      ip: 'x',
+    };
     await expect(guard.getTracker(req)).resolves.toBe('198.51.100.9');
   });
 
