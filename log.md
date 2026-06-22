@@ -574,3 +574,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/rpc-drift-maintenance-adr032`
 - **Décision** : fix(diagnostic): apply ADR-032 PR-1 maintenance kg_* RPCs (runtime-truth-p0 drift)
 - **Sortie** : PR #1084 | commits 0a25d1b80
+
+## 2026-06-22 — fix/client-ip-429-throttle (auto)
+
+- **Branche** : `fix/client-ip-429-throttle`
+- **Décision** : Merge remote-tracking branch 'origin/main' into fix/client-ip-429-throttle (+10 other commits)
+- **Sortie** : PR #1097 | commits 7b58ac6d1 5bb95cac4 951bb51ab fb7fe4dff 349d7653b 9414165c8 f74cac270 2c8179fa0 3ad43e1f4 6047cf3c9 1334a4234
