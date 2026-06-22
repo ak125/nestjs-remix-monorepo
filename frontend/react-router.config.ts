@@ -8,8 +8,16 @@ import { type Config } from "@react-router/dev/config";
  * Les anciens flags Remix v2 `future.v3_*` (fetcherPersist, lazyRouteDiscovery,
  * throwAbortReason, relativeSplatPath, singleFetch) sont le COMPORTEMENT PAR DÉFAUT
  * en RR7 — aucun flag à reporter.
+ *
+ * Préparation RR8 (Temps A — adoption incrémentale des `future.v8_*` sous RR7.18,
+ * un flag par PR pour isoler les régressions ; ces flags deviennent le comportement
+ * par défaut en RR8 et seront retirés au bump) :
+ * - A1 `v8_viteEnvironmentApi` : active la Vite Environment API (requiert Vite 7 ✅).
  */
 export default {
   ssr: true,
   serverModuleFormat: "esm",
+  future: {
+    v8_viteEnvironmentApi: true,
+  },
 } satisfies Config;
