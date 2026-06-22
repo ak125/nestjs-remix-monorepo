@@ -768,8 +768,11 @@ families:
     source_url: https://github.com/remix-run/react-router/releases
     upgrade_strategy: staged-rollout
     runtime_criticality: critical
-    requires_staging_soak: true
-    staging_soak_hours: 72
+    # PREPROD est CI-only / READ_ONLY / sans trafic réel → un soak figé n'observe
+    # rien (pas d'INP/hydratation/Sentry/CWV réels à accumuler) et `:preprod` est
+    # un tag flottant. Validation pré-PROD = e2e-smoke (hydratation/critical-path)
+    # sur le container :preprod déployé. Décision owner 2026-06-22.
+    requires_staging_soak: false
     node_runtime_requirement: ">=24"
     peer_dependency_cluster:
       - "@react-router/*"

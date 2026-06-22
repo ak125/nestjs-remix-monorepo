@@ -390,6 +390,11 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: medium
+  - glob: backend/src/common/guards/**
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
   - glob: backend/src/config/**
     domain: D13
     owner: '@ak125'
