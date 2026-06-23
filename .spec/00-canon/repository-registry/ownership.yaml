@@ -284,6 +284,13 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: low
+  # Scorecards funnel commerce (read-only, ancrées merge-date) — même famille que le
+  # glob *seo_event_funnel* (D3) + audit/seo-*.md. cf. audit/sales-funnel-scorecard-2026-06-23.md
+  - glob: audit/sales-funnel-*.md
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
   # V-Level doctrine de référence (PR vlevel-doctrine-lock, owner GO 2026-06-05) —
   # voir audit/levels-doctrine-cgc-vs-vlevel-2026-06-04.md. Préfixe ciblé.
   - glob: audit/levels-doctrine-*.md
