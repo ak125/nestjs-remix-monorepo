@@ -586,3 +586,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/rr8-prep-sentry-decouple`
 - **Décision** : refactor(observability): single server Sentry SDK — decouple SSR from React Router (prep RR8)
 - **Sortie** : PR #1116 | commits 33a3c6a44
+
+## 2026-06-23 — feat/rr8-prep-sentry-decouple (auto)
+
+- **Branche** : `feat/rr8-prep-sentry-decouple`
+- **Décision** : chore(canon): align dep-governance Sentry ids (owner) (+2 other commits)
+- **Sortie** : PR #1116 | commits 5233664db c583c9cfa 33a3c6a44
