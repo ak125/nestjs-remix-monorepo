@@ -22,7 +22,7 @@ import {
 } from "../components/ui/card";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => [
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => [
   {
     title: data?.claim?.title
       ? `${data.claim.title} | Réclamation`

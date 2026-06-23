@@ -46,7 +46,7 @@ export const handle = {
 /**
  * 🔍 SEO Meta Tags
  */
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   const total = data?.total || 0;
   const title = `Toutes les Marques Automobiles (${total}) | Pièces Détachées Auto`;
   const description = `Découvrez notre catalogue complet de ${total} marques automobiles. Trouvez les pièces détachées pour BMW, Mercedes, Audi, Volkswagen, Renault, Peugeot et toutes les autres marques.`;

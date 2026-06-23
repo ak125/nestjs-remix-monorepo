@@ -256,7 +256,7 @@ function shouldUseHeroRole(
 /* ===========================
    Meta
 =========================== */
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   if (!data?.reference) {
     return [
       { title: "Référence non trouvée - Pièces Auto" },

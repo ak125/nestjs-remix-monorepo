@@ -93,7 +93,7 @@ export const headers: HeadersFunction = () => ({
 // 🔄 META
 // ==========================================
 
-export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data, location }) => {
   if (!data || !data.seo) {
     return [{ title: "Pièces Auto" }];
   }

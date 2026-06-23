@@ -270,7 +270,7 @@ export const shouldRevalidate: ShouldRevalidateFunction = ({
 
 // ── Meta ─────────────────────────────────────────────────
 
-export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data, location }) => {
   if (!data) {
     return [
       { title: "Article non trouvé" },

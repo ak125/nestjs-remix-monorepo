@@ -118,7 +118,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Wrench,
 };
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   const canonicalUrl = "https://www.automecanik.com/diagnostic-auto";
 
   // Unified FAQPage: wiki FAQ entries + dynamic featured items

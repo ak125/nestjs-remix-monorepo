@@ -30,7 +30,7 @@ import { Badge } from "~/components/ui/badge";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   const user = data?.targetUser;
   const userName =
     user?.firstName && user?.lastName

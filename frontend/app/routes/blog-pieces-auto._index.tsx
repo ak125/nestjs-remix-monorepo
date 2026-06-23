@@ -85,7 +85,7 @@ interface LoaderData {
 }
 
 // Métadonnées SEO — robots conditionnel pour éviter cannibalisation des filtres
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   const title = "Blog Automecanik - Conseils et Guides Auto Experts";
   const description =
     "Diagnostiquer une panne, comprendre une pièce, réussir un montage, choisir la bonne référence. Plus de 500 articles pratiques pour l'entretien de votre véhicule.";

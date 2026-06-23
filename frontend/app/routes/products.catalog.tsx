@@ -50,7 +50,7 @@ import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 /**
  * 🔍 SEO Meta Tags - Catalogue produits (accès restreint)
  */
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   const total = data?.pagination?.total || 0;
   return [
     { title: `Catalogue Produits (${total.toLocaleString()}) | Espace Pro` },

@@ -177,7 +177,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 // ── Meta ────────────────────────────────────────────────
 
-export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data, location }) => {
   const count = data?.totalArticles ?? 0;
   const hasFilters = location?.search && location.search.length > 1;
 

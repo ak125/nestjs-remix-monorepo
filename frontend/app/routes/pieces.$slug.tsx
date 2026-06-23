@@ -411,7 +411,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 }
 
 export const meta: MetaFunction<typeof loader> = ({
-  data: rawData,
+  loaderData: rawData,
   location,
 }) => {
   const data = rawData as PiecesPageSyncData | undefined;

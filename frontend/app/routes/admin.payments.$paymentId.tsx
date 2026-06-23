@@ -33,7 +33,7 @@ import {
 } from "../services/payment-admin.server";
 import { type Payment, PaymentStatus } from "../types/payment";
 
-export const meta: MetaFunction<typeof loader> = ({ data }) =>
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) =>
   createNoIndexMeta(
     data?.payment?.id
       ? `Paiement #${data.payment.id.slice(0, 8)} - Admin`

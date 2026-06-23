@@ -62,7 +62,7 @@ export const handle = {
 /**
  * 🔍 SEO Meta Tags - Page produit individuel
  */
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   if (!data?.product) {
     return [
       { title: "Produit non trouvé" },

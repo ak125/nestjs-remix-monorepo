@@ -61,7 +61,7 @@ export const headers = buildCacheHeaders(
 // META - SEO (Schema.org genere par composant Breadcrumbs)
 // ========================================
 
-export const meta: MetaFunction<typeof loader> = ({ data, location }) =>
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data, location }) =>
   buildPiecesVehicleMeta(data, location);
 
 // ========================================

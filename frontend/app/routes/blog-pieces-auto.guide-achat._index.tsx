@@ -182,7 +182,7 @@ export const headers = buildCacheHeaders(
 /* ===========================
    Meta + Structured Data
 =========================== */
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   const count = data?.guides?.length ?? 0;
   const canonicalUrl =
     "https://www.automecanik.com/blog-pieces-auto/guide-achat";

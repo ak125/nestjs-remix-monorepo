@@ -227,7 +227,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 // META SEO
 // ===============================
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   const query = data?.query || "";
   const total = data?.performance.totalItems || 0;
 

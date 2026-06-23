@@ -111,7 +111,7 @@ interface LoaderData {
   error?: string;
 }
 
-export const meta: MetaFunction<typeof loader> = ({ data }) =>
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) =>
   createNoIndexMeta(
     data?.order?.ord_id ? `Commande #${data.order.ord_id}` : "Commande",
   );

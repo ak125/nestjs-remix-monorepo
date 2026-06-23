@@ -172,7 +172,7 @@ const _availablePages = [...legalPages, ...helpPages, ...infoPages];
 // Pages qui ne doivent PAS être indexées (contenu juridique standard)
 const noIndexPages = ["cgv", "privacy", "terms", "cookies", "legal-notice"];
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   if (!data || "error" in data) {
     return [
       { title: "Page non trouvée - Automecanik" },

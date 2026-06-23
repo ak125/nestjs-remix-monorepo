@@ -149,7 +149,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 /* ===========================
    Meta
 =========================== */
-export const meta: MetaFunction<typeof loader> = ({ data: rawData }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: rawData }) => {
   const data = rawData as LoaderData | undefined;
   const metadata = data?.metadata;
   const count = data?.stats?.totalBrands ?? 0;
