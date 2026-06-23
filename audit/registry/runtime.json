@@ -32,6 +32,7 @@
         "runtime:backend/src/api/api.module.ts",
         "runtime:backend/src/auth/auth.module.ts",
         "runtime:backend/src/cache/cache.module.ts",
+        "runtime:backend/src/common/guards/cloudflare-throttler.guard.ts",
         "runtime:backend/src/config/feature-flags.module.ts",
         "runtime:backend/src/config/write-guard.module.ts",
         "runtime:backend/src/controllers/analytics.controller.ts",
@@ -71,6 +72,7 @@
         "runtime:backend/src/modules/seo-monitoring/seo-monitoring.module.ts",
         "runtime:backend/src/modules/seo/seo.module.ts",
         "runtime:backend/src/modules/staff/staff.module.ts",
+        "runtime:backend/src/modules/substitution/substitution.module.ts",
         "runtime:backend/src/modules/supplier-truth/supplier-truth.module.ts",
         "runtime:backend/src/modules/suppliers/suppliers.module.ts",
         "runtime:backend/src/modules/support/support.module.ts",
@@ -3113,7 +3115,24 @@
       "status": "LIVE"
     },
     {
-      "dependsOn": [],
+      "dependsOn": [
+        "runtime:backend/src/modules/substitution/services/substitution-logger.service.ts",
+        "runtime:backend/src/modules/substitution/services/substitution.service.ts"
+      ],
+      "id": "runtime:backend/src/modules/substitution/controllers/substitution.controller.ts",
+      "kind": "nestjs-controller",
+      "path": "backend/src/modules/substitution/controllers/substitution.controller.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/modules/substitution/controllers/substitution.controller.ts",
+        "runtime:backend/src/modules/substitution/services/intent-extractor.service.ts",
+        "runtime:backend/src/modules/substitution/services/substitution-logger.service.ts",
+        "runtime:backend/src/modules/substitution/services/substitution.service.ts"
+      ],
       "id": "runtime:backend/src/modules/substitution/substitution.module.ts",
       "kind": "nestjs-module",
       "path": "backend/src/modules/substitution/substitution.module.ts",

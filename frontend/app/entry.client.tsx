@@ -115,7 +115,7 @@ const initObservability = async (): Promise<void> => {
 
   const [Sentry, { sentryBeforeSend }, { setSentryInstance }] =
     await Promise.all([
-      import("@sentry/react-router"),
+      import("@sentry/react"),
       import("~/utils/analytics-sanitize"),
       import("~/utils/web-vitals.client"),
     ]);
@@ -140,9 +140,10 @@ const initObservability = async (): Promise<void> => {
     // défauts, ne les remplace pas).
     allowUrls: [/\/assets\//],
     integrations: [
-      // RR7 : auto-instrumente le routing (remplace browserTracingIntegration
-      // qui prenait useEffect/useLocation/useMatches en Remix v2).
-      Sentry.reactRouterTracingIntegration(),
+      // Tracing navigateur framework-agnostique (`@sentry/react`). On n'utilise
+      // PAS `@sentry/react-router` (son peerDep `react-router: 7.x` bloque RR8).
+      // Trade-off assumé : noms de transactions basés URL, pas pattern de route RR.
+      Sentry.browserTracingIntegration(),
     ],
     // V0.B / S10 — RGPD scrubbing PII en defense-in-depth.
     // Strip immat FR, emails, tels des URL, query-string, breadcrumbs, extra.

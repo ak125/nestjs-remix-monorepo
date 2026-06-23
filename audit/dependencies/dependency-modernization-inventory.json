@@ -1,5 +1,5 @@
 {
-  "artifact_immutability_hash": "sha256:2e8321c4a6c18ae8e4cc419bd053e01cc5cb89f51baceb9517cca8735acf225f",
+  "artifact_immutability_hash": "sha256:74484db3e1291437efaa28634f2d72107c033a7c178436347cbcc2fa8889e04e",
   "divergences": [
     {
       "kind": "specifier",
@@ -119,21 +119,6 @@
       ],
       "resolved_versions": [
         "4.0.10"
-      ]
-    },
-    {
-      "kind": "resolved",
-      "name": "@vitest/browser",
-      "occurrences": [
-        {
-          "declaredIn": "frontend/package.json",
-          "specifier": "^4.1.8",
-          "workspace": "@fafa/frontend"
-        }
-      ],
-      "resolved_versions": [
-        "2.1.9",
-        "4.1.9"
       ]
     },
     {
@@ -685,7 +670,6 @@
       ],
       "resolved_versions": [
         "5.4.21",
-        "6.4.3",
         "7.3.5"
       ]
     },
@@ -2808,7 +2792,6 @@
           ],
           "resolved_versions": [
             "5.4.21",
-            "6.4.3",
             "7.3.5"
           ]
         }
@@ -3922,9 +3905,9 @@
   ],
   "generatedFrom": {
     "deps_registry": "audit/registry/deps.json",
-    "deps_registry_sha": "sha256:2a6047f3e71796e30d341e5360be2f1935be12f768599243041060e477a9e9d3",
+    "deps_registry_sha": "sha256:9b722879fab181ddf8a7942e3c00324fd6d8fddd5323646c2d7f939e7739234d",
     "lockfile": "package-lock.json",
-    "lockfile_sha": "sha256:4623b12342e4da3761e13a4c6d5d9db9993436202d55baebdf358f52a1c4d98c",
+    "lockfile_sha": "sha256:e8a958f8626c1c2ee0b4898296aa142a8f80c008fc85e2a4b967b5a685aba1ec",
     "overlay": "audit/dependencies/family-overlay.yaml",
     "overlay_sha": "sha256:42597019658ecd86a9df3c4f64505542d2f89192ab1eef12b9ae218ea5df4728"
   },
@@ -3953,7 +3936,7 @@
       "pr-9f": 17,
       "pr-9g": 0
     },
-    "divergent_packages_count": 36,
+    "divergent_packages_count": 35,
     "families_count": 12,
     "total_occurrences": 339,
     "total_packages": 231,
@@ -4482,7 +4465,7 @@
       "occurrences": [
         {
           "declaredIn": "backend/package.json",
-          "specifier": "^10.51.0",
+          "specifier": "10.59.0",
           "workspace": "@fafa/backend"
         }
       ],
@@ -4493,11 +4476,11 @@
     {
       "divergent_resolved": false,
       "divergent_specifiers": false,
-      "name": "@sentry/react-router",
+      "name": "@sentry/react",
       "occurrences": [
         {
           "declaredIn": "frontend/package.json",
-          "specifier": "^10.51.0",
+          "specifier": "10.59.0",
           "workspace": "@fafa/frontend"
         }
       ],
@@ -5212,7 +5195,7 @@
       ]
     },
     {
-      "divergent_resolved": true,
+      "divergent_resolved": false,
       "divergent_specifiers": false,
       "name": "@vitest/browser",
       "occurrences": [
@@ -5223,7 +5206,6 @@
         }
       ],
       "resolved_versions": [
-        "2.1.9",
         "4.1.9"
       ]
     },

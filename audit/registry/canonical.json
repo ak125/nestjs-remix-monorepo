@@ -5267,7 +5267,9 @@
         "returnType": "",
         "schema": "public",
         "schemaVersion": "1.0.0",
-        "searchPath": [],
+        "searchPath": [
+          "public"
+        ],
         "securityDefiner": false,
         "sourceConfidence": "medium",
         "status": "UNKNOWN",
@@ -5385,7 +5387,9 @@
         "returnType": "",
         "schema": "public",
         "schemaVersion": "1.0.0",
-        "searchPath": [],
+        "searchPath": [
+          "public"
+        ],
         "securityDefiner": false,
         "sourceConfidence": "medium",
         "status": "UNKNOWN",
@@ -5483,7 +5487,9 @@
         "returnType": "",
         "schema": "public",
         "schemaVersion": "1.0.0",
-        "searchPath": [],
+        "searchPath": [
+          "public"
+        ],
         "securityDefiner": false,
         "sourceConfidence": "medium",
         "status": "UNKNOWN",
@@ -23707,14 +23713,14 @@
       "declaredIn": [
         "backend/package.json"
       ],
-      "id": "npm:@sentry/nestjs@^10.51.0",
+      "id": "npm:@sentry/nestjs@10.59.0",
       "name": "@sentry/nestjs",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^10.51.0",
+      "version": "10.59.0",
       "workspaces": [
         "@fafa/backend"
       ]
@@ -23723,14 +23729,14 @@
       "declaredIn": [
         "frontend/package.json"
       ],
-      "id": "npm:@sentry/react-router@^10.51.0",
-      "name": "@sentry/react-router",
+      "id": "npm:@sentry/react@10.59.0",
+      "name": "@sentry/react",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^10.51.0",
+      "version": "10.59.0",
       "workspaces": [
         "@fafa/frontend"
       ]
@@ -27708,6 +27714,7 @@
         "backend/src/api/api.module.ts",
         "backend/src/auth/auth.module.ts",
         "backend/src/cache/cache.module.ts",
+        "backend/src/common/guards/cloudflare-throttler.guard.ts",
         "backend/src/config/feature-flags.module.ts",
         "backend/src/config/logger.config.ts",
         "backend/src/config/write-guard.module.ts",
@@ -27750,6 +27757,7 @@
         "backend/src/modules/seo-monitoring/seo-monitoring.module.ts",
         "backend/src/modules/seo/seo.module.ts",
         "backend/src/modules/staff/staff.module.ts",
+        "backend/src/modules/substitution/substitution.module.ts",
         "backend/src/modules/supplier-truth/supplier-truth.module.ts",
         "backend/src/modules/suppliers/suppliers.module.ts",
         "backend/src/modules/support/support.module.ts",
@@ -27766,7 +27774,7 @@
         "backend/src/workers/worker.module.ts"
       ],
       "kind": "service",
-      "loc": 267,
+      "loc": 272,
       "owner": "__unassigned__",
       "path": "backend/src/app.module.ts",
       "risk": "low",
@@ -29303,6 +29311,51 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
+      "id": "backend/src/common/guards/cloudflare-throttler.guard.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/common/guards/cloudflare-throttler.guard.ts"
+      ],
+      "kind": "test",
+      "loc": 66,
+      "owner": "@ak125",
+      "path": "backend/src/common/guards/cloudflare-throttler.guard.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D13",
+      "id": "backend/src/common/guards/cloudflare-throttler.guard.ts",
+      "importedBy": [
+        "backend/src/app.module.ts",
+        "backend/src/common/guards/cloudflare-throttler.guard.test.ts"
+      ],
+      "imports": [],
+      "kind": "service",
+      "loc": 50,
+      "owner": "@ak125",
+      "path": "backend/src/common/guards/cloudflare-throttler.guard.ts",
+      "risk": "medium",
+      "runtime": true,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "LIVE"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
         "depcruise"
       ],
       "domain": "UNKNOWN",
@@ -29838,6 +29891,8 @@
         "backend/src/config/index.ts",
         "backend/src/database/services/supabase-base.service.ts",
         "backend/src/main.ts",
+        "backend/src/modules/admin/processors/seo-control-refresh.processor.test.ts",
+        "backend/src/modules/admin/processors/seo-control-refresh.processor.ts",
         "backend/src/modules/cart/services/abandoned-cart.service.ts",
         "backend/src/modules/catalog/utils/image-urls.utils.ts",
         "backend/src/modules/layout/services/meta-tags.service.ts",
@@ -29930,7 +29985,7 @@
         "backend/src/modules/gamme-rest/services/buying-guide-data.service.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts"
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "config",
       "loc": 366,
@@ -31725,7 +31780,7 @@
         "backend/src/workers/types/content-refresh.types.ts"
       ],
       "imports": [
-        "../../../packages/seo-roles/dist/index.d.ts"
+        "packages/seo-roles/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 24,
@@ -32321,11 +32376,11 @@
         "backend/src/modules/payments/controllers/paybox-callback.controller.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@cache/cache.service",
         "@common/exceptions",
         "backend/src/database/services/supabase-base.service.ts",
-        "backend/src/modules/catalog/utils/image-urls.utils.ts"
+        "backend/src/modules/catalog/utils/image-urls.utils.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 1024,
@@ -32424,8 +32479,8 @@
         "backend/src/modules/vehicles/services/vehicle-meta.service.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
-        "backend/src/database/services/supabase-base.service.ts"
+        "backend/src/database/services/supabase-base.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 256,
@@ -32455,9 +32510,9 @@
         "backend/src/remix/remix-api.service.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@cache/cache.service",
-        "backend/src/database/services/supabase-base.service.ts"
+        "backend/src/database/services/supabase-base.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 1077,
@@ -32622,17 +32677,61 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/instrument-init-count.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/instrument.ts"
+      ],
+      "kind": "test",
+      "loc": 86,
+      "owner": "__unassigned__",
+      "path": "backend/src/instrument-init-count.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
+      "id": "backend/src/instrument.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/instrument.ts"
+      ],
+      "kind": "test",
+      "loc": 53,
+      "owner": "__unassigned__",
+      "path": "backend/src/instrument.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
         "depcruise",
         "reachability"
       ],
       "domain": "UNKNOWN",
       "id": "backend/src/instrument.ts",
       "importedBy": [
+        "backend/src/instrument-init-count.test.ts",
+        "backend/src/instrument.test.ts",
         "backend/src/main.ts"
       ],
       "imports": [],
       "kind": "service",
-      "loc": 76,
+      "loc": 128,
       "owner": "__unassigned__",
       "path": "backend/src/instrument.ts",
       "risk": "low",
@@ -32671,7 +32770,6 @@
       "id": "backend/src/main.ts",
       "importedBy": [],
       "imports": [
-        "../../../frontend/index.cjs",
         "backend/src/app.module.ts",
         "backend/src/config/app.config.ts",
         "backend/src/config/csp.config.ts",
@@ -32679,7 +32777,8 @@
         "backend/src/instrument.ts",
         "backend/src/modules/analytics/landing-attribution.middleware.ts",
         "backend/src/modules/seo/middleware/sitemap-static.middleware.ts",
-        "crypto"
+        "crypto",
+        "frontend/index.cjs"
       ],
       "kind": "service",
       "loc": 349,
@@ -33788,11 +33887,11 @@
         "backend/src/modules/admin/admin.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@auth/authenticated.guard",
         "@auth/is-admin.guard",
         "backend/src/common/interceptors/admin-response.interceptor.ts",
-        "backend/src/modules/admin/services/seo-cockpit.service.ts"
+        "backend/src/modules/admin/services/seo-cockpit.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "controller",
       "loc": 333,
@@ -33816,12 +33915,12 @@
         "backend/src/modules/admin/admin.module.ts"
       ],
       "imports": [
-        "../../../packages/seo-types/dist/index.d.ts",
         "@auth/authenticated.guard",
         "@auth/is-admin.guard",
         "backend/src/common/interceptors/admin-response.interceptor.ts",
         "backend/src/config/feature-flags.service.ts",
-        "backend/src/modules/admin/services/seo-control.service.ts"
+        "backend/src/modules/admin/services/seo-control.service.ts",
+        "packages/seo-types/dist/index.d.ts"
       ],
       "kind": "controller",
       "loc": 73,
@@ -34057,17 +34156,44 @@
         "manual"
       ],
       "domain": "D8",
+      "id": "backend/src/modules/admin/processors/seo-control-refresh.processor.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/config/app.config.ts",
+        "backend/src/modules/admin/processors/seo-control-refresh.processor.ts",
+        "backend/src/modules/admin/services/seo-control-refresher.service.ts",
+        "backend/src/modules/admin/services/seo-control.service.ts"
+      ],
+      "kind": "test",
+      "loc": 65,
+      "owner": "@ak125/admin-team",
+      "path": "backend/src/modules/admin/processors/seo-control-refresh.processor.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
       "id": "backend/src/modules/admin/processors/seo-control-refresh.processor.ts",
       "importedBy": [
-        "backend/src/modules/admin/admin.module.ts"
+        "backend/src/modules/admin/admin.module.ts",
+        "backend/src/modules/admin/processors/seo-control-refresh.processor.test.ts"
       ],
       "imports": [
+        "backend/src/config/app.config.ts",
         "backend/src/modules/admin/constants/seo-control.constants.ts",
         "backend/src/modules/admin/services/seo-control-refresher.service.ts",
         "backend/src/modules/admin/services/seo-control.service.ts"
       ],
       "kind": "service",
-      "loc": 62,
+      "loc": 78,
       "owner": "@ak125/admin-team",
       "path": "backend/src/modules/admin/processors/seo-control-refresh.processor.ts",
       "risk": "medium",
@@ -34134,7 +34260,6 @@
         "backend/src/modules/admin/services/gamme-detail-enricher.service.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@cache/cache.service",
         "@common/exceptions",
         "@database/services/supabase-base.service",
@@ -34143,7 +34268,8 @@
         "backend/src/modules/admin/services/gamme-seo-audit.service.ts",
         "backend/src/modules/admin/services/gamme-seo-badges.service.ts",
         "backend/src/modules/admin/services/gamme-seo-thresholds.service.ts",
-        "backend/src/modules/admin/services/gamme-vlevel.service.ts"
+        "backend/src/modules/admin/services/gamme-vlevel.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 1126,
@@ -34680,7 +34806,7 @@
         "backend/src/modules/admin/services/command-center-reader.service.ts"
       ],
       "imports": [
-        "../../../packages/registry/dist/index.d.ts"
+        "packages/registry/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 117,
@@ -34991,7 +35117,6 @@
         "backend/src/modules/admin/services/execution-router.service.ts"
       ],
       "imports": [
-        "../../../packages/seo-roles/dist/index.d.ts",
         "@database/services/supabase-base.service",
         "backend/src/config/buying-guide-quality.constants.ts",
         "backend/src/config/content-write-gate.service.ts",
@@ -35013,6 +35138,7 @@
         "backend/src/workers/types/content-refresh.types.ts",
         "crypto",
         "fs",
+        "packages/seo-roles/dist/index.d.ts",
         "path"
       ],
       "kind": "service",
@@ -35350,8 +35476,8 @@
         "backend/src/modules/admin/services/gamme-detail-enricher.service.ts"
       ],
       "imports": [
-        "../../../packages/seo-roles/dist/index.d.ts",
-        "@database/services/supabase-base.service"
+        "@database/services/supabase-base.service",
+        "packages/seo-roles/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 680,
@@ -36499,7 +36625,7 @@
         "backend/src/modules/admin/services/seo-control.service.ts"
       ],
       "imports": [
-        "../../../packages/seo-types/dist/index.d.ts"
+        "packages/seo-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 227,
@@ -36544,6 +36670,7 @@
       "id": "backend/src/modules/admin/services/seo-control-refresher.service.ts",
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
+        "backend/src/modules/admin/processors/seo-control-refresh.processor.test.ts",
         "backend/src/modules/admin/processors/seo-control-refresh.processor.ts",
         "backend/src/modules/admin/services/seo-control-refresher.service.test.ts"
       ],
@@ -36571,14 +36698,15 @@
       "importedBy": [
         "backend/src/modules/admin/admin.module.ts",
         "backend/src/modules/admin/controllers/seo-control.controller.ts",
+        "backend/src/modules/admin/processors/seo-control-refresh.processor.test.ts",
         "backend/src/modules/admin/processors/seo-control-refresh.processor.ts"
       ],
       "imports": [
-        "../../../packages/seo-types/dist/index.d.ts",
         "backend/src/cache/cache.service.ts",
         "backend/src/database/services/supabase-base.service.ts",
         "backend/src/modules/admin/services/seo-control-decisions.service.ts",
-        "crypto"
+        "crypto",
+        "packages/seo-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 316,
@@ -36607,12 +36735,12 @@
         "backend/src/modules/admin/services/stock-report.service.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@cache/cache.service",
         "@common/exceptions",
         "@database/services/supabase-base.service",
         "backend/src/modules/admin/services/stock-movement.service.ts",
-        "backend/src/modules/admin/services/stock-report.service.ts"
+        "backend/src/modules/admin/services/stock-report.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 746,
@@ -36637,10 +36765,10 @@
         "backend/src/modules/admin/services/stock-management.service.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@common/exceptions",
         "@database/services/supabase-base.service",
-        "backend/src/modules/admin/services/stock-management.service.ts"
+        "backend/src/modules/admin/services/stock-management.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 334,
@@ -36750,9 +36878,9 @@
         "backend/src/modules/admin/controllers/stock.controller.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@common/exceptions",
-        "@database/services/supabase-base.service"
+        "@database/services/supabase-base.service",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 273,
@@ -38032,12 +38160,12 @@
         "backend/src/modules/blog/services/advice.service.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "backend/src/modules/blog/interfaces/blog.interfaces.ts",
         "backend/src/modules/blog/services/advice-transform.service.ts",
         "backend/src/modules/blog/services/advice.service.ts",
         "backend/src/modules/catalog/utils/image-urls.utils.ts",
-        "backend/src/modules/search/services/supabase-indexation.service.ts"
+        "backend/src/modules/search/services/supabase-indexation.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 244,
@@ -38063,11 +38191,11 @@
         "backend/src/modules/blog/services/advice.service.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "backend/src/modules/blog/interfaces/blog.interfaces.ts",
         "backend/src/modules/blog/utils/blog-text.utils.ts",
         "backend/src/modules/search/services/supabase-indexation.service.ts",
-        "backend/src/utils/html-entities.ts"
+        "backend/src/utils/html-entities.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 266,
@@ -38095,7 +38223,6 @@
         "backend/src/modules/blog/services/advice-enrichment.service.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@security/rpc-gate/rpc-gate.service",
         "backend/src/common/utils/url-builder.utils.ts",
         "backend/src/modules/blog/interfaces/blog.interfaces.ts",
@@ -38103,7 +38230,8 @@
         "backend/src/modules/blog/services/advice-transform.service.ts",
         "backend/src/modules/blog/services/blog-cache.service.ts",
         "backend/src/modules/blog/services/blog.service.ts",
-        "backend/src/modules/search/services/supabase-indexation.service.ts"
+        "backend/src/modules/search/services/supabase-indexation.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 710,
@@ -38130,12 +38258,12 @@
         "backend/src/modules/blog/services/r3-guide.service.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@common/exceptions",
         "backend/src/modules/blog/interfaces/blog.interfaces.ts",
         "backend/src/modules/blog/services/blog-article-transform.service.ts",
         "backend/src/modules/blog/services/blog-cache.service.ts",
-        "backend/src/modules/search/services/supabase-indexation.service.ts"
+        "backend/src/modules/search/services/supabase-indexation.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 829,
@@ -38185,11 +38313,11 @@
         "backend/src/modules/blog/services/r3-guide.service.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@cache/cache.service",
         "backend/src/common/utils/url-builder.utils.ts",
         "backend/src/modules/blog/services/blog-article-transform.service.ts",
-        "backend/src/modules/search/services/supabase-indexation.service.ts"
+        "backend/src/modules/search/services/supabase-indexation.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 462,
@@ -38278,13 +38406,13 @@
         "backend/src/modules/blog/services/r3-guide.service.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "backend/src/config/conseil-pack.constants.ts",
         "backend/src/config/fr-accent-map.ts",
         "backend/src/config/seo-link-limits.config.ts",
         "backend/src/modules/blog/utils/source-provenance.util.ts",
         "backend/src/modules/search/services/supabase-indexation.service.ts",
-        "backend/src/modules/seo/internal-linking.service.ts"
+        "backend/src/modules/seo/internal-linking.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 454,
@@ -38310,11 +38438,11 @@
         "backend/src/modules/blog/services/blog.service.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "backend/src/modules/blog/interfaces/blog.interfaces.ts",
         "backend/src/modules/blog/services/blog-article-transform.service.ts",
         "backend/src/modules/blog/services/blog-cache.service.ts",
-        "backend/src/modules/search/services/supabase-indexation.service.ts"
+        "backend/src/modules/search/services/supabase-indexation.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 635,
@@ -38372,12 +38500,12 @@
         "backend/src/modules/blog/services/constructeur.service.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "backend/src/modules/blog/interfaces/blog.interfaces.ts",
         "backend/src/modules/blog/services/blog-cache.service.ts",
         "backend/src/modules/blog/services/constructeur-transform.service.ts",
         "backend/src/modules/blog/services/constructeur.service.ts",
-        "backend/src/modules/search/services/supabase-indexation.service.ts"
+        "backend/src/modules/search/services/supabase-indexation.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 230,
@@ -38403,9 +38531,9 @@
         "backend/src/modules/blog/services/constructeur.service.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "backend/src/modules/blog/interfaces/blog.interfaces.ts",
-        "backend/src/utils/html-entities.ts"
+        "backend/src/utils/html-entities.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 320,
@@ -38432,12 +38560,12 @@
         "backend/src/modules/blog/services/constructeur-search.service.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "backend/src/modules/blog/interfaces/blog.interfaces.ts",
         "backend/src/modules/blog/services/blog-cache.service.ts",
         "backend/src/modules/blog/services/constructeur-search.service.ts",
         "backend/src/modules/blog/services/constructeur-transform.service.ts",
-        "backend/src/modules/search/services/supabase-indexation.service.ts"
+        "backend/src/modules/search/services/supabase-indexation.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 810,
@@ -38463,9 +38591,9 @@
         "backend/src/modules/blog/controllers/content.controller.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "backend/src/modules/blog/interfaces/blog.interfaces.ts",
-        "backend/src/modules/search/services/supabase-indexation.service.ts"
+        "backend/src/modules/search/services/supabase-indexation.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 479,
@@ -38491,10 +38619,10 @@
         "backend/src/modules/blog/controllers/content.controller.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "backend/src/modules/blog/interfaces/blog.interfaces.ts",
         "backend/src/modules/catalog/utils/image-urls.utils.ts",
-        "backend/src/modules/search/services/supabase-indexation.service.ts"
+        "backend/src/modules/search/services/supabase-indexation.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 1254,
@@ -39296,9 +39424,9 @@
         "backend/src/modules/cart/cart.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@database/services/supabase-base.service",
-        "backend/src/database/services/cart-data.service.ts"
+        "backend/src/database/services/cart-data.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 219,
@@ -39375,8 +39503,8 @@
       "id": "backend/src/modules/cart/services/stock-management.service.ts",
       "importedBy": [],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
-        "@cache/cache.service"
+        "@cache/cache.service",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 414,
@@ -39483,13 +39611,13 @@
         "backend/src/modules/catalog/catalog.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@cache/cache.service",
         "@common/exceptions",
         "@common/utils/error.utils",
         "@database/services/supabase-base.service",
         "@security/rpc-gate/rpc-gate.service",
-        "backend/src/modules/catalog/services/catalog-hierarchy.service.ts"
+        "backend/src/modules/catalog/services/catalog-hierarchy.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 885,
@@ -39822,7 +39950,7 @@
       "id": "backend/src/modules/catalog/services/__tests__/vehicle-aware-label.composer.test.ts",
       "importedBy": [],
       "imports": [
-        "../../../packages/seo-types/dist/index.d.ts"
+        "packages/seo-types/dist/index.d.ts"
       ],
       "kind": "test",
       "loc": 229,
@@ -39926,11 +40054,11 @@
         "backend/src/modules/seo/services/sitemap-vehicle-pieces-validator.service.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@cache/cache.service",
         "@common/utils/error.utils",
         "@database/services/supabase-base.service",
-        "@security/rpc-gate/rpc-gate.service"
+        "@security/rpc-gate/rpc-gate.service",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 492,
@@ -39957,11 +40085,11 @@
         "backend/src/modules/catalog/services/cache-warming.service.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@cache/cache.service",
         "@common/exceptions",
         "@database/services/supabase-base.service",
-        "backend/src/modules/catalog/interfaces/catalog-family.interface.ts"
+        "backend/src/modules/catalog/interfaces/catalog-family.interface.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 218,
@@ -40036,9 +40164,9 @@
         "backend/src/modules/catalog/controllers/equipementiers.controller.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@cache/cache.service",
-        "@database/services/supabase-base.service"
+        "@database/services/supabase-base.service",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 224,
@@ -40089,10 +40217,10 @@
         "backend/src/modules/catalog/controllers/gamme-unified.controller.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@cache/cache.service",
         "@database/services/supabase-base.service",
-        "backend/src/modules/catalog/types/gamme.types.ts"
+        "backend/src/modules/catalog/types/gamme.types.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 166,
@@ -40170,8 +40298,8 @@
         "backend/src/modules/vehicles/vehicles.controller.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
-        "@database/services/supabase-base.service"
+        "@database/services/supabase-base.service",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 91,
@@ -40196,10 +40324,10 @@
         "backend/src/modules/catalog/services/__tests__/seo-template-switch.test.ts"
       ],
       "imports": [
-        "../../../packages/seo-types/dist/index.d.ts",
         "@cache/cache.service",
         "backend/src/config/seo-variations.config.ts",
-        "backend/src/modules/catalog/services/vehicle-aware-description.composer.ts"
+        "backend/src/modules/catalog/services/vehicle-aware-description.composer.ts",
+        "packages/seo-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 509,
@@ -40281,11 +40409,11 @@
         "backend/src/modules/catalog/controllers/vehicle-filtered-catalog-v4-hybrid.controller.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@common/utils/error.utils",
         "@database/services/supabase-base.service",
         "@security/rpc-gate/rpc-gate.service",
-        "backend/src/utils/promise-helpers.ts"
+        "backend/src/utils/promise-helpers.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 887,
@@ -40422,8 +40550,8 @@
         "backend/src/modules/commercial/commercial.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
-        "@database/services/supabase-base.service"
+        "@database/services/supabase-base.service",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 376,
@@ -40737,11 +40865,11 @@
         "backend/src/modules/dashboard/dashboard.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@cache/cache.service",
         "@common/exceptions",
         "@database/services/supabase-base.service",
-        "backend/src/database/services/meta-tags-ariane-data.service.ts"
+        "backend/src/database/services/meta-tags-ariane-data.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 941,
@@ -41114,7 +41242,7 @@
       "id": "backend/src/modules/diagnostic-engine/ports/commerce.port.ts",
       "importedBy": [],
       "imports": [
-        "../../../packages/registry/dist/index.d.ts"
+        "packages/registry/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 44,
@@ -41136,7 +41264,7 @@
       "id": "backend/src/modules/diagnostic-engine/ports/editorial.port.ts",
       "importedBy": [],
       "imports": [
-        "../../../packages/registry/dist/index.d.ts"
+        "packages/registry/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 36,
@@ -41158,7 +41286,7 @@
       "id": "backend/src/modules/diagnostic-engine/ports/maintenance.port.ts",
       "importedBy": [],
       "imports": [
-        "../../../packages/registry/dist/index.d.ts"
+        "packages/registry/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 50,
@@ -41185,7 +41313,7 @@
         "backend/src/modules/vehicle-context/vehicle-context.service.ts"
       ],
       "imports": [
-        "../../../packages/registry/dist/index.d.ts"
+        "packages/registry/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 58,
@@ -41898,7 +42026,7 @@
         "backend/src/modules/diagnostic-engine/diagnostic-engine.controller.ts"
       ],
       "imports": [
-        "../../../packages/registry/dist/index.d.ts"
+        "packages/registry/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 45,
@@ -42108,9 +42236,9 @@
         "backend/src/modules/errors/services/error.service.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@common/utils/error.utils",
-        "@database/services/supabase-base.service"
+        "@database/services/supabase-base.service",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 598,
@@ -42352,11 +42480,11 @@
         "backend/src/modules/gamme-rest/services/index.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@cache/cache.service",
         "@database/services/supabase-base.service",
         "backend/src/modules/catalog/services/unified-page-data.service.ts",
-        "backend/src/modules/gamme-rest/services/gamme-data-transformer.service.ts"
+        "backend/src/modules/gamme-rest/services/gamme-data-transformer.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 113,
@@ -42675,9 +42803,9 @@
         "backend/src/modules/invoices/invoices.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@common/exceptions",
-        "@database/services/supabase-base.service"
+        "@database/services/supabase-base.service",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 165,
@@ -42955,8 +43083,8 @@
         "backend/src/modules/layout/services/layout.service.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
-        "@cache/cache.service"
+        "@cache/cache.service",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 451,
@@ -42983,8 +43111,8 @@
         "backend/src/modules/layout/services/layout.service.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
-        "@cache/cache.service"
+        "@cache/cache.service",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 283,
@@ -45250,9 +45378,9 @@
         "backend/src/modules/messages/messages.service.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@common/exceptions",
-        "@database/services/supabase-base.service"
+        "@database/services/supabase-base.service",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 326,
@@ -45532,8 +45660,8 @@
         "backend/src/modules/navigation/navigation.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
-        "@database/services/supabase-base.service"
+        "@database/services/supabase-base.service",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 272,
@@ -45861,10 +45989,10 @@
         "backend/src/modules/orders/orders.module.ts"
       ],
       "imports": [
-        "../../../packages/domain-commerce/dist/index.d.ts",
         "@auth/authenticated.guard",
         "@auth/is-admin.guard",
         "@cache/cache.service",
+        "@repo/domain-commerce",
         "backend/src/auth/auth.service.ts",
         "backend/src/auth/guards/optional-auth.guard.ts",
         "backend/src/modules/orders/services/orders.service.ts",
@@ -46050,10 +46178,10 @@
         "backend/src/modules/orders/orders.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@database/services/supabase-base.service",
         "backend/src/modules/orders/events/order.events.ts",
-        "backend/src/services/mail.service.ts"
+        "backend/src/services/mail.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 121,
@@ -46141,10 +46269,10 @@
         "backend/src/modules/orders/orders.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@database/services/supabase-base.service",
         "backend/src/modules/orders/events/order.events.ts",
-        "backend/src/modules/orders/types/order.types.ts"
+        "backend/src/modules/orders/types/order.types.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 763,
@@ -46169,9 +46297,9 @@
         "backend/src/modules/orders/orders.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@common/exceptions",
-        "@database/services/supabase-base.service"
+        "@database/services/supabase-base.service",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 507,
@@ -46245,8 +46373,8 @@
         "backend/src/modules/orders/services/orders.service.ts"
       ],
       "imports": [
-        "../../../packages/domain-commerce/dist/index.d.ts",
         "@database/services/supabase-base.service",
+        "@repo/domain-commerce",
         "crypto"
       ],
       "kind": "service",
@@ -46272,16 +46400,16 @@
         "backend/src/modules/orders/orders.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
-        "../../../packages/domain-commerce/dist/index.d.ts",
         "@database/services/supabase-base.service",
+        "@repo/domain-commerce",
         "backend/src/modules/cart/services/shipping-calculator.service.ts",
         "backend/src/modules/orders/events/order.events.ts",
         "backend/src/modules/orders/services/order-calculation.service.ts",
         "backend/src/modules/orders/services/order-status.service.ts",
         "backend/src/modules/shipping/shipping.service.ts",
         "backend/src/services/mail.service.ts",
-        "crypto"
+        "crypto",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 870,
@@ -46306,8 +46434,8 @@
         "backend/src/modules/orders/orders.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
-        "@database/services/supabase-base.service"
+        "@database/services/supabase-base.service",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 438,
@@ -46910,11 +47038,11 @@
         "backend/src/modules/payments/services/payment.service.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@common/exceptions",
         "@database/services/supabase-base.service",
         "backend/src/modules/payments/entities/payment.entity.ts",
-        "backend/src/modules/payments/utils/normalize-order-id.ts"
+        "backend/src/modules/payments/utils/normalize-order-id.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 798,
@@ -48284,9 +48412,9 @@
         "backend/src/modules/products/services/product-enhancement.service.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@database/services/supabase-base.service",
-        "@security/rpc-gate/rpc-gate.service"
+        "@security/rpc-gate/rpc-gate.service",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 576,
@@ -48340,10 +48468,10 @@
         "backend/src/modules/products/services/cross-selling.service.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@database/services/supabase-base.service",
         "backend/src/modules/products/services/cross-selling.service.ts",
-        "backend/src/utils/html-entities.ts"
+        "backend/src/utils/html-entities.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 284,
@@ -48368,9 +48496,9 @@
         "backend/src/modules/products/services/cross-selling.service.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@database/services/supabase-base.service",
-        "backend/src/modules/products/services/cross-selling.service.ts"
+        "backend/src/modules/products/services/cross-selling.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 462,
@@ -48427,9 +48555,9 @@
         "backend/src/modules/products/products.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@common/exceptions",
-        "@database/services/supabase-base.service"
+        "@database/services/supabase-base.service",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 553,
@@ -48478,8 +48606,8 @@
         "backend/src/modules/products/products.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
-        "@database/services/supabase-base.service"
+        "@database/services/supabase-base.service",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 432,
@@ -48505,11 +48633,11 @@
         "backend/src/modules/products/products.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@common/exceptions",
         "@database/services/supabase-base.service",
         "@security/rpc-gate/rpc-gate.service",
-        "backend/src/modules/pricing/services/pricing-formula.service.ts"
+        "backend/src/modules/pricing/services/pricing-formula.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 627,
@@ -48536,9 +48664,9 @@
         "backend/src/modules/products/products.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@database/services/supabase-base.service",
-        "@security/rpc-gate/rpc-gate.service"
+        "@security/rpc-gate/rpc-gate.service",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 361,
@@ -48562,8 +48690,8 @@
         "backend/src/modules/products/products.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
-        "@database/services/supabase-base.service"
+        "@database/services/supabase-base.service",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 311,
@@ -48590,8 +48718,8 @@
         "backend/src/modules/products/products.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
-        "@database/services/supabase-base.service"
+        "@database/services/supabase-base.service",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 507,
@@ -50398,8 +50526,8 @@
         "backend/src/modules/search/search.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
-        "backend/src/modules/search/services/supabase-indexation.service.ts"
+        "backend/src/modules/search/services/supabase-indexation.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 199,
@@ -50473,9 +50601,9 @@
         "backend/src/modules/search/search.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@common/exceptions",
-        "@database/services/supabase-base.service"
+        "@database/services/supabase-base.service",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 351,
@@ -50524,9 +50652,9 @@
         "backend/src/modules/search/search.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@common/exceptions",
-        "@database/services/supabase-base.service"
+        "@database/services/supabase-base.service",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 907,
@@ -50598,10 +50726,10 @@
         "backend/src/modules/search/search.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@cache/cache.service",
         "@database/services/supabase-base.service",
-        "backend/src/modules/catalog/utils/image-urls.utils.ts"
+        "backend/src/modules/catalog/utils/image-urls.utils.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 999,
@@ -50663,9 +50791,9 @@
         "backend/src/modules/search/services/indexation.service.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@database/services/supabase-base.service",
-        "backend/src/modules/search/services/vehicle-naming.service.ts"
+        "backend/src/modules/search/services/vehicle-naming.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 489,
@@ -50689,8 +50817,8 @@
         "backend/src/modules/search/services/supabase-indexation.service.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
-        "@database/services/supabase-base.service"
+        "@database/services/supabase-base.service",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 283,
@@ -50763,9 +50891,9 @@
       "id": "backend/src/modules/seo-control-plane/collectors/cf-analytics/cf-analytics.service.test.ts",
       "importedBy": [],
       "imports": [
-        "../../../packages/registry/dist/index.d.ts",
         "backend/src/modules/seo-control-plane/collectors/cf-analytics/cf-analytics.service.ts",
-        "backend/src/modules/seo-control-plane/services/criticality-loader.service.ts"
+        "backend/src/modules/seo-control-plane/services/criticality-loader.service.ts",
+        "packages/registry/dist/index.d.ts"
       ],
       "kind": "test",
       "loc": 262,
@@ -50821,7 +50949,7 @@
         "backend/src/modules/seo-control-plane/collectors/cf-analytics/cf-analytics.service.ts"
       ],
       "imports": [
-        "../../../packages/registry/dist/index.d.ts"
+        "packages/registry/dist/index.d.ts"
       ],
       "kind": "config",
       "loc": 62,
@@ -50894,9 +51022,9 @@
       "id": "backend/src/modules/seo-control-plane/collectors/cf-rum/cf-rum.service.test.ts",
       "importedBy": [],
       "imports": [
-        "../../../packages/registry/dist/index.d.ts",
         "backend/src/modules/seo-control-plane/collectors/cf-rum/cf-rum.service.ts",
-        "backend/src/modules/seo-control-plane/services/criticality-loader.service.ts"
+        "backend/src/modules/seo-control-plane/services/criticality-loader.service.ts",
+        "packages/registry/dist/index.d.ts"
       ],
       "kind": "test",
       "loc": 523,
@@ -50952,7 +51080,7 @@
         "backend/src/modules/seo-control-plane/collectors/cf-rum/cf-rum.service.ts"
       ],
       "imports": [
-        "../../../packages/registry/dist/index.d.ts"
+        "packages/registry/dist/index.d.ts"
       ],
       "kind": "config",
       "loc": 104,
@@ -51025,9 +51153,9 @@
       "id": "backend/src/modules/seo-control-plane/collectors/runtime-logs/runtime-logs.service.test.ts",
       "importedBy": [],
       "imports": [
-        "../../../packages/registry/dist/index.d.ts",
         "backend/src/modules/seo-control-plane/collectors/runtime-logs/runtime-logs.service.ts",
-        "backend/src/modules/seo-control-plane/services/criticality-loader.service.ts"
+        "backend/src/modules/seo-control-plane/services/criticality-loader.service.ts",
+        "packages/registry/dist/index.d.ts"
       ],
       "kind": "test",
       "loc": 251,
@@ -51083,7 +51211,7 @@
         "backend/src/modules/seo-control-plane/collectors/runtime-logs/runtime-logs.service.ts"
       ],
       "imports": [
-        "../../../packages/registry/dist/index.d.ts"
+        "packages/registry/dist/index.d.ts"
       ],
       "kind": "config",
       "loc": 54,
@@ -51156,10 +51284,10 @@
       "id": "backend/src/modules/seo-control-plane/collectors/synthetic-crawler/synthetic-crawler.service.test.ts",
       "importedBy": [],
       "imports": [
-        "../../../packages/registry/dist/index.d.ts",
         "backend/src/modules/seo-control-plane/collectors/synthetic-crawler/synthetic-crawler.service.ts",
         "backend/src/modules/seo-control-plane/services/criticality-loader.service.ts",
-        "backend/src/modules/seo-control-plane/types.ts"
+        "backend/src/modules/seo-control-plane/types.ts",
+        "packages/registry/dist/index.d.ts"
       ],
       "kind": "test",
       "loc": 330,
@@ -51185,11 +51313,11 @@
         "backend/src/modules/seo-control-plane/seo-control-plane.module.ts"
       ],
       "imports": [
-        "../../../packages/registry/dist/index.d.ts",
         "backend/src/database/services/supabase-base.service.ts",
         "backend/src/modules/seo-control-plane/services/criticality-loader.service.ts",
         "backend/src/modules/seo-control-plane/types.ts",
-        "crypto"
+        "crypto",
+        "packages/registry/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 432,
@@ -51249,8 +51377,8 @@
       "id": "backend/src/modules/seo-control-plane/services/criticality-loader.service.test.ts",
       "importedBy": [],
       "imports": [
-        "../../../packages/registry/dist/index.d.ts",
-        "backend/src/modules/seo-control-plane/services/criticality-loader.service.ts"
+        "backend/src/modules/seo-control-plane/services/criticality-loader.service.ts",
+        "packages/registry/dist/index.d.ts"
       ],
       "kind": "test",
       "loc": 93,
@@ -51283,8 +51411,8 @@
         "backend/src/modules/seo-control-plane/services/criticality-loader.service.test.ts"
       ],
       "imports": [
-        "../../../packages/registry/dist/index.d.ts",
         "fs",
+        "packages/registry/dist/index.d.ts",
         "path"
       ],
       "kind": "service",
@@ -51314,7 +51442,7 @@
         "backend/src/modules/seo-control-plane/seo-control-plane.module.ts"
       ],
       "imports": [
-        "../../../packages/registry/dist/index.d.ts"
+        "packages/registry/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 80,
@@ -51666,8 +51794,8 @@
         "backend/src/modules/seo-monitoring/seo-monitoring.module.ts"
       ],
       "imports": [
-        "../../../packages/cwv-taxonomy/dist/index.d.ts",
-        "backend/src/modules/seo-monitoring/services/cwv-beacon.service.ts"
+        "backend/src/modules/seo-monitoring/services/cwv-beacon.service.ts",
+        "packages/cwv-taxonomy/dist/index.d.ts"
       ],
       "kind": "controller",
       "loc": 69,
@@ -51716,8 +51844,8 @@
         "backend/src/modules/seo-monitoring/seo-monitoring.module.ts"
       ],
       "imports": [
-        "../../../packages/seo-types/dist/index.d.ts",
-        "backend/src/modules/seo-monitoring/services/funnel-events.service.ts"
+        "backend/src/modules/seo-monitoring/services/funnel-events.service.ts",
+        "packages/seo-types/dist/index.d.ts"
       ],
       "kind": "controller",
       "loc": 36,
@@ -51768,9 +51896,9 @@
         "backend/src/modules/seo-monitoring/seo-monitoring.module.ts"
       ],
       "imports": [
-        "../../../packages/cwv-taxonomy/dist/index.d.ts",
         "backend/src/modules/seo-monitoring/services/runtime-events.schema.ts",
-        "backend/src/modules/seo-monitoring/services/runtime-events.service.ts"
+        "backend/src/modules/seo-monitoring/services/runtime-events.service.ts",
+        "packages/cwv-taxonomy/dist/index.d.ts"
       ],
       "kind": "controller",
       "loc": 70,
@@ -51985,8 +52113,8 @@
         "backend/src/modules/seo-monitoring/services/crux-alerter.test.ts"
       ],
       "imports": [
-        "../../../packages/seo-types/dist/index.d.ts",
-        "@common/utils"
+        "@common/utils",
+        "packages/seo-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 527,
@@ -52034,7 +52162,7 @@
         "backend/src/modules/seo-monitoring/services/crux-field-fetcher.test.ts"
       ],
       "imports": [
-        "../../../packages/seo-types/dist/index.d.ts"
+        "packages/seo-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 235,
@@ -52060,10 +52188,10 @@
         "backend/src/modules/seo-monitoring/services/crux-field-fetcher.test.ts"
       ],
       "imports": [
-        "../../../packages/seo-types/dist/index.d.ts",
         "@common/utils",
         "backend/src/modules/seo-monitoring/services/crux-api-client.service.ts",
-        "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts"
+        "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts",
+        "packages/seo-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 355,
@@ -52162,8 +52290,8 @@
         "backend/src/modules/seo-monitoring/seo-monitoring.module.ts"
       ],
       "imports": [
-        "../../../packages/cwv-taxonomy/dist/index.d.ts",
-        "@database/services/supabase-base.service"
+        "@database/services/supabase-base.service",
+        "packages/cwv-taxonomy/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 94,
@@ -52239,8 +52367,8 @@
         "backend/src/modules/seo-monitoring/seo-monitoring.module.ts"
       ],
       "imports": [
-        "../../../packages/seo-types/dist/index.d.ts",
-        "@database/services/supabase-base.service"
+        "@database/services/supabase-base.service",
+        "packages/seo-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 47,
@@ -52262,7 +52390,7 @@
       "id": "backend/src/modules/seo-monitoring/services/funnel-events.test.ts",
       "importedBy": [],
       "imports": [
-        "../../../packages/seo-types/dist/index.d.ts"
+        "packages/seo-types/dist/index.d.ts"
       ],
       "kind": "test",
       "loc": 62,
@@ -52387,11 +52515,11 @@
         "backend/src/modules/seo-monitoring/seo-monitoring.module.ts"
       ],
       "imports": [
-        "../../../packages/seo-types/dist/index.d.ts",
         "@common/utils",
         "backend/src/modules/seo-monitoring/services/google-credentials.service.ts",
         "backend/src/modules/seo-monitoring/services/gsc-coverage.ts",
-        "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts"
+        "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts",
+        "packages/seo-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 576,
@@ -52596,7 +52724,7 @@
         "backend/src/modules/seo-monitoring/services/runtime-events.service.ts"
       ],
       "imports": [
-        "../../../packages/cwv-taxonomy/dist/index.d.ts"
+        "packages/cwv-taxonomy/dist/index.d.ts"
       ],
       "kind": "config",
       "loc": 43,
@@ -52914,8 +53042,8 @@
         "backend/src/modules/seo-shadow-observatory/seo-shadow-observatory.service.ts"
       ],
       "imports": [
-        "../../../packages/seo-role-contracts/dist/index.d.ts",
         "@modules/seo/services/chain/seo-chain-orchestrator.service",
+        "@repo/seo-role-contracts",
         "backend/src/modules/seo-shadow-observatory/types.ts"
       ],
       "kind": "service",
@@ -52941,7 +53069,7 @@
         "backend/src/modules/seo-shadow-observatory/seo-shadow-observatory.service.ts"
       ],
       "imports": [
-        "../../../packages/seo-role-contracts/dist/index.d.ts",
+        "@repo/seo-role-contracts",
         "backend/src/modules/seo-shadow-observatory/seo-shadow-url-normalizer.service.ts",
         "backend/src/modules/seo-shadow-observatory/types.ts",
         "crypto"
@@ -52969,8 +53097,8 @@
         "backend/src/modules/seo-shadow-observatory/seo-shadow-observatory.service.ts"
       ],
       "imports": [
-        "../../../packages/seo-role-contracts/dist/index.d.ts",
         "@common/utils",
+        "@repo/seo-role-contracts",
         "backend/src/modules/seo-shadow-observatory/types.ts"
       ],
       "kind": "service",
@@ -53027,8 +53155,8 @@
         "backend/src/modules/seo-shadow-observatory/seo-shadow-observatory.module.ts"
       ],
       "imports": [
-        "../../../packages/seo-role-contracts/dist/index.d.ts",
         "@modules/seo/registries/seo-feature-flag.registry",
+        "@repo/seo-role-contracts",
         "backend/src/modules/seo-shadow-observatory/seo-shadow-chain-runner.service.ts",
         "backend/src/modules/seo-shadow-observatory/seo-shadow-diff-engine.service.ts",
         "backend/src/modules/seo-shadow-observatory/seo-shadow-event-sink.service.ts",
@@ -53133,7 +53261,7 @@
         "backend/src/modules/seo-shadow-observatory/seo-shadow-observatory.service.ts"
       ],
       "imports": [
-        "../../../packages/seo-role-contracts/dist/index.d.ts"
+        "@repo/seo-role-contracts"
       ],
       "kind": "service",
       "loc": 92,
@@ -53286,8 +53414,8 @@
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
-        "backend/src/modules/seo/services/keywords-dashboard.service.ts"
+        "backend/src/modules/seo/services/keywords-dashboard.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "controller",
       "loc": 191,
@@ -53387,9 +53515,9 @@
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "backend/src/modules/seo/services/googlebot-detector.service.ts",
-        "backend/src/modules/seo/services/risk-flags-engine.service.ts"
+        "backend/src/modules/seo/services/risk-flags-engine.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "controller",
       "loc": 481,
@@ -54072,9 +54200,9 @@
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "backend/src/config/seo-link-limits.config.ts",
-        "backend/src/modules/seo/types/page-role.types.ts"
+        "backend/src/modules/seo/types/page-role.types.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 723,
@@ -55374,8 +55502,8 @@
       "id": "backend/src/modules/seo/registries/__tests__/seo-surface.registry.test.ts",
       "importedBy": [],
       "imports": [
-        "../../../packages/seo-roles/dist/index.d.ts",
-        "backend/src/modules/seo/registries/seo-surface.registry.ts"
+        "backend/src/modules/seo/registries/seo-surface.registry.ts",
+        "packages/seo-roles/dist/index.d.ts"
       ],
       "kind": "test",
       "loc": 40,
@@ -55451,8 +55579,8 @@
         "backend/src/modules/seo/services/policies/seo-indexability-policy.service.ts"
       ],
       "imports": [
-        "../../../packages/seo-role-contracts/dist/index.d.ts",
-        "../../../packages/seo-roles/dist/index.d.ts"
+        "@repo/seo-role-contracts",
+        "packages/seo-roles/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 42,
@@ -55539,7 +55667,7 @@
         "backend/src/modules/seo/services/seo-v4-switch-engine.service.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts"
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "config",
       "loc": 204,
@@ -55730,9 +55858,9 @@
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@database/services/supabase-base.service",
-        "backend/src/database/services/meta-tags-ariane-data.service.ts"
+        "backend/src/database/services/meta-tags-ariane-data.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 264,
@@ -56045,7 +56173,7 @@
         "backend/src/modules/seo/services/chain/seo-chain-orchestrator.service.ts"
       ],
       "imports": [
-        "../../../packages/seo-role-contracts/dist/index.d.ts"
+        "@repo/seo-role-contracts"
       ],
       "kind": "service",
       "loc": 103,
@@ -56073,7 +56201,7 @@
         "backend/src/modules/seo/services/chain/__tests__/seo-chain-orchestrator.service.test.ts"
       ],
       "imports": [
-        "../../../packages/seo-role-contracts/dist/index.d.ts",
+        "@repo/seo-role-contracts",
         "backend/src/modules/seo/registries/seo-surface.registry.ts",
         "backend/src/modules/seo/services/chain/seo-ariane-breadcrumb.service.ts",
         "backend/src/modules/seo/services/chain/seo-content-block-builder.service.ts",
@@ -56137,11 +56265,11 @@
         "backend/src/modules/seo/services/chain/seo-chain-orchestrator.service.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
-        "../../../packages/seo-role-contracts/dist/index.d.ts",
-        "../../../packages/seo-roles/dist/index.d.ts",
         "@database/services/supabase-base.service",
-        "crypto"
+        "@repo/seo-role-contracts",
+        "crypto",
+        "packages/database-types/dist/index.d.ts",
+        "packages/seo-roles/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 333,
@@ -56166,8 +56294,8 @@
         "backend/src/modules/seo/services/chain/__tests__/seo-meta-registry.service.test.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
-        "@database/services/supabase-base.service"
+        "@database/services/supabase-base.service",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 119,
@@ -56280,10 +56408,10 @@
         "backend/src/modules/seo/services/chain/seo-chain-orchestrator.service.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
-        "../../../packages/seo-role-contracts/dist/index.d.ts",
         "@database/services/supabase-base.service",
-        "backend/src/modules/seo/seo-v4.types.ts"
+        "@repo/seo-role-contracts",
+        "backend/src/modules/seo/seo-v4.types.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 234,
@@ -56384,7 +56512,7 @@
       "id": "backend/src/modules/seo/services/policies/__tests__/r2-indexability-gate.service.test.ts",
       "importedBy": [],
       "imports": [
-        "../../../packages/seo-role-contracts/dist/index.d.ts",
+        "@repo/seo-role-contracts",
         "backend/src/modules/seo/services/policies/r2-indexability-gate.service.ts"
       ],
       "kind": "test",
@@ -56429,7 +56557,7 @@
       "id": "backend/src/modules/seo/services/policies/__tests__/seo-indexability-policy.service.test.ts",
       "importedBy": [],
       "imports": [
-        "../../../packages/seo-role-contracts/dist/index.d.ts",
+        "@repo/seo-role-contracts",
         "backend/src/modules/seo/registries/seo-surface.registry.ts",
         "backend/src/modules/seo/services/policies/r2-indexability-gate.service.ts",
         "backend/src/modules/seo/services/policies/seo-indexability-policy.service.ts"
@@ -56484,7 +56612,7 @@
         "backend/src/modules/seo/services/policies/seo-indexability-policy.service.ts"
       ],
       "imports": [
-        "../../../packages/seo-role-contracts/dist/index.d.ts"
+        "@repo/seo-role-contracts"
       ],
       "kind": "service",
       "loc": 30,
@@ -56513,7 +56641,7 @@
         "backend/src/modules/seo/services/policies/__tests__/seo-canonical.service.test.ts"
       ],
       "imports": [
-        "../../../packages/seo-role-contracts/dist/index.d.ts"
+        "@repo/seo-role-contracts"
       ],
       "kind": "service",
       "loc": 108,
@@ -56542,7 +56670,7 @@
         "backend/src/modules/seo/services/policies/__tests__/seo-indexability-policy.service.test.ts"
       ],
       "imports": [
-        "../../../packages/seo-role-contracts/dist/index.d.ts",
+        "@repo/seo-role-contracts",
         "backend/src/modules/seo/registries/seo-surface.registry.ts",
         "backend/src/modules/seo/services/policies/r2-indexability-gate.service.ts"
       ],
@@ -56770,8 +56898,8 @@
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
-        "@database/services/supabase-base.service"
+        "@database/services/supabase-base.service",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 506,
@@ -56876,9 +57004,9 @@
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@database/services/supabase-base.service",
-        "backend/src/modules/seo/seo-v4.types.ts"
+        "backend/src/modules/seo/seo-v4.types.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 366,
@@ -56900,9 +57028,9 @@
       "id": "backend/src/modules/seo/services/seo-v4-switch-engine.service.ts",
       "importedBy": [],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@database/services/supabase-base.service",
-        "backend/src/modules/seo/seo-v4.types.ts"
+        "backend/src/modules/seo/seo-v4.types.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 276,
@@ -57829,9 +57957,9 @@
         "backend/src/modules/seo/seo.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@database/services/supabase-base.service",
-        "backend/src/common/utils/url-builder.utils.ts"
+        "backend/src/common/utils/url-builder.utils.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 786,
@@ -57904,10 +58032,10 @@
         "backend/src/modules/shipping/shipping.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@common/exceptions",
         "@database/services/supabase-base.service",
-        "backend/src/modules/cart/services/shipping-calculator.service.ts"
+        "backend/src/modules/cart/services/shipping-calculator.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 375,
@@ -57954,9 +58082,9 @@
         "backend/src/modules/staff/staff.service.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@database/services/supabase-base.service",
-        "backend/src/modules/staff/dto/staff.dto.ts"
+        "backend/src/modules/staff/dto/staff.dto.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 291,
@@ -58049,8 +58177,7 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise",
-        "reachability"
+        "depcruise"
       ],
       "domain": "UNKNOWN",
       "id": "backend/src/modules/substitution/controllers/substitution.controller.ts",
@@ -58067,7 +58194,7 @@
       "owner": "__unassigned__",
       "path": "backend/src/modules/substitution/controllers/substitution.controller.ts",
       "risk": "low",
-      "runtime": false,
+      "runtime": true,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
@@ -58075,8 +58202,7 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise",
-        "reachability"
+        "depcruise"
       ],
       "domain": "UNKNOWN",
       "id": "backend/src/modules/substitution/services/intent-extractor.service.ts",
@@ -58093,7 +58219,7 @@
       "owner": "__unassigned__",
       "path": "backend/src/modules/substitution/services/intent-extractor.service.ts",
       "risk": "low",
-      "runtime": false,
+      "runtime": true,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
@@ -58101,8 +58227,7 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise",
-        "reachability"
+        "depcruise"
       ],
       "domain": "UNKNOWN",
       "id": "backend/src/modules/substitution/services/substitution-logger.service.ts",
@@ -58121,7 +58246,7 @@
       "owner": "__unassigned__",
       "path": "backend/src/modules/substitution/services/substitution-logger.service.ts",
       "risk": "low",
-      "runtime": false,
+      "runtime": true,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
@@ -58129,8 +58254,7 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise",
-        "reachability"
+        "depcruise"
       ],
       "domain": "UNKNOWN",
       "id": "backend/src/modules/substitution/services/substitution.service.ts",
@@ -58151,7 +58275,7 @@
       "owner": "__unassigned__",
       "path": "backend/src/modules/substitution/services/substitution.service.ts",
       "risk": "low",
-      "runtime": false,
+      "runtime": true,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
       "status": "LIVE"
@@ -58163,7 +58287,9 @@
       ],
       "domain": "UNKNOWN",
       "id": "backend/src/modules/substitution/substitution.module.ts",
-      "importedBy": [],
+      "importedBy": [
+        "backend/src/app.module.ts"
+      ],
       "imports": [
         "backend/src/modules/substitution/controllers/substitution.controller.ts",
         "backend/src/modules/substitution/services/intent-extractor.service.ts",
@@ -59633,9 +59759,9 @@
         "backend/src/modules/suppliers/suppliers.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@common/exceptions",
-        "@database/services/supabase-base.service"
+        "@database/services/supabase-base.service",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 699,
@@ -59898,7 +60024,7 @@
         "backend/src/modules/support/controllers/leads-admin.controller.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts"
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 69,
@@ -60075,10 +60201,10 @@
         "backend/src/modules/support/support.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@database/services/supabase-base.service",
         "backend/src/modules/support/services/notification.service.ts",
-        "backend/src/services/mail.service.ts"
+        "backend/src/services/mail.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 927,
@@ -60131,8 +60257,8 @@
         "backend/src/modules/support/support.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
-        "@database/services/supabase-base.service"
+        "@database/services/supabase-base.service",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 272,
@@ -60183,9 +60309,9 @@
         "backend/src/modules/support/support.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@database/services/supabase-base.service",
-        "backend/src/modules/support/services/legal.service.ts"
+        "backend/src/modules/support/services/legal.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 150,
@@ -60213,11 +60339,11 @@
         "backend/src/modules/support/support.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@common/exceptions",
         "@database/services/supabase-base.service",
         "backend/src/modules/support/services/legal-page.service.ts",
-        "backend/src/modules/support/services/legal-version.service.ts"
+        "backend/src/modules/support/services/legal-version.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 913,
@@ -60307,10 +60433,10 @@
         "backend/src/modules/support/support.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@common/exceptions",
         "@database/services/supabase-base.service",
-        "backend/src/modules/support/services/notification.service.ts"
+        "backend/src/modules/support/services/notification.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 773,
@@ -60539,11 +60665,11 @@
         "backend/src/modules/system/system.controller.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@common/utils/error.utils",
         "@database/services/supabase-base.service",
         "backend/src/modules/system/services/database-monitor.service.ts",
-        "backend/src/modules/system/services/metrics.service.ts"
+        "backend/src/modules/system/services/metrics.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 360,
@@ -60571,9 +60697,9 @@
         "backend/src/modules/system/system.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@database/services/supabase-base.service",
-        "backend/src/database/services/meta-tags-ariane-data.service.ts"
+        "backend/src/database/services/meta-tags-ariane-data.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 315,
@@ -61552,9 +61678,9 @@
         "backend/src/modules/users/users.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@database/services/supabase-base.service",
-        "backend/src/modules/users/dto/addresses.dto.ts"
+        "backend/src/modules/users/dto/addresses.dto.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 523,
@@ -61578,11 +61704,11 @@
         "backend/src/modules/users/users.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@common/exceptions",
         "@database/services/supabase-base.service",
         "backend/src/modules/users/dto/users.dto.ts",
-        "backend/src/modules/users/services/profile.service.ts"
+        "backend/src/modules/users/services/profile.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 279,
@@ -61607,11 +61733,11 @@
         "backend/src/modules/users/users.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@common/exceptions",
         "@database/services/supabase-base.service",
         "backend/src/services/mail.service.ts",
-        "crypto"
+        "crypto",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 388,
@@ -61636,13 +61762,13 @@
         "backend/src/modules/users/users.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@cache/cache.service",
         "@common/exceptions",
         "@database/services/supabase-base.service",
         "backend/src/modules/users/dto/user.dto.ts",
         "backend/src/modules/users/dto/users.dto.ts",
-        "backend/src/modules/users/services/user-data-consolidated.service.ts"
+        "backend/src/modules/users/services/user-data-consolidated.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 282,
@@ -61672,9 +61798,9 @@
         "backend/src/modules/users/users.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@database/services/supabase-base.service",
-        "backend/src/modules/users/dto/user.dto.ts"
+        "backend/src/modules/users/dto/user.dto.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 643,
@@ -61699,9 +61825,9 @@
         "backend/src/modules/users/users.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@common/utils/error.utils",
-        "@database/services/supabase-base.service"
+        "@database/services/supabase-base.service",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 127,
@@ -61820,10 +61946,10 @@
       "id": "backend/src/modules/vehicle-context/vehicle-context.middleware.test.ts",
       "importedBy": [],
       "imports": [
-        "../../../packages/registry/dist/index.d.ts",
         "backend/src/config/feature-flags.service.ts",
         "backend/src/modules/vehicle-context/vehicle-context.middleware.ts",
-        "backend/src/modules/vehicle-context/vehicle-context.service.ts"
+        "backend/src/modules/vehicle-context/vehicle-context.service.ts",
+        "packages/registry/dist/index.d.ts"
       ],
       "kind": "test",
       "loc": 205,
@@ -61849,9 +61975,9 @@
         "backend/src/modules/vehicle-context/vehicle-context.module.ts"
       ],
       "imports": [
-        "../../../packages/registry/dist/index.d.ts",
         "backend/src/config/feature-flags.service.ts",
-        "backend/src/modules/vehicle-context/vehicle-context.service.ts"
+        "backend/src/modules/vehicle-context/vehicle-context.service.ts",
+        "packages/registry/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 80,
@@ -61904,8 +62030,8 @@
         "backend/src/modules/vehicle-context/vehicle-context.module.ts"
       ],
       "imports": [
-        "../../../packages/registry/dist/index.d.ts",
-        "backend/src/modules/diagnostic-engine/ports/vehicle-context.port.ts"
+        "backend/src/modules/diagnostic-engine/ports/vehicle-context.port.ts",
+        "packages/registry/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 105,
@@ -62143,13 +62269,13 @@
         "backend/src/modules/vehicles/vehicles.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@common/utils/error.utils",
         "@database/services/supabase-base.service",
         "@security/rpc-gate/rpc-gate.service",
         "backend/src/common/utils/url-builder.utils.ts",
         "backend/src/config/cache-ttl.config.ts",
-        "backend/src/modules/catalog/utils/image-urls.utils.ts"
+        "backend/src/modules/catalog/utils/image-urls.utils.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 453,
@@ -62263,10 +62389,10 @@
         "backend/src/modules/vehicles/vehicles.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@database/services/supabase-base.service",
         "backend/src/modules/vehicles/services/core/vehicle-cache.service.ts",
-        "backend/src/modules/vehicles/types/vehicle.types.ts"
+        "backend/src/modules/vehicles/types/vehicle.types.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 662,
@@ -62293,10 +62419,10 @@
         "backend/src/modules/vehicles/vehicles.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@database/services/supabase-base.service",
         "backend/src/modules/vehicles/services/core/vehicle-cache.service.ts",
-        "backend/src/modules/vehicles/types/vehicle.types.ts"
+        "backend/src/modules/vehicles/types/vehicle.types.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 774,
@@ -62324,11 +62450,11 @@
         "backend/src/modules/vehicles/vehicles.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@database/services/supabase-base.service",
         "backend/src/modules/vehicles/services/core/vehicle-cache.service.ts",
         "backend/src/modules/vehicles/services/core/vehicle-enrichment.service.ts",
-        "backend/src/modules/vehicles/types/vehicle.types.ts"
+        "backend/src/modules/vehicles/types/vehicle.types.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 700,
@@ -62385,11 +62511,11 @@
         "backend/src/modules/vehicles/vehicles.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@database/services/supabase-base.service",
         "backend/src/modules/vehicles/services/core/vehicle-cache.service.ts",
         "backend/src/modules/vehicles/services/core/vehicle-enrichment.service.ts",
-        "backend/src/modules/vehicles/types/vehicle.types.ts"
+        "backend/src/modules/vehicles/types/vehicle.types.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 525,
@@ -62416,11 +62542,11 @@
         "backend/src/modules/vehicles/vehicles.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@database/services/supabase-base.service",
         "backend/src/modules/vehicles/services/core/vehicle-cache.service.ts",
         "backend/src/modules/vehicles/services/core/vehicle-enrichment.service.ts",
-        "backend/src/modules/vehicles/types/vehicle.types.ts"
+        "backend/src/modules/vehicles/types/vehicle.types.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 491,
@@ -62445,9 +62571,9 @@
         "backend/src/modules/vehicles/vehicles.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@common/utils",
-        "backend/src/config/seo-variations.config.ts"
+        "backend/src/config/seo-variations.config.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 298,
@@ -62498,9 +62624,9 @@
         "backend/src/modules/vehicles/vehicles.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@database/services/supabase-base.service",
-        "backend/src/config/cache-ttl.config.ts"
+        "backend/src/config/cache-ttl.config.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 347,
@@ -62525,12 +62651,12 @@
         "backend/src/modules/vehicles/vehicles.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@database/services/supabase-base.service",
         "backend/src/common/utils/url-builder.utils.ts",
         "backend/src/config/cache-ttl.config.ts",
         "backend/src/modules/catalog/utils/image-urls.utils.ts",
-        "backend/src/modules/vehicles/services/vehicle-motor-codes.service.ts"
+        "backend/src/modules/vehicles/services/vehicle-motor-codes.service.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 329,
@@ -62752,10 +62878,10 @@
         "backend/src/modules/vehicles/vehicles.module.ts"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "@database/services/supabase-base.service",
         "backend/src/modules/catalog/utils/image-urls.utils.ts",
-        "backend/src/modules/vehicles/dto/vehicles.dto.ts"
+        "backend/src/modules/vehicles/dto/vehicles.dto.ts",
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 184,
@@ -62894,17 +63020,39 @@
         "depcruise"
       ],
       "domain": "UNKNOWN",
+      "id": "backend/src/remix/remix.controller.test.ts",
+      "importedBy": [],
+      "imports": [
+        "backend/src/remix/remix.controller.ts"
+      ],
+      "kind": "test",
+      "loc": 74,
+      "owner": "__unassigned__",
+      "path": "backend/src/remix/remix.controller.test.ts",
+      "risk": "low",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise"
+      ],
+      "domain": "UNKNOWN",
       "id": "backend/src/remix/remix.controller.ts",
       "importedBy": [
+        "backend/src/remix/remix.controller.test.ts",
         "backend/src/remix/remix.module.ts"
       ],
       "imports": [
-        "../../../frontend/index.cjs",
         "backend/src/remix/remix-api.service.ts",
-        "backend/src/remix/remix.service.ts"
+        "backend/src/remix/remix.service.ts",
+        "frontend/index.cjs"
       ],
       "kind": "controller",
-      "loc": 66,
+      "loc": 109,
       "owner": "__unassigned__",
       "path": "backend/src/remix/remix.controller.ts",
       "risk": "low",
@@ -67962,11 +68110,12 @@
       "id": "frontend/app/components/cart/CartCrossSell.tsx",
       "importedBy": [],
       "imports": [
+        "~/utils/image-optimizer",
         "~/utils/url-builder.utils",
         "~/utils/vehicle-cookie"
       ],
       "kind": "config",
-      "loc": 95,
+      "loc": 99,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/components/cart/CartCrossSell.tsx",
       "risk": "low",
@@ -68429,8 +68578,8 @@
       "id": "frontend/app/components/command-center/GlobalHealthBar.tsx",
       "importedBy": [],
       "imports": [
-        "../../../packages/registry/dist/index.d.ts",
         "frontend/app/components/command-center/badges.tsx",
+        "packages/registry/dist/index.d.ts",
         "~/components/ui/alert",
         "~/components/ui/badge",
         "~/components/ui/card"
@@ -68455,8 +68604,8 @@
       "id": "frontend/app/components/command-center/ModuleGrid.tsx",
       "importedBy": [],
       "imports": [
-        "../../../packages/registry/dist/index.d.ts",
         "frontend/app/components/command-center/badges.tsx",
+        "packages/registry/dist/index.d.ts",
         "~/components/ui/badge",
         "~/components/ui/card",
         "~/components/ui/progress"
@@ -68506,7 +68655,7 @@
       "id": "frontend/app/components/command-center/OwnerActionQueue.tsx",
       "importedBy": [],
       "imports": [
-        "../../../packages/registry/dist/index.d.ts",
+        "packages/registry/dist/index.d.ts",
         "~/components/ui/alert",
         "~/components/ui/badge",
         "~/components/ui/card"
@@ -68534,7 +68683,7 @@
         "frontend/app/components/command-center/ModuleGrid.tsx"
       ],
       "imports": [
-        "../../../packages/registry/dist/index.d.ts",
+        "packages/registry/dist/index.d.ts",
         "~/components/ui/badge"
       ],
       "kind": "config",
@@ -71178,7 +71327,7 @@
         "frontend/app/components/home/HomepageJsonLd.tsx"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts"
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "config",
       "loc": 343,
@@ -72909,11 +73058,11 @@
       "id": "frontend/app/components/pieces/PiecesHeader.tsx",
       "importedBy": [],
       "imports": [
-        "../../../packages/seo-types/dist/index.d.ts",
         "frontend/app/components/pieces/hero/index.ts",
         "frontend/app/services/brand-colors.service.ts",
         "frontend/app/types/pieces-route.types.ts",
-        "frontend/app/utils/image-optimizer.ts"
+        "frontend/app/utils/image-optimizer.ts",
+        "packages/seo-types/dist/index.d.ts"
       ],
       "kind": "config",
       "loc": 244,
@@ -75928,10 +76077,10 @@
         "frontend/app/routes/constructeurs.$brand[.]html.tsx"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "frontend/app/components/ui/button.tsx",
         "frontend/app/components/ui/card.tsx",
         "frontend/app/services/api/enhanced-vehicle.api.ts",
+        "packages/database-types/dist/index.d.ts",
         "~/utils/logger"
       ],
       "kind": "config",
@@ -76494,11 +76643,12 @@
       "imports": [
         "~/utils/array-at-polyfill.client",
         "~/utils/logger",
+        "~/utils/react-error-handlers.client",
         "~/utils/runtime-errors.client",
         "~/utils/web-vitals.client"
       ],
       "kind": "service",
-      "loc": 184,
+      "loc": 230,
       "owner": "__unassigned__",
       "path": "frontend/app/entry.client.tsx",
       "risk": "low",
@@ -76517,10 +76667,11 @@
       "importedBy": [],
       "imports": [
         "stream",
-        "~/utils/logger"
+        "~/utils/logger",
+        "~/utils/observability-contract"
       ],
       "kind": "config",
-      "loc": 205,
+      "loc": 220,
       "owner": "__unassigned__",
       "path": "frontend/app/entry.server.tsx",
       "risk": "low",
@@ -77293,10 +77444,11 @@
         "frontend/app/hooks/useScrollBehavior.ts",
         "frontend/app/services/cart.server.ts",
         "frontend/app/styles/animations.css",
-        "~/utils/logger"
+        "~/utils/logger",
+        "~/utils/observability-contract"
       ],
       "kind": "service",
-      "loc": 588,
+      "loc": 590,
       "owner": "__unassigned__",
       "path": "frontend/app/root.tsx",
       "risk": "low",
@@ -78260,8 +78412,8 @@
       "id": "frontend/app/routes/admin.command-center.tsx",
       "importedBy": [],
       "imports": [
-        "../../../packages/registry/dist/index.d.ts",
         "frontend/app/auth/unified.server.ts",
+        "packages/registry/dist/index.d.ts",
         "~/components/command-center/GlobalHealthBar",
         "~/components/command-center/ModuleGrid",
         "~/components/command-center/OrchestrationPanel",
@@ -78732,12 +78884,12 @@
       "id": "frontend/app/routes/admin.leads.$id.tsx",
       "importedBy": [],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "frontend/app/components/ui/badge.tsx",
         "frontend/app/components/ui/button.tsx",
         "frontend/app/components/ui/card.tsx",
         "frontend/app/components/ui/input.tsx",
         "frontend/app/components/ui/textarea.tsx",
+        "packages/database-types/dist/index.d.ts",
         "~/components/errors/ErrorGeneric",
         "~/utils/logger"
       ],
@@ -78761,10 +78913,10 @@
       "id": "frontend/app/routes/admin.leads._index.tsx",
       "importedBy": [],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "frontend/app/components/ui/badge.tsx",
         "frontend/app/components/ui/button.tsx",
         "frontend/app/components/ui/card.tsx",
+        "packages/database-types/dist/index.d.ts",
         "~/components/errors/ErrorGeneric",
         "~/utils/logger"
       ],
@@ -79696,7 +79848,7 @@
       "id": "frontend/app/routes/admin.seo-control.tsx",
       "importedBy": [],
       "imports": [
-        "../../../packages/seo-types/dist/index.d.ts",
+        "packages/seo-types/dist/index.d.ts",
         "~/components/ui/button",
         "~/components/ui/table",
         "~/utils/internal-api.server",
@@ -80324,7 +80476,7 @@
       "id": "frontend/app/routes/admin.seo-hub.page-briefs.tsx",
       "importedBy": [],
       "imports": [
-        "../../../packages/seo-roles/dist/index.d.ts",
+        "packages/seo-roles/dist/index.d.ts",
         "~/components/ui/badge",
         "~/components/ui/card",
         "~/utils/internal-api.server",
@@ -81450,7 +81602,7 @@
       "id": "frontend/app/routes/blog-pieces-auto.conseils._index.tsx",
       "importedBy": [],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
+        "packages/database-types/dist/index.d.ts",
         "~/components/blog/ArticleCardEnhanced",
         "~/components/blog/BlogPiecesAutoNavigation",
         "~/components/blog/blog-helpers",
@@ -81548,7 +81700,7 @@
       "id": "frontend/app/routes/blog-pieces-auto.guide-achat._index.tsx",
       "importedBy": [],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
+        "packages/database-types/dist/index.d.ts",
         "~/components/blog/BlogPiecesAutoNavigation",
         "~/components/errors/ErrorGeneric",
         "~/components/ui/ResponsiveImage",
@@ -81746,11 +81898,12 @@
         "~/schemas/cart.schemas",
         "~/utils/analytics",
         "~/utils/logger",
+        "~/utils/observability.server",
         "~/utils/page-role.types",
         "~/utils/vehicle-cookie"
       ],
       "kind": "route",
-      "loc": 549,
+      "loc": 590,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/cart.tsx",
       "risk": "medium",
@@ -81866,11 +82019,12 @@
         "~/types/payment",
         "~/utils/analytics",
         "~/utils/logger",
+        "~/utils/observability.server",
         "~/utils/page-role.types",
         "~/utils/vehicle-cookie"
       ],
       "kind": "route",
-      "loc": 1343,
+      "loc": 1350,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/routes/checkout.tsx",
       "risk": "medium",
@@ -84197,7 +84351,7 @@
       "id": "frontend/app/server/vehicle-context.server.ts",
       "importedBy": [],
       "imports": [
-        "../../../packages/registry/dist/index.d.ts"
+        "packages/registry/dist/index.d.ts"
       ],
       "kind": "config",
       "loc": 73,
@@ -84285,7 +84439,7 @@
       "id": "frontend/app/services/api.ts",
       "importedBy": [],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts"
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "config",
       "loc": 175,
@@ -84468,7 +84622,7 @@
         "frontend/app/components/vehicle/VehicleSelector.tsx"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts"
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "config",
       "loc": 334,
@@ -84539,8 +84693,8 @@
         "frontend/app/routes/constructeurs.$brand.$model.$type.tsx"
       ],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts",
         "frontend/app/types/catalog.types.ts",
+        "packages/database-types/dist/index.d.ts",
         "~/utils/family-theme",
         "~/utils/logger"
       ],
@@ -84633,7 +84787,7 @@
       "id": "frontend/app/services/api/vehicle-api-unified.ts",
       "importedBy": [],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts"
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "config",
       "loc": 188,
@@ -85385,7 +85539,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "service",
-      "loc": 140,
+      "loc": 164,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/analytics-sanitize.ts",
       "risk": "medium",
@@ -85627,7 +85781,7 @@
       "id": "frontend/app/utils/family-theme.ts",
       "importedBy": [],
       "imports": [
-        "../../../packages/database-types/dist/index.d.ts"
+        "packages/database-types/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 350,
@@ -85713,7 +85867,7 @@
       "id": "frontend/app/utils/funnel-beacon.ts",
       "importedBy": [],
       "imports": [
-        "../../../packages/seo-types/dist/index.d.ts",
+        "packages/seo-types/dist/index.d.ts",
         "~/utils/safe-storage"
       ],
       "kind": "service",
@@ -85855,7 +86009,9 @@
       ],
       "domain": "D8",
       "id": "frontend/app/utils/logger.ts",
-      "importedBy": [],
+      "importedBy": [
+        "frontend/app/utils/observability.server.ts"
+      ],
       "imports": [],
       "kind": "service",
       "loc": 22,
@@ -85881,6 +86037,51 @@
       "loc": 14,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/meta-helpers.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
+      "id": "frontend/app/utils/observability-contract.ts",
+      "importedBy": [
+        "frontend/app/utils/observability.server.ts"
+      ],
+      "imports": [],
+      "kind": "service",
+      "loc": 27,
+      "owner": "@ak125/frontend-team",
+      "path": "frontend/app/utils/observability-contract.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
+      "id": "frontend/app/utils/observability.server.ts",
+      "importedBy": [],
+      "imports": [
+        "frontend/app/utils/logger.ts",
+        "frontend/app/utils/observability-contract.ts"
+      ],
+      "kind": "config",
+      "loc": 49,
+      "owner": "@ak125/frontend-team",
+      "path": "frontend/app/utils/observability.server.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -86126,8 +86327,8 @@
         "frontend/app/utils/pieces-loader.utils.ts"
       ],
       "imports": [
-        "../../../packages/seo-url-contract/dist/index.d.ts",
         "frontend/app/types/pieces-route.types.ts",
+        "packages/seo-url-contract/dist/index.d.ts",
         "~/utils/logger"
       ],
       "kind": "service",
@@ -86150,7 +86351,7 @@
       "id": "frontend/app/utils/pieces-vehicle.loader.server.ts",
       "importedBy": [],
       "imports": [
-        "../../../packages/seo-types/dist/index.d.ts",
+        "packages/seo-types/dist/index.d.ts",
         "~/components/pieces/NoProductsAlternatives",
         "~/components/pieces/PiecesFilterSidebar",
         "~/services/api/rm-api.service",
@@ -86378,6 +86579,26 @@
         "manual"
       ],
       "domain": "D8",
+      "id": "frontend/app/utils/react-error-handlers.client.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "service",
+      "loc": 193,
+      "owner": "@ak125/frontend-team",
+      "path": "frontend/app/utils/react-error-handlers.client.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D8",
       "id": "frontend/app/utils/rm-mapper.ts",
       "importedBy": [],
       "imports": [
@@ -86405,10 +86626,10 @@
       "id": "frontend/app/utils/runtime-errors.client.ts",
       "importedBy": [],
       "imports": [
-        "../../../packages/cwv-taxonomy/dist/index.d.ts"
+        "packages/cwv-taxonomy/dist/index.d.ts"
       ],
       "kind": "service",
-      "loc": 252,
+      "loc": 237,
       "owner": "@ak125/frontend-team",
       "path": "frontend/app/utils/runtime-errors.client.ts",
       "risk": "medium",
@@ -86836,7 +87057,7 @@
       "id": "frontend/app/utils/web-vitals.client.ts",
       "importedBy": [],
       "imports": [
-        "../../../packages/cwv-taxonomy/dist/index.d.ts"
+        "packages/cwv-taxonomy/dist/index.d.ts"
       ],
       "kind": "service",
       "loc": 342,
@@ -86890,12 +87111,18 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "reachability"
       ],
       "domain": "UNKNOWN",
       "id": "frontend/index.cjs",
-      "importedBy": [],
-      "imports": [],
+      "importedBy": [
+        "backend/src/main.ts",
+        "backend/src/remix/remix.controller.ts"
+      ],
+      "imports": [
+        "path"
+      ],
       "kind": "service",
       "loc": 41,
       "owner": "__unassigned__",
@@ -86904,7 +87131,7 @@
       "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "medium",
-      "status": "UNKNOWN"
+      "status": "LIVE"
     },
     {
       "deletePolicy": "FREE",
@@ -87090,6 +87317,26 @@
         "manual"
       ],
       "domain": "D2",
+      "id": "frontend/tests/e2e/react19-hydration.spec.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 124,
+      "owner": "@ak125",
+      "path": "frontend/tests/e2e/react19-hydration.spec.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
       "id": "frontend/tests/e2e/responsive.spec.ts",
       "importedBy": [],
       "imports": [],
@@ -87117,6 +87364,26 @@
       "loc": 113,
       "owner": "@ak125",
       "path": "frontend/tests/e2e/search-first-mobile.spec.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/e2e/sentry-lazy-loading.spec.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 101,
+      "owner": "@ak125",
+      "path": "frontend/tests/e2e/sentry-lazy-loading.spec.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -87330,6 +87597,26 @@
         "manual"
       ],
       "domain": "D2",
+      "id": "frontend/tests/unit/cart.server.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 125,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/cart.server.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
       "id": "frontend/tests/unit/catalog-gammes.server.test.ts",
       "importedBy": [],
       "imports": [],
@@ -87477,6 +87764,26 @@
       "loc": 145,
       "owner": "@ak125",
       "path": "frontend/tests/unit/no-products-alternatives.test.tsx",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
+      "id": "frontend/tests/unit/observability-server-noop.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 49,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/observability-server-noop.test.ts",
       "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
@@ -87750,6 +88057,26 @@
         "manual"
       ],
       "domain": "D2",
+      "id": "frontend/tests/unit/react-error-handlers.test.ts",
+      "importedBy": [],
+      "imports": [],
+      "kind": "test",
+      "loc": 212,
+      "owner": "@ak125",
+      "path": "frontend/tests/unit/react-error-handlers.test.ts",
+      "risk": "medium",
+      "runtime": false,
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "high",
+      "status": "UNKNOWN"
+    },
+    {
+      "deletePolicy": "FREE",
+      "derivedFrom": [
+        "depcruise",
+        "manual"
+      ],
+      "domain": "D2",
       "id": "frontend/tests/unit/safe-storage.test.ts",
       "importedBy": [],
       "imports": [],
@@ -87913,7 +88240,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "config",
-      "loc": 133,
+      "loc": 143,
       "owner": "__unassigned__",
       "path": "frontend/vite.config.ts",
       "risk": "low",
@@ -95170,12 +95497,12 @@
       ".spec/00-canon/repository-registry/ownership.yaml": "9c243c28ac174f5470f9d054359bafd8d95a2c08a14981069fa3c23d2eebf94e",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "4221fce2a80e5a9dbee75d87424bf08d18cc97cfdb120d655ad4c6ddf2e9e3b5",
-      "audit/registry/deps.json": "2a6047f3e71796e30d341e5360be2f1935be12f768599243041060e477a9e9d3",
-      "audit/registry/files.json": "72d2f47cfd5a3fcbae7f4a9435f323d953faca1c5329a5d9a7d69affe1736be1",
-      "audit/registry/rpc.json": "6e5c182566d80733d4186f734032a1b52a0816ed932c20dba8c82900b34084e5",
-      "audit/registry/runtime.json": "43e79a9fb7feb07c2bb0519da2f18b46f0263f176441a88e4e304982ea119660"
+      "audit/registry/deps.json": "9b722879fab181ddf8a7942e3c00324fd6d8fddd5323646c2d7f939e7739234d",
+      "audit/registry/files.json": "497dece566c42c327f31bdfd5786688efae439ecc2cd0a3d674a3de9206583b1",
+      "audit/registry/rpc.json": "792d108b194e1597656f4db0c88f60984ec8dcc0f0bb34a0dbf9f6d954323fd5",
+      "audit/registry/runtime.json": "b16e3ac36a9094b2ebbbcd874cfb964d6107392fa67f66e609c7d400d9ef4ad9"
     },
-    "sotFingerprint": "8cbce221d55f"
+    "sotFingerprint": "2d28347501d5"
   },
   "runtime": [
     {
@@ -95210,6 +95537,7 @@
         "runtime:backend/src/api/api.module.ts",
         "runtime:backend/src/auth/auth.module.ts",
         "runtime:backend/src/cache/cache.module.ts",
+        "runtime:backend/src/common/guards/cloudflare-throttler.guard.ts",
         "runtime:backend/src/config/feature-flags.module.ts",
         "runtime:backend/src/config/write-guard.module.ts",
         "runtime:backend/src/controllers/analytics.controller.ts",
@@ -95249,6 +95577,7 @@
         "runtime:backend/src/modules/seo-monitoring/seo-monitoring.module.ts",
         "runtime:backend/src/modules/seo/seo.module.ts",
         "runtime:backend/src/modules/staff/staff.module.ts",
+        "runtime:backend/src/modules/substitution/substitution.module.ts",
         "runtime:backend/src/modules/supplier-truth/supplier-truth.module.ts",
         "runtime:backend/src/modules/suppliers/suppliers.module.ts",
         "runtime:backend/src/modules/support/support.module.ts",
@@ -98291,7 +98620,24 @@
       "status": "LIVE"
     },
     {
-      "dependsOn": [],
+      "dependsOn": [
+        "runtime:backend/src/modules/substitution/services/substitution-logger.service.ts",
+        "runtime:backend/src/modules/substitution/services/substitution.service.ts"
+      ],
+      "id": "runtime:backend/src/modules/substitution/controllers/substitution.controller.ts",
+      "kind": "nestjs-controller",
+      "path": "backend/src/modules/substitution/controllers/substitution.controller.ts",
+      "schemaVersion": "1.0.0",
+      "sourceConfidence": "medium",
+      "status": "LIVE"
+    },
+    {
+      "dependsOn": [
+        "runtime:backend/src/modules/substitution/controllers/substitution.controller.ts",
+        "runtime:backend/src/modules/substitution/services/intent-extractor.service.ts",
+        "runtime:backend/src/modules/substitution/services/substitution-logger.service.ts",
+        "runtime:backend/src/modules/substitution/services/substitution.service.ts"
+      ],
       "id": "runtime:backend/src/modules/substitution/substitution.module.ts",
       "kind": "nestjs-module",
       "path": "backend/src/modules/substitution/substitution.module.ts",

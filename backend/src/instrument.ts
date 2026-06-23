@@ -2,6 +2,14 @@
 // OpenTelemetry-based instrumentation can patch http/fs/express before any
 // other module loads.
 //
+// ── SINGLE SERVER SDK OWNER — DO NOT DUPLICATE IN THE SSR BUNDLE. ──
+// @sentry/nestjs is the ONLY server-side SDK allowed to call Sentry.init().
+// The React Router SSR bundle (frontend/app/entry.server.tsx) initializes NO
+// server SDK; it reports through AppLoadContext.serverObservability (the pont in
+// backend/src/remix/remix.controller.ts). Reintroducing an init in the ESM SSR
+// bundle caused the PROD dual-realm server.emit recursion incident
+// (RangeError: Maximum call stack size — #1106 / getsentry/sentry-javascript#21696).
+//
 // Loads dotenv internally so `process.env.SENTRY_DSN` is populated before
 // Sentry.init runs. main.ts can therefore drop its own `import 'dotenv/config'`.
 //

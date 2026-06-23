@@ -92,7 +92,7 @@ export const meta: MetaFunction = () => [
   },
 ];
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
+export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   try {
     // Paralléliser getCart + vehicle cookie (indépendants)
     const [cartData, vehicle] = await Promise.all([
@@ -168,7 +168,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   } catch (err) {
     // Observabilité : un getCart en échec est rattrapé ici (dégradation
     // gracieuse) → invisible pour Sentry sans remontée explicite.
-    reportLoaderError("cart_load_failed", err);
+    reportLoaderError(context.serverObservability, "cart_load_failed", err, {
+      method: request.method,
+      pathname: new URL(request.url).pathname,
+    });
     const vehicle = await getVehicleFromCookie(
       request.headers.get("Cookie"),
     ).catch(() => null);
