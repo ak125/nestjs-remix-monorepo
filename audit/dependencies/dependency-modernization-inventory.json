@@ -1,5 +1,5 @@
 {
-  "artifact_immutability_hash": "sha256:74484db3e1291437efaa28634f2d72107c033a7c178436347cbcc2fa8889e04e",
+  "artifact_immutability_hash": "sha256:cf62a4019c348a930a97f83f1004cdc2b9f8ef0516253470569be9577044fb1f",
   "divergences": [
     {
       "kind": "specifier",
@@ -60,7 +60,7 @@
         }
       ],
       "resolved_versions": [
-        "7.18.0"
+        "8.0.1"
       ]
     },
     {
@@ -169,21 +169,6 @@
         "1.20.4",
         "1.20.5",
         "2.3.0"
-      ]
-    },
-    {
-      "kind": "resolved",
-      "name": "cookie",
-      "occurrences": [
-        {
-          "declaredIn": "frontend/package.json",
-          "specifier": "^0.7.2",
-          "workspace": "@fafa/frontend"
-        }
-      ],
-      "resolved_versions": [
-        "0.7.2",
-        "1.1.1"
       ]
     },
     {
@@ -452,7 +437,7 @@
         }
       ],
       "resolved_versions": [
-        "7.18.0"
+        "8.0.1"
       ]
     },
     {
@@ -2596,7 +2581,7 @@
             }
           ],
           "resolved_versions": [
-            "7.18.0"
+            "8.0.1"
           ]
         },
         {
@@ -2621,7 +2606,7 @@
             }
           ],
           "resolved_versions": [
-            "7.18.0"
+            "8.0.1"
           ]
         },
         {
@@ -2641,7 +2626,7 @@
             }
           ],
           "resolved_versions": [
-            "7.18.0"
+            "8.0.1"
           ]
         },
         {
@@ -2656,7 +2641,7 @@
             }
           ],
           "resolved_versions": [
-            "7.18.0"
+            "8.0.1"
           ]
         },
         {
@@ -2676,7 +2661,7 @@
             }
           ],
           "resolved_versions": [
-            "7.18.0"
+            "8.0.1"
           ]
         },
         {
@@ -2771,7 +2756,7 @@
             }
           ],
           "resolved_versions": [
-            "7.18.0"
+            "8.0.1"
           ]
         },
         {
@@ -3907,7 +3892,7 @@
     "deps_registry": "audit/registry/deps.json",
     "deps_registry_sha": "sha256:9b722879fab181ddf8a7942e3c00324fd6d8fddd5323646c2d7f939e7739234d",
     "lockfile": "package-lock.json",
-    "lockfile_sha": "sha256:e8a958f8626c1c2ee0b4898296aa142a8f80c008fc85e2a4b967b5a685aba1ec",
+    "lockfile_sha": "sha256:4f4de882fe3b525a4b48b6ccc99f948e634b374fd0bddef42182dc35f5c9051b",
     "overlay": "audit/dependencies/family-overlay.yaml",
     "overlay_sha": "sha256:42597019658ecd86a9df3c4f64505542d2f89192ab1eef12b9ae218ea5df4728"
   },
@@ -3936,7 +3921,7 @@
       "pr-9f": 17,
       "pr-9g": 0
     },
-    "divergent_packages_count": 35,
+    "divergent_packages_count": 34,
     "families_count": 12,
     "total_occurrences": 339,
     "total_packages": 231,
@@ -5356,7 +5341,7 @@
       ]
     },
     {
-      "divergent_resolved": true,
+      "divergent_resolved": false,
       "divergent_specifiers": false,
       "name": "cookie",
       "occurrences": [
@@ -5367,8 +5352,7 @@
         }
       ],
       "resolved_versions": [
-        "0.7.2",
-        "1.1.1"
+        "0.7.2"
       ]
     },
     {
