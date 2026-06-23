@@ -580,3 +580,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/client-ip-429-throttle`
 - **Décision** : Merge remote-tracking branch 'origin/main' into fix/client-ip-429-throttle (+10 other commits)
 - **Sortie** : PR #1097 | commits 7b58ac6d1 5bb95cac4 951bb51ab fb7fe4dff 349d7653b 9414165c8 f74cac270 2c8179fa0 3ad43e1f4 6047cf3c9 1334a4234
+
+## 2026-06-23 — feat/rr8-prep-sentry-decouple (auto)
+
+- **Branche** : `feat/rr8-prep-sentry-decouple`
+- **Décision** : refactor(observability): single server Sentry SDK — decouple SSR from React Router (prep RR8)
+- **Sortie** : PR #1116 | commits 33a3c6a44

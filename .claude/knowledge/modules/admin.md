@@ -2,7 +2,7 @@
 module: admin
 sources:
 - backend/src/modules/admin
-last_scan: '2026-06-21'
+last_scan: '2026-06-23'
 primary_files:
 - backend/src/modules/admin/admin.module.ts
 - backend/src/modules/admin/constants/seo-control.constants.ts
