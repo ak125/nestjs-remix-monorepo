@@ -4,6 +4,7 @@ import {
   useLoaderData,
 } from "react-router";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import { userContext } from "~/server/load-context";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 import { getOptionalUser } from "../auth/unified.server";
 
@@ -11,13 +12,17 @@ export const meta: MetaFunction = () => createNoIndexMeta("Debug - Admin");
 
 export async function loader({ context }: LoaderFunctionArgs) {
   const user = await getOptionalUser({ context });
+  const ctxUser = context.get(userContext);
 
   return {
     user: user,
     context: {
-      hasUser: !!context.user,
-      userType: typeof context.user,
-      userKeys: context.user ? Object.keys(context.user) : [],
+      hasUser: !!ctxUser,
+      userType: typeof ctxUser,
+      userKeys:
+        ctxUser && typeof ctxUser === "object"
+          ? Object.keys(ctxUser as object)
+          : [],
     },
   };
 }

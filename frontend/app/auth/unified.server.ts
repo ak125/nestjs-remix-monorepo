@@ -1,5 +1,6 @@
-import { redirect, type AppLoadContext } from "react-router";
+import { redirect, type RouterContextProvider } from "react-router";
 import { z } from "zod";
+import { userContext } from "~/server/load-context";
 import { logger } from "~/utils/logger";
 import { getProxyHeaders } from "~/utils/proxy-headers.server";
 
@@ -60,18 +61,19 @@ const authenticatedUserSchema = z.object({
 export const getOptionalUser = async ({
   context,
 }: {
-  context: AppLoadContext;
+  context: Readonly<RouterContextProvider>;
 }): Promise<AuthUser | null> => {
   try {
-    if (context.user && typeof context.user === "object") {
-      const rawUser = context.user as RawContextUser;
+    const ctxUser = context.get(userContext);
+    if (ctxUser && typeof ctxUser === "object") {
+      const rawUser = ctxUser as RawContextUser;
       if (rawUser.error) {
         return null;
       }
       const user = authenticatedUserSchema
         .optional()
         .nullable()
-        .parse(context.user);
+        .parse(ctxUser);
       if (user) {
         return {
           id: rawUser.id ?? "",
@@ -192,7 +194,7 @@ export const requireUser = async ({
   context,
   request,
 }: {
-  context: AppLoadContext;
+  context: Readonly<RouterContextProvider>;
   request?: Request;
 }): Promise<AuthUser> => {
   const user = await getOptionalUser({ context });
@@ -216,7 +218,7 @@ export const requireUser = async ({
 export const requireAuth = async (
   requestOrOptions:
     | Request
-    | { request: Request; context?: AppLoadContext; redirectTo?: string },
+    | { request: Request; context?: Readonly<RouterContextProvider>; redirectTo?: string },
 ): Promise<AuthUser> => {
   let request: Request;
   let redirectTo = "/login";
@@ -249,7 +251,7 @@ export const requireUserWithRedirect = async ({
   context,
 }: {
   request: Request;
-  context: AppLoadContext;
+  context: Readonly<RouterContextProvider>;
 }): Promise<AuthUser> => {
   const user = await getOptionalUser({ context });
   if (!user) {
@@ -270,7 +272,7 @@ export const requireUserWithRedirect = async ({
 export const requireAdmin = async ({
   context,
 }: {
-  context: AppLoadContext;
+  context: Readonly<RouterContextProvider>;
 }): Promise<AuthUser> => {
   const user = await getOptionalUser({ context });
 
@@ -303,7 +305,7 @@ export const requireAdmin = async ({
 export const redirectIfAuthenticated = async ({
   context,
 }: {
-  context: AppLoadContext;
+  context: Readonly<RouterContextProvider>;
 }) => {
   const user = await getOptionalUser({ context });
   if (user) {

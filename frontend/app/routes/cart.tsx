@@ -56,6 +56,7 @@ import {
   type CartItem as CartItemType,
   type CartSummary as CartSummaryType,
 } from "~/schemas/cart.schemas";
+import { serverObservabilityContext } from "~/server/load-context";
 import { trackViewCart } from "~/utils/analytics";
 import { logger } from "~/utils/logger";
 import { reportLoaderError } from "~/utils/observability.server";
@@ -168,10 +169,15 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   } catch (err) {
     // Observabilité : un getCart en échec est rattrapé ici (dégradation
     // gracieuse) → invisible pour Sentry sans remontée explicite.
-    reportLoaderError(context.serverObservability, "cart_load_failed", err, {
-      method: request.method,
-      pathname: new URL(request.url).pathname,
-    });
+    reportLoaderError(
+      context.get(serverObservabilityContext) ?? undefined,
+      "cart_load_failed",
+      err,
+      {
+        method: request.method,
+        pathname: new URL(request.url).pathname,
+      },
+    );
     const vehicle = await getVehicleFromCookie(
       request.headers.get("Cookie"),
     ).catch(() => null);

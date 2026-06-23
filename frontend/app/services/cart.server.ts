@@ -5,7 +5,7 @@
  * Compatible avec l'architecture existante RemixApiService
  */
 
-import { type AppLoadContext } from "react-router";
+import { type RouterContextProvider } from "react-router";
 import { logger } from "~/utils/logger";
 import {
   type CartItem,
@@ -46,7 +46,7 @@ class CartServerService {
   /**
    * Obtenir le panier complet
    */
-  async getCart(request: Request, context?: AppLoadContext): Promise<CartData> {
+  async getCart(request: Request, context?: Readonly<RouterContextProvider>): Promise<CartData> {
     const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
     const cookie = request.headers.get("Cookie") || "";
 
@@ -358,7 +358,7 @@ class CartServerService {
    */
   async validateCart(
     request: Request,
-    context?: AppLoadContext,
+    context?: Readonly<RouterContextProvider>,
   ): Promise<CartActionResult> {
     try {
       const cart = await this.getCart(request, context);
@@ -518,7 +518,7 @@ class CartServerService {
    */
   private async getCartAsLegacyFormat(
     request: Request,
-    context?: AppLoadContext,
+    context?: Readonly<RouterContextProvider>,
   ): Promise<Cart> {
     const cartData = await this.getCart(request, context);
 
@@ -561,7 +561,7 @@ export const cartServerService = new CartServerService();
 /**
  * 🎯 Fonctions utilitaires pour l'export
  */
-export const getCart = (request: Request, context?: AppLoadContext) =>
+export const getCart = (request: Request, context?: Readonly<RouterContextProvider>) =>
   cartServerService.getCart(request, context);
 
 export const addItem = (
@@ -582,7 +582,7 @@ export const removeFromCart = (request: Request, itemId: string) =>
 export const clearCart = (request: Request) =>
   cartServerService.clearCart(request);
 
-export const validateCart = (request: Request, context?: AppLoadContext) =>
+export const validateCart = (request: Request, context?: Readonly<RouterContextProvider>) =>
   cartServerService.validateCart(request, context);
 
 /**

@@ -22,6 +22,13 @@ import { type Config } from "@react-router/dev/config";
  * - A4 `v8_splitRouteModules: true` (PAS `"enforce"`) : découpe automatiquement
  *   les exports de route en chunks séparés quand c'est possible. `true` (et non
  *   `"enforce"`) pour ne pas faire échouer le build sur une route non-séparable.
+ * - A6 `v8_middleware` : le contexte des loaders/actions devient un
+ *   `RouterContextProvider` (lecture via `context.get(key)`), `getLoadContext`
+ *   renvoie ce provider. Le pont CJS→ESM (NestJS → SSR) passe par la fabrique
+ *   `createAppLoadContext` réexposée sur `build.entry.module` via la façade
+ *   `@fafa/frontend` — NestJS n'importe jamais les clés `createContext`
+ *   (sécurité dual-realm, incident #1106). `typegen` régénère les types pour
+ *   que `MiddlewareEnabled = true` (clés typées, accès propriété interdit).
  */
 export default {
   ssr: true,
@@ -31,5 +38,6 @@ export default {
     v8_passThroughRequests: true,
     v8_trailingSlashAwareDataRequests: true,
     v8_splitRouteModules: true,
+    v8_middleware: true,
   },
 } satisfies Config;

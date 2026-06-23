@@ -56,6 +56,7 @@ import {
   parseCheckoutFormData,
   validateCheckoutClient,
 } from "~/schemas/checkout.schemas";
+import { serverObservabilityContext } from "~/server/load-context";
 import {
   buildOrderLines,
   buildPayboxRedirectUrl,
@@ -143,7 +144,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   } catch (error) {
     logger.error("[Checkout] Erreur chargement:", error);
     reportLoaderError(
-      context.serverObservability,
+      context.get(serverObservabilityContext) ?? undefined,
       "checkout_cart_load_failed",
       error,
       { method: request.method, pathname: new URL(request.url).pathname },

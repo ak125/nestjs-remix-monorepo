@@ -1,4 +1,4 @@
-import { getServerBuild } from '@fafa/frontend';
+import { getServerBuild, getCreateAppLoadContext } from '@fafa/frontend';
 import {
   All,
   Controller,
@@ -76,17 +76,25 @@ export class RemixController {
     }
 
     try {
-      const build = await getServerBuild();
+      // v8_middleware: `getLoadContext` must return a `RouterContextProvider`.
+      // The factory is sourced from the SSR build's `entry.module` via the
+      // façade bridge (`getCreateAppLoadContext`), so NestJS (CJS) never imports
+      // the identity-keyed `createContext()` keys — dual-realm safety (#1106).
+      // `parsedBody` dropped (DEAD).
+      const [build, createAppLoadContext] = await Promise.all([
+        getServerBuild(),
+        getCreateAppLoadContext(),
+      ]);
       return createRequestHandler({
         build,
-        getLoadContext: () => ({
-          user: request.user,
-          remixService: this.remixService,
-          remixIntegration: this.remixApiService,
-          parsedBody: request.body,
-          cspNonce: response.locals.cspNonce,
-          serverObservability,
-        }),
+        getLoadContext: () =>
+          createAppLoadContext({
+            user: request.user,
+            remixService: this.remixService,
+            remixIntegration: this.remixApiService,
+            cspNonce: response.locals.cspNonce ?? '',
+            serverObservability,
+          }),
       })(request, response, next);
     } catch (error) {
       // L'échec de chargement du build SSR survient AVANT que entry.server.tsx prenne

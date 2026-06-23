@@ -3,6 +3,8 @@
  * Utilise les variables d'environnement ou des valeurs par défaut
  */
 
+import { type RouterContextProvider } from "react-router";
+import { remixServiceContext } from "~/server/load-context";
 import { logger } from "~/utils/logger";
 
 // Configuration de l'API backend
@@ -87,15 +89,20 @@ export interface PaymentStats {
  * Récupère les statistiques des paiements
  * Utilise le service direct ou fallback HTTP
  */
-export async function getPaymentStats(context?: any): Promise<PaymentStats> {
+export async function getPaymentStats(
+  context?: Readonly<RouterContextProvider>,
+): Promise<PaymentStats> {
   try {
     // Utilisation directe du service NestJS via le contexte (comme pour orders)
-    if (context?.remixService?.integration) {
+    // v8_middleware : service lu via clé typée (`.get`), pas en accès propriété.
+    const integration = context?.get(remixServiceContext)?.integration;
+    if (integration) {
       logger.log("✅ Utilisation du service de paiements direct");
       // Note: il faudra ajouter getPaymentStatsForRemix au service d'intégration
-      const result =
-        await context.remixService.integration.getPaymentStatsForRemix?.();
-      if (result?.success) {
+      const result = (await integration.getPaymentStatsForRemix?.()) as
+        | { success?: boolean; stats?: PaymentStats }
+        | undefined;
+      if (result?.success && result.stats) {
         return result.stats;
       }
     }
@@ -130,15 +137,18 @@ export async function getPaymentStats(context?: any): Promise<PaymentStats> {
  */
 export async function createPayment(
   payment: CreateLegacyPaymentRequest,
-  context?: any,
+  context?: Readonly<RouterContextProvider>,
 ): Promise<LegacyPayment> {
   try {
     // Utilisation directe du service NestJS via le contexte
-    if (context?.remixService?.integration) {
+    // v8_middleware : service lu via clé typée (`.get`), pas en accès propriété.
+    const integration = context?.get(remixServiceContext)?.integration;
+    if (integration) {
       logger.log("✅ Utilisation du service de paiements direct");
-      const result =
-        await context.remixService.integration.createPaymentForRemix?.(payment);
-      if (result?.success) {
+      const result = (await integration.createPaymentForRemix?.(payment)) as
+        | { success?: boolean; payment?: LegacyPayment }
+        | undefined;
+      if (result?.success && result.payment) {
         return result.payment;
       }
     }
@@ -170,17 +180,18 @@ export async function createPayment(
  */
 export async function getPaymentStatus(
   orderId: string | number,
-  context?: any,
+  context?: Readonly<RouterContextProvider>,
 ): Promise<LegacyPayment> {
   try {
     // Utilisation directe du service NestJS via le contexte
-    if (context?.remixService?.integration) {
+    // v8_middleware : service lu via clé typée (`.get`), pas en accès propriété.
+    const integration = context?.get(remixServiceContext)?.integration;
+    if (integration) {
       logger.log("✅ Utilisation du service de paiements direct");
-      const result =
-        await context.remixService.integration.getPaymentStatusForRemix?.(
-          orderId,
-        );
-      if (result?.success) {
+      const result = (await integration.getPaymentStatusForRemix?.(
+        orderId,
+      )) as { success?: boolean; payment?: LegacyPayment } | undefined;
+      if (result?.success && result.payment) {
         return result.payment;
       }
     }
