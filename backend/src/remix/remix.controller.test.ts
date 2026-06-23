@@ -1,22 +1,35 @@
 /**
- * Injection gate — the SSR observability reporter MUST be present in the
- * AppLoadContext returned by getLoadContext.
+ * Injection gate — the SSR observability reporter MUST be handed to the
+ * load-context factory by the controller.
  *
- * Production topology is always NestJS → React Router (embedded), so the SSR
- * bridge (entry.server handleError/onError + reportLoaderError) depends on
- * `context.serverObservability` being injected here. Without it the bridge
- * silently no-ops. This locks PRODUCTION_EMBEDDED_SERVER_OBSERVABILITY = REQUIRED.
+ * Production topology is always NestJS → React Router (embedded). Under
+ * `v8_middleware` (A6) the load context is a `RouterContextProvider` built by
+ * the SSR-realm factory `createAppLoadContext`, bridged into NestJS (CJS) via
+ * `@fafa/frontend`'s `getCreateAppLoadContext` (the keys never cross realms —
+ * dual-realm safety, incident #1106). The SSR bridge (entry.server
+ * handleError/onError + reportLoaderError) reads the reporter via
+ * `context.get(serverObservabilityContext)`, so the controller MUST pass a
+ * `serverObservability` reporter INTO that factory. This locks
+ * PRODUCTION_EMBEDDED_SERVER_OBSERVABILITY = REQUIRED at the backend boundary.
  *
- * Anti-vacuity: the handler awaits getServerBuild() (mocked) BEFORE
- * createRequestHandler, inside a try/catch that swallows failures into a 500 —
- * so without the @fafa/frontend mock + the toHaveBeenCalled() check the test
- * could pass without ever reaching getLoadContext. `expect.assertions(2)` guards.
+ * Split of concerns: the provider's key identity / `.get()` round-trip is
+ * covered by the frontend `load-context-identity.test.ts`; here we lock the
+ * BACKEND contract — getLoadContext invokes the factory with a
+ * `serverObservability.captureException`. The factory is mocked as an
+ * identity passthrough so the gate can inspect the values it receives.
+ *
+ * Anti-vacuity: the handler awaits getServerBuild()+getCreateAppLoadContext()
+ * (both mocked) BEFORE createRequestHandler, inside a try/catch that swallows
+ * failures into a 500 — so without the mocks + the toHaveBeenCalled() check the
+ * test could pass without ever reaching getLoadContext. `expect.assertions(2)` guards.
  */
+import { getCreateAppLoadContext } from '@fafa/frontend';
 import { createRequestHandler } from '@react-router/express';
 import { RemixController } from './remix.controller';
 
 jest.mock('@fafa/frontend', () => ({
   getServerBuild: jest.fn().mockResolvedValue({}),
+  getCreateAppLoadContext: jest.fn(),
 }));
 jest.mock('@sentry/nestjs', () => ({
   withScope: jest.fn(),
@@ -31,6 +44,15 @@ jest.mock('./remix-api.service', () => ({ RemixApiService: class {} }));
 describe('RemixController — serverObservability injection gate', () => {
   it('injects serverObservability into getLoadContext (embedded prod)', async () => {
     expect.assertions(2);
+
+    // A6 factory bridge: getCreateAppLoadContext resolves the SSR-realm factory.
+    // Mock it as an identity passthrough so the gate inspects the exact values
+    // the controller hands in (the real factory wraps them in a
+    // RouterContextProvider — its key round-trip is the frontend identity test).
+    jest
+      .mocked(getCreateAppLoadContext)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .mockResolvedValue(((values: any) => values) as any);
 
     jest.mocked(createRequestHandler).mockImplementation(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
