@@ -16,6 +16,9 @@ import { type Config } from "@react-router/dev/config";
  * - A2 `v8_passThroughRequests` : passe la requête HTTP brute aux loaders/actions
  *   (la `Request.url`/host est désormais reconstruite côté serveur — à valider
  *   derrière Caddy : X-Forwarded-Host → contrôle d'origine CSRF des actions).
+ * - A3 `v8_trailingSlashAwareDataRequests` : préserve le trailing-slash dans les
+ *   URLs de requête `.data` (fetch single-fetch interne). N'affecte PAS les URLs
+ *   de page canoniques → gate `url-immutability` (147/147) préservé.
  */
 export default {
   ssr: true,
@@ -23,5 +26,6 @@ export default {
   future: {
     v8_viteEnvironmentApi: true,
     v8_passThroughRequests: true,
+    v8_trailingSlashAwareDataRequests: true,
   },
 } satisfies Config;
