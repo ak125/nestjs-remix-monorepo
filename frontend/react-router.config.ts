@@ -19,6 +19,9 @@ import { type Config } from "@react-router/dev/config";
  * - A3 `v8_trailingSlashAwareDataRequests` : préserve le trailing-slash dans les
  *   URLs de requête `.data` (fetch single-fetch interne). N'affecte PAS les URLs
  *   de page canoniques → gate `url-immutability` (147/147) préservé.
+ * - A4 `v8_splitRouteModules: true` (PAS `"enforce"`) : découpe automatiquement
+ *   les exports de route en chunks séparés quand c'est possible. `true` (et non
+ *   `"enforce"`) pour ne pas faire échouer le build sur une route non-séparable.
  */
 export default {
   ssr: true,
@@ -27,5 +30,6 @@ export default {
     v8_viteEnvironmentApi: true,
     v8_passThroughRequests: true,
     v8_trailingSlashAwareDataRequests: true,
+    v8_splitRouteModules: true,
   },
 } satisfies Config;
