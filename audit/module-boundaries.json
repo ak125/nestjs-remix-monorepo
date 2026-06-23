@@ -18,8 +18,8 @@
         "backend/src/modules/admin/services/r1-image-prompt-builders",
         "backend/src/modules/admin/services/r1-image-prompt-builders/__tests__"
       ],
-      "files_count": 147,
-      "loc_total": 44631,
+      "files_count": 148,
+      "loc_total": 44712,
       "has_barrel": true
     },
     "agentic-engine": {
@@ -92,8 +92,8 @@
         "backend/src/types",
         "backend/src/utils"
       ],
-      "files_count": 32,
-      "loc_total": 5557,
+      "files_count": 35,
+      "loc_total": 5870,
       "has_barrel": true
     },
     "blog": {
@@ -164,6 +164,7 @@
         "backend/src/common",
         "backend/src/common/decorators",
         "backend/src/common/exceptions",
+        "backend/src/common/guards",
         "backend/src/common/interceptors",
         "backend/src/common/pipes",
         "backend/src/common/pipes/params",
@@ -171,8 +172,8 @@
         "backend/src/common/schemas",
         "backend/src/common/utils"
       ],
-      "files_count": 34,
-      "loc_total": 1441,
+      "files_count": 36,
+      "loc_total": 1557,
       "has_barrel": true
     },
     "config": {
@@ -260,7 +261,7 @@
         "frontend/app/routes/_public+"
       ],
       "files_count": 246,
-      "loc_total": 116014,
+      "loc_total": 116062,
       "has_barrel": false
     },
     "frontend-shared": {
@@ -342,8 +343,8 @@
         "frontend/app/utils",
         "frontend/app/utils/seo"
       ],
-      "files_count": 586,
-      "loc_total": 112317,
+      "files_count": 589,
+      "loc_total": 112662,
       "has_barrel": true
     },
     "gamme-rest": {
@@ -945,8 +946,8 @@
         "services/remotion-renderer/src/types",
         "tests/registry"
       ],
-      "files_count": 177,
-      "loc_total": 33298,
+      "files_count": 182,
+      "loc_total": 33919,
       "has_barrel": true
     },
     "upload": {
@@ -1046,7 +1047,7 @@
     {
       "from": "admin",
       "to": "config",
-      "count": 82
+      "count": 84
     },
     {
       "from": "admin",
@@ -1235,6 +1236,11 @@
     },
     {
       "from": "backend-core",
+      "to": "common",
+      "count": 1
+    },
+    {
+      "from": "backend-core",
       "to": "config",
       "count": 8
     },
@@ -1380,6 +1386,11 @@
     },
     {
       "from": "backend-core",
+      "to": "substitution",
+      "count": 1
+    },
+    {
+      "from": "backend-core",
       "to": "supplier-truth",
       "count": 1
     },
@@ -1402,6 +1413,11 @@
       "from": "backend-core",
       "to": "trend-signals",
       "count": 1
+    },
+    {
+      "from": "backend-core",
+      "to": "uncategorized",
+      "count": 2
     },
     {
       "from": "backend-core",

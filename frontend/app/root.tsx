@@ -29,6 +29,7 @@ import {
   useNavigation,
 } from "react-router";
 
+import type { ServerObservability } from "~/utils/observability-contract";
 import { logger } from "~/utils/logger";
 import { getOptionalUser } from "./auth/unified.server";
 import { ErrorGeneric } from "./components/errors";
@@ -142,6 +143,12 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
         process.env.APP_ENV ||
         process.env.NODE_ENV ||
         "development",
+      // GA4 measurement ID — provisionné par environnement (docker-compose.prod.yml
+      // uniquement). Vide en DEV (`npm run dev`) et PREPROD (CI) → le tag gtag n'est
+      // PAS injecté, ce qui évite que les navigateurs headless E2E/Lighthouse polluent
+      // la propriété GA4 de PROD (hostname=localhost, géo datacenter). Config-driven,
+      // pas de measurement ID en dur dans le bundle client.
+      VITE_GA_MEASUREMENT_ID: process.env.VITE_GA_MEASUREMENT_ID || "",
     },
   };
 };
@@ -168,6 +175,7 @@ declare module "react-router" {
     parsedBody?: any;
     user: unknown;
     cspNonce?: string; // injecté par le handler NestJS (response.locals.cspNonce)
+    serverObservability?: ServerObservability; // pont SSR → client Sentry NestJS (remix.controller.ts)
   }
 }
 
@@ -393,6 +401,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const data = useRouteLoaderData<typeof loader>("root");
   const nonce = data?.cspNonce || "";
   const isBot = data?.isBot ?? false;
+  // GA4 mesure uniquement quand l'ID est provisionné (PROD). Vide en DEV/PREPROD
+  // → pas de tag → pas de pollution CI/headless. Cf. loader ENV ci-dessus.
+  const gaMeasurementId = data?.ENV?.VITE_GA_MEASUREMENT_ID ?? "";
 
   return (
     <html lang="fr" className="h-full" suppressHydrationWarning>
@@ -430,8 +441,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <link rel="stylesheet" href={animationsStylesheet} />
         </noscript>
         {/* Google Analytics 4 - Optimisé avec requestIdleCallback + Consent Mode v2 (RGPD) */}
-        {/* 🤖 Bot filter: ne pas charger gtag pour les bots (évite pollution GA4) */}
-        {!isBot && (
+        {/* Double garde anti-pollution GA4 :
+            1. !isBot         → exclut les crawlers (UA serveur)
+            2. gaMeasurementId → l'ID n'est provisionné qu'en PROD (docker-compose.prod.yml),
+               donc pas de tag en DEV/PREPROD (stoppe la pollution headless E2E/Lighthouse). */}
+        {!isBot && gaMeasurementId !== "" && (
           <script
             nonce={nonce}
             suppressHydrationWarning
@@ -461,11 +475,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
                 var loadScript = function() {
                   var script = document.createElement('script');
-                  script.src = 'https://www.googletagmanager.com/gtag/js?id=G-ZVG6K5R740';
+                  script.src = 'https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}';
                   script.async = true;
                   script.onload = function() {
                     gtag('js', new Date());
-                    gtag('config', 'G-ZVG6K5R740', {
+                    gtag('config', '${gaMeasurementId}', {
                       page_title: document.title,
                       page_location: window.location.href,
                       send_page_view: false

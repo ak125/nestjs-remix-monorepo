@@ -10,7 +10,7 @@ import { expect, test } from '@playwright/test';
  *   2. The SDK loads only when the deferred background task runs
  *      (`scheduler.postTask({priority:'background'})`, with requestIdleCallback /
  *      setTimeout fallbacks) — there is NO click/scroll listener anymore.
- *   3. With a DSN present, the task triggers the lazy `import('@sentry/react-router')`
+ *   3. With a DSN present, the task triggers the lazy `import('@sentry/react')`
  *      → `sentry-vendor-*.js` is fetched.
  *
  * MUST run against a PRODUCTION build served via the real NestJS topology

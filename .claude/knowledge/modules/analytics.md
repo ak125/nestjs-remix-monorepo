@@ -2,7 +2,7 @@
 module: analytics
 sources:
 - backend/src/modules/analytics
-last_scan: '2026-06-21'
+last_scan: '2026-06-23'
 primary_files:
 - backend/src/modules/analytics/analytics.module.ts
 - backend/src/modules/analytics/controllers/simple-analytics.controller.ts

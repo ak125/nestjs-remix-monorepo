@@ -2,7 +2,7 @@
 module: seo-control-plane
 sources:
 - backend/src/modules/seo-control-plane
-last_scan: '2026-06-21'
+last_scan: '2026-06-23'
 primary_files:
 - backend/src/modules/seo-control-plane/collectors/cf-analytics/cf-analytics.processor.ts
 - backend/src/modules/seo-control-plane/collectors/cf-analytics/cf-analytics.scheduler.service.ts

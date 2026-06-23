@@ -142,7 +142,12 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     };
   } catch (error) {
     logger.error("[Checkout] Erreur chargement:", error);
-    reportLoaderError("checkout_cart_load_failed", error);
+    reportLoaderError(
+      context.serverObservability,
+      "checkout_cart_load_failed",
+      error,
+      { method: request.method, pathname: new URL(request.url).pathname },
+    );
     return {
       cart: null,
       error: "Erreur lors du chargement du panier. Veuillez reessayer.",
