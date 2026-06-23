@@ -10,12 +10,22 @@ import { isbot } from "isbot";
 import { renderToPipeableStream } from "react-dom/server";
 import {
   ServerRouter,
-  type AppLoadContext,
   type EntryContext,
   type HandleErrorFunction,
+  type RouterContextProvider,
 } from "react-router";
-import type { ServerObservability } from "~/utils/observability-contract";
+import {
+  cspNonceContext,
+  serverObservabilityContext,
+} from "~/utils/load-context";
 import { logger } from "~/utils/logger";
+import  { type ServerObservability } from "~/utils/observability-contract";
+
+// Re-export the load-context factory so the SSR build exposes it on
+// `build.entry.module` for the NestJS façade bridge (`getCreateAppLoadContext`).
+// This is the CJS→ESM pont: NestJS calls the factory without ever importing the
+// identity-keyed `createContext()` keys (dual-realm safety, incident #1106).
+export { createAppLoadContext } from "~/utils/load-context";
 
 // ⚠️ NO server-side Sentry SDK in this SSR bundle — DO NOT add `Sentry.init()` /
 // import `@sentry/node` / `@sentry/react-router` here. `@sentry/nestjs`
@@ -32,16 +42,15 @@ export const handleError: HandleErrorFunction = (
   error,
   { request, context },
 ): void => {
-  // `context` is `any` in RR7 (DefaultContext, no v8_middleware). RR8 CHECKPOINT:
-  // enabling `v8_middleware` makes it `RouterContextProvider` (no .serverObservability)
-  // → this access becomes a TS error and the pont must move to `context.get(...)`.
-  const ctx = context as AppLoadContext;
+  // v8_middleware: `context` is a Readonly<RouterContextProvider>. Read the
+  // NestJS-owned reporter via the typed key (nullable default → never throws).
+  const observability = context.get(serverObservabilityContext);
   // Skip aborted requests (client gone) — equivalent to @sentry/react-router's
   // createSentryHandleError abort guard. `flushIfServerless` deliberately NOT
   // reproduced: persistent NestJS process, not serverless (and RR doesn't await
   // handleError anyway).
   if (!request.signal.aborted) {
-    ctx.serverObservability?.captureException(error, {
+    observability?.captureException(error, {
       mechanism: { type: "react-router", handled: false },
       tags: { observability_channel: "react-router-handle-error" },
       extra: { method: request.method, pathname: new URL(request.url).pathname },
@@ -62,12 +71,12 @@ export default function handleRequest(
   responseStatusCode: number,
   responseHeaders: Headers,
   reactRouterContext: EntryContext,
-  loadContext: AppLoadContext,
+  loadContext: RouterContextProvider,
 ) {
-  const nonce = loadContext.cspNonce || "";
+  const nonce = loadContext.get(cspNonceContext) || "";
   // Pass the reporter OBJECT (not a detached method) down so the streaming
   // onError callbacks can forward render errors to the NestJS-owned Sentry client.
-  const observability = loadContext.serverObservability;
+  const observability = loadContext.get(serverObservabilityContext) ?? undefined;
 
   return isbot(request.headers.get("user-agent") || "")
     ? handleBotRequest(

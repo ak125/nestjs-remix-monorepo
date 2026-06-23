@@ -29,7 +29,7 @@ import {
   useNavigation,
 } from "react-router";
 
-import type { ServerObservability } from "~/utils/observability-contract";
+import { cspNonceContext } from "~/utils/load-context";
 import { logger } from "~/utils/logger";
 import { getOptionalUser } from "./auth/unified.server";
 import { ErrorGeneric } from "./components/errors";
@@ -132,7 +132,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     user,
     cart: cartPromise,
     isBot,
-    cspNonce: context.cspNonce || "",
+    cspNonce: context.get(cspNonceContext) || "",
     // Public runtime env exposed to the browser via `window.ENV` (see <script>
     // injection below). Same image runs in DEV/PROD with different values, so
     // these MUST be read at request time, not inlined at build time.
@@ -167,17 +167,6 @@ export const action = async (_args: ActionFunctionArgs) => {
 
 // Re-exports depuis module neutre pour éviter la dépendance circulaire root ↔ Navbar
 export { useOptionalUser, useRootCart } from "./hooks/useRootData";
-
-declare module "react-router" {
-  interface AppLoadContext {
-    remixService: any;
-    remixIntegration?: any; // injection côté Nest: RemixApiService
-    parsedBody?: any;
-    user: unknown;
-    cspNonce?: string; // injecté par le handler NestJS (response.locals.cspNonce)
-    serverObservability?: ServerObservability; // pont SSR → client Sentry NestJS (remix.controller.ts)
-  }
-}
 
 /** Error boundary that silently catches ChatWidget crashes without affecting the app. */
 class ChatWidgetErrorBoundary extends Component<

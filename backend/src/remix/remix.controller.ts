@@ -1,4 +1,4 @@
-import { getServerBuild } from '@fafa/frontend';
+import { getServerBuild, getCreateAppLoadContext } from '@fafa/frontend';
 import {
   All,
   Controller,
@@ -13,6 +13,21 @@ import * as Sentry from '@sentry/nestjs';
 import { NextFunction, Request, Response } from 'express';
 import { RemixService } from './remix.service';
 import { RemixApiService } from './remix-api.service';
+
+// v8_middleware (A6): the frontend enables `future.v8_middleware`; `react-router
+// typegen` augments `Future` for the FRONTEND project only. This backend project
+// (separate tsconfig) does not see that augmentation, so without this declaration
+// `MiddlewareEnabled` resolves to `false` here and `@react-router/express`'s
+// `getLoadContext` would be typed to return `AppLoadContext` ({ [k]: unknown }) —
+// which a `RouterContextProvider` is NOT assignable to (no index signature). This
+// ambient augmentation aligns the backend's type view with the runtime truth (the
+// same Node process serves the middleware-enabled SSR build), so `getLoadContext`
+// correctly expects the `RouterContextProvider` produced by the façade factory.
+declare module 'react-router' {
+  interface Future {
+    v8_middleware: true;
+  }
+}
 
 /**
  * Pont d'observabilité serveur — UNIQUE client Sentry = `@sentry/nestjs` (init dans
@@ -76,17 +91,25 @@ export class RemixController {
     }
 
     try {
-      const build = await getServerBuild();
+      // v8_middleware: `getLoadContext` must return a `RouterContextProvider`.
+      // The factory is sourced from the SSR build's `entry.module` via the
+      // façade bridge (`getCreateAppLoadContext`), so NestJS (CJS) never imports
+      // the identity-keyed `createContext()` keys — dual-realm safety (#1106).
+      // `parsedBody` dropped (DEAD).
+      const [build, createAppLoadContext] = await Promise.all([
+        getServerBuild(),
+        getCreateAppLoadContext(),
+      ]);
       return createRequestHandler({
         build,
-        getLoadContext: () => ({
-          user: request.user,
-          remixService: this.remixService,
-          remixIntegration: this.remixApiService,
-          parsedBody: request.body,
-          cspNonce: response.locals.cspNonce,
-          serverObservability,
-        }),
+        getLoadContext: () =>
+          createAppLoadContext({
+            user: request.user,
+            remixService: this.remixService,
+            remixIntegration: this.remixApiService,
+            cspNonce: response.locals.cspNonce ?? '',
+            serverObservability,
+          }),
       })(request, response, next);
     } catch (error) {
       // L'échec de chargement du build SSR survient AVANT que entry.server.tsx prenne

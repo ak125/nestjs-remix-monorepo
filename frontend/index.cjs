@@ -16,6 +16,23 @@ module.exports.getServerBuild = async function getServerBuild() {
 	return ssrModule;
 };
 
+/**
+ * CJS→ESM bridge for the RR8 `v8_middleware` load context (A6).
+ *
+ * NestJS (CJS) must NEVER import `app/utils/load-context.ts` directly — the
+ * `createContext()` keys are identity-keyed and a second instance in the CJS
+ * realm would silently break `.set()`/`.get()` (dual-realm hazard, incident
+ * #1106). Instead we hand back the `createAppLoadContext` factory that the SSR
+ * build itself re-exports from `entry.server` (`build.entry.module`), so it
+ * rides the EXACT same module graph as the loaders/actions → single key
+ * identity, guaranteed. Works for both realms because `getServerBuild()`
+ * already resolves DEV (Vite SSR graph) vs PROD (built ESM bundle).
+ */
+module.exports.getCreateAppLoadContext = async function getCreateAppLoadContext() {
+	const build = await module.exports.getServerBuild();
+	return build.entry.module.createAppLoadContext;
+};
+
 module.exports.startDevServer = async function startDevServer(app) {
 	if (process.env.NODE_ENV === 'production') return;
 
