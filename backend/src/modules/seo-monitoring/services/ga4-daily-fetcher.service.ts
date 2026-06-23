@@ -16,6 +16,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseClient, createClient } from '@supabase/supabase-js';
 import { getEffectiveSupabaseKey } from '@common/utils';
+import { SITE_HOSTNAME } from '@config/site.constants';
 import { GoogleCredentialsService } from './google-credentials.service';
 import { SeoMonitoringRunsService } from './seo-monitoring-runs.service';
 
@@ -106,8 +107,41 @@ export class Ga4DailyFetcherService {
     let keyEventsFallback = false;
 
     try {
+      // Garde anti-pollution : ne compter que le trafic du hostname de PROD.
+      // GA4 reçoit aussi des hits hostname=localhost (navigateurs headless E2E/
+      // Lighthouse de la CI, géo datacenter) qui faussaient sessions/bounce.
+      // Cf. mémoire ga4_prod_tag_not_env_gated_ci_localhost_pollution + PR #1115.
+      const hostNameFilter = {
+        filter: {
+          fieldName: 'hostName',
+          stringFilter: {
+            matchType: 'EXACT' as const,
+            value: SITE_HOSTNAME,
+          },
+        },
+      };
+
       for (const pattern of segments) {
         result.apiCalls += 1;
+        // Combine le filtre hostname (toujours) avec le filtre pagePath (si segment).
+        const dimensionFilter = pattern
+          ? {
+              andGroup: {
+                expressions: [
+                  hostNameFilter,
+                  {
+                    filter: {
+                      fieldName: 'pagePath',
+                      stringFilter: {
+                        matchType: 'CONTAINS' as const,
+                        value: pattern,
+                      },
+                    },
+                  },
+                ],
+              },
+            }
+          : hostNameFilter;
         const mkReq = (metric: string) => ({
           property,
           dateRanges: [{ startDate: options.date, endDate: options.date }],
@@ -121,17 +155,7 @@ export class Ga4DailyFetcherService {
             { name: 'bounceRate' },
             { name: 'averageSessionDuration' },
           ],
-          dimensionFilter: pattern
-            ? {
-                filter: {
-                  fieldName: 'pagePath',
-                  stringFilter: {
-                    matchType: 'CONTAINS' as const,
-                    value: pattern,
-                  },
-                },
-              }
-            : undefined,
+          dimensionFilter,
           limit: rowLimit,
         });
 
