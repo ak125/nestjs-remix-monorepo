@@ -26,6 +26,7 @@ import { RContentAuditorService } from './services/r-content-auditor.service';
 import { QualityHistorySnapshotService } from './services/quality-history-snapshot.service';
 import { RagMirrorFreshnessService } from './services/rag-mirror-freshness.service';
 import { FunnelEventsService } from './services/funnel-events.service';
+import { OrderFunnelListener } from './listeners/order-funnel.listener';
 import { CwvBeaconService } from './services/cwv-beacon.service';
 import { CwvAggregationService } from './services/cwv-aggregation.service';
 import { RuntimeEventsService } from './services/runtime-events.service';
@@ -55,6 +56,7 @@ import { CwvDashboardController } from './controllers/cwv-dashboard.controller';
     QualityHistorySnapshotService, // ADR-050 Phase 0 baseline
     RagMirrorFreshnessService, // ADR-046 § L3 RAG MIRROR read-only — PR-E.2
     FunnelEventsService, // Commerce-Loop V1 étape 4-A — funnel outil diagnostic
+    OrderFunnelListener, // Commerce-Loop V1 PR-A — server-side r2_order_placed @OnEvent(order.paid), flag OFF + READ_ONLY-skip
     CwvBeaconService, // CWV Runtime Observability bloc 3 — landing beacons web-vitals
     CwvAggregationService, // CWV bloc 4 — RPCs aggregate_cwv_hourly/daily_rum
     RuntimeEventsService, // CWV bloc 5 — wrapper __seo_event_log pour 4 runtime events
