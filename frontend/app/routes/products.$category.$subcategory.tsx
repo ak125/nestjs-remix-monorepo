@@ -43,7 +43,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   };
 }
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   if (!data?.metaTags) {
     return [{ title: "Erreur | Automecanik" }];
   }

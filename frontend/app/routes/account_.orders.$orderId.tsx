@@ -35,7 +35,7 @@ import {
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { getOrderDetails } from "../services/orders.server";
 
-export const meta: MetaFunction<typeof loader> = ({ data }) =>
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) =>
   createNoIndexMeta(
     data?.order?.orderNumber
       ? `Commande #${data.order.orderNumber}`

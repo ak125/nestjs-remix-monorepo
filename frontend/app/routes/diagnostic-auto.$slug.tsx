@@ -167,7 +167,7 @@ const SAFETY_GATE_FALLBACK: SafetyGateEntry = {
   label: "",
 };
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   if (!data?.diagnostic) {
     return [{ title: "Diagnostic non trouvé | AutoMekanik" }];
   }

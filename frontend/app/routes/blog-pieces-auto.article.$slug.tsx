@@ -83,7 +83,7 @@ interface LoaderData {
 }
 
 // Meta SEO
-export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data, location }) => {
   if (!data?.article) {
     return [
       { title: "Article non trouvé - Blog Automecanik" },

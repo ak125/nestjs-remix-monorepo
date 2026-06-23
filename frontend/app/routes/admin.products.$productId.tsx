@@ -9,7 +9,7 @@ import { Badge } from "~/components/ui/badge";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 
-export const meta: MetaFunction<typeof loader> = ({ data }) =>
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) =>
   createNoIndexMeta(
     data?.product?.piece_name
       ? `${data.product.piece_name} - Admin`

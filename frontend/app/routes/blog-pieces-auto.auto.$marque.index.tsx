@@ -166,7 +166,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
 /* ===========================
    Meta
 =========================== */
-export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data, location }) => {
   const metadata = data?.metadata;
   const brand = data?.brand;
   const modelsCount = data?.models?.length ?? 0;

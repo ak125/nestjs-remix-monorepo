@@ -40,7 +40,7 @@ import {
   deleteReview,
 } from "../services/api/review.api";
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   return [
     {
       title: data

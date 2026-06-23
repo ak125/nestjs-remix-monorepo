@@ -288,7 +288,7 @@ export const shouldRevalidate: ShouldRevalidateFunction = ({
 
 // ── Meta (noindex if no data) ───────────────────────────
 
-export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data, location }) => {
   if (!data) {
     return [
       { title: "Guide non trouve" },

@@ -20,7 +20,7 @@ import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 /**
  * 🔍 SEO Meta Tags - noindex pour pages de recherche
  */
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   const query = data?.query || "";
   const total = data?.totalCount || 0;
 

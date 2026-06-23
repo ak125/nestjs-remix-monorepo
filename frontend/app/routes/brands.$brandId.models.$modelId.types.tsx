@@ -48,7 +48,7 @@ export const handle = {
   }),
 };
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   if (!data?.brand || !data?.model) {
     return [
       { title: "Motorisations | Automecanik" },

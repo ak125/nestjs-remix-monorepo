@@ -531,7 +531,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   };
 }
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   const title = data?.search
     ? `Constructeurs Automobiles - Recherche: ${data.search}`
     : data?.letter

@@ -40,7 +40,7 @@ export const handle = {
 /**
  * 🔍 SEO Meta Tags
  */
-export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data, location }) => {
   const brandName = data?.brand?.marque_name || "Marque";
   const modelsCount = data?.models?.length || 0;
   const canonicalUrl = `https://www.automecanik.com${location.pathname}`;

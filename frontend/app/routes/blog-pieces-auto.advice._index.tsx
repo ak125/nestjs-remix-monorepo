@@ -85,7 +85,7 @@ interface LoaderData {
   error?: string;
 }
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   const search = data?.search || "";
   const total = data?.total || 0;
 

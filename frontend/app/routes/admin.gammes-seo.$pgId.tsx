@@ -80,7 +80,7 @@ import { Textarea } from "~/components/ui/textarea";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 
-export const meta: MetaFunction<typeof loader> = ({ data }) =>
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) =>
   createNoIndexMeta(
     data?.detail?.gamme?.pg_name
       ? `${data.detail.gamme.pg_name} - Admin`

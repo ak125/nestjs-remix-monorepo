@@ -16,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 
-export const meta: MetaFunction<typeof loader> = ({ data }) =>
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) =>
   createNoIndexMeta(data?.doc?.id ? `Doc: ${data.doc.id}` : "Document RAG");
 
 interface KnowledgeDocFull {

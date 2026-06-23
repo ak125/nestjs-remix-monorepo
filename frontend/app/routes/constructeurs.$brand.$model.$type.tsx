@@ -388,7 +388,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
 }
 
 // 🎯 Meta function avec SEO optimisé (logique PHP)
-export const meta: MetaFunction<typeof loader> = ({ data: rawData }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: rawData }) => {
   const data = rawData as LoaderData | undefined;
   if (!data) {
     return [
