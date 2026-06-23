@@ -6,7 +6,7 @@ import { installArrayAtPolyfill } from "~/utils/array-at-polyfill.client";
  * Regression guard for the Sentry INP crash on engines without ES2022
  * `Array.prototype.at`.
  *
- * `@sentry-internal/browser-utils` (via `@sentry/react-router`) calls
+ * `@sentry-internal/browser-utils` (via `@sentry/react`) calls
  * `this._longestInteractionList.at(-1)` in `InteractionManager._processEntry`
  * (INP web-vital). Sentry declares ES2021 support and de-`.at()`-ed the
  * sibling CLS path but missed this INP call-site, so on Safari < 15.4 / old

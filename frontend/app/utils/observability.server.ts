@@ -8,20 +8,25 @@
  * cart/checkout → état « Erreur de chargement ») n'est JAMAIS vu par
  * l'auto-instrumentation Sentry (qui ne capte que les throws non rattrapés).
  * Ces échecs deviennent donc invisibles alors qu'ils impactent le funnel.
- * On REMONTE explicitement le signal via l'instrumentation Sentry existante
- * (entry.server.tsx) + un log structuré stable (mesurable dans les logs agrégés).
+ * On REMONTE explicitement le signal via le pont serveur unique
+ * (`AppLoadContext.serverObservability` → client Sentry NestJS) + un log
+ * structuré stable. CE FICHIER NE CHARGE AUCUN SDK Sentry (single-server-SDK,
+ * incident #1106) : le reporter est INJECTÉ par l'appelant depuis `context`.
  */
-import * as Sentry from "@sentry/react-router";
+import type { ServerObservability } from "./observability-contract";
 import { logger } from "./logger";
 
 /**
- * Remonte une erreur de loader/action rattrapée vers l'observabilité existante.
+ * Remonte une erreur de loader/action rattrapée vers l'observabilité serveur.
  * Ne lève jamais : l'observabilité ne doit pas casser le rendu.
  *
+ * @param observability `context.serverObservability` (pont NestJS). `undefined`
+ *   en mode autonome (SSR non embarqué) → no-op délibéré.
  * @param event Code d'événement stable (ex. `cart_load_failed`) — sert de tag
  *   Sentry et de marqueur de log pour la mesure post-merge.
  */
 export function reportLoaderError(
+  observability: ServerObservability | undefined,
   event: string,
   error: unknown,
   context?: Record<string, unknown>,
@@ -32,7 +37,8 @@ export function reportLoaderError(
   logger.error(`[observability] event=${event}`, err.message, context ?? {});
 
   try {
-    Sentry.captureException(err, {
+    observability?.captureException(err, {
+      mechanism: { type: "react-router-loader-caught", handled: true },
       tags: { observability_event: event },
       extra: context,
     });

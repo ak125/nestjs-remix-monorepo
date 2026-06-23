@@ -29,6 +29,7 @@ import {
   useNavigation,
 } from "react-router";
 
+import type { ServerObservability } from "~/utils/observability-contract";
 import { logger } from "~/utils/logger";
 import { getOptionalUser } from "./auth/unified.server";
 import { ErrorGeneric } from "./components/errors";
@@ -174,6 +175,7 @@ declare module "react-router" {
     parsedBody?: any;
     user: unknown;
     cspNonce?: string; // injecté par le handler NestJS (response.locals.cspNonce)
+    serverObservability?: ServerObservability; // pont SSR → client Sentry NestJS (remix.controller.ts)
   }
 }
 

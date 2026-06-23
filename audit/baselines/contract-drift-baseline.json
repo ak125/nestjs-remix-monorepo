@@ -1,11 +1,11 @@
 {
   "schemaVersion": "v1",
-  "createdAt": "2026-05-15",
+  "createdAt": "2026-06-23",
   "createdOnCommit": "0923c321752f",
   "sourcePr": null,
   "mode": "block-new-only",
   "summary": {
-    "ownership_gap": 538,
+    "ownership_gap": 541,
     "contract_invalid": 0,
     "contract_missing": 0,
     "canonical_stale": 0
@@ -326,6 +326,14 @@
     {
       "kind": "ownership_gap",
       "id": "backend/src/database/utils/supabase-type-helpers.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/instrument-init-count.test.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/instrument.test.ts"
     },
     {
       "kind": "ownership_gap",
@@ -1042,6 +1050,10 @@
     {
       "kind": "ownership_gap",
       "id": "backend/src/remix/remix-api.service.ts"
+    },
+    {
+      "kind": "ownership_gap",
+      "id": "backend/src/remix/remix.controller.test.ts"
     },
     {
       "kind": "ownership_gap",

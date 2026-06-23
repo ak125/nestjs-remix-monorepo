@@ -2,7 +2,7 @@
 module: bot-guard
 sources:
 - backend/src/modules/bot-guard
-last_scan: '2026-06-21'
+last_scan: '2026-06-23'
 primary_files:
 - backend/src/modules/bot-guard/bot-guard.controller.ts
 - backend/src/modules/bot-guard/bot-guard.middleware.test.ts

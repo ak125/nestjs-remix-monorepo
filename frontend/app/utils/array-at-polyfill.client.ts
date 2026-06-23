@@ -3,7 +3,7 @@
  *
  * Why this exists
  * ---------------
- * `@sentry-internal/browser-utils` (pulled in by `@sentry/react-router`) ships INP
+ * `@sentry-internal/browser-utils` (pulled in by `@sentry/react`) ships INP
  * web-vital instrumentation that calls `this._longestInteractionList.at(-1)`
  * in `InteractionManager._processEntry`. Sentry explicitly declares
  * "We support ES2021 and earlier" and de-`.at()`-ed the sibling CLS path

@@ -4898,7 +4898,9 @@
       "returnType": "",
       "schema": "public",
       "schemaVersion": "1.0.0",
-      "searchPath": [],
+      "searchPath": [
+        "public"
+      ],
       "securityDefiner": false,
       "sourceConfidence": "medium",
       "status": "UNKNOWN",
@@ -5016,7 +5018,9 @@
       "returnType": "",
       "schema": "public",
       "schemaVersion": "1.0.0",
-      "searchPath": [],
+      "searchPath": [
+        "public"
+      ],
       "securityDefiner": false,
       "sourceConfidence": "medium",
       "status": "UNKNOWN",
@@ -5114,7 +5118,9 @@
       "returnType": "",
       "schema": "public",
       "schemaVersion": "1.0.0",
-      "searchPath": [],
+      "searchPath": [
+        "public"
+      ],
       "securityDefiner": false,
       "sourceConfidence": "medium",
       "status": "UNKNOWN",

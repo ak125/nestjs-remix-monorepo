@@ -6,7 +6,6 @@
 
 import { PassThrough } from "node:stream";
 import { createReadableStreamFromReadable } from "@react-router/node";
-import * as Sentry from "@sentry/react-router";
 import { isbot } from "isbot";
 import { renderToPipeableStream } from "react-dom/server";
 import {
@@ -15,60 +14,43 @@ import {
   type EntryContext,
   type HandleErrorFunction,
 } from "react-router";
+import type { ServerObservability } from "~/utils/observability-contract";
 import { logger } from "~/utils/logger";
 
-// Sentry server SDK init — picks up DSN from process.env populated by NestJS
-// before SSR runs. In the monorepo, Remix is mounted inside NestJS so process.env
-// is already populated by the backend's `dotenv/config` (via `instrument.ts`).
-//
-// Guard `!Sentry.getClient()` — DO NOT REMOVE (PROD incident 2026-06-22).
-// When Remix is embedded in NestJS, the backend has ALREADY called Sentry.init()
-// (@sentry/nestjs → CJS @sentry/core) and registered the client on the shared
-// `globalThis.__SENTRY__[SDK_VERSION]` carrier, which both the CJS and ESM builds
-// of @sentry/core read. This ESM bundle (@sentry/react-router → @sentry/node) must
-// NOT init a second client: a second init re-runs the `Http` integration, which
-// re-subscribes to the `http.server.request.start` diagnostics channel. Because
-// @sentry/core's `lastSentryEmitMap` dedup guard is module-scoped (one WeakMap per
-// CJS/ESM build), neither realm sees the other's wrapper, so `server.emit` is
-// re-wrapped in a new Proxy on every request — the chain grows unbounded until
-// `RangeError: Maximum call stack size exceeded` (surfaced after the @sentry
-// 10.53→10.59 bump in #1052). Skipping the redundant init keeps a single HTTP-server
-// instrumentation; the capture below (handleError / captureException / instrumentations)
-// transparently uses the shared client. Standalone (non-embedded) frontend: no client
-// yet → init runs normally, so observability is preserved either way.
-if (process.env.SENTRY_DSN && !Sentry.getClient()) {
-  Sentry.init({
-    dsn: process.env.SENTRY_DSN,
-    environment:
-      process.env.SENTRY_ENVIRONMENT ||
-      process.env.APP_ENV ||
-      process.env.NODE_ENV ||
-      "development",
-    tracesSampleRate: Number(process.env.SENTRY_TRACES_SAMPLE_RATE ?? 0.1),
-  });
-}
+// ⚠️ NO server-side Sentry SDK in this SSR bundle — DO NOT add `Sentry.init()` /
+// import `@sentry/node` / `@sentry/react-router` here. `@sentry/nestjs`
+// (backend/src/instrument.ts) is the SINGLE server SDK owner. A second init in
+// this ESM bundle re-ran the Http integration and re-wrapped `server.emit` on
+// every request → unbounded Proxy chain → `RangeError: Maximum call stack size
+// exceeded` (PROD dual-realm incident #1106 / getsentry#21696). Server-side
+// errors are forwarded to the NestJS-owned Sentry client via
+// `AppLoadContext.serverObservability` (the pont injected in remix.controller.ts).
+// Standalone (non-embedded) frontend: no reporter → deliberate no-op
+// (STANDALONE server observability = NOT_SUPPORTED; prod is always NestJS→RR).
 
-// Capture Sentry (`createSentryHandleError` = équivalent RR7 de l'ancien
-// `wrapHandleErrorWithSentry`) + logging applicatif préservé. `logErrors: false`
-// évite le double-log (on garde notre propre logger).
-const captureErrorToSentry = Sentry.createSentryHandleError({
-  logErrors: false,
-});
-
-export const handleError: HandleErrorFunction = (error, details) => {
-  captureErrorToSentry(error, details);
+export const handleError: HandleErrorFunction = (
+  error,
+  { request, context },
+): void => {
+  // `context` is `any` in RR7 (DefaultContext, no v8_middleware). RR8 CHECKPOINT:
+  // enabling `v8_middleware` makes it `RouterContextProvider` (no .serverObservability)
+  // → this access becomes a TS error and the pont must move to `context.get(...)`.
+  const ctx = context as AppLoadContext;
+  // Skip aborted requests (client gone) — equivalent to @sentry/react-router's
+  // createSentryHandleError abort guard. `flushIfServerless` deliberately NOT
+  // reproduced: persistent NestJS process, not serverless (and RR doesn't await
+  // handleError anyway).
+  if (!request.signal.aborted) {
+    ctx.serverObservability?.captureException(error, {
+      mechanism: { type: "react-router", handled: false },
+      tags: { observability_channel: "react-router-handle-error" },
+      extra: { method: request.method, pathname: new URL(request.url).pathname },
+    });
+  }
   if (error instanceof Error) {
-    logger.error("[Remix SSR]", error.message);
+    logger.error("[React Router SSR]", error.message);
   }
 };
-
-// Instrumentation serveur RR7 (loaders / actions / middleware / request handlers) —
-// équivalent de l'auto-instrumentation @sentry/remix. Requiert React Router ≥ 7.15.
-// Annotation explicite : le type inféré référence un module interne @sentry non
-// portable (TS2742) ; `ReturnType<…>[]` le nomme via la fonction.
-export const instrumentations: ReturnType<
-  typeof Sentry.createSentryServerInstrumentation
->[] = [Sentry.createSentryServerInstrumentation()];
 
 // Single Fetch : `streamTimeout` borne le rejet des promesses différées côté serveur ;
 // l'abort du flux React doit être strictement au-dessus (streamTimeout + 1s).
@@ -83,6 +65,9 @@ export default function handleRequest(
   loadContext: AppLoadContext,
 ) {
   const nonce = loadContext.cspNonce || "";
+  // Pass the reporter OBJECT (not a detached method) down so the streaming
+  // onError callbacks can forward render errors to the NestJS-owned Sentry client.
+  const observability = loadContext.serverObservability;
 
   return isbot(request.headers.get("user-agent") || "")
     ? handleBotRequest(
@@ -91,6 +76,7 @@ export default function handleRequest(
         responseHeaders,
         reactRouterContext,
         nonce,
+        observability,
       )
     : handleBrowserRequest(
         request,
@@ -98,6 +84,7 @@ export default function handleRequest(
         responseHeaders,
         reactRouterContext,
         nonce,
+        observability,
       );
 }
 
@@ -107,6 +94,7 @@ function handleBotRequest(
   responseHeaders: Headers,
   reactRouterContext: EntryContext,
   nonce: string,
+  observability?: ServerObservability,
 ) {
   return new Promise((resolve, reject) => {
     let shellRendered = false;
@@ -145,9 +133,13 @@ function handleBotRequest(
           // the ABORT_DELAY timeout — would otherwise be SILENT: a Googlebot-only
           // 500 with no log and no Sentry event. Non-shell errors never
           // double-log (true shell errors go through onShellError -> reject ->
-          // handleError).
+          // handleError). Request-context attachment here is best-effort (same as
+          // before): the bridge call may run after ALS context is lost mid-stream.
           logger.error("[SSR onError]", error);
-          Sentry.captureException(error);
+          observability?.captureException(error, {
+            mechanism: { type: "react-ssr-stream", handled: false },
+            tags: { observability_channel: "ssr-stream", rendering_path: "bot" },
+          });
         },
       },
     );
@@ -162,6 +154,7 @@ function handleBrowserRequest(
   responseHeaders: Headers,
   reactRouterContext: EntryContext,
   nonce: string,
+  observability?: ServerObservability,
 ) {
   return new Promise((resolve, reject) => {
     let shellRendered = false;
@@ -210,7 +203,13 @@ function handleBrowserRequest(
           responseStatusCode = 500;
           // Same rationale as the bot path: never swallow a render error silently.
           logger.error("[SSR onError]", error);
-          Sentry.captureException(error);
+          observability?.captureException(error, {
+            mechanism: { type: "react-ssr-stream", handled: false },
+            tags: {
+              observability_channel: "ssr-stream",
+              rendering_path: "browser",
+            },
+          });
         },
       },
     );
