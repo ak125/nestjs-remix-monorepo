@@ -14,13 +14,20 @@
 --   - EXPRESSION key = payload->>'order_id' (the natural idempotency key).
 --   - NULL order_id is treated as distinct (default) — never blocks; the listener
 --     always sets order_id, malformed rows are not silently merged.
---   - Plain (non-CONCURRENTLY) build: the constrained subset has 0 rows today, so
---     the index builds in milliseconds; no meaningful write-lock window.
 --   - Additive + reversible (see .down.sql). Forward-only, no data rewrite.
 --
 -- The application layer (FunnelEventsService.recordOnce) treats the 23505
 -- unique_violation raised by this index as a benign idempotent skip, NOT a
 -- silent failure (real insert errors still surface) — CLAUDE.md no-silent-fallback.
+-- ⚠️ NON auto-appliquée à la DB partagée (deployment.md axe 4) : revue owner + apply_migration manuel.
+
+-- squawk-ignore-file require-concurrent-index-creation
+--   assume_in_transaction=true (.squawk.toml) → CONCURRENTLY interdit en transaction ; le sous-ensemble
+--   partiel (event_type = 'r2_order_placed') compte 0 ligne aujourd'hui → build en millisecondes,
+--   fenêtre de write-lock négligeable. Pattern identique à 20260619_adr059_pr6_seo_projection_schema.sql.
+-- Transaction gérée par l'outil de migration (assume_in_transaction=true). Timeouts requis (require-timeout-settings) :
+SET lock_timeout = '5s';
+SET statement_timeout = '60s';
 
 CREATE UNIQUE INDEX IF NOT EXISTS uq_seo_event_log_r2_order_placed_order_id
   ON public.__seo_event_log ((payload ->> 'order_id'))
