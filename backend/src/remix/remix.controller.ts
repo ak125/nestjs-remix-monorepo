@@ -14,20 +14,12 @@ import { NextFunction, Request, Response } from 'express';
 import { RemixService } from './remix.service';
 import { RemixApiService } from './remix-api.service';
 
-// v8_middleware (A6): the frontend enables `future.v8_middleware`; `react-router
-// typegen` augments `Future` for the FRONTEND project only. This backend project
-// (separate tsconfig) does not see that augmentation, so without this declaration
-// `MiddlewareEnabled` resolves to `false` here and `@react-router/express`'s
-// `getLoadContext` would be typed to return `AppLoadContext` ({ [k]: unknown }) —
-// which a `RouterContextProvider` is NOT assignable to (no index signature). This
-// ambient augmentation aligns the backend's type view with the runtime truth (the
-// same Node process serves the middleware-enabled SSR build), so `getLoadContext`
-// correctly expects the `RouterContextProvider` produced by the façade factory.
-declare module 'react-router' {
-  interface Future {
-    v8_middleware: true;
-  }
-}
+// RR8 (Temps B): middleware is always-on, so `@react-router/express`'s
+// `getLoadContext` is natively typed to return a `RouterContextProvider` — no
+// `Future` augmentation needed. (Under RR7.18 the A6 flag-gated form required a
+// `declare module 'react-router' { interface Future { v8_middleware: true } }`
+// ambient augmentation here so the separate backend tsconfig saw the flag; RR8
+// removed the flag, and that augmentation now fails `tsc --build` with TS2664.)
 
 /**
  * Pont d'observabilité serveur — UNIQUE client Sentry = `@sentry/nestjs` (init dans
