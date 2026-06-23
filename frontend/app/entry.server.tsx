@@ -17,7 +17,7 @@ import {
 import {
   cspNonceContext,
   serverObservabilityContext,
-} from "~/server/load-context";
+} from "~/utils/load-context";
 import { logger } from "~/utils/logger";
 import  { type ServerObservability } from "~/utils/observability-contract";
 
@@ -25,7 +25,7 @@ import  { type ServerObservability } from "~/utils/observability-contract";
 // `build.entry.module` for the NestJS façade bridge (`getCreateAppLoadContext`).
 // This is the CJS→ESM pont: NestJS calls the factory without ever importing the
 // identity-keyed `createContext()` keys (dual-realm safety, incident #1106).
-export { createAppLoadContext } from "~/server/load-context";
+export { createAppLoadContext } from "~/utils/load-context";
 
 // ⚠️ NO server-side Sentry SDK in this SSR bundle — DO NOT add `Sentry.init()` /
 // import `@sentry/node` / `@sentry/react-router` here. `@sentry/nestjs`

@@ -14,7 +14,7 @@ import {
   isRouteErrorResponse,
 } from "react-router";
 import { ErrorGeneric } from "~/components/errors";
-import { userContext } from "~/server/load-context";
+import { userContext } from "~/utils/load-context";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { getOptionalUser, getAuthUser } from "../auth/unified.server";

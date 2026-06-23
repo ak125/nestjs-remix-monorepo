@@ -29,7 +29,7 @@ import {
   useNavigation,
 } from "react-router";
 
-import { cspNonceContext } from "~/server/load-context";
+import { cspNonceContext } from "~/utils/load-context";
 import { logger } from "~/utils/logger";
 import { getOptionalUser } from "./auth/unified.server";
 import { ErrorGeneric } from "./components/errors";

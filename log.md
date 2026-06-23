@@ -592,3 +592,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/rr8-prep-sentry-decouple`
 - **Décision** : chore(canon): align dep-governance Sentry ids (owner) (+2 other commits)
 - **Sortie** : PR #1116 | commits 5233664db c583c9cfa 33a3c6a44
+
+## 2026-06-23 — feat/rr8-prep-a6-middleware (auto)
+
+- **Branche** : `feat/rr8-prep-a6-middleware`
+- **Décision** : feat(rr8-prep): A6 — adopt future.v8_middleware + RouterContextProvider bridge (RR7.18)
+- **Sortie** : PR #1124 | commits 75dfb7275

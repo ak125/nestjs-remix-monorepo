@@ -4,7 +4,7 @@ import {
   useLoaderData,
 } from "react-router";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
-import { userContext } from "~/server/load-context";
+import { userContext } from "~/utils/load-context";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 import { getOptionalUser } from "../auth/unified.server";
 

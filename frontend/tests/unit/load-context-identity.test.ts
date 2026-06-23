@@ -7,7 +7,7 @@ import {
   remixServiceContext,
   remixIntegrationContext,
   serverObservabilityContext,
-} from "~/server/load-context";
+} from "~/utils/load-context";
 
 /**
  * RR8 `v8_middleware` context-identity guard (A6).

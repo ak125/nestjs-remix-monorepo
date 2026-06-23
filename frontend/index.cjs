@@ -19,7 +19,7 @@ module.exports.getServerBuild = async function getServerBuild() {
 /**
  * CJS→ESM bridge for the RR8 `v8_middleware` load context (A6).
  *
- * NestJS (CJS) must NEVER import `app/server/load-context.ts` directly — the
+ * NestJS (CJS) must NEVER import `app/utils/load-context.ts` directly — the
  * `createContext()` keys are identity-keyed and a second instance in the CJS
  * realm would silently break `.set()`/`.get()` (dual-realm hazard, incident
  * #1106). Instead we hand back the `createAppLoadContext` factory that the SSR

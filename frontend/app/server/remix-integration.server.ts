@@ -7,7 +7,7 @@ import { type RouterContextProvider } from "react-router";
 import {
   remixIntegrationContext,
   remixServiceContext,
-} from "~/server/load-context";
+} from "~/utils/load-context";
 
 /**
  * Récupère une instance du service d'intégration Remix.

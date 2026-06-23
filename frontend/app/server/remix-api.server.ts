@@ -9,7 +9,7 @@ import {
   remixIntegrationContext,
   remixServiceContext,
   userContext,
-} from "~/server/load-context";
+} from "~/utils/load-context";
 import { logger } from "~/utils/logger";
 
 /**

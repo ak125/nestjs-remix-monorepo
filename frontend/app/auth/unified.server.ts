@@ -1,6 +1,6 @@
 import { redirect, type RouterContextProvider } from "react-router";
 import { z } from "zod";
-import { userContext } from "~/server/load-context";
+import { userContext } from "~/utils/load-context";
 import { logger } from "~/utils/logger";
 import { getProxyHeaders } from "~/utils/proxy-headers.server";
 

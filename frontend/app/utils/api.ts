@@ -4,7 +4,7 @@
  */
 
 import { type RouterContextProvider } from "react-router";
-import { remixServiceContext } from "~/server/load-context";
+import { remixServiceContext } from "~/utils/load-context";
 import { logger } from "~/utils/logger";
 
 // Configuration de l'API backend

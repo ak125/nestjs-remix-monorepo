@@ -56,7 +56,7 @@ import {
   type CartItem as CartItemType,
   type CartSummary as CartSummaryType,
 } from "~/schemas/cart.schemas";
-import { serverObservabilityContext } from "~/server/load-context";
+import { serverObservabilityContext } from "~/utils/load-context";
 import { trackViewCart } from "~/utils/analytics";
 import { logger } from "~/utils/logger";
 import { reportLoaderError } from "~/utils/observability.server";
