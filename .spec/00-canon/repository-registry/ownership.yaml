@@ -725,6 +725,13 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: medium
+  # Commerce-Loop V1 PR-A — idempotency index for server-side r2_order_placed
+  # emission into __seo_event_log (funnel family, même domaine que *seo_event_funnel*).
+  - glob: backend/supabase/migrations/*seo_event_log*
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
   - glob: backend/supabase/migrations/*seo_cwv*
     domain: D3
     owner: '@ak125/seo-team'
