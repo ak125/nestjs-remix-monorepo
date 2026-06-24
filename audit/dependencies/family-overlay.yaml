@@ -362,7 +362,7 @@ families:
 
   - family: auth-session-passport
     blast_radius: auth
-    target_major: "see source_url"
+    target_major: "connect-redis@9 + redis@5.12 + express-session@1.19 + passport@0.7"
     pr_assignment: pr-9e
     source_url: https://github.com/jaredhanson/passport/releases
     upgrade_strategy: abstraction-first
@@ -377,23 +377,19 @@ families:
       - passport-jwt
       - express-session
       - connect-redis
+      - redis
       - "@nestjs/jwt"
     deployment_sequence:
-      - dual-runtime
-      - canary
       - full-rollout
     production_approved: true
-    rollback_complexity: dangerous
-    migration_blockers:
-      - Node20Required
-      - ConnectRedisV8RedisClientV4Required
-      - AuthServiceAbstractionMerged
+    rollback_complexity: moderate
+    migration_blockers: []
     observability_requirements:
       - sentry
       - session-roundtrip
       - structured-logs
-    data_migration_required: true
-    supports_dual_runtime: full
+    data_migration_required: false
+    supports_dual_runtime: none
     rollback_rto_minutes: 30
     upgrade_owner_domain:
       - auth
@@ -401,15 +397,13 @@ families:
     requires_perf_baseline: false
     rollback_runbook_required: true
     expected_user_impact:
-      - forced-signout
-      - banner-display
+      - short-api-restart
     perf_baseline_metrics: []
     estimated_recovery_sequence:
-      - deploy-banner
-      - disable-canary
       - rollback-api
-      - invalidate-new-format-cookies
+      - verify-v5-reads-v9-sessions
       - verify-session-roundtrip
+      - verify-auth-success-rate
     stateful_surface:
       - redis-sessions
       - cookies
@@ -424,13 +418,13 @@ families:
     runtime_state_coupling:
       - redis
       - cookies
-    safe_parallel_window_minutes: 1440
-    rollback_data_loss_risk: partial-loss
+    safe_parallel_window_minutes: 0
+    rollback_data_loss_risk: none
     runtime_entrypoints:
       - api
       - ssr
     operational_owner: auth-team
-    estimated_canary_duration_minutes: 120
+    estimated_canary_duration_minutes: 0
     rollback_requires_human_approval: true
     rollback_tested_at: null
     rollback_drill_commit: null
@@ -445,52 +439,61 @@ families:
     runtime_dependency_edges:
       depends_on_runtime: []
     rollback_preconditions:
-      - banner-deployed
-      - dual-runtime-active
-      - canary-disabled
+      - previous-image-available
     observability_sli_queries:
       auth-success-rate: "sum(rate(auth_login_success_total[5m])) / sum(rate(auth_login_attempt_total[5m]))"
       api-p99: "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))"
-    state_schema_version: session-v7
+    state_schema_version: redis-session-json-v1
     rollback_blast_scope:
       - api
       - sessions
     runtime_capabilities:
-      - supports-canary
-      - supports-dual-write
+      - none
     failure_domain:
       - authentication
     rollback_confidence_level: theoretical
-    state_transition_strategy: dual-write
+    state_transition_strategy: none
     incident_comm_protocol:
       - status-page
-      - banner
-      - email-notification
     compatibility_contracts:
-      - session-cookie-v7
-      - connect-redis-v7
+      - session-cookie-v1
+      - redis-session-key-v1
+      - redis-session-json-v1
     runtime_freeze_window:
       start: "22:00"
       end: "06:00"
     orchestrator_policy:
       rollback_mode: manual-only
-      deploy_mode: canary-only
+      deploy_mode: atomic
     dependency_lineage:
       supersedes: []
-    state_compatibility_window_minutes: 1440
+    state_compatibility_window_minutes: 120
     runtime_budget_constraints: {}
     state_reconciliation_strategy:
-      duplicate_resolution: latest-write-wins
+      duplicate_resolution: n/a
     orchestrator_lock_scope:
-      - sessions-table
+      - redis-sessions
       - auth
     rollback_observability_grace_period_minutes: 30
     runtime_contract_expiry: "2026-12-31"
     notes: >
-      Abstraction layer first (split AuthService from session middleware),
-      then upgrade. connect-redis v7→v8 changes cookie format ⇒ forced sign-out
-      at deploy boundary. PROD banner mandatory. dual-runtime allows
-      old+new session cookies to coexist during the canary window.
+      Re-baselined 2026-06-24 (PR-9a follow-up). Baseline is connect-redis@5.2.0 (the
+      "v7->v8" framing was stale — the v7 step never landed); express-session already
+      resolves 1.19.0. Target = connect-redis@9 + redis@5.12 (node-redis, sessions only;
+      ioredis kept for cache/Bull/OIDC/write-guard) + express-session@1.19 + passport@0.7.
+      Migration PRESERVES the wire/state format: prefix "sess:", default JSON serializer,
+      disableTouch:false (rolling TTL), cookie name connect.sid => NO data migration, NO
+      forced sign-out. Deploy is ATOMIC (no canary): validate DEV/CI/PREPROD (48h soak,
+      connect-redis 9 alone, synthetic login/logout traffic) then atomic PROD swap on tag.
+      Rollback = redeploy previous image; SAFE because the bidirectional test proves v5
+      reads sessions written by v9 (migration blocked if that test fails). 48h-soak SLA
+      gate before PROD tag: session-roundtrip p99 <= baseline+20pct, auth-error-rate <=
+      baseline+10pct, zero cookie-format errors over 24h, health-endpoint-ok. redis pinned
+      ~5.12 (NOT 6.0: RESP3-default + 5s command-timeout — deferred to a separate PR).
+      Sequencing (roadmap prose, not blockers): PR-9e.1 extracts SessionStoreService
+      (store encapsulated, impl unchanged connect-redis@5+ioredis) then PR-9e.2 swaps the
+      internal implementation. node_runtime_requirement ">=20" is the upstream family
+      minimum, satisfied by the repo-wide Node 24 baseline.
     members:
       - passport
       - "@nestjs/passport"
@@ -498,6 +501,7 @@ families:
       - passport-jwt
       - express-session
       - connect-redis
+      - redis
       - bcrypt
       - "@nestjs/jwt"
 

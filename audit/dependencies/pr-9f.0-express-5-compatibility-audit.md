@@ -180,3 +180,20 @@ Single blocker. Application code (handlers, middleware, decorators) is **100% Ex
 ---
 
 *Audit produced 2026-05-24. Audit-only PR per PR-9 roadmap § PR-9f.0. No runtime code modified.*
+
+---
+
+## ERRATA — 2026-06-24 (re-evaluation after the React Router v7→v8 migration)
+
+> The 2026-05-24 verdict above is **preserved for history**. This errata supersedes it. Two findings: the blocker is lifted, **and** the original "100% Express 5-compatible application code" claim was incomplete (its 13 scans did not check route-path syntax).
+
+**Verdict update: `BLOCKING-FOR-PR9F` is LIFTED ⇒ `PASS` with required (non-blocking) Express-5 migrations for PR-9f.**
+
+- **Blocker lifted.** `@remix-run/express@2.17.4` (the sole blocker, peer `express@^4.20.0`) is **gone**: the React Router v7→v8 migration retired Remix v2 (PR #1052 + follow-ups #1041/#1046/#1058/#1126). SSR now runs through `@react-router/express`, whose peer accepts `express ^4 || ^5`. The leftover nested `express@4` under `@react-router/serve` is a CLI not used at runtime, and `@nestjs/platform-express@10` bundles its own `express@4` until NestJS 11.
+- **Correction to the original "0 deprecated patterns" claim.** The 13 scans checked handler/middleware/decorator patterns (`req.param()`, `res.json(status,…)`, etc.) but **not route-path syntax**. Express 5 ships path-to-regexp v8, which breaks the v0 wildcard/regex route forms still present:
+  - `@All(':path*')` — `backend/src/remix/remix.controller.ts:60`
+  - `:param(.*)` regex routes — `backend/src/modules/metadata/controllers/optimized-metadata.controller.ts:40/70/104`, `optimized-breadcrumb.controller.ts:40/117/152/194`, `backend/src/modules/seo/controllers/seo.controller.ts:52/115`
+  - → migrate to named wildcards `{*path}` (which also matches the root path).
+- **Query parser.** `main.ts` sets no explicit `query parser`; Express 5 flips the default `extended`→`simple` (nested/array query params change shape). PR-9f must prove no controller depends on it **or** set `expressApp.set('query parser', 'extended')`.
+
+**Net:** PR-9f is **openable** (no upstream peer-dep wall) with these two migrations as mandatory in-scope work, not "no source change". Re-run a full scan during PR-9f.
