@@ -19,6 +19,7 @@ import { BotGuardModule } from './modules/bot-guard/bot-guard.module'; // 🛡�
 import { DatabaseModule } from './database/database.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { HealthModule } from './modules/health/health.module';
+import { SessionInfrastructureModule } from './modules/session/session-infrastructure.module';
 import { CartModule } from './modules/cart/cart.module';
 import { PromoModule } from './modules/promo/promo.module'; // 🎫 NOUVEAU - Module promo avancé avec Zod et Cache !
 import { AuthModule } from './auth/auth.module';
@@ -189,6 +190,7 @@ import { TrendSignalsModule } from './modules/trend-signals/trend-signals.module
     RpcGateModule,
 
     // Modules core fonctionnels
+    SessionInfrastructureModule, // 🔐 Store de session Redis encapsulé (PR-9e.1)
     DatabaseModule,
     OrdersModule,
     HealthModule,

@@ -373,6 +373,11 @@ entries:
     owner: '@ak125/auth-team'
     sourceConfidence: medium
     risk: high
+  - glob: backend/src/modules/session/**
+    domain: D11
+    owner: '@ak125/auth-team'
+    sourceConfidence: medium
+    risk: high
   - glob: backend/src/cache/**
     domain: D10
     owner: '@ak125'
