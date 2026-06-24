@@ -2,7 +2,7 @@
 module: upload
 sources:
 - backend/src/modules/upload
-last_scan: '2026-06-23'
+last_scan: '2026-06-24'
 primary_files:
 - backend/src/modules/upload/dto/index.ts
 - backend/src/modules/upload/dto/upload.dto.ts

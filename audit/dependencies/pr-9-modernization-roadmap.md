@@ -137,28 +137,30 @@
 - **Rollback runbook (mandatory in PR body):** (1) revert PR, (2) drain v5 repeatable jobs, (3) re-emit in v4 Job-ID format, (4) verify workers consuming, (5) `queue-metrics` back to baseline.
 - **Runtime risk:** queues stop processing if Worker registration drifts. **Workers MUST deploy before API.**
 
-## PR-9e — Auth abstraction
+## PR-9e — Auth/session modernization (PR-9e.1 abstraction → PR-9e.2 impl swap)
+
+> **Re-baselined 2026-06-24** (PR-9a follow-up). Original entry was stale (pre-React-Router-migration, pre-Node-24): it framed the bump as `connect-redis v7→v8` with `data_migration: YES` / `dual-write` / forced-signout. **Reality verified against the lockfile:** baseline is `connect-redis@5.2.0` (the v7 step never landed), `express-session` already resolves `1.19.0`, the official `redis` client is absent. connect-redis@9 **preserves** the v5 wire/state format (prefix `sess:`, default JSON serializer, `disableTouch:false`) ⇒ **no data migration, no forced sign-out**, deploy is **atomic** (the repo has no canary).
 
 - **Family:** `auth-session-passport`
-- **Family meta:** `upgrade_strategy: abstraction-first`, `runtime_criticality: critical`, `requires_staging_soak: true`, `staging_soak_hours: 48`, `node_runtime_requirement: ">=20"`, `production_approved: true`
-- **Rollback complexity:** **`dangerous`** — mid-flight session invalidation.
-- **Migration blockers:** `Node20Required`, `ConnectRedisV8RedisClientV4Required`, `AuthServiceAbstractionMerged` (Step A merged before Step B opens).
+- **Family meta:** `upgrade_strategy: abstraction-first`, `runtime_criticality: critical`, `requires_staging_soak: true`, `staging_soak_hours: 48`, `node_runtime_requirement: ">=20"` (upstream family minimum — satisfied by the repo-wide Node 24 baseline), `production_approved: true`
+- **Rollback complexity:** **`moderate`** — code revert via image redeploy; no irreversible state change (format preserved).
+- **Migration blockers:** **none.** (`Node20Required` satisfied by Node 24; `ConnectRedisV8RedisClientV4Required` resolved by the explicit target; the `SessionStoreService` extraction is **the first step of PR-9e.1, not an external precondition** — rule #7. Ordering lives in prose below, not as a blocker.)
 - **Observability requirements:** `sentry`, `session-roundtrip`, `structured-logs`.
-- **Data migration:** **YES** — session cookie v7→v8 + Redis key shape. **Dual runtime:** `full`. **RTO:** 30 min. **Owner:** `auth`, `backend-runtime`. **Perf baseline:** not required.
-- **Control plane:** `rollback_runbook_required: true`. **User impact:** `[forced-signout, banner-display]` — release notes + banner template mandatory. **Perf metrics:** `[]`. **Recovery sequence:** `deploy-banner → disable-canary → rollback-api → invalidate-new-format-cookies → verify-session-roundtrip`.
-- **State + canary:** `stateful_surface: [redis-sessions, cookies]` ⚠️ live user state. `rollback_validation_checks: [session-roundtrip, no-sentry-spike, health-endpoint-ok]`. `canary_abort_conditions: [sentry-error-rate-spike, session-roundtrip-fail, p99-regression-20pct]`. `runtime_state_coupling: [redis, cookies]`. `safe_parallel_window_minutes: 1440` (24h dual-cookie acceptance).
-- **Orchestration:** `rollback_data_loss_risk: partial-loss`. `runtime_entrypoints: [api, ssr]`. `operational_owner: auth-team`. `estimated_canary_duration_minutes: 120`. **`rollback_requires_human_approval: true`**.
-- **Lifecycle:** drill banner + cookie cleanup during 48h soak. `known_incompatible_families: [data-supabase]`. Cost: **14 engineer-days, review_load: extreme**. SLO: `[auth-success-rate, api-p99]`.
-- **Runtime DAG:** `depends_on_runtime: []`. `rollback_preconditions: [banner-deployed, dual-runtime-active, canary-disabled]`. `observability_sli_queries: {auth-success-rate, api-p99}`. `state_schema_version: session-v7`. `rollback_blast_scope: [api, sessions]`.
-- **Platform:** `runtime_capabilities: [supports-canary, supports-dual-write]`. `failure_domain: [authentication]`. `rollback_confidence_level: theoretical → drilled at PR-9e (mandatory)`. **`state_transition_strategy: dual-write`**. `incident_comm_protocol: [status-page, banner, email-notification]`.
-- **Peer cluster:** `passport`, `@nestjs/passport`, `passport-local`, `passport-jwt`, `express-session`, `connect-redis`, `@nestjs/jwt`.
-- **Deployment sequence:** `dual-runtime` → `canary` → `full-rollout`
-- **Preconditions:** PR-9d merged.
-- **Scope:** Step A (`PR-9e.1`) — introduce `AuthService` abstraction. Step B (`PR-9e.2`) — bump cluster including `connect-redis` v7 → v8.
-- **CI proof:** login/logout E2E pass; admin/* smoke pass; session round-trip sample.
-- **PREPROD soak:** 48h on the PREPROD container with synthetic login/logout traffic.
-- **Rollback runbook (mandatory in PR body):** (1) deploy PROD banner, (2) revert PR, (3) verify connect-redis v7 cookie format accepted, (4) clear new-format cookies, (5) `session-roundtrip` synthetic green.
-- **Runtime risk:** session format change ⇒ forced sign-out at deploy boundary. Banner mandatory.
+- **Data migration:** **NO** — wire/state format preserved across v5↔v9. **Dual runtime:** `none` (atomic deploy). **RTO:** 30 min. **Owner:** `auth`, `backend-runtime`. **Perf baseline:** not required.
+- **Control plane:** `rollback_runbook_required: true`. **User impact:** `[short-api-restart]` (atomic swap = brief restart; **no** nominal forced sign-out). **Perf metrics:** `[]`. **Recovery sequence:** `rollback-api → verify-v5-reads-v9-sessions → verify-session-roundtrip → verify-auth-success-rate`.
+- **State:** `stateful_surface: [redis-sessions, cookies]`. `rollback_validation_checks: [session-roundtrip, no-sentry-spike, health-endpoint-ok]` (SLA thresholds in overlay `notes`). `runtime_state_coupling: [redis, cookies]`. `safe_parallel_window_minutes: 0` (atomic, no parallel window). `state_compatibility_window_minutes: 120` documents v5↔v9 session interop **for a rollback to the previous image** (not a canary).
+- **Orchestration:** `rollback_data_loss_risk: none`. `runtime_entrypoints: [api, ssr]`. `operational_owner: auth-team`. `estimated_canary_duration_minutes: 0`. **`rollback_requires_human_approval: true`**. `orchestrator_policy.deploy_mode: atomic`.
+- **Lifecycle:** `known_incompatible_families: [data-supabase]`. Cost: **14 engineer-days, review_load: extreme**. SLO: `[auth-success-rate, api-p99]`.
+- **Runtime DAG:** `depends_on_runtime: []`. `rollback_preconditions: [previous-image-available]`. `state_schema_version: redis-session-json-v1`. `rollback_blast_scope: [api, sessions]`.
+- **Platform:** `runtime_capabilities: [none]`. `failure_domain: [authentication]`. **`state_transition_strategy: none`**. `incident_comm_protocol: [status-page]` (banner = contingency only if the compat test fails).
+- **Peer cluster:** `passport`, `@nestjs/passport`, `passport-local`, `passport-jwt`, `express-session`, `connect-redis`, `redis`, `@nestjs/jwt`.
+- **Deployment sequence:** `full-rollout` (atomic — validate DEV/CI/PREPROD, then atomic PROD swap on tag).
+- **Preconditions:** PR-9d **de-facto satisfied** (`bullmq@5.79.1` already live); Node 24 baseline live.
+- **Scope (ordering — rule #7: not blockers):** **PR-9e.1** extracts `SessionStoreService` (store **encapsulated**, exposes `createSessionMiddleware()` + `isOpen()`/`healthCheck()`; impl **unchanged** = connect-redis@5 factory + ioredis; **boot behavior unchanged**) + splits health (`/health` liveness, `/health/ready`, `/health/session-store`). **PR-9e.2** (opens only after 9e.1 merges) swaps the internal impl to `connect-redis@9` + `redis@~5.12` (node-redis, sessions only; ioredis kept for cache/Bull/OIDC/write-guard), adds `OnApplicationBootstrap` connect + fail-fast, `OnApplicationShutdown` ordered close. redis pinned `~5.12` (**not 6.0**: RESP3-default + 5s command-timeout deferred).
+- **CI proof:** **bidirectional v5↔v9 session read/write on REAL Redis** (proves rollback safety incl. `cookie.expires`), contract/fail-fast/resilience/touch-TTL/sessionVersion tests, login/logout E2E, admin/* smoke. Requires a Redis service in CI (currently absent).
+- **PREPROD soak:** 48h, connect-redis 9 **alone**, with a **synthetic login/logout generator** (PREPROD has no real traffic) — SLA gate: `session-roundtrip p99 ≤ baseline+20%`, `auth-error-rate ≤ baseline+10%`, zero cookie-format errors / 24h, `health-endpoint-ok`.
+- **Rollback runbook (mandatory in PR body):** redeploy the previous versioned image. **Safe because the bidirectional test proves v5 reads sessions written by v9** — migration is blocked if that test fails. Banner/forced-signout = secondary contingency only if the compat test regresses.
+- **Runtime risk:** format preserved ⇒ **no nominal forced sign-out**; the residual risk is a brief restart at the atomic swap.
 
 ## PR-9f.0 — Express 5 compatibility audit (audit-only, blocks PR-9f)
 
@@ -179,6 +181,10 @@
 - **CI proof:** existing CI green.
 - **Output verdict (mandatory):** `PASS` or `BLOCKING-FOR-PR9F: <list>`.
 - **Why before PR-9f:** the `Express5CompatibilityAuditPassed` migration_blocker on `runtime-backend-nest` cannot be resolved without this audit.
+
+> **ERRATA 2026-06-24 — original blocking verdict is now stale.** The audit (`pr-9f.0-express-5-compatibility-audit.md`, #723) blocked on `@remix-run/express@2.17.4` (peer `express@^4.20.0`). The **React Router v7→v8 migration** retired Remix v2 (PR #1052 and follow-ups) — `@remix-run/express` is **removed**; SSR now runs through `@react-router/express`, which accepts `express ^4 || ^5`. The upstream blocker is **lifted**. Re-audit verdict ⇒ **PASS, with required (non-blocking) Express-5 migrations identified for PR-9f**, not "PASS with no source change":
+> 1. **Wildcard/regex routes** (path-to-regexp v0→v8): `@All(':path*')` [`backend/src/remix/remix.controller.ts:60`] and `:param(.*)` [`optimized-metadata.controller.ts:40/70/104`, `optimized-breadcrumb.controller.ts:40/117/152/194`, `seo.controller.ts:52/115`] → migrate to named wildcards `{*path}` (`{*path}` also matches the root).
+> 2. **Query parser:** no explicit `query parser` in `main.ts` ⇒ Express 5 flips the default `extended`→`simple` (nested/array params change shape). Prove no controller depends on it, or set `expressApp.set('query parser', 'extended')`.
 
 ## PR-9f — NestJS 11
 

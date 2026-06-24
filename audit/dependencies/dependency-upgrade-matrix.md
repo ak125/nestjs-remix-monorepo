@@ -16,7 +16,7 @@ Prose surrounding the tables (reading guides, callouts) is human-edited.
 <!-- AUTO-TABLE:upgrade-plan START -->
 | Family | Blast radius | Target major | PR | Upgrade strategy | Runtime criticality |
 | --- | --- | --- | --- | --- | --- |
-| auth-session-passport | auth | see source_url | pr-9e | abstraction-first | critical |
+| auth-session-passport | auth | connect-redis@9 + redis@5.12 + express-session@1.19 + passport@0.7 | pr-9e | abstraction-first | critical |
 | data-supabase | data | see source_url | deferred | staged-rollout | critical |
 | internal-workspace | internal | workspace | deferred | in-place | medium |
 | observability-otel | observability | see source_url | deferred | in-place | medium |
@@ -35,7 +35,7 @@ Prose surrounding the tables (reading guides, callouts) is human-edited.
 <!-- AUTO-TABLE:execution START -->
 | Family | Soak (h) | Node | Deployment sequence | Production approved |
 | --- | --- | --- | --- | --- |
-| auth-session-passport | 48 | >=20 | dual-runtime, canary, full-rollout | ✓ |
+| auth-session-passport | 48 | >=20 | full-rollout | ✓ |
 | data-supabase | 72 | >=20 | canary, full-rollout | ✓ |
 | internal-workspace | 0 | >=20 | n/a | ✓ |
 | observability-otel | 0 | >=20 | n/a | ✓ |
@@ -54,7 +54,7 @@ Prose surrounding the tables (reading guides, callouts) is human-edited.
 <!-- AUTO-TABLE:governance START -->
 | Family | Rollback complexity | Migration blockers | Observability requirements |
 | --- | --- | --- | --- |
-| auth-session-passport | dangerous | Node20Required, ConnectRedisV8RedisClientV4Required, AuthServiceAbstractionMerged | sentry, session-roundtrip, structured-logs |
+| auth-session-passport | moderate | [] | sentry, session-roundtrip, structured-logs |
 | data-supabase | dangerous | Node20Required, SupabaseRealtimeV2Compatible | sentry, structured-logs, health-endpoint |
 | internal-workspace | moderate | [] | structured-logs |
 | observability-otel | moderate | Node20Required | structured-logs, traces |
@@ -78,7 +78,7 @@ Prose surrounding the tables (reading guides, callouts) is human-edited.
 <!-- AUTO-TABLE:operational START -->
 | Family | Data migration | Dual runtime | RTO (min) | Owner domain | Perf baseline |
 | --- | --- | --- | --- | --- | --- |
-| auth-session-passport | yes | full | 30 | auth, backend-runtime | no |
+| auth-session-passport | no | none | 30 | auth, backend-runtime | no |
 | data-supabase | yes | partial | 30 | data, backend-runtime | no |
 | internal-workspace | no | none | 15 | platform-tooling | no |
 | observability-otel | no | full | 15 | observability | no |
@@ -104,7 +104,7 @@ Prose surrounding the tables (reading guides, callouts) is human-edited.
 <!-- AUTO-TABLE:control-plane START -->
 | Family | Runbook required | User impact | Perf metrics | Recovery sequence |
 | --- | --- | --- | --- | --- |
-| auth-session-passport | true | forced-signout, banner-display | [] | deploy-banner, disable-canary, rollback-api, invalidate-new-format-cookies, verify-session-roundtrip |
+| auth-session-passport | true | short-api-restart | [] | rollback-api, verify-v5-reads-v9-sessions, verify-session-roundtrip, verify-auth-success-rate |
 | data-supabase | true | short-api-restart | [] | disable-canary, rollback-api, supabase-realtime-channel-rollback, verify-health-endpoint |
 | internal-workspace | false | none | [] | changeset-rollback, rebuild |
 | observability-otel | false | none | [] | revert-pr, verify-log-format |
@@ -129,7 +129,7 @@ Prose surrounding the tables (reading guides, callouts) is human-edited.
 <!-- AUTO-TABLE:state-canary START -->
 | Family | Stateful surface | Rollback validation checks | Canary abort conditions | Runtime state coupling | Safe parallel window (min) |
 | --- | --- | --- | --- | --- | --- |
-| auth-session-passport | redis-sessions, cookies | session-roundtrip, no-sentry-spike, health-endpoint-ok | sentry-error-rate-spike, session-roundtrip-fail, p99-regression-20pct | redis, cookies | 1440 |
+| auth-session-passport | redis-sessions, cookies | session-roundtrip, no-sentry-spike, health-endpoint-ok | sentry-error-rate-spike, session-roundtrip-fail, p99-regression-20pct | redis, cookies | 0 |
 | data-supabase | realtime-channels | health-endpoint-ok, no-sentry-spike | sentry-error-rate-spike, p99-regression-20pct, health-endpoint-fail | realtime-channels | 120 |
 | internal-workspace | none | none | [] | none | 0 |
 | observability-otel | none | traces-continuity | [] | none | 1440 |
@@ -155,7 +155,7 @@ Prose surrounding the tables (reading guides, callouts) is human-edited.
 <!-- AUTO-TABLE:orchestration START -->
 | Family | Data loss risk | Runtime entrypoints | Operational owner | Canary duration (min) | Human approval |
 | --- | --- | --- | --- | --- | --- |
-| auth-session-passport | partial-loss | api, ssr | auth-team | 120 | true |
+| auth-session-passport | none | api, ssr | auth-team | 0 | true |
 | data-supabase | partial-loss | api, workers | data-team | 60 | true |
 | internal-workspace | none | build-only | platform-tooling-team | 0 | false |
 | observability-otel | none | api, workers | observability-team | 0 | false |
@@ -206,7 +206,7 @@ Prose surrounding the tables (reading guides, callouts) is human-edited.
 <!-- AUTO-TABLE:runtime-dag START -->
 | Family | depends_on_runtime | Rollback preconditions | SLI queries (count) | State schema version | Rollback blast scope |
 | --- | --- | --- | --- | --- | --- |
-| auth-session-passport | [] | banner-deployed, dual-runtime-active, canary-disabled | 2 | session-v7 | api, sessions |
+| auth-session-passport | [] | previous-image-available | 2 | redis-session-json-v1 | api, sessions |
 | data-supabase | auth-session-passport | no-realtime-active, canary-disabled | 2 | supabase-v2 | api, workers, realtime |
 | internal-workspace | [] | [] | 0 | n/a | none |
 | observability-otel | [] | [] | 0 | n/a | none |
@@ -232,7 +232,7 @@ Prose surrounding the tables (reading guides, callouts) is human-edited.
 <!-- AUTO-TABLE:platform-engineering START -->
 | Family | Runtime capabilities | Failure domain | Rollback confidence | State transition strategy | Incident comm protocol |
 | --- | --- | --- | --- | --- | --- |
-| auth-session-passport | supports-canary, supports-dual-write | authentication | theoretical | dual-write | status-page, banner, email-notification |
+| auth-session-passport | none | authentication | theoretical | none | status-page |
 | data-supabase | supports-canary | data-layer | theoretical | lazy-migration | status-page |
 | internal-workspace | supports-feature-flag | tooling | theoretical | none | none |
 | observability-otel | none | observability | theoretical | none | none |
@@ -258,7 +258,7 @@ Prose surrounding the tables (reading guides, callouts) is human-edited.
 <!-- AUTO-TABLE:contract-orchestration START -->
 | Family | Compatibility contracts | Freeze window | Orchestrator policy | Lineage supersedes | State compat window (min) |
 | --- | --- | --- | --- | --- | --- |
-| auth-session-passport | session-cookie-v7, connect-redis-v7 | 22:00→06:00 | {manual-only, canary-only} | [] | 1440 |
+| auth-session-passport | session-cookie-v1, redis-session-key-v1, redis-session-json-v1 | 22:00→06:00 | {manual-only, atomic} | [] | 120 |
 | data-supabase | supabase-v2 | 22:00→06:00 | {manual-only, staged} | [] | 120 |
 | internal-workspace | [] | null | {auto-allowed, staged} | [] | 0 |
 | observability-otel | pino-v8 | null | {auto-allowed, staged} | [] | 1440 |
@@ -284,7 +284,7 @@ Prose surrounding the tables (reading guides, callouts) is human-edited.
 <!-- AUTO-TABLE:budget-reconciliation START -->
 | Family | Runtime budget constraints | Duplicate resolution | Lock scope | Grace period (min) | Contract expiry |
 | --- | --- | --- | --- | --- | --- |
-| auth-session-passport | {} | latest-write-wins | sessions-table, auth | 30 | 2026-12-31 |
+| auth-session-passport | {} | n/a | redis-sessions, auth | 30 | 2026-12-31 |
 | data-supabase | {} | latest-write-wins | realtime-channels, data-layer | 30 | 2027-06-30 |
 | internal-workspace | {} | n/a | [] | 0 | null |
 | observability-otel | {} | n/a | [] | 5 | null |
@@ -314,7 +314,7 @@ Prose surrounding the tables (reading guides, callouts) is human-edited.
 <!-- AUTO-TABLE:peer-clusters START -->
 | Family | Overlay patterns | Resolved members (frozen) |
 | --- | --- | --- |
-| auth-session-passport | passport, @nestjs/passport, passport-local, passport-jwt, express-session, connect-redis, @nestjs/jwt | @nestjs/jwt, @nestjs/passport, connect-redis, express-session, passport, passport-jwt, passport-local |
+| auth-session-passport | passport, @nestjs/passport, passport-local, passport-jwt, express-session, connect-redis, redis, @nestjs/jwt | @nestjs/jwt, @nestjs/passport, connect-redis, express-session, passport, passport-jwt, passport-local, redis |
 | data-supabase | @supabase/supabase-js | @supabase/supabase-js |
 | observability-otel | pino, pino-pretty | pino, pino-pretty |
 | queues-bullmq | bullmq, @nestjs/bullmq, @nestjs/bull, bull, ioredis | @nestjs/bull, @nestjs/bullmq, bull, bullmq, ioredis |

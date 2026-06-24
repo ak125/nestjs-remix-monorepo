@@ -1,5 +1,5 @@
 {
-  "artifact_immutability_hash": "sha256:f6f46688a4650ed3e87ec2442c1bd10b4ffa35ab6f3e186ddcab5ccc8c7c98d8",
+  "artifact_immutability_hash": "sha256:35667595f44d371e62d268b1554c2f07f5711a0db67f2f9055dc61f989b2ed84",
   "divergences": [
     {
       "kind": "specifier",
@@ -763,38 +763,33 @@
         "p99-regression-20pct"
       ],
       "compatibility_contracts": [
-        "session-cookie-v7",
-        "connect-redis-v7"
+        "session-cookie-v1",
+        "redis-session-key-v1",
+        "redis-session-json-v1"
       ],
-      "data_migration_required": true,
+      "data_migration_required": false,
       "dependency_lineage": {
         "supersedes": []
       },
       "deployment_sequence": [
-        "dual-runtime",
-        "canary",
         "full-rollout"
       ],
-      "estimated_canary_duration_minutes": 120,
+      "estimated_canary_duration_minutes": 0,
       "estimated_recovery_sequence": [
-        "deploy-banner",
-        "disable-canary",
         "rollback-api",
-        "invalidate-new-format-cookies",
-        "verify-session-roundtrip"
+        "verify-v5-reads-v9-sessions",
+        "verify-session-roundtrip",
+        "verify-auth-success-rate"
       ],
       "expected_user_impact": [
-        "forced-signout",
-        "banner-display"
+        "short-api-restart"
       ],
       "failure_domain": [
         "authentication"
       ],
       "family": "auth-session-passport",
       "incident_comm_protocol": [
-        "status-page",
-        "banner",
-        "email-notification"
+        "status-page"
       ],
       "known_incompatible_families": [
         "data-supabase"
@@ -807,15 +802,12 @@
         "express-session",
         "passport",
         "passport-jwt",
-        "passport-local"
+        "passport-local",
+        "redis"
       ],
-      "migration_blockers": [
-        "Node20Required",
-        "ConnectRedisV8RedisClientV4Required",
-        "AuthServiceAbstractionMerged"
-      ],
+      "migration_blockers": [],
       "node_runtime_requirement": ">=20",
-      "notes": "Abstraction layer first (split AuthService from session middleware), then upgrade. connect-redis v7→v8 changes cookie format ⇒ forced sign-out at deploy boundary. PROD banner mandatory. dual-runtime allows old+new session cookies to coexist during the canary window.\n",
+      "notes": "Re-baselined 2026-06-24 (PR-9a follow-up). Baseline is connect-redis@5.2.0 (the \"v7->v8\" framing was stale — the v7 step never landed); express-session already resolves 1.19.0. Target = connect-redis@9 + redis@5.12 (node-redis, sessions only; ioredis kept for cache/Bull/OIDC/write-guard) + express-session@1.19 + passport@0.7. Migration PRESERVES the wire/state format: prefix \"sess:\", default JSON serializer, disableTouch:false (rolling TTL), cookie name connect.sid => NO data migration, NO forced sign-out. Deploy is ATOMIC (no canary): validate DEV/CI/PREPROD (48h soak, connect-redis 9 alone, synthetic login/logout traffic) then atomic PROD swap on tag. Rollback = redeploy previous image; SAFE because the bidirectional test proves v5 reads sessions written by v9 (migration blocked if that test fails). 48h-soak SLA gate before PROD tag: session-roundtrip p99 <= baseline+20pct, auth-error-rate <= baseline+10pct, zero cookie-format errors over 24h, health-endpoint-ok. redis pinned ~5.12 (NOT 6.0: RESP3-default + 5s command-timeout — deferred to a separate PR). Sequencing (roadmap prose, not blockers): PR-9e.1 extracts SessionStoreService (store encapsulated, impl unchanged connect-redis@5+ioredis) then PR-9e.2 swaps the internal implementation. node_runtime_requirement \">=20\" is the upstream family minimum, satisfied by the repo-wide Node 24 baseline.\n",
       "observability_requirements": [
         "sentry",
         "session-roundtrip",
@@ -827,11 +819,11 @@
       },
       "operational_owner": "auth-team",
       "orchestrator_lock_scope": [
-        "sessions-table",
+        "redis-sessions",
         "auth"
       ],
       "orchestrator_policy": {
-        "deploy_mode": "canary-only",
+        "deploy_mode": "atomic",
         "rollback_mode": "manual-only"
       },
       "packages": [
@@ -968,6 +960,7 @@
         "passport-jwt",
         "express-session",
         "connect-redis",
+        "redis",
         "@nestjs/jwt"
       ],
       "peer_dependency_cluster_resolved": [
@@ -977,7 +970,8 @@
         "express-session",
         "passport",
         "passport-jwt",
-        "passport-local"
+        "passport-local",
+        "redis"
       ],
       "perf_baseline_metrics": [],
       "pr_assignment": "pr-9e",
@@ -988,15 +982,13 @@
         "api",
         "sessions"
       ],
-      "rollback_complexity": "dangerous",
+      "rollback_complexity": "moderate",
       "rollback_confidence_level": "theoretical",
-      "rollback_data_loss_risk": "partial-loss",
+      "rollback_data_loss_risk": "none",
       "rollback_drill_commit": null,
       "rollback_observability_grace_period_minutes": 30,
       "rollback_preconditions": [
-        "banner-deployed",
-        "dual-runtime-active",
-        "canary-disabled"
+        "previous-image-available"
       ],
       "rollback_requires_human_approval": true,
       "rollback_rto_minutes": 30,
@@ -1009,8 +1001,7 @@
       ],
       "runtime_budget_constraints": {},
       "runtime_capabilities": [
-        "supports-canary",
-        "supports-dual-write"
+        "none"
       ],
       "runtime_contract_expiry": "2026-12-31",
       "runtime_criticality": "critical",
@@ -1033,21 +1024,21 @@
         "redis",
         "cookies"
       ],
-      "safe_parallel_window_minutes": 1440,
+      "safe_parallel_window_minutes": 0,
       "source_url": "https://github.com/jaredhanson/passport/releases",
       "staging_soak_hours": 48,
-      "state_compatibility_window_minutes": 1440,
+      "state_compatibility_window_minutes": 120,
       "state_reconciliation_strategy": {
-        "duplicate_resolution": "latest-write-wins"
+        "duplicate_resolution": "n/a"
       },
-      "state_schema_version": "session-v7",
-      "state_transition_strategy": "dual-write",
+      "state_schema_version": "redis-session-json-v1",
+      "state_transition_strategy": "none",
       "stateful_surface": [
         "redis-sessions",
         "cookies"
       ],
-      "supports_dual_runtime": "full",
-      "target_major": "see source_url",
+      "supports_dual_runtime": "none",
+      "target_major": "connect-redis@9 + redis@5.12 + express-session@1.19 + passport@0.7",
       "total_occurrences": 9,
       "upgrade_cost_estimate": {
         "estimated_engineer_days": 14,
@@ -3894,7 +3885,7 @@
     "lockfile": "package-lock.json",
     "lockfile_sha": "sha256:7b0b689e4b6c0a70b3bbe92dee8777fbdb6b8cf3f30b3a47674386b8a3ef778e",
     "overlay": "audit/dependencies/family-overlay.yaml",
-    "overlay_sha": "sha256:42597019658ecd86a9df3c4f64505542d2f89192ab1eef12b9ae218ea5df4728"
+    "overlay_sha": "sha256:27fd355bd68ab7e56f4adbf67edf8e704100487d3f744b76f95b9a11aba10fe6"
   },
   "inventoryFormat": "pr-9-modernization-inventory",
   "matrixVersion": "pr9-v1",
