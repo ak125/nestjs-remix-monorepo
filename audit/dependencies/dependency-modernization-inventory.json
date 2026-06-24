@@ -1,5 +1,5 @@
 {
-  "artifact_immutability_hash": "sha256:cf62a4019c348a930a97f83f1004cdc2b9f8ef0516253470569be9577044fb1f",
+  "artifact_immutability_hash": "sha256:f016c8037f3e4043aecf42bdf49eda97cea9ee97ec96c73444163966de3c3bbb",
   "divergences": [
     {
       "kind": "specifier",
@@ -3892,7 +3892,7 @@
     "deps_registry": "audit/registry/deps.json",
     "deps_registry_sha": "sha256:9b722879fab181ddf8a7942e3c00324fd6d8fddd5323646c2d7f939e7739234d",
     "lockfile": "package-lock.json",
-    "lockfile_sha": "sha256:4f4de882fe3b525a4b48b6ccc99f948e634b374fd0bddef42182dc35f5c9051b",
+    "lockfile_sha": "sha256:d43807a31b3009df16b17bead3fbd91af1f7cf6d88b61d0536e27440055cf4d7",
     "overlay": "audit/dependencies/family-overlay.yaml",
     "overlay_sha": "sha256:42597019658ecd86a9df3c4f64505542d2f89192ab1eef12b9ae218ea5df4728"
   },
@@ -4000,7 +4000,7 @@
         }
       ],
       "resolved_versions": [
-        "4.1.3"
+        "<unresolved>"
       ]
     },
     {
@@ -4500,7 +4500,7 @@
         }
       ],
       "resolved_versions": [
-        "9.1.20"
+        "<unresolved>"
       ]
     },
     {
@@ -4515,7 +4515,7 @@
         }
       ],
       "resolved_versions": [
-        "9.1.20"
+        "<unresolved>"
       ]
     },
     {
@@ -4530,7 +4530,7 @@
         }
       ],
       "resolved_versions": [
-        "9.1.20"
+        "<unresolved>"
       ]
     },
     {
@@ -4545,7 +4545,7 @@
         }
       ],
       "resolved_versions": [
-        "9.1.20"
+        "<unresolved>"
       ]
     },
     {
@@ -4560,7 +4560,7 @@
         }
       ],
       "resolved_versions": [
-        "9.1.20"
+        "<unresolved>"
       ]
     },
     {
@@ -5510,7 +5510,7 @@
         }
       ],
       "resolved_versions": [
-        "9.1.20"
+        "<unresolved>"
       ]
     },
     {
@@ -6264,7 +6264,7 @@
         }
       ],
       "resolved_versions": [
-        "9.1.20"
+        "<unresolved>"
       ]
     },
     {
