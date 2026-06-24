@@ -2,7 +2,7 @@
 module: diagnostic-engine
 sources:
 - backend/src/modules/diagnostic-engine
-last_scan: '2026-06-23'
+last_scan: '2026-06-24'
 primary_files:
 - backend/src/modules/diagnostic-engine/constants/gamme-map.constants.ts
 - backend/src/modules/diagnostic-engine/diagnostic-engine.controller.test.ts
