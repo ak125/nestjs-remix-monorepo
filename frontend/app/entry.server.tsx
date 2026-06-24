@@ -42,9 +42,12 @@ export const handleError: HandleErrorFunction = (
   error,
   { request, context },
 ): void => {
-  // v8_middleware: `context` is a Readonly<RouterContextProvider>. Read the
-  // NestJS-owned reporter via the typed key (nullable default → never throws).
-  const observability = context.get(serverObservabilityContext);
+  // v8_middleware: `context` is a Readonly<RouterContextProvider>. RR's server
+  // runtime can invoke handleError BEFORE the load context is resolved (its
+  // `loadContext` is still undefined when it rejects an invalid context value),
+  // so `context` may be undefined here — optional-chain it (the key itself
+  // carries a nullable default, so `.get` never throws once context exists).
+  const observability = context?.get(serverObservabilityContext);
   // Skip aborted requests (client gone) — equivalent to @sentry/react-router's
   // createSentryHandleError abort guard. `flushIfServerless` deliberately NOT
   // reproduced: persistent NestJS process, not serverless (and RR doesn't await

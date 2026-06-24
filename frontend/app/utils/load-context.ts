@@ -62,11 +62,27 @@ export interface AppLoadContextValues {
 /**
  * Build the per-request `RouterContextProvider`. Called inside the SSR realm via
  * the façade bridge. `parsedBody` is intentionally absent (DEAD — dropped in A6).
+ *
+ * `makeProvider` lets the CALLER supply the provider instance. This exists for the
+ * dual-realm topology: RR8 `v8_middleware` checks `initialContext instanceof
+ * RouterContextProvider` inside its server runtime, which runs in the realm of
+ * `@react-router/express` — i.e. the NestJS CJS realm. In DEV the SSR build is
+ * evaluated by Vite's `ssrLoadModule` (a SEPARATE module instance of react-router),
+ * so a provider created HERE with the build-realm class FAILS that node-realm
+ * `instanceof` → every DEV page 500s ("Invalid `context` value"). The consumer
+ * therefore injects a provider built from ITS react-router (node realm); we only
+ * `.set()` the identity-keyed context values onto it. The keys (`createContext`
+ * results) are plain `{ defaultValue }` objects and `RouterContextProvider.get/set`
+ * are pure Map-by-identity ops — so a node-realm provider holding build-realm keys
+ * round-trips correctly. The #1106 invariant is untouched: only the provider CLASS
+ * is unified across realms; the keys never leave this module. PROD is the unified
+ * production bundle (single realm) → identical behaviour.
  */
 export function createAppLoadContext(
   values: AppLoadContextValues,
+  makeProvider: () => RouterContextProvider = () => new RouterContextProvider(),
 ): RouterContextProvider {
-  const provider = new RouterContextProvider();
+  const provider = makeProvider();
   provider.set(userContext, values.user);
   provider.set(remixServiceContext, values.remixService);
   provider.set(remixIntegrationContext, values.remixIntegration);

@@ -61,6 +61,28 @@ describe("load-context identity (RR8 v8_middleware bridge)", () => {
     expect(result.loaderData.root.nonce).toBe("nonce-xyz");
   });
 
+  it("builds on the INJECTED provider (dual-realm fix) and still round-trips keys", () => {
+    // The consumer (NestJS) injects a provider built from ITS react-router so the
+    // RR8 v8_middleware `instanceof RouterContextProvider` check (node realm) passes
+    // even when the SSR build is a separate react-router instance (Vite ssrLoadModule
+    // in DEV). This locks that the factory uses the injected instance — not its own.
+    const injected = new RouterContextProvider();
+    const SENTINEL = { id: "node-realm" };
+    const returned = createAppLoadContext(
+      {
+        user: SENTINEL,
+        remixService: null,
+        remixIntegration: null,
+        cspNonce: "n",
+        serverObservability: null,
+      },
+      () => injected,
+    );
+    expect(returned).toBe(injected); // SAME instance — keys are set onto the consumer's provider
+    expect(returned.get(userContext)).toBe(SENTINEL);
+    expect(returned.get(cspNonceContext)).toBe("n");
+  });
+
   it("unset keys return their nullable default — context.get never throws", () => {
     const empty = new RouterContextProvider();
     expect(empty.get(userContext)).toBeNull();
