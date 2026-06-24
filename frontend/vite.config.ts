@@ -22,7 +22,16 @@ export default defineConfig({
     },
   },
   build: {
-    cssMinify: MODE === "production",
+    // CSS minifier GELÉ sur esbuild. Vite 8 a changé le défaut de `cssMinify: true`
+    // d'esbuild (Vite 7) → Lightning CSS. On fige esbuild pour que CETTE PR reste
+    // strictement attribuable (seul le bundler JS change : Rollup→Rolldown, transform/
+    // minify JS→Oxc) SANS toucher l'émission CSS. Justification du gel : bugs Lightning
+    // CSS upstream ouverts (backdrop-filter dé-préfixé à la minif ; certains `@scope`)
+    // + surface réellement utilisée (114 `backdrop-filter` dans app/**). esbuild 0.27.x
+    // (peer optionnel de Vite 8, ajouté explicitement) = exactement le minifier CSS de
+    // Vite 7.3.5 → sortie CSS identique. Passage à Lightning CSS = PR séparée (V8-3),
+    // après vérif backdrop-filter. (Dev : `false` = pas de minif, inchangé vs Vite 7.)
+    cssMinify: MODE === "production" ? "esbuild" : false,
     // Browser-target lock = exact expansion of Vite 5's old 'modules' default
     // (ESBUILD_MODULES_TARGET, verified in node_modules/vite/dist/node/constants.js).
     // Vite 7 changed the default to 'baseline-widely-available'
@@ -34,9 +43,8 @@ export default defineConfig({
     // Remove in a follow-up PR after Analytics review of the real browser mix.
     target: ["es2020", "edge88", "firefox78", "chrome87", "safari14"],
     sourcemap: false, // Désactivé pour réduire la taille du bundle
-    commonjsOptions: {
-      include: [/frontend/, /backend/, /node_modules/],
-    },
+    // build.commonjsOptions retiré : Rolldown (bundler de Vite 8) a un interop CJS
+    // natif → l'option @rollup/plugin-commonjs (incl. `include`) est un no-op sous Vite 8.
     // Strip <link rel="modulepreload"> for sentry-vendor : the Sentry SDK
     // is dynamically imported in entry.client.tsx behind a first-interaction
     // trigger (PR #424). Vite's default behaviour preloads dynamic-import
