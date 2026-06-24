@@ -1,7 +1,7 @@
 /**
  * Frontend ESLint flat config (PR-9h Phase F/C0).
  * Remplace `.eslintrc.cjs`. Étend la flat partagée `@fafa/eslint-config` (qui remplace
- * `@remix-run/eslint-config`) + storybook + les règles custom préservées 1:1
+ * `@remix-run/eslint-config`) + les règles custom préservées 1:1
  * (no-restricted-syntax Tailwind/SEO/storage, overrides test/SoT/routes).
  *
  * Test override = parité `@remix-run/eslint-config/jest-testing-library`
@@ -14,7 +14,6 @@
  * + 4 règles dépréciées-et-retirées en amont. Base/route/root prouvés drift=0 par `eslint --print-config`.
  */
 import sharedConfig from "@fafa/eslint-config/eslint.config.js";
-import storybook from "eslint-plugin-storybook";
 import testingLibrary from "eslint-plugin-testing-library";
 import jestDom from "eslint-plugin-jest-dom";
 import jest from "eslint-plugin-jest";
@@ -72,7 +71,6 @@ export default [
       "public/build/**",
       ".cache/**",
       ".react-router/**",
-      "storybook-static/**",
       "node_modules/**",
       "!**/.server",
       "!**/.client",
@@ -80,7 +78,6 @@ export default [
   },
 
   ...sharedConfig,
-  ...storybook.configs["flat/recommended"],
 
   // ── Base frontend (tous fichiers) : settings résolveur TS + règles non-TS préservées ──
   {
