@@ -30,10 +30,7 @@ import './instrument';
 
 // Validate environment variables BEFORE any other imports
 // This ensures the app fails fast if required vars are missing
-import {
-  validateRequiredEnvVars,
-  isReadOnlyMode,
-} from './config/env-validation';
+import { validateRequiredEnvVars } from './config/env-validation';
 import { buildCSPDirectives } from './config/csp.config';
 validateRequiredEnvVars();
 
@@ -46,17 +43,13 @@ import { SITE_ORIGIN } from './config/app.config';
 import { LandingAttributionMiddleware } from './modules/analytics/landing-attribution.middleware';
 import { SitemapStaticMiddleware } from './modules/seo/middleware/sitemap-static.middleware';
 
-import RedisStore from 'connect-redis';
-import session from 'express-session';
-import Redis from 'ioredis';
 import passport from 'passport';
 import { urlencoded, json } from 'body-parser';
 import compression from 'compression';
 import cors from 'cors';
 import crypto from 'crypto';
 import helmet from 'helmet';
-
-const redisStoreFactory = RedisStore(session);
+import { SessionStoreService } from './modules/session/session-store.service';
 
 async function bootstrap() {
   try {
@@ -83,87 +76,15 @@ async function bootstrap() {
       logger.log('Serveur de développement démarré');
     }
 
-    const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
-    const redisClient = new Redis(redisUrl);
-
-    redisClient.on('connect', () => logger.log('Redis connecté'));
-    redisClient.on('error', (err) => logger.error('Erreur Redis', err));
-
-    const redisStore = new redisStoreFactory({
-      client: redisClient,
-      ttl: 86400 * 30,
-    });
-
-    // Sécurité de session et cookies selon l'environnement.
-    // ADR-028 Option D : preprod sets NODE_ENV=production but READ_ONLY=true
-    // means no mutable session state to protect — SESSION_SECRET becomes
-    // a soft warning instead of a hard requirement.
-    const readOnly = isReadOnlyMode();
-    if (isProd && !readOnly && !process.env.SESSION_SECRET) {
-      throw new Error('SESSION_SECRET requis en production');
-    }
-
-    // SECURITE: SESSION_SECRET fail-fast en non-DEV + détection placeholders.
-    // Référence STRIDE 03-sessions critique #3, ADR-043 Sprint 1 Plan F.
-    const sessionSecretRaw = process.env.SESSION_SECRET ?? '';
-    const sessionSecretNorm = sessionSecretRaw.trim();
-    const KNOWN_WEAK_PLACEHOLDERS = [
-      '123',
-      'changeme',
-      'change-me',
-      'secret',
-      'mysecret',
-      'insecure_dev_secret_change_me',
-      'your-secret-here',
-      'todo',
-      'xxxxx',
-    ];
-    const isWeakSecret =
-      !sessionSecretNorm ||
-      sessionSecretNorm.length < 32 ||
-      KNOWN_WEAK_PLACEHOLDERS.includes(sessionSecretNorm.toLowerCase());
-
-    let sessionSecret = sessionSecretNorm;
-    if (isWeakSecret) {
-      // PROD/PREPROD: refuse de démarrer même en read-only — un secret faible
-      // expose toutes les sessions actives, indépendamment du mode RW/RO.
-      if (process.env.NODE_ENV === 'production') {
-        throw new Error(
-          `SESSION_SECRET ${sessionSecretNorm ? 'FAIBLE' : 'MANQUANT'} en production. ` +
-            `Génère un secret >= 32 caractères avec: openssl rand -base64 32`,
-        );
-      }
-
-      // DEV: génère un secret aléatoire runtime (sessions invalidées au restart,
-      // accepté en DEV). Plus jamais le hardcoded `INSECURE_DEV_SECRET_CHANGE_ME`
-      // qui était identique entre toutes les instances DEV — vector de spoofing.
-      sessionSecret = crypto.randomBytes(32).toString('base64');
-      logger.warn(
-        `[SECURITY] SESSION_SECRET ${sessionSecretNorm ? 'FAIBLE' : 'MANQUANT'} en DEV. ` +
-          `Secret aléatoire généré (32 bytes). Sessions perdues au restart.`,
-      );
-      logger.warn(
-        '[SECURITY] Pour des sessions persistantes, ajoute dans .env: ' +
-          'SESSION_SECRET=$(openssl rand -base64 32)',
-      );
-    }
-
-    app.use(
-      session({
-        store: redisStore,
-        resave: false,
-        saveUninitialized: false, // Session créée uniquement quand des données y sont écrites (login, panier)
-        secret: sessionSecret,
-        name: 'connect.sid', // ✅ Nom explicite du cookie
-        cookie: {
-          maxAge: 1000 * 60 * 60 * 24 * 30, // 30 jours
-          sameSite: 'lax', // ✅ Compatible navigation cross-site
-          secure: isProd, // HTTPS via Caddy en production
-          httpOnly: true, // ✅ Protection XSS
-          path: '/', // ✅ Cookie valide pour tout le site
-        },
-      }),
-    );
+    // 🔐 Session middleware — Redis store encapsulated in SessionStoreService
+    // (connect-redis@5 + ioredis; impl unchanged in PR-9e.1). Mounted HERE, at
+    // the exact same position as the previous inline wiring, so the middleware
+    // chain order is preserved byte-for-byte.
+    // ⚠️ ORDER INVARIANT: passport.initialize()/passport.session() (below) MUST
+    // stay AFTER this — passport.session() reads `req.session` populated here.
+    // Landing attribution (just below) also depends on `req.session`.
+    const sessionStore = app.get(SessionStoreService);
+    app.use(sessionStore.createSessionMiddleware());
     logger.log('Middleware de session initialisé');
 
     // Landing attribution: first-touch source capture into the session.
