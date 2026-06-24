@@ -400,3 +400,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `worktree-feat+pr9e1-session-store-abstraction`
 - **Décision** : refactor(session): encapsulate store in SessionStoreService (PR-9e.1) (+1 other commit)
 - **Sortie** : PR aucune | commits 5cbe8a899 96db34e5f
+
+## 2026-06-24 — worktree-feat+pr9e1-session-store-abstraction (auto)
+
+- **Branche** : `worktree-feat+pr9e1-session-store-abstraction`
+- **Décision** : chore(registry): map backend/src/modules/session/** ownership (D11/auth-team) (+3 other commits)
+- **Sortie** : PR aucune | commits bd7d1a547 3670bc1b7 5cbe8a899 96db34e5f
