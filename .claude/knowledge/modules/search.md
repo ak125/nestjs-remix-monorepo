@@ -2,7 +2,7 @@
 module: search
 sources:
 - backend/src/modules/search
-last_scan: '2026-06-23'
+last_scan: '2026-06-24'
 primary_files:
 - backend/src/modules/search/controllers/pieces.controller.ts
 - backend/src/modules/search/controllers/search-debug.controller.ts

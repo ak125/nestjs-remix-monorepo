@@ -2,7 +2,7 @@
 module: vehicles
 sources:
 - backend/src/modules/vehicles
-last_scan: '2026-06-23'
+last_scan: '2026-06-24'
 primary_files:
 - backend/src/modules/vehicles/brands.controller.ts
 - backend/src/modules/vehicles/controllers/admin-vehicle-cache.controller.ts
