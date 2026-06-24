@@ -155,16 +155,26 @@ if [ -n "$want_major" ] && [ -n "$have_major" ] && [ "$want_major" != "$have_maj
   alert "dérive Node : v$have_major installé, .nvmrc=$want_major attendu — l'app peut crasher ; upgrade manuel requis (NodeSource setup_${want_major}.x)"
 fi
 
-# 6. npm install si lockfile changé, puis build. Sorties capturées dans /tmp et
+# 6. npm ci si lockfile changé, puis build. Sorties capturées dans /tmp et
 #    re-déversées (tail -50) sur stderr en cas d'échec — pas de silencement total
 #    (canon no-silent-fallback). Logs gardés sur disque pour postmortem manuel.
+#
+#    `npm ci` (pas `npm install`) DÉLIBÉRÉMENT : DEV est un miroir read-only de
+#    l'état COMMITTÉ de `main`. `npm install` réécrit les annotations du lockfile
+#    (dev/peer/optional) selon le node_modules local → working tree sali → bloque
+#    le ff-pull du run suivant (cause de la dérive 2026-06). `npm ci` est
+#    déterministe : installe EXACTEMENT le lockfile committé, ne le réécrit JAMAIS
+#    (échoue franc si package.json↔lockfile désync, ce qui aligne no-silent-fallback).
+#    C'est aussi ce que fait la CI. Contrepartie assumée : `npm ci` purge
+#    node_modules avant réinstall → un échec laisse DEV sans deps jusqu'au prochain
+#    run ; le cron alerte déjà (abort ci-dessous) et re-tente au tick suivant (~10 min).
 INSTALL_LOG="/tmp/${LOG_TAG}-npm-install-$$.log"
 BUILD_LOG="/tmp/${LOG_TAG}-npm-build-$$.log"
 if ! git diff --quiet "$local_sha" "$remote_sha" -- package-lock.json 2>/dev/null; then
-  log "package-lock.json modifié → npm install (log: $INSTALL_LOG)"
-  if ! npm install >"$INSTALL_LOG" 2>&1; then
+  log "package-lock.json modifié → npm ci (install déterministe, log: $INSTALL_LOG)"
+  if ! npm ci >"$INSTALL_LOG" 2>&1; then
     tail -50 "$INSTALL_LOG" >&2
-    abort "npm install échoué — log complet : $INSTALL_LOG"
+    abort "npm ci échoué — log complet : $INSTALL_LOG"
   fi
 fi
 if ! npm run build >"$BUILD_LOG" 2>&1; then
