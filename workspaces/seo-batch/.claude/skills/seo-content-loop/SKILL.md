@@ -22,8 +22,15 @@ allowed-tools: mcp__claude_ai_Supabase__execute_sql, Read, Glob, Grep, Bash
 ## La BOUCLE (ordre non négociable)
 
 ```
-SCRAPING LARGE (RUN_TARGETED_RAW_TO_WIKI) → RAW → WIKI → CONSUMER (R1/R2/R8 → page R) → mesure SCORE → (si < seuil) itérer
+SCRAPING LARGE (RUN_TARGETED_RAW_TO_WIKI) → RAW → WIKI → score SUBSTANCE (shadow, sur le WIKI)
+  → revue/promotion → export → projection data → CONSUMER (R1/R2/R8) → resolver balises
+  → CONSTRUIRE le scorer SEO surface (shadow) → composition R2 → rendu SSR → EXÉCUTER le score surface
+  → audit cluster (intra + cross-gamme) → calibration → correction → re-passage → outcome
 ```
+
+> **2 scores à 2 étapes** : substance (sur le WIKI, tôt) ≠ surface SEO (après composition+rendu, tard) ;
+> **construire le scorer ≠ l'exécuter**. Verdict terminal de page = `PAGE_QUALITY_COMPOSITE_PASS`
+> (ADR-094, **shadow/gated** jusqu'à calibration — cf. §« scoring en transition » plus bas).
 
 1. **SCRAPING LARGE** (web → `automecanik-raw/sources/web-research/<gamme>/`) — la 1ʳᵉ étape, pas RAW directement.
    - **Méthode de scraping = run web-research `RUN_TARGETED_RAW_TO_WIKI <gamme>`** (label du run, pas un CLI) :
