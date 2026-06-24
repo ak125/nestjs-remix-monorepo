@@ -2,7 +2,7 @@
 module: mcp-validation
 sources:
 - backend/src/modules/mcp-validation
-last_scan: '2026-06-23'
+last_scan: '2026-06-24'
 primary_files:
 - backend/src/modules/mcp-validation/config/mcp-route-map.config.ts
 - backend/src/modules/mcp-validation/decorators/mcp-verify.decorator.ts
