@@ -1,3 +1,5 @@
+import { BadRequestException } from '@nestjs/common';
+
 import { DynamicSeoV4UltimateService } from '../dynamic-seo-v4-ultimate.service';
 import { SeoSurfaceRegistry } from '../registries/seo-surface.registry';
 import { SeoVariantFamilyRegistry } from '../registries/seo-variant-family.registry';
@@ -196,5 +198,42 @@ describe('DynamicSeoV4UltimateService → chain delegation (PR-2d E2E)', () => {
     const r2 = await v4.generateCompleteSeo(1, 1, baseVars);
 
     expect(r2.metadata.cacheHit).toBe(false);
+  });
+
+  // ── A1b : SeoVariables additif + safeParse fail-CLOSED ──────────────────────
+
+  it('contrat additif : powerKw + gammeId optionnels acceptés (zéro breakage)', async () => {
+    const v4 = buildV4({
+      templateRow: { sgc_id: 5, sgc_title: '#Gamme#' },
+    });
+
+    // Les champs A1b sont optionnels : présents → validés, absents → OK.
+    const result = await v4.generateCompleteSeo(5, 5, {
+      ...baseVars,
+      powerKw: 66,
+      gammeId: 124,
+    });
+
+    expect(result.title).toContain('Plaquettes');
+  });
+
+  it('fail-CLOSED : variables invalides → BadRequestException et generateDefaultSeo JAMAIS appelé', async () => {
+    const v4 = buildV4({
+      templateRow: { sgc_id: 1, sgc_title: '#Gamme#' },
+    });
+    // Le fallback ne doit JAMAIS produire de page depuis des variables invalides
+    // (le throw safeParse est levé AVANT le try/catch fail-open).
+    const defaultSpy = jest.spyOn(
+      v4 as unknown as { generateDefaultSeo: (...a: unknown[]) => unknown },
+      'generateDefaultSeo',
+    );
+
+    // nbCh est requis (number positif) ; on passe une valeur non-numérique.
+    const invalidVars = { ...baseVars, nbCh: 'quatre-vingt-dix' } as never;
+
+    await expect(
+      v4.generateCompleteSeo(1, 1, invalidVars),
+    ).rejects.toBeInstanceOf(BadRequestException);
+    expect(defaultSpy).not.toHaveBeenCalled();
   });
 });
