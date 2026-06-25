@@ -412,3 +412,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `worktree-feat+pr9e2-session-impl-swap`
 - **Décision** : feat(session): swap session store to connect-redis@9 + node-redis v5, fail-fast boot (PR-9e.2)
 - **Sortie** : PR aucune | commits 9e8a273bb
+
+## 2026-06-25 — feat/pr9f-cache-bridge (auto)
+
+- **Branche** : `feat/pr9f-cache-bridge`
+- **Décision** : feat(pr9f-cache): bridge cache-manager v6 / Keyv under Nest 10 (PR-9f.cache)
+- **Sortie** : PR #1147 | commits 62e97f552
