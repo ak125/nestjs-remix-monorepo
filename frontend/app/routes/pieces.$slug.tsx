@@ -194,14 +194,19 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
     // 🚀 Fetch en parallèle : données gamme + substitution (LCP optimization)
     const API_URL = getInternalApiUrl("");
-    const currentUrl = new URL(request.url);
-    const pathname = currentUrl.pathname;
+    // 🛡️ Chemin substitution bâti depuis le param de route `slug` (toujours
+    // propre) et NON depuis `request.url` : ce dernier conserve le suffixe
+    // `.data` des requêtes React Router v8 single-fetch (navigation client),
+    // ce qui faisait résoudre la substitution en `unknown_slug` → httpStatus
+    // 404 → 404 sur une page R1 valide (incident 2026-06-25, figé 2 h par le CDN
+    // en PROD). `slug` est nettoyé par RR avant le matching de route.
+    const substitutionPath = `/pieces/${slug}`;
 
     const [apiData, substitutionResponse] = await Promise.all([
       fetchGammePageData(gammeId, { signal: controller.signal }),
       // 🔄 Substitution API pour données enrichies (412/410 handling)
       fetch(
-        `${API_URL}/api/substitution/check?url=${encodeURIComponent(pathname)}`,
+        `${API_URL}/api/substitution/check?url=${encodeURIComponent(substitutionPath)}`,
         {
           signal: subController.signal,
         },
