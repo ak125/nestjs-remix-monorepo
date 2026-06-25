@@ -9,6 +9,7 @@ import { useRouteError, isRouteErrorResponse } from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { buildCacheHeaders } from "~/utils/cache-control";
 import { logger } from "~/utils/logger";
+import { stripSingleFetchSuffix } from "~/utils/single-fetch";
 
 export const meta: MetaFunction = () => [
   { title: "Page non trouvée | Automecanik" },
@@ -28,7 +29,12 @@ export const headers = buildCacheHeaders("no-cache");
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
-  const pathname = url.pathname;
+  // 🛡️ RR8 single-fetch (navigation client) garde le suffixe `.data` sur
+  // request.url. Le retirer pour que la détection garbage, les quick-redirects
+  // et les résolveurs redirect/legacy voient le VRAI chemin — sinon les 301
+  // legacy (/blog, /pieces-auto/*) ne se déclenchent pas en navigation client
+  // (404 au lieu du 301). Encodage préservé. Voir incident 2026-06-25.
+  const pathname = stripSingleFetchSuffix(url.pathname);
 
   // 0a. Short-circuit URLs garbage (base64 spam, bots) — évite 3 appels API inutiles
   if (isGarbageUrl(pathname)) {

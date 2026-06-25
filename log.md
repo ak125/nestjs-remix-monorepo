@@ -424,3 +424,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-a1a-observe-placeholder-events`
 - **Décision** : fix(seo): A1a-observe CI gates — prettier format + role-purity skip on aggregator module (+2 other commits)
 - **Sortie** : PR #1146 | commits 4b3d6ffb9 427927bdc d949b723e
+
+## 2026-06-25 — fix/catchall-data-suffix-redirects (auto)
+
+- **Branche** : `fix/catchall-data-suffix-redirects`
+- **Décision** : fix(catch-all): strip RR8 .data suffix so legacy 301 redirects fire on client-nav
+- **Sortie** : PR #1150 | commits 601ee8c43
