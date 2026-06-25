@@ -249,13 +249,27 @@ automecanik.com, www.automecanik.com {
         # Default: set only if no conditional matcher above already set Cache-Control
         header ?Cache-Control "public, max-age=120, stale-while-revalidate=240"
         header Vary "Accept-Encoding"
-        
+
         reverse_proxy monorepo_prod:3000 {
             header_up Host {host}
             header_up X-Real-IP {client_ip}
             header_up X-Forwarded-For {client_ip}
             header_up X-Forwarded-Proto {scheme}
             header_up X-Forwarded-Host {host}
+
+            # 🛡️ Anti-cache-poisoning : une réponse d'erreur (4xx/5xx) du backend
+            # NE DOIT PAS hériter du cache CDN long (s-maxage=86400) posé par
+            # @products / @content ci-dessus. Sinon un 404/500 transitoire (boot
+            # container, TypeError SSR ponctuel) est figé jusqu'à 24h par Cloudflare
+            # sur une page qui existe en réalité (incident 2026-06-25 :
+            # /pieces/barre-stabilisatrice-274.html & plaquette-de-frein-402.html).
+            # Même garde que le bloc imgproxy ci-dessus (@upstream_4xx). `no-store`
+            # l'emporte sur une Cache-Control upstream concurrente (RFC 7234 §5.2.2).
+            @up_error status 4xx 5xx
+            handle_response @up_error {
+                header Cache-Control "no-store"
+                copy_response
+            }
         }
     }
     
