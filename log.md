@@ -412,3 +412,15 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `worktree-feat+pr9e2-session-impl-swap`
 - **Décision** : feat(session): swap session store to connect-redis@9 + node-redis v5, fail-fast boot (PR-9e.2)
 - **Sortie** : PR aucune | commits 9e8a273bb
+
+## 2026-06-25 — feat/seo-a1a-observe-placeholder-events (auto)
+
+- **Branche** : `feat/seo-a1a-observe-placeholder-events`
+- **Décision** : feat(seo): A1a-observe — make silent placeholder strip + runtime fallback observable
+- **Sortie** : PR #1146 | commits d949b723e
+
+## 2026-06-25 — feat/seo-a1a-observe-placeholder-events (auto)
+
+- **Branche** : `feat/seo-a1a-observe-placeholder-events`
+- **Décision** : fix(seo): A1a-observe CI gates — prettier format + role-purity skip on aggregator module (+2 other commits)
+- **Sortie** : PR #1146 | commits 4b3d6ffb9 427927bdc d949b723e
