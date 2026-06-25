@@ -13,6 +13,7 @@ import "~/utils/array-at-polyfill.client";
 import { startTransition } from "react";
 import { hydrateRoot } from "react-dom/client";
 import { HydratedRouter } from "react-router/dom";
+import { installChunkReloadGuard } from "~/utils/chunk-reload.client";
 import { logger } from "~/utils/logger";
 import {
   captureReactErrorToSentry,
@@ -37,6 +38,11 @@ if ("serviceWorker" in navigator) {
     }
   });
 }
+
+// Chunk-load recovery — one-shot reload when a deploy rewrote asset hashes while
+// this client still holds stale HTML (`vite:preloadError`). Sync, no Sentry dep,
+// anti-loop guarded. See ~/utils/chunk-reload.client.
+installChunkReloadGuard();
 
 // Early error buffer — captures errors fired between hydration and the lazy
 // Sentry init below. Replayed once Sentry is loaded so no error is lost during

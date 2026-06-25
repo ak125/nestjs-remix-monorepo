@@ -10,6 +10,7 @@ import { isbot } from "isbot";
 import { renderToPipeableStream } from "react-dom/server";
 import {
   ServerRouter,
+  isRouteErrorResponse,
   type EntryContext,
   type HandleErrorFunction,
   type RouterContextProvider,
@@ -42,6 +43,16 @@ export const handleError: HandleErrorFunction = (
   error,
   { request, context },
 ): void => {
+  // Deterministic client-side routing errors (4xx) are NOT application
+  // incidents and must not reach Sentry: e.g. a scanner probing `POST /_next`
+  // matches the splat route `routes/$` (which has no `action`) → React Router
+  // throws a 405 `ErrorResponse`. Capturing those floods the project with bot
+  // noise. Only 5xx (real server faults) and non-Response throws deserve an
+  // event. The HTTP response sent to the client is unchanged — this gates
+  // observability only, at the single point every RR routing error flows through.
+  if (isRouteErrorResponse(error) && error.status < 500) return;
+  if (error instanceof Response && error.status < 500) return;
+
   // v8_middleware: `context` is a Readonly<RouterContextProvider>. RR's server
   // runtime can invoke handleError BEFORE the load context is resolved (its
   // `loadContext` is still undefined when it rejects an invalid context value),

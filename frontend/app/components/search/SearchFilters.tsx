@@ -18,6 +18,7 @@ import { Badge } from "~/components/ui/badge";
 import { FilterSection } from "~/components/ui/filter-section";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { logger } from "~/utils/logger";
+import { safeLocalStorage } from "~/utils/safe-storage";
 
 export interface FilterFacet {
   field: string;
@@ -67,7 +68,7 @@ export const SearchFilters = memo(function SearchFilters({
     loadPresets();
     // Restaurer les derniers filtres si aucun filtre actif
     if (Object.keys(currentFilters).length === 0) {
-      const lastFilters = localStorage.getItem(LAST_FILTERS_KEY);
+      const lastFilters = safeLocalStorage.getItem(LAST_FILTERS_KEY);
       if (lastFilters) {
         try {
           JSON.parse(lastFilters);
@@ -82,14 +83,14 @@ export const SearchFilters = memo(function SearchFilters({
   // 💾 Sauvegarder les filtres actuels dans localStorage
   useEffect(() => {
     if (Object.keys(currentFilters).length > 0) {
-      localStorage.setItem(LAST_FILTERS_KEY, JSON.stringify(currentFilters));
+      safeLocalStorage.setItem(LAST_FILTERS_KEY, JSON.stringify(currentFilters));
     }
   }, [currentFilters]);
 
   // 📥 Charger les presets depuis localStorage
   const loadPresets = () => {
     try {
-      const stored = localStorage.getItem(PRESET_STORAGE_KEY);
+      const stored = safeLocalStorage.getItem(PRESET_STORAGE_KEY);
       if (stored) {
         const presets = JSON.parse(stored);
         setSavedPresets(presets);
@@ -121,7 +122,7 @@ export const SearchFilters = memo(function SearchFilters({
 
     const updatedPresets = [...savedPresets, newPreset];
     setSavedPresets(updatedPresets);
-    localStorage.setItem(PRESET_STORAGE_KEY, JSON.stringify(updatedPresets));
+    safeLocalStorage.setItem(PRESET_STORAGE_KEY, JSON.stringify(updatedPresets));
 
     setPresetName("");
     setShowPresetModal(false);
@@ -133,7 +134,7 @@ export const SearchFilters = memo(function SearchFilters({
 
     const updatedPresets = savedPresets.filter((p) => p.id !== presetId);
     setSavedPresets(updatedPresets);
-    localStorage.setItem(PRESET_STORAGE_KEY, JSON.stringify(updatedPresets));
+    safeLocalStorage.setItem(PRESET_STORAGE_KEY, JSON.stringify(updatedPresets));
   };
 
   // 🔄 Charger un preset

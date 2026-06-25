@@ -26,6 +26,7 @@ import { useState, useEffect, useRef, memo } from "react";
 import { Form, useNavigate } from "react-router";
 
 import { logger } from "~/utils/logger";
+import { safeLocalStorage } from "~/utils/safe-storage";
 import {
   useEnhancedSearchWithDebounce,
   useEnhancedAutocomplete,
@@ -80,7 +81,7 @@ export const SearchBarEnhancedHomepage = memo(
 
     // Charger les recherches récentes depuis localStorage
     useEffect(() => {
-      const stored = localStorage.getItem("recentSearches");
+      const stored = safeLocalStorage.getItem("recentSearches");
       if (stored) {
         try {
           setRecentSearches(JSON.parse(stored).slice(0, 3));
@@ -103,7 +104,7 @@ export const SearchBarEnhancedHomepage = memo(
 
       // Différer l'écriture localStorage au temps idle
       scheduleIdleCallback(() => {
-        localStorage.setItem("recentSearches", JSON.stringify(updated));
+        safeLocalStorage.setItem("recentSearches", JSON.stringify(updated));
       });
     };
 
