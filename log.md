@@ -425,6 +425,17 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Décision** : fix(seo): A1a-observe CI gates — prettier format + role-purity skip on aggregator module (+2 other commits)
 - **Sortie** : PR #1146 | commits 4b3d6ffb9 427927bdc d949b723e
 
+## 2026-06-25 — feat/seo-a1d-sanitize-editorial-sgcontent (auto)
+
+- **Branche** : `feat/seo-a1d-sanitize-editorial-sgcontent`
+- **Décision** : fix(seo): A1d — sanitize sg_content editorial HTML at the render boundary (latent stored-XSS)
+- **Sortie** : PR #1151 | commits bc3821665
+
+## 2026-06-25 — feat/seo-a1d-sanitize-editorial-sgcontent (auto)
+
+- **Branche** : `feat/seo-a1d-sanitize-editorial-sgcontent`
+- **Décision** : Merge branch 'feat/seo-a1d-sanitize-editorial-sgcontent' of https://github.com/ak125/nestjs-remix-monorepo into feat/seo (+4 other commits)
+- **Sortie** : PR #1151 | commits 89db0ec7d ea2fe82e7 ccb2b15e4 e45eddf2b bc3821665
 ## 2026-06-25 — fix/catchall-data-suffix-redirects (auto)
 
 - **Branche** : `fix/catchall-data-suffix-redirects`
