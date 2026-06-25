@@ -24,6 +24,8 @@
 import { CacheableMemory } from 'cacheable';
 import { Keyv } from 'keyv';
 
+import type { CacheModuleOptions } from '@nestjs/cache-manager';
+
 /**
  * Build `CacheModule.register` options for a bounded in-memory (LRU) store.
  *
@@ -31,15 +33,25 @@ import { Keyv } from 'keyv';
  *                   exact numeric value the site used under cache-manager v5.
  * @param maxEntries LRU bound (former `max`), mapped to Keyv `lruSize`.
  */
-export function boundedMemoryCache(ttlMs: number, maxEntries: number) {
+export function boundedMemoryCache(
+  ttlMs: number,
+  maxEntries: number,
+): CacheModuleOptions {
   // Canonical cache-manager v6 in-memory store: a Keyv backed by CacheableMemory, which
   // honours `lruSize` (the former `max`).
+  const store = new Keyv({
+    store: new CacheableMemory({ ttl: ttlMs, lruSize: maxEntries }),
+  });
+  // `keyv` ships dual `.d.ts` (ESM) / `.d.cts` (CJS) type declarations. Production `tsc`
+  // (whole-program, classic `Node` resolution) reads the single `types` entry and
+  // validates this shape end-to-end. But ts-jest's per-file program can load the `keyv`
+  // copy reached through `cacheable` (CJS `.d.cts`) AND the direct import (`.d.ts`) as
+  // two *unrelated* nominal `Keyv` types — which would otherwise leak into every
+  // consumer module's `CacheModule.register(...)` type-check. Returning `CacheModuleOptions`
+  // keeps that raw identity inside this one file; the cast bridges only the ts-jest
+  // artifact, never a real structural mismatch (the runtime store is unchanged).
   return {
-    stores: [
-      new Keyv({
-        store: new CacheableMemory({ ttl: ttlMs, lruSize: maxEntries }),
-      }),
-    ],
+    stores: [store] as unknown as NonNullable<CacheModuleOptions['stores']>,
     ttl: ttlMs,
   };
 }

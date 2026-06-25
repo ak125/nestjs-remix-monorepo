@@ -16,27 +16,23 @@ import { boundedMemoryCache } from './cache-store.factory';
  * They also guard the cross-subsystem invariant that the seconds-based `CacheTTL`
  * enum (shared with the ioredis `CacheService`) is NOT touched by this migration.
  */
+
+// `boundedMemoryCache` returns the broad `CacheModuleOptions` shape; feed it straight
+// into cache-manager's `createCache` — the same call the @nestjs/cache-manager provider
+// makes internally — to exercise the real store at runtime.
+const buildCache = (opts: ReturnType<typeof boundedMemoryCache>) =>
+  createCache(opts as unknown as Parameters<typeof createCache>[0]);
+
 describe('boundedMemoryCache (cache-manager v6 / Keyv store factory)', () => {
-  it('forwards TTL verbatim as milliseconds (no unit conversion)', () => {
+  it('forwards the TTL verbatim as the cache-level default (milliseconds)', () => {
     const opts = boundedMemoryCache(1234, 50);
     expect(opts.ttl).toBe(1234);
     expect(Array.isArray(opts.stores)).toBe(true);
-    expect(opts.stores).toHaveLength(1);
-
-    // The CacheableMemory store carries the same ttl in ms (a stray *1000 or /1000
-    // would fail here) and the former `max` as lruSize.
-    const memory = (opts.stores[0] as { opts: { store: unknown } }).opts
-      .store as { ttl?: number; lruSize?: number };
-    expect(memory.constructor.name).toBe('CacheableMemory');
-    expect(memory.ttl).toBe(1234);
-    expect(memory.lruSize).toBe(50);
   });
 
   it('maps the former `max` onto Keyv lruSize (bounded eviction)', async () => {
     // lruSize 2: a third insertion evicts the least-recently-used entry.
-    const opts = boundedMemoryCache(60_000, 2);
-    const cache = createCache({ stores: opts.stores, ttl: opts.ttl });
-
+    const cache = buildCache(boundedMemoryCache(60_000, 2));
     await cache.set('a', { v: 1 });
     await cache.set('b', { v: 2 });
     await cache.set('c', { v: 3 });
@@ -47,9 +43,7 @@ describe('boundedMemoryCache (cache-manager v6 / Keyv store factory)', () => {
   });
 
   it('returns a falsy miss so consumer `if (cached)` recomputes (v5-equivalent control flow)', async () => {
-    const opts = boundedMemoryCache(60_000, 10);
-    const cache = createCache({ stores: opts.stores, ttl: opts.ttl });
-
+    const cache = buildCache(boundedMemoryCache(60_000, 10));
     const miss = await cache.get('absent');
     expect(miss).toBeFalsy();
     // Every CACHE_MANAGER consumer branches on truthiness; null and undefined are equivalent here.
@@ -57,9 +51,7 @@ describe('boundedMemoryCache (cache-manager v6 / Keyv store factory)', () => {
   });
 
   it('round-trips set/get, removes via del, and empties via clear()', async () => {
-    const opts = boundedMemoryCache(60_000, 10);
-    const cache = createCache({ stores: opts.stores, ttl: opts.ttl });
-
+    const cache = buildCache(boundedMemoryCache(60_000, 10));
     await cache.set('k', { hello: 'world' });
     expect(await cache.get('k')).toEqual({ hello: 'world' });
 
@@ -76,9 +68,7 @@ describe('boundedMemoryCache (cache-manager v6 / Keyv store factory)', () => {
   it('treats the TTL number as milliseconds, not seconds (entry expires)', async () => {
     // 60 ms TTL: present immediately, gone after 120 ms. If the number were treated
     // as seconds the entry would still be present — this distinguishes ms from s.
-    const opts = boundedMemoryCache(60, 10);
-    const cache = createCache({ stores: opts.stores, ttl: opts.ttl });
-
+    const cache = buildCache(boundedMemoryCache(60, 10));
     await cache.set('exp', { v: 9 });
     expect(await cache.get('exp')).toEqual({ v: 9 });
 

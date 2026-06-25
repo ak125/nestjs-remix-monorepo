@@ -43,11 +43,15 @@ flat-cache garde keyv@4 niché. En prod (`--omit=dev`) eslint est absent → key
 
 ### Travail
 1. **`max`→`lruSize`** via factory **partagée unique** `config/cache-store.factory.ts` (pattern canonique v6) :
-   `boundedMemoryCache(ttlMs,maxEntries)` → `{ stores:[new Keyv({store:new CacheableMemory({ttl:ttlMs,lruSize:maxEntries})})], ttl:ttlMs }`.
-   `Keyv` importé de `keyv`, `CacheableMemory` de `cacheable`. **Pas de `satisfies CacheModuleOptions`** sur le retour
-   (les types dual `.d.ts`/`.d.cts` de keyv font diverger ts-jest ; la compat `register` est validée par `tsc` aux 9 sites).
-   Adapter les **9** `register(...)` (blog:65, seo:178, vehicles:75 `registerAsync`, navigation:24, metadata:34,
-   invoices:19, dashboard:14, products:48, catalog:68) — **mêmes nombres** (neutralité).
+   `boundedMemoryCache(ttlMs,maxEntries): CacheModuleOptions` → `{ stores:[new Keyv({store:new CacheableMemory({ttl:ttlMs,lruSize:maxEntries})})], ttl:ttlMs }`.
+   `Keyv` importé de `keyv`, `CacheableMemory` de `cacheable`. **Type de retour annoté `CacheModuleOptions`** :
+   keyv a des décls dual `.d.ts`/`.d.cts`, et `cacheable` référence keyv via la condition `require` (`.d.cts`) ⇒
+   sous le programme **par-fichier** de ts-jest, le `Keyv` direct (`.d.ts`) et celui de cacheable (`.d.cts`) sont 2
+   types nominaux distincts. Le `tsc` prod (programme global, resolution `Node` classique) lit le seul champ `types`
+   et valide tout. En **exposant `CacheModuleOptions`** (cast du tableau `stores` au point de retour, **1 seul endroit**),
+   l'identité brute `Keyv` ne **fuit pas** dans les 9 modules consommateurs (sinon leur `register(...)` casse sous ts-jest,
+   ex. `run-supplier-sync-once.test.ts`). Adapter les **9** `register(...)` (blog:65, seo:178, vehicles:75 `registerAsync`,
+   navigation:24, metadata:34, invoices:19, dashboard:14, products:48, catalog:68) — **mêmes nombres** (neutralité).
 2. **TTL — migration NEUTRE (correction du cadrage initial)** : `cache-manager@5` est **déjà en ms**.
    Les 9 `register({ttl:180/300/3600})` passent des nombres **nus** → TTL effectif **sub-seconde** (0,18–3,6 s),
    pas min/heures (les commentaires sont faux) = **bug latent pré-existant** (les `set()` par-entrée multiplient
