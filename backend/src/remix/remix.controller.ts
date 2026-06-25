@@ -64,7 +64,7 @@ export class RemixController {
     private readonly remixApiService: RemixApiService,
   ) {}
 
-  @All(':path*')
+  @All('{*path}')
   async handler(
     @Req() request: Request,
     @Res() response: Response,

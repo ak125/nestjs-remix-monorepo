@@ -1,5 +1,6 @@
 export { Roles, ROLES_KEY } from './roles.decorator';
 export { User, UserDecorator } from './user.decorator';
+export { SplatPath } from './splat-path.decorator';
 export {
   RateLimit,
   RateLimitStrict,
