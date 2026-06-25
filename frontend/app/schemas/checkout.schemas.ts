@@ -14,8 +14,8 @@ import { z } from "zod";
 const trimmedString = (label: string, min = 1) =>
   z
     .string({
-      required_error: `${label} requis.`,
-      invalid_type_error: `${label} invalide.`,
+      error: (iss) =>
+        iss.input === undefined ? `${label} requis.` : `${label} invalide.`,
     })
     .trim()
     .min(min, `${label} requis.`);
@@ -33,14 +33,14 @@ const phoneCharsRegex = /^[0-9+\s().-]+$/;
 
 export const shippingAddressSchema = z.object({
   civility: z.enum(["M.", "Mme", "Societe"], {
-    required_error: "Civilite requise.",
-    invalid_type_error: "Civilite invalide.",
+    error: (iss) =>
+      iss.input === undefined ? "Civilite requise." : "Civilite invalide.",
   }),
   firstName: trimmedString("Prenom", 2).max(100, "Prenom trop long."),
   lastName: trimmedString("Nom", 2).max(100, "Nom trop long."),
   address: trimmedString("Adresse", 5).max(255, "Adresse trop longue."),
   zipCode: z
-    .string({ required_error: "Code postal requis." })
+    .string({ error: "Code postal requis." })
     .trim()
     .regex(frenchZipCodeRegex, "Code postal invalide."),
   city: trimmedString("Ville", 2).max(120, "Ville trop longue."),
@@ -57,8 +57,10 @@ export const shippingAddressSchema = z.object({
 export const paymentMethodSchema = z.enum(
   ["cyberplus", "credit_card", "debit_card"],
   {
-    required_error: "Methode de paiement requise.",
-    invalid_type_error: "Methode de paiement invalide.",
+    error: (iss) =>
+      iss.input === undefined
+        ? "Methode de paiement requise."
+        : "Methode de paiement invalide.",
   },
 );
 
@@ -68,16 +70,14 @@ export const paymentMethodSchema = z.enum(
 
 export const checkoutSubmitSchema = shippingAddressSchema.extend({
   guestEmail: z
-    .string({ invalid_type_error: "Email invalide." })
+    .string({ error: "Email invalide." })
     .trim()
     .email("Email invalide.")
     .optional()
     .or(z.literal("")),
   paymentMethod: paymentMethodSchema,
   acceptTerms: z.literal("on", {
-    errorMap: () => ({
-      message: "Vous devez accepter les conditions generales de vente.",
-    }),
+    error: "Vous devez accepter les conditions generales de vente.",
   }),
 });
 

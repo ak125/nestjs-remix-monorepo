@@ -9,27 +9,27 @@ import { ApiProperty } from '@nestjs/swagger';
  */
 export const RegisterSchema = z.object({
   email: z
-    .string({ required_error: 'Email requis' })
+    .string({ error: 'Email requis' })
     .email({ message: 'Format email invalide' })
     .toLowerCase()
     .trim()
     .max(255, 'Email trop long'),
 
   password: z
-    .string({ required_error: 'Mot de passe requis' })
+    .string({ error: 'Mot de passe requis' })
     .min(8, { message: 'Minimum 8 caractères' })
     .max(100, 'Mot de passe trop long')
     .regex(/[a-zA-Z]/, 'Au moins une lettre requise')
     .regex(/[0-9]/, 'Au moins un chiffre requis'),
 
   firstName: z
-    .string({ required_error: 'Prénom requis' })
+    .string({ error: 'Prénom requis' })
     .min(2, 'Prénom minimum 2 caractères')
     .max(50, 'Prénom trop long')
     .trim(),
 
   lastName: z
-    .string({ required_error: 'Nom requis' })
+    .string({ error: 'Nom requis' })
     .min(2, 'Nom minimum 2 caractères')
     .max(50, 'Nom trop long')
     .trim(),

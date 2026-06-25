@@ -248,4 +248,6 @@ export const Phase2aAuditRequestSchema = z.object({
   artifactTypes: z.array(z.enum([...PHASE2A_ARTIFACT_TYPES])).optional(),
   dryRun: z.boolean().optional().default(false),
 });
-export type Phase2aAuditRequest = z.infer<typeof Phase2aAuditRequestSchema>;
+// Request = input shape: the defaulted `dryRun` is optional for callers
+// (read defensively, e.g. `request?.dryRun ?? false`).
+export type Phase2aAuditRequest = z.input<typeof Phase2aAuditRequestSchema>;
