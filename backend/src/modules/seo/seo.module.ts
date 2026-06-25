@@ -17,6 +17,7 @@
 import { Module, Logger, forwardRef } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { CacheModule as NestCacheModule } from '@nestjs/cache-manager';
+import { boundedMemoryCache } from '../../config/cache-store.factory';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -181,8 +182,7 @@ import { R2V2Module } from './r2/r2-v2.module';
 
     // Cache in-memory pour SEO V4 Ultimate
     NestCacheModule.register({
-      ttl: 3600,
-      max: 1000,
+      ...boundedMemoryCache(3600, 1000),
       isGlobal: false,
     }),
   ],

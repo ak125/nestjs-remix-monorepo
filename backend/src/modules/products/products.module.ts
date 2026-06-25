@@ -16,6 +16,7 @@
 
 import { Module, Logger } from '@nestjs/common';
 import { CacheModule } from '@nestjs/cache-manager';
+import { boundedMemoryCache } from '../../config/cache-store.factory';
 import { DatabaseModule } from '../../database/database.module';
 
 // Controllers - Split Phase 5 (février 2026)
@@ -46,8 +47,7 @@ import { CrossSellingSourceService } from './services/cross-selling-source.servi
     DatabaseModule,
     // Cache Redis pour améliorer les performances + V4 Ultimate
     CacheModule.register({
-      ttl: 300, // 5 minutes par défaut
-      max: 1000, // 1000 entrées max en cache
+      ...boundedMemoryCache(300, 1000),
       isGlobal: false,
     }),
   ],
