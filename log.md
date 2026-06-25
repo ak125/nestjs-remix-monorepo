@@ -418,3 +418,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/pr9f-cache-bridge`
 - **Décision** : feat(pr9f-cache): bridge cache-manager v6 / Keyv under Nest 10 (PR-9f.cache)
 - **Sortie** : PR #1147 | commits 62e97f552
+
+## 2026-06-25 — feat/pr9f-cache-bridge (auto)
+
+- **Branche** : `feat/pr9f-cache-bridge`
+- **Décision** : fix(pr9f-cache): return CacheModuleOptions from factory to bridge keyv dual-decl under ts-jest (+2 other commits)
+- **Sortie** : PR #1147 | commits 2dcfa4f02 611c86322 62e97f552
