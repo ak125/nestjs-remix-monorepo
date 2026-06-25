@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+import { loader } from "~/routes/pieces.$slug";
+
 /**
  * Régression R1 404 (2026-06-25) — fuite du suffixe `.data` (React Router v8
  * single-fetch) dans l'URL envoyée au moteur de substitution.
@@ -16,6 +18,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
  * avant le matching). Le correctif : bâtir l'URL substitution depuis `slug`.
  */
 
+// vi.mock est hoisté par Vitest avant les imports au runtime — déclaré après les
+// imports pour satisfaire `import/first` tout en gardant les mocks effectifs.
 vi.mock("~/utils/logger", () => ({
   logger: { log: vi.fn(), error: vi.fn(), warn: vi.fn(), info: vi.fn() },
 }));
@@ -35,8 +39,6 @@ vi.mock("~/services/api/gamme-api.service", () => ({
     meta: {},
   })),
 }));
-
-import { loader } from "~/routes/pieces.$slug";
 
 describe("pieces.$slug loader — pas de fuite du suffixe .data vers la substitution", () => {
   let capturedSubUrl: string | undefined;
