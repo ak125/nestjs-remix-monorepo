@@ -1,59 +1,148 @@
-import { Injectable, Logger, OnApplicationShutdown } from '@nestjs/common';
-import RedisStore from 'connect-redis';
+import {
+  Injectable,
+  Logger,
+  OnApplicationBootstrap,
+  OnApplicationShutdown,
+} from '@nestjs/common';
+import { RedisStore } from 'connect-redis';
 import session from 'express-session';
 import type { RequestHandler } from 'express';
-import Redis from 'ioredis';
+import { createClient } from 'redis';
 import crypto from 'crypto';
 import { isReadOnlyMode } from '../../config/env-validation';
+
+/** 30 days — unchanged from the connect-redis@5 baseline (PR-9e.1). */
+const SESSION_TTL_SECONDS = 86400 * 30;
+/**
+ * connect-redis@5 used `'sess:'` as the implicit default prefix. We pass it
+ * EXPLICITLY here so the swap to connect-redis@9 reads/writes the SAME keyspace
+ * — changing it would orphan every existing session (forced sign-out).
+ */
+const SESSION_KEY_PREFIX = 'sess:';
+/** Per-socket connection timeout. Bounds a single connect attempt. */
+const CONNECT_TIMEOUT_MS = 5000;
+/** Overall fail-fast deadline for the INITIAL boot connect (allows a couple of
+ *  default-strategy retries for a slow-starting Redis, then gives up). */
+const BOOT_CONNECT_DEADLINE_MS = 10000;
+/** Bounded drain window on graceful shutdown before forcing destroy(). */
+const SHUTDOWN_DRAIN_TIMEOUT_MS = 5000;
+/** Bounded healthCheck PING (node-redis has no default command timeout). */
+const HEALTHCHECK_TIMEOUT_MS = 3000;
 
 /**
  * Encapsulates the Redis-backed session store + express-session middleware.
  *
- * PR-9e.1 = NEUTRAL extraction. The implementation is UNCHANGED from the
- * previous inline wiring in `main.ts`: connect-redis@5 factory + ioredis with
- * background auto-connect (no `await connect()` → boot behavior identical).
- * `main.ts` mounts `createSessionMiddleware()` at the exact same position in
- * the middleware chain, so ordering is preserved.
+ * PR-9e.2 = IMPLEMENTATION SWAP behind the PR-9e.1 surface
+ * (`createSessionMiddleware()` / `isOpen()` / `healthCheck()`): connect-redis@9
+ * (named `RedisStore`) backed by **node-redis v5** for sessions only. ioredis is
+ * kept elsewhere (cache / BullMQ / OIDC / write-guard) — this service owns the
+ * ONLY session client.
  *
- * INVARIANTS PRESERVED — changing any of these = forced sign-out / session
- * loss (see plan §Synthèse):
- *  - key prefix `sess:` (connect-redis@5 default — kept implicit, as before)
- *  - cookie name `connect.sid`
- *  - default JSON serializer
- *  - `disableTouch:false` (connect-redis@5 default → rolling TTL)
- *  - `sameSite:'lax'`
+ * WIRE-FORMAT INVARIANTS PRESERVED — changing any = forced sign-out / session
+ * loss; this is what makes a rollback to the v5 image SAFE (v5 reads v9-written
+ * sessions and vice-versa, proven by the bidirectional test suite):
+ *  - key prefix `sess:` (now passed explicitly — == connect-redis@5 default)
+ *  - default JSON serializer (omitted → JSON.parse/stringify, == v5)
+ *  - `disableTouch:false` (default → rolling TTL preserved)
+ *  - `disableTTL:false` (default → TTL written, == v5)
+ *  - ttl 30d
+ *  - cookie `connect.sid`, `sameSite:'lax'`, SESSION_SECRET fail-fast (unchanged)
  *
- * The raw store/client are NEVER exposed publicly (no `.store` getter). The
- * impl swap to connect-redis@9 + node-redis (sessions only) happens in PR-9e.2
- * behind this same surface (createSessionMiddleware / isOpen / healthCheck).
+ * Lifecycle differs from PR-9e.1 on purpose: node-redis does NOT auto-connect,
+ * so connect() is awaited fail-fast at boot (sessions are critical infra) and
+ * the client is closed gracefully (drain → close → destroy) on shutdown.
+ *
+ * The raw store/client are NEVER exposed publicly (no `.store` getter).
  */
 @Injectable()
-export class SessionStoreService implements OnApplicationShutdown {
+export class SessionStoreService
+  implements OnApplicationBootstrap, OnApplicationShutdown
+{
   private readonly logger = new Logger(SessionStoreService.name);
-  private readonly client: Redis;
+  private readonly client: ReturnType<typeof createClient>;
   private readonly store: session.Store;
 
   constructor() {
     const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
-    // ioredis auto-connects in the background (non-blocking) — identical to the
-    // previous inline construction in main.ts. No `await` here on purpose: boot
-    // must not block on Redis (cf. backend.md "Non-blocking onModuleInit").
-    this.client = new Redis(redisUrl);
-    this.client.on('connect', () => this.logger.log('Redis connecté'));
-    this.client.on('error', (err) => this.logger.error('Erreur Redis', err));
-
-    const redisStoreFactory = RedisStore(session);
-    this.store = new redisStoreFactory({
-      client: this.client,
-      ttl: 86400 * 30,
+    // node-redis v5 client. Unlike ioredis it does NOT auto-connect — connect()
+    // is awaited in onApplicationBootstrap (fail-fast). The offline queue is KEPT
+    // (default, NOT disableOfflineQueue) so transient post-boot blips queue during
+    // reconnect instead of rejecting store.get → next(err) → site-wide 500
+    // (cf. PR-9e.2 plan Affinement 1). reconnectStrategy is left at the node-redis
+    // default (exponential backoff, retries indefinitely) for runtime auto-recovery.
+    this.client = createClient({
+      url: redisUrl,
+      socket: {
+        connectTimeout: CONNECT_TIMEOUT_MS,
+        keepAlive: true,
+      },
     });
+    // The 'error' listener MUST be attached BEFORE connect(): a node-redis client
+    // with no 'error' listener re-throws socket errors as uncaught → process crash.
+    this.client.on('error', (err) =>
+      this.logger.error('Erreur Redis (session)', err as Error),
+    );
+    this.client.on('ready', () =>
+      this.logger.log('Redis (session) ready — node-redis v5'),
+    );
+
+    // connect-redis@9 named export. PRESERVES the connect-redis@5 wire format:
+    // SAFETY: prefix / disableTouch / disableTTL / serializer must NOT change —
+    // they are the contract that lets v5 and v9 read each other's sessions.
+    this.store = new RedisStore({
+      client: this.client,
+      prefix: SESSION_KEY_PREFIX, // == v5 default 'sess:'
+      ttl: SESSION_TTL_SECONDS, // disableTouch:false (default) = rolling TTL kept
+    });
+  }
+
+  /**
+   * Fail-fast Redis connect. Runs after all modules init but BEFORE the HTTP port
+   * binds (NestJS bootstrap phase): if Redis is unreachable at boot the app MUST
+   * NOT start — sessions/auth would be silently broken (no silent fallback).
+   *
+   * Bounded by {@link BOOT_CONNECT_DEADLINE_MS} so a permanently-down Redis (the
+   * default reconnectStrategy would otherwise retry forever) fails the boot fast
+   * → process exits → Docker restarts. Intentional blocking I/O lives in
+   * onApplicationBootstrap, NOT onModuleInit: the no-remote-io-in-onModuleInit
+   * rule (backend.md) targets non-critical warmers, not critical session infra.
+   */
+  async onApplicationBootstrap(): Promise<void> {
+    try {
+      await this.withTimeout(
+        this.client.connect(),
+        BOOT_CONNECT_DEADLINE_MS,
+        'redis-connect',
+      );
+      await this.withTimeout(
+        this.client.ping(),
+        HEALTHCHECK_TIMEOUT_MS,
+        'redis-boot-ping',
+      );
+      this.logger.log(
+        'Session store connecté (connect-redis@9 + node-redis v5)',
+      );
+    } catch (err) {
+      this.logger.error(
+        'Échec connexion Redis au boot — arrêt fatal (fail-fast)',
+        err as Error,
+      );
+      // Release the half-open socket + stop the reconnect loop. Guarded:
+      // destroy() throws ClientClosedError if the socket never opened — we must
+      // not let that mask the original connect failure (err) we want to surface.
+      try {
+        this.client.destroy();
+      } catch {
+        // socket never opened / already destroyed — nothing to release
+      }
+      throw err; // fail-fast → process exits non-zero → Docker restarts
+    }
   }
 
   /**
    * Builds the express-session middleware. The store + session options are
    * encapsulated here so callers never touch the raw store. SESSION_SECRET
-   * resolution (fail-fast in prod, random in dev) is moved verbatim from
-   * main.ts → boot behavior unchanged.
+   * resolution (fail-fast in prod, random in dev) is unchanged from PR-9e.1.
    */
   createSessionMiddleware(): RequestHandler {
     const isProd = process.env.NODE_ENV === 'production';
@@ -75,53 +164,81 @@ export class SessionStoreService implements OnApplicationShutdown {
   }
 
   /**
-   * Connection state — synchronous, no I/O. For ioredis, `status === 'ready'`
-   * means the client is connected and accepting commands. (PR-9e.2 maps this
-   * to node-redis `isReady`.)
+   * Connection state — synchronous, no I/O. node-redis `isReady` is true only
+   * when the socket is open AND the handshake/ready handshake completed (i.e.
+   * accepting commands). Distinct from `isOpen` (socket open but maybe not ready).
    */
   isOpen(): boolean {
-    return this.client.status === 'ready';
+    return this.client.isReady;
   }
 
   /**
-   * Active liveness probe against Redis (PING). Surfaces (throws) on failure
-   * or timeout — never swallows. A bounded timeout is REQUIRED because ioredis
-   * has no default command timeout: a PING on a half-open socket could
-   * otherwise hang the readiness probe indefinitely.
+   * Active liveness probe against Redis (PING). Surfaces (throws) on failure or
+   * timeout — never swallows. The bounded timeout is REQUIRED because node-redis
+   * has no default command timeout: a PING issued while the socket is half-open
+   * (offline queue) could otherwise hang the readiness probe.
    */
   async healthCheck(): Promise<void> {
-    const timeoutMs = 3000;
-    let timer: NodeJS.Timeout | undefined;
-    const timeout = new Promise<never>((_, reject) => {
-      timer = setTimeout(
-        () => reject(new Error(`Redis healthCheck timeout (${timeoutMs}ms)`)),
-        timeoutMs,
-      );
-    });
+    await this.withTimeout(
+      this.client.ping(),
+      HEALTHCHECK_TIMEOUT_MS,
+      'redis-healthcheck',
+    );
+  }
+
+  /**
+   * Graceful shutdown: drain pending commands (bounded), then close. The session
+   * client is closed here and owns no incoming requests at this point. Falls back
+   * to a forced destroy() if the graceful close drains too slowly or fails.
+   */
+  async onApplicationShutdown(): Promise<void> {
     try {
-      await Promise.race([this.client.ping(), timeout]);
+      await this.withTimeout(
+        this.client.close(), // node-redis v5: graceful, waits for pending commands
+        SHUTDOWN_DRAIN_TIMEOUT_MS,
+        'redis-close',
+      );
+    } catch (err) {
+      this.logger.warn(
+        `Redis close() (drain) a échoué/timeout — destroy forcé: ${err}`,
+      );
+      try {
+        this.client.destroy(); // node-redis v5: immediate, rejects pending
+      } catch {
+        // already destroyed / never connected — nothing to release
+      }
+    }
+  }
+
+  /**
+   * Races a promise against a bounded timeout that REJECTS (never resolves to a
+   * default — surfacing the failure is the point). Uses Promise.race so the
+   * loser keeps a handler attached (no unhandledRejection if it settles late).
+   */
+  private async withTimeout<T>(
+    p: Promise<T>,
+    ms: number,
+    label: string,
+  ): Promise<T> {
+    let timer: NodeJS.Timeout | undefined;
+    try {
+      return await Promise.race([
+        p,
+        new Promise<never>((_, reject) => {
+          timer = setTimeout(
+            () => reject(new Error(`${label} timeout (${ms}ms)`)),
+            ms,
+          );
+        }),
+      ]);
     } finally {
       if (timer) clearTimeout(timer);
     }
   }
 
   /**
-   * Graceful shutdown: drain pending replies then close. Wired via
-   * `app.enableShutdownHooks()` (main.ts). Falls back to a forced disconnect
-   * if the graceful quit fails.
-   */
-  async onApplicationShutdown(): Promise<void> {
-    try {
-      await this.client.quit();
-    } catch (err) {
-      this.logger.warn(`Redis quit() a échoué, disconnect forcé: ${err}`);
-      this.client.disconnect();
-    }
-  }
-
-  /**
-   * SESSION_SECRET resolution — moved verbatim from main.ts (ADR-028 Option D,
-   * STRIDE 03-sessions #3, ADR-043 Sprint 1 Plan F). Behavior unchanged:
+   * SESSION_SECRET resolution — unchanged from PR-9e.1 (ADR-028 Option D,
+   * STRIDE 03-sessions #3, ADR-043 Sprint 1 Plan F). Behavior:
    *  - PROD (RW): missing/weak secret → fatal throw.
    *  - PREPROD (NODE_ENV=production + READ_ONLY=true): a weak/missing secret
    *    still refuses to boot (a weak secret exposes all active sessions

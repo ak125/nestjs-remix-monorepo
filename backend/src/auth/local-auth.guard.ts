@@ -5,7 +5,8 @@ import { AuthGuard } from '@nestjs/passport';
 export class LocalAuthGuard extends AuthGuard('local') {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     // Guard valide seulement — le controller gère la session via
-    // promisifyLoginNoRegenerate (Passport 0.7 + connect-redis 5.x compat)
+    // promisifyLoginNoRegenerate (Passport 0.7 session-fixation workaround,
+    // indépendant du store ; voir backend/src/utils/promise-helpers.ts)
     return (await super.canActivate(context)) as boolean;
   }
 
