@@ -436,3 +436,8 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-a1d-sanitize-editorial-sgcontent`
 - **Décision** : Merge branch 'feat/seo-a1d-sanitize-editorial-sgcontent' of https://github.com/ak125/nestjs-remix-monorepo into feat/seo (+4 other commits)
 - **Sortie** : PR #1151 | commits 89db0ec7d ea2fe82e7 ccb2b15e4 e45eddf2b bc3821665
+## 2026-06-25 — fix/catchall-data-suffix-redirects (auto)
+
+- **Branche** : `fix/catchall-data-suffix-redirects`
+- **Décision** : fix(catch-all): strip RR8 .data suffix so legacy 301 redirects fire on client-nav
+- **Sortie** : PR #1150 | commits 601ee8c43
