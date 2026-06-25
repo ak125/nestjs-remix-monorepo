@@ -1,12 +1,16 @@
 import { HttpStatus, Injectable, Logger, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import { BotGuardService } from './bot-guard.service';
+import { SyntheticProbeCredentialService } from '../seo-control-plane/synthetic-probe-credential.service';
 
 @Injectable()
 export class BotGuardMiddleware implements NestMiddleware {
   private readonly logger = new Logger(BotGuardMiddleware.name);
 
-  constructor(private readonly botGuardService: BotGuardService) {}
+  constructor(
+    private readonly botGuardService: BotGuardService,
+    private readonly syntheticProbe: SyntheticProbeCredentialService,
+  ) {}
 
   async use(req: Request, res: Response, next: NextFunction) {
     // 1. Skip health checks and static assets
@@ -60,6 +64,20 @@ export class BotGuardMiddleware implements NestMiddleware {
       // identity is proven by forward-confirmed reverse DNS.
       if (await this.botGuardService.isVerifiedSearchEngine(ip, userAgent)) {
         (req as Request & { isVerifiedBot?: boolean }).isVerifiedBot = true;
+        this.botGuardService.trackAllowed(country).catch(() => {});
+        return next();
+      }
+
+      // 6b. Verified internal synthetic probe (seo-control-plane L1). Identity is
+      // an HMAC credential header — NEVER the User-Agent. Like a verified crawler
+      // it bypasses geo + behavioral (its mono-IP burst would otherwise score as
+      // suspicious and 403), while the rate-limit exemption is further scoped to
+      // public-catalogue GETs in app.module.ts skipIf. The explicit IP blocklist
+      // above still wins. Fail-closed: verify() returns false on any error.
+      if (this.syntheticProbe.verify(req)) {
+        (
+          req as Request & { isVerifiedSyntheticProbe?: boolean }
+        ).isVerifiedSyntheticProbe = true;
         this.botGuardService.trackAllowed(country).catch(() => {});
         return next();
       }

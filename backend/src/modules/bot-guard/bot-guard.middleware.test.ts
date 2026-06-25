@@ -2,7 +2,10 @@ import { BotGuardMiddleware } from './bot-guard.middleware';
 
 type ServiceMock = Record<string, jest.Mock | (() => boolean)>;
 
-function makeMiddleware(overrides: ServiceMock = {}) {
+function makeMiddleware(
+  overrides: ServiceMock = {},
+  probeVerify: () => boolean = () => false,
+) {
   const service = {
     isEnabled: () => true,
     isIpBlocked: jest.fn(async () => false),
@@ -13,8 +16,14 @@ function makeMiddleware(overrides: ServiceMock = {}) {
     trackAllowed: jest.fn(async () => undefined),
     ...overrides,
   };
-  const middleware = new BotGuardMiddleware(service as never);
-  return { middleware, service };
+  // Synthetic-probe credential: par défaut verify=false (chemin synthétique
+  // jamais pris → comportement existant inchangé).
+  const syntheticProbe = { verify: jest.fn(probeVerify) };
+  const middleware = new BotGuardMiddleware(
+    service as never,
+    syntheticProbe as never,
+  );
+  return { middleware, service, syntheticProbe };
 }
 
 function makeReqRes(
@@ -61,6 +70,50 @@ describe('BotGuardMiddleware ordering', () => {
     expect((res as { statusCode: number }).statusCode).toBe(200);
     // geo never consulted because the verified bypass returned first
     expect(service.isCountryBlocked).not.toHaveBeenCalled();
+  });
+
+  it('lets a verified synthetic probe through (dedicated flag) and bypasses geo + behavioral', async () => {
+    const { middleware, service, syntheticProbe } = makeMiddleware(
+      {
+        isVerifiedSearchEngine: jest.fn(async () => false), // NOT a search engine
+        isCountryBlocked: jest.fn(async () => true), // would block if consulted
+        calculateSuspicionScore: jest.fn(() => 100), // would block if consulted
+      },
+      () => true, // valid HMAC credential
+    );
+    const { req, res, next } = makeReqRes({
+      'cf-ipcountry': 'DE',
+      'cf-connecting-ip': '203.0.113.7', // public client IP → reaches the probe check
+    });
+
+    await middleware.use(req, res, next);
+
+    expect(syntheticProbe.verify).toHaveBeenCalledTimes(1);
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(
+      (req as { isVerifiedSyntheticProbe?: boolean }).isVerifiedSyntheticProbe,
+    ).toBe(true);
+    // distinct from the search-engine flag (least-privilege; skipIf scopes it)
+    expect((req as { isVerifiedBot?: boolean }).isVerifiedBot).toBeUndefined();
+    expect((res as { statusCode: number }).statusCode).toBe(200);
+    expect(service.isCountryBlocked).not.toHaveBeenCalled();
+    expect(service.calculateSuspicionScore).not.toHaveBeenCalled();
+  });
+
+  it('does NOT set the synthetic flag without a valid credential (verify=false → normal flow)', async () => {
+    const { middleware, syntheticProbe } = makeMiddleware(); // default verify=false
+    const { req, res, next } = makeReqRes({
+      'cf-ipcountry': 'DE',
+      'cf-connecting-ip': '203.0.113.7',
+    });
+
+    await middleware.use(req, res, next);
+
+    expect(syntheticProbe.verify).toHaveBeenCalledTimes(1);
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(
+      (req as { isVerifiedSyntheticProbe?: boolean }).isVerifiedSyntheticProbe,
+    ).toBeUndefined();
   });
 
   it('still honors an explicit operator IP block even for a would-be verified crawler (ip_block wins, no DNS work)', async () => {
