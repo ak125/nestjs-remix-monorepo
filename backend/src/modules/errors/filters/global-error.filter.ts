@@ -12,6 +12,35 @@ import { ErrorService } from '../services/error.service';
 import { DomainException } from '@common/exceptions';
 import { RedirectException } from '../../../auth/redirected-error.exception';
 
+/**
+ * Libellés FR par code HTTP pour la page d'erreur générique servie aux
+ * navigateurs/crawlers (429, 5xx et autres 4xx non spécialisés). Miroir
+ * volontairement minimal de `getStatusDescription()` côté frontend
+ * (`frontend/app/components/errors/ErrorGeneric.tsx`) — le rendu Remix reste la
+ * surface riche ; ceci est le repli serveur lorsqu'un throttler (429) ou une
+ * 5xx court-circuite avant que Remix ne rende. 404/410/412/451 sont traités
+ * en amont (handlers dédiés) et n'atteignent jamais ce chemin.
+ */
+const GENERIC_ERROR_LABELS_FR: Record<number, string> = {
+  400: 'Requête incorrecte',
+  401: 'Non autorisé',
+  403: 'Accès interdit',
+  405: 'Méthode non autorisée',
+  408: "Délai d'attente dépassé",
+  422: 'Entité non traitable',
+  429: 'Trop de requêtes',
+  500: 'Erreur serveur interne',
+  502: 'Passerelle incorrecte',
+  503: 'Service indisponible',
+  504: "Délai d'attente de la passerelle",
+};
+
+/** Retry-After (secondes) pour les statuts où il a un sens sémantique. */
+const RETRY_AFTER_SECONDS: Record<number, number> = {
+  429: 60, // throttler: fenêtre `medium` = 60s (app.module.ts)
+  503: 120,
+};
+
 @Catch()
 export class GlobalErrorFilter implements ExceptionFilter {
   private readonly logger = new Logger(GlobalErrorFilter.name);
@@ -365,21 +394,95 @@ export class GlobalErrorFilter implements ExceptionFilter {
       exception instanceof Error ? exception.stack : undefined,
     );
 
-    // Réponse d'erreur
-    const errorResponse = {
-      statusCode: status,
-      timestamp: new Date().toISOString(),
-      path: request.url,
-      method: request.method,
-      message,
-      error: code,
-    };
-
+    // Réponse d'erreur — content negotiation (même pattern isApiRequest que
+    // handle404/410/412/451) : navigateur/crawler → page HTML status-aware
+    // (code HTTP préservé, jamais de 302, noindex) ; client API → JSON inchangé.
+    // NB : 429/5xx sont rendus en HTML INLINE (et non via une route Remix comme
+    // /404) car le throttler (APP_GUARD) et les erreurs serveur court-circuitent
+    // AVANT que Remix ne rende ; un 302 vers une route Remix perdrait le code
+    // HTTP (un 429/503 doit rester 429/503 pour les crawlers).
     try {
-      response.status(status).json(errorResponse);
+      if (this.isApiRequest(request)) {
+        response.status(status).json({
+          statusCode: status,
+          timestamp: new Date().toISOString(),
+          path: request.url,
+          method: request.method,
+          message,
+          error: code,
+        });
+      } else {
+        this.sendErrorHtml(request, response, status);
+      }
     } catch (err) {
       this.logger.error('Failed to send error response:', err);
     }
+  }
+
+  /**
+   * Sert une page d'erreur HTML status-aware au navigateur/crawler.
+   * Code HTTP PRÉSERVÉ (jamais de 302), `X-Robots-Tag: noindex, follow`,
+   * `Retry-After` sur 429/503. Aucune donnée dynamique/interne n'est reflétée
+   * dans le HTML (pas de fuite d'info ni de surface XSS).
+   */
+  private sendErrorHtml(
+    request: Request,
+    response: Response,
+    status: number,
+  ): void {
+    if (response.headersSent) return;
+
+    response.setHeader('Content-Type', 'text/html; charset=utf-8');
+    response.setHeader('X-Robots-Tag', 'noindex, follow');
+
+    const retryAfter = RETRY_AFTER_SECONDS[status];
+    if (retryAfter) response.setHeader('Retry-After', String(retryAfter));
+
+    response.status(status).send(this.renderErrorPageHtml(status));
+  }
+
+  /**
+   * Page d'erreur autonome (aucune dépendance, mobile-first, accessible).
+   * Ne rend QUE le code HTTP (entier contrôlé) + un libellé FR statique —
+   * aucune chaîne dynamique reflétée.
+   */
+  private renderErrorPageHtml(status: number): string {
+    const label = GENERIC_ERROR_LABELS_FR[status] ?? 'Erreur';
+    const isServerError = status >= 500;
+    const accent = isServerError ? '#dc2626' : '#ea580c'; // red-600 / orange-600
+    const help = isServerError
+      ? 'Un problème technique est survenu de notre côté. Nos équipes ont été notifiées.'
+      : 'Veuillez réessayer dans quelques instants.';
+
+    return `<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, follow">
+<title>${status} — ${label} | Automecanik</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
+    background:#f3f4f6;color:#111827;padding:24px;
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  main{max-width:32rem;text-align:center}
+  .code{font-size:4rem;font-weight:800;line-height:1;color:${accent};margin:0}
+  h1{font-size:1.5rem;font-weight:700;margin:.5rem 0 0}
+  p{color:#6b7280;margin:.75rem 0 0}
+  a{display:inline-block;margin-top:1.5rem;padding:.625rem 1.25rem;border-radius:.5rem;
+    background:${accent};color:#fff;text-decoration:none;font-weight:600}
+</style>
+</head>
+<body>
+<main>
+  <p class="code">${status}</p>
+  <h1>${label}</h1>
+  <p>${help}</p>
+  <a href="/">Retour à l'accueil</a>
+</main>
+</body>
+</html>`;
   }
 
   /**
