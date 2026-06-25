@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 
 import { DynamicSeoV4UltimateService } from '../dynamic-seo-v4-ultimate.service';
+import { SeoPlaceholderEventsService } from '../services/seo-placeholder-events.service';
 import { SeoSurfaceRegistry } from '../registries/seo-surface.registry';
 import { SeoVariantFamilyRegistry } from '../registries/seo-variant-family.registry';
 import { R2IndexabilityGate } from '../services/policies/r2-indexability-gate.service';
@@ -25,7 +26,10 @@ import { SeoV4MonitoringService } from '../services/seo-v4-monitoring.service';
  *   - le cache résultat se comporte correctement (HIT après MISS)
  */
 describe('DynamicSeoV4UltimateService → chain delegation (PR-2d E2E)', () => {
-  function buildV4(opts: { templateRow: Record<string, unknown> | null }) {
+  function buildV4(opts: {
+    templateRow: Record<string, unknown> | null;
+    placeholderEvents?: { record: jest.Mock };
+  }) {
     const renderer = new SeoTemplateRenderer();
     const switchSelector = new SeoSwitchSelector(
       new SeoVariantFamilyRegistry(),
@@ -97,7 +101,15 @@ describe('DynamicSeoV4UltimateService → chain delegation (PR-2d E2E)', () => {
       SeoV4MonitoringService.prototype,
     ) as SeoV4MonitoringService;
 
-    return new DynamicSeoV4UltimateService(orchestrator, monitoring);
+    const placeholderEvents = opts.placeholderEvents ?? {
+      record: jest.fn().mockResolvedValue({ ok: true }),
+    };
+
+    return new DynamicSeoV4UltimateService(
+      orchestrator,
+      monitoring,
+      placeholderEvents as unknown as SeoPlaceholderEventsService,
+    );
   }
 
   const baseVars = {
@@ -235,5 +247,77 @@ describe('DynamicSeoV4UltimateService → chain delegation (PR-2d E2E)', () => {
       v4.generateCompleteSeo(1, 1, invalidVars),
     ).rejects.toBeInstanceOf(BadRequestException);
     expect(defaultSpy).not.toHaveBeenCalled();
+  });
+
+  // ── A1a-observe : rendre observables les replis silencieux (detection-only) ──
+
+  it('A1a-observe : émet runtime_default_fallback quand le fallback est pris', async () => {
+    const record = jest.fn().mockResolvedValue({ ok: true });
+    const v4 = buildV4({ templateRow: null, placeholderEvents: { record } });
+
+    await v4.generateCompleteSeo(5, 50, baseVars);
+
+    const fb = record.mock.calls
+      .map((c) => c[0])
+      .find((e) => e.trigger === 'runtime_default_fallback');
+    expect(fb).toBeDefined();
+    expect(fb.pg_id).toBe(5);
+    expect(fb.type_id).toBe(50);
+    // baseVars porte un contexte véhicule complet → version fallback.
+    expect(fb.fallback_version).toBe('4.1.0-fallback');
+  });
+
+  it('A1a-observe : émet residual_marker_detected sur marqueurs orphelins — marker_count vs stripped_count', async () => {
+    const record = jest.fn().mockResolvedValue({ ok: true });
+    const v4 = buildV4({
+      templateRow: {
+        sgc_id: 7,
+        // #Gamme# est résolu ; #ZzUnknown# (lettres → strippé) et #ZzDigit_9#
+        // (chiffre → SURVIT au strip /#[A-Za-z_]+#/g) restent orphelins.
+        sgc_title: '#Gamme# #ZzUnknown# #ZzDigit_9#',
+        sgc_descrip: 'Description simple sans marqueur',
+      },
+      placeholderEvents: { record },
+    });
+
+    await v4.generateCompleteSeo(7, 70, baseVars);
+
+    const titleEvents = record.mock.calls
+      .map((c) => c[0])
+      .filter(
+        (e) =>
+          e.trigger === 'residual_marker_detected' && e.field === 'title',
+      );
+    expect(titleEvents.length).toBeGreaterThan(0);
+    const ev = titleEvents[0];
+    expect(ev.marker_count).toBeGreaterThanOrEqual(2); // les 2 orphelins
+    expect(ev.stripped_count).toBeGreaterThanOrEqual(1); // seul #ZzUnknown# est retiré
+    expect(ev.markers).toEqual(
+      expect.arrayContaining(['#ZzUnknown#', '#ZzDigit_9#']),
+    );
+  });
+
+  it('A1a-observe : sortie propre (aucun #marqueur#) → aucun residual_marker_detected', async () => {
+    const record = jest.fn().mockResolvedValue({ ok: true });
+    // Fallback : title/description sont construits par littéraux, sans #...#.
+    const v4 = buildV4({ templateRow: null, placeholderEvents: { record } });
+
+    await v4.generateCompleteSeo(1, 1, baseVars);
+
+    const residual = record.mock.calls
+      .map((c) => c[0])
+      .filter((e) => e.trigger === 'residual_marker_detected');
+    expect(residual.length).toBe(0);
+  });
+
+  it('A1a-observe : un emit qui rejette ne casse pas le rendu (fire-and-forget)', async () => {
+    const record = jest.fn().mockRejectedValue(new Error('db down'));
+    const v4 = buildV4({ templateRow: null, placeholderEvents: { record } });
+
+    const result = await v4.generateCompleteSeo(1, 1, baseVars);
+
+    // La page se rend normalement malgré l'échec de l'emit.
+    expect(result.title).toContain('Renault');
+    expect(record).toHaveBeenCalled();
   });
 });

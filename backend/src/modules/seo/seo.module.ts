@@ -28,6 +28,7 @@ import { AiContentModule } from '../ai-content/ai-content.module';
 // ═══════════════════════════════════════════════════════════════════════════
 import { SeoService } from './seo.service';
 import { DynamicSeoV4UltimateService } from './dynamic-seo-v4-ultimate.service';
+import { SeoPlaceholderEventsService } from './services/seo-placeholder-events.service';
 import { SeoV4MonitoringService } from './services/seo-v4-monitoring.service';
 import { HreflangService } from './infrastructure/hreflang.service';
 import { ProductImageService } from './services/product-image.service';
@@ -213,6 +214,7 @@ import { R2V2Module } from './r2/r2-v2.module';
     SeoService,
     SeoV4MonitoringService,
     DynamicSeoV4UltimateService,
+    SeoPlaceholderEventsService, // A1a-observe — emit __seo_event_log on silent strip + runtime fallback
     HreflangService,
     ProductImageService,
     RobotsTxtService,

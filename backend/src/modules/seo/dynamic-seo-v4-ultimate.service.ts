@@ -29,6 +29,7 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { SeoChainOrchestratorService } from './services/chain/seo-chain-orchestrator.service';
 import { SeoV4MonitoringService } from './services/seo-v4-monitoring.service';
+import { SeoPlaceholderEventsService } from './services/seo-placeholder-events.service';
 import {
   SeoVariablesSchema,
   SeoVariables,
@@ -75,6 +76,7 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
   constructor(
     private readonly chain: SeoChainOrchestratorService,
     private readonly monitoring: SeoV4MonitoringService,
+    private readonly placeholderEvents: SeoPlaceholderEventsService,
   ) {
     super();
   }
@@ -135,7 +137,12 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
       // Si la chaîne n'a pas trouvé de template DB, on tombe sur le fallback
       // legacy (titre/description programmatiques par contexte).
       if (!chainOutput.template.title) {
-        const fallback = this.generateDefaultSeo(validatedVars, startTime);
+        const fallback = this.generateDefaultSeo(
+          validatedVars,
+          startTime,
+          pgId,
+          typeId,
+        );
         this.setCachedData(cacheKey, fallback, this.getCacheTTL(validatedVars));
         return fallback;
       }
@@ -152,7 +159,7 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
       this.logger.error(
         `❌ [SEO V4→chain] Erreur : ${(error as Error).message}`,
       );
-      return this.generateDefaultSeo(validatedVars, startTime);
+      return this.generateDefaultSeo(validatedVars, startTime, pgId, typeId);
     }
   }
 
@@ -170,8 +177,12 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
     ).length;
 
     return {
-      title: this.cleanContent(chain.template.title, true),
-      description: this.cleanContent(chain.template.description),
+      title: this.cleanContent(chain.template.title, true, 'title'),
+      description: this.cleanContent(
+        chain.template.description,
+        false,
+        'description',
+      ),
       h1: chain.template.h1,
       preview: chain.template.preview,
       content: chain.template.content,
@@ -197,7 +208,31 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
    * propres, mais on garde ce coup d'oil pour le legacy fallback (où certains
    * marqueurs synthétisés peuvent contenir des résidus).
    */
-  private cleanContent(content: string, isTitle = false): string {
+  private cleanContent(
+    content: string,
+    isTitle = false,
+    field?: 'title' | 'description',
+  ): string {
+    // A1a-observe : rend OBSERVABLE le strip silencieux des marqueurs `#X#` non
+    // résolus. Détection read-only AVANT le strip ; le strip lui-même
+    // (.replace ci-dessous) est INCHANGÉ — on ne fait qu'émettre un signal.
+    // Le strip `/#[A-Za-z_]+#/g` ne retire que les marqueurs sans chiffre ; les
+    // marqueurs à chiffre (`#LinkGamme_99#`) survivent dans la sortie → on
+    // mesure les deux (marker_count détecté vs stripped_count réellement retiré).
+    const detected = content.match(/#[A-Za-z0-9_]+#/g);
+    if (detected && detected.length > 0) {
+      const stripped = content.match(/#[A-Za-z_]+#/g);
+      void this.placeholderEvents
+        .record({
+          trigger: 'residual_marker_detected',
+          field,
+          marker_count: detected.length,
+          stripped_count: stripped?.length ?? 0,
+          markers: detected.slice(0, 10),
+        })
+        .catch(() => {});
+    }
+
     let cleaned = content
       .replace(/#[A-Za-z_]+#/g, '')
       .replace(/\s+/g, ' ')
@@ -226,6 +261,8 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
   private generateDefaultSeo(
     variables: SeoVariables,
     startTime: number,
+    pgId?: number,
+    typeId?: number,
   ): CompleteSeoResult {
     const processingTime = Date.now() - startTime;
     this.processingTimes.push(processingTime);
@@ -233,6 +270,17 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
     const hasVehicleContext =
       variables.marque && variables.modele && variables.type;
     const hasGammeOnly = variables.gamme && !hasVehicleContext;
+
+    // A1a-observe : le fallback runtime V4 devient OBSERVABLE (au lieu d'un
+    // repli silencieux). fire-and-forget — ne bloque ni ne casse jamais le rendu.
+    void this.placeholderEvents
+      .record({
+        trigger: 'runtime_default_fallback',
+        pg_id: pgId,
+        type_id: typeId,
+        fallback_version: hasVehicleContext ? '4.1.0-fallback' : '4.1.0-unknown',
+      })
+      .catch(() => {});
 
     if (!hasVehicleContext && !hasGammeOnly) {
       this.unknownPagesDetected.push({
@@ -279,8 +327,8 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
     }
 
     return {
-      title: this.cleanContent(title, true),
-      description: this.cleanContent(description),
+      title: this.cleanContent(title, true, 'title'),
+      description: this.cleanContent(description, false, 'description'),
       h1,
       preview,
       content,
