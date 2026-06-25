@@ -24,7 +24,7 @@
  * @version 4.1.0 (refactor seo-v9 PR-2c)
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { SeoChainOrchestratorService } from './services/chain/seo-chain-orchestrator.service';
@@ -89,7 +89,23 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
     variables: SeoVariables,
   ): Promise<CompleteSeoResult> {
     const startTime = Date.now();
-    const validatedVars = SeoVariablesSchema.parse(variables);
+
+    // Fail-CLOSED à l'entrée chaîne (A1b) : `safeParse` plutôt que `.parse()`.
+    // Variables invalides → 400 explicite/observable, levé AVANT le `try` plus
+    // bas — donc le throw échappe au `catch` fail-open (qui retournerait
+    // `generateDefaultSeo`) : on ne compose JAMAIS une page depuis des variables
+    // invalides. Inputs valides → `parsed.data` identique à l'ancien `.parse()`
+    // (sortie inchangée). Seuls appelants = les 4 endpoints debug V4.
+    const parsed = SeoVariablesSchema.safeParse(variables);
+    if (!parsed.success) {
+      this.logger.error(
+        `❌ [SEO V4→chain] SeoVariables invalides (pgId=${pgId}, typeId=${typeId}) : ${JSON.stringify(
+          parsed.error.flatten(),
+        )}`,
+      );
+      throw new BadRequestException(parsed.error.flatten());
+    }
+    const validatedVars = parsed.data;
 
     this.logger.log(
       `🎯 [SEO V4→chain] Génération complète : pgId=${pgId}, typeId=${typeId}`,
