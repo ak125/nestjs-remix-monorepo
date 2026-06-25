@@ -38,8 +38,8 @@ export class VehicleContextModule implements NestModule {
     consumer
       .apply(VehicleContextMiddleware)
       .forRoutes(
-        { path: 'api/diagnostic/*', method: RequestMethod.ALL },
-        { path: 'api/v1/orientation/*', method: RequestMethod.ALL },
+        { path: 'api/diagnostic/*path', method: RequestMethod.ALL },
+        { path: 'api/v1/orientation/*path', method: RequestMethod.ALL },
       );
   }
 }

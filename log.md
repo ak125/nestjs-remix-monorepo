@@ -441,3 +441,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/catchall-data-suffix-redirects`
 - **Décision** : fix(catch-all): strip RR8 .data suffix so legacy 301 redirects fire on client-nav
 - **Sortie** : PR #1150 | commits 601ee8c43
+
+## 2026-06-25 — feat/pr9f-nestjs11 (auto)
+
+- **Branche** : `feat/pr9f-nestjs11`
+- **Décision** : chore(registry): register backend/src/common/{utils,decorators} ownership (PR-9f, owner-applied) (+1 other commit)
+- **Sortie** : PR #1152 | commits bffbf89f9 e74b57c6d

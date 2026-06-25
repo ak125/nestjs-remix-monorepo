@@ -4,7 +4,6 @@ import {
   Post,
   Put,
   Body,
-  Param,
   Query,
   UseGuards,
   Logger,
@@ -14,6 +13,7 @@ import { AuthenticatedGuard } from '@auth/authenticated.guard';
 import { UrlCompatibilityService } from './validation/url-compatibility.service';
 import { SeoKpisService } from './services/seo-kpis.service';
 import { OperationFailedException } from '@common/exceptions';
+import { SplatPath } from '@common/decorators';
 
 interface MetadataDto {
   page_url: string;
@@ -49,10 +49,10 @@ export class SeoController {
   /**
    * GET /seo/metadata/:url - Récupère les métadonnées SEO d'une page
    */
-  @Get('metadata/:url(.*)')
-  async getMetadata(@Param('url') url: string) {
+  @Get('metadata/{*url}')
+  async getMetadata(@SplatPath('url') url: string) {
     try {
-      const decodedUrl = decodeURIComponent(url);
+      const decodedUrl = url;
       const metadata = await this.seoService.getMetadata(decodedUrl);
 
       if (!metadata) {
@@ -112,10 +112,10 @@ export class SeoController {
   /**
    * GET /seo/redirect/:url - Vérifie les redirections pour une URL
    */
-  @Get('redirect/:url(.*)')
-  async getRedirect(@Param('url') url: string) {
+  @Get('redirect/{*url}')
+  async getRedirect(@SplatPath('url') url: string) {
     try {
-      const decodedUrl = decodeURIComponent(url);
+      const decodedUrl = url;
       const redirect = await this.seoService.getRedirect(decodedUrl);
 
       if (!redirect) {
