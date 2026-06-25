@@ -278,7 +278,9 @@ export class DynamicSeoV4UltimateService extends SupabaseBaseService {
         trigger: 'runtime_default_fallback',
         pg_id: pgId,
         type_id: typeId,
-        fallback_version: hasVehicleContext ? '4.1.0-fallback' : '4.1.0-unknown',
+        fallback_version: hasVehicleContext
+          ? '4.1.0-fallback'
+          : '4.1.0-unknown',
       })
       .catch(() => {});
 

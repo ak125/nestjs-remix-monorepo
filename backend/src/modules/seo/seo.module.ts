@@ -9,6 +9,10 @@
  * - Sitemap: V10 (7 types, 714k URLs), Hubs, Scoring, Delta, Streaming, Hygiene
  * - Content: Reference R4, Diagnostic R5, SeoGenerator
  */
+// @role-purity-skip — module aggrégateur : son header nomme volontairement
+// plusieurs rôles SEO (R4/R5/…) car le module enregistre les controllers/services
+// de TOUS les rôles. Opt-out sanctionné (cf. check-role-purity.ts, même raison
+// que le skip du SoT forbidden-overlap.ts).
 
 import { Module, Logger, forwardRef } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';

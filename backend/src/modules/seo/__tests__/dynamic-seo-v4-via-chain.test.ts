@@ -285,8 +285,7 @@ describe('DynamicSeoV4UltimateService → chain delegation (PR-2d E2E)', () => {
     const titleEvents = record.mock.calls
       .map((c) => c[0])
       .filter(
-        (e) =>
-          e.trigger === 'residual_marker_detected' && e.field === 'title',
+        (e) => e.trigger === 'residual_marker_detected' && e.field === 'title',
       );
     expect(titleEvents.length).toBeGreaterThan(0);
     const ev = titleEvents[0];
