@@ -424,3 +424,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-a1a-observe-placeholder-events`
 - **Décision** : fix(seo): A1a-observe CI gates — prettier format + role-purity skip on aggregator module (+2 other commits)
 - **Sortie** : PR #1146 | commits 4b3d6ffb9 427927bdc d949b723e
+
+## 2026-06-25 — feat/seo-a1d-sanitize-editorial-sgcontent (auto)
+
+- **Branche** : `feat/seo-a1d-sanitize-editorial-sgcontent`
+- **Décision** : fix(seo): A1d — sanitize sg_content editorial HTML at the render boundary (latent stored-XSS)
+- **Sortie** : PR #1151 | commits bc3821665
