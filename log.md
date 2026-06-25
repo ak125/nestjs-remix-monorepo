@@ -406,3 +406,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `worktree-feat+pr9e1-session-store-abstraction`
 - **Décision** : chore(registry): map backend/src/modules/session/** ownership (D11/auth-team) (+3 other commits)
 - **Sortie** : PR aucune | commits bd7d1a547 3670bc1b7 5cbe8a899 96db34e5f
+
+## 2026-06-25 — worktree-feat+pr9e2-session-impl-swap (auto)
+
+- **Branche** : `worktree-feat+pr9e2-session-impl-swap`
+- **Décision** : feat(session): swap session store to connect-redis@9 + node-redis v5, fail-fast boot (PR-9e.2)
+- **Sortie** : PR aucune | commits 9e8a273bb

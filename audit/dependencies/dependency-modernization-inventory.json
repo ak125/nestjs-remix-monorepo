@@ -1,5 +1,5 @@
 {
-  "artifact_immutability_hash": "sha256:f6f46688a4650ed3e87ec2442c1bd10b4ffa35ab6f3e186ddcab5ccc8c7c98d8",
+  "artifact_immutability_hash": "sha256:968a87827a9d6eb273a4338775e7c40c9f4e3c6aa8dda8d38dc89e483af7df52",
   "divergences": [
     {
       "kind": "specifier",
@@ -122,6 +122,66 @@
       ]
     },
     {
+      "kind": "resolved",
+      "name": "@types/node",
+      "occurrences": [
+        {
+          "declaredIn": "backend/package.json",
+          "specifier": "^24",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "declaredIn": "packages/cwv-taxonomy/package.json",
+          "specifier": "^24",
+          "workspace": "@fafa/design-tokens"
+        },
+        {
+          "declaredIn": "packages/database-types/package.json",
+          "specifier": "^24",
+          "workspace": "@repo/cwv-taxonomy"
+        },
+        {
+          "declaredIn": "packages/design-tokens/package.json",
+          "specifier": "^24",
+          "workspace": "@repo/database-types"
+        },
+        {
+          "declaredIn": "packages/domain-commerce/package.json",
+          "specifier": "^24",
+          "workspace": "@repo/domain-commerce"
+        },
+        {
+          "declaredIn": "packages/registry/package.json",
+          "specifier": "^24",
+          "workspace": "@repo/registry"
+        },
+        {
+          "declaredIn": "packages/seo-role-contracts/package.json",
+          "specifier": "^24",
+          "workspace": "@repo/seo-role-contracts"
+        },
+        {
+          "declaredIn": "packages/seo-roles/package.json",
+          "specifier": "^24",
+          "workspace": "@repo/seo-roles"
+        },
+        {
+          "declaredIn": "packages/seo-types/package.json",
+          "specifier": "^24",
+          "workspace": "@repo/seo-types"
+        },
+        {
+          "declaredIn": "packages/seo-url-contract/package.json",
+          "specifier": "^24",
+          "workspace": "@repo/seo-url-contract"
+        }
+      ],
+      "resolved_versions": [
+        "18.19.130",
+        "24.13.2"
+      ]
+    },
+    {
       "kind": "specifier",
       "name": "autoprefixer",
       "occurrences": [
@@ -169,6 +229,21 @@
         "1.20.4",
         "1.20.5",
         "2.3.0"
+      ]
+    },
+    {
+      "kind": "resolved",
+      "name": "connect-redis",
+      "occurrences": [
+        {
+          "declaredIn": "backend/package.json",
+          "specifier": "^5.2.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
+      "resolved_versions": [
+        "5.2.0",
+        "9.0.0"
       ]
     },
     {
@@ -640,6 +715,21 @@
     },
     {
       "kind": "resolved",
+      "name": "undici",
+      "occurrences": [
+        {
+          "declaredIn": "backend/package.json",
+          "specifier": "^7.13.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
+      "resolved_versions": [
+        "7.28.0",
+        "8.5.0"
+      ]
+    },
+    {
+      "kind": "resolved",
       "name": "vite",
       "occurrences": [
         {
@@ -886,7 +976,7 @@
           ]
         },
         {
-          "divergent_resolved": false,
+          "divergent_resolved": true,
           "divergent_specifiers": false,
           "name": "connect-redis",
           "occurrences": [
@@ -897,7 +987,8 @@
             }
           ],
           "resolved_versions": [
-            "5.2.0"
+            "5.2.0",
+            "9.0.0"
           ]
         },
         {
@@ -3892,7 +3983,7 @@
     "deps_registry": "audit/registry/deps.json",
     "deps_registry_sha": "sha256:9b722879fab181ddf8a7942e3c00324fd6d8fddd5323646c2d7f939e7739234d",
     "lockfile": "package-lock.json",
-    "lockfile_sha": "sha256:7b0b689e4b6c0a70b3bbe92dee8777fbdb6b8cf3f30b3a47674386b8a3ef778e",
+    "lockfile_sha": "sha256:06250392b53ba4f116eac5b1597a0c4101817fbad2f6e83c5942e84085af2425",
     "overlay": "audit/dependencies/family-overlay.yaml",
     "overlay_sha": "sha256:42597019658ecd86a9df3c4f64505542d2f89192ab1eef12b9ae218ea5df4728"
   },
@@ -3921,7 +4012,7 @@
       "pr-9f": 17,
       "pr-9g": 0
     },
-    "divergent_packages_count": 34,
+    "divergent_packages_count": 37,
     "families_count": 12,
     "total_occurrences": 339,
     "total_packages": 231,
@@ -4785,7 +4876,7 @@
         }
       ],
       "resolved_versions": [
-        "0.0.23"
+        "<unresolved>"
       ]
     },
     {
@@ -4970,7 +5061,7 @@
       ]
     },
     {
-      "divergent_resolved": false,
+      "divergent_resolved": true,
       "divergent_specifiers": false,
       "name": "@types/node",
       "occurrences": [
@@ -5026,6 +5117,7 @@
         }
       ],
       "resolved_versions": [
+        "18.19.130",
         "24.13.2"
       ]
     },
@@ -6480,7 +6572,7 @@
       ]
     },
     {
-      "divergent_resolved": false,
+      "divergent_resolved": true,
       "divergent_specifiers": false,
       "name": "undici",
       "occurrences": [
@@ -6491,7 +6583,8 @@
         }
       ],
       "resolved_versions": [
-        "7.28.0"
+        "7.28.0",
+        "8.5.0"
       ]
     },
     {
