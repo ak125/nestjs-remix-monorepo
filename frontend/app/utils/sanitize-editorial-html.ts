@@ -7,11 +7,14 @@
  * que tous les sinks éditoriaux réutilisent la MÊME allowlist DOMPurify — pas de
  * sanitisation dupliquée, pas de sink brut non couvert.
  *
- * Deux étages :
- *  1. nettoyage des résidus Word/Microsoft + suppression des `style=` inline
- *     (html-react-parser plante côté SSR si `style` arrive en string) ;
- *  2. `DOMPurify.sanitize` avec une allowlist stricte de tags/attributs éditoriaux
- *     (strip scripts, handlers d'événements, iframes, `javascript:`…).
+ * **DOMPurify est l'unique autorité de sanitisation** (allowlist stricte de
+ * tags/attributs éditoriaux). Il retire à lui seul : scripts, handlers
+ * d'événements, iframes, `javascript:`, toute balise hors-allowlist (résidus
+ * Word `<o:p>`/`<spancalibri>`…) et tout attribut hors-allowlist — dont `style=`
+ * (→ html-react-parser SSR-safe). On NE fait AUCun strip de balise par regex :
+ * la sanitisation HTML par regex est incomplète/contournable (CWE-116). Seul un
+ * post-traitement cosmétique (normalisation des blancs) s'applique, sur HTML
+ * déjà sûr — il ne touche jamais à la sécurité.
  *
  * Le contenu éditorial est du HTML *par conception* (`<h2>`/`<p>`/`<table>`…) :
  * on **sanitise**, on n'**échappe pas** (échapper rendrait les balises littérales).
@@ -85,30 +88,16 @@ const ALLOWED_ATTR = [
 export function sanitizeEditorialHtml(html: string): string {
   if (!html || typeof html !== "string") return "";
 
-  let cleaned = html;
-
-  // Résidus Word/Microsoft : <spancalibri…> → <span>, tags à guillemets invalides.
-  cleaned = cleaned.replace(/<span[a-zA-Z][^>]*>/gi, "<span>");
-  cleaned = cleaned.replace(/<[a-z]+["',][^>]*>/gi, "");
-
-  // 🛡️ SSR : supprimer les `style=` inline (html-react-parser plante si style=string).
-  cleaned = cleaned.replace(/\s+style="[^"]*"/gi, "");
-
-  // Namespaces XML Word + conditionnels.
-  cleaned = cleaned.replace(/<o:[^>]*>[\s\S]*?<\/o:[^>]*>/gi, "");
-  cleaned = cleaned.replace(/<w:[^>]*>[\s\S]*?<\/w:[^>]*>/gi, "");
-  cleaned = cleaned.replace(/<m:[^>]*>[\s\S]*?<\/m:[^>]*>/gi, "");
-  cleaned = cleaned.replace(/<!\[if[^>]*>[\s\S]*?<!\[endif\]>/gi, "");
-
-  // Spans vides + espaces multiples.
-  cleaned = cleaned.replace(/<span>\s*<\/span>/gi, "");
-  cleaned = cleaned.replace(/\s+/g, " ");
-
-  // Sanitisation XSS (strip scripts, handlers, iframes, javascript:…).
-  cleaned = DOMPurify.sanitize(cleaned, {
+  // 🛡️ Unique autorité de sanitisation. L'allowlist retire scripts, handlers,
+  // iframes, `javascript:`, les balises hors-allowlist (résidus Word `<o:p>`,
+  // `<spancalibri>`…) et les attributs hors-allowlist (dont `style=` → SSR-safe).
+  // Pas de strip de balise par regex (sanitisation regex = incomplète, CWE-116).
+  const safe = DOMPurify.sanitize(html, {
     ALLOWED_TAGS,
     ALLOWED_ATTR,
   });
 
-  return cleaned.trim();
+  // Post-traitement cosmétique sur HTML DÉJÀ sûr : normaliser les blancs (résidus
+  // de copier-coller). N'altère aucune balise — sans impact sur la sécurité.
+  return safe.replace(/\s+/g, " ").trim();
 }
