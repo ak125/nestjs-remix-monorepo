@@ -87,6 +87,10 @@ jobs:
           # Optional override. If unset, the value already present in the PROD
           # .env is used (REQUIRED_VARS below guarantees it exists).
           JWT_SECRET_OVERRIDE: ${{ secrets.PROD_JWT_SECRET }}
+          # Optional. When set, activates the seo-control-plane synthetic-crawler
+          # rate-limit exemption on PROD (HMAC verifier side). Unset = stays OFF
+          # (probes throttled; in-app 429-rate alert fires). PR #1141 / #1142.
+          SEO_CP_SYNTHETIC_PROBE_SECRET_OVERRIDE: ${{ secrets.PROD_SEO_CP_SYNTHETIC_PROBE_SECRET }}
         run: |
           docker pull massdoc/nestjs-remix-monorepo:production
 
@@ -142,6 +146,30 @@ jobs:
               echo "JWT_SECRET=${JWT_SECRET_OVERRIDE}" >> .env
             fi
             echo "✅ JWT_SECRET updated from GitHub Secrets"
+          fi
+          # Inject the seo-control-plane synthetic-crawler probe HMAC secret and
+          # ATOMICALLY enable its rate-limit exemption (BotGuardMiddleware is the
+          # verifier — PR #1141). The enable flag is flipped to true ONLY when the
+          # secret is actually provided, so a half-config ("enabled but no secret")
+          # never reaches PROD; the app would fail-closed + log loudly anyway, but
+          # we avoid the state entirely. When PROD_SEO_CP_SYNTHETIC_PROBE_SECRET is
+          # unset the exemption stays OFF: probes get throttled and the in-app
+          # 429-rate alert fires (no silent degradation). Mirrors the JWT pattern.
+          # `|` sed delimiter is safe — the value is hex (openssl rand -hex 32).
+          if [ -n "$SEO_CP_SYNTHETIC_PROBE_SECRET_OVERRIDE" ]; then
+            if grep -q '^SEO_CP_SYNTHETIC_PROBE_SECRET=' .env; then
+              sed -i "s|^SEO_CP_SYNTHETIC_PROBE_SECRET=.*|SEO_CP_SYNTHETIC_PROBE_SECRET=${SEO_CP_SYNTHETIC_PROBE_SECRET_OVERRIDE}|" .env
+            else
+              echo "SEO_CP_SYNTHETIC_PROBE_SECRET=${SEO_CP_SYNTHETIC_PROBE_SECRET_OVERRIDE}" >> .env
+            fi
+            if grep -q '^SEO_CP_SYNTHETIC_PROBE_ENABLED=' .env; then
+              sed -i "s|^SEO_CP_SYNTHETIC_PROBE_ENABLED=.*|SEO_CP_SYNTHETIC_PROBE_ENABLED=true|" .env
+            else
+              echo "SEO_CP_SYNTHETIC_PROBE_ENABLED=true" >> .env
+            fi
+            echo "✅ SEO_CP synthetic-probe exemption secret injected + enabled from GitHub Secrets"
+          else
+            echo "ℹ️ PROD_SEO_CP_SYNTHETIC_PROBE_SECRET unset — synthetic-crawler exemption stays OFF (probes throttled; in-app 429 alert will fire)"
           fi
 
           docker network create automecanik-prod 2>/dev/null || true
