@@ -21,9 +21,15 @@ dans la même PR. `@nestjs/cache-manager@3` accepte Nest 9/10/11 (peer `@nestjs/
 
 Branche `feat/pr9f-cache-bridge`.
 
-### Cibles dépendances
-`@nestjs/cache-manager ^3.1` ; `cache-manager ^6` (**PAS ^7** — évite le changement `null→undefined`
-de v7) ; `keyv ^5` ; `cacheable ^2.4` (→ Keyv 5.6.x, fournit `KeyvCacheableMemory`) ; **retirer `@types/cache-manager`**.
+### Cibles dépendances (versions réelles installées)
+`@nestjs/cache-manager ^3.1` (3.1.3 — peer `@nestjs/common ^9||^10||^11`, donc **accepte Nest 10**) ;
+`cache-manager ^6` (6.4.3, **PAS ^7**) ; `keyv ^5.6` (5.6.0) ; `cacheable ^2.3` (2.3.5 — `^2.4` **n'existe pas** ;
+fournit `CacheableMemory` + `createKeyv`) ; **retirer `@types/cache-manager`** (v6 fournit ses types).
+
+**Dédup keyv (requis)** : ajouter `keyv ^5.6` aussi en **devDep racine**. eslint→flat-cache épingle `keyv@4`
+à la racine, empêchant `keyv@5` de se hoister en **une seule copie** (→ 2 identités de type nominales,
+casse ts-jest). Avec la devDep racine : une copie keyv@5 partagée (cacheable + backend + @nestjs/cache-manager),
+flat-cache garde keyv@4 niché. En prod (`--omit=dev`) eslint est absent → keyv@5 se hoiste seul.
 
 ### Deux sous-systèmes de cache — NE PAS confondre (trou bloquant identifié)
 - **Cache ioredis maison** : `backend/src/cache/cache.service.ts` (`redisClient.setex`/`expire` = **SECONDES**).
@@ -36,25 +42,37 @@ de v7) ; `keyv ^5` ; `cacheable ^2.4` (→ Keyv 5.6.x, fournit `KeyvCacheableMem
 `getTTLMs(strategy)=strategy.ttl*1000` (`cache-ttl.config.ts:406`) + `*1000` inline aux sites cache-manager.
 
 ### Travail
-1. **`max`→`lruSize`** via factory **partagée unique** (étendre `config/`, pas de parallèle) :
-   `boundedStore(ttlMs,maxEntries)=new Keyv({store:new KeyvCacheableMemory({ttl:ttlMs,lruSize:maxEntries})})`.
+1. **`max`→`lruSize`** via factory **partagée unique** `config/cache-store.factory.ts` (pattern canonique v6) :
+   `boundedMemoryCache(ttlMs,maxEntries)` → `{ stores:[new Keyv({store:new CacheableMemory({ttl:ttlMs,lruSize:maxEntries})})], ttl:ttlMs }`.
+   `Keyv` importé de `keyv`, `CacheableMemory` de `cacheable`. **Pas de `satisfies CacheModuleOptions`** sur le retour
+   (les types dual `.d.ts`/`.d.cts` de keyv font diverger ts-jest ; la compat `register` est validée par `tsc` aux 9 sites).
    Adapter les **9** `register(...)` (blog:65, seo:178, vehicles:75 `registerAsync`, navigation:24, metadata:34,
-   invoices:19, dashboard:14, products:48, catalog:68).
-2. **TTL ms aux register cache-manager UNIQUEMENT** : les `register({ttl:300/180/300})` **nus**
-   (navigation:24, dashboard:14, catalog:68) passent des secondes → router via `getTTLMs()`/`*1000`.
-   Auditer les 9 : nus → multiplier ; déjà-ms → laisser. **0 modification du chemin ioredis.**
+   invoices:19, dashboard:14, products:48, catalog:68) — **mêmes nombres** (neutralité).
+2. **TTL — migration NEUTRE (correction du cadrage initial)** : `cache-manager@5` est **déjà en ms**.
+   Les 9 `register({ttl:180/300/3600})` passent des nombres **nus** → TTL effectif **sub-seconde** (0,18–3,6 s),
+   pas min/heures (les commentaires sont faux) = **bug latent pré-existant** (les `set()` par-entrée multiplient
+   déjà `*1000`, eux, donc corrects). v6 est **aussi en ms** → la migration **préserve les valeurs nues telles
+   quelles** (même TTL effectif). **NE PAS multiplier** (= changement ×1000 interdit). **0 modification ioredis.**
+   Le fix structurel (router les register via `getTTLMs(CACHE_STRATEGIES.*)`) = **PR séparée, revue** (changement de comportement).
 3. **`reset()`→`clear()`** : `backend/src/modules/blog/services/blog-cache.service.ts:84`.
-4. **Valeur absente au wrapper central** : `CacheService.get<T>()` (`cache.service.ts:111`) renvoie `T|null`
-   → normaliser `?? undefined` à **ce point unique** (pas dispersé sur N services).
+4. **Miss `null` vs `undefined` (corrigé après vérif empirique)** : cache-manager **v5 `.get()` miss = `undefined`**,
+   **v6 = `null`** (mesuré). Le `CacheService` ioredis (`cache.service.ts`) n'utilise **PAS** cache-manager → hors sujet.
+   Les 16 consommateurs `CACHE_MANAGER` testent tous la **truthiness** (`if (cached)`) → `null`/`undefined` équivalents,
+   0 régression. **Seul** wrapper qui fuit la différence : `blog-cache.service.ts` `get<T>():Promise<T|undefined>`
+   renvoyait `cached` brut → corrigé **`return cached ?? undefined`** (`blog-cache.service.ts:42`, restaure le contrat v5).
+   Pas de proxy global (sur-ingénierie).
 5. **Topologie cache** : cartographier sous Nest 10, préserver la topologie métier, 0 isolation/mutualisation accidentelle.
 
-### Tests & gates
-- Caractérisation TTL **sous l'ancien stack** (golden `getTTLMs=ttl*1000` + fake-timers) → bump → mêmes tests repassent.
-- **Assert : `setex` ioredis reçoit toujours des secondes** (non-régression cross-subsystème).
-- get/set/del/wrap/**clear**, expiration réelle, isolation, sérialisation, `lruSize`, boot+shutdown.
-- Guard `grep -RIn 'cacheManager\.reset(' backend/src` = 0.
+### Tests & gates (réalisé)
+- `config/cache-store.factory.test.ts` (**7 tests PASS**) : ttl **ms verbatim** (`store.ttl`), `max→lruSize`
+  (éviction bornée), **miss falsy** (= `if (cached)` recalcule), set/get/del/**clear()**, **expiration réelle ms**
+  (60 ms expiré à 120 ms ⇒ ms et non s) + **invariant cross-subsystème** : `CacheTTL` reste en **secondes** et
+  `getTTLMs = ttl*1000` (garde le contrat de l'ioredis `setex`/`expire`).
+- `cacheManager.reset(` = **0** (grep) ; `reset()`/`keys()` n'existent plus sur le type `Cache` v6 → garde TS suffisante.
+- **Gates verts en local** : typecheck (`tsc --noEmit`) ✅, build (`tsc --build && tsc-alias`) ✅, eslint ✅,
+  contract-drift ratchet ✅ (0 new, 282/541), inventaire modernization `:check` déterministe ✅.
 - **Épingler `cache-manager ^6` à la main** (PAS `bump-dependency-family --target latest` = `^7`).
-- **Régénérer l'inventaire** : `npm run audit:pr-9-modernization-inventory` (gate BLOQUANT sur lockfile).
+- **Régénérer l'inventaire** : `npm run audit:pr-9-modernization-inventory` (gate BLOQUANT sur lockfile). ✅
 - CI **vérifiée `gh pr checks`** (requis verts, skips documentés). Merge.
 
 ---

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CacheModule as NestCacheModule } from '@nestjs/cache-manager';
+import { boundedMemoryCache } from '../../config/cache-store.factory';
 import { DatabaseModule } from '../../database/database.module';
 
 // ========================================
@@ -65,7 +66,7 @@ import { GammePricePreviewService } from './services/gamme-price-preview.service
 @Module({
   imports: [
     DatabaseModule,
-    NestCacheModule.register({ ttl: 300, max: 200 }), // Cache pour CacheInterceptor
+    NestCacheModule.register(boundedMemoryCache(300, 200)), // Cache pour CacheInterceptor
   ],
   controllers: [
     CatalogController,
