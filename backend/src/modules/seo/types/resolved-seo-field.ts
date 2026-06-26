@@ -39,6 +39,6 @@ export interface ResolvedPageSeo {
   title: ResolvedSeoField;
   description: ResolvedSeoField;
   h1: ResolvedSeoField;
-  surface: 'R1' | 'R2' | 'R3' | 'R8';
+  surface: 'R1' | 'R2' | 'R8';
   entityKey: string;
 }

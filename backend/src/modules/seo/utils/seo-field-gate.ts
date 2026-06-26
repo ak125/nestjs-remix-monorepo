@@ -4,7 +4,7 @@
  * Deux fonctions pures que toute valeur traverse avant de devenir un champ résolu :
  *
  *  • brandAwareFit(value, renderMax) — remplace le clip aveugle `substring(0, max-1)+'…'`.
- *    Quand la valeur dépasse renderMax ET se termine par « | AutoMecanik », on rogne le
+ *    Lorsque la valeur dépasse renderMax ET se termine par « | AutoMecanik », on rogne le
  *    SEGMENT CENTRAL en préservant la marque (au lieu de la couper en « AutoMeca… »).
  *    Réconcilie le plafond de validité (80c) et le plafond de rendu (60c) en UN seul MAX
  *    appliqué au point d'émission. → ferme G3 par construction (audit 2026-06-26).
@@ -24,7 +24,7 @@ export const SEO_BRAND_NAME = 'AutoMecanik';
 export const SEO_RESOLVER_VERSION = 'seo-field-gate.r1.v1';
 
 /**
- * Termes transactionnels interdits en R1 (router gamme — pas de signal prix/commerce).
+ * Termes transactionnels interdits sur le router gamme (aucun signal tarifaire).
  * SOURCE UNIQUE : SeoTitleEngineService délègue ici (évite le tableau dupliqué).
  */
 export const R1_FORBIDDEN_TERMS: readonly string[] = [
