@@ -2,7 +2,7 @@
 module: rag-knowledge-bootstrap
 sources:
 - backend/src/modules/rag-knowledge-bootstrap
-last_scan: '2026-06-25'
+last_scan: '2026-06-26'
 primary_files:
 - backend/src/modules/rag-knowledge-bootstrap/rag-knowledge-bootstrap.guard.ts
 - backend/src/modules/rag-knowledge-bootstrap/rag-knowledge-bootstrap.module.ts

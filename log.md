@@ -453,3 +453,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/tw4-gate-0-visual-gate`
 - **Décision** : feat(tw4-gate-0): wire authoritative visual-regression gate + 2-tier snapshot topology
 - **Sortie** : PR #1160 | commits 83de3e0f5
+
+## 2026-06-26 — fix/visual-gate-recapture-preprod (auto)
+
+- **Branche** : `fix/visual-gate-recapture-preprod`
+- **Décision** : fix(tw4-gate-0): purge root-owned Docker leftovers pre-checkout + fix report path (+1 other commit)
+- **Sortie** : PR #1170 | commits f94b7ad9d 9a7f2acc0
