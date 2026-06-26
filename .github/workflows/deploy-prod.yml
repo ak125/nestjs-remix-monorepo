@@ -96,8 +96,11 @@ jobs:
           # by Cloudflare (unlike the HMAC header, which the CDN can strip — root
           # cause of the 2026-06-25 self-throttle), so this keeps the exemption
           # working even if the header never reaches origin. Unset = floor stays
-          # OFF (fail-closed; HMAC path only). Value is a public IP, not a secret.
-          SEO_CP_SYNTHETIC_PROBE_EGRESS_IPS_OVERRIDE: ${{ secrets.PROD_SEO_CP_SYNTHETIC_PROBE_EGRESS_IPS }}
+          # OFF (fail-closed; HMAC path only). The value is a public egress IP, NOT a
+          # credential — so it lives as a GitHub Actions *variable* (vars), which is
+          # readable/verifiable (`gh variable list`), unlike the write-only HMAC secret
+          # above. cf-connecting-ip is anti-spoofed at origin, so exposing the IP is safe.
+          SEO_CP_SYNTHETIC_PROBE_EGRESS_IPS_OVERRIDE: ${{ vars.PROD_SEO_CP_SYNTHETIC_PROBE_EGRESS_IPS }}
         run: |
           docker pull massdoc/nestjs-remix-monorepo:production
 
@@ -190,7 +193,7 @@ jobs:
             else
               echo "SEO_CP_SYNTHETIC_PROBE_EGRESS_IPS=${SEO_CP_SYNTHETIC_PROBE_EGRESS_IPS_OVERRIDE}" >> .env
             fi
-            echo "✅ SEO_CP synthetic-probe egress floor configured from GitHub Secrets"
+            echo "✅ SEO_CP synthetic-probe egress floor configured from GitHub Variables"
           else
             echo "ℹ️ PROD_SEO_CP_SYNTHETIC_PROBE_EGRESS_IPS unset — egress floor OFF (HMAC path only)"
           fi
