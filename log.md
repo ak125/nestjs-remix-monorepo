@@ -459,3 +459,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/visual-gate-recapture-preprod`
 - **Décision** : fix(tw4-gate-0): purge root-owned Docker leftovers pre-checkout + fix report path (+1 other commit)
 - **Sortie** : PR #1170 | commits f94b7ad9d 9a7f2acc0
+
+## 2026-06-26 — fix/visual-gate-recapture-preprod (auto)
+
+- **Branche** : `fix/visual-gate-recapture-preprod`
+- **Décision** : feat(tw4-gate-0): re-capture 11 visual baselines against PREPROD:3200 (gate env) (+3 other commits)
+- **Sortie** : PR #1170 | commits 023c2a43f d8bc28dad f94b7ad9d 9a7f2acc0
