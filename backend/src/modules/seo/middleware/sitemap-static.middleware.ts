@@ -17,7 +17,7 @@ import * as nodePath from 'node:path';
  * PROD, and acts as defence-in-depth if a request ever reaches the app directly.
  *
  * Registered globally in main.ts (alongside the static-asset handler), so it runs
- * before the RemixController `@All('{*path}')` catch-all. Read-only — compatible
+ * before the RemixController `@All(':path*')` catch-all. Read-only — compatible
  * with PREPROD `READ_ONLY=true` (ADR-028). Honors `SITEMAP_OUTPUT_DIR`.
  *
  * Headers mirror Caddy (Content-Type + Cache-Control) for parity. The path regex

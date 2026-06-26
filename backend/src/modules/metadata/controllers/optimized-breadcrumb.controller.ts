@@ -11,13 +11,20 @@
  * ✅ POST /api/breadcrumb/cache/clear     → Nettoyage cache
  */
 
-import { Controller, Get, Post, Body, Query, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  Body,
+  Query,
+  Logger,
+} from '@nestjs/common';
 import {
   OptimizedBreadcrumbService,
   BreadcrumbItem,
 } from '../services/optimized-breadcrumb.service';
 import { OperationFailedException } from '@common/exceptions';
-import { SplatPath } from '@common/decorators';
 
 @Controller('api/breadcrumb')
 export class OptimizedBreadcrumbController {
@@ -30,7 +37,7 @@ export class OptimizedBreadcrumbController {
   /**
    * Statistiques breadcrumb (workaround admin)
    * GET /api/breadcrumb/statistics
-   * NOTE: Doit être AVANT @Get('{*path}') pour éviter la capture
+   * NOTE: Doit être AVANT @Get(':path(.*)') pour éviter la capture
    */
   @Get('statistics')
   async getStatistics(): Promise<{ success: boolean; data: any }> {
@@ -59,7 +66,7 @@ export class OptimizedBreadcrumbController {
   /**
    * Récupérer la configuration breadcrumb
    * GET /api/breadcrumb/config
-   * NOTE: Doit être AVANT @Get('{*path}') pour éviter la capture
+   * NOTE: Doit être AVANT @Get(':path(.*)') pour éviter la capture
    */
   @Get('config')
   async getConfig(@Query('lang') lang: string = 'fr') {
@@ -81,7 +88,7 @@ export class OptimizedBreadcrumbController {
   /**
    * Nettoyage cache breadcrumb
    * POST /api/breadcrumb/cache/clear
-   * NOTE: Doit être AVANT @Get('{*path}') pour éviter la capture
+   * NOTE: Doit être AVANT @Get(':path(.*)') pour éviter la capture
    */
   @Post('cache/clear')
   async clearCache(@Body() body?: { path?: string }) {
@@ -107,14 +114,14 @@ export class OptimizedBreadcrumbController {
    * GET /api/breadcrumb/:path
    * NOTE: Route générique - DOIT être après les routes spécifiques
    */
-  @Get('{*path}')
+  @Get(':path(.*)')
   async getBreadcrumb(
-    @SplatPath() path: string,
+    @Param('path') path: string,
     @Query('lang') lang: string = 'fr',
   ): Promise<{ success: boolean; data: BreadcrumbItem[] }> {
     try {
       // Décoder le chemin et s'assurer qu'il commence par /
-      const decodedPath = path ? '/' + path : '/';
+      const decodedPath = path ? '/' + decodeURIComponent(path) : '/';
 
       this.logger.debug(`🔍 Récupération breadcrumb pour: ${decodedPath}`);
 
@@ -142,13 +149,13 @@ export class OptimizedBreadcrumbController {
    * Mettre à jour le breadcrumb pour un chemin
    * POST /api/breadcrumb/:path
    */
-  @Post('{*path}')
+  @Post(':path(.*)')
   async updateBreadcrumb(
-    @SplatPath() path: string,
+    @Param('path') path: string,
     @Body() breadcrumbData: any,
   ): Promise<{ success: boolean; message: string }> {
     try {
-      const decodedPath = path ? '/' + path : '/';
+      const decodedPath = path ? '/' + decodeURIComponent(path) : '/';
 
       this.logger.log(`💾 Mise à jour breadcrumb pour: ${decodedPath}`);
 
@@ -184,13 +191,13 @@ export class OptimizedBreadcrumbController {
    * Récupérer le schema.org pour un breadcrumb
    * GET /api/breadcrumb/schema/:path
    */
-  @Get('schema/{*path}')
+  @Get('schema/:path(.*)')
   async getBreadcrumbSchema(
-    @SplatPath() path: string,
+    @Param('path') path: string,
     @Query('lang') lang: string = 'fr',
   ): Promise<{ success: boolean; data: any }> {
     try {
-      const decodedPath = path ? '/' + path : '/';
+      const decodedPath = path ? '/' + decodeURIComponent(path) : '/';
 
       this.logger.debug(`📈 Génération schema breadcrumb pour: ${decodedPath}`);
 

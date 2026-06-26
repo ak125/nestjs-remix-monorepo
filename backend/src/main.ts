@@ -123,7 +123,7 @@ async function bootstrap() {
     // /var/www/sitemaps — miroir du bloc Caddy @sitemaps (config/caddy/Caddyfile).
     // Indispensable en DEV (pas de Caddy) où aucune route React Router ne peut
     // matcher un splat préfixé `sitemap-*`. Lecture seule (compatible READ_ONLY).
-    // Doit précéder le catch-all RemixController @All('{*path}').
+    // Doit précéder le catch-all RemixController @All(':path*').
     const sitemapStatic = new SitemapStaticMiddleware();
     app.use((req: any, res: any, nextFn: any) =>
       sitemapStatic.use(req, res, nextFn),
@@ -161,12 +161,6 @@ async function bootstrap() {
 
     // Sécurité HTTP avec CSP personnalisée pour Supabase
     expressApp.set('trust proxy', 1);
-
-    // Express 5 a changé le query parser par défaut ('extended' → 'simple').
-    // On rétablit explicitement 'extended' (qs) pour préserver le parsing
-    // des objets/tableaux imbriqués (`?a[b]=c`) tel qu'en Express 4 — 0
-    // changement de contrat sur `req.query` (PR-9f).
-    expressApp.set('query parser', 'extended');
 
     // Nonce CSP par requête — doit être AVANT Helmet
     app.use((_req: any, res: any, next: any) => {

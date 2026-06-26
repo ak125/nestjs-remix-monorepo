@@ -9,14 +9,21 @@
  * ✅ DELETE /api/metadata/:path  → Supprimer métadonnées
  */
 
-import { Controller, Get, Put, Delete, Body, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Put,
+  Delete,
+  Param,
+  Body,
+  Logger,
+} from '@nestjs/common';
 import {
   OptimizedMetadataService,
   PageMetadata,
   MetadataUpdateData,
 } from '../services/optimized-metadata.service';
 import { OperationFailedException } from '@common/exceptions';
-import { SplatPath } from '@common/decorators';
 
 @Controller('api/metadata')
 export class OptimizedMetadataController {
@@ -30,12 +37,12 @@ export class OptimizedMetadataController {
    * Récupérer les métadonnées d'une page
    * GET /api/metadata/:path
    */
-  @Get('{*path}')
+  @Get(':path(.*)')
   async getMetadata(
-    @SplatPath() path: string,
+    @Param('path') path: string,
   ): Promise<{ success: boolean; data: PageMetadata }> {
     try {
-      const decodedPath = path ? '/' + path : '/';
+      const decodedPath = path ? '/' + decodeURIComponent(path) : '/';
 
       this.logger.debug(`📄 Récupération métadonnées pour: ${decodedPath}`);
 
@@ -60,13 +67,13 @@ export class OptimizedMetadataController {
    * Mettre à jour les métadonnées d'une page
    * PUT /api/metadata/:path
    */
-  @Put('{*path}')
+  @Put(':path(.*)')
   async updateMetadata(
-    @SplatPath() path: string,
+    @Param('path') path: string,
     @Body() updateData: MetadataUpdateData,
   ): Promise<{ success: boolean; data: PageMetadata }> {
     try {
-      const decodedPath = path ? '/' + path : '/';
+      const decodedPath = path ? '/' + decodeURIComponent(path) : '/';
 
       this.logger.log(`💾 Mise à jour métadonnées pour: ${decodedPath}`);
 
@@ -94,12 +101,12 @@ export class OptimizedMetadataController {
    * Supprimer les métadonnées d'une page
    * DELETE /api/metadata/:path
    */
-  @Delete('{*path}')
+  @Delete(':path(.*)')
   async deleteMetadata(
-    @SplatPath() path: string,
+    @Param('path') path: string,
   ): Promise<{ success: boolean; message: string }> {
     try {
-      const decodedPath = path ? '/' + path : '/';
+      const decodedPath = path ? '/' + decodeURIComponent(path) : '/';
 
       this.logger.log(`🗑️ Suppression métadonnées pour: ${decodedPath}`);
 

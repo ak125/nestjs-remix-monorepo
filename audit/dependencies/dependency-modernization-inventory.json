@@ -1,5 +1,5 @@
 {
-  "artifact_immutability_hash": "sha256:00dedf5773b345d2e4702e7a5e2a52bbcd50c2c2512e90ed75c231da32b0f1ba",
+  "artifact_immutability_hash": "sha256:5385c516bcb31c7df246d96e9721097633a349d514a88167eeb0a08b84e07962",
   "divergences": [
     {
       "kind": "specifier",
@@ -17,7 +17,7 @@
         }
       ],
       "resolved_versions": [
-        "11.1.27"
+        "10.4.22"
       ]
     },
     {
@@ -36,7 +36,7 @@
         }
       ],
       "resolved_versions": [
-        "11.1.27"
+        "10.4.22"
       ]
     },
     {
@@ -123,17 +123,62 @@
     },
     {
       "kind": "resolved",
-      "name": "@vitest/browser",
+      "name": "@types/node",
       "occurrences": [
         {
-          "declaredIn": "frontend/package.json",
-          "specifier": "^4.1.8",
-          "workspace": "@fafa/frontend"
+          "declaredIn": "backend/package.json",
+          "specifier": "^24",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "declaredIn": "packages/cwv-taxonomy/package.json",
+          "specifier": "^24",
+          "workspace": "@fafa/design-tokens"
+        },
+        {
+          "declaredIn": "packages/database-types/package.json",
+          "specifier": "^24",
+          "workspace": "@repo/cwv-taxonomy"
+        },
+        {
+          "declaredIn": "packages/design-tokens/package.json",
+          "specifier": "^24",
+          "workspace": "@repo/database-types"
+        },
+        {
+          "declaredIn": "packages/domain-commerce/package.json",
+          "specifier": "^24",
+          "workspace": "@repo/domain-commerce"
+        },
+        {
+          "declaredIn": "packages/registry/package.json",
+          "specifier": "^24",
+          "workspace": "@repo/registry"
+        },
+        {
+          "declaredIn": "packages/seo-role-contracts/package.json",
+          "specifier": "^24",
+          "workspace": "@repo/seo-role-contracts"
+        },
+        {
+          "declaredIn": "packages/seo-roles/package.json",
+          "specifier": "^24",
+          "workspace": "@repo/seo-roles"
+        },
+        {
+          "declaredIn": "packages/seo-types/package.json",
+          "specifier": "^24",
+          "workspace": "@repo/seo-types"
+        },
+        {
+          "declaredIn": "packages/seo-url-contract/package.json",
+          "specifier": "^24",
+          "workspace": "@repo/seo-url-contract"
         }
       ],
       "resolved_versions": [
-        "2.1.9",
-        "4.1.9"
+        "18.19.130",
+        "24.13.2"
       ]
     },
     {
@@ -152,7 +197,38 @@
         }
       ],
       "resolved_versions": [
-        "10.5.2"
+        "10.5.0"
+      ]
+    },
+    {
+      "kind": "resolved",
+      "name": "axe-core",
+      "occurrences": [
+        {
+          "declaredIn": "frontend/package.json",
+          "specifier": "^4.12.0",
+          "workspace": "@fafa/frontend"
+        }
+      ],
+      "resolved_versions": [
+        "4.11.4",
+        "4.12.1"
+      ]
+    },
+    {
+      "kind": "resolved",
+      "name": "body-parser",
+      "occurrences": [
+        {
+          "declaredIn": "backend/package.json",
+          "specifier": "^1.20.3",
+          "workspace": "@fafa/backend"
+        }
+      ],
+      "resolved_versions": [
+        "1.20.4",
+        "1.20.5",
+        "2.3.0"
       ]
     },
     {
@@ -172,17 +248,17 @@
     },
     {
       "kind": "resolved",
-      "name": "cookie",
+      "name": "cors",
       "occurrences": [
         {
-          "declaredIn": "frontend/package.json",
-          "specifier": "^0.7.2",
-          "workspace": "@fafa/frontend"
+          "declaredIn": "backend/package.json",
+          "specifier": "^2.8.5",
+          "workspace": "@fafa/backend"
         }
       ],
       "resolved_versions": [
-        "0.7.2",
-        "1.1.1"
+        "2.8.5",
+        "2.8.6"
       ]
     },
     {
@@ -252,21 +328,6 @@
     },
     {
       "kind": "resolved",
-      "name": "file-type",
-      "occurrences": [
-        {
-          "declaredIn": "backend/package.json",
-          "specifier": "^20.4.1",
-          "workspace": "@fafa/backend"
-        }
-      ],
-      "resolved_versions": [
-        "20.5.0",
-        "21.3.4"
-      ]
-    },
-    {
-      "kind": "resolved",
       "name": "globals",
       "occurrences": [
         {
@@ -297,7 +358,7 @@
       ],
       "resolved_versions": [
         "10.5.0",
-        "10.9.0"
+        "10.7.0"
       ]
     },
     {
@@ -352,6 +413,7 @@
       ],
       "resolved_versions": [
         "3.14.2",
+        "4.1.0",
         "4.1.1",
         "4.2.0"
       ]
@@ -387,7 +449,7 @@
         }
       ],
       "resolved_versions": [
-        "1.61.1"
+        "1.61.0"
       ]
     },
     {
@@ -469,6 +531,7 @@
         }
       ],
       "resolved_versions": [
+        "0.1.14",
         "0.2.2"
       ]
     },
@@ -490,6 +553,21 @@
       "resolved_versions": [
         "7.8.1",
         "7.8.2"
+      ]
+    },
+    {
+      "kind": "resolved",
+      "name": "socket.io",
+      "occurrences": [
+        {
+          "declaredIn": "backend/package.json",
+          "specifier": "^4.8.1",
+          "workspace": "@fafa/backend"
+        }
+      ],
+      "resolved_versions": [
+        "4.8.1",
+        "4.8.3"
       ]
     },
     {
@@ -523,7 +601,8 @@
         }
       ],
       "resolved_versions": [
-        "<unresolved>"
+        "4.6.3",
+        "5.0.1"
       ]
     },
     {
@@ -666,7 +745,6 @@
       ],
       "resolved_versions": [
         "5.4.21",
-        "6.4.3",
         "8.1.0"
       ]
     },
@@ -874,7 +952,7 @@
             }
           ],
           "resolved_versions": [
-            "11.0.5"
+            "10.0.3"
           ]
         },
         {
@@ -1733,7 +1811,7 @@
             }
           ],
           "resolved_versions": [
-            "11.0.4"
+            "10.2.3"
           ]
         },
         {
@@ -1910,9 +1988,10 @@
         "supersedes": []
       },
       "deployment_sequence": [
+        "canary",
         "full-rollout"
       ],
-      "estimated_canary_duration_minutes": 0,
+      "estimated_canary_duration_minutes": 60,
       "estimated_recovery_sequence": [
         "disable-canary",
         "rollback-api",
@@ -1961,7 +2040,7 @@
         "RxJS7Required",
         "PR9eMerged"
       ],
-      "node_runtime_requirement": ">=24",
+      "node_runtime_requirement": ">=20",
       "notes": "Nest 11 requires Node 20+, Express 5, RxJS 7.x. Must follow PR-9b/c/d/e — upgrade order matters for peer-dep resolution. 72h DEV preprod soak (every module loads through Nest — widest blast radius of PR-9 series). Real risk is Express 5 cascade (Passport / sessions / middleware) — see PR-9f.0.\n",
       "observability_requirements": [
         "sentry",
@@ -2010,7 +2089,7 @@
             }
           ],
           "resolved_versions": [
-            "11.0.23"
+            "10.4.9"
           ]
         },
         {
@@ -2030,7 +2109,7 @@
             }
           ],
           "resolved_versions": [
-            "11.1.27"
+            "10.4.22"
           ]
         },
         {
@@ -2065,7 +2144,7 @@
             }
           ],
           "resolved_versions": [
-            "11.1.27"
+            "10.4.22"
           ]
         },
         {
@@ -2080,7 +2159,7 @@
             }
           ],
           "resolved_versions": [
-            "3.1.0"
+            "2.1.1"
           ]
         },
         {
@@ -2095,7 +2174,7 @@
             }
           ],
           "resolved_versions": [
-            "11.1.27"
+            "10.4.22"
           ]
         },
         {
@@ -2110,7 +2189,7 @@
             }
           ],
           "resolved_versions": [
-            "11.1.27"
+            "10.4.22"
           ]
         },
         {
@@ -2140,7 +2219,7 @@
             }
           ],
           "resolved_versions": [
-            "11.1.0"
+            "10.2.3"
           ]
         },
         {
@@ -2155,7 +2234,7 @@
             }
           ],
           "resolved_versions": [
-            "11.4.4"
+            "7.4.2"
           ]
         },
         {
@@ -2170,7 +2249,7 @@
             }
           ],
           "resolved_versions": [
-            "11.1.27"
+            "10.4.22"
           ]
         },
         {
@@ -2185,7 +2264,7 @@
             }
           ],
           "resolved_versions": [
-            "6.5.0"
+            "5.2.0"
           ]
         },
         {
@@ -2200,11 +2279,11 @@
             }
           ],
           "resolved_versions": [
-            "11.1.27"
+            "10.4.22"
           ]
         },
         {
-          "divergent_resolved": false,
+          "divergent_resolved": true,
           "divergent_specifiers": false,
           "name": "body-parser",
           "occurrences": [
@@ -2215,11 +2294,13 @@
             }
           ],
           "resolved_versions": [
+            "1.20.4",
+            "1.20.5",
             "2.3.0"
           ]
         },
         {
-          "divergent_resolved": false,
+          "divergent_resolved": true,
           "divergent_specifiers": true,
           "name": "reflect-metadata",
           "occurrences": [
@@ -2235,6 +2316,7 @@
             }
           ],
           "resolved_versions": [
+            "0.1.14",
             "0.2.2"
           ]
         },
@@ -2360,7 +2442,7 @@
       ],
       "safe_parallel_window_minutes": 0,
       "source_url": "https://github.com/nestjs/nest/releases",
-      "staging_soak_hours": 24,
+      "staging_soak_hours": 72,
       "state_compatibility_window_minutes": 0,
       "state_reconciliation_strategy": {
         "duplicate_resolution": "n/a"
@@ -2786,7 +2868,6 @@
           ],
           "resolved_versions": [
             "5.4.21",
-            "6.4.3",
             "8.1.0"
           ]
         }
@@ -3902,9 +3983,9 @@
     "deps_registry": "audit/registry/deps.json",
     "deps_registry_sha": "sha256:9b722879fab181ddf8a7942e3c00324fd6d8fddd5323646c2d7f939e7739234d",
     "lockfile": "package-lock.json",
-    "lockfile_sha": "sha256:0c24db5cd39f40b03f1c491e913d6472110635f5b9b327832d0ec53b8c32c5c8",
+    "lockfile_sha": "sha256:aab9836617a4e06fb13b67ec5850822d08b06c6b398cb44b371d7bec75bc8b03",
     "overlay": "audit/dependencies/family-overlay.yaml",
-    "overlay_sha": "sha256:83fe5f81abca14f09c48070eec0ae8efbcc37427df56212a3ee1a74dcea07578"
+    "overlay_sha": "sha256:42597019658ecd86a9df3c4f64505542d2f89192ab1eef12b9ae218ea5df4728"
   },
   "inventoryFormat": "pr-9-modernization-inventory",
   "matrixVersion": "pr9-v1",
@@ -3931,7 +4012,7 @@
       "pr-9f": 17,
       "pr-9g": 0
     },
-    "divergent_packages_count": 35,
+    "divergent_packages_count": 37,
     "families_count": 12,
     "total_occurrences": 339,
     "total_packages": 231,
@@ -3980,7 +4061,7 @@
         }
       ],
       "resolved_versions": [
-        "4.12.1"
+        "4.11.3"
       ]
     },
     {
@@ -4130,7 +4211,7 @@
         }
       ],
       "resolved_versions": [
-        "1.61.1"
+        "1.61.0"
       ]
     },
     {
@@ -4585,7 +4666,7 @@
         }
       ],
       "resolved_versions": [
-        "5.101.1"
+        "5.101.0"
       ]
     },
     {
@@ -4980,7 +5061,7 @@
       ]
     },
     {
-      "divergent_resolved": false,
+      "divergent_resolved": true,
       "divergent_specifiers": false,
       "name": "@types/node",
       "occurrences": [
@@ -5036,6 +5117,7 @@
         }
       ],
       "resolved_versions": [
+        "18.19.130",
         "24.13.2"
       ]
     },
@@ -5171,7 +5253,7 @@
         }
       ],
       "resolved_versions": [
-        "8.62.0"
+        "8.61.1"
       ]
     },
     {
@@ -5190,7 +5272,7 @@
       ]
     },
     {
-      "divergent_resolved": true,
+      "divergent_resolved": false,
       "divergent_specifiers": false,
       "name": "@vitest/browser",
       "occurrences": [
@@ -5201,7 +5283,6 @@
         }
       ],
       "resolved_versions": [
-        "2.1.9",
         "4.1.9"
       ]
     },
@@ -5252,11 +5333,11 @@
         }
       ],
       "resolved_versions": [
-        "10.5.2"
+        "10.5.0"
       ]
     },
     {
-      "divergent_resolved": false,
+      "divergent_resolved": true,
       "divergent_specifiers": false,
       "name": "axe-core",
       "occurrences": [
@@ -5267,6 +5348,7 @@
         }
       ],
       "resolved_versions": [
+        "4.11.4",
         "4.12.1"
       ]
     },
@@ -5351,7 +5433,7 @@
       ]
     },
     {
-      "divergent_resolved": true,
+      "divergent_resolved": false,
       "divergent_specifiers": false,
       "name": "cookie",
       "occurrences": [
@@ -5362,12 +5444,11 @@
         }
       ],
       "resolved_versions": [
-        "0.7.2",
-        "1.1.1"
+        "0.7.2"
       ]
     },
     {
-      "divergent_resolved": false,
+      "divergent_resolved": true,
       "divergent_specifiers": false,
       "name": "cors",
       "occurrences": [
@@ -5378,6 +5459,7 @@
         }
       ],
       "resolved_versions": [
+        "2.8.5",
         "2.8.6"
       ]
     },
@@ -5574,7 +5656,7 @@
       ]
     },
     {
-      "divergent_resolved": true,
+      "divergent_resolved": false,
       "divergent_specifiers": false,
       "name": "file-type",
       "occurrences": [
@@ -5585,8 +5667,7 @@
         }
       ],
       "resolved_versions": [
-        "20.5.0",
-        "21.3.4"
+        "20.4.1"
       ]
     },
     {
@@ -5623,7 +5704,7 @@
       ],
       "resolved_versions": [
         "10.5.0",
-        "10.9.0"
+        "10.7.0"
       ]
     },
     {
@@ -5805,6 +5886,7 @@
       ],
       "resolved_versions": [
         "3.14.2",
+        "4.1.0",
         "4.1.1",
         "4.2.0"
       ]
@@ -6032,7 +6114,7 @@
         }
       ],
       "resolved_versions": [
-        "1.61.1"
+        "1.61.0"
       ]
     },
     {
@@ -6201,7 +6283,7 @@
       ]
     },
     {
-      "divergent_resolved": false,
+      "divergent_resolved": true,
       "divergent_specifiers": false,
       "name": "socket.io",
       "occurrences": [
@@ -6212,6 +6294,7 @@
         }
       ],
       "resolved_versions": [
+        "4.8.1",
         "4.8.3"
       ]
     },
@@ -6292,7 +6375,7 @@
       ]
     },
     {
-      "divergent_resolved": false,
+      "divergent_resolved": true,
       "divergent_specifiers": true,
       "name": "swagger-ui-express",
       "occurrences": [
@@ -6308,7 +6391,8 @@
         }
       ],
       "resolved_versions": [
-        "<unresolved>"
+        "4.6.3",
+        "5.0.1"
       ]
     },
     {
@@ -6454,7 +6538,7 @@
         }
       ],
       "resolved_versions": [
-        "2.10.0"
+        "2.9.18"
       ]
     },
     {
@@ -6469,7 +6553,7 @@
         }
       ],
       "resolved_versions": [
-        "8.62.0"
+        "8.61.1"
       ]
     },
     {

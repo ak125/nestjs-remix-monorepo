@@ -509,14 +509,15 @@ families:
     upgrade_strategy: staged-rollout
     runtime_criticality: critical
     requires_staging_soak: true
-    staging_soak_hours: 24
-    node_runtime_requirement: ">=24"
+    staging_soak_hours: 72
+    node_runtime_requirement: ">=20"
     peer_dependency_cluster:
       - "@nestjs/*"
       - rxjs
       - reflect-metadata
       - body-parser
     deployment_sequence:
+      - canary
       - full-rollout
     production_approved: true
     rollback_complexity: dangerous
@@ -572,7 +573,7 @@ families:
       - cron
       - ssr
     operational_owner: backend-runtime-team
-    estimated_canary_duration_minutes: 0
+    estimated_canary_duration_minutes: 60
     rollback_requires_human_approval: true
     rollback_tested_at: null
     rollback_drill_commit: null
