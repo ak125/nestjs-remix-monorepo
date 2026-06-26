@@ -1,12 +1,17 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHmac, timingSafeEqual } from 'node:crypto';
+import * as ipaddr from 'ipaddr.js';
 import {
   SYNTHETIC_PROBE_HEADER,
   SYNTHETIC_PROBE_SECRET_KEY,
   SYNTHETIC_PROBE_ENABLED_KEY,
   SYNTHETIC_PROBE_WINDOW_MS,
+  SYNTHETIC_PROBE_EGRESS_IPS_KEY,
 } from './types';
+
+/** Entrée allowlist normalisée : adresse de base + longueur de préfixe. */
+type EgressCidr = [ipaddr.IPv4 | ipaddr.IPv6, number];
 
 /** Requête minimale lisible par {@link SyntheticProbeCredentialService.verify}. */
 export interface SyntheticVerifiableRequest {
@@ -40,6 +45,12 @@ export interface SyntheticVerifiableRequest {
  *     throttler normal. JAMAIS de fail-open vers « vérifié ».
  *   - Le least-privilege (scope GET + catalogue) est appliqué dans `skipIf`, pas ici.
  *
+ * Défense en profondeur ({@link isExemptEgressIp}, ajout 2026-06-26) : le HMAC
+ * voyage dans un en-tête custom qu'un CDN peut retirer en transit (Cloudflare ne
+ * l'a PAS transmis → sonde auto-throttlée). Un PLANCHER par IP d'egress
+ * (`cf-connecting-ip`, toujours transmis + anti-spoofé) rend l'exemption robuste
+ * indépendamment du CDN. Même scope least-privilege, env-gated, fail-closed.
+ *
  * Stateless. Dépend uniquement de ConfigService. Fourni par un module @Global pour
  * être injecté à la fois par BotGuardMiddleware (verify) et SyntheticCrawlerService
  * (sign) sans dépendance circulaire.
@@ -49,6 +60,8 @@ export class SyntheticProbeCredentialService {
   private readonly logger = new Logger(SyntheticProbeCredentialService.name);
   private readonly secret: string;
   private readonly enabled: boolean;
+  /** Plancher défense-en-profondeur : CIDRs d'egress de la sonde (cf. types). */
+  private readonly egressAllowlist: EgressCidr[];
   private warnedSecretMissing = false;
 
   constructor(private readonly config: ConfigService) {
@@ -62,6 +75,65 @@ export class SyntheticProbeCredentialService {
           'exemption synthétique DÉSACTIVÉE (fail-closed).',
       );
     }
+
+    this.egressAllowlist = this.config
+      .get<string>(SYNTHETIC_PROBE_EGRESS_IPS_KEY, '')
+      .split(',')
+      .map((entry) => this.parseEgressEntry(entry))
+      .filter((cidr): cidr is EgressCidr => cidr !== null);
+    if (this.egressAllowlist.length > 0) {
+      this.logger.log(
+        `Plancher egress sonde synthétique actif (${this.egressAllowlist.length} entrée(s) ${SYNTHETIC_PROBE_EGRESS_IPS_KEY}).`,
+      );
+    }
+  }
+
+  /**
+   * Parse une entrée d'allowlist (IP simple ou CIDR, v4/v6) → [adresse, préfixe].
+   * Entrée vide ou invalide → `null` (ignorée + warn, pas de fail-open silencieux).
+   */
+  private parseEgressEntry(entry: string): EgressCidr | null {
+    const trimmed = entry.trim();
+    if (!trimmed) return null;
+    try {
+      if (trimmed.includes('/')) return ipaddr.parseCIDR(trimmed);
+      const addr = ipaddr.parse(trimmed);
+      return [addr, addr.kind() === 'ipv6' ? 128 : 32];
+    } catch {
+      this.logger.warn(
+        `Entrée ${SYNTHETIC_PROBE_EGRESS_IPS_KEY} invalide ignorée: "${trimmed}".`,
+      );
+      return null;
+    }
+  }
+
+  /**
+   * Plancher défense-en-profondeur : `true` si l'IP cliente (déjà anti-spoofée par
+   * BotGuard.getClientIp = `cf-connecting-ip` cru uniquement derrière le proxy
+   * interne) appartient à l'allowlist d'egress de la sonde. Allowlist vide → `false`
+   * (fail-closed). Le scope least-privilege (GET + catalogue public) reste appliqué
+   * en aval dans `skipIf` — cette méthode ne décide QUE de l'identité, pas du scope.
+   */
+  isExemptEgressIp(ip: string | undefined): boolean {
+    if (this.egressAllowlist.length === 0 || !ip) return false;
+    let parsed: ipaddr.IPv4 | ipaddr.IPv6;
+    try {
+      // `process` normalise un IPv4-mapped IPv6 (`::ffff:1.2.3.4`) → IPv4.
+      parsed = ipaddr.process(ip);
+    } catch {
+      return false;
+    }
+    // `instanceof` narrows BOTH operands to the same family so `.match` is
+    // callable (the IPv4|IPv6 union method isn't) — and enforces family equality.
+    return this.egressAllowlist.some(([range, prefix]) => {
+      if (parsed instanceof ipaddr.IPv6 && range instanceof ipaddr.IPv6) {
+        return parsed.match(range, prefix);
+      }
+      if (parsed instanceof ipaddr.IPv4 && range instanceof ipaddr.IPv4) {
+        return parsed.match(range, prefix);
+      }
+      return false;
+    });
   }
 
   /** Le credential est-il opérationnel (flag ON + secret présent) ? */

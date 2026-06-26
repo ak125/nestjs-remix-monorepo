@@ -31,6 +31,26 @@ export const SYNTHETIC_PROBE_ENABLED_KEY = 'SEO_CP_SYNTHETIC_PROBE_ENABLED';
 export const SYNTHETIC_PROBE_WINDOW_MS = 60_000;
 
 /**
+ * Allowlist d'IP/CIDR d'egress de la sonde synthétique — PLANCHER de défense en
+ * profondeur du rate-limit, EN PLUS du HMAC. Liste séparée par virgules d'IP ou
+ * CIDR (IPv4 ou IPv6).
+ *
+ * Pourquoi (incident 2026-06-25) : le HMAC voyage dans un en-tête custom
+ * (`x-synthetic-probe`) que le CDN peut retirer en transit (Cloudflare ne l'a PAS
+ * transmis à l'origine → sonde auto-throttlée ~90 %, monitoring L1 aveugle). Or
+ * `cf-connecting-ip` est TOUJOURS transmis par Cloudflare et anti-spoofé à
+ * l'origine (cf. BotGuard.getClientIp : la valeur n'est crue QUE si le pair TCP
+ * est le reverse-proxy interne). Reconnaître l'IP d'egress de NOTRE propre sonde
+ * rend l'exemption robuste, que l'en-tête survive ou non au CDN.
+ *
+ * Vide = plancher OFF (fail-closed) → seule la voie HMAC s'applique. Le même
+ * périmètre least-privilege (GET + catalogue public, {@link isSyntheticExemptPath})
+ * est appliqué en aval dans `skipIf` : même blast-radius que la voie HMAC.
+ */
+export const SYNTHETIC_PROBE_EGRESS_IPS_KEY =
+  'SEO_CP_SYNTHETIC_PROBE_EGRESS_IPS';
+
+/**
  * Préfixes de chemins PUBLICS en lecture sur lesquels l'exemption rate-limit du
  * crawler synthétique peut s'appliquer (least-privilege). Aligné sur la surface
  * publique cacheable (Caddyfile @products/@content). Une fuite éventuelle du
