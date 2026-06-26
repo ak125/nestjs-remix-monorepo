@@ -1,0 +1,111 @@
+name: 🖼️ Visual Regression Gate
+
+# GATE-0 du chantier Tailwind 4 : rend le gate de régression visuelle AUTORITAIRE en CI
+# (avant ce workflow, `test:visual:docker` n'était qu'un wrapper local manuel, dans aucun
+# workflow — un "gate" non exécuté).
+#
+# Modèle = `e2e-smoke` (ci.yml) : POST-DEPLOY, sur le runner self-hosted (= hôte PREPROD
+# 49.12.233.2), contre le container PREPROD :3200 — cohérent avec la validation post-merge
+# du repo (PREPROD valide main ; PROD reste protégé par le tag `v*` manuel). Ce n'est donc
+# PAS un gate bloquant de PR : un diff rouge alerte sur main et l'owner revert (même modèle
+# que e2e-smoke/lighthouse).
+#
+# DÉTERMINISME : la comparaison tourne dans l'image Docker pinnée
+# `mcr.microsoft.com/playwright:v1.61.0-noble` via `scripts/visual/run-visual-docker.sh` — même
+# rendu de police que la génération des baselines. Aucune install npm nécessaire (l'image porte
+# Playwright + Chromium).
+#
+# ── ACTIVATION (état GATE-0) ────────────────────────────────────────────────────────────────
+# Le gate n'est VERT qu'une fois TOUTES les baselines `snapshots/<projet>/<spec>/` capturées
+# sous l'état Tailwind v3 (build courant) via `npm run -w @fafa/frontend test:visual:update`
+# (Docker) contre PREPROD : aujourd'hui seules les 3 pages DESKTOP existent ; mobile + specs
+# composants/interactifs/checkout restent à capturer. Tant que des baselines manquent, le job
+# est ROUGE (baseline absente = échec, jamais skip silencieux — canon "no silent fallback").
+# C'est un signal d'activation visible, pas du bruit : on complète la capture, on confirme un
+# run vert, puis le gate vit.
+
+on:
+  # Manuel d'abord (merge-safe) : phase de capture/activation des baselines + tout re-run ciblé.
+  # ── ACTIVATION (à faire après capture) ──────────────────────────────────────────────────────
+  # Tant que des baselines manquent (mobile + specs composants/interactifs/checkout), un
+  # déclenchement AUTO rougirait `main` à chaque deploy. Donc : on garde MANUEL jusqu'à ce que
+  # TOUTES les baselines soient capturées sous v3 ET qu'un run manuel soit VERT. Ensuite, ajouter
+  # l'auto-déclencheur post-Deploy (le job `if` ci-dessous gère déjà `workflow_run`) :
+  #   workflow_run:
+  #     workflows: ["🚀 Deploy"]
+  #     types: [completed]
+  workflow_dispatch: {}
+
+# Le container PREPROD :3200 est PARTAGÉ (un seul). On sérialise par ref et on annule le run
+# superséded (même raison que la garde de concurrence de ci.yml).
+concurrency:
+  group: visual-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  visual-gate:
+    name: 🖼️ Visual Regression (PREPROD :3200, Docker noble)
+    runs-on: [self-hosted, Linux, X64]
+    # Sur auto-trigger : uniquement si le Deploy a RÉUSSI (sinon PREPROD n'a pas le nouveau build).
+    # Sur workflow_dispatch : pas de workflow_run → la condition passe.
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v4
+
+      - name: ⏳ Wait for PREPROD to be stably healthy
+        run: |
+          # Polls CONSÉCUTIFS (pas premier-succès) : le container PREPROD partagé peut redémarrer
+          # brièvement (host-side ExitCode=0 + restart:always, diagnostic 2026-06-21). On attend la
+          # STABILITÉ avant de lancer les captures. Borné ; reset sur tout blip (no silent fallback).
+          need=4; stable=0
+          for i in $(seq 1 40); do
+            if curl -sf http://localhost:3200/health > /dev/null 2>&1; then
+              stable=$((stable + 1))
+              echo "healthy ${stable}/${need} (poll ${i})"
+              if [ "$stable" -ge "$need" ]; then echo "✅ PREPROD stably healthy"; exit 0; fi
+            else
+              if [ "$stable" -gt 0 ]; then echo "⚠️ health blip at poll ${i} — resetting"; fi
+              stable=0
+            fi
+            sleep 5
+          done
+          echo "::error::PREPROD never reached ${need} consecutive healthy polls on :3200"
+          exit 1
+
+      - name: 🖼️ Compare visual snapshots (Docker noble, résilient au restart PREPROD)
+        run: |
+          run_visual() { bash scripts/visual/run-visual-docker.sh; }
+          # 1er passage.
+          if run_visual; then exit 0; fi
+          # Le container PREPROD partagé peut redémarrer MID-SUITE (~20s, host-side) → connexion
+          # refusée sur une app pourtant saine. On distingue ça d'un VRAI diff : on attend que
+          # PREPROD soit STABLE de nouveau, puis on rejoue UNE fois. Sinon = vrai échec.
+          echo "::warning::1er passage rouge — vérification d'un restart PREPROD transitoire…"
+          need=4; stable=0
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3200/health > /dev/null 2>&1; then
+              stable=$((stable + 1)); if [ "$stable" -ge "$need" ]; then break; fi
+            else stable=0; fi
+            sleep 3
+          done
+          if [ "$stable" -lt "$need" ]; then
+            echo "::error::PREPROD ne s'est pas re-stabilisé — vrai échec, pas un restart transitoire"
+            exit 1
+          fi
+          echo "PREPROD de nouveau stable — re-run unique de la comparaison visuelle"
+          run_visual
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:3200
+
+      - name: 📤 Upload visual diff report (sur échec)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-gate-report
+          path: frontend/test-results/visual-report
+          retention-days: 14
+          if-no-files-found: ignore

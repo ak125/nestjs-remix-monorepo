@@ -1,10 +1,12 @@
 import { test, expect } from "@playwright/test";
 
 /**
- * Régression visuelle — fige la STRUCTURE / cascade CSS du build courant (Vite 7) pour la
- * comparer après la migration Vite 8 / Rolldown (V8-1). Le changement de bundler peut altérer
- * l'émission et l'ordre des CSS (FOUC, ordre de cascade) sans casser typecheck/build/size-limit
- * (qui ne comptent que les octets). Ce gate capture ce que les autres ne voient pas.
+ * Régression visuelle — fige la STRUCTURE / cascade CSS du build courant pour la comparer après
+ * une mutation à fort blast-radius (Vite 8 / Rolldown ✅ ; GATE-0 du chantier Tailwind 3 → 4 +
+ * refonte design-tokens). Ces changements peuvent altérer l'émission/l'ordre des CSS (FOUC,
+ * cascade, défauts ring/border/shadow) sans casser typecheck/build/size-limit (qui ne comptent
+ * que les octets). Ce gate capture ce que les autres ne voient pas. Tourne pour les projets
+ * `desktop` (1920×1080) ET `mobile` (390×844). Topologie snapshots : voir README + config.
  *
  * DÉTERMINISME (obligatoire) : ces tests DOIVENT tourner dans l'image Docker Playwright pinnée
  * `mcr.microsoft.com/playwright:v1.61.0-noble` (= runner CI ubuntu-24.04 / noble). Les générer ou
