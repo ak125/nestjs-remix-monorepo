@@ -571,8 +571,13 @@ families:
     operational_owner: backend-runtime-team
     estimated_canary_duration_minutes: 0
     rollback_requires_human_approval: true
-    rollback_tested_at: null
-    rollback_drill_commit: null
+    # PR-9f rollback drill (2026-06-26): atomic `git revert` of #1152 (squash
+    # 19e4d6402) is conflict-free and byte-identical to 74da962dc (#1151) — the
+    # last state built + E2E-Smoke + Lighthouse green on the PREPROD container.
+    # PROD image rollback target massdoc/nestjs-remix-monorepo:sha-74da962dc…
+    # present on DockerHub. Drill artifact: draft PR #1156 (rollback-drill/pr9f-nestjs11).
+    rollback_tested_at: "2026-06-26T09:57:36Z"
+    rollback_drill_commit: "ab8f572f90979d4e7426c667d2411c84834a6e97"
     known_incompatible_families:
       - runtime-backend-platform-fastify
       - queues-bullmq
