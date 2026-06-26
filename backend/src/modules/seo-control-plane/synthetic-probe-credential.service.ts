@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHmac, timingSafeEqual } from 'node:crypto';
-import * as ipaddr from 'ipaddr.js';
+import { BlockList, isIP } from 'node:net';
 import {
   SYNTHETIC_PROBE_HEADER,
   SYNTHETIC_PROBE_SECRET_KEY,
@@ -9,9 +9,6 @@ import {
   SYNTHETIC_PROBE_WINDOW_MS,
   SYNTHETIC_PROBE_EGRESS_IPS_KEY,
 } from './types';
-
-/** Entrée allowlist normalisée : adresse de base + longueur de préfixe. */
-type EgressCidr = [ipaddr.IPv4 | ipaddr.IPv6, number];
 
 /** Requête minimale lisible par {@link SyntheticProbeCredentialService.verify}. */
 export interface SyntheticVerifiableRequest {
@@ -60,8 +57,10 @@ export class SyntheticProbeCredentialService {
   private readonly logger = new Logger(SyntheticProbeCredentialService.name);
   private readonly secret: string;
   private readonly enabled: boolean;
-  /** Plancher défense-en-profondeur : CIDRs d'egress de la sonde (cf. types). */
-  private readonly egressAllowlist: EgressCidr[];
+  /** Plancher défense-en-profondeur : allowlist d'egress de la sonde (cf. types). */
+  private readonly egressAllowlist: BlockList;
+  /** Nombre de règles d'egress chargées (0 → plancher inactif, fail-closed). */
+  private readonly egressRuleCount: number;
   private warnedSecretMissing = false;
 
   constructor(private readonly config: ConfigService) {
@@ -76,34 +75,64 @@ export class SyntheticProbeCredentialService {
       );
     }
 
-    this.egressAllowlist = this.config
-      .get<string>(SYNTHETIC_PROBE_EGRESS_IPS_KEY, '')
-      .split(',')
-      .map((entry) => this.parseEgressEntry(entry))
-      .filter((cidr): cidr is EgressCidr => cidr !== null);
-    if (this.egressAllowlist.length > 0) {
+    const egress = this.buildEgressAllowlist(
+      this.config.get<string>(SYNTHETIC_PROBE_EGRESS_IPS_KEY, ''),
+    );
+    this.egressAllowlist = egress.list;
+    this.egressRuleCount = egress.count;
+    if (this.egressRuleCount > 0) {
       this.logger.log(
-        `Plancher egress sonde synthétique actif (${this.egressAllowlist.length} entrée(s) ${SYNTHETIC_PROBE_EGRESS_IPS_KEY}).`,
+        `Plancher egress sonde synthétique actif (${this.egressRuleCount} entrée(s) ${SYNTHETIC_PROBE_EGRESS_IPS_KEY}).`,
       );
     }
   }
 
   /**
-   * Parse une entrée d'allowlist (IP simple ou CIDR, v4/v6) → [adresse, préfixe].
-   * Entrée vide ou invalide → `null` (ignorée + warn, pas de fail-open silencieux).
+   * Construit l'allowlist d'egress (IP simples ou CIDR, v4/v6) depuis une liste
+   * séparée par des virgules, via `net.BlockList` (primitive stdlib Node : aucune
+   * dépendance tierce, et `check()` normalise nativement les IPv4-mapped-IPv6).
+   * Chaque entrée invalide est ignorée + warn (no silent fail-open). `count` =
+   * nombre d'entrées valides chargées (0 → plancher OFF / fail-closed).
    */
-  private parseEgressEntry(entry: string): EgressCidr | null {
-    const trimmed = entry.trim();
-    if (!trimmed) return null;
+  private buildEgressAllowlist(raw: string): {
+    list: BlockList;
+    count: number;
+  } {
+    const list = new BlockList();
+    let count = 0;
+    for (const entry of raw.split(',')) {
+      const trimmed = entry.trim();
+      if (trimmed && this.addEgressEntry(list, trimmed)) count += 1;
+    }
+    return { list, count };
+  }
+
+  /**
+   * Ajoute une entrée (IP simple ou CIDR, v4/v6) à la BlockList. Retourne `false`
+   * si l'entrée est invalide (ignorée + warn) — `isIP` rejette une IP malformée et
+   * `addSubnet`/`addAddress` lèvent sur un préfixe hors-domaine, capté ici.
+   */
+  private addEgressEntry(list: BlockList, entry: string): boolean {
     try {
-      if (trimmed.includes('/')) return ipaddr.parseCIDR(trimmed);
-      const addr = ipaddr.parse(trimmed);
-      return [addr, addr.kind() === 'ipv6' ? 128 : 32];
+      if (entry.includes('/')) {
+        const [net, prefixRaw] = entry.split('/');
+        const family = isIP(net);
+        const prefix = Number(prefixRaw);
+        if (family === 0 || !Number.isInteger(prefix)) {
+          throw new Error('CIDR invalide');
+        }
+        list.addSubnet(net, prefix, family === 6 ? 'ipv6' : 'ipv4');
+        return true;
+      }
+      const family = isIP(entry);
+      if (family === 0) throw new Error('IP invalide');
+      list.addAddress(entry, family === 6 ? 'ipv6' : 'ipv4');
+      return true;
     } catch {
       this.logger.warn(
-        `Entrée ${SYNTHETIC_PROBE_EGRESS_IPS_KEY} invalide ignorée: "${trimmed}".`,
+        `Entrée ${SYNTHETIC_PROBE_EGRESS_IPS_KEY} invalide ignorée: "${entry}".`,
       );
-      return null;
+      return false;
     }
   }
 
@@ -115,25 +144,16 @@ export class SyntheticProbeCredentialService {
    * en aval dans `skipIf` — cette méthode ne décide QUE de l'identité, pas du scope.
    */
   isExemptEgressIp(ip: string | undefined): boolean {
-    if (this.egressAllowlist.length === 0 || !ip) return false;
-    let parsed: ipaddr.IPv4 | ipaddr.IPv6;
+    if (this.egressRuleCount === 0 || !ip) return false;
+    const family = isIP(ip);
+    if (family === 0) return false; // IP illisible → fail-closed
     try {
-      // `process` normalise un IPv4-mapped IPv6 (`::ffff:1.2.3.4`) → IPv4.
-      parsed = ipaddr.process(ip);
+      // `BlockList.check` normalise un IPv4-mapped IPv6 (`::ffff:1.2.3.4`) et
+      // n'inter-matche jamais deux familles distinctes (enforce family equality).
+      return this.egressAllowlist.check(ip, family === 6 ? 'ipv6' : 'ipv4');
     } catch {
       return false;
     }
-    // `instanceof` narrows BOTH operands to the same family so `.match` is
-    // callable (the IPv4|IPv6 union method isn't) — and enforces family equality.
-    return this.egressAllowlist.some(([range, prefix]) => {
-      if (parsed instanceof ipaddr.IPv6 && range instanceof ipaddr.IPv6) {
-        return parsed.match(range, prefix);
-      }
-      if (parsed instanceof ipaddr.IPv4 && range instanceof ipaddr.IPv4) {
-        return parsed.match(range, prefix);
-      }
-      return false;
-    });
   }
 
   /** Le credential est-il opérationnel (flag ON + secret présent) ? */
