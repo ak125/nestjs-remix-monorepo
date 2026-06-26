@@ -1,19 +1,19 @@
 ---
 name: runtime-truth-audit
-description: Use when auditing runtime drift vs spec/registry (dead services, RPC drift, STABLE functions that write, partitions without rotation, attribution columns never written, orphan feature flags, PGRST203 overload ambiguity, massdoc type_id invariant integrity). Triggers — "audit runtime drift", "detect dead service", "check partition rotation", "verify attribution write path", "audit feature flags", "detect ambiguous RPC overloads", "verify massdoc type_id invariant". 8 atomic checks, each tied to a real PR incident or MEMORY reference. Informational only (autofixable=false strict V1).
+description: Use when auditing runtime drift vs spec/registry (dead services, RPC drift, STABLE functions that write, partitions without rotation, attribution columns never written, orphan feature flags, PGRST203 overload ambiguity, massdoc type_id invariant integrity, scheduled-orchestrator drift). Triggers — "audit runtime drift", "detect dead service", "check partition rotation", "verify attribution write path", "audit feature flags", "detect ambiguous RPC overloads", "verify massdoc type_id invariant", "audit scheduled jobs / pg_cron". 9 atomic checks, each tied to a real PR incident or MEMORY reference. Informational only (autofixable=false strict V1).
 type: technique
 status: experimental
 owners: ['@ak125']
 domain: D15
 runtime_class: read-only
 llm_safe: true
-last_verified: '2026-05-23'
+last_verified: '2026-06-26'
 license: Internal - Automecanik
-compatibility: Claude Code in the AutoMecanik monorepo. Reads audit/registry/canonical.json + pg_proc via supabase MCP. No mutations.
+compatibility: Claude Code in the AutoMecanik monorepo. Reads audit/registry/canonical.json + pg_proc/cron.job(_run_details) via supabase MCP + the bull-repeatable-drift probe. No mutations.
 allowed-tools: Read Grep Glob Bash
 tags: [audit, runtime, governance, adr-058, prevention]
 metadata:
-  version: "0.1"
+  version: "0.2"
   argument-hint: "[check-name or 'all']"
   spec: agentskills.io/specification v1
 ---
@@ -43,7 +43,7 @@ Ce skill **ne fait que lire**. Il **ne modifie aucun fichier**, **ne crée
 aucune PR**, **n'écrit en DB que via supabase MCP read-only**. Output =
 rapport markdown structuré listant les findings par check.
 
-## Architecture atomique (8 checks)
+## Architecture atomique (9 checks)
 
 ```
 .claude/skills/runtime-truth-audit/
@@ -57,7 +57,12 @@ rapport markdown structuré listant les findings par check.
     orphan-runtime-flags.md         # feature flags morts (préventif)
     rpc-overload-ambiguity.md       # overloads PostgREST ambigus → PGRST203 (#993)
     massdoc-typeid-invariant.md     # invariant numérotation type_id Massdoc / ADR-085 (#998)
+    scheduled-orchestrator-drift.md # job pg_cron/Bull manquant/double/jamais-tourné/persisté après swap (CWV 06-03→23)
 ```
+
+Implémentations exécutables co-localisées dans `scripts/audit/runtime-truth/*.ts`
+(ex. `bull-repeatable-drift.ts` pour les repeatables Bull persistées) — runners
+déterministes sans LLM, testés (`tsx --test scripts/audit/runtime-truth/*.test.ts`).
 
 **Un check = une responsabilité** (≤ 100 lignes). Pas de check "mega"
 qui regroupe plusieurs patterns. Si un check tente de couvrir 2 patterns
@@ -123,14 +128,14 @@ conditionnée à 6 mois de mesure + `FPR < 0.01` + autofix trivial.
 ## Procédure (orchestrateur)
 
 1. Si l'utilisateur demande "audit runtime drift" sans préciser :
-   exécuter les 8 checks dans l'ordre listé ci-dessus, agréger les findings.
+   exécuter les 9 checks dans l'ordre listé ci-dessus, agréger les findings.
 2. Si l'utilisateur cite un check spécifique (ex: "check partition rotation") :
    exécuter uniquement ce check.
 3. Format de sortie attendu :
    ```markdown
    # Runtime Truth Audit Report
    Date : YYYY-MM-DD
-   Checks exécutés : N/8
+   Checks exécutés : N/9
 
    ## Findings par severity
    - critical : X
