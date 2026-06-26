@@ -1,11 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHmac, timingSafeEqual } from 'node:crypto';
+import { BlockList, isIP } from 'node:net';
 import {
   SYNTHETIC_PROBE_HEADER,
   SYNTHETIC_PROBE_SECRET_KEY,
   SYNTHETIC_PROBE_ENABLED_KEY,
   SYNTHETIC_PROBE_WINDOW_MS,
+  SYNTHETIC_PROBE_EGRESS_IPS_KEY,
 } from './types';
 
 /** Requête minimale lisible par {@link SyntheticProbeCredentialService.verify}. */
@@ -40,6 +42,12 @@ export interface SyntheticVerifiableRequest {
  *     throttler normal. JAMAIS de fail-open vers « vérifié ».
  *   - Le least-privilege (scope GET + catalogue) est appliqué dans `skipIf`, pas ici.
  *
+ * Défense en profondeur ({@link isExemptEgressIp}, ajout 2026-06-26) : le HMAC
+ * voyage dans un en-tête custom qu'un CDN peut retirer en transit (Cloudflare ne
+ * l'a PAS transmis → sonde auto-throttlée). Un PLANCHER par IP d'egress
+ * (`cf-connecting-ip`, toujours transmis + anti-spoofé) rend l'exemption robuste
+ * indépendamment du CDN. Même scope least-privilege, env-gated, fail-closed.
+ *
  * Stateless. Dépend uniquement de ConfigService. Fourni par un module @Global pour
  * être injecté à la fois par BotGuardMiddleware (verify) et SyntheticCrawlerService
  * (sign) sans dépendance circulaire.
@@ -49,6 +57,10 @@ export class SyntheticProbeCredentialService {
   private readonly logger = new Logger(SyntheticProbeCredentialService.name);
   private readonly secret: string;
   private readonly enabled: boolean;
+  /** Plancher défense-en-profondeur : allowlist d'egress de la sonde (cf. types). */
+  private readonly egressAllowlist: BlockList;
+  /** Nombre de règles d'egress chargées (0 → plancher inactif, fail-closed). */
+  private readonly egressRuleCount: number;
   private warnedSecretMissing = false;
 
   constructor(private readonly config: ConfigService) {
@@ -61,6 +73,86 @@ export class SyntheticProbeCredentialService {
         `${SYNTHETIC_PROBE_ENABLED_KEY}=true mais ${SYNTHETIC_PROBE_SECRET_KEY} absent — ` +
           'exemption synthétique DÉSACTIVÉE (fail-closed).',
       );
+    }
+
+    const egress = this.buildEgressAllowlist(
+      this.config.get<string>(SYNTHETIC_PROBE_EGRESS_IPS_KEY, ''),
+    );
+    this.egressAllowlist = egress.list;
+    this.egressRuleCount = egress.count;
+    if (this.egressRuleCount > 0) {
+      this.logger.log(
+        `Plancher egress sonde synthétique actif (${this.egressRuleCount} entrée(s) ${SYNTHETIC_PROBE_EGRESS_IPS_KEY}).`,
+      );
+    }
+  }
+
+  /**
+   * Construit l'allowlist d'egress (IP simples ou CIDR, v4/v6) depuis une liste
+   * séparée par des virgules, via `net.BlockList` (primitive stdlib Node : aucune
+   * dépendance tierce, et `check()` normalise nativement les IPv4-mapped-IPv6).
+   * Chaque entrée invalide est ignorée + warn (no silent fail-open). `count` =
+   * nombre d'entrées valides chargées (0 → plancher OFF / fail-closed).
+   */
+  private buildEgressAllowlist(raw: string): {
+    list: BlockList;
+    count: number;
+  } {
+    const list = new BlockList();
+    let count = 0;
+    for (const entry of raw.split(',')) {
+      const trimmed = entry.trim();
+      if (trimmed && this.addEgressEntry(list, trimmed)) count += 1;
+    }
+    return { list, count };
+  }
+
+  /**
+   * Ajoute une entrée (IP simple ou CIDR, v4/v6) à la BlockList. Retourne `false`
+   * si l'entrée est invalide (ignorée + warn) — `isIP` rejette une IP malformée et
+   * `addSubnet`/`addAddress` lèvent sur un préfixe hors-domaine, capté ici.
+   */
+  private addEgressEntry(list: BlockList, entry: string): boolean {
+    try {
+      if (entry.includes('/')) {
+        const [net, prefixRaw] = entry.split('/');
+        const family = isIP(net);
+        const prefix = Number(prefixRaw);
+        if (family === 0 || !Number.isInteger(prefix)) {
+          throw new Error('CIDR invalide');
+        }
+        list.addSubnet(net, prefix, family === 6 ? 'ipv6' : 'ipv4');
+        return true;
+      }
+      const family = isIP(entry);
+      if (family === 0) throw new Error('IP invalide');
+      list.addAddress(entry, family === 6 ? 'ipv6' : 'ipv4');
+      return true;
+    } catch {
+      this.logger.warn(
+        `Entrée ${SYNTHETIC_PROBE_EGRESS_IPS_KEY} invalide ignorée: "${entry}".`,
+      );
+      return false;
+    }
+  }
+
+  /**
+   * Plancher défense-en-profondeur : `true` si l'IP cliente (déjà anti-spoofée par
+   * BotGuard.getClientIp = `cf-connecting-ip` cru uniquement derrière le proxy
+   * interne) appartient à l'allowlist d'egress de la sonde. Allowlist vide → `false`
+   * (fail-closed). Le scope least-privilege (GET + catalogue public) reste appliqué
+   * en aval dans `skipIf` — cette méthode ne décide QUE de l'identité, pas du scope.
+   */
+  isExemptEgressIp(ip: string | undefined): boolean {
+    if (this.egressRuleCount === 0 || !ip) return false;
+    const family = isIP(ip);
+    if (family === 0) return false; // IP illisible → fail-closed
+    try {
+      // `BlockList.check` normalise un IPv4-mapped IPv6 (`::ffff:1.2.3.4`) et
+      // n'inter-matche jamais deux familles distinctes (enforce family equality).
+      return this.egressAllowlist.check(ip, family === 6 ? 'ipv6' : 'ipv4');
+    } catch {
+      return false;
     }
   }
 

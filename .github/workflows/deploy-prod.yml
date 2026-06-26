@@ -91,6 +91,13 @@ jobs:
           # rate-limit exemption on PROD (HMAC verifier side). Unset = stays OFF
           # (probes throttled; in-app 429-rate alert fires). PR #1141 / #1142.
           SEO_CP_SYNTHETIC_PROBE_SECRET_OVERRIDE: ${{ secrets.PROD_SEO_CP_SYNTHETIC_PROBE_SECRET }}
+          # Optional defense-in-depth FLOOR (synthetic-probe egress floor, 2026-06-26): comma-separated egress
+          # IP/CIDR(s) of the synthetic probe. cf-connecting-ip is always forwarded
+          # by Cloudflare (unlike the HMAC header, which the CDN can strip — root
+          # cause of the 2026-06-25 self-throttle), so this keeps the exemption
+          # working even if the header never reaches origin. Unset = floor stays
+          # OFF (fail-closed; HMAC path only). Value is a public IP, not a secret.
+          SEO_CP_SYNTHETIC_PROBE_EGRESS_IPS_OVERRIDE: ${{ secrets.PROD_SEO_CP_SYNTHETIC_PROBE_EGRESS_IPS }}
         run: |
           docker pull massdoc/nestjs-remix-monorepo:production
 
@@ -170,6 +177,22 @@ jobs:
             echo "✅ SEO_CP synthetic-probe exemption secret injected + enabled from GitHub Secrets"
           else
             echo "ℹ️ PROD_SEO_CP_SYNTHETIC_PROBE_SECRET unset — synthetic-crawler exemption stays OFF (probes throttled; in-app 429 alert will fire)"
+          fi
+          # Inject the synthetic-probe egress allowlist (defense-in-depth FLOOR,
+          # synthetic-probe egress floor, 2026-06-26). Independent of the HMAC secret above: this floor recognizes
+          # the probe by its anti-spoofed cf-connecting-ip, so the exemption keeps
+          # working even when Cloudflare strips the x-synthetic-probe header (root
+          # cause of the 2026-06-25 self-throttle). Unset = floor OFF (fail-closed;
+          # HMAC path only). `|` sed delimiter is safe — IP/CIDR values use :, /, ,.
+          if [ -n "$SEO_CP_SYNTHETIC_PROBE_EGRESS_IPS_OVERRIDE" ]; then
+            if grep -q '^SEO_CP_SYNTHETIC_PROBE_EGRESS_IPS=' .env; then
+              sed -i "s|^SEO_CP_SYNTHETIC_PROBE_EGRESS_IPS=.*|SEO_CP_SYNTHETIC_PROBE_EGRESS_IPS=${SEO_CP_SYNTHETIC_PROBE_EGRESS_IPS_OVERRIDE}|" .env
+            else
+              echo "SEO_CP_SYNTHETIC_PROBE_EGRESS_IPS=${SEO_CP_SYNTHETIC_PROBE_EGRESS_IPS_OVERRIDE}" >> .env
+            fi
+            echo "✅ SEO_CP synthetic-probe egress floor configured from GitHub Secrets"
+          else
+            echo "ℹ️ PROD_SEO_CP_SYNTHETIC_PROBE_EGRESS_IPS unset — egress floor OFF (HMAC path only)"
           fi
 
           docker network create automecanik-prod 2>/dev/null || true

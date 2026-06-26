@@ -69,12 +69,20 @@ export class BotGuardMiddleware implements NestMiddleware {
       }
 
       // 6b. Verified internal synthetic probe (seo-control-plane L1). Identity is
-      // an HMAC credential header — NEVER the User-Agent. Like a verified crawler
-      // it bypasses geo + behavioral (its mono-IP burst would otherwise score as
-      // suspicious and 403), while the rate-limit exemption is further scoped to
-      // public-catalogue GETs in app.module.ts skipIf. The explicit IP blocklist
-      // above still wins. Fail-closed: verify() returns false on any error.
-      if (this.syntheticProbe.verify(req)) {
+      // proven by EITHER an HMAC credential header (primary) OR the probe's own
+      // egress IP (defense-in-depth floor) — NEVER the User-Agent. The HMAC header
+      // can be stripped in transit by the CDN (Cloudflare did not forward
+      // x-synthetic-probe → probe self-throttled ~90%); cf-connecting-ip is always
+      // forwarded and anti-spoofed in getClientIp, so the egress floor keeps the
+      // exemption working regardless. Like a verified crawler it bypasses geo +
+      // behavioral; the rate-limit exemption is further scoped to public-catalogue
+      // GETs in app.module.ts skipIf. The explicit IP blocklist above still wins.
+      // Both paths fail-closed (verify() false on any error; egress allowlist empty
+      // → false). `ip` is the anti-spoofed client IP from getClientIp (line 32).
+      if (
+        this.syntheticProbe.verify(req) ||
+        this.syntheticProbe.isExemptEgressIp(ip)
+      ) {
         (
           req as Request & { isVerifiedSyntheticProbe?: boolean }
         ).isVerifiedSyntheticProbe = true;

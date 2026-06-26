@@ -8,6 +8,7 @@ import {
   SYNTHETIC_PROBE_SECRET_KEY,
   SYNTHETIC_PROBE_ENABLED_KEY,
   SYNTHETIC_PROBE_WINDOW_MS,
+  SYNTHETIC_PROBE_EGRESS_IPS_KEY,
   isSyntheticExemptPath,
 } from './types';
 
@@ -117,6 +118,79 @@ describe('SyntheticProbeCredentialService', () => {
     expect(
       makeService({ [SYNTHETIC_PROBE_SECRET_KEY]: SECRET }).isActive(),
     ).toBe(false);
+  });
+});
+
+describe('SyntheticProbeCredentialService.isExemptEgressIp (plancher défense-en-profondeur)', () => {
+  // IP d'egress observée de la sonde PROD (incident 2026-06-25). Fixture de test.
+  const PROBE_V6 = '2a01:4f8:1c1b:5e4e::1';
+
+  it('exempte une IPv6 exacte présente dans l’allowlist', () => {
+    const s = makeService({ [SYNTHETIC_PROBE_EGRESS_IPS_KEY]: PROBE_V6 });
+    expect(s.isExemptEgressIp(PROBE_V6)).toBe(true);
+  });
+
+  it('exempte via un CIDR IPv6', () => {
+    const s = makeService({
+      [SYNTHETIC_PROBE_EGRESS_IPS_KEY]: '2a01:4f8:1c1b:5e4e::/64',
+    });
+    expect(s.isExemptEgressIp(PROBE_V6)).toBe(true);
+    expect(s.isExemptEgressIp('2a01:4f8:1c1b:5e4e:abcd::9')).toBe(true);
+  });
+
+  it('exempte une IPv4 exacte et via CIDR', () => {
+    const s = makeService({
+      [SYNTHETIC_PROBE_EGRESS_IPS_KEY]: '203.0.113.7, 198.51.100.0/24',
+    });
+    expect(s.isExemptEgressIp('203.0.113.7')).toBe(true);
+    expect(s.isExemptEgressIp('198.51.100.42')).toBe(true);
+  });
+
+  it('normalise un IPv4-mapped IPv6 (::ffff:) vers IPv4', () => {
+    const s = makeService({
+      [SYNTHETIC_PROBE_EGRESS_IPS_KEY]: '203.0.113.0/24',
+    });
+    expect(s.isExemptEgressIp('::ffff:203.0.113.7')).toBe(true);
+  });
+
+  it('REFUSE une IP hors allowlist', () => {
+    const s = makeService({ [SYNTHETIC_PROBE_EGRESS_IPS_KEY]: PROBE_V6 });
+    expect(s.isExemptEgressIp('8.8.8.8')).toBe(false);
+    expect(s.isExemptEgressIp('2a01:4f8:1c1b:5e4f::1')).toBe(false);
+  });
+
+  it('fail-closed : allowlist vide → toujours false', () => {
+    expect(makeService({}).isExemptEgressIp(PROBE_V6)).toBe(false);
+    expect(
+      makeService({ [SYNTHETIC_PROBE_EGRESS_IPS_KEY]: '' }).isExemptEgressIp(
+        PROBE_V6,
+      ),
+    ).toBe(false);
+  });
+
+  it('REFUSE une IP absente/illisible (fail-closed, pas de crash)', () => {
+    const s = makeService({ [SYNTHETIC_PROBE_EGRESS_IPS_KEY]: PROBE_V6 });
+    expect(s.isExemptEgressIp(undefined)).toBe(false);
+    expect(s.isExemptEgressIp('')).toBe(false);
+    expect(s.isExemptEgressIp('pas-une-ip')).toBe(false);
+    expect(s.isExemptEgressIp('unknown')).toBe(false);
+  });
+
+  it('ignore les entrées invalides mais garde les valides (parse résilient)', () => {
+    const s = makeService({
+      [SYNTHETIC_PROBE_EGRESS_IPS_KEY]: `garbage, ${PROBE_V6}, 999.999.0.0/8`,
+    });
+    expect(s.isExemptEgressIp(PROBE_V6)).toBe(true);
+    expect(s.isExemptEgressIp('8.8.8.8')).toBe(false);
+  });
+
+  it('ne confond pas les familles (IPv4 vs plage IPv6 et inversement)', () => {
+    const v6only = makeService({ [SYNTHETIC_PROBE_EGRESS_IPS_KEY]: PROBE_V6 });
+    expect(v6only.isExemptEgressIp('203.0.113.7')).toBe(false);
+    const v4only = makeService({
+      [SYNTHETIC_PROBE_EGRESS_IPS_KEY]: '203.0.113.0/24',
+    });
+    expect(v4only.isExemptEgressIp(PROBE_V6)).toBe(false);
   });
 });
 
