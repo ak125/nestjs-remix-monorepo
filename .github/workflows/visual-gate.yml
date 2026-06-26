@@ -12,17 +12,19 @@ name: 🖼️ Visual Regression Gate
 #
 # DÉTERMINISME : la comparaison tourne dans l'image Docker pinnée
 # `mcr.microsoft.com/playwright:v1.61.0-noble` via `scripts/visual/run-visual-docker.sh` — même
-# rendu de police que la génération des baselines. Aucune install npm nécessaire (l'image porte
-# Playwright + Chromium).
+# rendu de police que la génération des baselines. L'image porte le BUILD Chromium (/ms-playwright)
+# MAIS PAS un `@playwright/test` résolvable par le projet : le config Playwright fait
+# `import "@playwright/test"`, résolu depuis le `node_modules` du repo MONTÉ dans le container
+# (`/work/frontend/node_modules`). Un checkout CI frais n'en a aucun → `npm ci` est REQUIS avant la
+# comparaison (sinon `ERR_MODULE_NOT_FOUND: @playwright/test`). Le download de browser est skippé
+# (la comparaison utilise le Chromium de l'image, pas celui du runner).
 #
 # ── ACTIVATION (état GATE-0) ────────────────────────────────────────────────────────────────
-# Le gate n'est VERT qu'une fois TOUTES les baselines `snapshots/<projet>/<spec>/` capturées
-# sous l'état Tailwind v3 (build courant) via `npm run -w @fafa/frontend test:visual:update`
-# (Docker) contre PREPROD : aujourd'hui seules les 3 pages DESKTOP existent ; mobile + specs
-# composants/interactifs/checkout restent à capturer. Tant que des baselines manquent, le job
-# est ROUGE (baseline absente = échec, jamais skip silencieux — canon "no silent fallback").
-# C'est un signal d'activation visible, pas du bruit : on complète la capture, on confirme un
-# run vert, puis le gate vit.
+# Les 18 baselines (9 pages × desktop+mobile) sont capturées sous v3 (PR #1160). Reste à confirmer
+# un `workflow_dispatch` VERT contre PREPROD — c'est la validation rendu DEV(capture)/PREPROD(gate)
+# (cf. README `tests/visual/`). Baseline absente = échec, jamais skip silencieux (no silent
+# fallback). Une fois ce run vert, flip `workflow_run` (auto-bloquant post-Deploy). Ce commit
+# corrige le bug qui empêchait le run de s'exécuter (npm ci manquant → @playwright/test introuvable).
 
 on:
   # Manuel d'abord (merge-safe) : phase de capture/activation des baselines + tout re-run ciblé.
@@ -55,6 +57,22 @@ jobs:
     steps:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v4
+
+      - name: ⎔ Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: "npm"
+
+      - name: 📦 Install deps (node_modules monté dans le container Docker)
+        # REQUIS : le config/spec Playwright importent `@playwright/test`, résolu depuis le
+        # `node_modules` du repo monté (`/work/frontend/node_modules`). L'image Docker ne fournit
+        # que le browser, pas le package projet → un checkout frais sans `npm ci` casse avec
+        # `ERR_MODULE_NOT_FOUND`. `npm ci` matérialise `@playwright/test@1.61.0` (= l'image).
+        # Skip le download du browser : la comparaison utilise le Chromium de l'image noble.
+        run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
 
       - name: ⏳ Wait for PREPROD to be stably healthy
         run: |
