@@ -1,5 +1,8 @@
 const path = require('path');
-const tokens = require('../packages/design-tokens/src/tokens/design-tokens.json');
+// Flat legacy projection generated from the DTCG source (src/tokens.json) by
+// @fafa/design-tokens' build (Style Dictionary). Deep-equals the former raw
+// design-tokens.json — Tailwind utilities compile identically. See packages/design-tokens.
+const tokens = require('@fafa/design-tokens/tailwind-tokens');
 
 module.exports = {
   darkMode: ['class'],
