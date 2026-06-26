@@ -11,8 +11,8 @@ que les octets). Ce gate capture ce que les autres ne voient pas.
 ```
 frontend/tests/visual/
 ├── snapshots/<projet>/<spec>/<capture>.png   # ORACLE COURANT — le SEUL comparé par le gate
-├── reference-v3/                             # ARCHIVE IMMUABLE pré-migration (PNG libres, jamais
-│   └── desktop/{home,r1-gamme,r2-vehicule}.png#   référencés par un toHaveScreenshot — preuve)
+├── reference-v3/{desktop,mobile}/<page>.png  # ARCHIVE IMMUABLE pré-migration (9 pages × 2 vues,
+│                                             #   PNG libres hors testMatch — preuve historique v3)
 └── test-results/                             # artefacts (diffs, rapport HTML) — gitignoré
 ```
 
@@ -35,16 +35,45 @@ DOIVENT matcher.
 
 | Projet | Viewport | Statut baseline |
 |---|---|---|
-| `desktop` | 1920×1080 | 3 pages migrées depuis l'ancien `-snapshots/` (v3) ✅ |
-| `mobile` | 390×844 (UA mobile + touch) | **à capturer sous v3** |
+| `desktop` | 1920×1080 | 9 pages capturées sous v3, image 1.61.0, **contre DEV:3000** ✅ |
+| `mobile` | 390×844 (UA mobile + touch) | 9 pages capturées sous v3, image 1.61.0, **contre DEV:3000** ✅ |
 
-Pages publiques (`pages.visual.spec.ts`) : `home`, `r1-gamme`, `r2-vehicule` (data-driven masqué).
+> **Cible de capture ≠ cible du gate** : ces baselines ont été générées contre **DEV:3000** (build
+> Vite **dev**, seul runtime atteignable depuis la machine DEV). Le gate CI compare contre
+> **PREPROD :3200** (build Docker **prod**). Le frontend n'a **qu'un** pipeline CSS (`global.css` +
+> Tailwind, **ni CSS modules ni inline** — cf. `.claude/rules/frontend.md`) → la divergence
+> dev/prod est faible (la minification ne change pas les pixels), mais **non vérifiée**. Le premier
+> `workflow_dispatch` du gate contre PREPROD EST cette vérification : vert ⇒ baselines DEV valides
+> sous tolérance 0.02 ; rouge uniforme ⇒ re-capturer contre PREPROD avant d'activer `workflow_run`.
 
-**Coverage à étendre (capture runtime, voir ci-dessous)** : composants ciblés seuil strict
-(input focus, bouton, carte, badge, accordéon, panier, modal), états interactifs (focus clavier,
-accordéon/dialog/panier ouverts, erreur form), pages **checkout/paiement** (`checkout.tsx`,
-`CheckoutLivraisonSection`, `CheckoutPaiementSection`, CTA désactivé `bg-cta/70`) — surface
-conversion-critique que la recolor CTA de DT-1 touche et que `panier` ne couvre pas.
+Pages publiques (`pages.visual.spec.ts`, data-driven masqué) — choisies pour **filtrer le périmètre
+visuel de DT-1** (recolor CTA `bg-cta` blanc→noir, 23 fichiers) : `home`, `r1-gamme`, `r2-vehicule`
+(⇒ chrome global Navbar/Footer/BottomNav/Section/root + Hero/Catalogue/Diagnostic/GammeHero/
+PiecesHeroPriceCard/VehicleSelector), `cart-empty` (cart.tsx **état vide** — voir gap CartSummaryBlock),
+`login`/`register`/`forgot-password` (CTA auth), `diagnostic-auto`, `not-found-404`.
+⇒ **18/23** fichiers CTA nettoyés de façon **déterministe** (capture stateless `goto`).
+
+**Gaps bornés DÉCLARÉS (pas de cap silencieux) — 5/23 non nettoyés** :
+- **`/checkout`** (`CheckoutLivraisonSection`/`CheckoutPaiementSection`/`checkout.tsx`, 7 CTA) :
+  redirige (302) tant que le panier est vide — son loader fait `getOptionalUser` (pas d'auth gate)
+  puis `redirect("/cart")` si `items.length === 0`. Une capture exigerait un **cart-drive interactif**
+  (ajout panier session/Redis → `/checkout`). DÉLIBÉRÉMENT **hors de l'oracle comparé** : un drive
+  interactif (clic carte→modal→ajout, dépendant du stock) rendrait le gate **flaky** — un gate qui
+  crie au loup est pire que pas de couverture (« safe », « pas de bricolage »). Couvert en DT-1 par :
+  (1) test de contraste **WCAG** bloquant (prouve que le nouveau foreground passe), (2) argument
+  d'**uniformité du token** (même mécanisme CSS `bg-cta`/`text-*` que les 18 surfaces nettoyées →
+  propre sur 18 ⇒ propre sur les autres), (3) **before/after manuel** capturé au moment de DT-1 depuis
+  `main` (qui reste v3 jusqu'au merge DT-1).
+- **`CartSummaryBlock.tsx`** : son CTA `bg-cta text-white` ne s'affiche **qu'avec un panier non vide** ;
+  `/cart` vide retourne tôt `<EmptyCart>` (cart.tsx:380), donc `cart-empty` ne le nettoie PAS (les
+  `bg-cta` du HTML `/cart` vide = chrome global déjà nettoyé par `home`). Même couverture DT-1 que
+  `/checkout` (WCAG + uniformité + before/after cart-drive).
+- **`DashboardDesignTab.tsx`** : route **admin** (`/admin/...`), aperçu design-tokens — **hors périmètre**
+  du gate visuel public (pas une surface SEO/conversion). Couvert par les tests unitaires design-tokens.
+- **États interactifs** (focus clavier, accordéon/dialog ouverts, erreur form) et **specs composant
+  seuil strict** : DIFFÉRÉS. Le CTA est un gros bouton plein-largeur, déjà visible en capture
+  full-page → un spec composant n'est pas requis pour filtrer ce diff. À ajouter si une phase
+  ultérieure exige un seuil composant plus serré.
 
 ## Commandes
 
@@ -61,17 +90,17 @@ npm run -w @fafa/frontend test:visual:docker   # comparer aux baselines (Docker)
 `.github/workflows/visual-gate.yml` exécute la comparaison sur le runner self-hosted contre
 **PREPROD :3200** dans l'image Docker noble pinnée (modèle `e2e-smoke` : validation post-merge ;
 PROD reste protégé par le tag `v*`). Déclencheur actuel : **`workflow_dispatch` (manuel)** — choix
-**merge-safe** : tant que des baselines manquent, un auto-déclencheur rougirait `main`. L'auto
-post-Deploy (`workflow_run`) est ajouté **à l'activation**, une fois toutes les baselines vertes
-(commentaire d'activation dans le workflow).
+**merge-safe** : merger #1160 ajoute l'infra + les baselines **sans** auto-rougir `main`. L'auto
+post-Deploy (`workflow_run`) est activé **séparément**, après un run `workflow_dispatch` vert contre
+PREPROD (vérifier que le gate tourne en CI avant de le rendre auto-bloquant — activation par étapes).
 
-> **ACTIVATION (GATE-0 en cours)** : le gate n'est VERT qu'une fois **toutes** les baselines
-> `snapshots/` capturées **sous l'état Tailwind v3** (build courant) — invariant : une baseline
-> capturée après une mutation DT-*/TW-* est **inadmissible** (elle masquerait la régression).
-> Aujourd'hui : desktop ✅ ; **mobile + specs composants/interactifs/checkout = à capturer**. Tant
-> qu'une baseline manque, le job est ROUGE (baseline absente = échec, jamais skip — "no silent
-> fallback"). Étapes de clôture : (1) capturer mobile + nouveaux specs via `test:visual:update`
-> contre PREPROD, (2) confirmer un run vert, (3) le gate vit.
+> **GATE-0 — baselines closes** : les **18** baselines `snapshots/` (9 pages × desktop+mobile) sont
+> capturées **sous l'état Tailwind v3** dans l'image pinnée **1.61.0** (invariant respecté : aucune
+> mutation DT-*/TW-* appliquée — DT-0 est prouvé byte-identique visuellement). Self-check
+> déterminisme : **18 passed** en mode comparaison (re-rendu vs baselines = vert). Baseline absente =
+> échec, jamais skip ("no silent fallback"). **Reste à l'activation** : (1) `workflow_dispatch` vert
+> contre PREPROD :3200 (peut différer du rendu DEV:3000 — re-capture sous PREPROD si l'image runner
+> diffère), (2) flip `workflow_run` pour rendre le gate auto-bloquant post-Deploy.
 
 ## Workflow d'usage (mutation à fort blast-radius)
 
