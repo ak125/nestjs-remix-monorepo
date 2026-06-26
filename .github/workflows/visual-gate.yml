@@ -62,6 +62,19 @@ jobs:
     # Sur workflow_dispatch : pas de workflow_run → la condition passe.
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     steps:
+      - name: 🧹 Purge des artefacts root-owned d'un run Docker précédent (pré-checkout)
+        # Le harnais visuel tourne `npx playwright test` dans le container noble EN ROOT (user par
+        # défaut de l'image ; Chromium y tourne sans sandbox). Playwright écrit `test-results/` dans
+        # le workspace MONTÉ → ces fichiers appartiennent à root, et le `clean: true` du checkout
+        # suivant échoue en EACCES (rmdir non permis au user runner) — c'est ce qui a cassé le run
+        # 28260655482. On purge ces leftovers AVANT checkout via un container (le runner est dans le
+        # groupe docker), donc en root. Idempotent ; `|| true` si le workspace n'existe pas encore.
+        # Image = le même tag pinné que scripts/visual/run-visual-docker.sh (déjà en cache runner).
+        run: |
+          docker run --rm -v "${{ github.workspace }}:/w" \
+            mcr.microsoft.com/playwright:v1.61.0-noble \
+            rm -rf /w/frontend/tests/visual/test-results || true
+
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v4
 
@@ -154,6 +167,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: visual-gate-report
-          path: frontend/test-results/visual-report
+          # Chemin RÉEL du rapport HTML : `outputFolder: ./test-results/visual-report` est résolu
+          # relativement au dossier de la config (frontend/tests/visual/), pas à frontend/ — l'ancien
+          # `frontend/test-results/visual-report` ne matchait jamais (artefact vide silencieux).
+          path: frontend/tests/visual/test-results/visual-report
           retention-days: 14
           if-no-files-found: ignore
