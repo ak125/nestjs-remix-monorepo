@@ -23,10 +23,6 @@ import { isMediaFactoryEnabled } from '../modules/media-factory/media-factory.fl
 import { SeoDailyFetchProcessor } from '../modules/seo-monitoring/processors/seo-daily-fetch.processor';
 import { SeoMonitoringModule } from '../modules/seo-monitoring/seo-monitoring.module';
 
-// CWV aggregation (bloc 4 CWV Runtime Observability)
-import { CwvAggregationProcessor } from '../modules/seo-monitoring/processors/cwv-aggregation.processor';
-import { CwvAggregationSchedulerService } from '../modules/seo-monitoring/services/cwv-aggregation.scheduler.service';
-
 // Services Workers
 import { SeoMonitorSchedulerService } from './services/seo-monitor-scheduler.service';
 
@@ -134,8 +130,6 @@ import { AdminJobHealthService } from '../modules/admin/services/admin-job-healt
     EmailProcessor,
     SeoMonitorProcessor,
     SeoDailyFetchProcessor, // V0.A — daily GSC/GA4/CWV/Links ingestion (cron 04:00 UTC)
-    CwvAggregationProcessor, // CWV bloc 4 — hourly + daily-rum aggregation jobs
-    CwvAggregationSchedulerService, // CWV bloc 4 — repeatable jobs configurator
     // 🎬 REVIVE flag-gated (off par défaut → 0 prod) : processor + ses 3 deps
     ...(isMediaFactoryEnabled()
       ? [
