@@ -511,7 +511,7 @@ export const PurchaseGuideDataSchema = z
       z.object({ title: z.string(), content: z.string(), icon: z.string() }),
     ),
     h1Override: z.string().nullable().optional(),
-    h2Overrides: z.record(z.string()).nullable().optional(),
+    h2Overrides: z.record(z.string(), z.string()).nullable().optional(),
     howToChoose: z.string().nullable().optional(),
     symptoms: z.array(z.string()).nullable().optional(),
     antiMistakes: z.array(z.string()).nullable().optional(),
@@ -524,7 +524,10 @@ export const PurchaseGuideDataSchema = z
     equipementiersLine: z.string().nullable().optional(),
     familyCrossSellIntro: z.string().nullable().optional(),
     interestNuggets: z
-      .union([z.record(z.unknown()), z.array(z.record(z.unknown()))])
+      .union([
+        z.record(z.string(), z.unknown()),
+        z.array(z.record(z.string(), z.unknown())),
+      ])
       .nullable()
       .optional(),
     safeTableRows: z

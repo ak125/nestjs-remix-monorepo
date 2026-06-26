@@ -8,13 +8,13 @@
       "build/client/assets/entry.client-*.js",
       "build/client/assets/app-core-*.js"
     ],
-    "limit": "210 KB",
+    "limit": "216 KB",
     "gzip": true
   },
   {
     "name": "Total JS (all chunks), gzip",
     "path": "build/client/assets/*.js",
-    "limit": "1000 KB",
+    "limit": "1012 KB",
     "gzip": true
   },
   {

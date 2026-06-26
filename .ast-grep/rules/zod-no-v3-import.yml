@@ -1,0 +1,24 @@
+id: zod-no-v3-import
+language: typescript
+# PR-9c (famille validation-zod) — ratchet permanent. Ajouté severity:error car
+# le graphe npm principal est intégralement Zod 4 ; aucun import zod/v3 ne doit
+# exister. Scopé au périmètre PR-9c (backend/frontend/packages) — services/
+# remotion-renderer reste hors workspace, ses propres règles continuent de tourner.
+severity: error
+message: |
+  Import depuis "zod/v3" interdit (repli silencieux Zod v3 dans un graphe Zod 4).
+
+  PR-9c a migré tout le graphe npm principal (backend/frontend/packages) vers
+  Zod 4 : z.toJSONSchema() natif, z.input<> pour les payloads à `.default()`,
+  .uuid()/.email() RFC-stricts, refine `{ error: (issue) => … }`. Le sous-chemin
+  conditionnel "zod/v3" réintroduit l'ancien moteur côte-à-côte → double instance
+  bundlée, validations divergentes, JSON-Schema legacy. Utiliser "zod" (v4).
+
+  "zod/v3" n'existe que pour des migrations progressives tierces — non gouverné ici.
+files:
+  - backend/**/*.ts
+  - frontend/**/*.ts
+  - packages/**/*.ts
+rule:
+  kind: string
+  regex: "^[\"']zod/v3(/.*)?[\"']$"

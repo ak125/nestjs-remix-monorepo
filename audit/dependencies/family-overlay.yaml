@@ -120,17 +120,15 @@ families:
     target_major: "4.x"
     pr_assignment: pr-9c
     source_url: https://github.com/colinhacks/zod/releases
-    upgrade_strategy: staged-rollout
+    upgrade_strategy: in-place
     runtime_criticality: high
-    requires_staging_soak: true
-    staging_soak_hours: 24
+    requires_staging_soak: false
+    staging_soak_hours: 0
     node_runtime_requirement: ">=20"
     peer_dependency_cluster:
       - zod
       - zod-to-json-schema
     deployment_sequence:
-      - api-second
-      - canary
       - full-rollout
     production_approved: true
     rollback_complexity: moderate
@@ -152,7 +150,6 @@ families:
       - short-api-restart
     perf_baseline_metrics: []
     estimated_recovery_sequence:
-      - disable-canary
       - rollback-api
       - redeploy
       - verify-form-submit-smoke
@@ -161,9 +158,7 @@ families:
     rollback_validation_checks:
       - form-submit-smoke
       - no-sentry-spike
-    canary_abort_conditions:
-      - sentry-error-rate-spike
-      - p99-regression-15pct
+    canary_abort_conditions: []
     runtime_state_coupling:
       - none
     safe_parallel_window_minutes: 0
@@ -173,7 +168,7 @@ families:
       - workers
       - ssr
     operational_owner: platform-validation-team
-    estimated_canary_duration_minutes: 60
+    estimated_canary_duration_minutes: 0
     rollback_requires_human_approval: false
     rollback_tested_at: null
     rollback_drill_commit: null
@@ -185,8 +180,7 @@ families:
       - api-p99
     runtime_dependency_edges:
       depends_on_runtime: []
-    rollback_preconditions:
-      - canary-disabled
+    rollback_preconditions: []
     observability_sli_queries:
       api-p99: "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))"
     state_schema_version: n/a
@@ -195,7 +189,7 @@ families:
       - workers
       - ssr
     runtime_capabilities:
-      - supports-canary
+      - none
     failure_domain:
       - api-runtime
     rollback_confidence_level: theoretical
@@ -203,11 +197,11 @@ families:
     incident_comm_protocol:
       - status-page
     compatibility_contracts:
-      - zod-v3
+      - zod-v4
     runtime_freeze_window: null
     orchestrator_policy:
       rollback_mode: auto-allowed
-      deploy_mode: staged
+      deploy_mode: atomic
     dependency_lineage:
       supersedes: []
     state_compatibility_window_minutes: 0
@@ -219,9 +213,12 @@ families:
     rollback_observability_grace_period_minutes: 5
     runtime_contract_expiry: null
     notes: >
-      Zod 4 ships breaking parser changes (z.string() defaults, error API).
-      Must touch every consumer schema in shared/ + backend/ + frontend/. 24h
-      DEV preprod soak required — forms/DTOs are user-facing surface.
+      Zod 4 ships breaking parser changes (.default() output now required —
+      payload DTOs typed z.input; unified error API; RFC-4122 strict .uuid()).
+      Touches consumer schemas across backend/ + frontend/ + packages/, and swaps
+      the JSON-Schema generators to native z.toJSONSchema(). Migrated atomically
+      (one PR, one revert); no canary/soak — PREPROD is CI-only/READ_ONLY and the
+      E2E Smoke gate is the validation.
     members:
       - zod
       - zod-to-json-schema

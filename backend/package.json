@@ -114,7 +114,7 @@
     "socket.io": "^4.8.1",
     "undici": "^7.13.0",
     "unix-crypt-td-js": "^1.1.4",
-    "zod": "^3.25.76"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@fafa/eslint-config": "*",
@@ -154,7 +154,6 @@
     "ts-node": "^10.9.1",
     "tsc-alias": "^1.8.17",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "~6.0.3",
-    "zod-to-json-schema": "^3.25.2"
+    "typescript": "~6.0.3"
   }
 }

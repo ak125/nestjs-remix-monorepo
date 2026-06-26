@@ -1,15 +1,586 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://automecanik.com/schemas/page-contract-r1.json",
+  "$id": "https://www.automecanik.com/schemas/PageContractR1.json",
   "title": "PageContractR1",
-  "description": "Contrat formel pour les pages gamme R1 transactionnelles (v2.4 corrige)",
-  "cross_role_policy": {
-    "_source": "content-section-policy.ts + brief-gates.service.ts Gate C — salvage pré-purge RAG 2026-06-11",
-    "file": "page-contract-cross-role-policy.json",
-    "role_keys": ["R1"]
-  },
   "type": "object",
-  "additionalProperties": false,
+  "properties": {
+    "page_role": {
+      "type": "string",
+      "const": "R1_ROUTER"
+    },
+    "primary_intent": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 220
+    },
+    "allowed_subintents": {
+      "minItems": 3,
+      "maxItems": 6,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "compatibility_checks",
+          "mounting_variants",
+          "identifier_check",
+          "exchange_standard",
+          "consigne",
+          "delivery_returns_support"
+        ]
+      }
+    },
+    "forbidden_topics": {
+      "minItems": 12,
+      "maxItems": 24,
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "allowed_lexicon": {
+      "minItems": 12,
+      "maxItems": 16,
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "forbidden_lexicon": {
+      "minItems": 25,
+      "maxItems": 35,
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "confusion_pairs": {
+      "minItems": 0,
+      "maxItems": 10,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "term": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 60
+          },
+          "confused_with": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 60
+          },
+          "distinction": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "term",
+          "confused_with",
+          "distinction"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "writing_constraints": {
+      "type": "object",
+      "properties": {
+        "max_words": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "min_words": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "tone": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 40
+        },
+        "person": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 20
+        },
+        "zero_diagnostic": {
+          "type": "boolean"
+        },
+        "zero_howto": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "max_words",
+        "min_words",
+        "tone",
+        "person",
+        "zero_diagnostic",
+        "zero_howto"
+      ],
+      "additionalProperties": false
+    },
+    "interest_nuggets": {
+      "minItems": 3,
+      "maxItems": 3,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "angle": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 80
+          },
+          "hook": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 120
+          },
+          "rag_source": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "angle",
+          "hook",
+          "rag_source"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "table_rows_library": {
+      "minItems": 8,
+      "maxItems": 8,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "element": {
+            "type": "string",
+            "enum": [
+              "Référence / équivalence",
+              "Connectique",
+              "Dimensions",
+              "Fixations",
+              "Norme / homologation",
+              "Échange standard",
+              "Consigne",
+              "Identifiant"
+            ]
+          },
+          "how_to_check": {
+            "type": "string",
+            "minLength": 20,
+            "maxLength": 180
+          }
+        },
+        "required": [
+          "element",
+          "how_to_check"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "safe_table_plan": {
+      "minItems": 4,
+      "maxItems": 6,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "element": {
+            "type": "string",
+            "enum": [
+              "Référence / équivalence",
+              "Connectique",
+              "Dimensions",
+              "Fixations",
+              "Norme / homologation",
+              "Échange standard",
+              "Consigne",
+              "Identifiant"
+            ]
+          },
+          "how_to_check": {
+            "type": "string",
+            "minLength": 20,
+            "maxLength": 180
+          }
+        },
+        "required": [
+          "element",
+          "how_to_check"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "visual_plan": {
+      "type": "object",
+      "properties": {
+        "hero_wallpaper": {
+          "type": "string",
+          "const": "none"
+        },
+        "selector_category_image": {
+          "type": "string",
+          "const": "required"
+        },
+        "compatibilities_cards": {
+          "type": "string",
+          "const": "icons_only"
+        },
+        "compatibilities_label_rule": {
+          "type": "string",
+          "const": "label_1_2_words_required"
+        },
+        "equipementiers": {
+          "type": "string",
+          "const": "logo_strip"
+        },
+        "cross_sell": {
+          "type": "string",
+          "const": "icon_grid"
+        },
+        "cross_sell_rules": {
+          "type": "object",
+          "properties": {
+            "max_items": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 6
+            },
+            "same_family_only": {
+              "type": "boolean",
+              "const": true
+            }
+          },
+          "required": [
+            "max_items",
+            "same_family_only"
+          ],
+          "additionalProperties": false
+        },
+        "sticky_mobile_cta": {
+          "type": "string",
+          "const": "enabled"
+        },
+        "hero_primary_cta": {
+          "type": "object",
+          "properties": {
+            "label": {
+              "type": "string",
+              "minLength": 6,
+              "maxLength": 48
+            },
+            "action": {
+              "type": "string",
+              "const": "use_vehicle_selector"
+            }
+          },
+          "required": [
+            "label",
+            "action"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "hero_wallpaper",
+        "selector_category_image",
+        "compatibilities_cards",
+        "compatibilities_label_rule",
+        "equipementiers",
+        "cross_sell",
+        "cross_sell_rules",
+        "sticky_mobile_cta",
+        "hero_primary_cta"
+      ],
+      "additionalProperties": false
+    },
+    "content_contract": {
+      "type": "object",
+      "properties": {
+        "total_words_target": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          ]
+        },
+        "micro_seo_words_target": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          ]
+        },
+        "faq_answer_words_target": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          ]
+        },
+        "max_gamme_mentions": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "max_compatible_mentions": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2
+        }
+      },
+      "required": [
+        "total_words_target",
+        "micro_seo_words_target",
+        "faq_answer_words_target",
+        "max_gamme_mentions",
+        "max_compatible_mentions"
+      ],
+      "additionalProperties": false
+    },
+    "hard_rules": {
+      "type": "object",
+      "properties": {
+        "ban_howto_markers": {
+          "minItems": 6,
+          "maxItems": 30,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ban_absolute_claims": {
+          "minItems": 3,
+          "maxItems": 20,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ban_price_push": {
+          "minItems": 3,
+          "maxItems": 20,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "ban_howto_markers",
+        "ban_absolute_claims",
+        "ban_price_push"
+      ],
+      "additionalProperties": false
+    },
+    "media_slots": {
+      "type": "object",
+      "properties": {
+        "rules": {
+          "type": "object",
+          "properties": {
+            "no_wallpaper": {
+              "type": "boolean",
+              "const": true
+            },
+            "selector_category_image_required": {
+              "type": "boolean",
+              "const": true
+            },
+            "logos_must_be_official_or_internal": {
+              "type": "boolean",
+              "const": true
+            },
+            "compat_icons_only": {
+              "type": "boolean",
+              "const": true
+            },
+            "cross_sell_icons_only": {
+              "type": "boolean",
+              "const": true
+            },
+            "no_vehicle_photos": {
+              "type": "boolean",
+              "const": true
+            },
+            "alt_style": {
+              "type": "string",
+              "const": "descriptive_no_hype_no_price"
+            }
+          },
+          "required": [
+            "no_wallpaper",
+            "selector_category_image_required",
+            "logos_must_be_official_or_internal",
+            "compat_icons_only",
+            "cross_sell_icons_only",
+            "no_vehicle_photos",
+            "alt_style"
+          ],
+          "additionalProperties": false
+        },
+        "slots": {
+          "minItems": 4,
+          "maxItems": 6,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "slot": {
+                "type": "string",
+                "enum": [
+                  "selector_category_image",
+                  "equipementiers_logo_strip",
+                  "cross_sell_icons",
+                  "og_image",
+                  "breadcrumb_icon",
+                  "empty_state_icon"
+                ]
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "image",
+                  "logo",
+                  "icon"
+                ]
+              },
+              "required": {
+                "type": "boolean"
+              },
+              "usage": {
+                "type": "string",
+                "minLength": 10,
+                "maxLength": 180
+              },
+              "asset_id": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "fallback": {
+                "maxItems": 4,
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "constraints": {
+                "type": "object",
+                "properties": {
+                  "no_vehicle": {
+                    "type": "boolean"
+                  },
+                  "no_text_overlay": {
+                    "type": "boolean"
+                  },
+                  "formats": {
+                    "minItems": 1,
+                    "maxItems": 4,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "1:1",
+                        "4:3",
+                        "1200x630",
+                        "svg"
+                      ]
+                    }
+                  },
+                  "crop": {
+                    "type": "string",
+                    "enum": [
+                      "center",
+                      "contain"
+                    ]
+                  },
+                  "background": {
+                    "type": "string",
+                    "enum": [
+                      "transparent",
+                      "neutral"
+                    ]
+                  }
+                },
+                "required": [
+                  "no_vehicle",
+                  "no_text_overlay",
+                  "formats",
+                  "crop",
+                  "background"
+                ],
+                "additionalProperties": false
+              },
+              "alt_template": {
+                "type": "string",
+                "minLength": 2,
+                "maxLength": 120
+              }
+            },
+            "required": [
+              "slot",
+              "type",
+              "required",
+              "usage",
+              "constraints",
+              "alt_template"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "rules",
+        "slots"
+      ],
+      "additionalProperties": false
+    },
+    "hero_cta_helper_line": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 180
+    }
+  },
   "required": [
     "page_role",
     "primary_intent",
@@ -28,308 +599,5 @@
     "media_slots",
     "hero_cta_helper_line"
   ],
-  "properties": {
-    "page_role": { "const": "R1_ROUTER" },
-    "primary_intent": { "type": "string", "minLength": 20, "maxLength": 220 },
-    "allowed_subintents": {
-      "type": "array",
-      "minItems": 3,
-      "maxItems": 6,
-      "items": {
-        "type": "string",
-        "enum": [
-          "compatibility_checks",
-          "mounting_variants",
-          "identifier_check",
-          "exchange_standard",
-          "consigne",
-          "delivery_returns_support"
-        ]
-      }
-    },
-    "forbidden_topics": { "type": "array", "minItems": 12, "maxItems": 24, "items": { "type": "string" } },
-    "allowed_lexicon": { "type": "array", "minItems": 12, "maxItems": 16, "items": { "type": "string" } },
-    "forbidden_lexicon": { "type": "array", "minItems": 25, "maxItems": 35, "items": { "type": "string" } },
-
-    "confusion_pairs": {
-      "type": "array",
-      "minItems": 0,
-      "maxItems": 10,
-      "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": ["term", "confused_with", "distinction"],
-        "properties": {
-          "term": { "type": "string", "minLength": 2, "maxLength": 60 },
-          "confused_with": { "type": "string", "minLength": 2, "maxLength": 60 },
-          "distinction": { "type": "string", "minLength": 10, "maxLength": 200 }
-        }
-      }
-    },
-
-    "writing_constraints": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["max_words", "min_words", "tone", "person", "zero_diagnostic", "zero_howto"],
-      "properties": {
-        "max_words": { "type": "integer", "exclusiveMinimum": 0 },
-        "min_words": { "type": "integer", "exclusiveMinimum": 0 },
-        "tone": { "type": "string", "minLength": 3, "maxLength": 40 },
-        "person": { "type": "string", "minLength": 1, "maxLength": 20 },
-        "zero_diagnostic": { "type": "boolean" },
-        "zero_howto": { "type": "boolean" }
-      }
-    },
-
-    "interest_nuggets": {
-      "type": "array",
-      "minItems": 3,
-      "maxItems": 3,
-      "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": ["angle", "hook", "rag_source"],
-        "properties": {
-          "angle": { "type": "string", "minLength": 5, "maxLength": 80 },
-          "hook": { "type": "string", "minLength": 10, "maxLength": 120 },
-          "rag_source": { "type": "string", "minLength": 3, "maxLength": 200 }
-        }
-      }
-    },
-
-    "table_rows_library": {
-      "type": "array",
-      "minItems": 8,
-      "maxItems": 8,
-      "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": ["element", "how_to_check"],
-        "properties": {
-          "element": {
-            "type": "string",
-            "enum": [
-              "Référence / équivalence",
-              "Connectique",
-              "Dimensions",
-              "Fixations",
-              "Norme / homologation",
-              "Échange standard",
-              "Consigne",
-              "Identifiant"
-            ]
-          },
-          "how_to_check": { "type": "string", "minLength": 20, "maxLength": 180 }
-        }
-      }
-    },
-
-    "safe_table_plan": {
-      "type": "array",
-      "minItems": 4,
-      "maxItems": 6,
-      "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": ["element", "how_to_check"],
-        "properties": {
-          "element": {
-            "type": "string",
-            "enum": [
-              "Référence / équivalence",
-              "Connectique",
-              "Dimensions",
-              "Fixations",
-              "Norme / homologation",
-              "Échange standard",
-              "Consigne",
-              "Identifiant"
-            ]
-          },
-          "how_to_check": { "type": "string", "minLength": 20, "maxLength": 180 }
-        }
-      }
-    },
-
-    "visual_plan": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "hero_wallpaper",
-        "selector_category_image",
-        "compatibilities_cards",
-        "compatibilities_label_rule",
-        "equipementiers",
-        "cross_sell",
-        "cross_sell_rules",
-        "sticky_mobile_cta",
-        "hero_primary_cta"
-      ],
-      "properties": {
-        "hero_wallpaper": { "const": "none" },
-        "selector_category_image": { "const": "required" },
-        "compatibilities_cards": { "const": "icons_only" },
-        "compatibilities_label_rule": { "const": "label_1_2_words_required" },
-        "equipementiers": { "const": "logo_strip" },
-        "cross_sell": { "const": "icon_grid" },
-        "cross_sell_rules": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["max_items", "same_family_only"],
-          "properties": {
-            "max_items": { "type": "integer", "minimum": 1, "maximum": 6 },
-            "same_family_only": { "const": true }
-          }
-        },
-        "sticky_mobile_cta": { "const": "enabled" },
-        "hero_primary_cta": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["label", "action"],
-          "properties": {
-            "label": { "type": "string", "minLength": 6, "maxLength": 48 },
-            "action": { "const": "use_vehicle_selector" }
-          }
-        }
-      }
-    },
-
-    "content_contract": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "total_words_target",
-        "micro_seo_words_target",
-        "faq_answer_words_target",
-        "max_gamme_mentions",
-        "max_compatible_mentions"
-      ],
-      "properties": {
-        "total_words_target": {
-          "type": "array",
-          "prefixItems": [{ "type": "integer" }, { "type": "integer" }],
-          "items": false,
-          "minItems": 2,
-          "maxItems": 2
-        },
-        "micro_seo_words_target": {
-          "type": "array",
-          "prefixItems": [{ "type": "integer" }, { "type": "integer" }],
-          "items": false,
-          "minItems": 2,
-          "maxItems": 2
-        },
-        "faq_answer_words_target": {
-          "type": "array",
-          "prefixItems": [{ "type": "integer" }, { "type": "integer" }],
-          "items": false,
-          "minItems": 2,
-          "maxItems": 2
-        },
-        "max_gamme_mentions": { "type": "integer", "minimum": 1, "maximum": 10 },
-        "max_compatible_mentions": { "type": "integer", "minimum": 0, "maximum": 2 }
-      }
-    },
-
-    "hard_rules": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["ban_howto_markers", "ban_absolute_claims", "ban_price_push"],
-      "properties": {
-        "ban_howto_markers": { "type": "array", "minItems": 6, "maxItems": 30, "items": { "type": "string" } },
-        "ban_absolute_claims": { "type": "array", "minItems": 3, "maxItems": 20, "items": { "type": "string" } },
-        "ban_price_push": { "type": "array", "minItems": 3, "maxItems": 20, "items": { "type": "string" } }
-      }
-    },
-
-    "media_slots": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["rules", "slots"],
-      "properties": {
-        "rules": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "no_wallpaper",
-            "selector_category_image_required",
-            "logos_must_be_official_or_internal",
-            "compat_icons_only",
-            "cross_sell_icons_only",
-            "no_vehicle_photos",
-            "alt_style"
-          ],
-          "properties": {
-            "no_wallpaper": { "const": true },
-            "selector_category_image_required": { "const": true },
-            "logos_must_be_official_or_internal": { "const": true },
-            "compat_icons_only": { "const": true },
-            "cross_sell_icons_only": { "const": true },
-            "no_vehicle_photos": { "const": true },
-            "alt_style": { "const": "descriptive_no_hype_no_price" }
-          }
-        },
-        "slots": {
-          "type": "array",
-          "minItems": 4,
-          "maxItems": 6,
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["slot", "type", "required", "usage", "constraints", "alt_template"],
-            "properties": {
-              "slot": {
-                "type": "string",
-                "enum": [
-                  "selector_category_image",
-                  "equipementiers_logo_strip",
-                  "cross_sell_icons",
-                  "og_image",
-                  "breadcrumb_icon",
-                  "empty_state_icon"
-                ]
-              },
-              "type": { "type": "string", "enum": ["image", "logo", "icon"] },
-              "required": { "type": "boolean" },
-              "usage": { "type": "string", "minLength": 10, "maxLength": 180 },
-              "asset_id": { "type": ["string", "null"] },
-              "fallback": {
-                "type": "array",
-                "minItems": 0,
-                "maxItems": 4,
-                "items": { "type": "string" }
-              },
-              "constraints": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": ["no_vehicle", "no_text_overlay", "formats", "crop", "background"],
-                "properties": {
-                  "no_vehicle": { "type": "boolean" },
-                  "no_text_overlay": { "type": "boolean" },
-                  "formats": {
-                    "type": "array",
-                    "minItems": 1,
-                    "maxItems": 4,
-                    "items": { "type": "string", "enum": ["1:1", "4:3", "1200x630", "svg"] }
-                  },
-                  "crop": { "type": "string", "enum": ["center", "contain"] },
-                  "background": { "type": "string", "enum": ["transparent", "neutral"] }
-                }
-              },
-              "alt_template": { "type": "string", "minLength": 2, "maxLength": 120 }
-            }
-          }
-        }
-      }
-    },
-
-    "hero_cta_helper_line": { "type": "string", "minLength": 10, "maxLength": 180 }
-  },
-
-  "allOf": [
-    {
-      "if": { "properties": { "allowed_subintents": { "contains": { "const": "exchange_standard" } } } },
-      "then": { "properties": { "allowed_subintents": { "minItems": 4 } } }
-    }
-  ]
+  "additionalProperties": false
 }

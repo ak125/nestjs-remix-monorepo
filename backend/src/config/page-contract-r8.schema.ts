@@ -278,7 +278,7 @@ export const R8SeoSchema = z.object({
   canonical: z.string().min(10),
   robots: z.enum(['index, follow', 'noindex, nofollow']),
   internal_links: z.array(R8InternalLinkSchema).max(12).default([]),
-  schema_org: z.record(z.any()),
+  schema_org: z.record(z.string(), z.any()),
 });
 export type R8Seo = z.infer<typeof R8SeoSchema>;
 
@@ -404,7 +404,7 @@ export const R8GateReportSchema = z.object({
   score: z.number().int().min(0).max(100),
   errors: z.array(z.string()),
   fixes: z.array(z.string()),
-  gate_details: z.record(z.enum(['PASS', 'FAIL'])),
+  gate_details: z.record(z.string(), z.enum(['PASS', 'FAIL'])),
 });
 export type R8GateReport = z.infer<typeof R8GateReportSchema>;
 

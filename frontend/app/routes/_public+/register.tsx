@@ -46,7 +46,7 @@ export const meta: MetaFunction = () => [
 // Schema Zod — source de vérité unique
 const RegisterSchemaBase = z.object({
   civility: z.enum(["M", "Mme", "Autre"], {
-    errorMap: () => ({ message: "Civilité invalide" }),
+    error: "Civilité invalide",
   }),
   firstName: z
     .string()

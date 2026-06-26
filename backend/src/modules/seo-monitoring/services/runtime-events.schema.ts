@@ -35,7 +35,7 @@ export const RuntimeEventInputSchema = z
     message: z.string().max(500).optional(),
     // Métadonnées spécifiques par event_type (longtask.duration, chunk.asset, ...)
     // — borné JSON ~2KB. Free-form intentionnel (champs varient par event).
-    meta: z.record(z.unknown()).optional(),
+    meta: z.record(z.string(), z.unknown()).optional(),
   })
   .strict();
 

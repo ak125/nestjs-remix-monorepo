@@ -132,7 +132,7 @@ export const EvidencePackSchema = z.object({
     // v1: liste plate. v2: fully typed per block (voir roadmap)
     rag_facts: z.array(RagFactSchema).optional(),
     // v1: permissif. v2: union typee par bloc (VehicleContextCardInput, etc.)
-    ui_block_inputs: z.record(z.unknown()),
+    ui_block_inputs: z.record(z.string(), z.unknown()),
   }),
 });
 export type EvidencePack = z.infer<typeof EvidencePackSchema>;
