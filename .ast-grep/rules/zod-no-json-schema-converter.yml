@@ -1,0 +1,27 @@
+id: zod-no-json-schema-converter
+language: typescript
+# PR-9c (famille validation-zod) — ratchet permanent. Le convertisseur tiers
+# `zod-to-json-schema` (déprécié, peer zod ^3) a été retiré de packages/registry
+# (3.23.0) et backend (^3.25.2) et remplacé par le natif z.toJSONSchema() (Zod 4)
+# dans les 7 générateurs. Le réintroduire casse l'install (peer zod ^3 rejette v4).
+severity: error
+message: |
+  Import/require de "zod-to-json-schema" interdit.
+
+  PR-9c a remplacé ce convertisseur tiers (déprécié, peer dependency zod ^3) par
+  le convertisseur NATIF z.toJSONSchema() de Zod 4, dans les 7 générateurs :
+    - packages/registry/src/bin/build-{architecture,db-contract,runtime-contract,
+      dep-governance,rpc-contract}-artifacts.ts
+    - backend/src/config/generate-json-schemas.ts
+    - backend/src/config/diag-canon-jsonschema.ts
+
+  Le réintroduire (a) casse `npm install` (son peer `zod ^3` rejette zod 4),
+  (b) duplique la source de vérité JSON-Schema, (c) émet un JSON-Schema legacy
+  divergent. Utiliser z.toJSONSchema(schema, { target, unrepresentable: 'throw' }).
+files:
+  - backend/**/*.ts
+  - frontend/**/*.ts
+  - packages/**/*.ts
+rule:
+  kind: string
+  regex: "^[\"']zod-to-json-schema[\"']$"

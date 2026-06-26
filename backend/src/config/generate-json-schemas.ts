@@ -5,7 +5,7 @@
  *
  * Replaces the former generate-r6-json-schema.ts (R6 only).
  */
-import { zodToJsonSchema } from 'zod-to-json-schema';
+import { z } from 'zod';
 import { writeFileSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 
@@ -13,7 +13,10 @@ import { PageContractR1Schema } from './page-contract-r1.schema';
 import { R3PageContractSchema } from './page-contract-r3.schema';
 import { PageContractR4Schema } from './page-contract-r4.schema';
 import { R6PageContractSchema } from './page-contract-r6.schema';
-import { SITE_ORIGIN } from './app.config';
+// SITE_ORIGIN imported from its source-of-truth (site.constants), not via the
+// app.config re-export — keeps this build script free of the @common/* alias
+// chain so it runs under bare ts-node (npm run generate:schemas).
+import { SITE_ORIGIN } from './site.constants';
 
 // ── Schema registry ─────────────────────────────────────
 
@@ -39,21 +42,22 @@ const SCHEMAS: Record<string, { schema: any; title: string }> = {
 // ── Generate all ─────────────────────────────────────────
 
 for (const [filename, { schema, title }] of Object.entries(SCHEMAS)) {
-  const raw = zodToJsonSchema(schema as any, {
-    name: title,
-    $refStrategy: 'none',
-  });
+  // Native z.toJSONSchema (draft-2020-12). Reused-by-reference subschemas are
+  // inlined by default (no $defs unless recursion / .meta({id})), matching the
+  // former `$refStrategy: 'none'`. unrepresentable: 'throw' is the Commit-C gate.
+  const raw = z.toJSONSchema(schema as any, {
+    target: 'draft-2020-12',
+    unrepresentable: 'throw',
+  }) as Record<string, any>;
+  // Native sets its own $schema; drop it so we control the exact URI + key order.
+  delete raw.$schema;
 
-  // Unwrap definitions wrapper: zodToJsonSchema with `name` wraps in $ref+definitions
-  const jsonSchema =
-    '$ref' in raw && 'definitions' in raw
-      ? {
-          $schema: 'https://json-schema.org/draft/2020-12/schema',
-          $id: `${SITE_ORIGIN}/schemas/${title}.json`,
-          title,
-          ...(raw as any).definitions?.[title],
-        }
-      : raw;
+  const jsonSchema = {
+    $schema: 'https://json-schema.org/draft/2020-12/schema',
+    $id: `${SITE_ORIGIN}/schemas/${title}.json`,
+    title,
+    ...raw,
+  };
 
   const outPath = join(__dirname, filename);
   mkdirSync(dirname(outPath), { recursive: true });

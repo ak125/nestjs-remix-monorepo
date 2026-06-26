@@ -71,13 +71,16 @@ const PageInfoSchema = z
 export const GammeRpcAggregatedDataSchema = z
   .object({
     page_info: PageInfoSchema,
-    seo: z.record(z.unknown()).nullable().optional(),
+    seo: z.record(z.string(), z.unknown()).nullable().optional(),
     conseils: z.array(ConseilRowSchema).optional(),
-    informations: z.array(z.record(z.unknown())).nullable().optional(),
+    informations: z
+      .array(z.record(z.string(), z.unknown()))
+      .nullable()
+      .optional(),
     equipementiers: z.array(EquipementierRowSchema).nullable().optional(),
-    blog: z.record(z.unknown()).nullable().optional(),
-    catalogue_famille: z.array(z.record(z.unknown())).optional(),
-    famille_info: z.record(z.unknown()).nullable().optional(),
+    blog: z.record(z.string(), z.unknown()).nullable().optional(),
+    catalogue_famille: z.array(z.record(z.string(), z.unknown())).optional(),
+    famille_info: z.record(z.string(), z.unknown()).nullable().optional(),
     motorisations_enriched: z
       .array(MotorizationRowSchema)
       .nullable()

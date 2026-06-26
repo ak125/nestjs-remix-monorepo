@@ -3,7 +3,7 @@ import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import path from "node:path";
 import { createHash } from "node:crypto";
 import { load as parseYaml } from "js-yaml";
-import { zodToJsonSchema } from "zod-to-json-schema";
+import { z } from "zod";
 import {
   DepGovernanceContractSchema,
   type DepGovernanceContract,
@@ -46,22 +46,29 @@ const SUPPORTED_NODE_MAJORS = ["20", "22", "24"];
 {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const zodPkg = require("zod/package.json") as { version: string };
-  if (!zodPkg.version.startsWith("3.")) {
+  if (!zodPkg.version.startsWith("4.")) {
     console.error(
-      `[dep-governance:build] ABORT — zod v${zodPkg.version} unsupported (expected 3.x).`,
+      `[dep-governance:build] ABORT — zod v${zodPkg.version} unsupported (expected 4.x).`,
     );
     process.exit(2);
   }
 }
 
-function loadContract(): { contract: DepGovernanceContract; yamlSha256: string } {
+function loadContract(): {
+  contract: DepGovernanceContract;
+  yamlSha256: string;
+} {
   const raw = readFileSync(YAML_PATH, "utf8");
   const yamlSha256 = createHash("sha256").update(raw).digest("hex");
   const parsed = parseYaml(raw);
   if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
     fail(
       `dep-governance.yaml root must be a single object map, got ${
-        parsed === null ? "null" : Array.isArray(parsed) ? "array" : typeof parsed
+        parsed === null
+          ? "null"
+          : Array.isArray(parsed)
+            ? "array"
+            : typeof parsed
       }.`,
     );
   }
@@ -78,9 +85,9 @@ function loadContract(): { contract: DepGovernanceContract; yamlSha256: string }
 }
 
 function emitJsonSchema(yamlSha256: string, depCount: number): string {
-  const schema = zodToJsonSchema(DepGovernanceContractSchema, {
-    name: "DepGovernanceContract",
-    target: "jsonSchema7",
+  const schema = z.toJSONSchema(DepGovernanceContractSchema, {
+    target: "draft-7",
+    unrepresentable: "throw",
   });
   const enriched = {
     $comment: [

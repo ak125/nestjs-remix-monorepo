@@ -64,7 +64,7 @@ export const cartItemSchema = z
     website_url: z.string().optional(),
 
     // Metadata flexible
-    options: z.record(z.any()).optional(),
+    options: z.record(z.string(), z.any()).optional(),
 
     // Metier auto (futur)
     compatibility_status: z

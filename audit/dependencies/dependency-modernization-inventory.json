@@ -1,5 +1,5 @@
 {
-  "artifact_immutability_hash": "sha256:00dedf5773b345d2e4702e7a5e2a52bbcd50c2c2512e90ed75c231da32b0f1ba",
+  "artifact_immutability_hash": "sha256:ce39e866fe6fbb25ba6ba768b82a73b5df8dbaa4fd64347f386a93f1fdac8e74",
   "divergences": [
     {
       "kind": "specifier",
@@ -122,21 +122,6 @@
       ]
     },
     {
-      "kind": "resolved",
-      "name": "@vitest/browser",
-      "occurrences": [
-        {
-          "declaredIn": "frontend/package.json",
-          "specifier": "^4.1.8",
-          "workspace": "@fafa/frontend"
-        }
-      ],
-      "resolved_versions": [
-        "2.1.9",
-        "4.1.9"
-      ]
-    },
-    {
       "kind": "specifier",
       "name": "autoprefixer",
       "occurrences": [
@@ -168,21 +153,6 @@
       "resolved_versions": [
         "5.2.0",
         "9.0.0"
-      ]
-    },
-    {
-      "kind": "resolved",
-      "name": "cookie",
-      "occurrences": [
-        {
-          "declaredIn": "frontend/package.json",
-          "specifier": "^0.7.2",
-          "workspace": "@fafa/frontend"
-        }
-      ],
-      "resolved_versions": [
-        "0.7.2",
-        "1.1.1"
       ]
     },
     {
@@ -666,7 +636,6 @@
       ],
       "resolved_versions": [
         "5.4.21",
-        "6.4.3",
         "8.1.0"
       ]
     },
@@ -761,8 +730,7 @@
         }
       ],
       "resolved_versions": [
-        "3.23.0",
-        "3.25.2"
+        "<unresolved>"
       ]
     }
   ],
@@ -2307,7 +2275,7 @@
       "rollback_complexity": "dangerous",
       "rollback_confidence_level": "theoretical",
       "rollback_data_loss_risk": "none",
-      "rollback_drill_commit": null,
+      "rollback_drill_commit": "ab8f572f90979d4e7426c667d2411c84834a6e97",
       "rollback_observability_grace_period_minutes": 20,
       "rollback_preconditions": [
         "canary-disabled",
@@ -2317,7 +2285,7 @@
       "rollback_requires_human_approval": true,
       "rollback_rto_minutes": 60,
       "rollback_runbook_required": true,
-      "rollback_tested_at": null,
+      "rollback_tested_at": "2026-06-26T09:57:36Z",
       "rollback_validation_checks": [
         "health-endpoint-ok",
         "traces-continuity",
@@ -2786,7 +2754,6 @@
           ],
           "resolved_versions": [
             "5.4.21",
-            "6.4.3",
             "8.1.0"
           ]
         }
@@ -3679,25 +3646,19 @@
     },
     {
       "blast_radius": "validation",
-      "canary_abort_conditions": [
-        "sentry-error-rate-spike",
-        "p99-regression-15pct"
-      ],
+      "canary_abort_conditions": [],
       "compatibility_contracts": [
-        "zod-v3"
+        "zod-v4"
       ],
       "data_migration_required": false,
       "dependency_lineage": {
         "supersedes": []
       },
       "deployment_sequence": [
-        "api-second",
-        "canary",
         "full-rollout"
       ],
-      "estimated_canary_duration_minutes": 60,
+      "estimated_canary_duration_minutes": 0,
       "estimated_recovery_sequence": [
-        "disable-canary",
         "rollback-api",
         "redeploy",
         "verify-form-submit-smoke"
@@ -3722,7 +3683,7 @@
         "TypeScript5xRequired"
       ],
       "node_runtime_requirement": ">=20",
-      "notes": "Zod 4 ships breaking parser changes (z.string() defaults, error API). Must touch every consumer schema in shared/ + backend/ + frontend/. 24h DEV preprod soak required — forms/DTOs are user-facing surface.\n",
+      "notes": "Zod 4 ships breaking parser changes (.default() output now required — payload DTOs typed z.input; unified error API; RFC-4122 strict .uuid()). Touches consumer schemas across backend/ + frontend/ + packages/, and swaps the JSON-Schema generators to native z.toJSONSchema(). Migrated atomically (one PR, one revert); no canary/soak — PREPROD is CI-only/READ_ONLY and the E2E Smoke gate is the validation.\n",
       "observability_requirements": [
         "sentry",
         "structured-logs"
@@ -3735,7 +3696,7 @@
         "validation"
       ],
       "orchestrator_policy": {
-        "deploy_mode": "staged",
+        "deploy_mode": "atomic",
         "rollback_mode": "auto-allowed"
       },
       "packages": [
@@ -3796,7 +3757,7 @@
           ]
         },
         {
-          "divergent_resolved": true,
+          "divergent_resolved": false,
           "divergent_specifiers": true,
           "name": "zod-to-json-schema",
           "occurrences": [
@@ -3812,8 +3773,7 @@
             }
           ],
           "resolved_versions": [
-            "3.23.0",
-            "3.25.2"
+            "<unresolved>"
           ]
         }
       ],
@@ -3829,7 +3789,7 @@
       "pr_assignment": "pr-9c",
       "production_approved": true,
       "requires_perf_baseline": false,
-      "requires_staging_soak": true,
+      "requires_staging_soak": false,
       "rollback_blast_scope": [
         "api",
         "workers",
@@ -3840,9 +3800,7 @@
       "rollback_data_loss_risk": "none",
       "rollback_drill_commit": null,
       "rollback_observability_grace_period_minutes": 5,
-      "rollback_preconditions": [
-        "canary-disabled"
-      ],
+      "rollback_preconditions": [],
       "rollback_requires_human_approval": false,
       "rollback_rto_minutes": 15,
       "rollback_runbook_required": false,
@@ -3853,7 +3811,7 @@
       ],
       "runtime_budget_constraints": {},
       "runtime_capabilities": [
-        "supports-canary"
+        "none"
       ],
       "runtime_contract_expiry": null,
       "runtime_criticality": "high",
@@ -3874,7 +3832,7 @@
       ],
       "safe_parallel_window_minutes": 0,
       "source_url": "https://github.com/colinhacks/zod/releases",
-      "staging_soak_hours": 24,
+      "staging_soak_hours": 0,
       "state_compatibility_window_minutes": 0,
       "state_reconciliation_strategy": {
         "duplicate_resolution": "n/a"
@@ -3895,16 +3853,16 @@
         "platform-validation",
         "backend-runtime"
       ],
-      "upgrade_strategy": "staged-rollout"
+      "upgrade_strategy": "in-place"
     }
   ],
   "generatedFrom": {
     "deps_registry": "audit/registry/deps.json",
     "deps_registry_sha": "sha256:9b722879fab181ddf8a7942e3c00324fd6d8fddd5323646c2d7f939e7739234d",
     "lockfile": "package-lock.json",
-    "lockfile_sha": "sha256:0c24db5cd39f40b03f1c491e913d6472110635f5b9b327832d0ec53b8c32c5c8",
+    "lockfile_sha": "sha256:fe31bd6c846ad80cf19f429468e03677b3aff0f8faf320d8d20cb167c65ae49a",
     "overlay": "audit/dependencies/family-overlay.yaml",
-    "overlay_sha": "sha256:83fe5f81abca14f09c48070eec0ae8efbcc37427df56212a3ee1a74dcea07578"
+    "overlay_sha": "sha256:f5b19e7c0c73a75b55e4c0a620e0d01c6665dfcfffe8b00a77d5c8928bb05117"
   },
   "inventoryFormat": "pr-9-modernization-inventory",
   "matrixVersion": "pr9-v1",
@@ -3931,7 +3889,7 @@
       "pr-9f": 17,
       "pr-9g": 0
     },
-    "divergent_packages_count": 35,
+    "divergent_packages_count": 33,
     "families_count": 12,
     "total_occurrences": 339,
     "total_packages": 231,
@@ -5190,7 +5148,7 @@
       ]
     },
     {
-      "divergent_resolved": true,
+      "divergent_resolved": false,
       "divergent_specifiers": false,
       "name": "@vitest/browser",
       "occurrences": [
@@ -5201,7 +5159,6 @@
         }
       ],
       "resolved_versions": [
-        "2.1.9",
         "4.1.9"
       ]
     },
@@ -5351,7 +5308,7 @@
       ]
     },
     {
-      "divergent_resolved": true,
+      "divergent_resolved": false,
       "divergent_specifiers": false,
       "name": "cookie",
       "occurrences": [
@@ -5362,8 +5319,7 @@
         }
       ],
       "resolved_versions": [
-        "0.7.2",
-        "1.1.1"
+        "0.7.2"
       ]
     },
     {

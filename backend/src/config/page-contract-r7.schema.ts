@@ -265,8 +265,8 @@ export const R7PageContractSchema = z.object({
   headings: z
     .object({
       h1: z.string().min(5).optional(),
-      h2_by_section: z.record(z.string()).optional(),
-      h3_by_section: z.record(z.array(z.string())).optional(),
+      h2_by_section: z.record(z.string(), z.string()).optional(),
+      h3_by_section: z.record(z.string(), z.array(z.string())).optional(),
     })
     .optional(),
 
@@ -334,6 +334,6 @@ export const R7GateReportSchema = z.object({
   score: z.number().int().min(0).max(100),
   errors: z.array(z.string()),
   fixes: z.array(z.string()),
-  gate_details: z.record(z.enum(['PASS', 'FAIL'])),
+  gate_details: z.record(z.string(), z.enum(['PASS', 'FAIL'])),
 });
 export type R7GateReport = z.infer<typeof R7GateReportSchema>;

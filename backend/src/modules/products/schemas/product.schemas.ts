@@ -547,7 +547,9 @@ export const CriteriaSearchSchema = z.object({
 export type VehicleCompatibilityDto = z.infer<
   typeof VehicleCompatibilitySchema
 >;
-export type VehicleSearchDto = z.infer<typeof VehicleSearchSchema>;
+// Search request = input shape: defaulted fields (limit/page) are optional for
+// the caller (services read them defensively, e.g. `filters?.limit || 50`).
+export type VehicleSearchDto = z.input<typeof VehicleSearchSchema>;
 export type ProductOEMReferenceDto = z.infer<typeof ProductOEMReferenceSchema>;
 export type OEMSearchDto = z.infer<typeof OEMSearchSchema>;
 export type ProductCriteriaDto = z.infer<typeof ProductCriteriaSchema>;

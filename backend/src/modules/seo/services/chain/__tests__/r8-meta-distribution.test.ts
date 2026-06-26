@@ -106,10 +106,10 @@ describe('R8VariantSignatureSchema (Zod ↔ DB consistency)', () => {
 
   it('accepte des UUIDs valides', () => {
     const parsed = R8VariantSignatureSchema.parse({
-      meta_title: '11111111-1111-1111-1111-111111111111',
-      meta_description: '22222222-2222-2222-2222-222222222222',
+      meta_title: '11111111-1111-4111-8111-111111111111',
+      meta_description: '22222222-2222-4222-9222-222222222222',
     });
-    expect(parsed.meta_title).toBe('11111111-1111-1111-1111-111111111111');
+    expect(parsed.meta_title).toBe('11111111-1111-4111-8111-111111111111');
   });
 
   it('rejette les strings non-UUID', () => {
@@ -123,8 +123,8 @@ describe('R8VariantSignatureSchema (Zod ↔ DB consistency)', () => {
     // (extra key dropped par Zod ou rejeté selon le strictness). On vérifie
     // que parse retourne un objet sans la clé `h1`.
     const parsed = R8VariantSignatureSchema.parse({
-      meta_title: '11111111-1111-1111-1111-111111111111',
-      meta_description: '22222222-2222-2222-2222-222222222222',
+      meta_title: '11111111-1111-4111-8111-111111111111',
+      meta_description: '22222222-2222-4222-9222-222222222222',
       // h1 n'est pas dans le schéma — Zod le drop par défaut (strip mode)
     } as never);
     expect(Object.keys(parsed).sort()).toEqual([

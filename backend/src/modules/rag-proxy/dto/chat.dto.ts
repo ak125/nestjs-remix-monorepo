@@ -8,7 +8,7 @@ import { z } from 'zod';
 export const ChatRequestSchema = z.object({
   message: z.string().min(1).max(2000),
   sessionId: z.string().optional(),
-  context: z.record(z.unknown()).optional(),
+  context: z.record(z.string(), z.unknown()).optional(),
 });
 
 // Schema pour les réponses de chat (v2 — guardrails + classification)
@@ -29,7 +29,7 @@ export const ChatResponseSchema = z.object({
   needsClarification: z.boolean().optional(),
   clarifyQuestions: z.array(z.string()).optional(),
   sourcesCitation: z.string().optional(),
-  truthMetadata: z.record(z.unknown()).optional(),
+  truthMetadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 // Types TypeScript inférés
