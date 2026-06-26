@@ -76,8 +76,16 @@ function mockFetch(responses: Map<string, MockResponse>): jest.Mock {
 function makeConfigService(
   overrides: Record<string, string | number> = {},
 ): ConfigService {
+  // Le pacer (probeMinIntervalMs) ralentit volontairement les départs. Par
+  // défaut on le neutralise (intervalle ~0) pour garder les tests existants
+  // rapides ; le test de pacing dédié réinjecte des knobs réalistes.
+  const env: Record<string, string | number> = {
+    SEO_CP_MAX_RPS: 1_000_000,
+    SEO_CP_MAX_RPM: 1_000_000,
+    ...overrides,
+  };
   return {
-    get: (key: string, def?: unknown): unknown => overrides[key] ?? def,
+    get: (key: string, def?: unknown): unknown => env[key] ?? def,
   } as unknown as ConfigService;
 }
 
@@ -328,5 +336,64 @@ describe('SyntheticCrawlerService', () => {
     const urlsA = await runOnce();
     const urlsB = await runOnce();
     expect(urlsA).toEqual(urlsB);
+  });
+
+  it('paces outbound probes via a shared monotonic cursor (no concurrency burst past the rate cap)', async () => {
+    // 10 page URLs + concurrency 10 : SANS pacer, les 10 fetch partent dans le
+    // même tick (span ~0). Le curseur partagé doit les étaler de minIntervalMs.
+    const PAGES = 10;
+    const responses = new Map<string, MockResponse>([
+      [
+        'https://www.automecanik.com/sitemap.xml',
+        {
+          status: 200,
+          body: '<sitemap><loc>https://www.automecanik.com/sitemap-pieces-1.xml</loc></sitemap>',
+          headers: {},
+        },
+      ],
+    ]);
+    let subBody = '';
+    for (let i = 1; i <= PAGES; i++) {
+      const u = `https://www.automecanik.com/pieces/p${i}-${i}.html`;
+      subBody += `<url><loc>${u}</loc></url>`;
+      responses.set(u, { status: 200, body: '<html></html>', headers: {} });
+    }
+    responses.set('https://www.automecanik.com/sitemap-pieces-1.xml', {
+      status: 200,
+      body: subBody,
+      headers: {},
+    });
+
+    const baseMock = mockFetch(responses);
+    const pageDispatchedAt: number[] = [];
+    globalThis.fetch = jest.fn(async (url: string, init?: RequestInit) => {
+      if (/\/pieces\/p\d+-\d+\.html$/.test(url)) {
+        pageDispatchedAt.push(Date.now());
+      }
+      return baseMock(url, init);
+    }) as unknown as typeof globalThis.fetch;
+
+    const insertSpy = jest.fn().mockResolvedValue({ error: null });
+    // minIntervalMs = max(1000/40, 60000/1200) = max(25, 50) = 50 ms
+    const svc = buildSvc(
+      crit,
+      makeConfigService({
+        SEO_CP_SAMPLE_SIZE: 30,
+        SEO_CP_CONCURRENCY: 10,
+        SEO_CP_MAX_RPS: 40,
+        SEO_CP_MAX_RPM: 1200,
+      }),
+      insertSpy,
+    );
+
+    await svc.run({ triggeredBy: 'test' });
+
+    expect(pageDispatchedAt).toHaveLength(PAGES);
+    const sorted = [...pageDispatchedAt].sort((a, b) => a - b);
+    const span = sorted[sorted.length - 1] - sorted[0];
+    // 10 départs à 50 ms d'intervalle partagé → span >= ~450 ms (setTimeout ne
+    // déclenche jamais en avance). Un burst de concurrency aurait span ~0.
+    // Seuil >=300 ms : prouve sans ambiguïté que le pacing a eu lieu.
+    expect(span).toBeGreaterThanOrEqual(300);
   });
 });

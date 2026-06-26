@@ -10,6 +10,7 @@ import { GammeRpcService } from './gamme-rpc.service';
 import { BuyingGuideDataService } from './buying-guide-data.service';
 import { ReferenceService } from '../../seo/services/reference.service';
 import { SeoTitleEngineService } from '../../seo/services/seo-title-engine.service';
+import { ResolvedPageSeo } from '../../seo/types/resolved-seo-field';
 import { SeoChainOrchestratorService } from '../../seo/services/chain/seo-chain-orchestrator.service';
 import { SeoFeatureFlagRegistry } from '../../seo/registries/seo-feature-flag.registry';
 import { buildPieceVehicleUrlRaw } from '../../../common/utils/url-builder.utils';
@@ -170,6 +171,32 @@ export class GammeResponseBuilderService {
     );
     const legacyH1 = this.transformer.contentCleaner(seoResolved.h1);
     const legacyContent = seoResolved.content || '';
+
+    // Phase 11 — SHADOW du resolver gated unifié (observe-only, 0 changement live).
+    // Calcule la sortie gated (SeoFieldGate: brandAwareFit + scrub R1 symétrique) et logge
+    // uniquement si elle diverge du live. Le live émis reste pageTitle/legacy* (flip = owner).
+    try {
+      const gated = this.seoTitleEngine.resolveGated({
+        pgNameSite,
+        pgNameMeta,
+        seoData: seoData as Parameters<
+          typeof this.seoTitleEngine.resolve
+        >[0]['seoData'],
+        gammeStats,
+        brandNames,
+      });
+      this.logSeoFieldGateDiffGamme(
+        pgIdNum,
+        { title: legacyTitle, description: legacyDescription, h1: legacyH1 },
+        gated,
+      );
+    } catch (err) {
+      this.logger.warn(
+        `[SEO_FIELD_GATE] shadow compute failed (pg=${pgIdNum}): ${
+          err instanceof Error ? err.message : 'unknown'
+        }`,
+      );
+    }
 
     // PR-5 (plan seo-v9) — Shadow / on / off pour la chaîne SEO commune.
     // Surface = R1_GAMME_ROUTER (catalogue gamme sans contexte véhicule).
@@ -1103,5 +1130,39 @@ export class GammeResponseBuilderService {
       chain_title_len: chain.title.length,
     };
     this.logger.log(`[SEO_CHAIN_GAMME_SHADOW] ${JSON.stringify(diff)}`);
+  }
+
+  /**
+   * Phase 11 — Log structuré du diff resolver gated vs sortie live, en SHADOW.
+   * N'émet QUE si au moins un champ diverge (haut signal, pas de bruit en prod).
+   * Observe-only : ne change jamais la valeur émise. 1 ligne JSON indexable.
+   */
+  private logSeoFieldGateDiffGamme(
+    pgId: number,
+    live: { title: string; description: string; h1: string },
+    gated: ResolvedPageSeo,
+  ): void {
+    const titleEq = live.title === gated.title.value;
+    const descEq = live.description === gated.description.value;
+    const h1Eq = live.h1 === gated.h1.value;
+    if (titleEq && descEq && h1Eq) return; // aucun changement → aucun log
+
+    const diff = {
+      flag: 'SEO_FIELD_GATE',
+      mode: 'shadow',
+      pg_id: pgId,
+      title_eq: titleEq,
+      description_eq: descEq,
+      h1_eq: h1Eq,
+      live_title_len: live.title.length,
+      gated_title_len: gated.title.value.length,
+      title_stage: gated.title.sourceStage,
+      desc_stage: gated.description.sourceStage,
+      title_degraded: gated.title.degraded,
+      desc_degraded: gated.description.degraded,
+      desc_degrade_reason: gated.description.degradeReason,
+      resolver_version: gated.title.resolverVersion,
+    };
+    this.logger.log(`[SEO_FIELD_GATE_SHADOW] ${JSON.stringify(diff)}`);
   }
 }
