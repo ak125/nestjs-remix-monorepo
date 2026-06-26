@@ -56,6 +56,14 @@ PiecesHeroPriceCard/VehicleSelector), `cart-empty` (cart.tsx **état vide** — 
 `login`/`register`/`forgot-password` (CTA auth), `diagnostic-auto`, `not-found-404`.
 ⇒ **18/23** fichiers CTA nettoyés de façon **déterministe** (capture stateless `goto`).
 
+> **Stratégie de capture par page (déterminisme des dimensions)** : les 4 pages à **structure
+> data-driven** (`home`, `r1-gamme`, `r2-vehicule`, `diagnostic-auto`) sont capturées en **viewport seul**
+> (`fullPage:false`) → la hauteur du screenshot = celle du viewport, indépendante du nombre de cartes/blocs
+> rendus. Sinon un changement de footprint contenu (redeploy PREPROD, drift data) ferait échouer le gate
+> par **mismatch de DIMENSIONS** — que Playwright traite comme une erreur FATALE, insensible à la tolérance
+> 0.02. L'above-fold porte le hero + CTA (périmètre DT-1) ; le below-fold variable est hors oracle, couvert
+> par les tests WCAG/computed-style de DT-1. Les 5 pages à structure **stable** restent en `fullPage`.
+
 **Gaps bornés DÉCLARÉS (pas de cap silencieux) — 5/23 non nettoyés** :
 - **`/checkout`** (`CheckoutLivraisonSection`/`CheckoutPaiementSection`/`checkout.tsx`, 7 CTA) :
   redirige (302) tant que le panier est vide — son loader fait `getOptionalUser` (pas d'auth gate)
@@ -108,6 +116,16 @@ PREPROD (vérifier que le gate tourne en CI avant de le rendre auto-bloquant —
 > visuellement). Baseline absente = échec, jamais skip ("no silent fallback"). **Reste à l'activation** :
 > (1) un `workflow_dispatch` `compare` vert contre PREPROD:3200, (2) flip `workflow_run` pour rendre le
 > gate auto-bloquant post-Deploy.
+
+> **Pré-requis AVANT de flip `workflow_run` (sinon faux positifs sur des merges légitimes)** :
+> - **Sérialiser capture+compare sur le MÊME `:preprod` immuable** : une baseline capturée sur un build,
+>   comparée après un redeploy d'un AUTRE build, peut rougir par drift de contenu. Le clipping viewport
+>   (pages dynamiques) neutralise l'axe HAUTEUR ; pour l'axe pixel above-fold, capturer juste avant /
+>   re-capturer si le footprint contenu PREPROD change. Un merge `main` invalide une baseline en vol.
+> - **Concurrence** : le groupe `visual-gate-${{ github.ref }}` + `cancel-in-progress` peut annuler une
+>   capture en vol si un second trigger même-ref arrive (re-lancer). Sous `workflow_run`, vérifier la
+>   sémantique de `github.ref` avant de rendre auto-bloquant (groupe séparé / `cancel-in-progress:false`
+>   pour la capture si besoin).
 
 ## Workflow d'usage (mutation à fort blast-radius)
 

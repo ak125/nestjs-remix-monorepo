@@ -121,7 +121,19 @@ jobs:
         # PAS : les PNG sont uploadés en artefact, committés ensuite dans une PR `visual-change`
         # reviewable (gouvernance snapshots/). `--update-snapshots` n'est autorisé QUE dans ce mode.
         if: ${{ inputs.capture_baselines }}
-        run: bash scripts/visual/run-visual-docker.sh --update-snapshots
+        run: |
+          # B3 — fraîcheur : VIDER les baselines committées AVANT capture, pour que l'artefact ne
+          # contienne QUE des PNG fraîchement écrits. Sinon une capture qui n'écrit rien laisserait les
+          # 18 PNG committés en place → `if-no-files-found: error` ne pourrait jamais se déclencher et
+          # on uploaderait des baselines PÉRIMÉES comme « fraîches ». (--user dans le harnais → fichiers
+          # écrits par le runner, donc `-delete` trivial, pas de root-owned.)
+          find frontend/tests/visual/snapshots -name '*.png' -delete
+          bash scripts/visual/run-visual-docker.sh --update-snapshots
+          # Assertion : EXACTEMENT 18 baselines (9 pages × desktop+mobile) régénérées. Capture partielle
+          # (page en échec/timeout) → run ROUGE, jamais un upload silencieux incomplet (no silent fallback).
+          n=$(find frontend/tests/visual/snapshots -name '*.png' | wc -l)
+          echo "baselines écrites : ${n}/18"
+          [ "$n" -eq 18 ] || { echo "::error::capture incomplète : ${n}/18 baselines écrites"; exit 1; }
         env:
           PLAYWRIGHT_BASE_URL: http://localhost:3200
 
@@ -162,8 +174,11 @@ jobs:
         env:
           PLAYWRIGHT_BASE_URL: http://localhost:3200
 
-      - name: 📤 Upload visual diff report (sur échec)
-        if: failure()
+      - name: 📤 Upload visual diff report (sur échec de COMPARE uniquement)
+        # A1 — borné au mode compare : un échec de CAPTURE ne produit pas de rapport de diff (il a son
+        # propre artefact `visual-baselines-preprod`). `!inputs.capture_baselines` reste vrai sous un
+        # futur `workflow_run` (inputs absent) → les rapports d'échec compare s'uploadent toujours.
+        if: ${{ failure() && !inputs.capture_baselines }}
         uses: actions/upload-artifact@v4
         with:
           name: visual-gate-report
