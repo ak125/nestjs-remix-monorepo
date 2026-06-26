@@ -14,19 +14,21 @@
       "require": "./dist/index.cjs",
       "default": "./dist/index.js"
     },
-    "./tokens.json": "./src/tokens/design-tokens.json",
+    "./tokens.json": "./src/tokens.json",
     "./css": "./dist/tokens.css",
     "./utilities": "./dist/utilities.css",
-    "./tailwind": "./dist/tailwind.config.js"
+    "./tailwind-tokens": "./src/tailwind-tokens.cjs"
   },
   "files": [
     "dist",
-    "src/design-tokens.json",
+    "src/tokens.json",
+    "src/tailwind-tokens.cjs",
     "README.md"
   ],
   "scripts": {
     "dev": "npm run build -- --watch",
-    "build": "node scripts/build-tokens.js && tsup",
+    "build": "node scripts/build-tokens.mjs && tsup",
+    "build:check": "node scripts/build-tokens.mjs --check",
     "typecheck": "tsc --noEmit",
     "lint": "ESLINT_USE_FLAT_CONFIG=true eslint src",
     "lint:fix": "ESLINT_USE_FLAT_CONFIG=true eslint src --fix",
@@ -39,9 +41,11 @@
     "@fafa/typescript-config": "*",
     "@types/node": "^24",
     "eslint": "^8.57.1",
+    "style-dictionary": "5.5.0",
     "tsup": "^8.3.5",
     "typescript": "~6.0.3",
-    "vitest": "^2.1.8"
+    "vitest": "^2.1.8",
+    "zod": "^4.4.3"
   },
   "keywords": [
     "design-tokens",

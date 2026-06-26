@@ -105,6 +105,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # DT-0 byte-identity gate: assert the committed design-tokens artifacts
+      # (src/styles/tokens.css, src/tailwind-tokens.cjs, src/tokens/generated.ts)
+      # still match a fresh build from the DTCG source (src/tokens.json). Runs
+      # BEFORE "Build Application" because turbo build would overwrite them first
+      # (build:check rebuilds to a temp dir, so it is independent of turbo cache).
+      # Also runs the package's contract tests (Zod schema / projection / WCAG drift).
+      - name: 🎨 Design-tokens gate (byte-identity + contract)
+        run: |
+          npm run -w @fafa/design-tokens build:check
+          npm run -w @fafa/design-tokens test:run
+
       - name: Build Application
         run: npm run build
 

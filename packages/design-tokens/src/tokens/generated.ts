@@ -1,7 +1,7 @@
 /**
  * 🎨 Design Tokens - Auto-généré
  * ⚠️  NE PAS MODIFIER MANUELLEMENT
- * Source: src/tokens/design-tokens.json
+ * Source: src/tokens.json
  */
 
 export const designTokens = {
