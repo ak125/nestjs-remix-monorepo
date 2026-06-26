@@ -12,7 +12,7 @@ license: Internal - Automecanik
 compatibility: Designed for Claude Code in the AutoMecanik monorepo. Stack — Supabase + PostgreSQL. Touches backend/supabase/migrations/ and __* canonical tables. Privileged because DDL is irreversible on prod.
 tags: [supabase, postgres, ddl, rls, migration, governance]
 metadata:
-  version: "1.1"
+  version: "1.2"
   argument-hint: "[migration-name]"
   disable-model-invocation: true
   spec: agentskills.io/specification v1
@@ -203,6 +203,77 @@ COMMENT ON TABLE my_table IS 'Description of table purpose';
 - Backend uses `service_role` key (bypasses RLS)
 - Frontend uses `anon` key (subject to RLS)
 - After adding RLS, test with both keys
+
+## Scheduled DB Automation — pg_cron
+
+Pour planifier du travail **idempotent local à la donnée** (agrégats SQL/RPC, rotations de
+partitions), le bon endroit est **pg_cron** (là où vit la donnée), pas une queue applicative.
+Une chaîne de données PROD ne doit **jamais** dépendre d'un worker DEV (`deployment.md`).
+
+> **Placement (quel orchestrateur ?)** : pg_cron pour le SQL/RPC déterministe DB-local.
+> BullMQ/Bull (queue applicative) pour le travail à **I/O externe** (HTTP authentifié,
+> secrets, retry applicatif). Un travail = **un seul** orchestrateur.
+
+### Convergence d'un job nommé (exact-match / fail-closed)
+
+Un `cron.schedule(...)` créé dans une migration doit **converger vers une définition
+attendue ou échouer explicitement** — jamais ignorer silencieusement une dérive, jamais
+écraser un état préexistant sans un `.down` capable de le restaurer :
+
+```sql
+DO $$
+DECLARE v_job cron.job%ROWTYPE;
+        v_cmd text := $c$/* migration:20260626_xxx */ SELECT public.my_rpc(); $c$;  -- marqueur de provenance
+BEGIN
+  -- garde homonyme : refuser un job de même nom appartenant à un AUTRE owner
+  IF EXISTS (SELECT 1 FROM cron.job WHERE jobname='my-job' AND username<>current_user)
+    THEN RAISE EXCEPTION 'my-job exists under another owner'; END IF;
+  SELECT * INTO v_job FROM cron.job WHERE jobname='my-job' AND username=current_user;
+  IF NOT FOUND THEN
+    PERFORM cron.schedule('my-job','5 * * * *',v_cmd);                 -- absent → créer
+  ELSIF v_job.schedule<>'5 * * * *' OR btrim(v_job.command)<>btrim(v_cmd) OR v_job.active IS NOT TRUE THEN
+    RAISE EXCEPTION 'Unexpected existing definition for my-job';       -- dérive → STOP (pas d'alter aveugle)
+  END IF;  -- match exact (marqueur inclus) = no-op idempotent
+END $$;
+```
+
+`.down.sql` ne `cron.unschedule` **que** le job possédé par cette migration
+(`jobname + username=current_user + command LIKE '%migration:<id>%'`). Une **transition
+contrôlée** d'un job préexistant (ex. resserrer un schedule) vérifie l'état EXACT attendu
+avant `cron.alter_job`, et le `.down` fait l'inverse exact. Appliquer le **prédécesseur
+avant** la migration de tuning (jamais un CREATE-OR-ALTER qui contredit la réversibilité).
+
+### Preuve d'exécution (pas seulement d'existence)
+
+Un job présent ≠ un job qui tourne. Vérifier APRÈS apply (run **postérieur** à
+`migration_applied_at`, pas un statut périmé) :
+
+```sql
+SELECT current_setting('cron.log_run', true);   -- doit être 'on' pour peupler job_run_details
+SELECT j.jobname, j.schedule, j.active, r.status, r.return_message, r.end_time
+FROM cron.job j
+LEFT JOIN LATERAL (SELECT * FROM cron.job_run_details d
+                   WHERE d.jobid=j.jobid ORDER BY d.start_time DESC LIMIT 1) r ON true
+WHERE j.jobname = 'my-job';
+```
+
+Gate = run `succeeded` + **sortie réelle produite** (l'effet métier existe) + **consommateur
+l'observe**. `cron.timezone`/session `TimeZone` : utiliser des bornes **UTC-explicites** dans
+la command (`now() AT TIME ZONE 'UTC'`), jamais un fuseau implicite.
+
+### Baseline AVANT backfill ; swap d'orchestrateur = nettoyage d'état
+
+- Mesurer + logger la **perte** avant tout write de récupération (fenêtre déjà perdue =
+  permanente si la source a un TTL).
+- Bascule d'orchestrateur (ex. Bull → pg_cron) : **supprimer l'état persistant** de l'ancien
+  (repeatables Redis) sinon **double orchestrateur** silencieux. Auditer via
+  `runtime-truth-audit` → `scheduled-orchestrator-drift`.
+
+### DDL via apply_migration, jamais execute_sql
+
+`cron.schedule`/`cron.alter_job`/`cron.unschedule` + `CREATE OR REPLACE FUNCTION` = DDL →
+`apply_migration` (trace d'audit). `execute_sql` reste pour les SELECT de validation /
+backfill DML one-shot.
 
 ## MCP Tools Available
 
