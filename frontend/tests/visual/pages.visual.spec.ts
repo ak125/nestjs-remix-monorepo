@@ -72,7 +72,11 @@ const DYNAMIC_MASK = [
 test.describe("Régression visuelle CSS (baseline bundler)", () => {
   for (const p of PAGES) {
     test(p.name, async ({ page }) => {
-      await page.goto(p.url, { waitUntil: "networkidle" });
+      // `load` (PAS `networkidle`) : Playwright DÉCONSEILLE networkidle — il peut ne JAMAIS se
+      // résoudre sur une page à réseau continu (analytics / polling), ce qui faisait timeout
+      // `diagnostic-auto` à 60s (run 28257536920). `load` = tous les sous-resources chargés ;
+      // le settle ci-dessous fige le layout SSR final post-hydratation.
+      await page.goto(p.url, { waitUntil: "load" });
       // Stabiliser : polices chargées + court settle pour layout final.
       await page.evaluate(() => document.fonts.ready);
       await page.waitForTimeout(500);

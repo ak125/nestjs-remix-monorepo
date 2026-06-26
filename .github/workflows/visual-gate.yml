@@ -20,23 +20,30 @@ name: 🖼️ Visual Regression Gate
 # (la comparaison utilise le Chromium de l'image, pas celui du runner).
 #
 # ── ACTIVATION (état GATE-0) ────────────────────────────────────────────────────────────────
-# Les 18 baselines (9 pages × desktop+mobile) sont capturées sous v3 (PR #1160). Reste à confirmer
-# un `workflow_dispatch` VERT contre PREPROD — c'est la validation rendu DEV(capture)/PREPROD(gate)
-# (cf. README `tests/visual/`). Baseline absente = échec, jamais skip silencieux (no silent
-# fallback). Une fois ce run vert, flip `workflow_run` (auto-bloquant post-Deploy). Ce commit
-# corrige le bug qui empêchait le run de s'exécuter (npm ci manquant → @playwright/test introuvable).
+# La 1ʳᵉ validation (run 28257536920) a prouvé que le gate S'EXÉCUTE (pages statiques pixel-parfaites)
+# MAIS que les baselines #1160 — capturées sur la machine DEV:3000 — divergent du container PREPROD:3200
+# que le gate compare : 9 pages dynamiques rougissaient par mismatch de HAUTEUR pur (largeur identique
+# au px → différence de CONTENU build dev vs build prod, pas une régression CSS). Correctif : RE-CAPTURER
+# les baselines DANS l'env du gate via le mode `capture_baselines` ci-dessous (même image noble, même
+# PREPROD:3200 → env de capture == env de gate). Baseline absente = échec, jamais skip silencieux (no
+# silent fallback). Une fois un run `compare` VERT, flip `workflow_run` (auto-bloquant post-Deploy).
 
 on:
-  # Manuel d'abord (merge-safe) : phase de capture/activation des baselines + tout re-run ciblé.
-  # ── ACTIVATION (à faire après capture) ──────────────────────────────────────────────────────
-  # Tant que des baselines manquent (mobile + specs composants/interactifs/checkout), un
-  # déclenchement AUTO rougirait `main` à chaque deploy. Donc : on garde MANUEL jusqu'à ce que
-  # TOUTES les baselines soient capturées sous v3 ET qu'un run manuel soit VERT. Ensuite, ajouter
-  # l'auto-déclencheur post-Deploy (le job `if` ci-dessous gère déjà `workflow_run`) :
+  # Manuel d'abord (merge-safe) : capture/activation des baselines + tout re-run ciblé.
+  # ── ACTIVATION (à faire après une capture VERTE) ─────────────────────────────────────────────
+  # Tant qu'un run `compare` n'est pas VERT contre PREPROD, un déclenchement AUTO rougirait `main`
+  # à chaque deploy. Donc : on garde MANUEL jusqu'à ce que les baselines soient capturées DANS l'env
+  # du gate (PREPROD:3200) ET qu'un run `compare` soit VERT. Ensuite, ajouter l'auto-déclencheur
+  # post-Deploy (le job `if` ci-dessous gère déjà `workflow_run`) :
   #   workflow_run:
   #     workflows: ["🚀 Deploy"]
   #     types: [completed]
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      capture_baselines:
+        description: "Capturer/rafraîchir les baselines CONTRE PREPROD:3200 (au lieu de comparer). Upload artefact, N'AUTO-COMMIT PAS."
+        type: boolean
+        default: false
 
 # Le container PREPROD :3200 est PARTAGÉ (un seul). On sérialise par ref et on annule le run
 # superséded (même raison que la garde de concurrence de ci.yml).
@@ -94,7 +101,30 @@ jobs:
           echo "::error::PREPROD never reached ${need} consecutive healthy polls on :3200"
           exit 1
 
+      - name: 🖼️ Capture/refresh baselines (mode capture — PREPROD:3200, Docker noble)
+        # Mode capture (input `capture_baselines`). Réutilise EXACTEMENT le harnais du gate (même
+        # image noble, même PREPROD:3200) → l'env de capture == l'env de gate : déterminisme garanti,
+        # c'est toute la raison d'étendre ce workflow plutôt que d'en créer un parallèle. N'AUTO-COMMIT
+        # PAS : les PNG sont uploadés en artefact, committés ensuite dans une PR `visual-change`
+        # reviewable (gouvernance snapshots/). `--update-snapshots` n'est autorisé QUE dans ce mode.
+        if: ${{ inputs.capture_baselines }}
+        run: bash scripts/visual/run-visual-docker.sh --update-snapshots
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:3200
+
+      - name: 📤 Upload baselines régénérées (mode capture)
+        # Upload même si la capture a partiellement échoué (≠ cancelled) → un échec reste INSPECTABLE
+        # (no silent fallback). Aucun fichier = erreur (jamais d'artefact vide silencieux).
+        if: ${{ inputs.capture_baselines && !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-baselines-preprod
+          path: frontend/tests/visual/snapshots
+          retention-days: 14
+          if-no-files-found: error
+
       - name: 🖼️ Compare visual snapshots (Docker noble, résilient au restart PREPROD)
+        if: ${{ !inputs.capture_baselines }}
         run: |
           run_visual() { bash scripts/visual/run-visual-docker.sh; }
           # 1er passage.
