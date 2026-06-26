@@ -447,3 +447,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/pr9f-nestjs11`
 - **Décision** : chore(registry): register backend/src/common/{utils,decorators} ownership (PR-9f, owner-applied) (+1 other commit)
 - **Sortie** : PR #1152 | commits bffbf89f9 e74b57c6d
+
+## 2026-06-26 — feat/tw4-gate-0-visual-gate (auto)
+
+- **Branche** : `feat/tw4-gate-0-visual-gate`
+- **Décision** : feat(tw4-gate-0): wire authoritative visual-regression gate + 2-tier snapshot topology
+- **Sortie** : PR #1160 | commits 83de3e0f5

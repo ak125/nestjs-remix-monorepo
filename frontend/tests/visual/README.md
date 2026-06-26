@@ -1,47 +1,111 @@
-# Régression visuelle (`tests/visual`)
+# Régression visuelle (`tests/visual`) — GATE-0 (chantier Tailwind 4)
 
 Gate de **régression visuelle CSS** : fige la structure / l'ordre de cascade CSS du build courant
-(Vite 7) pour le comparer après la migration **Vite 8 / Rolldown** (V8-1). Le changement de bundler
-peut altérer l'émission et l'ordre des CSS (FOUC, cascade) **sans** casser `typecheck` / `build` /
-`size-limit` (qui ne comptent que les octets). Ce gate capture ce que les autres ne voient pas.
+pour le comparer après une mutation à fort blast-radius (migration **Tailwind 3 → 4**, refonte
+**design-tokens**). Ces changements peuvent altérer l'émission/l'ordre des CSS (FOUC, cascade,
+défauts ring/border/shadow) **sans** casser `typecheck` / `build` / `size-limit` (qui ne comptent
+que les octets). Ce gate capture ce que les autres ne voient pas.
+
+## Topologie à deux niveaux
+
+```
+frontend/tests/visual/
+├── snapshots/<projet>/<spec>/<capture>.png   # ORACLE COURANT — le SEUL comparé par le gate
+├── reference-v3/{desktop,mobile}/<page>.png  # ARCHIVE IMMUABLE pré-migration (9 pages × 2 vues,
+│                                             #   PNG libres hors testMatch — preuve historique v3)
+└── test-results/                             # artefacts (diffs, rapport HTML) — gitignoré
+```
+
+- **`snapshots/`** est routé par `snapshotPathTemplate` (config) ; `{projectName}` évite la collision
+  desktop/mobile. Mis à jour **uniquement** dans une PR déclarée **`visual-change`** : artefact
+  before/after + manifest des diffs attendus + **approbation owner**. `--update-snapshots` est
+  **interdit** hors de ce flux (sinon une régression passe en re-snapshotant la référence).
+- **`reference-v3/`** = état avant toute modif, **immuable**, hors `testMatch` → jamais l'oracle CI.
 
 ## Déterminisme (obligatoire)
 
-Les snapshots Playwright sont **sensibles à l'environnement** (rendu de police, anti-aliasing).
-Le poste DEV est **Ubuntu 22.04 (jammy)** alors que le runner CI est **ubuntu-24.04 (noble)** → générer
-les baselines sur DEV et les comparer en CI produirait de faux positifs.
+Les snapshots Playwright sont **sensibles à l'environnement** (rendu de police, anti-aliasing) :
+poste DEV = jammy, runner CI = noble → générer/comparer hors d'une même image produit de faux
+positifs. On génère **et** compare **toujours** dans l'image Docker pinnée
+`mcr.microsoft.com/playwright:v1.61.0-noble` via `scripts/visual/run-visual-docker.sh`.
+Playwright est **épinglé `1.61.0` exact** (`@playwright/test`, `playwright`, image) — les trois
+DOIVENT matcher.
 
-→ On génère **et** on compare **toujours** dans l'image Docker Playwright pinnée
-`mcr.microsoft.com/playwright:v1.61.0-noble` (noble = CI), via `scripts/visual/run-visual-docker.sh`.
+## Couverture (projets × specs)
+
+| Projet | Viewport | Statut baseline |
+|---|---|---|
+| `desktop` | 1920×1080 | 9 pages capturées sous v3, image 1.61.0, **contre DEV:3000** ✅ |
+| `mobile` | 390×844 (UA mobile + touch) | 9 pages capturées sous v3, image 1.61.0, **contre DEV:3000** ✅ |
+
+> **Cible de capture ≠ cible du gate** : ces baselines ont été générées contre **DEV:3000** (build
+> Vite **dev**, seul runtime atteignable depuis la machine DEV). Le gate CI compare contre
+> **PREPROD :3200** (build Docker **prod**). Le frontend n'a **qu'un** pipeline CSS (`global.css` +
+> Tailwind, **ni CSS modules ni inline** — cf. `.claude/rules/frontend.md`) → la divergence
+> dev/prod est faible (la minification ne change pas les pixels), mais **non vérifiée**. Le premier
+> `workflow_dispatch` du gate contre PREPROD EST cette vérification : vert ⇒ baselines DEV valides
+> sous tolérance 0.02 ; rouge uniforme ⇒ re-capturer contre PREPROD avant d'activer `workflow_run`.
+
+Pages publiques (`pages.visual.spec.ts`, data-driven masqué) — choisies pour **filtrer le périmètre
+visuel de DT-1** (recolor CTA `bg-cta` blanc→noir, 23 fichiers) : `home`, `r1-gamme`, `r2-vehicule`
+(⇒ chrome global Navbar/Footer/BottomNav/Section/root + Hero/Catalogue/Diagnostic/GammeHero/
+PiecesHeroPriceCard/VehicleSelector), `cart-empty` (cart.tsx **état vide** — voir gap CartSummaryBlock),
+`login`/`register`/`forgot-password` (CTA auth), `diagnostic-auto`, `not-found-404`.
+⇒ **18/23** fichiers CTA nettoyés de façon **déterministe** (capture stateless `goto`).
+
+**Gaps bornés DÉCLARÉS (pas de cap silencieux) — 5/23 non nettoyés** :
+- **`/checkout`** (`CheckoutLivraisonSection`/`CheckoutPaiementSection`/`checkout.tsx`, 7 CTA) :
+  redirige (302) tant que le panier est vide — son loader fait `getOptionalUser` (pas d'auth gate)
+  puis `redirect("/cart")` si `items.length === 0`. Une capture exigerait un **cart-drive interactif**
+  (ajout panier session/Redis → `/checkout`). DÉLIBÉRÉMENT **hors de l'oracle comparé** : un drive
+  interactif (clic carte→modal→ajout, dépendant du stock) rendrait le gate **flaky** — un gate qui
+  crie au loup est pire que pas de couverture (« safe », « pas de bricolage »). Couvert en DT-1 par :
+  (1) test de contraste **WCAG** bloquant (prouve que le nouveau foreground passe), (2) argument
+  d'**uniformité du token** (même mécanisme CSS `bg-cta`/`text-*` que les 18 surfaces nettoyées →
+  propre sur 18 ⇒ propre sur les autres), (3) **before/after manuel** capturé au moment de DT-1 depuis
+  `main` (qui reste v3 jusqu'au merge DT-1).
+- **`CartSummaryBlock.tsx`** : son CTA `bg-cta text-white` ne s'affiche **qu'avec un panier non vide** ;
+  `/cart` vide retourne tôt `<EmptyCart>` (cart.tsx:380), donc `cart-empty` ne le nettoie PAS (les
+  `bg-cta` du HTML `/cart` vide = chrome global déjà nettoyé par `home`). Même couverture DT-1 que
+  `/checkout` (WCAG + uniformité + before/after cart-drive).
+- **`DashboardDesignTab.tsx`** : route **admin** (`/admin/...`), aperçu design-tokens — **hors périmètre**
+  du gate visuel public (pas une surface SEO/conversion). Couvert par les tests unitaires design-tokens.
+- **États interactifs** (focus clavier, accordéon/dialog ouverts, erreur form) et **specs composant
+  seuil strict** : DIFFÉRÉS. Le CTA est un gros bouton plein-largeur, déjà visible en capture
+  full-page → un spec composant n'est pas requis pour filtrer ce diff. À ajouter si une phase
+  ultérieure exige un seuil composant plus serré.
 
 ## Commandes
 
 ```bash
-# Pré-requis : l'app tourne sur http://localhost:3000 (ou PLAYWRIGHT_BASE_URL).
-npm run -w @fafa/frontend test:visual:update   # (re)générer les baselines (Docker)
+# Pré-requis : l'app tourne (DEV:3000 ou PLAYWRIGHT_BASE_URL=http://localhost:3200 pour PREPROD).
+npm run -w @fafa/frontend test:visual:update   # (re)générer les baselines (Docker) — PR visual-change
 npm run -w @fafa/frontend test:visual:docker   # comparer aux baselines (Docker) — le GATE
 ```
 
-`test:visual` (sans `:docker`) reste un raccourci local **non déterministe** (itération rapide),
-à ne PAS utiliser comme preuve.
+`test:visual` (sans `:docker`) = raccourci local **non déterministe** (itération), pas une preuve.
 
-## Couverture
+## Gate CI
 
-| Nom | Route | URL |
-|---|---|---|
-| `home` | accueil | `/` |
-| `r1-gamme` | R1 (gamme) | `/pieces/plaquette-de-frein-402.html` |
-| `r2-vehicule` | R2 (pièce × véhicule) | `/pieces/plaquette-de-frein-402/renault-140/megane-iii-140049/1-5-dci-77310.html` |
+`.github/workflows/visual-gate.yml` exécute la comparaison sur le runner self-hosted contre
+**PREPROD :3200** dans l'image Docker noble pinnée (modèle `e2e-smoke` : validation post-merge ;
+PROD reste protégé par le tag `v*`). Déclencheur actuel : **`workflow_dispatch` (manuel)** — choix
+**merge-safe** : merger #1160 ajoute l'infra + les baselines **sans** auto-rougir `main`. L'auto
+post-Deploy (`workflow_run`) est activé **séparément**, après un run `workflow_dispatch` vert contre
+PREPROD (vérifier que le gate tourne en CI avant de le rendre auto-bloquant — activation par étapes).
 
-Régions data-driven (prix, stock, dispo, dates, images) **masquées** dans le spec : on fige la mise
-en page, pas le contenu qui évolue avec la base. Tolérance `maxDiffPixelRatio: 0.02`.
+> **GATE-0 — baselines closes** : les **18** baselines `snapshots/` (9 pages × desktop+mobile) sont
+> capturées **sous l'état Tailwind v3** dans l'image pinnée **1.61.0** (invariant respecté : aucune
+> mutation DT-*/TW-* appliquée — DT-0 est prouvé byte-identique visuellement). Self-check
+> déterminisme : **18 passed** en mode comparaison (re-rendu vs baselines = vert). Baseline absente =
+> échec, jamais skip ("no silent fallback"). **Reste à l'activation** : (1) `workflow_dispatch` vert
+> contre PREPROD :3200 (peut différer du rendu DEV:3000 — re-capture sous PREPROD si l'image runner
+> diffère), (2) flip `workflow_run` pour rendre le gate auto-bloquant post-Deploy.
 
-## Workflow migration
+## Workflow d'usage (mutation à fort blast-radius)
 
-1. **Sous Vite 7** (baseline) : `test:visual:update` → committer les `*.png` (`-snapshots/`).
-2. **Sous Vite 8 / Rolldown** (V8-1) : `test:visual:docker` → tout vert = pas de régression de cascade.
-   Un diff = inspecter le rapport HTML Playwright (`test-results/visual-report/`) — images attendu /
-   reçu / diff — pour localiser la régression d'émission/ordre CSS Rolldown.
-
-Artefacts du gate (diffs, rapport HTML, traces) écrits sous `test-results/` (déjà gitignoré) : le gate
-ne mute jamais de fichier suivi par git.
+1. **Sous v3** (baseline) : `test:visual:update` → committer les `*.png` de `snapshots/`.
+2. **Après mutation** : `test:visual:docker` → tout vert = pas de régression de cascade/rendu.
+   Un diff = inspecter le rapport HTML (`test-results/visual-report/`, uploadé en artefact CI sur
+   échec) — images attendu/reçu/diff — pour localiser la régression. Si le diff est **intentionnel**
+   (ex. CTA blanc→noir en DT-1), c'est une PR `visual-change` : MAJ `snapshots/` + manifest + owner.
