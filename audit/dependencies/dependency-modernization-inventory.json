@@ -1,5 +1,5 @@
 {
-  "artifact_immutability_hash": "sha256:1298ed690ab93c58ca052c8b0ef6fc6ce90bb2b890a4996d987d13a405ce1a84",
+  "artifact_immutability_hash": "sha256:ce39e866fe6fbb25ba6ba768b82a73b5df8dbaa4fd64347f386a93f1fdac8e74",
   "divergences": [
     {
       "kind": "specifier",
@@ -2275,7 +2275,7 @@
       "rollback_complexity": "dangerous",
       "rollback_confidence_level": "theoretical",
       "rollback_data_loss_risk": "none",
-      "rollback_drill_commit": null,
+      "rollback_drill_commit": "ab8f572f90979d4e7426c667d2411c84834a6e97",
       "rollback_observability_grace_period_minutes": 20,
       "rollback_preconditions": [
         "canary-disabled",
@@ -2285,7 +2285,7 @@
       "rollback_requires_human_approval": true,
       "rollback_rto_minutes": 60,
       "rollback_runbook_required": true,
-      "rollback_tested_at": null,
+      "rollback_tested_at": "2026-06-26T09:57:36Z",
       "rollback_validation_checks": [
         "health-endpoint-ok",
         "traces-continuity",
@@ -3862,7 +3862,7 @@
     "lockfile": "package-lock.json",
     "lockfile_sha": "sha256:fe31bd6c846ad80cf19f429468e03677b3aff0f8faf320d8d20cb167c65ae49a",
     "overlay": "audit/dependencies/family-overlay.yaml",
-    "overlay_sha": "sha256:4788b9a5e54718e4556d2eeb5a7bf991ea33ce12a6303b69773589dc3ba06ee4"
+    "overlay_sha": "sha256:f5b19e7c0c73a75b55e4c0a620e0d01c6665dfcfffe8b00a77d5c8928bb05117"
   },
   "inventoryFormat": "pr-9-modernization-inventory",
   "matrixVersion": "pr9-v1",
