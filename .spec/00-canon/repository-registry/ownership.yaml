@@ -115,6 +115,13 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: medium
+  # ADR-059 PR-6c — SEO projection : REVOKE MV anon + RPC refresh_seo_projection_mvs. Owner GO 2026-06-19.
+  # Glob exact volontaire — les migrations ne sont PAS auto-couvertes (review ownership à chaque fois).
+  - glob: backend/supabase/migrations/20260619_adr059_pr6c_mv_revoke_and_refresh_rpc.sql
+    domain: D14
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
   # Allocateur gouverné Massdoc-séquentiel type_id (ADR-085, owner GO session 2026-06-15).
   # Glob exact volontaire — les migrations ne sont PAS auto-couvertes (review ownership à chaque fois).
   - glob: backend/supabase/migrations/20260615_massdoc_type_id_allocator.sql
