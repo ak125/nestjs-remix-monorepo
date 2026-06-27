@@ -26,7 +26,7 @@ export function SummarySnippet({ conseil }: SummarySnippetProps) {
       <ol className="px-5 py-4 space-y-3">
         {points.map((point, i) => (
           <li key={i} className="flex items-start gap-3">
-            <span className="flex-shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white text-sm font-bold flex items-center justify-center mt-0.5">
+            <span className="shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white text-sm font-bold flex items-center justify-center mt-0.5">
               {i + 1}
             </span>
             <div>

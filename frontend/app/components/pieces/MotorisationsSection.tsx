@@ -99,7 +99,7 @@ const MotorisationsSection = memo(function MotorisationsSection({
         <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             {/* Icône animée */}
-            <div className="flex-shrink-0 w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm shadow-lg">
+            <div className="shrink-0 w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm shadow-lg">
               <Car className="w-7 h-7 text-white" />
             </div>
 
@@ -169,7 +169,7 @@ const MotorisationsSection = memo(function MotorisationsSection({
               <div className="relative p-5 md:p-6">
                 <div className="flex items-start gap-4">
                   {/* Image agrandie avec effet hover */}
-                  <div className="flex-shrink-0">
+                  <div className="shrink-0">
                     <div className="relative">
                       <div
                         className={`absolute inset-0 bg-gradient-to-br ${familleColor} rounded-xl opacity-0 group-hover:opacity-20 blur-xl transition-all duration-300`}

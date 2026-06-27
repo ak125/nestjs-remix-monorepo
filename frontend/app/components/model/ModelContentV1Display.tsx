@@ -106,7 +106,7 @@ export const ModelContentV1Display = memo(function ModelContentV1Display({
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex-shrink-0 w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
+            <div className="shrink-0 w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
               <Book className="w-5 h-5 text-white" />
             </div>
             <div>

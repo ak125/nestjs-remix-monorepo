@@ -62,7 +62,7 @@ export function R6PriceGuide({ priceGuide, gammeName }: Props) {
                 key={i}
                 className="flex items-center gap-2 text-sm text-gray-700"
               >
-                <div className="w-1.5 h-1.5 bg-green-500 rounded-full flex-shrink-0" />
+                <div className="w-1.5 h-1.5 bg-green-500 rounded-full shrink-0" />
                 {factor}
               </li>
             ))}
@@ -71,7 +71,7 @@ export function R6PriceGuide({ priceGuide, gammeName }: Props) {
       )}
 
       <div className="flex items-start gap-2 text-xs text-gray-500 bg-gray-50 rounded-lg p-3">
-        <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+        <Info className="w-3.5 h-3.5 mt-0.5 shrink-0" />
         <span>{priceGuide.disclaimer}</span>
       </div>
     </section>

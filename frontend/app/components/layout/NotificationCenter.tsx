@@ -382,7 +382,7 @@ export const NotificationCenter = memo(function NotificationCenter({
 
                         {/* Icône du type */}
                         <div
-                          className={`flex-shrink-0 mt-0.5 p-1 rounded-full bg-${typeColor}-100`}
+                          className={`shrink-0 mt-0.5 p-1 rounded-full bg-${typeColor}-100`}
                         >
                           <TypeIcon
                             className={`w-4 h-4 text-${typeColor}-600`}

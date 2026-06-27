@@ -88,7 +88,7 @@ export default function BrandsGrid({
               {[...equipList, ...equipList].map((e, i) => (
                 <div
                   key={`${e.name}-${i}`}
-                  className="flex-shrink-0 h-10 sm:h-12"
+                  className="shrink-0 h-10 sm:h-12"
                 >
                   <img
                     src={e.logo}

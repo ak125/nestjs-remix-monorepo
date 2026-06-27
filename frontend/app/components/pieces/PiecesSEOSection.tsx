@@ -92,7 +92,7 @@ export const PiecesSEOSection = memo(function PiecesSEOSection({
                   className="flex items-start gap-2 text-sm text-gray-700"
                 >
                   <svg
-                    className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0"
+                    className="w-4 h-4 text-blue-600 mt-0.5 shrink-0"
                     fill="currentColor"
                     viewBox="0 0 20 20"
                   >

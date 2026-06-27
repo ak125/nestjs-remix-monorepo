@@ -290,7 +290,7 @@ export default function StaffIndex() {
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
-                      <div className="h-10 w-10 flex-shrink-0">
+                      <div className="h-10 w-10 shrink-0">
                         <div className="h-10 w-10 rounded-full bg-primary/15 flex items-center justify-center">
                           <span className="text-sm font-medium text-blue-600">
                             {member.firstName?.[0]}

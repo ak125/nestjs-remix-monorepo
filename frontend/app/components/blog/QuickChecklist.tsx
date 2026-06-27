@@ -30,7 +30,7 @@ export function QuickChecklist() {
           <ol className="space-y-3">
             {CHECKS.map((check, i) => (
               <li key={i} className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center mt-0.5">
+                <div className="shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center mt-0.5">
                   <CheckCircle2 className="w-4 h-4 text-green-600" />
                 </div>
                 <span className="text-sm text-gray-700">{check}</span>

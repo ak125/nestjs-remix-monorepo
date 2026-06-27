@@ -573,7 +573,7 @@ export default function AdminPaymentsDashboard() {
         {/* Bannière informative */}
         <div className="bg-primary/5 p-4 mb-6 rounded-r-lg">
           <div className="flex">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <AlertTriangle className="h-5 w-5 text-blue-400" />
             </div>
             <div className="ml-3">
@@ -590,7 +590,7 @@ export default function AdminPaymentsDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 <DollarSign className="h-8 w-8 text-green-600" />
               </div>
               <div className="ml-4">
@@ -606,7 +606,7 @@ export default function AdminPaymentsDashboard() {
 
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 <CheckCircle className="h-8 w-8 text-blue-600" />
               </div>
               <div className="ml-4">
@@ -622,7 +622,7 @@ export default function AdminPaymentsDashboard() {
 
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 <Clock className="h-8 w-8 text-yellow-600" />
               </div>
               <div className="ml-4">
@@ -638,7 +638,7 @@ export default function AdminPaymentsDashboard() {
 
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 <AlertTriangle className="h-8 w-8 text-red-600" />
               </div>
               <div className="ml-4">

@@ -370,7 +370,7 @@ export function ProductCatalog({
                     >
                       <div className="flex items-center space-x-4">
                         {/* Image miniature */}
-                        <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                        <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
                           {product.piece_image ? (
                             <img
                               src={product.piece_image}

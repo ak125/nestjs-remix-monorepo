@@ -81,7 +81,7 @@ export const CompatibilityConfirmationBlock = memo(
     if (!selectedVehicle) {
       return (
         <div className="flex items-start gap-4 rounded-xl border border-blue-200 bg-blue-50 p-5">
-          <Car className="mt-0.5 h-6 w-6 flex-shrink-0 text-blue-600" />
+          <Car className="mt-0.5 h-6 w-6 shrink-0 text-blue-600" />
           <div className="flex-1">
             <p className="font-semibold text-blue-900">
               Sélectionnez votre véhicule pour vérifier la compatibilité
@@ -115,7 +115,7 @@ export const CompatibilityConfirmationBlock = memo(
 
       return (
         <div className="flex items-start gap-4 rounded-xl border border-emerald-200 bg-emerald-50 p-5">
-          <ShieldCheck className="mt-0.5 h-6 w-6 flex-shrink-0 text-emerald-600" />
+          <ShieldCheck className="mt-0.5 h-6 w-6 shrink-0 text-emerald-600" />
           <div className="flex-1">
             <p className="font-semibold text-emerald-900">
               Compatibilité garantie pour votre {vehicleName}
@@ -126,7 +126,7 @@ export const CompatibilityConfirmationBlock = memo(
                   key={proof}
                   className="flex items-start gap-2 text-sm text-emerald-800"
                 >
-                  <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-500" />
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
                   <span>{proof}</span>
                 </li>
               ))}
@@ -157,7 +157,7 @@ export const CompatibilityConfirmationBlock = memo(
     // ── État 2 : Non confirmé (ambre) ──
     return (
       <div className="flex items-start gap-4 rounded-xl border border-amber-200 bg-amber-50 p-5">
-        <ShieldQuestion className="mt-0.5 h-6 w-6 flex-shrink-0 text-amber-600" />
+        <ShieldQuestion className="mt-0.5 h-6 w-6 shrink-0 text-amber-600" />
         <div className="flex-1">
           <p className="font-semibold text-amber-900">
             Votre {vehicleName} n&apos;apparaît pas dans les motorisations

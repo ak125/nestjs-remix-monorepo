@@ -113,7 +113,7 @@ export function CompactBlogHeader({
             <div className="flex-1 flex items-center gap-3 md:gap-4">
               {/* Logo */}
               {logo && (
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   <div className="w-20 h-20 md:w-24 md:h-24 bg-white rounded-2xl shadow-xl p-1.5 md:p-2 flex items-center justify-center hover:scale-105 hover:rotate-2 transition-all duration-300">
                     <img
                       src={logo}
@@ -122,7 +122,7 @@ export function CompactBlogHeader({
                       onError={(e) => {
                         // Masquer le conteneur si le logo 404
                         const container =
-                          e.currentTarget.closest("div.flex-shrink-0");
+                          e.currentTarget.closest("div.shrink-0");
                         if (container instanceof HTMLElement) {
                           container.style.display = "none";
                         }

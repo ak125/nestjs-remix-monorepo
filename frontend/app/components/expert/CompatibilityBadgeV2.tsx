@@ -114,7 +114,7 @@ function VehicleDisplay({ vehicle }: { vehicle: VehicleInfoV2 }) {
 
   return (
     <div className="flex items-center gap-1.5 text-sm">
-      <Car className="h-3.5 w-3.5 flex-shrink-0" />
+      <Car className="h-3.5 w-3.5 shrink-0" />
       <span className="truncate max-w-[180px] sm:max-w-[250px]">
         {displayText}
       </span>
