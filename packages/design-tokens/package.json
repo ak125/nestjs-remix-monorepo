@@ -16,7 +16,6 @@
     },
     "./tokens.json": "./src/tokens.json",
     "./css": "./dist/tokens.css",
-    "./utilities": "./dist/utilities.css",
     "./tailwind-tokens": "./src/tailwind-tokens.cjs"
   },
   "files": [
