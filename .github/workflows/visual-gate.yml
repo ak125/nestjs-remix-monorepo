@@ -1,0 +1,190 @@
+name: 🖼️ Visual Regression Gate
+
+# GATE-0 du chantier Tailwind 4 : rend le gate de régression visuelle AUTORITAIRE en CI
+# (avant ce workflow, `test:visual:docker` n'était qu'un wrapper local manuel, dans aucun
+# workflow — un "gate" non exécuté).
+#
+# Modèle = `e2e-smoke` (ci.yml) : POST-DEPLOY, sur le runner self-hosted (= hôte PREPROD
+# 49.12.233.2), contre le container PREPROD :3200 — cohérent avec la validation post-merge
+# du repo (PREPROD valide main ; PROD reste protégé par le tag `v*` manuel). Ce n'est donc
+# PAS un gate bloquant de PR : un diff rouge alerte sur main et l'owner revert (même modèle
+# que e2e-smoke/lighthouse).
+#
+# DÉTERMINISME : la comparaison tourne dans l'image Docker pinnée
+# `mcr.microsoft.com/playwright:v1.61.0-noble` via `scripts/visual/run-visual-docker.sh` — même
+# rendu de police que la génération des baselines. L'image porte le BUILD Chromium (/ms-playwright)
+# MAIS PAS un `@playwright/test` résolvable par le projet : le config Playwright fait
+# `import "@playwright/test"`, résolu depuis le `node_modules` du repo MONTÉ dans le container
+# (`/work/frontend/node_modules`). Un checkout CI frais n'en a aucun → `npm ci` est REQUIS avant la
+# comparaison (sinon `ERR_MODULE_NOT_FOUND: @playwright/test`). Le download de browser est skippé
+# (la comparaison utilise le Chromium de l'image, pas celui du runner).
+#
+# ── ACTIVATION (état GATE-0) ────────────────────────────────────────────────────────────────
+# La 1ʳᵉ validation (run 28257536920) a prouvé que le gate S'EXÉCUTE (pages statiques pixel-parfaites)
+# MAIS que les baselines #1160 — capturées sur la machine DEV:3000 — divergent du container PREPROD:3200
+# que le gate compare : 9 pages dynamiques rougissaient par mismatch de HAUTEUR pur (largeur identique
+# au px → différence de CONTENU build dev vs build prod, pas une régression CSS). Correctif : RE-CAPTURER
+# les baselines DANS l'env du gate via le mode `capture_baselines` ci-dessous (même image noble, même
+# PREPROD:3200 → env de capture == env de gate). Baseline absente = échec, jamais skip silencieux (no
+# silent fallback). Une fois un run `compare` VERT, flip `workflow_run` (auto-bloquant post-Deploy).
+
+on:
+  # Manuel d'abord (merge-safe) : capture/activation des baselines + tout re-run ciblé.
+  # ── ACTIVATION (à faire après une capture VERTE) ─────────────────────────────────────────────
+  # Tant qu'un run `compare` n'est pas VERT contre PREPROD, un déclenchement AUTO rougirait `main`
+  # à chaque deploy. Donc : on garde MANUEL jusqu'à ce que les baselines soient capturées DANS l'env
+  # du gate (PREPROD:3200) ET qu'un run `compare` soit VERT. Ensuite, ajouter l'auto-déclencheur
+  # post-Deploy (le job `if` ci-dessous gère déjà `workflow_run`) :
+  #   workflow_run:
+  #     workflows: ["🚀 Deploy"]
+  #     types: [completed]
+  workflow_dispatch:
+    inputs:
+      capture_baselines:
+        description: "Capturer/rafraîchir les baselines CONTRE PREPROD:3200 (au lieu de comparer). Upload artefact, N'AUTO-COMMIT PAS."
+        type: boolean
+        default: false
+
+# Le container PREPROD :3200 est PARTAGÉ (un seul). On sérialise par ref et on annule le run
+# superséded (même raison que la garde de concurrence de ci.yml).
+concurrency:
+  group: visual-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  visual-gate:
+    name: 🖼️ Visual Regression (PREPROD :3200, Docker noble)
+    runs-on: [self-hosted, Linux, X64]
+    # Sur auto-trigger : uniquement si le Deploy a RÉUSSI (sinon PREPROD n'a pas le nouveau build).
+    # Sur workflow_dispatch : pas de workflow_run → la condition passe.
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: 🧹 Purge des artefacts root-owned d'un run Docker précédent (pré-checkout)
+        # Le harnais visuel tourne `npx playwright test` dans le container noble EN ROOT (user par
+        # défaut de l'image ; Chromium y tourne sans sandbox). Playwright écrit `test-results/` dans
+        # le workspace MONTÉ → ces fichiers appartiennent à root, et le `clean: true` du checkout
+        # suivant échoue en EACCES (rmdir non permis au user runner) — c'est ce qui a cassé le run
+        # 28260655482. On purge ces leftovers AVANT checkout via un container (le runner est dans le
+        # groupe docker), donc en root. Idempotent ; `|| true` si le workspace n'existe pas encore.
+        # Image = le même tag pinné que scripts/visual/run-visual-docker.sh (déjà en cache runner).
+        run: |
+          docker run --rm -v "${{ github.workspace }}:/w" \
+            mcr.microsoft.com/playwright:v1.61.0-noble \
+            rm -rf /w/frontend/tests/visual/test-results || true
+
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v4
+
+      - name: ⎔ Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: "npm"
+
+      - name: 📦 Install deps (node_modules monté dans le container Docker)
+        # REQUIS : le config/spec Playwright importent `@playwright/test`, résolu depuis le
+        # `node_modules` du repo monté (`/work/frontend/node_modules`). L'image Docker ne fournit
+        # que le browser, pas le package projet → un checkout frais sans `npm ci` casse avec
+        # `ERR_MODULE_NOT_FOUND`. `npm ci` matérialise `@playwright/test@1.61.0` (= l'image).
+        # Skip le download du browser : la comparaison utilise le Chromium de l'image noble.
+        run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+
+      - name: ⏳ Wait for PREPROD to be stably healthy
+        run: |
+          # Polls CONSÉCUTIFS (pas premier-succès) : le container PREPROD partagé peut redémarrer
+          # brièvement (host-side ExitCode=0 + restart:always, diagnostic 2026-06-21). On attend la
+          # STABILITÉ avant de lancer les captures. Borné ; reset sur tout blip (no silent fallback).
+          need=4; stable=0
+          for i in $(seq 1 40); do
+            if curl -sf http://localhost:3200/health > /dev/null 2>&1; then
+              stable=$((stable + 1))
+              echo "healthy ${stable}/${need} (poll ${i})"
+              if [ "$stable" -ge "$need" ]; then echo "✅ PREPROD stably healthy"; exit 0; fi
+            else
+              if [ "$stable" -gt 0 ]; then echo "⚠️ health blip at poll ${i} — resetting"; fi
+              stable=0
+            fi
+            sleep 5
+          done
+          echo "::error::PREPROD never reached ${need} consecutive healthy polls on :3200"
+          exit 1
+
+      - name: 🖼️ Capture/refresh baselines (mode capture — PREPROD:3200, Docker noble)
+        # Mode capture (input `capture_baselines`). Réutilise EXACTEMENT le harnais du gate (même
+        # image noble, même PREPROD:3200) → l'env de capture == l'env de gate : déterminisme garanti,
+        # c'est toute la raison d'étendre ce workflow plutôt que d'en créer un parallèle. N'AUTO-COMMIT
+        # PAS : les PNG sont uploadés en artefact, committés ensuite dans une PR `visual-change`
+        # reviewable (gouvernance snapshots/). `--update-snapshots` n'est autorisé QUE dans ce mode.
+        if: ${{ inputs.capture_baselines }}
+        run: |
+          # B3 — fraîcheur : VIDER les baselines committées AVANT capture, pour que l'artefact ne
+          # contienne QUE des PNG fraîchement écrits. Sinon une capture qui n'écrit rien laisserait les
+          # 18 PNG committés en place → `if-no-files-found: error` ne pourrait jamais se déclencher et
+          # on uploaderait des baselines PÉRIMÉES comme « fraîches ». (--user dans le harnais → fichiers
+          # écrits par le runner, donc `-delete` trivial, pas de root-owned.)
+          find frontend/tests/visual/snapshots -name '*.png' -delete
+          bash scripts/visual/run-visual-docker.sh --update-snapshots
+          # Assertion : EXACTEMENT 18 baselines (9 pages × desktop+mobile) régénérées. Capture partielle
+          # (page en échec/timeout) → run ROUGE, jamais un upload silencieux incomplet (no silent fallback).
+          n=$(find frontend/tests/visual/snapshots -name '*.png' | wc -l)
+          echo "baselines écrites : ${n}/18"
+          [ "$n" -eq 18 ] || { echo "::error::capture incomplète : ${n}/18 baselines écrites"; exit 1; }
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:3200
+
+      - name: 📤 Upload baselines régénérées (mode capture)
+        # Upload même si la capture a partiellement échoué (≠ cancelled) → un échec reste INSPECTABLE
+        # (no silent fallback). Aucun fichier = erreur (jamais d'artefact vide silencieux).
+        if: ${{ inputs.capture_baselines && !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-baselines-preprod
+          path: frontend/tests/visual/snapshots
+          retention-days: 14
+          if-no-files-found: error
+
+      - name: 🖼️ Compare visual snapshots (Docker noble, résilient au restart PREPROD)
+        if: ${{ !inputs.capture_baselines }}
+        run: |
+          run_visual() { bash scripts/visual/run-visual-docker.sh; }
+          # 1er passage.
+          if run_visual; then exit 0; fi
+          # Le container PREPROD partagé peut redémarrer MID-SUITE (~20s, host-side) → connexion
+          # refusée sur une app pourtant saine. On distingue ça d'un VRAI diff : on attend que
+          # PREPROD soit STABLE de nouveau, puis on rejoue UNE fois. Sinon = vrai échec.
+          echo "::warning::1er passage rouge — vérification d'un restart PREPROD transitoire…"
+          need=4; stable=0
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3200/health > /dev/null 2>&1; then
+              stable=$((stable + 1)); if [ "$stable" -ge "$need" ]; then break; fi
+            else stable=0; fi
+            sleep 3
+          done
+          if [ "$stable" -lt "$need" ]; then
+            echo "::error::PREPROD ne s'est pas re-stabilisé — vrai échec, pas un restart transitoire"
+            exit 1
+          fi
+          echo "PREPROD de nouveau stable — re-run unique de la comparaison visuelle"
+          run_visual
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:3200
+
+      - name: 📤 Upload visual diff report (sur échec de COMPARE uniquement)
+        # A1 — borné au mode compare : un échec de CAPTURE ne produit pas de rapport de diff (il a son
+        # propre artefact `visual-baselines-preprod`). `!inputs.capture_baselines` reste vrai sous un
+        # futur `workflow_run` (inputs absent) → les rapports d'échec compare s'uploadent toujours.
+        if: ${{ failure() && !inputs.capture_baselines }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-gate-report
+          # Chemin RÉEL du rapport HTML : `outputFolder: ./test-results/visual-report` est résolu
+          # relativement au dossier de la config (frontend/tests/visual/), pas à frontend/ — l'ancien
+          # `frontend/test-results/visual-report` ne matchait jamais (artefact vide silencieux).
+          path: frontend/tests/visual/test-results/visual-report
+          retention-days: 14
+          if-no-files-found: ignore
