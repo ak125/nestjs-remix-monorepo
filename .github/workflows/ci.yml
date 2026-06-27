@@ -73,6 +73,13 @@ jobs:
       - name: 🛡️ CACHE-HEADERS-OK exemptions traceable
         run: bash scripts/lint/check-cache-headers-ok-references.sh
 
+      # DT-2b reserved-namespace-zero: frontend app CSS must not reference an
+      # un-migrated (non --am-) design-tokens scale var — it would resolve to
+      # nothing once Tailwind v4 owns --color-*/--spacing-*/--font-*/etc. (TW-2).
+      # Sister to the package-side @fafa/design-tokens check:reserved-namespaces.
+      - name: 🛡️ Reserved-namespace-zero (frontend app CSS)
+        run: bash scripts/lint/check-frontend-css-am-namespace.sh
+
   typecheck:
     name: ʦ TypeScript
     runs-on: ubuntu-latest
@@ -114,6 +121,7 @@ jobs:
       - name: 🎨 Design-tokens gate (byte-identity + contract)
         run: |
           npm run -w @fafa/design-tokens build:check
+          npm run -w @fafa/design-tokens check:reserved-namespaces
           npm run -w @fafa/design-tokens test:run
 
       - name: Build Application
