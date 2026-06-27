@@ -52,7 +52,7 @@ const FAMILY_TIPS: Record<string, { type: "info" | "warning"; text: string }> =
  *
  * NE gère PAS :
  * - Images R1 (gérées par la section dédiée dans pieces.$slug.tsx)
- * - "Pourquoi nous choisir" (déplacé vers R1TrustStrip)
+ * - Bloc de réassurance « nous choisir » (déplacé vers R1TrustStrip)
  * - Resource cards (déplacées vers GammeGuideCTA ou section séparée)
  */
 export default function GammeContent({
