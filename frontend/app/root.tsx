@@ -76,7 +76,7 @@ export const links: LinksFunction = () => [
     crossOrigin: "anonymous" as const,
   },
 
-  // CSS principal (inclut design tokens + utilities via @import, bundlé par Vite)
+  // CSS principal (inclut design tokens via @import, bundlé par Vite)
   { rel: "stylesheet", href: stylesheet },
 
   // DNS Prefetch & Preconnect

@@ -1,6 +1,5 @@
 /* === DESIGN TOKENS (bundled by Vite) === */
 @import "@fafa/design-tokens/css";
-@import "@fafa/design-tokens/utilities";
 
 /* === SELF-HOSTED FONTS === */
 /* Outfit (headings) + DM Sans (body) + Roboto Mono (data) */
@@ -60,7 +59,7 @@
 }
 
 /* === DESIGN SYSTEM === */
-/* tokens.css + utilities.css importés via @import en haut de ce fichier */
+/* tokens.css importé via @import en haut de ce fichier (DT-2a : utilities.css retiré — classes mortes/non-utilisées, Tailwind génère les équivalents vivants) */
 
 /* === MAILLAGE INTERNE === */
 /* (intégré directement pour éviter erreur @layer sans @tailwind directives) */
