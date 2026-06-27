@@ -26,15 +26,22 @@ Usage:
     # Custom threshold
     python3 scripts/qa/r8-diversity-check.py --brand smart --threshold 75
 
+Plus (D-2 GO-shadow) : mesure des collisions de BALISES émises (meta_title /
+H1 / meta_description) entre sœurs, lues en texte brut depuis __seo_r8_pages.
+REPORT-ONLY — affiché dans le rapport mais SANS effet sur le verdict diversité
+contenu ni sur l'exit code (le hard-gate balises = D-3, conditionné ADR vault).
+
 Exit codes:
     0 — PASS (all slots ≥ threshold for all models)
     1 — REVIEW (1-2 slots sous seuil sur au moins 1 modele)
     2 — FAIL (≥ 3 slots sous seuil, ou ≥ 50% modeles en FAIL)
     3 — Technical error (DB connection, SQL)
+    (la mesure balises D-2 est report-only : elle ne change AUCUN exit code)
 
 References:
     ADR-022: R8 RAG Control Plane (Pilier 2d wire variation)
     PRs: #145 (pools), #146 (enricher wire)
+    Plan balises R0→R8 D-2 (GO-shadow) : mesure title/H1/desc duplicate sœurs.
     Tables read: __seo_r8_pages, __seo_r8_fingerprints, auto_type, auto_modele, auto_marque
 """
 from __future__ import annotations
@@ -43,6 +50,7 @@ import argparse
 import json
 import os
 import sys
+import unicodedata
 from dataclasses import dataclass, asdict, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -306,6 +314,181 @@ SLOT_TO_FP_COLUMN = {
 }
 
 
+# ── Balise (meta_title / H1 / meta_description) measurement — D-2 GO-shadow ──
+#
+# Mesure les collisions de BALISES émises entre sœurs (mêmes modele_id), lues en
+# TEXTE BRUT depuis __seo_r8_pages (colonnes h1/meta_title/meta_description, NOT
+# NULL). Orthogonal au check de diversité de CONTENU ci-dessus :
+#   * exact = égalité littérale du texte émis            → signal DÉFINITIF.
+#   * near  = égalité après normalize_balise (accent-fold NFKD + lower + espaces)
+#             → IDENTIQUE à seo-snapshot-baseline-rates.py (D-0) pour cohérence.
+# REPORT-ONLY : n'affecte NI le verdict de diversité contenu NI l'exit-code. Le
+# hard-gate balises vit en D-3 (conditionné à l'ADR vault). Les seuils pg_trgm
+# near-dup RÉELS sont CALIBRATION_PENDING (P-7) — placeholder ci-dessous, NON
+# appliqué (aucune décision dérivée de ces valeurs avant calibration).
+TRGM_THRESHOLDS_SCHEMA_VERSION = "v0"  # bump à la calibration P-7
+TRGM_THRESHOLDS_V0 = {
+    "R8_VEHICLE": {"title": 0.80, "description": 0.70, "h1": 0.78},
+    "R2_PRODUCT": {"title": 0.75, "description": 0.70},
+}
+
+# Champs balise lus en brut depuis __seo_r8_pages.
+BALISE_FIELDS = ("meta_title", "h1", "meta_description")
+
+
+def normalize_balise(text: str | None) -> str:
+    """Accent-fold (NFKD) + lowercase + whitespace-collapse pour le near-dup.
+
+    Définition VOLONTAIREMENT identique à normalize() de
+    seo-snapshot-baseline-rates.py (D-0), pour que « near » signifie la même
+    chose dans les deux scripts de mesure.
+    """
+    if not text:
+        return ""
+    decomposed = unicodedata.normalize("NFKD", text)
+    folded = "".join(c for c in decomposed if not unicodedata.combining(c))
+    return " ".join(folded.lower().split())
+
+
+def _field_diversity(values: list[tuple[int, str]]) -> dict[str, Any]:
+    """Pour un champ balise d'un groupe de sœurs : exact + near distinctness +
+    collisions (report-only).
+
+    values = [(type_id, raw_text), ...].
+      * distinct_exact = nb de valeurs brutes distinctes.
+      * distinct_near  = nb de valeurs distinctes après normalize_balise.
+      * exact_collisions  = textes bruts identiques partagés par ≥ 2 sœurs.
+      * near_only_collisions = même valeur normalisée mais ≥ 2 textes bruts
+        distincts (collision purement cosmétique : casse/accent/espaces) — à
+        NE PAS confondre avec une collision exacte.
+    """
+    raw_groups: dict[str, list[int]] = {}
+    near_groups: dict[str, list[int]] = {}
+    near_raws: dict[str, set[str]] = {}
+    for type_id, raw in values:
+        raw_groups.setdefault(raw, []).append(type_id)
+        nk = normalize_balise(raw)
+        near_groups.setdefault(nk, []).append(type_id)
+        near_raws.setdefault(nk, set()).add(raw)
+    exact_collisions = [
+        {"value": k[:80], "type_ids": sorted(v)}
+        for k, v in raw_groups.items()
+        if len(v) >= 2
+    ]
+    near_only_collisions = [
+        {"value": nk[:80], "type_ids": sorted(near_groups[nk])}
+        for nk in near_groups
+        if len(near_groups[nk]) >= 2 and len(near_raws[nk]) >= 2
+    ]
+    return {
+        "distinct_exact": len(raw_groups),
+        "distinct_near": len(near_groups),
+        "exact_collisions": sorted(
+            exact_collisions, key=lambda c: -len(c["type_ids"])
+        )[:20],
+        "near_only_collisions": sorted(
+            near_only_collisions, key=lambda c: -len(c["type_ids"])
+        )[:20],
+    }
+
+
+def compute_balise_diversity(
+    modele_id: int,
+    modele_name: str,
+    marque_name: str,
+    rows: list[dict[str, Any]],
+    indexable_count: int,
+) -> dict[str, Any]:
+    """Diversité des balises émises pour UN groupe de sœurs (mêmes modele_id).
+
+    rows = pages R8 enrichies du modèle, chacune {type_id, meta_title, h1,
+    meta_description}. indexable_count = nb de sœurs AFFICHABLES
+    (auto_type.type_display='1') du modèle → dénominateur emission_coverage.
+
+    NB emission_coverage : numérateur = TOUTES les sœurs enrichies (la diversité
+    exact/near doit porter sur toutes les pages publiées), dénominateur =
+    affichables seules. La valeur peut donc dépasser 1.0 si un type masqué
+    (type_display≠'1') est enrichi — signal en soi (sur-enrichissement de types
+    cachés), pas un bug.
+
+    Pure / déterministe / REPORT-ONLY : aucun verdict dérivé ici.
+    """
+    sibling_count = len(rows)
+    fields = {
+        f: _field_diversity([(int(r["type_id"]), (r.get(f) or "")) for r in rows])
+        for f in BALISE_FIELDS
+    }
+    return {
+        "modele_id": modele_id,
+        "modele_name": modele_name,
+        "marque_name": marque_name,
+        "enriched_siblings": sibling_count,
+        "indexable_siblings": indexable_count,
+        "emission_coverage": round(sibling_count / indexable_count, 4)
+        if indexable_count
+        else None,
+        "fields": fields,
+    }
+
+
+BALISE_ROWS_SQL = """
+SELECT
+  t.type_modele_id_i AS modele_id,
+  m.modele_name,
+  br.marque_name,
+  p.type_id::int AS type_id,
+  p.meta_title,
+  p.h1,
+  p.meta_description
+FROM public.__seo_r8_pages p
+JOIN public.auto_type t ON t.type_id::int = p.type_id::int
+JOIN public.auto_modele m ON m.modele_id = t.type_modele_id_i
+JOIN public.auto_marque br ON br.marque_id::text = m.modele_marque_id::text
+WHERE t.type_modele_id_i = ANY(%(modele_ids)s::int[])
+ORDER BY t.type_modele_id_i, p.type_id::int;
+"""
+
+# Sœurs AFFICHABLES par modèle (auto_type.type_display = '1', stocké en TEXT —
+# cf. anti-pattern auto_type) = dénominateur de emission_coverage
+# (enrichies / affichables). Mesure le trou de couverture R8 (~0.54 %).
+INDEXABLE_COUNT_SQL = """
+SELECT t.type_modele_id_i AS modele_id, COUNT(*) AS indexable_count
+FROM public.auto_type t
+WHERE t.type_modele_id_i = ANY(%(modele_ids)s::int[])
+  AND t.type_display = '1'
+GROUP BY t.type_modele_id_i;
+"""
+
+
+def measure_balises(
+    cur: psycopg2.extensions.cursor, modele_ids: list[int]
+) -> list[dict[str, Any]]:
+    """Fetch raw balises + indexable counts, compute per-modele diversity.
+
+    REPORT-ONLY. Erreurs SQL propagées (pas de fallback silencieux) — le caller
+    les convertit en exit 3 comme le reste du script.
+    """
+    cur.execute(BALISE_ROWS_SQL, {"modele_ids": modele_ids})
+    rows = cur.fetchall()
+    cur.execute(INDEXABLE_COUNT_SQL, {"modele_ids": modele_ids})
+    indexable = {r["modele_id"]: r["indexable_count"] for r in cur.fetchall()}
+
+    by_modele: dict[int, list[dict[str, Any]]] = {}
+    names: dict[int, tuple[str, str]] = {}
+    for r in rows:
+        by_modele.setdefault(r["modele_id"], []).append(r)
+        names[r["modele_id"]] = (r["modele_name"] or "", r["marque_name"] or "")
+
+    result = [
+        compute_balise_diversity(
+            mid, names[mid][0], names[mid][1], mrows, indexable.get(mid, 0)
+        )
+        for mid, mrows in by_modele.items()
+    ]
+    result.sort(key=lambda b: (b["marque_name"], b["modele_name"]))
+    return result
+
+
 # ── Scope resolution ─────────────────────────────────────────────────────────
 
 
@@ -410,7 +593,12 @@ def fetch_collisions(
 # ── Output formatters ────────────────────────────────────────────────────────
 
 
-def format_markdown(summary: RunSummary, models: list[ModelReport]) -> str:
+def format_markdown(
+    summary: RunSummary,
+    models: list[ModelReport],
+    balises: list[dict[str, Any]] | None = None,
+    balise_error: str | None = None,
+) -> str:
     """Human-readable markdown report."""
     lines: list[str] = []
     lines.append(f"# R8 Diversity Check — {summary.scope}")
@@ -497,6 +685,79 @@ def format_markdown(summary: RunSummary, models: list[ModelReport]) -> str:
                     )
                 lines.append("")
 
+    # ── Balises émises — diversité sœurs (D-2 GO-shadow, report-only) ──
+    if balise_error:
+        lines.append("## Balises émises — diversité sœurs (D-2, report-only)")
+        lines.append("")
+        lines.append(
+            f"> ⚠️ **Mesure balises indisponible** (report-only) : `{balise_error}`. "
+            "Le verdict de diversité **contenu** ci-dessus reste valide."
+        )
+        lines.append("")
+    if balises:
+        lines.append("## Balises émises — diversité sœurs (D-2, report-only)")
+        lines.append("")
+        lines.append(
+            "> Collisions de **balises** (meta_title / H1 / meta_desc) lues en texte "
+            "brut depuis `__seo_r8_pages`. **Report-only** — n'affecte pas le verdict "
+            "ci-dessus (hard-gate balises = D-3, ADR vault requis). `ex` = distinct "
+            "exact (texte identique) ; `near` = distinct après accent-fold+lower+"
+            "espaces. Cellule = `exact/near` sur `n` sœurs enrichies ; viser "
+            "`exact == n` (toutes distinctes)."
+        )
+        lines.append("")
+        lines.append(
+            "| modele_id | Marque | Modèle | Enrichies/Affichables | title ex/near | "
+            "H1 ex/near | desc ex/near |"
+        )
+        lines.append(
+            "|-----------|--------|--------|-----------------------|---------------|"
+            "------------|--------------|"
+        )
+        for b in balises:
+            n = b["enriched_siblings"]
+            cov = b["emission_coverage"]
+            cov_cell = (
+                f"{n}/{b['indexable_siblings']} ({cov * 100:.1f}%)"
+                if cov is not None
+                else f"{n}/?"
+            )
+
+            def _cell(field: str) -> str:
+                fd = b["fields"][field]
+                return f"{fd['distinct_exact']}/{fd['distinct_near']} (n={n})"
+
+            lines.append(
+                f"| {b['modele_id']} | {b['marque_name']} | {b['modele_name'][:30]} | "
+                f"{cov_cell} | {_cell('meta_title')} | {_cell('h1')} | "
+                f"{_cell('meta_description')} |"
+            )
+        lines.append("")
+
+        # Exact collisions = hard signal (deux sœurs publient la balise identique).
+        any_exact = False
+        for b in balises:
+            exact_hits = [
+                (f, b["fields"][f]["exact_collisions"])
+                for f in BALISE_FIELDS
+                if b["fields"][f]["exact_collisions"]
+            ]
+            if not exact_hits:
+                continue
+            if not any_exact:
+                lines.append("### Collisions EXACTES de balises (signal fort)")
+                lines.append("")
+                any_exact = True
+            lines.append(f"**{b['modele_id']} {b['modele_name']}** ({b['marque_name']}) :")
+            lines.append("")
+            for field, colls in exact_hits:
+                for c in colls[:5]:
+                    lines.append(
+                        f"- `{field}` « {c['value']} » → type_ids {c['type_ids']}"
+                    )
+            lines.append("")
+        lines.append("")
+
     lines.append("## Actions recommandées")
     lines.append("")
     if summary.global_verdict == "PASS":
@@ -510,10 +771,27 @@ def format_markdown(summary: RunSummary, models: list[ModelReport]) -> str:
     return "\n".join(lines)
 
 
-def format_json(summary: RunSummary, models: list[ModelReport]) -> str:
+def format_json(
+    summary: RunSummary,
+    models: list[ModelReport],
+    balises: list[dict[str, Any]] | None = None,
+    balise_error: str | None = None,
+) -> str:
     payload = {
         "summary": asdict(summary),
         "models": [asdict(m) for m in models],
+        # D-2 GO-shadow balise measurement (report-only). near-dup pg_trgm
+        # thresholds are CALIBRATION_PENDING (P-7) — placeholder, NOT applied.
+        "balises": balises or [],
+        "balise_meta": {
+            "report_only": True,
+            "trgm_thresholds_schema_version": TRGM_THRESHOLDS_SCHEMA_VERSION,
+            "trgm_thresholds_v0": TRGM_THRESHOLDS_V0,
+            "near_dup_status": "CALIBRATION_PENDING",
+            # Non-null si la mesure balises a échoué (observable, pas silencieux).
+            # Le verdict/exit-code contenu reste valide indépendamment.
+            "measurement_error": balise_error,
+        },
     }
     return json.dumps(payload, indent=2, ensure_ascii=False, default=str)
 
@@ -591,6 +869,22 @@ def run_check(
             m.collisions = fetch_collisions(cur, m.modele_id, m.slots_failing)
         models.append(m)
 
+    # 4b. Balise diversity (D-2 GO-shadow, report-only). Une erreur de mesure
+    # balises (secondaire) ne doit PAS masquer le rapport de diversité CONTENU
+    # (primaire, déjà calculé). On dégrade de façon OBSERVABLE (WARN stderr +
+    # marqueur dans la sortie), JAMAIS silencieuse → conforme « report-only » et
+    # « no SILENT fallback ». L'exit-code reste piloté par le verdict contenu.
+    balises: list[dict[str, Any]] = []
+    balise_error: str | None = None
+    try:
+        balises = measure_balises(cur, modele_ids)
+    except psycopg2.Error as e:
+        balise_error = f"{type(e).__name__}: {str(e).strip()[:200]}"
+        sys.stderr.write(
+            "[WARN] Mesure balises D-2 échouée — report-only, le verdict de "
+            f"diversité contenu est préservé : {balise_error}\n"
+        )
+
     # 5. Global summary
     pass_count = sum(1 for m in models if m.verdict == "PASS")
     review_count = sum(1 for m in models if m.verdict == "REVIEW")
@@ -617,10 +911,10 @@ def run_check(
 
     # 6. Format output
     if output_format == "json":
-        sys.stdout.write(format_json(summary, models))
+        sys.stdout.write(format_json(summary, models, balises, balise_error))
         sys.stdout.write("\n")
     else:
-        sys.stdout.write(format_markdown(summary, models))
+        sys.stdout.write(format_markdown(summary, models, balises, balise_error))
 
     cur.close()
     conn.close()
