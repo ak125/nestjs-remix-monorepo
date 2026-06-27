@@ -67,7 +67,12 @@ export default function HeroSection() {
             Recherche par véhicule, référence OE, Type Mine ou immatriculation.
           </p>
           {/* ====== SELECTOR ====== */}
-          <div className="mx-auto mt-5 max-w-[960px] lg:mt-8">
+          {/* translate="no" — même protection que CatalogueSection : ce sélecteur
+              (onglets Véhicule/Type Mine/Référence + formulaires) re-render au clic et
+              à la frappe. La traduction navigateur re-parente ses nœuds texte → React
+              removeChild NotFoundError. Le H1 / sous-titre / trust strip restent hors
+              de ce <div>, donc traduisibles. Cf. React #11538. */}
+          <div translate="no" className="mx-auto mt-5 max-w-[960px] lg:mt-8">
             {/* ── MOBILE SELECTOR ── */}
             <div className="relative lg:hidden">
               <div className="absolute inset-x-3 top-0 h-24 rounded-[28px] bg-white/8 blur-2xl" />
