@@ -60,6 +60,16 @@
       "types": "./dist/seo-variations.d.ts",
       "import": "./dist/seo-variations.js",
       "require": "./dist/seo-variations.js"
+    },
+    "./build-r2-h1": {
+      "types": "./dist/build-r2-h1.d.ts",
+      "import": "./dist/build-r2-h1.js",
+      "require": "./dist/build-r2-h1.js"
+    },
+    "./build-r8-h1": {
+      "types": "./dist/build-r8-h1.d.ts",
+      "import": "./dist/build-r8-h1.js",
+      "require": "./dist/build-r8-h1.js"
     }
   },
   "scripts": {
