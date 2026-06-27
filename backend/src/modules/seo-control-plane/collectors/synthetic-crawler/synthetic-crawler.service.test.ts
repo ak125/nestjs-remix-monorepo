@@ -396,4 +396,138 @@ describe('SyntheticCrawlerService', () => {
     // Seuil >=300 ms : prouve sans ambiguïté que le pacing a eu lieu.
     expect(span).toBeGreaterThanOrEqual(300);
   });
+
+  it('captures meta-description + Open Graph balises (present + absent cases)', async () => {
+    const rich = 'https://www.automecanik.com/pieces/foo-1.html';
+    const bare = 'https://www.automecanik.com/pieces/bar-2.html';
+    const responses = new Map<string, MockResponse>([
+      [
+        'https://www.automecanik.com/sitemap.xml',
+        {
+          status: 200,
+          body: '<sitemap><loc>https://www.automecanik.com/sitemap-pieces-1.xml</loc></sitemap>',
+          headers: {},
+        },
+      ],
+      [
+        'https://www.automecanik.com/sitemap-pieces-1.xml',
+        {
+          status: 200,
+          body: `<url><loc>${rich}</loc></url><url><loc>${bare}</loc></url>`,
+          headers: {},
+        },
+      ],
+      [
+        rich,
+        {
+          status: 200,
+          body:
+            '<html><head><title>T</title>' +
+            '<meta name="description" content="Ma description sœur">' +
+            '<meta property="og:title" content="OG Titre">' +
+            '<meta property="og:description" content="OG Desc">' +
+            '<meta property="og:image" content="https://img.example/x.webp">' +
+            '<meta property="og:url" content="https://www.automecanik.com/pieces/foo-1.html">' +
+            '<link rel="canonical" href="/pieces/foo-1.html"></head>' +
+            '<body><h1>H</h1></body></html>',
+          headers: {},
+        },
+      ],
+      [
+        bare,
+        {
+          status: 200,
+          body: '<html><head><title>Bare</title></head><body><h1>B</h1></body></html>',
+          headers: {},
+        },
+      ],
+    ]);
+    globalThis.fetch = mockFetch(
+      responses,
+    ) as unknown as typeof globalThis.fetch;
+
+    const insertSpy = jest.fn().mockResolvedValue({ error: null });
+    const svc = buildSvc(
+      crit,
+      makeConfigService({ SEO_CP_SAMPLE_SIZE: 5, SEO_CP_CONCURRENCY: 1 }),
+      insertSpy,
+    );
+    await svc.run({ triggeredBy: 'test' });
+
+    const inserted = insertSpy.mock.calls[0][0] as Array<
+      Record<string, unknown>
+    >;
+    const richSnap = inserted.find((s) => s.url === rich)!;
+    const bareSnap = inserted.find((s) => s.url === bare)!;
+
+    // Present case — captured verbatim.
+    expect(richSnap.meta_description).toBe('Ma description sœur');
+    expect(richSnap.has_meta_description).toBe(true);
+    expect(richSnap.og_title).toBe('OG Titre');
+    expect(richSnap.og_description).toBe('OG Desc');
+    expect(richSnap.og_image).toBe('https://img.example/x.webp');
+    expect(richSnap.og_url).toBe(
+      'https://www.automecanik.com/pieces/foo-1.html',
+    );
+    expect(richSnap.has_og).toBe(true);
+    // Sitemap mode → no catalog ids.
+    expect(richSnap.pg_id).toBeNull();
+    expect(richSnap.type_id).toBeNull();
+    expect(richSnap.modele_id).toBeNull();
+
+    // Absent case — flags false, fields null (never undefined, never throws).
+    expect(bareSnap.meta_description).toBeNull();
+    expect(bareSnap.has_meta_description).toBe(false);
+    expect(bareSnap.og_title).toBeNull();
+    expect(bareSnap.has_og).toBe(false);
+  });
+
+  it('seed-list mode: crawls explicit URLs exhaustively (bypass sitemap) + carries catalog ids + skips excluded', async () => {
+    const target =
+      'https://www.automecanik.com/pieces/disque/renault/clio/1-5-dci.html';
+    const responses = new Map<string, MockResponse>([
+      [
+        target,
+        {
+          status: 200,
+          body: '<html><head><title>S</title></head><body><h1>S</h1></body></html>',
+          headers: {},
+        },
+      ],
+    ]);
+    const fetchMock = mockFetch(responses);
+    globalThis.fetch = fetchMock as unknown as typeof globalThis.fetch;
+
+    const insertSpy = jest.fn().mockResolvedValue({ error: null });
+    const svc = buildSvc(
+      crit,
+      makeConfigService({ SEO_CP_CONCURRENCY: 1 }),
+      insertSpy,
+    );
+
+    const result = await svc.run({
+      triggeredBy: 'test',
+      seedEntries: [
+        { url: target, pgId: 7, typeId: 1234, modeleId: 140004 },
+        { url: 'https://www.automecanik.com/admin/x', pgId: 9 }, // excluded → skipped
+      ],
+    });
+
+    // Sitemap is never fetched in seed-list mode.
+    const fetchedUrls = fetchMock.mock.calls.map((c) => c[0]);
+    expect(fetchedUrls).not.toContain(
+      'https://www.automecanik.com/sitemap.xml',
+    );
+    // Excluded seed dropped → exactly the one valid URL probed.
+    expect(result.sample_size_effective).toBe(1);
+    expect(fetchedUrls).toEqual([target]);
+
+    const snap = (
+      insertSpy.mock.calls[0][0] as Array<Record<string, unknown>>
+    )[0];
+    expect(snap.url).toBe(target);
+    expect(snap.pg_id).toBe(7);
+    expect(snap.type_id).toBe(1234);
+    expect(snap.modele_id).toBe(140004);
+  });
 });
