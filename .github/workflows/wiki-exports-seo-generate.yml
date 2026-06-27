@@ -21,6 +21,18 @@ name: wiki-exports-seo-generate
 # DELTA : le builder lit le wiki canon (pas la DB) → le wiki est checkouté AVANT le
 # générateur et sert de SOURCE en plus de cible ; pas de SUPABASE_* / Node / tsx.
 #
+# OÙ ÇA TOURNE (important) : `runs-on: ubuntu-latest` = runner GitHub CLOUD, PAS la
+# machine DEV. Ce job NE dépend PAS de `npm run dev` ni d'aucune machine opérateur ;
+# il clone le wiki + lance le builder dans le cloud + recommite. Il fonctionne même
+# DEV éteint (preuve : diag-canon, même runner, commit chaque nuit avec succès).
+# Le seul runner self-hosted du repo (`hetzner-prod`, labels self-hosted/production)
+# n'a PAS le label `ubuntu-latest` → aucun risque de router ce job dessus.
+#
+# AVAL (hors scope ici) : l'étape 2 (forward writer ADR-090 qui écrit exports/seo →
+# projection DB) tourne dans le backend NestJS et DOIT s'exécuter sur un process
+# TOUJOURS allumé = le conteneur PROD (49.12.233.2), JAMAIS sur DEV (`npm run dev`,
+# intermittent). À câbler séparément, sous GO owner (apply migration + GRANT + flag).
+#
 # Secrets requis (monorepo Settings → Secrets and variables → Actions) :
 #   - WIKI_REPO_TOKEN : PAT / GitHub App token avec contents:write sur
 #                       ak125/automecanik-wiki (commit des exports/).
