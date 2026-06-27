@@ -141,7 +141,7 @@ export default function CouleursConstructeursAdminPage() {
                 <div className="relative p-6 min-h-[160px] flex flex-col justify-between">
                   {/* Badge ID */}
                   <div className="absolute top-3 right-3">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/20 backdrop-blur-sm rounded-full text-white/90 text-xs font-medium">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/20 backdrop-blur-xs rounded-full text-white/90 text-xs font-medium">
                       <Car className="w-3 h-3" />
                       ID {brand.marque_id}
                     </span>

@@ -730,7 +730,7 @@ export default function VehicleDetailPage() {
                             />
 
                             {/* Badge nombre de gammes */}
-                            <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-semibold text-gray-700 shadow-sm">
+                            <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-xs px-2 py-1 rounded-full text-xs font-semibold text-gray-700 shadow-sm">
                               {family.gammes.length} pièces
                             </div>
                           </div>
@@ -1223,7 +1223,7 @@ export default function VehicleDetailPage() {
       </div>
       {/* Sticky vehicle bar - top */}
       {showStickyCta && (
-        <div className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm py-2 px-4 animate-in slide-in-from-top duration-300">
+        <div className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xs border-b border-gray-200 shadow-sm py-2 px-4 animate-in slide-in-from-top duration-300">
           <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 min-w-0">
               <Car size={20} className="text-brand shrink-0" />

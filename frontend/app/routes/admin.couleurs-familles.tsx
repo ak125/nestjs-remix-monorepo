@@ -105,7 +105,7 @@ export default function CouleursAdminPage() {
                   />
 
                   {/* Badge ID */}
-                  <div className="absolute top-3 right-3 bg-neutral-900/60 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full">
+                  <div className="absolute top-3 right-3 bg-neutral-900/60 backdrop-blur-xs text-white text-xs font-bold px-3 py-1.5 rounded-full">
                     ID: {family.mf_id}
                   </div>
 

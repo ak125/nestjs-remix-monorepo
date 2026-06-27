@@ -311,7 +311,7 @@ export const ProductStickyCTAV2Skeleton = memo(
           "min-h-[96px] md:min-h-0",
           "fixed bottom-0 left-0 right-0 z-40",
           "md:relative md:z-auto",
-          "bg-white/95 backdrop-blur-sm",
+          "bg-white/95 backdrop-blur-xs",
           "border-t border-slate-200",
           "md:border md:rounded-xl",
           "shadow-[0_-4px_20px_rgba(0,0,0,0.08)]",
@@ -387,7 +387,7 @@ const ProductStickyCTAV2 = memo(
             "fixed bottom-0 left-0 right-0 z-40",
             "md:relative md:z-auto",
             // Background - frosted glass effect
-            "bg-white/95 backdrop-blur-sm",
+            "bg-white/95 backdrop-blur-xs",
             // Borders
             "border-t border-slate-200/80",
             "md:border md:rounded-xl md:border-slate-200",

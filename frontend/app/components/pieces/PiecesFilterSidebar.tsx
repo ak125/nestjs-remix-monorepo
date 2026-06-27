@@ -96,7 +96,7 @@ export const PiecesFilterSidebar = memo(function PiecesFilterSidebar({
 
           <div className="relative z-10 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 bg-white/10 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/20">
+              <div className="w-9 h-9 bg-white/10 backdrop-blur-xs rounded-lg flex items-center justify-center border border-white/20">
                 <Package className="w-4 h-4 text-white" />
               </div>
               <div>
@@ -106,7 +106,7 @@ export const PiecesFilterSidebar = memo(function PiecesFilterSidebar({
                 </p>
               </div>
             </div>
-            <div className="bg-white/15 backdrop-blur-sm rounded-full px-2.5 py-1 border border-white/20">
+            <div className="bg-white/15 backdrop-blur-xs rounded-full px-2.5 py-1 border border-white/20">
               <span className="text-white font-bold text-xs">
                 {piecesCount}
               </span>

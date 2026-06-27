@@ -441,7 +441,7 @@ export default function AdminUsersIndex() {
         {/* Notification Toast */}
         {notification && (
           <div
-            className={`fixed top-6 right-6 z-50 min-w-[320px] p-4 rounded-xl shadow-2xl border-2 backdrop-blur-sm ${
+            className={`fixed top-6 right-6 z-50 min-w-[320px] p-4 rounded-xl shadow-2xl border-2 backdrop-blur-xs ${
               notification.type === "success"
                 ? "bg-success/10 border-green-500 text-success"
                 : "bg-destructive/10 border-red-500 text-red-900"
@@ -475,7 +475,7 @@ export default function AdminUsersIndex() {
         )}
 
         {/* Header avec actions */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white/80 backdrop-blur-xs rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-gradient-to-br from-blue-500 rounded-xl shadow-lg">

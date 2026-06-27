@@ -682,7 +682,7 @@ export default function BlogPiecesAutoMarqueModele() {
                   return (
                     <div key={fuelType} className="space-y-3">
                       {/* Badge du carburant - En-tête de groupe */}
-                      <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm py-3 border-b-2 border-gray-200">
+                      <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-xs py-3 border-b-2 border-gray-200">
                         <div className="flex items-center gap-3">
                           <span
                             className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-base font-bold ${getBadgeClass(fuelType)}`}

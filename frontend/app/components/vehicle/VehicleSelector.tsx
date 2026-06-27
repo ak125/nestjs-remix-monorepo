@@ -663,7 +663,7 @@ const VehicleSelector = memo(function VehicleSelector({
   // 🎨 Mode full (vertical) - Design moderne avec Card + onglets
   return (
     <Card
-      className={`bg-white/95 backdrop-blur-sm shadow-2xl border-0 ${className}`}
+      className={`bg-white/95 backdrop-blur-xs shadow-2xl border-0 ${className}`}
       data-nosnippet
       data-noindex
     >

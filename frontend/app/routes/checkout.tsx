@@ -1193,7 +1193,7 @@ export default function CheckoutPage() {
 
       {/* Redirecting overlay with progressive states */}
       {isRedirecting && (
-        <div className="fixed inset-0 z-50 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center">
+        <div className="fixed inset-0 z-50 bg-white/80 backdrop-blur-xs flex flex-col items-center justify-center">
           <div className="flex flex-col items-center gap-4 max-w-sm text-center px-4">
             {redirectPhase !== "retry" && (
               <svg

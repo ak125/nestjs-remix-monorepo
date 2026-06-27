@@ -121,7 +121,7 @@ export const PiecesCrossSelling = memo(function PiecesCrossSelling({
                   )}
 
                   {/* Badge overlay */}
-                  <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 text-xs font-medium text-teal-700 shadow-md">
+                  <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-xs rounded-full px-3 py-1 text-xs font-medium text-teal-700 shadow-md">
                     Voir les pièces
                   </div>
                 </div>
