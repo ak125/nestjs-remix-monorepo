@@ -601,7 +601,7 @@ export default function BrandCatalogPage() {
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmer_3s_ease-in-out_infinite]"></div>
                 <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-3 md:gap-4">
-                    <div className="bg-white/10 backdrop-blur-sm p-2.5 md:p-3 rounded-xl border border-white/20">
+                    <div className="bg-white/10 backdrop-blur-xs p-2.5 md:p-3 rounded-xl border border-white/20">
                       <Package className="w-6 h-6 md:w-8 md:h-8 text-white" />
                     </div>
                     <div>
@@ -681,7 +681,7 @@ export default function BrandCatalogPage() {
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[shimmer_3s_ease-in-out_infinite]"></div>
                 <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 md:gap-4">
                   <div className="flex items-center gap-4">
-                    <div className="bg-white/10 backdrop-blur-sm p-2.5 md:p-3 rounded-xl border border-white/20">
+                    <div className="bg-white/10 backdrop-blur-xs p-2.5 md:p-3 rounded-xl border border-white/20">
                       <TrendingUp className="w-6 h-6 md:w-8 md:h-8 text-white" />
                     </div>
                     <div>
