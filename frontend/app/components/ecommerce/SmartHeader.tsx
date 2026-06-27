@@ -81,30 +81,30 @@ export function SmartHeader({
         ═════════════════════════════════════════════════════════════════════
         • bg-secondary-500 → Navigation (Bleu acier)
         • Sticky avec shadow au scroll
-        • py-sm/md → Espacement vertical adaptatif
+        • py-2/md → Espacement vertical adaptatif
       */}
       <header
         className={`
           fixed top-0 left-0 right-0 z-50
           bg-secondary-500 text-white
           transition-all duration-300
-          ${isSticky ? "shadow-lg py-sm" : "py-md"}
+          ${isSticky ? "shadow-lg py-2" : "py-4"}
         `}
       >
-        <div className="max-w-7xl mx-auto px-md">
+        <div className="max-w-7xl mx-auto px-4">
           {/* 
             ─────────────────────────────────────────────────────────────────
             Top Bar - Desktop
             ─────────────────────────────────────────────────────────────────
           */}
-          <div className="hidden lg:flex items-center justify-between gap-lg">
+          <div className="hidden lg:flex items-center justify-between gap-6">
             {/* 
               Logo + Nom (font-heading)
-              • gap-sm → Espacement serré entre logo et texte
+              • gap-2 → Espacement serré entre logo et texte
             */}
             <a
               href="/"
-              className="flex items-center gap-sm hover:opacity-90 transition-opacity"
+              className="flex items-center gap-2 hover:opacity-90 transition-opacity"
             >
               <BrandLogo src={logoUrl} alt={companyName} className="h-8 w-8" />
               <span className="font-heading text-xl font-bold">
@@ -116,7 +116,7 @@ export function SmartHeader({
               Recherche Centrale Intelligente
               • Largeur maximale pour visibilité
               • border-secondary-400 → Contraste subtil
-              • p-sm → Padding serré input
+              • p-2 → Padding serré input
             */}
             <form onSubmit={handleSearch} className="flex-1 max-w-2xl">
               <div className="relative">
@@ -126,7 +126,7 @@ export function SmartHeader({
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Recherche par marque, modèle, moteur, référence..."
                   className="
-                    w-full py-sm px-md
+                    w-full py-2 px-4
                     bg-secondary-600 border border-secondary-400
                     text-white placeholder-secondary-200
                     font-sans text-sm
@@ -140,8 +140,8 @@ export function SmartHeader({
                 <button
                   type="submit"
                   className="
-                    absolute right-xs top-1/2 -translate-y-1/2
-                    p-sm
+                    absolute right-1 top-1/2 -translate-y-1/2
+                    p-2
                     text-secondary-200 hover:text-white
                     transition-colors
                   "
@@ -165,9 +165,9 @@ export function SmartHeader({
 
               {/* 
                 Suggestions rapides
-                • gap-xs → Micro-espacement entre badges
+                • gap-1 → Micro-espacement entre badges
               */}
-              <div className="flex items-center gap-xs mt-xs">
+              <div className="flex items-center gap-1 mt-1">
                 <span className="font-sans text-xs text-secondary-200">
                   Recherches fréquentes:
                 </span>
@@ -181,7 +181,7 @@ export function SmartHeader({
                         onSearch?.(term);
                       }}
                       className="
-                      px-xs py-xs
+                      px-1 py-1
                       bg-secondary-600 hover:bg-secondary-500
                       text-secondary-100 hover:text-white
                       font-sans text-xs
@@ -202,14 +202,14 @@ export function SmartHeader({
               ═════════════════════════════════════════════════════════════
               • bg-primary-500 → CTA Action
               • font-heading → Outfit (robustesse)
-              • p-sm → Padding compact pour header
+              • p-2 → Padding compact pour header
               • Affiche véhicule mémorisé si présent
             */}
             <button
               onClick={() => setIsVehicleModalOpen(true)}
               className="
-                flex items-center gap-sm
-                px-md py-sm
+                flex items-center gap-2
+                px-4 py-2
                 bg-primary-500 hover:bg-primary-600
                 text-white
                 font-heading font-semibold text-sm
@@ -251,14 +251,14 @@ export function SmartHeader({
 
             {/* 
               Actions secondaires
-              • gap-sm → Espacement serré entre icônes
+              • gap-2 → Espacement serré entre icônes
             */}
-            <div className="flex items-center gap-sm">
+            <div className="flex items-center gap-2">
               {/* Compte */}
               <a
                 href="/account"
                 className="
-                  p-sm
+                  p-2
                   text-secondary-100 hover:text-white
                   transition-colors
                 "
@@ -284,7 +284,7 @@ export function SmartHeader({
                 href="/cart"
                 className="
                   relative
-                  p-sm
+                  p-2
                   text-secondary-100 hover:text-white
                   transition-colors
                 "
@@ -308,8 +308,8 @@ export function SmartHeader({
                 {cartItemCount > 0 && (
                   <span
                     className="
-                    absolute -top-xs -right-xs
-                    px-xs py-xs
+                    absolute -top-1 -right-1
+                    px-1 py-1
                     min-w-[20px]
                     bg-primary-500
                     text-white
@@ -334,7 +334,7 @@ export function SmartHeader({
             {/* Menu burger */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-sm text-white"
+              className="p-2 text-white"
               aria-label="Menu"
             >
               <svg
@@ -353,7 +353,7 @@ export function SmartHeader({
             </button>
 
             {/* Logo mobile */}
-            <a href="/" className="flex items-center gap-xs">
+            <a href="/" className="flex items-center gap-1">
               <BrandLogo src={logoUrl} alt={companyName} className="h-6 w-6" />
               <span className="font-heading text-lg font-bold">
                 {companyName}
@@ -361,10 +361,10 @@ export function SmartHeader({
             </a>
 
             {/* Actions mobile */}
-            <div className="flex items-center gap-xs">
+            <div className="flex items-center gap-1">
               <button
                 onClick={() => setIsVehicleModalOpen(true)}
-                className="p-sm text-white"
+                className="p-2 text-white"
                 aria-label="Mon véhicule"
               >
                 <svg
@@ -382,7 +382,7 @@ export function SmartHeader({
                 </svg>
               </button>
 
-              <a href="/cart" className="relative p-sm text-white">
+              <a href="/cart" className="relative p-2 text-white">
                 <svg
                   className="w-6 h-6"
                   fill="none"
@@ -397,7 +397,7 @@ export function SmartHeader({
                   />
                 </svg>
                 {cartItemCount > 0 && (
-                  <span className="absolute -top-xs -right-xs px-xs min-w-[16px] bg-primary-500 text-white font-mono text-xs rounded-full flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 px-1 min-w-[16px] bg-primary-500 text-white font-mono text-xs rounded-full flex items-center justify-center">
                     {cartItemCount}
                   </span>
                 )}
@@ -406,14 +406,14 @@ export function SmartHeader({
           </div>
 
           {/* Recherche mobile (sous le header) */}
-          <form onSubmit={handleSearch} className="lg:hidden mt-sm">
+          <form onSubmit={handleSearch} className="lg:hidden mt-2">
             <input
               type="search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Recherche..."
               className="
-                w-full py-sm px-sm
+                w-full py-2 px-2
                 bg-secondary-600 border border-secondary-400
                 text-white placeholder-secondary-200
                 font-sans text-sm
@@ -428,12 +428,12 @@ export function SmartHeader({
           Navigation Secondaire (Categories)
           ═════════════════════════════════════════════════════════════════
           • bg-secondary-600 → Nuance plus foncée
-          • gap-lg → Espacement sections
+          • gap-6 → Espacement sections
         */}
         {!isSticky && (
-          <nav className="hidden lg:block bg-secondary-600 mt-sm">
-            <div className="max-w-7xl mx-auto px-md py-sm">
-              <ul className="flex items-center gap-lg font-sans text-sm">
+          <nav className="hidden lg:block bg-secondary-600 mt-2">
+            <div className="max-w-7xl mx-auto px-4 py-2">
+              <ul className="flex items-center gap-6 font-sans text-sm">
                 {[
                   "Freinage",
                   "Filtration",
@@ -472,16 +472,16 @@ export function SmartHeader({
           onClick={() => setIsMobileMenuOpen(false)}
         >
           <div
-            className="absolute left-0 top-0 bottom-0 w-80 bg-white p-lg"
+            className="absolute left-0 top-0 bottom-0 w-80 bg-white p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between mb-lg">
+            <div className="flex items-center justify-between mb-6">
               <h2 className="font-heading text-xl font-bold text-neutral-900">
                 Menu
               </h2>
               <button
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-sm"
+                className="p-2"
               >
                 <svg
                   className="w-6 h-6"
@@ -500,7 +500,7 @@ export function SmartHeader({
             </div>
 
             <nav>
-              <ul className="space-y-sm font-sans">
+              <ul className="space-y-2 font-sans">
                 {[
                   "Freinage",
                   "Filtration",
@@ -513,7 +513,7 @@ export function SmartHeader({
                   <li key={category}>
                     <a
                       href={`/category/${category.toLowerCase()}`}
-                      className="block py-sm px-md text-neutral-700 hover:bg-neutral-100 rounded-md transition-colors"
+                      className="block py-2 px-4 text-neutral-700 hover:bg-neutral-100 rounded-md transition-colors"
                     >
                       {category}
                     </a>
@@ -533,22 +533,22 @@ export function SmartHeader({
       */}
       {isVehicleModalOpen && (
         <div
-          className="fixed inset-0 z-50 bg-neutral-900/50 flex items-center justify-center p-md"
+          className="fixed inset-0 z-50 bg-neutral-900/50 flex items-center justify-center p-4"
           onClick={() => setIsVehicleModalOpen(false)}
         >
           <div
-            className="bg-white rounded-lg p-xl max-w-2xl w-full"
+            className="bg-white rounded-lg p-8 max-w-2xl w-full"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="font-heading text-2xl font-bold text-neutral-900 mb-lg">
+            <h2 className="font-heading text-2xl font-bold text-neutral-900 mb-6">
               Sélectionnez votre véhicule
             </h2>
-            <p className="font-sans text-neutral-600 mb-lg">
+            <p className="font-sans text-neutral-600 mb-6">
               Formulaire à implémenter : Marque → Modèle → Moteur → Année
             </p>
             <button
               onClick={() => setIsVehicleModalOpen(false)}
-              className="px-lg py-sm bg-neutral-200 hover:bg-neutral-300 rounded-lg font-heading transition-colors"
+              className="px-6 py-2 bg-neutral-200 hover:bg-neutral-300 rounded-lg font-heading transition-colors"
             >
               Fermer
             </button>

@@ -20,6 +20,7 @@ import {
   buildGammeImageUrl,
   buildModelImageUrl,
   buildProxyImageUrl,
+  buildEquipementierLogoUrl,
   IMAGE_CONFIG,
 } from '../../catalog/utils/image-urls.utils';
 import {
@@ -345,14 +346,22 @@ export class GammeResponseBuilderService {
     // If top_brands has more brands than __seo_equip_gamme, use top_brands instead
     const topBrands = gammeStats.top_brands || [];
     if (topBrands.length > equipementiers.length) {
-      equipementiers = topBrands
+      const selectedBrands = topBrands
         .filter((b) => b.name && b.count > 0)
-        .slice(0, 6)
-        .map((b) => ({
-          title: b.name,
-          description: `${b.count} références disponibles — équipementier ${b.top === '1' ? 'première monte (OE)' : 'qualité équivalente OE'}`,
-          image: null as string | null,
-        }));
+        .slice(0, 6);
+      // top_brands (gamme_stats) ne porte pas le logo → enrichissement depuis
+      // pieces_marque (logos réels) via buildEquipementierLogoUrl (DEFAULT_LOGO si
+      // absent). Sans ça l'image était `null` → <img> sans src → logo manquant.
+      const logoMap = await this.rpcService.getEquipementierLogos(
+        selectedBrands.map((b) => b.name),
+      );
+      equipementiers = selectedBrands.map((b) => ({
+        title: b.name,
+        description: `${b.count} références disponibles — équipementier ${b.top === '1' ? 'première monte (OE)' : 'qualité équivalente OE'}`,
+        image: buildEquipementierLogoUrl(
+          logoMap.get(b.name.toUpperCase()) ?? null,
+        ),
+      }));
     }
 
     // ✅ Utilise fonctions centralisées depuis image-urls.utils.ts

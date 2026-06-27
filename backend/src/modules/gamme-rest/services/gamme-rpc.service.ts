@@ -335,6 +335,38 @@ export class GammeRpcService extends SupabaseBaseService {
   }
 
   /**
+   * Récupère les logos équipementiers (pieces_marque.pm_logo) pour une liste de
+   * noms de marques. Le fallback `top_brands` (gamme_stats) n'expose pas le logo ;
+   * cette lookup bornée (≤ quelques marques, sur cache-miss page uniquement) permet
+   * de l'enrichir avant buildEquipementierLogoUrl (qui gère le DEFAULT_LOGO si null).
+   * @returns Map clé = UPPER(pm_name), valeur = pm_logo (filename) | null
+   */
+  async getEquipementierLogos(
+    brandNames: string[],
+  ): Promise<Map<string, string | null>> {
+    const map = new Map<string, string | null>();
+    const names = [...new Set(brandNames.filter((n): n is string => !!n))];
+    if (names.length === 0) return map;
+
+    const { data, error } = await this.supabase
+      .from('pieces_marque')
+      .select('pm_name, pm_logo')
+      .in('pm_name', names);
+
+    if (error) {
+      this.logger.warn(`⚠️ getEquipementierLogos: ${error.message}`);
+      return map;
+    }
+
+    for (const row of data ?? []) {
+      if (row.pm_name) {
+        map.set(String(row.pm_name).toUpperCase(), row.pm_logo ?? null);
+      }
+    }
+    return map;
+  }
+
+  /**
    * Récupère les codes CNIT / Type Mine pour une liste de type_ids
    * Utilisé par le response builder pour la section "Fiche technique"
    */
