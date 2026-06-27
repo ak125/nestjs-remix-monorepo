@@ -145,8 +145,8 @@ export function CartSummaryBlock({
 
         <div className="mt-4 pt-4 border-t-2 border-slate-200">
           <div className="flex justify-between items-center p-5 bg-cta rounded-xl shadow-lg">
-            <span className="font-bold text-lg text-white">Total TTC</span>
-            <span className="font-extrabold text-3xl text-white">
+            <span className="font-bold text-lg text-black">Total TTC</span>
+            <span className="font-extrabold text-3xl text-black">
               {formatPrice(total)}
             </span>
           </div>
@@ -159,10 +159,10 @@ export function CartSummaryBlock({
           aria-disabled={checkoutDisabled}
           className={`w-full py-4 px-6 bg-cta hover:bg-cta-hover rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-3 ${checkoutDisabled ? "pointer-events-none opacity-50" : ""}`}
         >
-          <span className="text-white font-bold text-lg">
+          <span className="text-black font-bold text-lg">
             Continuer vers la livraison
           </span>
-          <ArrowRight className="h-5 w-5 text-white" />
+          <ArrowRight className="h-5 w-5 text-black" />
         </Link>
 
         <div className="grid grid-cols-3 gap-3 pt-2 text-center text-xs text-slate-500">

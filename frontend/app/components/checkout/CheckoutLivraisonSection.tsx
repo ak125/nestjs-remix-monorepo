@@ -284,7 +284,7 @@ export function CheckoutLivraisonSection({
                   type="button"
                   onClick={handleEmailCheck}
                   disabled={isCheckingEmail || !guestEmail.includes("@")}
-                  className="px-6 py-3 bg-cta text-white rounded-xl font-medium hover:bg-cta-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                  className="px-6 py-3 bg-cta text-black rounded-xl font-medium hover:bg-cta-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                 >
                   {isCheckingEmail ? "..." : "Continuer"}
                 </button>
@@ -324,7 +324,7 @@ export function CheckoutLivraisonSection({
                     type="button"
                     onClick={handleInlineLogin}
                     disabled={isLoggingIn}
-                    className="px-6 py-3 bg-cta text-white rounded-xl font-medium hover:bg-cta-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-6 py-3 bg-cta text-black rounded-xl font-medium hover:bg-cta-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isLoggingIn ? "Connexion..." : "Se connecter"}
                   </button>
@@ -655,7 +655,7 @@ export function CheckoutLivraisonSection({
           <button
             type="button"
             onClick={handleContinue}
-            className="w-full py-3 bg-cta hover:bg-cta-hover text-white rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
+            className="w-full py-3 bg-cta hover:bg-cta-hover text-black rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
           >
             <span>Continuer vers le paiement</span>
             <svg

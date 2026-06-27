@@ -633,7 +633,7 @@ const VehicleSelector = memo(function VehicleSelector({
             if (selectedType) handleTypeSelect(selectedType);
           }}
           disabled={!canSearch}
-          className="w-full h-12 bg-cta rounded-2xl text-white text-[16px] font-semibold shadow-[0_12px_24px_rgba(249,115,22,0.28)] hover:bg-cta-hover active:translate-y-0 disabled:opacity-40 disabled:shadow-none"
+          className="w-full h-12 bg-cta rounded-2xl text-black text-[16px] font-semibold shadow-[0_12px_24px_rgba(249,115,22,0.28)] hover:bg-cta-hover active:translate-y-0 disabled:opacity-40 disabled:shadow-none"
         >
           Rechercher des pièces
         </Button>
