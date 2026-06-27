@@ -35,6 +35,7 @@ import {
   type SyntheticCrawlJobData,
   type SyntheticRunResult,
   type SyntheticSnapshot,
+  type SyntheticSeedEntry,
 } from '../../types';
 
 const PROD_BASE_DEFAULT = 'https://www.automecanik.com';
@@ -45,6 +46,10 @@ interface UrlCandidate {
   url: string;
   route_path: string;
   tier: TierId;
+  // Ids catalogue reportés depuis une seed-entry (null en mode sitemap).
+  pg_id?: number | null;
+  type_id?: number | null;
+  modele_id?: number | null;
 }
 
 @Injectable()
@@ -102,24 +107,36 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
       `🤖 synthetic-crawler run starting (run_id=${runId} seed=${seed} sample=${sampleSize} triggeredBy=${job.triggeredBy})`,
     );
 
-    let candidates: UrlCandidate[];
-    try {
-      candidates = await this.collectCandidates();
-    } catch (err) {
-      this.logger.error(
-        `❌ sitemap fetch failed: ${this.errMsg(err)} — aborting run`,
+    // Mode seed-list (D-0) : crawl EXHAUSTIF d'une liste explicite (R8/R2 ciblé),
+    // sinon crawl sitemap échantillonné habituel. Le seed-list bypass sitemap +
+    // stratification pour ne pas être affamé par le pooling tier0 (pieces ≫ constructeurs).
+    let sampled: UrlCandidate[];
+    if (job.seedEntries && job.seedEntries.length > 0) {
+      sampled = this.candidatesFromSeed(job.seedEntries);
+      this.logger.log(
+        `🎯 seed-list mode: ${sampled.length}/${job.seedEntries.length} URL(s) classées tier (bypass sitemap + stratification)`,
       );
-      result.skipped = 'no_sitemap';
-      result.errorMessage = this.errMsg(err);
-      return this.finalize(result, startedAtMs);
+    } else {
+      let candidates: UrlCandidate[];
+      try {
+        candidates = await this.collectCandidates();
+      } catch (err) {
+        this.logger.error(
+          `❌ sitemap fetch failed: ${this.errMsg(err)} — aborting run`,
+        );
+        result.skipped = 'no_sitemap';
+        result.errorMessage = this.errMsg(err);
+        return this.finalize(result, startedAtMs);
+      }
+      sampled = this.stratifiedSample(candidates, seed, sampleSize);
     }
-
-    const sampled = this.stratifiedSample(candidates, seed, sampleSize);
     result.sample_size_effective = sampled.length;
 
     if (sampled.length === 0) {
       this.logger.warn(
-        `⚠️ stratified sample empty (sitemap returned ${candidates.length} candidates) — aborting`,
+        job.seedEntries?.length
+          ? `⚠️ seed-list mode: aucune des ${job.seedEntries.length} URL(s) fournie(s) n'est classable (toutes excluded/malformées) — aborting`
+          : `⚠️ stratified sample empty (sitemap: 0 candidat exploitable) — aborting`,
       );
       result.skipped = 'no_sitemap';
       return this.finalize(result, startedAtMs);
@@ -215,6 +232,39 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
         out.push({ url: u, route_path: parsed.pathname, tier: tierResult });
       } catch {
         // skip malformed
+      }
+    }
+    return out;
+  }
+
+  /**
+   * Mode seed-list (D-0) : transforme une liste explicite en candidats, en
+   * reportant les ids catalogue. Classe chaque URL par tier (les exclues sont
+   * écartées AVEC un log, jamais en silence). Aucune stratification : la liste
+   * est crawlée exhaustivement (toujours sous le pacer/concurrency de probeAll).
+   */
+  private candidatesFromSeed(entries: SyntheticSeedEntry[]): UrlCandidate[] {
+    const out: UrlCandidate[] = [];
+    for (const e of entries) {
+      try {
+        const parsed = new URL(e.url);
+        const tierResult = this.criticality.classify(parsed.pathname);
+        if (tierResult === 'excluded' || tierResult === null) {
+          this.logger.warn(
+            `seed URL écartée (tier=${tierResult ?? 'null'}): ${e.url}`,
+          );
+          continue;
+        }
+        out.push({
+          url: e.url,
+          route_path: parsed.pathname,
+          tier: tierResult,
+          pg_id: e.pgId ?? null,
+          type_id: e.typeId ?? null,
+          modele_id: e.modeleId ?? null,
+        });
+      } catch {
+        this.logger.warn(`seed URL malformée, écartée: ${e.url}`);
       }
     }
     return out;
@@ -336,11 +386,37 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
         html,
         /<meta\s+[^>]*name=["']robots["'][^>]*content=["']([^"']+)["']/i,
       );
+      // Balises émises (D-0) — meta-description + Open Graph. Même convention
+      // que robots/canonical : attribut-clé puis content (ordre rendu par le
+      // meta() Remix : { name|property, content }). Regex minimal, pas de DOM.
+      const metaDescription = this.extractAttr(
+        html,
+        /<meta\s+[^>]*name=["']description["'][^>]*content=["']([^"']*)["']/i,
+      );
+      const ogTitle = this.extractAttr(
+        html,
+        /<meta\s+[^>]*property=["']og:title["'][^>]*content=["']([^"']*)["']/i,
+      );
+      const ogDescription = this.extractAttr(
+        html,
+        /<meta\s+[^>]*property=["']og:description["'][^>]*content=["']([^"']*)["']/i,
+      );
+      const ogImage = this.extractAttr(
+        html,
+        /<meta\s+[^>]*property=["']og:image["'][^>]*content=["']([^"']*)["']/i,
+      );
+      const ogUrl = this.extractAttr(
+        html,
+        /<meta\s+[^>]*property=["']og:url["'][^>]*content=["']([^"']*)["']/i,
+      );
 
       return {
         url: cand.url,
         route_path: cand.route_path,
         tier: cand.tier,
+        pg_id: cand.pg_id ?? null,
+        type_id: cand.type_id ?? null,
+        modele_id: cand.modele_id ?? null,
         http_code: res.status,
         ttfb_ms: ttfb,
         content_length: body.length,
@@ -362,6 +438,15 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
         canonical_url: canonical,
         robots_meta: robotsMeta,
         x_robots_tag: res.headers.get('x-robots-tag'),
+        meta_description: metaDescription
+          ? metaDescription.slice(0, 1000)
+          : null,
+        has_meta_description: metaDescription !== null,
+        og_title: ogTitle ? ogTitle.slice(0, 500) : null,
+        og_description: ogDescription ? ogDescription.slice(0, 1000) : null,
+        og_image: ogImage ? ogImage.slice(0, 1000) : null,
+        og_url: ogUrl ? ogUrl.slice(0, 1000) : null,
+        has_og: ogTitle !== null || ogDescription !== null,
         error_kind: null,
         error_message: null,
         run_id: runId,
@@ -379,6 +464,9 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
         url: cand.url,
         route_path: cand.route_path,
         tier: cand.tier,
+        pg_id: cand.pg_id ?? null,
+        type_id: cand.type_id ?? null,
+        modele_id: cand.modele_id ?? null,
         http_code: 0,
         ttfb_ms: Date.now() - t0,
         content_length: null,
@@ -394,6 +482,13 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
         canonical_url: null,
         robots_meta: null,
         x_robots_tag: null,
+        meta_description: null,
+        has_meta_description: null,
+        og_title: null,
+        og_description: null,
+        og_image: null,
+        og_url: null,
+        has_og: null,
         error_kind: errorKind,
         error_message: this.errMsg(err).slice(0, 500),
         run_id: runId,
