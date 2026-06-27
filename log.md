@@ -477,3 +477,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/wiki-exports-seo-generate-ci`
 - **Décision** : fix(ci): exports-seo generator — ajv-formats, untracked+deletion gate, gitignore assert (review) (+2 other commits)
 - **Sortie** : PR #1174 | commits f84c8af9d ad8e84d0a c7ee94b18
+
+## 2026-06-27 — feat/tw2-tailwind4-engine (auto)
+
+- **Branche** : `feat/tw2-tailwind4-engine`
+- **Décision** : feat(tw-2): install Tailwind CSS v4.3.1 (engine swap, @config bridge, @tailwindcss/vite)
+- **Sortie** : PR #1181 | commits fe3aef3b8
