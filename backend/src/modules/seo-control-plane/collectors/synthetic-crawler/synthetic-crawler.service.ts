@@ -63,6 +63,15 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
   }
 
   /**
+   * En-têtes de sonde : UA identifiable obligatoire (JAMAIS spoof Googlebot). La
+   * sonde ne porte plus d'en-tête d'exemption — elle s'auto-cadence (pacer,
+   * SEO_CP_MAX_RPM) pour rester sous le rate-limiter PROD (PR #1161 + PR2).
+   */
+  private buildProbeHeaders(): Record<string, string> {
+    return { 'User-Agent': SYNTHETIC_USER_AGENT };
+  }
+
+  /**
    * Exécute un run complet : sitemap fetch → stratification → probe pool →
    * INSERT batch. Retourne un résumé agrégé pour l'audit-trail BullMQ.
    */
@@ -124,15 +133,34 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
       tier1: { probed: 0, fail_5xx: 0 },
       tier2: { probed: 0, fail_5xx: 0 },
     };
+    let http429 = 0;
     for (const s of snapshots) {
       if (s.error_kind != null || s.http_code === 0) result.totals.error++;
       else if (s.http_code >= 500) result.totals.http_5xx++;
       else if (s.http_code >= 400) result.totals.http_4xx++;
       else if (s.http_code >= 300) result.totals.http_3xx++;
       else if (s.http_code >= 200) result.totals.http_2xx++;
+      if (s.http_code === 429) http429++;
       const t = tierCounts[s.tier];
       t.probed++;
       if (s.http_code >= 500) t.fail_5xx++;
+    }
+
+    // 🚨 Observabilité anti silent-fallback : la sonde s'auto-cadence (pacer,
+    // SEO_CP_MAX_RPM ≈ 90/min) pour rester sous le rate-limiter PROD. Un taux de
+    // 429 anormal signale une dérive (pacer mal configuré, paliers throttler
+    // modifiés, ou sitemap gonflé) → le monitoring L1 redevient AVEUGLE. On le rend
+    // BRUYANT (log.error, visible Sentry) plutôt que de dégrader en silence
+    // (incident 2026-06-25 : 89,7 % de 429 jamais alertés).
+    if (snapshots.length > 0) {
+      const rate429 = http429 / snapshots.length;
+      if (rate429 > 0.2) {
+        this.logger.error(
+          `🚨 synthetic-crawler: ${(rate429 * 100).toFixed(1)}% des sondes throttlées ` +
+            `(${http429}/${snapshots.length} en 429). Le self-pacing (SEO_CP_MAX_RPM) ` +
+            `ne tient plus la sonde sous le rate-limiter PROD — monitoring L1 dégradé.`,
+        );
+      }
     }
     for (const tier of ['tier0', 'tier1', 'tier2'] as TierId[]) {
       const t = tierCounts[tier];
@@ -216,7 +244,15 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
     return out;
   }
 
-  /** Probe HTTP+HTML pour chaque URL, pool de concurrency. */
+  /**
+   * Probe HTTP+HTML pour chaque URL. Pool de concurrency (borne les sockets
+   * in-flight) + PACER de débit partagé : un unique curseur monotone réserve le
+   * prochain départ pour TOUS les workers, de sorte que le débit sortant AGRÉGÉ
+   * reste sous les paliers du throttler de l'app (`app.module.ts` : short 15/1s,
+   * medium 100/60s). La sonde se comporte alors comme un client public bien élevé
+   * et ne déclenche JAMAIS de 429 — aucune exemption rate-limit n'est requise
+   * (solution structurelle vs exempter par en-tête HMAC stripable / IP qui tourne).
+   */
   private async probeAll(
     cands: UrlCandidate[],
     runId: string,
@@ -224,18 +260,51 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
   ): Promise<SyntheticSnapshot[]> {
     const concurrency = this.cfg.get<number>('SEO_CP_CONCURRENCY', 10);
     const timeoutMs = this.cfg.get<number>('SEO_CP_TIMEOUT_MS', 15_000);
+    const minIntervalMs = this.probeMinIntervalMs();
     const results: SyntheticSnapshot[] = [];
     let i = 0;
+    // Curseur monotone PARTAGÉ par tous les workers. `acquireSlot()` réserve
+    // ATOMIQUEMENT le prochain créneau (aucun await entre la lecture et l'écriture
+    // de `nextSlotAt` → exécution single-thread JS) puis avance le curseur. Débit
+    // agrégé = 1 départ / minIntervalMs, jamais un burst de `concurrency` à t0.
+    let nextSlotAt = Date.now();
+    const acquireSlot = async (): Promise<void> => {
+      const now = Date.now();
+      const slot = Math.max(now, nextSlotAt);
+      nextSlotAt = slot + minIntervalMs;
+      const wait = slot - now;
+      if (wait > 0) await this.sleep(wait);
+    };
 
     const worker = async (): Promise<void> => {
       while (i < cands.length) {
         const idx = i++;
+        await acquireSlot();
         results[idx] = await this.probe(cands[idx], runId, seed, timeoutMs);
       }
     };
 
     await Promise.all(Array.from({ length: concurrency }, () => worker()));
     return results;
+  }
+
+  /**
+   * Intervalle minimal (ms) entre deux départs de requête, tel que le débit
+   * sortant AGRÉGÉ reste strictement sous les paliers du throttler de l'app
+   * (`app.module.ts` : short 15 req/1s, medium 100 req/60s). Défauts headroomés :
+   * `SEO_CP_MAX_RPS=12` (< 15/s) et `SEO_CP_MAX_RPM=90` (< 100/min) → on retient le
+   * PLUS LENT des deux (ici 60000/90 ≈ 667 ms). Couplage assumé et documenté : si
+   * les paliers publics d'`app.module.ts` sont resserrés, baisser ces 2 knobs.
+   */
+  private probeMinIntervalMs(): number {
+    const maxRps = Math.max(1, this.cfg.get<number>('SEO_CP_MAX_RPS', 12));
+    const maxRpm = Math.max(1, this.cfg.get<number>('SEO_CP_MAX_RPM', 90));
+    return Math.max(1000 / maxRps, 60_000 / maxRpm);
+  }
+
+  /** setTimeout promisifié (pacer). */
+  private sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /** Single URL probe — fetch + HTML parse (regex minimal, no full DOM). */
@@ -251,7 +320,7 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
     try {
       const res = await fetch(cand.url, {
         signal: ctrl.signal,
-        headers: { 'User-Agent': SYNTHETIC_USER_AGENT },
+        headers: this.buildProbeHeaders(),
         redirect: 'manual',
       });
       const ttfb = Date.now() - t0;
@@ -361,7 +430,7 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
     try {
       const res = await fetch(url, {
         signal: ctrl.signal,
-        headers: { 'User-Agent': SYNTHETIC_USER_AGENT },
+        headers: this.buildProbeHeaders(),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status} on ${url}`);
       return await res.text();

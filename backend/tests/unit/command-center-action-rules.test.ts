@@ -12,6 +12,10 @@ import {
   deriveUrlNextStep,
 } from '../../src/modules/admin/services/command-center-action-rules/seo-action.rules';
 import { buildPricingRiskActions } from '../../src/modules/admin/services/command-center-action-rules/pricing-action.rules';
+import {
+  buildImprovementCandidateActions,
+  CANDIDATE_HEADROOM_THRESHOLD,
+} from '../../src/modules/admin/services/command-center-action-rules/improvement-candidate.rules';
 
 function biz(confidence: number): RawAction {
   return {
@@ -502,5 +506,56 @@ describe('pricing rules — cautious; thresholds → certification, not a guesse
     expect(sal).toBeDefined();
     expect(sal!.action_type).toBe('risk'); // confidence 72 ≥ floor → stays risk
     expect(sal!.impact).toBe(10);
+  });
+});
+
+describe('improvement-candidate rules — read-only perf ranking, headroom-driven', () => {
+  it('tight budget → emits a runtime/business candidate; healthy budget → none', () => {
+    const out = buildImprovementCandidateActions([
+      { name: 'Tight chunk, gzip', measuredBytes: 30766, limitBytes: 34000 }, // ~9.5% headroom
+      { name: 'Healthy chunk, gzip', measuredBytes: 50000, limitBytes: 100000 }, // 50% headroom
+    ]);
+    expect(out).toHaveLength(1);
+    const c = out[0];
+    expect(c.source).toBe('runtime');
+    expect(c.action_type).toBe('business');
+    expect(c.data_confidence).toBeGreaterThanOrEqual(BUSINESS_CONFIDENCE_FLOOR); // measured → stays business
+    expect(c.id).toMatch(/^perf:size:/);
+    expect(c.next_step).toContain('boucle');
+  });
+
+  it('finalizeAction keeps the candidate as business (measured confidence ≥ floor)', () => {
+    const [c] = buildImprovementCandidateActions([
+      { name: 'X, gzip', measuredBytes: 98, limitBytes: 100 },
+    ]).map(finalizeAction);
+    expect(c.action_type).toBe('business'); // not downgraded to certification
+    expect(c.details).toBeNull();
+  });
+
+  it('ranks the tightest chunk first (smaller headroom → higher score)', () => {
+    const ranked = sortActions(
+      buildImprovementCandidateActions([
+        { name: 'Looser, gzip', measuredBytes: 85, limitBytes: 100 }, // 15% headroom
+        { name: 'Tightest, gzip', measuredBytes: 99, limitBytes: 100 }, // 1% headroom
+      ]).map(finalizeAction),
+    );
+    expect(ranked[0].title).toContain('Tightest');
+  });
+
+  it('healthy budgets only → empty (honest "nothing tight"), and threshold is a named constant', () => {
+    expect(CANDIDATE_HEADROOM_THRESHOLD).toBeGreaterThan(0);
+    const out = buildImprovementCandidateActions([
+      { name: 'A, gzip', measuredBytes: 10, limitBytes: 100 },
+      { name: 'B, gzip', measuredBytes: 0, limitBytes: 100 },
+    ]);
+    expect(out).toHaveLength(0);
+  });
+
+  it('zero/invalid limit is skipped (no divide-by-zero candidate)', () => {
+    expect(
+      buildImprovementCandidateActions([
+        { name: 'Z, gzip', measuredBytes: 10, limitBytes: 0 },
+      ]),
+    ).toHaveLength(0);
   });
 });

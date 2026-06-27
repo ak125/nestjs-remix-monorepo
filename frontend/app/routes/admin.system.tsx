@@ -1,11 +1,10 @@
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
 import { AlertCircle, CheckCircle } from "lucide-react";
 import { useState, useEffect } from "react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+} from "react-router";
 import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
@@ -45,19 +44,19 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       ? await metricsResponse.json()
       : null;
 
-    return json({
+    return {
       initialHealth: healthData,
       initialMetrics: metricsData,
       timestamp: new Date().toISOString(),
-    });
+    };
   } catch (error) {
     logger.error("Erreur lors du chargement des données système:", error);
-    return json({
+    return {
       initialHealth: null,
       initialMetrics: null,
       error: "Impossible de charger les données système",
       timestamp: new Date().toISOString(),
-    });
+    };
   }
 };
 

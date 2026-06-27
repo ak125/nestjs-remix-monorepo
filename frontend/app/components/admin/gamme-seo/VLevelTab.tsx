@@ -143,7 +143,7 @@ export const VLevelTab = memo(function VLevelTab({
       {/* V2 violation warning */}
       {(v2Violations.diesel.length > 0 || v2Violations.essence.length > 0) && (
         <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-800 flex items-center gap-3">
-          <AlertCircle className="h-5 w-5 flex-shrink-0" />
+          <AlertCircle className="h-5 w-5 shrink-0" />
           <div>
             <p className="font-medium">Violation regle V2</p>
             <p className="text-sm">

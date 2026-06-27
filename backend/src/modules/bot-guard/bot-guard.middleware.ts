@@ -64,6 +64,15 @@ export class BotGuardMiddleware implements NestMiddleware {
         return next();
       }
 
+      // NOTE: the internal synthetic crawler (seo-control-plane L1) is no longer
+      // given a dedicated bypass here. It carries an identifiable UA
+      // (AutoMecanikSyntheticBot) and passes geo + behavioral scoring on its own
+      // (empirically 0 × 403 across all runs, even before any exemption existed);
+      // it self-paces (PR #1161) to stay under the rate limiter. The old HMAC /
+      // egress-IP exemption was retired (PR2) — header-survival was CDN-fragile and
+      // an IP allowlist weakens a security control for no benefit the pacer doesn't
+      // already provide.
+
       // 7. Geo block (Cloudflare CF-IPCountry header).
       if (country && (await this.botGuardService.isCountryBlocked(country))) {
         await this.botGuardService.logBlocked(

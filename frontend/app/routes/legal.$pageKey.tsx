@@ -1,17 +1,13 @@
 // app/routes/legal.$pageKey.tsx - Pages légales dynamiques
 // Fetches from ___META_TAGS_ARIANE via API with fallback to static content
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "react-router";
 import {
   Link,
   useLoaderData,
   useParams,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import Container from "~/components/layout/Container";
 import { HtmlContent } from "~/components/seo/HtmlContent";
@@ -176,7 +172,7 @@ const _availablePages = [...legalPages, ...helpPages, ...infoPages];
 // Pages qui ne doivent PAS être indexées (contenu juridique standard)
 const noIndexPages = ["cgv", "privacy", "terms", "cookies", "legal-notice"];
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   if (!data || "error" in data) {
     return [
       { title: "Page non trouvée - Automecanik" },
@@ -293,7 +289,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
       if (response.ok) {
         const dbPage: LegalPageFromDB = await response.json();
 
-        return json({
+        return {
           page: {
             key: pageKey,
             title: dbPage.h1 || dbPage.title,
@@ -304,7 +300,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
             indexable: dbPage.indexable,
           },
           fromDB: true,
-        });
+        };
       }
     } catch (error) {
       logger.warn(`Failed to fetch legal page from API for ${pageKey}:`, error);
@@ -317,7 +313,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
     throw new Response("Page légale non trouvée", { status: 404 });
   }
 
-  return json({
+  return {
     page: {
       key: staticPage.key,
       title: staticPage.title,
@@ -328,7 +324,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
       indexable: true,
     },
     fromDB: false,
-  });
+  };
 }
 
 export default function LegalPage() {

@@ -3,21 +3,6 @@
  * Interface complète pour la modération et gestion des avis
  */
 import {
-  json,
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import {
-  Form,
-  Link,
-  useLoaderData,
-  useSubmit,
-  useNavigation,
-  useRouteError,
-  isRouteErrorResponse,
-} from "@remix-run/react";
-import {
   Star,
   Plus,
   Filter,
@@ -30,6 +15,19 @@ import {
   MessageSquare,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  type MetaFunction,
+  data,
+  Form,
+  Link,
+  useLoaderData,
+  useSubmit,
+  useNavigation,
+  useRouteError,
+  isRouteErrorResponse,
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -90,7 +88,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       })),
     ]);
 
-    return json<LoaderData>({
+    return {
       reviews: reviewsData.reviews || [],
       stats,
       pagination:
@@ -104,10 +102,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
                 (reviewsData.total || 0) / (reviewsData.limit || 10),
               ),
             },
-    });
+    };
   } catch (error) {
     logger.error("Erreur lors du chargement des avis:", error);
-    return json<LoaderData>({
+    return {
       reviews: [],
       stats: {
         total: 0,
@@ -118,7 +116,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         ratingDistribution: { "5": 0, "4": 0, "3": 0, "2": 0, "1": 0 },
       },
       pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
-    });
+    };
   }
 }
 
@@ -137,20 +135,35 @@ export async function action({ request }: ActionFunctionArgs) {
         : "pending";
     try {
       await updateReviewStatus(Number(reviewId), status, request);
-      return json({ success: true });
+      return { success: true };
     } catch (error) {
-      return json(
+      return data(
         { error: "Erreur lors de la mise à jour du statut" },
         { status: 500 },
       );
     }
   }
 
-  return json({ error: "Action non reconnue" }, { status: 400 });
+  return data({ error: "Action non reconnue" }, { status: 400 });
 }
 
 export default function ReviewsPage() {
   const { reviews, stats, pagination } = useLoaderData<typeof loader>();
+  // Le payload runtime de l'endpoint stats est en camelCase (cf. backend
+  // ReviewService.getReviewStats). Le type snake_case `ReviewStats` du service
+  // frontend est obsolète ; on sélectionne ici la forme camelCase réellement
+  // servie — la branche snake_case ne se produit jamais à l'exécution.
+  const statsView =
+    "averageRating" in stats
+      ? stats
+      : {
+          total: stats.total_reviews,
+          pending: stats.pending_reviews,
+          approved: stats.approved_reviews,
+          rejected: stats.rejected_reviews,
+          averageRating: stats.average_rating,
+          ratingDistribution: stats.rating_distribution,
+        };
   const submit = useSubmit();
   const navigation = useNavigation();
   const [selectedReviews, setSelectedReviews] = useState<number[]>([]);
@@ -264,7 +277,7 @@ export default function ReviewsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <div className="w-8 h-8 bg-muted rounded-md flex items-center justify-center">
                 <MessageSquare className="w-5 h-5 text-blue-600" />
               </div>
@@ -272,7 +285,7 @@ export default function ReviewsPage() {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Total</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {stats.total}
+                {statsView.total}
               </p>
             </div>
           </div>
@@ -280,7 +293,7 @@ export default function ReviewsPage() {
 
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <div className="w-8 h-8 bg-warning/10 rounded-md flex items-center justify-center">
                 <Star className="w-5 h-5 text-yellow-600" />
               </div>
@@ -289,9 +302,9 @@ export default function ReviewsPage() {
               <p className="text-sm font-medium text-gray-500">Moyenne</p>
               <div className="flex items-center">
                 <p className="text-2xl font-semibold text-gray-900 mr-2">
-                  {stats.averageRating.toFixed(1)}
+                  {statsView.averageRating.toFixed(1)}
                 </p>
-                {renderStars(Math.round(stats.averageRating))}
+                {renderStars(Math.round(statsView.averageRating))}
               </div>
             </div>
           </div>
@@ -299,7 +312,7 @@ export default function ReviewsPage() {
 
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <div className="w-8 h-8 bg-warning/10 rounded-md flex items-center justify-center">
                 <span className="text-sm font-semibold text-yellow-600">
                   ⏳
@@ -309,7 +322,7 @@ export default function ReviewsPage() {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">En attente</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {stats.pending}
+                {statsView.pending}
               </p>
             </div>
           </div>
@@ -317,7 +330,7 @@ export default function ReviewsPage() {
 
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <div className="w-8 h-8 bg-success/10 rounded-md flex items-center justify-center">
                 <Check className="w-5 h-5 text-green-600" />
               </div>
@@ -325,7 +338,7 @@ export default function ReviewsPage() {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Approuvés</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {stats.approved}
+                {statsView.approved}
               </p>
             </div>
           </div>
@@ -333,7 +346,7 @@ export default function ReviewsPage() {
 
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <div className="w-8 h-8 bg-destructive/10 rounded-md flex items-center justify-center">
                 <X className="w-5 h-5 text-red-600" />
               </div>
@@ -341,7 +354,7 @@ export default function ReviewsPage() {
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-500">Rejetés</p>
               <p className="text-2xl font-semibold text-gray-900">
-                {stats.rejected}
+                {statsView.rejected}
               </p>
             </div>
           </div>

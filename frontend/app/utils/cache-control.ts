@@ -1,4 +1,4 @@
-import type { HeadersFunction } from "@remix-run/node";
+import { type HeadersFunction } from "react-router";
 
 const NO_STORE = "no-cache, no-store, must-revalidate";
 
@@ -40,8 +40,7 @@ export function buildCacheHeaders(
       return out;
     }
 
-    out["Cache-Control"] =
-      loaderHeaders?.get("Cache-Control") ?? successPolicy;
+    out["Cache-Control"] = loaderHeaders?.get("Cache-Control") ?? successPolicy;
     const xRobots = loaderHeaders?.get("X-Robots-Tag");
     if (xRobots) out["X-Robots-Tag"] = xRobots;
     return out;

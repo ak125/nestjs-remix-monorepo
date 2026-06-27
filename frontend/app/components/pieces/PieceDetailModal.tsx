@@ -358,7 +358,7 @@ export const PieceDetailModal = memo(function PieceDetailModal({
                                       className="bg-white rounded-lg px-4 py-3 border border-gray-200"
                                     >
                                       <div className="flex justify-between items-start gap-3">
-                                        <span className="text-sm font-semibold text-gray-700 flex-shrink-0">
+                                        <span className="text-sm font-semibold text-gray-700 shrink-0">
                                           {critere.name}
                                         </span>
                                         <span className="text-sm text-gray-900 font-medium text-right">
@@ -396,7 +396,7 @@ export const PieceDetailModal = memo(function PieceDetailModal({
                                 className="bg-white rounded-lg px-4 py-3 hover:shadow-md transition-shadow border border-gray-200"
                               >
                                 <div className="flex justify-between items-start gap-3">
-                                  <span className="text-sm font-semibold text-gray-700 flex-shrink-0">
+                                  <span className="text-sm font-semibold text-gray-700 shrink-0">
                                     {critere.name}
                                   </span>
                                   <span className="text-sm text-gray-900 font-medium text-right">

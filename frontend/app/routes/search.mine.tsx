@@ -5,20 +5,17 @@
  * Route: /search/mine
  */
 
+import { Search, Car, AlertCircle, ArrowRight } from "lucide-react";
+import { useState } from "react";
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import {
   useLoaderData,
   Form,
   Link,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { Search, Car, AlertCircle, ArrowRight } from "lucide-react";
-import { useState } from "react";
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
@@ -81,7 +78,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const mineCode = url.searchParams.get("code")?.trim();
 
   if (!mineCode) {
-    return json<LoaderData>({ searchTerm: "" });
+    return { searchTerm: "" };
   }
 
   try {
@@ -102,10 +99,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
       logger.error("API Error:", response.status, errorText);
 
       if (response.status === 404) {
-        return json<LoaderData>({
+        return {
           searchTerm: mineCode,
           error: "Aucun véhicule trouvé pour ce code mine",
-        });
+        };
       }
 
       throw new Error(`Erreur API: ${response.status}`);
@@ -115,22 +112,22 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     // La réponse de notre API est un VehicleResponseDto
     if (result.data && result.data.length > 0) {
-      return json<LoaderData>({
+      return {
         vehicle: result.data[0], // Premier résultat
         searchTerm: mineCode,
-      });
+      };
     } else {
-      return json<LoaderData>({
+      return {
         searchTerm: mineCode,
         error: "Aucun véhicule trouvé pour ce code mine",
-      });
+      };
     }
   } catch (error) {
     logger.error("Search error:", error);
-    return json<LoaderData>({
+    return {
       searchTerm: mineCode,
       error: "Erreur lors de la recherche. Veuillez réessayer.",
-    });
+    };
   }
 }
 

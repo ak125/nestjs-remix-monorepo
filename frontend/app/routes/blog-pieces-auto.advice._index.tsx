@@ -6,20 +6,17 @@
  * Intention : Découvrir des conseils pratiques
  */
 
+import React, { useState, useMemo } from "react";
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import {
   useLoaderData,
   Link,
   useSearchParams,
   useNavigation,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import React, { useState, useMemo } from "react";
+} from "react-router";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 
@@ -88,7 +85,7 @@ interface LoaderData {
   error?: string;
 }
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   const search = data?.search || "";
   const total = data?.total || 0;
 
@@ -197,7 +194,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     const endTime = Date.now();
     logger.log(`[PERF] Advice loader completed in ${endTime - startTime}ms`);
 
-    return json({
+    return {
       articles,
       total: data.data?.total || 0,
       page: data.data?.page || 1,
@@ -209,10 +206,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       popularTags,
       stats,
       success: true,
-    });
+    };
   } catch (error) {
     logger.error("[ERROR] Advice loader failed:", error);
-    return json({
+    return {
       articles: [],
       total: 0,
       page: 1,
@@ -225,7 +222,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       stats: { totalViews: 0, avgReadingTime: 3, totalArticles: 0 },
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
-    });
+    };
   }
 };
 
@@ -613,7 +610,6 @@ export default function AdviceIndex() {
     <div className="min-h-screen bg-gray-50">
       {/* Navigation Blog */}
       <BlogNavigation />
-
       {/* Breadcrumb */}
       <div className="container mx-auto px-4 pt-6">
         <PublicBreadcrumb
@@ -623,7 +619,6 @@ export default function AdviceIndex() {
           ]}
         />
       </div>
-
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-blue-600 to-blue-800 text-white">
         <div className="container mx-auto px-4 py-16">
@@ -663,7 +658,6 @@ export default function AdviceIndex() {
           </div>
         </div>
       </section>
-
       <div className="container mx-auto px-4 py-8">
         {/* Search and Filters */}
         <Card className="mb-8">
@@ -977,7 +971,6 @@ export default function AdviceIndex() {
           </Card>
         )}
       </div>
-
       <style
         dangerouslySetInnerHTML={{
           __html: `

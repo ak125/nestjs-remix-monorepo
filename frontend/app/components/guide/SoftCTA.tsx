@@ -4,8 +4,8 @@
  * variant="inline" → blue discrete (for use in article body)
  */
 
-import { Link } from "@remix-run/react";
 import { ArrowRight } from "lucide-react";
+import { Link } from "react-router";
 
 interface SoftCTAProps {
   label: string;

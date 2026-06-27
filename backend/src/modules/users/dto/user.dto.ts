@@ -65,7 +65,11 @@ export const UserFiltersSchema = z.object({
 // ============================================================================
 
 export type User = z.infer<typeof UserSchema>;
-export type CreateUserDto = z.infer<typeof CreateUserSchema>;
+// Creation payload = the PRE-default input shape: fields carrying `.default()`
+// (country/isPro/isCompany/isActive/level) are optional for callers. Zod 4's
+// `z.infer` (output) makes defaulted fields required; `z.input` is the correct
+// type for a creation DTO and preserves the prior call contract.
+export type CreateUserDto = z.input<typeof CreateUserSchema>;
 export type UpdateUserDto = z.infer<typeof UpdateUserSchema>;
 export type UserFilters = z.infer<typeof UserFiltersSchema>;
 

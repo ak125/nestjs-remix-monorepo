@@ -2,6 +2,14 @@
 // OpenTelemetry-based instrumentation can patch http/fs/express before any
 // other module loads.
 //
+// ── SINGLE SERVER SDK OWNER — DO NOT DUPLICATE IN THE SSR BUNDLE. ──
+// @sentry/nestjs is the ONLY server-side SDK allowed to call Sentry.init().
+// The React Router SSR bundle (frontend/app/entry.server.tsx) initializes NO
+// server SDK; it reports through AppLoadContext.serverObservability (the pont in
+// backend/src/remix/remix.controller.ts). Reintroducing an init in the ESM SSR
+// bundle caused the PROD dual-realm server.emit recursion incident
+// (RangeError: Maximum call stack size — #1106 / getsentry/sentry-javascript#21696).
+//
 // Loads dotenv internally so `process.env.SENTRY_DSN` is populated before
 // Sentry.init runs. main.ts can therefore drop its own `import 'dotenv/config'`.
 //
@@ -73,3 +81,47 @@ if (dsn) {
     beforeSend: sanitizeSentryEvent,
   });
 }
+
+// Defense-in-depth — a single unhandled promise rejection must NOT take down the
+// whole server. Several background paths fire-and-forget async work (cache warms,
+// scheduled refreshes, web-vitals beacons). When one rejects — e.g. an RLS-blocked
+// write in READ_ONLY PREPROD (anon key, ADR-028 Option D), or a transient RPC error
+// — Node's default (`--unhandled-rejections=throw`) exits the process with code 1.
+// On the PREPROD container's `restart: always` that became a ~5-min crash-loop that
+// intermittently broke the E2E Smoke gate (:3200 unreachable mid-suite →
+// ERR_CONNECTION_REFUSED / socket hang up). Log + report to Sentry and keep serving:
+// the failing operation still fails, the server survives. NOT a silent fallback —
+// every rejection is surfaced (stderr + Sentry), which also reveals the culprit path
+// for a follow-up source fix. Registered here (instrument.ts is imported first, before
+// bootstrap) so it covers rejections from the very start. uncaughtException is left to
+// Node's default — a sync uncaught error genuinely leaves the process in an undefined
+// state and should still terminate.
+process.on('unhandledRejection', (reason: unknown) => {
+  // eslint-disable-next-line no-console
+  console.error('[unhandledRejection] non-fatal — logged + reported:', reason);
+  try {
+    Sentry.captureException(reason);
+  } catch {
+    // Sentry not initialised (no DSN) — the stderr line above is the record.
+  }
+});
+
+// uncaughtException is genuinely fatal — a synchronous error left the process in an
+// undefined state, so we keep Node's "exit" semantics (NOT a silent fallback). But we
+// first capture + flush to Sentry so the crash is finally observable: until now these
+// exits produced no recognisable marker in the container logs, which is exactly why the
+// ~5-min restart cause stayed invisible. Log → report → best-effort flush → exit(1).
+process.on('uncaughtException', (err: Error) => {
+  // eslint-disable-next-line no-console
+  console.error('[uncaughtException] fatal — logged + reported, exiting:', err);
+  try {
+    Sentry.captureException(err);
+    // Give Sentry up to 2s to ship the event, then exit regardless.
+    void Sentry.close(2000).then(
+      () => process.exit(1),
+      () => process.exit(1),
+    );
+  } catch {
+    process.exit(1);
+  }
+});

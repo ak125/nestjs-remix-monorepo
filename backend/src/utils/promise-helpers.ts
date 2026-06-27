@@ -10,10 +10,14 @@ export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-/** Passport 0.7 + connect-redis 5.x compatibility wrapper.
- *  Patches session.regenerate/save to no-ops during req.login()
- *  to prevent Passport's internal regenerate from breaking the session store.
- *  Caller must handle regenerate and save explicitly. */
+/** Passport 0.7 session-fixation workaround (session-store-version-independent).
+ *  Passport >=0.6 calls session.regenerate() inside req.login() to harden against
+ *  session fixation — but that drops the pre-login (guest cart) session and its id.
+ *  This patches session.regenerate/save to no-ops *during* req.login() so the caller
+ *  can regenerate + save explicitly and preserve the guest cart on login.
+ *  Independent of the session-store impl: works identically with connect-redis 5
+ *  (ioredis) and connect-redis 9 (node-redis) — it only touches express-session
+ *  Session methods, never the Store. See PR-9e.2. */
 export function promisifyLoginNoRegenerate(
   req: Express.Request,
   user: object,

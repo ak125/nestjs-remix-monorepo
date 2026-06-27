@@ -10,9 +10,9 @@
 
 :root {
   /* Valeurs par défaut (fallback) */
-  --brand-primary: var(--color-primary-600, #3b82f6);
-  --brand-primary-light: var(--color-primary-100, #dbeafe);
-  --brand-primary-dark: var(--color-primary-700, #1d4ed8);
+  --brand-primary: var(--am-color-primary-600, #3b82f6);
+  --brand-primary-light: var(--am-color-primary-100, #dbeafe);
+  --brand-primary-dark: var(--am-color-primary-700, #1d4ed8);
 }
 
 /* Marques françaises */

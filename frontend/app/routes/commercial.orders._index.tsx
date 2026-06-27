@@ -4,18 +4,16 @@
  * Navigation vers /commercial/orders/:id pour le detail
  */
 
+import { useCallback, useState } from "react";
 import {
-  json,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
-} from "@remix-run/node";
-import {
+  data,
   useActionData,
   useLoaderData,
   useNavigate,
   useSearchParams,
-} from "@remix-run/react";
-import { useCallback, useState } from "react";
+} from "react-router";
 import { toast } from "sonner";
 
 import { Alert } from "~/components/ui/alert";
@@ -46,7 +44,7 @@ export const meta = () => [
 export const action = async ({ request, context }: ActionFunctionArgs) => {
   const user = await getOptionalUser({ context });
   if (!user || !user.level || user.level < 3) {
-    return json<ActionData>({ error: "Acces refuse" }, { status: 403 });
+    return data({ error: "Acces refuse" }, { status: 403 });
   }
 
   const permissions = await loadUserPermissions(
@@ -66,26 +64,17 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
     switch (intent) {
       case "markPaid":
         if (!permissions.canMarkPaid)
-          return json<ActionData>(
-            { error: "Permission refusee" },
-            { status: 403 },
-          );
+          return data({ error: "Permission refusee" }, { status: 403 });
         apiUrl = `http://127.0.0.1:3000/api/admin/orders/${orderId}/confirm-payment`;
         break;
       case "validate":
         if (!permissions.canValidate)
-          return json<ActionData>(
-            { error: "Permission refusee" },
-            { status: 403 },
-          );
+          return data({ error: "Permission refusee" }, { status: 403 });
         apiUrl = `http://127.0.0.1:3000/api/admin/orders/${orderId}/validate`;
         break;
       case "ship":
         if (!permissions.canShip)
-          return json<ActionData>(
-            { error: "Permission refusee" },
-            { status: 403 },
-          );
+          return data({ error: "Permission refusee" }, { status: 403 });
         apiUrl = `http://127.0.0.1:3000/api/admin/orders/${orderId}/ship`;
         body = JSON.stringify({
           trackingNumber: formData.get("trackingNumber"),
@@ -93,23 +82,17 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
         break;
       case "deliver":
         if (!permissions.canDeliver)
-          return json<ActionData>(
-            { error: "Permission refusee" },
-            { status: 403 },
-          );
+          return data({ error: "Permission refusee" }, { status: 403 });
         apiUrl = `http://127.0.0.1:3000/api/admin/orders/${orderId}/deliver`;
         break;
       case "cancel":
         if (!permissions.canCancel)
-          return json<ActionData>(
-            { error: "Permission refusee" },
-            { status: 403 },
-          );
+          return data({ error: "Permission refusee" }, { status: 403 });
         apiUrl = `http://127.0.0.1:3000/api/admin/orders/${orderId}/cancel`;
         body = JSON.stringify({ reason: formData.get("reason") });
         break;
       default:
-        return json<ActionData>({ error: "Action inconnue" }, { status: 400 });
+        return data({ error: "Action inconnue" }, { status: 400 });
     }
 
     const headers: Record<string, string> = { Cookie: cookie };
@@ -118,18 +101,15 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
     const res = await fetch(apiUrl, { method, headers, body });
     if (!res.ok) {
       const err = await res.json().catch(() => ({ message: "Erreur" }));
-      return json<ActionData>(
-        { error: err.message || "Erreur" },
-        { status: 500 },
-      );
+      return data({ error: err.message || "Erreur" }, { status: 500 });
     }
 
-    return json<ActionData>({
+    return {
       success: true,
       message: `Action "${intent}" executee`,
-    });
+    };
   } catch {
-    return json<ActionData>({ error: "Erreur serveur" }, { status: 500 });
+    return data({ error: "Erreur serveur" }, { status: 500 });
   }
 };
 
@@ -227,7 +207,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
 
     const totalPages = Math.ceil(totalFromApi / limit);
 
-    return json<LoaderData>({
+    return {
       orders,
       stats,
       filters: {
@@ -242,10 +222,10 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
       totalPages,
       permissions,
       user: { level: user.level, email: user.email, role: userRole },
-    });
+    };
   } catch (error) {
     logger.error("Loader error:", error);
-    return json<LoaderData>({
+    return {
       orders: [],
       stats: {
         totalOrders: 0,
@@ -267,7 +247,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
       totalPages: 0,
       permissions,
       user: { level: user.level || 0, email: user.email, role: userRole },
-    });
+    };
   }
 };
 

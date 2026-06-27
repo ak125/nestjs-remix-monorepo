@@ -8,12 +8,6 @@
  */
 
 import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, useSearchParams, Form, Link } from "@remix-run/react";
-import {
   Package,
   AlertTriangle,
   TrendingDown,
@@ -24,6 +18,14 @@ import {
   Search,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  useSearchParams,
+  Form,
+  Link,
+} from "react-router";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 import { Badge } from "../components/ui/badge";
@@ -97,7 +99,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const dashboardResponse = await fetch(dashboardUrl.toString());
     const dashboardData = await dashboardResponse.json();
 
-    return json({
+    return {
       stats: statsData.success
         ? statsData.data
         : {
@@ -111,10 +113,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
       currentPage: page,
       limit,
       filters: { search, available, minPrice, maxPrice },
-    });
+    };
   } catch (error) {
     logger.error("Erreur chargement stock commercial:", error);
-    return json({
+    return {
       stats: {
         availableItems: 0,
         unavailableItems: 0,
@@ -126,7 +128,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       currentPage: 1,
       limit: 20,
       filters: { search: "", available: "", minPrice: "", maxPrice: "" },
-    });
+    };
   }
 }
 

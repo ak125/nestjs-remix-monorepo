@@ -31,7 +31,7 @@ export const RagExtractionResultSchema = z.object({
   contentHash: z.string().min(1),
   extractedText: z.string(),
   detectedLanguage: z.string().optional(),
-  metadata: z.record(z.unknown()),
+  metadata: z.record(z.string(), z.unknown()),
   warnings: z.array(z.string()),
   extractionQualityScore: z.number().min(0).max(1),
 });

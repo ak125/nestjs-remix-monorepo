@@ -1,4 +1,3 @@
-import { Link, useLocation } from "@remix-run/react";
 import {
   Home,
   ShoppingCart,
@@ -14,6 +13,7 @@ import {
 } from "lucide-react";
 import * as React from "react";
 import { memo } from "react";
+import { Link, useLocation } from "react-router";
 
 import { Badge } from "~/components/ui/badge";
 import { Button } from "./ui/button";
@@ -110,7 +110,7 @@ export const CommercialSidebar = memo(function CommercialSidebar({
       {/* Sidebar overlay for mobile */}
       {isOpen && (
         <div
-          className="lg:hidden fixed inset-0 z-40 bg-neutral-900 bg-opacity-50"
+          className="lg:hidden fixed inset-0 z-40 bg-neutral-900/50"
           onClick={() => setIsOpen(false)}
         />
       )}
@@ -206,7 +206,7 @@ export const CommercialSidebar = memo(function CommercialSidebar({
                   <div className="flex items-center">
                     <Icon
                       className={cn(
-                        "mr-3 h-5 w-5 flex-shrink-0",
+                        "mr-3 h-5 w-5 shrink-0",
                         active
                           ? "text-blue-600"
                           : "text-gray-400 group-hover:text-gray-600",

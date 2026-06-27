@@ -4,14 +4,6 @@
  */
 
 import {
-  json,
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  redirect,
-  type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, Link, Form, useNavigation } from "@remix-run/react";
-import {
   MessageSquare,
   Users,
   Clock,
@@ -27,6 +19,16 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  redirect,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+  Form,
+  useNavigation,
+} from "react-router";
 import { Alert } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
@@ -183,14 +185,14 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
 
       logger.log(`✅ ${messagesData.messages?.length || 0} messages récupérés`);
 
-      return json({
+      return {
         messages: messagesData.messages || [],
         total: messagesData.total || 0,
         page: messagesData.page || 1,
         totalPages: messagesData.totalPages || 1,
         stats: statsData || { total: 0, open: 0, closed: 0 },
         fallbackMode: false,
-      } as MessageData);
+      } as MessageData;
     } else {
       logger.error(
         "❌ Erreur API messages:",
@@ -198,7 +200,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         statsResponse.status,
       );
 
-      return json({
+      return {
         messages: [],
         total: 0,
         page: 1,
@@ -206,12 +208,12 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         stats: { total: 0, open: 0, closed: 0 },
         error: `Erreur API (${messagesResponse.status})`,
         fallbackMode: true,
-      } as MessageData);
+      } as MessageData;
     }
   } catch (error: unknown) {
     logger.error("❌ Erreur lors du chargement des messages:", error);
 
-    return json({
+    return {
       messages: [],
       total: 0,
       page: 1,
@@ -219,7 +221,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       stats: { total: 0, open: 0, closed: 0 },
       error: "Erreur de connexion à l'API messages",
       fallbackMode: true,
-    } as MessageData);
+    } as MessageData;
   }
 }
 
@@ -311,7 +313,7 @@ export default function AdminMessages() {
 
       {/* Indicateur de source */}
       <div
-        className={`mb-6 p-4 rounded-lg ${ fallbackMode ? "border-warning bg-warning/10" : "border-success bg-success/10" }`}
+        className={`mb-6 p-4 rounded-lg ${fallbackMode ? "border-warning bg-warning/10" : "border-success bg-success/10"}`}
       >
         <div className="flex items-center gap-2">
           {fallbackMode ? (
@@ -625,7 +627,7 @@ export default function AdminMessages() {
 
       {/* Modal de détail du message */}
       {selectedMessage && (
-        <div className="fixed inset-0 bg-neutral-900 bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-neutral-900/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900">

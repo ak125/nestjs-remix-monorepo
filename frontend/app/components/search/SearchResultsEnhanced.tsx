@@ -280,7 +280,7 @@ export const SearchResultsEnhanced = memo(function SearchResultsEnhanced({
             <CardContent className="p-4">
               <div className="flex gap-4">
                 {/* Image - ✅ OPTIMISÉE WEBP */}
-                <div className="flex-shrink-0 w-32 h-32 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg overflow-hidden flex items-center justify-center group-hover:from-gray-200 group-hover:to-gray-300 transition-colors">
+                <div className="shrink-0 w-32 h-32 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg overflow-hidden flex items-center justify-center group-hover:from-gray-200 group-hover:to-gray-300 transition-colors">
                   {item.image ? (
                     <img
                       src={optimizeImageUrl(item.image, 300)}

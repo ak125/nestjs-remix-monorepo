@@ -92,7 +92,7 @@ export function TableOfContents({
               >
                 <span className="flex items-center gap-2">
                   {isActive && (
-                    <ChevronRight className="w-4 h-4 flex-shrink-0" />
+                    <ChevronRight className="w-4 h-4 shrink-0" />
                   )}
                   <span className="line-clamp-2">{section.title}</span>
                 </span>

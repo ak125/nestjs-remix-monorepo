@@ -2,7 +2,6 @@
  * Table Commandes - avec navigation vers detail
  */
 
-import { useNavigate } from "@remix-run/react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -15,6 +14,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { memo } from "react";
+import { useNavigate } from "react-router";
 
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";

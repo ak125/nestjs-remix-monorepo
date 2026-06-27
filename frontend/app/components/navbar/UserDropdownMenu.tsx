@@ -13,7 +13,6 @@
  * - Responsive design
  */
 
-import { Link } from "@remix-run/react";
 import {
   Bell,
   LogOut,
@@ -24,6 +23,7 @@ import {
   User,
 } from "lucide-react";
 import { memo } from "react";
+import { Link } from "react-router";
 
 import { Badge } from "../ui/badge";
 import {

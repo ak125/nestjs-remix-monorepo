@@ -101,7 +101,7 @@ export function ResultCatalog({ catalogGuard }: Props) {
                       {g.confidence}
                     </Badge>
                   </div>
-                  <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-blue-500 flex-shrink-0" />
+                  <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-blue-500 shrink-0" />
                 </a>
               ))}
             </div>

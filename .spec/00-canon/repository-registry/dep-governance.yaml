@@ -167,13 +167,13 @@ dependencies:
     owner: "@ak125"
 
   # ── observability (3 entries — D10) ──
-  - id: "npm:@sentry/nestjs@^10.51.0"
+  - id: "npm:@sentry/nestjs@10.59.0"
     name: "@sentry/nestjs"
     family: observability
     domain: D10
     owner: "@ak125"
-  - id: "npm:@sentry/remix@^10.51.0"
-    name: "@sentry/remix"
+  - id: "npm:@sentry/react@10.59.0"
+    name: "@sentry/react"
     family: observability
     domain: D10
     owner: "@ak125"

@@ -1,17 +1,14 @@
 // app/routes/blog-pieces-auto.auto.$marque.tsx
+import { ArrowLeft, Calendar, Car } from "lucide-react";
+import * as React from "react";
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import {
   Link,
   useLoaderData,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { ArrowLeft, Calendar, Car } from "lucide-react";
-import * as React from "react";
+} from "react-router";
 
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
@@ -152,11 +149,11 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
         }
       : null;
 
-    return json<LoaderData>({
+    return {
       brand,
       models: mappedModels,
       metadata,
-    });
+    };
   } catch (e) {
     logger.error("Erreur loader marque:", e);
     if (e instanceof Response) throw e;
@@ -169,7 +166,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
 /* ===========================
    Meta
 =========================== */
-export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data, location }) => {
   const metadata = data?.metadata;
   const brand = data?.brand;
   const modelsCount = data?.models?.length ?? 0;
@@ -611,7 +608,7 @@ export default function BlogPiecesAutoMarque() {
 
                         {/* Période + Badge nouveau */}
                         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
-                          <Calendar className="w-4 h-4 flex-shrink-0" />
+                          <Calendar className="w-4 h-4 shrink-0" />
                           <span className="font-semibold">
                             ({model.yearFrom} - {model.yearTo || "aujourd'hui"})
                           </span>

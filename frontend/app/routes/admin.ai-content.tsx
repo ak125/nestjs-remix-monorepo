@@ -1,5 +1,5 @@
-import { type MetaFunction } from "@remix-run/node";
 import { useState, useEffect } from "react";
+import { type MetaFunction } from "react-router";
 import { AiContentGenerator } from "~/components/ai/AiContentGenerator";
 import { ProductDescriptionGenerator } from "~/components/ai/ProductDescriptionGenerator";
 import { SEOMetaGenerator } from "~/components/ai/SEOMetaGenerator";
@@ -97,7 +97,7 @@ export default function AiContentDashboard() {
         {/* Info Banner */}
         <div className="mb-6 rounded-lg bg-blue-50 p-4 border border-blue-200">
           <div className="flex">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <svg
                 className="h-5 w-5 text-blue-400"
                 viewBox="0 0 20 20"
@@ -344,7 +344,7 @@ function InfoCard({
   return (
     <div className="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6">
       <div className="flex items-center">
-        <div className="flex-shrink-0">
+        <div className="shrink-0">
           <span className="text-3xl">{icon}</span>
         </div>
         <div className="ml-5 w-0 flex-1">
@@ -382,7 +382,7 @@ function SetupStep({
 
   return (
     <div className="flex items-start">
-      <div className="flex-shrink-0">
+      <div className="shrink-0">
         <span className="flex h-8 w-8 items-center justify-center rounded-full bg-yellow-200 text-sm font-semibold text-yellow-900">
           {number}
         </span>

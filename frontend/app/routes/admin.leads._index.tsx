@@ -6,13 +6,17 @@
  */
 
 import {
-  json,
+  LEAD_TRANSITIONS,
+  isValidLeadTransition,
+  type LeadStatus,
+} from "@repo/database-types";
+import { Bell, Filter, ChevronLeft, ChevronRight } from "lucide-react";
+import {
   redirect,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import {
+  data,
   useLoaderData,
   Form,
   useNavigation,
@@ -20,13 +24,7 @@ import {
   useRouteError,
   isRouteErrorResponse,
   Link,
-} from "@remix-run/react";
-import { Bell, Filter, ChevronLeft, ChevronRight } from "lucide-react";
-import {
-  LEAD_TRANSITIONS,
-  isValidLeadTransition,
-  type LeadStatus,
-} from "@repo/database-types";
+} from "react-router";
 
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { logger } from "~/utils/logger";
@@ -66,7 +64,10 @@ type LoaderData = {
 
 const STATUS_LABEL: Record<
   LeadStatus,
-  { label: string; variant: "default" | "secondary" | "destructive" | "outline" }
+  {
+    label: string;
+    variant: "default" | "secondary" | "destructive" | "outline";
+  }
 > = {
   new: { label: "Nouveau", variant: "default" },
   contacted: { label: "Contacté", variant: "secondary" },
@@ -107,7 +108,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     });
 
     if (res.status === 401 || res.status === 403) {
-      throw json(
+      throw data(
         { error: "Authentification admin requise" },
         { status: res.status },
       );
@@ -115,11 +116,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     if (!res.ok) {
       const errText = await res.text().catch(() => "");
-      logger.error("admin.leads loader failed", { status: res.status, errText });
-      throw json(
-        { error: `API leads failed: ${res.status}` },
-        { status: 502 },
-      );
+      logger.error("admin.leads loader failed", {
+        status: res.status,
+        errText,
+      });
+      throw data({ error: `API leads failed: ${res.status}` }, { status: 502 });
     }
 
     const body = (await res.json()) as {
@@ -129,18 +130,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
       page_size: number;
     };
 
-    return json<LoaderData>({
+    return {
       rows: body.rows,
       total: body.total,
       page: body.page,
       page_size: body.page_size,
       filter_status: status,
       filter_follow_up: followUp || "any",
-    });
+    };
   } catch (err) {
     if (err instanceof Response) throw err;
     logger.error("admin.leads loader exception", { err });
-    throw json({ error: "API leads unreachable" }, { status: 502 });
+    throw data({ error: "API leads unreachable" }, { status: 502 });
   }
 }
 
@@ -154,7 +155,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const intent = String(formData.get("intent") || "");
 
   if (!leadId || intent !== "transition") {
-    return json({ error: "Invalid request" }, { status: 400 });
+    return data({ error: "Invalid request" }, { status: 400 });
   }
 
   const res = await fetch(`${baseUrl}/api/admin/leads/${leadId}/status`, {
@@ -168,8 +169,10 @@ export async function action({ request }: ActionFunctionArgs) {
   });
 
   if (!res.ok) {
-    const errBody = await res.json().catch(() => ({ message: "Unknown error" }));
-    return json(
+    const errBody = await res
+      .json()
+      .catch(() => ({ message: "Unknown error" }));
+    return data(
       { error: errBody.message || `Transition failed: ${res.status}` },
       { status: res.status },
     );
@@ -270,7 +273,8 @@ export default function AdminLeadsIndex() {
                     : "—";
                   const followUpOverdue = isOverdue(followUpDate);
                   const statusInfo = STATUS_LABEL[lead.msg_crm_status];
-                  const allowedTransitions = LEAD_TRANSITIONS[lead.msg_crm_status];
+                  const allowedTransitions =
+                    LEAD_TRANSITIONS[lead.msg_crm_status];
 
                   return (
                     <tr
@@ -316,52 +320,52 @@ export default function AdminLeadsIndex() {
                       </td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex flex-wrap justify-end gap-1">
-                          {(["contacted", "quoted", "won", "lost"] as const).map(
-                            (target) => {
-                              if (
-                                !isValidLeadTransition(
-                                  lead.msg_crm_status,
-                                  target,
-                                ) ||
-                                target === lead.msg_crm_status
-                              ) {
-                                return null;
-                              }
-                              if (!allowedTransitions.includes(target))
-                                return null;
-                              return (
-                                <Form
-                                  method="post"
-                                  key={`${lead.msg_id}-${target}`}
-                                  className="inline"
+                          {(
+                            ["contacted", "quoted", "won", "lost"] as const
+                          ).map((target) => {
+                            if (
+                              !isValidLeadTransition(
+                                lead.msg_crm_status,
+                                target,
+                              ) ||
+                              target === lead.msg_crm_status
+                            ) {
+                              return null;
+                            }
+                            if (!allowedTransitions.includes(target))
+                              return null;
+                            return (
+                              <Form
+                                method="post"
+                                key={`${lead.msg_id}-${target}`}
+                                className="inline"
+                              >
+                                <input
+                                  type="hidden"
+                                  name="intent"
+                                  value="transition"
+                                />
+                                <input
+                                  type="hidden"
+                                  name="lead_id"
+                                  value={lead.msg_id}
+                                />
+                                <input
+                                  type="hidden"
+                                  name="next_status"
+                                  value={target}
+                                />
+                                <Button
+                                  type="submit"
+                                  variant="outline"
+                                  size="sm"
+                                  disabled={isLoading}
                                 >
-                                  <input
-                                    type="hidden"
-                                    name="intent"
-                                    value="transition"
-                                  />
-                                  <input
-                                    type="hidden"
-                                    name="lead_id"
-                                    value={lead.msg_id}
-                                  />
-                                  <input
-                                    type="hidden"
-                                    name="next_status"
-                                    value={target}
-                                  />
-                                  <Button
-                                    type="submit"
-                                    variant="outline"
-                                    size="sm"
-                                    disabled={isLoading}
-                                  >
-                                    → {STATUS_LABEL[target].label}
-                                  </Button>
-                                </Form>
-                              );
-                            },
-                          )}
+                                  → {STATUS_LABEL[target].label}
+                                </Button>
+                              </Form>
+                            );
+                          })}
                         </div>
                       </td>
                     </tr>

@@ -9,17 +9,6 @@
  *              → Par intention → Securite → FAQ → CTA
  */
 
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import {
-  useLoaderData,
-  Link,
-  useRouteError,
-  isRouteErrorResponse,
-} from "@remix-run/react";
 import { FAMILY_REGISTRY, findFamilyIdByKeyword } from "@repo/database-types";
 import {
   Wrench,
@@ -32,6 +21,14 @@ import {
   Package,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  useLoaderData,
+  Link,
+  useRouteError,
+  isRouteErrorResponse,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "react-router";
 
 import { ArticleCardEnhanced } from "~/components/blog/ArticleCardEnhanced";
 import {
@@ -119,12 +116,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     if (!data?.success || !data.data?.families) {
       logger.error("Format de r\u00e9ponse inattendu:", data);
-      return json<LoaderData>({
+      return {
         groupedArticles: [],
         allArticles: [],
         totalArticles: 0,
         stats: { totalViews: 0, totalCategories: 0 },
-      });
+      };
     }
 
     const allArticles: BlogArticle[] = [];
@@ -158,7 +155,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       0,
     );
 
-    return json<LoaderData>({
+    return {
       groupedArticles,
       allArticles,
       totalArticles,
@@ -166,21 +163,21 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         totalViews,
         totalCategories: groupedArticles.length,
       },
-    });
+    };
   } catch (e) {
     logger.error("Erreur loader conseils:", e);
-    return json<LoaderData>({
+    return {
       groupedArticles: [],
       allArticles: [],
       totalArticles: 0,
       stats: { totalViews: 0, totalCategories: 0 },
-    });
+    };
   }
 };
 
 // ── Meta ────────────────────────────────────────────────
 
-export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data, location }) => {
   const count = data?.totalArticles ?? 0;
   const hasFilters = location?.search && location.search.length > 1;
 
@@ -536,7 +533,7 @@ export default function BlogConseilsIndex() {
                             to={getArticleUrl(article)}
                             className="text-sm text-gray-700 hover:text-primary hover:underline flex items-start gap-1.5"
                           >
-                            <ArrowRight className="h-3.5 w-3.5 mt-0.5 flex-shrink-0 text-gray-400" />
+                            <ArrowRight className="h-3.5 w-3.5 mt-0.5 shrink-0 text-gray-400" />
                             <span className="line-clamp-1">
                               {article.title}
                             </span>
@@ -800,7 +797,7 @@ export default function BlogConseilsIndex() {
                   key={i}
                   className="flex items-start gap-3 rounded-lg bg-white p-4 border border-amber-200/60"
                 >
-                  <div className="w-6 h-6 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+                  <div className="w-6 h-6 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
                     {i + 1}
                   </div>
                   <p className="text-sm text-gray-700 leading-relaxed">

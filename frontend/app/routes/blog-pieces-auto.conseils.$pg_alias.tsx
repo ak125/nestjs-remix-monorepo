@@ -6,14 +6,13 @@
  * Intention : Comprendre comment installer/entretenir une pièce
  */
 
+import { ArrowLeft, Tag, BookOpen, ExternalLink } from "lucide-react";
+import { lazy, Suspense, useEffect, useRef } from "react";
 import {
-  defer,
-  json,
   type HeadersFunction,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import {
+  data,
   Await,
   Link,
   useLoaderData,
@@ -21,9 +20,7 @@ import {
   useRouteError,
   isRouteErrorResponse,
   type ShouldRevalidateFunction,
-} from "@remix-run/react";
-import { ArrowLeft, Tag, BookOpen, ExternalLink } from "lucide-react";
-import { lazy, Suspense, useEffect, useRef } from "react";
+} from "react-router";
 
 // Components
 import { ArticleActionsBar } from "~/components/blog/ArticleActionsBar";
@@ -145,7 +142,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const { pg_alias } = params;
 
   if (!pg_alias) {
-    throw json({ message: "Alias manquant" }, { status: 404 });
+    throw data({ message: "Alias manquant" }, { status: 404 });
   }
 
   const controller = new AbortController();
@@ -164,7 +161,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
     if (!response.ok) {
       if (response.status === 404) {
-        throw json(
+        throw data(
           { message: `Guide R3 introuvable: ${pg_alias}` },
           { status: 404 },
         );
@@ -176,7 +173,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const guide = result?.data as R3GuidePayload | null;
 
     if (!guide) {
-      throw json(
+      throw data(
         { message: `Pas de donnees R3 pour: ${pg_alias}` },
         { status: 404 },
       );
@@ -237,7 +234,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       }
     })();
 
-    return defer(
+    return data(
       { guide, pg_alias, r4Reference: r4ReferencePromise },
       {
         headers: {
@@ -249,7 +246,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     clearTimeout(timeoutId);
     if (error instanceof Response) throw error;
     logger.error(`[R3 Guide] Error loading guide for: ${pg_alias}`, error);
-    throw json(
+    throw data(
       { message: `Erreur chargement guide R3: ${pg_alias}` },
       { status: 404 },
     );
@@ -273,7 +270,7 @@ export const shouldRevalidate: ShouldRevalidateFunction = ({
 
 // ── Meta ─────────────────────────────────────────────────
 
-export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data, location }) => {
   if (!data) {
     return [
       { title: "Article non trouvé" },
@@ -609,7 +606,7 @@ export default function R3GuidePage() {
                   {sourceType === "conseil" && page.cta_link && (
                     <div className="my-6 rounded-lg border border-emerald-200 bg-emerald-50/50 p-4">
                       <div className="flex items-center gap-3">
-                        <Tag className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                        <Tag className="w-5 h-5 text-emerald-600 shrink-0" />
                         <p className="text-sm text-gray-700">
                           Trouvez votre{" "}
                           <Link
@@ -636,7 +633,7 @@ export default function R3GuidePage() {
                   {/* Cross-link R6 guide d'achat */}
                   <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 p-4 mb-8">
                     <div className="flex items-center gap-2">
-                      <ExternalLink className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                      <ExternalLink className="w-4 h-4 text-emerald-600 shrink-0" />
                       <p className="text-sm text-gray-700">
                         Choisir la bonne piece ?{" "}
                         <Link

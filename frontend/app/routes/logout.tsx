@@ -1,5 +1,9 @@
-import { type ActionFunctionArgs, redirect } from "@remix-run/node";
-import { useRouteError, isRouteErrorResponse } from "@remix-run/react";
+import {
+  type ActionFunctionArgs,
+  redirect,
+  useRouteError,
+  isRouteErrorResponse,
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";

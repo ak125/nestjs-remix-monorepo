@@ -1,5 +1,3 @@
-import { json, type ActionFunctionArgs } from "@remix-run/node";
-import { useLoaderData, useFetcher } from "@remix-run/react";
 import {
   Search,
   Wrench,
@@ -8,6 +6,11 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  type ActionFunctionArgs,
+  useLoaderData,
+  useFetcher,
+} from "react-router";
 import Container from "~/components/layout/Container";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
@@ -60,16 +63,16 @@ export async function loader() {
       "http://127.0.0.1:3000/api/knowledge-graph/nodes?type=Observable",
     );
     if (!response.ok) {
-      return json({
+      return {
         observables: [],
         error: "Erreur de chargement des symptômes",
-      });
+      };
     }
     const data = await response.json();
-    return json({ observables: data || [], error: null });
+    return { observables: data || [], error: null };
   } catch (error) {
     logger.error("Loader error:", error);
-    return json({ observables: [], error: "Service indisponible" });
+    return { observables: [], error: "Service indisponible" };
   }
 }
 
@@ -79,7 +82,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const symptoms = formData.getAll("symptoms") as string[];
 
   if (symptoms.length === 0) {
-    return json({ error: "Veuillez sélectionner au moins un symptôme" });
+    return { error: "Veuillez sélectionner au moins un symptôme" };
   }
 
   try {
@@ -93,13 +96,13 @@ export async function action({ request }: ActionFunctionArgs) {
     );
 
     if (!response.ok) {
-      return json({ error: "Erreur lors du diagnostic" });
+      return { error: "Erreur lors du diagnostic" };
     }
 
-    return json(await response.json());
+    return await response.json();
   } catch (error) {
     logger.error("Action error:", error);
-    return json({ error: "Service de diagnostic indisponible" });
+    return { error: "Service de diagnostic indisponible" };
   }
 }
 

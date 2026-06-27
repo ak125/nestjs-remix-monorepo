@@ -1,10 +1,4 @@
 import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
-import {
   Home,
   Wrench,
   Car,
@@ -18,6 +12,12 @@ import {
   Package,
   Search,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+} from "react-router";
 import Container from "~/components/layout/Container";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 
@@ -92,13 +92,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
       0,
     );
 
-    return json({ families, brands, totalGammes });
+    return { families, brands, totalGammes };
   } catch {
-    return json({
+    return {
       families: [] as Family[],
       brands: [] as Brand[],
       totalGammes: 0,
-    });
+    };
   }
 }
 

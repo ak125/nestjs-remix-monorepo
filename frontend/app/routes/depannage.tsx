@@ -10,8 +10,6 @@
  * interactive (3 steps). Le bouton urgence pointe vers le 3477/112.
  */
 
-import { type MetaFunction } from "@remix-run/node";
-import { Link } from "@remix-run/react";
 import {
   AlertTriangle,
   ArrowRight,
@@ -23,6 +21,7 @@ import {
   ShoppingCart,
   Stethoscope,
 } from "lucide-react";
+import { type MetaFunction, Link } from "react-router";
 
 import { DiagnosticWizard } from "~/components/diagnostic-wizard/DiagnosticWizard";
 import { HeroDiagnostic } from "~/components/heroes";

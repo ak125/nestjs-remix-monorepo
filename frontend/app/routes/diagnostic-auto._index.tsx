@@ -7,17 +7,6 @@
  */
 
 import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import {
-  Link,
-  useLoaderData,
-  useRouteError,
-  isRouteErrorResponse,
-} from "@remix-run/react";
-import {
   AlertTriangle,
   ArrowRight,
   Car,
@@ -40,10 +29,13 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import {
-  emitFunnel,
-  getFunnelDevice,
-  getFunnelSessionId,
-} from "~/utils/funnel-beacon";
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  Link,
+  useLoaderData,
+  useRouteError,
+  isRouteErrorResponse,
+} from "react-router";
 
 import { DiagnosticWizard } from "~/components/diagnostic-wizard/DiagnosticWizard";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
@@ -59,6 +51,11 @@ import { Badge } from "~/components/ui/badge";
 import { Input } from "~/components/ui/input";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { Separator } from "~/components/ui/separator";
+import {
+  emitFunnel,
+  getFunnelDevice,
+  getFunnelSessionId,
+} from "~/utils/funnel-beacon";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
@@ -121,7 +118,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Wrench,
 };
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   const canonicalUrl = "https://www.automecanik.com/diagnostic-auto";
 
   // Unified FAQPage: wiki FAQ entries + dynamic featured items
@@ -270,14 +267,14 @@ export async function loader({ request: _request }: LoaderFunctionArgs) {
       ),
     ]);
 
-  return json({
+  return {
     featured: (featuredJson?.data ?? []) as DiagnosticItem[],
     clusters: vocab?.clusters ?? [],
     perceptionIcons: vocab?.perception_icons ?? {},
     signs: signsData?.signs ?? [],
     faq: faqData?.faq ?? [],
     riskLevels: safetyData?.risk_levels ?? {},
-  });
+  };
 }
 
 export default function DiagnosticAutoIndex() {
@@ -334,14 +331,12 @@ export default function DiagnosticAutoIndex() {
           />
         </Container>
       </div>
-
       {/* ═══ HERO ═══ */}
       <HeroDiagnostic
         title="Identifiez votre panne auto"
         description="Décrivez le symptôme, notre outil identifie les causes probables et vous oriente vers la bonne pièce. Gratuit, sans inscription."
         severity="warning"
       />
-
       {/* ═══ WIZARD DIAGNOSTIC INTELLIGENT ═══ */}
       <section className="bg-white border-b py-8">
         <Container>
@@ -350,7 +345,6 @@ export default function DiagnosticAutoIndex() {
           </div>
         </Container>
       </section>
-
       {/* ═══ RECHERCHE + OBD ═══ */}
       <section className="bg-white border-b py-4">
         <Container>
@@ -376,7 +370,7 @@ export default function DiagnosticAutoIndex() {
               />
               <button
                 type="submit"
-                className="h-11 px-5 bg-cta hover:bg-cta-hover text-white font-semibold rounded-xl transition-colors whitespace-nowrap"
+                className="h-11 px-5 bg-cta hover:bg-cta-hover text-black font-semibold rounded-xl transition-colors whitespace-nowrap"
               >
                 Scanner
               </button>
@@ -384,7 +378,6 @@ export default function DiagnosticAutoIndex() {
           </div>
         </Container>
       </section>
-
       {/* ═══ CLUSTERS ═══ */}
       <Container as="section" className="py-12">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Par catégorie</h2>
@@ -427,7 +420,6 @@ export default function DiagnosticAutoIndex() {
           </p>
         )}
       </Container>
-
       {/* ═══ GUIDE : COMMENT IDENTIFIER SA PANNE ═══ */}
       <Container as="section" className="py-14">
         <div className="grid lg:grid-cols-3 gap-10">
@@ -449,7 +441,7 @@ export default function DiagnosticAutoIndex() {
             {/* Methode 1 */}
             <div className="mb-6">
               <h3 className="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
-                <span className="w-7 h-7 rounded-full bg-cta text-white text-sm flex items-center justify-center font-bold shrink-0">
+                <span className="w-7 h-7 rounded-full bg-cta text-black text-sm flex items-center justify-center font-bold shrink-0">
                   1
                 </span>
                 Observer les symptômes sensoriels (sans outil)
@@ -508,7 +500,7 @@ export default function DiagnosticAutoIndex() {
             {/* Methode 2 */}
             <div className="mb-6">
               <h3 className="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
-                <span className="w-7 h-7 rounded-full bg-cta text-white text-sm flex items-center justify-center font-bold shrink-0">
+                <span className="w-7 h-7 rounded-full bg-cta text-black text-sm flex items-center justify-center font-bold shrink-0">
                   2
                 </span>
                 Lire les voyants du tableau de bord
@@ -541,7 +533,7 @@ export default function DiagnosticAutoIndex() {
             {/* Methode 3 */}
             <div>
               <h3 className="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
-                <span className="w-7 h-7 rounded-full bg-cta text-white text-sm flex items-center justify-center font-bold shrink-0">
+                <span className="w-7 h-7 rounded-full bg-cta text-black text-sm flex items-center justify-center font-bold shrink-0">
                   3
                 </span>
                 Scanner le code OBD (P, C, B, U)
@@ -591,7 +583,6 @@ export default function DiagnosticAutoIndex() {
           </div>
         </div>
       </Container>
-
       {/* ═══ SIGNES AVANT-COUREURS ═══ */}
       <section className="bg-gray-50 border-y py-14">
         <Container>
@@ -639,7 +630,6 @@ export default function DiagnosticAutoIndex() {
           )}
         </Container>
       </section>
-
       {/* ═══ MÉCANIQUE VS ÉLECTRIQUE ═══ */}
       <Container as="section" className="py-14">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">
@@ -751,7 +741,6 @@ export default function DiagnosticAutoIndex() {
           </div>
         </div>
       </Container>
-
       {/* ═══ DIAGNOSTICS POPULAIRES ═══ */}
       <section className="bg-white border-y">
         <Container className="py-12">
@@ -826,7 +815,6 @@ export default function DiagnosticAutoIndex() {
           )}
         </Container>
       </section>
-
       {/* ═══ URGENCE : PANNE SUR AUTOROUTE ═══ */}
       <section className="bg-gradient-to-br from-red-950 to-red-900 text-white py-12">
         <Container>
@@ -908,7 +896,6 @@ export default function DiagnosticAutoIndex() {
           </div>
         </Container>
       </section>
-
       {/* ═══ FAQ ═══ */}
       <Container as="section" className="py-14">
         <div className="flex items-center gap-3 mb-8">
@@ -951,7 +938,6 @@ export default function DiagnosticAutoIndex() {
           )}
         </div>
       </Container>
-
       {/* ═══ CTA BOTTOM ═══ */}
       <Container as="section" className="py-12">
         <div className="rounded-2xl bg-navy text-white p-8 md:p-12 flex flex-col md:flex-row items-center gap-8">
@@ -980,7 +966,7 @@ export default function DiagnosticAutoIndex() {
             />
             <button
               type="submit"
-              className="h-12 px-6 bg-cta hover:bg-cta-hover text-white font-bold rounded-xl transition-colors flex items-center gap-2"
+              className="h-12 px-6 bg-cta hover:bg-cta-hover text-black font-bold rounded-xl transition-colors flex items-center gap-2"
             >
               Scanner
               <ChevronRight className="w-4 h-4" />
@@ -988,7 +974,6 @@ export default function DiagnosticAutoIndex() {
           </form>
         </div>
       </Container>
-
       {/* Cross-link glossaire */}
       <Container className="pb-12 flex items-center justify-center gap-2 text-sm text-gray-500">
         <BookOpen className="w-4 h-4 text-foreground" />

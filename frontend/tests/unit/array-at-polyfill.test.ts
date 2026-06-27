@@ -6,7 +6,7 @@ import { installArrayAtPolyfill } from "~/utils/array-at-polyfill.client";
  * Regression guard for the Sentry INP crash on engines without ES2022
  * `Array.prototype.at`.
  *
- * `@sentry-internal/browser-utils` (via `@sentry/remix`) calls
+ * `@sentry-internal/browser-utils` (via `@sentry/react`) calls
  * `this._longestInteractionList.at(-1)` in `InteractionManager._processEntry`
  * (INP web-vital). Sentry declares ES2021 support and de-`.at()`-ed the
  * sibling CLS path but missed this INP call-site, so on Safari < 15.4 / old
@@ -18,7 +18,10 @@ import { installArrayAtPolyfill } from "~/utils/array-at-polyfill.client";
  * the method, then assert the polyfill restores spec-correct behaviour.
  */
 describe("Array.prototype.at polyfill", () => {
-  const nativeDescriptor = Object.getOwnPropertyDescriptor(Array.prototype, "at");
+  const nativeDescriptor = Object.getOwnPropertyDescriptor(
+    Array.prototype,
+    "at",
+  );
 
   afterEach(() => {
     if (nativeDescriptor) {
@@ -38,7 +41,7 @@ describe("Array.prototype.at polyfill", () => {
   it("reproduces the crash on an engine lacking Array.prototype.at", () => {
     removeNativeAt();
     expect(() =>
-      (([1, 2, 3] as unknown as { at(index: number): unknown }).at(-1)),
+      ([1, 2, 3] as unknown as { at(index: number): unknown }).at(-1),
     ).toThrow(/is not a function/);
   });
 

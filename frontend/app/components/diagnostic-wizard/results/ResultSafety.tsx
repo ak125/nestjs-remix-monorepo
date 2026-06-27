@@ -49,7 +49,7 @@ export function ResultSafety({ riskLevel, riskFlags, safetyAlert }: Props) {
       role="alert"
     >
       <div className="flex items-start gap-3">
-        <ShieldAlert className={`w-6 h-6 flex-shrink-0 mt-0.5 ${style.icon}`} />
+        <ShieldAlert className={`w-6 h-6 shrink-0 mt-0.5 ${style.icon}`} />
         <div className="space-y-1">
           <h3 className={`font-semibold text-sm ${style.text}`}>
             {riskLevel === "critical"
@@ -68,7 +68,7 @@ export function ResultSafety({ riskLevel, riskFlags, safetyAlert }: Props) {
         {riskFlags.map((flag, i) => (
           <li key={i} className="flex items-start gap-2 text-sm">
             <AlertTriangle
-              className={`w-3.5 h-3.5 mt-0.5 flex-shrink-0 ${style.icon}`}
+              className={`w-3.5 h-3.5 mt-0.5 shrink-0 ${style.icon}`}
             />
             <span className={style.text}>{flag}</span>
           </li>

@@ -1,5 +1,9 @@
-import { type LoaderFunctionArgs, type MetaFunction } from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+} from "react-router";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
@@ -67,7 +71,7 @@ export default function NotFound() {
         <div className="space-y-4">
           <Link
             to="/"
-            className="inline-block bg-cta text-white px-6 py-3 rounded-lg hover:bg-cta-hover transition-colors font-medium"
+            className="inline-block bg-cta text-black px-6 py-3 rounded-lg hover:bg-cta-hover transition-colors font-medium"
           >
             Retour à l'accueil
           </Link>

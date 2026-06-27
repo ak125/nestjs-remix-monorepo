@@ -31,24 +31,21 @@
  */
 
 import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import {
-  useLoaderData,
-  Link,
-  useSearchParams,
-  useRouteError,
-  isRouteErrorResponse,
-} from "@remix-run/react";
-import {
   ShoppingCart,
   Eye,
   TrendingUp,
   AlertTriangle,
   BarChart3,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+  useSearchParams,
+  useRouteError,
+  isRouteErrorResponse,
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
@@ -158,7 +155,10 @@ interface ProductsData {
   error?: string;
 }
 
-export async function loader({ request, context }: LoaderFunctionArgs) {
+export async function loader({
+  request,
+  context,
+}: LoaderFunctionArgs): Promise<ProductsData> {
   const user = await requireUser({ context });
 
   // Vérifier accès commercial (niveau 3+)
@@ -317,7 +317,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       // Continuer avec tableau vide
     }
 
-    return json<ProductsData>({
+    return {
       user: {
         id: user.id,
         name: userName,
@@ -333,10 +333,10 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         ? (await responses[1].json()).slice(0, 6)
         : [],
       recentBrands: responses[2]?.ok ? await responses[2].json() : [],
-    });
+    };
   } catch (error) {
     logger.error("Products data loading error:", error);
-    return json<ProductsData>({
+    return {
       user: {
         id: user.id,
         name: userName,
@@ -349,7 +349,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       filterLists: { gammes: [], brands: [] },
       enhanced,
       error: "Erreur lors du chargement des données produits",
-    });
+    };
   }
 }
 

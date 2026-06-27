@@ -6,19 +6,16 @@
  * Intention : Hub des définitions officielles / vérités mécaniques
  */
 
+import { BookOpen, Search, ChevronRight, ShoppingCart } from "lucide-react";
+import { useState, useMemo, useCallback } from "react";
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import {
   Link,
   useLoaderData,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { BookOpen, Search, ChevronRight, ShoppingCart } from "lucide-react";
-import { useState, useMemo, useCallback } from "react";
+} from "react-router";
 
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
@@ -126,18 +123,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     if (!res.ok) {
       logger.error("Erreur API référence:", res.status);
-      return json<LoaderData>({ references: [], total: 0 });
+      return { references: [], total: 0 };
     }
 
     const data = await res.json();
 
-    return json<LoaderData>({
+    return {
       references: data.references || [],
       total: data.total || 0,
-    });
+    };
   } catch (error) {
     logger.error("Erreur chargement références:", error);
-    return json<LoaderData>({ references: [], total: 0 });
+    return { references: [], total: 0 };
   }
 }
 
@@ -264,20 +261,17 @@ export default function ReferenceIndexPage() {
     <div className="min-h-screen bg-gray-50" data-page-role="R4">
       <BlogPiecesAutoNavigation />
       <SchemaJsonLd references={references} />
-
       {/* ═══ BREADCRUMB ═══ */}
       <div className="bg-white border-b">
         <Container className="py-3">
           <PublicBreadcrumb items={[{ label: "Référence Auto" }]} />
         </Container>
       </div>
-
       {/* ═══ HERO ═══ */}
       <HeroReference
         title="Encyclopédie Pièces Auto"
         subtitle="Glossaire complet des pièces automobiles. Définitions techniques, rôles mécaniques et compositions détaillées."
       />
-
       {/* ═══ RECHERCHE + STATS ═══ */}
       <section className="bg-white border-b py-4">
         <Container>
@@ -305,7 +299,6 @@ export default function ReferenceIndexPage() {
           </div>
         </Container>
       </section>
-
       {/* ═══ FILTRES GAMMES (STICKY) ═══ */}
       <section className="sticky top-0 z-10 bg-white border-b shadow-sm">
         <Container className="py-3">
@@ -315,7 +308,7 @@ export default function ReferenceIndexPage() {
                 {/* Chip "Toutes" */}
                 <button
                   onClick={() => setActiveGamme(null)}
-                  className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors ${ activeGamme === null ? "bg-primary text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200" }`}
+                  className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeGamme === null ? "bg-primary text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
                 >
                   Toutes ({total})
                 </button>
@@ -327,7 +320,7 @@ export default function ReferenceIndexPage() {
                       onClick={() =>
                         setActiveGamme(activeGamme === name ? null : name)
                       }
-                      className={`shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${ activeGamme === name ? "bg-primary text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200" }`}
+                      className={`shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeGamme === name ? "bg-primary text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
                     >
                       <span
                         className={`w-2 h-2 rounded-full ${activeGamme === name ? "bg-white" : color.dot}`}
@@ -360,7 +353,6 @@ export default function ReferenceIndexPage() {
           </div>
         </Container>
       </section>
-
       {/* ═══ NAVIGATION ALPHABÉTIQUE ═══ */}
       <nav
         className="py-3 bg-gray-50 border-b"
@@ -376,7 +368,7 @@ export default function ReferenceIndexPage() {
                     key={letter}
                     onClick={() => hasEntries && scrollToLetter(letter)}
                     disabled={!hasEntries}
-                    className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm font-semibold transition-colors ${ hasEntries ? "text-foreground hover:bg-muted cursor-pointer" : "text-gray-300 cursor-default" }`}
+                    className={`w-9 h-9 rounded-lg flex items-center justify-center text-sm font-semibold transition-colors ${hasEntries ? "text-foreground hover:bg-muted cursor-pointer" : "text-gray-300 cursor-default"}`}
                     aria-label={`Aller à la lettre ${letter}`}
                   >
                     {letter}
@@ -388,7 +380,6 @@ export default function ReferenceIndexPage() {
           </ScrollArea>
         </Container>
       </nav>
-
       {/* ═══ GRILLE DE CARTES ═══ */}
       <section className="py-12 bg-gradient-to-br from-slate-50 via-white /30">
         <Container>
@@ -481,7 +472,6 @@ export default function ReferenceIndexPage() {
           )}
         </Container>
       </section>
-
       {/* ═══ CTA BOTTOM ═══ */}
       <section className="py-12">
         <Container>

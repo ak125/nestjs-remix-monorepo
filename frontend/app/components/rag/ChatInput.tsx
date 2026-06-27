@@ -65,7 +65,7 @@ const ChatInput = memo(function ChatInput({
       <button
         onClick={handleSubmit}
         disabled={!message.trim() || isLoading}
-        className="flex-shrink-0 w-10 h-10 flex items-center justify-center bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="shrink-0 w-10 h-10 flex items-center justify-center bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
         aria-label="Envoyer"
       >
         {isLoading ? (

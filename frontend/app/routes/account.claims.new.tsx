@@ -1,11 +1,10 @@
+import { ArrowLeft, Send, Loader2 } from "lucide-react";
 import {
-  json,
   redirect,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import {
+  data,
   useLoaderData,
   useActionData,
   Form,
@@ -13,8 +12,7 @@ import {
   useNavigation,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { ArrowLeft, Send, Loader2 } from "lucide-react";
+} from "react-router";
 
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { logger } from "~/utils/logger";
@@ -49,13 +47,12 @@ const claimTypes = [
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await requireAuth(request);
   if (!user) throw new Response("Non authentifié", { status: 401 });
-  return json<LoaderData>({ user });
+  return { user };
 }
 
 export async function action({ request }: ActionFunctionArgs) {
   const user = await requireAuth(request);
-  if (!user)
-    return json<ActionData>({ error: "Non authentifié" }, { status: 401 });
+  if (!user) return data({ error: "Non authentifié" }, { status: 401 });
 
   const formData = await request.formData();
   const type = formData.get("type") as string;
@@ -76,7 +73,7 @@ export async function action({ request }: ActionFunctionArgs) {
       "La résolution attendue doit faire au moins 10 caractères";
 
   if (Object.keys(fieldErrors).length > 0)
-    return json<ActionData>({ fieldErrors }, { status: 400 });
+    return data({ fieldErrors }, { status: 400 });
 
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
   const cookie = request.headers.get("Cookie") || "";
@@ -103,7 +100,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({}));
-      return json<ActionData>(
+      return data(
         { error: errorData.message || `Erreur ${res.status}` },
         { status: res.status },
       );
@@ -111,7 +108,7 @@ export async function action({ request }: ActionFunctionArgs) {
     return redirect("/account/claims");
   } catch (error) {
     logger.error("Erreur création réclamation:", error);
-    return json<ActionData>({ error: "Erreur serveur" }, { status: 500 });
+    return data({ error: "Erreur serveur" }, { status: 500 });
   }
 }
 

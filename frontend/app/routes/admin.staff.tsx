@@ -4,12 +4,6 @@
  */
 
 import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
-import {
   Shield,
   Users,
   Crown,
@@ -18,6 +12,12 @@ import {
   MessageSquare,
   Mail,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+} from "react-router";
 import { Alert } from "~/components/ui/alert";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
@@ -78,13 +78,13 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
           // Les données sont déjà dans le bon format
           const staffMembers = staffData.data;
 
-          return json({
+          return {
             staff: staffMembers,
             total: staffData.total,
             fallbackMode: false,
             messagesEnabled: true,
             apiSource: "test-staff-endpoint",
-          } as StaffData);
+          } as StaffData;
         }
       }
     } catch (staffApiError) {
@@ -129,13 +129,13 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         logger.warn(
           "⚠️ Structure de données inattendue, utilisation mode minimal",
         );
-        return json({
+        return {
           staff: [],
           total: 0,
           fallbackMode: true,
           messagesEnabled: false,
           apiSource: "minimal-fallback",
-        } as StaffData);
+        } as StaffData;
       }
 
       // Filtrer pour ne garder que le staff (niveau >= 7)
@@ -147,29 +147,29 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         `✅ ${staffMembers.length} membres du staff trouvés sur ${allUsers.length} utilisateurs`,
       );
 
-      return json({
+      return {
         staff: staffMembers,
         total: staffMembers.length,
         fallbackMode: true,
         messagesEnabled: false,
         apiSource: "users-api",
-      } as StaffData);
+      } as StaffData;
     } else {
       logger.error("❌ Erreur API:", response.status, response.statusText);
 
-      return json({
+      return {
         staff: [],
         total: 0,
         fallbackMode: true,
         messagesEnabled: false,
         apiSource: "error-fallback",
-      } as StaffData);
+      } as StaffData;
     }
   } catch (error: unknown) {
     logger.error("❌ Erreur lors du chargement du staff:", error);
 
     // Mode fallback d'urgence
-    return json({
+    return {
       staff: [
         {
           id: user.id,
@@ -190,7 +190,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       error: "Erreur de connexion à l'API",
       fallbackMode: true,
       messagesEnabled: false,
-    } as StaffData);
+    } as StaffData;
   }
 }
 
@@ -254,7 +254,7 @@ export default function AdminStaff() {
 
       {/* Indicateur de source */}
       <div
-        className={`mb-6 p-4 rounded-lg ${ fallbackMode ? "border-warning bg-warning/10" : "border-success bg-success/10" }`}
+        className={`mb-6 p-4 rounded-lg ${fallbackMode ? "border-warning bg-warning/10" : "border-success bg-success/10"}`}
       >
         <div className="flex items-center gap-2">
           {fallbackMode ? (
@@ -380,7 +380,7 @@ export default function AdminStaff() {
                 <tr key={member.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
-                      <div className="h-10 w-10 flex-shrink-0">
+                      <div className="h-10 w-10 shrink-0">
                         <div className="h-10 w-10 rounded-full bg-primary/15 flex items-center justify-center">
                           <span className="text-sm font-medium text-blue-600">
                             {member.firstName?.[0]}

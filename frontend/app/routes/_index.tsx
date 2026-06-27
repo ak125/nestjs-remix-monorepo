@@ -1,11 +1,11 @@
+import { Suspense } from "react";
 import {
-  defer,
   type HeadersFunction,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import { Await, useLoaderData } from "@remix-run/react";
-import { Suspense } from "react";
+  Await,
+  useLoaderData,
+} from "react-router";
 
 import {
   HomepageJsonLd,
@@ -161,20 +161,20 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     const familiesRaw = await remixApi.getHomepageFamilies();
     const families = mapFamiliesFromSplit(familiesRaw);
 
-    return defer({
+    return {
       families,
       belowFold: belowFoldPromise,
       faqs: faqPromise,
-    });
+    };
   } catch (err) {
     logger.error("[homepage-families] Service call failed:", {
       error: err instanceof Error ? err.message : String(err),
     });
-    return defer({
+    return {
       families: [] as SlimFamily[],
       belowFold: belowFoldPromise,
       faqs: faqPromise,
-    });
+    };
   }
 }
 

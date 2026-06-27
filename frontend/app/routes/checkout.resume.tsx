@@ -6,14 +6,14 @@
  * GET /checkout/resume?token=xxx&check=1  → vérifie l'état (read-only, ne consomme PAS le token)
  */
 
+import { CheckCircle, CreditCard, AlertTriangle } from "lucide-react";
 import {
-  json,
   redirect,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
-import { CheckCircle, CreditCard, AlertTriangle } from "lucide-react";
+  useLoaderData,
+  Link,
+} from "react-router";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { buildPayboxRedirectUrl } from "~/services/order.server";
@@ -56,22 +56,22 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     // Mode check : afficher l'état sans consommer le token
     if (isCheck) {
-      return json({
+      return {
         mode: "check" as const,
         orderId,
         isPaid: isPaid === "1" || isPaid === true,
         orderStatus,
-      });
+      };
     }
 
     // Si déjà payé, afficher la confirmation
     if (isPaid === "1" || isPaid === true) {
-      return json({
+      return {
         mode: "already_paid" as const,
         orderId,
         isPaid: true,
         orderStatus,
-      });
+      };
     }
 
     // Rediriger vers Paybox (le token sera marqué used_at par le backend)

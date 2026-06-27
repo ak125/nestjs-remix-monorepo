@@ -319,7 +319,12 @@ def check_source_quality(fm, body):
     source_kind = db.get("source_kind")
     if source_kind == "deterministic_transform":
         return {"pass": True, "verdict": "STRONG"}
-    if source_kind == "rag_candidate":
+    if source_kind in ("rag_candidate", "web_research_oe"):
+        # web_research_oe : fiches reconstruites depuis des sources OE/normatives web
+        # (ex. disque-de-frein). Reconnu comme source VALIDE — sinon drop silencieux en
+        # NOT_APPLICABLE -> NOT_REVIEWABLE pour les meilleures fiches OE. DATA_WEAK =
+        # revue humaine, JAMAIS auto-promu (cf. compute_auto_promotion). Le tiering STRONG
+        # de l'OE web relève d'ADR-091 (source_type -> confidence), pas de ce fix.
         return {"pass": True, "verdict": "DATA_WEAK"}
     return {"pass": False, "verdict": "NOT_APPLICABLE"}
 
@@ -571,7 +576,7 @@ def review_proposal_data(frontmatter, body):
     source_kind = db.get("source_kind")
     db_quality = (
         "STRONG" if source_kind == "deterministic_transform"
-        else "DATA_WEAK" if source_kind == "rag_candidate"
+        else "DATA_WEAK" if source_kind in ("rag_candidate", "web_research_oe")
         else "NOT_APPLICABLE"
     )
 

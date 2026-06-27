@@ -2,12 +2,6 @@
 // Dashboard fournisseurs avec stats réelles depuis pieces_marque (pm_display breakdown)
 
 import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import { Outlet, useLoaderData, Link } from "@remix-run/react";
-import {
   Building2,
   Users,
   Package,
@@ -16,6 +10,13 @@ import {
   Star,
   Layers,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  Outlet,
+  useLoaderData,
+  Link,
+} from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
@@ -110,7 +111,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     apiError = "API supplier-stats indisponible";
   }
 
-  return json({ user, stats, listItems, listTotal, search, display, apiError });
+  return { user, stats, listItems, listTotal, search, display, apiError };
 }
 
 export default function AdminSuppliersLayout() {
@@ -200,7 +201,7 @@ export default function AdminSuppliersLayout() {
 
       {apiError && (
         <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-lg p-3 mb-6 text-sm flex items-center gap-2">
-          <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+          <AlertTriangle className="h-4 w-4 shrink-0" />
           {apiError}
         </div>
       )}

@@ -5,8 +5,8 @@
  * Réplique la section PHP "Marques les plus consultées"
  */
 
-import { Link } from "@remix-run/react";
 import { memo } from "react";
+import { Link } from "react-router";
 
 interface Brand {
   id: number;

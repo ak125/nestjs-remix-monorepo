@@ -1,5 +1,5 @@
-import { Link } from "@remix-run/react";
 import { useEffect, memo } from "react";
+import { Link } from "react-router";
 
 interface ErrorGenericProps {
   status?: number;
@@ -120,7 +120,7 @@ export const ErrorGeneric = memo(function ErrorGeneric({
                   className={`mt-4 p-4 ${colorMap[color].bg} border ${colorMap[color].border} rounded-md`}
                 >
                   <div className="flex">
-                    <div className="flex-shrink-0">
+                    <div className="shrink-0">
                       <svg
                         className={`h-5 w-5 ${colorMap[color].icon}`}
                         viewBox="0 0 20 20"

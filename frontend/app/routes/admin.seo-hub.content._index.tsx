@@ -8,12 +8,6 @@
  */
 
 import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
-import {
   BookOpen,
   Eye,
   FileText,
@@ -23,6 +17,12 @@ import {
   Wand2,
   Zap,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+} from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
@@ -80,16 +80,16 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     const data = res.ok ? await res.json() : null;
 
-    return json({
+    return {
       stats: data?.data as ContentStats | null,
       error: data?.success === false ? "Erreur chargement stats" : null,
-    });
+    };
   } catch (error) {
     logger.error("[SEO Content] Loader error:", error);
-    return json({
+    return {
       stats: null,
       error: "Erreur connexion backend",
-    });
+    };
   }
 }
 

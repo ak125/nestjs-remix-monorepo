@@ -3,7 +3,6 @@
  * Handles meta title, description, H1, content, and switch variations
  */
 
-import { useFetcher } from "@remix-run/react";
 import {
   AlertCircle,
   CheckCircle2,
@@ -14,6 +13,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useState } from "react";
+import { useFetcher } from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {

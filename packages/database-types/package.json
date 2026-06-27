@@ -36,11 +36,11 @@
     "generate:zod": "tsx scripts/generate-zod-schemas.ts"
   },
   "dependencies": {
-    "zod": "^3.25.76"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
+    "@types/node": "^24",
     "tsx": "^4.22.4",
-    "typescript": "^5.9.3"
+    "typescript": "~6.0.3"
   }
 }

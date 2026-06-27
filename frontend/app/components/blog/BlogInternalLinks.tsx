@@ -2,7 +2,7 @@
  * BlogInternalLinks — Mini sitemap thématique en bas de page (SEO)
  * Grille de liens internes vers les sous-sections du blog
  */
-import { Link } from "@remix-run/react";
+import { Link } from "react-router";
 
 const PRODUCT_FAMILIES = [
   { name: "Freinage", href: "/blog-pieces-auto/conseils/plaquette-de-frein" },

@@ -8,13 +8,6 @@
  */
 
 import {
-  json,
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, Form, useNavigation, Link } from "@remix-run/react";
-import {
   Package,
   Truck,
   Calculator,
@@ -25,6 +18,15 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  Form,
+  useNavigation,
+  Link,
+} from "react-router";
 import { Button } from "~/components/ui/button";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
@@ -222,43 +224,27 @@ export async function loader({ request }: LoaderFunctionArgs) {
           height: 10,
         },
         shippingAddress: {
-          firstName:
-            order.shippingAddress?.firstName ||
-            order.firstName ||
-            "",
-          lastName:
-            order.shippingAddress?.lastName ||
-            order.lastName ||
-            "",
+          firstName: order.shippingAddress?.firstName || order.firstName || "",
+          lastName: order.shippingAddress?.lastName || order.lastName || "",
           company: order.shippingAddress?.company || "",
-          address1:
-            order.shippingAddress?.address1 ||
-            order.address ||
-            "",
+          address1: order.shippingAddress?.address1 || order.address || "",
           address2: order.shippingAddress?.address2 || "",
           postalCode:
-            order.shippingAddress?.postalCode ||
-            order.postalCode ||
-            "",
-          city:
-            order.shippingAddress?.city || order.city || "",
-          country:
-            order.shippingAddress?.country ||
-            order.country ||
-            "France",
-          phone:
-            order.shippingAddress?.phone || order.phone || "",
+            order.shippingAddress?.postalCode || order.postalCode || "",
+          city: order.shippingAddress?.city || order.city || "",
+          country: order.shippingAddress?.country || order.country || "France",
+          phone: order.shippingAddress?.phone || order.phone || "",
         },
         items: [{ name: "Articles de la commande", quantity: 1, weight: 2.5 }],
       };
     }
 
-    return json({
+    return {
       order: transformedOrder,
       orders: allOrders, // Utiliser les vraies commandes récupérées
       carriers,
       shippingRates: [],
-    });
+    };
   } catch (error) {
     // Propager les Response HTTP (404, etc.) telles quelles
     if (error instanceof Response) {
@@ -291,13 +277,13 @@ export async function action({ request }: ActionFunctionArgs) {
       createdAt: new Date().toISOString(),
     };
 
-    return json({
+    return {
       success: true,
       shipment: shipmentData,
       message: "Expédition créée avec succès",
-    });
+    };
   } catch (error) {
-    return json({ success: false, error: "Erreur serveur" });
+    return { success: false, error: "Erreur serveur" };
   }
 }
 
@@ -307,7 +293,9 @@ export default function CreateShipment() {
 
   // États pour le formulaire
   const [selectedCarrier, setSelectedCarrier] = useState<Carrier | null>(null);
-  const [selectedService, setSelectedService] = useState<Carrier["services"][number] | null>(null);
+  const [selectedService, setSelectedService] = useState<
+    Carrier["services"][number] | null
+  >(null);
   const [weight, setWeight] = useState<number>(order?.totalWeight || 2.5);
   const [dimensions, setDimensions] = useState({
     length: order?.dimensions.length || 30,
@@ -389,9 +377,9 @@ export default function CreateShipment() {
                           {orderItem.totalPrice || 0}€
                         </div>
                         <div className="text-sm text-gray-500">
-                          {new Date(orderItem.createdAt ?? "").toLocaleDateString(
-                            "fr-FR",
-                          )}
+                          {new Date(
+                            orderItem.createdAt ?? "",
+                          ).toLocaleDateString("fr-FR")}
                         </div>
                       </div>
                     </div>

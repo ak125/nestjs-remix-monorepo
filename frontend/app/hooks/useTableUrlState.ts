@@ -20,8 +20,8 @@
  *   table.setFilter("status", "draft"), table.resetFilters()
  */
 
-import { useSearchParams } from "@remix-run/react";
 import { useCallback, useMemo } from "react";
+import { useSearchParams } from "react-router";
 
 interface UseTableUrlStateConfig {
   /** Default sort column */

@@ -26,8 +26,8 @@ import { RContentAuditorService } from './services/r-content-auditor.service';
 import { QualityHistorySnapshotService } from './services/quality-history-snapshot.service';
 import { RagMirrorFreshnessService } from './services/rag-mirror-freshness.service';
 import { FunnelEventsService } from './services/funnel-events.service';
+import { OrderFunnelListener } from './listeners/order-funnel.listener';
 import { CwvBeaconService } from './services/cwv-beacon.service';
-import { CwvAggregationService } from './services/cwv-aggregation.service';
 import { RuntimeEventsService } from './services/runtime-events.service';
 import { CwvDashboardService } from './services/cwv-dashboard.service';
 import { SeoMonitoringController } from './controllers/seo-monitoring.controller';
@@ -55,12 +55,12 @@ import { CwvDashboardController } from './controllers/cwv-dashboard.controller';
     QualityHistorySnapshotService, // ADR-050 Phase 0 baseline
     RagMirrorFreshnessService, // ADR-046 § L3 RAG MIRROR read-only — PR-E.2
     FunnelEventsService, // Commerce-Loop V1 étape 4-A — funnel outil diagnostic
+    OrderFunnelListener, // Commerce-Loop V1 PR-A — server-side r2_order_placed @OnEvent(order.paid), flag OFF + READ_ONLY-skip
     CwvBeaconService, // CWV Runtime Observability bloc 3 — landing beacons web-vitals
-    CwvAggregationService, // CWV bloc 4 — RPCs aggregate_cwv_hourly/daily_rum
     RuntimeEventsService, // CWV bloc 5 — wrapper __seo_event_log pour 4 runtime events
     CwvDashboardService, // CWV bloc 6 — wraps STABLE RPCs get_cwv_dashboard/funnel_correlation + health
-    // CwvAggregationSchedulerService + CwvAggregationProcessor : wired in workers/worker.module.ts
-    // (queue 'seo-monitor' registered there ; pattern mirror SeoDailyFetchProcessor)
+    // CWV bloc 4 (raw→hourly→daily_rum) : orchestré par pg_cron (migration
+    // 20260626_seo_cwv_aggregation_cron) — plus de service/scheduler NestJS.
   ],
   controllers: [
     SeoMonitoringController,
@@ -84,7 +84,6 @@ import { CwvDashboardController } from './controllers/cwv-dashboard.controller';
     RContentAuditorService,
     QualityHistorySnapshotService, // exposé pour PR-T (re-enrich pre/post snapshot)
     RagMirrorFreshnessService, // exposé pour cron health endpoint
-    CwvAggregationService, // exposé pour CwvAggregationProcessor (workers module)
   ],
 })
 export class SeoMonitoringModule {}

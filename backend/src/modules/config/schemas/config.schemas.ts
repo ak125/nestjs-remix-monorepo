@@ -124,7 +124,9 @@ export const ConfigItemSchema = z.object({
 });
 
 // Types TypeScript dérivés des schémas Zod
-export type CreateConfigDto = z.infer<typeof CreateConfigSchema>;
+// Request payload = input shape: defaulted fields (isPublic/isReadOnly) are
+// optional for the caller. The post-parse output shape is ValidatedCreateConfigDto.
+export type CreateConfigDto = z.input<typeof CreateConfigSchema>;
 export type UpdateConfigDto = z.infer<typeof UpdateConfigSchema>;
 export type ConfigQueryDto = z.infer<typeof ConfigQuerySchema>;
 export type ConfigItemDto = z.infer<typeof ConfigItemSchema>;

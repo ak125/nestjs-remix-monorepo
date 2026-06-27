@@ -1,10 +1,3 @@
-import { json, type LoaderFunction, type MetaFunction } from "@remix-run/node";
-import {
-  useLoaderData,
-  Link,
-  useRouteError,
-  isRouteErrorResponse,
-} from "@remix-run/react";
 import {
   Shield,
   Key,
@@ -14,6 +7,14 @@ import {
   Clock,
   Lock,
 } from "lucide-react";
+import {
+  type LoaderFunction,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+  useRouteError,
+  isRouteErrorResponse,
+} from "react-router";
 
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { logger } from "~/utils/logger";
@@ -135,7 +136,7 @@ export const loader: LoaderFunction = async ({ request }) => {
       ],
     };
 
-    return json<LoaderData>({ security, user });
+    return { security, user };
   } catch (error) {
     // Propager les Response HTTP (404, etc.) telles quelles
     if (error instanceof Response) {

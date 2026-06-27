@@ -162,15 +162,19 @@ export const CreateMarketingBriefSchema = z
     generation_prompt_hash: z.string().optional(),
   })
   // Refinement 1 : business_unit × channel cohérence
-  .refine(
-    (data) => isCoherentUnitChannel(data.business_unit, data.channel),
-    (data) => ({
-      message:
+  .refine((data) => isCoherentUnitChannel(data.business_unit, data.channel), {
+    path: ['channel'],
+    error: (issue) => {
+      const data = issue.input as {
+        business_unit: MarketingBusinessUnit;
+        channel: MarketingChannel;
+      };
+      return (
         `Channel '${data.channel}' incohérent avec business_unit '${data.business_unit}'. ` +
-        `LOCAL=[gbp,local_landing,sms] ECOMMERCE=[website_seo,email,social_*] HYBRID=any.`,
-      path: ['channel'],
-    }),
-  )
+        `LOCAL=[gbp,local_landing,sms] ECOMMERCE=[website_seo,email,social_*] HYBRID=any.`
+      );
+    },
+  })
   // Refinement 2 : HYBRID payload obligatoire
   .refine(
     (data) => {
@@ -179,14 +183,16 @@ export const CreateMarketingBriefSchema = z
       const result = HybridPayloadSchema.safeParse(data.payload);
       return result.success;
     },
-    (data) => ({
-      message:
-        data.business_unit === MarketingBusinessUnit.HYBRID
-          ? 'HYBRID exige payload avec hybrid_reason + cta_ecommerce + cta_local + ' +
-            'conversion_goal_ecommerce + conversion_goal_local (ADR-036 §HYBRID)'
-          : '',
+    {
       path: ['payload'],
-    }),
+      error: (issue) => {
+        const data = issue.input as { business_unit: MarketingBusinessUnit };
+        return data.business_unit === MarketingBusinessUnit.HYBRID
+          ? 'HYBRID exige payload avec hybrid_reason + cta_ecommerce + cta_local + ' +
+              'conversion_goal_ecommerce + conversion_goal_local (ADR-036 §HYBRID)'
+          : '';
+      },
+    },
   );
 
 export type CreateMarketingBriefDto = z.infer<

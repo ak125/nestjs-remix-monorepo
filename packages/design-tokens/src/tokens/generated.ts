@@ -1,7 +1,7 @@
 /**
  * 🎨 Design Tokens - Auto-généré
  * ⚠️  NE PAS MODIFIER MANUELLEMENT
- * Source: src/tokens/design-tokens.json
+ * Source: src/tokens.json
  */
 
 export const designTokens = {
@@ -60,7 +60,7 @@ export const designTokens = {
     },
     "semantic": {
       "action": "#F97316",
-      "actionContrast": "#FFFFFF",
+      "actionContrast": "#000000",
       "info": "#0F4C81",
       "infoContrast": "#FFFFFF",
       "success": "#1E8449",

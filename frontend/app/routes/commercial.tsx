@@ -2,14 +2,11 @@ import {
   type LoaderFunctionArgs,
   type MetaFunction,
   redirect,
-  json,
-} from "@remix-run/node";
-import {
   Outlet,
   useLoaderData,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
@@ -41,7 +38,7 @@ export async function loader({ context }: LoaderFunctionArgs) {
     logger.log("Erreur récupération stats sidebar commercial:", error);
   }
 
-  return json({ user, stats });
+  return { user, stats };
 }
 
 export default function CommercialLayout() {

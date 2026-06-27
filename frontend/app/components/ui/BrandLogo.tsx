@@ -92,7 +92,7 @@ export function BrandLogo({
     <Avatar
       className={cn(
         sizeClass,
-        "flex-shrink-0",
+        "shrink-0",
         typeof size === "number" &&
           "w-[var(--brand-size)] h-[var(--brand-size)]",
         className,

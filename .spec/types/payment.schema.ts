@@ -57,7 +57,7 @@ export const CreatePaymentSchema = z.object({
   
   // Méthode de paiement
   method: z.nativeEnum(PaymentMethod, {
-    errorMap: () => ({ message: 'Méthode de paiement invalide' }),
+    error: 'Méthode de paiement invalide',
   }),
   
   // Identifiants
@@ -87,10 +87,7 @@ export const CreatePaymentSchema = z.object({
     .min(2, 'Nom client trop court')
     .max(100, 'Nom client trop long')
     .optional(),
-  ipAddress: z
-    .string()
-    .ip({ version: 'v4', message: 'Adresse IP v4 invalide' })
-    .optional(),
+  ipAddress: z.ipv4({ error: 'Adresse IP v4 invalide' }).optional(),
   
   // Consignes (système automobile)
   consigne_total: z

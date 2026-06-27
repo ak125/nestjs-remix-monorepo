@@ -1,10 +1,4 @@
 import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, useSubmit } from "@remix-run/react";
-import {
   Search,
   Download,
   Users,
@@ -17,6 +11,12 @@ import {
   Eye,
 } from "lucide-react";
 import { useState, useMemo, useCallback } from "react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  useSubmit,
+} from "react-router";
 import { toast } from "sonner";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -170,7 +170,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     compatibleProducts = productVariations.slice(0, numProducts);
   }
 
-  return json<LoaderData>({
+  return {
     compatibleProducts,
     stats,
     searchParams: {
@@ -178,7 +178,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       typeId: typeId || undefined,
       year: year || undefined,
     },
-  });
+  };
 }
 
 export default function AdvancedVehicleSearch() {

@@ -28,11 +28,11 @@ export function R8EnrichedSection({ r8Content }: Props) {
         >
           <div className="flex items-start gap-3 mb-3">
             {block.type === "variant_difference" ? (
-              <Car size={24} className="text-foreground flex-shrink-0 mt-0.5" />
+              <Car size={24} className="text-foreground shrink-0 mt-0.5" />
             ) : (
               <Wrench
                 size={24}
-                className="text-blue-600 flex-shrink-0 mt-0.5"
+                className="text-blue-600 shrink-0 mt-0.5"
               />
             )}
             <h2 className="text-xl font-bold text-gray-900">{block.title}</h2>

@@ -198,7 +198,7 @@ export function TechnicalSpec({
       className={`flex items-center justify-between px-4 py-3 rounded-lg ${importanceColors[importance]}`}
     >
       <div className="flex items-center gap-3">
-        {icon && <div className="text-xl flex-shrink-0">{icon}</div>}
+        {icon && <div className="text-xl shrink-0">{icon}</div>}
 
         <div>
           <p className="text-sm font-sans font-medium text-gray-500">{label}</p>
@@ -476,7 +476,7 @@ export function SimplifiedExplanation({
 }: SimplifiedExplanationProps) {
   return (
     <div className="flex gap-3 p-4 bg-blue-50 border-secondary-500 rounded-lg">
-      <div className="flex-shrink-0 text-2xl">{icon}</div>
+      <div className="shrink-0 text-2xl">{icon}</div>
 
       <div className="flex-1">
         <p className="text-sm font-sans font-semibold text-secondary-500 mb-1">

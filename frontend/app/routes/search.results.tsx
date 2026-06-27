@@ -3,16 +3,13 @@
  */
 
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import {
   useLoaderData,
   useNavigation,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import Container from "~/components/layout/Container";
 import { Badge } from "~/components/ui/badge";
@@ -23,7 +20,7 @@ import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 /**
  * 🔍 SEO Meta Tags - noindex pour pages de recherche
  */
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   const query = data?.query || "";
   const total = data?.totalCount || 0;
 
@@ -69,14 +66,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const version = (url.searchParams.get("version") as "v7" | "v8") || "v8";
 
   if (!query) {
-    return json<SearchResultsData>({
+    return {
       query: "",
       results: [],
       totalCount: 0,
       searchTime: 0,
       version,
       suggestions: [],
-    });
+    };
   }
 
   // Simulation d'appel API (en réalité, ceci ferait appel au SearchService backend)
@@ -113,7 +110,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       result.description.toLowerCase().includes(query.toLowerCase()),
   );
 
-  return json<SearchResultsData>({
+  return {
     query,
     results: mockResults,
     totalCount: mockResults.length,
@@ -123,7 +120,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       query.length > 2
         ? [`${query} compatible`, `${query} original`, `${query} haute qualité`]
         : [],
-  });
+  };
 }
 
 export default function SearchResults() {

@@ -1,13 +1,12 @@
 {
 	"extends": "@fafa/typescript-config/base.json",
-	"include": ["env.d.ts", "vite-env.d.ts", "**/*.ts", "**/*.tsx", "../playwright.config.ts", "tailwind.config.cjs"],
+	"include": ["env.d.ts", "vite-env.d.ts", "**/*.ts", "**/*.tsx", ".react-router/types/**/*", "../playwright.config.ts", "tailwind.config.cjs"],
 	"exclude": ["index.d.cts", "tests/qa-audit"],
 	"compilerOptions": {
 		"module": "ESNext",
 		"skipLibCheck": true,
 		"lib": ["DOM", "DOM.Iterable", "ES2019"],
 		"isolatedModules": true,
-		"esModuleInterop": false,
 		"jsx": "react-jsx",
 		"noImplicitAny": false,
 		"moduleResolution": "bundler",
@@ -17,11 +16,13 @@
 		"useUnknownInCatchVariables": true,
 		"allowJs": true,
 		"forceConsistentCasingInFileNames": true,
-		"baseUrl": ".",
+		"types": ["vite/client", "vitest/globals", "node"],
+		"rootDirs": [".", "./.react-router/types"],
 		"paths": {
 			"~/*": ["./app/*"]
 		},
-		"noEmit": true
-	},
-	
+		"noEmit": true,
+		"incremental": true,
+		"tsBuildInfoFile": "./node_modules/.cache/tsc/frontend.tsbuildinfo"
+	}
 }

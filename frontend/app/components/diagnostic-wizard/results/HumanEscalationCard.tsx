@@ -6,12 +6,12 @@
  *   - true  : rendue en PRIMAIRE (au-dessus de RecommendedActionList)
  *   - false : rendue en SECONDAIRE (au-dessous, anti-cannibalisation)
  */
-import { Link } from "@remix-run/react";
 import { UserRound, AlertCircle } from "lucide-react";
+import { Link } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import { emitHandoff } from "./v1a-handoff-client";
-import  {
+import {
   type HumanEscalation,
   type DiagnosticIntent,
 } from "./v1a-intent-types";
@@ -58,9 +58,15 @@ export function HumanEscalationCard({
       aria-label="Escalade humaine"
     >
       {escalation.priority_boost ? (
-        <AlertCircle className="h-6 w-6 flex-shrink-0 text-amber-600" aria-hidden />
+        <AlertCircle
+          className="h-6 w-6 shrink-0 text-amber-600"
+          aria-hidden
+        />
       ) : (
-        <UserRound className="h-6 w-6 flex-shrink-0 text-muted-foreground" aria-hidden />
+        <UserRound
+          className="h-6 w-6 shrink-0 text-muted-foreground"
+          aria-hidden
+        />
       )}
       <div className="flex-1">
         <p className="font-medium">

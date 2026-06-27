@@ -9,7 +9,6 @@
  * ✅ Historique local
  */
 
-import { Form, useNavigate, useSearchParams } from "@remix-run/react";
 import {
   Search,
   X,
@@ -20,8 +19,10 @@ import {
   Zap,
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback, memo } from "react";
+import { Form, useNavigate, useSearchParams } from "react-router";
 
 import { logger } from "~/utils/logger";
+import { safeLocalStorage } from "~/utils/safe-storage";
 import {
   useEnhancedSearchWithDebounce,
   useEnhancedAutocomplete,
@@ -112,7 +113,7 @@ export const SearchBar = memo(function SearchBar({
   // Charger l'historique au montage
   useEffect(() => {
     if (typeof window !== "undefined" && showHistory) {
-      const stored = localStorage.getItem("search-history");
+      const stored = safeLocalStorage.getItem("search-history");
       if (stored) {
         try {
           setSearchHistory(JSON.parse(stored).slice(0, 5));
@@ -281,7 +282,7 @@ export const SearchBar = memo(function SearchBar({
       ].slice(0, 5);
 
       setSearchHistory(newHistory);
-      localStorage.setItem("search-history", JSON.stringify(newHistory));
+      safeLocalStorage.setItem("search-history", JSON.stringify(newHistory));
     },
     [showHistory, searchHistory],
   );
@@ -290,7 +291,7 @@ export const SearchBar = memo(function SearchBar({
   const clearHistory = useCallback(() => {
     setSearchHistory([]);
     if (typeof window !== "undefined") {
-      localStorage.removeItem("search-history");
+      safeLocalStorage.removeItem("search-history");
     }
   }, []);
 
@@ -483,7 +484,7 @@ export const SearchBar = memo(function SearchBar({
                   "border-b border-gray-100 last:border-b-0",
                 )}
               >
-                <div className="flex-shrink-0 mr-3">{suggestion.icon}</div>
+                <div className="shrink-0 mr-3">{suggestion.icon}</div>
 
                 <div className="flex-1 min-w-0">
                   <div className="font-medium text-gray-900 truncate">

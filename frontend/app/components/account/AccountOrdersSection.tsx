@@ -1,4 +1,3 @@
-import { Link } from "@remix-run/react";
 import {
   ChevronDown,
   ChevronRight,
@@ -7,6 +6,7 @@ import {
   Truck,
 } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router";
 import { Button } from "~/components/ui/button";
 import { formatPrice } from "~/utils/format";
 import { type OrderStatus, type RecentOrder } from "./account.types";
@@ -96,7 +96,7 @@ export function AccountOrdersSection({
                   onClick={() => setExpandedOrderId(isOpen ? null : o.id)}
                   className="w-full p-4 text-left flex items-center gap-3 bg-transparent border-none cursor-pointer font-[inherit]"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center flex-shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
                     <Package size={18} className="text-slate-400" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -114,7 +114,7 @@ export function AccountOrdersSection({
                       {o.info || "Commande"} &middot; {formatDate(o.date)}
                     </div>
                   </div>
-                  <div className="text-right flex-shrink-0">
+                  <div className="text-right shrink-0">
                     <div className="text-[13px] font-bold text-slate-800">
                       {formatPrice(o.totalTtc)}
                     </div>

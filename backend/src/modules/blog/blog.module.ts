@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CacheModule } from '@nestjs/cache-manager';
+import { boundedMemoryCache } from '../../config/cache-store.factory';
 
 // Controllers - API endpoints pour chaque type de contenu blog
 import { BlogController } from './controllers/blog.controller';
@@ -63,8 +64,7 @@ import { SeoModule } from '../seo/seo.module';
   imports: [
     // Cache Redis optimisé pour contenu blog
     CacheModule.register({
-      ttl: 3600, // 1 heure - contenu stable
-      max: 2000, // Augmenté pour plus d'articles
+      ...boundedMemoryCache(3600, 2000), // 1h, 2000 entrées — contenu blog stable
       isGlobal: false, // Cache spécifique au module blog
     }),
     SearchModule, // Services Meilisearch et Supabase intégrés

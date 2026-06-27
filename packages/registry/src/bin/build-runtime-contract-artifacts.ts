@@ -3,7 +3,7 @@ import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import path from "node:path";
 import { createHash } from "node:crypto";
 import { load as parseYaml } from "js-yaml";
-import { zodToJsonSchema } from "zod-to-json-schema";
+import { z } from "zod";
 import {
   RuntimeContractSchema,
   type RuntimeContract,
@@ -31,11 +31,11 @@ function fail(msg: string): never {
   throw new RuntimeContractBuildError(msg);
 }
 
-// Supported Node majors. Pure JSON.stringify over zodToJsonSchema()'s
+// Supported Node majors. Pure JSON.stringify over z.toJSONSchema()'s
 // deterministic output — byte-identical across 20.x and 22.x. Empirically
 // verified by PR-W4 #513 on db-contract (same pattern); re-verify on new
 // majors before extending.
-const SUPPORTED_NODE_MAJORS = ["20", "22"];
+const SUPPORTED_NODE_MAJORS = ["20", "22", "24"];
 
 {
   const currentMajor = process.versions.node.split(".")[0];
@@ -49,13 +49,13 @@ const SUPPORTED_NODE_MAJORS = ["20", "22"];
   }
 }
 
-// Runtime version guard for zod compatibility with zod-to-json-schema.
+// Runtime version guard: native z.toJSONSchema() requires zod 4.x.
 {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const zodPkg = require("zod/package.json") as { version: string };
-  if (!zodPkg.version.startsWith("3.")) {
+  if (!zodPkg.version.startsWith("4.")) {
     console.error(
-      `[runtime-contract:build] ABORT — zod v${zodPkg.version} unsupported (expected 3.x). ` +
+      `[runtime-contract:build] ABORT — zod v${zodPkg.version} unsupported (expected 4.x). ` +
         "See packages/registry/package.json runtime deps.",
     );
     process.exit(2);
@@ -92,9 +92,9 @@ function loadContract(): { contract: RuntimeContract; yamlSha256: string } {
 }
 
 function emitJsonSchema(yamlSha256: string, entrypointCount: number): string {
-  const schema = zodToJsonSchema(RuntimeContractSchema, {
-    name: "RuntimeContract",
-    target: "jsonSchema7",
+  const schema = z.toJSONSchema(RuntimeContractSchema, {
+    target: "draft-7",
+    unrepresentable: "throw",
   });
   // Forensic markers — audit/origin self-evident from the artifact alone.
   // Stored under $comment (JSON Schema 7 reserved key, ignored by validators).

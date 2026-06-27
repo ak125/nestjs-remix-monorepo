@@ -16,19 +16,6 @@
  */
 
 import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import {
-  useLoaderData,
-  Link,
-  useSearchParams,
-  Form,
-  useRouteError,
-  isRouteErrorResponse,
-} from "@remix-run/react";
-import {
   ArrowLeft,
   Search,
   Filter,
@@ -38,6 +25,16 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+  useSearchParams,
+  Form,
+  useRouteError,
+  isRouteErrorResponse,
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
@@ -53,7 +50,7 @@ import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 /**
  * 🔍 SEO Meta Tags - Catalogue produits (accès restreint)
  */
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   const total = data?.pagination?.total || 0;
   return [
     { title: `Catalogue Produits (${total.toLocaleString()}) | Espace Pro` },
@@ -103,7 +100,10 @@ interface CatalogData {
   error?: string;
 }
 
-export async function loader({ request, context }: LoaderFunctionArgs) {
+export async function loader({
+  request,
+  context,
+}: LoaderFunctionArgs): Promise<CatalogData> {
   const user = await requireUser({ context });
 
   // Determine user role and check access
@@ -185,7 +185,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       totalPages: Math.ceil((catalogData.total || products.length) / limit),
     };
 
-    return json<CatalogData>({
+    return {
       user: {
         id: user.id,
         name: userName,
@@ -201,10 +201,10 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         activeOnly,
       },
       enhanced,
-    });
+    };
   } catch (error) {
     logger.error("Catalog loading error:", error);
-    return json<CatalogData>({
+    return {
       user: {
         id: user.id,
         name: userName,
@@ -216,7 +216,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       filters: { searchTerm, activeOnly: false },
       enhanced,
       error: "Erreur lors du chargement du catalogue",
-    });
+    };
   }
 }
 

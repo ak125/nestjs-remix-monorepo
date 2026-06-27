@@ -38,7 +38,7 @@ function Badge({ className = "", variant = "default", size = "sm", icon, childre
       className={`${baseClasses} ${sizeClasses[size]} ${variantClasses[variant]} ${className}`}
       {...props}
     >
-      {icon && <span className="flex-shrink-0">{icon}</span>}
+      {icon && <span className="shrink-0">{icon}</span>}
       {children}
     </div>
   );

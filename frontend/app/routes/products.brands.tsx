@@ -15,18 +15,15 @@
  * - /products/brands?enhanced=true (advanced interface)
  */
 
+import { ArrowLeft, Tag, Car, TrendingUp, Search, Filter } from "lucide-react";
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import {
   useLoaderData,
   Link,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { ArrowLeft, Tag, Car, TrendingUp, Search, Filter } from "lucide-react";
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
@@ -69,13 +66,16 @@ interface BrandsData {
   error?: string;
 }
 
-export async function loader({ request, context }: LoaderFunctionArgs) {
+export async function loader({
+  request,
+  context,
+}: LoaderFunctionArgs): Promise<BrandsData> {
   const user = await requireUser({ context });
 
   // Determine user role and check access
   const userLevel = user.level || 0;
   const userName = user.name || "Utilisateur";
-  const userRole =
+  const userRole: "pro" | "commercial" | null =
     userLevel >= 4 ? "pro" : userLevel >= 3 ? "commercial" : null;
 
   if (!userRole) {
@@ -125,7 +125,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       }),
     };
 
-    return json<BrandsData>({
+    return {
       user: {
         id: user.id,
         name: userName,
@@ -135,10 +135,10 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       brands,
       stats,
       enhanced,
-    });
+    };
   } catch (error) {
     logger.error("Brands loading error:", error);
-    return json<BrandsData>({
+    return {
       user: {
         id: user.id,
         name: userName,
@@ -149,7 +149,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       stats: { total: 0, active: 0 },
       enhanced,
       error: "Erreur lors du chargement des marques",
-    });
+    };
   }
 }
 

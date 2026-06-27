@@ -1,16 +1,13 @@
+import { useState, useEffect } from "react";
 import {
-  json,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import {
   useLoaderData,
   useActionData,
   Form,
   useNavigation,
-} from "@remix-run/react";
-import { useState, useEffect } from "react";
+} from "react-router";
 import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -123,21 +120,21 @@ export async function loader({ request }: LoaderFunctionArgs) {
       stats: statsData?.data || {},
     };
 
-    return json({
+    return {
       dashboard,
       stockData,
       filters,
       success: true,
-    });
+    };
   } catch (error) {
     logger.error("Erreur chargement stock:", error);
-    return json({
+    return {
       dashboard: null,
       stockData: { items: [], total: 0, stats: {} },
       filters,
       error: "Erreur de chargement des données stock",
       success: false,
-    });
+    };
   }
 }
 
@@ -169,13 +166,13 @@ export async function action({ request }: ActionFunctionArgs) {
         );
 
         if (response.ok) {
-          return json({
+          return {
             success: true,
             message: "Mouvement enregistré avec succès",
-          });
+          };
         } else {
           const error = await response.json();
-          return json({ success: false, error: error.message });
+          return { success: false, error: error.message };
         }
       }
 
@@ -198,22 +195,22 @@ export async function action({ request }: ActionFunctionArgs) {
 
         if (response.ok) {
           const result = await response.json();
-          return json({ success: true, message: result.message });
+          return { success: true, message: result.message };
         } else {
           const error = await response.json();
-          return json({ success: false, error: error.message });
+          return { success: false, error: error.message };
         }
       }
 
       default:
-        return json({ success: false, error: "Action non reconnue" });
+        return { success: false, error: "Action non reconnue" };
     }
   } catch (error) {
     logger.error("Erreur action stock:", error);
-    return json({
+    return {
       success: false,
       error: "Erreur lors de l'exécution de l'action",
-    });
+    };
   }
 }
 
@@ -532,7 +529,7 @@ export default function AdminStock() {
 
       {/* Modal Mouvement */}
       {showMovementModal && selectedProduct && (
-        <div className="fixed inset-0 bg-neutral-900 bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-neutral-900/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <h3 className="text-lg font-semibold mb-4">
               Enregistrer un mouvement
@@ -629,7 +626,7 @@ export default function AdminStock() {
 
       {/* Modal Ajustement */}
       {showAdjustModal && selectedProduct && (
-        <div className="fixed inset-0 bg-neutral-900 bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-neutral-900/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <h3 className="text-lg font-semibold mb-4">
               Ajustement d'inventaire

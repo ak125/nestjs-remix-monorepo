@@ -7,13 +7,13 @@
  * texte libre, validé côté serveur (400 si inconnu, 409 si mode ≠ shadow, 422 si
  * dry-run KO) — pas de catalogue dupliqué ici.
  */
-import { Form, useNavigation } from "@remix-run/react";
 import {
   Activity,
   PlayCircle,
   AlertTriangle,
   CheckCircle2,
 } from "lucide-react";
+import { Form, useNavigation } from "react-router";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";

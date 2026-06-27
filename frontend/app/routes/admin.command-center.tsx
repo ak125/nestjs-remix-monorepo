@@ -11,13 +11,6 @@
  * Onglet « Orchestration » (ADR-087) : statut read-only + preview d'un plan shadow
  * *would-be* (action POST → backend). 0 mutation d'artefact ; le backend valide.
  */
-import {
-  type ActionFunctionArgs,
-  type LoaderFunctionArgs,
-  json,
-  type MetaFunction,
-} from "@remix-run/node";
-import { useActionData, useLoaderData } from "@remix-run/react";
 import { type CommandCenterResponse } from "@repo/registry";
 import {
   AlertTriangle,
@@ -26,6 +19,24 @@ import {
   FileWarning,
   Workflow,
 } from "lucide-react";
+import {
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  data,
+  useActionData,
+  useLoaderData,
+} from "react-router";
+import { CertBadge } from "~/components/command-center/badges";
+import { GlobalHealthBar } from "~/components/command-center/GlobalHealthBar";
+import { ModuleGrid } from "~/components/command-center/ModuleGrid";
+import {
+  OrchestrationPanel,
+  type OrchestrationActionData,
+  type OrchestrationStatus,
+  type ShadowPlanView,
+} from "~/components/command-center/OrchestrationPanel";
+import { OwnerActionQueue } from "~/components/command-center/OwnerActionQueue";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
@@ -42,16 +53,6 @@ import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 import { requireAdmin } from "../auth/unified.server";
-import { GlobalHealthBar } from "~/components/command-center/GlobalHealthBar";
-import { OwnerActionQueue } from "~/components/command-center/OwnerActionQueue";
-import { ModuleGrid } from "~/components/command-center/ModuleGrid";
-import { CertBadge } from "~/components/command-center/badges";
-import {
-  OrchestrationPanel,
-  type OrchestrationActionData,
-  type OrchestrationStatus,
-  type ShadowPlanView,
-} from "~/components/command-center/OrchestrationPanel";
 
 export const meta: MetaFunction = () =>
   createNoIndexMeta("Command Center — Admin");
@@ -133,20 +134,20 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     );
     if (res.status === 404) {
       // COMMAND_CENTER_MODE=disabled (prod-safe default) → endpoint 404s.
-      return json({
+      return {
         cc: degraded(
           "Command Center désactivé dans cet environnement.",
           "disabled",
         ),
         orchestration: null as OrchestrationStatus | null,
-      });
+      };
     }
     if (!res.ok) {
       logger.warn(`[command-center] API ${res.status} — rendering degraded`);
-      return json({
+      return {
         cc: degraded(`backend API ${res.status}`),
         orchestration: null as OrchestrationStatus | null,
-      });
+      };
     }
     const body = (await res.json()) as {
       data?: CommandCenterResponse;
@@ -155,22 +156,17 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     const cc = body.data ?? (body as CommandCenterResponse);
     const orchestration =
       cc.mode === "disabled" ? null : await fetchOrchestration(request);
-    return json({ cc, orchestration });
+    return { cc, orchestration };
   } catch (e) {
     logger.error(`[command-center] fetch failed: ${e}`);
-    return json({
+    return {
       cc: degraded("backend unreachable"),
       orchestration: null as OrchestrationStatus | null,
-    });
+    };
   }
 }
 
-export async function action({
-  request,
-  context,
-}: ActionFunctionArgs): Promise<
-  ReturnType<typeof json<OrchestrationActionData>>
-> {
+export async function action({ request, context }: ActionFunctionArgs) {
   await requireAdmin({ context });
   const form = await request.formData();
   const kind = String(form.get("kind") ?? "");
@@ -199,13 +195,13 @@ export async function action({
       const msg = Array.isArray(body.message)
         ? body.message.join(", ")
         : (body.message ?? `Erreur backend ${res.status}`);
-      return json({ ok: false, error: msg }, { status: res.status });
+      return data({ ok: false, error: msg }, { status: res.status });
     }
     const plan = body.data ?? (body as ShadowPlanView);
-    return json({ ok: true, plan });
+    return { ok: true, plan };
   } catch (e) {
     logger.error(`[command-center] shadow preview failed: ${e}`);
-    return json({ ok: false, error: "Backend injoignable." }, { status: 502 });
+    return data({ ok: false, error: "Backend injoignable." }, { status: 502 });
   }
 }
 

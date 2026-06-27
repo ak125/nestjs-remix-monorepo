@@ -1,17 +1,4 @@
 import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import {
-  useLoaderData,
-  Link,
-  useSearchParams,
-  Form,
-  useRouteError,
-  isRouteErrorResponse,
-} from "@remix-run/react";
-import {
   Package,
   Clock,
   CheckCircle,
@@ -19,6 +6,16 @@ import {
   Truck,
   ShoppingBag,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+  useSearchParams,
+  Form,
+  useRouteError,
+  isRouteErrorResponse,
+} from "react-router";
 
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { logger } from "~/utils/logger";
@@ -85,12 +82,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
       totalSpent: orders.reduce((sum, order) => sum + order.totalTTC, 0),
     };
 
-    return json({ orders, pagination, user, stats });
+    return { orders, pagination, user, stats };
   } catch (error) {
     logger.error("Error in loader:", error);
 
     // Retour avec des données vides en cas d'erreur
-    return json({
+    return {
       orders: [],
       pagination: {
         currentPage: 1,
@@ -105,7 +102,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         totalSpent: 0,
       },
       error: "Impossible de charger les commandes",
-    });
+    };
   }
 }
 

@@ -4,8 +4,8 @@
  * A/B Testing automatisé et insights utilisateur
  */
 
-import { useLocation } from "@remix-run/react";
 import { useCallback, useEffect, useState } from "react";
+import { useLocation } from "react-router";
 import { logger } from "~/utils/logger";
 
 interface AnalyticsEvent {

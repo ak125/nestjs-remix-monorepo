@@ -60,7 +60,7 @@ export function HeroDiagnostic({
       <div className="container mx-auto px-4">
         <div className="max-w-4xl flex items-start gap-4">
           <div
-            className={`flex-shrink-0 p-3 rounded-xl ${styles.accentBg} border ${styles.border}`}
+            className={`shrink-0 p-3 rounded-xl ${styles.accentBg} border ${styles.border}`}
           >
             <Icon className={`w-6 h-6 md:w-7 md:h-7 ${styles.accent}`} />
           </div>

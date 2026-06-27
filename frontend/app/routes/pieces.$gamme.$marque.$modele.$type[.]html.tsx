@@ -11,13 +11,13 @@
  * sont delegues a des fichiers dedies.
  */
 
-import { type MetaFunction } from "@remix-run/node";
+import { useEffect } from "react";
 import {
+  type MetaFunction,
   isRouteErrorResponse,
   useLoaderData,
   useRouteError,
-} from "@remix-run/react";
-import { useEffect } from "react";
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import {
   NoProductsAlternatives,
@@ -61,7 +61,7 @@ export const headers = buildCacheHeaders(
 // META - SEO (Schema.org genere par composant Breadcrumbs)
 // ========================================
 
-export const meta: MetaFunction<typeof loader> = ({ data, location }) =>
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data, location }) =>
   buildPiecesVehicleMeta(data, location);
 
 // ========================================

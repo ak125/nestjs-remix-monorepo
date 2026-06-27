@@ -109,6 +109,6 @@ export class McpValidationModule implements NestModule {
     // Apply RequestIdMiddleware to all routes
     consumer
       .apply(RequestIdMiddleware)
-      .forRoutes({ path: '*', method: RequestMethod.ALL });
+      .forRoutes({ path: '{*path}', method: RequestMethod.ALL });
   }
 }

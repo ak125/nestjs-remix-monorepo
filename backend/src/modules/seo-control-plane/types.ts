@@ -17,6 +17,12 @@ export type SyntheticRunTrigger = 'scheduler' | 'manual' | 'test';
 export const SYNTHETIC_USER_AGENT =
   'AutoMecanikSyntheticBot/1.0 (+https://www.automecanik.com/bots/synthetic)';
 
+// NOTE: the synthetic crawler no longer carries a rate-limit exemption. The
+// former HMAC header (x-synthetic-probe) + egress-IP floor + isSyntheticExemptPath
+// scope were retired (PR2): the CDN strips the custom header, an IP allowlist
+// weakens a security control, and the crawler now self-paces (PR #1161,
+// SEO_CP_MAX_RPM) to stay under the throttler — the structural fix at the source.
+
 /** Payload du job BullMQ `seo-cp-synthetic-crawl`. */
 export interface SyntheticCrawlJobData {
   triggeredBy: SyntheticRunTrigger;

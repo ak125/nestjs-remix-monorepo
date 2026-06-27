@@ -6,12 +6,6 @@
  */
 
 import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, Link, useParams } from "@remix-run/react";
-import {
   ArrowLeft,
   Car,
   Fuel,
@@ -20,6 +14,13 @@ import {
   Settings,
   Info,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+  useParams,
+} from "react-router";
 import { Alert } from "~/components/ui/alert";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
@@ -47,7 +48,7 @@ export const handle = {
   }),
 };
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   if (!data?.brand || !data?.model) {
     return [
       { title: "Motorisations | Automecanik" },
@@ -197,10 +198,10 @@ export async function loader({ params }: LoaderFunctionArgs) {
           : { min: 0, max: 0 },
     };
 
-    return json({ types, model, brand, stats } as LoaderData);
+    return { types, model, brand, stats } as LoaderData;
   } catch (error) {
     logger.error("Erreur chargement types:", error);
-    return json({
+    return {
       types: [],
       model: null,
       brand: null,
@@ -211,7 +212,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
         powerRange: { min: 0, max: 0 },
       },
       error: "Impossible de charger les types",
-    } as LoaderData);
+    } as LoaderData;
   }
 }
 

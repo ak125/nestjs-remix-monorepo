@@ -7,17 +7,6 @@
  */
 
 import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import {
-  useLoaderData,
-  Link,
-  useRouteError,
-  isRouteErrorResponse,
-} from "@remix-run/react";
-import {
   Plus,
   Edit,
   Trash,
@@ -27,6 +16,14 @@ import {
   Shield,
   Settings,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+  useRouteError,
+  isRouteErrorResponse,
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Alert } from "~/components/ui/alert";
 import { logger } from "~/utils/logger";
@@ -99,7 +96,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
       );
     }
 
-    return json({
+    return {
       staff: staffResult.staff || [],
       statistics: statisticsResult.statistics || {
         total: 0,
@@ -110,11 +107,11 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
       pagination: staffResult.pagination,
       success: true,
       timestamp: new Date().toISOString(),
-    });
+    };
   } catch (error) {
     logger.error("Erreur loader staff:", error);
 
-    return json({
+    return {
       staff: [],
       statistics: {
         total: 0,
@@ -126,7 +123,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
       success: false,
       error: error instanceof Error ? error.message : "Erreur inconnue",
       timestamp: new Date().toISOString(),
-    });
+    };
   }
 };
 
@@ -293,7 +290,7 @@ export default function StaffIndex() {
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
-                      <div className="h-10 w-10 flex-shrink-0">
+                      <div className="h-10 w-10 shrink-0">
                         <div className="h-10 w-10 rounded-full bg-primary/15 flex items-center justify-center">
                           <span className="text-sm font-medium text-blue-600">
                             {member.firstName?.[0]}

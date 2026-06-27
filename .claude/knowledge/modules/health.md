@@ -2,10 +2,11 @@
 module: health
 sources:
 - backend/src/modules/health
-last_scan: '2026-05-24'
+last_scan: '2026-06-26'
 primary_files:
 - backend/src/modules/health/health.module.ts
-depends_on: []
+depends_on:
+- SessionInfrastructureModule
 ---
 
 # Module Health

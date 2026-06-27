@@ -4,7 +4,12 @@
  * Remplacement ultra-allégé de remix-integration.server.ts
  */
 // import "reflect-metadata"; // Désactivé - géré par le backend
-import { type AppLoadContext } from "@remix-run/node";
+import { type RouterContextProvider } from "react-router";
+import {
+  remixIntegrationContext,
+  remixServiceContext,
+  userContext,
+} from "~/utils/load-context";
 import { logger } from "~/utils/logger";
 
 /**
@@ -12,41 +17,29 @@ import { logger } from "~/utils/logger";
  * Gère le bootstrap de l'application NestJS si nécessaire.
  */
 export async function getRemixApiService(
-  context: AppLoadContext,
+  context: Readonly<RouterContextProvider>,
 ): Promise<any> {
-  // Si le backend Nest a déjà injecté le service dans le contexte, on l'utilise directement
-  const ctx: any = context as any;
+  // Si le backend Nest a déjà injecté le service dans le contexte, on l'utilise
+  // directement. v8_middleware : les valeurs sont lues via les clés typées
+  // (`.get`), pas en accès propriété — un RouterContextProvider n'expose aucune
+  // clé énumérable (l'ancien `Object.keys(ctx)` retournerait toujours `[]`).
+  const remixIntegration = context.get(remixIntegrationContext);
+  const remixService = context.get(remixServiceContext);
 
-  logger.log("[getRemixApiService] Context keys:", Object.keys(ctx));
   logger.log(
     "[getRemixApiService] remixIntegration available:",
-    !!ctx.remixIntegration,
+    !!remixIntegration,
   );
-  logger.log(
-    "[getRemixApiService] remixService available:",
-    !!ctx.remixService,
-  );
+  logger.log("[getRemixApiService] remixService available:", !!remixService);
 
-  if (ctx.remixIntegration) {
-    logger.log(
-      "[getRemixApiService] Using remixIntegration:",
-      Object.keys(ctx.remixIntegration),
-    );
-    return ctx.remixIntegration;
+  if (remixIntegration) {
+    return remixIntegration;
   }
-  if (ctx.remixService?.integration) {
-    logger.log(
-      "[getRemixApiService] Using remixService.integration:",
-      Object.keys(ctx.remixService.integration),
-    );
-    return ctx.remixService.integration;
+  if (remixService?.integration) {
+    return remixService.integration;
   }
-  if (ctx.remixService) {
-    logger.log(
-      "[getRemixApiService] Using remixService directly:",
-      Object.keys(ctx.remixService),
-    );
-    return ctx.remixService;
+  if (remixService) {
+    return remixService;
   }
 
   logger.log("[getRemixApiService] Creating fallback API service");
@@ -67,15 +60,21 @@ export async function getRemixApiService(
     };
 
     // Transmettre les informations d'authentification du contexte
-    if (ctx.user) {
-      headers["X-User-Id"] = String(ctx.user.id || ctx.user.usr_id);
-      headers["X-User-Email"] = String(ctx.user.email || ctx.user.usr_email);
-      headers["X-User-Level"] = String(
-        ctx.user.level || ctx.user.usr_level || 1,
-      );
+    const user = context.get(userContext) as {
+      id?: unknown;
+      usr_id?: unknown;
+      email?: unknown;
+      usr_email?: unknown;
+      level?: unknown;
+      usr_level?: unknown;
+    } | null;
+    if (user) {
+      headers["X-User-Id"] = String(user.id || user.usr_id);
+      headers["X-User-Email"] = String(user.email || user.usr_email);
+      headers["X-User-Level"] = String(user.level || user.usr_level || 1);
       logger.log(
         "[makeApiCall] Auth headers ajoutés pour utilisateur:",
-        ctx.user.email,
+        String(user.email),
       );
     }
 
@@ -103,7 +102,12 @@ export async function getRemixApiService(
 
   const api = {
     makeApiCall,
-    getOrdersForRemix: (params?: { page?: number; limit?: number; status?: string; search?: string }) => {
+    getOrdersForRemix: (params?: {
+      page?: number;
+      limit?: number;
+      status?: string;
+      search?: string;
+    }) => {
       const { page = 1, limit = 20, status, search } = params || {};
       const q = new URLSearchParams({
         page: String(page),
@@ -113,7 +117,12 @@ export async function getRemixApiService(
       });
       return makeApiCall(`/api/admin/orders?${q}`);
     },
-    getUsersForRemix: (params?: { page?: number; limit?: number; search?: string; level?: number }) => {
+    getUsersForRemix: (params?: {
+      page?: number;
+      limit?: number;
+      search?: string;
+      level?: number;
+    }) => {
       const { page = 1, limit = 10, search, level } = params || {};
       const q = new URLSearchParams({
         page: String(page),
@@ -123,7 +132,11 @@ export async function getRemixApiService(
       });
       return makeApiCall(`/api/legacy-users?${q}`);
     },
-    getSuppliersForRemix: (params?: { page?: number; limit?: number; search?: string }) => {
+    getSuppliersForRemix: (params?: {
+      page?: number;
+      limit?: number;
+      search?: string;
+    }) => {
       const { page = 1, limit = 20, search } = params || {};
       const q = new URLSearchParams({
         page: String(page),
@@ -156,7 +169,12 @@ export async function getRemixApiService(
           };
         });
     },
-    getPayments: async (params?: { page?: number; limit?: number; status?: string; search?: string }) => {
+    getPayments: async (params?: {
+      page?: number;
+      limit?: number;
+      status?: string;
+      search?: string;
+    }) => {
       // Proxy simple via orders
       const orders: any = await api.getOrdersForRemix(params);
       const payments = (orders?.orders || []).map((o: any) => ({
@@ -492,7 +510,13 @@ export async function getRemixApiService(
     },
 
     // 👥 Méthodes Staff ajoutées pour corriger l'intégration Remix
-    getStaff: async (params?: { page?: number; limit?: number; status?: string; department?: string; search?: string }) => {
+    getStaff: async (params?: {
+      page?: number;
+      limit?: number;
+      status?: string;
+      department?: string;
+      search?: string;
+    }) => {
       try {
         const {
           page = 1,

@@ -74,7 +74,7 @@ jobs:
       - name: Setup Node + install monorepo deps (for tsx + zod-to-json-schema)
         uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
           cache-dependency-path: monorepo/package-lock.json
       - run: cd monorepo && npm ci --ignore-scripts

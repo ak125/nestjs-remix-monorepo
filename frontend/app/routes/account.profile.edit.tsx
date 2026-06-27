@@ -1,19 +1,17 @@
+import { User, Save, ArrowLeft } from "lucide-react";
 import {
-  json,
   redirect,
   type ActionFunction,
   type LoaderFunction,
   type MetaFunction,
-} from "@remix-run/node";
-import {
+  data,
   useLoaderData,
   Form,
   useActionData,
   useNavigation,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { User, Save, ArrowLeft } from "lucide-react";
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Alert } from "~/components/ui/alert";
 import { logger } from "~/utils/logger";
@@ -70,7 +68,7 @@ export const loader: LoaderFunction = async ({ request, context }) => {
       status: "active",
     };
 
-    return json<LoaderData>({ user });
+    return { user };
   } catch (error) {
     logger.error("Erreur chargement profil:", error);
     throw redirect("/account/profile");
@@ -102,7 +100,7 @@ export const action: ActionFunction = async ({ request, context }) => {
   }
 
   if (Object.keys(fieldErrors).length > 0) {
-    return json<ActionData>({ fieldErrors }, { status: 400 });
+    return data({ fieldErrors }, { status: 400 });
   }
 
   try {
@@ -125,7 +123,7 @@ export const action: ActionFunction = async ({ request, context }) => {
 
     if (!response.ok) {
       logger.error(`Update profile API error: ${response.status}`);
-      return json<ActionData>(
+      return data(
         {
           error: "Erreur lors de la mise à jour du profil",
         },
@@ -136,7 +134,7 @@ export const action: ActionFunction = async ({ request, context }) => {
     return redirect("/account/profile?updated=true");
   } catch (error) {
     logger.error("Erreur mise à jour profil:", error);
-    return json<ActionData>(
+    return data(
       {
         error: "Erreur lors de la mise à jour du profil",
       },

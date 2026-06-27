@@ -1,10 +1,73 @@
 # PR-9f.0 — Express 5 Compatibility Audit (audit-only, BLOCKS PR-9f)
 
-> **Verdict** : **`BLOCKING-FOR-PR9F: [@remix-run/express-peer-dep-strict-express-4]`**
+> **Verdict (REFRESH 2026-06-25)** : **`UNBLOCKED_WITH_EXECUTION_GATES`** — voir [§ REFRESH](#refresh-2026-06-25--verdict-flips-to-unblocked_with_execution_gates).
+> _(Verdict original 2026-05-24 `BLOCKING-FOR-PR9F: [@remix-run/express-peer-dep-strict-express-4]` — **SUPERSEDED**, conservé ci-dessous comme trace d'audit.)_
 >
 > Audit produced per [PR-9 roadmap](./pr-9-modernization-roadmap.md) § PR-9f.0. Audit-only PR. Touches no runtime code. Output is this document.
 >
 > **Methodology** : enumerate every Express 4 contract used in the monorepo, check Express 5 status (per [Express 5.0 migration guide](https://expressjs.com/en/guide/migrating-5.html)), and produce a `PASS` or `BLOCKING-FOR-PR9F: <list>` verdict.
+
+## REFRESH 2026-06-25 — verdict flips to `UNBLOCKED_WITH_EXECUTION_GATES`
+
+> Tout le corps **sous le § TL;DR (2026-05-24) est SUPERSEDED** — conservé comme trace d'audit.
+> Son blocker unique est résolu et son scan §1 était incomplet (la **syntaxe de routes** n'avait pas été scannée).
+
+### 1. Blocker résolu par RR8
+
+L'unique blocker `@remix-run/express@2.17.4` (peer strict `express@^4.20.0`) a **disparu** :
+[`backend/src/remix/remix.controller.ts`](../../backend/src/remix/remix.controller.ts) importe désormais
+`createRequestHandler` depuis **`@react-router/express@8.0.1`** (React Router 8, live en PROD — état
+**définitif**, pas un intermédiaire RR7). `@react-router/express@8` tourne déjà sur `express@5.x` ; seul
+`@nestjs/platform-express@10` épingle encore `express@4.22.1`. PR-9e (auth/connect-redis 5→9, #1139) est mergée.
+→ **plus aucun blocker structurel.**
+
+### 2. Correction du §1 — la syntaxe de routes n'avait pas été scannée (path-to-regexp v8)
+
+Le §1 original (« 0 deprecated patterns ») scannait `req.param()`, `res.json(status,…)`, etc. mais **pas les
+chaînes de route**. path-to-regexp v8 (Express 5) retire `:param(.*)` et `:path*`. Inventaire **exhaustif = 14 patterns**
+(critère : 14 recensés → 14 migrés → 0 laissé obsolète) :
+
+| # | Type | Site | Actuel → v8 |
+|---|---|---|---|
+| 1 | décorateur | `remix.controller.ts:60` | `@All(':path*')` → `@All('{*path}')` |
+| 2-4 | décorateur | `optimized-metadata.controller.ts:40/70/104` | `@Get/@Put/@Delete(':path(.*)')` → `{*path}` |
+| 5-6 | décorateur | `optimized-breadcrumb.controller.ts:117/152` | `@Get/@Post(':path(.*)')` → `{*path}` |
+| 7 | décorateur | `optimized-breadcrumb.controller.ts:194` | `@Get('schema/:path(.*)')` → `@Get('schema/{*path}')` |
+| 8-9 | décorateur | `seo.controller.ts:52/115` | `metadata/:url(.*)` / `redirect/:url(.*)` → `metadata/{*url}` / `redirect/{*url}` |
+| 10 | middleware | `app.module.ts:292` | `.forRoutes('*')` → `.forRoutes('{*path}')` |
+| 11 | middleware | `bot-guard.module.ts:20` | `{ path: '*' }` → `{ path: '{*path}' }` |
+| 12 | middleware | `mcp-validation.module.ts:112` | `{ path: '*' }` → `{ path: '{*path}' }` (module non relié au graphe — **migré** quand même) |
+| 13-14 | middleware **scopé** | `vehicle-context.module.ts:41/42` | `api/diagnostic/*` / `api/v1/orientation/*` → splat **nommé** `*path` (PAS universel — sinon fire sur toutes les requêtes) |
+
+### 3. Autres points Express 5 non signalés à l'origine
+
+- **Splat = `string[] | undefined`** (pré-décodé) sous v8 → les 8 `decodeURIComponent(path/url)`
+  (metadata 45/76/109, breadcrumb 124/158/200, seo 55/118) doivent **abandonner le décodage manuel** (sinon double-décodage).
+- **Override `path-to-regexp: 3.3.0`** (root `package.json`) à **retirer** (down-pinnerait le router v8 d'Express 5).
+- **Query parser** : Express 5 défaut `simple` ≠ Express 4 `extended` → `expressApp.set('query parser','extended')`
+  (précautionnaire ; backend en query plat — **0 usage imbriqué vérifié**).
+- **Prérequis cache (PR séparée)** : NestJS 11 force `@nestjs/cache-manager@3` → `cache-manager@6` + Keyv.
+  **2 sous-systèmes cache partagent l'enum `CacheTTL` (secondes)** — convertir l'enum corromprait le cache
+  ioredis ×1000. Isolé en **PR-9f.cache sous Nest 10** ; `getTTLMs()` existant réutilisé.
+- **`@nestjs/bull@10.2.3`** peer Nest 8/9/10 seulement → bump **obligatoire `→^11.0.4`** (garde `bull@4.x`, n'empiète pas PR-9d).
+- **`req.query`** : 0 mutation backend (vérifié) → compatible getter Express 5.
+- **RxJS** déjà `^7.8.2` → `RxJS7Required` satisfait. **`@nestjs/swagger`** 7→11 (tire `swagger-ui-dist` ; les 2 décls directes `swagger-ui-express` ont 0 importateur → retirer). **`@nestjs/throttler`** config déjà `throttlers:[{ttl:ms}]` (v6-shaped).
+
+### 4. Route morte pré-existante découverte (comportement préservé)
+
+`@Get('schema/:path(.*)')` (breadcrumb:194) est **déjà inatteignable** sous Nest 10 : le générique
+`@Get(':path(.*)')` (l.117) capture `schema/…` en premier. La migration **préserve ce comportement** (pas de
+réordonnancement) → « 0 changement de contrat d'URL externe » reste vrai. Route morte signalée à l'owner pour décision séparée.
+
+### 5. Nouveau verdict
+
+**`UNBLOCKED_WITH_EXECUTION_GATES`** — aucun blocker structurel ; la migration 14-patterns + le bridge cache
+sont **dans le périmètre de PR-9f / PR-9f.cache** (pas des blockers). Gates restants = exécution
+(cf. `pr-9f-nestjs11-execution-spec-2026-06-25.md`) : peer-tree dépendances propre, matrice runtime,
+soak piloté par preuve, **GO owner nominatif** pour le tag PROD. Préconditions cascade : PR-9e ✅ ;
+Zod 4 hors-chemin (`nestjs-zod@4.3.1` accepte zod 3||4).
+
+---
 
 ## TL;DR
 

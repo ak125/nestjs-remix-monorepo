@@ -6,8 +6,8 @@
  * 📊 TRACKING: Intégration du hook useSeoLinkTracking pour analytics
  */
 
-import { Link } from "@remix-run/react";
 import React, { useEffect, memo } from "react";
+import { Link } from "react-router";
 
 import { useSeoLinkTracking } from "../../hooks/useSeoLinkTracking";
 import {
@@ -74,7 +74,6 @@ export const PiecesCrossSelling = memo(function PiecesCrossSelling({
           Découvrez d'autres gammes pour votre {vehicle.marque} {vehicle.modele}
         </p>
       </div>
-
       <div className="p-6">
         {/* Grid des gammes */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -189,7 +188,7 @@ export const PiecesCrossSelling = memo(function PiecesCrossSelling({
         <div className="mt-6 p-4 bg-teal-50 rounded-lg border border-teal-200">
           <p className="text-xs text-teal-800 flex items-start gap-2">
             <svg
-              className="w-4 h-4 mt-0.5 flex-shrink-0"
+              className="w-4 h-4 mt-0.5 shrink-0"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -249,7 +248,6 @@ export const PiecesCrossSellingCompact = memo(
             Autres pièces
           </h3>
         </div>
-
         <div className="p-3 space-y-2">
           {limitedGammes.map((gamme) => {
             // ⚠️ CRITIQUE: Construction URL préservée
@@ -262,7 +260,7 @@ export const PiecesCrossSellingCompact = memo(
                 to={url}
                 className="flex items-center gap-3 p-2 rounded-lg hover:bg-teal-50 transition-colors group"
               >
-                <div className="w-10 h-10 bg-gradient-to-br from-teal-100 to-cyan-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 bg-gradient-to-br from-teal-100 to-cyan-100 rounded-lg flex items-center justify-center shrink-0">
                   {gamme.PG_IMAGE ? (
                     <img
                       src={gamme.PG_IMAGE}
