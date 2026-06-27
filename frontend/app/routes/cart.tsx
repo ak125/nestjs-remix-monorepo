@@ -540,12 +540,12 @@ export default function CartPage() {
           aria-disabled={isAnyMutating}
           className={`flex-1 py-3 px-4 bg-cta hover:bg-cta-hover rounded-xl flex items-center justify-center gap-2 touch-target ${isAnyMutating ? "pointer-events-none opacity-50" : ""}`}
         >
-          <span className="text-white font-bold">
+          <span className="text-black font-bold">
             {cart.summary.total_items} article
             {cart.summary.total_items > 1 ? "s" : ""} &middot;{" "}
             {formatPrice(cart.summary.total_price || cart.summary.subtotal)}
           </span>
-          <ArrowRight className="h-5 w-5 text-white" />
+          <ArrowRight className="h-5 w-5 text-black" />
         </Link>
       </MobileBottomBar>
 

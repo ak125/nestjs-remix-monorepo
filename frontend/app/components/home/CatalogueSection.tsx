@@ -69,7 +69,7 @@ const CatalogFamilyCard = memo(function CatalogFamilyCard({
             </span>
           )}
           {pop && (
-            <span className="absolute top-2.5 right-2.5 text-[10px] font-bold uppercase tracking-wide text-white bg-cta/90 px-2 py-0.5 rounded-md shadow-sm z-10">
+            <span className="absolute top-2.5 right-2.5 text-[10px] font-bold uppercase tracking-wide text-black bg-cta/90 px-2 py-0.5 rounded-md shadow-sm z-10">
               Populaire
             </span>
           )}

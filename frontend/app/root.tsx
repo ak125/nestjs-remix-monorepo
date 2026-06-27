@@ -371,7 +371,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
       <button
         onClick={scrollToTop}
         type="button"
-        className={`fixed bottom-40 right-4 md:bottom-24 md:right-8 z-[9999] w-12 h-12 rounded-full shadow-2xl flex items-center justify-center bg-cta hover:bg-cta-hover text-white transition-all duration-300 hover:scale-110 ${showScrollTop ? "opacity-100 scale-100" : "opacity-0 scale-50 pointer-events-none"}`}
+        className={`fixed bottom-40 right-4 md:bottom-24 md:right-8 z-[9999] w-12 h-12 rounded-full shadow-2xl flex items-center justify-center bg-cta hover:bg-cta-hover text-black transition-all duration-300 hover:scale-110 ${showScrollTop ? "opacity-100 scale-100" : "opacity-0 scale-50 pointer-events-none"}`}
         aria-label="Retour en haut"
       >
         <ChevronUp className="w-6 h-6" />

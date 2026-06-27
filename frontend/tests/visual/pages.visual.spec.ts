@@ -41,22 +41,30 @@ import { test, expect } from "@playwright/test";
  *     pour filtrer ce diff. À ajouter si une phase ultérieure exige un seuil composant plus strict.
  */
 
-const PAGES = [
-  // R-surfaces SEO (oracle existant)
-  { name: "home", url: "/" },
-  { name: "r1-gamme", url: "/pieces/plaquette-de-frein-402.html" },
+// `dynamic: true` = page à STRUCTURE data-driven (nombre de cartes / blocs éditoriaux variable selon
+// la base) → capturée en VIEWPORT seul (fullPage:false), pas en pleine page : la hauteur du screenshot
+// = celle du viewport (DÉTERMINISTE). Sinon un simple changement de footprint contenu (redeploy PREPROD,
+// drift data) ferait échouer le gate par mismatch de DIMENSIONS — que Playwright traite comme une erreur
+// FATALE, insensible à maxDiffPixelRatio. L'above-fold porte le hero + CTA (périmètre DT-1) ; le below-fold
+// variable est volontairement hors oracle (couvert par les tests WCAG/computed-style de DT-1). Les pages à
+// structure STABLE restent en fullPage (hauteur déterministe, couverture complète).
+const PAGES: { name: string; url: string; dynamic?: boolean }[] = [
+  // R-surfaces SEO (structure data-driven → viewport-only)
+  { name: "home", url: "/", dynamic: true },
+  { name: "r1-gamme", url: "/pieces/plaquette-de-frein-402.html", dynamic: true },
   {
     name: "r2-vehicule",
     url: "/pieces/plaquette-de-frein-402/renault-140/megane-iii-140049/1-5-dci-77310.html",
+    dynamic: true,
   },
   // Surfaces publiques portant un CTA `bg-cta text-white` (périmètre DT-1)
   { name: "cart-empty", url: "/cart" },
   { name: "login", url: "/login" },
   { name: "register", url: "/register" },
   { name: "forgot-password", url: "/forgot-password" },
-  { name: "diagnostic-auto", url: "/diagnostic-auto" },
+  { name: "diagnostic-auto", url: "/diagnostic-auto", dynamic: true },
   { name: "not-found-404", url: "/__visual-gate-probe-404-inexistant" },
-] as const;
+];
 
 // Régions dynamiques masquées (insensible à la casse). Affiner si une capture reste instable.
 const DYNAMIC_MASK = [
@@ -72,12 +80,32 @@ const DYNAMIC_MASK = [
 test.describe("Régression visuelle CSS (baseline bundler)", () => {
   for (const p of PAGES) {
     test(p.name, async ({ page }) => {
-      await page.goto(p.url, { waitUntil: "networkidle" });
-      // Stabiliser : polices chargées + court settle pour layout final.
-      await page.evaluate(() => document.fonts.ready);
-      await page.waitForTimeout(500);
+      // `load` (PAS `networkidle`) : Playwright DÉCONSEILLE networkidle — il peut ne JAMAIS se
+      // résoudre sur une page à réseau continu (analytics / polling), ce qui faisait timeout
+      // `diagnostic-auto` à 60s (run 28257536920). `load` = tous les sous-resources chargés ;
+      // le settle ci-dessous fige le layout SSR final post-hydratation.
+      await page.goto(p.url, { waitUntil: "load" });
+      // Polices chargées (swap → reflow) AVANT de mesurer la stabilité.
+      await page.evaluate(() => document.fonts.ready.then(() => undefined));
+      // Settle DÉTERMINISTE (B2) : attendre une hauteur de document STABLE sur 2 lectures
+      // consécutives (hydratation Remix + reflows tardifs) plutôt qu'un sleep aveugle. Borné ;
+      // on continue si non atteint (Playwright attend déjà les polices avant le screenshot).
+      await page
+        .waitForFunction(
+          () => {
+            const w = window as unknown as { __vgH?: number };
+            const h = document.documentElement.scrollHeight;
+            if (w.__vgH === h) return true;
+            w.__vgH = h;
+            return false;
+          },
+          undefined,
+          { timeout: 3000, polling: 250 },
+        )
+        .catch(() => {});
       await expect(page).toHaveScreenshot(`${p.name}.png`, {
-        fullPage: true,
+        // Pages dynamiques : viewport seul (hauteur déterministe) ; stables : pleine page.
+        fullPage: !p.dynamic,
         animations: "disabled",
         maxDiffPixelRatio: 0.02,
         mask: DYNAMIC_MASK.map((s) => page.locator(s)),

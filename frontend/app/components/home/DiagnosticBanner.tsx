@@ -45,7 +45,7 @@ export default function DiagnosticBanner() {
 
           <Button
             onClick={() => navigate("/diagnostic-auto")}
-            className="h-12 w-full shrink-0 rounded-2xl bg-cta px-8 text-[15px] font-semibold text-white shadow-[0_12px_24px_rgba(249,115,22,0.28)] hover:bg-cta-hover lg:w-auto"
+            className="h-12 w-full shrink-0 rounded-2xl bg-cta px-8 text-[15px] font-semibold text-black shadow-[0_12px_24px_rgba(249,115,22,0.28)] hover:bg-cta-hover lg:w-auto"
           >
             <ScanLine size={16} className="mr-2" />
             Lancer le diagnostic

@@ -330,3 +330,41 @@ entries:
     last_verified_by: "seed:fafa"
     last_verified_method: "seed-from-plan-review"
     risk: "low"
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # ACTIVE — pg_cron CWV RUM aggregation (raw→hourly→daily_rum). Replaces a dead
+  # Bull v4 scheduler (DEV worker) retired in #1166. Closes the data chain that
+  # was frozen 2026-06-03→2026-06-23 (incident web-vitals-attribution-unstable).
+  # ──────────────────────────────────────────────────────────────────────────
+  - automation_id: "cwv-rum-aggregation"
+    domain: "D3"
+    intended_mode: "ACTIVE"
+    actual_mode: "ACTIVE"
+    executor: "pg_cron"
+    evidence:
+      - path: "backend/supabase/migrations/20260626_seo_cwv_aggregation_cron.sql"
+        line: 75
+        excerpt: "PERFORM cron.schedule('cwv-hourly-aggregation', '5 * * * *', v_expected_command);"
+        note: "exact-match/fail-closed convergence + provenance marker ; .down unschedules only this migration's jobs"
+    runtime_evidence:
+      trigger:
+        kind: "db_row"
+        source: "cron.job_run_details"
+        observed_at: "2026-06-26"
+        query_or_url: "SELECT j.jobname, r.status, r.start_time FROM cron.job j JOIN LATERAL (SELECT * FROM cron.job_run_details d WHERE d.jobid=j.jobid ORDER BY d.start_time DESC LIMIT 1) r ON true WHERE j.jobname IN ('cwv-hourly-aggregation','cwv-daily-rum-aggregation')  -- hourly: succeeded '48 rows' @16:05 UTC ; daily: active, first fire 00:15 UTC 2026-06-27"
+      output:
+        kind: "db_row"
+        source: "__seo_cwv_hourly / __seo_cwv_daily_rum"
+        observed_at: "2026-06-26"
+        query_or_url: "WITH raw_hours AS (SELECT DISTINCT date_trunc('hour',received_at) hour FROM __seo_cwv_raw WHERE ua_class='human' AND received_at<date_trunc('hour',now())) SELECT count(*) missing_complete_hours FROM raw_hours r WHERE NOT EXISTS (SELECT 1 FROM __seo_cwv_hourly h WHERE h.hour=r.hour AND h.ua_class='human')  -- = 0 ; max(date) __seo_cwv_daily_rum = 2026-06-25 (J-1)"
+      consumer:
+        kind: "db_row"
+        source: "get_cwv_dashboard RPC (CwvDashboardService → GET /api/seo/cwv/dashboard) over __seo_cwv_daily_rum"
+        observed_at: "2026-06-26"
+        query_or_url: "SELECT count(*) FROM get_cwv_dashboard(now()::date-30, now()::date, NULL)  -- = 49 rows"
+    last_verified_at: "2026-06-26"
+    last_verified_by: "@ak125"
+    last_verified_method: "runtime-probe"
+    risk: "high"
+    related_pr: [1165, 1166]
+    drift_note: "Hourly leg live (succeeded '48 rows' @16:05, missing_complete_hours=0, daily_rum J-1). Daily cron first fire 00:15 UTC 2026-06-27. Bull v4 retired #1166; coverage detector @35 auto-resolves."
