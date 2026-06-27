@@ -12,7 +12,7 @@
  * 
  * Design System: Success (compatible), Error (incompatible), Secondary (boutons), Neutral (backgrounds)
  * Typographie: font-heading (véhicule), font-sans (message), font-mono (specs techniques)
- * Espacement: 8px grid (p-md, gap-sm)
+ * Espacement: 8px grid (p-4, gap-2)
  */
 
 import React from 'react';
@@ -80,7 +80,7 @@ export const VehicleCompatibilityBanner: React.FC<VehicleCompatibilityBannerProp
   const containerClasses = `
     w-full ${bgColorClass} text-white
     ${isSticky ? 'sticky z-40' : 'relative'}
-    ${compact ? 'py-sm px-md' : 'py-md px-md md:px-lg'}
+    ${compact ? 'py-2 px-4' : 'py-4 px-4 md:px-6'}
     transition-all duration-300 shadow-md
     ${className}
   `.trim();
@@ -90,9 +90,9 @@ export const VehicleCompatibilityBanner: React.FC<VehicleCompatibilityBannerProp
   return (
     <div className={containerClasses} style={stickyStyle}>
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between gap-md flex-wrap">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
           {/* Message principal */}
-          <div className="flex items-center gap-sm flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
             {/* Icône */}
             <span className="text-2xl shrink-0" aria-hidden="true">
               {iconEmoji}
@@ -108,7 +108,7 @@ export const VehicleCompatibilityBanner: React.FC<VehicleCompatibilityBannerProp
               ) : (
                 // Mode normal: multi-lignes
                 <>
-                  <p className="font-heading text-base md:text-lg mb-xs">
+                  <p className="font-heading text-base md:text-lg mb-1">
                     {isCompatible ? '✓ Pièce compatible' : '✕ Pièce incompatible'}
                   </p>
                   <p className="font-sans text-sm md:text-base opacity-90">
@@ -127,7 +127,7 @@ export const VehicleCompatibilityBanner: React.FC<VehicleCompatibilityBannerProp
                 bg-white hover:bg-neutral-100
                 text-neutral-900
                 font-heading text-sm
-                px-md py-sm rounded-md
+                px-4 py-2 rounded-md
                 transition-colors duration-200
                 shrink-0
                 border border-transparent hover:border-neutral-300

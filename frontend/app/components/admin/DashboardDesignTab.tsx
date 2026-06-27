@@ -208,7 +208,7 @@ export function DashboardDesignTab() {
             <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-sm text-blue-800 font-medium mb-1">Astuce</p>
               <p className="text-xs text-blue-700">
-                Utilisez les tokens sémantiques (p-md, bg-primary-500) plutôt
+                Utilisez les tokens sémantiques (p-4, bg-primary-500) plutôt
                 que des valeurs hardcodées
               </p>
             </div>
@@ -295,43 +295,43 @@ export function DashboardDesignTab() {
             {
               name: "XS",
               value: "4px",
-              class: "p-xs",
+              class: "p-1",
               usage: "Micro-espaces (badges)",
             },
             {
               name: "SM",
               value: "8px",
-              class: "p-sm",
+              class: "p-2",
               usage: "Serré (label → input)",
             },
             {
               name: "MD",
               value: "16px",
-              class: "p-md",
+              class: "p-4",
               usage: "Standard (padding cartes)",
             },
             {
               name: "LG",
               value: "24px",
-              class: "p-lg",
+              class: "p-6",
               usage: "Sections/blocs",
             },
             {
               name: "XL",
               value: "32px",
-              class: "p-xl",
+              class: "p-8",
               usage: "Grilles/marges",
             },
             {
               name: "2XL",
               value: "40px",
-              class: "p-2xl",
+              class: "p-10",
               usage: "Large grilles",
             },
             {
               name: "3XL",
               value: "48px",
-              class: "p-3xl",
+              class: "p-12",
               usage: "Hero sections",
             },
           ].map((spacing, index) => (

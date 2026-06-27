@@ -146,7 +146,7 @@ export const ProductCard = memo(function ProductCard({
         bg-white rounded-lg shadow-md border border-neutral-200
         hover:shadow-xl hover:border-neutral-300
         transition-all duration-300
-        ${compactMode ? "p-sm" : "p-md"}
+        ${compactMode ? "p-2" : "p-4"}
         relative
         group
       `}
@@ -163,7 +163,7 @@ export const ProductCard = memo(function ProductCard({
       <div
         className={`
           relative 
-          ${compactMode ? "aspect-square mb-sm" : "aspect-[4/3] mb-md"}
+          ${compactMode ? "aspect-square mb-2" : "aspect-[4/3] mb-4"}
           overflow-hidden rounded-lg
           bg-neutral-50
           cursor-pointer
@@ -194,11 +194,11 @@ export const ProductCard = memo(function ProductCard({
           • font-heading → Impact
         */}
         {calculatedDiscount > 0 && (
-          <div className="absolute top-xs left-xs">
+          <div className="absolute top-1 left-1">
             <span
               className="
               bg-error-500 text-white
-              px-sm py-xs
+              px-2 py-1
               font-heading text-sm font-bold
               rounded
               shadow-md
@@ -214,15 +214,15 @@ export const ProductCard = memo(function ProductCard({
           • Position: top-right
           • Couleur dynamique selon status
         */}
-        <div className="absolute top-xs right-xs">
+        <div className="absolute top-1 right-1">
           <span
             className={`
             ${stockBadge.color} ${stockBadge.textColor}
-            px-sm py-xs
+            px-2 py-1
             font-sans text-xs font-semibold
             rounded
             shadow-md
-            flex items-center gap-xs
+            flex items-center gap-1
           `}
           >
             <span>{stockBadge.icon}</span>
@@ -236,12 +236,12 @@ export const ProductCard = memo(function ProductCard({
           • Success = compatible, Error = incompatible
         */}
         {showCompatibility && isCompatible !== undefined && (
-          <div className="absolute bottom-xs left-xs">
+          <div className="absolute bottom-1 left-1">
             <span
               className={`
               ${isCompatible ? "bg-success-500" : "bg-error-500"}
               text-white
-              px-sm py-xs
+              px-2 py-1
               font-sans text-xs font-semibold
               rounded
               shadow-md
@@ -268,7 +268,7 @@ export const ProductCard = memo(function ProductCard({
         CONTENT SECTION
         ═════════════════════════════════════════════════════════════════════
       */}
-      <div className={compactMode ? "space-y-xs" : "space-y-sm"}>
+      <div className={compactMode ? "space-y-1" : "space-y-2"}>
         {/* 
           Référence OEM (Roboto Mono)
           • font-mono → Précision technique
@@ -280,7 +280,7 @@ export const ProductCard = memo(function ProductCard({
             className="
             font-mono text-xs text-neutral-600
             bg-neutral-100
-            px-xs py-xs
+            px-1 py-1
             rounded
             inline-block
           "
@@ -345,10 +345,10 @@ export const ProductCard = memo(function ProductCard({
           • Prix original barré si remise
           • Économie calculée affichée
         */}
-        <div className={compactMode ? "mt-sm" : "mt-md"}>
+        <div className={compactMode ? "mt-2" : "mt-4"}>
           {/* Prix barré (si remise) */}
           {originalPrice && originalPrice > price && (
-            <div className="flex items-center gap-xs mb-xs">
+            <div className="flex items-center gap-1 mb-1">
               <span
                 className="
                 font-mono text-sm text-neutral-400
@@ -378,7 +378,7 @@ export const ProductCard = memo(function ProductCard({
           </div>
 
           {/* TVA indication */}
-          <p className="font-sans text-xs text-neutral-500 mt-xs">
+          <p className="font-sans text-xs text-neutral-500 mt-1">
             TTC • Livraison gratuite dès 50€
           </p>
         </div>
@@ -398,7 +398,7 @@ export const ProductCard = memo(function ProductCard({
           disabled={stockStatus === "out-of-stock" || isAddingToCart}
           className={`
             w-full
-            ${compactMode ? "py-sm px-md" : "py-md px-lg"}
+            ${compactMode ? "py-2 px-4" : "py-4 px-6"}
             ${
               stockStatus === "out-of-stock"
                 ? "bg-neutral-300 cursor-not-allowed"
@@ -412,7 +412,7 @@ export const ProductCard = memo(function ProductCard({
             rounded-lg
             shadow-md hover:shadow-lg
             transition-all duration-200
-            flex items-center justify-center gap-sm
+            flex items-center justify-center gap-2
           `}
         >
           {isAddingToCart ? (
@@ -473,10 +473,10 @@ export const ProductCard = memo(function ProductCard({
             font-sans text-xs text-warning-700
             bg-warning-50
             border border-warning-200
-            px-sm py-xs
+            px-2 py-1
             rounded
             text-center
-            mt-xs
+            mt-1
           "
           >
             ⚠ Dernières pièces disponibles
