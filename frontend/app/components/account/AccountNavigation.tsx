@@ -118,7 +118,7 @@ export function SideNavigation({ user, stats }: SideNavigationProps) {
           >
             <item.icon
               className={cn(
-                "w-5 h-5 flex-shrink-0",
+                "w-5 h-5 shrink-0",
                 isActive(item.href)
                   ? "text-blue-600"
                   : "text-gray-400 group-hover:text-gray-500",
@@ -144,7 +144,7 @@ export function SideNavigation({ user, stats }: SideNavigationProps) {
             </div>
             <ChevronRight
               className={cn(
-                "w-4 h-4 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity",
+                "w-4 h-4 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity",
                 isActive(item.href) && "opacity-100",
               )}
             />

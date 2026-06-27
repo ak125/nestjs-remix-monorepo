@@ -608,7 +608,7 @@ export default function BlogPiecesAutoMarque() {
 
                         {/* Période + Badge nouveau */}
                         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
-                          <Calendar className="w-4 h-4 flex-shrink-0" />
+                          <Calendar className="w-4 h-4 shrink-0" />
                           <span className="font-semibold">
                             ({model.yearFrom} - {model.yearTo || "aujourd'hui"})
                           </span>

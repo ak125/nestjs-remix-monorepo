@@ -52,7 +52,7 @@ const FAMILY_TIPS: Record<string, { type: "info" | "warning"; text: string }> =
  *
  * NE gère PAS :
  * - Images R1 (gérées par la section dédiée dans pieces.$slug.tsx)
- * - "Pourquoi nous choisir" (déplacé vers R1TrustStrip)
+ * - Bloc de réassurance « nous choisir » (déplacé vers R1TrustStrip)
  * - Resource cards (déplacées vers GammeGuideCTA ou section séparée)
  */
 export default function GammeContent({
@@ -106,11 +106,11 @@ export default function GammeContent({
             }`}
           >
             {tip.type === "info" ? (
-              <Info size={15} className="text-blue-500 mt-0.5 flex-shrink-0" />
+              <Info size={15} className="text-blue-500 mt-0.5 shrink-0" />
             ) : (
               <AlertTriangle
                 size={15}
-                className="text-amber-500 mt-0.5 flex-shrink-0"
+                className="text-amber-500 mt-0.5 shrink-0"
               />
             )}
             <p

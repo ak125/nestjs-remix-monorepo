@@ -57,7 +57,7 @@ module.exports = {
     },
     "semantic": {
       "action": "#F97316",
-      "actionContrast": "#FFFFFF",
+      "actionContrast": "#000000",
       "info": "#0F4C81",
       "infoContrast": "#FFFFFF",
       "success": "#1E8449",

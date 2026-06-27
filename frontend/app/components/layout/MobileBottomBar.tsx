@@ -52,7 +52,7 @@ export const MobileBottomBar = memo(function MobileBottomBar({
         "px-4 py-3 pb-safe",
         // Background
         variant === "solid" && "bg-white",
-        variant === "blur" && "bg-white/95 backdrop-blur-sm",
+        variant === "blur" && "bg-white/95 backdrop-blur-xs",
         // Border
         border && "border-t border-gray-200",
         // Shadow for elevation

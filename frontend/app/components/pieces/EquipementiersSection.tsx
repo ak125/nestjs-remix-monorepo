@@ -79,7 +79,7 @@ const EquipementiersSection = memo(function EquipementiersSection({
               className="group border border-gray-200 rounded-lg p-5 hover:border-orange-300 hover:shadow-md transition-all duration-200 block"
             >
               <div className="flex items-start space-x-4">
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   <img
                     src={equipementier.pm_logo || equipementier.image}
                     alt={`Logo ${equipementier.pm_name}`}

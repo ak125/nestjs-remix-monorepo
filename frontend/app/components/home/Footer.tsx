@@ -109,7 +109,7 @@ export default function Footer() {
               </h3>
               <ul className="space-y-3">
                 <li className="flex items-start gap-2.5">
-                  <MapPin size={16} className="text-cta flex-shrink-0 mt-0.5" />
+                  <MapPin size={16} className="text-cta shrink-0 mt-0.5" />
                   <span className="text-[13px] text-white/60">
                     184 avenue Aristide Briand
                     <br />
@@ -117,7 +117,7 @@ export default function Footer() {
                   </span>
                 </li>
                 <li className="flex items-center gap-2.5">
-                  <Phone size={16} className="text-cta flex-shrink-0" />
+                  <Phone size={16} className="text-cta shrink-0" />
                   <a
                     href={`tel:${SITE_CONFIG.contact.phone.raw}`}
                     className="text-[13px] text-white/60 hover:text-white transition-colors"
@@ -126,7 +126,7 @@ export default function Footer() {
                   </a>
                 </li>
                 <li className="flex items-center gap-2.5">
-                  <Mail size={16} className="text-cta flex-shrink-0" />
+                  <Mail size={16} className="text-cta shrink-0" />
                   <a
                     href={`mailto:${SITE_CONFIG.contact.email}`}
                     className="text-[13px] text-white/60 hover:text-white transition-colors"

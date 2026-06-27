@@ -2,7 +2,7 @@
 module: errors
 sources:
 - backend/src/modules/errors
-last_scan: '2026-06-25'
+last_scan: '2026-06-27'
 primary_files:
 - backend/src/modules/errors/controllers/error.controller.ts
 - backend/src/modules/errors/controllers/internal-error-log.controller.ts
@@ -10,8 +10,8 @@ primary_files:
 - backend/src/modules/errors/errors.module.ts
 - backend/src/modules/errors/filters/global-error.filter.ts
 - backend/src/modules/errors/services/error-log.service.ts
+- backend/src/modules/errors/services/error-status-population.test.ts
 - backend/src/modules/errors/services/error.service.ts
-- backend/src/modules/errors/services/redirect.service.ts
 depends_on: []
 ---
 

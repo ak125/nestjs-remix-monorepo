@@ -649,7 +649,7 @@ export default function RegisterPage() {
                         role="alert"
                       >
                         <svg
-                          className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5"
+                          className="w-5 h-5 text-red-500 shrink-0 mt-0.5"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -1067,7 +1067,7 @@ export default function RegisterPage() {
                     <Button
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full h-14 bg-cta hover:bg-cta-hover text-white font-bold text-base rounded-2xl shadow-[0_12px_30px_rgba(249,115,22,0.28)] transition-colors"
+                      className="w-full h-14 bg-cta hover:bg-cta-hover text-black font-bold text-base rounded-2xl shadow-[0_12px_30px_rgba(249,115,22,0.28)] transition-colors"
                     >
                       {isSubmitting ? (
                         <span className="flex items-center gap-2">

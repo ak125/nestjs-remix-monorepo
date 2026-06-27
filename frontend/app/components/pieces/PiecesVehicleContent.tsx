@@ -300,7 +300,7 @@ export function PiecesVehicleContent() {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar filtres et catalogue — hidden on mobile, toggle via MobileBottomBar */}
           <aside
-            className={`lg:w-80 flex-shrink-0 space-y-6 animate-in fade-in slide-in-from-left duration-700 ${showFilters ? "block" : "hidden lg:block"}`}
+            className={`lg:w-80 shrink-0 space-y-6 animate-in fade-in slide-in-from-left duration-700 ${showFilters ? "block" : "hidden lg:block"}`}
           >
             {/* Filtres */}
             <div className="sticky top-24">
@@ -385,7 +385,7 @@ export function PiecesVehicleContent() {
                 </p>
                 <a
                   href="#compatibilite"
-                  className="flex-shrink-0 text-sm font-semibold text-amber-700 hover:text-amber-900 bg-amber-100 hover:bg-amber-200 px-3 py-1.5 rounded-md transition-colors"
+                  className="shrink-0 text-sm font-semibold text-amber-700 hover:text-amber-900 bg-amber-100 hover:bg-amber-200 px-3 py-1.5 rounded-md transition-colors"
                 >
                   Vérifier
                 </a>
@@ -553,7 +553,7 @@ export function PiecesVehicleContent() {
         <button
           type="button"
           onClick={openCartSidebar}
-          className="relative py-3 px-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold flex items-center gap-2 transition-colors"
+          className="relative py-3 px-4 bg-orange-500 hover:bg-orange-600 text-black rounded-xl font-bold flex items-center gap-2 transition-colors"
         >
           <ShoppingCart className="w-5 h-5" />
           Panier
@@ -596,7 +596,7 @@ export function PiecesVehicleContent() {
       </MobileBottomBar>
       {/* Performance debug (dev only) */}
       {process.env.NODE_ENV === "development" && (
-        <div className="fixed bottom-4 right-4 bg-neutral-900/80 text-white text-xs p-3 rounded-lg backdrop-blur-sm">
+        <div className="fixed bottom-4 right-4 bg-neutral-900/80 text-white text-xs p-3 rounded-lg backdrop-blur-xs">
           <div>Load: {data.performance.loadTime}ms</div>
           <div>Pieces: {data.count}</div>
           <div>Filtrees: {filteredProducts.length}</div>

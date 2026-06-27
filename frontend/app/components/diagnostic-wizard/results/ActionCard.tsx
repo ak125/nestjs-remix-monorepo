@@ -89,7 +89,7 @@ export function ActionCard({
           : "border"
       }`}
     >
-      <Icon className="h-6 w-6 flex-shrink-0 text-primary" aria-hidden />
+      <Icon className="h-6 w-6 shrink-0 text-primary" aria-hidden />
       <div className="flex-1">
         <p className="font-medium">{label}</p>
         <p className="text-xs text-muted-foreground">

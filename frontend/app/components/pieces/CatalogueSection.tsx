@@ -210,7 +210,7 @@ const CatalogueSection = memo(function CatalogueSection({
               >
                 <div className="flex flex-col h-full">
                   <div className="flex items-start gap-3 mb-2">
-                    <div className="relative flex-shrink-0">
+                    <div className="relative shrink-0">
                       <img
                         src={item.image}
                         alt={`${item.name} — ${catalogueMameFamille.title}`}
@@ -234,7 +234,7 @@ const CatalogueSection = memo(function CatalogueSection({
                           const badge = getUrgencyBadge(item.name);
                           return badge ? (
                             <span
-                              className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full whitespace-nowrap flex-shrink-0 ${badge.color}`}
+                              className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full whitespace-nowrap shrink-0 ${badge.color}`}
                             >
                               {badge.label}
                             </span>

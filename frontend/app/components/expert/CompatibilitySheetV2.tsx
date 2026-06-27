@@ -285,7 +285,7 @@ function VehicleCardV2({
         <div className="mt-3 pt-3 border-t border-slate-100 space-y-1">
           {vehicle.cnit && (
             <div className="flex items-center justify-between text-xs gap-2">
-              <span className="text-slate-400 flex-shrink-0">CNIT</span>
+              <span className="text-slate-400 shrink-0">CNIT</span>
               <code
                 className="text-slate-600 bg-slate-50 px-1.5 py-0.5 rounded break-all text-right"
                 style={{ fontFamily: "'JetBrains Mono', monospace" }}
@@ -296,7 +296,7 @@ function VehicleCardV2({
           )}
           {vehicle.typeMine && (
             <div className="flex items-center justify-between text-xs gap-2">
-              <span className="text-slate-400 flex-shrink-0">Type Mine</span>
+              <span className="text-slate-400 shrink-0">Type Mine</span>
               <code
                 className="text-slate-600 bg-slate-50 px-1.5 py-0.5 rounded break-all text-right"
                 style={{ fontFamily: "'JetBrains Mono', monospace" }}

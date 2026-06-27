@@ -54,7 +54,7 @@ function CartItemSkeleton() {
   return (
     <div className="flex gap-3 p-4 bg-white rounded-lg border animate-fade-in">
       {/* Image */}
-      <Skeleton className="w-20 h-20 rounded-lg flex-shrink-0" />
+      <Skeleton className="w-20 h-20 rounded-lg shrink-0" />
       
       {/* Content */}
       <div className="flex-1 space-y-2">

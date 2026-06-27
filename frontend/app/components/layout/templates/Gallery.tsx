@@ -59,7 +59,7 @@ export const Gallery: React.FC<GalleryProps> = memo(function Gallery({
 
                 {/* Overlay avec caption */}
                 {image.caption && (
-                  <div className="absolute inset-0 bg-neutral-900 bg-opacity-0 group-hover:bg-opacity-60 transition-all duration-300 flex items-end">
+                  <div className="absolute inset-0 bg-neutral-900/0 group-hover:bg-neutral-900/60 transition-all duration-300 flex items-end">
                     <p className="text-white p-4 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
                       {image.caption}
                     </p>

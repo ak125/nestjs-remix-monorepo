@@ -16,7 +16,6 @@
     },
     "./tokens.json": "./src/tokens.json",
     "./css": "./dist/tokens.css",
-    "./utilities": "./dist/utilities.css",
     "./tailwind-tokens": "./src/tailwind-tokens.cjs"
   },
   "files": [
@@ -29,6 +28,7 @@
     "dev": "npm run build -- --watch",
     "build": "node scripts/build-tokens.mjs && tsup",
     "build:check": "node scripts/build-tokens.mjs --check",
+    "check:reserved-namespaces": "node scripts/check-reserved-namespaces.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "ESLINT_USE_FLAT_CONFIG=true eslint src",
     "lint:fix": "ESLINT_USE_FLAT_CONFIG=true eslint src --fix",

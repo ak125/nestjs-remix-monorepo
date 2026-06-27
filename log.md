@@ -453,3 +453,33 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/tw4-gate-0-visual-gate`
 - **Décision** : feat(tw4-gate-0): wire authoritative visual-regression gate + 2-tier snapshot topology
 - **Sortie** : PR #1160 | commits 83de3e0f5
+
+## 2026-06-26 — fix/visual-gate-recapture-preprod (auto)
+
+- **Branche** : `fix/visual-gate-recapture-preprod`
+- **Décision** : fix(tw4-gate-0): purge root-owned Docker leftovers pre-checkout + fix report path (+1 other commit)
+- **Sortie** : PR #1170 | commits f94b7ad9d 9a7f2acc0
+
+## 2026-06-26 — fix/visual-gate-recapture-preprod (auto)
+
+- **Branche** : `fix/visual-gate-recapture-preprod`
+- **Décision** : feat(tw4-gate-0): re-capture 11 visual baselines against PREPROD:3200 (gate env) (+3 other commits)
+- **Sortie** : PR #1170 | commits 023c2a43f d8bc28dad f94b7ad9d 9a7f2acc0
+
+## 2026-06-27 — feat/wiki-exports-seo-generate-ci (auto)
+
+- **Branche** : `feat/wiki-exports-seo-generate-ci`
+- **Décision** : feat(ci): generate exports/seo from wiki canon + commit back (ADR-059 PR-5a)
+- **Sortie** : PR #1174 | commits c7ee94b18
+
+## 2026-06-27 — feat/wiki-exports-seo-generate-ci (auto)
+
+- **Branche** : `feat/wiki-exports-seo-generate-ci`
+- **Décision** : fix(ci): exports-seo generator — ajv-formats, untracked+deletion gate, gitignore assert (review) (+2 other commits)
+- **Sortie** : PR #1174 | commits f84c8af9d ad8e84d0a c7ee94b18
+
+## 2026-06-27 — feat/tw2-tailwind4-engine (auto)
+
+- **Branche** : `feat/tw2-tailwind4-engine`
+- **Décision** : feat(tw-2): install Tailwind CSS v4.3.1 (engine swap, @config bridge, @tailwindcss/vite)
+- **Sortie** : PR #1181 | commits fe3aef3b8

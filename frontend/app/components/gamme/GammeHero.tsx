@@ -75,8 +75,8 @@ export default function GammeHero({
       <div className="max-w-7xl mx-auto px-page pb-5 lg:pb-8">
         <div className="flex flex-col lg:flex-row lg:items-stretch lg:gap-8">
           {/* Product image */}
-          <div className="lg:w-[280px] lg:flex-shrink-0 flex">
-            <div className="mx-0 mb-4 lg:mb-0 w-full max-h-[280px] bg-gradient-to-br from-white/[0.08] to-white/[0.03] border border-white/[0.12] rounded-2xl overflow-hidden flex items-center justify-center backdrop-blur-sm">
+          <div className="lg:w-[280px] lg:shrink-0 flex">
+            <div className="mx-0 mb-4 lg:mb-0 w-full max-h-[280px] bg-gradient-to-br from-white/[0.08] to-white/[0.03] border border-white/[0.12] rounded-2xl overflow-hidden flex items-center justify-center backdrop-blur-xs">
               {r1HeroPath || pgPic ? (
                 (() => {
                   const imgPath = r1HeroPath
@@ -205,7 +205,7 @@ export default function GammeHero({
                       <Button
                         type="submit"
                         disabled={mineCode.length < 5}
-                        className="h-12 w-full rounded-2xl bg-cta text-[16px] font-semibold text-white shadow-[0_12px_24px_rgba(249,115,22,0.28)] hover:bg-cta-hover disabled:opacity-50"
+                        className="h-12 w-full rounded-2xl bg-cta text-[16px] font-semibold text-black shadow-[0_12px_24px_rgba(249,115,22,0.28)] hover:bg-cta-hover disabled:opacity-50"
                       >
                         <Search size={15} className="mr-2" /> Rechercher
                       </Button>
@@ -304,7 +304,7 @@ export default function GammeHero({
                       <Button
                         type="submit"
                         disabled={mineCode.length < 5}
-                        className="h-12 shrink-0 rounded-2xl bg-cta px-8 text-[15px] font-semibold text-white shadow-[0_12px_24px_rgba(249,115,22,0.28)] hover:bg-cta-hover disabled:opacity-50"
+                        className="h-12 shrink-0 rounded-2xl bg-cta px-8 text-[15px] font-semibold text-black shadow-[0_12px_24px_rgba(249,115,22,0.28)] hover:bg-cta-hover disabled:opacity-50"
                       >
                         <Search size={15} className="mr-2" /> Rechercher
                       </Button>

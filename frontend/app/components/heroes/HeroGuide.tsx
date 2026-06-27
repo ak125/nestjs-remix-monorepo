@@ -87,7 +87,7 @@ export function HeroGuide({
                   key={criterion}
                   className={`inline-block text-xs font-medium px-3 py-1 rounded-full ${
                     hasImage
-                      ? "bg-white/20 text-white backdrop-blur-sm"
+                      ? "bg-white/20 text-white backdrop-blur-xs"
                       : "bg-white/20 text-white"
                   }`}
                 >

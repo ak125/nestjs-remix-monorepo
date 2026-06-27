@@ -35,16 +35,19 @@ DOIVENT matcher.
 
 | Projet | Viewport | Statut baseline |
 |---|---|---|
-| `desktop` | 1920×1080 | 9 pages capturées sous v3, image 1.61.0, **contre DEV:3000** ✅ |
-| `mobile` | 390×844 (UA mobile + touch) | 9 pages capturées sous v3, image 1.61.0, **contre DEV:3000** ✅ |
+| `desktop` | 1920×1080 | 9 pages capturées sous v3, image 1.61.0, **contre PREPROD:3200** ✅ |
+| `mobile` | 390×844 (UA mobile + touch) | 9 pages capturées sous v3, image 1.61.0, **contre PREPROD:3200** ✅ |
 
-> **Cible de capture ≠ cible du gate** : ces baselines ont été générées contre **DEV:3000** (build
-> Vite **dev**, seul runtime atteignable depuis la machine DEV). Le gate CI compare contre
-> **PREPROD :3200** (build Docker **prod**). Le frontend n'a **qu'un** pipeline CSS (`global.css` +
-> Tailwind, **ni CSS modules ni inline** — cf. `.claude/rules/frontend.md`) → la divergence
-> dev/prod est faible (la minification ne change pas les pixels), mais **non vérifiée**. Le premier
-> `workflow_dispatch` du gate contre PREPROD EST cette vérification : vert ⇒ baselines DEV valides
-> sous tolérance 0.02 ; rouge uniforme ⇒ re-capturer contre PREPROD avant d'activer `workflow_run`.
+> **L'env de capture DOIT == l'env de gate.** Constat empirique (1er dispatch, run 28257536920) :
+> des baselines capturées sur **DEV:3000** (build Vite **dev**) rougissaient le gate contre
+> **PREPROD:3200** (build Docker **prod**) — non par diff CSS mais par **mismatch de HAUTEUR** sur les
+> pages dynamiques (`home` −164px, `r1` −726px…, largeur identique au pixel) : le contenu rendu diffère
+> entre les deux builds. Les pages **statiques** (`cart-empty`, `forgot-password`, `404`, `login`
+> desktop) matchaient au pixel → le mécanisme du gate est sain ; seul l'env de capture était faux.
+> **Résolution** : les baselines sont (re)capturées **dans l'env du gate** via le mode
+> `capture_baselines` du workflow (`workflow_dispatch` → `--update-snapshots` contre PREPROD:3200,
+> même image noble). Toute (re)capture future passe par ce mode (jamais `--update-snapshots` en local
+> contre DEV:3000). Vert sous tolérance 0.02 ⇒ baselines valides ⇒ activer `workflow_run`.
 
 Pages publiques (`pages.visual.spec.ts`, data-driven masqué) — choisies pour **filtrer le périmètre
 visuel de DT-1** (recolor CTA `bg-cta` blanc→noir, 23 fichiers) : `home`, `r1-gamme`, `r2-vehicule`
@@ -52,6 +55,14 @@ visuel de DT-1** (recolor CTA `bg-cta` blanc→noir, 23 fichiers) : `home`, `r1-
 PiecesHeroPriceCard/VehicleSelector), `cart-empty` (cart.tsx **état vide** — voir gap CartSummaryBlock),
 `login`/`register`/`forgot-password` (CTA auth), `diagnostic-auto`, `not-found-404`.
 ⇒ **18/23** fichiers CTA nettoyés de façon **déterministe** (capture stateless `goto`).
+
+> **Stratégie de capture par page (déterminisme des dimensions)** : les 4 pages à **structure
+> data-driven** (`home`, `r1-gamme`, `r2-vehicule`, `diagnostic-auto`) sont capturées en **viewport seul**
+> (`fullPage:false`) → la hauteur du screenshot = celle du viewport, indépendante du nombre de cartes/blocs
+> rendus. Sinon un changement de footprint contenu (redeploy PREPROD, drift data) ferait échouer le gate
+> par **mismatch de DIMENSIONS** — que Playwright traite comme une erreur FATALE, insensible à la tolérance
+> 0.02. L'above-fold porte le hero + CTA (périmètre DT-1) ; le below-fold variable est hors oracle, couvert
+> par les tests WCAG/computed-style de DT-1. Les 5 pages à structure **stable** restent en `fullPage`.
 
 **Gaps bornés DÉCLARÉS (pas de cap silencieux) — 5/23 non nettoyés** :
 - **`/checkout`** (`CheckoutLivraisonSection`/`CheckoutPaiementSection`/`checkout.tsx`, 7 CTA) :
@@ -78,10 +89,15 @@ PiecesHeroPriceCard/VehicleSelector), `cart-empty` (cart.tsx **état vide** — 
 ## Commandes
 
 ```bash
-# Pré-requis : l'app tourne (DEV:3000 ou PLAYWRIGHT_BASE_URL=http://localhost:3200 pour PREPROD).
-npm run -w @fafa/frontend test:visual:update   # (re)générer les baselines (Docker) — PR visual-change
-npm run -w @fafa/frontend test:visual:docker   # comparer aux baselines (Docker) — le GATE
+# Itération locale uniquement (NON déterministe, pas une preuve, pas une baseline de gate).
+npm run -w @fafa/frontend test:visual:docker   # comparer aux baselines (Docker) — le GATE, en local
 ```
+
+> **Baselines de gate = capturées par le workflow, jamais en local.** L'env de capture doit ==
+> l'env de gate (PREPROD:3200). On NE génère PAS les baselines de gate avec `test:visual:update`
+> contre DEV:3000 (build dev ⇒ contenu de hauteur différente, cf. encadré « env de capture »).
+> Capture canonique : `gh workflow run visual-gate.yml -f capture_baselines=true` → télécharger
+> l'artefact `visual-baselines-preprod` → committer les PNG dans une PR `visual-change`.
 
 `test:visual` (sans `:docker`) = raccourci local **non déterministe** (itération), pas une preuve.
 
@@ -95,12 +111,21 @@ post-Deploy (`workflow_run`) est activé **séparément**, après un run `workfl
 PREPROD (vérifier que le gate tourne en CI avant de le rendre auto-bloquant — activation par étapes).
 
 > **GATE-0 — baselines closes** : les **18** baselines `snapshots/` (9 pages × desktop+mobile) sont
-> capturées **sous l'état Tailwind v3** dans l'image pinnée **1.61.0** (invariant respecté : aucune
-> mutation DT-*/TW-* appliquée — DT-0 est prouvé byte-identique visuellement). Self-check
-> déterminisme : **18 passed** en mode comparaison (re-rendu vs baselines = vert). Baseline absente =
-> échec, jamais skip ("no silent fallback"). **Reste à l'activation** : (1) `workflow_dispatch` vert
-> contre PREPROD :3200 (peut différer du rendu DEV:3000 — re-capture sous PREPROD si l'image runner
-> diffère), (2) flip `workflow_run` pour rendre le gate auto-bloquant post-Deploy.
+> capturées **sous l'état Tailwind v3** dans l'image pinnée **1.61.0**, **contre PREPROD:3200** (= l'env
+> du gate ; invariant respecté : aucune mutation DT-*/TW-* appliquée — DT-0 prouvé byte-identique
+> visuellement). Baseline absente = échec, jamais skip ("no silent fallback"). **Reste à l'activation** :
+> (1) un `workflow_dispatch` `compare` vert contre PREPROD:3200, (2) flip `workflow_run` pour rendre le
+> gate auto-bloquant post-Deploy.
+
+> **Pré-requis AVANT de flip `workflow_run` (sinon faux positifs sur des merges légitimes)** :
+> - **Sérialiser capture+compare sur le MÊME `:preprod` immuable** : une baseline capturée sur un build,
+>   comparée après un redeploy d'un AUTRE build, peut rougir par drift de contenu. Le clipping viewport
+>   (pages dynamiques) neutralise l'axe HAUTEUR ; pour l'axe pixel above-fold, capturer juste avant /
+>   re-capturer si le footprint contenu PREPROD change. Un merge `main` invalide une baseline en vol.
+> - **Concurrence** : le groupe `visual-gate-${{ github.ref }}` + `cancel-in-progress` peut annuler une
+>   capture en vol si un second trigger même-ref arrive (re-lancer). Sous `workflow_run`, vérifier la
+>   sémantique de `github.ref` avant de rendre auto-bloquant (groupe séparé / `cancel-in-progress:false`
+>   pour la capture si besoin).
 
 ## Workflow d'usage (mutation à fort blast-radius)
 

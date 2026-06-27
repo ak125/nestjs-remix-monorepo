@@ -416,7 +416,7 @@ export const SearchBarEnhancedHomepage = memo(
                             : "hover:bg-gray-50",
                         )}
                       >
-                        <Tag className="w-4 h-4 text-foreground flex-shrink-0" />
+                        <Tag className="w-4 h-4 text-foreground shrink-0" />
                         <span className="text-gray-900 font-medium">
                           {suggestion}
                         </span>
