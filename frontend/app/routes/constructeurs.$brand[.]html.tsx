@@ -6,19 +6,6 @@
 // Intention : Hub marque constructeur
 
 import {
-  defer,
-  type HeadersFunction,
-  type LinksFunction,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import {
-  useLoaderData,
-  Link,
-  useRouteError,
-  isRouteErrorResponse,
-} from "@remix-run/react";
-import {
   Car,
   Wrench,
   Zap,
@@ -27,6 +14,16 @@ import {
   TrendingUp,
   Package,
 } from "lucide-react";
+import {
+  type HeadersFunction,
+  type LinksFunction,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+  useRouteError,
+  isRouteErrorResponse,
+} from "react-router";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
@@ -96,7 +93,7 @@ export const headers: HeadersFunction = () => ({
 // 🔄 META
 // ==========================================
 
-export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data, location }) => {
   if (!data || !data.seo) {
     return [{ title: "Pièces Auto" }];
   }
@@ -353,7 +350,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
     // 🏭 R7 enriched content (optional overlay)
     const r7Content = await brandApi.getR7Content(marque_id);
 
-    return defer({ ...bestsellersResponse.data, r7Content });
+    return { ...bestsellersResponse.data, r7Content };
   } catch (error) {
     // Propager les Response HTTP (404, etc.) telles quelles
     if (error instanceof Response) {
@@ -442,7 +439,6 @@ export default function BrandCatalogPage() {
           </ol>
         </div>
       </nav>
-
       {/* 🏎️ Hero Section - Couleur thématique du constructeur */}
       <section
         className="relative overflow-hidden text-white py-12 md:py-16 lg:py-20"
@@ -506,7 +502,7 @@ export default function BrandCatalogPage() {
               {/* Layout horizontal : Logo + VehicleSelector côte à côte */}
               <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-8">
                 {/* Logo constructeur à gauche */}
-                <div className="flex-shrink-0 w-full lg:w-64">
+                <div className="shrink-0 w-full lg:w-64">
                   <div className="relative group">
                     {/* Cercle décoratif arrière-plan */}
                     <div className="absolute inset-0 -z-10">
@@ -565,25 +561,25 @@ export default function BrandCatalogPage() {
           {/* Trust badges premium - Grid responsive pour mobile */}
           <div className="grid grid-cols-2 md:flex md:flex-wrap justify-center gap-3 md:gap-4 max-w-3xl mx-auto animate-in fade-in duration-700 delay-400">
             <div className="group flex items-center gap-2 px-3 md:px-4 py-2.5 bg-gradient-to-br from-white/15 to-white/10 rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
-              <Car className="w-4 h-4 text-green-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
+              <Car className="w-4 h-4 text-green-300 shrink-0 group-hover:scale-110 transition-transform" />
               <span className="text-white text-sm md:text-base font-semibold whitespace-nowrap">
                 400 000+ pièces
               </span>
             </div>
             <div className="group flex items-center gap-2 px-3 md:px-4 py-2.5 bg-gradient-to-br from-white/15 to-white/10 rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
-              <Settings className="w-4 h-4 text-blue-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
+              <Settings className="w-4 h-4 text-blue-300 shrink-0 group-hover:scale-110 transition-transform" />
               <span className="text-white text-sm md:text-base font-semibold whitespace-nowrap">
                 Livraison 24-48h
               </span>
             </div>
             <div className="group flex items-center gap-2 px-3 md:px-4 py-2.5 bg-gradient-to-br from-white/15 to-white/10 rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
-              <Wrench className="w-4 h-4 text-foreground flex-shrink-0 group-hover:scale-110 transition-transform" />
+              <Wrench className="w-4 h-4 text-foreground shrink-0 group-hover:scale-110 transition-transform" />
               <span className="text-white text-sm md:text-base font-semibold whitespace-nowrap">
                 Paiement sécurisé
               </span>
             </div>
             <div className="group flex items-center gap-2 px-3 md:px-4 py-2.5 bg-gradient-to-br from-white/15 to-white/10 rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
-              <Zap className="w-4 h-4 text-orange-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
+              <Zap className="w-4 h-4 text-orange-300 shrink-0 group-hover:scale-110 transition-transform" />
               <span className="text-white text-sm md:text-base font-semibold whitespace-nowrap">
                 Experts gratuits
               </span>
@@ -591,7 +587,6 @@ export default function BrandCatalogPage() {
           </div>
         </div>
       </section>
-
       {/* 📦 Pièces populaires depuis l'API */}
       {apiParts.length > 0 && (
         <div className="bg-gradient-to-b from-gray-50 to-white py-12 md:py-16 border-b border-gray-100">
@@ -668,7 +663,6 @@ export default function BrandCatalogPage() {
           </div>
         </div>
       )}
-
       {/* 🚗 Véhicules les plus recherchés */}
       {apiVehicles.length > 0 && (
         <div className="bg-gradient-to-b from-white to-gray-50 py-10 md:py-16 border-b border-gray-100">
@@ -727,7 +721,6 @@ export default function BrandCatalogPage() {
           </div>
         </div>
       )}
-
       {/* 🔗 Maillage interne - Gammes populaires pour cette marque */}
       {popularGammes.length > 0 && (
         <PopularGammesSection
@@ -738,7 +731,6 @@ export default function BrandCatalogPage() {
           className="bg-white border-b border-gray-100"
         />
       )}
-
       {/* 🏭 R7 Enriched Sections */}
       {r7Blocks.length > 0 && (
         <>
@@ -781,7 +773,7 @@ export default function BrandCatalogPage() {
                         className="flex items-center justify-between gap-2 px-4 py-3 bg-white border border-gray-200 hover:border-blue-400 hover:bg-blue-50 rounded-lg shadow-sm hover:shadow-md transition-all text-sm font-medium text-blue-900 hover:text-blue-700"
                       >
                         <span className="truncate">{m[1]}</span>
-                        <ChevronRight className="w-4 h-4 flex-shrink-0 opacity-60" />
+                        <ChevronRight className="w-4 h-4 shrink-0 opacity-60" />
                       </Link>
                     ))}
                 </div>
@@ -812,7 +804,7 @@ export default function BrandCatalogPage() {
                           className="bg-white rounded-xl p-6 shadow-sm border border-gray-200"
                         >
                           <div className="flex items-center gap-3 mb-3">
-                            <span className="flex-shrink-0 w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-lg">
+                            <span className="shrink-0 w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-lg">
                               {idx + 1}
                             </span>
                             <h3 className="font-semibold text-gray-900">
@@ -950,7 +942,6 @@ export default function BrandCatalogPage() {
             )}
         </>
       )}
-
       {/* 📘 Présentation Constructeur */}
       <div className="bg-white py-8 md:py-12 border-t border-gray-200">
         <div className="container mx-auto px-4">
@@ -996,7 +987,6 @@ export default function BrandCatalogPage() {
           </div>
         </div>
       </div>
-
       {/* JSON-LD unifié dans meta function - voir brandSchema */}
     </div>
   );
@@ -1070,7 +1060,7 @@ function VehicleCard({ vehicle }: { vehicle: PopularVehicle }) {
           {/* Badge carburant */}
           {fuelLabel && (
             <span
-              className={`px-2 py-0.5 rounded-full text-[10px] font-semibold shadow-md ${ fuelLabel === "Diesel" ? "bg-gray-800 text-white" : fuelLabel === "Essence" ? "bg-green-600 text-white" : fuelLabel === "Hybride" ? "bg-blue-500 text-white" : "bg-primary text-white" }`}
+              className={`px-2 py-0.5 rounded-full text-[10px] font-semibold shadow-md ${fuelLabel === "Diesel" ? "bg-gray-800 text-white" : fuelLabel === "Essence" ? "bg-green-600 text-white" : fuelLabel === "Hybride" ? "bg-blue-500 text-white" : "bg-primary text-white"}`}
             >
               {fuelLabel}
             </span>

@@ -4,20 +4,17 @@
  * @route /admin/articles
  */
 
+import { useState } from "react";
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
   type ActionFunctionArgs,
-} from "@remix-run/node";
-import {
   useLoaderData,
   Link,
   Form,
   useFetcher,
   useNavigation,
-} from "@remix-run/react";
-import { useState } from "react";
+} from "react-router";
 import { toast } from "sonner";
 import { Alert } from "~/components/ui/alert";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
@@ -128,12 +125,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const response = await fetch(`${backendUrl}/api/blog/dashboard`);
 
     if (!response.ok) {
-      return json<LoaderData>({
+      return {
         articles: [],
         totalCount: 0,
         isError: true,
         errorMessage: "Erreur lors de la récupération des données",
-      });
+      };
     }
 
     await response.json();
@@ -205,20 +202,20 @@ export async function loader({ request }: LoaderFunctionArgs) {
       startIndex + limit,
     );
 
-    return json<LoaderData>({
+    return {
       articles: paginatedArticles,
       totalCount: filteredArticles.length,
       isError: false,
-    });
+    };
   } catch (error) {
     logger.error("Erreur lors du chargement des articles:", error);
 
-    return json<LoaderData>({
+    return {
       articles: [],
       totalCount: 0,
       isError: true,
       errorMessage: error instanceof Error ? error.message : "Erreur inconnue",
-    });
+    };
   }
 }
 
@@ -231,19 +228,19 @@ export async function action({ request }: ActionFunctionArgs) {
   try {
     if (action === "delete") {
       // Simulation de suppression
-      return json({
+      return {
         success: true,
         message: `Article ${articleId} supprimé avec succès`,
-      });
+      };
     }
 
-    return json({ success: false, message: "Action non reconnue" });
+    return { success: false, message: "Action non reconnue" };
   } catch (error) {
-    return json({
+    return {
       success: false,
       message:
         error instanceof Error ? error.message : "Erreur lors de l'action",
-    });
+    };
   }
 }
 

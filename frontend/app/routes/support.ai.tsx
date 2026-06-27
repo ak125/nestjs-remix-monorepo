@@ -1,15 +1,12 @@
+import { useState } from "react";
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import {
   useLoaderData,
   Link,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { useState } from "react";
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -91,7 +88,7 @@ interface _ContactTicket {
 
 export async function loader({ request }: LoaderFunctionArgs) {
   // Version simplifiée pour démo
-  return json({
+  return {
     tickets: [
       {
         msg_id: "demo-1",
@@ -127,7 +124,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         predictive: "ok",
       },
     },
-  });
+  };
 }
 
 // Fonctions utilitaires simplifiées

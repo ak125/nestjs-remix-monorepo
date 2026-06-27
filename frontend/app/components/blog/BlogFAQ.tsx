@@ -2,9 +2,9 @@
  * BlogFAQ — 5 questions fréquentes statiques (SEO + UX)
  * Apparaît sur la page index blog pour donner du contenu utile sans cliquer
  */
-import { Link } from "@remix-run/react";
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router";
 
 interface FAQItem {
   question: string;
@@ -84,7 +84,7 @@ export function BlogFAQ() {
                     {item.question}
                   </span>
                   <ChevronDown
-                    className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform ${
+                    className={`w-5 h-5 text-gray-400 shrink-0 transition-transform ${
                       openIndex === index ? "rotate-180" : ""
                     }`}
                   />

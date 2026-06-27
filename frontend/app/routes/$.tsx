@@ -1,14 +1,15 @@
 // app/routes/$.tsx - Catch-all route pour 404 - Version Optimisée
 import {
-  json,
   redirect,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import { useRouteError, isRouteErrorResponse } from "@remix-run/react";
+  data,
+} from "react-router";
+import { useRouteError, isRouteErrorResponse } from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { buildCacheHeaders } from "~/utils/cache-control";
 import { logger } from "~/utils/logger";
+import { stripSingleFetchSuffix } from "~/utils/single-fetch";
 
 export const meta: MetaFunction = () => [
   { title: "Page non trouvée | Automecanik" },
@@ -28,11 +29,16 @@ export const headers = buildCacheHeaders("no-cache");
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
-  const pathname = url.pathname;
+  // 🛡️ RR8 single-fetch (navigation client) garde le suffixe `.data` sur
+  // request.url. Le retirer pour que la détection garbage, les quick-redirects
+  // et les résolveurs redirect/legacy voient le VRAI chemin — sinon les 301
+  // legacy (/blog, /pieces-auto/*) ne se déclenchent pas en navigation client
+  // (404 au lieu du 301). Encodage préservé. Voir incident 2026-06-25.
+  const pathname = stripSingleFetchSuffix(url.pathname);
 
   // 0a. Short-circuit URLs garbage (base64 spam, bots) — évite 3 appels API inutiles
   if (isGarbageUrl(pathname)) {
-    throw json(
+    throw data(
       { url: pathname, message: "Contenu supprimé" },
       {
         status: 410,
@@ -156,7 +162,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
             logger.log(
               `[SEO] Legacy URL not resolved, returning 410: ${pathname}`,
             );
-            throw json(
+            throw data(
               {
                 url: pathname,
                 message:
@@ -220,7 +226,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     // 5. Vérifier si c'est un ancien lien connu (logique 410)
     if (errorResponseData.isOldLink) {
-      throw json(
+      throw data(
         {
           ...errorResponseData,
           message: "Ce contenu a été définitivement supprimé ou déplacé",
@@ -239,7 +245,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     // X-Robots-Tag obligatoire : sans ce header, SeoHeadersInterceptor.intercept()
     // applique le default `index, follow` pour les paths non-matchés (ex /wp-admin/,
     // /panier inexistant). Canon SEO : un 404 ne s'indexe jamais.
-    throw json(
+    throw data(
       {
         ...errorResponseData,
         message: "Page non trouvée",
@@ -260,7 +266,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     // Pour toute autre erreur, fallback vers 404 basique
     logger.error("Erreur dans catch-all route:", error);
-    throw json(
+    throw data(
       {
         url: pathname,
         message: "Page non trouvée",

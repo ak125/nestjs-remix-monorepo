@@ -4,9 +4,9 @@
  * Source unique : useRootCart() (SSR + revalidation automatique)
  * Pas de fetch independant — root.tsx revalide sur cart:updated (300ms debounce)
  */
-import { Link } from "@remix-run/react";
 import { ShoppingCart } from "lucide-react";
 import { memo } from "react";
+import { Link } from "react-router";
 
 import { useRootCart } from "~/hooks/useRootData";
 import { Badge } from "../ui/badge";
@@ -28,7 +28,7 @@ export const CartIcon = memo(function CartIcon({
       className={`hover:text-blue-200 transition-colors relative inline-flex items-center ${className}`}
       aria-label="Panier"
     >
-      <ShoppingCart className="flex-shrink-0" size={20} />
+      <ShoppingCart className="shrink-0" size={20} />
       {itemCount > 0 && (
         <Badge
           data-cart-badge

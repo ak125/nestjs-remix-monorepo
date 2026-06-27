@@ -1,10 +1,9 @@
+import { MapPin, Trash2, Home, Building, Star, Loader2 } from "lucide-react";
 import {
-  json,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import {
+  data,
   useLoaderData,
   useActionData,
   Link,
@@ -12,8 +11,7 @@ import {
   useNavigation,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { MapPin, Trash2, Home, Building, Star, Loader2 } from "lucide-react";
+} from "react-router";
 
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { logger } from "~/utils/logger";
@@ -75,24 +73,23 @@ export async function loader({ request }: LoaderFunctionArgs) {
     });
     if (!res.ok) {
       logger.error(`API addresses error: ${res.status}`);
-      return json<LoaderData>({ billing: null, delivery: [], user });
+      return { billing: null, delivery: [], user };
     }
     const data = await res.json();
-    return json<LoaderData>({
+    return {
       billing: data.billing || null,
       delivery: data.delivery || [],
       user,
-    });
+    };
   } catch (error) {
     logger.error("Erreur chargement adresses:", error);
-    return json<LoaderData>({ billing: null, delivery: [], user });
+    return { billing: null, delivery: [], user };
   }
 }
 
 export async function action({ request }: ActionFunctionArgs) {
   const user = await requireAuth(request);
-  if (!user)
-    return json<ActionData>({ error: "Non authentifié" }, { status: 401 });
+  if (!user) return data({ error: "Non authentifié" }, { status: 401 });
 
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
   const cookie = request.headers.get("Cookie") || "";
@@ -123,19 +120,19 @@ export async function action({ request }: ActionFunctionArgs) {
         break;
       }
       default:
-        return json<ActionData>({ error: "Action inconnue" }, { status: 400 });
+        return data({ error: "Action inconnue" }, { status: 400 });
     }
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({}));
-      return json<ActionData>(
+      return data(
         { error: errorData.message || `Erreur ${res.status}` },
         { status: res.status },
       );
     }
-    return json<ActionData>({ success: true });
+    return { success: true };
   } catch (error) {
     logger.error("Erreur action adresses:", error);
-    return json<ActionData>({ error: "Erreur serveur" }, { status: 500 });
+    return data({ error: "Erreur serveur" }, { status: 500 });
   }
 }
 

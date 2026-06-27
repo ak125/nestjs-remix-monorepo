@@ -20,20 +20,19 @@ import { normalizeRoleId } from "./normalize";
  *   const row = RowSchema.parse(rawDbRow);
  *   row.role; // typed as CanonicalRoleId
  */
-export const tolerantRoleSchema: z.ZodType<CanonicalRoleId, z.ZodTypeDef, unknown> =
-  z
-    .string({ required_error: "Role is required" })
-    .transform((val, ctx) => {
-      const normalized = normalizeRoleId(val);
-      if (!normalized) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: `Unknown or forbidden role: "${val}". Bare R3/R6/R9 are ambiguous; use canonical RoleId or a known legacy alias.`,
-        });
-        return z.NEVER;
-      }
-      return assertCanonicalRoleStrict(normalized);
-    });
+export const tolerantRoleSchema: z.ZodType<CanonicalRoleId, unknown> = z
+  .string({ error: "Role is required" })
+  .transform((val, ctx) => {
+    const normalized = normalizeRoleId(val);
+    if (!normalized) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `Unknown or forbidden role: "${val}". Bare R3/R6/R9 are ambiguous; use canonical RoleId or a known legacy alias.`,
+      });
+      return z.NEVER;
+    }
+    return assertCanonicalRoleStrict(normalized);
+  });
 
 /**
  * Zod schema accepting **only canonical** RoleId values (strict).
@@ -47,27 +46,26 @@ export const tolerantRoleSchema: z.ZodType<CanonicalRoleId, z.ZodTypeDef, unknow
  *   });
  *   ResponseSchema.parse(payload); // throws if payload.role is legacy
  */
-export const canonicalRoleSchema: z.ZodType<CanonicalRoleId, z.ZodTypeDef, unknown> =
-  z
-    .string({ required_error: "Role is required" })
-    .transform((val, ctx) => {
-      try {
-        return assertCanonicalRoleStrict(val);
-      } catch (e) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message:
-            e instanceof Error
-              ? e.message
-              : `Non-canonical role in output: "${val}".`,
-        });
-        return z.NEVER;
-      }
-    });
+export const canonicalRoleSchema: z.ZodType<CanonicalRoleId, unknown> = z
+  .string({ error: "Role is required" })
+  .transform((val, ctx) => {
+    try {
+      return assertCanonicalRoleStrict(val);
+    } catch (e) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          e instanceof Error
+            ? e.message
+            : `Non-canonical role in output: "${val}".`,
+      });
+      return z.NEVER;
+    }
+  });
 
 /**
  * Native Zod enum mirroring the `RoleId` enum, useful for documentation
  * generation (OpenAPI / Swagger). Allows ALL enum members including
  * deprecated ones — prefer `canonicalRoleSchema` for runtime output validation.
  */
-export const roleIdNativeEnum = z.nativeEnum(RoleId);
+export const roleIdNativeEnum = z.enum(RoleId);

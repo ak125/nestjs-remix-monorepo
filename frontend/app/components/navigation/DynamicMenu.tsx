@@ -3,9 +3,9 @@
  * Compatible avec les services NavigationService optimisés (Commercial, SEO, Expedition)
  * Intégration complète avec backend NestJS + Supabase
  */
-import { Link, useLocation } from "@remix-run/react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { memo, useState, useEffect, useCallback } from "react";
+import { Link, useLocation } from "react-router";
 import { Alert } from "~/components/ui/alert";
 import { logger } from "~/utils/logger";
 import {

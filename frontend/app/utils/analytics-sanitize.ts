@@ -86,7 +86,7 @@ export function sanitizeParams<T = unknown>(input: T, depth = 0): T {
 /**
  * Sentry `beforeSend` callback — sanitize les request data + breadcrumbs.
  *
- * Compatible `@sentry/remix` (ErrorEvent) et `@sentry/nestjs`. Le param est
+ * Compatible `@sentry/react` (ErrorEvent) et `@sentry/nestjs`. Le param est
  * typé générique pour s'adapter aux différentes signatures SDK ; on opère
  * via accès propriété défensifs pour ne pas couplar à un type SDK précis.
  *
@@ -133,6 +133,30 @@ export function sentryBeforeSend<E>(event: E): E {
   // extra (Record<string, unknown>)
   if (e.extra && typeof e.extra === "object") {
     e.extra = sanitizeParams(e.extra);
+  }
+
+  // event.message — React 19 hydration mismatch errors carry a server/client
+  // DIFF (potentially dynamically-rendered page text) in the message. Without
+  // this, a raw diff would reach Sentry unsanitized.
+  if (typeof e.message === "string") {
+    e.message = sanitizeString(e.message);
+  }
+
+  // exception.values[*].value — the captured Error message string. Same diff /
+  // PII leak surface as event.message for hydration & render errors.
+  const exception = e.exception as Record<string, unknown> | undefined;
+  if (
+    exception &&
+    typeof exception === "object" &&
+    Array.isArray(exception.values)
+  ) {
+    exception.values = exception.values.map((v) => {
+      if (!v || typeof v !== "object") return v;
+      const val = v as Record<string, unknown>;
+      return typeof val.value === "string"
+        ? { ...val, value: sanitizeString(val.value) }
+        : val;
+    });
   }
 
   return event;

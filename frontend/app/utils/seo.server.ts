@@ -1,5 +1,5 @@
 // app/utils/seo.server.ts
-import { type MetaFunction } from "@remix-run/node";
+import { type MetaFunction } from "react-router";
 import { logger } from "~/utils/logger";
 
 // Import for local usage within this .server file

@@ -9,12 +9,6 @@
  */
 
 import {
-  type LoaderFunctionArgs,
-  type MetaFunction,
-  json,
-} from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
-import {
   Shield,
   Search,
   FileText,
@@ -27,6 +21,11 @@ import {
   Info,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+} from "react-router";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -110,13 +109,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
       : { hierarchy: [] };
     const rules = rulesRes.ok ? await rulesRes.json() : { rules: {} };
 
-    return json({ matrix, hierarchy, rules });
+    return { matrix, hierarchy, rules };
   } catch {
-    return json({
+    return {
       matrix: { matrix: {}, table: {}, roles: [] },
       hierarchy: { hierarchy: [] },
       rules: { rules: {} },
-    });
+    };
   }
 }
 

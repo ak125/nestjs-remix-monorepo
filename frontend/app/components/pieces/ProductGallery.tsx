@@ -265,7 +265,7 @@ export const ProductGallery = memo(function ProductGallery({
               setCurrentImage(img.url);
             }}
             onMouseEnter={() => setCurrentImage(img.url)}
-            className={`w-12 h-12 flex-shrink-0 rounded border-2 ${currentImage === img.url ? "border-blue-400 ring-2 ring-blue-400 scale-110" : "border-white/50 hover:border-white"} overflow-hidden transition-all bg-white shadow-lg`}
+            className={`w-12 h-12 shrink-0 rounded border-2 ${currentImage === img.url ? "border-blue-400 ring-2 ring-blue-400 scale-110" : "border-white/50 hover:border-white"} overflow-hidden transition-all bg-white shadow-lg`}
           >
             <img
               src={img.url}
@@ -279,7 +279,7 @@ export const ProductGallery = memo(function ProductGallery({
           </button>
         ))}
         {allImages.length > 5 && (
-          <div className="w-12 h-12 flex-shrink-0 rounded border-2 border-white/50 bg-neutral-900/50 flex items-center justify-center text-white text-xs font-bold shadow-lg">
+          <div className="w-12 h-12 shrink-0 rounded border-2 border-white/50 bg-neutral-900/50 flex items-center justify-center text-white text-xs font-bold shadow-lg">
             +{allImages.length - 5}
           </div>
         )}

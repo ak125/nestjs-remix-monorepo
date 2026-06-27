@@ -14,33 +14,38 @@
       "require": "./dist/index.cjs",
       "default": "./dist/index.js"
     },
-    "./tokens.json": "./src/tokens/design-tokens.json",
+    "./tokens.json": "./src/tokens.json",
     "./css": "./dist/tokens.css",
-    "./utilities": "./dist/utilities.css",
-    "./tailwind": "./dist/tailwind.config.js"
+    "./tailwind-tokens": "./src/tailwind-tokens.cjs"
   },
   "files": [
     "dist",
-    "src/design-tokens.json",
+    "src/tokens.json",
+    "src/tailwind-tokens.cjs",
     "README.md"
   ],
   "scripts": {
     "dev": "npm run build -- --watch",
-    "build": "node scripts/build-tokens.js && tsup",
+    "build": "node scripts/build-tokens.mjs && tsup",
+    "build:check": "node scripts/build-tokens.mjs --check",
+    "check:reserved-namespaces": "node scripts/check-reserved-namespaces.mjs",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src --ext ts",
-    "lint:fix": "eslint src --ext ts --fix",
+    "lint": "ESLINT_USE_FLAT_CONFIG=true eslint src",
+    "lint:fix": "ESLINT_USE_FLAT_CONFIG=true eslint src --fix",
     "test": "vitest",
     "test:run": "vitest run",
     "clean": "rm -rf dist .turbo node_modules/.cache"
   },
   "devDependencies": {
+    "@fafa/eslint-config": "*",
     "@fafa/typescript-config": "*",
-    "@types/node": "^20.17.6",
+    "@types/node": "^24",
     "eslint": "^8.57.1",
+    "style-dictionary": "5.5.0",
     "tsup": "^8.3.5",
-    "typescript": "^5.9.3",
-    "vitest": "^2.1.8"
+    "typescript": "~6.0.3",
+    "vitest": "^2.1.8",
+    "zod": "^4.4.3"
   },
   "keywords": [
     "design-tokens",
@@ -50,7 +55,7 @@
     "tailwind"
   ],
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=24.0.0"
   },
   "publishConfig": {
     "access": "public"

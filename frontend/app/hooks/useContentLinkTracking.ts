@@ -19,8 +19,8 @@
  * ```
  */
 
-import { useLocation } from "@remix-run/react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router";
 import { postJsonBeacon } from "~/utils/beacon";
 import { safeSessionStorage } from "~/utils/safe-storage";
 
@@ -54,7 +54,7 @@ interface UseContentLinkTrackingReturn {
   /**
    * Ref à attacher au container du contenu HTML
    */
-  containerRef: React.RefObject<HTMLDivElement>;
+  containerRef: React.RefObject<HTMLDivElement | null>;
 
   /**
    * Formulas des liens détectés dans le contenu

@@ -1,0 +1,55 @@
+name: 🛡️ Contract Gate (deterministic)
+
+# Always-run, blocking-capable gate for the DETERMINISTIC control-plane invariants:
+#   - @repo/registry L1<->L2 contracts (incl. the dep-governance subset test that
+#     #1052 silently drifted past — @sentry/remix vs react-router)
+#   - SEO agent-matrix determinism (the executionRegistry hash #947 left stale)
+#
+# WHY a dedicated workflow (not audit.yml): audit.yml is path-filtered (Phase-0
+# advisory) and also runs heuristic knip/madge/ast-grep that legitimately drift, so
+# it must stay non-required. This gate runs ONLY deterministic checks (green on main)
+# on EVERY PR with NO path filter — so it can be a REQUIRED status check WITHOUT the
+# path-filter skip-bypass (a path-filtered required check that does not trigger is
+# treated by GitHub as absent — the exact hole #1052 used).
+#
+# To make it blocking: add the context "🛡️ Contract Gate" to main's required status
+# checks (owner, branch protection). Until then it runs advisory like any other check.
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: contract-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contract-gate:
+    name: 🛡️ Contract Gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      # Transitive dep of BOTH the registry contract suite and dump-agent-matrix.ts
+      # (via backend/src/config/role-ids.ts). --ignore-scripts skips workspace builds.
+      - name: Build @repo/seo-roles
+        run: npm run build --workspace=@repo/seo-roles
+
+      - name: 📋 Registry contracts — L1 vs L2 (incl. dep-governance subset)
+        run: npm -w @repo/registry test
+
+      - name: 🛡️ SEO agent-matrix determinism
+        run: npm run audit:seo-matrix:check

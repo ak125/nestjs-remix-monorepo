@@ -8,13 +8,14 @@
  * Intention : Navigation vers modèles d'une marque
  */
 
+import { ArrowLeft, Car, Calendar, Settings } from "lucide-react";
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, Link, useParams } from "@remix-run/react";
-import { ArrowLeft, Car, Calendar, Settings } from "lucide-react";
+  useLoaderData,
+  Link,
+  useParams,
+} from "react-router";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 import { Alert } from "~/components/ui/alert";
@@ -39,7 +40,7 @@ export const handle = {
 /**
  * 🔍 SEO Meta Tags
  */
-export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data, location }) => {
   const brandName = data?.brand?.marque_name || "Marque";
   const modelsCount = data?.models?.length || 0;
   const canonicalUrl = `https://www.automecanik.com${location.pathname}`;
@@ -128,15 +129,15 @@ export async function loader({ params }: LoaderFunctionArgs) {
     // Récupérer quelques types pour affichage (optionnel)
     const types: any[] = [];
 
-    return json({ models, brand, types } as LoaderData);
+    return { models, brand, types } as LoaderData;
   } catch (error) {
     logger.error("Erreur chargement marque:", error);
-    return json({
+    return {
       models: [],
       brand: null,
       types: [],
       error: "Impossible de charger les données",
-    } as LoaderData);
+    } as LoaderData;
   }
 }
 

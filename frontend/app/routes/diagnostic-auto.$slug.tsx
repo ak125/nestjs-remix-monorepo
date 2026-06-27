@@ -12,18 +12,6 @@
  */
 
 import {
-  json,
-  redirect,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import {
-  Link,
-  useLoaderData,
-  useRouteError,
-  isRouteErrorResponse,
-} from "@remix-run/react";
-import {
   AlertTriangle,
   ArrowLeft,
   BookOpen,
@@ -44,6 +32,15 @@ import {
   AlertOctagon,
   type LucideIcon,
 } from "lucide-react";
+import {
+  redirect,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  Link,
+  useLoaderData,
+  useRouteError,
+  isRouteErrorResponse,
+} from "react-router";
 
 // UI Components
 import {
@@ -170,7 +167,7 @@ const SAFETY_GATE_FALLBACK: SafetyGateEntry = {
   label: "",
 };
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   if (!data?.diagnostic) {
     return [{ title: "Diagnostic non trouvé | AutoMekanik" }];
   }
@@ -255,10 +252,10 @@ export async function loader({ params }: LoaderFunctionArgs) {
     const safetyConfig = (safetyJson?.entity_data ??
       null) as SafetyConfigData | null;
 
-    return json({
+    return {
       diagnostic: data.data as DiagnosticData,
       safetyConfig,
-    });
+    };
   } catch (error) {
     if (error instanceof Response) throw error;
     logger.error("[diagnostic-auto.$slug] Loader error:", error);
@@ -290,7 +287,6 @@ export default function DiagnosticAutoDetail() {
           }}
         />
       )}
-
       {/* Breadcrumbs */}
       <div className="bg-white border-b">
         <Container className="py-3">
@@ -306,7 +302,6 @@ export default function DiagnosticAutoDetail() {
           />
         </Container>
       </div>
-
       {/* Safety Gate Alert (si critique) */}
       {diagnostic.safety_gate !== "none" && (
         <div
@@ -330,7 +325,6 @@ export default function DiagnosticAutoDetail() {
           </Container>
         </div>
       )}
-
       {/* Hero Diagnostic — H1 unique (image-matrix-v1 §7) */}
       <HeroDiagnostic
         title={diagnostic.title}
@@ -347,7 +341,6 @@ export default function DiagnosticAutoDetail() {
               : "info"
         }
       />
-
       {/* Back link + badges */}
       <div className="bg-white border-b">
         <Container className="py-3 flex items-center justify-between">
@@ -370,7 +363,6 @@ export default function DiagnosticAutoDetail() {
           </div>
         </Container>
       </div>
-
       <Container className="py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Colonne principale */}
@@ -909,7 +901,7 @@ export default function DiagnosticAutoDetail() {
             <Card className="bg-gray-100">
               <CardContent className="py-4">
                 <div className="flex items-start gap-3">
-                  <Shield className="h-5 w-5 text-gray-600 flex-shrink-0 mt-0.5" />
+                  <Shield className="h-5 w-5 text-gray-600 shrink-0 mt-0.5" />
                   <div className="text-sm text-gray-600">
                     <p className="font-medium mb-1">Avis professionnel</p>
                     <p>

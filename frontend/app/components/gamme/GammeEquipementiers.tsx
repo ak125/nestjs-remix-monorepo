@@ -42,7 +42,7 @@ export default function GammeEquipementiers({
           <Reveal key={e.name} delay={i * 60}>
             <div className="bg-white/[0.05] border border-white/[0.08] rounded-[22px] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-sm hover:bg-white/[0.08] hover:border-white/[0.15] transition-all group">
               <div className="flex items-center gap-3 mb-2.5">
-                <div className="w-11 h-11 lg:w-12 lg:h-12 rounded-xl bg-white/[0.08] flex items-center justify-center flex-shrink-0 group-hover:text-white group-hover:bg-white/[0.12] transition-all overflow-hidden">
+                <div className="w-11 h-11 lg:w-12 lg:h-12 rounded-xl bg-white/[0.08] flex items-center justify-center shrink-0 group-hover:text-white group-hover:bg-white/[0.12] transition-all overflow-hidden">
                   {e.logo ? (
                     <img
                       src={e.logo}

@@ -1,11 +1,12 @@
+import { ArrowLeft, Save, AlertTriangle } from "lucide-react";
 import {
-  json,
   redirect,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
-} from "@remix-run/node";
-import { useLoaderData, useFetcher, Link } from "@remix-run/react";
-import { ArrowLeft, Save, AlertTriangle } from "lucide-react";
+  useLoaderData,
+  useFetcher,
+  Link,
+} from "react-router";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
@@ -73,7 +74,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
     const observable: Observable = await res.json();
 
-    return json({ observable });
+    return { observable };
   } catch (error) {
     logger.error("Loader error:", error);
     throw new Response("Erreur serveur", { status: 500 });
@@ -117,13 +118,13 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
     if (!res.ok) {
       const error = await res.text();
-      return json({ success: false, error: `Erreur mise a jour: ${error}` });
+      return { success: false, error: `Erreur mise a jour: ${error}` };
     }
 
     return redirect("/admin/diagnostic?updated=true");
   } catch (error) {
     logger.error("Action error:", error);
-    return json({ success: false, error: "Erreur serveur" });
+    return { success: false, error: "Erreur serveur" };
   }
 }
 

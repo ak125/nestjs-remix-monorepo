@@ -9,13 +9,6 @@
  */
 
 import {
-  json,
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, useFetcher } from "@remix-run/react";
-import {
   Activity,
   AlertTriangle,
   CheckCircle2,
@@ -31,6 +24,13 @@ import {
   Link as LinkIcon,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  useFetcher,
+} from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
@@ -104,18 +104,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const dashboardData = dashboardRes.ok ? await dashboardRes.json() : null;
     const alertsData = alertsRes.ok ? await alertsRes.json() : null;
 
-    return json({
+    return {
       dashboard: dashboardData?.data as DashboardKpis | null,
       alerts: (alertsData?.data || []) as Alert[],
       error: dashboardData?.success === false ? dashboardData.error : null,
-    });
+    };
   } catch (error) {
     logger.error("[SEO Hub Index] Loader error:", error);
-    return json({
+    return {
       dashboard: null,
       alerts: [],
       error: "Erreur connexion backend",
-    });
+    };
   }
 }
 
@@ -135,10 +135,10 @@ export async function action({ request }: ActionFunctionArgs) {
         },
       );
       const result = await res.json();
-      return json({
+      return {
         success: result.success,
         message: result.data?.message || "Risks refreshed",
-      });
+      };
     }
 
     if (intent === "trigger-monitor") {
@@ -150,15 +150,15 @@ export async function action({ request }: ActionFunctionArgs) {
         },
       );
       const result = await res.json();
-      return json({
+      return {
         success: result.success,
         message: result.data?.message || "Monitor triggered",
-      });
+      };
     }
 
-    return json({ success: false, message: "Unknown action" });
+    return { success: false, message: "Unknown action" };
   } catch (error) {
-    return json({ success: false, message: "Erreur réseau" });
+    return { success: false, message: "Erreur réseau" };
   }
 }
 

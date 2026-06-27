@@ -22,8 +22,15 @@ allowed-tools: mcp__claude_ai_Supabase__execute_sql, Read, Glob, Grep, Bash
 ## La BOUCLE (ordre non négociable)
 
 ```
-SCRAPING LARGE (RUN_TARGETED_RAW_TO_WIKI) → RAW → WIKI → CONSUMER (R1/R2/R8 → page R) → mesure SCORE → (si < seuil) itérer
+SCRAPING LARGE (RUN_TARGETED_RAW_TO_WIKI) → RAW → WIKI → score SUBSTANCE (shadow, sur le WIKI)
+  → revue/promotion → export → projection data → CONSUMER (R1/R2/R8) → resolver balises
+  → CONSTRUIRE le scorer SEO surface (shadow) → composition R2 → rendu SSR → EXÉCUTER le score surface
+  → audit cluster (intra + cross-gamme) → calibration → correction → re-passage → outcome
 ```
+
+> **2 scores à 2 étapes** : substance (sur le WIKI, tôt) ≠ surface SEO (après composition+rendu, tard) ;
+> **construire le scorer ≠ l'exécuter**. Verdict terminal de page = `PAGE_QUALITY_COMPOSITE_PASS`
+> (ADR-094, **shadow/gated** jusqu'à calibration — cf. §« scoring en transition » plus bas).
 
 1. **SCRAPING LARGE** (web → `automecanik-raw/sources/web-research/<gamme>/`) — la 1ʳᵉ étape, pas RAW directement.
    - **Méthode de scraping = run web-research `RUN_TARGETED_RAW_TO_WIKI <gamme>`** (label du run, pas un CLI) :
@@ -62,9 +69,16 @@ SCRAPING LARGE (RUN_TARGETED_RAW_TO_WIKI) → RAW → WIKI → CONSUMER (R1/R2/R
      - **Diagnostic** : sources symptômes→causes (codes OBD/VAG, constructeur, forums techniques) — à découvrir de même.
      - **Dédup + refresh** : chaque cible scrapée **une seule fois** (manifest type `app/audit/scrape-targets-*.md`) ;
        rafraîchir périodiquement. Sortie toujours **`.md`** par `target_wiki_field` (cf. ci-dessus).
-   - **Mesure de la substance produite (complète l'étape 5)** : le **scorer shadow ADR-088**
-     (`automecanik-wiki/_scripts/shadow_score.py`, 6 dimensions à **planchers entity-type-aware**) note
-     `claim`/`applies_to`/`evidence`/`related_gammes` par engineBlock → re-scraper jusqu'au TIER A.
+   - **Mesure de la substance produite (complète l'étape 5) — ⚠️ SCORING EN TRANSITION, ne pas traiter le score scalaire comme fiable** :
+     - **Câblé aujourd'hui (autoritaire)** : `automecanik-wiki/_scripts/compute-confidence-score.py` (4 composantes) + `promote.py`
+       (TIER A/B, ADR-083 ; seuil auto **NO-OP** par défaut → revue humaine). ⚠️ **Ce scorer déflate l'OE** (défaut
+       `medium`=0.6 ; ex. `disque-de-frein` OE = 0.36 malgré 64 sources OE) — connu, à remplacer.
+     - **Cible ratifiée (ADR-091)** : `shadow_score.py` **EXISTE** (6-dim à planchers `claim`/`applies_to`/`evidence`/`related_gammes`,
+       ADR-088, + `test_shadow_score.py`) — derrière flag `PROMOTE_GATE_ENGINE`, **PAS encore câblé** comme scorer autoritaire
+       (câblage + baseline-resync de tout le corpus = **Phase B**, atomique).
+     - **Gate de régression** `compare-proposal-versions.py` (#60, mergé) utilise **encore** `compute-confidence-score` (celui qui déflate).
+     - **Conséquence** : « itérer jusqu'au SCORE » n'est fiable qu'**après** câblage ADR-091. Tant que non câblé : **revue humaine décide** ;
+       ne jamais conclure « TIER A / fait » sur le score scalaire seul. (Détail + plan : `app/audit/content-loop-method-confusion-and-hardening-2026-06-22.md`.)
 2. **RAW** (`automecanik-raw/`) — normaliser/recycler le scrape en fiches sourcées (frontmatter contrat
    `_schemas/recycled-frontmatter.schema.json`), `verification_status` `to_verify`→`verified` (humain).
    `recycled/` n'est **jamais** canon (canon RAW `CLAUDE.md`).

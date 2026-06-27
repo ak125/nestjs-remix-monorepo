@@ -2,7 +2,7 @@
  * 🔔 API NOTIFICATIONS ACTIONS - Endpoint pour les actions sur notifications
  */
 
-import { json, type ActionFunctionArgs } from "@remix-run/node";
+import { type ActionFunctionArgs, data } from "react-router";
 import { logger } from "~/utils/logger";
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -24,58 +24,58 @@ export async function action({ request }: ActionFunctionArgs) {
         "Marking as read:",
         idsString ? JSON.parse(idsString) : [notificationId],
       );
-      return json({
+      return {
         success: true,
         message: "Notifications marquées comme lues",
-      });
+      };
 
     case "mark-unread":
       logger.log(
         "Marking as unread:",
         idsString ? JSON.parse(idsString) : [notificationId],
       );
-      return json({
+      return {
         success: true,
         message: "Notifications marquées comme non lues",
-      });
+      };
 
     case "delete":
       logger.log(
         "Deleting:",
         idsString ? JSON.parse(idsString) : [notificationId],
       );
-      return json({ success: true, message: "Notifications supprimées" });
+      return { success: true, message: "Notifications supprimées" };
 
     case "view-order":
       logger.log("Viewing order for notification:", notificationId);
-      return json({ success: true, redirect: `/orders/${notificationId}` });
+      return { success: true, redirect: `/orders/${notificationId}` };
 
     case "process-order":
       logger.log("Processing order for notification:", notificationId);
-      return json({
+      return {
         success: true,
         message: "Commande en cours de traitement",
-      });
+      };
 
     case "restock":
       logger.log("Restocking product for notification:", notificationId);
-      return json({
+      return {
         success: true,
         message: "Demande de réapprovisionnement envoyée",
-      });
+      };
 
     case "retry-processing":
       logger.log("Retrying processing for notification:", notificationId);
-      return json({ success: true, message: "Nouveau traitement lancé" });
+      return { success: true, message: "Nouveau traitement lancé" };
 
     case "manual-process":
       logger.log("Manual processing for notification:", notificationId);
-      return json({
+      return {
         success: true,
         redirect: `/admin/orders/manual-process/${notificationId}`,
-      });
+      };
 
     default:
-      return json({ error: "Action non reconnue" }, { status: 400 });
+      return data({ error: "Action non reconnue" }, { status: 400 });
   }
 }

@@ -1,4 +1,3 @@
-import { Link } from "@remix-run/react";
 import {
   BookMarked,
   Building2,
@@ -8,6 +7,7 @@ import {
   Search,
 } from "lucide-react";
 import { useCallback } from "react";
+import { Link } from "react-router";
 
 /** Scroll to an element with offset for sticky header */
 function scrollToId(id: string) {
@@ -110,7 +110,7 @@ function ShortcutItem({
   );
 
   const cls = compact
-    ? "flex flex-shrink-0 items-center gap-2.5 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 transition-colors hover:border-cta/30 hover:bg-orange-50 active:scale-[0.98] cursor-pointer"
+    ? "flex shrink-0 items-center gap-2.5 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 transition-colors hover:border-cta/30 hover:bg-orange-50 active:scale-[0.98] cursor-pointer"
     : "group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3.5 transition-all hover:border-cta/30 hover:bg-orange-50/50 hover:shadow-sm cursor-pointer";
 
   // Route link → <Link>

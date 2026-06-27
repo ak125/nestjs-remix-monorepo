@@ -72,7 +72,7 @@ export function ResultHypotheses({ hypotheses }: Props) {
               >
                 {/* Rank */}
                 <span
-                  className={`flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold flex-shrink-0 ${
+                  className={`flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold shrink-0 ${
                     isTop
                       ? "bg-blue-600 text-white"
                       : "bg-gray-100 text-white border border-gray-200"
@@ -181,7 +181,7 @@ export function ResultHypotheses({ hypotheses }: Props) {
                   {/* Verification method */}
                   {h.verification_method && (
                     <div className="flex items-start gap-2 p-2 rounded bg-amber-50 border border-amber-100">
-                      <Wrench className="w-3.5 h-3.5 mt-0.5 text-amber-600 flex-shrink-0" />
+                      <Wrench className="w-3.5 h-3.5 mt-0.5 text-amber-600 shrink-0" />
                       <div>
                         <p className="text-xs font-medium text-amber-800">
                           Vérification recommandée

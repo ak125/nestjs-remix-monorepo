@@ -1,6 +1,6 @@
-import { Link } from "@remix-run/react";
 import { ArrowRight, BookOpen, Calendar, Sparkles } from "lucide-react";
 import { useEffect, useState, memo } from "react";
+import { Link } from "react-router";
 
 import { HtmlContent } from "../seo/HtmlContent";
 

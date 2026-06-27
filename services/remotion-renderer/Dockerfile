@@ -1,6 +1,6 @@
 # ── AutoMecanik Remotion Renderer ──
 # Node 22-bookworm-slim (NOT alpine — Chromium requires glibc)
-FROM node:22-bookworm-slim AS base
+FROM node:24-bookworm-slim AS base
 
 # System dependencies: FFmpeg + Chromium + fonts
 RUN apt-get update && apt-get install -y --no-install-recommends \

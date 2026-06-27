@@ -80,7 +80,7 @@ export const R1KpiCoverage = memo(function R1KpiCoverage({
           key={i}
           className="flex items-center gap-3 rounded-xl border border-gray-100 bg-white p-3 sm:p-4"
         >
-          <div className="flex-shrink-0">{item.icon}</div>
+          <div className="shrink-0">{item.icon}</div>
           <div className="min-w-0">
             <p className="text-sm font-bold text-gray-900 leading-tight">
               {item.value}

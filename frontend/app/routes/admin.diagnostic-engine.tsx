@@ -4,8 +4,6 @@
  * Admin dashboard for the Diagnostic Engine.
  * Shows stats, recent sessions, system coverage.
  */
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
 import {
   Activity,
   Brain,
@@ -15,6 +13,7 @@ import {
   Stethoscope,
   TrendingUp,
 } from "lucide-react";
+import { type LoaderFunctionArgs, useLoaderData } from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
@@ -58,7 +57,7 @@ export const loader = async ({ request: _request }: LoaderFunctionArgs) => {
     ? await sessionsRes.json()
     : { sessions: [] };
 
-  return json({ stats, sessions: sessionsData.sessions || [] });
+  return { stats, sessions: sessionsData.sessions || [] };
 };
 
 const SYSTEM_LABELS: Record<string, string> = {

@@ -3,14 +3,6 @@
  * Affiche toutes les informations d'une commande spécifique avec adresses
  */
 
-import { json, type LoaderFunction, type MetaFunction } from "@remix-run/node";
-import {
-  useLoaderData,
-  Link,
-  useNavigate,
-  useRouteError,
-  isRouteErrorResponse,
-} from "@remix-run/react";
 import {
   ArrowLeft,
   Package,
@@ -21,6 +13,15 @@ import {
   Phone,
   Mail,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+  useNavigate,
+  useRouteError,
+  isRouteErrorResponse,
+} from "react-router";
 import { OrderLineActions } from "~/components/admin/OrderLineActions";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { HtmlContent } from "~/components/seo/HtmlContent";
@@ -110,16 +111,16 @@ interface LoaderData {
   error?: string;
 }
 
-export const meta: MetaFunction<typeof loader> = ({ data }) =>
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) =>
   createNoIndexMeta(
     data?.order?.ord_id ? `Commande #${data.order.ord_id}` : "Commande",
   );
 
-export const loader: LoaderFunction = async ({ params, request }) => {
+export const loader = async ({ params, request }: LoaderFunctionArgs) => {
   const orderId = params.id;
 
   if (!orderId) {
-    return json<LoaderData>({ order: null, error: "ID de commande manquant" });
+    return { order: null, error: "ID de commande manquant" };
   }
 
   logger.log(`🔍 [Frontend] Chargement commande avec ID: ${orderId}`);
@@ -144,10 +145,10 @@ export const loader: LoaderFunction = async ({ params, request }) => {
         errorText,
       );
 
-      return json<LoaderData>({
+      return {
         order: null,
         error: `Commande non trouvée avec l'ID: ${orderId}`,
-      });
+      };
     }
 
     const data = await response.json();
@@ -155,23 +156,23 @@ export const loader: LoaderFunction = async ({ params, request }) => {
 
     if (!order || !order.ord_id) {
       logger.error(`❌ [Frontend] Commande non trouvée ou structure invalide`);
-      return json<LoaderData>({
+      return {
         order: null,
         error: "Commande non trouvée",
-      });
+      };
     }
 
     logger.log(`✅ [Frontend] Commande ${orderId} chargée (format BDD)`);
-    return json<LoaderData>({
+    return {
       order: order,
       error: undefined,
-    });
+    };
   } catch (error) {
     logger.error("❌ [Frontend] Error loading order:", error);
-    return json<LoaderData>({
+    return {
       order: null,
       error: "Erreur lors du chargement de la commande",
-    });
+    };
   }
 };
 
@@ -339,7 +340,7 @@ export default function OrderDetailsReal() {
                   </div>
                   <div className="space-y-3">
                     <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                      <Mail className="w-5 h-5 text-gray-500 flex-shrink-0" />
+                      <Mail className="w-5 h-5 text-gray-500 shrink-0" />
                       <a
                         href={`mailto:${order.customer.cst_mail}`}
                         className="text-gray-700 hover:text-blue-600 hover:underline font-medium"
@@ -349,7 +350,7 @@ export default function OrderDetailsReal() {
                     </div>
                     {order.customer.cst_tel && (
                       <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                        <Phone className="w-5 h-5 text-gray-500 flex-shrink-0" />
+                        <Phone className="w-5 h-5 text-gray-500 shrink-0" />
                         <a
                           href={`tel:${order.customer.cst_tel}`}
                           className="text-gray-700 hover:text-blue-600 font-medium"
@@ -360,7 +361,7 @@ export default function OrderDetailsReal() {
                     )}
                     {order.customer.cst_gsm && (
                       <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                        <Phone className="w-5 h-5 text-green-500 flex-shrink-0" />
+                        <Phone className="w-5 h-5 text-green-500 shrink-0" />
                         <a
                           href={`tel:${order.customer.cst_gsm}`}
                           className="text-gray-700 hover:text-blue-600 font-medium"
@@ -609,7 +610,7 @@ export default function OrderDetailsReal() {
                           </Badge>
                         )}
                       </div>
-                      <div className="flex-shrink-0 text-right space-y-1">
+                      <div className="shrink-0 text-right space-y-1">
                         <p className="text-gray-600 text-sm">
                           <span className="font-semibold text-gray-900">
                             {line.orl_art_quantity}

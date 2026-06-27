@@ -10,7 +10,6 @@
  * - Lien vers fiche produit
  */
 
-import { Link } from "@remix-run/react";
 import {
   ExternalLink,
   Package,
@@ -19,6 +18,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { memo } from "react";
+import { Link } from "react-router";
 
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";

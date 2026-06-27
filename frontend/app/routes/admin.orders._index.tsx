@@ -17,18 +17,16 @@
  * - UI Components: components/orders/* (10 composants)
  */
 
+import { useCallback, useState } from "react";
 import {
-  json,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
-} from "@remix-run/node";
-import {
+  data,
   useActionData,
   useLoaderData,
   useNavigate,
   useSearchParams,
-} from "@remix-run/react";
-import { useCallback, useState } from "react";
+} from "react-router";
 import { toast } from "sonner";
 
 import { Alert } from "~/components/ui/alert";
@@ -75,7 +73,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
   const user = await requireUser({ context });
   if (!user || !user.level || user.level < 3) {
     logger.error(`🚫 [Action] Accès refusé`);
-    return json<ActionData>({ error: "Accès refusé" }, { status: 403 });
+    return data({ error: "Accès refusé" }, { status: 403 });
   }
 
   const permissions = await loadUserPermissions(
@@ -99,10 +97,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
     switch (intent) {
       case "markPaid":
         if (!permissions.canMarkPaid) {
-          return json<ActionData>(
-            { error: "Permission refusée" },
-            { status: 403 },
-          );
+          return data({ error: "Permission refusée" }, { status: 403 });
         }
         const markPaidResponse = await fetch(
           `http://127.0.0.1:3000/api/admin/orders/${orderId}/confirm-payment`,
@@ -113,23 +108,20 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
         );
         if (!markPaidResponse.ok) {
           const error = await markPaidResponse.json();
-          return json<ActionData>(
+          return data(
             { error: error.message || "Erreur lors du paiement" },
             { status: 500 },
           );
         }
         logger.log(`💰 Order #${orderId} marked as paid`);
-        return json<ActionData>({
+        return {
           success: true,
           message: `Commande #${orderId} marquée comme payée`,
-        });
+        };
 
       case "validate":
         if (!permissions.canValidate) {
-          return json<ActionData>(
-            { error: "Permission refusée" },
-            { status: 403 },
-          );
+          return data({ error: "Permission refusée" }, { status: 403 });
         }
         const validateResponse = await fetch(
           `http://127.0.0.1:3000/api/admin/orders/${orderId}/validate`,
@@ -140,23 +132,20 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
         );
         if (!validateResponse.ok) {
           const error = await validateResponse.json();
-          return json<ActionData>(
+          return data(
             { error: error.message || "Erreur lors de la validation" },
             { status: 500 },
           );
         }
         logger.log(`✅ Order #${orderId} validated`);
-        return json<ActionData>({
+        return {
           success: true,
           message: `Commande #${orderId} validée`,
-        });
+        };
 
       case "startProcessing":
         if (!permissions.canValidate) {
-          return json<ActionData>(
-            { error: "Permission refusée" },
-            { status: 403 },
-          );
+          return data({ error: "Permission refusée" }, { status: 403 });
         }
         const processingResponse = await fetch(
           `http://127.0.0.1:3000/api/orders/admin/${orderId}/status`,
@@ -171,23 +160,20 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
         );
         if (!processingResponse.ok) {
           const error = await processingResponse.json();
-          return json<ActionData>(
+          return data(
             { error: error.message || "Erreur lors du passage en préparation" },
             { status: 500 },
           );
         }
         logger.log(`📦 Order #${orderId} processing started`);
-        return json<ActionData>({
+        return {
           success: true,
           message: `Commande #${orderId} mise en préparation`,
-        });
+        };
 
       case "markReady":
         if (!permissions.canShip) {
-          return json<ActionData>(
-            { error: "Permission refusée" },
-            { status: 403 },
-          );
+          return data({ error: "Permission refusée" }, { status: 403 });
         }
         const readyResponse = await fetch(
           `http://127.0.0.1:3000/api/orders/admin/${orderId}/status`,
@@ -202,23 +188,20 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
         );
         if (!readyResponse.ok) {
           const error = await readyResponse.json();
-          return json<ActionData>(
+          return data(
             { error: error.message || "Erreur lors du marquage prête" },
             { status: 500 },
           );
         }
         logger.log(`✅ Order #${orderId} marked as ready`);
-        return json<ActionData>({
+        return {
           success: true,
           message: `Commande #${orderId} prête à expédier`,
-        });
+        };
 
       case "ship":
         if (!permissions.canShip) {
-          return json<ActionData>(
-            { error: "Permission refusée" },
-            { status: 403 },
-          );
+          return data({ error: "Permission refusée" }, { status: 403 });
         }
         const shipResponse = await fetch(
           `http://127.0.0.1:3000/api/admin/orders/${orderId}/ship`,
@@ -229,23 +212,20 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
         );
         if (!shipResponse.ok) {
           const error = await shipResponse.json();
-          return json<ActionData>(
+          return data(
             { error: error.message || "Erreur lors de l'expédition" },
             { status: 500 },
           );
         }
         logger.log(`🚚 Order #${orderId} shipped`);
-        return json<ActionData>({
+        return {
           success: true,
           message: `Commande #${orderId} expédiée`,
-        });
+        };
 
       case "deliver":
         if (!permissions.canDeliver) {
-          return json<ActionData>(
-            { error: "Permission refusée" },
-            { status: 403 },
-          );
+          return data({ error: "Permission refusée" }, { status: 403 });
         }
         const deliverResponse = await fetch(
           `http://127.0.0.1:3000/api/admin/orders/${orderId}/deliver`,
@@ -256,23 +236,20 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
         );
         if (!deliverResponse.ok) {
           const error = await deliverResponse.json();
-          return json<ActionData>(
+          return data(
             { error: error.message || "Erreur lors de la livraison" },
             { status: 500 },
           );
         }
         logger.log(`✅ Order #${orderId} delivered`);
-        return json<ActionData>({
+        return {
           success: true,
           message: `Commande #${orderId} livrée`,
-        });
+        };
 
       case "cancel":
         if (!permissions.canCancel) {
-          return json<ActionData>(
-            { error: "Permission refusée" },
-            { status: 403 },
-          );
+          return data({ error: "Permission refusée" }, { status: 403 });
         }
         const cancelResponse = await fetch(
           `http://127.0.0.1:3000/api/admin/orders/${orderId}/cancel`,
@@ -283,23 +260,20 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
         );
         if (!cancelResponse.ok) {
           const error = await cancelResponse.json();
-          return json<ActionData>(
+          return data(
             { error: error.message || "Erreur lors de l'annulation" },
             { status: 500 },
           );
         }
         logger.log(`❌ Order #${orderId} cancelled`);
-        return json<ActionData>({
+        return {
           success: true,
           message: `Commande #${orderId} annulée`,
-        });
+        };
 
       case "delete":
         if (!permissions.canCancel) {
-          return json<ActionData>(
-            { error: "Permission refusée" },
-            { status: 403 },
-          );
+          return data({ error: "Permission refusée" }, { status: 403 });
         }
         const deleteResponse = await fetch(
           `http://127.0.0.1:3000/api/admin/orders/${orderId}/cancel`,
@@ -310,23 +284,20 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
         );
         if (!deleteResponse.ok) {
           const error = await deleteResponse.json();
-          return json<ActionData>(
+          return data(
             { error: error.message || "Erreur lors de la suppression" },
             { status: 500 },
           );
         }
         logger.log(`🗑️ Order #${orderId} deleted`);
-        return json<ActionData>({
+        return {
           success: true,
           message: `Commande #${orderId} supprimée`,
-        });
+        };
 
       case "updateOrder":
         if (!permissions.canValidate) {
-          return json<ActionData>(
-            { error: "Permission refusée" },
-            { status: 403 },
-          );
+          return data({ error: "Permission refusée" }, { status: 403 });
         }
         const orderStatus = formData.get("orderStatus");
         const isPaid = formData.get("isPaid") === "on" ? "1" : "0";
@@ -351,36 +322,33 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
         );
         if (!updateResponse.ok) {
           const error = await updateResponse.json();
-          return json<ActionData>(
+          return data(
             { error: error.message || "Erreur lors de la modification" },
             { status: 500 },
           );
         }
         logger.log(`✏️ Order #${orderId} updated`);
-        return json<ActionData>({
+        return {
           success: true,
           message: `Commande #${orderId} modifiée avec succès`,
-        });
+        };
 
       case "export":
         if (!permissions.canExport) {
-          return json<ActionData>(
-            { error: "Permission refusée" },
-            { status: 403 },
-          );
+          return data({ error: "Permission refusée" }, { status: 403 });
         }
         logger.log(`📄 Export CSV by ${user.email}`);
-        return json<ActionData>({
+        return {
           success: true,
           message: "Export CSV généré",
-        });
+        };
 
       default:
-        return json<ActionData>({ error: "Action inconnue" }, { status: 400 });
+        return data({ error: "Action inconnue" }, { status: 400 });
     }
   } catch (error) {
     logger.error("❌ Action error:", error);
-    return json<ActionData>(
+    return data(
       {
         error: error instanceof Error ? error.message : "Erreur inconnue",
       },
@@ -501,7 +469,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
       `Page ${page}/${totalPages} - ${orders.length}/${totalFromApi} orders`,
     );
 
-    return json<LoaderData>({
+    return {
       orders,
       stats,
       filters: { search, orderStatus, paymentStatus, paymentMethod, dateRange },
@@ -510,10 +478,10 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
       totalPages,
       permissions,
       user: { level: user.level || 0, email: user.email, role: userRole },
-    });
+    };
   } catch (error) {
     logger.error("❌ Loader error:", error);
-    return json<LoaderData>({
+    return {
       orders: [],
       stats: {
         totalOrders: 0,
@@ -536,7 +504,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
       totalPages: 0,
       permissions,
       user: { level: user.level || 0, email: user.email, role: userRole },
-    });
+    };
   }
 };
 
@@ -1099,7 +1067,7 @@ export default function OrdersRoute() {
 
       {/* Modal Expédition avec numéro de suivi */}
       {shipModalOpen && (
-        <div className="fixed inset-0 bg-neutral-900 bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-neutral-900/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               📦 Expédier la commande #{actionOrderId}
@@ -1149,7 +1117,7 @@ export default function OrdersRoute() {
 
       {/* Modal Annulation avec raison */}
       {cancelModalOpen && (
-        <div className="fixed inset-0 bg-neutral-900 bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-neutral-900/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               ❌ Annuler la commande #{actionOrderId}

@@ -110,9 +110,9 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "packageManager": "npm@10.8.2",
+  "packageManager": "npm@11.13.0",
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=24.0.0"
   },
   "description": "",
   "workspaces": [
@@ -121,13 +121,13 @@
     "packages/*"
   ],
   "devDependencies": {
-    "@ast-grep/cli": "0.43.0",
+    "@ast-grep/cli": "0.44.0",
     "@changesets/cli": "^2.31.0",
     "@commitlint/cli": "^20.5.3",
     "@commitlint/config-conventional": "^20.5.3",
-    "@nestjs/common": "^10.4.20",
-    "@nestjs/core": "^10.4.20",
-    "@remix-run/dev": "^2.17.5",
+    "@nestjs/common": "^11.1.27",
+    "@nestjs/core": "^11.1.27",
+    "@react-router/dev": "8.0.1",
     "@types/bcrypt": "^6.0.0",
     "@types/file-type": "^10.9.3",
     "@types/js-yaml": "^4.0.9",
@@ -139,23 +139,22 @@
     "eslint-plugin-prettier": "^5.5.6",
     "fast-json-stable-stringify": "^2.1.0",
     "js-yaml": "^4.1.1",
-    "knip": "6.16.1",
+    "keyv": "^5.6.0",
+    "knip": "6.17.1",
     "lint-staged": "^16.4.0",
     "madge": "8.0.0",
     "micromatch": "^4.0.8",
     "prettier": "^3.8.3",
-    "reflect-metadata": "^0.1.14",
+    "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
-    "squawk-cli": "2.57.0",
+    "squawk-cli": "2.58.0",
     "turbo": "^2.9.16",
-    "typescript": "^5.9.3"
+    "typescript": "6.0.3"
   },
   "dependencies": {
-    "@remix-run/express": "^2.17.4",
-    "@remix-run/node": "^2.17.4",
-    "@remix-run/react": "^2.17.4",
-    "@remix-run/serve": "^2.17.4",
-    "@remix-run/server-runtime": "^2.17.4",
+    "@react-router/express": "8.0.1",
+    "@react-router/node": "8.0.1",
+    "@react-router/serve": "8.0.1",
     "@repo/seo-roles": "*",
     "@supabase/supabase-js": "^2.95.0",
     "abort-controller": "^3.0.0",
@@ -166,35 +165,33 @@
     "nestjs-zod": "^4.3.1",
     "node-fetch": "^3.3.2",
     "postcss": "^8.4.24",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "react-router": "8.0.1",
     "remix-flat-routes": "^0.8.5",
     "sharp": "^0.34.3",
-    "swagger-ui-express": "^5.0.1",
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^3.4.15",
     "uid": "^2.0.2",
-    "vite": "^5.4.11",
-    "zod": "^3.25.76"
+    "vite": "8.1.0",
+    "zod": "^4.4.3"
   },
   "overrides": {
-    "path-to-regexp": "3.3.0",
-    "zod": "^3.25.76",
-    "typescript": "^5.9.3",
+    "@sentry/core": "10.59.0",
+    "@sentry/node": "10.59.0",
+    "@sentry/node-core": "10.59.0",
+    "@types/node": "^24",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "zod": "^4.4.3",
+    "typescript": "6.0.3",
     "eslint": "^8.57.1",
-    "@typescript-eslint/parser": "^8.59.4",
-    "@typescript-eslint/eslint-plugin": "^8.59.4",
-    "@typescript-eslint/utils": "^8.59.4",
-    "handlebars": "4.7.9",
-    "knip": {
-      "zod": "^4.0.0"
-    }
+    "@typescript-eslint/parser": "8.61.1",
+    "@typescript-eslint/eslint-plugin": "8.61.1",
+    "@typescript-eslint/utils": "8.61.1",
+    "handlebars": "4.7.9"
   },
   "lint-staged": {
-    "frontend/app/**/*.{ts,tsx}": [
-      "eslint --cache --fix --max-warnings=0",
-      "prettier --write"
-    ],
     "backend/src/**/*.ts": [
       "node --max-old-space-size=4096 node_modules/.bin/eslint --cache --fix",
       "prettier --write"

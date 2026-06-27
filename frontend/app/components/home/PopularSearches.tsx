@@ -1,5 +1,5 @@
-import { Link } from "@remix-run/react";
 import { TrendingUp } from "lucide-react";
+import { Link } from "react-router";
 
 const POPULAR = [
   {

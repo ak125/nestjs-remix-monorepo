@@ -2,7 +2,7 @@
   "version": "1.0.0",
   "generated_at": "2026-02-03T14:00:00Z",
   "description": "RPC READ_SAFE - Autorisees pour tous les roles",
-  "total": 181,
+  "total": 183,
   "functions": [
     {
       "name": "__gov_m1_table_sizes",
@@ -390,6 +390,11 @@
       "reason": "Read-only optimization (migrated from P2)"
     },
     {
+      "name": "get_homepage_families",
+      "volatility": "STABLE",
+      "reason": "Homepage families read-path (SECURITY DEFINER) — replaces direct catalog_family/.from() reads broken under anon (ADR-028, DB row_security=off)"
+    },
+    {
       "name": "get_listing_products_extended",
       "volatility": "STABLE",
       "reason": "SELECT only"
@@ -408,6 +413,11 @@
       "name": "get_merchant_center_feed_v1",
       "volatility": "STABLE",
       "reason": "PR commerce-loop V1 step 5B — Google Shopping XML feed rows. STABLE pure SELECT joins pieces × price × gamme × marque × media_img. Called by MerchantCenterFeedService.fetchPage (pagination). GRANT EXECUTE service_role only."
+    },
+    {
+      "name": "get_active_seo_projection",
+      "volatility": "STABLE",
+      "reason": "ADR-059/090 D1 — SEO projection read (facts+blocks envelope, role-filtered). STABLE SECURITY DEFINER pure SELECT over mv_seo_entity_facts_current × mv_seo_content_blocks_current. Backend-proxied (no anon GRANT), called by SeoBriefService.composeBrief. EXECUTE service_role only."
     },
     {
       "name": "get_missing_v4_type_ids",

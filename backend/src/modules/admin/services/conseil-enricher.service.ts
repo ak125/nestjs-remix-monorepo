@@ -11,6 +11,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import * as yaml from 'js-yaml';
 import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
+import { SOURCE_TIER } from '../../../config/source-provenance.constants';
 import {
   GENERIC_PHRASES as SHARED_GENERIC_PHRASES,
   MIN_R3_SECTION_LENGTH,
@@ -2053,13 +2054,15 @@ export class ConseilEnricherService extends SupabaseBaseService {
       const existingRow = existing.get(action.type);
       const sources: Array<{ type: string; ref: string; field: string }> = [
         {
-          type: 'rag',
+          // Honest provenance tier: this descriptor is parsed from the legacy RAG
+          // knowledge doc (decommissioned source) — not bare 'rag'. See ADR-031/046.
+          type: SOURCE_TIER.RAG_LEGACY,
           ref: `gammes/${pgAlias}.md`,
           field:
             action.ragField ?? SECTION_RAG_FIELD_MAP[action.type] ?? 'general',
         },
         ...supplementaryRefs.map((ref) => ({
-          type: 'web',
+          type: SOURCE_TIER.WEB,
           ref,
           field: 'supplementary',
         })),

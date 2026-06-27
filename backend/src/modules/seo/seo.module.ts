@@ -9,10 +9,15 @@
  * - Sitemap: V10 (7 types, 714k URLs), Hubs, Scoring, Delta, Streaming, Hygiene
  * - Content: Reference R4, Diagnostic R5, SeoGenerator
  */
+// @role-purity-skip — module aggrégateur : son header nomme volontairement
+// plusieurs rôles SEO (R4/R5/…) car le module enregistre les controllers/services
+// de TOUS les rôles. Opt-out sanctionné (cf. check-role-purity.ts, même raison
+// que le skip du SoT forbidden-overlap.ts).
 
 import { Module, Logger, forwardRef } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { CacheModule as NestCacheModule } from '@nestjs/cache-manager';
+import { boundedMemoryCache } from '../../config/cache-store.factory';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -28,6 +33,7 @@ import { AiContentModule } from '../ai-content/ai-content.module';
 // ═══════════════════════════════════════════════════════════════════════════
 import { SeoService } from './seo.service';
 import { DynamicSeoV4UltimateService } from './dynamic-seo-v4-ultimate.service';
+import { SeoPlaceholderEventsService } from './services/seo-placeholder-events.service';
 import { SeoV4MonitoringService } from './services/seo-v4-monitoring.service';
 import { HreflangService } from './infrastructure/hreflang.service';
 import { ProductImageService } from './services/product-image.service';
@@ -176,8 +182,7 @@ import { R2V2Module } from './r2/r2-v2.module';
 
     // Cache in-memory pour SEO V4 Ultimate
     NestCacheModule.register({
-      ttl: 3600,
-      max: 1000,
+      ...boundedMemoryCache(3600, 1000),
       isGlobal: false,
     }),
   ],
@@ -213,6 +218,7 @@ import { R2V2Module } from './r2/r2-v2.module';
     SeoService,
     SeoV4MonitoringService,
     DynamicSeoV4UltimateService,
+    SeoPlaceholderEventsService, // A1a-observe — emit __seo_event_log on silent strip + runtime fallback
     HreflangService,
     ProductImageService,
     RobotsTxtService,

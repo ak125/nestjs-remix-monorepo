@@ -1,17 +1,4 @@
 import {
-  defer,
-  redirect,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import {
-  Link,
-  useLoaderData,
-  useNavigate,
-  useRouteError,
-  isRouteErrorResponse,
-} from "@remix-run/react";
-import {
   ArrowLeft,
   Calendar,
   Clock,
@@ -20,8 +7,18 @@ import {
   Bookmark,
   Tag,
 } from "lucide-react";
-
 import { useState } from "react";
+import {
+  redirect,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  Link,
+  useLoaderData,
+  useNavigate,
+  useRouteError,
+  isRouteErrorResponse,
+} from "react-router";
+
 import { toast } from "sonner";
 
 // Error components
@@ -86,7 +83,7 @@ interface LoaderData {
 }
 
 // Meta SEO
-export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data, location }) => {
   if (!data?.article) {
     return [
       { title: "Article non trouvé - Blog Automecanik" },
@@ -283,10 +280,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       return redirect("/blog-pieces-auto", 301);
     }
 
-    return defer({
+    return {
       article,
       relatedArticles,
-    });
+    };
   } catch (error) {
     clearTimeout(timeoutId);
 

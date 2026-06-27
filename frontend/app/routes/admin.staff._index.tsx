@@ -5,13 +5,15 @@
  * Module admin moderne avec API REST et nouveau StaffService
  */
 
+import { useState } from "react";
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, Link, Form, useNavigation } from "@remix-run/react";
-import { useState } from "react";
+  useLoaderData,
+  Link,
+  Form,
+  useNavigation,
+} from "react-router";
 import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -158,7 +160,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       ),
     };
 
-    return json({
+    return {
       staff,
       stats,
       pagination: {
@@ -169,12 +171,12 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       },
       fallbackMode: false,
       timestamp: new Date().toISOString(),
-    });
+    };
   } catch (error) {
     logger.error("Erreur loader staff:", error);
 
     // Fallback en cas d'erreur
-    return json({
+    return {
       staff: [],
       stats: {
         total: 0,
@@ -185,7 +187,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       pagination: { page: 1, totalPages: 1, totalItems: 0 },
       error: "Erreur lors du chargement du staff",
       fallbackMode: true,
-    });
+    };
   }
 }
 
@@ -451,7 +453,7 @@ export default function AdminStaff() {
                   <tr key={staff.cnfa_id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10">
+                        <div className="shrink-0 h-10 w-10">
                           <div className="h-10 w-10 rounded-full bg-primary/15 flex items-center justify-center">
                             <span className="text-blue-600 font-bold text-sm">
                               {staff.cnfa_fname.charAt(0).toUpperCase()}

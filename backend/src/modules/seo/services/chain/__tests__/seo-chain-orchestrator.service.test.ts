@@ -121,6 +121,7 @@ describe('SeoChainOrchestratorService', () => {
     articlesCount: 12,
     familyName: 'Freinage',
     isTopGamme: false,
+    gammeLevel: 1,
   };
 
   it('R1_GAMME_VEHICLE_ROUTER : applique les variables, rend canonical et JSON-LD', async () => {

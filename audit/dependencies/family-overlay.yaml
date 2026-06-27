@@ -120,17 +120,15 @@ families:
     target_major: "4.x"
     pr_assignment: pr-9c
     source_url: https://github.com/colinhacks/zod/releases
-    upgrade_strategy: staged-rollout
+    upgrade_strategy: in-place
     runtime_criticality: high
-    requires_staging_soak: true
-    staging_soak_hours: 24
+    requires_staging_soak: false
+    staging_soak_hours: 0
     node_runtime_requirement: ">=20"
     peer_dependency_cluster:
       - zod
       - zod-to-json-schema
     deployment_sequence:
-      - api-second
-      - canary
       - full-rollout
     production_approved: true
     rollback_complexity: moderate
@@ -152,7 +150,6 @@ families:
       - short-api-restart
     perf_baseline_metrics: []
     estimated_recovery_sequence:
-      - disable-canary
       - rollback-api
       - redeploy
       - verify-form-submit-smoke
@@ -161,9 +158,7 @@ families:
     rollback_validation_checks:
       - form-submit-smoke
       - no-sentry-spike
-    canary_abort_conditions:
-      - sentry-error-rate-spike
-      - p99-regression-15pct
+    canary_abort_conditions: []
     runtime_state_coupling:
       - none
     safe_parallel_window_minutes: 0
@@ -173,7 +168,7 @@ families:
       - workers
       - ssr
     operational_owner: platform-validation-team
-    estimated_canary_duration_minutes: 60
+    estimated_canary_duration_minutes: 0
     rollback_requires_human_approval: false
     rollback_tested_at: null
     rollback_drill_commit: null
@@ -185,8 +180,7 @@ families:
       - api-p99
     runtime_dependency_edges:
       depends_on_runtime: []
-    rollback_preconditions:
-      - canary-disabled
+    rollback_preconditions: []
     observability_sli_queries:
       api-p99: "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))"
     state_schema_version: n/a
@@ -195,7 +189,7 @@ families:
       - workers
       - ssr
     runtime_capabilities:
-      - supports-canary
+      - none
     failure_domain:
       - api-runtime
     rollback_confidence_level: theoretical
@@ -203,11 +197,11 @@ families:
     incident_comm_protocol:
       - status-page
     compatibility_contracts:
-      - zod-v3
+      - zod-v4
     runtime_freeze_window: null
     orchestrator_policy:
       rollback_mode: auto-allowed
-      deploy_mode: staged
+      deploy_mode: atomic
     dependency_lineage:
       supersedes: []
     state_compatibility_window_minutes: 0
@@ -219,9 +213,12 @@ families:
     rollback_observability_grace_period_minutes: 5
     runtime_contract_expiry: null
     notes: >
-      Zod 4 ships breaking parser changes (z.string() defaults, error API).
-      Must touch every consumer schema in shared/ + backend/ + frontend/. 24h
-      DEV preprod soak required — forms/DTOs are user-facing surface.
+      Zod 4 ships breaking parser changes (.default() output now required —
+      payload DTOs typed z.input; unified error API; RFC-4122 strict .uuid()).
+      Touches consumer schemas across backend/ + frontend/ + packages/, and swaps
+      the JSON-Schema generators to native z.toJSONSchema(). Migrated atomically
+      (one PR, one revert); no canary/soak — PREPROD is CI-only/READ_ONLY and the
+      E2E Smoke gate is the validation.
     members:
       - zod
       - zod-to-json-schema
@@ -509,15 +506,14 @@ families:
     upgrade_strategy: staged-rollout
     runtime_criticality: critical
     requires_staging_soak: true
-    staging_soak_hours: 72
-    node_runtime_requirement: ">=20"
+    staging_soak_hours: 24
+    node_runtime_requirement: ">=24"
     peer_dependency_cluster:
       - "@nestjs/*"
       - rxjs
       - reflect-metadata
       - body-parser
     deployment_sequence:
-      - canary
       - full-rollout
     production_approved: true
     rollback_complexity: dangerous
@@ -573,10 +569,15 @@ families:
       - cron
       - ssr
     operational_owner: backend-runtime-team
-    estimated_canary_duration_minutes: 60
+    estimated_canary_duration_minutes: 0
     rollback_requires_human_approval: true
-    rollback_tested_at: null
-    rollback_drill_commit: null
+    # PR-9f rollback drill (2026-06-26): atomic `git revert` of #1152 (squash
+    # 19e4d6402) is conflict-free and byte-identical to 74da962dc (#1151) — the
+    # last state built + E2E-Smoke + Lighthouse green on the PREPROD container.
+    # PROD image rollback target massdoc/nestjs-remix-monorepo:sha-74da962dc…
+    # present on DockerHub. Drill artifact: draft PR #1156 (rollback-drill/pr9f-nestjs11).
+    rollback_tested_at: "2026-06-26T09:57:36Z"
+    rollback_drill_commit: "ab8f572f90979d4e7426c667d2411c84834a6e97"
     known_incompatible_families:
       - runtime-backend-platform-fastify
       - queues-bullmq
@@ -761,27 +762,31 @@ families:
   # ====================================================================
   # Deferred (roadmap-approved, visibility only)
   # ====================================================================
-  - family: runtime-frontend-remix-vite
+  - family: runtime-frontend-react-router-vite
     blast_radius: runtime-frontend
     target_major: "see source_url"
     pr_assignment: deferred
-    source_url: https://github.com/remix-run/remix/releases
+    source_url: https://github.com/remix-run/react-router/releases
     upgrade_strategy: staged-rollout
     runtime_criticality: critical
-    requires_staging_soak: true
-    staging_soak_hours: 72
-    node_runtime_requirement: ">=20"
+    # PREPROD est CI-only / READ_ONLY / sans trafic réel → un soak figé n'observe
+    # rien (pas d'INP/hydratation/Sentry/CWV réels à accumuler) et `:preprod` est
+    # un tag flottant. Validation pré-PROD = e2e-smoke (hydratation/critical-path)
+    # sur le container :preprod déployé. Décision owner 2026-06-22.
+    requires_staging_soak: false
+    node_runtime_requirement: ">=24"
     peer_dependency_cluster:
-      - "@remix-run/*"
+      - "@react-router/*"
       - react
       - react-dom
+      - "@types/react"
+      - "@types/react-dom"
       - vite
     production_approved: true
     rollback_complexity: dangerous
     migration_blockers:
-      - React19Stable
-      - Vite6EcosystemReady
-      - Node20Required
+      - Vite7MigrationReady
+      - ReactRouter8MigrationReady
     observability_requirements:
       - sentry
       - structured-logs
@@ -854,9 +859,9 @@ families:
       - status-page
       - banner
     compatibility_contracts:
-      - remix-v2
+      - react-router-v7
       - vite-v5
-      - react-v18
+      - react-v19
     runtime_freeze_window:
       start: "22:00"
       end: "06:00"
@@ -877,18 +882,19 @@ families:
     rollback_observability_grace_period_minutes: 30
     runtime_contract_expiry: null
     notes: >
-      Remix v2 → Vite 6 → React 19 chain. Deferred until React 19 stable +
-      Vite 6 ecosystem caught up. Not in PR-9 scope.
+      React Router 7 + React 19 (migré) + Vite 5. Remix retiré (RR7). Prochaines
+      marches gouvernées par blockers : Vite 7 puis React Router 8. Hors PR-9.
     members:
-      - "@remix-run/dev"
-      - "@remix-run/eslint-config"
-      - "@remix-run/express"
-      - "@remix-run/node"
-      - "@remix-run/react"
-      - "@remix-run/serve"
-      - "@remix-run/server-runtime"
+      - "@react-router/dev"
+      - "@react-router/express"
+      - "@react-router/node"
+      - "@react-router/remix-routes-option-adapter"
+      - "@react-router/serve"
+      - react-router
       - react
       - react-dom
+      - "@types/react"
+      - "@types/react-dom"
       - vite
 
   - family: observability-otel

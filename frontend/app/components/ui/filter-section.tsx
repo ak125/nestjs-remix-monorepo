@@ -73,7 +73,7 @@ const FilterSection = React.forwardRef<HTMLDivElement, FilterSectionProps>(
             "mb-3",
           )}
         >
-          {icon && <span className="flex-shrink-0">{icon}</span>}
+          {icon && <span className="shrink-0">{icon}</span>}
           <h3 className="text-xs font-semibold">{title}</h3>
           {badge && <span className="ml-auto">{badge}</span>}
         </div>

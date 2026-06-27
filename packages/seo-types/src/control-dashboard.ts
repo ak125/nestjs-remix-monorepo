@@ -25,21 +25,21 @@
  *   generated_from = { rpc_versions: v1×5, decision_service_version: 'v1',
  *                      impact_score_version: 'v1', rules_catalog_version: 'v1' }
  */
-import { z } from 'zod';
+import { z } from "zod";
 import {
   DECISION_RULE_IDS,
   OPERATIONAL_DOMAINS,
   ROLE_IDS,
   SURFACE_KEYS,
-} from './control-dashboard.rules.js';
+} from "./control-dashboard.rules.js";
 
 // ─── Primitive enums ────────────────────────────────────────────────
 
-export const RangeSchema = z.enum(['7d', '28d']);
+export const RangeSchema = z.enum(["7d", "28d"]);
 export type Range = z.infer<typeof RangeSchema>;
 
 // Re-use SeveritySchema from onpage barrel (avoid duplicate export collision)
-import { SeveritySchema } from './onpage.js';
+import { SeveritySchema } from "./onpage.js";
 export { SeveritySchema };
 
 export const SurfaceKeySchema = z.enum(SURFACE_KEYS);
@@ -65,12 +65,12 @@ export type Decisions = z.infer<typeof DecisionsSchema>;
 export const TrafficDeltaSchema = z.object({
   clicks_pct: z.number().nullable(),
   impressions_pct: z.number().nullable(),
-  direction: z.enum(['up', 'down', 'flat', 'unknown']),
-  change_severity: z.enum(['high', 'medium', 'info']),
+  direction: z.enum(["up", "down", "flat", "unknown"]),
+  change_severity: z.enum(["high", "medium", "info"]),
 });
 
 export const TrafficWindowSchema = z.object({
-  impact_score_version: z.literal('v1'),
+  impact_score_version: z.literal("v1"),
   clicks: z.number().int().nonnegative(),
   impressions: z.number().int().nonnegative(),
   ctr: z.number(),
@@ -99,7 +99,7 @@ export const TopLoserSchema = z.object({
   position_current: z.number().nullable(),
   position_delta: z.number(),
   business_impact_score: z.number().nonnegative(),
-  impact_score_version: z.literal('v1'),
+  impact_score_version: z.literal("v1"),
   severity: SeveritySchema,
   top_queries_sample: z.array(TopQuerySampleSchema).max(3),
   decisions: DecisionsSchema,
@@ -115,9 +115,9 @@ export const LowCtrOpportunitySchema = z.object({
   clicks: z.number().int().nonnegative(),
   ctr: z.number(),
   avg_position: z.number(),
-  position_band: z.enum(['top5', 'top15', 'beyond']),
+  position_band: z.enum(["top5", "top15", "beyond"]),
   business_impact_score: z.number().nonnegative(),
-  impact_score_version: z.literal('v1'),
+  impact_score_version: z.literal("v1"),
   severity: SeveritySchema,
   decisions: DecisionsSchema,
 });
@@ -133,7 +133,7 @@ export const ConversionGapSchema = z.object({
   conversion_rate: z.number(),
   revenue: z.number(),
   business_impact_score: z.number().nonnegative(),
-  impact_score_version: z.literal('v1'),
+  impact_score_version: z.literal("v1"),
   severity: SeveritySchema,
   decisions: DecisionsSchema,
 });
@@ -142,7 +142,7 @@ export type ConversionGap = z.infer<typeof ConversionGapSchema>;
 // ─── Block 5 : Technical Alert ──────────────────────────────────────
 
 export const TechnicalAlertSchema = z.object({
-  source: z.enum(['audit_findings', 'event_log']),
+  source: z.enum(["audit_findings", "event_log"]),
   alert_type: z.string(),
   entity_url: z.string().nullable(),
   surface_key: SurfaceKeySchema,
@@ -150,10 +150,10 @@ export const TechnicalAlertSchema = z.object({
   severity: SeveritySchema,
   detected_at: z.string(),
   payload_minimal: z
-    .record(z.unknown())
-    .refine((o) => Object.keys(o).length <= 3, 'payload_minimal max 3 keys'),
+    .record(z.string(), z.unknown())
+    .refine((o) => Object.keys(o).length <= 3, "payload_minimal max 3 keys"),
   business_impact_score: z.number().nonnegative(),
-  impact_score_version: z.literal('v1'),
+  impact_score_version: z.literal("v1"),
   decisions: DecisionsSchema,
 });
 export type TechnicalAlert = z.infer<typeof TechnicalAlertSchema>;
@@ -162,20 +162,20 @@ export type TechnicalAlert = z.infer<typeof TechnicalAlertSchema>;
 
 export const GeneratedFromSchema = z.object({
   rpc_versions: z.object({
-    traffic: z.literal('v1'),
-    losers: z.literal('v1'),
-    low_ctr: z.literal('v1'),
-    alerts: z.literal('v1'),
-    conversion: z.literal('v1'),
+    traffic: z.literal("v1"),
+    losers: z.literal("v1"),
+    low_ctr: z.literal("v1"),
+    alerts: z.literal("v1"),
+    conversion: z.literal("v1"),
   }),
-  decision_service_version: z.literal('v1'),
-  impact_score_version: z.literal('v1'),
-  rules_catalog_version: z.literal('v1'),
+  decision_service_version: z.literal("v1"),
+  impact_score_version: z.literal("v1"),
+  rules_catalog_version: z.literal("v1"),
 });
 
 export const SnapshotLineageSchema = z.object({
   snapshot_id: z.string().uuid(),
-  snapshot_hash: z.string().regex(/^[a-f0-9]{64}$/, 'sha256 hex (64 chars)'),
+  snapshot_hash: z.string().regex(/^[a-f0-9]{64}$/, "sha256 hex (64 chars)"),
   generated_at: z.string(),
   generated_from: GeneratedFromSchema,
 });
@@ -201,10 +201,10 @@ export {
   ROLE_IDS,
   SEO_CONTROL_DECISION_RULES_V1,
   SURFACE_KEYS,
-} from './control-dashboard.rules.js';
+} from "./control-dashboard.rules.js";
 export type {
   DecisionRuleId,
   OperationalDomain,
   RoleId,
   SurfaceKey,
-} from './control-dashboard.rules.js';
+} from "./control-dashboard.rules.js";

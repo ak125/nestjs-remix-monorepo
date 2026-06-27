@@ -12,17 +12,17 @@
  * ```
  */
 
-import { Link, useLocation } from "@remix-run/react";
 import parse, {
   domToReact,
   type HTMLReactParserOptions,
   Element,
   type DOMNode,
 } from "html-react-parser";
-import DOMPurify from "isomorphic-dompurify";
 import { memo } from "react";
+import { Link, useLocation } from "react-router";
 
 import { useSeoLinkTracking } from "~/hooks/useSeoLinkTracking";
+import { sanitizeEditorialHtml } from "~/utils/sanitize-editorial-html";
 
 // =====================================================
 // Types
@@ -98,97 +98,6 @@ function getTextContent(nodes: DOMNode[]): string {
       return "";
     })
     .join("");
-}
-
-/**
- * Clean HTML from Word/Microsoft junk and invalid tags
- * Fixes issues like: <spancalibri","sans-serif""> becoming valid HTML
- */
-function cleanHtml(html: string): string {
-  if (!html) return "";
-
-  let cleaned = html;
-
-  // Remove invalid Microsoft Word tags like <spancalibri...>, <spanTimes...>, etc.
-  // These are malformed tags from copy-paste from Word
-  cleaned = cleaned.replace(/<span[a-zA-Z][^>]*>/gi, "<span>");
-
-  // Remove tags with quotes/special chars in name (invalid HTML)
-  cleaned = cleaned.replace(/<[a-z]+["',][^>]*>/gi, "");
-
-  // 🛡️ SSR FIX: Supprimer TOUS les attributs style inline
-  // React SSR échoue si html-react-parser passe style comme string au lieu d'objet
-  cleaned = cleaned.replace(/\s+style="[^"]*"/gi, "");
-
-  // Remove Word-specific XML namespaces and tags
-  cleaned = cleaned.replace(/<o:[^>]*>[\s\S]*?<\/o:[^>]*>/gi, "");
-  cleaned = cleaned.replace(/<w:[^>]*>[\s\S]*?<\/w:[^>]*>/gi, "");
-  cleaned = cleaned.replace(/<m:[^>]*>[\s\S]*?<\/m:[^>]*>/gi, "");
-  cleaned = cleaned.replace(/<!\[if[^>]*>[\s\S]*?<!\[endif\]>/gi, "");
-
-  // Remove empty spans
-  cleaned = cleaned.replace(/<span>\s*<\/span>/gi, "");
-
-  // Clean up multiple spaces
-  cleaned = cleaned.replace(/\s+/g, " ");
-
-  // Sanitize against XSS (strips scripts, event handlers, iframes, etc.)
-  cleaned = DOMPurify.sanitize(cleaned, {
-    ALLOWED_TAGS: [
-      "p",
-      "br",
-      "strong",
-      "em",
-      "b",
-      "i",
-      "u",
-      "a",
-      "ul",
-      "ol",
-      "li",
-      "h2",
-      "h3",
-      "h4",
-      "span",
-      "div",
-      "table",
-      "thead",
-      "tbody",
-      "tr",
-      "th",
-      "td",
-      "img",
-      "blockquote",
-      "pre",
-      "code",
-      "hr",
-      "sup",
-      "sub",
-      "dl",
-      "dt",
-      "dd",
-    ],
-    ALLOWED_ATTR: [
-      "href",
-      "class",
-      "id",
-      "data-link-type",
-      "data-formula",
-      "data-target-gamme",
-      "target",
-      "rel",
-      "src",
-      "alt",
-      "width",
-      "height",
-      "title",
-      "colspan",
-      "rowspan",
-      "scope",
-    ],
-  });
-
-  return cleaned.trim();
 }
 
 // =====================================================
@@ -295,8 +204,8 @@ export const HtmlContent = memo(function HtmlContent({
     return null;
   }
 
-  // Clean HTML from Word/Microsoft junk before parsing
-  const cleanedHtml = cleanHtml(html);
+  // Clean + sanitize HTML (Word junk, XSS) via the shared editorial sanitizer.
+  const cleanedHtml = sanitizeEditorialHtml(html);
 
   return <div className={className}>{parse(cleanedHtml, options)}</div>;
 });

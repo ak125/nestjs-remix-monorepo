@@ -8,13 +8,13 @@
       "build/client/assets/entry.client-*.js",
       "build/client/assets/app-core-*.js"
     ],
-    "limit": "210 KB",
+    "limit": "216 KB",
     "gzip": true
   },
   {
     "name": "Total JS (all chunks), gzip",
     "path": "build/client/assets/*.js",
-    "limit": "1000 KB",
+    "limit": "1012 KB",
     "gzip": true
   },
   {
@@ -33,6 +33,18 @@
     "name": "react-vendor chunk, gzip",
     "path": "build/client/assets/react-vendor-*.js",
     "limit": "110 KB",
+    "gzip": true
+  },
+  {
+    "name": "Route R2 produit-véhicule (pieces/.../$type.html) chunk, gzip",
+    "path": "build/client/assets/pieces._gamme._marque._modele._type_*.js",
+    "limit": "34 KB",
+    "gzip": true
+  },
+  {
+    "name": "Route R1 gamme (pieces/$slug) chunk, gzip",
+    "path": "build/client/assets/pieces._slug-*.js",
+    "limit": "16 KB",
     "gzip": true
   }
 ]

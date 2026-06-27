@@ -1,12 +1,12 @@
-import { describe, it, expect, vi } from "vitest";
 import { render } from "@testing-library/react";
+import { describe, it, expect, vi } from "vitest";
 import {
   NoProductsAlternatives,
   type NoProductsData,
 } from "~/components/pieces/NoProductsAlternatives";
 
 // Mock @remix-run/react Link as a plain <a> tag
-vi.mock("@remix-run/react", () => ({
+vi.mock("react-router", () => ({
   Link: ({
     to,
     children,

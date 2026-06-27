@@ -1,4 +1,3 @@
-import { Link } from "@remix-run/react";
 import {
   ArrowRight,
   BookOpen,
@@ -6,6 +5,7 @@ import {
   ShoppingCart,
   Wrench,
 } from "lucide-react";
+import { Link } from "react-router";
 import { type BlogArticle } from "~/components/home/constants";
 import { Card, CardContent } from "~/components/ui/card";
 
@@ -71,7 +71,7 @@ function CompactCard({ b }: { b: BlogArticle }) {
     <Link to={b.link || "#"} className="no-style no-visited lg:hidden group">
       <Card className="rounded-[20px] border overflow-hidden shadow-[0_6px_18px_rgba(15,23,42,0.05)] hover:shadow-lg transition-all duration-200 flex flex-row h-24">
         <div
-          className={`w-24 h-full flex-shrink-0 overflow-hidden ${b.img ? "bg-slate-100" : `bg-gradient-to-br ${gradient}`}`}
+          className={`w-24 h-full shrink-0 overflow-hidden ${b.img ? "bg-slate-100" : `bg-gradient-to-br ${gradient}`}`}
         >
           {b.img ? (
             <img

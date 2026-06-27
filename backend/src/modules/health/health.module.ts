@@ -1,8 +1,16 @@
 import { Module } from '@nestjs/common';
-import { Controller, Get, NotFoundException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Logger,
+  NotFoundException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { Injectable } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
+import { SessionInfrastructureModule } from '../session/session-infrastructure.module';
+import { SessionStoreService } from '../session/session-store.service';
 
 @Injectable()
 export class HealthService {
@@ -18,14 +26,56 @@ export class HealthService {
 @SkipThrottle() // 🛡️ Health checks exemptés du rate limiting
 @Controller('health')
 export class HealthController {
+  private readonly logger = new Logger(HealthController.name);
+
   constructor(
     private readonly healthService: HealthService,
     private readonly rpcGateService: RpcGateService,
+    private readonly sessionStore: SessionStoreService,
   ) {}
 
+  /**
+   * Liveness — ALWAYS 200, never Redis-dependent. This is the endpoint Docker
+   * healthchecks hit (`wget http://localhost:3000/health`): a Redis blip must
+   * NOT mark the container unhealthy and trigger a restart loop.
+   */
   @Get()
   getHealth() {
     return this.healthService.getHealth();
+  }
+
+  /**
+   * Readiness — 200/503. Synchronous connection-state check (no I/O). Returns
+   * 503 if the session store is not connected. Diagnostic until a consumer
+   * (deploy gate / upstream LB) queries it. No secret/URL leakage on failure.
+   */
+  @Get('ready')
+  getReadiness() {
+    const sessionStoreOpen = this.sessionStore.isOpen();
+    if (!sessionStoreOpen) {
+      throw new ServiceUnavailableException({
+        status: 'not_ready',
+        checks: { sessionStore: 'down' },
+      });
+    }
+    return { status: 'ready', checks: { sessionStore: 'up' } };
+  }
+
+  /**
+   * Active session-store probe — 200/503. Runs a bounded Redis PING via
+   * SessionStoreService.healthCheck(). On failure logs the real error
+   * server-side and returns a GENERIC 503 (no URL / creds / error string
+   * leaked to the client).
+   */
+  @Get('session-store')
+  async getSessionStoreHealth() {
+    try {
+      await this.sessionStore.healthCheck();
+      return { status: 'ok' };
+    } catch (err) {
+      this.logger.error('Session-store health probe failed', err as Error);
+      throw new ServiceUnavailableException({ status: 'unavailable' });
+    }
   }
 
   /**
@@ -55,6 +105,7 @@ export class HealthController {
 }
 
 @Module({
+  imports: [SessionInfrastructureModule],
   controllers: [HealthController],
   providers: [HealthService],
   exports: [HealthService],

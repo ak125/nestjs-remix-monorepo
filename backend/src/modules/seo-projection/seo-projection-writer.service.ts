@@ -20,6 +20,7 @@ import { getAppConfig } from '../../config/app.config';
 import { SeoProjectionGateService } from './seo-projection-gate.service';
 import {
   type EntityWriteOutcome,
+  type ProjectedBlockRow,
   type ProjectionRunMeta,
   type ProjectionRunResult,
   type ProjectionTriggeredBy,
@@ -27,6 +28,65 @@ import {
   type SeoProjectionExport,
   WRITER_CONTRACT_VERSION,
 } from './seo-projection.types';
+
+/** Slug déterministe (kebab, ascii) pour dériver block_kind depuis `section`. */
+function slugifyKind(raw: string): string {
+  return raw
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
+/**
+ * Adapte un bloc d'export **FLAT** (`role`/`content_md`/`source_ids`/`truth_level` + `section`/
+ * `usefulness_target` + provenance D3 optionnelle) vers la forme **DB** versionnée
+ * (`block_kind` + `content` jsonb, tous deux NOT NULL). Déterministe, **sans perte, sans enrichissement** :
+ * toute la provenance est copiée verbatim dans `content`. `block_kind = slug(section)` ; fallback
+ * positionnel `b<index>` si `section` absente (jamais de collision, jamais de silent-fallback — l'appelant
+ * logue `kindFallback`). `content_hash` recalculé sur le `content` réel → no-op detection correcte par bloc.
+ */
+export function mapExportBlockToDbBlock(
+  entityId: string,
+  b: SeoProjectionBlock,
+  index: number,
+): ProjectedBlockRow {
+  const sectionSlug = slugifyKind((b.section ?? '').trim());
+  const kindFallback = sectionSlug === '';
+  const blockKind =
+    b.block_kind?.trim() || (kindFallback ? `b${index}` : sectionSlug);
+  const blockId = b.block_id ?? `${entityId}#${b.role}#${blockKind}`;
+
+  // content jsonb = contenu citable verbatim (zéro enrichissement, ordre de clés déterministe pour le hash).
+  const content: Record<string, unknown> = {
+    content_md: b.content_md,
+    source_ids: b.source_ids ?? [],
+    truth_level: b.truth_level,
+  };
+  if (b.section != null) content.section = b.section;
+  if (b.usefulness_target != null)
+    content.usefulness_target = b.usefulness_target;
+  if (b.evidence_type != null) content.evidence_type = b.evidence_type;
+  if (b.applies_to != null) content.applies_to = b.applies_to;
+  if (b.last_verified_at != null) content.last_verified_at = b.last_verified_at;
+  if (b.consumer_pages != null) content.consumer_pages = b.consumer_pages;
+
+  const contentHash =
+    b.content_hash ??
+    createHash('md5').update(JSON.stringify(content)).digest('hex');
+
+  return {
+    blockId,
+    blockKind,
+    content,
+    contentHash,
+    sourceType: b.truth_level ?? null,
+    confidenceBase:
+      typeof b.confidence_base === 'number' ? b.confidence_base : null,
+    kindFallback,
+  };
+}
 
 @Injectable()
 export class SeoProjectionWriterService extends SupabaseBaseService {
@@ -214,15 +274,22 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
   ): Promise<{ written: number; regressed: number }> {
     let written = 0;
     let regressed = 0;
-    for (const b of exp.blocks ?? []) {
-      const blockId =
-        b.block_id ?? `${exp.entity_id}#${b.role}#${b.block_kind}`;
+    const blocks = exp.blocks ?? [];
+    for (let index = 0; index < blocks.length; index += 1) {
+      const b = blocks[index];
+      // Adapte le bloc FLAT (builder) → forme DB (block_kind + content jsonb NOT NULL). Sans perte.
+      const row = mapExportBlockToDbBlock(exp.entity_id, b, index);
+      if (row.kindFallback) {
+        this.log.warn(
+          `bloc sans 'section' (${exp.entity_id} role=${b.role} #${index}) → block_kind positionnel '${row.blockKind}' (observable, pas de fallback silencieux)`,
+        );
+      }
       await this.supabase.from('__seo_content_blocks').upsert(
         {
-          block_id: blockId,
+          block_id: row.blockId,
           entity_id: exp.entity_id,
           role: b.role,
-          block_kind: b.block_kind,
+          block_kind: row.blockKind,
           updated_at: new Date().toISOString(),
         },
         { onConflict: 'block_id' },
@@ -231,44 +298,44 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
       const { data: active } = await this.supabase
         .from('__seo_content_block_versions')
         .select('content_hash, confidence_base')
-        .eq('block_id', blockId)
+        .eq('block_id', row.blockId)
         .eq('status', 'active')
         .maybeSingle();
 
-      const newHash = b.content_hash ?? this.hashBlock(b);
-      if (active?.content_hash === newHash) continue; // no-op
+      if (active?.content_hash === row.contentHash) continue; // no-op
 
       // no-rétro-régression : si une version active existe avec une confiance strictement supérieure, on
       // insère la nouvelle en draft (jamais active) + conflit observable.
       const wouldRegress =
         active != null &&
         typeof active.confidence_base === 'number' &&
-        typeof b.confidence_base === 'number' &&
-        b.confidence_base < active.confidence_base;
+        row.confidenceBase != null &&
+        row.confidenceBase < active.confidence_base;
 
       const { data: ins, error } = await this.supabase
         .from('__seo_content_block_versions')
         .insert({
-          block_id: blockId,
+          block_id: row.blockId,
           status: wouldRegress ? 'draft' : 'active',
-          content_hash: newHash,
-          confidence_base: b.confidence_base ?? null,
-          content: b.content,
+          content_hash: row.contentHash,
+          confidence_base: row.confidenceBase,
+          source_type: row.sourceType,
+          content: row.content,
           run_id: runId,
         })
         .select('version_id')
         .single();
       if (error || !ins)
         throw new Error(
-          `insert block_version ${blockId}: ${error?.message ?? 'no row'}`,
+          `insert block_version ${row.blockId}: ${error?.message ?? 'no row'}`,
         );
 
       if (wouldRegress) {
         await this.recordConflict(
           exp.entity_id,
-          blockId,
+          row.blockId,
           'would_regress',
-          { newHash, kept_active: true },
+          { newHash: row.contentHash, kept_active: true },
           runId,
         );
         regressed += 1;
@@ -277,7 +344,7 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
       await this.supabase
         .from('__seo_content_block_versions')
         .update({ status: 'deprecated', valid_to: new Date().toISOString() })
-        .eq('block_id', blockId)
+        .eq('block_id', row.blockId)
         .eq('status', 'active')
         .neq('version_id', ins.version_id);
       await this.supabase
@@ -286,7 +353,7 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
           active_version_id: ins.version_id,
           updated_at: new Date().toISOString(),
         })
-        .eq('block_id', blockId);
+        .eq('block_id', row.blockId);
       written += 1;
     }
     return { written, regressed };
@@ -373,12 +440,5 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
       detail,
       run_id: runId,
     });
-  }
-
-  private hashBlock(b: SeoProjectionBlock): string {
-    // hash déterministe minimal (le content_hash autoritaire vient du builder wiki ; fallback ici).
-    return createHash('md5')
-      .update(JSON.stringify(b.content ?? {}))
-      .digest('hex');
   }
 }

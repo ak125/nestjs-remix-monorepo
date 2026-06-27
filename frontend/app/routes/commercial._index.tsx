@@ -4,14 +4,14 @@
  * Route: /commercial
  */
 
+import { ShoppingCart, Truck, CheckCircle, TrendingUp } from "lucide-react";
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
   redirect,
-} from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
-import { ShoppingCart, Truck, CheckCircle, TrendingUp } from "lucide-react";
+  useLoaderData,
+  Link,
+} from "react-router";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
@@ -104,18 +104,18 @@ export async function loader({ context }: LoaderFunctionArgs) {
       };
     }
 
-    return json({
+    return {
       dashboardData,
       user: {
         name: `${user.firstName} ${user.lastName}`,
         email: user.email,
         level: user.level,
       },
-    });
+    };
   } catch (error) {
     logger.error("Erreur dashboard commercial:", error);
 
-    return json({
+    return {
       dashboardData: {
         orders: {
           totalOrders: 0,
@@ -130,7 +130,7 @@ export async function loader({ context }: LoaderFunctionArgs) {
         email: user.email,
         level: user.level,
       },
-    });
+    };
   }
 }
 

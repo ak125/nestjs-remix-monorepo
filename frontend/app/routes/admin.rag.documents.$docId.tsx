@@ -1,10 +1,10 @@
+import { ArrowLeft, FileText } from "lucide-react";
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import { Link, useLoaderData } from "@remix-run/react";
-import { ArrowLeft, FileText } from "lucide-react";
+  Link,
+  useLoaderData,
+} from "react-router";
 import { DashboardShell } from "~/components/admin/patterns/DashboardShell";
 import {
   StatusBadge,
@@ -16,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 
-export const meta: MetaFunction<typeof loader> = ({ data }) =>
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) =>
   createNoIndexMeta(data?.doc?.id ? `Doc: ${data.doc.id}` : "Document RAG");
 
 interface KnowledgeDocFull {
@@ -48,7 +48,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   const doc: KnowledgeDocFull = await response.json();
 
-  return json({ doc });
+  return { doc };
 }
 
 const TRUTH_STATUS: Record<string, StatusType> = {

@@ -7,7 +7,10 @@
  * Imports forbidden terms and thresholds from r4-keyword-plan.constants.ts (single source of truth).
  */
 import { Injectable } from '@nestjs/common';
-import type { GateResult } from '../../../config/keyword-plan.constants';
+import {
+  type GateResult,
+  reduceQualityGateScore,
+} from '../../../config/keyword-plan.constants';
 import {
   R4_FORBIDDEN_FROM_R1,
   R4_FORBIDDEN_FROM_R3,
@@ -129,12 +132,15 @@ export class R4LintGatesService {
     gates['LG8_DUPLICATES'] = lg8;
     if (!lg8.pass && lg8.details) violations.push(lg8.details);
 
-    // Compute score: 100 - sum of penalties for failed gates
-    const totalPenalty = Object.values(gates)
-      .filter((g) => !g.pass)
-      .reduce((sum, g) => sum + g.penalty, 0);
-
-    const score = Math.max(0, 100 - totalPenalty);
+    // Compute score: 100 - sum of penalties for failed gates.
+    // R4 is binary (pass/fail); the start-100/subtract/clamp arithmetic is the
+    // shared reducer. The verdict threshold (minLintScore) stays role-private.
+    const score = reduceQualityGateScore(
+      Object.values(gates).map((g) => ({
+        status: g.pass ? ('pass' as const) : ('fail' as const),
+        penalty: g.penalty,
+      })),
+    );
     const pass = score >= R4_CONTENT_THRESHOLDS.minLintScore;
 
     return { score, pass, gates, violations };

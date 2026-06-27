@@ -8,14 +8,13 @@ import {
   type LoaderFunctionArgs,
   type MetaFunction,
   redirect,
-} from "@remix-run/node";
-import {
   Outlet,
   useLoaderData,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors";
+import { userContext } from "~/utils/load-context";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { getOptionalUser, getAuthUser } from "../auth/unified.server";
@@ -41,7 +40,7 @@ export const meta: MetaFunction = () => {
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
   // Auth unifiée : context d'abord, puis fallback request (JWT)
-  let user = context?.user ? await getOptionalUser({ context }) : null;
+  let user = context.get(userContext) ? await getOptionalUser({ context }) : null;
   if (!user) {
     user = await getAuthUser(request);
   }

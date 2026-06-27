@@ -1,5 +1,5 @@
-import { Link, Outlet, useLocation } from "@remix-run/react";
 import { Phone } from "lucide-react";
+import { Link, Outlet, useLocation } from "react-router";
 
 /**
  * Layout tunnel auth : header navy premium + footer navy
@@ -58,7 +58,7 @@ export default function AuthLayout() {
       </header>
 
       {/* Contenu */}
-      <main className="flex-grow">
+      <main className="grow">
         <Outlet />
       </main>
 

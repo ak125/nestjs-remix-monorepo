@@ -1,5 +1,3 @@
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData, useSearchParams } from "@remix-run/react";
 import {
   Map,
   AlertCircle,
@@ -12,6 +10,11 @@ import {
   GitBranch,
   FileText,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  useLoaderData,
+  useSearchParams,
+} from "react-router";
 import {
   DashboardShell,
   KpiGrid,
@@ -137,7 +140,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       pipelineRes.ok ? pipelineRes.json() : { data: null },
     ]);
 
-    return json({
+    return {
       roadmap: roadmapData.data || [],
       coverage: coverageData.data as CoverageData | null,
       pipeline: pipelineData.data as PipelineData | null,
@@ -146,9 +149,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
       totalPages: roadmapData.totalPages || 0,
       view,
       error: null,
-    });
+    };
   } catch (e: unknown) {
-    return json({
+    return {
       roadmap: [],
       coverage: null,
       pipeline: null,
@@ -157,7 +160,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       totalPages: 0,
       view: "pipeline",
       error: e instanceof Error ? e.message : "Unknown error",
-    });
+    };
   }
 }
 

@@ -1,15 +1,4 @@
 import {
-  json,
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-} from "@remix-run/node";
-import {
-  useLoaderData,
-  useFetcher,
-  Link,
-  useNavigation,
-} from "@remix-run/react";
-import {
   Search,
   Plus,
   Edit,
@@ -22,6 +11,14 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  useLoaderData,
+  useFetcher,
+  Link,
+  useNavigation,
+} from "react-router";
 import { AdminDataTable, type DataColumn } from "~/components/admin/patterns";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -158,7 +155,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const totalObservables =
       stats.nodesByType?.Observable || observables.length;
 
-    return json({
+    return {
       observables: filtered,
       stats,
       pagination: {
@@ -168,10 +165,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
         totalPages: Math.ceil(totalObservables / limit),
       },
       error: undefined as string | undefined,
-    });
+    };
   } catch (error) {
     logger.error("Loader error:", error);
-    return json({
+    return {
       observables: [],
       stats: {
         totalNodes: 0,
@@ -181,7 +178,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       },
       pagination: { page: 1, limit: 25, total: 0, totalPages: 1 },
       error: "Erreur de chargement",
-    });
+    };
   }
 }
 
@@ -226,9 +223,9 @@ export async function action({ request }: ActionFunctionArgs) {
 
         if (!res.ok) {
           const error = await res.text();
-          return json({ success: false, error: `Erreur creation: ${error}` });
+          return { success: false, error: `Erreur creation: ${error}` };
         }
-        return json({ success: true, message: "Symptome cree avec succes" });
+        return { success: true, message: "Symptome cree avec succes" };
       }
 
       case "delete": {
@@ -237,9 +234,8 @@ export async function action({ request }: ActionFunctionArgs) {
           `http://127.0.0.1:3000/api/knowledge-graph/nodes/${nodeId}`,
           { method: "DELETE" },
         );
-        if (!res.ok)
-          return json({ success: false, error: "Erreur suppression" });
-        return json({ success: true, message: "Symptome supprime" });
+        if (!res.ok) return { success: false, error: "Erreur suppression" };
+        return { success: true, message: "Symptome supprime" };
       }
 
       case "toggle": {
@@ -253,20 +249,19 @@ export async function action({ request }: ActionFunctionArgs) {
             body: JSON.stringify({ is_active: !isActive }),
           },
         );
-        if (!res.ok)
-          return json({ success: false, error: "Erreur modification" });
-        return json({
+        if (!res.ok) return { success: false, error: "Erreur modification" };
+        return {
           success: true,
           message: isActive ? "Symptome desactive" : "Symptome active",
-        });
+        };
       }
 
       default:
-        return json({ success: false, error: "Action inconnue" });
+        return { success: false, error: "Action inconnue" };
     }
   } catch (error) {
     logger.error("Action error:", error);
-    return json({ success: false, error: "Erreur serveur" });
+    return { success: false, error: "Erreur serveur" };
   }
 }
 

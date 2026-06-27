@@ -1,4 +1,3 @@
-import { Link, useLocation } from "@remix-run/react";
 import {
   Home,
   Users,
@@ -36,6 +35,7 @@ import {
 } from "lucide-react";
 import * as React from "react";
 import { memo } from "react";
+import { Link, useLocation } from "react-router";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
 
@@ -561,7 +561,7 @@ export const AdminSidebar = memo(function AdminSidebar({
                       }
                     }}
                   >
-                    <Icon className="h-5 w-5 flex-shrink-0" />
+                    <Icon className="h-5 w-5 shrink-0" />
                     <div className="flex-1 min-w-0">
                       <div className="font-medium flex items-center justify-between">
                         <span>{item.name}</span>
@@ -588,7 +588,7 @@ export const AdminSidebar = memo(function AdminSidebar({
                     )}
                     {/* Indicateur d'expansion pour menus avec sous-items */}
                     {(item as any).subItems && (
-                      <div className="ml-2 flex-shrink-0">
+                      <div className="ml-2 shrink-0">
                         <div
                           className={cn(
                             "transition-transform duration-200",
@@ -619,7 +619,7 @@ export const AdminSidebar = memo(function AdminSidebar({
                                 : "text-slate-400 hover:text-slate-200",
                             )}
                           >
-                            <SubIcon className="h-3 w-3 flex-shrink-0" />
+                            <SubIcon className="h-3 w-3 shrink-0" />
                             <div className="flex-1 min-w-0">
                               <div className="font-medium">{subItem.name}</div>
                               <div className="text-xs opacity-75 truncate">
@@ -691,7 +691,7 @@ export const AdminSidebar = memo(function AdminSidebar({
       </div>
 
       {/* Spacer pour le contenu principal sur desktop */}
-      <div className="hidden lg:block w-64 flex-shrink-0" />
+      <div className="hidden lg:block w-64 shrink-0" />
     </>
   );
 });

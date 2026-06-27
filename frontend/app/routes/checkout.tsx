@@ -4,14 +4,13 @@
  * Flow: /cart → /checkout → Paybox (2 etapes au lieu de 4)
  */
 
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  json,
   redirect,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import {
+  data,
   Form,
   useLoaderData,
   useNavigation,
@@ -20,8 +19,7 @@ import {
   Link,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+} from "react-router";
 import { toast } from "sonner";
 
 import { GoogleSignInButton } from "~/components/auth/GoogleSignInButton";
@@ -58,6 +56,7 @@ import {
   parseCheckoutFormData,
   validateCheckoutClient,
 } from "~/schemas/checkout.schemas";
+import { serverObservabilityContext } from "~/utils/load-context";
 import {
   buildOrderLines,
   buildPayboxRedirectUrl,
@@ -68,6 +67,7 @@ import { getUserProfile } from "~/services/profile.server";
 import { type PaymentMethod } from "~/types/payment";
 import { trackBeginCheckout, trackAddPaymentInfo } from "~/utils/analytics";
 import { logger } from "~/utils/logger";
+import { reportLoaderError } from "~/utils/observability.server";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import {
   getVehicleFromCookie,
@@ -110,10 +110,10 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     const cart = await getCart(request, context);
 
     if (!cart || !cart.items) {
-      return json({
+      return {
         cart: null,
         error: "Erreur de structure du panier. Veuillez recharger.",
-      });
+      };
     }
 
     const itemsCount = Array.isArray(cart.items) ? cart.items.length : 0;
@@ -133,20 +133,26 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
 
     const googleClientId = process.env.VITE_GOOGLE_CLIENT_ID || "";
 
-    return json({
+    return {
       cart,
       user,
       userProfile,
       paymentMethods,
       vehicle,
       googleClientId,
-    });
+    };
   } catch (error) {
     logger.error("[Checkout] Erreur chargement:", error);
-    return json({
+    reportLoaderError(
+      context.get(serverObservabilityContext) ?? undefined,
+      "checkout_cart_load_failed",
+      error,
+      { method: request.method, pathname: new URL(request.url).pathname },
+    );
+    return {
       cart: null,
       error: "Erreur lors du chargement du panier. Veuillez reessayer.",
-    });
+    };
   }
 };
 
@@ -179,7 +185,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
         .map(([k, msgs]) => `${labelMap[k] || k} : ${(msgs as string[])[0]}`)
         .join(" | ");
       logger.warn("[Checkout] Validation failed:", details);
-      return json(
+      return data(
         {
           ok: false,
           error: details || "Veuillez corriger les informations du formulaire.",
@@ -227,7 +233,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
     const cartData = await getCart(request);
 
     if (!cartData.items || cartData.items.length === 0) {
-      return json(
+      return data(
         {
           ok: false,
           error: "Votre panier est vide.",
@@ -282,7 +288,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
       }
       // Handle email conflict
       if (orderResult.emailConflict) {
-        return json(
+        return data(
           {
             ok: false,
             error: orderResult.error,
@@ -293,7 +299,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
           { status: orderResult.status },
         );
       }
-      return json(
+      return data(
         {
           ok: false,
           error: orderResult.error,
@@ -310,7 +316,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
 
     if (!orderDetails) {
       logger.error("[Checkout] getOrderForPayment returned null for:", orderId);
-      return json(
+      return data(
         {
           ok: false,
           error: "Commande creee mais impossible de recuperer les details.",
@@ -325,7 +331,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
     }
 
     if (orderDetails.totalTTC <= 0) {
-      return json(
+      return data(
         {
           ok: false,
           error: "Montant de commande invalide.",
@@ -337,7 +343,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
 
     const customerEmail = orderDetails.customerEmail || guestEmail || "";
     if (!customerEmail) {
-      return json(
+      return data(
         {
           ok: false,
           error: "Email client manquant sur la commande.",
@@ -362,10 +368,10 @@ export async function action({ request, context }: ActionFunctionArgs) {
     const resumeToken = orderResult.success
       ? orderResult.resumeToken
       : undefined;
-    return json({ ok: true, redirectUrl, orderId, resumeToken });
+    return { ok: true, redirectUrl, orderId, resumeToken };
   } catch (error) {
     logger.error("[Checkout] Action error:", error);
-    return json(
+    return data(
       {
         ok: false,
         error: error instanceof Error ? error.message : "Erreur inconnue",
@@ -794,7 +800,7 @@ export default function CheckoutPage() {
             </Link>
             <Link
               to="/#catalogue"
-              className="inline-flex items-center gap-2 px-5 py-3 bg-cta hover:bg-cta-hover text-white font-semibold rounded-xl transition-colors"
+              className="inline-flex items-center gap-2 px-5 py-3 bg-cta hover:bg-cta-hover text-black font-semibold rounded-xl transition-colors"
             >
               Trouver des pièces
             </Link>
@@ -964,7 +970,7 @@ export default function CheckoutPage() {
           <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 shadow-sm">
             <div className="flex items-start gap-3">
               <svg
-                className="h-5 w-5 flex-shrink-0 text-red-600"
+                className="h-5 w-5 shrink-0 text-red-600"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -1221,7 +1227,7 @@ export default function CheckoutPage() {
               <div className="flex flex-col gap-2 w-full mt-2">
                 <a
                   href={`/checkout/resume?token=${pendingOrderInfo.resumeToken}`}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-3 bg-cta text-white rounded-lg font-medium hover:bg-cta/90 transition-colors"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-3 bg-cta text-black rounded-lg font-medium hover:bg-cta/90 transition-colors"
                 >
                   Reprendre le paiement
                 </a>
@@ -1268,7 +1274,7 @@ export default function CheckoutPage() {
             form="checkout-form"
             disabled={isLocked}
             size="lg"
-            className={`w-full rounded-xl font-bold touch-target ${canSubmitOrder ? "bg-cta hover:bg-cta-hover text-white" : "bg-cta/70 text-white"}`}
+            className={`w-full rounded-xl font-bold touch-target ${canSubmitOrder ? "bg-cta hover:bg-cta-hover text-black" : "bg-cta/70 text-black"}`}
           >
             {isLocked ? (
               <>

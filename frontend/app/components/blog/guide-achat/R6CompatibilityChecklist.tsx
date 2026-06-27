@@ -26,7 +26,7 @@ export function R6CompatibilityChecklist({ axes, gammeName }: Props) {
             className="rounded-lg border border-indigo-200 bg-muted/50 p-4"
           >
             <div className="flex items-start gap-3">
-              <div className="p-1.5 bg-muted rounded-lg flex-shrink-0 mt-0.5">
+              <div className="p-1.5 bg-muted rounded-lg shrink-0 mt-0.5">
                 <Search className="w-4 h-4 text-foreground" />
               </div>
               <div className="flex-1">

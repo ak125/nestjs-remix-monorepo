@@ -154,7 +154,7 @@ export const PiecesBuyingGuide = memo(function PiecesBuyingGuide({
                     key={index}
                     className="flex items-start gap-3 bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-amber-200/50"
                   >
-                    <span className="flex-shrink-0 w-6 h-6 bg-amber-100 rounded-full flex items-center justify-center">
+                    <span className="shrink-0 w-6 h-6 bg-amber-100 rounded-full flex items-center justify-center">
                       <svg
                         className="w-4 h-4 text-amber-600"
                         fill="currentColor"

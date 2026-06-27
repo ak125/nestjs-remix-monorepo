@@ -15,9 +15,7 @@ import { RagRedisJobService } from './services/rag-redis-job.service';
 import { RagKnowledgeService } from './services/rag-knowledge.service';
 import { RagChatService } from './services/rag-chat.service';
 import { RagGammeDetectionService } from './services/rag-gamme-detection.service';
-import { RagIngestionService } from './services/rag-ingestion.service';
 import { RagWebhookCompletionService } from './services/rag-webhook-completion.service';
-import { RagWebIngestDbService } from './services/rag-web-ingest-db.service';
 
 // PDF merge pipeline services
 import { PdfTextExtractorService } from './services/pdf-text-extractor.service';
@@ -69,9 +67,9 @@ import { RagPhase2aShadowAuditService } from './services/rag-phase2a-shadow-audi
     RagKnowledgeService,
     RagChatService,
     RagGammeDetectionService,
-    RagIngestionService,
     RagWebhookCompletionService,
-    RagWebIngestDbService,
+    // NB: RagIngestionService + RagWebIngestDbService RETIRÉS — rag-purge B9 (ADR-031/046).
+    // Plus d'ingestion RAG déclenchée par l'app ; entrée = sync wiki→rag. Services bannerisés (salvage).
     // PDF merge pipeline
     PdfTextExtractorService,
     PdfRagClassifierService,
@@ -95,9 +93,7 @@ import { RagPhase2aShadowAuditService } from './services/rag-phase2a-shadow-audi
     RagKnowledgeService,
     RagChatService,
     RagGammeDetectionService,
-    RagIngestionService,
     RagWebhookCompletionService,
-    RagWebIngestDbService,
     PdfTextExtractorService,
     PdfRagClassifierService,
     RagMdMergerService,

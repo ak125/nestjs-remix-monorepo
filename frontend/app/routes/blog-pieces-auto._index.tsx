@@ -17,18 +17,16 @@
  * - BlogInternalLinks (mini sitemap thématique)
  */
 
+import { useState, useMemo } from "react";
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
   type ActionFunctionArgs,
-} from "@remix-run/node";
-import {
+  data,
   useLoaderData,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { useState, useMemo } from "react";
+} from "react-router";
 
 // Blog Components
 import {
@@ -87,7 +85,7 @@ interface LoaderData {
 }
 
 // Métadonnées SEO — robots conditionnel pour éviter cannibalisation des filtres
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   const title = "Blog Automecanik - Conseils et Guides Auto Experts";
   const description =
     "Diagnostiquer une panne, comprendre une pièce, réussir un montage, choisir la bonne référence. Plus de 500 articles pratiques pour l'entretien de votre véhicule.";
@@ -197,7 +195,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     logger.warn({ err: error, url: request.url }, "Blog API error");
   }
 
-  return json(
+  return data(
     { blogData, searchParams },
     {
       headers: {
@@ -216,14 +214,14 @@ export async function action({ request }: ActionFunctionArgs) {
   try {
     switch (actionType) {
       case "bookmark":
-        return json({ success: true, message: "Article ajouté aux favoris" });
+        return { success: true, message: "Article ajouté aux favoris" };
       case "share":
-        return json({ success: true, message: "Article partagé" });
+        return { success: true, message: "Article partagé" };
       default:
-        return json({ success: false, error: "Action non reconnue" });
+        return { success: false, error: "Action non reconnue" };
     }
   } catch {
-    return json(
+    return data(
       { success: false, error: "Erreur lors de l'action" },
       { status: 500 },
     );

@@ -11,6 +11,7 @@
 
 import { Module } from '@nestjs/common';
 import { CacheModule as NestCacheModule } from '@nestjs/cache-manager';
+import { boundedMemoryCache } from '../../config/cache-store.factory';
 import { NavigationController } from './navigation.controller';
 import { NavigationService } from './navigation.service';
 import { CommercialMenuService } from './services/commercial-menu.service';
@@ -21,7 +22,7 @@ import { DatabaseModule } from '../../database/database.module';
 @Module({
   imports: [
     DatabaseModule, // Utilise le module database existant du projet
-    NestCacheModule.register({ ttl: 300, max: 100 }), // Cache pour CacheInterceptor
+    NestCacheModule.register(boundedMemoryCache(300, 100)), // Cache pour CacheInterceptor
   ],
   controllers: [NavigationController],
   providers: [

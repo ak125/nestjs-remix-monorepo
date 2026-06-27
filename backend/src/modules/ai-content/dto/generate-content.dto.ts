@@ -49,18 +49,21 @@ export const GenerateContentSchema = z.object({
   tone: ToneSchema.optional().default('professional'),
   language: z.string().optional().default('fr'),
   maxLength: z.number().min(50).max(5000).optional().default(500),
-  context: z.record(z.any()).optional(),
+  context: z.record(z.string(), z.any()).optional(),
   temperature: z.number().min(0).max(2).optional().default(0.7),
   useCache: z.boolean().optional().default(true),
 });
 
-export type GenerateContentDto = z.infer<typeof GenerateContentSchema>;
+// Request payload = input shape: defaulted fields (tone/language/maxLength/
+// temperature/useCache) are optional for callers and read defensively in
+// generateContent(). z.infer (output) would force them all required.
+export type GenerateContentDto = z.input<typeof GenerateContentSchema>;
 
 export const GenerateProductDescriptionSchema = z.object({
   productName: z.string().min(1),
   category: z.string().optional(),
   features: z.array(z.string()).optional(),
-  specifications: z.record(z.any()).optional(),
+  specifications: z.record(z.string(), z.any()).optional(),
   targetAudience: z.string().optional(),
   tone: ToneSchema.optional().default('professional'),
   language: z.string().optional().default('fr'),

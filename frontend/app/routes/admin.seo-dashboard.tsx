@@ -8,13 +8,13 @@
  * - Évolution journalière
  */
 
+import { useEffect, useState } from "react";
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, useRevalidator } from "@remix-run/react";
-import { useEffect, useState } from "react";
+  useLoaderData,
+  useRevalidator,
+} from "react-router";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 
@@ -72,28 +72,28 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     if (!response.ok) {
       // Retourner des données mock si l'API n'est pas disponible
-      return json({
+      return {
         report: getMockReport(startDate, endDate),
         error: null,
         filters: { startDate, endDate },
-      });
+      };
     }
 
     const report: PerformanceReport = await response.json();
 
-    return json({
+    return {
       report,
       error: null,
       filters: { startDate, endDate },
-    });
+    };
   } catch (error) {
     logger.error("Error fetching SEO metrics:", error);
-    return json({
+    return {
       report: getMockReport(startDate, endDate),
       error:
         "Impossible de charger les métriques. Affichage des données de démonstration.",
       filters: { startDate, endDate },
-    });
+    };
   }
 }
 

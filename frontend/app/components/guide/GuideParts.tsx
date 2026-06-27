@@ -3,8 +3,8 @@
  * Parses the parts list from HTML and renders as visual link cards.
  */
 
-import { Link } from "@remix-run/react";
 import { Package, ArrowRight } from "lucide-react";
+import { Link } from "react-router";
 import { type GammeConseil } from "~/components/blog/conseil/section-config";
 import { GuideCard } from "./GuideCard";
 
@@ -59,7 +59,7 @@ export function GuideParts({ section, pgAlias, pgId }: GuidePartsProps) {
               prefetch="intent"
               className="group flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-green-100 hover:border-green-300 hover:shadow-sm transition-all"
             >
-              <div className="flex-shrink-0 p-1.5 bg-green-100 rounded-md group-hover:bg-green-200 transition-colors">
+              <div className="shrink-0 p-1.5 bg-green-100 rounded-md group-hover:bg-green-200 transition-colors">
                 <Package className="w-4 h-4 text-green-700" />
               </div>
               <span className="flex-1 text-sm font-medium text-gray-800 group-hover:text-green-800 capitalize">

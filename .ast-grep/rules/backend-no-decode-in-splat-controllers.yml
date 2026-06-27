@@ -1,0 +1,24 @@
+id: backend-no-decode-in-splat-controllers
+language: typescript
+severity: error
+message: |
+  `decodeURIComponent` dans un contrôleur splat — interdit (PR-9f).
+
+  Ces trois contrôleurs reçoivent le chemin via `@SplatPath()`, qui retourne la
+  valeur DÉJÀ décodée par path-to-regexp 8 (un segment = un `decodeURIComponent`
+  appliqué par le routeur). Re-décoder ici réintroduit le DOUBLE-décodage
+  (CWE-174) que la migration Express 5 / NestJS 11 a supprimé : `a%252Fb`
+  redeviendrait `a/b` au lieu de `a%2Fb`.
+
+  Canon : utiliser directement la valeur de `@SplatPath()` (cf.
+  `backend/src/common/decorators/splat-path.decorator.ts` +
+  `backend/src/common/utils/splat-path.util.ts`).
+
+  Règle file-scopée aux 3 contrôleurs splat — PAS monorepo-wide : paybox/HMAC,
+  auth et d'autres surfaces décodent légitimement ailleurs.
+files:
+  - backend/src/modules/metadata/controllers/optimized-metadata.controller.ts
+  - backend/src/modules/metadata/controllers/optimized-breadcrumb.controller.ts
+  - backend/src/modules/seo/seo.controller.ts
+rule:
+  pattern: decodeURIComponent($$$ARGS)

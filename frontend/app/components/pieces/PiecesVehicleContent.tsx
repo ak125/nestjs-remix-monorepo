@@ -3,7 +3,6 @@
  * Rendu du render tree complet avec hooks, filtres, sections SEO
  */
 
-import { Await, Link, useLoaderData, useLocation } from "@remix-run/react";
 import { ShoppingCart } from "lucide-react";
 import {
   lazy,
@@ -13,6 +12,7 @@ import {
   useMemo,
   useState,
 } from "react";
+import { Await, Link, useLoaderData, useLocation } from "react-router";
 import { ScrollToTop } from "~/components/blog/ScrollToTop";
 import {
   MobileBottomBar,
@@ -227,7 +227,6 @@ export function PiecesVehicleContent() {
     <div className="min-h-[100dvh] bg-gradient-to-br from-slate-50 via-blue-50/30 /50 relative overflow-x-clip">
       {/* Pattern d'arriere-plan subtil */}
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDE0YzIuMiAwIDQgMS44IDQgNHMtMS44IDQtNCA0LTQtMS44LTQtNGMwLTIuMiAxLjgtNCA0LTR6bTAgNDBjMi4yIDAgNCAxLjggNCA0cy0xLjggNC00IDQtNC0xLjgtNC00YzAtMi4yIDEuOC00IDQtNHoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-40 pointer-events-none"></div>
-
       {/* Header moderne */}
       <div className="relative z-10">
         <PiecesHeader
@@ -239,7 +238,6 @@ export function PiecesVehicleContent() {
           compSwitch2={data.seo?.compSwitch2}
         />
       </div>
-
       {/* Fil d'ariane SEO optimise - Reutilisation composant Breadcrumbs */}
       <div
         className="bg-white border-b border-gray-200 relative z-[100]"
@@ -260,7 +258,6 @@ export function PiecesVehicleContent() {
           />
         </div>
       </div>
-
       {/* Conteneur principal */}
       <div className="max-w-7xl mx-auto px-4 py-8 relative z-10">
         {/* Badge vehicule actuel avec lien pour changer */}
@@ -303,7 +300,7 @@ export function PiecesVehicleContent() {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar filtres et catalogue — hidden on mobile, toggle via MobileBottomBar */}
           <aside
-            className={`lg:w-80 flex-shrink-0 space-y-6 animate-in fade-in slide-in-from-left duration-700 ${showFilters ? "block" : "hidden lg:block"}`}
+            className={`lg:w-80 shrink-0 space-y-6 animate-in fade-in slide-in-from-left duration-700 ${showFilters ? "block" : "hidden lg:block"}`}
           >
             {/* Filtres */}
             <div className="sticky top-24">
@@ -388,7 +385,7 @@ export function PiecesVehicleContent() {
                 </p>
                 <a
                   href="#compatibilite"
-                  className="flex-shrink-0 text-sm font-semibold text-amber-700 hover:text-amber-900 bg-amber-100 hover:bg-amber-200 px-3 py-1.5 rounded-md transition-colors"
+                  className="shrink-0 text-sm font-semibold text-amber-700 hover:text-amber-900 bg-amber-100 hover:bg-amber-200 px-3 py-1.5 rounded-md transition-colors"
                 >
                   Vérifier
                 </a>
@@ -434,7 +431,6 @@ export function PiecesVehicleContent() {
                         typeId={data.vehicle.typeId}
                       />
                     )}
-
                     {viewMode === "list" && (
                       <PiecesListView
                         pieces={filteredProducts}
@@ -548,10 +544,8 @@ export function PiecesVehicleContent() {
           />
         </div>
       </div>
-
       {/* Bouton retour en haut */}
       <ScrollToTop />
-
       {/* Mobile bottom bar : Panier + Filtrer */}
       <MobileBottomBarSpacer />
       <MobileBottomBar>
@@ -559,7 +553,7 @@ export function PiecesVehicleContent() {
         <button
           type="button"
           onClick={openCartSidebar}
-          className="relative py-3 px-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold flex items-center gap-2 transition-colors"
+          className="relative py-3 px-4 bg-orange-500 hover:bg-orange-600 text-black rounded-xl font-bold flex items-center gap-2 transition-colors"
         >
           <ShoppingCart className="w-5 h-5" />
           Panier
@@ -600,7 +594,6 @@ export function PiecesVehicleContent() {
           )}
         </button>
       </MobileBottomBar>
-
       {/* Performance debug (dev only) */}
       {process.env.NODE_ENV === "development" && (
         <div className="fixed bottom-4 right-4 bg-neutral-900/80 text-white text-xs p-3 rounded-lg backdrop-blur-sm">

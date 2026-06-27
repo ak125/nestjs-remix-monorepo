@@ -1,10 +1,4 @@
 import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
-import {
   AlertCircle,
   Database,
   HardDrive,
@@ -14,6 +8,11 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { useState, useCallback } from "react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+} from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
@@ -72,28 +71,28 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     }).catch(() => null);
 
     if (!response || !response.ok) {
-      return json({
+      return {
         report: null,
         error: "Impossible de charger les métriques DB Governance",
         timestamp: new Date().toISOString(),
-      });
+      };
     }
 
     const result = await response.json();
     const report: GovernanceReport = result.data || result;
 
-    return json({
+    return {
       report,
       error: null,
       timestamp: new Date().toISOString(),
-    });
+    };
   } catch (error) {
     logger.error("Erreur DB Governance loader:", error);
-    return json({
+    return {
       report: null,
       error: "Erreur lors du chargement",
       timestamp: new Date().toISOString(),
-    });
+    };
   }
 };
 

@@ -15,7 +15,7 @@ export function AntiErrorsSection({ vehicle }: Props) {
         <div className="flex items-start gap-3 mb-4">
           <AlertTriangle
             size={24}
-            className="text-amber-600 flex-shrink-0 mt-0.5"
+            className="text-amber-600 shrink-0 mt-0.5"
           />
           <h2 className="text-xl font-bold text-gray-900">
             Erreurs fréquentes à éviter
@@ -23,7 +23,7 @@ export function AntiErrorsSection({ vehicle }: Props) {
         </div>
         <ul className="space-y-3 ml-9">
           <li className="flex items-start gap-2 text-gray-700">
-            <span className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-2 flex-shrink-0" />
+            <span className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-2 shrink-0" />
             <span>
               Vérifier l'année exacte ({vehicle.type_year_from}–
               {vehicle.type_year_to || "aujourd'hui"}) : les pièces peuvent
@@ -31,7 +31,7 @@ export function AntiErrorsSection({ vehicle }: Props) {
             </span>
           </li>
           <li className="flex items-start gap-2 text-gray-700">
-            <span className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-2 flex-shrink-0" />
+            <span className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-2 shrink-0" />
             <span>
               Puissance proche ≠ moteur identique : confirmez avec le CNIT ou le
               code moteur
@@ -41,7 +41,7 @@ export function AntiErrorsSection({ vehicle }: Props) {
             </span>
           </li>
           <li className="flex items-start gap-2 text-gray-700">
-            <span className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-2 flex-shrink-0" />
+            <span className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-2 shrink-0" />
             <span>
               En cas de doute entre deux motorisations, utilisez le VIN (17
               caractères, carte grise case E)
@@ -49,7 +49,7 @@ export function AntiErrorsSection({ vehicle }: Props) {
           </li>
           {vehicle.type_body && vehicle.type_body.includes("/") && (
             <li className="flex items-start gap-2 text-gray-700">
-              <span className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-2 flex-shrink-0" />
+              <span className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-2 shrink-0" />
               <span>
                 Attention à la carrosserie ({vehicle.type_body}) : les pièces
                 peuvent varier selon la version

@@ -1,10 +1,9 @@
+import { AlertTriangle, CheckCircle, UserCheck, Filter } from "lucide-react";
 import {
-  json,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import {
+  data,
   useLoaderData,
   useActionData,
   Form,
@@ -12,8 +11,7 @@ import {
   useSearchParams,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { AlertTriangle, CheckCircle, UserCheck, Filter } from "lucide-react";
+} from "react-router";
 
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { logger } from "~/utils/logger";
@@ -127,10 +125,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
       assignedTo: c.assignedTo || c.clm_assigned_to || undefined,
       createdAt: c.createdAt || c.clm_created_at || "",
     }));
-    return json<LoaderData>({ claims, stats: statsData });
+    return { claims, stats: statsData };
   } catch (error) {
     logger.error("Erreur chargement claims admin:", error);
-    return json<LoaderData>({
+    return {
       claims: [],
       stats: {
         total: 0,
@@ -139,7 +137,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         averageResolutionTime: 0,
         satisfactionRating: 0,
       },
-    });
+    };
   }
 }
 
@@ -163,15 +161,15 @@ export async function action({ request }: ActionFunctionArgs) {
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      return json<ActionData>(
+      return data(
         { error: err.message || `Erreur ${res.status}` },
         { status: res.status },
       );
     }
-    return json<ActionData>({ success: true });
+    return { success: true };
   } catch (error) {
     logger.error("Erreur action claim admin:", error);
-    return json<ActionData>({ error: "Erreur serveur" }, { status: 500 });
+    return data({ error: "Erreur serveur" }, { status: 500 });
   }
 }
 

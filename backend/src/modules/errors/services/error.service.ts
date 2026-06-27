@@ -366,6 +366,15 @@ export class ErrorService {
         request_body: undefined as Record<string, unknown> | null | undefined,
         user_agent: undefined as string | undefined,
         ip_address: undefined as string | undefined,
+        // Surface le code HTTP transmis par le filtre (`context.status`) pour que
+        // `ErrorLogService.build()` le mappe vers la colonne `err_status`
+        // (`err_status: md.response_status ?? null`). Sans ça, err_status restait
+        // NULL pour TOUT ce chemin (429 ThrottlerException, 5xx…) → non requêtable
+        // par statut. Garde de type : on n'écrit qu'un nombre.
+        response_status:
+          typeof context?.status === 'number'
+            ? (context.status as number)
+            : undefined,
       };
 
       if (request) {

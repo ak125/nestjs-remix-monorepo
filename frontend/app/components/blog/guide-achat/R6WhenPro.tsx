@@ -25,7 +25,7 @@ export function R6WhenPro({ cases, gammeName: _gammeName }: Props) {
           <Card key={i} className="border-orange-200">
             <CardContent className="p-4">
               <div className="flex items-start gap-3">
-                <div className="p-1.5 bg-orange-100 rounded-lg flex-shrink-0 mt-0.5">
+                <div className="p-1.5 bg-orange-100 rounded-lg shrink-0 mt-0.5">
                   <Wrench className="w-4 h-4 text-orange-600" />
                 </div>
                 <div>

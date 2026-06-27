@@ -70,6 +70,15 @@ export class FeatureFlagsService {
     return this.bool('BRIEF_AWARE_ENABLED', false);
   }
 
+  /**
+   * Gate le générateur de briefs **evidence-driven** (D1, SeoBriefService) : ON → le brief est composé
+   * depuis la projection WIKI (get_active_seo_projection) au lieu du chemin keyword-first. OFF (défaut) →
+   * comportement keyword-first inchangé. Dégrade observable (wiki_available=false) si projection absente.
+   */
+  get seoBriefWikiEnabled(): boolean {
+    return this.bool('SEO_BRIEF_WIKI_ENABLED', false);
+  }
+
   // ── Phase 2 Orchestration flags ──
 
   get executionRegistryEnabled(): boolean {
@@ -226,6 +235,23 @@ export class FeatureFlagsService {
     return this.bool('ABANDONED_CART_EMAIL_ENABLED', false);
   }
 
+  // ── Commerce-Loop V1 — server-side funnel emission (PR-A) ──
+
+  /**
+   * Gates the guaranteed SERVER-side emission of conversion funnel events
+   * (r2_order_placed via OrderFunnelListener @OnEvent(ORDER_EVENTS.PAID)),
+   * replacing the lossy client beacon on the payment-return page.
+   * Default: false (inert — the listener is a no-op, nothing is written).
+   * PROD-only by construction: emission is additionally skipped when the
+   * backend runs READ_ONLY (PREPROD anon, ADR-028) since __seo_event_log
+   * grants INSERT to service_role only — see OrderFunnelListener.
+   * Activation order: apply the idempotency-index migration → land the
+   * payments emit(ORDER_EVENTS.PAID) → flip this flag (shadow then on).
+   */
+  get funnelServerEmitEnabled(): boolean {
+    return this.bool('FUNNEL_SERVER_EMIT_ENABLED', false);
+  }
+
   // ── SEO Business Control Dashboard flag (PR-SBD-1 Task 7) ──
 
   /**
@@ -330,6 +356,7 @@ export class FeatureFlagsService {
     'R8_OWNED_EDITORIAL_ENABLED',
     'BRIEF_GATES_ENABLED',
     'BRIEF_GATES_OBSERVE_ONLY',
+    'SEO_BRIEF_WIKI_ENABLED',
     'RAG_CATCHUP_ENABLED',
     'RAG_MERGE_DRY_RUN',
     'RAG_MERGE_ALLOWED_ROLES',
@@ -351,6 +378,7 @@ export class FeatureFlagsService {
     'QA_DECISION_ENABLED',
     'BEST_VERSION_PROTECTION_ENABLED',
     'ABANDONED_CART_EMAIL_ENABLED',
+    'FUNNEL_SERVER_EMIT_ENABLED',
     'WRITE_GUARD_ENABLED',
     'WRITE_GUARD_MODE',
     'WRITE_GUARD_CANARY_ROLES',

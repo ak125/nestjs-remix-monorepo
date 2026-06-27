@@ -20,14 +20,14 @@
       "declaredIn": [
         "package.json"
       ],
-      "id": "npm:@ast-grep/cli@0.43.0",
+      "id": "npm:@ast-grep/cli@0.44.0",
       "name": "@ast-grep/cli",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "0.43.0",
+      "version": "0.44.0",
       "workspaces": [
         "nestjs-remix-monorepo"
       ]
@@ -789,124 +789,14 @@
         "frontend/package.json",
         "package.json"
       ],
-      "id": "npm:@remix-run/dev@^2.17.5",
-      "name": "@remix-run/dev",
+      "id": "npm:@react-router/dev@^7.15.0",
+      "name": "@react-router/dev",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^2.17.5",
-      "workspaces": [
-        "@fafa/frontend",
-        "nestjs-remix-monorepo"
-      ]
-    },
-    {
-      "declaredIn": [
-        "frontend/package.json",
-        "packages/eslint-config/package.json"
-      ],
-      "id": "npm:@remix-run/eslint-config@^2.17.5",
-      "name": "@remix-run/eslint-config",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^2.17.5",
-      "workspaces": [
-        "@fafa/eslint-config",
-        "@fafa/frontend"
-      ]
-    },
-    {
-      "declaredIn": [
-        "backend/package.json",
-        "frontend/package.json",
-        "package.json"
-      ],
-      "id": "npm:@remix-run/express@^2.17.4",
-      "name": "@remix-run/express",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^2.17.4",
-      "workspaces": [
-        "@fafa/backend",
-        "@fafa/frontend",
-        "nestjs-remix-monorepo"
-      ]
-    },
-    {
-      "declaredIn": [
-        "frontend/package.json",
-        "package.json"
-      ],
-      "id": "npm:@remix-run/node@^2.17.4",
-      "name": "@remix-run/node",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^2.17.4",
-      "workspaces": [
-        "@fafa/frontend",
-        "nestjs-remix-monorepo"
-      ]
-    },
-    {
-      "declaredIn": [
-        "frontend/package.json",
-        "package.json"
-      ],
-      "id": "npm:@remix-run/react@^2.17.4",
-      "name": "@remix-run/react",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^2.17.4",
-      "workspaces": [
-        "@fafa/frontend",
-        "nestjs-remix-monorepo"
-      ]
-    },
-    {
-      "declaredIn": [
-        "frontend/package.json",
-        "package.json"
-      ],
-      "id": "npm:@remix-run/serve@^2.17.4",
-      "name": "@remix-run/serve",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^2.17.4",
-      "workspaces": [
-        "@fafa/frontend",
-        "nestjs-remix-monorepo"
-      ]
-    },
-    {
-      "declaredIn": [
-        "frontend/package.json",
-        "package.json"
-      ],
-      "id": "npm:@remix-run/server-runtime@^2.17.4",
-      "name": "@remix-run/server-runtime",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^2.17.4",
+      "version": "^7.15.0",
       "workspaces": [
         "@fafa/frontend",
         "nestjs-remix-monorepo"
@@ -916,14 +806,100 @@
       "declaredIn": [
         "backend/package.json"
       ],
-      "id": "npm:@sentry/nestjs@^10.51.0",
+      "id": "npm:@react-router/express@^7.0.0",
+      "name": "@react-router/express",
+      "owner": "__unassigned__",
+      "schemaVersion": "1.0.0",
+      "source": "npm",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "version": "^7.0.0",
+      "workspaces": [
+        "@fafa/backend"
+      ]
+    },
+    {
+      "declaredIn": [
+        "frontend/package.json",
+        "package.json"
+      ],
+      "id": "npm:@react-router/express@^7.15.0",
+      "name": "@react-router/express",
+      "owner": "__unassigned__",
+      "schemaVersion": "1.0.0",
+      "source": "npm",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "version": "^7.15.0",
+      "workspaces": [
+        "@fafa/frontend",
+        "nestjs-remix-monorepo"
+      ]
+    },
+    {
+      "declaredIn": [
+        "frontend/package.json",
+        "package.json"
+      ],
+      "id": "npm:@react-router/node@^7.15.0",
+      "name": "@react-router/node",
+      "owner": "__unassigned__",
+      "schemaVersion": "1.0.0",
+      "source": "npm",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "version": "^7.15.0",
+      "workspaces": [
+        "@fafa/frontend",
+        "nestjs-remix-monorepo"
+      ]
+    },
+    {
+      "declaredIn": [
+        "frontend/package.json"
+      ],
+      "id": "npm:@react-router/remix-routes-option-adapter@^7.15.0",
+      "name": "@react-router/remix-routes-option-adapter",
+      "owner": "__unassigned__",
+      "schemaVersion": "1.0.0",
+      "source": "npm",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "version": "^7.15.0",
+      "workspaces": [
+        "@fafa/frontend"
+      ]
+    },
+    {
+      "declaredIn": [
+        "frontend/package.json",
+        "package.json"
+      ],
+      "id": "npm:@react-router/serve@^7.15.0",
+      "name": "@react-router/serve",
+      "owner": "__unassigned__",
+      "schemaVersion": "1.0.0",
+      "source": "npm",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "version": "^7.15.0",
+      "workspaces": [
+        "@fafa/frontend",
+        "nestjs-remix-monorepo"
+      ]
+    },
+    {
+      "declaredIn": [
+        "backend/package.json"
+      ],
+      "id": "npm:@sentry/nestjs@10.59.0",
       "name": "@sentry/nestjs",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^10.51.0",
+      "version": "10.59.0",
       "workspaces": [
         "@fafa/backend"
       ]
@@ -932,14 +908,14 @@
       "declaredIn": [
         "frontend/package.json"
       ],
-      "id": "npm:@sentry/remix@^10.51.0",
-      "name": "@sentry/remix",
+      "id": "npm:@sentry/react@10.59.0",
+      "name": "@sentry/react",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^10.51.0",
+      "version": "10.59.0",
       "workspaces": [
         "@fafa/frontend"
       ]
@@ -1510,8 +1486,10 @@
     },
     {
       "declaredIn": [
+        "backend/package.json",
         "packages/cwv-taxonomy/package.json",
         "packages/database-types/package.json",
+        "packages/design-tokens/package.json",
         "packages/domain-commerce/package.json",
         "packages/registry/package.json",
         "packages/seo-role-contracts/package.json",
@@ -1519,15 +1497,17 @@
         "packages/seo-types/package.json",
         "packages/seo-url-contract/package.json"
       ],
-      "id": "npm:@types/node@^20.0.0",
+      "id": "npm:@types/node@^24",
       "name": "@types/node",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^20.0.0",
+      "version": "^24",
       "workspaces": [
+        "@fafa/backend",
+        "@fafa/design-tokens",
         "@repo/cwv-taxonomy",
         "@repo/database-types",
         "@repo/domain-commerce",
@@ -1536,38 +1516,6 @@
         "@repo/seo-roles",
         "@repo/seo-types",
         "@repo/seo-url-contract"
-      ]
-    },
-    {
-      "declaredIn": [
-        "packages/design-tokens/package.json"
-      ],
-      "id": "npm:@types/node@^20.17.6",
-      "name": "@types/node",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^20.17.6",
-      "workspaces": [
-        "@fafa/design-tokens"
-      ]
-    },
-    {
-      "declaredIn": [
-        "backend/package.json"
-      ],
-      "id": "npm:@types/node@^20.19.24",
-      "name": "@types/node",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^20.19.24",
-      "workspaces": [
-        "@fafa/backend"
       ]
     },
     {
@@ -1638,14 +1586,14 @@
       "declaredIn": [
         "frontend/package.json"
       ],
-      "id": "npm:@types/react-dom@^18.2.7",
+      "id": "npm:@types/react-dom@19.2.3",
       "name": "@types/react-dom",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^18.2.7",
+      "version": "19.2.3",
       "workspaces": [
         "@fafa/frontend"
       ]
@@ -1654,14 +1602,14 @@
       "declaredIn": [
         "frontend/package.json"
       ],
-      "id": "npm:@types/react@^18.2.20",
+      "id": "npm:@types/react@19.2.17",
       "name": "@types/react",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^18.2.20",
+      "version": "19.2.17",
       "workspaces": [
         "@fafa/frontend"
       ]
@@ -2236,6 +2184,39 @@
       "declaredIn": [
         "frontend/package.json"
       ],
+      "id": "npm:eslint-plugin-jest-dom@^5.5.0",
+      "name": "eslint-plugin-jest-dom",
+      "owner": "__unassigned__",
+      "schemaVersion": "1.0.0",
+      "source": "npm",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "version": "^5.5.0",
+      "workspaces": [
+        "@fafa/frontend"
+      ]
+    },
+    {
+      "declaredIn": [
+        "frontend/package.json"
+      ],
+      "id": "npm:eslint-plugin-jest@^28.14.0",
+      "name": "eslint-plugin-jest",
+      "owner": "__unassigned__",
+      "schemaVersion": "1.0.0",
+      "source": "npm",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "version": "^28.14.0",
+      "workspaces": [
+        "@fafa/frontend"
+      ]
+    },
+    {
+      "declaredIn": [
+        "frontend/package.json",
+        "packages/eslint-config/package.json"
+      ],
       "id": "npm:eslint-plugin-jsx-a11y@^6.10.2",
       "name": "eslint-plugin-jsx-a11y",
       "owner": "__unassigned__",
@@ -2245,6 +2226,7 @@
       "status": "LIVE",
       "version": "^6.10.2",
       "workspaces": [
+        "@fafa/eslint-config",
         "@fafa/frontend"
       ]
     },
@@ -2268,7 +2250,8 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend/package.json",
+        "packages/eslint-config/package.json"
       ],
       "id": "npm:eslint-plugin-react-hooks@^4.6.2",
       "name": "eslint-plugin-react-hooks",
@@ -2279,12 +2262,14 @@
       "status": "LIVE",
       "version": "^4.6.2",
       "workspaces": [
+        "@fafa/eslint-config",
         "@fafa/frontend"
       ]
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "frontend/package.json",
+        "packages/eslint-config/package.json"
       ],
       "id": "npm:eslint-plugin-react@^7.37.5",
       "name": "eslint-plugin-react",
@@ -2295,6 +2280,7 @@
       "status": "LIVE",
       "version": "^7.37.5",
       "workspaces": [
+        "@fafa/eslint-config",
         "@fafa/frontend"
       ]
     },
@@ -2310,6 +2296,22 @@
       "sourceConfidence": "high",
       "status": "LIVE",
       "version": "^9.1.13",
+      "workspaces": [
+        "@fafa/frontend"
+      ]
+    },
+    {
+      "declaredIn": [
+        "frontend/package.json"
+      ],
+      "id": "npm:eslint-plugin-testing-library@^7.16.2",
+      "name": "eslint-plugin-testing-library",
+      "owner": "__unassigned__",
+      "schemaVersion": "1.0.0",
+      "source": "npm",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "version": "^7.16.2",
       "workspaces": [
         "@fafa/frontend"
       ]
@@ -2420,6 +2422,24 @@
       "version": "^20.4.1",
       "workspaces": [
         "@fafa/backend"
+      ]
+    },
+    {
+      "declaredIn": [
+        "frontend/package.json",
+        "packages/eslint-config/package.json"
+      ],
+      "id": "npm:globals@^14.0.0",
+      "name": "globals",
+      "owner": "__unassigned__",
+      "schemaVersion": "1.0.0",
+      "source": "npm",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "version": "^14.0.0",
+      "workspaces": [
+        "@fafa/eslint-config",
+        "@fafa/frontend"
       ]
     },
     {
@@ -2670,14 +2690,14 @@
       "declaredIn": [
         "package.json"
       ],
-      "id": "npm:knip@6.16.1",
+      "id": "npm:knip@6.17.1",
       "name": "knip",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "6.16.1",
+      "version": "6.17.1",
       "workspaces": [
         "nestjs-remix-monorepo"
       ]
@@ -3092,33 +3112,19 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
-      ],
-      "id": "npm:react-dom@18.3.1",
-      "name": "react-dom",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "18.3.1",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
-    },
-    {
-      "declaredIn": [
+        "frontend/package.json",
         "package.json"
       ],
-      "id": "npm:react-dom@^18.3.1",
+      "id": "npm:react-dom@19.2.7",
       "name": "react-dom",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^18.3.1",
+      "version": "19.2.7",
       "workspaces": [
+        "@fafa/frontend",
         "nestjs-remix-monorepo"
       ]
     },
@@ -3140,33 +3146,53 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "backend/package.json"
       ],
-      "id": "npm:react@18.3.1",
-      "name": "react",
+      "id": "npm:react-router@^7.0.0",
+      "name": "react-router",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "18.3.1",
+      "version": "^7.0.0",
       "workspaces": [
-        "@fafa/frontend"
+        "@fafa/backend"
       ]
     },
     {
       "declaredIn": [
+        "frontend/package.json",
         "package.json"
       ],
-      "id": "npm:react@^18.3.1",
+      "id": "npm:react-router@^7.15.0",
+      "name": "react-router",
+      "owner": "__unassigned__",
+      "schemaVersion": "1.0.0",
+      "source": "npm",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "version": "^7.15.0",
+      "workspaces": [
+        "@fafa/frontend",
+        "nestjs-remix-monorepo"
+      ]
+    },
+    {
+      "declaredIn": [
+        "frontend/package.json",
+        "package.json"
+      ],
+      "id": "npm:react@19.2.7",
       "name": "react",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^18.3.1",
+      "version": "19.2.7",
       "workspaces": [
+        "@fafa/frontend",
         "nestjs-remix-monorepo"
       ]
     },
@@ -3372,14 +3398,14 @@
       "declaredIn": [
         "package.json"
       ],
-      "id": "npm:squawk-cli@2.57.0",
+      "id": "npm:squawk-cli@2.58.0",
       "name": "squawk-cli",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "2.57.0",
+      "version": "2.58.0",
       "workspaces": [
         "nestjs-remix-monorepo"
       ]
@@ -3534,14 +3560,14 @@
       "declaredIn": [
         "backend/package.json"
       ],
-      "id": "npm:ts-loader@^9.6.0",
+      "id": "npm:ts-loader@^9.6.2",
       "name": "ts-loader",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^9.6.0",
+      "version": "^9.6.2",
       "workspaces": [
         "@fafa/backend"
       ]
@@ -3660,9 +3686,40 @@
     },
     {
       "declaredIn": [
+        "packages/eslint-config/package.json"
+      ],
+      "id": "npm:typescript-eslint@^8.61.1",
+      "name": "typescript-eslint",
+      "owner": "__unassigned__",
+      "schemaVersion": "1.0.0",
+      "source": "npm",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "version": "^8.61.1",
+      "workspaces": [
+        "@fafa/eslint-config"
+      ]
+    },
+    {
+      "declaredIn": [
+        "package.json"
+      ],
+      "id": "npm:typescript@6.0.3",
+      "name": "typescript",
+      "owner": "__unassigned__",
+      "schemaVersion": "1.0.0",
+      "source": "npm",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "version": "6.0.3",
+      "workspaces": [
+        "nestjs-remix-monorepo"
+      ]
+    },
+    {
+      "declaredIn": [
         "backend/package.json",
         "frontend/package.json",
-        "package.json",
         "packages/cwv-taxonomy/package.json",
         "packages/database-types/package.json",
         "packages/design-tokens/package.json",
@@ -3674,14 +3731,14 @@
         "packages/seo-types/package.json",
         "packages/seo-url-contract/package.json"
       ],
-      "id": "npm:typescript@^5.9.3",
+      "id": "npm:typescript@~6.0.3",
       "name": "typescript",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^5.9.3",
+      "version": "~6.0.3",
       "workspaces": [
         "@fafa/backend",
         "@fafa/design-tokens",
@@ -3694,8 +3751,7 @@
         "@repo/seo-role-contracts",
         "@repo/seo-roles",
         "@repo/seo-types",
-        "@repo/seo-url-contract",
-        "nestjs-remix-monorepo"
+        "@repo/seo-url-contract"
       ]
     },
     {
@@ -3767,14 +3823,14 @@
         "frontend/package.json",
         "package.json"
       ],
-      "id": "npm:vite@^5.4.11",
+      "id": "npm:vite@7.3.5",
       "name": "vite",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^5.4.11",
+      "version": "7.3.5",
       "workspaces": [
         "@fafa/frontend",
         "nestjs-remix-monorepo"
@@ -3895,7 +3951,8 @@
     {
       "declaredIn": [
         "backend/package.json",
-        "frontend/package.json"
+        "frontend/package.json",
+        "packages/design-tokens/package.json"
       ],
       "id": "workspace:@fafa/eslint-config@*",
       "name": "@fafa/eslint-config",
@@ -3907,6 +3964,7 @@
       "version": "*",
       "workspaces": [
         "@fafa/backend",
+        "@fafa/design-tokens",
         "@fafa/frontend"
       ]
     },

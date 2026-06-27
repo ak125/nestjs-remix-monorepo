@@ -3,11 +3,8 @@ import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import path from "node:path";
 import { createHash } from "node:crypto";
 import { load as parseYaml } from "js-yaml";
-import { zodToJsonSchema } from "zod-to-json-schema";
-import {
-  RpcContractSchema,
-  type RpcContract,
-} from "../canonical/rpc-contract";
+import { z } from "zod";
+import { RpcContractSchema, type RpcContract } from "../canonical/rpc-contract";
 
 const REPO_ROOT = path.resolve(__dirname, "../../../..");
 const YAML_PATH = path.join(
@@ -30,7 +27,7 @@ function fail(msg: string): never {
   throw new RpcContractBuildError(msg);
 }
 
-const SUPPORTED_NODE_MAJORS = ["20", "22"];
+const SUPPORTED_NODE_MAJORS = ["20", "22", "24"];
 
 {
   const currentMajor = process.versions.node.split(".")[0];
@@ -46,9 +43,9 @@ const SUPPORTED_NODE_MAJORS = ["20", "22"];
 {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const zodPkg = require("zod/package.json") as { version: string };
-  if (!zodPkg.version.startsWith("3.")) {
+  if (!zodPkg.version.startsWith("4.")) {
     console.error(
-      `[rpc-contract:build] ABORT — zod v${zodPkg.version} unsupported (expected 3.x).`,
+      `[rpc-contract:build] ABORT — zod v${zodPkg.version} unsupported (expected 4.x).`,
     );
     process.exit(2);
   }
@@ -61,7 +58,11 @@ function loadContract(): { contract: RpcContract; yamlSha256: string } {
   if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
     fail(
       `rpc.yaml root must be a single object map, got ${
-        parsed === null ? "null" : Array.isArray(parsed) ? "array" : typeof parsed
+        parsed === null
+          ? "null"
+          : Array.isArray(parsed)
+            ? "array"
+            : typeof parsed
       }.`,
     );
   }
@@ -78,9 +79,9 @@ function loadContract(): { contract: RpcContract; yamlSha256: string } {
 }
 
 function emitJsonSchema(yamlSha256: string, rpcCount: number): string {
-  const schema = zodToJsonSchema(RpcContractSchema, {
-    name: "RpcContract",
-    target: "jsonSchema7",
+  const schema = z.toJSONSchema(RpcContractSchema, {
+    target: "draft-7",
+    unrepresentable: "throw",
   });
   const enriched = {
     $comment: [

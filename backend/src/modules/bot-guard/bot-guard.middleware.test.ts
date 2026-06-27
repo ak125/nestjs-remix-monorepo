@@ -63,6 +63,32 @@ describe('BotGuardMiddleware ordering', () => {
     expect(service.isCountryBlocked).not.toHaveBeenCalled();
   });
 
+  it('no longer exempts the synthetic crawler — geo + behavioral now apply (PR2: exemption retired, crawler self-paces instead)', async () => {
+    // Former synthetic-probe bypass (HMAC header / egress-IP floor) is gone. A
+    // probe-like request (identifiable UA, public client IP) must now flow through
+    // geo + behavioral like any other client. Empirically the crawler passes both
+    // (0 × 403 across all runs); the rate limiter is handled by self-pacing, not a
+    // server-side exemption.
+    const { middleware, service } = makeMiddleware({
+      isVerifiedSearchEngine: jest.fn(async () => false), // NOT a search engine
+    });
+    const { req, res, next } = makeReqRes({
+      'cf-ipcountry': 'DE',
+      'cf-connecting-ip': '203.0.113.7',
+    });
+
+    await middleware.use(req, res, next);
+
+    expect(next).toHaveBeenCalledTimes(1);
+    // No dedicated synthetic flag is ever set anymore.
+    expect(
+      (req as { isVerifiedSyntheticProbe?: boolean }).isVerifiedSyntheticProbe,
+    ).toBeUndefined();
+    // geo + behavioral are consulted (the bypass that skipped them is gone).
+    expect(service.isCountryBlocked).toHaveBeenCalled();
+    expect(service.calculateSuspicionScore).toHaveBeenCalled();
+  });
+
   it('still honors an explicit operator IP block even for a would-be verified crawler (ip_block wins, no DNS work)', async () => {
     const verifySpy = jest.fn(async () => true);
     const { middleware, res, next, req, service } = (() => {

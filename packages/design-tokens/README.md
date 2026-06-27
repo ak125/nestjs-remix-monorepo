@@ -24,11 +24,11 @@
 
 ## 📦 Contenu
 
-- `design-tokens.json` : 140+ tokens (colors, spacing, typography, shadows, etc.)
-- Auto-génération :
-  - **CSS variables** (`dist/tokens.css`)
-  - **TypeScript types** (`dist/generated.ts`)
-  - **Tailwind preset** (`dist/tailwind.config.js`)
+- `src/tokens.json` : source **DTCG** (W3C `$value`/`$type`), 140+ tokens (colors, spacing, typography, shadows, etc.)
+- Auto-génération (**Style Dictionary**) :
+  - **CSS variables** (`dist/tokens.css`, export `./css`)
+  - **TypeScript** (`dist/index.*`, export `.` → `designTokens`)
+  - **Projection Tailwind plate** (`src/tailwind-tokens.cjs`, export `./tailwind-tokens`)
 
 ## 🚀 Installation
 
@@ -82,34 +82,38 @@ import { designTokens } from '@fafa/design-tokens';
 const primaryColor = designTokens.colors.primary[600];
 ```
 
-### 4. Extend Tailwind Config
+### 4. Tokens dans Tailwind
+
+`./tailwind-tokens` exporte une **projection plate** (`{ colors, spacing, typography, shadows, … }`)
+consommée dans `theme.extend` (voir `frontend/tailwind.config.cjs`) :
 
 ```javascript
-// tailwind.config.js
+// tailwind.config.cjs
+const tokens = require('@fafa/design-tokens/tailwind-tokens');
 module.exports = {
-  presets: [require('@fafa/design-tokens/tailwind')],
-  // ... votre config
+  theme: { extend: { colors: { ...tokens.colors }, spacing: { ...tokens.spacing } } },
 };
 ```
 
 ## 🔧 Build
 
 ```bash
-npm run build
+npm run build         # Style Dictionary (validation Zod) → tsup
+npm run build:check   # garde anti-dérive : rebuild en mémoire + byte-diff vs commité (CI)
 ```
 
-Génère :
-- `dist/tokens.css` (CSS variables)
-- `dist/generated.ts` (TypeScript types)
-- `dist/tailwind.config.js` (Tailwind preset)
-- `dist/index.{cjs,mjs,d.ts}` (Exports package)
+Génère depuis `src/tokens.json` :
+- `src/styles/tokens.css` → `dist/tokens.css` (CSS variables, export `./css`)
+- `src/tailwind-tokens.cjs` (projection plate, export `./tailwind-tokens`)
+- `src/tokens/generated.ts` → `dist/index.{cjs,js,d.ts}` (`designTokens` + types, export `.`)
 
 ## 📝 Modifier les Tokens
 
-Éditez `src/design-tokens.json`, puis :
+Éditez la source DTCG `src/tokens.json`, puis :
 
 ```bash
 npm run build
 ```
 
-Les outputs sont régénérés automatiquement.
+Les artefacts (`tokens.css`, `tailwind-tokens.cjs`, `generated.ts`) sont régénérés et validés
+(schéma Zod + garde de contraste WCAG). **Ne jamais** éditer ces fichiers générés à la main.

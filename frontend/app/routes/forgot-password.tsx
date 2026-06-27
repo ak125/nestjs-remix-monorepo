@@ -1,17 +1,15 @@
 import {
-  json,
-  type ActionFunction,
+  type ActionFunctionArgs,
   type MetaFunction,
   redirect,
-} from "@remix-run/node";
-import {
+  data,
   Form,
   useActionData,
   useSearchParams,
   Link,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
@@ -31,12 +29,12 @@ export const meta: MetaFunction = () => [
   { name: "robots", content: "noindex, nofollow" },
 ];
 
-export const action: ActionFunction = async ({ request }) => {
+export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData();
   const email = formData.get("email");
 
   if (!email) {
-    return json({ error: "Email is required" }, { status: 400 });
+    return data({ error: "Email is required" }, { status: 400 });
   }
 
   try {
@@ -54,7 +52,7 @@ export const action: ActionFunction = async ({ request }) => {
       return redirect("/forgot-password?status=sent");
     }
 
-    return json(
+    return data(
       { error: result.message || "Une erreur est survenue" },
       { status: response.status },
     );
@@ -114,7 +112,7 @@ export default function ForgotPassword() {
             <Button
               type="submit"
               size="lg"
-              className="w-full bg-cta hover:bg-cta-hover text-white"
+              className="w-full bg-cta hover:bg-cta-hover text-black"
             >
               Envoyer le lien de réinitialisation
             </Button>

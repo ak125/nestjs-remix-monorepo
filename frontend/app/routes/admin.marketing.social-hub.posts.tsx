@@ -1,10 +1,4 @@
 import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, useSearchParams } from "@remix-run/react";
-import {
   FileText,
   CheckCircle2,
   ShieldCheck,
@@ -22,6 +16,12 @@ import {
   CalendarDays,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  useSearchParams,
+} from "react-router";
 import { toast } from "sonner";
 import { AdminDataTable } from "~/components/admin/patterns/AdminDataTable";
 import {
@@ -222,12 +222,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
       ? await statusRes.value.json()
       : null;
 
-  return json({
+  return {
     posts: (postsData.data || []) as SocialPost[],
     total: postsData.total || 0,
     filters: { week, status },
     pipeline: pipelineData as PipelineStatus | null,
-  });
+  };
 }
 
 // ── Post Actions ──

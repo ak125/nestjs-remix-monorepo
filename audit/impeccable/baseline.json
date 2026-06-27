@@ -1,14 +1,14 @@
 {
   "$schema": "https://raw.githubusercontent.com/ak125/nestjs-remix-monorepo/main/audit/impeccable/baseline.schema.json",
-  "note": "Decremental baseline for impeccable design anti-pattern ratchet (see audit/impeccable/README.md). Regenerate via scripts/audit/impeccable-baseline-write.mjs.",
-  "generatedAt": "2026-06-14T14:35:16.316Z",
-  "computedFrom": "git@9c5c9cc625f8ec596162a17da81c5aa3f2c33104",
-  "total": 8,
+  "note": "Decremental baseline for impeccable design anti-pattern ratchet (see audit/impeccable/README.md). Regenerate via scripts/audit/impeccable-baseline-write.mjs. 2026-06-20: +1 gray-on-color from recovered admin.video-hub route (MediaFactory revival, flag-gated). À corriger proprement (contraste réel) quand le détecteur visuel peut tourner.",
+  "generatedAt": "2026-06-20T12:40:00.000Z",
+  "computedFrom": "git@cb857874f-mediafactory-revival",
+  "total": 9,
   "byCategory": {
     "ai-color-palette": 1,
     "bounce-easing": 3,
     "gradient-text": 1,
-    "gray-on-color": 1,
+    "gray-on-color": 2,
     "overused-font": 2
   },
   "byFile": {
@@ -17,6 +17,7 @@
     "frontend/app/components/pieces/MotorisationsSection.tsx": 1,
     "frontend/app/components/vehicle/VehicleSelector.tsx": 1,
     "frontend/app/global.css": 2,
+    "frontend/app/routes/admin.video-hub.productions.$briefId.tsx": 1,
     "frontend/app/styles/animations.css": 2
   }
 }

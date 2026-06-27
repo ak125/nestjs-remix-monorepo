@@ -6,20 +6,17 @@
  * Intention : Découvrir l'histoire des marques automobiles
  */
 
+import React, { useState, useMemo } from "react";
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import {
   useLoaderData,
   Link,
   useSearchParams,
   useNavigation,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import React, { useState, useMemo } from "react";
+} from "react-router";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 
@@ -379,7 +376,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       const paginatedItems = filtered.slice(startIndex, startIndex + limit);
 
       // Enrichir avec les données manquantes
-      return json({
+      return {
         constructeurs: paginatedItems.map((m: any) => ({
           id: m.id,
           title: m.name,
@@ -413,7 +410,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         },
         success: true,
         source: "api",
-      });
+      };
     }
   } catch (error) {
     logger.warn("[API] Error, using fallback data:", error);
@@ -517,7 +514,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     totalModels: DEMO_CONSTRUCTEURS.reduce((sum, c) => sum + c.modelsCount, 0),
   };
 
-  return json({
+  return {
     constructeurs: paginatedConstructeurs,
     total: filteredConstructeurs.length,
     page,
@@ -531,10 +528,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     popularBrands,
     stats,
     success: true,
-  });
+  };
 }
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   const title = data?.search
     ? `Constructeurs Automobiles - Recherche: ${data.search}`
     : data?.letter
@@ -922,7 +919,7 @@ export default function ConstructeursHomePage() {
 
       <div className="container mx-auto px-4 py-8 lg:flex lg:gap-8">
         {/* Sidebar avec toutes les marques */}
-        <aside className="hidden lg:block lg:w-64 flex-shrink-0">
+        <aside className="hidden lg:block lg:w-64 shrink-0">
           <div className="bg-white rounded-lg shadow-sm p-6 sticky top-4">
             <h3 className="font-bold text-lg mb-4 uppercase">
               Marques des constructeurs
@@ -965,7 +962,7 @@ export default function ConstructeursHomePage() {
               </div>
 
               {/* Filtre par lettre */}
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 <select
                   value={letter}
                   onChange={(e) => handleFilterChange("letter", e.target.value)}
@@ -981,7 +978,7 @@ export default function ConstructeursHomePage() {
               </div>
 
               {/* Filtre par marque */}
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 <select
                   value={brand}
                   onChange={(e) => handleFilterChange("brand", e.target.value)}
@@ -997,7 +994,7 @@ export default function ConstructeursHomePage() {
               </div>
 
               {/* Tri */}
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 <select
                   value={sortBy}
                   onChange={(e) => handleFilterChange("sortBy", e.target.value)}

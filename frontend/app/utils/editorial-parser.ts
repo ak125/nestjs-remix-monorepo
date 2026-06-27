@@ -6,7 +6,14 @@
  * les classe par section cible pour éviter les doublons de H2.
  *
  * Les H2 originaux sont downgrade en H3 car ils deviennent des sous-sections.
+ *
+ * 🛡️ Sécurité : `sg_content` est admin-éditable → le blob est sanitisé en
+ * ENTRÉE (chokepoint unique) via `sanitizeEditorialHtml`, donc TOUS les
+ * fragments produits (rendus ensuite en `dangerouslySetInnerHTML`) sont sûrs.
+ * DOMPurify conserve `<h2>` : le split + downgrade H2→H3 restent intacts.
  */
+
+import { sanitizeEditorialHtml } from "./sanitize-editorial-html";
 
 export interface EditorialBlocks {
   /** Blocs pour "Bien choisir votre {gamme}" — types, critères, choix */
@@ -85,14 +92,20 @@ export function extractEditorialBlocks(html: string): EditorialBlocks {
 
   if (!html || !html.trim()) return result;
 
+  // 🛡️ Sanitisation en ENTRÉE : tous les fragments dérivés ci-dessous sont
+  // ensuite rendus en HTML brut → on sécurise une seule fois ici. DOMPurify
+  // conserve `<h2>`, donc le split + le downgrade H2→H3 fonctionnent à l'identique.
+  const safe = sanitizeEditorialHtml(html);
+  if (!safe.trim()) return result;
+
   // Pas de H2 dans le contenu → tout dans chooseSection
-  if (!/<h2[\s>]/i.test(html)) {
-    result.chooseSection.push(html);
+  if (!/<h2[\s>]/i.test(safe)) {
+    result.chooseSection.push(safe);
     return result;
   }
 
   // Split aux <h2 — garde le délimiteur dans le fragment suivant
-  const parts = html.split(/(?=<h2[\s>])/i);
+  const parts = safe.split(/(?=<h2[\s>])/i);
 
   for (const part of parts) {
     const trimmed = part.trim();

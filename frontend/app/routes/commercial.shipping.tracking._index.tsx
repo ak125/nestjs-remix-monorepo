@@ -3,12 +3,6 @@
  */
 
 import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
-import {
   Clock,
   CheckCircle,
   Truck,
@@ -22,6 +16,12 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+} from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { logger } from "~/utils/logger";
@@ -297,7 +297,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       exceptions: shipments.filter((s) => s.status === "exception").length,
     };
 
-    return json({ shipments, stats });
+    return { shipments, stats };
   } catch (error) {
     logger.error("❌ Erreur tracking:", error);
 
@@ -311,7 +311,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       exceptions: shipments.filter((s) => s.status === "exception").length,
     };
 
-    return json({ shipments, stats });
+    return { shipments, stats };
   }
 }
 

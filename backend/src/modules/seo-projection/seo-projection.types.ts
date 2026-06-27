@@ -99,13 +99,44 @@ export interface SeoProjectionExport {
   consumers_allowed: string[];
 }
 
+/** Niveau de vérité d'un bloc (ADR-086). Porte la provenance lue par D1/D2 (sépare DB-owned de sourced). */
+export type BlockTruthLevel = 'db_owned' | 'sourced' | 'inferred' | 'editorial';
+
+/**
+ * Bloc tel qu'émis par le builder wiki — forme **FLAT**, miroir de `exports-seo.schema.json`
+ * (`role`, `content_md`, `source_ids`, `truth_level` requis ; `section`/`usefulness_target` optionnels ;
+ * provenance citable D3 optionnelle). Le writer l'**adapte** vers la forme DB (`block_kind` + `content`
+ * jsonb, tous deux NOT NULL) via `mapExportBlockToDbBlock` — voir writer. Aucun enrichissement.
+ */
 export interface SeoProjectionBlock {
-  block_id?: string;
   role: string;
-  block_kind: string;
+  content_md: string;
+  source_ids: string[];
+  truth_level: BlockTruthLevel;
+  section?: string | null;
+  usefulness_target?: string | null;
+  // Provenance citable optionnelle (D3 ADR-086) — copiée verbatim dans content si présente, jamais fabriquée.
+  evidence_type?: string;
+  applies_to?: { scope: string; key: string } | null;
+  last_verified_at?: string | null;
+  consumer_pages?: string[];
+  // Optionnels hérités : si le builder les fournit on les respecte, sinon le writer les dérive.
+  block_id?: string;
+  block_kind?: string;
   content_hash?: string;
   confidence_base?: number | null;
+}
+
+/** Forme DB d'un bloc projeté (cible de l'adaptation `mapExportBlockToDbBlock`). */
+export interface ProjectedBlockRow {
+  blockId: string;
+  blockKind: string;
   content: Record<string, unknown>;
+  contentHash: string;
+  sourceType: string | null;
+  confidenceBase: number | null;
+  /** true si block_kind a dû retomber sur un index positionnel (section absente) — à loguer (observable). */
+  kindFallback: boolean;
 }
 
 /** Verdict d'une porte (CanonGate / QualityGate). Fail-closed : `ok=false` → conflit observable, pas d'écriture. */

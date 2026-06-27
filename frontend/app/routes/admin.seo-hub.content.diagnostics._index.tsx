@@ -8,13 +8,6 @@
  */
 
 import {
-  json,
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, Link, Form, useNavigation } from "@remix-run/react";
-import {
   AlertTriangle,
   Edit,
   Eye,
@@ -30,6 +23,15 @@ import {
   RefreshCw,
   ExternalLink,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+  Form,
+  useNavigation,
+} from "react-router";
 import { AdminDataTable, type DataColumn } from "~/components/admin/patterns";
 import {
   Accordion,
@@ -142,14 +144,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
     ]);
 
     if (draftsRes.status === 403) {
-      return json<LoaderData>({
+      return {
         diagnostics: [],
         total: 0,
         clusters: [],
         error:
           "Accès refusé : vous devez être connecté en tant qu'administrateur (niveau 7+) pour accéder aux drafts.",
         authError: true,
-      });
+      };
     }
 
     const featuredData = featuredRes.ok
@@ -175,20 +177,20 @@ export async function loader({ request }: LoaderFunctionArgs) {
       ...new Set(diagnostics.map((d) => d.clusterId).filter(Boolean)),
     ] as string[];
 
-    return json<LoaderData>({
+    return {
       diagnostics,
       total: published.length + drafts.length,
       clusters,
       error: null,
-    });
+    };
   } catch (error) {
     logger.error("[R5 List] Loader error:", error);
-    return json<LoaderData>({
+    return {
       diagnostics: [],
       total: 0,
       clusters: [],
       error: "Erreur connexion backend",
-    });
+    };
   }
 }
 
@@ -209,7 +211,7 @@ export async function action({ request }: ActionFunctionArgs) {
           { method: "PATCH", headers: { Cookie: cookieHeader } },
         );
         const data = await res.json();
-        return json({ success: data.success, action: "publish", slug });
+        return { success: data.success, action: "publish", slug };
       }
       case "delete": {
         const res = await fetch(`${backendUrl}/api/seo/diagnostic/${slug}`, {
@@ -217,14 +219,14 @@ export async function action({ request }: ActionFunctionArgs) {
           headers: { Cookie: cookieHeader },
         });
         const data = await res.json();
-        return json({ success: data.success, action: "delete", slug });
+        return { success: data.success, action: "delete", slug };
       }
       default:
-        return json({ success: false, error: "Action non reconnue" });
+        return { success: false, error: "Action non reconnue" };
     }
   } catch (error) {
     logger.error("[R5 Action] Error:", error);
-    return json({ success: false, error: "Erreur serveur" });
+    return { success: false, error: "Erreur serveur" };
   }
 }
 

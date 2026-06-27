@@ -284,10 +284,10 @@ const PieceCard = memo(function PieceCard({
       {/* Footer: Marque + Référence + Prix + Bouton */}
       <div className="p-2.5 pt-2 border-t border-slate-100 bg-gradient-to-b from-white to-slate-50/50">
         <div className="flex items-center gap-1.5 mb-2 min-w-0">
-          <span className="text-xs sm:text-sm font-bold text-slate-600 uppercase tracking-wide flex-shrink-0">
+          <span className="text-xs sm:text-sm font-bold text-slate-600 uppercase tracking-wide shrink-0">
             {piece.brand}
           </span>
-          <span className="text-slate-300 flex-shrink-0">|</span>
+          <span className="text-slate-300 shrink-0">|</span>
           <code className="text-sm sm:text-base font-mono font-bold text-foreground truncate">
             {piece.reference}
           </code>
@@ -501,7 +501,7 @@ export function PiecesGridView({
           <div className="inline-flex flex-col gap-2 text-sm text-left bg-card rounded-xl p-4 shadow-sm border border-border">
             <div className="flex items-start gap-2">
               <svg
-                className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0"
+                className="w-4 h-4 text-blue-500 mt-0.5 shrink-0"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -517,7 +517,7 @@ export function PiecesGridView({
             </div>
             <div className="flex items-start gap-2">
               <svg
-                className="w-4 h-4 text-primary mt-0.5 flex-shrink-0"
+                className="w-4 h-4 text-primary mt-0.5 shrink-0"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -533,7 +533,7 @@ export function PiecesGridView({
             </div>
             <div className="flex items-start gap-2">
               <svg
-                className="w-4 h-4 text-primary mt-0.5 flex-shrink-0"
+                className="w-4 h-4 text-primary mt-0.5 shrink-0"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >

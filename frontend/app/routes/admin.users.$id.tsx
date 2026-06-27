@@ -1,15 +1,4 @@
 import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import {
-  useLoaderData,
-  Link,
-  useRouteError,
-  isRouteErrorResponse,
-} from "@remix-run/react";
-import {
   ArrowLeft,
   Mail,
   Phone,
@@ -26,6 +15,14 @@ import {
   XCircle,
   AlertCircle,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+  useRouteError,
+  isRouteErrorResponse,
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors";
 import { HtmlContent } from "~/components/seo/HtmlContent";
 import { Alert } from "~/components/ui/alert";
@@ -33,7 +30,7 @@ import { Badge } from "~/components/ui/badge";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   const user = data?.targetUser;
   const userName =
     user?.firstName && user?.lastName
@@ -221,7 +218,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
       );
     }
 
-    return json<LoaderData>({
+    return {
       targetUser: {
         ...user,
         totalOrders: stats.totalOrders,
@@ -229,7 +226,7 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
       },
       stats,
       recentOrders,
-    });
+    };
   } catch (error) {
     logger.error("Erreur lors du chargement de l'utilisateur:", error);
     throw new Response("Erreur lors du chargement de l'utilisateur", {
@@ -698,7 +695,7 @@ export default function UserDetails() {
                 >
                   <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                     {/* Gauche: ID et Date */}
-                    <div className="flex-shrink-0">
+                    <div className="shrink-0">
                       <div className="flex items-center gap-3 mb-2">
                         <span className="font-mono text-sm font-semibold text-gray-900 bg-gray-100 px-3 py-1 rounded-md">
                           #{order.id}
@@ -752,7 +749,7 @@ export default function UserDetails() {
                     )}
 
                     {/* Droite: Montant et Actions */}
-                    <div className="flex-shrink-0 flex flex-col items-end gap-3">
+                    <div className="shrink-0 flex flex-col items-end gap-3">
                       <div className="text-right">
                         <div className="text-xs text-gray-500 uppercase font-semibold mb-1">
                           Montant

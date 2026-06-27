@@ -1,10 +1,4 @@
 import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
-import {
   Image,
   Copy,
   Check,
@@ -16,6 +10,11 @@ import {
   Trash2,
 } from "lucide-react";
 import { useState, useMemo, useRef, useCallback, useEffect } from "react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+} from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
@@ -68,7 +67,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   );
 
   const images: RagImage[] = res.ok ? await res.json() : [];
-  return json({ images });
+  return { images };
 }
 
 function formatSize(bytes: number): string {
@@ -331,7 +330,6 @@ export default function AdminRagImages() {
           </div>
         </div>
       </div>
-
       {/* Filters */}
       <div className="flex items-center gap-3">
         <Filter className="h-4 w-4 text-gray-400" />
@@ -401,7 +399,6 @@ export default function AdminRagImages() {
           {filtered.length} image{filtered.length > 1 ? "s" : ""}
         </span>
       </div>
-
       {/* Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
         {filtered.map((img) => (
@@ -461,14 +458,12 @@ export default function AdminRagImages() {
           </Card>
         ))}
       </div>
-
       {filtered.length === 0 && (
         <div className="text-center py-20 text-gray-400">
           <Image className="h-12 w-12 mx-auto mb-3 opacity-50" />
           <p>Aucune image trouvee</p>
         </div>
       )}
-
       {/* Modal detail */}
       <Dialog
         open={!!selected}

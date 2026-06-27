@@ -10,7 +10,7 @@ export const R1TrustStrip = memo(function R1TrustStrip() {
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
       {/* 1. Compatibilité vérifiée */}
       <div className="flex items-center gap-3 rounded-xl border border-gray-100 bg-green-50 p-3 sm:p-4">
-        <ShieldCheck className="w-6 h-6 text-green-600 flex-shrink-0" />
+        <ShieldCheck className="w-6 h-6 text-green-600 shrink-0" />
         <div className="min-w-0">
           <p className="text-sm font-semibold text-gray-900 leading-tight">
             Compatibilité vérifiée
@@ -23,7 +23,7 @@ export const R1TrustStrip = memo(function R1TrustStrip() {
 
       {/* 2. Livraison */}
       <div className="flex items-center gap-3 rounded-xl border border-gray-100 bg-blue-50 p-3 sm:p-4">
-        <Truck className="w-6 h-6 text-blue-600 flex-shrink-0" />
+        <Truck className="w-6 h-6 text-blue-600 shrink-0" />
         <div className="min-w-0">
           <p className="text-sm font-semibold text-gray-900 leading-tight">
             Livraison 24–48h
@@ -36,7 +36,7 @@ export const R1TrustStrip = memo(function R1TrustStrip() {
 
       {/* 3. Retours */}
       <div className="flex items-center gap-3 rounded-xl border border-gray-100 bg-amber-50 p-3 sm:p-4">
-        <RotateCcw className="w-6 h-6 text-amber-600 flex-shrink-0" />
+        <RotateCcw className="w-6 h-6 text-amber-600 shrink-0" />
         <div className="min-w-0">
           <p className="text-sm font-semibold text-gray-900 leading-tight">
             Retours 30 jours
@@ -49,7 +49,7 @@ export const R1TrustStrip = memo(function R1TrustStrip() {
 
       {/* 4. Paiement sécurisé */}
       <div className="flex items-center gap-3 rounded-xl border border-gray-100 bg-muted p-3 sm:p-4">
-        <Lock className="w-6 h-6 text-foreground flex-shrink-0" />
+        <Lock className="w-6 h-6 text-foreground shrink-0" />
         <div className="min-w-0">
           <p className="text-sm font-semibold text-gray-900 leading-tight">
             Paiement sécurisé

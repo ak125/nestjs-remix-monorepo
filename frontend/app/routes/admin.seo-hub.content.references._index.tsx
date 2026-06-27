@@ -9,19 +9,6 @@
  */
 
 import {
-  json,
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import {
-  useLoaderData,
-  useSearchParams,
-  Link,
-  Form,
-  useNavigation,
-} from "@remix-run/react";
-import {
   BookOpen,
   Edit,
   Eye,
@@ -34,6 +21,16 @@ import {
   ExternalLink,
   RefreshCw,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  useSearchParams,
+  Link,
+  Form,
+  useNavigation,
+} from "react-router";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -117,14 +114,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     // Vérifier les erreurs d'autorisation (403)
     if (draftsRes.status === 403) {
-      return json<LoaderData>({
+      return {
         references: [],
         drafts: [],
         total: 0,
         error:
           "Accès refusé : vous devez être connecté en tant qu'administrateur (niveau 7+) pour accéder aux drafts.",
         authError: true,
-      });
+      };
     }
 
     const publishedData = publishedRes.ok
@@ -152,20 +149,20 @@ export async function loader({ request }: LoaderFunctionArgs) {
       references = [...drafts, ...published];
     }
 
-    return json<LoaderData>({
+    return {
       references,
       drafts,
       total: published.length + drafts.length,
       error: null,
-    });
+    };
   } catch (error) {
     logger.error("[R4 List] Loader error:", error);
-    return json<LoaderData>({
+    return {
       references: [],
       drafts: [],
       total: 0,
       error: "Erreur connexion backend",
-    });
+    };
   }
 }
 
@@ -187,7 +184,7 @@ export async function action({ request }: ActionFunctionArgs) {
           },
         );
         const data = await res.json();
-        return json({ success: data.success, action: "publish", slug });
+        return { success: data.success, action: "publish", slug };
       }
       case "delete": {
         const res = await fetch(`${backendUrl}/api/seo/reference/${slug}`, {
@@ -195,14 +192,14 @@ export async function action({ request }: ActionFunctionArgs) {
           headers: { Cookie: cookieHeader },
         });
         const data = await res.json();
-        return json({ success: data.success, action: "delete", slug });
+        return { success: data.success, action: "delete", slug };
       }
       default:
-        return json({ success: false, error: "Action non reconnue" });
+        return { success: false, error: "Action non reconnue" };
     }
   } catch (error) {
     logger.error("[R4 Action] Error:", error);
-    return json({ success: false, error: "Erreur serveur" });
+    return { success: false, error: "Erreur serveur" };
   }
 }
 

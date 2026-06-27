@@ -1,6 +1,5 @@
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
 import { Link2, TrendingUp, FileText, Target } from "lucide-react";
+import { type LoaderFunctionArgs, useLoaderData } from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
@@ -13,11 +12,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
         headers: { Cookie: request.headers.get("Cookie") || "" },
       },
     );
-    if (!res.ok) return json({ dashboard: null, error: "Failed to load" });
+    if (!res.ok) return { dashboard: null, error: "Failed to load" };
     const result = await res.json();
-    return json({ dashboard: result.data, error: null });
+    return { dashboard: result.data, error: null };
   } catch (e: any) {
-    return json({ dashboard: null, error: e.message });
+    return { dashboard: null, error: e.message };
   }
 }
 
