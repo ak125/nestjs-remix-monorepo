@@ -240,7 +240,7 @@ const VehicleCard: React.FC<VehicleCardProps> = ({
           )}
 
           {/* Badge période */}
-          <Badge className="absolute top-2 right-2 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-lg hover:bg-white dark:hover:bg-gray-900 border-gray-200 dark:border-gray-700">
+          <Badge className="absolute top-2 right-2 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xs shadow-lg hover:bg-white dark:hover:bg-gray-900 border-gray-200 dark:border-gray-700">
             <Calendar className="w-3 h-3 inline mr-1" />
             {vehicle.period}
           </Badge>

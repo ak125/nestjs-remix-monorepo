@@ -255,7 +255,7 @@ export const ProductGallery = memo(function ProductGallery({
       </div>
 
       {/* Thumbnails overlay on hover (desktop) */}
-      <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 via-black/40 to-transparent backdrop-blur-sm translate-y-full group-hover/gallery:translate-y-0 transition-transform duration-300 hidden sm:flex gap-2 overflow-x-auto scrollbar-hide z-10">
+      <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 via-black/40 to-transparent backdrop-blur-xs translate-y-full group-hover/gallery:translate-y-0 transition-transform duration-300 hidden sm:flex gap-2 overflow-x-auto scrollbar-hide z-10">
         {allImages.slice(0, 5).map((img, idx) => (
           <button
             key={img.id || idx}
@@ -286,7 +286,7 @@ export const ProductGallery = memo(function ProductGallery({
       </div>
 
       {/* Indicateur multi-images (visible quand pas hover, desktop only) */}
-      <div className="absolute bottom-3 right-3 bg-neutral-900/70 text-white text-xs px-2.5 py-1.5 rounded-lg opacity-100 group-hover/gallery:opacity-0 transition-opacity duration-300 pointer-events-none hidden sm:flex items-center gap-1.5 shadow-lg backdrop-blur-sm">
+      <div className="absolute bottom-3 right-3 bg-neutral-900/70 text-white text-xs px-2.5 py-1.5 rounded-lg opacity-100 group-hover/gallery:opacity-0 transition-opacity duration-300 pointer-events-none hidden sm:flex items-center gap-1.5 shadow-lg backdrop-blur-xs">
         <svg
           className="w-3.5 h-3.5"
           fill="none"

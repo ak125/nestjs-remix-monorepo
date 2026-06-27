@@ -376,7 +376,7 @@ export default function BlogConseilsIndex() {
             <div className="grid sm:grid-cols-3 gap-4 max-w-2xl mx-auto">
               <Link
                 to="?type=HOWTO"
-                className="group flex flex-col items-center gap-2 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 p-5 transition-all hover:bg-blue-600/30 hover:border-blue-400/50"
+                className="group flex flex-col items-center gap-2 rounded-xl bg-white/10 backdrop-blur-xs border border-white/20 p-5 transition-all hover:bg-blue-600/30 hover:border-blue-400/50"
               >
                 <Wrench className="h-8 w-8 text-blue-400 group-hover:scale-110 transition-transform" />
                 <span className="font-semibold text-sm">
@@ -389,7 +389,7 @@ export default function BlogConseilsIndex() {
               </Link>
               <Link
                 to="?type=DIAGNOSTIC"
-                className="group flex flex-col items-center gap-2 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 p-5 transition-all hover:bg-orange-600/30 hover:border-orange-400/50"
+                className="group flex flex-col items-center gap-2 rounded-xl bg-white/10 backdrop-blur-xs border border-white/20 p-5 transition-all hover:bg-orange-600/30 hover:border-orange-400/50"
               >
                 <AlertTriangle className="h-8 w-8 text-orange-400 group-hover:scale-110 transition-transform" />
                 <span className="font-semibold text-sm">
@@ -401,7 +401,7 @@ export default function BlogConseilsIndex() {
               </Link>
               <Link
                 to="?type=BUYING_GUIDE"
-                className="group flex flex-col items-center gap-2 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 p-5 transition-all hover:bg-green-600/30 hover:border-green-400/50"
+                className="group flex flex-col items-center gap-2 rounded-xl bg-white/10 backdrop-blur-xs border border-white/20 p-5 transition-all hover:bg-green-600/30 hover:border-green-400/50"
               >
                 <ShoppingCart className="h-8 w-8 text-green-400 group-hover:scale-110 transition-transform" />
                 <span className="font-semibold text-sm">

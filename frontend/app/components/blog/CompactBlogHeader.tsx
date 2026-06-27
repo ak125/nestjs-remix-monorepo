@@ -153,7 +153,7 @@ export function CompactBlogHeader({
                   return (
                     <div
                       key={index}
-                      className="bg-white/20 backdrop-blur-sm rounded-full px-3 md:px-4 py-1.5 md:py-2 flex items-center gap-2 hover:bg-white/30 transition-all duration-200 hover:scale-105"
+                      className="bg-white/20 backdrop-blur-xs rounded-full px-3 md:px-4 py-1.5 md:py-2 flex items-center gap-2 hover:bg-white/30 transition-all duration-200 hover:scale-105"
                       title={stat.label}
                     >
                       <Icon className="w-4 h-4" />

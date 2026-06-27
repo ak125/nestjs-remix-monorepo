@@ -2,7 +2,7 @@
 module: seo-shadow-observatory
 sources:
 - backend/src/modules/seo-shadow-observatory
-last_scan: '2026-06-26'
+last_scan: '2026-06-27'
 primary_files:
 - backend/src/modules/seo-shadow-observatory/env.schema.ts
 - backend/src/modules/seo-shadow-observatory/seo-shadow-chain-runner.service.ts

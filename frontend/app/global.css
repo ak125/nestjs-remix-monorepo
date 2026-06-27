@@ -1,5 +1,16 @@
-/* === DESIGN TOKENS (bundled by Vite) === */
+/* === TAILWIND v4 ENGINE === */
+/* Remplace les directives @tailwind base/components/utilities (v3). DOIT précéder
+   toute règle (@font-face plus bas) — contrainte CSS « @import en premier ». */
+@import "tailwindcss";
+
+/* === DESIGN TOKENS (bundled by Vite) — --am-* + rôles shadcn HSL === */
 @import "@fafa/design-tokens/css";
+
+/* === PONT CONFIG v3→v4 ===
+   Charge couleurs/spacing/fontFamily/keyframes/plugins/darkMode/content depuis
+   tailwind.config.cjs (qui consomme la projection plate @fafa/design-tokens/tailwind-tokens).
+   reserved-namespace-zero (DT-2) garantit zéro collision avec les namespaces @theme de v4. */
+@config "../tailwind.config.cjs";
 
 /* === SELF-HOSTED FONTS === */
 /* Outfit (headings) + DM Sans (body) + Roboto Mono (data) */
@@ -68,9 +79,7 @@
 /* brand-colors.css: variables CSS chargées via links() dans root.tsx */
 /* brand utilities intégrées ci-dessous dans @layer utilities */
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* (v4) base + components + utilities sont fournis par `@import "tailwindcss"` en tête de fichier. */
 
 /* === BASE STYLES === */
 @layer base {

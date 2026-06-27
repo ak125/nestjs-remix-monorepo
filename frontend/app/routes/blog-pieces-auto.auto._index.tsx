@@ -276,7 +276,7 @@ export default function BlogPiecesAutoIndex() {
                               <img
                                 src={brand.logo}
                                 alt={brand.name}
-                                className="max-w-full max-h-full object-contain filter grayscale-0 group-hover:grayscale-0 group-hover:scale-110 transition-all duration-500 drop-shadow-sm"
+                                className="max-w-full max-h-full object-contain filter grayscale-0 group-hover:grayscale-0 group-hover:scale-110 transition-all duration-500 drop-shadow-xs"
                                 loading="lazy"
                                 onError={(e) => {
                                   e.currentTarget.style.display = "none";
@@ -583,7 +583,7 @@ export default function BlogPiecesAutoIndex() {
 
                           {/* Brand Badge */}
                           <div className="absolute top-3 left-3">
-                            <Badge className="bg-white/95 backdrop-blur-sm text-gray-900 font-bold px-3 py-1 shadow-lg">
+                            <Badge className="bg-white/95 backdrop-blur-xs text-gray-900 font-bold px-3 py-1 shadow-lg">
                               {model.brandName}
                             </Badge>
                           </div>
@@ -835,7 +835,7 @@ export default function BlogPiecesAutoIndex() {
                           </div>
                         </div>
 
-                        <div className="mt-8 p-5 rounded-xl bg-white/80 backdrop-blur-sm border border-blue-200 shadow-lg">
+                        <div className="mt-8 p-5 rounded-xl bg-white/80 backdrop-blur-xs border border-blue-200 shadow-lg">
                           <p className="text-sm text-gray-600 italic">
                             💡 <strong>Astuce :</strong> Utilisez notre moteur
                             de recherche pour trouver rapidement toutes les

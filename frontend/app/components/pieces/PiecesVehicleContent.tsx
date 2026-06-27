@@ -596,7 +596,7 @@ export function PiecesVehicleContent() {
       </MobileBottomBar>
       {/* Performance debug (dev only) */}
       {process.env.NODE_ENV === "development" && (
-        <div className="fixed bottom-4 right-4 bg-neutral-900/80 text-white text-xs p-3 rounded-lg backdrop-blur-sm">
+        <div className="fixed bottom-4 right-4 bg-neutral-900/80 text-white text-xs p-3 rounded-lg backdrop-blur-xs">
           <div>Load: {data.performance.loadTime}ms</div>
           <div>Pieces: {data.count}</div>
           <div>Filtrees: {filteredProducts.length}</div>
