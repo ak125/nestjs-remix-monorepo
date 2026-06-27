@@ -240,9 +240,9 @@ export function AdvancedFilters({
         HEADER (Titre + Toggle Mobile + Compteur)
         ═════════════════════════════════════════════════════════════════════
       */}
-      <div className="flex items-center justify-between p-md border-b border-neutral-200">
+      <div className="flex items-center justify-between p-4 border-b border-neutral-200">
         {/* Titre */}
-        <div className="flex items-center gap-sm">
+        <div className="flex items-center gap-2">
           <svg
             className="w-5 h-5 text-secondary-500"
             fill="none"
@@ -262,14 +262,14 @@ export function AdvancedFilters({
 
           {/* Badge compteur filtres actifs */}
           {hasActiveFilters && (
-            <span className="bg-primary-500 text-white px-sm py-xs rounded-full font-mono text-xs font-bold">
+            <span className="bg-primary-500 text-white px-2 py-1 rounded-full font-mono text-xs font-bold">
               {activeTags.length}
             </span>
           )}
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-sm">
+        <div className="flex items-center gap-2">
           {/* Compteur résultats */}
           {resultCount > 0 && (
             <span className="font-sans text-sm text-neutral-600">
@@ -314,8 +314,8 @@ export function AdvancedFilters({
         • Toujours visible (même si collapsed)
       */}
       {hasActiveFilters && (
-        <div className="p-md border-b border-neutral-200 bg-neutral-50">
-          <div className="flex flex-wrap items-center gap-xs">
+        <div className="p-4 border-b border-neutral-200 bg-neutral-50">
+          <div className="flex flex-wrap items-center gap-1">
             <span className="font-sans text-xs text-neutral-600 font-semibold">
               Filtres actifs:
             </span>
@@ -325,10 +325,10 @@ export function AdvancedFilters({
                 <button
                   onClick={() => handleRemoveTag(tag.key)}
                   className="
-                    inline-flex items-center gap-xs
+                    inline-flex items-center gap-1
                     bg-primary-500 hover:bg-primary-600
                     text-white
-                    px-sm py-xs
+                    px-2 py-1
                     font-sans text-xs font-semibold
                     rounded
                     transition-colors
@@ -351,7 +351,7 @@ export function AdvancedFilters({
                   </svg>
                 </button>
                 {index < activeTags.length - 1 && (
-                  <span className="mx-xs text-neutral-400">•</span>
+                  <span className="mx-1 text-neutral-400">•</span>
                 )}
               </span>
             ))}
@@ -365,7 +365,7 @@ export function AdvancedFilters({
         ═════════════════════════════════════════════════════════════════════
       */}
       <div className={`${isCollapsed ? "hidden lg:block" : "block"}`}>
-        <div className="p-md space-y-lg">
+        <div className="p-4 space-y-6">
           {/* 
             ─────────────────────────────────────────────────────────────────
             Section: Véhicule
@@ -373,7 +373,7 @@ export function AdvancedFilters({
           */}
           {showVehicleFilters && (
             <section>
-              <h3 className="font-heading text-sm font-bold text-neutral-900 mb-sm flex items-center gap-xs">
+              <h3 className="font-heading text-sm font-bold text-neutral-900 mb-2 flex items-center gap-1">
                 <svg
                   className="w-4 h-4 text-secondary-500"
                   fill="none"
@@ -390,10 +390,10 @@ export function AdvancedFilters({
                 Véhicule
               </h3>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-sm">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {/* Marque */}
                 <div>
-                  <label className="block font-sans text-xs font-semibold text-neutral-700 mb-xs">
+                  <label className="block font-sans text-xs font-semibold text-neutral-700 mb-1">
                     Marque
                   </label>
                   <Select
@@ -413,7 +413,7 @@ export function AdvancedFilters({
 
                 {/* Modèle */}
                 <div>
-                  <label className="block font-sans text-xs font-semibold text-neutral-700 mb-xs">
+                  <label className="block font-sans text-xs font-semibold text-neutral-700 mb-1">
                     Modèle
                   </label>
                   <Input
@@ -428,7 +428,7 @@ export function AdvancedFilters({
 
                 {/* Année */}
                 <div>
-                  <label className="block font-sans text-xs font-semibold text-neutral-700 mb-xs">
+                  <label className="block font-sans text-xs font-semibold text-neutral-700 mb-1">
                     Année
                   </label>
                   <Input
@@ -449,7 +449,7 @@ export function AdvancedFilters({
 
                 {/* Moteur */}
                 <div>
-                  <label className="block font-sans text-xs font-semibold text-neutral-700 mb-xs">
+                  <label className="block font-sans text-xs font-semibold text-neutral-700 mb-1">
                     Moteur
                   </label>
                   <Input
@@ -472,7 +472,7 @@ export function AdvancedFilters({
             ─────────────────────────────────────────────────────────────────
           */}
           <section>
-            <h3 className="font-heading text-sm font-bold text-neutral-900 mb-sm flex items-center gap-xs">
+            <h3 className="font-heading text-sm font-bold text-neutral-900 mb-2 flex items-center gap-1">
               <svg
                 className="w-4 h-4 text-secondary-500"
                 fill="none"
@@ -489,10 +489,10 @@ export function AdvancedFilters({
               Produit
             </h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-sm">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {/* Catégorie */}
               <div>
-                <label className="block font-sans text-xs font-semibold text-neutral-700 mb-xs">
+                <label className="block font-sans text-xs font-semibold text-neutral-700 mb-1">
                   Catégorie
                 </label>
                 <Select
@@ -512,7 +512,7 @@ export function AdvancedFilters({
 
               {/* Référence OEM */}
               <div>
-                <label className="block font-sans text-xs font-semibold text-neutral-700 mb-xs">
+                <label className="block font-sans text-xs font-semibold text-neutral-700 mb-1">
                   Référence OEM
                 </label>
                 <Input
@@ -535,7 +535,7 @@ export function AdvancedFilters({
           */}
           {showPriceFilter && (
             <section>
-              <h3 className="font-heading text-sm font-bold text-neutral-900 mb-sm flex items-center gap-xs">
+              <h3 className="font-heading text-sm font-bold text-neutral-900 mb-2 flex items-center gap-1">
                 <svg
                   className="w-4 h-4 text-secondary-500"
                   fill="none"
@@ -552,10 +552,10 @@ export function AdvancedFilters({
                 Prix (€)
               </h3>
 
-              <div className="grid grid-cols-2 gap-sm">
+              <div className="grid grid-cols-2 gap-2">
                 {/* Prix min */}
                 <div>
-                  <label className="block font-sans text-xs font-semibold text-neutral-700 mb-xs">
+                  <label className="block font-sans text-xs font-semibold text-neutral-700 mb-1">
                     Minimum
                   </label>
                   <Input
@@ -576,7 +576,7 @@ export function AdvancedFilters({
 
                 {/* Prix max */}
                 <div>
-                  <label className="block font-sans text-xs font-semibold text-neutral-700 mb-xs">
+                  <label className="block font-sans text-xs font-semibold text-neutral-700 mb-1">
                     Maximum
                   </label>
                   <Input
@@ -605,11 +605,11 @@ export function AdvancedFilters({
           */}
           {showStockFilter && (
             <section>
-              <h3 className="font-heading text-sm font-bold text-neutral-900 mb-sm">
+              <h3 className="font-heading text-sm font-bold text-neutral-900 mb-2">
                 Options
               </h3>
 
-              <div className="space-y-sm">
+              <div className="space-y-2">
                 {/* Stock uniquement */}
                 <Checkbox
                   checked={localValues.inStockOnly || false}
@@ -639,10 +639,10 @@ export function AdvancedFilters({
           FOOTER (Boutons Appliquer + Reset)
           ═════════════════════════════════════════════════════════════════
         */}
-        <div className="border-t border-neutral-200 p-md bg-neutral-50">
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-sm">
+        <div className="border-t border-neutral-200 p-4 bg-neutral-50">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
             {/* Bouton Appliquer (Primary) */}
-            <Button onClick={handleApply} className="flex-1 gap-sm">
+            <Button onClick={handleApply} className="flex-1 gap-2">
               <svg
                 className="w-5 h-5"
                 fill="none"
@@ -658,7 +658,7 @@ export function AdvancedFilters({
               </svg>
               <span>Appliquer les filtres</span>
               {hasActiveFilters && (
-                <span className="bg-primary-foreground/20 px-xs py-xs rounded-full font-mono text-xs">
+                <span className="bg-primary-foreground/20 px-1 py-1 rounded-full font-mono text-xs">
                   {activeTags.length}
                 </span>
               )}
@@ -669,7 +669,7 @@ export function AdvancedFilters({
               <Button
                 variant="outline"
                 onClick={handleReset}
-                className="gap-sm"
+                className="gap-2"
               >
                 <svg
                   className="w-5 h-5"

@@ -231,7 +231,7 @@ export function QuickCartDrawer({
         aria-labelledby="cart-drawer-title"
       >
         {/* Header */}
-        <div className="bg-neutral-900 text-white px-md py-md flex items-center justify-between">
+        <div className="bg-neutral-900 text-white px-4 py-4 flex items-center justify-between">
           <div>
             <h2
               id="cart-drawer-title"
@@ -239,14 +239,14 @@ export function QuickCartDrawer({
             >
               Mon Panier
             </h2>
-            <p className="font-sans text-sm text-neutral-300 mt-xs">
+            <p className="font-sans text-sm text-neutral-300 mt-1">
               {itemCount} {itemCount > 1 ? "articles" : "article"}
             </p>
           </div>
 
           <button
             onClick={handleClose}
-            className="p-sm hover:bg-neutral-800 rounded-lg transition-colors"
+            className="p-2 hover:bg-neutral-800 rounded-lg transition-colors"
             aria-label="Fermer le panier"
           >
             <svg
@@ -267,7 +267,7 @@ export function QuickCartDrawer({
 
         {/* Alerte véhicule configuré */}
         {savedVehicle && (
-          <div className="bg-success-50 border-b border-success-200 px-md py-sm">
+          <div className="bg-success-50 border-b border-success-200 px-4 py-2">
             <p className="font-sans text-xs text-success-800">
               <strong className="font-heading">✓ Véhicule:</strong>{" "}
               {savedVehicle.brand} {savedVehicle.model} {savedVehicle.engine} (
@@ -278,7 +278,7 @@ export function QuickCartDrawer({
 
         {/* Alerte incompatibilités */}
         {hasIncompatibleItems && (
-          <div className="bg-error-50 border-b border-error-200 px-md py-sm">
+          <div className="bg-error-50 border-b border-error-200 px-4 py-2">
             <p className="font-sans text-xs text-error-800">
               <strong className="font-heading">⚠ Attention:</strong>{" "}
               {incompatibleCount}{" "}
@@ -291,11 +291,11 @@ export function QuickCartDrawer({
         )}
 
         {/* Liste produits (scrollable) */}
-        <div className="flex-1 overflow-y-auto px-md py-md">
+        <div className="flex-1 overflow-y-auto px-4 py-4">
           {items.length === 0 ? (
-            <div className="text-center py-2xl">
-              <div className="text-6xl mb-md">🛒</div>
-              <p className="font-heading text-lg font-bold text-neutral-900 mb-sm">
+            <div className="text-center py-10">
+              <div className="text-6xl mb-4">🛒</div>
+              <p className="font-heading text-lg font-bold text-neutral-900 mb-2">
                 Votre panier est vide
               </p>
               <p className="font-sans text-sm text-neutral-600">
@@ -303,16 +303,16 @@ export function QuickCartDrawer({
               </p>
             </div>
           ) : (
-            <div className="space-y-md">
+            <div className="space-y-4">
               {items.map((item) => (
                 <div
                   key={item.id}
                   className={`
-                    bg-neutral-50 rounded-lg p-sm border-2 transition-colors
+                    bg-neutral-50 rounded-lg p-2 border-2 transition-colors
                     ${item.isCompatible ? "border-success-200" : "border-error-200"}
                   `}
                 >
-                  <div className="flex gap-sm">
+                  <div className="flex gap-2">
                     {/* Image */}
                     <img
                       src={item.imageUrl}
@@ -323,31 +323,31 @@ export function QuickCartDrawer({
                     {/* Infos */}
                     <div className="flex-1 min-w-0">
                       {/* Nom + Badge compatibilité */}
-                      <div className="flex items-start justify-between gap-xs mb-xs">
+                      <div className="flex items-start justify-between gap-1 mb-1">
                         <h3 className="font-heading text-sm font-bold text-neutral-900 line-clamp-2">
                           {item.name}
                         </h3>
 
                         {item.isCompatible ? (
-                          <span className="px-xs py-xs bg-success-500 text-white text-xs font-heading font-semibold rounded whitespace-nowrap">
+                          <span className="px-1 py-1 bg-success-500 text-white text-xs font-heading font-semibold rounded whitespace-nowrap">
                             ✓ OK
                           </span>
                         ) : (
-                          <span className="px-xs py-xs bg-error-500 text-white text-xs font-heading font-semibold rounded whitespace-nowrap">
+                          <span className="px-1 py-1 bg-error-500 text-white text-xs font-heading font-semibold rounded whitespace-nowrap">
                             ⚠ Non
                           </span>
                         )}
                       </div>
 
                       {/* Réf OEM */}
-                      <p className="font-mono text-xs text-neutral-600 mb-sm">
+                      <p className="font-mono text-xs text-neutral-600 mb-2">
                         Réf. {item.oemRef}
                       </p>
 
                       {/* Prix + Quantité */}
                       <div className="flex items-center justify-between">
                         {/* Quantité */}
-                        <div className="flex items-center gap-xs">
+                        <div className="flex items-center gap-1">
                           <button
                             onClick={() =>
                               handleDecrement(item.id, item.quantity)
@@ -393,7 +393,7 @@ export function QuickCartDrawer({
                   {/* Bouton supprimer */}
                   <button
                     onClick={() => onRemoveItem(item.id)}
-                    className="w-full mt-sm px-sm py-xs bg-neutral-200 hover:bg-error-100 text-neutral-700 hover:text-error-700 rounded-lg font-sans text-xs font-semibold transition-colors"
+                    className="w-full mt-2 px-2 py-1 bg-neutral-200 hover:bg-error-100 text-neutral-700 hover:text-error-700 rounded-lg font-sans text-xs font-semibold transition-colors"
                   >
                     Supprimer
                   </button>
@@ -405,10 +405,10 @@ export function QuickCartDrawer({
 
         {/* Footer (toujours visible) */}
         {items.length > 0 && (
-          <div className="border-t border-neutral-200 bg-white px-md py-md space-y-md">
+          <div className="border-t border-neutral-200 bg-white px-4 py-4 space-y-4">
             {/* 🚚 Barre de progression livraison gratuite */}
             {!isFreeShipping && (
-              <div className="bg-secondary-50 rounded-lg p-sm space-y-xs">
+              <div className="bg-secondary-50 rounded-lg p-2 space-y-1">
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-heading font-bold text-secondary-700">
                     🚚 Livraison gratuite dès 50€
@@ -427,7 +427,7 @@ export function QuickCartDrawer({
             )}
 
             {isFreeShipping && selectedDeliveryId === "standard" && (
-              <div className="bg-success-50 border-2 border-success-500 rounded-lg p-sm">
+              <div className="bg-success-50 border-2 border-success-500 rounded-lg p-2">
                 <p className="font-heading text-sm font-bold text-success-700 text-center">
                   ✅ Livraison gratuite débloquée !
                 </p>
@@ -436,15 +436,15 @@ export function QuickCartDrawer({
 
             {/* Options livraison */}
             <div>
-              <h3 className="font-heading text-sm font-bold text-neutral-900 mb-sm">
+              <h3 className="font-heading text-sm font-bold text-neutral-900 mb-2">
                 Livraison
               </h3>
-              <div className="space-y-xs">
+              <div className="space-y-1">
                 {deliveryOptions.map((option) => (
                   <label
                     key={option.id}
                     className={`
-                      flex items-center justify-between p-sm rounded-lg cursor-pointer transition-colors
+                      flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors
                       ${
                         selectedDeliveryId === option.id
                           ? "bg-secondary-50 border-2 border-secondary-500"
@@ -452,7 +452,7 @@ export function QuickCartDrawer({
                       }
                     `}
                   >
-                    <div className="flex items-center gap-sm">
+                    <div className="flex items-center gap-2">
                       <input
                         type="radio"
                         name="delivery"
@@ -491,7 +491,7 @@ export function QuickCartDrawer({
             </div>
 
             {/* Résumé prix */}
-            <div className="space-y-xs">
+            <div className="space-y-1">
               {/* Sous-total */}
               <div className="flex items-center justify-between font-sans text-sm">
                 <span className="text-neutral-600">
@@ -513,7 +513,7 @@ export function QuickCartDrawer({
               </div>
 
               {/* Total */}
-              <div className="flex items-center justify-between pt-sm border-t border-neutral-300">
+              <div className="flex items-center justify-between pt-2 border-t border-neutral-300">
                 <span className="font-heading text-lg font-bold text-neutral-900">
                   Total
                 </span>
@@ -524,19 +524,19 @@ export function QuickCartDrawer({
             </div>
 
             {/* 🎁 Produits recommandés */}
-            <div className="mt-md">
-              <h3 className="font-heading text-sm font-bold text-neutral-900 mb-sm">
+            <div className="mt-4">
+              <h3 className="font-heading text-sm font-bold text-neutral-900 mb-2">
                 Vous aimerez aussi
               </h3>
-              <div className="grid grid-cols-3 gap-xs">
+              <div className="grid grid-cols-3 gap-1">
                 {/* Placeholder - Les vraies données viennent de l'API */}
                 {[1, 2, 3].map((i) => (
                   <div
                     key={i}
-                    className="bg-neutral-50 rounded p-xs border border-neutral-200 hover:border-primary-300 cursor-pointer transition-colors"
+                    className="bg-neutral-50 rounded p-1 border border-neutral-200 hover:border-primary-300 cursor-pointer transition-colors"
                   >
-                    <div className="aspect-square bg-neutral-200 rounded mb-xs" />
-                    <p className="text-xs font-semibold text-neutral-900 line-clamp-2 mb-xs">
+                    <div className="aspect-square bg-neutral-200 rounded mb-1" />
+                    <p className="text-xs font-semibold text-neutral-900 line-clamp-2 mb-1">
                       Produit {i}
                     </p>
                     <p className="text-xs font-mono font-bold text-primary-600">
@@ -550,7 +550,7 @@ export function QuickCartDrawer({
             {/* CTA Commander */}
             <button
               onClick={handleCheckout}
-              className="w-full py-md bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-heading text-base font-bold transition-colors shadow-lg hover:shadow-xl"
+              className="w-full py-4 bg-primary-500 hover:bg-primary-600 text-white rounded-lg font-heading text-base font-bold transition-colors shadow-lg hover:shadow-xl"
             >
               Commander
             </button>
@@ -558,7 +558,7 @@ export function QuickCartDrawer({
             {/* Continuer shopping */}
             <button
               onClick={handleClose}
-              className="w-full py-sm text-neutral-600 hover:text-neutral-900 font-sans text-sm font-semibold transition-colors"
+              className="w-full py-2 text-neutral-600 hover:text-neutral-900 font-sans text-sm font-semibold transition-colors"
             >
               Continuer mes achats
             </button>
