@@ -709,7 +709,7 @@ export default function BlogPiecesAutoIndex() {
                         className="flex items-start gap-3 p-4 rounded-xl"
                         variant="success"
                       >
-                        <div className="w-6 h-6 rounded-full bg-success flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <div className="w-6 h-6 rounded-full bg-success flex items-center justify-center shrink-0 mt-0.5">
                           <svg
                             className="w-3 h-3 text-white"
                             fill="currentColor"
@@ -736,7 +736,7 @@ export default function BlogPiecesAutoIndex() {
                         className="flex items-start gap-3 p-4 rounded-xl"
                         variant="info"
                       >
-                        <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center shrink-0 mt-0.5">
                           <svg
                             className="w-3 h-3 text-white"
                             fill="currentColor"
@@ -763,7 +763,7 @@ export default function BlogPiecesAutoIndex() {
                         className="flex items-start gap-3 p-4 rounded-xl"
                         variant="default"
                       >
-                        <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center shrink-0 mt-0.5">
                           <svg
                             className="w-3 h-3 text-white"
                             fill="currentColor"

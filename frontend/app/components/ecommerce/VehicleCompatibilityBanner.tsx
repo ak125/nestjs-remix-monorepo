@@ -94,7 +94,7 @@ export const VehicleCompatibilityBanner: React.FC<VehicleCompatibilityBannerProp
           {/* Message principal */}
           <div className="flex items-center gap-sm flex-1 min-w-0">
             {/* Icône */}
-            <span className="text-2xl flex-shrink-0" aria-hidden="true">
+            <span className="text-2xl shrink-0" aria-hidden="true">
               {iconEmoji}
             </span>
 
@@ -129,7 +129,7 @@ export const VehicleCompatibilityBanner: React.FC<VehicleCompatibilityBannerProp
                 font-heading text-sm
                 px-md py-sm rounded-md
                 transition-colors duration-200
-                flex-shrink-0
+                shrink-0
                 border border-transparent hover:border-neutral-300
               "
               aria-label="Changer de véhicule"

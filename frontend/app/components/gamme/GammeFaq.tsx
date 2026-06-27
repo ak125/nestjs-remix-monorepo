@@ -45,7 +45,7 @@ export default function GammeFaq({ items, h2Override }: GammeFaqProps) {
                   className="w-full p-4 text-left flex items-center gap-3 text-[13px] font-semibold text-slate-800"
                 >
                   <div
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
                       isOpen
                         ? "bg-blue-100 text-blue-600"
                         : "bg-slate-100 text-blue-900"
@@ -58,7 +58,7 @@ export default function GammeFaq({ items, h2Override }: GammeFaqProps) {
                   </span>
                   <Plus
                     size={16}
-                    className={`flex-shrink-0 transition-transform duration-300 ${
+                    className={`shrink-0 transition-transform duration-300 ${
                       isOpen ? "rotate-45 text-blue-500" : "text-slate-400"
                     }`}
                   />

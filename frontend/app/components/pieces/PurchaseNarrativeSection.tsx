@@ -50,7 +50,7 @@ export const PurchaseNarrativeSection = memo(function PurchaseNarrativeSection({
       <CardHeader className="pb-3">
         <h2 className="text-xl sm:text-2xl md:text-[28px] font-bold tracking-tight text-slate-900 flex items-center gap-3">
           <span
-            className="flex-shrink-0 w-10 h-10 rounded-full bg-navy text-white flex items-center justify-center"
+            className="shrink-0 w-10 h-10 rounded-full bg-navy text-white flex items-center justify-center"
             aria-hidden="true"
           >
             <Info className="w-5 h-5" />
@@ -62,7 +62,7 @@ export const PurchaseNarrativeSection = memo(function PurchaseNarrativeSection({
         {/* Bloc 1: Role + pieces liees */}
         <div className="flex gap-4 p-4 bg-white rounded-lg border border-slate-200">
           <div
-            className="flex-shrink-0 w-10 h-10 rounded-full bg-navy/10 text-navy flex items-center justify-center font-bold"
+            className="shrink-0 w-10 h-10 rounded-full bg-navy/10 text-navy flex items-center justify-center font-bold"
             aria-hidden="true"
           >
             1
@@ -91,7 +91,7 @@ export const PurchaseNarrativeSection = memo(function PurchaseNarrativeSection({
         {/* Bloc 2: Risques + cout */}
         <div className="flex gap-4 p-4 bg-white rounded-lg border border-red-200">
           <div
-            className="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 text-red-700 flex items-center justify-center font-bold"
+            className="shrink-0 w-10 h-10 rounded-full bg-red-100 text-red-700 flex items-center justify-center font-bold"
             aria-hidden="true"
           >
             <AlertTriangle className="w-5 h-5" />
@@ -132,7 +132,7 @@ export const PurchaseNarrativeSection = memo(function PurchaseNarrativeSection({
         {/* Bloc 3: Timing */}
         <div className="flex gap-4 p-4 bg-white rounded-lg border border-slate-200">
           <div
-            className="flex-shrink-0 w-10 h-10 rounded-full bg-cta/10 text-cta flex items-center justify-center font-bold"
+            className="shrink-0 w-10 h-10 rounded-full bg-cta/10 text-cta flex items-center justify-center font-bold"
             aria-hidden="true"
           >
             <Clock className="w-5 h-5" />
@@ -188,7 +188,7 @@ export const PurchaseNarrativeSection = memo(function PurchaseNarrativeSection({
               {steps.map((step, i) => (
                 <div key={i} className="flex items-center gap-1.5">
                   <span
-                    className="flex-shrink-0 w-6 h-6 rounded-full bg-navy text-white flex items-center justify-center text-xs font-bold"
+                    className="shrink-0 w-6 h-6 rounded-full bg-navy text-white flex items-center justify-center text-xs font-bold"
                     aria-hidden="true"
                   >
                     {i + 1}

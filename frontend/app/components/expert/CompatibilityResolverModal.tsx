@@ -84,7 +84,7 @@ function HelpCard({
   return (
     <div className="bg-slate-50 rounded-lg p-3 border border-slate-200">
       <div className="flex items-start gap-2">
-        <Info className="h-4 w-4 text-slate-400 mt-0.5 flex-shrink-0" />
+        <Info className="h-4 w-4 text-slate-400 mt-0.5 shrink-0" />
         <div>
           <div className="text-xs font-medium text-slate-700">{title}</div>
           <div className="text-xs text-slate-500 mt-0.5">{description}</div>

@@ -148,7 +148,7 @@ export const DecisionGridSection = memo(function DecisionGridSection({
                   <div key={node.id} className="relative">
                     {/* Question */}
                     <div className="flex items-start gap-3 mb-2">
-                      <span className="flex-shrink-0 w-7 h-7 rounded-full bg-slate-700 text-white flex items-center justify-center text-xs font-bold mt-0.5">
+                      <span className="shrink-0 w-7 h-7 rounded-full bg-slate-700 text-white flex items-center justify-center text-xs font-bold mt-0.5">
                         {nodeIdx + 1}
                       </span>
                       <p className="font-medium text-slate-900 text-base leading-relaxed">
@@ -170,7 +170,7 @@ export const DecisionGridSection = memo(function DecisionGridSection({
                             key={optIdx}
                             className="flex items-start gap-2 text-sm"
                           >
-                            <ArrowRight className="w-4 h-4 text-slate-400 mt-0.5 flex-shrink-0" />
+                            <ArrowRight className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
                             <div className="flex flex-wrap items-center gap-2">
                               <span className="font-medium text-slate-800">
                                 {opt.label}

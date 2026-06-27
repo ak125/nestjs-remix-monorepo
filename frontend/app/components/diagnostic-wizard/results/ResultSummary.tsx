@@ -60,7 +60,7 @@ export function ResultSummary({
                 key={i}
                 className="flex items-start gap-2 text-sm text-gray-700"
               >
-                <CheckCircle2 className="w-3.5 h-3.5 mt-0.5 text-green-500 flex-shrink-0" />
+                <CheckCircle2 className="w-3.5 h-3.5 mt-0.5 text-green-500 shrink-0" />
                 {fact}
               </li>
             ))}

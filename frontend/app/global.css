@@ -118,8 +118,8 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-body);
-    font-size: var(--font-size-base);
+    font-family: var(--am-font-body, 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif);
+    font-size: var(--am-font-size-base);
     line-height: var(--line-height-relaxed); /* 1.6 */
     /* Évite CLS lors de l'ouverture de modals (scrollbar disparaît) */
     scrollbar-gutter: stable;
@@ -139,22 +139,22 @@
 
   /* Headings avec échelles fluides */
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-heading);
+    font-family: var(--am-font-heading, 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, sans-serif);
     line-height: var(--line-height-tight); /* 1.2 */
     letter-spacing: var(--letter-spacing-tight); /* -0.025em */
     font-weight: 700;
   }
 
-  h1 { font-size: var(--font-size-fluid-5xl); }
-  h2 { font-size: var(--font-size-fluid-4xl); }
-  h3 { font-size: var(--font-size-fluid-3xl); }
-  h4 { font-size: var(--font-size-fluid-2xl); }
-  h5 { font-size: var(--font-size-fluid-xl); }
-  h6 { font-size: var(--font-size-fluid-lg); }
+  h1 { font-size: var(--am-font-size-fluid-5xl); }
+  h2 { font-size: var(--am-font-size-fluid-4xl); }
+  h3 { font-size: var(--am-font-size-fluid-3xl); }
+  h4 { font-size: var(--am-font-size-fluid-2xl); }
+  h5 { font-size: var(--am-font-size-fluid-xl); }
+  h6 { font-size: var(--am-font-size-fluid-lg); }
 
   /* Code et données */
   code, kbd, samp, pre {
-    font-family: var(--font-data);
+    font-family: var(--am-font-data, ui-monospace, 'SF Mono', 'Cascadia Code', 'Roboto Mono', Consolas, monospace);
     font-variant-numeric: tabular-nums slashed-zero;
   }
 
@@ -229,7 +229,7 @@
   /* Contenu éditorial gamme R1 (sg_content avec H2, ul, details) */
   .gamme-editorial h2 {
     @apply text-[18px] lg:text-[22px] font-bold text-slate-900 tracking-tight mt-8 mb-3;
-    font-family: var(--font-heading, 'Outfit', sans-serif);
+    font-family: var(--am-font-heading, 'Outfit', sans-serif);
   }
   .gamme-editorial h2:first-child {
     @apply mt-0;

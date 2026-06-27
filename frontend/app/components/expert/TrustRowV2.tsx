@@ -195,7 +195,7 @@ function TrustBadgeV2Component({
       {/* Icon with pulse effect on highlight */}
       <div
         className={cn(
-          "flex-shrink-0 transition-transform duration-200",
+          "shrink-0 transition-transform duration-200",
           isHovered && "scale-110",
         )}
         style={{ color: colors.icon }}

@@ -386,7 +386,7 @@ const VehicleSelector = memo(function VehicleSelector({
         data-nosnippet
         data-noindex
       >
-        <Car className="hidden sm:block w-5 h-5 text-cta flex-shrink-0" />
+        <Car className="hidden sm:block w-5 h-5 text-cta shrink-0" />
 
         {/* Marque */}
         <select
@@ -871,7 +871,7 @@ const VehicleSelector = memo(function VehicleSelector({
               {/* Aide */}
               <div className="bg-muted border border-purple-200 rounded-lg p-4">
                 <div className="flex items-start gap-3">
-                  <FileText className="w-5 h-5 text-foreground mt-0.5 flex-shrink-0" />
+                  <FileText className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
                   <div className="text-sm text-foreground">
                     <p className="font-medium mb-1">
                       Le Type Mine se trouve sur votre carte grise

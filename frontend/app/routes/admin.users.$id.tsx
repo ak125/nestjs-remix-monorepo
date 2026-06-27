@@ -695,7 +695,7 @@ export default function UserDetails() {
                 >
                   <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                     {/* Gauche: ID et Date */}
-                    <div className="flex-shrink-0">
+                    <div className="shrink-0">
                       <div className="flex items-center gap-3 mb-2">
                         <span className="font-mono text-sm font-semibold text-gray-900 bg-gray-100 px-3 py-1 rounded-md">
                           #{order.id}
@@ -749,7 +749,7 @@ export default function UserDetails() {
                     )}
 
                     {/* Droite: Montant et Actions */}
-                    <div className="flex-shrink-0 flex flex-col items-end gap-3">
+                    <div className="shrink-0 flex flex-col items-end gap-3">
                       <div className="text-right">
                         <div className="text-xs text-gray-500 uppercase font-semibold mb-1">
                           Montant

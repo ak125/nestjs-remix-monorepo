@@ -69,25 +69,25 @@ function renderTokensCss(t) {
   L.push("/**", " * 🎨 Design Tokens - Auto-généré", " * ⚠️  NE PAS MODIFIER MANUELLEMENT", " * Source: src/tokens.json", " */", "", ":root {", "");
   L.push("  /* Colors */");
   for (const { path, val } of leaves(t.color)) {
-    const name = "color-" + path.join("-");
+    const name = "am-color-" + path.join("-");
     L.push(`  --${name}: ${val};`);
     L.push(`  --${name}-contrast: ${getContrastColor(val)};`);
   }
   const flat = (node, prefix) => leaves(node).map(({ path, val }) => `  --${prefix}${path.join("-")}: ${val};`);
-  L.push("", "  /* Spacing */", ...flat(t.spacing, "spacing-"));
-  L.push("", "  /* Spacing Fluid (Responsive) */", ...flat(t.spacingFluid, "spacing-fluid-"));
-  L.push("", "  /* Layout */", "", "  /* Container Max-Widths */", ...flat(t.layout.container, "container-"));
+  L.push("", "  /* Spacing */", ...flat(t.spacing, "am-spacing-"));
+  L.push("", "  /* Spacing Fluid (Responsive) */", ...flat(t.spacingFluid, "am-spacing-fluid-"));
+  L.push("", "  /* Layout */", "", "  /* Container Max-Widths */", ...flat(t.layout.container, "am-container-"));
   L.push("", "  /* Grid System */", ...flat(t.layout.grid.columns, "grid-columns-"), ...flat(t.layout.grid.gutter, "grid-gutter-"));
-  L.push("", "  /* Breakpoints */", ...flat(t.layout.breakpoints, "breakpoint-"));
+  L.push("", "  /* Breakpoints */", ...flat(t.layout.breakpoints, "am-breakpoint-"));
   L.push("", "  /* Typography */",
-    ...flat(t.typography.fontFamily, "font-"),
-    ...flat(t.typography.fontSize, "font-size-"),
-    ...flat(t.typography.fontSizeFluid, "font-size-fluid-"),
+    ...flat(t.typography.fontFamily, "am-font-"),
+    ...flat(t.typography.fontSize, "am-font-size-"),
+    ...flat(t.typography.fontSizeFluid, "am-font-size-fluid-"),
     ...flat(t.typography.lineHeight, "line-height-"),
     ...flat(t.typography.letterSpacing, "letter-spacing-"),
     ...flat(t.typography.maxWidth, "max-width-"));
-  L.push("", "  /* Shadows */", ...flat(t.shadows, "shadow-"));
-  L.push("", "  /* Border Radius */", ...flat(t.borderRadius, "radius-"));
+  L.push("", "  /* Shadows */", ...flat(t.shadows, "am-shadow-"));
+  L.push("", "  /* Border Radius */", ...flat(t.borderRadius, "am-radius-"));
   L.push("", "  /* Z-Index */", ...flat(t.zIndex, "z-"));
   L.push("", "  /* Transitions */", ...flat(t.transitions, "transition-"));
   L.push("}", "");

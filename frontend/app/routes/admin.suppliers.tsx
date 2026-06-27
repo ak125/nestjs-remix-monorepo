@@ -201,7 +201,7 @@ export default function AdminSuppliersLayout() {
 
       {apiError && (
         <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-lg p-3 mb-6 text-sm flex items-center gap-2">
-          <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+          <AlertTriangle className="h-4 w-4 shrink-0" />
           {apiError}
         </div>
       )}

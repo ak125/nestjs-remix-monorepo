@@ -72,7 +72,7 @@ export function DiagnosticSection({ articles }: DiagnosticSectionProps) {
                 <Card className="h-full border border-orange-200 hover:border-orange-400 hover:shadow-lg transition-all bg-white">
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between gap-2 mb-2">
-                      <Badge className="bg-orange-100 text-orange-700 text-xs flex-shrink-0">
+                      <Badge className="bg-orange-100 text-orange-700 text-xs shrink-0">
                         Diagnostic
                       </Badge>
                       <span className="text-xs text-gray-400 flex items-center gap-1">

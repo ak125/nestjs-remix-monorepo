@@ -696,7 +696,7 @@ export default function VideoHubDashboard() {
                     </p>
                   </div>
                   {i < 4 && (
-                    <ChevronRight className="h-4 w-4 text-gray-300 mt-4 hidden md:block flex-shrink-0" />
+                    <ChevronRight className="h-4 w-4 text-gray-300 mt-4 hidden md:block shrink-0" />
                   )}
                 </div>
               );

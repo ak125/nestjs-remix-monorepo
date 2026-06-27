@@ -533,7 +533,7 @@ export default function BlogConseilsIndex() {
                             to={getArticleUrl(article)}
                             className="text-sm text-gray-700 hover:text-primary hover:underline flex items-start gap-1.5"
                           >
-                            <ArrowRight className="h-3.5 w-3.5 mt-0.5 flex-shrink-0 text-gray-400" />
+                            <ArrowRight className="h-3.5 w-3.5 mt-0.5 shrink-0 text-gray-400" />
                             <span className="line-clamp-1">
                               {article.title}
                             </span>
@@ -797,7 +797,7 @@ export default function BlogConseilsIndex() {
                   key={i}
                   className="flex items-start gap-3 rounded-lg bg-white p-4 border border-amber-200/60"
                 >
-                  <div className="w-6 h-6 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+                  <div className="w-6 h-6 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
                     {i + 1}
                   </div>
                   <p className="text-sm text-gray-700 leading-relaxed">

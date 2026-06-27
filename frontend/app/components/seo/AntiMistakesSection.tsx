@@ -49,7 +49,7 @@ export const AntiMistakesSection = memo(function AntiMistakesSection({
                   key={index}
                   className="flex items-start gap-3 p-3 bg-white rounded-lg border border-rose-200"
                 >
-                  <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-rose-100 text-rose-700 text-sm font-bold">
+                  <span className="shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-rose-100 text-rose-700 text-sm font-bold">
                     !
                   </span>
                   <span className="text-gray-700">{item}</span>

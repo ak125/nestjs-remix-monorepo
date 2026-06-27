@@ -143,7 +143,7 @@ export function CheckoutPaiementSection({
       <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl p-4">
         <div className="flex items-center gap-3">
           <svg
-            className="h-5 w-5 text-emerald-600 flex-shrink-0"
+            className="h-5 w-5 text-emerald-600 shrink-0"
             fill="currentColor"
             viewBox="0 0 20 20"
           >
@@ -169,7 +169,7 @@ export function CheckoutPaiementSection({
       {vehicleLabel && (
         <div className="flex items-center gap-2 rounded-lg bg-emerald-50 border border-emerald-100 px-3 py-2">
           <svg
-            className="h-4 w-4 text-emerald-600 flex-shrink-0"
+            className="h-4 w-4 text-emerald-600 shrink-0"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"

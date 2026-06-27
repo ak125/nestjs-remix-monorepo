@@ -484,7 +484,7 @@ export const SearchBar = memo(function SearchBar({
                   "border-b border-gray-100 last:border-b-0",
                 )}
               >
-                <div className="flex-shrink-0 mr-3">{suggestion.icon}</div>
+                <div className="shrink-0 mr-3">{suggestion.icon}</div>
 
                 <div className="flex-1 min-w-0">
                   <div className="font-medium text-gray-900 truncate">

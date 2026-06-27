@@ -77,7 +77,7 @@ export function R6BrandsGuide({ brandsGuide, gammeName }: Props) {
                 <ul className="space-y-1 text-sm text-gray-600">
                   {tier.quality_signals.map((signal, j) => (
                     <li key={j} className="flex items-start gap-2">
-                      <Shield className="w-3.5 h-3.5 text-emerald-500 mt-0.5 flex-shrink-0" />
+                      <Shield className="w-3.5 h-3.5 text-emerald-500 mt-0.5 shrink-0" />
                       <span>{signal}</span>
                     </li>
                   ))}

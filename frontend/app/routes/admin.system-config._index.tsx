@@ -449,7 +449,7 @@ function OverviewPanel({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <Database className="h-8 w-8 text-blue-600" />
             </div>
             <div className="ml-4">
@@ -468,7 +468,7 @@ function OverviewPanel({
 
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <BarChart3 className="h-8 w-8 text-green-600" />
             </div>
             <div className="ml-4">
@@ -483,7 +483,7 @@ function OverviewPanel({
 
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <Mail className="h-8 w-8 text-foreground" />
             </div>
             <div className="ml-4">
@@ -498,7 +498,7 @@ function OverviewPanel({
 
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <Shield className="h-8 w-8 text-red-600" />
             </div>
             <div className="ml-4">
