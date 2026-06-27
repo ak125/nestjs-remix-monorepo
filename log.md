@@ -471,3 +471,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/wiki-exports-seo-generate-ci`
 - **Décision** : feat(ci): generate exports/seo from wiki canon + commit back (ADR-059 PR-5a)
 - **Sortie** : PR #1174 | commits c7ee94b18
+
+## 2026-06-27 — feat/wiki-exports-seo-generate-ci (auto)
+
+- **Branche** : `feat/wiki-exports-seo-generate-ci`
+- **Décision** : fix(ci): exports-seo generator — ajv-formats, untracked+deletion gate, gitignore assert (review) (+2 other commits)
+- **Sortie** : PR #1174 | commits f84c8af9d ad8e84d0a c7ee94b18
