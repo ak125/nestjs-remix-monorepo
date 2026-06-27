@@ -348,7 +348,7 @@ export default function AdminProducts() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                          <div className="flex-shrink-0 h-8 w-8">
+                          <div className="shrink-0 h-8 w-8">
                             <div className="h-8 w-8 rounded-md bg-gray-200 flex items-center justify-center">
                               <span className="text-xs">📦</span>
                             </div>

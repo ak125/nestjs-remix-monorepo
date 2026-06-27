@@ -76,7 +76,7 @@ const GuideSection = memo(function GuideSection({
 
             <div className="relative flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                <div className="w-12 h-12 bg-white/20 backdrop-blur-xs rounded-xl flex items-center justify-center">
                   <BookOpen className="w-6 h-6 text-white" />
                 </div>
                 <div>
@@ -89,7 +89,7 @@ const GuideSection = memo(function GuideSection({
                 </div>
               </div>
 
-              <div className="hidden md:flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
+              <div className="hidden md:flex items-center gap-2 bg-white/20 backdrop-blur-xs px-4 py-2 rounded-full">
                 <Sparkles className="w-4 h-4 text-white" />
                 <span className="text-white text-sm font-medium">
                   Conseils Pro

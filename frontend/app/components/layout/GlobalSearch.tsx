@@ -321,7 +321,7 @@ export const GlobalSearch = memo(function GlobalSearch({
   );
 
   return (
-    <div className="fixed inset-0 z-50 bg-neutral-900/50 backdrop-blur-sm flex items-start justify-center pt-[10vh] animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 bg-neutral-900/50 backdrop-blur-xs flex items-start justify-center pt-[10vh] animate-in fade-in duration-200">
       {/* Overlay pour fermer */}
       <div className="absolute inset-0" onClick={onClose} />
 
@@ -501,7 +501,7 @@ export const GlobalSearch = memo(function GlobalSearch({
                           >
                             <div className="flex items-center space-x-3 flex-1 min-w-0">
                               <Icon
-                                className={`w-5 h-5 flex-shrink-0 ${
+                                className={`w-5 h-5 shrink-0 ${
                                   selectedIndex === globalIndex
                                     ? "text-blue-600"
                                     : "text-gray-400"

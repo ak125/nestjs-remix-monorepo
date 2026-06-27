@@ -130,7 +130,7 @@ export default function SupportDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <div className="w-8 h-8 bg-muted rounded-md flex items-center justify-center">
                 <svg
                   className="w-5 h-5 text-blue-600"
@@ -158,7 +158,7 @@ export default function SupportDashboard() {
 
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <div className="w-8 h-8 bg-success/10 rounded-md flex items-center justify-center">
                 <svg
                   className="w-5 h-5 text-green-600"
@@ -188,7 +188,7 @@ export default function SupportDashboard() {
 
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <div className="w-8 h-8 bg-muted rounded-md flex items-center justify-center">
                 <svg
                   className="w-5 h-5 text-orange-600"
@@ -216,7 +216,7 @@ export default function SupportDashboard() {
 
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <div className="w-8 h-8 bg-muted rounded-md flex items-center justify-center">
                 <svg
                   className="w-5 h-5 text-foreground"

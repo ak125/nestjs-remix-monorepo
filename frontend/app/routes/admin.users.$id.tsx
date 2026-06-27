@@ -424,7 +424,7 @@ export default function UserDetails() {
         {/* Informations détaillées */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Informations personnelles */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
+          <div className="bg-white/80 backdrop-blur-xs rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
             <div className="flex items-center gap-2 mb-5 pb-3 border-b border-gray-200">
               <div className="p-2 bg-muted rounded-lg">
                 <User className="w-5 h-5 text-blue-600" />
@@ -545,7 +545,7 @@ export default function UserDetails() {
           </div>
 
           {/* Adresse */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
+          <div className="bg-white/80 backdrop-blur-xs rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
             <div className="flex items-center gap-2 mb-5 pb-3 border-b border-gray-200">
               <div className="p-2 bg-emerald-100 rounded-lg">
                 <MapPin className="w-5 h-5 text-emerald-600" />
@@ -601,7 +601,7 @@ export default function UserDetails() {
           </div>
 
           {/* Activité */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
+          <div className="bg-white/80 backdrop-blur-xs rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
             <div className="flex items-center gap-2 mb-5 pb-3 border-b border-gray-200">
               <div className="p-2 bg-amber-100 rounded-lg">
                 <Clock className="w-5 h-5 text-amber-600" />
@@ -673,7 +673,7 @@ export default function UserDetails() {
 
         {/* Commandes récentes */}
         {recentOrders.length > 0 && (
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
+          <div className="bg-white/80 backdrop-blur-xs rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
             <div className="flex items-center justify-between mb-5 pb-3 border-b border-gray-200">
               <div className="flex items-center gap-2">
                 <div className="p-2 bg-muted rounded-lg">
@@ -695,7 +695,7 @@ export default function UserDetails() {
                 >
                   <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                     {/* Gauche: ID et Date */}
-                    <div className="flex-shrink-0">
+                    <div className="shrink-0">
                       <div className="flex items-center gap-3 mb-2">
                         <span className="font-mono text-sm font-semibold text-gray-900 bg-gray-100 px-3 py-1 rounded-md">
                           #{order.id}
@@ -749,7 +749,7 @@ export default function UserDetails() {
                     )}
 
                     {/* Droite: Montant et Actions */}
-                    <div className="flex-shrink-0 flex flex-col items-end gap-3">
+                    <div className="shrink-0 flex flex-col items-end gap-3">
                       <div className="text-right">
                         <div className="text-xs text-gray-500 uppercase font-semibold mb-1">
                           Montant
@@ -787,7 +787,7 @@ export default function UserDetails() {
         )}
 
         {/* Actions rapides */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
+        <div className="bg-white/80 backdrop-blur-xs rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
           <h3 className="text-lg font-semibold mb-5 pb-3 border-b border-gray-200 text-gray-900">
             Actions rapides
           </h3>

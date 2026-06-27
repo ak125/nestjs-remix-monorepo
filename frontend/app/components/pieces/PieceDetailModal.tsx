@@ -174,7 +174,7 @@ export const PieceDetailModal = memo(function PieceDetailModal({
   return (
     <DialogPrimitive.Root open={isOpen} onOpenChange={handleOpenChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-neutral-900/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 duration-200" />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-neutral-900/60 backdrop-blur-xs data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 duration-200" />
         <DialogPrimitive.Content
           className="fixed inset-0 z-50 flex items-center justify-center p-4 focus:outline-none"
           aria-describedby={undefined}
@@ -194,7 +194,7 @@ export const PieceDetailModal = memo(function PieceDetailModal({
             {/* Header avec bouton fermer */}
             <div className="absolute top-4 right-4 z-20">
               <DialogPrimitive.Close
-                className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm shadow-lg hover:bg-gray-100 transition-colors flex items-center justify-center group"
+                className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-xs shadow-lg hover:bg-gray-100 transition-colors flex items-center justify-center group"
                 aria-label="Fermer"
               >
                 <X className="w-6 h-6 text-gray-600 group-hover:text-gray-900" />
@@ -358,7 +358,7 @@ export const PieceDetailModal = memo(function PieceDetailModal({
                                       className="bg-white rounded-lg px-4 py-3 border border-gray-200"
                                     >
                                       <div className="flex justify-between items-start gap-3">
-                                        <span className="text-sm font-semibold text-gray-700 flex-shrink-0">
+                                        <span className="text-sm font-semibold text-gray-700 shrink-0">
                                           {critere.name}
                                         </span>
                                         <span className="text-sm text-gray-900 font-medium text-right">
@@ -396,7 +396,7 @@ export const PieceDetailModal = memo(function PieceDetailModal({
                                 className="bg-white rounded-lg px-4 py-3 hover:shadow-md transition-shadow border border-gray-200"
                               >
                                 <div className="flex justify-between items-start gap-3">
-                                  <span className="text-sm font-semibold text-gray-700 flex-shrink-0">
+                                  <span className="text-sm font-semibold text-gray-700 shrink-0">
                                     {critere.name}
                                   </span>
                                   <span className="text-sm text-gray-900 font-medium text-right">

@@ -19,7 +19,7 @@ export default function CTAButton({ anchor, link, className = "" }: CTAButtonPro
         >
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-blue-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <div className="shrink-0 w-14 h-14 bg-gradient-to-br from-blue-600 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
                 <ShoppingCart className="w-7 h-7 text-white" />
               </div>
               <div className="flex-1">
@@ -37,7 +37,7 @@ export default function CTAButton({ anchor, link, className = "" }: CTAButtonPro
                 </p>
               </div>
             </div>
-            <div className="flex-shrink-0 w-10 h-10 bg-primary rounded-full flex items-center justify-center group-hover:bg-primary/90 transition-colors shadow-lg">
+            <div className="shrink-0 w-10 h-10 bg-primary rounded-full flex items-center justify-center group-hover:bg-primary/90 transition-colors shadow-lg">
               <ArrowRight className="w-5 h-5 text-white group-hover:translate-x-1 transition-transform" />
             </div>
           </div>

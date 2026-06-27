@@ -15,7 +15,7 @@ export function HowtoSection({ vehicle }: Props) {
         <div className="flex items-start gap-3 mb-4">
           <ListChecks
             size={24}
-            className="text-blue-600 flex-shrink-0 mt-0.5"
+            className="text-blue-600 shrink-0 mt-0.5"
           />
           <h2 className="text-xl font-bold text-gray-900">
             Comment choisir sans se tromper

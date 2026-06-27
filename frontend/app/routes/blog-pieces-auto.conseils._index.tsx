@@ -376,7 +376,7 @@ export default function BlogConseilsIndex() {
             <div className="grid sm:grid-cols-3 gap-4 max-w-2xl mx-auto">
               <Link
                 to="?type=HOWTO"
-                className="group flex flex-col items-center gap-2 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 p-5 transition-all hover:bg-blue-600/30 hover:border-blue-400/50"
+                className="group flex flex-col items-center gap-2 rounded-xl bg-white/10 backdrop-blur-xs border border-white/20 p-5 transition-all hover:bg-blue-600/30 hover:border-blue-400/50"
               >
                 <Wrench className="h-8 w-8 text-blue-400 group-hover:scale-110 transition-transform" />
                 <span className="font-semibold text-sm">
@@ -389,7 +389,7 @@ export default function BlogConseilsIndex() {
               </Link>
               <Link
                 to="?type=DIAGNOSTIC"
-                className="group flex flex-col items-center gap-2 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 p-5 transition-all hover:bg-orange-600/30 hover:border-orange-400/50"
+                className="group flex flex-col items-center gap-2 rounded-xl bg-white/10 backdrop-blur-xs border border-white/20 p-5 transition-all hover:bg-orange-600/30 hover:border-orange-400/50"
               >
                 <AlertTriangle className="h-8 w-8 text-orange-400 group-hover:scale-110 transition-transform" />
                 <span className="font-semibold text-sm">
@@ -401,7 +401,7 @@ export default function BlogConseilsIndex() {
               </Link>
               <Link
                 to="?type=BUYING_GUIDE"
-                className="group flex flex-col items-center gap-2 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 p-5 transition-all hover:bg-green-600/30 hover:border-green-400/50"
+                className="group flex flex-col items-center gap-2 rounded-xl bg-white/10 backdrop-blur-xs border border-white/20 p-5 transition-all hover:bg-green-600/30 hover:border-green-400/50"
               >
                 <ShoppingCart className="h-8 w-8 text-green-400 group-hover:scale-110 transition-transform" />
                 <span className="font-semibold text-sm">
@@ -533,7 +533,7 @@ export default function BlogConseilsIndex() {
                             to={getArticleUrl(article)}
                             className="text-sm text-gray-700 hover:text-primary hover:underline flex items-start gap-1.5"
                           >
-                            <ArrowRight className="h-3.5 w-3.5 mt-0.5 flex-shrink-0 text-gray-400" />
+                            <ArrowRight className="h-3.5 w-3.5 mt-0.5 shrink-0 text-gray-400" />
                             <span className="line-clamp-1">
                               {article.title}
                             </span>
@@ -797,7 +797,7 @@ export default function BlogConseilsIndex() {
                   key={i}
                   className="flex items-start gap-3 rounded-lg bg-white p-4 border border-amber-200/60"
                 >
-                  <div className="w-6 h-6 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+                  <div className="w-6 h-6 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
                     {i + 1}
                   </div>
                   <p className="text-sm text-gray-700 leading-relaxed">

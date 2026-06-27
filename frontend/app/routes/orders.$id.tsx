@@ -239,7 +239,7 @@ export default function OrderDetailsReal() {
               Retour
             </Button>
           </div>
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-8">
+          <div className="bg-white/80 backdrop-blur-xs rounded-xl shadow-sm border border-gray-200 p-8">
             <div className="text-center">
               <Package className="w-16 h-16 mx-auto mb-4 text-red-500" />
               <p className="text-red-600 text-lg font-semibold mb-4">
@@ -267,7 +267,7 @@ export default function OrderDetailsReal() {
         />
 
         {/* Header moderne */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white/80 backdrop-blur-xs rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <Button
@@ -315,7 +315,7 @@ export default function OrderDetailsReal() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Informations client */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
+          <div className="bg-white/80 backdrop-blur-xs rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
             <div className="flex items-center gap-3 mb-5 pb-3 border-b border-gray-200">
               <div className="p-2 bg-muted rounded-lg">
                 <User className="w-5 h-5 text-blue-600" />
@@ -340,7 +340,7 @@ export default function OrderDetailsReal() {
                   </div>
                   <div className="space-y-3">
                     <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                      <Mail className="w-5 h-5 text-gray-500 flex-shrink-0" />
+                      <Mail className="w-5 h-5 text-gray-500 shrink-0" />
                       <a
                         href={`mailto:${order.customer.cst_mail}`}
                         className="text-gray-700 hover:text-blue-600 hover:underline font-medium"
@@ -350,7 +350,7 @@ export default function OrderDetailsReal() {
                     </div>
                     {order.customer.cst_tel && (
                       <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                        <Phone className="w-5 h-5 text-gray-500 flex-shrink-0" />
+                        <Phone className="w-5 h-5 text-gray-500 shrink-0" />
                         <a
                           href={`tel:${order.customer.cst_tel}`}
                           className="text-gray-700 hover:text-blue-600 font-medium"
@@ -361,7 +361,7 @@ export default function OrderDetailsReal() {
                     )}
                     {order.customer.cst_gsm && (
                       <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                        <Phone className="w-5 h-5 text-green-500 flex-shrink-0" />
+                        <Phone className="w-5 h-5 text-green-500 shrink-0" />
                         <a
                           href={`tel:${order.customer.cst_gsm}`}
                           className="text-gray-700 hover:text-blue-600 font-medium"
@@ -392,7 +392,7 @@ export default function OrderDetailsReal() {
           </div>
 
           {/* Adresse de facturation */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
+          <div className="bg-white/80 backdrop-blur-xs rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
             <div className="flex items-center gap-3 mb-5 pb-3 border-b border-gray-200">
               <div className="p-2 bg-muted rounded-lg">
                 <CreditCard className="w-5 h-5 text-foreground" />
@@ -449,7 +449,7 @@ export default function OrderDetailsReal() {
           </div>
 
           {/* Adresse de livraison */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
+          <div className="bg-white/80 backdrop-blur-xs rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
             <div className="flex items-center gap-3 mb-5 pb-3 border-b border-gray-200">
               <div className="p-2 bg-success/10 rounded-lg">
                 <MapPin className="w-5 h-5 text-green-600" />
@@ -506,7 +506,7 @@ export default function OrderDetailsReal() {
           </div>
 
           {/* Résumé financier */}
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
+          <div className="bg-white/80 backdrop-blur-xs rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
             <div className="flex items-center gap-3 mb-5 pb-3 border-b border-gray-200">
               <div className="p-2 bg-amber-100 rounded-lg">
                 <CreditCard className="w-5 h-5 text-amber-600" />
@@ -556,7 +556,7 @@ export default function OrderDetailsReal() {
         </div>
 
         {/* Articles commandés */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
+        <div className="bg-white/80 backdrop-blur-xs rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
           <div className="flex items-center justify-between mb-5 pb-3 border-b border-gray-200">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-muted rounded-lg">
@@ -610,7 +610,7 @@ export default function OrderDetailsReal() {
                           </Badge>
                         )}
                       </div>
-                      <div className="flex-shrink-0 text-right space-y-1">
+                      <div className="shrink-0 text-right space-y-1">
                         <p className="text-gray-600 text-sm">
                           <span className="font-semibold text-gray-900">
                             {line.orl_art_quantity}
@@ -654,7 +654,7 @@ export default function OrderDetailsReal() {
 
         {/* Informations complémentaires */}
         {order.ord_info && (
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
+          <div className="bg-white/80 backdrop-blur-xs rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200">
             <div className="flex items-center gap-3 mb-5 pb-3 border-b border-gray-200">
               <div className="p-2 bg-muted rounded-lg">
                 <FileText className="w-5 h-5 text-orange-600" />

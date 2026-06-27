@@ -28,7 +28,7 @@ export const CartIcon = memo(function CartIcon({
       className={`hover:text-blue-200 transition-colors relative inline-flex items-center ${className}`}
       aria-label="Panier"
     >
-      <ShoppingCart className="flex-shrink-0" size={20} />
+      <ShoppingCart className="shrink-0" size={20} />
       {itemCount > 0 && (
         <Badge
           data-cart-badge

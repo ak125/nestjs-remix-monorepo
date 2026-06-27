@@ -539,7 +539,7 @@ export default function VehicleDetailPage() {
         <div className="container mx-auto px-4 max-w-7xl py-6">
           <div className="flex flex-col md:flex-row gap-6 items-start">
             {/* Vehicle image */}
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <div className="w-48 h-32 md:w-56 md:h-36 rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
                 {!imageError && isValidImagePath(vehicle.modele_pic) ? (
                   <img
@@ -730,7 +730,7 @@ export default function VehicleDetailPage() {
                             />
 
                             {/* Badge nombre de gammes */}
-                            <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-semibold text-gray-700 shadow-sm">
+                            <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-xs px-2 py-1 rounded-full text-xs font-semibold text-gray-700 shadow-sm">
                               {family.gammes.length} pièces
                             </div>
                           </div>
@@ -1178,7 +1178,7 @@ export default function VehicleDetailPage() {
                       {item.question}
                     </span>
                     <div
-                      className={`flex-shrink-0 p-1 rounded-full ${openFaqIndex === index ? "bg-brand" : "bg-gray-200"}`}
+                      className={`shrink-0 p-1 rounded-full ${openFaqIndex === index ? "bg-brand" : "bg-gray-200"}`}
                     >
                       {openFaqIndex === index ? (
                         <ChevronUp size={18} className="text-white" />
@@ -1223,10 +1223,10 @@ export default function VehicleDetailPage() {
       </div>
       {/* Sticky vehicle bar - top */}
       {showStickyCta && (
-        <div className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm py-2 px-4 animate-in slide-in-from-top duration-300">
+        <div className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xs border-b border-gray-200 shadow-sm py-2 px-4 animate-in slide-in-from-top duration-300">
           <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 min-w-0">
-              <Car size={20} className="text-brand flex-shrink-0" />
+              <Car size={20} className="text-brand shrink-0" />
               <div className="min-w-0">
                 <div className="font-bold text-gray-900 text-sm truncate">
                   {vehicle.marque_name} {vehicle.modele_name}{" "}
@@ -1238,7 +1238,7 @@ export default function VehicleDetailPage() {
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="flex items-center gap-2 shrink-0">
               <a
                 href="#catalogue"
                 className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold text-white bg-brand hover:brightness-110 transition-all"

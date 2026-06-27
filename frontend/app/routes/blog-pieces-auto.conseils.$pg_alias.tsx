@@ -606,7 +606,7 @@ export default function R3GuidePage() {
                   {sourceType === "conseil" && page.cta_link && (
                     <div className="my-6 rounded-lg border border-emerald-200 bg-emerald-50/50 p-4">
                       <div className="flex items-center gap-3">
-                        <Tag className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                        <Tag className="w-5 h-5 text-emerald-600 shrink-0" />
                         <p className="text-sm text-gray-700">
                           Trouvez votre{" "}
                           <Link
@@ -633,7 +633,7 @@ export default function R3GuidePage() {
                   {/* Cross-link R6 guide d'achat */}
                   <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 p-4 mb-8">
                     <div className="flex items-center gap-2">
-                      <ExternalLink className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                      <ExternalLink className="w-4 h-4 text-emerald-600 shrink-0" />
                       <p className="text-sm text-gray-700">
                         Choisir la bonne piece ?{" "}
                         <Link

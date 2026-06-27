@@ -151,7 +151,7 @@ export const ProductSearch = memo(function ProductSearch({
                         className="w-full p-4 hover:bg-info/20 transition-colors flex items-center gap-4 text-left"
                       >
                         {/* Image responsive */}
-                        <div className="flex-shrink-0 w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                        <div className="shrink-0 w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
                           {result.image_url ? (
                             <PartImage
                               src={result.image_url}
@@ -182,7 +182,7 @@ export const ProductSearch = memo(function ProductSearch({
                         </div>
 
                         {/* Price & Stock */}
-                        <div className="text-right flex-shrink-0">
+                        <div className="text-right shrink-0">
                           {result.price_ttc && (
                             <p className="font-bold text-blue-600">
                               {result.price_ttc.toFixed(2)} €

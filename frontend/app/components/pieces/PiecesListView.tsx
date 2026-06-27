@@ -169,7 +169,7 @@ export const PiecesListView = React.memo(
                           ? `Désélectionner ${piece.name}`
                           : `Sélectionner ${piece.name}`
                       }
-                      className={`w-5 h-5 rounded-md border-2 flex-shrink-0 flex items-center justify-center transition-all mt-1 ${
+                      className={`w-5 h-5 rounded-md border-2 shrink-0 flex items-center justify-center transition-all mt-1 ${
                         isSelected
                           ? "bg-blue-600 border-blue-600 shadow-sm"
                           : "border-slate-300 hover:border-blue-400 hover:bg-blue-50"
@@ -192,7 +192,7 @@ export const PiecesListView = React.memo(
                   )}
 
                   {/* Image produit - responsive */}
-                  <div className="w-24 h-24 sm:w-32 sm:h-32 flex-shrink-0 bg-gradient-to-br from-slate-50 to-white rounded-xl overflow-hidden border border-slate-100 relative shadow-sm">
+                  <div className="w-24 h-24 sm:w-32 sm:h-32 shrink-0 bg-gradient-to-br from-slate-50 to-white rounded-xl overflow-hidden border border-slate-100 relative shadow-sm">
                     {piece.image &&
                     piece.image !== "/images/pieces/default.png" ? (
                       <img
@@ -309,7 +309,7 @@ export const PiecesListView = React.memo(
 
                   {/* Bouton panier - plus grand sur mobile */}
                   <button
-                    className={`w-12 h-12 sm:w-10 sm:h-10 rounded-xl sm:rounded-lg flex-shrink-0 flex items-center justify-center transition-all duration-200 ${ hasStock && !loadingItems.has(piece.id) ? "bg-gradient-to-r from-blue-600 hover:from-blue-700 hover: text-white shadow-md hover:shadow-lg hover:scale-110" : "bg-slate-100 text-slate-400 cursor-not-allowed" }`}
+                    className={`w-12 h-12 sm:w-10 sm:h-10 rounded-xl sm:rounded-lg shrink-0 flex items-center justify-center transition-all duration-200 ${ hasStock && !loadingItems.has(piece.id) ? "bg-gradient-to-r from-blue-600 hover:from-blue-700 hover: text-white shadow-md hover:shadow-lg hover:scale-110" : "bg-slate-100 text-slate-400 cursor-not-allowed" }`}
                     disabled={!hasStock || loadingItems.has(piece.id)}
                     onClick={() => hasStock && handleAddToCart(piece.id)}
                     title={hasStock ? "Ajouter au panier" : "Indisponible"}

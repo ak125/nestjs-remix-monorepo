@@ -24,7 +24,7 @@ export const ReferenceEncartSection = memo(function ReferenceEncartSection({
         <Card className="border-indigo-200 shadow-sm hover:shadow-md transition-shadow">
           <CardContent className="p-6 md:p-8">
             <div className="flex items-start gap-4">
-              <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-muted flex items-center justify-center">
+              <div className="shrink-0 w-12 h-12 rounded-xl bg-muted flex items-center justify-center">
                 <BookOpen className="w-6 h-6 text-foreground" />
               </div>
               <div className="flex-1 min-w-0">

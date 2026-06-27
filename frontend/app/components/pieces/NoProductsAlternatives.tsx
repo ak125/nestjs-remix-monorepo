@@ -164,7 +164,7 @@ export const NoProductsAlternatives = memo(function NoProductsAlternatives({
                         {v.type_name} · {v.type_power_ps}ch · {v.type_fuel}
                       </span>
                     </div>
-                    <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-blue-600 flex-shrink-0" />
+                    <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-blue-600 shrink-0" />
                   </Link>
                 ))}
               </div>
@@ -192,7 +192,7 @@ export const NoProductsAlternatives = memo(function NoProductsAlternatives({
                       <img
                         src={`https://img.automecanik.com/gamme/${g.pg_pic}`}
                         alt={g.pg_name}
-                        className="w-10 h-10 object-contain flex-shrink-0"
+                        className="w-10 h-10 object-contain shrink-0"
                         loading="lazy"
                         width={40}
                         height={40}
@@ -228,7 +228,7 @@ export const NoProductsAlternatives = memo(function NoProductsAlternatives({
                     <span className="text-sm font-medium text-gray-800 group-hover:text-foreground">
                       {m.marque_name} {m.modele_name}
                     </span>
-                    <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-foreground flex-shrink-0" />
+                    <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-foreground shrink-0" />
                   </Link>
                 ))}
               </div>

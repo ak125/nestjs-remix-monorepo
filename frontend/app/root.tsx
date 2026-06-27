@@ -354,8 +354,8 @@ function AppShell({ children }: { children: React.ReactNode }) {
       {...pageRoleAttrs}
     >
       {!hideGlobalNavbar && <Navbar />}
-      <main className="flex-grow flex flex-col">
-        <div className="flex-grow">{children}</div>
+      <main className="grow flex flex-col">
+        <div className="grow">{children}</div>
       </main>
       {!hideGlobalFooter && (
         <Suspense fallback={null}>

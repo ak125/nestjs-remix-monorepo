@@ -84,7 +84,7 @@ export const CartItem = memo(function CartItem({
       <CardContent className="p-4">
         <div className="flex items-center gap-4">
           {/* Image produit */}
-          <div className="w-20 h-20 bg-gray-100 rounded-md overflow-hidden flex-shrink-0">
+          <div className="w-20 h-20 bg-gray-100 rounded-md overflow-hidden shrink-0">
             <img
               src={productImage}
               alt={productName}

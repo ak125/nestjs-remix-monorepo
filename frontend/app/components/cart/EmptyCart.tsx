@@ -137,7 +137,7 @@ export function EmptyCart({ vehicle }: EmptyCartProps) {
               to={`/pieces/${gamme.alias}-${gamme.id}.html`}
               className="flex items-center gap-3 min-h-[44px] px-4 py-3 bg-white rounded-xl border border-slate-200 hover:border-cta hover:shadow-md transition-all group"
             >
-              <gamme.Icon className="h-5 w-5 text-slate-400 group-hover:text-cta flex-shrink-0 transition-colors" />
+              <gamme.Icon className="h-5 w-5 text-slate-400 group-hover:text-cta shrink-0 transition-colors" />
               <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900 transition-colors">
                 {gamme.name}
               </span>

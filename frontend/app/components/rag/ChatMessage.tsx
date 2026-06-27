@@ -46,7 +46,7 @@ const ChatMessage = memo(function ChatMessage({ message }: ChatMessageProps) {
     <div className={`flex gap-3 ${isUser ? "flex-row-reverse" : "flex-row"}`}>
       {/* Avatar */}
       <div
-        className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+        className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
           isUser
             ? "bg-gradient-to-r from-orange-500 to-amber-500"
             : "bg-gray-200"

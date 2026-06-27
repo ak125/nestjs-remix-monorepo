@@ -438,7 +438,7 @@ export default function ContactPage() {
               <div className="space-y-4">
                 <div className="flex items-start">
                   <svg
-                    className="w-5 h-5 text-gray-400 mt-1 mr-3 flex-shrink-0"
+                    className="w-5 h-5 text-gray-400 mt-1 mr-3 shrink-0"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -465,7 +465,7 @@ export default function ContactPage() {
 
                 <div className="flex items-start">
                   <svg
-                    className="w-5 h-5 text-gray-400 mt-1 mr-3 flex-shrink-0"
+                    className="w-5 h-5 text-gray-400 mt-1 mr-3 shrink-0"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -487,7 +487,7 @@ export default function ContactPage() {
 
                 <div className="flex items-start">
                   <svg
-                    className="w-5 h-5 text-gray-400 mt-1 mr-3 flex-shrink-0"
+                    className="w-5 h-5 text-gray-400 mt-1 mr-3 shrink-0"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -544,7 +544,7 @@ export default function ContactPage() {
                   >
                     <div className="flex">
                       <svg
-                        className="w-5 h-5 text-red-400 mr-2 flex-shrink-0"
+                        className="w-5 h-5 text-red-400 mr-2 shrink-0"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"

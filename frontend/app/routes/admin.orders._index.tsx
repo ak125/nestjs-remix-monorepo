@@ -1067,7 +1067,7 @@ export default function OrdersRoute() {
 
       {/* Modal Expédition avec numéro de suivi */}
       {shipModalOpen && (
-        <div className="fixed inset-0 bg-neutral-900 bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-neutral-900/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               📦 Expédier la commande #{actionOrderId}
@@ -1117,7 +1117,7 @@ export default function OrdersRoute() {
 
       {/* Modal Annulation avec raison */}
       {cancelModalOpen && (
-        <div className="fixed inset-0 bg-neutral-900 bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-neutral-900/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               ❌ Annuler la commande #{actionOrderId}

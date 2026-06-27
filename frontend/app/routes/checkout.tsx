@@ -970,7 +970,7 @@ export default function CheckoutPage() {
           <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 shadow-sm">
             <div className="flex items-start gap-3">
               <svg
-                className="h-5 w-5 flex-shrink-0 text-red-600"
+                className="h-5 w-5 shrink-0 text-red-600"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -1193,7 +1193,7 @@ export default function CheckoutPage() {
 
       {/* Redirecting overlay with progressive states */}
       {isRedirecting && (
-        <div className="fixed inset-0 z-50 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center">
+        <div className="fixed inset-0 z-50 bg-white/80 backdrop-blur-xs flex flex-col items-center justify-center">
           <div className="flex flex-col items-center gap-4 max-w-sm text-center px-4">
             {redirectPhase !== "retry" && (
               <svg
