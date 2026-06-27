@@ -124,7 +124,7 @@ const VehicleCard: React.FC<VehicleCardProps> = ({
           />
 
           {/* 🏷️ Badge marque */}
-          <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm rounded-lg px-3 py-1 shadow-md">
+          <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-xs rounded-lg px-3 py-1 shadow-md">
             <span className="text-sm font-semibold text-gray-800">
               {vehicle.marque_name}
             </span>
@@ -132,7 +132,7 @@ const VehicleCard: React.FC<VehicleCardProps> = ({
 
           {/* ⚡ Badge puissance */}
           {vehicle.type_power_ps && (
-            <div className="absolute top-3 right-3 bg-primary/95 backdrop-blur-sm rounded-lg px-2 py-1 shadow-md">
+            <div className="absolute top-3 right-3 bg-primary/95 backdrop-blur-xs rounded-lg px-2 py-1 shadow-md">
               <div className="flex items-center space-x-1 text-white">
                 <Zap className="w-3 h-3" />
                 <span className="text-xs font-medium">

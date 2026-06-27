@@ -1696,7 +1696,7 @@ function FeedbackToasts({
         <div
           key={i}
           className={`
-            px-4 py-2.5 rounded-lg text-xs font-mono border backdrop-blur-sm shadow-lg
+            px-4 py-2.5 rounded-lg text-xs font-mono border backdrop-blur-xs shadow-lg
             ${
               t.ok
                 ? "bg-emerald-900/80 border-emerald-700/50 text-emerald-200"

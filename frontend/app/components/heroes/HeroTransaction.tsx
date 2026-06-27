@@ -39,7 +39,7 @@ function TrustBadges({ badges }: { badges: string[] }) {
       {badges.map((badge) => (
         <span
           key={badge}
-          className="flex items-center justify-center gap-2 px-3 md:px-4 py-2.5 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 text-white text-sm font-semibold"
+          className="flex items-center justify-center gap-2 px-3 md:px-4 py-2.5 bg-white/10 backdrop-blur-xs rounded-xl border border-white/20 text-white text-sm font-semibold"
         >
           {badge}
         </span>
