@@ -553,7 +553,7 @@ export function PiecesVehicleContent() {
         <button
           type="button"
           onClick={openCartSidebar}
-          className="relative py-3 px-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold flex items-center gap-2 transition-colors"
+          className="relative py-3 px-4 bg-orange-500 hover:bg-orange-600 text-black rounded-xl font-bold flex items-center gap-2 transition-colors"
         >
           <ShoppingCart className="w-5 h-5" />
           Panier

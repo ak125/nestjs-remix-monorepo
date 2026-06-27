@@ -112,7 +112,7 @@ export default function ForgotPassword() {
             <Button
               type="submit"
               size="lg"
-              className="w-full bg-cta hover:bg-cta-hover text-white"
+              className="w-full bg-cta hover:bg-cta-hover text-black"
             >
               Envoyer le lien de réinitialisation
             </Button>

@@ -152,7 +152,7 @@ export default function HeroSection() {
                         <Button
                           type="submit"
                           disabled={mineCode.length < 5}
-                          className="h-12 w-full rounded-2xl bg-cta text-[16px] font-semibold text-white shadow-[0_12px_24px_rgba(249,115,22,0.28)] hover:bg-cta-hover disabled:opacity-50"
+                          className="h-12 w-full rounded-2xl bg-cta text-[16px] font-semibold text-black shadow-[0_12px_24px_rgba(249,115,22,0.28)] hover:bg-cta-hover disabled:opacity-50"
                         >
                           <Search size={15} className="mr-2" /> Rechercher
                         </Button>
@@ -186,7 +186,7 @@ export default function HeroSection() {
                         <Button
                           type="submit"
                           disabled={!refQuery.trim()}
-                          className="h-12 w-full rounded-2xl bg-cta text-[16px] font-semibold text-white shadow-[0_12px_24px_rgba(249,115,22,0.28)] hover:bg-cta-hover disabled:opacity-50"
+                          className="h-12 w-full rounded-2xl bg-cta text-[16px] font-semibold text-black shadow-[0_12px_24px_rgba(249,115,22,0.28)] hover:bg-cta-hover disabled:opacity-50"
                         >
                           <Search size={15} className="mr-2" /> Rechercher
                         </Button>
@@ -286,7 +286,7 @@ export default function HeroSection() {
                       <Button
                         type="submit"
                         disabled={mineCode.length < 5}
-                        className="h-12 shrink-0 rounded-2xl bg-cta px-8 text-[15px] font-semibold text-white shadow-[0_12px_24px_rgba(249,115,22,0.28)] hover:bg-cta-hover disabled:opacity-50"
+                        className="h-12 shrink-0 rounded-2xl bg-cta px-8 text-[15px] font-semibold text-black shadow-[0_12px_24px_rgba(249,115,22,0.28)] hover:bg-cta-hover disabled:opacity-50"
                       >
                         <Search size={15} className="mr-2" /> Rechercher
                       </Button>
@@ -319,7 +319,7 @@ export default function HeroSection() {
                       <Button
                         type="submit"
                         disabled={!refQuery.trim()}
-                        className="h-12 shrink-0 rounded-2xl bg-cta px-8 text-[15px] font-semibold text-white shadow-[0_12px_24px_rgba(249,115,22,0.28)] hover:bg-cta-hover disabled:opacity-50"
+                        className="h-12 shrink-0 rounded-2xl bg-cta px-8 text-[15px] font-semibold text-black shadow-[0_12px_24px_rgba(249,115,22,0.28)] hover:bg-cta-hover disabled:opacity-50"
                       >
                         <Search size={15} className="mr-2" /> Rechercher
                       </Button>

@@ -97,8 +97,8 @@
   --color-neutral-black-contrast: #ffffff;
   --color-semantic-action: #F97316;
   --color-semantic-action-contrast: #000000;
-  --color-semantic-actionContrast: #FFFFFF;
-  --color-semantic-actionContrast-contrast: #000000;
+  --color-semantic-actionContrast: #000000;
+  --color-semantic-actionContrast-contrast: #ffffff;
   --color-semantic-info: #0F4C81;
   --color-semantic-info-contrast: #ffffff;
   --color-semantic-infoContrast: #FFFFFF;

@@ -370,7 +370,7 @@ export default function DiagnosticAutoIndex() {
               />
               <button
                 type="submit"
-                className="h-11 px-5 bg-cta hover:bg-cta-hover text-white font-semibold rounded-xl transition-colors whitespace-nowrap"
+                className="h-11 px-5 bg-cta hover:bg-cta-hover text-black font-semibold rounded-xl transition-colors whitespace-nowrap"
               >
                 Scanner
               </button>
@@ -441,7 +441,7 @@ export default function DiagnosticAutoIndex() {
             {/* Methode 1 */}
             <div className="mb-6">
               <h3 className="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
-                <span className="w-7 h-7 rounded-full bg-cta text-white text-sm flex items-center justify-center font-bold shrink-0">
+                <span className="w-7 h-7 rounded-full bg-cta text-black text-sm flex items-center justify-center font-bold shrink-0">
                   1
                 </span>
                 Observer les symptômes sensoriels (sans outil)
@@ -500,7 +500,7 @@ export default function DiagnosticAutoIndex() {
             {/* Methode 2 */}
             <div className="mb-6">
               <h3 className="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
-                <span className="w-7 h-7 rounded-full bg-cta text-white text-sm flex items-center justify-center font-bold shrink-0">
+                <span className="w-7 h-7 rounded-full bg-cta text-black text-sm flex items-center justify-center font-bold shrink-0">
                   2
                 </span>
                 Lire les voyants du tableau de bord
@@ -533,7 +533,7 @@ export default function DiagnosticAutoIndex() {
             {/* Methode 3 */}
             <div>
               <h3 className="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
-                <span className="w-7 h-7 rounded-full bg-cta text-white text-sm flex items-center justify-center font-bold shrink-0">
+                <span className="w-7 h-7 rounded-full bg-cta text-black text-sm flex items-center justify-center font-bold shrink-0">
                   3
                 </span>
                 Scanner le code OBD (P, C, B, U)
@@ -966,7 +966,7 @@ export default function DiagnosticAutoIndex() {
             />
             <button
               type="submit"
-              className="h-12 px-6 bg-cta hover:bg-cta-hover text-white font-bold rounded-xl transition-colors flex items-center gap-2"
+              className="h-12 px-6 bg-cta hover:bg-cta-hover text-black font-bold rounded-xl transition-colors flex items-center gap-2"
             >
               Scanner
               <ChevronRight className="w-4 h-4" />
