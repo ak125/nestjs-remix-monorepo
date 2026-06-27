@@ -649,7 +649,7 @@ export default function RegisterPage() {
                         role="alert"
                       >
                         <svg
-                          className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5"
+                          className="w-5 h-5 text-red-500 shrink-0 mt-0.5"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"

@@ -59,12 +59,12 @@ export function HumanEscalationCard({
     >
       {escalation.priority_boost ? (
         <AlertCircle
-          className="h-6 w-6 flex-shrink-0 text-amber-600"
+          className="h-6 w-6 shrink-0 text-amber-600"
           aria-hidden
         />
       ) : (
         <UserRound
-          className="h-6 w-6 flex-shrink-0 text-muted-foreground"
+          className="h-6 w-6 shrink-0 text-muted-foreground"
           aria-hidden
         />
       )}

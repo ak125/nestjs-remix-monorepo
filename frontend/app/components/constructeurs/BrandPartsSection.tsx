@@ -40,7 +40,7 @@ export default function BrandPartsSection({
 
         <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="flex-shrink-0 w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm shadow-lg">
+            <div className="shrink-0 w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-xs shadow-lg">
               <Package className="w-7 h-7 text-white" />
             </div>
             <div>
@@ -53,7 +53,7 @@ export default function BrandPartsSection({
             </div>
           </div>
 
-          <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2.5 rounded-full shadow-lg border border-white/20 w-fit">
+          <div className="flex items-center gap-2 bg-white/20 backdrop-blur-xs px-4 py-2.5 rounded-full shadow-lg border border-white/20 w-fit">
             <TrendingUp className="w-5 h-5 text-white" />
             <span className="text-white font-bold text-lg">{parts.length}</span>
             <span className="text-white/90 text-sm font-medium">pièces</span>

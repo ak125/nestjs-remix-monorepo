@@ -397,7 +397,7 @@ const CustomerReviewCard: React.FC<{ review: CustomerReview }> = ({ review }) =>
       {/* Header: Avatar + Nom + Date */}
       <div className="flex items-start gap-sm mb-md">
         {/* Avatar */}
-        <div className="w-12 h-12 rounded-full bg-neutral-200 flex items-center justify-center flex-shrink-0 overflow-hidden">
+        <div className="w-12 h-12 rounded-full bg-neutral-200 flex items-center justify-center shrink-0 overflow-hidden">
           {review.customerPhoto ? (
             <img
               src={review.customerPhoto}

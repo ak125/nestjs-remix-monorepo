@@ -19,7 +19,7 @@ export function GuideLinkCard({ pgAlias, pgName }: GuideLinkCardProps) {
         prefetch="intent"
         className="group flex items-center gap-4 px-6 py-5 bg-white rounded-xl border border-violet-200 hover:border-violet-400 shadow-sm hover:shadow-md transition-all"
       >
-        <div className="flex-shrink-0 p-3 bg-muted rounded-lg group-hover:bg-muted transition-colors">
+        <div className="shrink-0 p-3 bg-muted rounded-lg group-hover:bg-muted transition-colors">
           <BookOpen className="w-6 h-6 text-foreground" />
         </div>
         <div className="flex-1 min-w-0">
@@ -30,7 +30,7 @@ export function GuideLinkCard({ pgAlias, pgName }: GuideLinkCardProps) {
             Symptômes, remplacement étape par étape, erreurs à éviter et FAQ
           </p>
         </div>
-        <ArrowRight className="w-5 h-5 text-gray-300 group-hover:text-foreground transition-colors flex-shrink-0" />
+        <ArrowRight className="w-5 h-5 text-gray-300 group-hover:text-foreground transition-colors shrink-0" />
       </Link>
     </div>
   );

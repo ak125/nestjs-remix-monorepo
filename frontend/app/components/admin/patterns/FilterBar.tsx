@@ -85,7 +85,7 @@ export function FilterBar({
             </Button>
           </SheetTrigger>
           <SheetContent side="bottom" className="h-[80vh] flex flex-col">
-            <SheetHeader className="flex-shrink-0">
+            <SheetHeader className="shrink-0">
               <SheetTitle className="flex items-center justify-between">
                 <span className="flex items-center gap-2">
                   <Filter className="h-5 w-5" />
@@ -111,7 +111,7 @@ export function FilterBar({
             </div>
 
             {/* Footer avec actions */}
-            <SheetFooter className="flex-shrink-0 pt-4 border-t">
+            <SheetFooter className="shrink-0 pt-4 border-t">
               <div className="flex gap-3 w-full">
                 <Button
                   variant="outline"

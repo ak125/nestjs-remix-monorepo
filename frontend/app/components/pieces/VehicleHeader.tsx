@@ -73,7 +73,7 @@ export const VehicleHeader = memo(function VehicleHeader({
             <div className="flex items-center gap-4 mb-4">
               {/* Image gamme si disponible */}
               {gamme.image && (
-                <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden shrink-0">
                   <img
                     src={gamme.image}
                     alt={gamme.name}
@@ -148,7 +148,7 @@ export const VehicleHeader = memo(function VehicleHeader({
           </div>
 
           {/* Actions */}
-          <div className="flex-shrink-0 ml-6">
+          <div className="shrink-0 ml-6">
             <div className="flex flex-col gap-3">
               <Button
                 className="px-6 py-3 rounded-lg   flex items-center gap-2"

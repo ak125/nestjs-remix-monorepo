@@ -51,7 +51,7 @@ export const SymptomsSection = memo(function SymptomsSection({
                   key={index}
                   className="flex items-start gap-3 p-3 bg-white rounded-lg border border-orange-200"
                 >
-                  <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-orange-100 text-orange-600 text-sm font-bold">
+                  <span className="shrink-0 w-6 h-6 flex items-center justify-center rounded-full bg-orange-100 text-orange-600 text-sm font-bold">
                     {index + 1}
                   </span>
                   <span className="text-gray-700">{symptom}</span>

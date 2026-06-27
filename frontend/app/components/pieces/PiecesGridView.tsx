@@ -232,7 +232,7 @@ const PieceCard = memo(function PieceCard({
 
         {/* Indicateur photos */}
         {piece.images && piece.images.length > 1 && (
-          <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-white/95 backdrop-blur-sm text-slate-700 text-xs font-bold px-2 py-1 rounded-md shadow-md border border-slate-200 z-10">
+          <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-white/95 backdrop-blur-xs text-slate-700 text-xs font-bold px-2 py-1 rounded-md shadow-md border border-slate-200 z-10">
             <svg
               className="w-3.5 h-3.5 text-foreground"
               fill="none"
@@ -260,7 +260,7 @@ const PieceCard = memo(function PieceCard({
                 : `Sélectionner ${piece.name}`
             }
             onClick={handleSelect}
-            className={`absolute top-2 left-2 w-6 h-6 rounded-md flex items-center justify-center transition-all duration-300 z-20 ${ isSelected ? "bg-primary shadow-lg shadow-indigo-500/50 scale-110" : "bg-white/90 backdrop-blur-sm border border-slate-200 hover:border-indigo-400 hover:bg-muted" }`}
+            className={`absolute top-2 left-2 w-6 h-6 rounded-md flex items-center justify-center transition-all duration-300 z-20 ${ isSelected ? "bg-primary shadow-lg shadow-indigo-500/50 scale-110" : "bg-white/90 backdrop-blur-xs border border-slate-200 hover:border-indigo-400 hover:bg-muted" }`}
           >
             {isSelected ? (
               <svg
@@ -284,10 +284,10 @@ const PieceCard = memo(function PieceCard({
       {/* Footer: Marque + Référence + Prix + Bouton */}
       <div className="p-2.5 pt-2 border-t border-slate-100 bg-gradient-to-b from-white to-slate-50/50">
         <div className="flex items-center gap-1.5 mb-2 min-w-0">
-          <span className="text-xs sm:text-sm font-bold text-slate-600 uppercase tracking-wide flex-shrink-0">
+          <span className="text-xs sm:text-sm font-bold text-slate-600 uppercase tracking-wide shrink-0">
             {piece.brand}
           </span>
-          <span className="text-slate-300 flex-shrink-0">|</span>
+          <span className="text-slate-300 shrink-0">|</span>
           <code className="text-sm sm:text-base font-mono font-bold text-foreground truncate">
             {piece.reference}
           </code>
@@ -501,7 +501,7 @@ export function PiecesGridView({
           <div className="inline-flex flex-col gap-2 text-sm text-left bg-card rounded-xl p-4 shadow-sm border border-border">
             <div className="flex items-start gap-2">
               <svg
-                className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0"
+                className="w-4 h-4 text-blue-500 mt-0.5 shrink-0"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -517,7 +517,7 @@ export function PiecesGridView({
             </div>
             <div className="flex items-start gap-2">
               <svg
-                className="w-4 h-4 text-primary mt-0.5 flex-shrink-0"
+                className="w-4 h-4 text-primary mt-0.5 shrink-0"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -533,7 +533,7 @@ export function PiecesGridView({
             </div>
             <div className="flex items-start gap-2">
               <svg
-                className="w-4 h-4 text-primary mt-0.5 flex-shrink-0"
+                className="w-4 h-4 text-primary mt-0.5 shrink-0"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >

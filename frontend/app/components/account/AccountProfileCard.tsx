@@ -42,7 +42,7 @@ export function AccountProfileCard({ user, stats }: AccountProfileCardProps) {
     <section className="bg-gradient-to-b from-[var(--navy)] to-[var(--navy-light)]">
       <div className="px-5 pt-5 pb-6">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20 flex-shrink-0">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20 shrink-0">
             <span className="text-[24px] font-extrabold text-white font-heading">
               {initials}
             </span>

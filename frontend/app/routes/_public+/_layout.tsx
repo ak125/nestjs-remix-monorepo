@@ -58,7 +58,7 @@ export default function AuthLayout() {
       </header>
 
       {/* Contenu */}
-      <main className="flex-grow">
+      <main className="grow">
         <Outlet />
       </main>
 

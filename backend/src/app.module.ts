@@ -16,8 +16,6 @@ import { FeatureFlagsModule } from './config/feature-flags.module'; // 🎛️ N
 import { WriteGuardModule } from './config/write-guard.module'; // 🛡️ P1.5 - Write Ownership & Collision Guard
 import { RpcGateModule } from './security/rpc-gate/rpc-gate.module'; // 🛡️ NOUVEAU - RPC Safety Gate pour gouvernance Supabase !
 import { BotGuardModule } from './modules/bot-guard/bot-guard.module'; // 🛡️ Bot protection (geo-block, IP block, behavioral scoring)
-import { SyntheticProbeCredentialModule } from './modules/seo-control-plane/synthetic-probe-credential.module'; // 🛡️ HMAC credential du crawler synthétique (exemption rate-limit scopée)
-import { isSyntheticExemptPath } from './modules/seo-control-plane/types';
 import { DatabaseModule } from './database/database.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { HealthModule } from './modules/health/health.module';
@@ -137,19 +135,12 @@ import { TrendSignalsModule } from './modules/trend-signals/trend-signals.module
           return true;
         }
 
-        // Skip the internal synthetic crawler (seo-control-plane L1) — but ONLY
-        // for public-catalogue GETs (least-privilege). The flag is set upstream
-        // by BotGuardMiddleware after verifying an HMAC credential (NOT the UA),
-        // and isSyntheticExemptPath() blocks /api, /auth, /cart, /checkout,
-        // /admin and every non-GET, so even a leaked credential cannot relax
-        // rate-limiting beyond already-public, already-CDN-cached reads.
-        // Incident 2026-06-25 (crawler 89.7% 429 → L1 monitoring blind).
-        if (
-          request.isVerifiedSyntheticProbe === true &&
-          isSyntheticExemptPath(request.method, request.path || '')
-        ) {
-          return true;
-        }
+        // NOTE: the internal synthetic crawler (seo-control-plane L1) is NOT
+        // exempted here. It self-paces (SEO_CP_MAX_RPM ≈ 90/min, structural fix
+        // PR #1161) to stay under the throttler tiers — verified live 2026-06-26
+        // (~90% 429 → 0%). The old HMAC/egress-IP exemption was retired (PR2): a
+        // server-side exemption is fragile (CDN strips the header; IP allowlists
+        // weaken a security control) and the pacer fixes the cause at the source.
 
         // Skip for admin users (level >= 7)
         if (user?.isAdmin === true || parseInt(user?.level) >= 7) {
@@ -189,11 +180,6 @@ import { TrendSignalsModule } from './modules/trend-signals/trend-signals.module
 
     // 🛡️ Bot protection - geo-block, IP block, behavioral scoring (must be before other modules)
     BotGuardModule,
-
-    // 🛡️ Credential HMAC du crawler synthétique (@Global) — injecté par
-    // BotGuardMiddleware (verify) + SyntheticCrawlerService (sign). Posé avant les
-    // modules consommateurs pour disponibilité DI app-wide. Incident 2026-06-25.
-    SyntheticProbeCredentialModule,
 
     // 🎛️ Feature flags centralisés (Global)
     FeatureFlagsModule,

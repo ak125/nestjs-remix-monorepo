@@ -38,7 +38,7 @@ export const ContentGuidePills = memo(function ContentGuidePills({
     >
       {/* Phrase universelle — 18 mots */}
       <div className="flex items-center gap-2 mb-3">
-        <HelpCircle className="w-4 h-4 text-gray-400 flex-shrink-0" />
+        <HelpCircle className="w-4 h-4 text-gray-400 shrink-0" />
         <p className="text-sm text-gray-600">
           Sélectionnez votre véhicule ci-dessus pour afficher uniquement les{" "}
           {lowerName} compatibles avec votre motorisation.

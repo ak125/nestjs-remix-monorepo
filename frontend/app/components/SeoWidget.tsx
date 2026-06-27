@@ -119,7 +119,7 @@ export const SeoWidget = memo(function SeoWidget({
                 <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
               </div>
             </div>
-            <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white drop-shadow-sm">
+            <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white drop-shadow-xs">
               {seoData.completionRate.toFixed(1)}%
             </div>
           </div>

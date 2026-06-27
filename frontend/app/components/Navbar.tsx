@@ -219,7 +219,7 @@ export const Navbar = memo(function Navbar() {
           <Link
             to="/"
             prefetch="intent"
-            className="no-style no-visited flex-shrink-0 group hidden lg:block"
+            className="no-style no-visited shrink-0 group hidden lg:block"
             aria-label="Retour à l'accueil"
           >
             <span
@@ -233,7 +233,7 @@ export const Navbar = memo(function Navbar() {
           </Link>
 
           {/* DESKTOP NAV LINKS */}
-          <div className="hidden lg:flex items-center gap-1 min-w-0 flex-shrink">
+          <div className="hidden lg:flex items-center gap-1 min-w-0 shrink">
             <Link
               to="/#catalogue"
               onClick={(e) => scrollToSection(e, "catalogue")}
@@ -310,7 +310,7 @@ export const Navbar = memo(function Navbar() {
           </form>
 
           {/* DESKTOP: User actions */}
-          <div className="hidden lg:flex items-center gap-1 flex-shrink-0">
+          <div className="hidden lg:flex items-center gap-1 shrink-0">
             {/* Cart */}
             <button
               onClick={toggleCart}

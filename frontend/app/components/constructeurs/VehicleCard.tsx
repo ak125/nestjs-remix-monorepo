@@ -124,7 +124,7 @@ const VehicleCard: React.FC<VehicleCardProps> = ({
           />
 
           {/* 🏷️ Badge marque */}
-          <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm rounded-lg px-3 py-1 shadow-md">
+          <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-xs rounded-lg px-3 py-1 shadow-md">
             <span className="text-sm font-semibold text-gray-800">
               {vehicle.marque_name}
             </span>
@@ -132,7 +132,7 @@ const VehicleCard: React.FC<VehicleCardProps> = ({
 
           {/* ⚡ Badge puissance */}
           {vehicle.type_power_ps && (
-            <div className="absolute top-3 right-3 bg-primary/95 backdrop-blur-sm rounded-lg px-2 py-1 shadow-md">
+            <div className="absolute top-3 right-3 bg-primary/95 backdrop-blur-xs rounded-lg px-2 py-1 shadow-md">
               <div className="flex items-center space-x-1 text-white">
                 <Zap className="w-3 h-3" />
                 <span className="text-xs font-medium">
@@ -160,14 +160,14 @@ const VehicleCard: React.FC<VehicleCardProps> = ({
           <div className="grid grid-cols-2 gap-3 text-sm">
             {/* 🗓️ Période */}
             <div className="flex items-center space-x-2 text-gray-600">
-              <Calendar className="w-4 h-4 flex-shrink-0" />
+              <Calendar className="w-4 h-4 shrink-0" />
               <span className="truncate">{dateRange}</span>
             </div>
 
             {/* ⛽ Carburant */}
             {vehicle.type_fuel && (
               <div className="flex items-center space-x-2 text-gray-600">
-                <Fuel className="w-4 h-4 flex-shrink-0" />
+                <Fuel className="w-4 h-4 shrink-0" />
                 <span className="truncate">{vehicle.type_fuel}</span>
               </div>
             )}
@@ -175,7 +175,7 @@ const VehicleCard: React.FC<VehicleCardProps> = ({
             {/* 🔧 Cylindrée */}
             {vehicle.type_liter && (
               <div className="flex items-center space-x-2 text-gray-600">
-                <Car className="w-4 h-4 flex-shrink-0" />
+                <Car className="w-4 h-4 shrink-0" />
                 <span className="truncate">{vehicle.type_liter}L</span>
               </div>
             )}
@@ -183,7 +183,7 @@ const VehicleCard: React.FC<VehicleCardProps> = ({
             {/* ⚡ Puissance (si pas déjà affichée en badge) */}
             {vehicle.type_power_ps && (
               <div className="flex items-center space-x-2 text-gray-600">
-                <Zap className="w-4 h-4 flex-shrink-0" />
+                <Zap className="w-4 h-4 shrink-0" />
                 <span className="truncate">{vehicle.type_power_ps} PS</span>
               </div>
             )}

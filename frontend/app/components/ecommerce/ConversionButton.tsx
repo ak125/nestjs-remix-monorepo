@@ -222,9 +222,9 @@ export function ConversionButton({
       </>
     ) : (
       <>
-        {iconLeft && <span className="flex-shrink-0">{iconLeft}</span>}
+        {iconLeft && <span className="shrink-0">{iconLeft}</span>}
         <span>{children}</span>
-        {iconRight && <span className="flex-shrink-0">{iconRight}</span>}
+        {iconRight && <span className="shrink-0">{iconRight}</span>}
       </>
     );
 

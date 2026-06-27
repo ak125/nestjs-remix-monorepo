@@ -327,21 +327,21 @@ export default function PiecesCatalogGrid({
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white bg-opacity-20 rounded-lg p-3 text-center">
+          <div className="bg-white/20 rounded-lg p-3 text-center">
             <div className="text-2xl font-bold">{categories.length}</div>
             <div className="text-xs opacity-90">Catégories</div>
           </div>
-          <div className="bg-white bg-opacity-20 rounded-lg p-3 text-center">
+          <div className="bg-white/20 rounded-lg p-3 text-center">
             <div className="text-2xl font-bold">
               {stats.categories_with_pieces}
             </div>
             <div className="text-xs opacity-90">Catégories actives</div>
           </div>
-          <div className="bg-white bg-opacity-20 rounded-lg p-3 text-center">
+          <div className="bg-white/20 rounded-lg p-3 text-center">
             <div className="text-2xl font-bold">{stats.total_brands}</div>
             <div className="text-xs opacity-90">Marques</div>
           </div>
-          <div className="bg-white bg-opacity-20 rounded-lg p-3 text-center">
+          <div className="bg-white/20 rounded-lg p-3 text-center">
             <div className="text-2xl font-bold">
               {stats.total_pieces > 0
                 ? Math.round(stats.total_pieces / stats.categories_with_pieces)
@@ -378,12 +378,12 @@ export default function PiecesCatalogGrid({
                   </div>
 
                   <div className="flex justify-between items-center">
-                    <span className="bg-white bg-opacity-30 rounded-full px-3 py-1 text-sm font-bold">
+                    <span className="bg-white/30 rounded-full px-3 py-1 text-sm font-bold">
                       {category.piecesCount.toLocaleString()} pièces
                     </span>
                     <button
                       onClick={() => toggleCategory(category.id)}
-                      className="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-full p-2 transition-colors"
+                      className="bg-white/20 hover:bg-white/30 rounded-full p-2 transition-colors"
                     >
                       <svg
                         className={`w-4 h-4 transform transition-transform ${isExpanded ? "rotate-180" : ""}`}

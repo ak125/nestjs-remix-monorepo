@@ -57,7 +57,7 @@ export default function WhyAutomecanikSection() {
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
         {VALUE_PROPS.map(({ icon: Icon, title, desc }, i) => (
           <Reveal key={title} delay={i * 80}>
-            <article className="rounded-[22px] border border-white/10 bg-white/[0.045] px-3 py-3 sm:px-4 sm:py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-sm">
+            <article className="rounded-[22px] border border-white/10 bg-white/[0.045] px-3 py-3 sm:px-4 sm:py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-xs">
               <div className="mb-2 inline-flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-2xl bg-white/10">
                 <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-orange-500" />
               </div>

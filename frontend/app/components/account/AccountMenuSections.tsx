@@ -105,7 +105,7 @@ export function AccountMenuSections({ isPro }: AccountMenuSectionsProps) {
 
         {isPro && (
           <div className="bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl p-4 flex items-center gap-3.5 mb-4 border border-slate-700">
-            <div className="w-11 h-11 rounded-xl bg-amber-500 flex items-center justify-center shadow-md shadow-amber-500/20 flex-shrink-0">
+            <div className="w-11 h-11 rounded-xl bg-amber-500 flex items-center justify-center shadow-md shadow-amber-500/20 shrink-0">
               <Award size={20} className="text-white" />
             </div>
             <div className="flex-1">
