@@ -2,7 +2,11 @@ import { BotGuardMiddleware } from './bot-guard.middleware';
 
 type ServiceMock = Record<string, jest.Mock | (() => boolean)>;
 
-function makeMiddleware(overrides: ServiceMock = {}) {
+function makeMiddleware(
+  overrides: ServiceMock = {},
+  probeVerify: () => boolean = () => false,
+  probeEgress: (ip?: string) => boolean = () => false,
+) {
   const service = {
     isEnabled: () => true,
     isIpBlocked: jest.fn(async () => false),
@@ -13,8 +17,17 @@ function makeMiddleware(overrides: ServiceMock = {}) {
     trackAllowed: jest.fn(async () => undefined),
     ...overrides,
   };
-  const middleware = new BotGuardMiddleware(service as never);
-  return { middleware, service };
+  // Synthetic-probe credential: par défaut verify=false ET egress=false (chemin
+  // synthétique jamais pris → comportement existant inchangé).
+  const syntheticProbe = {
+    verify: jest.fn(probeVerify),
+    isExemptEgressIp: jest.fn(probeEgress),
+  };
+  const middleware = new BotGuardMiddleware(
+    service as never,
+    syntheticProbe as never,
+  );
+  return { middleware, service, syntheticProbe };
 }
 
 function makeReqRes(
@@ -63,15 +76,36 @@ describe('BotGuardMiddleware ordering', () => {
     expect(service.isCountryBlocked).not.toHaveBeenCalled();
   });
 
-  it('no longer exempts the synthetic crawler — geo + behavioral now apply (PR2: exemption retired, crawler self-paces instead)', async () => {
-    // Former synthetic-probe bypass (HMAC header / egress-IP floor) is gone. A
-    // probe-like request (identifiable UA, public client IP) must now flow through
-    // geo + behavioral like any other client. Empirically the crawler passes both
-    // (0 × 403 across all runs); the rate limiter is handled by self-pacing, not a
-    // server-side exemption.
-    const { middleware, service } = makeMiddleware({
-      isVerifiedSearchEngine: jest.fn(async () => false), // NOT a search engine
+  it('lets a verified synthetic probe through (dedicated flag) and bypasses geo + behavioral', async () => {
+    const { middleware, service, syntheticProbe } = makeMiddleware(
+      {
+        isVerifiedSearchEngine: jest.fn(async () => false), // NOT a search engine
+        isCountryBlocked: jest.fn(async () => true), // would block if consulted
+        calculateSuspicionScore: jest.fn(() => 100), // would block if consulted
+      },
+      () => true, // valid HMAC credential
+    );
+    const { req, res, next } = makeReqRes({
+      'cf-ipcountry': 'DE',
+      'cf-connecting-ip': '203.0.113.7', // public client IP → reaches the probe check
     });
+
+    await middleware.use(req, res, next);
+
+    expect(syntheticProbe.verify).toHaveBeenCalledTimes(1);
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(
+      (req as { isVerifiedSyntheticProbe?: boolean }).isVerifiedSyntheticProbe,
+    ).toBe(true);
+    // distinct from the search-engine flag (least-privilege; skipIf scopes it)
+    expect((req as { isVerifiedBot?: boolean }).isVerifiedBot).toBeUndefined();
+    expect((res as { statusCode: number }).statusCode).toBe(200);
+    expect(service.isCountryBlocked).not.toHaveBeenCalled();
+    expect(service.calculateSuspicionScore).not.toHaveBeenCalled();
+  });
+
+  it('does NOT set the synthetic flag without a valid credential (verify=false → normal flow)', async () => {
+    const { middleware, syntheticProbe } = makeMiddleware(); // default verify=false
     const { req, res, next } = makeReqRes({
       'cf-ipcountry': 'DE',
       'cf-connecting-ip': '203.0.113.7',
@@ -79,14 +113,41 @@ describe('BotGuardMiddleware ordering', () => {
 
     await middleware.use(req, res, next);
 
+    expect(syntheticProbe.verify).toHaveBeenCalledTimes(1);
     expect(next).toHaveBeenCalledTimes(1);
-    // No dedicated synthetic flag is ever set anymore.
     expect(
       (req as { isVerifiedSyntheticProbe?: boolean }).isVerifiedSyntheticProbe,
     ).toBeUndefined();
-    // geo + behavioral are consulted (the bypass that skipped them is gone).
-    expect(service.isCountryBlocked).toHaveBeenCalled();
-    expect(service.calculateSuspicionScore).toHaveBeenCalled();
+  });
+
+  it('recognizes the synthetic probe by its egress IP when the HMAC header is absent (defense-in-depth floor)', async () => {
+    // verify=false (en-tête HMAC retiré par le CDN) MAIS isExemptEgressIp=true
+    // (cf-connecting-ip de la sonde dans l'allowlist) → exemption maintenue.
+    const { middleware, service, syntheticProbe } = makeMiddleware(
+      {
+        isCountryBlocked: jest.fn(async () => true), // would block if consulted
+        calculateSuspicionScore: jest.fn(() => 100), // would block if consulted
+      },
+      () => false, // HMAC absent / stripped
+      () => true, // egress IP recognized
+    );
+    const { req, res, next } = makeReqRes({
+      'cf-ipcountry': 'DE',
+      'cf-connecting-ip': '203.0.113.7',
+    });
+
+    await middleware.use(req, res, next);
+
+    expect(syntheticProbe.verify).toHaveBeenCalledTimes(1);
+    // getClientIp's anti-spoofed IP is passed to the egress check
+    expect(syntheticProbe.isExemptEgressIp).toHaveBeenCalledWith('203.0.113.7');
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(
+      (req as { isVerifiedSyntheticProbe?: boolean }).isVerifiedSyntheticProbe,
+    ).toBe(true);
+    expect((req as { isVerifiedBot?: boolean }).isVerifiedBot).toBeUndefined();
+    expect(service.isCountryBlocked).not.toHaveBeenCalled();
+    expect(service.calculateSuspicionScore).not.toHaveBeenCalled();
   });
 
   it('still honors an explicit operator IP block even for a would-be verified crawler (ip_block wins, no DNS work)', async () => {
