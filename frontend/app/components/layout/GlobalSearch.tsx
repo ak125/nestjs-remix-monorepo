@@ -501,7 +501,7 @@ export const GlobalSearch = memo(function GlobalSearch({
                           >
                             <div className="flex items-center space-x-3 flex-1 min-w-0">
                               <Icon
-                                className={`w-5 h-5 flex-shrink-0 ${
+                                className={`w-5 h-5 shrink-0 ${
                                   selectedIndex === globalIndex
                                     ? "text-blue-600"
                                     : "text-gray-400"

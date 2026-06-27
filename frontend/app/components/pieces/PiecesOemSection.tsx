@@ -161,7 +161,7 @@ export const PiecesOemSection = memo(function PiecesOemSection({
                   {/* Titre H3 OEM avec préfixe et modèle */}
                   <h3 className="text-sm font-semibold text-gray-900 mb-2 flex items-center gap-2">
                     <svg
-                      className={`w-4 h-4 flex-shrink-0 ${
+                      className={`w-4 h-4 shrink-0 ${
                         isAvant ? "text-blue-600" : "text-orange-600"
                       }`}
                       fill="none"

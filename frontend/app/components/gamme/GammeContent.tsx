@@ -106,11 +106,11 @@ export default function GammeContent({
             }`}
           >
             {tip.type === "info" ? (
-              <Info size={15} className="text-blue-500 mt-0.5 flex-shrink-0" />
+              <Info size={15} className="text-blue-500 mt-0.5 shrink-0" />
             ) : (
               <AlertTriangle
                 size={15}
-                className="text-amber-500 mt-0.5 flex-shrink-0"
+                className="text-amber-500 mt-0.5 shrink-0"
               />
             )}
             <p

@@ -170,7 +170,7 @@ const MultiCarousel: React.FC<MultiCarouselProps> = ({
           {childrenArray.map((child, index) => (
             <div
               key={index}
-              className="flex-shrink-0"
+              className="shrink-0"
               style={{ width: itemWidth }}
               role="listitem"
               aria-hidden={index < currentIndex || index >= currentIndex + itemsPerView}

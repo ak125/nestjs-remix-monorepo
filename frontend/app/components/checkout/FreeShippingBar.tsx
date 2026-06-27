@@ -26,7 +26,7 @@ export function FreeShippingBar({
     return (
       <div className="rounded-xl p-3 bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-500 text-white shadow-sm">
         <div className="flex items-center gap-2">
-          <Truck className="h-4 w-4 flex-shrink-0" />
+          <Truck className="h-4 w-4 shrink-0" />
           <p className="font-bold text-sm flex-1">Livraison OFFERTE</p>
           <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full">
             0,00&nbsp;&euro;
@@ -45,7 +45,7 @@ export function FreeShippingBar({
   return (
     <div className="rounded-xl p-3 bg-white border border-slate-200">
       <div className="flex items-center gap-2 mb-2">
-        <Truck className="h-4 w-4 text-cta flex-shrink-0" />
+        <Truck className="h-4 w-4 text-cta shrink-0" />
         <p className="text-xs text-slate-700 flex-1">
           Plus que{" "}
           <strong className="text-cta">{formatPrice(remaining)}</strong> pour la

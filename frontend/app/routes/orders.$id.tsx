@@ -340,7 +340,7 @@ export default function OrderDetailsReal() {
                   </div>
                   <div className="space-y-3">
                     <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                      <Mail className="w-5 h-5 text-gray-500 flex-shrink-0" />
+                      <Mail className="w-5 h-5 text-gray-500 shrink-0" />
                       <a
                         href={`mailto:${order.customer.cst_mail}`}
                         className="text-gray-700 hover:text-blue-600 hover:underline font-medium"
@@ -350,7 +350,7 @@ export default function OrderDetailsReal() {
                     </div>
                     {order.customer.cst_tel && (
                       <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                        <Phone className="w-5 h-5 text-gray-500 flex-shrink-0" />
+                        <Phone className="w-5 h-5 text-gray-500 shrink-0" />
                         <a
                           href={`tel:${order.customer.cst_tel}`}
                           className="text-gray-700 hover:text-blue-600 font-medium"
@@ -361,7 +361,7 @@ export default function OrderDetailsReal() {
                     )}
                     {order.customer.cst_gsm && (
                       <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                        <Phone className="w-5 h-5 text-green-500 flex-shrink-0" />
+                        <Phone className="w-5 h-5 text-green-500 shrink-0" />
                         <a
                           href={`tel:${order.customer.cst_gsm}`}
                           className="text-gray-700 hover:text-blue-600 font-medium"
@@ -610,7 +610,7 @@ export default function OrderDetailsReal() {
                           </Badge>
                         )}
                       </div>
-                      <div className="flex-shrink-0 text-right space-y-1">
+                      <div className="shrink-0 text-right space-y-1">
                         <p className="text-gray-600 text-sm">
                           <span className="font-semibold text-gray-900">
                             {line.orl_art_quantity}

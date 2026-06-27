@@ -80,6 +80,13 @@ jobs:
       - name: 🛡️ Reserved-namespace-zero (frontend app CSS)
         run: bash scripts/lint/check-frontend-css-am-namespace.sh
 
+      # TW-1 (Tailwind-4 chantier): block utilities Tailwind v4 HARD-REMOVES
+      # (flex-shrink/grow, *-opacity-N, overflow-ellipsis, decoration-slice/clone).
+      # They still work under v3, so nothing else stops a regression before the
+      # engine swap (TW-2). Pre-normalized to the v3+v4 canonical form here.
+      - name: 🛡️ No Tailwind-v4 hard-removed utilities
+        run: bash scripts/lint/check-tailwind-v4-removed-utilities.sh
+
   typecheck:
     name: ʦ TypeScript
     runs-on: ubuntu-latest

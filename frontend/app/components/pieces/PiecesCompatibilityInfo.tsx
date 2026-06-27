@@ -64,7 +64,7 @@ export const PiecesCompatibilityInfo = memo(function PiecesCompatibilityInfo({
 
         {/* Années de production */}
         <div className="flex items-start gap-4">
-          <div className="flex-shrink-0 w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
+          <div className="shrink-0 w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
             <svg
               className="w-6 h-6 text-foreground"
               fill="none"
@@ -92,7 +92,7 @@ export const PiecesCompatibilityInfo = memo(function PiecesCompatibilityInfo({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {motorCodesFormatted && (
               <div className="flex items-start gap-4 bg-gradient-to-br from-gray-50 to-slate-50 rounded-lg p-4 border border-gray-200">
-                <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <div className="shrink-0 w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
                   <svg
                     className="w-5 h-5 text-blue-600"
                     fill="none"
@@ -125,7 +125,7 @@ export const PiecesCompatibilityInfo = memo(function PiecesCompatibilityInfo({
             )}
             {mineCodesFormatted && (
               <div className="flex items-start gap-4 bg-gradient-to-br from-gray-50 to-slate-50 rounded-lg p-4 border border-gray-200">
-                <div className="flex-shrink-0 w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                <div className="shrink-0 w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
                   <svg
                     className="w-5 h-5 text-green-600"
                     fill="none"
@@ -200,7 +200,7 @@ export const PiecesCompatibilityInfo = memo(function PiecesCompatibilityInfo({
           <Alert className="rounded-lg p-5" variant="warning">
             <div className="flex items-start gap-3">
               <svg
-                className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0"
+                className="w-5 h-5 text-yellow-600 mt-0.5 shrink-0"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -244,7 +244,7 @@ export const PiecesCompatibilityInfo = memo(function PiecesCompatibilityInfo({
                 véhicule
               </p>
             </div>
-            <button className="flex-shrink-0 bg-white text-foreground px-4 py-2 rounded-lg font-medium hover:bg-info/20 transition-colors shadow-lg">
+            <button className="shrink-0 bg-white text-foreground px-4 py-2 rounded-lg font-medium hover:bg-info/20 transition-colors shadow-lg">
               Vérifier
             </button>
           </div>
