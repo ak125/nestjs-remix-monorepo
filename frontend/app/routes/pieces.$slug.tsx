@@ -811,7 +811,7 @@ export default function PiecesDetailPage() {
            H2 #1 — Bien choisir votre {gamme}
            Types, critères, vérifications, erreurs à éviter
            ═══════════════════════════════════════════════════════ */}
-      <section id="bien-choisir" className="py-10 px-4 sm:px-6 bg-white">
+      <section id="bien-choisir" className="py-10 px-4 sm:px-6 bg-white cv-auto">
         <div className="max-w-[1280px] mx-auto">
           <h2 className="text-2xl font-bold text-slate-900 mb-6">
             Bien choisir votre {n}

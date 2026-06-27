@@ -12,7 +12,15 @@ import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { createRequire } from "node:module";
 import { validateTokens } from "../scripts/tokens-schema.mjs";
-import { getContrastColor, hexToHSL } from "../scripts/color-utils.mjs";
+import { getContrastColor, hexToHSL, calculateLuminance } from "../scripts/color-utils.mjs";
+
+/** WCAG 2.x contrast ratio between two #rrggbb hexes. */
+const contrastRatio = (a, b) => {
+  const la = calculateLuminance(a);
+  const lb = calculateLuminance(b);
+  const [hi, lo] = la > lb ? [la, lb] : [lb, la];
+  return (hi + 0.05) / (lo + 0.05);
+};
 
 const PKG = dirname(dirname(fileURLToPath(import.meta.url)));
 const source = JSON.parse(readFileSync(join(PKG, "src/tokens.json"), "utf8"));
@@ -77,6 +85,33 @@ describe("color math (v3-oracle verified)", () => {
     const hsl = hexToHSL(source.color.primary["500"].$value);
     expect(source.shadcn.primary.$value).toBe(hsl);
     expect(source.shadcn.ring.$value).toBe(hsl);
+  });
+});
+
+describe("DT-1 — CTA action foreground a11y (#FFF→#000)", () => {
+  it("light semantic.actionContrast is #000000 (was #FFFFFF, WCAG ~2.8:1 fail)", () => {
+    expect(source.color.semantic.actionContrast.$value).toBe("#000000");
+  });
+
+  it("the light action surface + actionContrast pair passes WCAG AA (≥4.5)", () => {
+    const surface = source.color.semantic.action.$value; // #F97316
+    const fg = source.color.semantic.actionContrast.$value; // #000000
+    expect(contrastRatio(surface, fg)).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it("white-on-action would FAIL AA (the defect this fixes)", () => {
+    expect(contrastRatio(source.color.semantic.action.$value, "#FFFFFF")).toBeLessThan(4.5);
+  });
+
+  it("the DARK action block is untouched (descoped — stays as-is)", () => {
+    // dark.semantic.actionContrast must remain #FFFFFF (no runtime .dark activation; byte-identical)
+    expect(source.dark.semantic.actionContrast.$value).toBe("#FFFFFF");
+    expect(projection.dark.semantic.actionContrast).toBe("#FFFFFF");
+  });
+
+  it("the auto luminance-contrast var for action stays #000000 (single source of truth)", () => {
+    // getContrastColor(#F97316) must agree with the explicit actionContrast now (both #000)
+    expect(getContrastColor(source.color.semantic.action.$value)).toBe("#000000");
   });
 });
 

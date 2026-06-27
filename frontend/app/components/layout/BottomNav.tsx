@@ -95,7 +95,7 @@ export default function BottomNav() {
         <span className="relative">
           <ShoppingCart size={20} strokeWidth={isCartActive ? 2.5 : 1.5} />
           {itemCount > 0 && (
-            <span className="absolute -top-1.5 -right-2.5 min-w-[16px] h-[16px] px-0.5 bg-cta rounded-full text-[9px] font-bold flex items-center justify-center text-white">
+            <span className="absolute -top-1.5 -right-2.5 min-w-[16px] h-[16px] px-0.5 bg-cta rounded-full text-[9px] font-bold flex items-center justify-center text-black">
               {itemCount > 99 ? "99+" : itemCount}
             </span>
           )}

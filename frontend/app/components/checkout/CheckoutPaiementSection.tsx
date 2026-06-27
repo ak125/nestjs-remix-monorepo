@@ -223,7 +223,7 @@ export function CheckoutPaiementSection({
         type="submit"
         disabled={isProcessing}
         size="lg"
-        className={`w-full py-4 px-6 rounded-xl font-semibold shadow-lg transition-all duration-200 ${canSubmit ? "bg-cta hover:bg-cta-hover text-white shadow-cta/30 hover:shadow-xl hover:shadow-cta/40" : "bg-cta/70 text-white shadow-cta/20"}`}
+        className={`w-full py-4 px-6 rounded-xl font-semibold shadow-lg transition-all duration-200 ${canSubmit ? "bg-cta hover:bg-cta-hover text-black shadow-cta/30 hover:shadow-xl hover:shadow-cta/40" : "bg-cta/70 text-black shadow-cta/20"}`}
       >
         {isProcessing ? (
           <>

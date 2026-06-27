@@ -21,7 +21,6 @@ export default defineConfig({
     
     const files = [
       { src: 'src/styles/tokens.css', dest: 'dist/tokens.css' },
-      { src: 'src/styles/utilities.css', dest: 'dist/utilities.css' },
     ];
     
     files.forEach(({ src, dest }) => {

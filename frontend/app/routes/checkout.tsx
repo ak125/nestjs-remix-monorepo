@@ -800,7 +800,7 @@ export default function CheckoutPage() {
             </Link>
             <Link
               to="/#catalogue"
-              className="inline-flex items-center gap-2 px-5 py-3 bg-cta hover:bg-cta-hover text-white font-semibold rounded-xl transition-colors"
+              className="inline-flex items-center gap-2 px-5 py-3 bg-cta hover:bg-cta-hover text-black font-semibold rounded-xl transition-colors"
             >
               Trouver des pièces
             </Link>
@@ -1227,7 +1227,7 @@ export default function CheckoutPage() {
               <div className="flex flex-col gap-2 w-full mt-2">
                 <a
                   href={`/checkout/resume?token=${pendingOrderInfo.resumeToken}`}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-3 bg-cta text-white rounded-lg font-medium hover:bg-cta/90 transition-colors"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-3 bg-cta text-black rounded-lg font-medium hover:bg-cta/90 transition-colors"
                 >
                   Reprendre le paiement
                 </a>
@@ -1274,7 +1274,7 @@ export default function CheckoutPage() {
             form="checkout-form"
             disabled={isLocked}
             size="lg"
-            className={`w-full rounded-xl font-bold touch-target ${canSubmitOrder ? "bg-cta hover:bg-cta-hover text-white" : "bg-cta/70 text-white"}`}
+            className={`w-full rounded-xl font-bold touch-target ${canSubmitOrder ? "bg-cta hover:bg-cta-hover text-black" : "bg-cta/70 text-black"}`}
           >
             {isLocked ? (
               <>
