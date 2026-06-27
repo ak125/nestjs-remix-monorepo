@@ -483,3 +483,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/tw2-tailwind4-engine`
 - **Décision** : feat(tw-2): install Tailwind CSS v4.3.1 (engine swap, @config bridge, @tailwindcss/vite)
 - **Sortie** : PR #1181 | commits fe3aef3b8
+
+## 2026-06-27 — fix/home-translate-no-removechild (auto)
+
+- **Branche** : `fix/home-translate-no-removechild`
+- **Décision** : fix(home): translate="no" sur widgets interactifs — stoppe le crash removeChild dû à la traduction navigateur
+- **Sortie** : PR aucune | commits bda4ee6d5
