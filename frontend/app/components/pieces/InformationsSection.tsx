@@ -449,7 +449,7 @@ const InformationsSection = memo(function InformationsSection({
             des {pluralGammeName || "pièces"}
           </p>
           <p className="text-sm text-green-600 ml-10 mb-4 flex items-center gap-2">
-            <CheckCircle className="w-4 h-4 flex-shrink-0" />
+            <CheckCircle className="w-4 h-4 shrink-0" />
             <span>
               Nous filtrons selon votre véhicule et votre essieu (avant/arrière)
               pour éviter toute erreur de compatibilité.
@@ -458,7 +458,7 @@ const InformationsSection = memo(function InformationsSection({
           <div className="space-y-3 ml-10">
             {essentials.map((infoHtml, index) => (
               <div key={index} className="flex items-start gap-3">
-                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-sm font-bold shadow-sm">
+                <span className="shrink-0 w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-sm font-bold shadow-sm">
                   {index + 1}
                 </span>
                 <HtmlContent

@@ -502,7 +502,7 @@ export default function BrandCatalogPage() {
               {/* Layout horizontal : Logo + VehicleSelector côte à côte */}
               <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-8">
                 {/* Logo constructeur à gauche */}
-                <div className="flex-shrink-0 w-full lg:w-64">
+                <div className="shrink-0 w-full lg:w-64">
                   <div className="relative group">
                     {/* Cercle décoratif arrière-plan */}
                     <div className="absolute inset-0 -z-10">
@@ -561,25 +561,25 @@ export default function BrandCatalogPage() {
           {/* Trust badges premium - Grid responsive pour mobile */}
           <div className="grid grid-cols-2 md:flex md:flex-wrap justify-center gap-3 md:gap-4 max-w-3xl mx-auto animate-in fade-in duration-700 delay-400">
             <div className="group flex items-center gap-2 px-3 md:px-4 py-2.5 bg-gradient-to-br from-white/15 to-white/10 rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
-              <Car className="w-4 h-4 text-green-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
+              <Car className="w-4 h-4 text-green-300 shrink-0 group-hover:scale-110 transition-transform" />
               <span className="text-white text-sm md:text-base font-semibold whitespace-nowrap">
                 400 000+ pièces
               </span>
             </div>
             <div className="group flex items-center gap-2 px-3 md:px-4 py-2.5 bg-gradient-to-br from-white/15 to-white/10 rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
-              <Settings className="w-4 h-4 text-blue-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
+              <Settings className="w-4 h-4 text-blue-300 shrink-0 group-hover:scale-110 transition-transform" />
               <span className="text-white text-sm md:text-base font-semibold whitespace-nowrap">
                 Livraison 24-48h
               </span>
             </div>
             <div className="group flex items-center gap-2 px-3 md:px-4 py-2.5 bg-gradient-to-br from-white/15 to-white/10 rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
-              <Wrench className="w-4 h-4 text-foreground flex-shrink-0 group-hover:scale-110 transition-transform" />
+              <Wrench className="w-4 h-4 text-foreground shrink-0 group-hover:scale-110 transition-transform" />
               <span className="text-white text-sm md:text-base font-semibold whitespace-nowrap">
                 Paiement sécurisé
               </span>
             </div>
             <div className="group flex items-center gap-2 px-3 md:px-4 py-2.5 bg-gradient-to-br from-white/15 to-white/10 rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
-              <Zap className="w-4 h-4 text-orange-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
+              <Zap className="w-4 h-4 text-orange-300 shrink-0 group-hover:scale-110 transition-transform" />
               <span className="text-white text-sm md:text-base font-semibold whitespace-nowrap">
                 Experts gratuits
               </span>
@@ -773,7 +773,7 @@ export default function BrandCatalogPage() {
                         className="flex items-center justify-between gap-2 px-4 py-3 bg-white border border-gray-200 hover:border-blue-400 hover:bg-blue-50 rounded-lg shadow-sm hover:shadow-md transition-all text-sm font-medium text-blue-900 hover:text-blue-700"
                       >
                         <span className="truncate">{m[1]}</span>
-                        <ChevronRight className="w-4 h-4 flex-shrink-0 opacity-60" />
+                        <ChevronRight className="w-4 h-4 shrink-0 opacity-60" />
                       </Link>
                     ))}
                 </div>
@@ -804,7 +804,7 @@ export default function BrandCatalogPage() {
                           className="bg-white rounded-xl p-6 shadow-sm border border-gray-200"
                         >
                           <div className="flex items-center gap-3 mb-3">
-                            <span className="flex-shrink-0 w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-lg">
+                            <span className="shrink-0 w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-lg">
                               {idx + 1}
                             </span>
                             <h3 className="font-semibold text-gray-900">

@@ -107,7 +107,7 @@ export default function GammeChecklist({
                 )}
                 <div className="flex items-center gap-2.5">
                   <div
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all ${
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all ${
                       ok
                         ? "bg-emerald-500 shadow-md shadow-emerald-200"
                         : "bg-blue-50"
@@ -139,7 +139,7 @@ export default function GammeChecklist({
 
       {checked.length === total && (
         <div className="mt-4 p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-2.5 animate-subtle-fade-in">
-          <CheckCircle size={16} className="text-emerald-500 flex-shrink-0" />
+          <CheckCircle size={16} className="text-emerald-500 shrink-0" />
           <span className="text-[12px] font-semibold text-emerald-700">
             Tout validé — commandez en confiance.
           </span>

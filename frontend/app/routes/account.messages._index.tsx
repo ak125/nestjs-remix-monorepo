@@ -194,9 +194,9 @@ export default function MessagesList() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         {message.MSG_OPEN === 0 ? (
-                          <Mail className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                          <Mail className="h-4 w-4 text-blue-500 shrink-0" />
                         ) : (
-                          <MailOpen className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                          <MailOpen className="h-4 w-4 text-gray-400 shrink-0" />
                         )}
                         <span className="font-medium text-sm">
                           {message.MSG_ORD_ID

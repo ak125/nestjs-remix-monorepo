@@ -188,7 +188,7 @@ export const PiecesCrossSelling = memo(function PiecesCrossSelling({
         <div className="mt-6 p-4 bg-teal-50 rounded-lg border border-teal-200">
           <p className="text-xs text-teal-800 flex items-start gap-2">
             <svg
-              className="w-4 h-4 mt-0.5 flex-shrink-0"
+              className="w-4 h-4 mt-0.5 shrink-0"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -260,7 +260,7 @@ export const PiecesCrossSellingCompact = memo(
                 to={url}
                 className="flex items-center gap-3 p-2 rounded-lg hover:bg-teal-50 transition-colors group"
               >
-                <div className="w-10 h-10 bg-gradient-to-br from-teal-100 to-cyan-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 bg-gradient-to-br from-teal-100 to-cyan-100 rounded-lg flex items-center justify-center shrink-0">
                   {gamme.PG_IMAGE ? (
                     <img
                       src={gamme.PG_IMAGE}

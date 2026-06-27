@@ -126,7 +126,7 @@ export function DynamicMenu({ module, className = "" }: DynamicMenuProps) {
           >
             <div className="flex items-center space-x-3 flex-1 min-w-0">
               {item.icon && (
-                <span className="flex-shrink-0 w-4 h-4 text-current">
+                <span className="shrink-0 w-4 h-4 text-current">
                   {item.icon}
                 </span>
               )}
@@ -156,7 +156,7 @@ export function DynamicMenu({ module, className = "" }: DynamicMenuProps) {
             </div>
 
             {hasChildren && (
-              <div className="flex-shrink-0 ml-2">
+              <div className="shrink-0 ml-2">
                 {isExpanded ? (
                   <ChevronDown className="w-4 h-4 text-gray-500" />
                 ) : (

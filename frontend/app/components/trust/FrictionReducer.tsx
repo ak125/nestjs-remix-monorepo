@@ -62,7 +62,7 @@ export const FrictionReducer = memo(function FrictionReducer({
   if (variant === "compact") {
     return (
       <div className={cn("flex items-center gap-2 text-sm", className)}>
-        <Icon className={cn("w-4 h-4 flex-shrink-0", config.color)} />
+        <Icon className={cn("w-4 h-4 shrink-0", config.color)} />
         <span className="font-medium text-gray-700">{config.title}</span>
       </div>
     );

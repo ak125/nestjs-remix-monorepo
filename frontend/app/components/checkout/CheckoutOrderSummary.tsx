@@ -61,7 +61,7 @@ export function CheckoutOrderSummary({
       {/* Vehicle context */}
       {vehicleLabel && (
         <div className="flex items-center gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
-          <Car className="h-4 w-4 text-emerald-600 flex-shrink-0" />
+          <Car className="h-4 w-4 text-emerald-600 shrink-0" />
           <div className="min-w-0">
             <p className="text-sm font-medium text-slate-800 truncate">
               {vehicleLabel}
@@ -78,7 +78,7 @@ export function CheckoutOrderSummary({
 
       {/* Delivery ETA */}
       <div className="flex items-start gap-2.5 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3">
-        <Truck className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
+        <Truck className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
         <div className="text-sm">
           <p className="font-medium text-slate-800">
             Livraison estimee {deliveryETA.formattedRange}
@@ -141,14 +141,14 @@ export function CheckoutOrderSummary({
           {/* Contextual reassurance messages */}
           <div className="mt-2 space-y-1">
             <p className="flex items-center gap-1.5 text-xs text-emerald-600">
-              <Package className="h-3 w-3 flex-shrink-0" />
+              <Package className="h-3 w-3 shrink-0" />
               {cart.items.length} article{cart.items.length > 1 ? "s" : ""} pret
               {cart.items.length > 1 ? "s" : ""} a etre expedie
               {cart.items.length > 1 ? "s" : ""}
             </p>
             {vehicleLabel && (
               <p className="flex items-center gap-1.5 text-xs text-emerald-600">
-                <CheckCircle className="h-3 w-3 flex-shrink-0" />
+                <CheckCircle className="h-3 w-3 shrink-0" />
                 Pieces compatibles avec votre vehicule
               </p>
             )}
@@ -177,7 +177,7 @@ export function CheckoutOrderSummary({
           {cart.items.map((item: CartItemType) => (
             <div key={item.id} className="flex items-start gap-3">
               {/* Product thumbnail */}
-              <div className="w-10 h-10 rounded-lg border border-slate-200 bg-slate-50 flex-shrink-0 overflow-hidden">
+              <div className="w-10 h-10 rounded-lg border border-slate-200 bg-slate-50 shrink-0 overflow-hidden">
                 {item.product_image ? (
                   <img
                     src={item.product_image}
@@ -223,7 +223,7 @@ export function CheckoutOrderSummary({
                   Qte {item.quantity}
                 </p>
               </div>
-              <span className="text-sm font-medium text-slate-900 flex-shrink-0">
+              <span className="text-sm font-medium text-slate-900 shrink-0">
                 {formatPrice(item.price * item.quantity)}
               </span>
             </div>
@@ -257,19 +257,19 @@ export function CheckoutOrderSummary({
       {/* Trust badges — 4 columns */}
       <div className="mt-4 rounded-xl border p-3 grid grid-cols-2 gap-2 text-xs text-gray-600">
         <span className="flex items-center gap-1.5">
-          <Truck className="h-4 w-4 text-blue-600 flex-shrink-0" />
+          <Truck className="h-4 w-4 text-blue-600 shrink-0" />
           Expedition 24-48h
         </span>
         <span className="flex items-center gap-1.5">
-          <Shield className="h-4 w-4 text-green-600 flex-shrink-0" />
+          <Shield className="h-4 w-4 text-green-600 shrink-0" />
           Paiement securise
         </span>
         <span className="flex items-center gap-1.5">
-          <CreditCard className="h-4 w-4 text-foreground flex-shrink-0" />
+          <CreditCard className="h-4 w-4 text-foreground shrink-0" />
           3D Secure
         </span>
         <span className="flex items-center gap-1.5">
-          <RotateCcw className="h-4 w-4 text-orange-500 flex-shrink-0" />
+          <RotateCcw className="h-4 w-4 text-orange-500 shrink-0" />
           Retours 30 jours
         </span>
       </div>

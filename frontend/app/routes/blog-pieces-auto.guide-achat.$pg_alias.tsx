@@ -552,7 +552,7 @@ export default function R6GuidePage() {
                   {/* Cross-link R3 encadre */}
                   <div className="rounded-lg border border-blue-200 bg-blue-50/50 p-4 mb-8">
                     <div className="flex items-center gap-2">
-                      <ExternalLink className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                      <ExternalLink className="w-4 h-4 text-blue-600 shrink-0" />
                       <p className="text-sm text-gray-700">
                         Procedure de remplacement ?{" "}
                         <Link
@@ -1003,7 +1003,7 @@ function V1Sections({
               <ul className="space-y-2">
                 {guide.symptoms.map((s, i) => (
                   <li key={i} className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-orange-500 mt-0.5 shrink-0" />
                     <span className="text-sm text-gray-700">{s}</span>
                   </li>
                 ))}

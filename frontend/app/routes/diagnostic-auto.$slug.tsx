@@ -901,7 +901,7 @@ export default function DiagnosticAutoDetail() {
             <Card className="bg-gray-100">
               <CardContent className="py-4">
                 <div className="flex items-start gap-3">
-                  <Shield className="h-5 w-5 text-gray-600 flex-shrink-0 mt-0.5" />
+                  <Shield className="h-5 w-5 text-gray-600 shrink-0 mt-0.5" />
                   <div className="text-sm text-gray-600">
                     <p className="font-medium mb-1">Avis professionnel</p>
                     <p>

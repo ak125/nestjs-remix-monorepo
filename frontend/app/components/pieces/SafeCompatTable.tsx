@@ -63,7 +63,7 @@ const SafeCompatTable = memo(function SafeCompatTable({
           return (
             <div key={i} className="flex items-start gap-3 px-4 py-3 text-sm">
               <Icon
-                className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0"
+                className="w-4 h-4 text-blue-600 mt-0.5 shrink-0"
                 aria-hidden="true"
               />
               <div className="flex-1 min-w-0">

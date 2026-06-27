@@ -87,8 +87,8 @@ export function ColorDemo() {
             {/* Color Swatch */}
             <div
               style={{
-                background: `var(--color-semantic-${color.name})`,
-                color: `var(--color-semantic-${color.name}-contrast)`,
+                background: `var(--am-color-semantic-${color.name})`,
+                color: `var(--am-color-semantic-${color.name}-contrast)`,
               }}
               className="p-6 text-center"
             >
@@ -104,7 +104,7 @@ export function ColorDemo() {
               {/* CSS Variable */}
               <div>
                 <code className="text-xs bg-gray-100 px-2 py-1 rounded block overflow-x-auto">
-                  var(--color-semantic-{color.name})
+                  var(--am-color-semantic-{color.name})
                 </code>
               </div>
 
@@ -142,8 +142,8 @@ export function ColorDemo() {
               <div className="pt-3 border-t space-y-2">
                 <button
                   style={{
-                    background: `var(--color-semantic-${color.name})`,
-                    color: `var(--color-semantic-${color.name}-contrast)`,
+                    background: `var(--am-color-semantic-${color.name})`,
+                    color: `var(--am-color-semantic-${color.name}-contrast)`,
                   }}
                   className="w-full px-4 py-2 rounded font-semibold hover:opacity-90 transition"
                 >
@@ -151,8 +151,8 @@ export function ColorDemo() {
                 </button>
                 <button
                   style={{
-                    border: `2px solid var(--color-semantic-${color.name})`,
-                    color: `var(--color-semantic-${color.name})`,
+                    border: `2px solid var(--am-color-semantic-${color.name})`,
+                    color: `var(--am-color-semantic-${color.name})`,
                   }}
                   className="w-full px-4 py-2 rounded font-semibold hover:bg-gray-50 transition"
                 >
@@ -175,8 +175,8 @@ export function ColorDemo() {
             <div className="flex gap-3">
               <button
                 style={{
-                  background: 'var(--color-semantic-action)',
-                  color: 'var(--color-semantic-action-contrast)',
+                  background: 'var(--am-color-semantic-action)',
+                  color: 'var(--am-color-semantic-action-contrast)',
                 }}
                 className="px-6 py-3 rounded-lg font-semibold shadow-md hover:shadow-lg transition"
               >
@@ -184,8 +184,8 @@ export function ColorDemo() {
               </button>
               <button
                 style={{
-                  background: 'var(--color-semantic-info)',
-                  color: 'var(--color-semantic-info-contrast)',
+                  background: 'var(--am-color-semantic-info)',
+                  color: 'var(--am-color-semantic-info-contrast)',
                 }}
                 className="px-6 py-3 rounded-lg font-semibold shadow-md hover:shadow-lg transition"
               >
@@ -203,8 +203,8 @@ export function ColorDemo() {
             <div className="space-y-3">
               <div
                 style={{
-                  background: 'var(--color-semantic-success)',
-                  color: 'var(--color-semantic-success-contrast)',
+                  background: 'var(--am-color-semantic-success)',
+                  color: 'var(--am-color-semantic-success-contrast)',
                 }}
                 className="p-4 rounded-lg"
               >
@@ -212,8 +212,8 @@ export function ColorDemo() {
               </div>
               <div
                 style={{
-                  background: 'var(--color-semantic-warning)',
-                  color: 'var(--color-semantic-warning-contrast)',
+                  background: 'var(--am-color-semantic-warning)',
+                  color: 'var(--am-color-semantic-warning-contrast)',
                 }}
                 className="p-4 rounded-lg"
               >
@@ -221,8 +221,8 @@ export function ColorDemo() {
               </div>
               <div
                 style={{
-                  background: 'var(--color-semantic-danger)',
-                  color: 'var(--color-semantic-danger-contrast)',
+                  background: 'var(--am-color-semantic-danger)',
+                  color: 'var(--am-color-semantic-danger-contrast)',
                 }}
                 className="p-4 rounded-lg"
               >
@@ -230,8 +230,8 @@ export function ColorDemo() {
               </div>
               <div
                 style={{
-                  background: 'var(--color-semantic-info)',
-                  color: 'var(--color-semantic-info-contrast)',
+                  background: 'var(--am-color-semantic-info)',
+                  color: 'var(--am-color-semantic-info-contrast)',
                 }}
                 className="p-4 rounded-lg"
               >
@@ -246,8 +246,8 @@ export function ColorDemo() {
             <div className="flex flex-wrap gap-3">
               <span
                 style={{
-                  background: 'var(--color-semantic-success)',
-                  color: 'var(--color-semantic-success-contrast)',
+                  background: 'var(--am-color-semantic-success)',
+                  color: 'var(--am-color-semantic-success-contrast)',
                 }}
                 className="px-3 py-1 rounded-full text-sm font-semibold"
               >
@@ -255,8 +255,8 @@ export function ColorDemo() {
               </span>
               <span
                 style={{
-                  background: 'var(--color-semantic-warning)',
-                  color: 'var(--color-semantic-warning-contrast)',
+                  background: 'var(--am-color-semantic-warning)',
+                  color: 'var(--am-color-semantic-warning-contrast)',
                 }}
                 className="px-3 py-1 rounded-full text-sm font-semibold"
               >
@@ -264,8 +264,8 @@ export function ColorDemo() {
               </span>
               <span
                 style={{
-                  background: 'var(--color-semantic-danger)',
-                  color: 'var(--color-semantic-danger-contrast)',
+                  background: 'var(--am-color-semantic-danger)',
+                  color: 'var(--am-color-semantic-danger-contrast)',
                 }}
                 className="px-3 py-1 rounded-full text-sm font-semibold"
               >
@@ -273,8 +273,8 @@ export function ColorDemo() {
               </span>
               <span
                 style={{
-                  background: 'var(--color-semantic-neutral)',
-                  color: 'var(--color-semantic-neutral-contrast)',
+                  background: 'var(--am-color-semantic-neutral)',
+                  color: 'var(--am-color-semantic-neutral-contrast)',
                 }}
                 className="px-3 py-1 rounded-full text-sm font-semibold"
               >

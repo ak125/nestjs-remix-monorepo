@@ -300,7 +300,7 @@ export function PiecesVehicleContent() {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar filtres et catalogue — hidden on mobile, toggle via MobileBottomBar */}
           <aside
-            className={`lg:w-80 flex-shrink-0 space-y-6 animate-in fade-in slide-in-from-left duration-700 ${showFilters ? "block" : "hidden lg:block"}`}
+            className={`lg:w-80 shrink-0 space-y-6 animate-in fade-in slide-in-from-left duration-700 ${showFilters ? "block" : "hidden lg:block"}`}
           >
             {/* Filtres */}
             <div className="sticky top-24">
@@ -385,7 +385,7 @@ export function PiecesVehicleContent() {
                 </p>
                 <a
                   href="#compatibilite"
-                  className="flex-shrink-0 text-sm font-semibold text-amber-700 hover:text-amber-900 bg-amber-100 hover:bg-amber-200 px-3 py-1.5 rounded-md transition-colors"
+                  className="shrink-0 text-sm font-semibold text-amber-700 hover:text-amber-900 bg-amber-100 hover:bg-amber-200 px-3 py-1.5 rounded-md transition-colors"
                 >
                   Vérifier
                 </a>

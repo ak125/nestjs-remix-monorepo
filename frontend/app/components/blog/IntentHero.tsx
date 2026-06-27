@@ -165,7 +165,7 @@ export function IntentHero({ stats }: IntentHeroProps) {
                     {lane.bullets.map((bullet) => (
                       <li key={bullet} className="flex items-start gap-1.5">
                         <span
-                          className={`mt-1 w-1.5 h-1.5 rounded-full bg-gradient-to-br ${lane.color} flex-shrink-0`}
+                          className={`mt-1 w-1.5 h-1.5 rounded-full bg-gradient-to-br ${lane.color} shrink-0`}
                         />
                         {bullet}
                       </li>

@@ -47,7 +47,7 @@ export default function SectionHeader({
       {linkText && linkHref && (
         <Link
           to={linkHref}
-          className="flex items-center gap-1 text-sm font-semibold text-cta whitespace-nowrap flex-shrink-0"
+          className="flex items-center gap-1 text-sm font-semibold text-cta whitespace-nowrap shrink-0"
         >
           {linkText} <ArrowRight className="w-3.5 h-3.5" />
         </Link>

@@ -75,7 +75,7 @@ export function PurchaseGuide({
             <div className="relative p-6 md:p-8">
               <div className="flex items-start gap-4 md:gap-6">
                 {/* Badge numéro avec animation pulse */}
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   <div className="relative">
                     <div className="absolute inset-0 bg-blue-500 rounded-full blur-xl opacity-30 animate-pulse"></div>
                     <div className="relative w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-full flex items-center justify-center shadow-xl">
@@ -95,7 +95,7 @@ export function PurchaseGuide({
                   {/* Highlight box avec icône */}
                   <div className="bg-gradient-to-r from-blue-100 to-blue-50 p-4 rounded-r-lg mb-5 shadow-sm">
                     <div className="flex items-center gap-3">
-                      <Shield className="w-6 h-6 text-blue-600 flex-shrink-0" />
+                      <Shield className="w-6 h-6 text-blue-600 shrink-0" />
                       <p className="text-sm md:text-base font-semibold text-blue-900">
                         {categoryData.step1.highlight}
                       </p>
@@ -109,7 +109,7 @@ export function PurchaseGuide({
                         key={idx}
                         className="flex items-start gap-3 text-gray-700 group"
                       >
-                        <div className="flex-shrink-0 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center mt-0.5 shadow-md group-hover:scale-110 transition-transform">
+                        <div className="shrink-0 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center mt-0.5 shadow-md group-hover:scale-110 transition-transform">
                           <CheckCircle2 className="w-4 h-4 text-white" />
                         </div>
                         <span className="text-base leading-relaxed">
@@ -131,7 +131,7 @@ export function PurchaseGuide({
               {/* Header de l'étape */}
               <div className="mb-3">
                 <div className="flex items-start gap-4 md:gap-6">
-                  <div className="flex-shrink-0">
+                  <div className="shrink-0">
                     <div className="relative">
                       <div className="absolute inset-0 bg-green-500 rounded-full blur-xl opacity-30 animate-pulse"></div>
                       <div className="relative w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-green-500 to-green-700 text-white rounded-full flex items-center justify-center shadow-xl">
@@ -155,7 +155,7 @@ export function PurchaseGuide({
                     {/* Highlight box avec icône */}
                     <div className="bg-gradient-to-r from-green-100 to-green-50 p-4 rounded-r-lg shadow-sm">
                       <div className="flex items-center gap-3">
-                        <CheckCircle2 className="w-6 h-6 text-green-600 flex-shrink-0" />
+                        <CheckCircle2 className="w-6 h-6 text-green-600 shrink-0" />
                         <p className="text-sm md:text-base font-semibold text-green-900">
                           Toutes nos gammes sont certifiées et garantissent
                           votre sécurité
@@ -343,7 +343,7 @@ export function PurchaseGuide({
                     style={{ animationDelay: "100ms" }}
                   >
                     <div
-                      className={`w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center shadow-lg flex-shrink-0 ${
+                      className={`w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center shadow-lg shrink-0 ${
                         selectedRange === "economique"
                           ? "bg-gradient-to-br from-gray-100 to-gray-200"
                           : selectedRange === "qualite_plus"
@@ -408,7 +408,7 @@ export function PurchaseGuide({
                             className="flex items-start gap-3 p-3 bg-white rounded-lg border border-gray-100 hover:border-green-200 hover:shadow-sm transition-all animate-in fade-in slide-in-from-left-2 duration-300 fill-mode-both"
                             style={{ animationDelay: `${350 + idx * 50}ms` }}
                           >
-                            <div className="flex-shrink-0 w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                            <div className="shrink-0 w-2 h-2 bg-green-500 rounded-full mt-2"></div>
                             <span className="text-sm text-gray-700 leading-relaxed">
                               {spec}
                             </span>
@@ -443,7 +443,7 @@ export function PurchaseGuide({
           <div className="relative bg-gradient-to-br from-red-50 via-white to-red-50/50 rounded-2xl shadow-lg border border-red-200/50 overflow-hidden">
             <div className="relative p-6 md:p-8">
               <div className="flex items-start gap-4 md:gap-6">
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   <div className="relative">
                     <div className="absolute inset-0 bg-red-500 rounded-full blur-xl opacity-30 animate-pulse"></div>
                     <div className="relative w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-red-500 to-red-700 text-white rounded-full flex items-center justify-center shadow-xl">
@@ -485,7 +485,7 @@ export function PurchaseGuide({
                           <div className="flex items-start gap-3">
                             {/* Icône avec gradient de la famille */}
                             <div
-                              className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center shadow-md bg-gradient-to-br ${familleColor}`}
+                              className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center shadow-md bg-gradient-to-br ${familleColor}`}
                             >
                               {alert.type === "danger" ? (
                                 <AlertTriangle className="w-5 h-5 text-white" />

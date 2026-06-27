@@ -9,7 +9,7 @@ export default function GammeDiagnosticCTA() {
       <div className="bg-white rounded-[24px] shadow-[0_14px_34px_rgba(15,23,42,0.08)] border border-orange-100 overflow-hidden">
         <div className="px-5 pt-4 pb-2 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 lg:w-10 lg:h-10 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-md shadow-orange-200 flex-shrink-0">
+            <div className="w-9 h-9 lg:w-10 lg:h-10 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-md shadow-orange-200 shrink-0">
               <SearchCheck
                 size={17}
                 className="text-white animate-subtle-float"
