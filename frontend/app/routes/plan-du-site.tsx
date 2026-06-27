@@ -258,7 +258,7 @@ export default function PlanDuSite() {
 
       <Container size="default" className="py-8">
         {/* Navigation rapide — sticky */}
-        <nav className="mb-10 sticky top-0 z-10 bg-white/95 backdrop-blur-sm border rounded-xl p-4 shadow-sm">
+        <nav className="mb-10 sticky top-0 z-10 bg-white/95 backdrop-blur-xs border rounded-xl p-4 shadow-sm">
           <div className="flex flex-wrap gap-2">
             {quickNav.map((item) => {
               const Icon = item.icon;

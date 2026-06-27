@@ -130,7 +130,7 @@ export const PiecesCatalogueFamille = memo(function PiecesCatalogueFamille({
 
                             {/* Badge "Voir" au hover - apparaît en haut à droite */}
                             <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
-                              <div className="bg-white/90 backdrop-blur-sm text-gray-900 text-[7px] font-bold px-1.5 py-0.5 rounded-full shadow-lg flex items-center gap-0.5">
+                              <div className="bg-white/90 backdrop-blur-xs text-gray-900 text-[7px] font-bold px-1.5 py-0.5 rounded-full shadow-lg flex items-center gap-0.5">
                                 <Eye className="w-2 h-2" />
                                 <span>{getAnchorText(index)}</span>
                               </div>
@@ -141,7 +141,7 @@ export const PiecesCatalogueFamille = memo(function PiecesCatalogueFamille({
                           </a>
                         ))}
                       {catalogueMameFamille.items.length > 32 && (
-                        <div className="flex items-center justify-center aspect-square rounded-md bg-white/20 backdrop-blur-sm border border-white/30 text-white font-bold text-[9px] shadow-sm">
+                        <div className="flex items-center justify-center aspect-square rounded-md bg-white/20 backdrop-blur-xs border border-white/30 text-white font-bold text-[9px] shadow-sm">
                           +{catalogueMameFamille.items.length - 32}
                         </div>
                       )}

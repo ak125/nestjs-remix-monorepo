@@ -55,7 +55,7 @@ export const AIPredictionsPanel = memo(function AIPredictionsPanel({
             </div>
             Analyse Prédictive IA - {vehicle.marque} {vehicle.modele}
           </h2>
-          <div className="flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 border border-violet-200">
+          <div className="flex items-center gap-2 bg-white/80 backdrop-blur-xs rounded-full px-4 py-2 border border-violet-200">
             <div className="w-2 h-2 bg-success rounded-full animate-pulse" />
             <span className="text-sm font-medium text-gray-700">IA Active</span>
           </div>
@@ -82,7 +82,7 @@ export const AIPredictionsPanel = memo(function AIPredictionsPanel({
 
 // Composant Analyse des Risques
 const RiskAnalysisCard: React.FC<{ risks: RiskAnalysis[] }> = ({ risks }) => (
-  <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300">
+  <div className="bg-white/90 backdrop-blur-xs rounded-2xl p-6 border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300">
     <div className="flex items-center justify-between mb-6">
       <h3 className="text-xl font-bold text-gray-900 flex items-center gap-3">
         <div className="w-8 h-8 bg-gradient-to-r from-red-500 to-orange-500 rounded-lg flex items-center justify-center">
@@ -177,7 +177,7 @@ const CostOptimizationCard: React.FC<{
   optimization: CostOptimization;
   maintenance: PredictiveMaintenance;
 }> = ({ optimization, maintenance }) => (
-  <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300">
+  <div className="bg-white/90 backdrop-blur-xs rounded-2xl p-6 border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300">
     <div className="flex items-center justify-between mb-6">
       <h3 className="text-xl font-bold text-gray-900 flex items-center gap-3">
         <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
@@ -273,7 +273,7 @@ const AIFooter: React.FC<{
   vehicle: { marque: string; modele: string };
   piecesCount: number;
 }> = ({ vehicle, piecesCount }) => (
-  <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 border border-gradient-to-r shadow-xl mt-8">
+  <div className="bg-white/95 backdrop-blur-xs rounded-2xl p-6 border border-gradient-to-r shadow-xl mt-8">
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-4">
         <div className="relative">

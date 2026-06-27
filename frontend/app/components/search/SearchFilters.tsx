@@ -227,7 +227,7 @@ export const SearchFilters = memo(function SearchFilters({
 
           <div className="relative z-10 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 bg-white/10 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/20">
+              <div className="w-9 h-9 bg-white/10 backdrop-blur-xs rounded-lg flex items-center justify-center border border-white/20">
                 <Package className="w-4 h-4 text-white" />
               </div>
               <div>
@@ -237,7 +237,7 @@ export const SearchFilters = memo(function SearchFilters({
                 </p>
               </div>
             </div>
-            <div className="bg-white/15 backdrop-blur-sm rounded-full px-2.5 py-1 border border-white/20">
+            <div className="bg-white/15 backdrop-blur-xs rounded-full px-2.5 py-1 border border-white/20">
               <span className="text-white font-bold text-xs">
                 {resultCount}
               </span>
@@ -838,7 +838,7 @@ export const SearchFilters = memo(function SearchFilters({
       {/* Modal sauvegarde preset */}
       {showPresetModal && (
         <div
-          className="fixed inset-0 bg-neutral-900/50 backdrop-blur-sm flex items-center justify-center z-50"
+          className="fixed inset-0 bg-neutral-900/50 backdrop-blur-xs flex items-center justify-center z-50"
           onClick={() => setShowPresetModal(false)}
         >
           <div
