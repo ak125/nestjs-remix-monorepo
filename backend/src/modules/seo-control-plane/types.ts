@@ -17,11 +17,76 @@ export type SyntheticRunTrigger = 'scheduler' | 'manual' | 'test';
 export const SYNTHETIC_USER_AGENT =
   'AutoMecanikSyntheticBot/1.0 (+https://www.automecanik.com/bots/synthetic)';
 
-// NOTE: the synthetic crawler no longer carries a rate-limit exemption. The
-// former HMAC header (x-synthetic-probe) + egress-IP floor + isSyntheticExemptPath
-// scope were retired (PR2): the CDN strips the custom header, an IP allowlist
-// weakens a security control, and the crawler now self-paces (PR #1161,
-// SEO_CP_MAX_RPM) to stay under the throttler — the structural fix at the source.
+/**
+ * Identité du crawler synthétique vis-à-vis du rate-limiter (incident 2026-06-25).
+ *
+ * En-tête CUSTOM (PAS `Authorization` — vérifié empiriquement : n'entre pas dans la
+ * cache-key Cloudflare, préserve donc `cf_cache_status`) portant un HMAC signé par
+ * le crawler et vérifié par BotGuardMiddleware. On n'expose ici que les NOMS d'env
+ * et le nom du header — AUCUNE valeur (IP/secret) en dur.
+ */
+export const SYNTHETIC_PROBE_HEADER = 'x-synthetic-probe';
+export const SYNTHETIC_PROBE_SECRET_KEY = 'SEO_CP_SYNTHETIC_PROBE_SECRET';
+export const SYNTHETIC_PROBE_ENABLED_KEY = 'SEO_CP_SYNTHETIC_PROBE_ENABLED';
+export const SYNTHETIC_PROBE_WINDOW_MS = 60_000;
+
+/**
+ * Allowlist d'IP/CIDR d'egress de la sonde synthétique — PLANCHER de défense en
+ * profondeur du rate-limit, EN PLUS du HMAC. Liste séparée par virgules d'IP ou
+ * CIDR (IPv4 ou IPv6).
+ *
+ * Pourquoi (incident 2026-06-25) : le HMAC voyage dans un en-tête custom
+ * (`x-synthetic-probe`) que le CDN peut retirer en transit (Cloudflare ne l'a PAS
+ * transmis à l'origine → sonde auto-throttlée ~90 %, monitoring L1 aveugle). Or
+ * `cf-connecting-ip` est TOUJOURS transmis par Cloudflare et anti-spoofé à
+ * l'origine (cf. BotGuard.getClientIp : la valeur n'est crue QUE si le pair TCP
+ * est le reverse-proxy interne). Reconnaître l'IP d'egress de NOTRE propre sonde
+ * rend l'exemption robuste, que l'en-tête survive ou non au CDN.
+ *
+ * Vide = plancher OFF (fail-closed) → seule la voie HMAC s'applique. Le même
+ * périmètre least-privilege (GET + catalogue public, {@link isSyntheticExemptPath})
+ * est appliqué en aval dans `skipIf` : même blast-radius que la voie HMAC.
+ */
+export const SYNTHETIC_PROBE_EGRESS_IPS_KEY =
+  'SEO_CP_SYNTHETIC_PROBE_EGRESS_IPS';
+
+/**
+ * Préfixes de chemins PUBLICS en lecture sur lesquels l'exemption rate-limit du
+ * crawler synthétique peut s'appliquer (least-privilege). Aligné sur la surface
+ * publique cacheable (Caddyfile @products/@content). Une fuite éventuelle du
+ * credential ne peut donc relâcher le rate-limit QUE sur des GET de pages
+ * publiques déjà CDN-cachées — jamais /api, /auth, /cart, /checkout, /admin, ni
+ * aucune méthode non-GET.
+ *
+ * NB : les sitemaps (`/sitemap*.xml`) ne figurent PAS ici — Caddy les sert en
+ * statique (`@sitemaps → file_server`), ils n'atteignent jamais le throttler NestJS.
+ */
+export const SYNTHETIC_PROBE_PUBLIC_PREFIXES = [
+  '/pieces',
+  '/products',
+  '/catalog',
+  '/vehicule',
+  '/constructeurs',
+  '/blog',
+  '/blog-pieces-auto',
+] as const;
+
+/**
+ * Scope (pur, testable) de l'exemption rate-limit synthétique : `true` uniquement
+ * pour un GET vers la page d'accueil ou un préfixe catalogue public. Toute autre
+ * méthode ou chemin (API/auth/panier/admin/…) renvoie `false` même avec un flag
+ * `isVerifiedSyntheticProbe` vrai — borne le rayon d'explosion d'un secret fuité.
+ */
+export function isSyntheticExemptPath(method: string, path: string): boolean {
+  if (method !== 'GET') return false;
+  if (path === '/') return true;
+  return SYNTHETIC_PROBE_PUBLIC_PREFIXES.some(
+    (prefix) =>
+      path === prefix ||
+      path.startsWith(`${prefix}/`) ||
+      path.startsWith(`${prefix}.`),
+  );
+}
 
 /**
  * Entrée de seed-list pour un crawl R8/R2 ciblé (D-0 baseline).

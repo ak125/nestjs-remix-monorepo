@@ -30,8 +30,11 @@ import { randomUUID } from 'node:crypto';
 import type { TierId } from '@repo/registry';
 import { SupabaseBaseService } from '../../../../database/services/supabase-base.service';
 import { CriticalityLoaderService } from '../../services/criticality-loader.service';
+import { SyntheticProbeCredentialService } from '../../synthetic-probe-credential.service';
 import {
   SYNTHETIC_USER_AGENT,
+  SYNTHETIC_PROBE_HEADER,
+  SYNTHETIC_PROBE_ENABLED_KEY,
   type SyntheticCrawlJobData,
   type SyntheticRunResult,
   type SyntheticSnapshot,
@@ -62,18 +65,34 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
   constructor(
     private readonly criticality: CriticalityLoaderService,
     configService: ConfigService,
+    private readonly probeCredential: SyntheticProbeCredentialService,
   ) {
     super(configService);
     this.cfg = configService;
   }
 
   /**
-   * En-têtes de sonde : UA identifiable obligatoire (JAMAIS spoof Googlebot). La
-   * sonde ne porte plus d'en-tête d'exemption — elle s'auto-cadence (pacer,
-   * SEO_CP_MAX_RPM) pour rester sous le rate-limiter PROD (PR #1161 + PR2).
+   * En-têtes de sonde : UA identifiable + (si le credential est actif) un HMAC
+   * `x-synthetic-probe` signé sur (GET|pathname|fenêtre) pour être exempté du
+   * rate-limiter sans usurper d'UA. Si l'exemption est OFF/non provisionnée, le
+   * header est omis (la sonde sera throttlée — surfacé par l'alerte 429 du run).
    */
-  private buildProbeHeaders(): Record<string, string> {
-    return { 'User-Agent': SYNTHETIC_USER_AGENT };
+  private buildProbeHeaders(url: string): Record<string, string> {
+    const headers: Record<string, string> = {
+      'User-Agent': SYNTHETIC_USER_AGENT,
+    };
+    if (this.probeCredential.isActive()) {
+      try {
+        const { pathname } = new URL(url);
+        headers[SYNTHETIC_PROBE_HEADER] = this.probeCredential.sign(
+          'GET',
+          pathname,
+        );
+      } catch {
+        // URL malformée — pas de header ; la sonde sera throttlée (observable).
+      }
+    }
+    return headers;
   }
 
   /**
@@ -163,19 +182,19 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
       if (s.http_code >= 500) t.fail_5xx++;
     }
 
-    // 🚨 Observabilité anti silent-fallback : la sonde s'auto-cadence (pacer,
-    // SEO_CP_MAX_RPM ≈ 90/min) pour rester sous le rate-limiter PROD. Un taux de
-    // 429 anormal signale une dérive (pacer mal configuré, paliers throttler
-    // modifiés, ou sitemap gonflé) → le monitoring L1 redevient AVEUGLE. On le rend
-    // BRUYANT (log.error, visible Sentry) plutôt que de dégrader en silence
-    // (incident 2026-06-25 : 89,7 % de 429 jamais alertés).
+    // 🚨 Observabilité anti silent-fallback : si une part anormale des sondes est
+    // throttlée (429), l'exemption rate-limit est probablement inactive (flag OFF,
+    // secret non provisionné) ou a dérivé → le monitoring L1 redevient AVEUGLE.
+    // On le rend BRUYANT (log.error, visible Sentry) plutôt que de dégrader en
+    // silence (incident 2026-06-25 : 89,7 % de 429 jamais alertés).
     if (snapshots.length > 0) {
       const rate429 = http429 / snapshots.length;
       if (rate429 > 0.2) {
         this.logger.error(
           `🚨 synthetic-crawler: ${(rate429 * 100).toFixed(1)}% des sondes throttlées ` +
-            `(${http429}/${snapshots.length} en 429). Le self-pacing (SEO_CP_MAX_RPM) ` +
-            `ne tient plus la sonde sous le rate-limiter PROD — monitoring L1 dégradé.`,
+            `(${http429}/${snapshots.length} en 429). L'exemption rate-limit est ` +
+            `probablement inactive (${SYNTHETIC_PROBE_ENABLED_KEY}/secret) ou a dérivé — ` +
+            `monitoring L1 dégradé.`,
         );
       }
     }
@@ -370,7 +389,7 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
     try {
       const res = await fetch(cand.url, {
         signal: ctrl.signal,
-        headers: this.buildProbeHeaders(),
+        headers: this.buildProbeHeaders(cand.url),
         redirect: 'manual',
       });
       const ttfb = Date.now() - t0;
@@ -525,7 +544,7 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
     try {
       const res = await fetch(url, {
         signal: ctrl.signal,
-        headers: this.buildProbeHeaders(),
+        headers: this.buildProbeHeaders(url),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status} on ${url}`);
       return await res.text();

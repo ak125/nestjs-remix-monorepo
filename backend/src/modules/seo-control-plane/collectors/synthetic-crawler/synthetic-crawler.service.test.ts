@@ -108,7 +108,9 @@ function buildSvc(
     logger: { log: jest.fn(), warn: jest.fn(), error: jest.fn() },
     criticality: crit,
     cfg,
-    // buildProbeHeaders() returns only the identifiable UA (no exemption header).
+    // Exemption inactive en test → buildProbeHeaders n'ajoute que l'UA (comportement
+    // identique à l'existant ; pas de header HMAC).
+    probeCredential: { isActive: () => false, sign: jest.fn() },
     supabase: {
       from: (_table: string) => ({ insert: spyInsert }),
     },
