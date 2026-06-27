@@ -21,6 +21,14 @@ export const PROJECTION_REFRESH_QUEUE = 'projection-refresh-queue';
 export const PROJECTION_WRITE_JOB = 'seo-projection-write';
 export const PROJECTION_REFRESH_JOB = 'seo-projection-refresh';
 
+/**
+ * Feeder R1 (PR-6c, ADR-090 §C2) : queue/job du déclencheur qui découvre les exports/seo/gamme
+ * et enqueue des write-jobs. Repeatable BullMQ (le ScheduleModule @nestjs/schedule est désactivé
+ * monorepo → pattern canon = repeatable jobs, cf. SitemapV10SchedulerService). Flag-gated OFF.
+ */
+export const PROJECTION_FEED_QUEUE = 'projection-feed-queue';
+export const PROJECTION_FEED_JOB = 'seo-projection-r1-feed';
+
 /** Version du contrat WRITER (ADR-090 Q1 : découplé du projection_contract_version du runner). */
 export const WRITER_CONTRACT_VERSION = '1.0.0';
 
@@ -47,6 +55,19 @@ export interface ProjectionRefreshJobData {
   triggeredBy: ProjectionTriggeredBy;
   /** run_id à l'origine du refresh (traçabilité). */
   runId?: string;
+}
+
+/** Données du job feed R1 (PR-6c) : qui a déclenché la découverte d'exports. */
+export interface ProjectionFeedJobData {
+  triggeredBy: 'scheduler' | 'manual';
+}
+
+/** Résultat observable d'un cycle de feed R1 (découverte + enqueue). Jamais silencieux. */
+export interface ProjectionFeedResult {
+  discovered: number;
+  enqueued: boolean;
+  exportsDir: string;
+  reason?: 'READ_ONLY' | 'NO_EXPORTS_DIR' | 'EMPTY';
 }
 
 export interface ProjectionRunMeta {
