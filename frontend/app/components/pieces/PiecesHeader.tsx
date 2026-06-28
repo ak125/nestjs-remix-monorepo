@@ -5,15 +5,10 @@
  * ⚠️ URLS PRÉSERVÉES - Breadcrumb et navigation inchangés
  */
 
-import {
-  enrichTypeNameForHeadings,
-  pickH1Suffix,
-  SEO_PRICE_VARIATIONS,
-} from "@repo/seo-types";
+import { buildR2H1Emitted } from "@repo/seo-types";
 import { Car } from "lucide-react";
 import React, { useState, memo } from "react";
 
-import { PiecesHeroTrustStrip } from "./hero";
 import { brandColorsService } from "../../services/brand-colors.service";
 import {
   type GammeData,
@@ -21,6 +16,7 @@ import {
   type VehicleData,
 } from "../../types/pieces-route.types";
 import { ImageOptimizer, isValidImagePath } from "../../utils/image-optimizer";
+import { PiecesHeroTrustStrip } from "./hero";
 
 interface PiecesHeaderProps {
   vehicle: VehicleData;
@@ -51,28 +47,12 @@ export const PiecesHeader = memo(function PiecesHeader({
 }: PiecesHeaderProps) {
   const [imageError, setImageError] = useState(false);
 
-  // Suffix H1 R2 rotation : compSwitch2 per-gamme primary (pattern legacy PHP
-  // #CompSwitch_2#), fallback SEO_PRICE_VARIATIONS 7 variantes prix, fallback
-  // ultime literal "au meilleur prix" (compatibilité legacy prixPasCherText).
-  // Cause : audit 2026-05-26 montre `au meilleur prix` figé 4/4 fixtures car
-  // prop n'était jamais passée. Restauration pattern legacy via #763 follow-up.
-  const finalText = pickH1Suffix({
-    compSwitch2,
-    priceVariations: SEO_PRICE_VARIATIONS,
-    ctx: { typeId: vehicle.typeId, pgId: gamme.id },
-    literalFallback: prixPasCherText ?? "au meilleur prix",
-  });
-
-  // R2 H1/title disambiguation : enrichir `typeName` avec `powerPs`/`fuel`
-  // quand le type_name est ambigu (ex. "2.0 HDi" partagé par 140/163 ch).
-  // No-op si non-ambigu → byte-identique à l'actuel. Cause empirique :
-  // audit/seo-h1-meta-empirical-verification-2026-05-26.md (3 H1 + 1 title
-  // EXACT duplicates sur 100 paires LIVE PROD).
-  const enrichedTypeLabel = enrichTypeNameForHeadings({
-    typeName: vehicle.typeName || vehicle.type,
-    powerPs: vehicle.typePowerPs?.toString(),
-    fuel: vehicle.typeFuel,
-  }).value;
+  // H1 R2 = builder partagé @repo/seo-types `buildR2H1Emitted` (PR-D2). L'assemblage
+  // (rotation suffixe compSwitch2 → SEO_PRICE_VARIATIONS → "au meilleur prix" legacy
+  // #763 ; enrichissement type powerPs/fuel anti-collision ambiguïté, audit 2026-05-26)
+  // vit désormais DANS le builder, rendu ici ET hashé par le fingerprint anti-duplicate
+  // → divergence impossible. Byte-identique au JSX précédent (golden #1178 +
+  // pieces-header-h1-parity.test.tsx).
 
   // Récupérer le gradient de la marque du véhicule
   const brandGradient = vehicle.marqueAlias
@@ -114,9 +94,17 @@ export const PiecesHeader = memo(function PiecesHeader({
               <header>
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black leading-tight mb-3 tracking-tight">
                   <span className="text-foreground from-white via-white to-white/90 drop-shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
-                    {gamme.name} {vehicle.marque?.toUpperCase()}{" "}
-                    {vehicle.modele?.toUpperCase()} {enrichedTypeLabel}{" "}
-                    {finalText}
+                    {buildR2H1Emitted({
+                      gammeName: gamme.name,
+                      marque: vehicle.marque,
+                      modele: vehicle.modele,
+                      typeName: vehicle.typeName || vehicle.type,
+                      typePowerPs: vehicle.typePowerPs,
+                      typeFuel: vehicle.typeFuel,
+                      ctx: { typeId: vehicle.typeId, pgId: gamme.id },
+                      compSwitch2,
+                      literalFallback: prixPasCherText,
+                    })}
                   </span>
                 </h1>
               </header>
