@@ -49,6 +49,8 @@ export interface IndexabilityVerdict {
  *   3. R2 gate fail ⇒ noindex,nofollow + R2_GATE_FAIL
  *   4. availableFamilies < min_families ⇒ noindex,follow + FAMILIES_BELOW_THRESHOLD
  *   5. availableGammes < min_gammes ⇒ noindex,follow + GAMMES_BELOW_THRESHOLD
+ *   5b. Soft-404 (ADR-095 §1) ⇒ noindex,follow + SOFT_404_EMPTY_CONTENT
+ *      (exposé uniquement aux loaders via composer direct, comme tecdoc)
  *   6. Fingerprint match (PR-9) ⇒ noindex,follow + FINGERPRINT_DUPLICATE
  *   7. TecDoc release gate ⇒ noindex,nofollow + TECDOC_RELEASE_GATE
  *      (exposé uniquement aux loaders R8 via composer direct)
@@ -123,6 +125,8 @@ export class SeoIndexabilityPolicyService {
           `gammes_below_threshold(${input.availableGammes}<${thresholds.min_gammes})`,
         ];
       }
+      case ReasonCode.SOFT_404_EMPTY_CONTENT:
+        return ['soft_404_empty_content'];
       case ReasonCode.FINGERPRINT_DUPLICATE:
         return ['fingerprint_duplicate_match'];
       case ReasonCode.TECDOC_RELEASE_GATE:

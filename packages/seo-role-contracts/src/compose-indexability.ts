@@ -15,6 +15,8 @@
  *      ⇒ NOINDEX_FOLLOW + reasonCodes:[FAMILIES_BELOW_THRESHOLD]
  *   5. availableGammes < min_gammes
  *      ⇒ NOINDEX_FOLLOW + reasonCodes:[GAMMES_BELOW_THRESHOLD]
+ *   5b. Soft-404 (caller flag `soft404` — ADR-095 §1, après gammes/avant fingerprint)
+ *      ⇒ NOINDEX_FOLLOW + reasonCodes:[SOFT_404_EMPTY_CONTENT]
  *   6. Fingerprint match (PR-9)
  *      ⇒ NOINDEX_FOLLOW + reasonCodes:[FINGERPRINT_DUPLICATE]
  *   7. TecDoc release gate ouverte (caller flag)
@@ -115,6 +117,19 @@ export function computeIndexabilityVerdict(
     return {
       kind: RobotsVerdictKind.NOINDEX_FOLLOW,
       reasonCodes: [ReasonCode.GAMMES_BELOW_THRESHOLD],
+      context: baseContext,
+    };
+  }
+
+  // 5b. soft-404 — page sans contenu réel (caller flag, ADR-095 §1).
+  //     NOINDEX_FOLLOW : on n'indexe pas une page vide, mais les liens (vers
+  //     alternatives/related) restent suivables. Le composer ne décide JAMAIS
+  //     du soft-404 lui-même (zéro I/O) — il consomme le booléen calculé par le
+  //     caller via le proxy `get_soft_404_alternatives`.
+  if (input.soft404 === true) {
+    return {
+      kind: RobotsVerdictKind.NOINDEX_FOLLOW,
+      reasonCodes: [ReasonCode.SOFT_404_EMPTY_CONTENT],
       context: baseContext,
     };
   }

@@ -283,6 +283,67 @@ describe("@repo/seo-role-contracts — computeIndexabilityVerdict — cascade", 
   });
 
   // ───────────────────────────────────────────────────────────────────────────
+  // 5b. SOFT_404_EMPTY_CONTENT (caller flag — ADR-095 §1, après gammes/avant fingerprint)
+  // ───────────────────────────────────────────────────────────────────────────
+  describe("step 5b — soft-404 empty content", () => {
+    it("soft404=true → NOINDEX_FOLLOW + [SOFT_404_EMPTY_CONTENT]", () => {
+      const v = computeIndexabilityVerdict({
+        surfaceKey: "R8_VEHICLE",
+        requestedUrl: URL_CANON,
+        canonicalUrl: URL_CANON,
+        availableGammes: 10,
+        soft404: true,
+      });
+      assert.equal(v.kind, RobotsVerdictKind.NOINDEX_FOLLOW);
+      assert.deepEqual(v.reasonCodes, [ReasonCode.SOFT_404_EMPTY_CONTENT]);
+    });
+
+    it("soft404=false explicite ne déclenche pas", () => {
+      const v = computeIndexabilityVerdict({
+        surfaceKey: "R8_VEHICLE",
+        requestedUrl: URL_CANON,
+        canonicalUrl: URL_CANON,
+        availableGammes: 10,
+        soft404: false,
+      });
+      assert.equal(v.kind, RobotsVerdictKind.INDEX_FOLLOW);
+    });
+
+    it("soft404 undefined ne déclenche pas (behaviour-preserving — callers existants)", () => {
+      const v = computeIndexabilityVerdict({
+        surfaceKey: "R8_VEHICLE",
+        requestedUrl: URL_CANON,
+        canonicalUrl: URL_CANON,
+        availableGammes: 10,
+      });
+      assert.equal(v.kind, RobotsVerdictKind.INDEX_FOLLOW);
+    });
+
+    it("gammes<threshold court-circuite AVANT soft-404 (ordre cascade : 5 avant 5b)", () => {
+      const v = computeIndexabilityVerdict({
+        surfaceKey: "R8_VEHICLE",
+        requestedUrl: URL_CANON,
+        canonicalUrl: URL_CANON,
+        availableGammes: 4, // < 5 → GAMMES_BELOW_THRESHOLD doit gagner
+        soft404: true,
+      });
+      assert.deepEqual(v.reasonCodes, [ReasonCode.GAMMES_BELOW_THRESHOLD]);
+    });
+
+    it("soft-404 court-circuite AVANT fingerprint (ordre cascade : 5b avant 6)", () => {
+      const v = computeIndexabilityVerdict({
+        surfaceKey: "R8_VEHICLE",
+        requestedUrl: URL_CANON,
+        canonicalUrl: URL_CANON,
+        availableGammes: 10,
+        soft404: true,
+        fingerprintMatch: true, // serait FINGERPRINT_DUPLICATE si pas court-circuité
+      });
+      assert.deepEqual(v.reasonCodes, [ReasonCode.SOFT_404_EMPTY_CONTENT]);
+    });
+  });
+
+  // ───────────────────────────────────────────────────────────────────────────
   // 6. FINGERPRINT_DUPLICATE
   // ───────────────────────────────────────────────────────────────────────────
   describe("step 6 — fingerprint duplicate", () => {
@@ -396,6 +457,7 @@ describe("@repo/seo-role-contracts — computeIndexabilityVerdict — cascade", 
       { surfaceKey: "R2_PRODUCT", requestedUrl: URL_CANON, canonicalUrl: URL_CANON, r2Conditions: R2_FAIL_NO_IMAGE },
       { surfaceKey: "R1_GAMME_ROUTER", requestedUrl: URL_CANON, canonicalUrl: URL_CANON, availableFamilies: 0 },
       { surfaceKey: "R8_VEHICLE", requestedUrl: URL_CANON, canonicalUrl: URL_CANON, availableGammes: 1 },
+      { surfaceKey: "R8_VEHICLE", requestedUrl: URL_CANON, canonicalUrl: URL_CANON, availableGammes: 10, soft404: true },
       { surfaceKey: "R8_VEHICLE", requestedUrl: URL_CANON, canonicalUrl: URL_CANON, availableGammes: 10, fingerprintMatch: true },
       { surfaceKey: "R8_VEHICLE", requestedUrl: URL_CANON, canonicalUrl: URL_CANON, availableGammes: 10, tecdocReleaseGateOpen: true },
     ];
