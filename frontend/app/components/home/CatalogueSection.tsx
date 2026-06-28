@@ -219,7 +219,16 @@ export default function CatalogueSection({
         sub={`Pièces neuves pour toutes marques — ${families.length} familles techniques`}
       />
 
+      {/* translate="no" — neutralise la cause racine du crash NotFoundError
+          "removeChild ... not a child" (Sentry PROD, page /, fragment #catalogue).
+          La traduction navigateur (Chrome / Google Translate) re-parente les nœuds
+          texte de ce widget dans des <font> ; un re-render React (frappe dans la
+          recherche, changement d'onglet, expand/collapse) appelle ensuite removeChild
+          sur un nœud déplacé → DOMException. Marquer ce sous-arbre interactif comme
+          non-traduisible empêche le traducteur d'y toucher. Le <SectionHeader>
+          ci-dessus reste hors de ce sous-arbre, donc traduisible. Cf. React #11538. */}
       <Tabs
+        translate="no"
         defaultValue="Tout"
         className="w-full"
         aria-label="Catalogue par domaine technique"
