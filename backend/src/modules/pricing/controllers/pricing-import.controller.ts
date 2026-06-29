@@ -19,7 +19,7 @@
  *   POST /api/admin/pricing/display/accessory-link/commit   → write pg_parent_gamme_id (confirm:true)
  *   POST /api/admin/pricing/display/accessory-link/rollback → restore pg_parent_gamme_id for a batch
  */
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { IsAdminGuard } from '@auth/is-admin.guard';
 import {
   PriceImportService,
@@ -38,6 +38,7 @@ import {
   type DisplayQuarantineRequest,
 } from '../services/catalog-display-quarantine.service';
 import { PricingSimulationService } from '../services/pricing-simulation.service';
+import { SellabilityTruthService } from '../services/sellability-truth.service';
 import type {
   CustomerType,
   PricingRule,
@@ -52,7 +53,18 @@ export class PricingImportController {
     private readonly displayActivationService: CatalogDisplayActivationService,
     private readonly displayQuarantineService: CatalogDisplayQuarantineService,
     private readonly simulationService: PricingSimulationService,
+    private readonly sellabilityTruth: SellabilityTruthService,
   ) {}
+
+  /**
+   * Read-only diagnostic du rollup de vendabilité (PR1) : readiness + stats agrégées
+   * (pairs total/stale/sellable, strandées par chaîne display, somme sellable_count).
+   * Ne mute rien ; ne statue pas sur l'indexabilité (politique SEO).
+   */
+  @Get('sellable/diagnostic')
+  sellableDiagnostic() {
+    return this.sellabilityTruth.diagnostic();
+  }
 
   /** Read-only grid simulation (no write). */
   @Post('simulate')
