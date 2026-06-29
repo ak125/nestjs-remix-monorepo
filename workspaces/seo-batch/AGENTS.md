@@ -43,19 +43,17 @@ Les agents `.claude/agents/` de ce workspace orchestrent le LLM Claude Code pour
 
 ---
 
-## DEPRECATED (sunset 2026-06-07)
+## DEPRECATED (sunset 2026-06-07 — EXÉCUTÉ 2026-06-12)
 
-5 générateurs déviants à archiver via Phase 6 PR-V (cf. plan Action 6 lock canonical) :
+5 générateurs déviants, sunset exécuté (état vérifié 2026-06-12) :
 
-| Path | Type | Raison sunset | Remplacement |
-|------|------|---------------|--------------|
-| `scripts/seo/generate-content-r1.py` | Python script | Anthropic API direct (non-canon, hors gouvernance rate-limit) | Skill `/content-gen --r1` ou `R1EnricherService` |
-| `scripts/rag/rag-enrich-from-web-corpus.py` | Python script | Écrit `rag/knowledge/` direct (bypass wiki/exports — viole ADR-031) | Phase 3B PR-O `wiki-to-rag-exporter.py` |
-| `scripts/seo/materialize-db-to-md.py` | Python script | Écrit `rag/knowledge/diagnostic/` direct | Phase 3B promotion gate |
-| `workspaces/seo-batch/.claude/agents/phase5-vague{4,5,6}-*.md` | Claude Code agent | Curation humaine direct rag/ (avant pivot ADR-033) | Phase 3A PR-K `legacy-rag-importer.py` (passage par wiki/proposals/) |
-| `scripts/seo/r7-brand-rag-generator-legacy.py` | Python script (legacy) | Override sync brands canon (PR vault #19) | Sync canon `automecanik-wiki/exports/rag/constructeurs/` |
-
-**Action archivage** : `git mv <path> archive/2026-06/<path>` en PR-V (Phase 6).
+| Path | Type | Raison sunset | Remplacement | Statut |
+|------|------|---------------|--------------|--------|
+| `archive/2026-06/scripts/seo/generate-content-r1.py` | Python script | Anthropic API direct (non-canon, hors gouvernance rate-limit) | Skill `/content-gen --r1` ou `R1EnricherService` | Archivé 2026-06-12 (lint vocab : déjà porté dans `.claude/prompts/R1_ROUTER/editorial.md` §FORBIDDEN VOCABULARY) |
+| `scripts/rag/rag-enrich-from-web-corpus.py` | Python script | Écrit `rag/knowledge/` direct (bypass wiki/exports — viole ADR-031) | Phase 3B PR-O `wiki-to-rag-exporter.py` | Retiré (refactor #270 et purges suivantes) |
+| `scripts/seo/materialize-db-to-md.py` | Python script | Écrit `rag/knowledge/diagnostic/` direct | Phase 3B promotion gate | Retiré |
+| `workspaces/seo-batch/.claude/agents/phase5-vague{4,5,6}-*.md` | Claude Code agent | Curation humaine direct rag/ (avant pivot ADR-033) | Phase 3A PR-K `legacy-rag-importer.py` (passage par wiki/proposals/) | Retirés (0 fichier restant) |
+| `scripts/seo/r7-brand-rag-generator-legacy.py` | Python script (legacy) | Override sync brands canon (PR vault #19) | Sync canon `automecanik-wiki/exports/rag/constructeurs/` | Retiré |
 
 ---
 
