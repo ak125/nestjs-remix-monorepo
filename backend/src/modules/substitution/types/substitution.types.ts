@@ -280,5 +280,12 @@ export interface SubstitutionDataResponse {
     vehicle_found: boolean;
     products_count: number;
     resolved_by: 'exact' | 'similarity' | 'none';
+    /**
+     * True quand l'appel RPC `get_substitution_data` a ÉCHOUÉ (erreur infra/SQL),
+     * par opposition à un vrai "gamme non trouvée". Distingue les deux pour que
+     * `determineSubstitution` fasse fail-OPEN (200) au lieu de fail-CLOSE (404)
+     * sur une page valide. Voir incident 2026-06-25.
+     */
+    rpc_error?: boolean;
   };
 }

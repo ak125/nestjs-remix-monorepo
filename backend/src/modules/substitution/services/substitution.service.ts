@@ -110,26 +110,35 @@ export class SubstitutionService extends SupabaseBaseService {
       );
 
       if (error) {
-        this.logger.error(`RPC error: ${error.message}`);
+        // FAIL-OPEN observable (cf. determineSubstitution) : une erreur RPC est
+        // une panne d'infra, PAS une "gamme non trouvée" → `rpc_error: true` pour
+        // ne pas 404 une page valide. Log conservé = visibilité de la panne.
+        this.logger.error(
+          `RPC error → fail-open (substitution skipped, page renders on primary data): ${error.message}`,
+        );
         return {
           _meta: {
             gamme_found: false,
             resolved_by: 'none',
             products_count: 0,
             vehicle_found: false,
+            rpc_error: true,
           },
         };
       }
 
       return data as SubstitutionDataResponse;
     } catch (error) {
-      this.logger.error(`RPC exception: ${getErrorMessage(error)}`);
+      this.logger.error(
+        `RPC exception → fail-open (substitution skipped, page renders on primary data): ${getErrorMessage(error)}`,
+      );
       return {
         _meta: {
           gamme_found: false,
           resolved_by: 'none',
           products_count: 0,
           vehicle_found: false,
+          rpc_error: true,
         },
       };
     }
@@ -143,6 +152,21 @@ export class SubstitutionService extends SupabaseBaseService {
     intent: ExtractedIntent,
     data: SubstitutionDataResponse,
   ): SubstitutionResult {
+    // FAIL-OPEN (gouverné + observable — l'erreur RPC est loggée dans
+    // fetchSubstitutionData) : une panne d'INFRA RPC n'est PAS un "gamme non
+    // trouvée". La transformer en 404 tuait des pages R1 VALIDES de façon
+    // intermittente (incident 2026-06-25 : get_substitution_data GROUP BY).
+    // → On rend 200 'none' : la page se rend sur sa data principale, la
+    // substitution est juste absente. Un vrai slug inconnu (RPC OK,
+    // gamme_found:false) reste un 404 ci-dessous (CASE 1), inchangé.
+    if (data._meta?.rpc_error) {
+      return this.buildResult(
+        'none',
+        200,
+        'Substitution temporairement indisponible',
+      );
+    }
+
     // CASE 1: Gamme non trouvée → 404
     if (!data._meta?.gamme_found) {
       return this.buildResult('unknown_slug', 404, 'Gamme non reconnue', {
