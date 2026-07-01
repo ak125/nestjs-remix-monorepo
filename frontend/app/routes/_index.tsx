@@ -16,12 +16,12 @@ import {
   BrandsGrid,
   BlogCarousel,
   FaqSection,
-  Footer,
   WhyAutomecanikSection,
   DiagnosticBanner,
   PopularSearches,
 } from "~/components/home";
 import { type BrandItem } from "~/components/home/constants";
+import { LazyFooter } from "~/components/home/LazyFooter";
 import { getRemixApiService } from "~/server/remix-api.server";
 import {
   type SlimFamily,
@@ -250,7 +250,7 @@ export default function Homepage() {
 
       <PopularSearches />
       <FaqSection faqsPromise={loaderData.faqs} />
-      <Footer />
+      <LazyFooter />
     </div>
   );
 }

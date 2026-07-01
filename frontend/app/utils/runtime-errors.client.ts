@@ -141,6 +141,28 @@ export function reportHydrationError(meta: Record<string, unknown> = {}): void {
   sendEvent("seo.runtime.hydration_error", meta, "React hydration mismatch");
 }
 
+/**
+ * Émet un évènement pour le cas « `import()` dynamique résolu SANS default
+ * utilisable » (fulfill-with-undefined, artefact Rolldown mixed-chunk) —
+ * distinct des rejections stale-chunk classiques. Réutilise l'enum existant
+ * `seo.runtime.chunk_load_error` + un discriminant `meta.reason` (`meta` est
+ * free-form `z.record` côté contrat → aucune migration DB). Appelé par
+ * `resilient-lazy.client.ts` ET `LazyBoundary` : chaque résolution invalide est
+ * comptée → pas de silent fallback même quand irrécupérable.
+ *
+ * NB : le `stage` fourni par l'appelant (`resolved_undefined` | `rejected` |
+ * `boundary`) est conservé dans `meta` pour la ventilation dashboard.
+ */
+export function reportChunkResolvedInvalid(
+  meta: Record<string, unknown> = {},
+): void {
+  sendEvent(
+    "seo.runtime.chunk_load_error",
+    { ...meta, reason: "resolved_undefined" },
+    "Dynamic import fulfilled with undefined",
+  );
+}
+
 function captureLongTasks(): void {
   if (typeof PerformanceObserver === "undefined") return;
   try {
