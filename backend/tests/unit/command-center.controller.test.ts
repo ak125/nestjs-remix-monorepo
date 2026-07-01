@@ -112,7 +112,9 @@ describe('CommandCenterController — orchestration', () => {
     const c1 = make({
       planShadow: jest
         .fn()
-        .mockRejectedValue(new UnsupportedExecutableActionError('regen-artifact')),
+        .mockRejectedValue(
+          new UnsupportedExecutableActionError('regen-artifact'),
+        ),
     });
     await expect(
       c1.previewShadowPlan({ kind: 'regen-artifact', action_id: 'x' }),
@@ -136,14 +138,16 @@ describe('CommandCenterController — orchestration', () => {
     ).rejects.toBeInstanceOf(UnprocessableEntityException);
   });
 
-  it('succès → renvoie le plan + propage actor (email)', async () => {
+  it('succès → renvoie le plan + plan_hash déterministe + propage actor (email)', async () => {
     const planShadow = jest.fn().mockResolvedValue(plan);
     const c = make({ orchMode: 'shadow', planShadow });
     const res = await c.previewShadowPlan(
       { kind: 'regen-artifact', action_id: 'regen:command-center-snapshot' },
       'fafa@automecanik.com',
     );
-    expect(res).toEqual(plan);
+    // Le plan est renvoyé tel quel, AUGMENTÉ d'un plan_hash sha256 pour le flux HITL.
+    expect(res).toMatchObject(plan);
+    expect(res.plan_hash).toMatch(/^[a-f0-9]{64}$/);
     expect(planShadow).toHaveBeenCalledWith(
       'regen-artifact',
       'regen:command-center-snapshot',

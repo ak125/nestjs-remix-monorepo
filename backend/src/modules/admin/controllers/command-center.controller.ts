@@ -38,10 +38,18 @@ import {
 } from '../services/command-center-orchestrator/regen-artifact.executor';
 import { UnknownPrPropositionError } from '../services/command-center-orchestrator/pr-proposition.planner';
 import {
+  computePlanHash,
   type ExecutionPlan,
   type ExecutionReceipt,
   type OrchestrationMode,
 } from '../services/command-center-orchestrator/executable-action.contract';
+
+/**
+ * Preview shadow renvoyé à l'UI : le plan *would-be* + son `plan_hash` déterministe.
+ * Le hash voyage AVEC le plan pour que l'étape approve (HITL) porte exactement le plan
+ * prévisualisé (garde TOCTOU) — l'UI ne recalcule jamais le hash (pas de logique dupliquée).
+ */
+type ShadowPlanPreview = ExecutionPlan & { plan_hash: string };
 
 /** Corps validé du preview shadow (kind aligné sur ExecutableActionKind). */
 const ShadowPlanRequestSchema = z
@@ -131,7 +139,7 @@ export class CommandCenterController {
   async previewShadowPlan(
     @Body() body: unknown,
     @User('email') actorEmail?: string,
-  ): Promise<ExecutionPlan> {
+  ): Promise<ShadowPlanPreview> {
     this.assertExposed();
 
     let parsed: z.infer<typeof ShadowPlanRequestSchema>;
@@ -147,9 +155,13 @@ export class CommandCenterController {
     }
 
     try {
-      return await this.orchestrator.planShadow(parsed.kind, parsed.action_id, {
-        actor: actorEmail ?? 'admin',
-      });
+      const plan = await this.orchestrator.planShadow(
+        parsed.kind,
+        parsed.action_id,
+        { actor: actorEmail ?? 'admin' },
+      );
+      // Le hash déterministe accompagne le plan → l'UI le renvoie tel quel à approve.
+      return { ...plan, plan_hash: computePlanHash(plan) };
     } catch (e) {
       // Mapping HTTP explicite — jamais de 500 opaque sur un cas attendu.
       if (e instanceof OrchestrationDisabledError) {
