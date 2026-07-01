@@ -20,7 +20,7 @@
 
 import { Suspense } from "react";
 import { LazyBoundary } from "~/components/LazyBoundary";
-import { safeLazy } from "~/utils/resilient-lazy.client";
+import { safeLazy } from "~/utils/resilient-lazy";
 
 // Specifier canonique UNIQUE — forme alias — utilisé nulle part ailleurs en
 // import statique. Rolldown ne coalesce en un seul chunk dynamique que si cette

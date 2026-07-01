@@ -1,9 +1,19 @@
 /**
- * resilient-lazy.client — `React.lazy` durci contre l'`import()` dynamique qui
+ * resilient-lazy — `React.lazy` durci contre l'`import()` dynamique qui
  * **résout avec `undefined`** (artefact Rolldown mixed-chunk : un module importé
  * à la fois statiquement et dynamiquement peut voir son `import()` dynamique
  * résolu sur `undefined`). React.lazy lit alors `_result.default` sur `undefined`
  * → `TypeError: Cannot read properties of undefined (reading 'default')`.
+ *
+ * ISOMORPHE — PAS de suffixe `.client` (régression PR #1200 → hotfix). `safeLazy`
+ * est appelé au **top-level** de modules rendus en SSR (`root.tsx`, `LazyFooter`).
+ * Un suffixe `.client` fait remplacer ce module par un stub vide dans le bundle
+ * serveur → `safeLazy` devient `undefined` → `safeLazy(...)` au chargement du
+ * module serveur jette `TypeError: (void 0) is not a function` → « Error loading
+ * server build » = **toutes les routes en 500** (capté par E2E Smoke PREPROD).
+ * `safeLazy` n'enveloppe que `React.lazy` (isomorphe) + validation pure : sûr
+ * côté serveur. La balise d'observabilité (browser-only, cf. `runtime-errors.client`,
+ * stub côté serveur) est donc appelée sous garde `typeof window`.
  *
  * Décision (validée red-team) : sur résolution invalide, on **observe** (balise
  * `reportChunkResolvedInvalid`) puis on **jette** pour laisser `LazyBoundary`
@@ -62,14 +72,25 @@ export async function loadSafeModule<T extends ComponentType<unknown>>(
   try {
     mod = await factory();
   } catch (cause) {
-    // Rejet réel (stale chunk / réseau) : observer puis re-jeter. La décision
-    // de reload appartient exclusivement à `vite:preloadError`.
-    reportChunkResolvedInvalid({ name: opts.name, stage: "rejected" });
+    // Rejet réel (stale chunk / réseau) : observer (browser only) puis re-jeter.
+    // La décision de reload appartient exclusivement à `vite:preloadError`.
+    if (typeof window !== "undefined") {
+      reportChunkResolvedInvalid({ name: opts.name, stage: "rejected" });
+    }
     throw cause instanceof Error ? cause : new Error(String(cause));
   }
   if (isValidDefaultModule(mod)) return mod as DefaultModule<T>;
   // Résolu-avec-undefined / default manquant → observer + dégrader (pas de reload).
-  reportChunkResolvedInvalid({ name: opts.name, stage: "resolved_undefined" });
+  // Garde `typeof window` : hors navigateur la balise `.client` est stubée
+  // (`undefined`) → l'appeler jetterait « (void 0) is not a function » et
+  // masquerait l'erreur. La classe fulfill-with-undefined est de toute façon
+  // browser-only (artefact Rolldown côté client).
+  if (typeof window !== "undefined") {
+    reportChunkResolvedInvalid({
+      name: opts.name,
+      stage: "resolved_undefined",
+    });
+  }
   throw new Error(`[safeLazy:${opts.name}] resolved without a default export`);
 }
 

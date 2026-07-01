@@ -25,7 +25,7 @@ import { LazyFooter } from "~/components/home/LazyFooter";
 import { LazyBoundary } from "~/components/LazyBoundary";
 import { cspNonceContext } from "~/utils/load-context";
 import { logger } from "~/utils/logger";
-import { safeLazy } from "~/utils/resilient-lazy.client";
+import { safeLazy } from "~/utils/resilient-lazy";
 import { getOptionalUser } from "./auth/unified.server";
 import { ErrorGeneric } from "./components/errors";
 import { Navbar } from "./components/Navbar";

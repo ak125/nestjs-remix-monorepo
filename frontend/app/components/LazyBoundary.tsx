@@ -58,7 +58,13 @@ export class LazyBoundary extends Component<
       error.message,
       info.componentStack?.slice(0, 200),
     );
-    reportChunkResolvedInvalid({ name: this.props.name, stage: "boundary" });
+    // Garde `typeof window` : `reportChunkResolvedInvalid` vient d'un module
+    // `.client` (stub `undefined` côté serveur). `componentDidCatch` est de fait
+    // client-only, mais la garde rend l'isomorphie explicite et uniforme avec
+    // `resilient-lazy` (pas d'appel de `(void 0)` si le lifecycle évolue).
+    if (typeof window !== "undefined") {
+      reportChunkResolvedInvalid({ name: this.props.name, stage: "boundary" });
+    }
   }
 
   render(): ReactNode {

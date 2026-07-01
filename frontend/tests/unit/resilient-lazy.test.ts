@@ -1,6 +1,6 @@
 /**
  * Tests unitaires — `safeLazy` / `loadSafeModule` / `isValidDefaultModule`
- * (`frontend/app/utils/resilient-lazy.client.ts`).
+ * (`frontend/app/utils/resilient-lazy.ts`).
  *
  * Contexte : crash PROD `TypeError: Cannot read properties of undefined
  * (reading 'default')` dans le `lazyInitializer` de React.lazy — un `import()`
@@ -11,11 +11,11 @@
  * artefact déterministe = boucle + perte d'état panier/formulaire sur la R2).
  */
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   isValidDefaultModule,
   loadSafeModule,
-} from '~/utils/resilient-lazy.client';
+} from '~/utils/resilient-lazy';
 
 // DI par mock de module : on espionne la balise sans toucher au vrai sendBeacon.
 // `vi.hoisted` + `vi.mock` (auto-hoisté) → le spy est disponible dans la factory.
@@ -97,5 +97,33 @@ describe('loadSafeModule', () => {
       name: 'ChatWidget',
       stage: 'rejected',
     });
+  });
+});
+
+// En SSR le module `.client` de la balise est remplacé par un stub vide →
+// `reportChunkResolvedInvalid` y est `undefined`. `loadSafeModule` est isomorphe
+// (rendu par `root.tsx`/`LazyFooter` côté serveur) : il NE DOIT PAS appeler la
+// balise hors navigateur, sinon `(void 0) is not a function` masquerait la vraie
+// erreur (canon : no silent fallback). Garde `typeof window !== "undefined"`.
+describe('loadSafeModule — contexte serveur (aucun `window`)', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('fulfill-with-undefined en SSR : jette la synthetic error SANS émettre la balise', async () => {
+    vi.stubGlobal('window', undefined);
+    await expect(
+      loadSafeModule(() => Promise.resolve(undefined), { name: 'GlobalFooter' }),
+    ).rejects.toThrow(/\[safeLazy:GlobalFooter\]/);
+    expect(reportChunkResolvedInvalid).not.toHaveBeenCalled();
+  });
+
+  it('rejet réel en SSR : re-jette la cause SANS émettre la balise', async () => {
+    vi.stubGlobal('window', undefined);
+    const boom = new Error('server import failed');
+    await expect(
+      loadSafeModule(() => Promise.reject(boom), { name: 'ChatWidget' }),
+    ).rejects.toBe(boom);
+    expect(reportChunkResolvedInvalid).not.toHaveBeenCalled();
   });
 });
