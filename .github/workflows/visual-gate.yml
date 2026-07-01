@@ -141,7 +141,7 @@ jobs:
         # Upload même si la capture a partiellement échoué (≠ cancelled) → un échec reste INSPECTABLE
         # (no silent fallback). Aucun fichier = erreur (jamais d'artefact vide silencieux).
         if: ${{ inputs.capture_baselines && !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: visual-baselines-preprod
           path: frontend/tests/visual/snapshots
@@ -179,7 +179,7 @@ jobs:
         # propre artefact `visual-baselines-preprod`). `!inputs.capture_baselines` reste vrai sous un
         # futur `workflow_run` (inputs absent) → les rapports d'échec compare s'uploadent toujours.
         if: ${{ failure() && !inputs.capture_baselines }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: visual-gate-report
           # Chemin RÉEL du rapport HTML : `outputFolder: ./test-results/visual-report` est résolu
