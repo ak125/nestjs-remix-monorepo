@@ -69,28 +69,44 @@ describe('RegenArtifactExecutor', () => {
       base: 'main',
     });
 
-    const calls = run.mock.calls as [string, string[], string?][];
+    const calls = run.mock.calls as [
+      string,
+      string[],
+      { cwd?: string; env?: NodeJS.ProcessEnv }?,
+    ][];
     // worktree isolé sur origin/main + branche dérivée du plan_hash
     const wtAdd = calls.find(
-      (c) => c[0] === 'git' && c[1].includes('worktree') && c[1].includes('add'),
+      (c) =>
+        c[0] === 'git' && c[1].includes('worktree') && c[1].includes('add'),
     );
     expect(wtAdd?.[1]).toEqual(expect.arrayContaining(['origin/main', '-b']));
     expect(wtAdd?.[1].some((a) => a.includes('abcdef012345'))).toBe(true);
+    // Générateur lancé avec NODE_PATH vers les deps du checkout (sinon require('js-yaml')
+    // → MODULE_NOT_FOUND dans le worktree tmpdir sans node_modules). Régression lockée.
+    const gen = calls.find((c) => c[0] === 'node');
+    expect(gen?.[2]?.env?.NODE_PATH).toBe('/repo/node_modules');
     // PR draft
     const gh = calls.find((c) => c[0] === 'gh');
     expect(gh?.[1]).toEqual(
       expect.arrayContaining(['pr', 'create', '--draft', '--base', 'main']),
     );
-    // worktree nettoyé (remove --force)
+    // worktree nettoyé (remove --force) + branche locale supprimée (re-run possible)
     const wtRemove = calls.find(
-      (c) => c[0] === 'git' && c[1].includes('worktree') && c[1].includes('remove'),
+      (c) =>
+        c[0] === 'git' && c[1].includes('worktree') && c[1].includes('remove'),
     );
     expect(wtRemove).toBeDefined();
+    const branchDel = calls.find(
+      (c) => c[0] === 'git' && c[1].includes('branch') && c[1].includes('-D'),
+    );
+    expect(branchDel).toBeDefined();
   });
 
   it('git/gh échoue → ExecutorUnavailableError (pas de succès fictif)', async () => {
     env.COMMAND_CENTER_EXECUTOR = 'pr';
-    const run = jest.fn().mockRejectedValue(new Error('git: command not found'));
+    const run = jest
+      .fn()
+      .mockRejectedValue(new Error('git: command not found'));
     const ex = new RegenArtifactExecutor(run);
     await expect(ex.execute(target, '/repo', 'h')).rejects.toBeInstanceOf(
       ExecutorUnavailableError,

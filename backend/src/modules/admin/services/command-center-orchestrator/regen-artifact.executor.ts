@@ -15,12 +15,15 @@ const execFileAsync = promisify(execFile);
 export type CommandRunner = (
   cmd: string,
   args: string[],
-  cwd?: string,
+  opts?: { cwd?: string; env?: NodeJS.ProcessEnv },
 ) => Promise<{ stdout: string }>;
 
-const defaultRunner: CommandRunner = async (cmd, args, cwd) => {
+const defaultRunner: CommandRunner = async (cmd, args, opts) => {
   const { stdout } = await execFileAsync(cmd, args, {
-    cwd,
+    cwd: opts?.cwd,
+    // env absent ⇒ execFile hérite de process.env (git/gh conservent leur auth).
+    // Fourni ⇒ REMPLACE process.env : l'appelant doit passer un env complet mergé.
+    env: opts?.env,
     timeout: 120_000,
     maxBuffer: 16 * 1024 * 1024,
   });
@@ -117,21 +120,36 @@ export class RegenArtifactExecutor {
         wt,
         'origin/main',
       ]);
-      // régénère l'artefact (le générateur écrit DANS le worktree temporaire).
-      await this.run('node', [join(wt, target.generatorRel)], wt);
-      await this.run('git', ['-C', wt, 'add', target.committedRel]);
-      await this.run('git', [
-        '-C',
-        wt,
-        '-c',
-        `user.name=${RegenArtifactExecutor.GIT_NAME}`,
-        '-c',
-        `user.email=${RegenArtifactExecutor.GIT_EMAIL}`,
-        'commit',
-        '-m',
-        target.commitMessage,
-      ]);
-      await this.run('git', ['-C', wt, 'push', '-u', 'origin', branch]);
+      // Régénère l'artefact (le générateur écrit DANS le worktree temporaire).
+      // Le worktree (sous os.tmpdir()) n'a PAS de node_modules (gitignoré) → le
+      // générateur `require('js-yaml')` échouerait (MODULE_NOT_FOUND) sur toute
+      // machine propre (CI/PROD/fresh dev). NODE_PATH pointe la résolution des
+      // modules bare vers les deps du checkout runtime — sans jamais salir ce dernier.
+      await this.run('node', [join(wt, target.generatorRel)], {
+        cwd: wt,
+        env: { ...process.env, NODE_PATH: join(repoRoot, 'node_modules') },
+      });
+      await this.run('git', ['-C', wt, 'add', target.committedRel], {
+        cwd: wt,
+      });
+      await this.run(
+        'git',
+        [
+          '-C',
+          wt,
+          '-c',
+          `user.name=${RegenArtifactExecutor.GIT_NAME}`,
+          '-c',
+          `user.email=${RegenArtifactExecutor.GIT_EMAIL}`,
+          'commit',
+          '-m',
+          target.commitMessage,
+        ],
+        { cwd: wt },
+      );
+      await this.run('git', ['-C', wt, 'push', '-u', 'origin', branch], {
+        cwd: wt,
+      });
       const { stdout } = await this.run(
         'gh',
         [
@@ -147,7 +165,7 @@ export class RegenArtifactExecutor {
           '--body',
           `Régénération approuvée (HITL, ADR-087 Phase 2). plan_hash=${planHash}. À relire + merger humainement.`,
         ],
-        wt,
+        { cwd: wt },
       );
       const prUrl = stdout.trim();
       this.logger.warn(`PR d'exécution ouverte (draft) : ${prUrl} [${branch}]`);
@@ -175,6 +193,15 @@ export class RegenArtifactExecutor {
         ]);
       } catch {
         /* worktree déjà absent / non créé */
+      }
+      // Supprime la branche LOCALE créée par `worktree add -b` (après remove, elle
+      // n'est plus checked-out). Sinon un re-run du même plan (planHash → même nom)
+      // collisionnerait « branch already exists ». La branche distante + la PR (si
+      // push a réussi) subsistent : `git branch -D` ne touche que le ref local.
+      try {
+        await this.run('git', ['-C', repoRoot, 'branch', '-D', branch]);
+      } catch {
+        /* branche jamais créée / déjà supprimée */
       }
       try {
         rmSync(wt, { recursive: true, force: true });
