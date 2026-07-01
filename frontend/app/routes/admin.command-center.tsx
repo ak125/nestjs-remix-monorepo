@@ -32,6 +32,7 @@ import { GlobalHealthBar } from "~/components/command-center/GlobalHealthBar";
 import { ModuleGrid } from "~/components/command-center/ModuleGrid";
 import {
   OrchestrationPanel,
+  type ExecutionReceiptView,
   type OrchestrationActionData,
   type OrchestrationStatus,
   type ShadowPlanView,
@@ -166,12 +167,69 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   }
 }
 
+/** Extrait un message d'erreur lisible du corps backend (AdminResponseInterceptor / Nest). */
+function backendError(
+  body: { message?: string | string[] },
+  status: number,
+): string {
+  return Array.isArray(body.message)
+    ? body.message.join(", ")
+    : (body.message ?? `Erreur backend ${status}`);
+}
+
+/**
+ * Deux intents (HITL preview → approve) vers le backend gouverné :
+ *  - `preview`  → POST /orchestration/shadow  : plan *would-be* + plan_hash (0 mutation).
+ *  - `approve`  → POST /orchestration/approve : exécution réelle du plan approuvé (mode
+ *    `approved` + double-flag executor requis côté backend, sinon 409/501/503 surfacés).
+ * Le backend reste la seule autorité : l'UI ne fait que router + afficher son verdict.
+ */
 export async function action({ request, context }: ActionFunctionArgs) {
   await requireAdmin({ context });
   const form = await request.formData();
+  const intent = String(form.get("intent") ?? "preview");
   const kind = String(form.get("kind") ?? "");
   const action_id = String(form.get("action_id") ?? "");
 
+  if (intent === "approve") {
+    const plan_hash = String(form.get("plan_hash") ?? "");
+    try {
+      const res = await fetch(
+        getInternalApiUrlFromRequest(
+          "/api/admin/command-center/orchestration/approve",
+          request,
+        ),
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Cookie: request.headers.get("Cookie") || "",
+          },
+          body: JSON.stringify({ kind, action_id, plan_hash }),
+        },
+      );
+      const body = (await res.json().catch(() => ({}))) as {
+        data?: ExecutionReceiptView;
+        message?: string | string[];
+      } & ExecutionReceiptView;
+      if (!res.ok) {
+        return data(
+          { ok: false, error: backendError(body, res.status) },
+          { status: res.status },
+        );
+      }
+      const receipt = body.data ?? (body as ExecutionReceiptView);
+      return { ok: true, intent: "approve" as const, receipt };
+    } catch (e) {
+      logger.error(`[command-center] approve execution failed: ${e}`);
+      return data(
+        { ok: false, error: "Backend injoignable." },
+        { status: 502 },
+      );
+    }
+  }
+
+  // intent === "preview" (défaut)
   try {
     const res = await fetch(
       getInternalApiUrlFromRequest(
@@ -192,13 +250,13 @@ export async function action({ request, context }: ActionFunctionArgs) {
       message?: string | string[];
     } & ShadowPlanView;
     if (!res.ok) {
-      const msg = Array.isArray(body.message)
-        ? body.message.join(", ")
-        : (body.message ?? `Erreur backend ${res.status}`);
-      return data({ ok: false, error: msg }, { status: res.status });
+      return data(
+        { ok: false, error: backendError(body, res.status) },
+        { status: res.status },
+      );
     }
     const plan = body.data ?? (body as ShadowPlanView);
-    return { ok: true, plan };
+    return { ok: true, intent: "preview" as const, plan };
   } catch (e) {
     logger.error(`[command-center] shadow preview failed: ${e}`);
     return data({ ok: false, error: "Backend injoignable." }, { status: 502 });
