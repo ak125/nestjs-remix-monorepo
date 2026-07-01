@@ -71,6 +71,7 @@
     "audit:db-usage": "node scripts/audit/build-db-usage-map.js",
     "audit:inventory": "node scripts/audit/build-deep-inventory.js && node scripts/audit/build-db-usage-map.js",
     "audit:inventory:check": "npm run audit:inventory && git diff --exit-code -- audit/*.json",
+    "audit:runtime-truth": "for c in pg-stable-write partition-cron-gap rpc-registry-drift rpc-overload-ambiguity bull-repeatable-drift; do tsx scripts/audit/runtime-truth/$c.ts; done",
     "registry:build:files": "node scripts/registry/build-files-registry.js",
     "registry:build:runtime": "node scripts/registry/build-runtime-registry.js",
     "registry:build:deps": "node scripts/registry/build-deps-registry.js",
