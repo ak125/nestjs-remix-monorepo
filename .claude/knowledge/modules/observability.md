@@ -2,7 +2,7 @@
 module: observability
 sources:
 - backend/src/modules/observability
-last_scan: '2026-06-27'
+last_scan: '2026-07-01'
 primary_files:
 - backend/src/modules/observability/diagnostic-kg-shadow-metrics.listener.test.ts
 - backend/src/modules/observability/diagnostic-kg-shadow-metrics.listener.ts
