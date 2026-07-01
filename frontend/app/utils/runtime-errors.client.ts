@@ -141,6 +141,50 @@ export function reportHydrationError(meta: Record<string, unknown> = {}): void {
   sendEvent("seo.runtime.hydration_error", meta, "React hydration mismatch");
 }
 
+/**
+ * Dérive `(reason, message)` de la balise depuis le `stage` de l'appelant.
+ * Distingue le REJET réel (`stage: "rejected"` : stale chunk / réseau →
+ * `reason: "load_rejected"`) de la classe fulfill-with-undefined
+ * (`resolved_undefined` | `boundary` | défaut → `reason: "resolved_undefined"`).
+ * Sans cette dérivation, un rejet réel serait mislabelisé `resolved_undefined`
+ * (review PR #1200) → ventilation dashboard `meta.reason` faussée. Pur/testable.
+ */
+export function resolveChunkEventLabels(stage?: string): {
+  reason: string;
+  message: string;
+} {
+  if (stage === "rejected") {
+    return {
+      reason: "load_rejected",
+      message: "Dynamic import rejected (chunk load failed)",
+    };
+  }
+  return {
+    reason: "resolved_undefined",
+    message: "Dynamic import fulfilled with undefined",
+  };
+}
+
+/**
+ * Émet un évènement pour un `import()` dynamique en échec — soit résolu SANS
+ * default utilisable (fulfill-with-undefined, artefact Rolldown mixed-chunk),
+ * soit rejeté (stale chunk / réseau). Réutilise l'enum existant
+ * `seo.runtime.chunk_load_error` + un discriminant `meta.reason` DÉRIVÉ du
+ * `stage` (`meta` est free-form `z.record` côté contrat → aucune migration DB).
+ * Appelé par `resilient-lazy.client.ts` ET `LazyBoundary` : chaque échec est
+ * compté → pas de silent fallback même quand irrécupérable. Le `stage`
+ * (`resolved_undefined` | `rejected` | `boundary`) reste dans `meta` pour la
+ * ventilation fine.
+ */
+export function reportChunkResolvedInvalid(
+  meta: Record<string, unknown> = {},
+): void {
+  const { reason, message } = resolveChunkEventLabels(
+    typeof meta.stage === "string" ? meta.stage : undefined,
+  );
+  sendEvent("seo.runtime.chunk_load_error", { ...meta, reason }, message);
+}
+
 function captureLongTasks(): void {
   if (typeof PerformanceObserver === "undefined") return;
   try {

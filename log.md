@@ -489,3 +489,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/home-translate-no-removechild`
 - **Décision** : fix(home): translate="no" sur widgets interactifs — stoppe le crash removeChild dû à la traduction navigateur
 - **Sortie** : PR aucune | commits bda4ee6d5
+
+## 2026-07-01 — fix/lazy-rolldown-mixed-import (auto)
+
+- **Branche** : `fix/lazy-rolldown-mixed-import`
+- **Décision** : fix(lazy): stop Footer mixed static+dynamic import crashing R2 pages (Rolldown fulfill-undefined)
+- **Sortie** : PR #1200 | commits 4c536b958

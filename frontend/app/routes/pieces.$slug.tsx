@@ -34,7 +34,7 @@ import {
   GammeGuideCTA,
   GammeFaq,
 } from "~/components/gamme";
-import { Footer } from "~/components/home";
+import { LazyFooter } from "~/components/home/LazyFooter";
 
 import CatalogueSection from "~/components/pieces/CatalogueSection";
 import EquipementiersSection from "~/components/pieces/EquipementiersSection";
@@ -1092,7 +1092,7 @@ export default function PiecesDetailPage() {
           )}
         </div>
       </section>
-      <Footer />
+      <LazyFooter />
     </div>
   );
 }

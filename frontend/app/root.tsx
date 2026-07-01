@@ -1,13 +1,5 @@
 import { ChevronUp } from "lucide-react";
-import {
-  Component,
-  lazy,
-  Suspense,
-  useEffect,
-  useRef,
-  type ErrorInfo,
-  type ReactNode,
-} from "react";
+import { lazy, Suspense, useEffect, useRef } from "react";
 import {
   type ActionFunctionArgs,
   type HeadersFunction,
@@ -29,8 +21,11 @@ import {
   useNavigation,
 } from "react-router";
 
+import { LazyFooter } from "~/components/home/LazyFooter";
+import { LazyBoundary } from "~/components/LazyBoundary";
 import { cspNonceContext } from "~/utils/load-context";
 import { logger } from "~/utils/logger";
+import { safeLazy } from "~/utils/resilient-lazy.client";
 import { getOptionalUser } from "./auth/unified.server";
 import { ErrorGeneric } from "./components/errors";
 import { Navbar } from "./components/Navbar";
@@ -46,9 +41,15 @@ import { useScrollBehavior } from "./hooks/useScrollBehavior";
 import { getCart } from "./services/cart.server";
 import animationsStylesheet from "./styles/animations.css?url";
 
-const ChatWidget = lazy(() => import("./components/rag/ChatWidget"));
-const GlobalFooter = lazy(() => import("./components/home/Footer"));
-const BottomNav = lazy(() => import("./components/layout/BottomNav"));
+// GlobalFooter n'est plus déclaré ici : rendu via <LazyFooter/> (composant partagé,
+// specifier canonique unique `~/components/home/Footer`) — voir components/home/LazyFooter.
+// ChatWidget/BottomNav passent par safeLazy (durcissement fulfill-with-undefined).
+const ChatWidget = safeLazy(() => import("./components/rag/ChatWidget"), {
+  name: "ChatWidget",
+});
+const BottomNav = safeLazy(() => import("./components/layout/BottomNav"), {
+  name: "BottomNav",
+});
 const LazyToaster = lazy(() =>
   import("sonner").then((m) => ({ default: m.Toaster })),
 );
@@ -168,41 +169,16 @@ export const action = async (_args: ActionFunctionArgs) => {
 // Re-exports depuis module neutre pour éviter la dépendance circulaire root ↔ Navbar
 export { useOptionalUser, useRootCart } from "./hooks/useRootData";
 
-/** Error boundary that silently catches ChatWidget crashes without affecting the app. */
-class ChatWidgetErrorBoundary extends Component<
-  { children: ReactNode },
-  { hasError: boolean }
-> {
-  constructor(props: { children: ReactNode }) {
-    super(props);
-    this.state = { hasError: false };
-  }
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-  componentDidCatch(error: Error, info: ErrorInfo) {
-    logger.warn(
-      "[ChatWidget] crash intercepte:",
-      error.message,
-      info.componentStack?.slice(0, 200),
-    );
-  }
-  render() {
-    if (this.state.hasError) return null;
-    return this.props.children;
-  }
-}
-
 /** Lazy-loaded ChatWidget wrapped in error boundary + suspense + hydration guard */
 function ChatWidgetSafe() {
   const isHydrated = useHydrated();
   if (!isHydrated) return null;
   return (
-    <ChatWidgetErrorBoundary>
+    <LazyBoundary name="ChatWidget">
       <Suspense fallback={null}>
         <ChatWidget />
       </Suspense>
-    </ChatWidgetErrorBoundary>
+    </LazyBoundary>
   );
 }
 
@@ -357,15 +333,13 @@ function AppShell({ children }: { children: React.ReactNode }) {
       <main className="grow flex flex-col">
         <div className="grow">{children}</div>
       </main>
-      {!hideGlobalFooter && (
-        <Suspense fallback={null}>
-          <GlobalFooter />
-        </Suspense>
-      )}
+      {!hideGlobalFooter && <LazyFooter />}
       {!hideBottomNav && (
-        <Suspense fallback={null}>
-          <BottomNav />
-        </Suspense>
+        <LazyBoundary name="BottomNav">
+          <Suspense fallback={null}>
+            <BottomNav />
+          </Suspense>
+        </LazyBoundary>
       )}
       <NotificationContainer />
       <button

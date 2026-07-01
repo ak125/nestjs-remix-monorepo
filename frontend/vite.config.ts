@@ -60,6 +60,23 @@ export default defineConfig({
         deps.filter((dep) => !dep.includes("sentry-vendor")),
     },
     rollupOptions: {
+      // Regression guard (incident PROD Footer, `React.lazy` `_result.default`
+      // sur `undefined`) : un module importé à la fois STATIQUEMENT et
+      // DYNAMIQUEMENT produit sous Rolldown un chunk dont l'`import()` dynamique
+      // peut se résoudre avec `undefined` → crash. Rolldown signale ce cas via
+      // `INEFFECTIVE_DYNAMIC_IMPORT` ; on l'élève en ERREUR de build pour
+      // empêcher cette classe de resurgir silencieusement.
+      // Allowlist : `cart.schemas` (cas préexistant same-file `cart.tsx`, un
+      // schéma Zod jamais rendu via React.lazy → hors classe de crash).
+      onwarn(warning, defaultHandler) {
+        if (
+          warning.code === "INEFFECTIVE_DYNAMIC_IMPORT" &&
+          !/cart\.schemas/.test(warning.message ?? "")
+        ) {
+          throw new Error(`[mixed-import guard] ${warning.message}`);
+        }
+        defaultHandler(warning);
+      },
       output: {
         // Vendor chunking — only pure third-party node_modules (never react-router)
         // Previous race condition was caused by splitting Remix internals; this config avoids that
