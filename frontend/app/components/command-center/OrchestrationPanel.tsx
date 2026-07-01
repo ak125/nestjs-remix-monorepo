@@ -3,9 +3,10 @@
  *
  * Read-only + preview. Affiche le mode d'orchestration courant (off|shadow|…) et les
  * kinds supportés, et permet de PRÉVISUALISER un plan *would-be* (POST .../shadow) —
- * 0 mutation d'artefact. Le backend reste la source de vérité : l'action_id est en
- * texte libre, validé côté serveur (400 si inconnu, 409 si mode ≠ shadow, 422 si
- * dry-run KO) — pas de catalogue dupliqué ici.
+ * 0 mutation d'artefact. Le backend reste la source de vérité : l'action_id se choisit
+ * dans le catalogue `available_actions` exposé par l'API (#1019), filtré par kind ;
+ * fallback en saisie libre si le backend ne fournit pas (encore) le catalogue. Dans
+ * tous les cas le serveur valide (400 si inconnu, 409 si mode ≠ shadow, 422 si dry-run KO).
  */
 import {
   Activity,
@@ -13,16 +14,25 @@ import {
   AlertTriangle,
   CheckCircle2,
 } from "lucide-react";
+import { useState } from "react";
 import { Form, useNavigation } from "react-router";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 
+export interface AvailableAction {
+  kind: string;
+  action_id: string;
+}
+
 export interface OrchestrationStatus {
   mode: "off" | "shadow" | "approved" | "auto";
   shadow_enabled: boolean;
   supported_kinds: string[];
+  /** Catalogue (kind × action_id) fourni par le backend (#1019). Optionnel : si absent
+   *  (ancien backend), l'UI retombe sur la saisie texte libre. */
+  available_actions?: AvailableAction[];
 }
 
 export interface ShadowPlanView {
@@ -53,6 +63,8 @@ export function OrchestrationPanel({
 }) {
   const navigation = useNavigation();
   const submitting = navigation.state === "submitting";
+  // Hook AVANT tout early-return (rules of hooks). Vide → défaut dérivé du statut.
+  const [kind, setKind] = useState("");
 
   if (!status) {
     return (
@@ -69,6 +81,12 @@ export function OrchestrationPanel({
       </Alert>
     );
   }
+
+  // Kind effectif (état contrôlé, défaut = 1er supporté) + actions du catalogue filtrées.
+  const selectedKind = kind || status.supported_kinds[0] || "regen-artifact";
+  const actionsForKind = (status.available_actions ?? []).filter(
+    (a) => a.kind === selectedKind,
+  );
 
   return (
     <div className="space-y-4">
@@ -133,7 +151,8 @@ export function OrchestrationPanel({
                 id="orch-kind"
                 name="kind"
                 className="h-9 rounded-md border bg-background px-3 text-sm"
-                defaultValue={status.supported_kinds[0] ?? "regen-artifact"}
+                value={selectedKind}
+                onChange={(e) => setKind(e.target.value)}
               >
                 {status.supported_kinds.map((k) => (
                   <option key={k} value={k}>
@@ -146,13 +165,30 @@ export function OrchestrationPanel({
               <label htmlFor="orch-action-id" className="text-sm font-medium">
                 action_id
               </label>
-              <input
-                id="orch-action-id"
-                name="action_id"
-                required
-                placeholder="regen:command-center-snapshot"
-                className="h-9 rounded-md border bg-background px-3 text-sm"
-              />
+              {actionsForKind.length > 0 ? (
+                // Catalogue dispo (#1019) → menu déroulant filtré par kind.
+                <select
+                  id="orch-action-id"
+                  name="action_id"
+                  required
+                  className="h-9 rounded-md border bg-background px-3 text-sm"
+                >
+                  {actionsForKind.map((a) => (
+                    <option key={a.action_id} value={a.action_id}>
+                      {a.action_id}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                // Fallback (backend sans catalogue) → saisie libre, validée serveur.
+                <input
+                  id="orch-action-id"
+                  name="action_id"
+                  required
+                  placeholder="regen:command-center-snapshot"
+                  className="h-9 rounded-md border bg-background px-3 text-sm"
+                />
+              )}
             </div>
             <Button type="submit" disabled={submitting}>
               {submitting ? "Calcul…" : "Prévisualiser"}
