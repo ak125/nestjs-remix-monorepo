@@ -29,6 +29,12 @@ bounded context → **grep en dernier recours**).
 - **NEVER** commencer par `Grep` / `Glob`. **NEVER** créer un fichier avant
   cartographie. **NEVER** proposer avant audit.
 - Vérifier l'existant avant d'inventer : voir §dédiée (règle non-négociable).
+- `[HIGH]` **Fraîcheur avant analyse** : avant de conclure sur le code ou le canon d'un
+  repo externe (wiki, vault) ou d'un checkout, vérifier qu'il n'est pas EN RETARD sur
+  `origin/main` via `scripts/ops/check-repo-freshness.sh <repo> origin/main`. Conclure sur
+  un checkout périmé est une cause directe d'analyses fausses (incident 2026-07-02, checkout
+  wiki 31+ commits derrière). En cas de doute, l'état réel du repo
+  (`git show origin/main:<chemin>`) prime sur toute doc / skill dérivé.
 
 ### Repository Control Plane — 3 couches `[HIGH]`
 
@@ -237,6 +243,12 @@ Règles synthétiques (détails dans MEMORY.md `vault-sot-adr013.md`,
    README — **linker** le vault, ne pas réécrire.
 4. **3-VPS** (ADR-012) : DEV = SoT canonique (write), PROD = mirror read-only,
    AI-COS = lit via HTTPS GitHub. Kill-switch `AI_VAULT_WRITE=false`.
+5. **Normativité ADR** : une ADR n'est **normative** que si `status: accepted` ET sans
+   `superseded_by` actif. Une ADR `deprecated` / `superseded` = **contexte historique**
+   (audit trail, chaînes `amends` / `supersedes`), jamais une justification d'implémentation
+   courante. Consulter l'index `ops/moc/MOC-Decisions.md` (vault, auto-synchronisé) pour le
+   statut — ne pas créer d'index parallèle. En cas de conflit entre une ADR et l'état réel
+   du code / wiki, ou entre un skill dérivé et le repo, **l'état du repo prime**.
 
 Ce monorepo contient uniquement : `backend/`, `frontend/`, `shared/`, `scripts/`,
 `docker/`, `.github/workflows/`, `app/`. **Aucun** `governance/`, `docs/adrs/`,
