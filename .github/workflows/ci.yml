@@ -100,7 +100,9 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          # Full history: `turbo typecheck --affected` (PR path below) compares base↔head,
+          # and a shallow checkout makes turbo treat ALL packages as changed.
+          fetch-depth: 0
 
       - name: Setup Node.js environment
         uses: actions/setup-node@v6
@@ -119,6 +121,24 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Warm the incremental typecheck: carry each package's tsc `.tsbuildinfo`
+      # (node_modules/.cache/tsc/*, wiped by `npm ci`) across CI runs so `tsc` re-checks
+      # only the changed slice (~7s warm) instead of a full cold pass (~19s). restore-keys
+      # (prefix match) restores the most recent parent buildinfo — GitHub also falls back to
+      # the base-branch cache, so PRs warm from their first run. The buildinfo is an
+      # OUTPUT-only artifact (never a turbo/tsc input): `tsc --incremental` self-invalidates
+      # on any change, so a stale restore can only slow a run, never mask a type error.
+      # Key on lockfile + turbo.json + every tsconfig — a config change alters the compile
+      # graph and must start a fresh buildinfo. Saves only on job success (first GREEN run).
+      - name: Restore TypeScript incremental buildinfo
+        uses: actions/cache@v5
+        with:
+          path: |
+            **/node_modules/.cache/tsc/
+          key: tsbuildinfo-${{ runner.os }}-${{ hashFiles('package-lock.json', 'turbo.json', 'packages/typescript-config/*.json', 'backend/tsconfig*.json', 'frontend/tsconfig*.json', 'packages/*/tsconfig*.json') }}-${{ github.sha }}
+          restore-keys: |
+            tsbuildinfo-${{ runner.os }}-${{ hashFiles('package-lock.json', 'turbo.json', 'packages/typescript-config/*.json', 'backend/tsconfig*.json', 'frontend/tsconfig*.json', 'packages/*/tsconfig*.json') }}-
+
       # DT-0 byte-identity gate: assert the committed design-tokens artifacts
       # (src/styles/tokens.css, src/tailwind-tokens.cjs, src/tokens/generated.ts)
       # still match a fresh build from the DTCG source (src/tokens.json). Runs
@@ -135,7 +155,19 @@ jobs:
         run: npm run build
 
       - name: 🔎 Type check
-        run: npm run typecheck --if-present
+        # PR events → typecheck only the AFFECTED packages (turbo compares base↔head via
+        # TURBO_SCM_BASE/HEAD; needs fetch-depth: 0 above). push (main/dev) → FULL run:
+        # never narrow the pre-deploy gate. Root package.json stays `turbo typecheck`;
+        # `--affected` is appended only here, via the existing npm script.
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            npm run typecheck --if-present -- --affected
+          else
+            npm run typecheck --if-present
+          fi
+        env:
+          TURBO_SCM_BASE: ${{ github.event.pull_request.base.sha }}
+          TURBO_SCM_HEAD: ${{ github.event.pull_request.head.sha }}
 
       - name: 🧪 URL Pattern Tests
         run: cd frontend && npm run test -- --run tests/unit/url-patterns.test.ts

@@ -1,5 +1,6 @@
 {
     "$schema": "https://turbo.build/schema.json",
+    "globalDependencies": ["packages/typescript-config/*.json"],
     "tasks": {
       "dev": {
         "cache": false,
