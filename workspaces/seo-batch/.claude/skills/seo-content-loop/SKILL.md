@@ -69,16 +69,21 @@ SCRAPING LARGE (RUN_TARGETED_RAW_TO_WIKI) → RAW → WIKI → score SUBSTANCE (
      - **Diagnostic** : sources symptômes→causes (codes OBD/VAG, constructeur, forums techniques) — à découvrir de même.
      - **Dédup + refresh** : chaque cible scrapée **une seule fois** (manifest type `app/audit/scrape-targets-*.md`) ;
        rafraîchir périodiquement. Sortie toujours **`.md`** par `target_wiki_field` (cf. ci-dessus).
-   - **Mesure de la substance produite (complète l'étape 5) — ⚠️ SCORING EN TRANSITION, ne pas traiter le score scalaire comme fiable** :
-     - **Câblé aujourd'hui (autoritaire)** : `automecanik-wiki/_scripts/compute-confidence-score.py` (4 composantes) + `promote.py`
-       (TIER A/B, ADR-083 ; seuil auto **NO-OP** par défaut → revue humaine). ⚠️ **Ce scorer déflate l'OE** (défaut
-       `medium`=0.6 ; ex. `disque-de-frein` OE = 0.36 malgré 64 sources OE) — connu, à remplacer.
-     - **Cible ratifiée (ADR-091)** : `shadow_score.py` **EXISTE** (6-dim à planchers `claim`/`applies_to`/`evidence`/`related_gammes`,
-       ADR-088, + `test_shadow_score.py`) — derrière flag `PROMOTE_GATE_ENGINE`, **PAS encore câblé** comme scorer autoritaire
-       (câblage + baseline-resync de tout le corpus = **Phase B**, atomique).
-     - **Gate de régression** `compare-proposal-versions.py` (#60, mergé) utilise **encore** `compute-confidence-score` (celui qui déflate).
-     - **Conséquence** : « itérer jusqu'au SCORE » n'est fiable qu'**après** câblage ADR-091. Tant que non câblé : **revue humaine décide** ;
-       ne jamais conclure « TIER A / fait » sur le score scalaire seul. (Détail + plan : `app/audit/content-loop-method-confusion-and-hardening-2026-06-22.md`.)
+   - **Mesure de la substance produite (complète l'étape 5) — ⚠️ SCORING EN TRANSITION + ⚠️ ÉTAT RUNTIME À VÉRIFIER SUR `origin/main`** :
+     - **Ne pas traiter ce skill comme une vérité runtime figée.** Les scorers + la porte de promotion du wiki
+       (`_scripts/compute-confidence-score.py`, `_scripts/promote.py` ADR-083 TIER A/B, `_scripts/shadow_score.py` ADR-088 6-dim
+       derrière flag `PROMOTE_GATE_ENGINE`, gate régression `compare-proposal-versions.py`) **évoluent vite et peuvent être
+       absents ou différents sur un checkout périmé** (incident 2026-07-02 : checkout wiki 31+ commits derrière `origin/main`).
+       **AVANT de t'appuyer sur eux** : (1) lancer la garde de fraîcheur `scripts/ops/check-repo-freshness.sh <chemin-wiki> origin/main`
+       (racine monorepo) — si `STALE`, ne conclus pas sur le vieux code ; (2) lire l'état réel via
+       `git -C <chemin-wiki> show origin/main:_scripts/<fichier>` (présence + statut de câblage + seuil). **En cas de conflit
+       entre ce skill (dérivé) et l'état réel du repo : l'état du repo l'emporte.**
+     - **Doctrine stable (indépendante du checkout)** : le score scalaire seul ne suffit jamais à déclarer « TIER A / fait ».
+       La promotion reste gouvernée par la **porte tiered déterministe** (ADR-083 : TIER A auto fail-closed / TIER B humain),
+       durcie par le scorer de substance (ADR-088, planchers par claim) et recalibrée sur `source-catalog` (ADR-091) ;
+       **les familles sécurité (freinage/direction/airbag/suspension) restent human spot-check** (ADR-091), jamais auto.
+       Tant que le scorer autoritaire cible n'est pas confirmé câblé **sur `origin/main`**, traiter le verdict comme **indicatif**.
+       (Détail + plan : `app/audit/content-loop-method-confusion-and-hardening-2026-06-22.md`.)
 2. **RAW** (`automecanik-raw/`) — normaliser/recycler le scrape en fiches sourcées (frontmatter contrat
    `_schemas/recycled-frontmatter.schema.json`), `verification_status` `to_verify`→`verified` (humain).
    `recycled/` n'est **jamais** canon (canon RAW `CLAUDE.md`).
