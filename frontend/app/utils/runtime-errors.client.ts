@@ -25,6 +25,9 @@ import {
   type Surface,
 } from "@repo/cwv-taxonomy";
 
+import { isChunkLoadErrorMessage } from "~/utils/chunk-error-classification";
+import { safeSessionStorage } from "~/utils/safe-storage";
+
 const SESSION_ID_KEY = "_aut_cwv_sid";
 const EVENT_QUOTA_KEY = "_aut_runtime_quota";
 const MAX_PER_TYPE = 5;
@@ -41,18 +44,16 @@ interface QuotaState {
 }
 
 function getSessionId(): string | null {
-  try {
-    return sessionStorage.getItem(SESSION_ID_KEY);
-  } catch {
-    return null;
-  }
+  // safeSessionStorage never throws (blocked storage → null, Sentry 181aeb23).
+  return safeSessionStorage.getItem(SESSION_ID_KEY);
 }
 
 function getQuotaState(): QuotaState {
   try {
-    const raw = sessionStorage.getItem(EVENT_QUOTA_KEY);
+    const raw = safeSessionStorage.getItem(EVENT_QUOTA_KEY);
     return raw ? (JSON.parse(raw) as QuotaState) : {};
   } catch {
+    // JSON.parse can still throw on corrupt data → best-effort empty quota.
     return {};
   }
 }
@@ -62,11 +63,9 @@ function consumeQuota(eventType: EventType): boolean {
   const current = quota[eventType] ?? 0;
   if (current >= MAX_PER_TYPE) return false;
   quota[eventType] = current + 1;
-  try {
-    sessionStorage.setItem(EVENT_QUOTA_KEY, JSON.stringify(quota));
-  } catch {
-    // storage disabled — accept and silently emit (quota best-effort)
-  }
+  // safeSessionStorage.setItem is a no-op (returns false) when storage is
+  // disabled — quota stays best-effort without a throw.
+  safeSessionStorage.setItem(EVENT_QUOTA_KEY, JSON.stringify(quota));
   return true;
 }
 
@@ -213,11 +212,7 @@ function captureChunkLoadErrors(): void {
   // message typé (varie par bundler — Vite, Rollup, Webpack).
   window.addEventListener("error", (event) => {
     const msg = event.message ?? "";
-    if (
-      msg.includes("Loading chunk") ||
-      msg.includes("Failed to fetch dynamically imported module") ||
-      msg.includes("Importing a module script failed")
-    ) {
+    if (isChunkLoadErrorMessage(msg)) {
       sendEvent(
         "seo.runtime.chunk_load_error",
         {
@@ -238,11 +233,7 @@ function captureChunkLoadErrors(): void {
         : typeof reason === "string"
           ? reason
           : "";
-    if (
-      msg.includes("Loading chunk") ||
-      msg.includes("Failed to fetch dynamically imported module") ||
-      msg.includes("Importing a module script failed")
-    ) {
+    if (isChunkLoadErrorMessage(msg)) {
       sendEvent("seo.runtime.chunk_load_error", { source: "rejection" }, msg);
     }
   });
