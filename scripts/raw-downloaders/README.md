@@ -7,8 +7,14 @@ Scripts qui **téléchargent des sources externes** (Wikipedia, OEM PDFs, brand 
 
 ## Scripts hébergés
 
-- `download-oem-corpus.py` (anciennement `scripts/rag/download-oem-corpus.py`) — télécharge corpus technique Wikipedia FR + OEM pages.
-- `download-brand-oem-corpus.py` (anciennement `scripts/rag/download-brand-oem-corpus.py`) — télécharge corpus brand-specific.
+> **⚠️ NEUTRALISÉS — PR-C (2026-07-02).** Les deux scripts ci-dessous alimentaient l'ancien
+> pipeline content-RAG (`recycled/rag-knowledge/`), direction abandonnée par ADR-031/046
+> (RAG = retrieval chatbot uniquement). Ils sont désormais **inertes** (corps retiré, `exit 1`).
+> Capture de sources canon = boucle RAW → WIKI via le skill `/seo-content-loop`.
+> Détail : `audit/rag-legacy-inventory-2026-07-02.md`.
+
+- `download-oem-corpus.py` (anciennement `scripts/rag/download-oem-corpus.py`) — **[NEUTRALISÉ PR-C]** téléchargeait un corpus technique Wikipedia FR + OEM pages.
+- `download-brand-oem-corpus.py` (anciennement `scripts/rag/download-brand-oem-corpus.py`) — **[NEUTRALISÉ PR-C]** téléchargeait un corpus brand-specific.
 
 ## Convention OUTPUT
 
