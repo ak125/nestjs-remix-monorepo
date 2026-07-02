@@ -18,7 +18,7 @@
 
 ## Scripts restant ici (legacy, non classifiés)
 
-- `ingest-oem-enriched-gammes.py` — ingester legacy via API `/api/rag/internal/ingest/manual`. Lit `gammes/*.md` avec bloc `phase5_enrichment`. Pas dans la classification du plan v3 (ce n'est ni générateur, ni exporter, ni sync). À déprécier ou reclasser en `scripts/api-clients/` lors d'un prochain chantier.
+- `ingest-oem-enriched-gammes.py` — **[NEUTRALISÉ PR-C 2026-07-02]** ingester legacy (poussait `phase5_enrichment` des `gammes/*.md` vers `__rag_knowledge` via `/api/rag/internal/ingest/manual`). Direction RAG-source abandonnée par ADR-031/046 ; ingestion canon = mirror WIKI→RAG (`scripts/rag-sync/`). Corps retiré, `exit 1`. Détail : `audit/rag-legacy-inventory-2026-07-02.md`.
 
 ## Suite (plan v3)
 

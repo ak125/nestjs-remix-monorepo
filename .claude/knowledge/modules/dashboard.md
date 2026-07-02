@@ -2,7 +2,7 @@
 module: dashboard
 sources:
 - backend/src/modules/dashboard
-last_scan: '2026-07-01'
+last_scan: '2026-07-02'
 primary_files:
 - backend/src/modules/dashboard/dashboard.controller.ts
 - backend/src/modules/dashboard/dashboard.module.ts
