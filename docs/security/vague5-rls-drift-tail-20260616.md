@@ -1,7 +1,7 @@
 # Vague 5 — RLS drift-tail + function-privilege hardening
 
 > **Date** : 2026-06-16
-> **Status** : `MIGRATIONS_PREPARED` (NOT applied — shared DB, owner-gated apply)
+> **Status** : `APPLIED` 2026-06-17 (PR #1012 mergée ; 5 migrations + revoke paiement appliqués via apply_migration ; advisor **215 ERROR → 0** confirmé)
 > **Source** : Supabase advisor (security) — project `cxpojprgwgubzjyqzmoq`
 > **Auteur** : Claude (extension du programme vagues 1→4b, ADR-021 / ADR-028 Option D)
 > **Pattern** : identique aux migrations `20260422_enable_rls_internal_tables.sql` /
@@ -236,16 +236,17 @@ GRANT EXECUTE / unschedule+DROP). `main` est branch-protected — jamais de forc
 
 | Item | État |
 |---|---|
-| 215 ERROR | **Migrations préparées + lintées** (#1+#2, non appliquées) |
+| 215 ERROR | ✅ **APPLIQUÉ 2026-06-17 → advisor 215 ERROR = 0** (vérifié) |
 | ~350/541 WARN | **Migrations préparées** (#4 search_path 334 + #2 matview 1 + #5b 13 prouvés-safe) |
 | ~190 WARN restants | ~186 RPC read-path **déférés vague-5b-full** (mapping read-path PREPROD) · 3 carveout (§7) · 3 ext (§6a) · 1 pg (§6b) |
 | Revue adversariale (passe 1) | 1 BLOQUANT (#5 → déféré) + 1 HAUTE (#4 carveout → exclu) **corrigés** |
 | Re-revue adversariale (passe 2) | **APPROVE** (0 BLOQUANT/HAUTE) ; 2 SUGGESTION corrigées : #5b self-assert `prorettype=trigger` (fail-closed) + #3 reconcileur escalade no-silent-fallback (échec systémique → cron job rouge) |
 | 20 INFO | Intentionnel (closure optionnelle §6c) |
 | Anti-régression rotation | Migration #3 (pg_cron reconcileur) |
-| Smoke-test live (BEGIN/ROLLBACK) | **NON exécuté** (psql refusé par garde ; à faire à l'apply) |
-| Apply à la DB | **NON fait** (owner-gated, DB partagée) |
-| Findings paiement/commerce | **Signalés, non touchés** (payments.md) |
+| Apply à la DB | ✅ **FAIT 2026-06-17** (migration par migration via apply_migration, vérifié à chaque étape) |
+| Reconcileur anti-régression | ✅ planifié pg_cron `15 * * * *` ; reconcile() = 0 (tout verrouillé) |
+| Findings paiement/commerce | ✅ **FERMÉS 2026-06-17** (4 fns order/payment : revoke owner-autorisé, anon_exec=false ; voir `20260617_revoke_anon_execute_cancel_order_atomic_and_order_payment_siblings.sql`) |
+| WARN restants | 172 (165 RPC read-path irréductibles ADR-028 + 3 carveout search_path + 3 ext + 1 pg) |
 
 **Non vérifié / hors périmètre** : comportement runtime exact de chaque RPC sous service_role
 (supposé inchangé car privilèges service_role intacts) ; parité PREPROD↔PROD à l'apply.
