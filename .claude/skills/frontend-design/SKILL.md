@@ -46,7 +46,7 @@ Production frontend skill: implements Remix + shadcn/ui code with an assumed aes
    - UI lib: shadcn/ui (`~/components/ui/`)
    - Icons: `lucide-react`
    - Styling: Tailwind CSS only (no CSS modules, no styled-components, no inline `style={}`)
-4. **Design system check**: read `packages/design-tokens/src/tokens/design-tokens.json` before picking any color or typography.
+4. **Design system check**: read `packages/design-tokens/src/tokens.json` (the hex/typography SoT) before picking any color or typography. See [`references/canon-links.md`](references/canon-links.md) for the token SoT path, the non-color design-system gates, and the anti-invention guard.
 
 ### Phase 2 — Prototype (aesthetic direction)
 
@@ -54,6 +54,7 @@ Production frontend skill: implements Remix + shadcn/ui code with an assumed aes
 2. Anchor the palette on the SoT tokens (extension justified or rejected, never invented)
 3. Define typography hierarchy (heading vs body vs data)
 4. Sketch structure (H1, sections, CTA, micro-interactions)
+5. **Before fixing CTA / section order**, open the exemplars — [`exemplars/good-r2-mobile.md`](exemplars/good-r2-mobile.md) (role-correct structure, lucide icon not emoji) and [`exemplars/antipattern-editorial-sprawl.md`](exemplars/antipattern-editorial-sprawl.md) (keep handoffs above editorial).
 
 ### Phase 3 — Code (implementation)
 
@@ -70,7 +71,7 @@ Apply the *Pre-Delivery Checklist*. **Any failing item → fix before delivery.*
 
 ## Design System Integration (SoT)
 
-**Source of truth** — `packages/design-tokens/src/tokens/design-tokens.json` (consumed via `packages/design-tokens/src/tokens/generated.ts`).
+**Source of truth** — `packages/design-tokens/src/tokens.json` (consumed via `packages/design-tokens/src/tokens/generated.ts`).
 
 **Authoritative palette** (verified against SoT 2026-05):
 
@@ -297,4 +298,10 @@ Before declaring the work done:
 | `responsive-audit` | → propose | After build, validate mobile compliance (touch targets, viewport, fluid tokens) |
 | `vehicle-ops` | ← receives | If `VehicleSelector` breaks, rebuild via this skill |
 
-For test scenarios (gap testing, application scenarios), see [`references/test-scenarios.md`](references/test-scenarios.md).
+## Références canon & exemplars
+
+Open these **at the decision point** (see Phase 1 design-system check / Phase 2), not as passive reading:
+
+- **Canon (links only, never restated)** — [`references/canon-links.md`](references/canon-links.md): the token SoT (hex/typography authority), non-color design-system gates, and an anti-invention guard. `NO CANONICAL AUTHORITY` — the linked source always wins; this skill builds UI structure and never invents SEO content/keywords/URLs. (Page-role canon lives in `role-matrix.md` via CLAUDE.md, not here.)
+- **Exemplars** — [`exemplars/good-r2-mobile.md`](exemplars/good-r2-mobile.md) (real production R2 surface: lucide icon, not emoji) · [`exemplars/antipattern-editorial-sprawl.md`](exemplars/antipattern-editorial-sprawl.md) (editorial must sit below the handoffs; R8 no-cart is correct-by-canon).
+- **Test scenarios** (gap testing, application scenarios) — [`references/test-scenarios.md`](references/test-scenarios.md).
