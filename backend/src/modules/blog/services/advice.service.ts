@@ -550,8 +550,13 @@ export class AdviceService {
         .from(TABLES.blog_advice)
         .update({ ba_visit: String(next) })
         .eq('ba_id', adviceId);
-    } catch {
-      // Comptage de vues non-critique — ne jamais casser la requête.
+    } catch (e) {
+      // Comptage de vues non-critique — ne jamais casser la requête, mais
+      // rester observable : un fallback qui échoue lui aussi (ex. UPDATE anon
+      // refusé sous RLS en PREPROD READ_ONLY) ne doit pas être silencieux.
+      this.logger.debug(
+        `incrementViewsFallback failed for ba_id=${adviceId}: ${(e as Error).message}`,
+      );
     }
   }
 
