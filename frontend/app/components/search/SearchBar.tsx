@@ -23,10 +23,7 @@ import { Form, useNavigate, useSearchParams } from "react-router";
 
 import { logger } from "~/utils/logger";
 import { safeLocalStorage } from "~/utils/safe-storage";
-import {
-  useEnhancedSearchWithDebounce,
-  useEnhancedAutocomplete,
-} from "../../hooks/useEnhancedSearch";
+import { useEnhancedSearchWithDebounce } from "../../hooks/useEnhancedSearch";
 import { cn } from "../../lib/utils";
 import { searchApi } from "../../services/api/search.api";
 
@@ -83,9 +80,6 @@ export const SearchBar = memo(function SearchBar({
     debouncedQuery,
     loading: isSearching,
   } = useEnhancedSearchWithDebounce(initialQuery, 300);
-
-  // Hook d'autocomplete Enhanced
-  useEnhancedAutocomplete(query);
 
   // Historique local (localStorage)
   const [searchHistory, setSearchHistory] = useState<string[]>([]);

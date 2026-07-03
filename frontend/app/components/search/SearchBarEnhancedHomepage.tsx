@@ -68,13 +68,17 @@ export const SearchBarEnhancedHomepage = memo(
     const [selectedIndex, setSelectedIndex] = useState(-1);
     const [recentSearches, setRecentSearches] = useState<string[]>([]);
 
-    // Hook Enhanced avec debounce
+    // Hook Enhanced avec debounce.
+    // 300 ms (au lieu de 200) = valeur par défaut du hook : moins de requêtes
+    // `/api/search-existing/search` envoyées à l'origine pendant la frappe, donc
+    // moins de pression sur le rate-limiter par-IP partagé (incident 429 mobile
+    // CGNAT, 2026-07-03), pour un délai imperceptible.
     const {
       query,
       setQuery,
       loading: isSearching,
       results,
-    } = useEnhancedSearchWithDebounce(initialQuery, 200);
+    } = useEnhancedSearchWithDebounce(initialQuery, 300);
 
     // Hook d'autocomplete Enhanced
     const { suggestions } = useEnhancedAutocomplete(query);
