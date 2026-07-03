@@ -510,6 +510,13 @@ entries:
     owner: '@ak125/content-team'
     sourceConfidence: medium
     risk: medium
+  # Glob exact volontaire — les migrations ne sont PAS auto-couvertes (review ownership à chaque fois).
+  # Couvre .sql + .down.sql de la migration increment_advice_views (runtime-truth #3, Lot C).
+  - glob: backend/supabase/migrations/*blog_advice_increment_views*
+    domain: D5
+    owner: '@ak125/content-team'
+    sourceConfidence: high
+    risk: low
   # bot-guard = anti-bot access-control middleware (throttling, geo/IP filtering,
   # GOOD_BOTS allowlist) → Security & Governance. Risk high: can 403 real traffic.
   - glob: backend/src/modules/bot-guard/**
