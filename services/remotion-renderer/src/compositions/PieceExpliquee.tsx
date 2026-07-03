@@ -33,12 +33,12 @@ interface PieceExpliqueeProps {
   briefId?: string;
   videoType?: string;
   vertical?: string;
-  piece: string;
-  pieceFunction: string;
-  location: string;
-  wearSigns: WearSign[];
-  whenToChange: string;
-  cta: string;
+  piece?: string;
+  pieceFunction?: string;
+  location?: string;
+  wearSigns?: WearSign[];
+  whenToChange?: string;
+  cta?: string;
   disclaimer?: string;
   audioUrl?: string;
   brandName?: string;

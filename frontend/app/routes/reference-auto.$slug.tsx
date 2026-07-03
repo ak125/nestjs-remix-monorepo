@@ -10,17 +10,6 @@
  */
 
 import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import {
-  Link,
-  useLoaderData,
-  useRouteError,
-  isRouteErrorResponse,
-} from "@remix-run/react";
-import {
   ArrowLeft,
   BookOpen,
   AlertTriangle,
@@ -38,6 +27,15 @@ import {
   Tag,
 } from "lucide-react";
 import { type ReactNode } from "react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  data,
+  Link,
+  useLoaderData,
+  useRouteError,
+  isRouteErrorResponse,
+} from "react-router";
 
 // UI Components
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
@@ -258,7 +256,7 @@ function shouldUseHeroRole(
 /* ===========================
    Meta
 =========================== */
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   if (!data?.reference) {
     return [
       { title: "Référence non trouvée - Pièces Auto" },
@@ -361,7 +359,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
       // Silently ignore — related refs are optional
     }
 
-    return json<LoaderData>(
+    return data(
       { reference, relatedRefs },
       {
         headers: {
@@ -559,7 +557,6 @@ export default function ReferenceDetailPage() {
       <BlogPiecesAutoNavigation />
       {/* Schema.org JSON-LD (DefinedTerm + TechArticle + Breadcrumbs) */}
       <SchemaJsonLd reference={reference} />
-
       {/* Breadcrumb */}
       <nav className="bg-white border-b" aria-label="Breadcrumb">
         <div className="container mx-auto px-4 py-3">
@@ -580,7 +577,6 @@ export default function ReferenceDetailPage() {
           </ol>
         </div>
       </nav>
-
       {/* Hero — S16: HeroRole (pedagogique) si role riche, sinon HeroReference (neutre) */}
       {shouldUseHeroRole(reference.roleMecanique, relatedRefs.length) ? (
         <HeroRole
@@ -604,7 +600,6 @@ export default function ReferenceDetailPage() {
           slogan={resolveSlogan("glossaire-reference", reference.gamme.name)}
         />
       )}
-
       {/* Back Button */}
       <section className="py-4 border-b bg-white">
         <div className="container mx-auto px-4">
@@ -617,7 +612,6 @@ export default function ReferenceDetailPage() {
           </Link>
         </div>
       </section>
-
       <div className="mx-auto max-w-7xl px-4 py-12">
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_360px]">
           {/* Main Content - article tag for R4 semantic signal */}
@@ -839,7 +833,7 @@ export default function ReferenceDetailPage() {
                 <ul className="space-y-2">
                   {reference.composition.map((item, index) => (
                     <li key={item} className="flex items-start gap-3">
-                      <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-medium flex-shrink-0">
+                      <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-medium shrink-0">
                         {index + 1}
                       </span>
                       <span className="text-gray-700">{item}</span>
@@ -993,7 +987,7 @@ export default function ReferenceDetailPage() {
                         key={point}
                         className="flex items-start gap-3 p-3 bg-red-50 rounded-lg"
                       >
-                        <XCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                        <XCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
                         <span className="text-gray-700">
                           {point.trim().replace(/\.$/, "")}
                         </span>
@@ -1020,7 +1014,7 @@ export default function ReferenceDetailPage() {
                       key={rule}
                       className="flex items-start gap-3 p-3 bg-muted rounded-lg"
                     >
-                      <span className="w-6 h-6 rounded-full bg-muted text-foreground flex items-center justify-center text-sm font-medium flex-shrink-0">
+                      <span className="w-6 h-6 rounded-full bg-muted text-foreground flex items-center justify-center text-sm font-medium shrink-0">
                         {index + 1}
                       </span>
                       <span className="text-gray-700">{rule}</span>
@@ -1117,7 +1111,7 @@ export default function ReferenceDetailPage() {
                         >
                           <Badge
                             variant="outline"
-                            className="text-xs text-green-600 border-green-200 flex-shrink-0"
+                            className="text-xs text-green-600 border-green-200 shrink-0"
                           >
                             Guide
                           </Badge>
@@ -1154,7 +1148,7 @@ export default function ReferenceDetailPage() {
                           >
                             <Badge
                               variant="outline"
-                              className="text-xs text-orange-600 border-orange-200 flex-shrink-0"
+                              className="text-xs text-orange-600 border-orange-200 shrink-0"
                             >
                               Diagnostic
                             </Badge>
@@ -1190,7 +1184,7 @@ export default function ReferenceDetailPage() {
                         >
                           <Badge
                             variant="outline"
-                            className="text-xs text-foreground border-indigo-200 flex-shrink-0"
+                            className="text-xs text-foreground border-indigo-200 shrink-0"
                           >
                             Réf.
                           </Badge>

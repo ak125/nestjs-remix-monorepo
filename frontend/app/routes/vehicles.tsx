@@ -5,8 +5,7 @@
  * Améliore l'UX en cas d'URL raccourcie
  */
 
-import { redirect } from "@remix-run/node";
-import { useRouteError, isRouteErrorResponse } from "@remix-run/react";
+import { redirect, useRouteError, isRouteErrorResponse } from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 
 export async function loader() {

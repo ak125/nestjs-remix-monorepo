@@ -38,7 +38,14 @@ services:
     image: massdoc/nestjs-remix-monorepo:preprod
     restart: always
     ports:
-      - "3200:3000"
+      # Bind to loopback only. PREPROD is CI-only (READ_ONLY) and reached
+      # exclusively via http://localhost:3200 by the self-hosted runner (E2E
+      # Smoke / Lighthouse / health polls in ci.yml). Caddy never proxies :3200
+      # (PROD is monorepo_prod:3000), so nothing external needs it. Enforcing the
+      # canonical "3200 localhost only" guarantee at the Docker layer — instead of
+      # relying solely on a host firewall — closes the exposure that let an
+      # external scanner POST /_next straight to the port (Sentry 2026-06-25).
+      - "127.0.0.1:3200:3000"
     volumes:
       # Sitemap output directory — writable, isolated from PROD's /var/www/sitemaps.
       # The path follows the canonical `/dev/volumes/nestjs-remix/preprod/*` pattern

@@ -11,9 +11,9 @@
  * - API contrôlée inchangée (isOpen / onClose) → singleton useCartSidebar intact
  */
 
-import { Link } from "@remix-run/react";
 import { ShoppingBag, X } from "lucide-react";
 import { memo, useEffect } from "react";
+import { Link } from "react-router";
 
 import { Badge } from "~/components/ui/badge";
 import { useNativeDialog } from "~/hooks/useNativeDialog";

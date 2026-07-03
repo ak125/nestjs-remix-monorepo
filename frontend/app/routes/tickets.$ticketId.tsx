@@ -3,11 +3,11 @@
  * Remix Route Component pour voir et modifier un ticket spécifique
  */
 import {
-  json,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
+  data,
+} from "react-router";
 import {
   Form,
   Link,
@@ -16,7 +16,7 @@ import {
   useNavigation,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
@@ -28,7 +28,7 @@ import {
   type ContactTicket,
 } from "../services/api/contact.api";
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   return [
     {
       title: data
@@ -52,7 +52,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   try {
     const ticket = await getTicket(ticketId, request);
-    return json<LoaderData>({ ticket });
+    return { ticket };
   } catch (error) {
     logger.error("Erreur lors du chargement du ticket:", error);
     throw new Response("Ticket non trouvé", { status: 404 });
@@ -68,10 +68,7 @@ export async function action({ params, request }: ActionFunctionArgs) {
   const ticketId = params.ticketId;
 
   if (!ticketId) {
-    return json<ActionData>(
-      { error: "ID de ticket manquant" },
-      { status: 400 },
-    );
+    return data({ error: "ID de ticket manquant" }, { status: 400 });
   }
 
   try {
@@ -82,18 +79,18 @@ export async function action({ params, request }: ActionFunctionArgs) {
       const newStatus = formData.get("status") as "open" | "closed";
 
       if (!newStatus || !["open", "closed"].includes(newStatus)) {
-        return json<ActionData>({ error: "Statut invalide" }, { status: 400 });
+        return data({ error: "Statut invalide" }, { status: 400 });
       }
 
       await updateTicketStatus(ticketId, newStatus, request);
 
-      return json<ActionData>({ success: true });
+      return { success: true };
     }
 
-    return json<ActionData>({ error: "Action non reconnue" }, { status: 400 });
+    return data({ error: "Action non reconnue" }, { status: 400 });
   } catch (error) {
     logger.error("Erreur lors de l'action:", error);
-    return json<ActionData>(
+    return data(
       {
         error:
           error instanceof Error
@@ -162,13 +159,13 @@ export default function TicketDetailPage() {
       </div>
 
       {/* Messages de retour */}
-      {actionData?.success && (
+      {actionData && "success" in actionData && actionData.success && (
         <Alert intent="success">
           <p>Ticket mis à jour avec succès !</p>
         </Alert>
       )}
 
-      {actionData?.error && (
+      {actionData && "error" in actionData && actionData.error && (
         <Alert intent="error">
           <p>{actionData.error}</p>
         </Alert>

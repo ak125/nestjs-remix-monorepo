@@ -19,13 +19,11 @@ import request from 'supertest';
 import { RagProxyController } from '../../src/modules/rag-proxy/rag-proxy.controller';
 import { RagProxyService } from '../../src/modules/rag-proxy/rag-proxy.service';
 import { RagCleanupService } from '../../src/modules/rag-proxy/services/rag-cleanup.service';
-import { RagWebIngestDbService } from '../../src/modules/rag-proxy/services/rag-web-ingest-db.service';
-import { RagIngestionService } from '../../src/modules/rag-proxy/services/rag-ingestion.service';
 import { RagImageManagementService } from '../../src/modules/rag-proxy/services/rag-image-management.service';
 import { RagVideoManagementService } from '../../src/modules/rag-proxy/services/rag-video-management.service';
 import { RagGammeDetectionService } from '../../src/modules/rag-proxy/services/rag-gamme-detection.service';
 import { RagPhase2aShadowAuditService } from '../../src/modules/rag-proxy/services/rag-phase2a-shadow-audit.service';
-import { RagPipelineService } from '../../src/modules/rag-proxy/rag-pipeline.service';
+import { WebhookAuditService } from '../../src/modules/rag-proxy/services/webhook-audit.service';
 
 describe('RagProxyController', () => {
   let app: INestApplication;
@@ -42,13 +40,17 @@ describe('RagProxyController', () => {
       providers: [
         { provide: RagProxyService, useValue: mockRagProxyService },
         { provide: RagCleanupService, useValue: {} },
-        { provide: RagWebIngestDbService, useValue: {} },
-        { provide: RagIngestionService, useValue: {} },
         { provide: RagImageManagementService, useValue: {} },
         { provide: RagVideoManagementService, useValue: {} },
         { provide: RagGammeDetectionService, useValue: {} },
         { provide: RagPhase2aShadowAuditService, useValue: {} },
-        { provide: RagPipelineService, useValue: {} },
+        {
+          provide: WebhookAuditService,
+          useValue: {
+            getRecentWebhooks: jest.fn().mockResolvedValue({ data: [], total: 0 }),
+            getWebhookStats: jest.fn().mockResolvedValue({}),
+          },
+        },
         { provide: ConfigService, useValue: { get: jest.fn().mockReturnValue('test-internal-api-key') } },
       ],
     }).compile();

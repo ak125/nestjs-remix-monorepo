@@ -1,11 +1,12 @@
-import { json, type LoaderFunction, type MetaFunction } from "@remix-run/node";
+import { User, Mail, Phone, Calendar, Shield, Edit } from "lucide-react";
 import {
+  type LoaderFunction,
+  type MetaFunction,
   useLoaderData,
   Link,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { User, Mail, Phone, Calendar, Shield, Edit } from "lucide-react";
+} from "react-router";
 
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
@@ -85,20 +86,20 @@ export const loader: LoaderFunction = async ({ request }) => {
 
       if (profileResponse.ok) {
         const { data } = await profileResponse.json();
-        return json<LoaderData>({
+        return {
           user: { ...defaultProfile, ...data },
           stats: {},
-        });
+        };
       }
     } catch (apiError) {
       logger.warn("API profile fetch failed, using default:", apiError);
     }
 
     // Retourner le profil par défaut si l'API échoue
-    return json<LoaderData>({
+    return {
       user: defaultProfile,
       stats: {},
-    });
+    };
   } catch (error) {
     // Propager les Response HTTP (404, etc.) telles quelles
     if (error instanceof Response) {

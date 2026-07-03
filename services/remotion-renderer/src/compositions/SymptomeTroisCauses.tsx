@@ -34,9 +34,9 @@ interface SymptomeTroisCausesProps {
   briefId?: string;
   videoType?: string;
   vertical?: string;
-  symptom: string;
-  causes: CauseDetail[];
-  cta: string;
+  symptom?: string;
+  causes?: CauseDetail[];
+  cta?: string;
   disclaimer?: string;
   audioUrl?: string;
   brandName?: string;

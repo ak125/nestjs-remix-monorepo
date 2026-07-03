@@ -1,13 +1,11 @@
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import {
+  data,
   useLoaderData,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
+} from "react-router";
 import { z } from "zod";
 import { ErrorGeneric } from "~/components/errors";
 
@@ -110,22 +108,22 @@ export async function loader({ params: _params }: LoaderFunctionArgs) {
       },
     ];
 
-    return json({
+    return {
       vehicle: vehicleData,
       parts: mockParts,
       success: true,
       timestamp: new Date().toISOString(),
-    });
+    };
   } catch (error) {
     logger.error("Erreur dans le loader:", error);
-    throw json({ error: "Véhicule non trouvé" }, { status: 404 });
+    throw data({ error: "Véhicule non trouvé" }, { status: 404 });
   }
 }
 
 // ========================================
 // 🎯 META FUNCTION
 // ========================================
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   if (!data || !data.vehicle) {
     return [
       { title: "Véhicule non trouvé" },

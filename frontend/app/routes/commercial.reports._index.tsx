@@ -6,12 +6,6 @@
  */
 
 import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
-import {
   BarChart3,
   TrendingUp,
   TrendingDown,
@@ -21,6 +15,12 @@ import {
   Package,
   Users,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+} from "react-router";
 import { Button } from "~/components/ui/button";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
@@ -66,7 +66,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
           )
         : "0.00";
 
-    return json({
+    return {
       statistics: {
         totalOrders: dashboardData.totalOrders || 0,
         completedOrders: dashboardData.completedOrders || 0,
@@ -78,10 +78,10 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         averageOrderValue,
       },
       recentOrders: recentOrders.orders || [],
-    });
+    };
   } catch (error) {
     logger.error("Erreur chargement rapports:", error);
-    return json({
+    return {
       statistics: {
         totalOrders: 0,
         completedOrders: 0,
@@ -93,7 +93,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         averageOrderValue: "0.00",
       },
       recentOrders: [],
-    });
+    };
   }
 }
 

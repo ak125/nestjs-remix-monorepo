@@ -1,12 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://automecanik.com/schemas/PageContractR6.json",
+  "$id": "https://www.automecanik.com/schemas/PageContractR6.json",
   "title": "PageContractR6",
   "type": "object",
   "properties": {
     "pg_id": {
       "type": "integer",
-      "exclusiveMinimum": 0
+      "exclusiveMinimum": 0,
+      "maximum": 9007199254740991
     },
     "pg_alias": {
       "type": "string",
@@ -17,26 +18,26 @@
       "minLength": 3
     },
     "intentType": {
+      "default": "R6",
       "type": "string",
-      "const": "R6",
-      "default": "R6"
+      "const": "R6"
     },
     "pageRole": {
+      "default": "R6_BUYING_GUIDE",
       "type": "string",
-      "const": "R6_BUYING_GUIDE",
-      "default": "R6_BUYING_GUIDE"
+      "const": "R6_BUYING_GUIDE"
     },
     "canonicalRoleUrl": {
       "type": "string",
-      "pattern": "^\\/"
+      "pattern": "^\\/.*"
     },
     "roleVersion": {
+      "default": "v2",
       "type": "string",
       "enum": [
         "v1",
         "v2"
-      ],
-      "default": "v2"
+      ]
     },
     "pipeline_phase": {
       "type": "string",
@@ -54,7 +55,8 @@
     },
     "built_at": {
       "type": "string",
-      "format": "date-time"
+      "format": "date-time",
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
     },
     "meta": {
       "type": "object",
@@ -64,13 +66,14 @@
           "const": "R6_GUIDE_ACHAT"
         },
         "language": {
+          "default": "fr-FR",
           "type": "string",
-          "const": "fr-FR",
-          "default": "fr-FR"
+          "const": "fr-FR"
         }
       },
       "required": [
-        "role"
+        "role",
+        "language"
       ],
       "additionalProperties": false
     },
@@ -122,7 +125,7 @@
         "media_slots": {
           "type": "array",
           "items": {
-            "anyOf": [
+            "oneOf": [
               {
                 "type": "object",
                 "properties": {
@@ -145,15 +148,16 @@
                     ]
                   },
                   "priority": {
+                    "default": "normal",
                     "type": "string",
                     "enum": [
                       "high",
                       "normal",
                       "low"
-                    ],
-                    "default": "normal"
+                    ]
                   },
                   "source": {
+                    "default": "none",
                     "type": "string",
                     "enum": [
                       "cdn",
@@ -162,8 +166,7 @@
                       "rag",
                       "generated",
                       "none"
-                    ],
-                    "default": "none"
+                    ]
                   },
                   "alt": {
                     "type": "object",
@@ -175,6 +178,9 @@
                       },
                       "variables": {
                         "type": "object",
+                        "propertyNames": {
+                          "type": "string"
+                        },
                         "additionalProperties": {
                           "type": "string"
                         }
@@ -195,6 +201,9 @@
                       },
                       "variables": {
                         "type": "object",
+                        "propertyNames": {
+                          "type": "string"
+                        },
                         "additionalProperties": {
                           "type": "string"
                         }
@@ -206,12 +215,12 @@
                     "additionalProperties": false
                   },
                   "loading": {
+                    "default": "lazy",
                     "type": "string",
                     "enum": [
                       "eager",
                       "lazy"
-                    ],
-                    "default": "lazy"
+                    ]
                   },
                   "fetch_priority": {
                     "type": "string",
@@ -223,11 +232,13 @@
                   },
                   "width": {
                     "type": "integer",
-                    "exclusiveMinimum": 0
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
                   },
                   "height": {
                     "type": "integer",
-                    "exclusiveMinimum": 0
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
                   },
                   "notes": {
                     "type": "string",
@@ -261,20 +272,24 @@
                     "maximum": 1920
                   },
                   "format": {
+                    "default": "webp",
                     "type": "string",
                     "enum": [
                       "webp",
                       "avif"
-                    ],
-                    "default": "webp"
+                    ]
                   }
                 },
                 "required": [
                   "slot_id",
                   "placement",
+                  "priority",
+                  "source",
                   "alt",
+                  "loading",
                   "type",
-                  "budget_cost"
+                  "budget_cost",
+                  "format"
                 ],
                 "additionalProperties": false
               },
@@ -300,15 +315,16 @@
                     ]
                   },
                   "priority": {
+                    "default": "normal",
                     "type": "string",
                     "enum": [
                       "high",
                       "normal",
                       "low"
-                    ],
-                    "default": "normal"
+                    ]
                   },
                   "source": {
+                    "default": "none",
                     "type": "string",
                     "enum": [
                       "cdn",
@@ -317,8 +333,7 @@
                       "rag",
                       "generated",
                       "none"
-                    ],
-                    "default": "none"
+                    ]
                   },
                   "alt": {
                     "type": "object",
@@ -330,6 +345,9 @@
                       },
                       "variables": {
                         "type": "object",
+                        "propertyNames": {
+                          "type": "string"
+                        },
                         "additionalProperties": {
                           "type": "string"
                         }
@@ -350,6 +368,9 @@
                       },
                       "variables": {
                         "type": "object",
+                        "propertyNames": {
+                          "type": "string"
+                        },
                         "additionalProperties": {
                           "type": "string"
                         }
@@ -361,12 +382,12 @@
                     "additionalProperties": false
                   },
                   "loading": {
+                    "default": "lazy",
                     "type": "string",
                     "enum": [
                       "eager",
                       "lazy"
-                    ],
-                    "default": "lazy"
+                    ]
                   },
                   "fetch_priority": {
                     "type": "string",
@@ -378,11 +399,13 @@
                   },
                   "width": {
                     "type": "integer",
-                    "exclusiveMinimum": 0
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
                   },
                   "height": {
                     "type": "integer",
-                    "exclusiveMinimum": 0
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
                   },
                   "notes": {
                     "type": "string",
@@ -406,7 +429,10 @@
                 "required": [
                   "slot_id",
                   "placement",
+                  "priority",
+                  "source",
                   "alt",
+                  "loading",
                   "type",
                   "budget_cost"
                 ],
@@ -434,15 +460,16 @@
                     ]
                   },
                   "priority": {
+                    "default": "normal",
                     "type": "string",
                     "enum": [
                       "high",
                       "normal",
                       "low"
-                    ],
-                    "default": "normal"
+                    ]
                   },
                   "source": {
+                    "default": "none",
                     "type": "string",
                     "enum": [
                       "cdn",
@@ -451,8 +478,7 @@
                       "rag",
                       "generated",
                       "none"
-                    ],
-                    "default": "none"
+                    ]
                   },
                   "alt": {
                     "type": "object",
@@ -464,6 +490,9 @@
                       },
                       "variables": {
                         "type": "object",
+                        "propertyNames": {
+                          "type": "string"
+                        },
                         "additionalProperties": {
                           "type": "string"
                         }
@@ -484,6 +513,9 @@
                       },
                       "variables": {
                         "type": "object",
+                        "propertyNames": {
+                          "type": "string"
+                        },
                         "additionalProperties": {
                           "type": "string"
                         }
@@ -495,12 +527,12 @@
                     "additionalProperties": false
                   },
                   "loading": {
+                    "default": "lazy",
                     "type": "string",
                     "enum": [
                       "eager",
                       "lazy"
-                    ],
-                    "default": "lazy"
+                    ]
                   },
                   "fetch_priority": {
                     "type": "string",
@@ -512,11 +544,13 @@
                   },
                   "width": {
                     "type": "integer",
-                    "exclusiveMinimum": 0
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
                   },
                   "height": {
                     "type": "integer",
-                    "exclusiveMinimum": 0
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
                   },
                   "notes": {
                     "type": "string",
@@ -531,14 +565,14 @@
                     "const": 0
                   },
                   "columns": {
+                    "minItems": 2,
+                    "maxItems": 6,
                     "type": "array",
                     "items": {
                       "type": "string",
                       "minLength": 1,
                       "maxLength": 50
-                    },
-                    "minItems": 2,
-                    "maxItems": 6
+                    }
                   },
                   "row_count_target": {
                     "type": "string",
@@ -548,7 +582,10 @@
                 "required": [
                   "slot_id",
                   "placement",
+                  "priority",
+                  "source",
                   "alt",
+                  "loading",
                   "type",
                   "budget_cost",
                   "columns"
@@ -577,15 +614,16 @@
                     ]
                   },
                   "priority": {
+                    "default": "normal",
                     "type": "string",
                     "enum": [
                       "high",
                       "normal",
                       "low"
-                    ],
-                    "default": "normal"
+                    ]
                   },
                   "source": {
+                    "default": "none",
                     "type": "string",
                     "enum": [
                       "cdn",
@@ -594,8 +632,7 @@
                       "rag",
                       "generated",
                       "none"
-                    ],
-                    "default": "none"
+                    ]
                   },
                   "alt": {
                     "type": "object",
@@ -607,6 +644,9 @@
                       },
                       "variables": {
                         "type": "object",
+                        "propertyNames": {
+                          "type": "string"
+                        },
                         "additionalProperties": {
                           "type": "string"
                         }
@@ -627,6 +667,9 @@
                       },
                       "variables": {
                         "type": "object",
+                        "propertyNames": {
+                          "type": "string"
+                        },
                         "additionalProperties": {
                           "type": "string"
                         }
@@ -638,12 +681,12 @@
                     "additionalProperties": false
                   },
                   "loading": {
+                    "default": "lazy",
                     "type": "string",
                     "enum": [
                       "eager",
                       "lazy"
-                    ],
-                    "default": "lazy"
+                    ]
                   },
                   "fetch_priority": {
                     "type": "string",
@@ -655,11 +698,13 @@
                   },
                   "width": {
                     "type": "integer",
-                    "exclusiveMinimum": 0
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
                   },
                   "height": {
                     "type": "integer",
-                    "exclusiveMinimum": 0
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
                   },
                   "notes": {
                     "type": "string",
@@ -681,7 +726,10 @@
                 "required": [
                   "slot_id",
                   "placement",
+                  "priority",
+                  "source",
                   "alt",
+                  "loading",
                   "type",
                   "budget_cost"
                 ],
@@ -709,15 +757,16 @@
                     ]
                   },
                   "priority": {
+                    "default": "normal",
                     "type": "string",
                     "enum": [
                       "high",
                       "normal",
                       "low"
-                    ],
-                    "default": "normal"
+                    ]
                   },
                   "source": {
+                    "default": "none",
                     "type": "string",
                     "enum": [
                       "cdn",
@@ -726,8 +775,7 @@
                       "rag",
                       "generated",
                       "none"
-                    ],
-                    "default": "none"
+                    ]
                   },
                   "alt": {
                     "type": "object",
@@ -739,6 +787,9 @@
                       },
                       "variables": {
                         "type": "object",
+                        "propertyNames": {
+                          "type": "string"
+                        },
                         "additionalProperties": {
                           "type": "string"
                         }
@@ -759,6 +810,9 @@
                       },
                       "variables": {
                         "type": "object",
+                        "propertyNames": {
+                          "type": "string"
+                        },
                         "additionalProperties": {
                           "type": "string"
                         }
@@ -770,12 +824,12 @@
                     "additionalProperties": false
                   },
                   "loading": {
+                    "default": "lazy",
                     "type": "string",
                     "enum": [
                       "eager",
                       "lazy"
-                    ],
-                    "default": "lazy"
+                    ]
                   },
                   "fetch_priority": {
                     "type": "string",
@@ -787,11 +841,13 @@
                   },
                   "width": {
                     "type": "integer",
-                    "exclusiveMinimum": 0
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
                   },
                   "height": {
                     "type": "integer",
-                    "exclusiveMinimum": 0
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
                   },
                   "notes": {
                     "type": "string",
@@ -822,7 +878,10 @@
                 "required": [
                   "slot_id",
                   "placement",
+                  "priority",
+                  "source",
                   "alt",
+                  "loading",
                   "type",
                   "budget_cost"
                 ],
@@ -850,15 +909,16 @@
                     ]
                   },
                   "priority": {
+                    "default": "normal",
                     "type": "string",
                     "enum": [
                       "high",
                       "normal",
                       "low"
-                    ],
-                    "default": "normal"
+                    ]
                   },
                   "source": {
+                    "default": "none",
                     "type": "string",
                     "enum": [
                       "cdn",
@@ -867,8 +927,7 @@
                       "rag",
                       "generated",
                       "none"
-                    ],
-                    "default": "none"
+                    ]
                   },
                   "alt": {
                     "type": "object",
@@ -880,6 +939,9 @@
                       },
                       "variables": {
                         "type": "object",
+                        "propertyNames": {
+                          "type": "string"
+                        },
                         "additionalProperties": {
                           "type": "string"
                         }
@@ -900,6 +962,9 @@
                       },
                       "variables": {
                         "type": "object",
+                        "propertyNames": {
+                          "type": "string"
+                        },
                         "additionalProperties": {
                           "type": "string"
                         }
@@ -911,12 +976,12 @@
                     "additionalProperties": false
                   },
                   "loading": {
+                    "default": "lazy",
                     "type": "string",
                     "enum": [
                       "eager",
                       "lazy"
-                    ],
-                    "default": "lazy"
+                    ]
                   },
                   "fetch_priority": {
                     "type": "string",
@@ -928,11 +993,13 @@
                   },
                   "width": {
                     "type": "integer",
-                    "exclusiveMinimum": 0
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
                   },
                   "height": {
                     "type": "integer",
-                    "exclusiveMinimum": 0
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
                   },
                   "notes": {
                     "type": "string",
@@ -954,7 +1021,10 @@
                 "required": [
                   "slot_id",
                   "placement",
+                  "priority",
+                  "source",
                   "alt",
+                  "loading",
                   "type",
                   "budget_cost"
                 ],
@@ -982,15 +1052,16 @@
                     ]
                   },
                   "priority": {
+                    "default": "normal",
                     "type": "string",
                     "enum": [
                       "high",
                       "normal",
                       "low"
-                    ],
-                    "default": "normal"
+                    ]
                   },
                   "source": {
+                    "default": "none",
                     "type": "string",
                     "enum": [
                       "cdn",
@@ -999,8 +1070,7 @@
                       "rag",
                       "generated",
                       "none"
-                    ],
-                    "default": "none"
+                    ]
                   },
                   "alt": {
                     "type": "object",
@@ -1012,6 +1082,9 @@
                       },
                       "variables": {
                         "type": "object",
+                        "propertyNames": {
+                          "type": "string"
+                        },
                         "additionalProperties": {
                           "type": "string"
                         }
@@ -1032,6 +1105,9 @@
                       },
                       "variables": {
                         "type": "object",
+                        "propertyNames": {
+                          "type": "string"
+                        },
                         "additionalProperties": {
                           "type": "string"
                         }
@@ -1043,12 +1119,12 @@
                     "additionalProperties": false
                   },
                   "loading": {
+                    "default": "lazy",
                     "type": "string",
                     "enum": [
                       "eager",
                       "lazy"
-                    ],
-                    "default": "lazy"
+                    ]
                   },
                   "fetch_priority": {
                     "type": "string",
@@ -1060,11 +1136,13 @@
                   },
                   "width": {
                     "type": "integer",
-                    "exclusiveMinimum": 0
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
                   },
                   "height": {
                     "type": "integer",
-                    "exclusiveMinimum": 0
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
                   },
                   "notes": {
                     "type": "string",
@@ -1086,7 +1164,10 @@
                 "required": [
                   "slot_id",
                   "placement",
+                  "priority",
+                  "source",
                   "alt",
+                  "loading",
                   "type",
                   "budget_cost"
                 ],
@@ -1096,14 +1177,14 @@
           }
         },
         "takeaways": {
+          "minItems": 2,
+          "maxItems": 5,
           "type": "array",
           "items": {
             "type": "string",
             "minLength": 5,
             "maxLength": 100
-          },
-          "minItems": 2,
-          "maxItems": 5
+          }
         }
       },
       "required": [
@@ -1114,6 +1195,21 @@
     },
     "sections": {
       "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "enum": [
+          "hero_decision",
+          "summary_pick_fast",
+          "quality_tiers",
+          "compatibility",
+          "price_guide",
+          "brands_guide",
+          "pitfalls",
+          "when_pro",
+          "faq_r6",
+          "cta_final"
+        ]
+      },
       "additionalProperties": {
         "type": "object",
         "properties": {
@@ -1133,13 +1229,13 @@
             ]
           },
           "include_terms": {
+            "minItems": 1,
             "type": "array",
             "items": {
               "type": "string",
               "minLength": 2,
               "maxLength": 60
-            },
-            "minItems": 1
+            }
           },
           "forbidden_overlap": {
             "type": "array",
@@ -1148,9 +1244,10 @@
             }
           },
           "blocks": {
+            "minItems": 1,
             "type": "array",
             "items": {
-              "anyOf": [
+              "oneOf": [
                 {
                   "type": "object",
                   "properties": {
@@ -1164,12 +1261,13 @@
                     },
                     "word_count": {
                       "type": "integer",
-                      "minimum": 20
+                      "minimum": 20,
+                      "maximum": 9007199254740991
                     },
                     "media_slots": {
                       "type": "array",
                       "items": {
-                        "anyOf": [
+                        "oneOf": [
                           {
                             "type": "object",
                             "properties": {
@@ -1192,15 +1290,16 @@
                                 ]
                               },
                               "priority": {
+                                "default": "normal",
                                 "type": "string",
                                 "enum": [
                                   "high",
                                   "normal",
                                   "low"
-                                ],
-                                "default": "normal"
+                                ]
                               },
                               "source": {
+                                "default": "none",
                                 "type": "string",
                                 "enum": [
                                   "cdn",
@@ -1209,8 +1308,7 @@
                                   "rag",
                                   "generated",
                                   "none"
-                                ],
-                                "default": "none"
+                                ]
                               },
                               "alt": {
                                 "type": "object",
@@ -1222,6 +1320,9 @@
                                   },
                                   "variables": {
                                     "type": "object",
+                                    "propertyNames": {
+                                      "type": "string"
+                                    },
                                     "additionalProperties": {
                                       "type": "string"
                                     }
@@ -1242,6 +1343,9 @@
                                   },
                                   "variables": {
                                     "type": "object",
+                                    "propertyNames": {
+                                      "type": "string"
+                                    },
                                     "additionalProperties": {
                                       "type": "string"
                                     }
@@ -1253,12 +1357,12 @@
                                 "additionalProperties": false
                               },
                               "loading": {
+                                "default": "lazy",
                                 "type": "string",
                                 "enum": [
                                   "eager",
                                   "lazy"
-                                ],
-                                "default": "lazy"
+                                ]
                               },
                               "fetch_priority": {
                                 "type": "string",
@@ -1270,11 +1374,13 @@
                               },
                               "width": {
                                 "type": "integer",
-                                "exclusiveMinimum": 0
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
                               },
                               "height": {
                                 "type": "integer",
-                                "exclusiveMinimum": 0
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
                               },
                               "notes": {
                                 "type": "string",
@@ -1308,20 +1414,24 @@
                                 "maximum": 1920
                               },
                               "format": {
+                                "default": "webp",
                                 "type": "string",
                                 "enum": [
                                   "webp",
                                   "avif"
-                                ],
-                                "default": "webp"
+                                ]
                               }
                             },
                             "required": [
                               "slot_id",
                               "placement",
+                              "priority",
+                              "source",
                               "alt",
+                              "loading",
                               "type",
-                              "budget_cost"
+                              "budget_cost",
+                              "format"
                             ],
                             "additionalProperties": false
                           },
@@ -1347,15 +1457,16 @@
                                 ]
                               },
                               "priority": {
+                                "default": "normal",
                                 "type": "string",
                                 "enum": [
                                   "high",
                                   "normal",
                                   "low"
-                                ],
-                                "default": "normal"
+                                ]
                               },
                               "source": {
+                                "default": "none",
                                 "type": "string",
                                 "enum": [
                                   "cdn",
@@ -1364,8 +1475,7 @@
                                   "rag",
                                   "generated",
                                   "none"
-                                ],
-                                "default": "none"
+                                ]
                               },
                               "alt": {
                                 "type": "object",
@@ -1377,6 +1487,9 @@
                                   },
                                   "variables": {
                                     "type": "object",
+                                    "propertyNames": {
+                                      "type": "string"
+                                    },
                                     "additionalProperties": {
                                       "type": "string"
                                     }
@@ -1397,6 +1510,9 @@
                                   },
                                   "variables": {
                                     "type": "object",
+                                    "propertyNames": {
+                                      "type": "string"
+                                    },
                                     "additionalProperties": {
                                       "type": "string"
                                     }
@@ -1408,12 +1524,12 @@
                                 "additionalProperties": false
                               },
                               "loading": {
+                                "default": "lazy",
                                 "type": "string",
                                 "enum": [
                                   "eager",
                                   "lazy"
-                                ],
-                                "default": "lazy"
+                                ]
                               },
                               "fetch_priority": {
                                 "type": "string",
@@ -1425,11 +1541,13 @@
                               },
                               "width": {
                                 "type": "integer",
-                                "exclusiveMinimum": 0
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
                               },
                               "height": {
                                 "type": "integer",
-                                "exclusiveMinimum": 0
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
                               },
                               "notes": {
                                 "type": "string",
@@ -1453,7 +1571,10 @@
                             "required": [
                               "slot_id",
                               "placement",
+                              "priority",
+                              "source",
                               "alt",
+                              "loading",
                               "type",
                               "budget_cost"
                             ],
@@ -1481,15 +1602,16 @@
                                 ]
                               },
                               "priority": {
+                                "default": "normal",
                                 "type": "string",
                                 "enum": [
                                   "high",
                                   "normal",
                                   "low"
-                                ],
-                                "default": "normal"
+                                ]
                               },
                               "source": {
+                                "default": "none",
                                 "type": "string",
                                 "enum": [
                                   "cdn",
@@ -1498,8 +1620,7 @@
                                   "rag",
                                   "generated",
                                   "none"
-                                ],
-                                "default": "none"
+                                ]
                               },
                               "alt": {
                                 "type": "object",
@@ -1511,6 +1632,9 @@
                                   },
                                   "variables": {
                                     "type": "object",
+                                    "propertyNames": {
+                                      "type": "string"
+                                    },
                                     "additionalProperties": {
                                       "type": "string"
                                     }
@@ -1531,6 +1655,9 @@
                                   },
                                   "variables": {
                                     "type": "object",
+                                    "propertyNames": {
+                                      "type": "string"
+                                    },
                                     "additionalProperties": {
                                       "type": "string"
                                     }
@@ -1542,12 +1669,12 @@
                                 "additionalProperties": false
                               },
                               "loading": {
+                                "default": "lazy",
                                 "type": "string",
                                 "enum": [
                                   "eager",
                                   "lazy"
-                                ],
-                                "default": "lazy"
+                                ]
                               },
                               "fetch_priority": {
                                 "type": "string",
@@ -1559,11 +1686,13 @@
                               },
                               "width": {
                                 "type": "integer",
-                                "exclusiveMinimum": 0
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
                               },
                               "height": {
                                 "type": "integer",
-                                "exclusiveMinimum": 0
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
                               },
                               "notes": {
                                 "type": "string",
@@ -1578,14 +1707,14 @@
                                 "const": 0
                               },
                               "columns": {
+                                "minItems": 2,
+                                "maxItems": 6,
                                 "type": "array",
                                 "items": {
                                   "type": "string",
                                   "minLength": 1,
                                   "maxLength": 50
-                                },
-                                "minItems": 2,
-                                "maxItems": 6
+                                }
                               },
                               "row_count_target": {
                                 "type": "string",
@@ -1595,7 +1724,10 @@
                             "required": [
                               "slot_id",
                               "placement",
+                              "priority",
+                              "source",
                               "alt",
+                              "loading",
                               "type",
                               "budget_cost",
                               "columns"
@@ -1624,15 +1756,16 @@
                                 ]
                               },
                               "priority": {
+                                "default": "normal",
                                 "type": "string",
                                 "enum": [
                                   "high",
                                   "normal",
                                   "low"
-                                ],
-                                "default": "normal"
+                                ]
                               },
                               "source": {
+                                "default": "none",
                                 "type": "string",
                                 "enum": [
                                   "cdn",
@@ -1641,8 +1774,7 @@
                                   "rag",
                                   "generated",
                                   "none"
-                                ],
-                                "default": "none"
+                                ]
                               },
                               "alt": {
                                 "type": "object",
@@ -1654,6 +1786,9 @@
                                   },
                                   "variables": {
                                     "type": "object",
+                                    "propertyNames": {
+                                      "type": "string"
+                                    },
                                     "additionalProperties": {
                                       "type": "string"
                                     }
@@ -1674,6 +1809,9 @@
                                   },
                                   "variables": {
                                     "type": "object",
+                                    "propertyNames": {
+                                      "type": "string"
+                                    },
                                     "additionalProperties": {
                                       "type": "string"
                                     }
@@ -1685,12 +1823,12 @@
                                 "additionalProperties": false
                               },
                               "loading": {
+                                "default": "lazy",
                                 "type": "string",
                                 "enum": [
                                   "eager",
                                   "lazy"
-                                ],
-                                "default": "lazy"
+                                ]
                               },
                               "fetch_priority": {
                                 "type": "string",
@@ -1702,11 +1840,13 @@
                               },
                               "width": {
                                 "type": "integer",
-                                "exclusiveMinimum": 0
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
                               },
                               "height": {
                                 "type": "integer",
-                                "exclusiveMinimum": 0
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
                               },
                               "notes": {
                                 "type": "string",
@@ -1728,7 +1868,10 @@
                             "required": [
                               "slot_id",
                               "placement",
+                              "priority",
+                              "source",
                               "alt",
+                              "loading",
                               "type",
                               "budget_cost"
                             ],
@@ -1756,15 +1899,16 @@
                                 ]
                               },
                               "priority": {
+                                "default": "normal",
                                 "type": "string",
                                 "enum": [
                                   "high",
                                   "normal",
                                   "low"
-                                ],
-                                "default": "normal"
+                                ]
                               },
                               "source": {
+                                "default": "none",
                                 "type": "string",
                                 "enum": [
                                   "cdn",
@@ -1773,8 +1917,7 @@
                                   "rag",
                                   "generated",
                                   "none"
-                                ],
-                                "default": "none"
+                                ]
                               },
                               "alt": {
                                 "type": "object",
@@ -1786,6 +1929,9 @@
                                   },
                                   "variables": {
                                     "type": "object",
+                                    "propertyNames": {
+                                      "type": "string"
+                                    },
                                     "additionalProperties": {
                                       "type": "string"
                                     }
@@ -1806,6 +1952,9 @@
                                   },
                                   "variables": {
                                     "type": "object",
+                                    "propertyNames": {
+                                      "type": "string"
+                                    },
                                     "additionalProperties": {
                                       "type": "string"
                                     }
@@ -1817,12 +1966,12 @@
                                 "additionalProperties": false
                               },
                               "loading": {
+                                "default": "lazy",
                                 "type": "string",
                                 "enum": [
                                   "eager",
                                   "lazy"
-                                ],
-                                "default": "lazy"
+                                ]
                               },
                               "fetch_priority": {
                                 "type": "string",
@@ -1834,11 +1983,13 @@
                               },
                               "width": {
                                 "type": "integer",
-                                "exclusiveMinimum": 0
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
                               },
                               "height": {
                                 "type": "integer",
-                                "exclusiveMinimum": 0
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
                               },
                               "notes": {
                                 "type": "string",
@@ -1869,7 +2020,10 @@
                             "required": [
                               "slot_id",
                               "placement",
+                              "priority",
+                              "source",
                               "alt",
+                              "loading",
                               "type",
                               "budget_cost"
                             ],
@@ -1897,15 +2051,16 @@
                                 ]
                               },
                               "priority": {
+                                "default": "normal",
                                 "type": "string",
                                 "enum": [
                                   "high",
                                   "normal",
                                   "low"
-                                ],
-                                "default": "normal"
+                                ]
                               },
                               "source": {
+                                "default": "none",
                                 "type": "string",
                                 "enum": [
                                   "cdn",
@@ -1914,8 +2069,7 @@
                                   "rag",
                                   "generated",
                                   "none"
-                                ],
-                                "default": "none"
+                                ]
                               },
                               "alt": {
                                 "type": "object",
@@ -1927,6 +2081,9 @@
                                   },
                                   "variables": {
                                     "type": "object",
+                                    "propertyNames": {
+                                      "type": "string"
+                                    },
                                     "additionalProperties": {
                                       "type": "string"
                                     }
@@ -1947,6 +2104,9 @@
                                   },
                                   "variables": {
                                     "type": "object",
+                                    "propertyNames": {
+                                      "type": "string"
+                                    },
                                     "additionalProperties": {
                                       "type": "string"
                                     }
@@ -1958,12 +2118,12 @@
                                 "additionalProperties": false
                               },
                               "loading": {
+                                "default": "lazy",
                                 "type": "string",
                                 "enum": [
                                   "eager",
                                   "lazy"
-                                ],
-                                "default": "lazy"
+                                ]
                               },
                               "fetch_priority": {
                                 "type": "string",
@@ -1975,11 +2135,13 @@
                               },
                               "width": {
                                 "type": "integer",
-                                "exclusiveMinimum": 0
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
                               },
                               "height": {
                                 "type": "integer",
-                                "exclusiveMinimum": 0
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
                               },
                               "notes": {
                                 "type": "string",
@@ -2001,7 +2163,10 @@
                             "required": [
                               "slot_id",
                               "placement",
+                              "priority",
+                              "source",
                               "alt",
+                              "loading",
                               "type",
                               "budget_cost"
                             ],
@@ -2029,15 +2194,16 @@
                                 ]
                               },
                               "priority": {
+                                "default": "normal",
                                 "type": "string",
                                 "enum": [
                                   "high",
                                   "normal",
                                   "low"
-                                ],
-                                "default": "normal"
+                                ]
                               },
                               "source": {
+                                "default": "none",
                                 "type": "string",
                                 "enum": [
                                   "cdn",
@@ -2046,8 +2212,7 @@
                                   "rag",
                                   "generated",
                                   "none"
-                                ],
-                                "default": "none"
+                                ]
                               },
                               "alt": {
                                 "type": "object",
@@ -2059,6 +2224,9 @@
                                   },
                                   "variables": {
                                     "type": "object",
+                                    "propertyNames": {
+                                      "type": "string"
+                                    },
                                     "additionalProperties": {
                                       "type": "string"
                                     }
@@ -2079,6 +2247,9 @@
                                   },
                                   "variables": {
                                     "type": "object",
+                                    "propertyNames": {
+                                      "type": "string"
+                                    },
                                     "additionalProperties": {
                                       "type": "string"
                                     }
@@ -2090,12 +2261,12 @@
                                 "additionalProperties": false
                               },
                               "loading": {
+                                "default": "lazy",
                                 "type": "string",
                                 "enum": [
                                   "eager",
                                   "lazy"
-                                ],
-                                "default": "lazy"
+                                ]
                               },
                               "fetch_priority": {
                                 "type": "string",
@@ -2107,11 +2278,13 @@
                               },
                               "width": {
                                 "type": "integer",
-                                "exclusiveMinimum": 0
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
                               },
                               "height": {
                                 "type": "integer",
-                                "exclusiveMinimum": 0
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
                               },
                               "notes": {
                                 "type": "string",
@@ -2133,7 +2306,10 @@
                             "required": [
                               "slot_id",
                               "placement",
+                              "priority",
+                              "source",
                               "alt",
+                              "loading",
                               "type",
                               "budget_cost"
                             ],
@@ -2167,14 +2343,14 @@
                       "maxLength": 200
                     },
                     "bullets": {
+                      "minItems": 2,
+                      "maxItems": 5,
                       "type": "array",
                       "items": {
                         "type": "string",
                         "minLength": 5,
                         "maxLength": 100
-                      },
-                      "minItems": 2,
-                      "maxItems": 5
+                      }
                     },
                     "cta_label": {
                       "type": "string",
@@ -2183,12 +2359,12 @@
                     },
                     "cta_href": {
                       "type": "string",
-                      "pattern": "^\\/"
+                      "pattern": "^\\/.*"
                     },
                     "media_slots": {
                       "type": "array",
                       "items": {
-                        "anyOf": [
+                        "oneOf": [
                           {
                             "type": "object",
                             "properties": {
@@ -2211,15 +2387,16 @@
                                 ]
                               },
                               "priority": {
+                                "default": "normal",
                                 "type": "string",
                                 "enum": [
                                   "high",
                                   "normal",
                                   "low"
-                                ],
-                                "default": "normal"
+                                ]
                               },
                               "source": {
+                                "default": "none",
                                 "type": "string",
                                 "enum": [
                                   "cdn",
@@ -2228,8 +2405,7 @@
                                   "rag",
                                   "generated",
                                   "none"
-                                ],
-                                "default": "none"
+                                ]
                               },
                               "alt": {
                                 "type": "object",
@@ -2241,6 +2417,9 @@
                                   },
                                   "variables": {
                                     "type": "object",
+                                    "propertyNames": {
+                                      "type": "string"
+                                    },
                                     "additionalProperties": {
                                       "type": "string"
                                     }
@@ -2261,6 +2440,9 @@
                                   },
                                   "variables": {
                                     "type": "object",
+                                    "propertyNames": {
+                                      "type": "string"
+                                    },
                                     "additionalProperties": {
                                       "type": "string"
                                     }
@@ -2272,12 +2454,12 @@
                                 "additionalProperties": false
                               },
                               "loading": {
+                                "default": "lazy",
                                 "type": "string",
                                 "enum": [
                                   "eager",
                                   "lazy"
-                                ],
-                                "default": "lazy"
+                                ]
                               },
                               "fetch_priority": {
                                 "type": "string",
@@ -2289,11 +2471,13 @@
                               },
                               "width": {
                                 "type": "integer",
-                                "exclusiveMinimum": 0
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
                               },
                               "height": {
                                 "type": "integer",
-                                "exclusiveMinimum": 0
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
                               },
                               "notes": {
                                 "type": "string",
@@ -2327,20 +2511,24 @@
                                 "maximum": 1920
                               },
                               "format": {
+                                "default": "webp",
                                 "type": "string",
                                 "enum": [
                                   "webp",
                                   "avif"
-                                ],
-                                "default": "webp"
+                                ]
                               }
                             },
                             "required": [
                               "slot_id",
                               "placement",
+                              "priority",
+                              "source",
                               "alt",
+                              "loading",
                               "type",
-                              "budget_cost"
+                              "budget_cost",
+                              "format"
                             ],
                             "additionalProperties": false
                           },
@@ -2366,15 +2554,16 @@
                                 ]
                               },
                               "priority": {
+                                "default": "normal",
                                 "type": "string",
                                 "enum": [
                                   "high",
                                   "normal",
                                   "low"
-                                ],
-                                "default": "normal"
+                                ]
                               },
                               "source": {
+                                "default": "none",
                                 "type": "string",
                                 "enum": [
                                   "cdn",
@@ -2383,8 +2572,7 @@
                                   "rag",
                                   "generated",
                                   "none"
-                                ],
-                                "default": "none"
+                                ]
                               },
                               "alt": {
                                 "type": "object",
@@ -2396,6 +2584,9 @@
                                   },
                                   "variables": {
                                     "type": "object",
+                                    "propertyNames": {
+                                      "type": "string"
+                                    },
                                     "additionalProperties": {
                                       "type": "string"
                                     }
@@ -2416,6 +2607,9 @@
                                   },
                                   "variables": {
                                     "type": "object",
+                                    "propertyNames": {
+                                      "type": "string"
+                                    },
                                     "additionalProperties": {
                                       "type": "string"
                                     }
@@ -2427,12 +2621,12 @@
                                 "additionalProperties": false
                               },
                               "loading": {
+                                "default": "lazy",
                                 "type": "string",
                                 "enum": [
                                   "eager",
                                   "lazy"
-                                ],
-                                "default": "lazy"
+                                ]
                               },
                               "fetch_priority": {
                                 "type": "string",
@@ -2444,11 +2638,13 @@
                               },
                               "width": {
                                 "type": "integer",
-                                "exclusiveMinimum": 0
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
                               },
                               "height": {
                                 "type": "integer",
-                                "exclusiveMinimum": 0
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
                               },
                               "notes": {
                                 "type": "string",
@@ -2472,7 +2668,10 @@
                             "required": [
                               "slot_id",
                               "placement",
+                              "priority",
+                              "source",
                               "alt",
+                              "loading",
                               "type",
                               "budget_cost"
                             ],
@@ -2500,15 +2699,16 @@
                                 ]
                               },
                               "priority": {
+                                "default": "normal",
                                 "type": "string",
                                 "enum": [
                                   "high",
                                   "normal",
                                   "low"
-                                ],
-                                "default": "normal"
+                                ]
                               },
                               "source": {
+                                "default": "none",
                                 "type": "string",
                                 "enum": [
                                   "cdn",
@@ -2517,8 +2717,7 @@
                                   "rag",
                                   "generated",
                                   "none"
-                                ],
-                                "default": "none"
+                                ]
                               },
                               "alt": {
                                 "type": "object",
@@ -2530,6 +2729,9 @@
                                   },
                                   "variables": {
                                     "type": "object",
+                                    "propertyNames": {
+                                      "type": "string"
+                                    },
                                     "additionalProperties": {
                                       "type": "string"
                                     }
@@ -2550,6 +2752,9 @@
                                   },
                                   "variables": {
                                     "type": "object",
+                                    "propertyNames": {
+                                      "type": "string"
+                                    },
                                     "additionalProperties": {
                                       "type": "string"
                                     }
@@ -2561,12 +2766,12 @@
                                 "additionalProperties": false
                               },
                               "loading": {
+                                "default": "lazy",
                                 "type": "string",
                                 "enum": [
                                   "eager",
                                   "lazy"
-                                ],
-                                "default": "lazy"
+                                ]
                               },
                               "fetch_priority": {
                                 "type": "string",
@@ -2578,11 +2783,13 @@
                               },
                               "width": {
                                 "type": "integer",
-                                "exclusiveMinimum": 0
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
                               },
                               "height": {
                                 "type": "integer",
-                                "exclusiveMinimum": 0
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
                               },
                               "notes": {
                                 "type": "string",
@@ -2597,14 +2804,14 @@
                                 "const": 0
                               },
                               "columns": {
+                                "minItems": 2,
+                                "maxItems": 6,
                                 "type": "array",
                                 "items": {
                                   "type": "string",
                                   "minLength": 1,
                                   "maxLength": 50
-                                },
-                                "minItems": 2,
-                                "maxItems": 6
+                                }
                               },
                               "row_count_target": {
                                 "type": "string",
@@ -2614,7 +2821,10 @@
                             "required": [
                               "slot_id",
                               "placement",
+                              "priority",
+                              "source",
                               "alt",
+                              "loading",
                               "type",
                               "budget_cost",
                               "columns"
@@ -2643,15 +2853,16 @@
                                 ]
                               },
                               "priority": {
+                                "default": "normal",
                                 "type": "string",
                                 "enum": [
                                   "high",
                                   "normal",
                                   "low"
-                                ],
-                                "default": "normal"
+                                ]
                               },
                               "source": {
+                                "default": "none",
                                 "type": "string",
                                 "enum": [
                                   "cdn",
@@ -2660,8 +2871,7 @@
                                   "rag",
                                   "generated",
                                   "none"
-                                ],
-                                "default": "none"
+                                ]
                               },
                               "alt": {
                                 "type": "object",
@@ -2673,6 +2883,9 @@
                                   },
                                   "variables": {
                                     "type": "object",
+                                    "propertyNames": {
+                                      "type": "string"
+                                    },
                                     "additionalProperties": {
                                       "type": "string"
                                     }
@@ -2693,6 +2906,9 @@
                                   },
                                   "variables": {
                                     "type": "object",
+                                    "propertyNames": {
+                                      "type": "string"
+                                    },
                                     "additionalProperties": {
                                       "type": "string"
                                     }
@@ -2704,12 +2920,12 @@
                                 "additionalProperties": false
                               },
                               "loading": {
+                                "default": "lazy",
                                 "type": "string",
                                 "enum": [
                                   "eager",
                                   "lazy"
-                                ],
-                                "default": "lazy"
+                                ]
                               },
                               "fetch_priority": {
                                 "type": "string",
@@ -2721,11 +2937,13 @@
                               },
                               "width": {
                                 "type": "integer",
-                                "exclusiveMinimum": 0
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
                               },
                               "height": {
                                 "type": "integer",
-                                "exclusiveMinimum": 0
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
                               },
                               "notes": {
                                 "type": "string",
@@ -2747,7 +2965,10 @@
                             "required": [
                               "slot_id",
                               "placement",
+                              "priority",
+                              "source",
                               "alt",
+                              "loading",
                               "type",
                               "budget_cost"
                             ],
@@ -2775,15 +2996,16 @@
                                 ]
                               },
                               "priority": {
+                                "default": "normal",
                                 "type": "string",
                                 "enum": [
                                   "high",
                                   "normal",
                                   "low"
-                                ],
-                                "default": "normal"
+                                ]
                               },
                               "source": {
+                                "default": "none",
                                 "type": "string",
                                 "enum": [
                                   "cdn",
@@ -2792,8 +3014,7 @@
                                   "rag",
                                   "generated",
                                   "none"
-                                ],
-                                "default": "none"
+                                ]
                               },
                               "alt": {
                                 "type": "object",
@@ -2805,6 +3026,9 @@
                                   },
                                   "variables": {
                                     "type": "object",
+                                    "propertyNames": {
+                                      "type": "string"
+                                    },
                                     "additionalProperties": {
                                       "type": "string"
                                     }
@@ -2825,6 +3049,9 @@
                                   },
                                   "variables": {
                                     "type": "object",
+                                    "propertyNames": {
+                                      "type": "string"
+                                    },
                                     "additionalProperties": {
                                       "type": "string"
                                     }
@@ -2836,12 +3063,12 @@
                                 "additionalProperties": false
                               },
                               "loading": {
+                                "default": "lazy",
                                 "type": "string",
                                 "enum": [
                                   "eager",
                                   "lazy"
-                                ],
-                                "default": "lazy"
+                                ]
                               },
                               "fetch_priority": {
                                 "type": "string",
@@ -2853,11 +3080,13 @@
                               },
                               "width": {
                                 "type": "integer",
-                                "exclusiveMinimum": 0
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
                               },
                               "height": {
                                 "type": "integer",
-                                "exclusiveMinimum": 0
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
                               },
                               "notes": {
                                 "type": "string",
@@ -2888,7 +3117,10 @@
                             "required": [
                               "slot_id",
                               "placement",
+                              "priority",
+                              "source",
                               "alt",
+                              "loading",
                               "type",
                               "budget_cost"
                             ],
@@ -2916,15 +3148,16 @@
                                 ]
                               },
                               "priority": {
+                                "default": "normal",
                                 "type": "string",
                                 "enum": [
                                   "high",
                                   "normal",
                                   "low"
-                                ],
-                                "default": "normal"
+                                ]
                               },
                               "source": {
+                                "default": "none",
                                 "type": "string",
                                 "enum": [
                                   "cdn",
@@ -2933,8 +3166,7 @@
                                   "rag",
                                   "generated",
                                   "none"
-                                ],
-                                "default": "none"
+                                ]
                               },
                               "alt": {
                                 "type": "object",
@@ -2946,6 +3178,9 @@
                                   },
                                   "variables": {
                                     "type": "object",
+                                    "propertyNames": {
+                                      "type": "string"
+                                    },
                                     "additionalProperties": {
                                       "type": "string"
                                     }
@@ -2966,6 +3201,9 @@
                                   },
                                   "variables": {
                                     "type": "object",
+                                    "propertyNames": {
+                                      "type": "string"
+                                    },
                                     "additionalProperties": {
                                       "type": "string"
                                     }
@@ -2977,12 +3215,12 @@
                                 "additionalProperties": false
                               },
                               "loading": {
+                                "default": "lazy",
                                 "type": "string",
                                 "enum": [
                                   "eager",
                                   "lazy"
-                                ],
-                                "default": "lazy"
+                                ]
                               },
                               "fetch_priority": {
                                 "type": "string",
@@ -2994,11 +3232,13 @@
                               },
                               "width": {
                                 "type": "integer",
-                                "exclusiveMinimum": 0
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
                               },
                               "height": {
                                 "type": "integer",
-                                "exclusiveMinimum": 0
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
                               },
                               "notes": {
                                 "type": "string",
@@ -3020,7 +3260,10 @@
                             "required": [
                               "slot_id",
                               "placement",
+                              "priority",
+                              "source",
                               "alt",
+                              "loading",
                               "type",
                               "budget_cost"
                             ],
@@ -3048,15 +3291,16 @@
                                 ]
                               },
                               "priority": {
+                                "default": "normal",
                                 "type": "string",
                                 "enum": [
                                   "high",
                                   "normal",
                                   "low"
-                                ],
-                                "default": "normal"
+                                ]
                               },
                               "source": {
+                                "default": "none",
                                 "type": "string",
                                 "enum": [
                                   "cdn",
@@ -3065,8 +3309,7 @@
                                   "rag",
                                   "generated",
                                   "none"
-                                ],
-                                "default": "none"
+                                ]
                               },
                               "alt": {
                                 "type": "object",
@@ -3078,6 +3321,9 @@
                                   },
                                   "variables": {
                                     "type": "object",
+                                    "propertyNames": {
+                                      "type": "string"
+                                    },
                                     "additionalProperties": {
                                       "type": "string"
                                     }
@@ -3098,6 +3344,9 @@
                                   },
                                   "variables": {
                                     "type": "object",
+                                    "propertyNames": {
+                                      "type": "string"
+                                    },
                                     "additionalProperties": {
                                       "type": "string"
                                     }
@@ -3109,12 +3358,12 @@
                                 "additionalProperties": false
                               },
                               "loading": {
+                                "default": "lazy",
                                 "type": "string",
                                 "enum": [
                                   "eager",
                                   "lazy"
-                                ],
-                                "default": "lazy"
+                                ]
                               },
                               "fetch_priority": {
                                 "type": "string",
@@ -3126,11 +3375,13 @@
                               },
                               "width": {
                                 "type": "integer",
-                                "exclusiveMinimum": 0
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
                               },
                               "height": {
                                 "type": "integer",
-                                "exclusiveMinimum": 0
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
                               },
                               "notes": {
                                 "type": "string",
@@ -3152,7 +3403,10 @@
                             "required": [
                               "slot_id",
                               "placement",
+                              "priority",
+                              "source",
                               "alt",
+                              "loading",
                               "type",
                               "budget_cost"
                             ],
@@ -3183,6 +3437,8 @@
                       "maxLength": 120
                     },
                     "options": {
+                      "minItems": 2,
+                      "maxItems": 6,
                       "type": "array",
                       "items": {
                         "type": "object",
@@ -3206,9 +3462,7 @@
                           "outcome"
                         ],
                         "additionalProperties": false
-                      },
-                      "minItems": 2,
-                      "maxItems": 6
+                      }
                     }
                   },
                   "required": [
@@ -3226,6 +3480,8 @@
                       "const": "QualityTiersTable"
                     },
                     "tiers": {
+                      "minItems": 2,
+                      "maxItems": 5,
                       "type": "array",
                       "items": {
                         "type": "object",
@@ -3259,19 +3515,18 @@
                             "maxLength": 80
                           },
                           "available": {
-                            "type": "boolean",
-                            "default": true
+                            "default": true,
+                            "type": "boolean"
                           }
                         },
                         "required": [
                           "tier_id",
                           "label",
-                          "description"
+                          "description",
+                          "available"
                         ],
                         "additionalProperties": false
-                      },
-                      "minItems": 2,
-                      "maxItems": 5
+                      }
                     },
                     "notes": {
                       "type": "array",
@@ -3301,6 +3556,8 @@
                       "const": "CompatibilityChecklist"
                     },
                     "axes": {
+                      "minItems": 2,
+                      "maxItems": 6,
                       "type": "array",
                       "items": {
                         "type": "object",
@@ -3325,18 +3582,16 @@
                           "risk_if_wrong"
                         ],
                         "additionalProperties": false
-                      },
-                      "minItems": 2,
-                      "maxItems": 6
+                      }
                     },
                     "disclaimers": {
+                      "minItems": 1,
                       "type": "array",
                       "items": {
                         "type": "string",
                         "minLength": 6,
                         "maxLength": 200
-                      },
-                      "minItems": 1
+                      }
                     }
                   },
                   "required": [
@@ -3361,6 +3616,8 @@
                       ]
                     },
                     "tiers": {
+                      "minItems": 2,
+                      "maxItems": 4,
                       "type": "array",
                       "items": {
                         "type": "object",
@@ -3391,19 +3648,17 @@
                           "safe_wording"
                         ],
                         "additionalProperties": false
-                      },
-                      "minItems": 2,
-                      "maxItems": 4
+                      }
                     },
                     "variation_factors": {
+                      "minItems": 2,
+                      "maxItems": 6,
                       "type": "array",
                       "items": {
                         "type": "string",
                         "minLength": 5,
                         "maxLength": 120
-                      },
-                      "minItems": 2,
-                      "maxItems": 6
+                      }
                     },
                     "disclaimer": {
                       "type": "string",
@@ -3425,6 +3680,7 @@
                       "const": "BrandsGuide"
                     },
                     "recognized_brands": {
+                      "maxItems": 10,
                       "type": "array",
                       "items": {
                         "type": "object",
@@ -3443,10 +3699,11 @@
                           "name"
                         ],
                         "additionalProperties": false
-                      },
-                      "maxItems": 10
+                      }
                     },
                     "quality_signals": {
+                      "minItems": 2,
+                      "maxItems": 6,
                       "type": "array",
                       "items": {
                         "type": "object",
@@ -3466,19 +3723,17 @@
                           "why_it_matters"
                         ],
                         "additionalProperties": false
-                      },
-                      "minItems": 2,
-                      "maxItems": 6
+                      }
                     },
                     "alert_signs": {
+                      "minItems": 2,
+                      "maxItems": 5,
                       "type": "array",
                       "items": {
                         "type": "string",
                         "minLength": 5,
                         "maxLength": 120
-                      },
-                      "minItems": 2,
-                      "maxItems": 5
+                      }
                     }
                   },
                   "required": [
@@ -3496,6 +3751,8 @@
                       "const": "BudgetTiers"
                     },
                     "tiers": {
+                      "minItems": 2,
+                      "maxItems": 4,
                       "type": "array",
                       "items": {
                         "type": "object",
@@ -3526,9 +3783,7 @@
                           "safe_wording"
                         ],
                         "additionalProperties": false
-                      },
-                      "minItems": 2,
-                      "maxItems": 4
+                      }
                     },
                     "disclaimer": {
                       "type": "string",
@@ -3550,12 +3805,14 @@
                       "const": "Checklist"
                     },
                     "title": {
+                      "default": "Avant de commander",
                       "type": "string",
                       "minLength": 3,
-                      "maxLength": 80,
-                      "default": "Avant de commander"
+                      "maxLength": 80
                     },
                     "items": {
+                      "minItems": 4,
+                      "maxItems": 15,
                       "type": "array",
                       "items": {
                         "type": "object",
@@ -3582,13 +3839,12 @@
                           "priority"
                         ],
                         "additionalProperties": false
-                      },
-                      "minItems": 4,
-                      "maxItems": 15
+                      }
                     }
                   },
                   "required": [
                     "block_type",
+                    "title",
                     "items"
                   ],
                   "additionalProperties": false
@@ -3601,6 +3857,8 @@
                       "const": "WhenPro"
                     },
                     "cases": {
+                      "minItems": 2,
+                      "maxItems": 6,
                       "type": "array",
                       "items": {
                         "type": "object",
@@ -3616,12 +3874,12 @@
                             "maxLength": 200
                           },
                           "keywords": {
+                            "maxItems": 3,
                             "type": "array",
                             "items": {
                               "type": "string",
                               "maxLength": 40
-                            },
-                            "maxItems": 3
+                            }
                           }
                         },
                         "required": [
@@ -3629,9 +3887,7 @@
                           "why_pro"
                         ],
                         "additionalProperties": false
-                      },
-                      "minItems": 2,
-                      "maxItems": 6
+                      }
                     }
                   },
                   "required": [
@@ -3648,6 +3904,8 @@
                       "const": "FAQ"
                     },
                     "items": {
+                      "minItems": 6,
+                      "maxItems": 12,
                       "type": "array",
                       "items": {
                         "type": "object",
@@ -3676,9 +3934,7 @@
                           "answer"
                         ],
                         "additionalProperties": false
-                      },
-                      "minItems": 6,
-                      "maxItems": 12
+                      }
                     }
                   },
                   "required": [
@@ -3695,6 +3951,8 @@
                       "const": "FurtherReading"
                     },
                     "links": {
+                      "minItems": 1,
+                      "maxItems": 4,
                       "type": "array",
                       "items": {
                         "type": "object",
@@ -3706,7 +3964,7 @@
                           },
                           "href": {
                             "type": "string",
-                            "pattern": "^\\/"
+                            "pattern": "^\\/.*"
                           },
                           "target_role": {
                             "type": "string",
@@ -3725,9 +3983,7 @@
                           "target_role"
                         ],
                         "additionalProperties": false
-                      },
-                      "minItems": 1,
-                      "maxItems": 4
+                      }
                     }
                   },
                   "required": [
@@ -3744,6 +4000,8 @@
                       "const": "InternalLinks"
                     },
                     "links": {
+                      "minItems": 1,
+                      "maxItems": 6,
                       "type": "array",
                       "items": {
                         "type": "object",
@@ -3755,7 +4013,7 @@
                           },
                           "href": {
                             "type": "string",
-                            "pattern": "^\\/"
+                            "pattern": "^\\/.*"
                           },
                           "target_role": {
                             "type": "string",
@@ -3788,9 +4046,7 @@
                           "target_role"
                         ],
                         "additionalProperties": false
-                      },
-                      "minItems": 1,
-                      "maxItems": 6
+                      }
                     }
                   },
                   "required": [
@@ -3800,13 +4056,12 @@
                   "additionalProperties": false
                 }
               ]
-            },
-            "minItems": 1
+            }
           },
           "media_slots": {
             "type": "array",
             "items": {
-              "anyOf": [
+              "oneOf": [
                 {
                   "type": "object",
                   "properties": {
@@ -3829,15 +4084,16 @@
                       ]
                     },
                     "priority": {
+                      "default": "normal",
                       "type": "string",
                       "enum": [
                         "high",
                         "normal",
                         "low"
-                      ],
-                      "default": "normal"
+                      ]
                     },
                     "source": {
+                      "default": "none",
                       "type": "string",
                       "enum": [
                         "cdn",
@@ -3846,8 +4102,7 @@
                         "rag",
                         "generated",
                         "none"
-                      ],
-                      "default": "none"
+                      ]
                     },
                     "alt": {
                       "type": "object",
@@ -3859,6 +4114,9 @@
                         },
                         "variables": {
                           "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
                           "additionalProperties": {
                             "type": "string"
                           }
@@ -3879,6 +4137,9 @@
                         },
                         "variables": {
                           "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
                           "additionalProperties": {
                             "type": "string"
                           }
@@ -3890,12 +4151,12 @@
                       "additionalProperties": false
                     },
                     "loading": {
+                      "default": "lazy",
                       "type": "string",
                       "enum": [
                         "eager",
                         "lazy"
-                      ],
-                      "default": "lazy"
+                      ]
                     },
                     "fetch_priority": {
                       "type": "string",
@@ -3907,11 +4168,13 @@
                     },
                     "width": {
                       "type": "integer",
-                      "exclusiveMinimum": 0
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
                     },
                     "height": {
                       "type": "integer",
-                      "exclusiveMinimum": 0
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
                     },
                     "notes": {
                       "type": "string",
@@ -3945,20 +4208,24 @@
                       "maximum": 1920
                     },
                     "format": {
+                      "default": "webp",
                       "type": "string",
                       "enum": [
                         "webp",
                         "avif"
-                      ],
-                      "default": "webp"
+                      ]
                     }
                   },
                   "required": [
                     "slot_id",
                     "placement",
+                    "priority",
+                    "source",
                     "alt",
+                    "loading",
                     "type",
-                    "budget_cost"
+                    "budget_cost",
+                    "format"
                   ],
                   "additionalProperties": false
                 },
@@ -3984,15 +4251,16 @@
                       ]
                     },
                     "priority": {
+                      "default": "normal",
                       "type": "string",
                       "enum": [
                         "high",
                         "normal",
                         "low"
-                      ],
-                      "default": "normal"
+                      ]
                     },
                     "source": {
+                      "default": "none",
                       "type": "string",
                       "enum": [
                         "cdn",
@@ -4001,8 +4269,7 @@
                         "rag",
                         "generated",
                         "none"
-                      ],
-                      "default": "none"
+                      ]
                     },
                     "alt": {
                       "type": "object",
@@ -4014,6 +4281,9 @@
                         },
                         "variables": {
                           "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
                           "additionalProperties": {
                             "type": "string"
                           }
@@ -4034,6 +4304,9 @@
                         },
                         "variables": {
                           "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
                           "additionalProperties": {
                             "type": "string"
                           }
@@ -4045,12 +4318,12 @@
                       "additionalProperties": false
                     },
                     "loading": {
+                      "default": "lazy",
                       "type": "string",
                       "enum": [
                         "eager",
                         "lazy"
-                      ],
-                      "default": "lazy"
+                      ]
                     },
                     "fetch_priority": {
                       "type": "string",
@@ -4062,11 +4335,13 @@
                     },
                     "width": {
                       "type": "integer",
-                      "exclusiveMinimum": 0
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
                     },
                     "height": {
                       "type": "integer",
-                      "exclusiveMinimum": 0
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
                     },
                     "notes": {
                       "type": "string",
@@ -4090,7 +4365,10 @@
                   "required": [
                     "slot_id",
                     "placement",
+                    "priority",
+                    "source",
                     "alt",
+                    "loading",
                     "type",
                     "budget_cost"
                   ],
@@ -4118,15 +4396,16 @@
                       ]
                     },
                     "priority": {
+                      "default": "normal",
                       "type": "string",
                       "enum": [
                         "high",
                         "normal",
                         "low"
-                      ],
-                      "default": "normal"
+                      ]
                     },
                     "source": {
+                      "default": "none",
                       "type": "string",
                       "enum": [
                         "cdn",
@@ -4135,8 +4414,7 @@
                         "rag",
                         "generated",
                         "none"
-                      ],
-                      "default": "none"
+                      ]
                     },
                     "alt": {
                       "type": "object",
@@ -4148,6 +4426,9 @@
                         },
                         "variables": {
                           "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
                           "additionalProperties": {
                             "type": "string"
                           }
@@ -4168,6 +4449,9 @@
                         },
                         "variables": {
                           "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
                           "additionalProperties": {
                             "type": "string"
                           }
@@ -4179,12 +4463,12 @@
                       "additionalProperties": false
                     },
                     "loading": {
+                      "default": "lazy",
                       "type": "string",
                       "enum": [
                         "eager",
                         "lazy"
-                      ],
-                      "default": "lazy"
+                      ]
                     },
                     "fetch_priority": {
                       "type": "string",
@@ -4196,11 +4480,13 @@
                     },
                     "width": {
                       "type": "integer",
-                      "exclusiveMinimum": 0
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
                     },
                     "height": {
                       "type": "integer",
-                      "exclusiveMinimum": 0
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
                     },
                     "notes": {
                       "type": "string",
@@ -4215,14 +4501,14 @@
                       "const": 0
                     },
                     "columns": {
+                      "minItems": 2,
+                      "maxItems": 6,
                       "type": "array",
                       "items": {
                         "type": "string",
                         "minLength": 1,
                         "maxLength": 50
-                      },
-                      "minItems": 2,
-                      "maxItems": 6
+                      }
                     },
                     "row_count_target": {
                       "type": "string",
@@ -4232,7 +4518,10 @@
                   "required": [
                     "slot_id",
                     "placement",
+                    "priority",
+                    "source",
                     "alt",
+                    "loading",
                     "type",
                     "budget_cost",
                     "columns"
@@ -4261,15 +4550,16 @@
                       ]
                     },
                     "priority": {
+                      "default": "normal",
                       "type": "string",
                       "enum": [
                         "high",
                         "normal",
                         "low"
-                      ],
-                      "default": "normal"
+                      ]
                     },
                     "source": {
+                      "default": "none",
                       "type": "string",
                       "enum": [
                         "cdn",
@@ -4278,8 +4568,7 @@
                         "rag",
                         "generated",
                         "none"
-                      ],
-                      "default": "none"
+                      ]
                     },
                     "alt": {
                       "type": "object",
@@ -4291,6 +4580,9 @@
                         },
                         "variables": {
                           "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
                           "additionalProperties": {
                             "type": "string"
                           }
@@ -4311,6 +4603,9 @@
                         },
                         "variables": {
                           "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
                           "additionalProperties": {
                             "type": "string"
                           }
@@ -4322,12 +4617,12 @@
                       "additionalProperties": false
                     },
                     "loading": {
+                      "default": "lazy",
                       "type": "string",
                       "enum": [
                         "eager",
                         "lazy"
-                      ],
-                      "default": "lazy"
+                      ]
                     },
                     "fetch_priority": {
                       "type": "string",
@@ -4339,11 +4634,13 @@
                     },
                     "width": {
                       "type": "integer",
-                      "exclusiveMinimum": 0
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
                     },
                     "height": {
                       "type": "integer",
-                      "exclusiveMinimum": 0
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
                     },
                     "notes": {
                       "type": "string",
@@ -4365,7 +4662,10 @@
                   "required": [
                     "slot_id",
                     "placement",
+                    "priority",
+                    "source",
                     "alt",
+                    "loading",
                     "type",
                     "budget_cost"
                   ],
@@ -4393,15 +4693,16 @@
                       ]
                     },
                     "priority": {
+                      "default": "normal",
                       "type": "string",
                       "enum": [
                         "high",
                         "normal",
                         "low"
-                      ],
-                      "default": "normal"
+                      ]
                     },
                     "source": {
+                      "default": "none",
                       "type": "string",
                       "enum": [
                         "cdn",
@@ -4410,8 +4711,7 @@
                         "rag",
                         "generated",
                         "none"
-                      ],
-                      "default": "none"
+                      ]
                     },
                     "alt": {
                       "type": "object",
@@ -4423,6 +4723,9 @@
                         },
                         "variables": {
                           "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
                           "additionalProperties": {
                             "type": "string"
                           }
@@ -4443,6 +4746,9 @@
                         },
                         "variables": {
                           "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
                           "additionalProperties": {
                             "type": "string"
                           }
@@ -4454,12 +4760,12 @@
                       "additionalProperties": false
                     },
                     "loading": {
+                      "default": "lazy",
                       "type": "string",
                       "enum": [
                         "eager",
                         "lazy"
-                      ],
-                      "default": "lazy"
+                      ]
                     },
                     "fetch_priority": {
                       "type": "string",
@@ -4471,11 +4777,13 @@
                     },
                     "width": {
                       "type": "integer",
-                      "exclusiveMinimum": 0
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
                     },
                     "height": {
                       "type": "integer",
-                      "exclusiveMinimum": 0
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
                     },
                     "notes": {
                       "type": "string",
@@ -4506,7 +4814,10 @@
                   "required": [
                     "slot_id",
                     "placement",
+                    "priority",
+                    "source",
                     "alt",
+                    "loading",
                     "type",
                     "budget_cost"
                   ],
@@ -4534,15 +4845,16 @@
                       ]
                     },
                     "priority": {
+                      "default": "normal",
                       "type": "string",
                       "enum": [
                         "high",
                         "normal",
                         "low"
-                      ],
-                      "default": "normal"
+                      ]
                     },
                     "source": {
+                      "default": "none",
                       "type": "string",
                       "enum": [
                         "cdn",
@@ -4551,8 +4863,7 @@
                         "rag",
                         "generated",
                         "none"
-                      ],
-                      "default": "none"
+                      ]
                     },
                     "alt": {
                       "type": "object",
@@ -4564,6 +4875,9 @@
                         },
                         "variables": {
                           "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
                           "additionalProperties": {
                             "type": "string"
                           }
@@ -4584,6 +4898,9 @@
                         },
                         "variables": {
                           "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
                           "additionalProperties": {
                             "type": "string"
                           }
@@ -4595,12 +4912,12 @@
                       "additionalProperties": false
                     },
                     "loading": {
+                      "default": "lazy",
                       "type": "string",
                       "enum": [
                         "eager",
                         "lazy"
-                      ],
-                      "default": "lazy"
+                      ]
                     },
                     "fetch_priority": {
                       "type": "string",
@@ -4612,11 +4929,13 @@
                     },
                     "width": {
                       "type": "integer",
-                      "exclusiveMinimum": 0
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
                     },
                     "height": {
                       "type": "integer",
-                      "exclusiveMinimum": 0
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
                     },
                     "notes": {
                       "type": "string",
@@ -4638,7 +4957,10 @@
                   "required": [
                     "slot_id",
                     "placement",
+                    "priority",
+                    "source",
                     "alt",
+                    "loading",
                     "type",
                     "budget_cost"
                   ],
@@ -4666,15 +4988,16 @@
                       ]
                     },
                     "priority": {
+                      "default": "normal",
                       "type": "string",
                       "enum": [
                         "high",
                         "normal",
                         "low"
-                      ],
-                      "default": "normal"
+                      ]
                     },
                     "source": {
+                      "default": "none",
                       "type": "string",
                       "enum": [
                         "cdn",
@@ -4683,8 +5006,7 @@
                         "rag",
                         "generated",
                         "none"
-                      ],
-                      "default": "none"
+                      ]
                     },
                     "alt": {
                       "type": "object",
@@ -4696,6 +5018,9 @@
                         },
                         "variables": {
                           "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
                           "additionalProperties": {
                             "type": "string"
                           }
@@ -4716,6 +5041,9 @@
                         },
                         "variables": {
                           "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
                           "additionalProperties": {
                             "type": "string"
                           }
@@ -4727,12 +5055,12 @@
                       "additionalProperties": false
                     },
                     "loading": {
+                      "default": "lazy",
                       "type": "string",
                       "enum": [
                         "eager",
                         "lazy"
-                      ],
-                      "default": "lazy"
+                      ]
                     },
                     "fetch_priority": {
                       "type": "string",
@@ -4744,11 +5072,13 @@
                     },
                     "width": {
                       "type": "integer",
-                      "exclusiveMinimum": 0
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
                     },
                     "height": {
                       "type": "integer",
-                      "exclusiveMinimum": 0
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
                     },
                     "notes": {
                       "type": "string",
@@ -4770,7 +5100,10 @@
                   "required": [
                     "slot_id",
                     "placement",
+                    "priority",
+                    "source",
                     "alt",
+                    "loading",
                     "type",
                     "budget_cost"
                   ],
@@ -4832,20 +5165,18 @@
         ],
         "additionalProperties": false
       },
-      "propertyNames": {
-        "enum": [
-          "hero_decision",
-          "summary_pick_fast",
-          "quality_tiers",
-          "compatibility",
-          "price_guide",
-          "brands_guide",
-          "pitfalls",
-          "when_pro",
-          "faq_r6",
-          "cta_final"
-        ]
-      }
+      "required": [
+        "hero_decision",
+        "summary_pick_fast",
+        "quality_tiers",
+        "compatibility",
+        "price_guide",
+        "brands_guide",
+        "pitfalls",
+        "when_pro",
+        "faq_r6",
+        "cta_final"
+      ]
     },
     "intent_result": {
       "type": "object",
@@ -4932,6 +5263,9 @@
         },
         "gate_report": {
           "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
           "additionalProperties": {
             "type": "object",
             "properties": {
@@ -5037,7 +5371,7 @@
           "type": "object",
           "properties": {
             "hero": {
-              "anyOf": [
+              "oneOf": [
                 {
                   "type": "object",
                   "properties": {
@@ -5060,15 +5394,16 @@
                       ]
                     },
                     "priority": {
+                      "default": "normal",
                       "type": "string",
                       "enum": [
                         "high",
                         "normal",
                         "low"
-                      ],
-                      "default": "normal"
+                      ]
                     },
                     "source": {
+                      "default": "none",
                       "type": "string",
                       "enum": [
                         "cdn",
@@ -5077,8 +5412,7 @@
                         "rag",
                         "generated",
                         "none"
-                      ],
-                      "default": "none"
+                      ]
                     },
                     "alt": {
                       "type": "object",
@@ -5090,6 +5424,9 @@
                         },
                         "variables": {
                           "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
                           "additionalProperties": {
                             "type": "string"
                           }
@@ -5110,6 +5447,9 @@
                         },
                         "variables": {
                           "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
                           "additionalProperties": {
                             "type": "string"
                           }
@@ -5121,12 +5461,12 @@
                       "additionalProperties": false
                     },
                     "loading": {
+                      "default": "lazy",
                       "type": "string",
                       "enum": [
                         "eager",
                         "lazy"
-                      ],
-                      "default": "lazy"
+                      ]
                     },
                     "fetch_priority": {
                       "type": "string",
@@ -5138,11 +5478,13 @@
                     },
                     "width": {
                       "type": "integer",
-                      "exclusiveMinimum": 0
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
                     },
                     "height": {
                       "type": "integer",
-                      "exclusiveMinimum": 0
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
                     },
                     "notes": {
                       "type": "string",
@@ -5176,20 +5518,24 @@
                       "maximum": 1920
                     },
                     "format": {
+                      "default": "webp",
                       "type": "string",
                       "enum": [
                         "webp",
                         "avif"
-                      ],
-                      "default": "webp"
+                      ]
                     }
                   },
                   "required": [
                     "slot_id",
                     "placement",
+                    "priority",
+                    "source",
                     "alt",
+                    "loading",
                     "type",
-                    "budget_cost"
+                    "budget_cost",
+                    "format"
                   ],
                   "additionalProperties": false
                 },
@@ -5215,15 +5561,16 @@
                       ]
                     },
                     "priority": {
+                      "default": "normal",
                       "type": "string",
                       "enum": [
                         "high",
                         "normal",
                         "low"
-                      ],
-                      "default": "normal"
+                      ]
                     },
                     "source": {
+                      "default": "none",
                       "type": "string",
                       "enum": [
                         "cdn",
@@ -5232,8 +5579,7 @@
                         "rag",
                         "generated",
                         "none"
-                      ],
-                      "default": "none"
+                      ]
                     },
                     "alt": {
                       "type": "object",
@@ -5245,6 +5591,9 @@
                         },
                         "variables": {
                           "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
                           "additionalProperties": {
                             "type": "string"
                           }
@@ -5265,6 +5614,9 @@
                         },
                         "variables": {
                           "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
                           "additionalProperties": {
                             "type": "string"
                           }
@@ -5276,12 +5628,12 @@
                       "additionalProperties": false
                     },
                     "loading": {
+                      "default": "lazy",
                       "type": "string",
                       "enum": [
                         "eager",
                         "lazy"
-                      ],
-                      "default": "lazy"
+                      ]
                     },
                     "fetch_priority": {
                       "type": "string",
@@ -5293,11 +5645,13 @@
                     },
                     "width": {
                       "type": "integer",
-                      "exclusiveMinimum": 0
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
                     },
                     "height": {
                       "type": "integer",
-                      "exclusiveMinimum": 0
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
                     },
                     "notes": {
                       "type": "string",
@@ -5321,7 +5675,10 @@
                   "required": [
                     "slot_id",
                     "placement",
+                    "priority",
+                    "source",
                     "alt",
+                    "loading",
                     "type",
                     "budget_cost"
                   ],
@@ -5349,15 +5706,16 @@
                       ]
                     },
                     "priority": {
+                      "default": "normal",
                       "type": "string",
                       "enum": [
                         "high",
                         "normal",
                         "low"
-                      ],
-                      "default": "normal"
+                      ]
                     },
                     "source": {
+                      "default": "none",
                       "type": "string",
                       "enum": [
                         "cdn",
@@ -5366,8 +5724,7 @@
                         "rag",
                         "generated",
                         "none"
-                      ],
-                      "default": "none"
+                      ]
                     },
                     "alt": {
                       "type": "object",
@@ -5379,6 +5736,9 @@
                         },
                         "variables": {
                           "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
                           "additionalProperties": {
                             "type": "string"
                           }
@@ -5399,6 +5759,9 @@
                         },
                         "variables": {
                           "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
                           "additionalProperties": {
                             "type": "string"
                           }
@@ -5410,12 +5773,12 @@
                       "additionalProperties": false
                     },
                     "loading": {
+                      "default": "lazy",
                       "type": "string",
                       "enum": [
                         "eager",
                         "lazy"
-                      ],
-                      "default": "lazy"
+                      ]
                     },
                     "fetch_priority": {
                       "type": "string",
@@ -5427,11 +5790,13 @@
                     },
                     "width": {
                       "type": "integer",
-                      "exclusiveMinimum": 0
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
                     },
                     "height": {
                       "type": "integer",
-                      "exclusiveMinimum": 0
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
                     },
                     "notes": {
                       "type": "string",
@@ -5446,14 +5811,14 @@
                       "const": 0
                     },
                     "columns": {
+                      "minItems": 2,
+                      "maxItems": 6,
                       "type": "array",
                       "items": {
                         "type": "string",
                         "minLength": 1,
                         "maxLength": 50
-                      },
-                      "minItems": 2,
-                      "maxItems": 6
+                      }
                     },
                     "row_count_target": {
                       "type": "string",
@@ -5463,7 +5828,10 @@
                   "required": [
                     "slot_id",
                     "placement",
+                    "priority",
+                    "source",
                     "alt",
+                    "loading",
                     "type",
                     "budget_cost",
                     "columns"
@@ -5492,15 +5860,16 @@
                       ]
                     },
                     "priority": {
+                      "default": "normal",
                       "type": "string",
                       "enum": [
                         "high",
                         "normal",
                         "low"
-                      ],
-                      "default": "normal"
+                      ]
                     },
                     "source": {
+                      "default": "none",
                       "type": "string",
                       "enum": [
                         "cdn",
@@ -5509,8 +5878,7 @@
                         "rag",
                         "generated",
                         "none"
-                      ],
-                      "default": "none"
+                      ]
                     },
                     "alt": {
                       "type": "object",
@@ -5522,6 +5890,9 @@
                         },
                         "variables": {
                           "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
                           "additionalProperties": {
                             "type": "string"
                           }
@@ -5542,6 +5913,9 @@
                         },
                         "variables": {
                           "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
                           "additionalProperties": {
                             "type": "string"
                           }
@@ -5553,12 +5927,12 @@
                       "additionalProperties": false
                     },
                     "loading": {
+                      "default": "lazy",
                       "type": "string",
                       "enum": [
                         "eager",
                         "lazy"
-                      ],
-                      "default": "lazy"
+                      ]
                     },
                     "fetch_priority": {
                       "type": "string",
@@ -5570,11 +5944,13 @@
                     },
                     "width": {
                       "type": "integer",
-                      "exclusiveMinimum": 0
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
                     },
                     "height": {
                       "type": "integer",
-                      "exclusiveMinimum": 0
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
                     },
                     "notes": {
                       "type": "string",
@@ -5596,7 +5972,10 @@
                   "required": [
                     "slot_id",
                     "placement",
+                    "priority",
+                    "source",
                     "alt",
+                    "loading",
                     "type",
                     "budget_cost"
                   ],
@@ -5624,15 +6003,16 @@
                       ]
                     },
                     "priority": {
+                      "default": "normal",
                       "type": "string",
                       "enum": [
                         "high",
                         "normal",
                         "low"
-                      ],
-                      "default": "normal"
+                      ]
                     },
                     "source": {
+                      "default": "none",
                       "type": "string",
                       "enum": [
                         "cdn",
@@ -5641,8 +6021,7 @@
                         "rag",
                         "generated",
                         "none"
-                      ],
-                      "default": "none"
+                      ]
                     },
                     "alt": {
                       "type": "object",
@@ -5654,6 +6033,9 @@
                         },
                         "variables": {
                           "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
                           "additionalProperties": {
                             "type": "string"
                           }
@@ -5674,6 +6056,9 @@
                         },
                         "variables": {
                           "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
                           "additionalProperties": {
                             "type": "string"
                           }
@@ -5685,12 +6070,12 @@
                       "additionalProperties": false
                     },
                     "loading": {
+                      "default": "lazy",
                       "type": "string",
                       "enum": [
                         "eager",
                         "lazy"
-                      ],
-                      "default": "lazy"
+                      ]
                     },
                     "fetch_priority": {
                       "type": "string",
@@ -5702,11 +6087,13 @@
                     },
                     "width": {
                       "type": "integer",
-                      "exclusiveMinimum": 0
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
                     },
                     "height": {
                       "type": "integer",
-                      "exclusiveMinimum": 0
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
                     },
                     "notes": {
                       "type": "string",
@@ -5737,7 +6124,10 @@
                   "required": [
                     "slot_id",
                     "placement",
+                    "priority",
+                    "source",
                     "alt",
+                    "loading",
                     "type",
                     "budget_cost"
                   ],
@@ -5765,15 +6155,16 @@
                       ]
                     },
                     "priority": {
+                      "default": "normal",
                       "type": "string",
                       "enum": [
                         "high",
                         "normal",
                         "low"
-                      ],
-                      "default": "normal"
+                      ]
                     },
                     "source": {
+                      "default": "none",
                       "type": "string",
                       "enum": [
                         "cdn",
@@ -5782,8 +6173,7 @@
                         "rag",
                         "generated",
                         "none"
-                      ],
-                      "default": "none"
+                      ]
                     },
                     "alt": {
                       "type": "object",
@@ -5795,6 +6185,9 @@
                         },
                         "variables": {
                           "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
                           "additionalProperties": {
                             "type": "string"
                           }
@@ -5815,6 +6208,9 @@
                         },
                         "variables": {
                           "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
                           "additionalProperties": {
                             "type": "string"
                           }
@@ -5826,12 +6222,12 @@
                       "additionalProperties": false
                     },
                     "loading": {
+                      "default": "lazy",
                       "type": "string",
                       "enum": [
                         "eager",
                         "lazy"
-                      ],
-                      "default": "lazy"
+                      ]
                     },
                     "fetch_priority": {
                       "type": "string",
@@ -5843,11 +6239,13 @@
                     },
                     "width": {
                       "type": "integer",
-                      "exclusiveMinimum": 0
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
                     },
                     "height": {
                       "type": "integer",
-                      "exclusiveMinimum": 0
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
                     },
                     "notes": {
                       "type": "string",
@@ -5869,7 +6267,10 @@
                   "required": [
                     "slot_id",
                     "placement",
+                    "priority",
+                    "source",
                     "alt",
+                    "loading",
                     "type",
                     "budget_cost"
                   ],
@@ -5897,15 +6298,16 @@
                       ]
                     },
                     "priority": {
+                      "default": "normal",
                       "type": "string",
                       "enum": [
                         "high",
                         "normal",
                         "low"
-                      ],
-                      "default": "normal"
+                      ]
                     },
                     "source": {
+                      "default": "none",
                       "type": "string",
                       "enum": [
                         "cdn",
@@ -5914,8 +6316,7 @@
                         "rag",
                         "generated",
                         "none"
-                      ],
-                      "default": "none"
+                      ]
                     },
                     "alt": {
                       "type": "object",
@@ -5927,6 +6328,9 @@
                         },
                         "variables": {
                           "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
                           "additionalProperties": {
                             "type": "string"
                           }
@@ -5947,6 +6351,9 @@
                         },
                         "variables": {
                           "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
                           "additionalProperties": {
                             "type": "string"
                           }
@@ -5958,12 +6365,12 @@
                       "additionalProperties": false
                     },
                     "loading": {
+                      "default": "lazy",
                       "type": "string",
                       "enum": [
                         "eager",
                         "lazy"
-                      ],
-                      "default": "lazy"
+                      ]
                     },
                     "fetch_priority": {
                       "type": "string",
@@ -5975,11 +6382,13 @@
                     },
                     "width": {
                       "type": "integer",
-                      "exclusiveMinimum": 0
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
                     },
                     "height": {
                       "type": "integer",
-                      "exclusiveMinimum": 0
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
                     },
                     "notes": {
                       "type": "string",
@@ -6001,7 +6410,10 @@
                   "required": [
                     "slot_id",
                     "placement",
+                    "priority",
+                    "source",
                     "alt",
+                    "loading",
                     "type",
                     "budget_cost"
                   ],
@@ -6011,10 +6423,25 @@
             },
             "by_section": {
               "type": "object",
+              "propertyNames": {
+                "type": "string",
+                "enum": [
+                  "hero_decision",
+                  "summary_pick_fast",
+                  "quality_tiers",
+                  "compatibility",
+                  "price_guide",
+                  "brands_guide",
+                  "pitfalls",
+                  "when_pro",
+                  "faq_r6",
+                  "cta_final"
+                ]
+              },
               "additionalProperties": {
                 "type": "array",
                 "items": {
-                  "anyOf": [
+                  "oneOf": [
                     {
                       "type": "object",
                       "properties": {
@@ -6037,15 +6464,16 @@
                           ]
                         },
                         "priority": {
+                          "default": "normal",
                           "type": "string",
                           "enum": [
                             "high",
                             "normal",
                             "low"
-                          ],
-                          "default": "normal"
+                          ]
                         },
                         "source": {
+                          "default": "none",
                           "type": "string",
                           "enum": [
                             "cdn",
@@ -6054,8 +6482,7 @@
                             "rag",
                             "generated",
                             "none"
-                          ],
-                          "default": "none"
+                          ]
                         },
                         "alt": {
                           "type": "object",
@@ -6067,6 +6494,9 @@
                             },
                             "variables": {
                               "type": "object",
+                              "propertyNames": {
+                                "type": "string"
+                              },
                               "additionalProperties": {
                                 "type": "string"
                               }
@@ -6087,6 +6517,9 @@
                             },
                             "variables": {
                               "type": "object",
+                              "propertyNames": {
+                                "type": "string"
+                              },
                               "additionalProperties": {
                                 "type": "string"
                               }
@@ -6098,12 +6531,12 @@
                           "additionalProperties": false
                         },
                         "loading": {
+                          "default": "lazy",
                           "type": "string",
                           "enum": [
                             "eager",
                             "lazy"
-                          ],
-                          "default": "lazy"
+                          ]
                         },
                         "fetch_priority": {
                           "type": "string",
@@ -6115,11 +6548,13 @@
                         },
                         "width": {
                           "type": "integer",
-                          "exclusiveMinimum": 0
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
                         },
                         "height": {
                           "type": "integer",
-                          "exclusiveMinimum": 0
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
                         },
                         "notes": {
                           "type": "string",
@@ -6153,20 +6588,24 @@
                           "maximum": 1920
                         },
                         "format": {
+                          "default": "webp",
                           "type": "string",
                           "enum": [
                             "webp",
                             "avif"
-                          ],
-                          "default": "webp"
+                          ]
                         }
                       },
                       "required": [
                         "slot_id",
                         "placement",
+                        "priority",
+                        "source",
                         "alt",
+                        "loading",
                         "type",
-                        "budget_cost"
+                        "budget_cost",
+                        "format"
                       ],
                       "additionalProperties": false
                     },
@@ -6192,15 +6631,16 @@
                           ]
                         },
                         "priority": {
+                          "default": "normal",
                           "type": "string",
                           "enum": [
                             "high",
                             "normal",
                             "low"
-                          ],
-                          "default": "normal"
+                          ]
                         },
                         "source": {
+                          "default": "none",
                           "type": "string",
                           "enum": [
                             "cdn",
@@ -6209,8 +6649,7 @@
                             "rag",
                             "generated",
                             "none"
-                          ],
-                          "default": "none"
+                          ]
                         },
                         "alt": {
                           "type": "object",
@@ -6222,6 +6661,9 @@
                             },
                             "variables": {
                               "type": "object",
+                              "propertyNames": {
+                                "type": "string"
+                              },
                               "additionalProperties": {
                                 "type": "string"
                               }
@@ -6242,6 +6684,9 @@
                             },
                             "variables": {
                               "type": "object",
+                              "propertyNames": {
+                                "type": "string"
+                              },
                               "additionalProperties": {
                                 "type": "string"
                               }
@@ -6253,12 +6698,12 @@
                           "additionalProperties": false
                         },
                         "loading": {
+                          "default": "lazy",
                           "type": "string",
                           "enum": [
                             "eager",
                             "lazy"
-                          ],
-                          "default": "lazy"
+                          ]
                         },
                         "fetch_priority": {
                           "type": "string",
@@ -6270,11 +6715,13 @@
                         },
                         "width": {
                           "type": "integer",
-                          "exclusiveMinimum": 0
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
                         },
                         "height": {
                           "type": "integer",
-                          "exclusiveMinimum": 0
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
                         },
                         "notes": {
                           "type": "string",
@@ -6298,7 +6745,10 @@
                       "required": [
                         "slot_id",
                         "placement",
+                        "priority",
+                        "source",
                         "alt",
+                        "loading",
                         "type",
                         "budget_cost"
                       ],
@@ -6326,15 +6776,16 @@
                           ]
                         },
                         "priority": {
+                          "default": "normal",
                           "type": "string",
                           "enum": [
                             "high",
                             "normal",
                             "low"
-                          ],
-                          "default": "normal"
+                          ]
                         },
                         "source": {
+                          "default": "none",
                           "type": "string",
                           "enum": [
                             "cdn",
@@ -6343,8 +6794,7 @@
                             "rag",
                             "generated",
                             "none"
-                          ],
-                          "default": "none"
+                          ]
                         },
                         "alt": {
                           "type": "object",
@@ -6356,6 +6806,9 @@
                             },
                             "variables": {
                               "type": "object",
+                              "propertyNames": {
+                                "type": "string"
+                              },
                               "additionalProperties": {
                                 "type": "string"
                               }
@@ -6376,6 +6829,9 @@
                             },
                             "variables": {
                               "type": "object",
+                              "propertyNames": {
+                                "type": "string"
+                              },
                               "additionalProperties": {
                                 "type": "string"
                               }
@@ -6387,12 +6843,12 @@
                           "additionalProperties": false
                         },
                         "loading": {
+                          "default": "lazy",
                           "type": "string",
                           "enum": [
                             "eager",
                             "lazy"
-                          ],
-                          "default": "lazy"
+                          ]
                         },
                         "fetch_priority": {
                           "type": "string",
@@ -6404,11 +6860,13 @@
                         },
                         "width": {
                           "type": "integer",
-                          "exclusiveMinimum": 0
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
                         },
                         "height": {
                           "type": "integer",
-                          "exclusiveMinimum": 0
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
                         },
                         "notes": {
                           "type": "string",
@@ -6423,14 +6881,14 @@
                           "const": 0
                         },
                         "columns": {
+                          "minItems": 2,
+                          "maxItems": 6,
                           "type": "array",
                           "items": {
                             "type": "string",
                             "minLength": 1,
                             "maxLength": 50
-                          },
-                          "minItems": 2,
-                          "maxItems": 6
+                          }
                         },
                         "row_count_target": {
                           "type": "string",
@@ -6440,7 +6898,10 @@
                       "required": [
                         "slot_id",
                         "placement",
+                        "priority",
+                        "source",
                         "alt",
+                        "loading",
                         "type",
                         "budget_cost",
                         "columns"
@@ -6469,15 +6930,16 @@
                           ]
                         },
                         "priority": {
+                          "default": "normal",
                           "type": "string",
                           "enum": [
                             "high",
                             "normal",
                             "low"
-                          ],
-                          "default": "normal"
+                          ]
                         },
                         "source": {
+                          "default": "none",
                           "type": "string",
                           "enum": [
                             "cdn",
@@ -6486,8 +6948,7 @@
                             "rag",
                             "generated",
                             "none"
-                          ],
-                          "default": "none"
+                          ]
                         },
                         "alt": {
                           "type": "object",
@@ -6499,6 +6960,9 @@
                             },
                             "variables": {
                               "type": "object",
+                              "propertyNames": {
+                                "type": "string"
+                              },
                               "additionalProperties": {
                                 "type": "string"
                               }
@@ -6519,6 +6983,9 @@
                             },
                             "variables": {
                               "type": "object",
+                              "propertyNames": {
+                                "type": "string"
+                              },
                               "additionalProperties": {
                                 "type": "string"
                               }
@@ -6530,12 +6997,12 @@
                           "additionalProperties": false
                         },
                         "loading": {
+                          "default": "lazy",
                           "type": "string",
                           "enum": [
                             "eager",
                             "lazy"
-                          ],
-                          "default": "lazy"
+                          ]
                         },
                         "fetch_priority": {
                           "type": "string",
@@ -6547,11 +7014,13 @@
                         },
                         "width": {
                           "type": "integer",
-                          "exclusiveMinimum": 0
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
                         },
                         "height": {
                           "type": "integer",
-                          "exclusiveMinimum": 0
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
                         },
                         "notes": {
                           "type": "string",
@@ -6573,7 +7042,10 @@
                       "required": [
                         "slot_id",
                         "placement",
+                        "priority",
+                        "source",
                         "alt",
+                        "loading",
                         "type",
                         "budget_cost"
                       ],
@@ -6601,15 +7073,16 @@
                           ]
                         },
                         "priority": {
+                          "default": "normal",
                           "type": "string",
                           "enum": [
                             "high",
                             "normal",
                             "low"
-                          ],
-                          "default": "normal"
+                          ]
                         },
                         "source": {
+                          "default": "none",
                           "type": "string",
                           "enum": [
                             "cdn",
@@ -6618,8 +7091,7 @@
                             "rag",
                             "generated",
                             "none"
-                          ],
-                          "default": "none"
+                          ]
                         },
                         "alt": {
                           "type": "object",
@@ -6631,6 +7103,9 @@
                             },
                             "variables": {
                               "type": "object",
+                              "propertyNames": {
+                                "type": "string"
+                              },
                               "additionalProperties": {
                                 "type": "string"
                               }
@@ -6651,6 +7126,9 @@
                             },
                             "variables": {
                               "type": "object",
+                              "propertyNames": {
+                                "type": "string"
+                              },
                               "additionalProperties": {
                                 "type": "string"
                               }
@@ -6662,12 +7140,12 @@
                           "additionalProperties": false
                         },
                         "loading": {
+                          "default": "lazy",
                           "type": "string",
                           "enum": [
                             "eager",
                             "lazy"
-                          ],
-                          "default": "lazy"
+                          ]
                         },
                         "fetch_priority": {
                           "type": "string",
@@ -6679,11 +7157,13 @@
                         },
                         "width": {
                           "type": "integer",
-                          "exclusiveMinimum": 0
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
                         },
                         "height": {
                           "type": "integer",
-                          "exclusiveMinimum": 0
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
                         },
                         "notes": {
                           "type": "string",
@@ -6714,7 +7194,10 @@
                       "required": [
                         "slot_id",
                         "placement",
+                        "priority",
+                        "source",
                         "alt",
+                        "loading",
                         "type",
                         "budget_cost"
                       ],
@@ -6742,15 +7225,16 @@
                           ]
                         },
                         "priority": {
+                          "default": "normal",
                           "type": "string",
                           "enum": [
                             "high",
                             "normal",
                             "low"
-                          ],
-                          "default": "normal"
+                          ]
                         },
                         "source": {
+                          "default": "none",
                           "type": "string",
                           "enum": [
                             "cdn",
@@ -6759,8 +7243,7 @@
                             "rag",
                             "generated",
                             "none"
-                          ],
-                          "default": "none"
+                          ]
                         },
                         "alt": {
                           "type": "object",
@@ -6772,6 +7255,9 @@
                             },
                             "variables": {
                               "type": "object",
+                              "propertyNames": {
+                                "type": "string"
+                              },
                               "additionalProperties": {
                                 "type": "string"
                               }
@@ -6792,6 +7278,9 @@
                             },
                             "variables": {
                               "type": "object",
+                              "propertyNames": {
+                                "type": "string"
+                              },
                               "additionalProperties": {
                                 "type": "string"
                               }
@@ -6803,12 +7292,12 @@
                           "additionalProperties": false
                         },
                         "loading": {
+                          "default": "lazy",
                           "type": "string",
                           "enum": [
                             "eager",
                             "lazy"
-                          ],
-                          "default": "lazy"
+                          ]
                         },
                         "fetch_priority": {
                           "type": "string",
@@ -6820,11 +7309,13 @@
                         },
                         "width": {
                           "type": "integer",
-                          "exclusiveMinimum": 0
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
                         },
                         "height": {
                           "type": "integer",
-                          "exclusiveMinimum": 0
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
                         },
                         "notes": {
                           "type": "string",
@@ -6846,7 +7337,10 @@
                       "required": [
                         "slot_id",
                         "placement",
+                        "priority",
+                        "source",
                         "alt",
+                        "loading",
                         "type",
                         "budget_cost"
                       ],
@@ -6874,15 +7368,16 @@
                           ]
                         },
                         "priority": {
+                          "default": "normal",
                           "type": "string",
                           "enum": [
                             "high",
                             "normal",
                             "low"
-                          ],
-                          "default": "normal"
+                          ]
                         },
                         "source": {
+                          "default": "none",
                           "type": "string",
                           "enum": [
                             "cdn",
@@ -6891,8 +7386,7 @@
                             "rag",
                             "generated",
                             "none"
-                          ],
-                          "default": "none"
+                          ]
                         },
                         "alt": {
                           "type": "object",
@@ -6904,6 +7398,9 @@
                             },
                             "variables": {
                               "type": "object",
+                              "propertyNames": {
+                                "type": "string"
+                              },
                               "additionalProperties": {
                                 "type": "string"
                               }
@@ -6924,6 +7421,9 @@
                             },
                             "variables": {
                               "type": "object",
+                              "propertyNames": {
+                                "type": "string"
+                              },
                               "additionalProperties": {
                                 "type": "string"
                               }
@@ -6935,12 +7435,12 @@
                           "additionalProperties": false
                         },
                         "loading": {
+                          "default": "lazy",
                           "type": "string",
                           "enum": [
                             "eager",
                             "lazy"
-                          ],
-                          "default": "lazy"
+                          ]
                         },
                         "fetch_priority": {
                           "type": "string",
@@ -6952,11 +7452,13 @@
                         },
                         "width": {
                           "type": "integer",
-                          "exclusiveMinimum": 0
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
                         },
                         "height": {
                           "type": "integer",
-                          "exclusiveMinimum": 0
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
                         },
                         "notes": {
                           "type": "string",
@@ -6978,7 +7480,10 @@
                       "required": [
                         "slot_id",
                         "placement",
+                        "priority",
+                        "source",
                         "alt",
+                        "loading",
                         "type",
                         "budget_cost"
                       ],
@@ -6987,41 +7492,44 @@
                   ]
                 }
               },
-              "propertyNames": {
-                "enum": [
-                  "hero_decision",
-                  "summary_pick_fast",
-                  "quality_tiers",
-                  "compatibility",
-                  "price_guide",
-                  "brands_guide",
-                  "pitfalls",
-                  "when_pro",
-                  "faq_r6",
-                  "cta_final"
-                ]
-              }
+              "required": [
+                "hero_decision",
+                "summary_pick_fast",
+                "quality_tiers",
+                "compatibility",
+                "price_guide",
+                "brands_guide",
+                "pitfalls",
+                "when_pro",
+                "faq_r6",
+                "cta_final"
+              ]
             },
             "constraints": {
               "type": "object",
               "properties": {
                 "max_images_in_article": {
+                  "default": 3,
                   "type": "integer",
                   "minimum": 1,
-                  "maximum": 5,
-                  "default": 3
+                  "maximum": 5
                 },
                 "hero_always_eager": {
-                  "type": "boolean",
-                  "default": true
+                  "default": true,
+                  "type": "boolean"
                 },
                 "max_callouts_per_page": {
+                  "default": 4,
                   "type": "integer",
                   "minimum": 1,
-                  "maximum": 6,
-                  "default": 4
+                  "maximum": 6
                 }
               },
+              "required": [
+                "max_images_in_article",
+                "hero_always_eager",
+                "max_callouts_per_page"
+              ],
               "additionalProperties": false
             }
           },
@@ -7085,6 +7593,9 @@
     },
     "gate_report": {
       "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
       "additionalProperties": {
         "type": "object",
         "properties": {
@@ -7127,6 +7638,9 @@
     "pg_id",
     "pg_alias",
     "gamme_name",
+    "intentType",
+    "pageRole",
+    "roleVersion",
     "pipeline_phase",
     "built_by",
     "meta"

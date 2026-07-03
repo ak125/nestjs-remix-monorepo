@@ -5,20 +5,17 @@
  * Route: /search/cnit
  */
 
+import { Search, Car, AlertCircle, ArrowRight, Info } from "lucide-react";
+import { useState } from "react";
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import {
   useLoaderData,
   Form,
   Link,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { Search, Car, AlertCircle, ArrowRight, Info } from "lucide-react";
-import { useState } from "react";
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
@@ -86,7 +83,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const cnitCode = url.searchParams.get("code")?.trim();
 
   if (!cnitCode) {
-    return json<LoaderData>({ searchTerm: "" });
+    return { searchTerm: "" };
   }
 
   try {
@@ -107,10 +104,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
       logger.error("API Error:", response.status, errorText);
 
       if (response.status === 404) {
-        return json<LoaderData>({
+        return {
           searchTerm: cnitCode,
           error: "Aucun véhicule trouvé pour ce code CNIT",
-        });
+        };
       }
 
       throw new Error(`Erreur API: ${response.status}`);
@@ -120,22 +117,22 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     // La réponse de notre API est un VehicleResponseDto
     if (result.data && result.data.length > 0) {
-      return json<LoaderData>({
+      return {
         vehicle: result.data[0], // Premier résultat
         searchTerm: cnitCode,
-      });
+      };
     } else {
-      return json<LoaderData>({
+      return {
         searchTerm: cnitCode,
         error: "Aucun véhicule trouvé pour ce code CNIT",
-      });
+      };
     }
   } catch (error) {
     logger.error("Search error:", error);
-    return json<LoaderData>({
+    return {
       searchTerm: cnitCode,
       error: "Erreur lors de la recherche. Veuillez réessayer.",
-    });
+    };
   }
 }
 
@@ -190,7 +187,7 @@ export default function SearchCnitPage() {
               </Button>
             </div>
             <div className="flex items-start gap-2 text-sm text-primary bg-primary/10 p-3 rounded-lg">
-              <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
+              <Info className="h-4 w-4 mt-0.5 shrink-0" />
               <p>
                 Le code CNIT se trouve sur la carte grise du véhicule dans la
                 case K. Il est composé de lettres et de chiffres (généralement 8

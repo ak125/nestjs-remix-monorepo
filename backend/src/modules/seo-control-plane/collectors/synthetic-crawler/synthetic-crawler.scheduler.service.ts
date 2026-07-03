@@ -40,9 +40,17 @@ export class SyntheticCrawlerSchedulerService implements OnModuleInit {
 
   onModuleInit(): void {
     if (!this.isEnabled()) {
+      // Kill-switch AUTORITAIRE : ne pas seulement éviter de (re)programmer, mais
+      // RETIRER tout repeatable déjà persisté en Redis. Sinon un job ajouté lors
+      // d'un boot précédent (flag absent = default true) SURVIT et continue de
+      // tourner → le toggle off est un no-op silencieux (« feature flag non
+      // gouverné »). Incident 2026-06-25 : le crawler du poste DEV restait throttlé
+      // à 90 % et polluait la table partagée car le repeatable survivait au flag.
+      // Fire-and-forget (discipline backend.md § Non-blocking onModuleInit).
       this.logger.log(
-        'SEO_CP_SYNTHETIC_ENABLED=false — synthetic-crawler scheduler skipped',
+        'SEO_CP_SYNTHETIC_ENABLED=false — synthetic-crawler scheduler disabled; removing any stale repeatable',
       );
+      void this.removeStaleRepeatableJob();
       return;
     }
     void this.configureRepeatableJob();

@@ -1,10 +1,12 @@
-import { json, type LoaderFunction, type MetaFunction } from "@remix-run/node";
+import { User, ShoppingBag, Mail, Key } from "lucide-react";
 import {
+  type LoaderFunction,
+  type MetaFunction,
+  data,
   useLoaderData,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { User, ShoppingBag, Mail, Key } from "lucide-react";
+} from "react-router";
 import { z } from "zod";
 
 import AccountDashboard from "~/components/account/AccountDashboard";
@@ -130,7 +132,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     // Auth stricte si demandée
     if (authenticated && !authResult) {
       logger.log("🔒 Strict auth required - redirecting");
-      return json({ authenticated: false }, { status: 401 });
+      return data({ authenticated: false }, { status: 401 });
     }
 
     // API Call - même endpoint que les versions précédentes
@@ -205,7 +207,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     };
 
     logger.log("✅ Dashboard unifié - Data loaded successfully");
-    return json(responseData);
+    return responseData;
   } catch (error) {
     logger.error("❌ Dashboard unifié - Error:", error);
 

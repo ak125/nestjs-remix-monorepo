@@ -3,7 +3,7 @@
  * Compatible avec l'architecture Remix existante
  */
 
-import { Link } from "@remix-run/react";
+import { Link } from "react-router";
 
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";

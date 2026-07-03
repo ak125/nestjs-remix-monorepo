@@ -8,7 +8,7 @@ import { z } from 'zod';
 export const SearchRequestSchema = z.object({
   query: z.string().min(1).max(500),
   limit: z.number().int().min(1).max(50).optional().default(10),
-  filters: z.record(z.unknown()).optional(),
+  filters: z.record(z.string(), z.unknown()).optional(),
   includeFullContent: z.boolean().optional().default(false),
   routing: z
     .object({
@@ -65,10 +65,12 @@ export const SearchResponseSchema = z.object({
   needs_clarification: z.boolean().optional(),
   clarify_questions: z.array(z.string()).optional(),
   sources_citation: z.string().optional(),
-  truth_metadata: z.record(z.unknown()).optional(),
+  truth_metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 // Types TypeScript inférés
-export type SearchRequestDto = z.infer<typeof SearchRequestSchema>;
+// Request = input shape: defaulted fields (limit/includeFullContent) are optional
+// for callers (read defensively, e.g. `request.limit || 10`).
+export type SearchRequestDto = z.input<typeof SearchRequestSchema>;
 export type SearchResultDto = z.infer<typeof SearchResultSchema>;
 export type SearchResponseDto = z.infer<typeof SearchResponseSchema>;

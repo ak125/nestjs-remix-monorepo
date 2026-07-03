@@ -7,11 +7,24 @@ ecarts entre les chiffres declares dans `repo-map.md` (canon prose au
 
 Approche :
   1. Parse `.spec/00-canon/repo-map.md` table "Statistiques"
-  2. Compare les claims numeriques (Backend modules, Frontend routes,
-     Shared packages, Docker configs) a la realite filesystem
+  2. Compare les claims numeriques STABLES (Shared packages, Docker configs)
+     a la realite filesystem
   3. Flag chaque metric avec drift en `warning` ; exit 0 toujours en
      mode default (warn-only, coherent ADR-048 escalade J+30) ; exit 1
      en mode `--strict` (test local)
+
+Perimetre (ADR-048 follow-up 2026-06-20) : ce detecteur ne suit QUE les
+metriques structurelles STABLES. "Backend modules" et "Frontend routes" ont
+ete RETIRES (du canon prose ET d'ici, ensemble) car :
+  - comptes derivables du filesystem qui changent a chaque nouveau
+    bounded-context / route -> churn permanent -> drift garanti ;
+  - duplication de l'inventaire deja porte par le Repository Control Plane
+    (audit/registry/canonical.json, ADR-058) + sa projection generee
+    `.claude/knowledge/REPO_MAP.md` (source de verite unique) ;
+  - "Frontend routes" comptait des FICHIERS top-level, pas des routes Remix
+    effectives (proxy trompeur) et bouge avec la migration React Router.
+  Tenir ces comptes a la main dans le canon = re-derive garantie ; le canon
+  pointe desormais vers la projection generee pour l'inventaire vivant.
 
 Usage:
   python3 scripts/spec-canon/check-repo-map-drift.py [--json] [--strict]
@@ -19,8 +32,9 @@ Usage:
 Reference :
   - ADR-048 §Implementation Sprint 2 ("PR monorepo : repo-map.md auto
     -generator + drift CI")
+  - ADR-048 follow-up (vault) : narrow drift detector to stable metrics ;
+    FS-derivable counts owned by registry projection (ADR-058)
   - REG-002 (governance-vault) : repo-map.md state prose-only -> enforced
-    (post-merge cette PR)
 """
 
 from __future__ import annotations
@@ -44,7 +58,7 @@ def parse_repo_map_claims(text: str) -> dict[str, int]:
     Si la section est absente, retourne dict vide -> finding `error`
     (no-claims-found, fix #5 : detector casse, pas un simple drift).
 
-    Expected pattern within section : `| Backend modules | 40 |` etc.
+    Expected pattern within section : `| Shared packages | 12 |` etc.
     """
     claims: dict[str, int] = {}
     # Section anchor : depuis "## Statistiques" jusqu'au prochain H2 ou EOF
@@ -61,11 +75,11 @@ def parse_repo_map_claims(text: str) -> dict[str, int]:
     for m in re.finditer(r"\|\s*([A-Z][\w\s]+?)\s*\|\s*(\d+)(\+|k\+)?\s*\|", section_body):
         metric = m.group(1).strip()
         value = int(m.group(2))
-        # Only keep the "structurel" metrics (not "Produits DB 4M+" / "Utilisateurs 59k+" / "Categories 9k+"
-        # which are external/data-driven, not filesystem-driven)
+        # Only keep the STABLE structural metrics. Excluded:
+        #  - data-driven ("Produits DB 4M+" / "Utilisateurs 59k+" / "Categories 9k+")
+        #  - FS-derivable churn ("Backend modules" / "Frontend routes") -> owned by
+        #    the registry projection (ADR-058), retired here (see module docstring).
         if metric in {
-            "Backend modules",
-            "Frontend routes",
             "Shared packages",
             "Docker configs",
         }:
@@ -122,27 +136,10 @@ def count_filesystem_reality() -> tuple[dict[str, int], list[dict]]:
     reality: dict[str, int] = {}
     findings: list[dict] = []
 
-    # Backend modules : dirs in backend/src/modules/
-    _count_dir_entries(
-        "Backend modules",
-        REPO_ROOT / "backend" / "src" / "modules",
-        lambda p: p.is_dir(),
-        findings,
-        reality,
-    )
-
-    # Frontend routes : .tsx + .ts files in frontend/app/routes/ (top-level only)
-    # NOTE: cette metrique compte les fichiers top-level, pas les routes Remix
-    # effectives (les flat-routes peuvent etre dans des sous-dossiers via
-    # convention `routes/_layout/...`). C'est un proxy, le canon `repo-map.md`
-    # doit clarifier le perimetre exact (cf. PR review Suggestion).
-    _count_dir_entries(
-        "Frontend routes",
-        REPO_ROOT / "frontend" / "app" / "routes",
-        lambda p: p.is_file() and p.suffix in {".tsx", ".ts"},
-        findings,
-        reality,
-    )
+    # Perimetre narrowed (ADR-048 follow-up 2026-06-20) : "Backend modules" et
+    # "Frontend routes" RETIRES (churn permanent + duplication du registry
+    # ADR-058 + proxy trompeur pour les routes). Voir docstring du module.
+    # Seules les metriques structurelles STABLES restent suivies ci-dessous.
 
     # Shared packages : dirs in packages/
     _count_dir_entries(

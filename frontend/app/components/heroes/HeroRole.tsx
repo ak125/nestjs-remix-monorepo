@@ -61,7 +61,7 @@ export function HeroRole({
       <div className="relative container mx-auto px-4">
         <div className="max-w-4xl flex items-start gap-6">
           {/* Illustration ou icone */}
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             {illustration ? (
               <img
                 src={illustration.src}

@@ -2,22 +2,20 @@
  * Page Création d'Avis Client
  * Formulaire pour soumettre un nouvel avis client
  */
+import { Star, ArrowLeft, Send } from "lucide-react";
+import { useState } from "react";
 import {
-  json,
   redirect,
   type ActionFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import {
+  data,
   Form,
   Link,
   useActionData,
   useNavigation,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { Star, ArrowLeft, Send } from "lucide-react";
-import { useState } from "react";
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Alert } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
@@ -85,7 +83,7 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   if (Object.keys(errors).length > 0) {
-    return json<ActionData>({ errors }, { status: 400 });
+    return data({ errors }, { status: 400 });
   }
 
   try {
@@ -93,14 +91,10 @@ export async function action({ request }: ActionFunctionArgs) {
     return redirect(`/reviews?created=true`);
   } catch (error) {
     logger.error("Erreur lors de la création de l'avis:", error);
-    return json<ActionData>(
-      {
-        errors: {
-          general: "Erreur lors de la création de l'avis. Veuillez réessayer.",
-        },
-      },
-      { status: 500 },
-    );
+    const generalError: ActionData["errors"] = {
+      general: "Erreur lors de la création de l'avis. Veuillez réessayer.",
+    };
+    return data({ errors: generalError }, { status: 500 });
   }
 }
 

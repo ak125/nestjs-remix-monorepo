@@ -3,8 +3,8 @@
  * Displays cross-linked related articles with thumbnails, views, and dates.
  */
 
-import { Link } from "@remix-run/react";
 import { Eye, Calendar } from "lucide-react";
+import { Link } from "react-router";
 import { Card } from "~/components/ui/card";
 
 interface RelatedArticle {
@@ -51,7 +51,7 @@ export function RelatedArticlesSidebar({
                     <img
                       src={related.featuredImage}
                       alt={related.title}
-                      className="w-20 h-16 object-cover rounded-md flex-shrink-0 border-2 border-gray-200 group-hover:scale-105 transition-transform"
+                      className="w-20 h-16 object-cover rounded-md shrink-0 border-2 border-gray-200 group-hover:scale-105 transition-transform"
                       loading="lazy"
                       width="80"
                       height="64"
@@ -60,13 +60,13 @@ export function RelatedArticlesSidebar({
                     <img
                       src={`/upload/blog/guide/mini/${related.wall}`}
                       alt={related.title}
-                      className="w-20 h-16 object-cover rounded-md flex-shrink-0 border-2 border-gray-200 group-hover:scale-105 transition-transform"
+                      className="w-20 h-16 object-cover rounded-md shrink-0 border-2 border-gray-200 group-hover:scale-105 transition-transform"
                       loading="lazy"
                       width="80"
                       height="64"
                     />
                   ) : (
-                    <div className="w-20 h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-md flex-shrink-0 flex items-center justify-center border-2 border-gray-200">
+                    <div className="w-20 h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-md shrink-0 flex items-center justify-center border-2 border-gray-200">
                       <span className="text-xl text-blue-400">
                         <Eye className="w-5 h-5" />
                       </span>

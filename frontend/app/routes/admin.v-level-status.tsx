@@ -9,12 +9,6 @@
  */
 
 import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, useRevalidator } from "@remix-run/react";
-import {
   BarChart3,
   RefreshCw,
   AlertCircle,
@@ -23,6 +17,12 @@ import {
   TrendingUp,
   Layers,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  useRevalidator,
+} from "react-router";
 
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -80,24 +80,24 @@ export async function loader({ request }: LoaderFunctionArgs) {
     });
 
     if (!response.ok) {
-      return json({
+      return {
         stats: null,
         error: "Impossible de charger les statistiques V-Level",
-      });
+      };
     }
 
     const data = await response.json();
 
-    return json({
+    return {
       stats: data.data as VLevelStats,
       error: null,
-    });
+    };
   } catch (error) {
     logger.error("Error fetching V-Level stats:", error);
-    return json({
+    return {
       stats: null,
       error: "Erreur de connexion au serveur",
-    });
+    };
   }
 }
 

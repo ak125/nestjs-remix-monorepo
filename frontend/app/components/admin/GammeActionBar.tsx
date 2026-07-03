@@ -178,7 +178,7 @@ export function GammeActionBar({
           <Button
             size="sm"
             variant="outline"
-            className="gap-1.5 h-7 text-xs flex-shrink-0"
+            className="gap-1.5 h-7 text-xs shrink-0"
             onClick={() => handleCopy(contentResult.command!)}
           >
             <ClipboardCopy className="h-3 w-3" />

@@ -1,24 +1,29 @@
 id: no-anthropic-direct-import-in-scripts
 language: python
-# Phase 1 PR-B (ADR-046 § Layer L4 GENERATORS) :
-# - Aucun script `scripts/seo/` ou `scripts/rag/` ne doit importer Anthropic directement.
-# - Le passage canon est via le skill `/content-gen` (Claude Code) ou via les
-#   AnthropicProvider du backend (`backend/src/modules/ai-content/providers/anthropic.provider.ts`).
-# - Évite la prolifération d'appels API Anthropic non gouvernés (rate limit, cost,
-#   audit trail) — voir mémoire feedback_no_groq.md "Anthropic uniquement via
-#   provider canon".
+# ADR-046 § Layer L4 GENERATORS + ADR-031 (RAG = chatbot only) :
+# - Aucun script `scripts/seo/` ou `scripts/rag/` ne doit appeler Anthropic directement —
+#   ni par import SDK (`import anthropic`), ni par HTTP direct (`api.anthropic.com`).
+#   Appels non gouvernés (rate limit, coût, audit trail) + hors chaîne contenu canonique.
+# - Le CONTENU ne se génère pas depuis un script qui appelle Claude : la vérité contenu
+#   vient du WIKI (chaîne RAW → WIKI → projection, ADR-059 ; méthode = skill `/seo-content-loop`).
+#   Le RAG n'est PAS une source de contenu (ADR-031/046). Le skill `/content-gen` est
+#   NEUTRALISÉ (PR-C #1205, RAG-as-source) — ne PAS le recommander.
+# - Besoin Anthropic légitime NON-contenu : passer par le provider gouverné
+#   `backend/src/modules/ai-content/providers/anthropic.provider.ts` (rate-limit + observabilité).
 severity: error
 message: |
-  Import direct du SDK Anthropic interdit dans scripts/seo/ et scripts/rag/.
+  Appel direct à Anthropic interdit dans scripts/seo/ et scripts/rag/
+  (import SDK `anthropic` OU HTTP vers api.anthropic.com).
 
-  Pour générer du contenu via Claude :
-    - Préférer le skill Claude Code `/content-gen --r{N}` (pas d'API key, pas de coût)
-    - Ou passer par AnthropicProvider canon (backend/src/modules/ai-content/providers/anthropic.provider.ts)
-      avec gouvernance rate-limit + observabilité Sentry
+  Le CONTENU ne se génère pas via un script qui appelle Claude :
+    - Vérité contenu = WIKI (chaîne RAW → WIKI → projection, ADR-059).
+    - Méthode canonique = skill Claude Code `/seo-content-loop`.
+    - RAG ≠ source de contenu (ADR-031/046). `/content-gen` est NEUTRALISÉ (PR-C #1205).
 
-  Si vous avez un cas légitime (POC, debugging) :
-    - Rangez le script hors `scripts/seo/` et `scripts/rag/`
-    - Ou demandez ADR fils (cf. ADR-046 § Layer L4)
+  Besoin Anthropic légitime NON-contenu (ex. outil interne gouverné) :
+    - Passer par AnthropicProvider canon
+      (backend/src/modules/ai-content/providers/anthropic.provider.ts) — rate-limit + observabilité.
+    - Ou ranger le script hors scripts/seo/ et scripts/rag/ (+ ADR fils si besoin, ADR-046 §L4).
 files:
   - scripts/seo/**/*.py
   - scripts/rag/**/*.py
@@ -30,3 +35,9 @@ rule:
     - pattern: 'import anthropic'
     - pattern: 'from anthropic import $$$'
     - pattern: 'from anthropic.$$$ import $$$'
+    # Gap A (2026-07-02, audit F0-a §12bis) : ferme l'évasion par HTTP direct —
+    # `generate-content-r1.py` appelait api.anthropic.com sans importer le SDK.
+    # Ciblé sur les string-literals pour ne pas flagger un commentaire descriptif.
+    - all:
+        - kind: string
+        - regex: 'api\.anthropic\.com'

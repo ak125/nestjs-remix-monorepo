@@ -185,42 +185,40 @@ export type R1MediaSlots = z.infer<typeof R1MediaSlotsSchema>;
 
 // ── PageContractR1 (top-level) ───────────────────────────
 
-export const PageContractR1Schema = z
-  .object({
-    page_role: z.literal('R1_ROUTER' satisfies PageRole),
-    primary_intent: z.string().min(20).max(220),
-    allowed_subintents: z.array(AllowedSubintent).min(3).max(6),
-    forbidden_topics: z.array(z.string()).min(12).max(24),
-    allowed_lexicon: z.array(z.string()).min(12).max(16),
-    forbidden_lexicon: z.array(z.string()).min(25).max(35),
+const PageContractR1BaseSchema = z.object({
+  page_role: z.literal('R1_ROUTER' satisfies PageRole),
+  primary_intent: z.string().min(20).max(220),
+  allowed_subintents: z.array(AllowedSubintent).min(3).max(6),
+  forbidden_topics: z.array(z.string()).min(12).max(24),
+  allowed_lexicon: z.array(z.string()).min(12).max(16),
+  forbidden_lexicon: z.array(z.string()).min(25).max(35),
 
-    // P1 contract fields (B3)
-    confusion_pairs: z.array(R1ConfusionPairSchema).min(0).max(10),
-    writing_constraints: R1WritingConstraintsSchema,
+  // P1 contract fields (B3)
+  confusion_pairs: z.array(R1ConfusionPairSchema).min(0).max(10),
+  writing_constraints: R1WritingConstraintsSchema,
 
-    // E-E-A-T tracable nuggets (B1)
-    interest_nuggets: z.array(R1InterestNuggetSchema).length(3),
+  // E-E-A-T tracable nuggets (B1)
+  interest_nuggets: z.array(R1InterestNuggetSchema).length(3),
 
-    table_rows_library: z.array(R1TableRowSchema).length(8),
-    safe_table_plan: z.array(R1TableRowSchema).min(4).max(6),
+  table_rows_library: z.array(R1TableRowSchema).length(8),
+  safe_table_plan: z.array(R1TableRowSchema).min(4).max(6),
 
-    visual_plan: R1VisualPlanSchema,
-    content_contract: R1ContentContractSchema,
-    hard_rules: R1HardRulesSchema,
-    media_slots: R1MediaSlotsSchema,
+  visual_plan: R1VisualPlanSchema,
+  content_contract: R1ContentContractSchema,
+  hard_rules: R1HardRulesSchema,
+  media_slots: R1MediaSlotsSchema,
 
-    // P3 output (C2)
-    hero_cta_helper_line: z.string().min(10).max(180),
-  })
-  .superRefine((data, ctx) => {
+  // P3 output (C2)
+  hero_cta_helper_line: z.string().min(10).max(180),
+});
+
+export const PageContractR1Schema = PageContractR1BaseSchema.superRefine(
+  (data, ctx) => {
     // C1: Si exchange_standard dans subintents → minItems 4
     if (data.allowed_subintents.includes('exchange_standard')) {
       if (data.allowed_subintents.length < 4) {
         ctx.addIssue({
-          code: z.ZodIssueCode.too_small,
-          minimum: 4,
-          type: 'array',
-          inclusive: true,
+          code: z.ZodIssueCode.custom,
           message:
             'allowed_subintents requires at least 4 items when exchange_standard is included',
           path: ['allowed_subintents'],
@@ -241,12 +239,12 @@ export const PageContractR1Schema = z
         });
       }
     }
-  });
+  },
+);
 
 export type PageContractR1 = z.infer<typeof PageContractR1Schema>;
 
 // ── Partial schema (intermediate pipeline phases) ────────
 
-export const PageContractR1PartialSchema =
-  PageContractR1Schema.innerType().partial();
+export const PageContractR1PartialSchema = PageContractR1BaseSchema.partial();
 export type PageContractR1Partial = z.infer<typeof PageContractR1PartialSchema>;

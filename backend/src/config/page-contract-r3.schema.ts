@@ -176,10 +176,7 @@ export const R3SectionTermsMapSchema = z
       const min = SECTION_TERM_MINIMUMS[sectionId] ?? 1;
       if ((plan.include_terms?.length ?? 0) < min) {
         ctx.addIssue({
-          code: z.ZodIssueCode.too_small,
-          minimum: min,
-          type: 'array',
-          inclusive: true,
+          code: z.ZodIssueCode.custom,
           message: `${sectionId}: include_terms requires at least ${min} items`,
           path: [sectionId, 'include_terms'],
         });

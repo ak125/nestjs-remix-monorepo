@@ -3,9 +3,9 @@
  * Design minimaliste et efficace en espace
  */
 
-import { Link } from "@remix-run/react";
 import { type LucideIcon } from "lucide-react";
 import * as React from "react";
+import { Link } from "react-router";
 
 interface Stat {
   icon: LucideIcon;
@@ -113,7 +113,7 @@ export function CompactBlogHeader({
             <div className="flex-1 flex items-center gap-3 md:gap-4">
               {/* Logo */}
               {logo && (
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   <div className="w-20 h-20 md:w-24 md:h-24 bg-white rounded-2xl shadow-xl p-1.5 md:p-2 flex items-center justify-center hover:scale-105 hover:rotate-2 transition-all duration-300">
                     <img
                       src={logo}
@@ -122,7 +122,7 @@ export function CompactBlogHeader({
                       onError={(e) => {
                         // Masquer le conteneur si le logo 404
                         const container =
-                          e.currentTarget.closest("div.flex-shrink-0");
+                          e.currentTarget.closest("div.shrink-0");
                         if (container instanceof HTMLElement) {
                           container.style.display = "none";
                         }
@@ -153,7 +153,7 @@ export function CompactBlogHeader({
                   return (
                     <div
                       key={index}
-                      className="bg-white/20 backdrop-blur-sm rounded-full px-3 md:px-4 py-1.5 md:py-2 flex items-center gap-2 hover:bg-white/30 transition-all duration-200 hover:scale-105"
+                      className="bg-white/20 backdrop-blur-xs rounded-full px-3 md:px-4 py-1.5 md:py-2 flex items-center gap-2 hover:bg-white/30 transition-all duration-200 hover:scale-105"
                       title={stat.label}
                     >
                       <Icon className="w-4 h-4" />

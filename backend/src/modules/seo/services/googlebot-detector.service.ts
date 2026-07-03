@@ -246,10 +246,15 @@ export class GooglebotDetectorService {
         .gte('crawled_at', lastWeek.toISOString());
 
       // Unique URLs last 24h
-      const { data: uniqueData } = await this.supabase.rpc(
+      const { data: uniqueData, error: uniqueError } = await this.supabase.rpc(
         'count_distinct_crawled_urls',
         { since: yesterday.toISOString() },
       );
+      if (uniqueError) {
+        this.logger.warn(
+          `RPC count_distinct_crawled_urls unavailable → uniqueUrls24h=0: ${uniqueError.message}`,
+        );
+      }
 
       // Average response time
       const { data: avgData } = await this.supabase

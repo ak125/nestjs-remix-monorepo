@@ -1,13 +1,9 @@
 // app/routes/admin.suppliers._index.tsx
 // Liste des equipementiers — données via useOutletContext (pas de loader propre)
 
-import {
-  useOutletContext,
-  useSearchParams,
-  useNavigate,
-} from "@remix-run/react";
 import { Search, X, Trophy } from "lucide-react";
 import { useState } from "react";
+import { useOutletContext, useSearchParams, useNavigate } from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 

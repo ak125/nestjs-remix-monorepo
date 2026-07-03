@@ -1,16 +1,4 @@
 import {
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  json,
-  type MetaFunction,
-} from "@remix-run/node";
-import {
-  useLoaderData,
-  useNavigate,
-  Form,
-  useNavigation,
-} from "@remix-run/react";
-import {
   ArrowLeft,
   DollarSign,
   CreditCard,
@@ -25,6 +13,16 @@ import {
   Download,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  type MetaFunction,
+  data,
+  useLoaderData,
+  useNavigate,
+  Form,
+  useNavigation,
+} from "react-router";
 import { Button } from "~/components/ui/button";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
@@ -35,7 +33,7 @@ import {
 } from "../services/payment-admin.server";
 import { type Payment, PaymentStatus } from "../types/payment";
 
-export const meta: MetaFunction<typeof loader> = ({ data }) =>
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) =>
   createNoIndexMeta(
     data?.payment?.id
       ? `Paiement #${data.payment.id.slice(0, 8)} - Admin`
@@ -56,10 +54,10 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
 
   try {
     const payment = await getPaymentById(paymentId);
-    return json<LoaderData>({ payment });
+    return { payment };
   } catch (error) {
     logger.error("❌ Error loading payment:", error);
-    return json<LoaderData>({ payment: null });
+    return { payment: null };
   }
 }
 
@@ -77,13 +75,13 @@ export async function action({ request, context }: ActionFunctionArgs) {
 
       await processRefund(paymentId, amount, reason);
 
-      return json({
+      return {
         success: true,
         message: "Remboursement traité avec succès",
-      });
+      };
     }
 
-    return json(
+    return data(
       {
         success: false,
         message: "Action non reconnue",
@@ -92,7 +90,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
     );
   } catch (error) {
     logger.error("❌ Error processing action:", error);
-    return json(
+    return data(
       {
         success: false,
         message: "Erreur lors du traitement de l'action",
@@ -467,7 +465,7 @@ export default function AdminPaymentDetail() {
 
       {/* Modal de remboursement */}
       {showRefundModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div className="fixed inset-0 bg-gray-600/50 overflow-y-auto h-full w-full z-50">
           <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <div className="mt-3 text-center">
               <h3 className="text-lg font-medium text-gray-900 mb-4">

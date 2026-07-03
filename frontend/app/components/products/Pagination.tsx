@@ -8,9 +8,9 @@
  * - Informations "X - Y de Z résultats"
  */
 
-import { Link, useSearchParams } from "@remix-run/react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { memo } from "react";
+import { Link, useSearchParams } from "react-router";
 import { Button } from "../ui/button";
 import {
   Select,

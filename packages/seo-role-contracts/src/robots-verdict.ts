@@ -56,6 +56,8 @@ export enum ReasonCode {
   FAMILIES_BELOW_THRESHOLD = "FAMILIES_BELOW_THRESHOLD",
   /** availableGammes < threshold (R1/R8). */
   GAMMES_BELOW_THRESHOLD = "GAMMES_BELOW_THRESHOLD",
+  /** Soft-404 — page sans contenu réel (caller flag `soft404`). ADR-095 §1. */
+  SOFT_404_EMPTY_CONTENT = "SOFT_404_EMPTY_CONTENT",
   /** Fingerprint match (PR-9 SEO) — page duplicate variant. */
   FINGERPRINT_DUPLICATE = "FINGERPRINT_DUPLICATE",
   /** TecDoc release gate ouverte ([60000, 83456]) — noindex jusqu'à validation. */
@@ -108,6 +110,12 @@ export const IndexabilityInputSchema = z.object({
   availableFamilies: z.number().int().nonnegative().optional(),
   availableGammes: z.number().int().nonnegative().optional(),
   r2Conditions: R2IndexabilityConditionsSchema.optional(),
+  /**
+   * Soft-404 — caller-computed proxy (`get_soft_404_alternatives` : vehicles+gammes+
+   * related vides ET availableGammes=0). undefined/false = check inactif sur cette
+   * surface. Le composer ne fait que consommer le booléen (zéro I/O). ADR-095 §1.
+   */
+  soft404: z.boolean().optional(),
   /** PR-9 fingerprint match — undefined = check inactif sur cette surface. */
   fingerprintMatch: z.boolean().optional(),
   /** Caller-computed (ex. R8 : `type_id >= 60000 && type_id <= 83456`). */

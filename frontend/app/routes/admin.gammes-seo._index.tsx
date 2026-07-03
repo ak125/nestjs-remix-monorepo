@@ -8,18 +8,6 @@
  */
 
 import {
-  json,
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import {
-  useLoaderData,
-  useNavigation,
-  useSearchParams,
-  Link,
-} from "@remix-run/react";
-import {
   AlertTriangle,
   ArrowUpDown,
   CheckCircle,
@@ -39,6 +27,15 @@ import {
   XCircle,
 } from "lucide-react";
 import React, { useState, useCallback, useEffect } from "react";
+import {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  useNavigation,
+  useSearchParams,
+  Link,
+} from "react-router";
 import { toast } from "sonner";
 
 import { Alert } from "~/components/ui/alert";
@@ -222,7 +219,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const thresholdsData = thresholdsRes.ok ? await thresholdsRes.json() : null;
     const auditData = auditRes.ok ? await auditRes.json() : null;
 
-    return json({
+    return {
       gammes: gammesData?.data || [],
       total: gammesData?.total || 0,
       page: gammesData?.page || 1,
@@ -246,10 +243,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
         sortOrder,
       },
       error: null,
-    });
+    };
   } catch (error) {
     logger.error("[Admin Gammes SEO] Error:", error);
-    return json({
+    return {
       gammes: [],
       total: 0,
       page: 1,
@@ -273,7 +270,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         sortOrder: "desc",
       },
       error: "Erreur chargement données",
-    });
+    };
   }
 }
 
@@ -304,7 +301,7 @@ export async function action({ request }: ActionFunctionArgs) {
         );
 
         const result = await response.json();
-        return json({ success: result.success, message: result.message });
+        return { success: result.success, message: result.message };
       }
 
       case "batch-action": {
@@ -324,11 +321,11 @@ export async function action({ request }: ActionFunctionArgs) {
         );
 
         const result = await response.json();
-        return json({
+        return {
           success: result.success,
           message: result.message,
           updated: result.updated,
-        });
+        };
       }
 
       case "regenerate-sitemap": {
@@ -345,26 +342,26 @@ export async function action({ request }: ActionFunctionArgs) {
 
         const result = await response.json();
         if (result.success) {
-          return json({
+          return {
             success: true,
             message: `Sitemap régénéré: ${result.data?.totalUrls || 0} URLs dans ${result.data?.files?.length || 0} fichiers`,
             sitemapData: result.data,
-          });
+          };
         }
-        return json({
+        return {
           success: false,
           message: result.message || "Erreur lors de la régénération",
-        });
+        };
       }
 
       default:
-        return json({ success: false, message: "Action inconnue" });
+        return { success: false, message: "Action inconnue" };
     }
   } catch (error) {
-    return json({
+    return {
       success: false,
       message: error instanceof Error ? error.message : "Erreur",
-    });
+    };
   }
 }
 
@@ -734,9 +731,7 @@ export default function AdminGammesSeo() {
           <Button
             variant="outline"
             onClick={() => setShowThresholdsPanel(!showThresholdsPanel)}
-            className={
-              showThresholdsPanel ? "bg-muted border-indigo-400" : ""
-            }
+            className={showThresholdsPanel ? "bg-muted border-indigo-400" : ""}
           >
             <Settings className="h-4 w-4 mr-2" />
             Seuils
@@ -761,7 +756,6 @@ export default function AdminGammesSeo() {
           </a>
         </div>
       </div>
-
       {/* Panel Configuration des Seuils */}
       {showThresholdsPanel && (
         <Card className="bg-gradient-to-r to-blue-50">
@@ -913,7 +907,6 @@ export default function AdminGammesSeo() {
           </CardContent>
         </Card>
       )}
-
       {/* Panel Historique des Actions */}
       {showAuditPanel && (
         <Card className="bg-gradient-to-r to-pink-50">
@@ -958,7 +951,7 @@ export default function AdminGammesSeo() {
                         </td>
                         <td className="px-3 py-2">
                           <Badge
-                            className={`text-xs ${ entry.action_type.includes("THRESHOLD") ? "bg-muted text-foreground" : entry.action_type.includes("PROMOTE") ? "bg-green-100 text-green-700" : entry.action_type.includes("DEMOTE") ? "bg-red-100 text-red-700" : entry.action_type.includes("G1") ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-green-900" }`}
+                            className={`text-xs ${entry.action_type.includes("THRESHOLD") ? "bg-muted text-foreground" : entry.action_type.includes("PROMOTE") ? "bg-green-100 text-green-700" : entry.action_type.includes("DEMOTE") ? "bg-red-100 text-red-700" : entry.action_type.includes("G1") ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-green-900"}`}
                           >
                             {entry.action_type.replace(/_/g, " ")}
                           </Badge>
@@ -975,7 +968,6 @@ export default function AdminGammesSeo() {
           </CardContent>
         </Card>
       )}
-
       {/* Instructions / Légende - EN HAUT */}
       <Card className="bg-slate-50">
         <CardHeader className="py-3">
@@ -1357,7 +1349,6 @@ export default function AdminGammesSeo() {
           </div>
         </CardContent>
       </Card>
-
       {/* KPIs */}
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -1437,7 +1428,6 @@ export default function AdminGammesSeo() {
           </Card>
         </div>
       )}
-
       {/* Sitemap Regeneration Card */}
       <Card className="bg-blue-50">
         <CardHeader className="pb-2">
@@ -1484,7 +1474,6 @@ export default function AdminGammesSeo() {
           )}
         </CardContent>
       </Card>
-
       {/* Smart Actions KPIs - Click to filter */}
       <Card className="bg-gradient-to-r">
         <CardHeader className="pb-2">
@@ -1582,7 +1571,6 @@ export default function AdminGammesSeo() {
           </div>
         </CardContent>
       </Card>
-
       {/* Filters */}
       <Card>
         <CardHeader>
@@ -1733,7 +1721,6 @@ export default function AdminGammesSeo() {
           </div>
         </CardContent>
       </Card>
-
       {/* Batch Actions */}
       {selectedIds.length > 0 && (
         <Card className="bg-blue-50">
@@ -1795,7 +1782,6 @@ export default function AdminGammesSeo() {
           </CardContent>
         </Card>
       )}
-
       {/* Table */}
       <Card>
         <CardHeader>
@@ -1901,7 +1887,7 @@ export default function AdminGammesSeo() {
                       )}
                       {/* Ligne de gamme - Highlighting basé sur Execution status */}
                       <tr
-                        className={`hover:bg-gray-100 transition-colors ${ gamme.pg_top === "1" ? "bg-emerald-50 border-l-emerald-500" : gamme.execution_status === "PASS" ? "bg-green-50 border-l-green-400" : gamme.execution_status === "WARN" ? "bg-amber-50 border-l-amber-400" : gamme.execution_status === "FAIL" ? "bg-red-50 border-l-red-400" : "" }`}
+                        className={`hover:bg-gray-100 transition-colors ${gamme.pg_top === "1" ? "bg-emerald-50 border-l-emerald-500" : gamme.execution_status === "PASS" ? "bg-green-50 border-l-green-400" : gamme.execution_status === "WARN" ? "bg-amber-50 border-l-amber-400" : gamme.execution_status === "FAIL" ? "bg-red-50 border-l-red-400" : ""}`}
                       >
                         <td className="px-2 py-3">
                           <Checkbox

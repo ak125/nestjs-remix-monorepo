@@ -1,6 +1,6 @@
-import { Link } from '@remix-run/react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useEffect } from 'react';
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect } from "react";
+import { Link } from "react-router";
 
 interface ArticlePreview {
   id: string;
@@ -19,34 +19,41 @@ interface ArticleNavigationProps {
 
 /**
  * 🔀 ArticleNavigation - Navigation entre articles précédent/suivant
- * 
+ *
  * Features:
  * - Preview cards avec titre, excerpt, image
  * - Navigation clavier (← →)
  * - Design moderne avec gradients
  * - Responsive mobile
- * 
+ *
  * @example
  * <ArticleNavigation previous={prevArticle} next={nextArticle} />
  */
-export function ArticleNavigation({ previous, next, className = '' }: ArticleNavigationProps) {
+export function ArticleNavigation({
+  previous,
+  next,
+  className = "",
+}: ArticleNavigationProps) {
   // 🎹 Navigation clavier
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Ne pas intercepter si on est dans un input
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      ) {
         return;
       }
 
-      if (e.key === 'ArrowLeft' && previous) {
+      if (e.key === "ArrowLeft" && previous) {
         window.location.href = `/blog/${previous.slug}`;
-      } else if (e.key === 'ArrowRight' && next) {
+      } else if (e.key === "ArrowRight" && next) {
         window.location.href = `/blog/${next.slug}`;
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [previous, next]);
 
   // Si ni previous ni next, ne rien afficher
@@ -55,7 +62,10 @@ export function ArticleNavigation({ previous, next, className = '' }: ArticleNav
   }
 
   return (
-    <nav className={`mt-12 mb-8 ${className}`} aria-label="Navigation entre articles">
+    <nav
+      className={`mt-12 mb-8 ${className}`}
+      aria-label="Navigation entre articles"
+    >
       <div className="border-t border-gray-200 pt-8">
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
           Continuer la lecture
@@ -97,10 +107,10 @@ export function ArticleNavigation({ previous, next, className = '' }: ArticleNav
 
               {/* Date */}
               <p className="text-xs text-gray-500 mt-auto">
-                {new Date(previous.publishedAt).toLocaleDateString('fr-FR', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
+                {new Date(previous.publishedAt).toLocaleDateString("fr-FR", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
                 })}
               </p>
 
@@ -147,10 +157,10 @@ export function ArticleNavigation({ previous, next, className = '' }: ArticleNav
 
               {/* Date */}
               <p className="text-xs text-gray-500 mt-auto text-right">
-                {new Date(next.publishedAt).toLocaleDateString('fr-FR', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
+                {new Date(next.publishedAt).toLocaleDateString("fr-FR", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
                 })}
               </p>
 
@@ -162,10 +172,14 @@ export function ArticleNavigation({ previous, next, className = '' }: ArticleNav
 
         {/* 🎹 Raccourcis clavier hint */}
         <div className="mt-4 text-center text-xs text-gray-400">
-          <kbd className="px-2 py-1 bg-gray-100 rounded border border-gray-300">←</kbd>
-          {' '}et{' '}
-          <kbd className="px-2 py-1 bg-gray-100 rounded border border-gray-300">→</kbd>
-          {' '}pour naviguer
+          <kbd className="px-2 py-1 bg-gray-100 rounded border border-gray-300">
+            ←
+          </kbd>{" "}
+          et{" "}
+          <kbd className="px-2 py-1 bg-gray-100 rounded border border-gray-300">
+            →
+          </kbd>{" "}
+          pour naviguer
         </div>
       </div>
     </nav>

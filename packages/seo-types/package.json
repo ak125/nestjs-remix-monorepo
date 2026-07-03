@@ -60,6 +60,16 @@
       "types": "./dist/seo-variations.d.ts",
       "import": "./dist/seo-variations.js",
       "require": "./dist/seo-variations.js"
+    },
+    "./build-r2-h1": {
+      "types": "./dist/build-r2-h1.d.ts",
+      "import": "./dist/build-r2-h1.js",
+      "require": "./dist/build-r2-h1.js"
+    },
+    "./build-r8-h1": {
+      "types": "./dist/build-r8-h1.d.ts",
+      "import": "./dist/build-r8-h1.js",
+      "require": "./dist/build-r8-h1.js"
     }
   },
   "scripts": {
@@ -70,11 +80,11 @@
     "test": "tsx --test src/**/*.test.ts"
   },
   "dependencies": {
-    "zod": "^3.25.76"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
+    "@types/node": "^24",
     "tsx": "^4.22.4",
-    "typescript": "^5.9.3"
+    "typescript": "~6.0.3"
   }
 }

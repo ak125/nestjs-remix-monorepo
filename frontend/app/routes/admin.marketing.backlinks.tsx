@@ -1,6 +1,9 @@
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData, useSearchParams } from "@remix-run/react";
 import { Link2, ExternalLink, TrendingUp } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  useLoaderData,
+  useSearchParams,
+} from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
@@ -39,36 +42,36 @@ export async function loader({ request }: LoaderFunctionArgs) {
     ]);
 
     if (!backlinksRes.ok || !statsRes.ok) {
-      return json({
+      return {
         backlinks: [],
         stats: null,
         total: 0,
         page: 1,
         totalPages: 0,
         error: "Failed to load",
-      });
+      };
     }
 
     const backlinksData = await backlinksRes.json();
     const statsData = await statsRes.json();
 
-    return json({
+    return {
       backlinks: backlinksData.data || [],
       stats: statsData.data,
       total: backlinksData.total || 0,
       page: parseInt(page),
       totalPages: backlinksData.totalPages || 0,
       error: null,
-    });
+    };
   } catch (e: any) {
-    return json({
+    return {
       backlinks: [],
       stats: null,
       total: 0,
       page: 1,
       totalPages: 0,
       error: e.message,
-    });
+    };
   }
 }
 

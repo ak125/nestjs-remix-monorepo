@@ -5,14 +5,15 @@
  * Route: /commercial/vehicles/models/$modelId/types
  */
 
+import { ArrowLeft, Zap, Fuel, Settings, Calendar } from "lucide-react";
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
   redirect,
-} from "@remix-run/node";
-import { useLoaderData, Link, useParams } from "@remix-run/react";
-import { ArrowLeft, Zap, Fuel, Settings, Calendar } from "lucide-react";
+  useLoaderData,
+  Link,
+  useParams,
+} from "react-router";
 import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { type VehicleType } from "~/types/vehicle.types";
@@ -120,14 +121,14 @@ export async function loader({ context, params }: LoaderFunctionArgs) {
       }
     }
 
-    return json({ types, model } as LoaderData);
+    return { types, model } as LoaderData;
   } catch (error) {
     logger.error("Erreur chargement types:", error);
-    return json({
+    return {
       types: [],
       model: null,
       error: "Impossible de charger les types de véhicule",
-    } as LoaderData);
+    } as LoaderData;
   }
 }
 

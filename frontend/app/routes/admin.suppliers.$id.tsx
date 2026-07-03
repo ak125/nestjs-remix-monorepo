@@ -6,12 +6,14 @@
  */
 
 import {
-  json,
   redirect,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, Link, useFetcher } from "@remix-run/react";
+  data,
+  useLoaderData,
+  Link,
+  useFetcher,
+} from "react-router";
 import { toast } from "sonner";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -19,7 +21,7 @@ import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 import { requireUser } from "../auth/unified.server";
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   const supplierName = data?.supplier?.name;
   return createNoIndexMeta(
     supplierName
@@ -89,10 +91,10 @@ export async function loader({ request, context, params }: LoaderFunctionArgs) {
 
     if (!response.ok) {
       if (response.status === 404) {
-        return json<SupplierDetailData>({
+        return {
           supplier: null,
           error: `Fournisseur avec ID ${supplierId} non trouvé`,
-        });
+        };
       }
       throw new Error(`API Error: ${response.status}`);
     }
@@ -126,14 +128,14 @@ export async function loader({ request, context, params }: LoaderFunctionArgs) {
       links: supplier_raw.links || [],
     };
 
-    return json<SupplierDetailData>({ supplier });
+    return { supplier };
   } catch (error: unknown) {
     logger.error("[SupplierDetail] Erreur:", error);
     const message = error instanceof Error ? error.message : String(error);
-    return json<SupplierDetailData>({
+    return {
       supplier: null,
       error: `Erreur lors de la récupération: ${message || "Erreur inconnue"}`,
-    });
+    };
   }
 }
 
@@ -522,7 +524,7 @@ export async function action({
         throw new Error(`Erreur API: ${response.status}`);
       }
 
-      return json({ success: true });
+      return { success: true };
     }
 
     if (intent === "delete") {
@@ -542,13 +544,10 @@ export async function action({
       return redirect("/admin/suppliers");
     }
 
-    return json({ error: "Action non reconnue" }, { status: 400 });
+    return data({ error: "Action non reconnue" }, { status: 400 });
   } catch (error: unknown) {
     logger.error("[SupplierDetail Action] Erreur:", error);
     const message = error instanceof Error ? error.message : String(error);
-    return json(
-      { error: message || "Erreur inconnue" },
-      { status: 500 },
-    );
+    return data({ error: message || "Erreur inconnue" }, { status: 500 });
   }
 }

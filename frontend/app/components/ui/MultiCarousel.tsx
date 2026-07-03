@@ -33,7 +33,7 @@ const MultiCarousel: React.FC<MultiCarouselProps> = ({
   const [isPaused, setIsPaused] = useState(false);
   
   const carouselRef = useRef<HTMLDivElement>(null);
-  const intervalRef = useRef<NodeJS.Timeout>();
+  const intervalRef = useRef<NodeJS.Timeout>(undefined);
 
   const childrenArray = React.Children.toArray(children);
   const totalItems = childrenArray.length;
@@ -170,7 +170,7 @@ const MultiCarousel: React.FC<MultiCarouselProps> = ({
           {childrenArray.map((child, index) => (
             <div
               key={index}
-              className="flex-shrink-0"
+              className="shrink-0"
               style={{ width: itemWidth }}
               role="listitem"
               aria-hidden={index < currentIndex || index >= currentIndex + itemsPerView}

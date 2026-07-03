@@ -1,4 +1,3 @@
-import { Link } from "@remix-run/react";
 import {
   Car,
   ChevronRight,
@@ -8,6 +7,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useEffect, useState, memo } from "react";
+import { Link } from "react-router";
 import { Input } from "~/components/ui/input";
 import { pluralizePieceName } from "~/lib/seo-utils";
 import { getOptimizedLogoUrl } from "~/utils/image-optimizer";
@@ -99,7 +99,7 @@ const MotorisationsSection = memo(function MotorisationsSection({
         <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             {/* Icône animée */}
-            <div className="flex-shrink-0 w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm shadow-lg">
+            <div className="shrink-0 w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-xs shadow-lg">
               <Car className="w-7 h-7 text-white" />
             </div>
 
@@ -117,7 +117,7 @@ const MotorisationsSection = memo(function MotorisationsSection({
           </div>
 
           {/* Badge avec tendance */}
-          <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2.5 rounded-full shadow-lg border border-white/20 w-fit">
+          <div className="flex items-center gap-2 bg-white/20 backdrop-blur-xs px-4 py-2.5 rounded-full shadow-lg border border-white/20 w-fit">
             <TrendingUp className="w-5 h-5 text-white" />
             <span className="text-white font-bold text-lg">
               {totalCount || motorisations.items.length}
@@ -128,7 +128,6 @@ const MotorisationsSection = memo(function MotorisationsSection({
           </div>
         </div>
       </div>
-
       {/* Grid de cartes - responsive et optimisé */}
       <div className="p-6 md:p-8 bg-gradient-to-b from-gray-50/50 to-white">
         {/* Recherche motorisation */}
@@ -170,7 +169,7 @@ const MotorisationsSection = memo(function MotorisationsSection({
               <div className="relative p-5 md:p-6">
                 <div className="flex items-start gap-4">
                   {/* Image agrandie avec effet hover */}
-                  <div className="flex-shrink-0">
+                  <div className="shrink-0">
                     <div className="relative">
                       <div
                         className={`absolute inset-0 bg-gradient-to-br ${familleColor} rounded-xl opacity-0 group-hover:opacity-20 blur-xl transition-all duration-300`}

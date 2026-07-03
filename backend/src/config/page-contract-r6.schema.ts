@@ -28,7 +28,7 @@ export const R6SectionIdSchema = z.enum(R6_SECTION_IDS);
 
 export const R6AltTextSchema = z.object({
   template: z.string().min(5).max(140),
-  variables: z.record(z.string()).optional(),
+  variables: z.record(z.string(), z.string()).optional(),
 });
 export type R6AltText = z.infer<typeof R6AltTextSchema>;
 
@@ -43,7 +43,7 @@ const r6BaseSlot = {
   caption: z
     .object({
       template: z.string().min(3).max(140),
-      variables: z.record(z.string()).optional(),
+      variables: z.record(z.string(), z.string()).optional(),
     })
     .optional(),
   loading: z.enum(['eager', 'lazy']).default('lazy'),
@@ -420,10 +420,7 @@ export const R6SectionsMapSchema = z
       const min = R6_SECTION_TERM_MINIMUMS[sectionId as R6SectionId] ?? 1;
       if ((plan.include_terms?.length ?? 0) < min) {
         ctx.addIssue({
-          code: z.ZodIssueCode.too_small,
-          minimum: min,
-          type: 'array',
-          inclusive: true,
+          code: z.ZodIssueCode.custom,
           message: `${sectionId}: include_terms requires at least ${min} items`,
           path: [sectionId, 'include_terms'],
         });

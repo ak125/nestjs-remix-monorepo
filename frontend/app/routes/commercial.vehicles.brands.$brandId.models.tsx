@@ -5,14 +5,15 @@
  * Route: /commercial/vehicles/brands/$brandId/models
  */
 
+import { ArrowLeft, Car, Settings, Search } from "lucide-react";
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
   redirect,
-} from "@remix-run/node";
-import { useLoaderData, Link, useParams } from "@remix-run/react";
-import { ArrowLeft, Car, Settings, Search } from "lucide-react";
+  useLoaderData,
+  Link,
+  useParams,
+} from "react-router";
 import { Alert } from "~/components/ui/alert";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
@@ -101,14 +102,14 @@ export async function loader({ context, params }: LoaderFunctionArgs) {
         null;
     }
 
-    return json({ models, brand } as LoaderData);
+    return { models, brand } as LoaderData;
   } catch (error) {
     logger.error("Erreur chargement modèles:", error);
-    return json({
+    return {
       models: [],
       brand: null,
       error: "Impossible de charger les modèles",
-    } as LoaderData);
+    } as LoaderData;
   }
 }
 

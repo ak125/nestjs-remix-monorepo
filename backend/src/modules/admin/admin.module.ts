@@ -29,6 +29,7 @@ import {
   SHADOW_LEDGER,
 } from './services/command-center-orchestrator/orchestrator.service';
 import { RegenArtifactShadowPlanner } from './services/command-center-orchestrator/regen-artifact.planner';
+import { RegenArtifactExecutor } from './services/command-center-orchestrator/regen-artifact.executor';
 import { PrPropositionShadowPlanner } from './services/command-center-orchestrator/pr-proposition.planner';
 import { CommandCenterExecutionLedgerService } from './services/command-center-orchestrator/execution-ledger.service';
 import { ConfigurationController } from './controllers/configuration.controller';
@@ -77,6 +78,7 @@ import {
 import { ConseilEnricherService } from './services/conseil-enricher.service'; // 🔄 R3 Conseils enricher
 import { CanonObservabilityService } from './services/canon-observability.service'; // 🛡️ Canon violation Sentry emitter
 import { PageBriefService } from './services/page-brief.service'; // 📋 Page Briefs CRUD + overlap
+import { SeoBriefService } from './services/seo-brief.service'; // 🧱 D1 — WIKI-driven evidence brief (ADR-059/090)
 import { BriefGatesService } from './services/brief-gates.service'; // 🚦 Pre-publish gates anti-cannibalisation
 import { HardGatesService } from './services/hard-gates.service'; // 🚦 Hard gates (attribution, no_guess, scope, contradiction, seo)
 import { KeywordDensityGateService } from './services/keyword-density-gate.service'; // 🚦 Gate F: keyword density check
@@ -220,6 +222,7 @@ import { SeoControlRefreshProcessor } from './processors/seo-control-refresh.pro
     CommandCenterReaderService,
     CommandCenterActionsService,
     CommandCenterOrchestratorService,
+    RegenArtifactExecutor, // Phase 2b : executor PR-based (double-gardé, inerte par défaut)
     RegenArtifactShadowPlanner, // shadow-2 ① planner regen-artifact (ADR-087)
     {
       // shadow-3 ② planner pr-proposition : réutilise le planner regen comme source
@@ -269,6 +272,7 @@ import { SeoControlRefreshProcessor } from './processors/seo-control-refresh.pro
     ConseilEnricherService, // 🔄 R3 Conseils S1-S8 enricher
     CanonObservabilityService, // 🛡️ Canon violation Sentry emitter (R3 PR-E)
     PageBriefService, // 📋 Page Briefs CRUD + overlap detection
+    SeoBriefService, // 🧱 D1 — WIKI-driven evidence brief generator (flag SEO_BRIEF_WIKI_ENABLED, OFF)
     BriefGatesService, // 🚦 Pre-publish gates anti-cannibalisation
     HardGatesService, // 🚦 Hard gates (attribution, no_guess, scope, contradiction, seo)
     KeywordDensityGateService, // 🚦 Gate F: keyword density (feature flag KEYWORD_DENSITY_GATE_ENABLED)

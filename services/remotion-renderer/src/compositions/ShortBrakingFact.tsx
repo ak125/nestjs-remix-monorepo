@@ -25,10 +25,10 @@ interface ShortBrakingFactProps {
   briefId?: string;
   videoType?: string;
   vertical?: string;
-  factText: string;
-  factValue: string;
-  factUnit: string;
-  sourceRef: string;
+  factText?: string;
+  factValue?: string;
+  factUnit?: string;
+  sourceRef?: string;
   schemaSvgId?: 'full' | 'caliper' | 'disc' | 'fluid';
   audioUrl?: string;
   brandName?: string;

@@ -1,7 +1,18 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  Optional,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHash } from 'node:crypto';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { FeatureFlagsService } from '@config/feature-flags.service';
+import {
+  SeoBriefService,
+  type BriefRole,
+  type BriefEvidenceBundle,
+} from './seo-brief.service';
 
 // ── Types ──
 
@@ -35,14 +46,81 @@ export interface CloneDetectionResult {
   isClone: boolean;
 }
 
+// ── D1 — helpers PURES (evidence-driven brief, ADR-059/086) ──
+
+/**
+ * Map un `page_role` de brief (string DB) vers un `BriefRole` composable WIKI. Retourne `null` pour
+ * R2 et tout rôle non couvert par la fabrique evidence-driven → le chemin keyword-first est conservé.
+ */
+export function toBriefRole(pageRole: string): BriefRole | null {
+  const r = (pageRole ?? '').toUpperCase();
+  if (r === 'R3' || r === 'R3_CONSEILS') return 'R3_CONSEILS';
+  if (r === 'R6' || r === 'R3_GUIDE' || r === 'R6_GUIDE_ACHAT')
+    return 'R3_GUIDE';
+  if (r === 'R8' || r === 'R8_VEHICLE') return 'R8_VEHICLE';
+  return null; // R2 + autres → jamais via WIKI ici (page transactionnelle = chemin strict dédié)
+}
+
+/** Construit des `BriefOverrides` depuis un bundle WIKI (preuves citables, jamais de texte inventé). PURE. */
+export function wikiOverridesFromBundle(
+  bundle: BriefEvidenceBundle,
+): BriefOverrides {
+  return {
+    angles_obligatoires: bundle.brief_fields.angles_obligatoires,
+    preuves: bundle.brief_fields.preuves,
+    termes_techniques: bundle.brief_fields.termes_techniques,
+  };
+}
+
 // ── Service ──
 
 @Injectable()
 export class BriefTemplateService extends SupabaseBaseService {
   protected override readonly logger = new Logger(BriefTemplateService.name);
 
-  constructor(configService: ConfigService) {
+  constructor(
+    configService: ConfigService,
+    @Optional() private readonly featureFlags?: FeatureFlagsService,
+    @Optional() private readonly seoBrief?: SeoBriefService,
+  ) {
     super(configService);
+  }
+
+  /**
+   * D1 — tente un brief evidence-driven depuis la projection WIKI. Retourne `null` (→ keyword-first)
+   * si flag OFF / rôle non composable / projection indisponible / gate substance FAIL. **Observable**
+   * (chaque dégradation est loguée, jamais de fallback silencieux).
+   */
+  private async tryComposeWikiBrief(
+    pgId: number,
+    pgAlias: string,
+    pageRole: string,
+  ): Promise<BriefEvidenceBundle | null> {
+    if (!this.featureFlags?.seoBriefWikiEnabled || !this.seoBrief) return null;
+    const role = toBriefRole(pageRole);
+    if (!role) return null;
+
+    const bundle = await this.seoBrief.composeBrief({
+      pgId,
+      pgAlias,
+      pageRole: role,
+    });
+    if (!bundle.wiki_available) {
+      this.logger.log(
+        `[D1] ${pgAlias}/${pageRole}: WIKI indisponible (${bundle.substance_gate.reasons[0] ?? 'n/a'}) → keyword-first`,
+      );
+      return null;
+    }
+    if (!bundle.substance_gate.pass) {
+      this.logger.warn(
+        `[D1] ${pgAlias}/${pageRole}: substance gate FAIL (${bundle.substance_gate.reasons.join('; ')}) → keyword-first`,
+      );
+      return null;
+    }
+    this.logger.log(
+      `[D1] ${pgAlias}/${pageRole}: brief WIKI (${bundle.proprietary_count} preuves propriétaires)`,
+    );
+    return bundle;
   }
 
   // ── Template CRUD ──
@@ -348,12 +426,22 @@ export class BriefTemplateService extends SupabaseBaseService {
       }
 
       try {
-        // Build overrides from gamme-specific data
-        const overrides = await this.buildGammeOverrides(
+        // D1 — chemin evidence-driven (flag-gated). Dégrade observable vers keyword-first si indispo/gate FAIL.
+        const wikiBundle = await this.tryComposeWikiBrief(
           gamme.pg_id,
           gamme.pg_alias,
-          gamme.pg_name,
+          pageRole,
         );
+        const useWiki = wikiBundle != null;
+
+        // Overrides : WIKI (preuves citables) si dispo + gate OK, sinon keyword-first (chemin existant inchangé).
+        const overrides = useWiki
+          ? wikiOverridesFromBundle(wikiBundle)
+          : await this.buildGammeOverrides(
+              gamme.pg_id,
+              gamme.pg_alias,
+              gamme.pg_name,
+            );
 
         const overridesHash = this.computeOverridesHash(overrides);
 
@@ -392,6 +480,17 @@ export class BriefTemplateService extends SupabaseBaseService {
             coverage_score: this.computeCoverageScore(merged),
             version: 1,
             status: 'draft',
+            // D1 provenance — colonnes additives écrites SEULEMENT en chemin wiki_evidence (flag ON +
+            // migration 20260620_d1_brief_from_wiki_evidence_columns appliquée). Chemin keyword = byte-identique.
+            ...(useWiki
+              ? {
+                  brief_source: 'wiki_evidence',
+                  substance_count: wikiBundle.proprietary_count,
+                  substance_elements: wikiBundle.substance_elements,
+                  evidence_source_mix: wikiBundle.evidence_source_mix,
+                  demand_signal: wikiBundle.demand_signal,
+                }
+              : {}),
           });
         }
 

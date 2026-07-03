@@ -5,9 +5,9 @@
  * Basé sur l'architecture optimisée existante avec améliorations
  */
 
-import { Link } from "@remix-run/react";
 import { Zap, Calendar, Fuel, Settings } from "lucide-react";
 import { memo } from "react";
+import { Link } from "react-router";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";

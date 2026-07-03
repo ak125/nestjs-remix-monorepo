@@ -9,12 +9,6 @@
  */
 
 import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, useSearchParams } from "@remix-run/react";
-import {
   Calendar,
   Clock,
   Filter,
@@ -23,6 +17,12 @@ import {
   Settings,
   User,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  useSearchParams,
+} from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
@@ -85,18 +85,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const historyData = historyRes.ok ? await historyRes.json() : null;
     const statsData = statsRes.ok ? await statsRes.json() : null;
 
-    return json({
+    return {
       history: (historyData?.data || []) as AuditEntry[],
       stats: statsData?.data as AuditStats | null,
       error: null,
-    });
+    };
   } catch (error) {
     logger.error("[SEO Audit] Loader error:", error);
-    return json({
+    return {
       history: [],
       stats: null,
       error: "Erreur connexion backend",
-    });
+    };
   }
 }
 
@@ -153,7 +153,6 @@ export default function SeoHubAudit() {
           Rafraîchir
         </Button>
       </div>
-
       {/* Stats Cards */}
       {stats && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -203,7 +202,6 @@ export default function SeoHubAudit() {
           </Card>
         </div>
       )}
-
       {/* By Admin & By Type breakdown */}
       {stats && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -269,7 +267,6 @@ export default function SeoHubAudit() {
           </Card>
         </div>
       )}
-
       {/* Filter & History Table */}
       <Card>
         <CardHeader>

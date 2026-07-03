@@ -26,6 +26,7 @@ export const SeoVariablesSchema = z.object({
   // Variables techniques
   annee: z.string(),
   nbCh: z.number().positive(),
+  powerKw: z.number().positive().optional(), // puissance kW (pendant de nbCh ; cf colonne DB type_power_kw)
   carosserie: z.string(),
   fuel: z.string(),
   codeMoteur: z.string(),
@@ -38,6 +39,7 @@ export const SeoVariablesSchema = z.object({
   familyName: z.string().optional(),
 
   // Métadonnées contextuelles (nouvelles)
+  gammeId: z.number().int().positive().optional(), // pg_id (convention r2-composition.schema)
   articlesCount: z.number().int().nonnegative().default(0),
   gammeLevel: z.number().int().min(1).max(3).default(1),
   isTopGamme: z.boolean().default(false),

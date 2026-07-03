@@ -1,4 +1,3 @@
-import { Link } from "@remix-run/react";
 import {
   BookOpen,
   CheckCircle2,
@@ -8,6 +7,7 @@ import {
   Wrench,
 } from "lucide-react";
 import { memo } from "react";
+import { Link } from "react-router";
 import { Card, CardContent } from "~/components/ui/card";
 import {
   buildR1MicroBlock,
@@ -114,7 +114,7 @@ export const R1ReusableContent = memo(function R1ReusableContent({
               key={i}
               className="flex items-start gap-2 text-sm text-gray-700"
             >
-              <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+              <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />
               <span>{bullet}</span>
             </li>
           ))}
@@ -122,7 +122,7 @@ export const R1ReusableContent = memo(function R1ReusableContent({
 
         {/* Carte grise tip — toujours affiché */}
         <div className="flex items-start gap-2 p-3 rounded-lg bg-blue-50 border border-blue-100 mb-3">
-          <Info className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+          <Info className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
           <p className="text-xs text-blue-800 leading-relaxed">
             <strong>Astuce carte grise :</strong> {block.carteGriseTip}
           </p>
@@ -130,7 +130,7 @@ export const R1ReusableContent = memo(function R1ReusableContent({
 
         {/* Alerte sécurité — toujours affiché */}
         <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-50 border border-amber-100">
-          <Shield className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+          <Shield className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
           <p className="text-xs text-amber-800 leading-relaxed">
             <strong>Important :</strong> {block.safetyAlert}
           </p>
@@ -147,7 +147,7 @@ export const R1ReusableContent = memo(function R1ReusableContent({
                 className={`${style.bg} transition-all hover:shadow-md h-full`}
               >
                 <CardContent className="p-4 flex items-start gap-3">
-                  <div className="flex-shrink-0 mt-0.5">{style.icon}</div>
+                  <div className="shrink-0 mt-0.5">{style.icon}</div>
                   <div className="flex-1 min-w-0">
                     <h3 className={`${style.text} font-semibold text-sm mb-1`}>
                       {card.label}

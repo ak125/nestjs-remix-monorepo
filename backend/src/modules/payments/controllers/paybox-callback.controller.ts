@@ -21,6 +21,11 @@ import * as crypto from 'crypto';
 import { PaymentStatus, PaymentMethod } from '../entities/payment.entity';
 import { normalizeOrderId } from '../utils/normalize-order-id';
 import { PayboxCallbackSchema } from '../dto/paybox-callback.dto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import {
+  ORDER_EVENTS,
+  type OrderPaidEvent,
+} from '../../orders/events/order.events';
 
 /**
  * Contrôleur pour les callbacks Paybox (IPN - Instant Payment Notification)
@@ -37,6 +42,7 @@ export class PayboxCallbackController {
     private readonly mailService: MailService,
     private readonly cartDataService: CartDataService,
     private readonly cacheService: CacheService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   /**
@@ -286,11 +292,28 @@ export class PayboxCallbackController {
             .update({ payment_confirmed: true })
             .eq('ord_id', orderId)
             .eq('payment_confirmed', false)
-            .select('ord_id, ord_total_ttc, ga_client_id');
+            .select('ord_id, ord_total_ttc, ga_client_id, ord_cst_id');
 
           // N'envoyer purchase QUE si 1 ligne modifiée (pas de doublon)
           if (confirmResult && confirmResult.length === 1) {
             const confirmedOrder = confirmResult[0];
+
+            // Commerce-Loop V1 (PR-A′) — server-side funnel signal. This branch
+            // runs ONLY on the genuine payment_confirmed false→true transition
+            // (atomic guard above) → exactly-once. Consumed by OrderFunnelListener
+            // (@OnEvent) to record r2_order_placed reliably; the client beacon on
+            // the return page captured 0 of every paid order. Fire-and-forget:
+            // emit() is synchronous and the listener is self-guarded (never throws),
+            // so it never blocks or fails the IPN response.
+            this.eventEmitter.emit(ORDER_EVENTS.PAID, {
+              orderId,
+              customerId: String(confirmedOrder.ord_cst_id ?? ''),
+              amount: parseFloat(confirmedOrder.ord_total_ttc || '0'),
+              paymentRef: params.authorization || params.orderReference,
+              gateway: 'paybox',
+              timestamp: new Date().toISOString(),
+            } satisfies OrderPaidEvent);
+
             const gaClientId = confirmedOrder.ga_client_id;
             const gaSecret = process.env.GA4_MEASUREMENT_SECRET;
 

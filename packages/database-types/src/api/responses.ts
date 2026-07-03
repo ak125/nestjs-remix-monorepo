@@ -8,7 +8,7 @@
  * @package @repo/database-types
  */
 
-import { z } from 'zod';
+import { z } from "zod";
 
 // ====================================
 // PERFORMANCE METADATA
@@ -40,8 +40,8 @@ export type PerformanceMetadata = z.infer<typeof PerformanceMetadataSchema>;
 export const RequestMetadataSchema = z.object({
   requestId: z.string(),
   timestamp: z.string().datetime(),
-  version: z.string().default('2.0.0'),
-  source: z.enum(['web', 'mobile', 'api', 'cron', 'test']).default('web'),
+  version: z.string().default("2.0.0"),
+  source: z.enum(["web", "mobile", "api", "cron", "test"]).default("web"),
   userAgent: z.string().optional(),
   ipAddress: z.string().optional(),
   userId: z.string().optional(),
@@ -167,11 +167,11 @@ export const PaginatedResponseSchema = <T extends z.ZodTypeAny>(
         ttl: z.number().int().positive().optional(),
       })
       .optional(),
-    filters: z.record(z.any()).optional(),
+    filters: z.record(z.string(), z.any()).optional(),
     sort: z
       .object({
         field: z.string(),
-        order: z.enum(['asc', 'desc']),
+        order: z.enum(["asc", "desc"]),
       })
       .optional(),
   });
@@ -189,7 +189,7 @@ export type PaginatedResponse<T> = {
   filters?: Record<string, unknown>;
   sort?: {
     field: string;
-    order: 'asc' | 'desc';
+    order: "asc" | "desc";
   };
 };
 
@@ -205,6 +205,7 @@ export const SearchResponseSchema = <T extends z.ZodTypeAny>(itemSchema: T) =>
     suggestions: z.array(z.string()).optional(),
     facets: z
       .record(
+        z.string(),
         z.array(
           z.object({
             value: z.string(),
@@ -278,7 +279,7 @@ export type ValidationResponse = z.infer<typeof ValidationResponseSchema>;
 
 export const SortOptionsSchema = z.object({
   field: z.string(),
-  order: z.enum(['asc', 'desc']).default('asc'),
+  order: z.enum(["asc", "desc"]).default("asc"),
   nullsLast: z.boolean().default(true),
 });
 
@@ -300,7 +301,7 @@ export const QueryOptionsSchema = z.object({
   cache: CacheOptionsSchema.optional(),
   include: z.array(z.string()).optional(),
   fields: z.array(z.string()).optional(),
-  filters: z.record(z.any()).optional(),
+  filters: z.record(z.string(), z.any()).optional(),
   search: z.string().optional(),
 });
 
@@ -310,9 +311,9 @@ export type QueryOptions = z.infer<typeof QueryOptionsSchema>;
 // ADMIN RESPONSE TYPES
 // ====================================
 
-export type DataFreshness = 'live' | 'cached' | 'stale' | 'unavailable';
-export type DataSource = 'supabase' | 'cache' | 'bullmq' | 'computed';
-export type HealthStatus = 'healthy' | 'degraded' | 'down' | 'unknown';
+export type DataFreshness = "live" | "cached" | "stale" | "unavailable";
+export type DataSource = "supabase" | "cache" | "bullmq" | "computed";
+export type HealthStatus = "healthy" | "degraded" | "down" | "unknown";
 
 export interface AdminMeta {
   timestamp: string;
@@ -368,9 +369,9 @@ export function createErrorResponse(
   metadata?: Partial<RequestMetadata>,
 ): ApiResponse<never> {
   const apiError: ApiError =
-    typeof error === 'string'
+    typeof error === "string"
       ? {
-          code: code || 'UNKNOWN_ERROR',
+          code: code || "UNKNOWN_ERROR",
           message: error,
           timestamp: new Date().toISOString(),
         }
@@ -395,7 +396,7 @@ export function createAdminSuccessResponse<T>(
     data,
     meta: {
       timestamp: new Date().toISOString(),
-      freshness: 'live' as DataFreshness,
+      freshness: "live" as DataFreshness,
       ...meta,
     },
   };
@@ -421,7 +422,9 @@ export function createAdminErrorResponse(
 /**
  * Validate and normalize pagination options
  */
-export function normalizePaginationOptions(options: unknown): PaginationOptions {
+export function normalizePaginationOptions(
+  options: unknown,
+): PaginationOptions {
   const validated = PaginationOptionsSchema.parse(options || {});
 
   if (validated.offset === undefined) {

@@ -1,15 +1,12 @@
+import { ArrowLeft, Clock } from "lucide-react";
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import {
   useLoaderData,
   Link,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { ArrowLeft, Clock } from "lucide-react";
+} from "react-router";
 
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { logger } from "~/utils/logger";
@@ -25,7 +22,7 @@ import {
 } from "../components/ui/card";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => [
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => [
   {
     title: data?.claim?.title
       ? `${data.claim.title} | Réclamation`
@@ -133,7 +130,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       updatedAt: data.updatedAt || data.clm_updated_at || "",
       resolvedAt: data.resolvedAt || data.clm_resolved_at || undefined,
     };
-    return json<LoaderData>({ claim, user });
+    return { claim, user };
   } catch (error) {
     if (error instanceof Response) throw error;
     logger.error("Erreur chargement réclamation:", error);

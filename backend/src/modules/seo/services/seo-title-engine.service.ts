@@ -1,5 +1,16 @@
 import { Injectable } from '@nestjs/common';
 
+import {
+  ResolvedPageSeo,
+  ResolvedSeoField,
+  SeoSourceStage,
+} from '../types/resolved-seo-field';
+import {
+  SeoFieldGate,
+  SEO_BRAND_NAME,
+  SEO_RESOLVER_VERSION,
+} from '../utils/seo-field-gate';
+
 /**
  * SeoTitleEngineService — Moteur de résolution SEO title/meta/H1
  *
@@ -85,6 +96,185 @@ export class SeoTitleEngineService {
       content,
       titleSource,
       descripSource,
+    };
+  }
+
+  // ─── RESOLVER UNIFIÉ (Phase 11, SHADOW) ──────────────────
+
+  /**
+   * Resolver unifié (Phase 11) — produit title/desc/h1 via le GATE PARTAGÉ
+   * (`SeoFieldGate.brandAwareFit` + `hasForbidden` symétrique) avec provenance complète.
+   *
+   * NE remplace PAS `resolve()` : introduit en SHADOW (observe-only). Tant que le flip
+   * live n'est pas owner-validé, le builder continue d'émettre la sortie legacy de
+   * `resolve()` et logge seulement le diff gated-vs-live. Ferme G3 (clip marque-aveugle)
+   * et G5 (asymétrie title/desc) par construction. Cf.
+   * `audit/seo-producer-chain-unified-verify-2026-06-26.md`.
+   */
+  resolveGated(ctx: SeoTitleContext): ResolvedPageSeo {
+    return {
+      title: this.gatedTitle(ctx),
+      description: this.gatedDescription(ctx),
+      h1: this.gatedH1(ctx),
+      surface: 'R1',
+      entityKey: `gamme:${ctx.pgNameMeta}`,
+    };
+  }
+
+  private gatedTitle(ctx: SeoTitleContext): ResolvedSeoField {
+    const draft = ctx.seoData?.sg_title_draft;
+    const draftPresent = !!(draft && this.isValidTitle(draft));
+    // P1: draft validé ET R1-compliant (termes interdits via gate partagé)
+    if (draftPresent && !SeoFieldGate.hasForbidden(draft!)) {
+      return this.field(
+        SeoFieldGate.brandAwareFit(this.ensureBrandRaw(draft!), TITLE_MAX),
+        'runtime_db',
+        2,
+        'sg_title_draft',
+        false,
+        null,
+      );
+    }
+    // draft présent mais écarté (termes interdits) = signal de dégradation observable
+    const dropped = draftPresent;
+    const droppedReason = dropped ? 'draft_rejected_forbidden_terms' : null;
+
+    // P2: formule dynamique
+    const dynamic = this.buildDynamicTitle(ctx);
+    if (dynamic) {
+      return this.field(
+        dynamic,
+        'legacy_switch_validated',
+        1,
+        'dynamic_formula',
+        dropped,
+        droppedReason,
+      );
+    }
+    // P3: legacy DB (R1-compliant)
+    const legacy = ctx.seoData?.sg_title;
+    if (legacy && legacy.length > 5 && !SeoFieldGate.hasForbidden(legacy)) {
+      return this.field(
+        SeoFieldGate.brandAwareFit(legacy, TITLE_MAX),
+        'runtime_db',
+        1,
+        'sg_title',
+        dropped,
+        droppedReason,
+      );
+    }
+    // P4: fallback déterministe (non-null par construction)
+    return this.field(
+      SeoFieldGate.brandAwareFit(
+        `${ctx.pgNameMeta} | Sélection par véhicule | ${SEO_BRAND_NAME}`,
+        TITLE_MAX,
+      ),
+      'fallback_deterministic',
+      0,
+      null,
+      true,
+      droppedReason ?? 'no_valid_source',
+    );
+  }
+
+  private gatedDescription(ctx: SeoTitleContext): ResolvedSeoField {
+    const draft = ctx.seoData?.sg_descrip_draft;
+    const draftPresent = !!(draft && this.isValidDescription(draft));
+    // P1: draft validé ET — NOUVEAU — R1-compliant (symétrique au title) = fix G5
+    if (draftPresent && !SeoFieldGate.hasForbidden(draft!)) {
+      return this.field(
+        SeoFieldGate.brandAwareFit(draft!, DESCRIP_MAX),
+        'runtime_db',
+        2,
+        'sg_descrip_draft',
+        false,
+        null,
+      );
+    }
+    const dropped = draftPresent;
+    const droppedReason = dropped ? 'draft_rejected_forbidden_terms' : null;
+
+    // P2: formule dynamique (propre par construction)
+    const dynamic = this.buildDynamicDescription(ctx);
+    if (dynamic) {
+      return this.field(
+        dynamic,
+        'legacy_switch_validated',
+        1,
+        'dynamic_formula',
+        dropped,
+        droppedReason,
+      );
+    }
+    // P3: legacy DB
+    const legacy = ctx.seoData?.sg_descrip;
+    if (legacy && legacy.length > 20) {
+      return this.field(
+        SeoFieldGate.brandAwareFit(legacy, DESCRIP_MAX),
+        'runtime_db',
+        1,
+        'sg_descrip',
+        dropped,
+        droppedReason,
+      );
+    }
+    // P4: fallback déterministe R1-compliant
+    return this.field(
+      SeoFieldGate.brandAwareFit(
+        `Comparez les ${ctx.pgNameMeta} compatibles votre véhicule sur ${SEO_BRAND_NAME}. Filtrez par marque, modèle et motorisation.`,
+        DESCRIP_MAX,
+      ),
+      'fallback_deterministic',
+      0,
+      null,
+      true,
+      droppedReason ?? 'no_valid_source',
+    );
+  }
+
+  private gatedH1(ctx: SeoTitleContext): ResolvedSeoField {
+    const formula = `${ctx.pgNameSite} — trouvez la référence compatible avec votre véhicule`;
+    const existing = ctx.seoData?.sg_h1;
+    if (existing && typeof existing === 'string' && existing.length > 5) {
+      // h1 scrubbé symétriquement (attrape une éventuelle fuite de termes interdits)
+      if (!SeoFieldGate.hasForbidden(existing)) {
+        return this.field(existing, 'runtime_db', 1, 'sg_h1', false, null);
+      }
+      return this.field(
+        formula,
+        'fallback_deterministic',
+        0,
+        null,
+        true,
+        'h1_rejected_forbidden_terms',
+      );
+    }
+    return this.field(formula, 'fallback_deterministic', 0, null, false, null);
+  }
+
+  private ensureBrandRaw(title: string): string {
+    if (title.toLowerCase().includes(SEO_BRAND_NAME.toLowerCase()))
+      return title;
+    return `${title} | ${SEO_BRAND_NAME}`;
+  }
+
+  private field(
+    value: string,
+    sourceStage: SeoSourceStage,
+    truthLevel: number,
+    sourceId: string | null,
+    degraded: boolean,
+    degradeReason: string | null,
+  ): ResolvedSeoField {
+    return {
+      value,
+      sourceStage,
+      truthLevel,
+      sourceId,
+      evidenceIds: [],
+      resolverVersion: SEO_RESOLVER_VERSION,
+      degraded,
+      degradeReason,
     };
   }
 
@@ -314,23 +504,12 @@ export class SeoTitleEngineService {
 
   // ─── R1 COMPLIANCE ───────────────────────────────────────
 
-  /** Vérifie si un title contient des termes interdits en R1 (transactionnels) */
+  /**
+   * Vérifie si un texte contient des termes interdits en R1 (transactionnels).
+   * Délègue au gate partagé (source unique du tableau — voir SeoFieldGate). Comportement
+   * identique au tableau historique ; le test de parité interdit toute dérive.
+   */
   private hasR1ForbiddenTerms(text: string): boolean {
-    const lower = text.toLowerCase();
-    const forbidden = [
-      'pas cher',
-      'prix',
-      'meilleur prix',
-      'à partir de',
-      'promo',
-      'en stock',
-      'acheter',
-      'commander',
-      'livraison rapide',
-      'garantie',
-      'satisfait ou remboursé',
-      '€',
-    ];
-    return forbidden.some((term) => lower.includes(term));
+    return SeoFieldGate.hasForbidden(text);
   }
 }

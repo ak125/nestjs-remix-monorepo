@@ -2,13 +2,6 @@ import { Injectable, Logger, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { getEffectiveSupabaseKey } from '@common/utils';
-import * as fs from 'fs/promises';
-import * as path from 'path';
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const matter = require('gray-matter');
-
-import { SITE_ORIGIN } from '../../../config/app.config';
-import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 
 // Import du service de validation qualité
 import {
@@ -16,41 +9,6 @@ import {
   type VLevel,
   type ValidationResult,
 } from '../validation/quality-validator.service';
-
-// Import du service AI Content pour enrichissement LLM
-import { AiContentService } from '../../ai-content/ai-content.service';
-// R4 cross-family guard: reuse the primary writer's family filter (no duplicated logic)
-import { ReferenceService } from './reference.service';
-
-// Import des templates SEO
-import {
-  R4_REFERENCE_TEMPLATE,
-  R5_DIAGNOSTIC_TEMPLATE,
-  applyTemplate,
-  buildR4SchemaOrg,
-  buildR5SchemaOrg,
-} from '../constants/seo-templates.constants';
-
-/**
- * Interface pour le frontmatter RAG des gammes
- */
-interface RagGammeFrontmatter {
-  entity_type: string;
-  pg_id: number;
-  truth_level: string;
-  mechanical_rules?: {
-    role_summary?: string;
-    must_be_true?: string[];
-    must_not_contain_concepts?: string[];
-  };
-  symptoms?: Array<{
-    id: string;
-    label: string;
-    risk_level?: string;
-  }>;
-  composition?: string[];
-  confusions_courantes?: string[];
-}
 
 /**
  * Interface pour une R4 générée
@@ -119,25 +77,22 @@ export interface GenerateResult {
 // Multi-role generator: produces R4 Reference AND R5 Diagnostics (saveR4Draft / saveR5Draft);
 // its docstring legitimately names both roles. Not single-role content.
 /**
- * Service pour générer du contenu SEO depuis les fichiers RAG
+ * Service de génération de contenu SEO (R4 Reference / R5 Diagnostics) depuis la DB.
  *
- * Workflow:
- * 1. Lire le fichier gamme RAG (markdown avec frontmatter YAML)
- * 2. Parser avec gray-matter
- * 3. Générer R4 Reference et/ou R5 Diagnostics
- * 4. Retourner en mode DRAFT pour validation
+ * ADR-031/046 (programme rag-purge) : la génération depuis le corpus RAG
+ * (`RAG_KNOWLEDGE_PATH/gammes/*.md`) a été **retirée** — RAG = retrieval chatbot
+ * only, jamais source de contenu/SEO. La source de contenu est la DB interne
+ * (puis la projection WIKI, ADR-059). Les méthodes `buildR4FromRag`/`buildR5FromRag`,
+ * l'enrichissement LLM du RAG et le listing des fichiers RAG ont été supprimés.
  */
 @Injectable()
 export class SeoGeneratorService {
   private readonly logger = new Logger(SeoGeneratorService.name);
   private readonly supabase: SupabaseClient;
-  private readonly ragBasePath: string;
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly referenceService: ReferenceService,
     @Optional() private readonly qualityValidator?: QualityValidatorService,
-    @Optional() private readonly aiContentService?: AiContentService,
   ) {
     const supabaseUrl = this.configService.get<string>('SUPABASE_URL') || '';
     // ADR-028 Option D — fallback to ANON_KEY in read-only mode (RLS protects writes)
@@ -150,7 +105,6 @@ export class SeoGeneratorService {
     }
 
     this.supabase = createClient(supabaseUrl, supabaseKey);
-    this.ragBasePath = RAG_KNOWLEDGE_PATH;
   }
 
   /**
@@ -187,395 +141,31 @@ export class SeoGeneratorService {
   }
 
   /**
-   * Enrichit le contenu avec LLM (anti-hallucination)
+   * Génère du contenu SEO pour une gamme (R4 et/ou R5) depuis la DB.
    *
-   * PRINCIPE : "Le contenu ne crée jamais l'information"
-   * - ✅ Reformuler le texte RAG existant
-   * - ✅ Améliorer structure et lisibilité
-   * - ✅ Explications mécaniques génériques
-   * - ❌ Inventer des spécifications
-   * - ❌ Ajouter des prix/promotions
-   * - ❌ Créer des compatibilités
-   */
-  private async enrichWithLLM(
-    baseContent: string,
-    pageRole: 'R4' | 'R5',
-    vLevel: VLevel,
-    context: Record<string, unknown>,
-  ): Promise<string> {
-    // Si pas de service IA disponible, retourner le contenu brut
-    if (!this.aiContentService) {
-      this.logger.debug('AiContentService non disponible, contenu non enrichi');
-      return baseContent;
-    }
-
-    // Si le contenu est vide, pas d'enrichissement
-    if (!baseContent || baseContent.trim().length < 20) {
-      return baseContent;
-    }
-
-    const maxTokens = this.getMaxTokens(vLevel);
-
-    // 🛡️ Règles anti-hallucination strictes
-    const antiHallucinationRules = `
-RÈGLES STRICTES (violation = rejet) :
-1. Tu ne PEUX PAS inventer de données (prix, specs, compatibilités, dates)
-2. Tu ne PEUX PAS ajouter d'informations non présentes dans le contenu source
-3. Tu PEUX UNIQUEMENT reformuler, structurer et améliorer le style
-4. Tu PEUX ajouter des explications mécaniques GÉNÉRIQUES (ex: "un filtre retient les impuretés")
-5. Tu NE PEUX PAS utiliser de superlatifs (meilleur, top, n°1, unique)
-6. Tu NE PEUX PAS mentionner de prix ou promotions
-7. Tu NE PEUX PAS inventer de marques ou références`;
-
-    const systemPrompt =
-      pageRole === 'R4'
-        ? `Tu es un rédacteur technique automobile. REFORMULE ce contenu RAG sans inventer.
-${antiHallucinationRules}
-
-OBJECTIF : Améliorer la lisibilité et la structure du texte existant.
-Maximum ${maxTokens} tokens. Ton professionnel et informatif.
-Retourne UNIQUEMENT le texte reformulé, sans commentaires.`
-        : `Tu es un rédacteur technique automobile. REFORMULE ce diagnostic sans inventer.
-${antiHallucinationRules}
-
-OBJECTIF : Structurer les symptômes/causes/solutions du texte source.
-Maximum ${maxTokens} tokens. Ton technique et précis.
-Retourne UNIQUEMENT le texte reformulé, sans commentaires.`;
-
-    try {
-      const result = await this.aiContentService.generateContent({
-        type: 'generic',
-        prompt: `${systemPrompt}\n\nContenu source (RAG) à reformuler :\n${baseContent}\n\nContexte vérifié :\n${JSON.stringify(context)}`,
-        tone: 'technical',
-        language: 'fr',
-        maxLength: maxTokens,
-        context: context,
-        temperature: 0.2, // Très basse pour fidélité au source
-        useCache: true,
-      });
-
-      this.logger.debug(
-        `✅ Contenu enrichi par LLM (${result.metadata?.model || 'unknown'})`,
-      );
-      return result.content;
-    } catch (error) {
-      this.logger.warn(
-        `⚠️ Enrichissement LLM échoué: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      );
-      return baseContent; // Fallback au contenu original
-    }
-  }
-
-  /**
-   * Génère du contenu SEO depuis un fichier RAG gamme
+   * ADR-031/046 : génération depuis le RAG **retirée**. Le contenu provient de la DB
+   * interne (puis de la projection WIKI, ADR-059). Signature conservée pour les
+   * consommateurs existants ; `options` est ignoré (l'enrichissement LLM du corpus RAG
+   * n'existe plus). Pas de fallback silencieux : la source est explicitement la DB.
+   *
    * @param pgId - L'ID de la gamme (pg_id)
    * @param slug - Le slug de la gamme (ex: "filtre-a-huile")
    * @param contentTypes - Types de contenu à générer ('r4', 'r5', ou les deux)
-   * @param options - Options de génération (useAi pour enrichissement LLM)
-   * @returns Le contenu généré (R4 et/ou R5)
    */
   async generateFromGamme(
     pgId: number,
     slug: string,
     contentTypes: ('r4' | 'r5')[],
-    options: { useAi?: boolean } = {},
+    _options: { useAi?: boolean } = {},
   ): Promise<GenerateResult> {
     this.logger.log(
-      `🏭 Generating SEO content for gamme: ${slug} (pg_id: ${pgId})${options.useAi ? ' [AI enrichment enabled]' : ''}`,
+      `🏭 Generating SEO content (DB source) for gamme: ${slug} (pg_id: ${pgId})`,
     );
-
-    const result: GenerateResult = {
-      r4: null,
-      r5: [],
-      sourcesUsed: [],
-      keywordsMatched: [],
-      errors: [],
-    };
-
-    // 1. Chercher le fichier RAG
-    const gammeFilePath = path.join(this.ragBasePath, 'gammes', `${slug}.md`);
-
-    let ragContent: string;
-    let frontmatter: RagGammeFrontmatter;
-    let body: string;
-
-    try {
-      ragContent = await fs.readFile(gammeFilePath, 'utf-8');
-      result.sourcesUsed.push(gammeFilePath);
-      this.logger.debug(`📄 RAG file found: ${gammeFilePath}`);
-    } catch (_error) {
-      this.logger.warn(`⚠️ RAG file not found: ${gammeFilePath}`);
-      // Fallback: générer depuis la base de données
-      return this.generateFromDatabase(pgId, slug, contentTypes);
-    }
-
-    // 2. Parser le frontmatter avec gray-matter
-    try {
-      const parsed = matter(ragContent);
-      frontmatter = parsed.data as RagGammeFrontmatter;
-      body = parsed.content;
-      this.logger.debug(
-        `📊 Frontmatter parsed: ${Object.keys(frontmatter).length} keys`,
-      );
-    } catch (error) {
-      result.errors.push(`Error parsing frontmatter: ${error}`);
-      return result;
-    }
-
-    // 3. Récupérer le nom de la gamme et le volume de recherche depuis la DB
-    const { data: gammeData } = await this.supabase
-      .from('__pg_gammes')
-      .select('label, pg_alias, search_volume')
-      .eq('id', pgId)
-      .single();
-
-    const gammeName = gammeData?.label || this.slugToLabel(slug);
-    const searchVolume = gammeData?.search_volume || 0;
-
-    // 3b. Calculer le V-Level
-    const vLevel = this.getVLevel(searchVolume);
-    result.vLevel = vLevel;
-    this.logger.debug(`📊 V-Level: ${vLevel} (volume: ${searchVolume})`);
-
-    // 4. Générer R4 si demandé
-    if (contentTypes.includes('r4')) {
-      const useAi = options.useAi ?? false;
-      const r4 = await this.buildR4FromRag(
-        slug,
-        pgId,
-        gammeName,
-        frontmatter,
-        body,
-        vLevel,
-        useAi,
-      );
-      result.r4 = r4;
-      result.keywordsMatched.push(...this.extractKeywords(frontmatter));
-
-      // 4b. Valider le contenu R4
-      if (this.qualityValidator && r4) {
-        const contentToValidate = `${r4.title} ${r4.meta_description} ${r4.definition}`;
-        const validation = this.qualityValidator.validateContent(
-          contentToValidate,
-          'R4',
-        );
-        result.validation = validation;
-        result.qualityScore = validation.score;
-        r4.quality_score = validation.score;
-
-        if (!validation.isValid) {
-          this.logger.warn(
-            `⚠️ R4 ${slug} has ${validation.issues.length} quality issues`,
-          );
-        }
-      }
-    }
-
-    // 5. Générer R5 si demandé
-    if (contentTypes.includes('r5') && frontmatter.symptoms) {
-      const r5List = frontmatter.symptoms.map((symptom) => {
-        const r5 = this.buildR5FromRag(symptom, pgId, slug, gammeName);
-
-        // 5b. Valider le contenu R5
-        if (this.qualityValidator) {
-          const contentToValidate = `${r5.title} ${r5.meta_description} ${r5.symptom_description}`;
-          const validation = this.qualityValidator.validateContent(
-            contentToValidate,
-            'R5',
-          );
-          r5.quality_score = validation.score;
-        }
-
-        return r5;
-      });
-      result.r5 = r5List;
-    }
-
-    // 6. Auto-linking R4 ↔ R5 (maillage interne)
-    if (result.r4 && result.r5.length > 0) {
-      // R4 → R5 : symptômes associés
-      result.r4.symptomes_associes = result.r5.map((r5) => r5.slug);
-      this.logger.debug(
-        `🔗 R4 ${slug} linked to ${result.r5.length} R5 symptoms`,
-      );
-
-      // R5 → R4 : référence parente
-      for (const r5 of result.r5) {
-        r5.related_references = [slug];
-      }
-      this.logger.debug(`🔗 R5 pages linked back to R4 ${slug}`);
-    }
-
-    this.logger.log(
-      `✅ Generation complete: R4=${result.r4 ? 'yes' : 'no'}, R5=${result.r5.length} pages, V-Level=${vLevel}, Score=${result.qualityScore ?? 'N/A'}`,
-    );
-
-    return result;
+    return this.generateFromDatabase(pgId, slug, contentTypes);
   }
 
   /**
-   * Construit une R4 Reference depuis les données RAG
-   * @param useAi - Si true, enrichit le contenu avec LLM (anti-hallucination)
-   */
-  private async buildR4FromRag(
-    slug: string,
-    pgId: number,
-    gammeName: string,
-    frontmatter: RagGammeFrontmatter,
-    body: string,
-    vLevel?: VLevel,
-    useAi: boolean = false,
-  ): Promise<GeneratedR4> {
-    const mechanicalRules = frontmatter.mechanical_rules || {};
-
-    // Extraire la définition du body markdown (premier paragraphe après le titre)
-    const definitionMatch = body.match(/## Définition\n\n([^#]+)/);
-    let definition = definitionMatch
-      ? definitionMatch[1].trim()
-      : mechanicalRules.role_summary ||
-        `Le ${gammeName} est une pièce automobile essentielle.`;
-
-    // Extraire le rôle mécanique
-    const roleMecaniqueMatch = body.match(/## Rôle mécanique\n\n([^#]+)/);
-    let roleMecanique = roleMecaniqueMatch
-      ? roleMecaniqueMatch[1].trim()
-      : mechanicalRules.role_summary || null;
-
-    // 🤖 Enrichissement LLM optionnel (anti-hallucination)
-    if (useAi && vLevel) {
-      const context = {
-        gamme: gammeName,
-        pg_id: pgId,
-        composition: frontmatter.composition,
-        source: 'rag',
-      };
-
-      // Enrichir la définition
-      definition = await this.enrichWithLLM(definition, 'R4', vLevel, context);
-
-      // Enrichir le rôle mécanique si disponible
-      if (roleMecanique) {
-        roleMecanique = await this.enrichWithLLM(
-          roleMecanique,
-          'R4',
-          vLevel,
-          context,
-        );
-      }
-
-      this.logger.debug(`🤖 Contenu R4 ${slug} enrichi par LLM`);
-    }
-
-    // Construire le rôle négatif depuis must_not_contain_concepts
-    const roleNegatif = mechanicalRules.must_not_contain_concepts?.length
-      ? `Ce que le ${gammeName} NE fait PAS :\n- ${mechanicalRules.must_not_contain_concepts.join('\n- ')}`
-      : null;
-
-    // Générer les slugs R5 depuis les symptoms
-    const symptomesAssocies =
-      frontmatter.symptoms?.map((s) => this.symptomToSlug(s.label)) || null;
-
-    // Appliquer le template R4
-    const templateVars = {
-      piece: gammeName.toLowerCase(),
-      Piece: gammeName,
-    };
-    const templated = applyTemplate(R4_REFERENCE_TEMPLATE, templateVars);
-
-    // Générer le Schema.org
-    const url = `${SITE_ORIGIN}/reference-auto/${slug}`;
-    const schemaOrg = buildR4SchemaOrg(templated.title, definition, url);
-
-    // R4 cross-family guard (parity with the primary writer ReferenceService.refreshSingleGamme):
-    // drop related_parts belonging to another product family before persisting. Reuses the exact
-    // same merged, mf_id-based filter — no duplicated logic, no behaviour change to the primary writer.
-    const composition = await this.referenceService.filterCompositionByFamily(
-      slug,
-      pgId,
-      frontmatter.composition || null,
-    );
-
-    return {
-      slug,
-      title: templated.title,
-      meta_description: templated.meta,
-      definition,
-      role_mecanique: roleMecanique,
-      role_negatif: roleNegatif,
-      composition,
-      confusions_courantes: frontmatter.confusions_courantes || null,
-      symptomes_associes: symptomesAssocies,
-      regles_metier: mechanicalRules.must_be_true || null,
-      content_html: null, // Généré par le frontend ou à partir du template
-      pg_id: pgId,
-      schema_org: schemaOrg,
-      v_level: vLevel,
-    };
-  }
-
-  /**
-   * Construit une R5 Diagnostic depuis un symptôme RAG
-   */
-  private buildR5FromRag(
-    symptom: { id: string; label: string; risk_level?: string },
-    pgId: number,
-    gammeSlug: string,
-    gammeName: string,
-  ): GeneratedR5 {
-    const slug = this.symptomToSlug(symptom.label);
-
-    // Mapper risk_level RAG vers safety_gate
-    const { riskLevel, safetyGate } = this.mapRiskLevel(symptom.risk_level);
-
-    // Déterminer le canal de perception depuis le label
-    const perceptionChannel = this.detectPerceptionChannel(symptom.label);
-
-    // Déterminer le type d'observable
-    const observableType = this.detectObservableType(symptom.label);
-
-    // Appliquer le template R5
-    const templateVars = {
-      symptome: symptom.label.toLowerCase(),
-      Symptome: symptom.label,
-    };
-    const templated = applyTemplate(R5_DIAGNOSTIC_TEMPLATE, templateVars);
-
-    // Description du symptôme
-    const symptomDescription = `${symptom.label}. Ce symptôme peut indiquer un problème lié au ${gammeName.toLowerCase()}.`;
-
-    // Générer le Schema.org FAQPage
-    const url = `${SITE_ORIGIN}/diagnostic-auto/${slug}`;
-    const causes = [
-      `Usure du ${gammeName.toLowerCase()}`,
-      `Défaillance du système`,
-      `Problème de montage`,
-    ];
-    const schemaOrg = buildR5SchemaOrg(
-      symptom.label,
-      symptomDescription,
-      causes,
-      url,
-    );
-
-    return {
-      slug,
-      title: templated.title,
-      meta_description: templated.meta,
-      observable_type: observableType,
-      perception_channel: perceptionChannel,
-      risk_level: riskLevel,
-      safety_gate: safetyGate,
-      symptom_description: symptomDescription,
-      sign_description: `Pour diagnostiquer un ${symptom.label.toLowerCase()}, vérifiez l'état du ${gammeName.toLowerCase()}.`,
-      cluster_id: gammeSlug.split('-')[0], // Premier mot du slug
-      related_gammes: [pgId],
-      related_references: [gammeSlug],
-      schema_org: schemaOrg,
-    };
-  }
-
-  /**
-   * Fallback: génère depuis la base de données si pas de fichier RAG
+   * Génère du contenu SEO depuis la base de données (source de contenu, ADR-031/046).
    */
   private async generateFromDatabase(
     pgId: number,
@@ -745,141 +335,5 @@ Retourne UNIQUEMENT le texte reformulé, sans commentaires.`;
     }
 
     return { generated, saved, errors };
-  }
-
-  /**
-   * Liste les fichiers RAG disponibles
-   */
-  async listAvailableRagFiles(): Promise<string[]> {
-    try {
-      const gammesDir = path.join(this.ragBasePath, 'gammes');
-      const files = await fs.readdir(gammesDir);
-      return files
-        .filter((f) => f.endsWith('.md'))
-        .map((f) => f.replace('.md', ''));
-    } catch (error) {
-      this.logger.error('Error listing RAG files:', error);
-      return [];
-    }
-  }
-
-  // ============================================
-  // HELPERS
-  // ============================================
-
-  /**
-   * Convertit un slug en label lisible
-   */
-  private slugToLabel(slug: string): string {
-    return slug
-      .split('-')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
-  }
-
-  /**
-   * Convertit un label de symptôme en slug URL
-   */
-  private symptomToSlug(label: string): string {
-    return label
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '') // Remove accents
-      .replace(/[^a-z0-9\s-]/g, '') // Remove special chars
-      .replace(/\s+/g, '-') // Replace spaces with dashes
-      .replace(/-+/g, '-') // Collapse multiple dashes
-      .replace(/^-|-$/g, ''); // Trim dashes
-  }
-
-  /**
-   * Mappe le risk_level RAG vers les champs R5
-   */
-  private mapRiskLevel(riskLevel?: string): {
-    riskLevel: 'confort' | 'securite' | 'critique';
-    safetyGate: 'none' | 'warning' | 'stop_soon' | 'stop_immediate';
-  } {
-    switch (riskLevel?.toLowerCase()) {
-      case 'critique':
-      case 'stop_immediate':
-        return { riskLevel: 'critique', safetyGate: 'stop_immediate' };
-      case 'securite':
-      case 'stop_soon':
-        return { riskLevel: 'securite', safetyGate: 'stop_soon' };
-      case 'warning':
-        return { riskLevel: 'securite', safetyGate: 'warning' };
-      case 'confort':
-      default:
-        return { riskLevel: 'confort', safetyGate: 'warning' };
-    }
-  }
-
-  /**
-   * Détecte le canal de perception depuis le label
-   */
-  private detectPerceptionChannel(label: string): string {
-    const lower = label.toLowerCase();
-    if (
-      lower.includes('bruit') ||
-      lower.includes('cliquetis') ||
-      lower.includes('grincement')
-    ) {
-      return 'auditory';
-    }
-    if (
-      lower.includes('voyant') ||
-      lower.includes('témoin') ||
-      lower.includes('fuite')
-    ) {
-      return 'visual';
-    }
-    if (lower.includes('vibration') || lower.includes('tremblement')) {
-      return 'tactile';
-    }
-    if (lower.includes('odeur') || lower.includes('brûlé')) {
-      return 'olfactory';
-    }
-    if (
-      lower.includes('code') ||
-      lower.includes('obd') ||
-      lower.includes('dtc')
-    ) {
-      return 'electronic';
-    }
-    return 'visual'; // Default
-  }
-
-  /**
-   * Détecte le type d'observable depuis le label
-   */
-  private detectObservableType(label: string): 'symptom' | 'sign' | 'dtc' {
-    const lower = label.toLowerCase();
-    if (lower.match(/^p[0-9]/) || lower.includes('code')) {
-      return 'dtc';
-    }
-    if (
-      lower.includes('voyant') ||
-      lower.includes('niveau') ||
-      lower.includes('usure')
-    ) {
-      return 'sign';
-    }
-    return 'symptom';
-  }
-
-  /**
-   * Extrait les keywords depuis le frontmatter
-   */
-  private extractKeywords(frontmatter: RagGammeFrontmatter): string[] {
-    const keywords: string[] = [];
-
-    if (frontmatter.mechanical_rules?.must_be_true) {
-      keywords.push(...frontmatter.mechanical_rules.must_be_true);
-    }
-
-    if (frontmatter.symptoms) {
-      keywords.push(...frontmatter.symptoms.map((s) => s.label));
-    }
-
-    return keywords;
   }
 }

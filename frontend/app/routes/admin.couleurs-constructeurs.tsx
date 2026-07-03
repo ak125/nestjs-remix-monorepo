@@ -1,13 +1,13 @@
 // 🎨 PAGE ADMIN - VISUALISATION DES COULEURS CONSTRUCTEURS
 // Affiche tous les gradients de couleurs par marque automobile
 
+import { ChevronLeft, Car } from "lucide-react";
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
-import { ChevronLeft, Car } from "lucide-react";
+  useLoaderData,
+  Link,
+} from "react-router";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 import { brandColorsService } from "../services/brand-colors.service";
@@ -41,7 +41,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     a.marque_name.localeCompare(b.marque_name),
   );
 
-  return json<LoaderData>({ brands });
+  return { brands };
 }
 
 export default function CouleursConstructeursAdminPage() {
@@ -141,7 +141,7 @@ export default function CouleursConstructeursAdminPage() {
                 <div className="relative p-6 min-h-[160px] flex flex-col justify-between">
                   {/* Badge ID */}
                   <div className="absolute top-3 right-3">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/20 backdrop-blur-sm rounded-full text-white/90 text-xs font-medium">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/20 backdrop-blur-xs rounded-full text-white/90 text-xs font-medium">
                       <Car className="w-3 h-3" />
                       ID {brand.marque_id}
                     </span>

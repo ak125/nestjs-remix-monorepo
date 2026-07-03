@@ -6,6 +6,17 @@ on:
       - dev
   pull_request: {}
 
+# Garde de concurrence — le container PREPROD (49.12.233.2:3200) est PARTAGÉ (un seul).
+# Sans ça, des pushes `main` rapprochés lancent des `docker compose up` (job `deploy`)
+# qui se chevauchent et SIGTERM le container PENDANT le `e2e-smoke` d'un autre run
+# → "socket hang up" sur la homepage = gate rouge intermittent (ExitCode=0 = restart
+# infra, PAS un crash applicatif — diagnostic 2026-06-21). On sérialise par workflow+ref
+# et on annule le run superséded : seul le DERNIER commit se déploie/teste (sémantique
+# du tag flottant `:preprod` = dernier `main`). PROD (deploy-prod.yml) = workflow distinct, non affecté.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   actions: write
   contents: read
@@ -30,7 +41,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: "npm"
 
       - name: Restore Turbo cache
@@ -62,6 +73,20 @@ jobs:
       - name: 🛡️ CACHE-HEADERS-OK exemptions traceable
         run: bash scripts/lint/check-cache-headers-ok-references.sh
 
+      # DT-2b reserved-namespace-zero: frontend app CSS must not reference an
+      # un-migrated (non --am-) design-tokens scale var — it would resolve to
+      # nothing once Tailwind v4 owns --color-*/--spacing-*/--font-*/etc. (TW-2).
+      # Sister to the package-side @fafa/design-tokens check:reserved-namespaces.
+      - name: 🛡️ Reserved-namespace-zero (frontend app CSS)
+        run: bash scripts/lint/check-frontend-css-am-namespace.sh
+
+      # TW-1 (Tailwind-4 chantier): block utilities Tailwind v4 HARD-REMOVES
+      # (flex-shrink/grow, *-opacity-N, overflow-ellipsis, decoration-slice/clone).
+      # They still work under v3, so nothing else stops a regression before the
+      # engine swap (TW-2). Pre-normalized to the v3+v4 canonical form here.
+      - name: 🛡️ No Tailwind-v4 hard-removed utilities
+        run: bash scripts/lint/check-tailwind-v4-removed-utilities.sh
+
   typecheck:
     name: ʦ TypeScript
     runs-on: ubuntu-latest
@@ -75,12 +100,14 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          # Full history: `turbo typecheck --affected` (PR path below) compares base↔head,
+          # and a shallow checkout makes turbo treat ALL packages as changed.
+          fetch-depth: 0
 
       - name: Setup Node.js environment
         uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: "npm"
 
       - name: Restore Turbo cache
@@ -94,11 +121,53 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Warm the incremental typecheck: carry each package's tsc `.tsbuildinfo`
+      # (node_modules/.cache/tsc/*, wiped by `npm ci`) across CI runs so `tsc` re-checks
+      # only the changed slice (~7s warm) instead of a full cold pass (~19s). restore-keys
+      # (prefix match) restores the most recent parent buildinfo — GitHub also falls back to
+      # the base-branch cache, so PRs warm from their first run. The buildinfo is an
+      # OUTPUT-only artifact (never a turbo/tsc input): `tsc --incremental` self-invalidates
+      # on any change, so a stale restore can only slow a run, never mask a type error.
+      # Key on lockfile + turbo.json + every tsconfig — a config change alters the compile
+      # graph and must start a fresh buildinfo. Saves only on job success (first GREEN run).
+      - name: Restore TypeScript incremental buildinfo
+        uses: actions/cache@v5
+        with:
+          path: |
+            **/node_modules/.cache/tsc/
+          key: tsbuildinfo-${{ runner.os }}-${{ hashFiles('package-lock.json', 'turbo.json', 'packages/typescript-config/*.json', 'backend/tsconfig*.json', 'frontend/tsconfig*.json', 'packages/*/tsconfig*.json') }}-${{ github.sha }}
+          restore-keys: |
+            tsbuildinfo-${{ runner.os }}-${{ hashFiles('package-lock.json', 'turbo.json', 'packages/typescript-config/*.json', 'backend/tsconfig*.json', 'frontend/tsconfig*.json', 'packages/*/tsconfig*.json') }}-
+
+      # DT-0 byte-identity gate: assert the committed design-tokens artifacts
+      # (src/styles/tokens.css, src/tailwind-tokens.cjs, src/tokens/generated.ts)
+      # still match a fresh build from the DTCG source (src/tokens.json). Runs
+      # BEFORE "Build Application" because turbo build would overwrite them first
+      # (build:check rebuilds to a temp dir, so it is independent of turbo cache).
+      # Also runs the package's contract tests (Zod schema / projection / WCAG drift).
+      - name: 🎨 Design-tokens gate (byte-identity + contract)
+        run: |
+          npm run -w @fafa/design-tokens build:check
+          npm run -w @fafa/design-tokens check:reserved-namespaces
+          npm run -w @fafa/design-tokens test:run
+
       - name: Build Application
         run: npm run build
 
       - name: 🔎 Type check
-        run: npm run typecheck --if-present
+        # PR events → typecheck only the AFFECTED packages (turbo compares base↔head via
+        # TURBO_SCM_BASE/HEAD; needs fetch-depth: 0 above). push (main/dev) → FULL run:
+        # never narrow the pre-deploy gate. Root package.json stays `turbo typecheck`;
+        # `--affected` is appended only here, via the existing npm script.
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            npm run typecheck --if-present -- --affected
+          else
+            npm run typecheck --if-present
+          fi
+        env:
+          TURBO_SCM_BASE: ${{ github.event.pull_request.base.sha }}
+          TURBO_SCM_HEAD: ${{ github.event.pull_request.head.sha }}
 
       - name: 🧪 URL Pattern Tests
         run: cd frontend && npm run test -- --run tests/unit/url-patterns.test.ts
@@ -127,7 +196,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: "npm"
 
       - name: Restore Turbo cache
@@ -185,7 +254,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: "npm"
 
       - name: Restore Turbo cache
@@ -232,7 +301,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: "npm"
 
       - name: Install dependencies
@@ -261,7 +330,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: "npm"
 
       - name: Restore Turbo cache
@@ -558,7 +627,7 @@ jobs:
     if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
     steps:
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -567,7 +636,7 @@ jobs:
         run: docker pull massdoc/nestjs-remix-monorepo:preprod
 
       - name: 🔍 Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.35.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: 'massdoc/nestjs-remix-monorepo:preprod'
           format: 'table'
@@ -596,7 +665,7 @@ jobs:
         uses: actions/checkout@v4.1.1
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -611,7 +680,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: "npm"
 
       - name: Install dependencies (required for env-contract preflight)
@@ -1055,7 +1124,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: "npm"
 
       - name: Install dependencies
@@ -1064,28 +1133,122 @@ jobs:
       - name: Install Playwright browsers
         run: cd frontend && npx playwright install chromium --with-deps
 
-      - name: Wait for PREPROD to be healthy
+      - name: Wait for PREPROD to be stably healthy
         run: |
-          for i in {1..12}; do
+          # Require CONSECUTIVE healthy polls, not first-hit. The shared PREPROD
+          # container can briefly restart (host-side: ExitCode=0 + restart:always,
+          # diagnostic 2026-06-21) — a single healthy poll can land in a momentary
+          # window just before a restart. Wait until it is STABLE before starting
+          # Playwright. Bounded; resets on any blip (no silent fallback).
+          need=4; stable=0
+          for i in $(seq 1 40); do
             if curl -sf http://localhost:3200/health > /dev/null 2>&1; then
-              echo "PREPROD healthy"
-              exit 0
+              stable=$((stable + 1))
+              echo "healthy ${stable}/${need} (poll ${i})"
+              if [ "$stable" -ge "$need" ]; then
+                echo "✅ PREPROD stably healthy"
+                exit 0
+              fi
+            else
+              if [ "$stable" -gt 0 ]; then echo "⚠️ health blip at poll ${i} — resetting stability counter"; fi
+              stable=0
             fi
-            echo "Attempt $i/12 — waiting 10s..."
-            sleep 10
+            sleep 5
           done
-          echo "PREPROD not available on port 3200"
+          echo "::error::PREPROD never reached ${need} consecutive healthy polls on :3200"
           exit 1
 
-      - name: 🎭 Run critical E2E tests
-        run: cd frontend && npx playwright test tests/e2e/critical-path.spec.ts tests/e2e/url-validation.spec.ts --project=chromium --reporter=github,list
+      - name: 🎭 Run critical E2E tests (resilient to transient PREPROD restart)
+        run: |
+          cd frontend
+          run_e2e() {
+            npx playwright test tests/e2e/critical-path.spec.ts tests/e2e/url-validation.spec.ts tests/e2e/react19-hydration.spec.ts \
+              --project=chromium --reporter=github,list
+          }
+          # First pass.
+          if run_e2e; then exit 0; fi
+          # First pass failed. The shared PREPROD container can restart MID-SUITE
+          # (host-side, ~20s blind window) → connection-refused on an otherwise
+          # healthy app (diagnostic 2026-06-21: ExitCode=0, no OOM, no crash).
+          # Distinguish that from a REAL failure: wait until PREPROD is STABLY
+          # healthy again, then re-run the suite ONCE. If it never re-stabilizes,
+          # or the re-run also fails, it is a genuine failure (no silent fallback).
+          echo "::warning::E2E first pass failed — checking for a transient PREPROD restart…"
+          need=4; stable=0
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3200/health > /dev/null 2>&1; then
+              stable=$((stable + 1))
+              if [ "$stable" -ge "$need" ]; then break; fi
+            else
+              stable=0
+            fi
+            sleep 3
+          done
+          if [ "$stable" -lt "$need" ]; then
+            echo "::error::PREPROD did not re-stabilize after the failure — real failure, not a transient restart"
+            exit 1
+          fi
+          echo "PREPROD stably healthy again — re-running the critical E2E suite once"
+          run_e2e
         env:
           CI: true
           PLAYWRIGHT_BASE_URL: http://localhost:3200
 
+      # Diagnostic root-cause sur échec E2E. Le runner self-hosted EST l'hôte
+      # PREPROD (49.12.233.2) : on capture l'état exact du container + la mémoire
+      # hôte au moment de l'échec. Sert à distinguer OOM-kill (capacité) vs crash
+      # applicatif vs prioritisation kernel — sans deviner. Tout best-effort
+      # (`|| true`), n'altère pas le verdict du job (déjà en échec). Observabilité
+      # pure (canon : prefer observability ; no silent fallback).
+      - name: 🩺 Capture PREPROD container diagnostics (root-cause)
+        if: failure()
+        run: |
+          C=nestjs-remix-monorepo-preprod
+          echo "::group::container state"
+          docker ps -a --filter "name=preprod" --format '{{.Names}}\t{{.Status}}\t{{.RunningFor}}' || true
+          docker inspect "$C" --format 'OOMKilled={{.State.OOMKilled}} ExitCode={{.State.ExitCode}} Status={{.State.Status}} RestartCount={{.RestartCount}} StartedAt={{.State.StartedAt}} FinishedAt={{.State.FinishedAt}}' || true
+          echo "::endgroup::"
+          echo "::group::host memory (free -m)"
+          free -m || true
+          echo "::endgroup::"
+          echo "::group::per-container memory (docker stats)"
+          docker stats --no-stream --format '{{.Name}}\t{{.MemUsage}}\t{{.MemPerc}}' || true
+          echo "::endgroup::"
+          # FinishedAt = horodatage d'arrêt du run PRÉCÉDENT (avant le restart auto).
+          # On capture les logs JUSTE AVANT cet instant = la raison de l'arrêt (exit 0
+          # observé = sortie propre/SIGTERM, pas un OOM). Sans ça, `--tail` ne montre
+          # que le bruit post-restart (requêtes) et masque la cause.
+          FIN=$(docker inspect "$C" --format '{{.State.FinishedAt}}' 2>/dev/null || true)
+          echo "::group::logs JUSTE AVANT le dernier restart (raison de l'arrêt) [until=$FIN]"
+          docker logs --until "$FIN" --tail 80 "$C" 2>&1 | tail -80 || true
+          echo "::endgroup::"
+          echo "::group::lifecycle markers (tail 800 filtré)"
+          docker logs --tail 800 "$C" 2>&1 | grep -iE 'Nest application|SIGTERM|SIGINT|signal|shutdown|closed|bootstrap|Démarrage|Starting Nest|listening|FATAL|uncaught|unhandledRejection|heap out of memory|Killed|process exit|beforeExit|enableShutdownHooks' | tail -60 || echo "(aucun marqueur lifecycle)"
+          echo "::endgroup::"
+          echo "::group::container logs (tail 120, post-restart)"
+          docker logs --tail 120 "$C" 2>&1 | tail -120 || true
+          echo "::endgroup::"
+          # Le SMOKING GUN : les événements de cycle de vie du conteneur sur les
+          # dernières 25 min (couvre deploy + E2E + le restart). Capturés ICI, juste
+          # après l'échec → encore dans le buffer du démon (qui purge vite sous le
+          # spam healthcheck 30s). `kill signal=N` = stop externe ; `die exitCode=0`
+          # seul = sortie interne ; `oom` = mémoire ; `health_status: unhealthy` =
+          # santé. `--until now` borne la requête pour qu'elle SORTE (sinon stream).
+          NOW=$(date -u +%Y-%m-%dT%H:%M:%S)
+          echo "::group::docker events — cycle de vie conteneur (25m, until $NOW)"
+          docker events --since 25m --until "$NOW" \
+            --filter container="$C" \
+            --filter event=kill --filter event=die --filter event=stop \
+            --filter event=start --filter event=restart --filter event=oom \
+            --filter event=health_status 2>&1 | tail -50 || echo "(aucun événement / buffer purgé)"
+          echo "::endgroup::"
+          echo "::group::kernel OOM (dmesg, best-effort)"
+          (dmesg 2>/dev/null | grep -iE 'oom|killed process|out of memory' | tail -25) || echo "dmesg unavailable (no perm)"
+          echo "::endgroup::"
+
       - name: Upload test results
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-report
           path: frontend/playwright-report/
@@ -1119,7 +1282,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
 
       - name: Verify PREPROD is healthy
         run: |

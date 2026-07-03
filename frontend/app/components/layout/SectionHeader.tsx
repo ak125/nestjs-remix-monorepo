@@ -1,5 +1,5 @@
-import { Link } from "@remix-run/react";
 import { ArrowRight } from "lucide-react";
+import { Link } from "react-router";
 import { cn } from "~/lib/utils";
 
 export default function SectionHeader({
@@ -47,7 +47,7 @@ export default function SectionHeader({
       {linkText && linkHref && (
         <Link
           to={linkHref}
-          className="flex items-center gap-1 text-sm font-semibold text-cta whitespace-nowrap flex-shrink-0"
+          className="flex items-center gap-1 text-sm font-semibold text-cta whitespace-nowrap shrink-0"
         >
           {linkText} <ArrowRight className="w-3.5 h-3.5" />
         </Link>

@@ -38,7 +38,7 @@ cd /opt/automecanik/app && claude
 
 ### Skills SEO inclus
 
-`content-audit`, `content-gen`, `content-quality-gate` (🚨 deprecated 2026-06-12, fusionné dans `v5-guardian`), `keyword-planner`, `kw-classify`, `legacy-recycler`, `pipeline-orchestrator`, `pollution-scanner` (🚨 deprecated 2026-06-12, fusionné dans `v5-guardian`), `r8-diversity-check`, `rag-check` (🚨 deprecated 2026-06-12, successeur = validation exports WIKI), `rag-ops` (⚠️ chatbot-ops only ; ingestion contenu = legacy ADR-031/046), `seo-content-architect`, `seo-gamme-audit`, `seo-vault-verify`, `surgical-cleaner`, `v5-guardian` (survivant renforcé).
+`content-audit`, `content-gen`, `content-quality-gate` (🚨 deprecated 2026-06-12, fusionné dans `v5-guardian`), `keyword-planner`, `kw-classify`, `legacy-recycler`, `pipeline-orchestrator` (🔎 read-only depuis 2026-06-20 — détecteur d'état/couverture ; sous-commandes `run R3/R4/R6/R7` retirées, doctrine contenu = `seo-content-loop`), `pollution-scanner` (🚨 deprecated 2026-06-12, fusionné dans `v5-guardian`), `r8-diversity-check`, `rag-check` (🚨 deprecated 2026-06-12, successeur = validation exports WIKI), `rag-ops` (⚠️ chatbot-ops only ; ingestion contenu = legacy ADR-031/046), `seo-content-architect`, `seo-gamme-audit`, `seo-vault-verify`, `surgical-cleaner`, `v5-guardian` (survivant renforcé).
 
 ### Skills DEV restés en monorepo racine
 

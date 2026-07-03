@@ -5,12 +5,6 @@
  */
 
 import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
-import {
   AlertTriangle,
   CheckCircle2,
   XCircle,
@@ -18,6 +12,11 @@ import {
   Database,
   Layers,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+} from "react-router";
 
 import { AntiMistakesSection } from "~/components/seo/AntiMistakesSection";
 import { FAQSection } from "~/components/seo/FAQSection";
@@ -68,7 +67,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   }
 
   const data: PreviewData = await response.json();
-  return json(data);
+  return data;
 }
 
 function QualityBadge({

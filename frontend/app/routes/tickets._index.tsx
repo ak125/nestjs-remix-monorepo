@@ -2,19 +2,16 @@
  * Page de gestion des tickets - Liste et recherche
  * Remix Route Component pour la gestion des tickets de support
  */
+import { useState } from "react";
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import {
   Link,
   useLoaderData,
   useSearchParams,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { useState } from "react";
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Alert } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
@@ -69,7 +66,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     const stats = await getContactStats(request);
 
-    return json<LoaderData>({
+    return {
       tickets: ticketsData.tickets,
       stats,
       pagination: {
@@ -78,10 +75,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
         limit: ticketsData.limit,
         totalPages: Math.ceil(ticketsData.total / ticketsData.limit),
       },
-    });
+    };
   } catch (error) {
     logger.error("Erreur lors du chargement des tickets:", error);
-    return json<LoaderData>({
+    return {
       tickets: [],
       stats: {
         total_tickets: 0,
@@ -90,7 +87,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         tickets_last_24h: 0,
       },
       pagination: { total: 0, page: 1, limit: 10, totalPages: 0 },
-    });
+    };
   }
 }
 

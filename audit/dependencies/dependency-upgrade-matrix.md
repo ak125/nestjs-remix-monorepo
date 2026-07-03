@@ -23,7 +23,7 @@ Prose surrounding the tables (reading guides, callouts) is human-edited.
 | queues-bullmq | queues | 5.x | pr-9d | staged-rollout | high |
 | runtime-backend-nest | runtime-backend | 11.x | pr-9f | staged-rollout | critical |
 | runtime-backend-platform-fastify | runtime-backend | fastify-5.x | pr-9g | spike-only | medium |
-| runtime-frontend-remix-vite | runtime-frontend | see source_url | deferred | staged-rollout | critical |
+| runtime-frontend-react-router-vite | runtime-frontend | see source_url | deferred | staged-rollout | critical |
 | tooling-prettier-husky | tooling | see source_url | deferred | in-place | low |
 | tooling-typescript-eslint | tooling | locked-at-execution | pr-9b | in-place | low |
 | tooling-typescript-go | tooling | tsc-go-preview | deferred | benchmark-only | low |
@@ -42,7 +42,7 @@ Prose surrounding the tables (reading guides, callouts) is human-edited.
 | queues-bullmq | 48 | >=20 | workers-first, api-second, full-rollout | ✓ |
 | runtime-backend-nest | 72 | >=20 | canary, full-rollout | ✓ |
 | runtime-backend-platform-fastify | 0 | >=20 | n/a | ✗ |
-| runtime-frontend-remix-vite | 72 | >=20 | n/a | ✓ |
+| runtime-frontend-react-router-vite | 0 | >=24 | n/a | ✓ |
 | tooling-prettier-husky | 0 | >=20 | n/a | ✓ |
 | tooling-typescript-eslint | 0 | >=20 | n/a | ✓ |
 | tooling-typescript-go | 0 | >=20 | n/a | ✗ |
@@ -61,7 +61,7 @@ Prose surrounding the tables (reading guides, callouts) is human-edited.
 | queues-bullmq | dangerous | Node20Required, RedisServerCompatibilityVerified | queue-metrics, structured-logs, sentry |
 | runtime-backend-nest | dangerous | Node20Required, Express5CompatibilityAuditPassed, RxJS7Required, PR9eMerged | sentry, structured-logs, health-endpoint, traces |
 | runtime-backend-platform-fastify | trivial | PR9fMerged | structured-logs |
-| runtime-frontend-remix-vite | dangerous | React19Stable, Vite6EcosystemReady, Node20Required | sentry, structured-logs, synthetic-crawler |
+| runtime-frontend-react-router-vite | dangerous | Vite7MigrationReady, ReactRouter8MigrationReady | sentry, structured-logs, synthetic-crawler |
 | tooling-prettier-husky | trivial | [] | [] |
 | tooling-typescript-eslint | trivial | Node20Required | [] |
 | tooling-typescript-go | trivial | NotProductionReady | [] |
@@ -85,7 +85,7 @@ Prose surrounding the tables (reading guides, callouts) is human-edited.
 | queues-bullmq | yes | partial | 60 | queues, backend-runtime | no |
 | runtime-backend-nest | no | none | 60 | backend-runtime, platform-tooling | yes |
 | runtime-backend-platform-fastify | no | full | 5 | backend-runtime | yes |
-| runtime-frontend-remix-vite | no | none | 60 | frontend-runtime | yes |
+| runtime-frontend-react-router-vite | no | none | 60 | frontend-runtime | yes |
 | tooling-prettier-husky | no | none | 5 | platform-tooling | no |
 | tooling-typescript-eslint | no | none | 30 | platform-tooling | no |
 | tooling-typescript-go | no | full | 5 | platform-tooling | yes |
@@ -111,7 +111,7 @@ Prose surrounding the tables (reading guides, callouts) is human-edited.
 | queues-bullmq | true | queue-delay | [] | disable-canary, rollback-workers, drain-v5-queue, re-emit-repeatables, rollback-api, verify-queue-metrics |
 | runtime-backend-nest | true | short-api-restart | cold-start, p99, memory | disable-canary, rollback-api, prepare-express-ratchet-pr, prepare-rxjs-ratchet-pr, verify-health-endpoint, verify-traces-continuity |
 | runtime-backend-platform-fastify | false | none | cold-start, p99, memory | revert-spike-branch |
-| runtime-frontend-remix-vite | true | page-reload-required, cdn-cache-flush | hydration-time, lcp, bundle-size | revert-pr, cdn-flush, redeploy, verify-synthetic-crawler |
+| runtime-frontend-react-router-vite | true | page-reload-required, cdn-cache-flush | hydration-time, lcp, bundle-size | revert-pr, cdn-flush, redeploy, verify-synthetic-crawler |
 | tooling-prettier-husky | false | none | [] | revert-pr |
 | tooling-typescript-eslint | false | none | [] | revert-pr, regenerate-types |
 | tooling-typescript-go | false | none | build-time, memory | revert-benchmark-branch |
@@ -136,7 +136,7 @@ Prose surrounding the tables (reading guides, callouts) is human-edited.
 | queues-bullmq | repeatable-jobs, redis-cache | queue-depth-stable, no-sentry-spike, health-endpoint-ok | queue-backlog-growth, sentry-error-rate-spike, p99-regression-20pct | redis, queue-ids | 60 |
 | runtime-backend-nest | none | health-endpoint-ok, traces-continuity, no-sentry-spike | p99-regression-20pct, cold-start-regression-30pct, sentry-error-rate-spike, health-endpoint-fail | none | 0 |
 | runtime-backend-platform-fastify | none | none | [] | none | 1440 |
-| runtime-frontend-remix-vite | hydration-cache | synthetic-crawler-green, no-sentry-spike | [] | cdn, dom | 0 |
+| runtime-frontend-react-router-vite | hydration-cache | synthetic-crawler-green, no-sentry-spike | [] | cdn, dom | 0 |
 | tooling-prettier-husky | none | none | [] | none | 0 |
 | tooling-typescript-eslint | none | none | [] | none | 0 |
 | tooling-typescript-go | none | none | [] | none | 1440 |
@@ -162,7 +162,7 @@ Prose surrounding the tables (reading guides, callouts) is human-edited.
 | queues-bullmq | replayable | workers, cron | queues-team | 0 | true |
 | runtime-backend-nest | none | api, workers, cron, ssr | backend-runtime-team | 60 | true |
 | runtime-backend-platform-fastify | none | api | backend-runtime-team | 0 | false |
-| runtime-frontend-remix-vite | none | ssr, edge | frontend-runtime-team | 0 | true |
+| runtime-frontend-react-router-vite | none | ssr, edge | frontend-runtime-team | 0 | true |
 | tooling-prettier-husky | none | build-only | platform-tooling-team | 0 | false |
 | tooling-typescript-eslint | none | build-only | platform-tooling-team | 0 | false |
 | tooling-typescript-go | none | build-only | platform-tooling-team | 0 | false |
@@ -188,7 +188,7 @@ Prose surrounding the tables (reading guides, callouts) is human-edited.
 | queues-bullmq | null / null | runtime-backend-nest | 7 | high | queue-latency, queue-throughput |
 | runtime-backend-nest | null / null | runtime-backend-platform-fastify, queues-bullmq | 12 | extreme | api-p99, cold-start, container-startup |
 | runtime-backend-platform-fastify | null / null | runtime-backend-nest | 5 | medium | [] |
-| runtime-frontend-remix-vite | null / null | [] | 21 | extreme | lcp, hydration-time |
+| runtime-frontend-react-router-vite | null / null | [] | 21 | extreme | lcp, hydration-time |
 | tooling-prettier-husky | null / null | [] | 2 | low | [] |
 | tooling-typescript-eslint | null / null | [] | 5 | medium | [] |
 | tooling-typescript-go | null / null | [] | 3 | low | [] |
@@ -213,7 +213,7 @@ Prose surrounding the tables (reading guides, callouts) is human-edited.
 | queues-bullmq | [] | queue-drained, no-active-migrations, canary-disabled | 2 | bullmq-v4 | workers, queue, api |
 | runtime-backend-nest | auth-session-passport, validation-zod, queues-bullmq | canary-disabled, express-ratchet-pr-ready, rxjs-ratchet-pr-ready | 3 | n/a | api, workers, sessions, ssr |
 | runtime-backend-platform-fastify | runtime-backend-nest | [] | 0 | n/a | none |
-| runtime-frontend-remix-vite | [] | cdn-purge-ready, canary-disabled | 2 | n/a | ssr, cdn |
+| runtime-frontend-react-router-vite | [] | cdn-purge-ready, canary-disabled | 2 | n/a | ssr, cdn |
 | tooling-prettier-husky | [] | [] | 0 | n/a | none |
 | tooling-typescript-eslint | [] | [] | 0 | n/a | none |
 | tooling-typescript-go | [] | [] | 0 | n/a | none |
@@ -239,7 +239,7 @@ Prose surrounding the tables (reading guides, callouts) is human-edited.
 | queues-bullmq | supports-feature-flag | queues | theoretical | replay | status-page, support-ticket-tag |
 | runtime-backend-nest | supports-canary | api-runtime | theoretical | none | status-page, slack-channel |
 | runtime-backend-platform-fastify | supports-shadow | api-runtime | theoretical | none | none |
-| runtime-frontend-remix-vite | supports-canary | seo-rendering, frontend-ssr | theoretical | hard-cut | status-page, banner |
+| runtime-frontend-react-router-vite | supports-canary | seo-rendering, frontend-ssr | theoretical | hard-cut | status-page, banner |
 | tooling-prettier-husky | none | tooling | theoretical | none | none |
 | tooling-typescript-eslint | none | tooling | theoretical | none | none |
 | tooling-typescript-go | supports-shadow | tooling | theoretical | none | none |
@@ -265,7 +265,7 @@ Prose surrounding the tables (reading guides, callouts) is human-edited.
 | queues-bullmq | bullmq-jobid-v4, ioredis-v5 | 22:00→06:00 | {manual-only, staged} | [] | 120 |
 | runtime-backend-nest | nestjs-v10, express-v4, rxjs-v6 | 22:00→06:00 | {manual-only, canary-only} | [] | 0 |
 | runtime-backend-platform-fastify | nestjs-platform-fastify-v0 | null | {manual-only, staged} | [] | 0 |
-| runtime-frontend-remix-vite | remix-v2, vite-v5, react-v18 | 22:00→06:00 | {manual-only, atomic} | [] | 0 |
+| runtime-frontend-react-router-vite | react-router-v7, vite-v5, react-v19 | 22:00→06:00 | {manual-only, atomic} | [] | 0 |
 | tooling-prettier-husky | prettier-v3 | null | {auto-allowed, atomic} | [] | 0 |
 | tooling-typescript-eslint | typescript-v5 | null | {manual-only, atomic} | [] | 0 |
 | tooling-typescript-go | [] | null | {auto-allowed, staged} | [] | 0 |
@@ -291,7 +291,7 @@ Prose surrounding the tables (reading guides, callouts) is human-edited.
 | queues-bullmq | {} | latest-write-wins | queues, workers | 15 | 2026-12-31 |
 | runtime-backend-nest | {p99:10%, memory:15%, cold-start:20%} | n/a | backend-runtime | 20 | 2027-06-30 |
 | runtime-backend-platform-fastify | {} | n/a | [] | 0 | null |
-| runtime-frontend-remix-vite | {p99:10%, lcp:15%} | n/a | frontend-runtime, cdn-cache | 30 | null |
+| runtime-frontend-react-router-vite | {p99:10%, lcp:15%} | n/a | frontend-runtime, cdn-cache | 30 | null |
 | tooling-prettier-husky | {} | n/a | [] | 0 | null |
 | tooling-typescript-eslint | {} | n/a | [] | 0 | null |
 | tooling-typescript-go | {memory:50%} | n/a | [] | 0 | null |
@@ -320,8 +320,8 @@ Prose surrounding the tables (reading guides, callouts) is human-edited.
 | queues-bullmq | bullmq, @nestjs/bullmq, @nestjs/bull, bull, ioredis | @nestjs/bull, @nestjs/bullmq, bull, bullmq, ioredis |
 | runtime-backend-nest | @nestjs/*, rxjs, reflect-metadata, body-parser | @nestjs/bull, @nestjs/bullmq, @nestjs/cache-manager, @nestjs/cli, @nestjs/common, @nestjs/config, @nestjs/core, @nestjs/event-emitter, @nestjs/jwt, @nestjs/passport, @nestjs/platform-express, @nestjs/platform-socket.io, @nestjs/schedule, @nestjs/schematics, @nestjs/swagger, @nestjs/testing, @nestjs/throttler, @nestjs/websockets, body-parser, reflect-metadata, rxjs |
 | runtime-backend-platform-fastify | @nestjs/platform-fastify | @nestjs/platform-fastify |
-| runtime-frontend-remix-vite | @remix-run/*, react, react-dom, vite | @remix-run/dev, @remix-run/eslint-config, @remix-run/express, @remix-run/node, @remix-run/react, @remix-run/serve, @remix-run/server-runtime, react, react-dom, vite |
-| tooling-typescript-eslint | typescript, eslint, @typescript-eslint/*, eslint-plugin-*, eslint-config-prettier | @typescript-eslint/eslint-plugin, @typescript-eslint/parser, eslint, eslint-config-prettier, eslint-plugin-import, eslint-plugin-jsx-a11y, eslint-plugin-prettier, eslint-plugin-react, eslint-plugin-react-hooks, eslint-plugin-storybook, typescript |
+| runtime-frontend-react-router-vite | @react-router/*, react, react-dom, @types/react, @types/react-dom, vite | @react-router/dev, @react-router/express, @react-router/node, @react-router/remix-routes-option-adapter, @react-router/serve, @types/react, @types/react-dom, react, react-dom, vite |
+| tooling-typescript-eslint | typescript, eslint, @typescript-eslint/*, eslint-plugin-*, eslint-config-prettier | @typescript-eslint/eslint-plugin, @typescript-eslint/parser, @typescript-eslint/rule-tester, @typescript-eslint/utils, eslint, eslint-config-prettier, eslint-plugin-fafa-ports, eslint-plugin-import, eslint-plugin-jest, eslint-plugin-jest-dom, eslint-plugin-jsx-a11y, eslint-plugin-prettier, eslint-plugin-react, eslint-plugin-react-hooks, eslint-plugin-storybook, eslint-plugin-testing-library, typescript |
 | validation-zod | zod, zod-to-json-schema | zod, zod-to-json-schema |
 <!-- AUTO-TABLE:peer-clusters END -->
 

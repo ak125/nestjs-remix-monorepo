@@ -225,6 +225,39 @@
     "expectedReasonCodes": ["CANONICAL_MISMATCH"]
   },
   {
+    "stratum": "R8_VEHICLE_soft_404",
+    "input": {
+      "surfaceKey": "R8_VEHICLE",
+      "requestedUrl": "https://www.automecanik.com/constructeurs/foo-bar-29404.html",
+      "canonicalUrl": "https://www.automecanik.com/constructeurs/foo-bar-29404.html",
+      "availableGammes": 10,
+      "soft404": true
+    },
+    "expectedKind": "NOINDEX_FOLLOW",
+    "expectedReasonCodes": ["SOFT_404_EMPTY_CONTENT"]
+  },
+  {
+    "stratum": "R2_PRODUCT_soft_404",
+    "input": {
+      "surfaceKey": "R2_PRODUCT",
+      "requestedUrl": "https://www.automecanik.com/produits/sku-99404.html",
+      "canonicalUrl": "https://www.automecanik.com/produits/sku-99404.html",
+      "r2Conditions": {
+        "has_price": true,
+        "has_stock": true,
+        "has_image": true,
+        "has_oem_ref": true,
+        "has_equivalent_ref": false,
+        "has_unique_product_ref": true,
+        "has_valid_canonical": true,
+        "is_duplicate_variant": false
+      },
+      "soft404": true
+    },
+    "expectedKind": "NOINDEX_FOLLOW",
+    "expectedReasonCodes": ["SOFT_404_EMPTY_CONTENT"]
+  },
+  {
     "stratum": "R8_VEHICLE_fingerprint",
     "input": {
       "surfaceKey": "R8_VEHICLE",

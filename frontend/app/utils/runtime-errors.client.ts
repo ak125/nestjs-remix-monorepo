@@ -3,7 +3,7 @@
  *
  * Capture côté navigateur des évènements runtime qui ne sont PAS des Web
  * Vitals mais corrèlent avec l'expérience utilisateur :
- *   - hydration_error    : React/Remix hydration mismatch (warning console)
+ *   - hydration_error    : React 19 hydration mismatch (via onRecoverableError)
  *   - long_task          : PerformanceObserver longtask > 200ms (CPU stall)
  *   - navigation_abort   : useNavigation interrompue (user back ou error boundary)
  *   - chunk_load_error   : import() dynamique échoue (deploy gap, network drop)
@@ -25,6 +25,9 @@ import {
   type Surface,
 } from "@repo/cwv-taxonomy";
 
+import { isChunkLoadErrorMessage } from "~/utils/chunk-error-classification";
+import { safeSessionStorage } from "~/utils/safe-storage";
+
 const SESSION_ID_KEY = "_aut_cwv_sid";
 const EVENT_QUOTA_KEY = "_aut_runtime_quota";
 const MAX_PER_TYPE = 5;
@@ -41,18 +44,16 @@ interface QuotaState {
 }
 
 function getSessionId(): string | null {
-  try {
-    return sessionStorage.getItem(SESSION_ID_KEY);
-  } catch {
-    return null;
-  }
+  // safeSessionStorage never throws (blocked storage → null, Sentry 181aeb23).
+  return safeSessionStorage.getItem(SESSION_ID_KEY);
 }
 
 function getQuotaState(): QuotaState {
   try {
-    const raw = sessionStorage.getItem(EVENT_QUOTA_KEY);
+    const raw = safeSessionStorage.getItem(EVENT_QUOTA_KEY);
     return raw ? (JSON.parse(raw) as QuotaState) : {};
   } catch {
+    // JSON.parse can still throw on corrupt data → best-effort empty quota.
     return {};
   }
 }
@@ -62,11 +63,9 @@ function consumeQuota(eventType: EventType): boolean {
   const current = quota[eventType] ?? 0;
   if (current >= MAX_PER_TYPE) return false;
   quota[eventType] = current + 1;
-  try {
-    sessionStorage.setItem(EVENT_QUOTA_KEY, JSON.stringify(quota));
-  } catch {
-    // storage disabled — accept and silently emit (quota best-effort)
-  }
+  // safeSessionStorage.setItem is a no-op (returns false) when storage is
+  // disabled — quota stays best-effort without a throw.
+  safeSessionStorage.setItem(EVENT_QUOTA_KEY, JSON.stringify(quota));
   return true;
 }
 
@@ -129,32 +128,60 @@ function sendEvent(
 // Captures
 // ---------------------------------------------------------------------------
 
-function captureHydrationFromConsole(): void {
-  // React émet ses hydration mismatches via console.error avec messages typés
-  // ("Hydration failed", "Text content does not match", "There was an error
-  // while hydrating"...). On hook console.error en proxy léger (jamais break
-  // la console — wrap try/catch + appel original).
-  const originalError = console.error;
-  console.error = (...args: unknown[]): void => {
-    try {
-      const first = args[0];
-      const msg = typeof first === "string" ? first : "";
-      if (
-        msg.includes("Hydration") ||
-        msg.includes("hydrat") ||
-        msg.includes("does not match")
-      ) {
-        sendEvent(
-          "seo.runtime.hydration_error",
-          { args_count: args.length },
-          msg,
-        );
-      }
-    } catch {
-      // ignore
-    }
-    originalError.apply(console, args as []);
+/**
+ * Émet l'évènement interne `seo.runtime.hydration_error` avec un message
+ * **normalisé** + métadonnées bornées. JAMAIS le diff React brut (server/client
+ * mismatch peut contenir du texte rendu dynamiquement → fuite si persisté dans
+ * `__seo_event_log`). La classification "hydration" se fait en amont via
+ * `isHydrationRecoverableError` (cf. `react-error-handlers.client`), branchée
+ * sur `onRecoverableError` de React 19 — plus de proxy `console.error`.
+ */
+export function reportHydrationError(meta: Record<string, unknown> = {}): void {
+  sendEvent("seo.runtime.hydration_error", meta, "React hydration mismatch");
+}
+
+/**
+ * Dérive `(reason, message)` de la balise depuis le `stage` de l'appelant.
+ * Distingue le REJET réel (`stage: "rejected"` : stale chunk / réseau →
+ * `reason: "load_rejected"`) de la classe fulfill-with-undefined
+ * (`resolved_undefined` | `boundary` | défaut → `reason: "resolved_undefined"`).
+ * Sans cette dérivation, un rejet réel serait mislabelisé `resolved_undefined`
+ * (review PR #1200) → ventilation dashboard `meta.reason` faussée. Pur/testable.
+ */
+export function resolveChunkEventLabels(stage?: string): {
+  reason: string;
+  message: string;
+} {
+  if (stage === "rejected") {
+    return {
+      reason: "load_rejected",
+      message: "Dynamic import rejected (chunk load failed)",
+    };
+  }
+  return {
+    reason: "resolved_undefined",
+    message: "Dynamic import fulfilled with undefined",
   };
+}
+
+/**
+ * Émet un évènement pour un `import()` dynamique en échec — soit résolu SANS
+ * default utilisable (fulfill-with-undefined, artefact Rolldown mixed-chunk),
+ * soit rejeté (stale chunk / réseau). Réutilise l'enum existant
+ * `seo.runtime.chunk_load_error` + un discriminant `meta.reason` DÉRIVÉ du
+ * `stage` (`meta` est free-form `z.record` côté contrat → aucune migration DB).
+ * Appelé par `resilient-lazy.client.ts` ET `LazyBoundary` : chaque échec est
+ * compté → pas de silent fallback même quand irrécupérable. Le `stage`
+ * (`resolved_undefined` | `rejected` | `boundary`) reste dans `meta` pour la
+ * ventilation fine.
+ */
+export function reportChunkResolvedInvalid(
+  meta: Record<string, unknown> = {},
+): void {
+  const { reason, message } = resolveChunkEventLabels(
+    typeof meta.stage === "string" ? meta.stage : undefined,
+  );
+  sendEvent("seo.runtime.chunk_load_error", { ...meta, reason }, message);
 }
 
 function captureLongTasks(): void {
@@ -185,11 +212,7 @@ function captureChunkLoadErrors(): void {
   // message typé (varie par bundler — Vite, Rollup, Webpack).
   window.addEventListener("error", (event) => {
     const msg = event.message ?? "";
-    if (
-      msg.includes("Loading chunk") ||
-      msg.includes("Failed to fetch dynamically imported module") ||
-      msg.includes("Importing a module script failed")
-    ) {
+    if (isChunkLoadErrorMessage(msg)) {
       sendEvent(
         "seo.runtime.chunk_load_error",
         {
@@ -210,11 +233,7 @@ function captureChunkLoadErrors(): void {
         : typeof reason === "string"
           ? reason
           : "";
-    if (
-      msg.includes("Loading chunk") ||
-      msg.includes("Failed to fetch dynamically imported module") ||
-      msg.includes("Importing a module script failed")
-    ) {
+    if (isChunkLoadErrorMessage(msg)) {
       sendEvent("seo.runtime.chunk_load_error", { source: "rejection" }, msg);
     }
   });
@@ -228,7 +247,8 @@ export function startRuntimeErrorReporter(): void {
   if (typeof window === "undefined") return;
 
   try {
-    captureHydrationFromConsole();
+    // hydration_error n'est plus capturé via console.error : il est émis par
+    // `reportHydrationError()` depuis `onRecoverableError` (React 19).
     captureLongTasks();
     captureChunkLoadErrors();
   } catch {

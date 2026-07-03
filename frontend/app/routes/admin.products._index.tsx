@@ -31,18 +31,15 @@
  *
  * @meta noindex, nofollow - Admin only
  */
+import { useState } from "react";
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import {
   useLoaderData,
   useRouteLoaderData,
   Link,
   Form,
-} from "@remix-run/react";
-import { useState } from "react";
+} from "react-router";
 import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -109,14 +106,14 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     logger.log(`✅ Produits chargés: ${productsData.data.length} items`);
 
-    return json({
+    return {
       products: productsData,
       searchQuery: search,
-    });
+    };
   } catch (error) {
     logger.error("❌ Erreur chargement produits:", error);
 
-    return json({
+    return {
       products: {
         success: false,
         data: [],
@@ -125,7 +122,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       },
       searchQuery: "",
       error: String(error),
-    });
+    };
   }
 };
 
@@ -351,7 +348,7 @@ export default function AdminProducts() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                          <div className="flex-shrink-0 h-8 w-8">
+                          <div className="shrink-0 h-8 w-8">
                             <div className="h-8 w-8 rounded-md bg-gray-200 flex items-center justify-center">
                               <span className="text-xs">📦</span>
                             </div>

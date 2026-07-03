@@ -1,5 +1,8 @@
 const path = require('path');
-const tokens = require('../packages/design-tokens/src/tokens/design-tokens.json');
+// Flat legacy projection generated from the DTCG source (src/tokens.json) by
+// @fafa/design-tokens' build (Style Dictionary). Deep-equals the former raw
+// design-tokens.json — Tailwind utilities compile identically. See packages/design-tokens.
+const tokens = require('@fafa/design-tokens/tailwind-tokens');
 
 module.exports = {
   darkMode: ['class'],
@@ -132,7 +135,19 @@ module.exports = {
         }
       },
       spacing: {
-        ...tokens.spacing,
+        // Échelle spacing v4 : clés NUMÉRIQUES (0,1,2,4,6,8,10,12,16,20,24) +
+        // fluid (section-*/gap-*). Les clés NOMMÉES nues (xs..6xl) sont retirées :
+        // en Tailwind v4 l'échelle `maxWidth` v3 a fusionné dans le namespace sizing
+        // partagé, donc `spacing.{xs..6xl}` shadowait `max-w-{nommé}` (max-w-2xl=40px
+        // au lieu de 672px, régression site-wide). Sans elles, `max-w-{nommé}`
+        // repointe sur `--container-*` (correct), et les usages spacing nommés ont été
+        // migrés vers le numérique v4 équivalent pixel-identique (md=16px=4, lg=24px=6…).
+        // Tokens nommés sémantiques toujours dispo programmatiquement via @fafa/design-tokens.
+        ...Object.fromEntries(
+          Object.entries(tokens.spacing).filter(
+            ([k]) => !['xs', 'sm', 'md', 'lg', 'xl', '2xl', '3xl', '4xl', '5xl', '6xl'].includes(k)
+          )
+        ),
         // Fluid spacing tokens (use clamp for responsive)
         ...tokens.spacingFluid
       },

@@ -37,7 +37,9 @@ export class BlogCacheService {
       if (cached) {
         this.logger.debug(`🎯 Cache hit: ${cacheKey}`);
       }
-      return cached;
+      // cache-manager v6 returns null on miss (v5 returned undefined); preserve
+      // this wrapper's declared `T | undefined` contract for callers.
+      return cached ?? undefined;
     } catch (error) {
       this.logger.warn(`⚠️ Cache get error: ${(error as Error).message}`);
       return undefined;
@@ -81,7 +83,7 @@ export class BlogCacheService {
     try {
       // Note: Cette méthode dépend de l'implémentation du cache manager
       // Pour Redis, on pourrait utiliser un pattern comme 'blog:*'
-      await this.cacheManager.reset();
+      await this.cacheManager.clear();
       this.logger.log('🧹 Cache blog réinitialisé');
     } catch (error) {
       this.logger.warn(`⚠️ Cache reset error: ${(error as Error).message}`);

@@ -2,8 +2,6 @@
  * Page Rapports - Analyses et rapports avec Context7
  */
 
-import { type LoaderFunction, json, type MetaFunction } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
 import {
   BarChart3,
   TrendingUp,
@@ -14,6 +12,11 @@ import {
   AlertTriangle,
   CheckCircle,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+} from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
@@ -48,7 +51,7 @@ interface Report {
 
 export const meta: MetaFunction = () => createNoIndexMeta("Rapports - Admin");
 
-export const loader: LoaderFunction = async ({ request, context }) => {
+export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const user = await requireUser({ context });
 
   // Vérifier les permissions admin
@@ -126,14 +129,14 @@ export const loader: LoaderFunction = async ({ request, context }) => {
       scheduledReports: reports.filter((r) => r.status === "scheduled").length,
     };
 
-    return json({
+    return {
       reports,
       analytics,
       context7: {
         servicesAvailable: !!ordersResult?.success,
         fallbackMode: !ordersResult?.success,
       },
-    });
+    };
   } catch (error) {
     logger.error("❌ Erreur lors du chargement des rapports:", error);
 
@@ -152,7 +155,7 @@ export const loader: LoaderFunction = async ({ request, context }) => {
       },
     ];
 
-    return json({
+    return {
       reports: fallbackReports,
       analytics: {
         totalReports: 1,
@@ -166,7 +169,7 @@ export const loader: LoaderFunction = async ({ request, context }) => {
         fallbackMode: true,
         errorMode: true,
       },
-    });
+    };
   }
 };
 

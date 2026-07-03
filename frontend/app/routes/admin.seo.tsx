@@ -1,19 +1,16 @@
 // app/routes/admin.seo.tsx
+import { CheckCircle, XCircle } from "lucide-react";
+import { useState } from "react";
 import {
-  json,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import {
   Form,
   Link,
   useLoaderData,
   useActionData,
   useNavigation,
-} from "@remix-run/react";
-import { CheckCircle, XCircle } from "lucide-react";
-import { useState } from "react";
+} from "react-router";
 import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
@@ -93,16 +90,16 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     const pagesWithoutSeo =
       pagesRes && pagesRes.ok ? await pagesRes.json().catch(() => null) : null;
 
-    return json({
+    return {
       analytics,
       kpis,
       pagesWithoutSeo,
       success: true,
       error: null,
-    });
+    };
   } catch (error) {
     logger.error("[SEO Admin] Erreur:", error);
-    return json({
+    return {
       analytics: null,
       kpis: null,
       pagesWithoutSeo: null,
@@ -111,7 +108,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
           ? error.message
           : "Erreur de connexion au backend",
       success: false,
-    });
+    };
   }
 }
 
@@ -143,10 +140,10 @@ export async function action({ request, context }: ActionFunctionArgs) {
         });
 
         if (!response.ok) throw new Error(`API Error: ${response.status}`);
-        return json({
+        return {
           success: true,
           message: "Métadonnées mises à jour avec succès",
-        });
+        };
       }
 
       case "regenerate-sitemap": {
@@ -159,11 +156,11 @@ export async function action({ request, context }: ActionFunctionArgs) {
         });
         if (!response.ok) throw new Error(`API Error: ${response.status}`);
         const result = await response.json();
-        return json({
+        return {
           success: true,
           message: "Sitemap regénéré avec succès",
           details: result,
-        });
+        };
       }
 
       case "batch-update": {
@@ -185,21 +182,21 @@ export async function action({ request, context }: ActionFunctionArgs) {
         });
 
         if (!response.ok) throw new Error(`API Error: ${response.status}`);
-        return json({
+        return {
           success: true,
           message: `${selectedPages.length} pages mises à jour en lot`,
-        });
+        };
       }
 
       default:
-        return json({ success: false, error: "Action non reconnue" });
+        return { success: false, error: "Action non reconnue" };
     }
   } catch (error) {
     logger.error("[SEO Admin Action] Erreur:", error);
-    return json({
+    return {
       success: false,
       error: error instanceof Error ? error.message : "Erreur inconnue",
-    });
+    };
   }
 }
 

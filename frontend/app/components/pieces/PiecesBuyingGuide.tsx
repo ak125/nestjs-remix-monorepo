@@ -152,9 +152,9 @@ export const PiecesBuyingGuide = memo(function PiecesBuyingGuide({
                 {guide.warnings.map((warning, index) => (
                   <li
                     key={index}
-                    className="flex items-start gap-3 bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-amber-200/50"
+                    className="flex items-start gap-3 bg-white/80 backdrop-blur-xs rounded-xl p-4 border border-amber-200/50"
                   >
-                    <span className="flex-shrink-0 w-6 h-6 bg-amber-100 rounded-full flex items-center justify-center">
+                    <span className="shrink-0 w-6 h-6 bg-amber-100 rounded-full flex items-center justify-center">
                       <svg
                         className="w-4 h-4 text-amber-600"
                         fill="currentColor"
@@ -235,7 +235,7 @@ export const PiecesBuyingGuide = memo(function PiecesBuyingGuide({
               </button>
 
               {/* Bouton secondaire */}
-              <button className="group bg-white/10 backdrop-blur-sm text-white px-8 py-4 rounded-xl font-bold border border-white/20 hover:bg-white/20 transition-all duration-300">
+              <button className="group bg-white/10 backdrop-blur-xs text-white px-8 py-4 rounded-xl font-bold border border-white/20 hover:bg-white/20 transition-all duration-300">
                 <span className="flex items-center gap-2">
                   <svg
                     className="w-5 h-5 text-yellow-400"

@@ -164,7 +164,7 @@ export function StepSymptom({ state, dispatch }: Props) {
                 }`}
               >
                 <Cog
-                  className={`w-5 h-5 mt-0.5 flex-shrink-0 ${
+                  className={`w-5 h-5 mt-0.5 shrink-0 ${
                     active ? "text-blue-600" : "text-gray-400"
                   }`}
                 />
@@ -295,7 +295,7 @@ export function StepSymptom({ state, dispatch }: Props) {
                     }`}
                   >
                     <div
-                      className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                      className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
                         selected
                           ? "border-blue-500 bg-blue-500"
                           : "border-gray-300"

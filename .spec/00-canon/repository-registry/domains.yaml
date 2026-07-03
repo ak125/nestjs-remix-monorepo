@@ -138,10 +138,15 @@ entries:
     name: Marketing & Video
     description: |
       Marketing operating layer (ADR-036 Phase 1+), video pipelines, GBP posts,
-      LEAD/LOCAL/RETENTION G1 agents.
+      LEAD/LOCAL/RETENTION G1 agents. Includes the MediaFactory video-production
+      module (revival 2026-06-20, flag-gated MEDIA_FACTORY_ENABLED) governed by
+      video-governance-p0 + __video_* tables (ADR-079).
     criticality: P3
     globs:
       - "workspaces/marketing/**"
+      - "backend/src/modules/media-factory/**"
+      - "backend/src/workers/processors/video-execution.processor.ts"
+      - "backend/src/workers/types/video-execution.types.ts"
     owner: "@ak125/marketing-team"
 
   - id: D13

@@ -10,12 +10,23 @@
 // See ~/utils/array-at-polyfill.client for the full rationale.
 import "~/utils/array-at-polyfill.client";
 
-import { RemixBrowser } from "@remix-run/react";
 import { startTransition } from "react";
 import { hydrateRoot } from "react-dom/client";
+import { HydratedRouter } from "react-router/dom";
+import { installChunkReloadGuard } from "~/utils/chunk-reload.client";
 import { logger } from "~/utils/logger";
+import {
+  captureReactErrorToSentry,
+  createDeferredReactErrorBuffer,
+  createReactErrorHandlers,
+  type BufferedReactError,
+  type SentryLike,
+} from "~/utils/react-error-handlers.client";
+import {
+  reportHydrationError,
+  startRuntimeErrorReporter,
+} from "~/utils/runtime-errors.client";
 import { reportWebVitals } from "~/utils/web-vitals.client";
-import { startRuntimeErrorReporter } from "~/utils/runtime-errors.client";
 
 // Service worker cleanup — sync, no Sentry dep
 if ("serviceWorker" in navigator) {
@@ -28,29 +39,57 @@ if ("serviceWorker" in navigator) {
   });
 }
 
+// Chunk-load recovery — one-shot reload when a deploy rewrote asset hashes while
+// this client still holds stale HTML (`vite:preloadError`). Sync, no Sentry dep,
+// anti-loop guarded. See ~/utils/chunk-reload.client.
+installChunkReloadGuard();
+
 // Early error buffer — captures errors fired between hydration and the lazy
 // Sentry init below. Replayed once Sentry is loaded so no error is lost during
 // the window before the first user interaction (or error) triggers init.
 type BufferedEvent =
   | { kind: "error"; ev: ErrorEvent }
-  | { kind: "rejection"; ev: PromiseRejectionEvent };
+  | { kind: "rejection"; ev: PromiseRejectionEvent }
+  | BufferedReactError;
 const errorBuffer: BufferedEvent[] = [];
-const onError = (ev: ErrorEvent) => errorBuffer.push({ kind: "error", ev });
+// Bound the pre-init buffer so it can never grow unbounded if Sentry init is
+// very delayed or never fires (e.g. no-DSN PROD / SENTRY_LIVE_BLOCKED).
+const MAX_BUFFER = 50;
+const bufferPush = (entry: BufferedEvent): void => {
+  if (errorBuffer.length < MAX_BUFFER) errorBuffer.push(entry);
+};
+const onError = (ev: ErrorEvent) => bufferPush({ kind: "error", ev });
 const onRejection = (ev: PromiseRejectionEvent) =>
-  errorBuffer.push({ kind: "rejection", ev });
+  bufferPush({ kind: "rejection", ev });
 window.addEventListener("error", onError);
 window.addEventListener("unhandledrejection", onRejection);
 
+// Observability lifecycle for React-channel errors. Unlike window 'error'
+// events (captured post-init by Sentry's native global handlers), React's
+// onRecoverableError/onCaughtError/onUncaughtError are NOT hooked by Sentry —
+// these handlers are the ONLY path. So: buffer BEFORE init (replayed once),
+// capture DIRECTLY once Sentry is live, and DROP if observability is disabled
+// (no DSN) — never buffer unbounded.
+let liveSentry: SentryLike | null = null;
+let observabilityDisabled = false;
+
+const reactErrorHandlers = createReactErrorHandlers({
+  buffer: createDeferredReactErrorBuffer({
+    isDisabled: () => observabilityDisabled,
+    getLive: () => liveSentry,
+    bufferPush: (entry) => bufferPush(entry),
+  }),
+  reportHydration: () => reportHydrationError({ source: "onRecoverableError" }),
+});
+
 startTransition(() => {
-  hydrateRoot(document, <RemixBrowser />, {
-    onRecoverableError(error) {
-      if (error instanceof Error) {
-        console.warn("[Hydration]", error.message);
-      } else {
-        console.error("Recoverable error:", error);
-      }
-    },
-  });
+  // PROD/PREPROD only: providing these options replaces React's default error
+  // handlers, so in DEV we pass `undefined` to keep React's standard dev
+  // diagnostics + overlay (per React 19 docs). `import.meta.env.PROD` is fixed
+  // at build time — false under the DEV `vite dev` server, true in the Docker
+  // production build that ships to both PREPROD and PROD.
+  const rootOptions = import.meta.env.PROD ? reactErrorHandlers : undefined;
+  hydrateRoot(document, <HydratedRouter />, rootOptions);
   // Web Vitals observers attached early — `web-vitals` v4 uses
   // PerformanceObserver buffered:true so LCP/FCP candidates that already
   // fired are still observed. Sentry pipe is wired up later via
@@ -71,6 +110,9 @@ const initObservability = async (): Promise<void> => {
   const dsn = (window as unknown as { ENV?: { VITE_SENTRY_DSN?: string } }).ENV
     ?.VITE_SENTRY_DSN;
   if (!dsn) {
+    // No DSN → observability is off. Stop React-channel buffering so it can't
+    // leak, and detach the window listeners.
+    observabilityDisabled = true;
     window.removeEventListener("error", onError);
     window.removeEventListener("unhandledrejection", onRejection);
     errorBuffer.length = 0;
@@ -80,15 +122,13 @@ const initObservability = async (): Promise<void> => {
   const [
     Sentry,
     { sentryBeforeSend },
+    { applyChunkErrorClassification },
     { setSentryInstance },
-    { useEffect },
-    { useLocation, useMatches },
   ] = await Promise.all([
-    import("@sentry/remix"),
+    import("@sentry/react"),
     import("~/utils/analytics-sanitize"),
+    import("~/utils/chunk-error-classification"),
     import("~/utils/web-vitals.client"),
-    import("react"),
-    import("@remix-run/react"),
   ]);
 
   Sentry.init({
@@ -111,27 +151,39 @@ const initObservability = async (): Promise<void> => {
     // défauts, ne les remplace pas).
     allowUrls: [/\/assets\//],
     integrations: [
-      Sentry.browserTracingIntegration({
-        useEffect,
-        useLocation,
-        useMatches,
-      }),
+      // Tracing navigateur framework-agnostique (`@sentry/react`). On n'utilise
+      // PAS `@sentry/react-router` (son peerDep `react-router: 7.x` bloque RR8).
+      // Trade-off assumé : noms de transactions basés URL, pas pattern de route RR.
+      Sentry.browserTracingIntegration(),
     ],
-    // V0.B / S10 — RGPD scrubbing PII en defense-in-depth.
-    // Strip immat FR, emails, tels des URL, query-string, breadcrumbs, extra.
-    // Cf. `~/utils/analytics-sanitize`.
-    beforeSend: (event) => sentryBeforeSend(event),
+    // V0.B / S10 — RGPD scrubbing PII en defense-in-depth (strip immat FR,
+    // emails, tels), PUIS classification des erreurs de chunk (cf_challenge vs
+    // stale_or_network) : pose tag + fingerprint, ne DROP aucun event (canon
+    // « no silent fallback » — tout reste observable). Le PII-scrub d'abord car
+    // il ne touche pas le nom de param `__cf_chl_` que lit le classifieur.
+    // Cf. `~/utils/analytics-sanitize` + `~/utils/chunk-error-classification`.
+    beforeSend: (event) =>
+      applyChunkErrorClassification(sentryBeforeSend(event)),
   });
 
   setSentryInstance(Sentry);
+
+  // Mark Sentry live BEFORE replay so React-channel errors fired from now on are
+  // captured DIRECTLY (the buffer below only holds pre-init entries — no double,
+  // no miss).
+  liveSentry = Sentry;
 
   // Replay any errors buffered during hydration → init gap, then detach
   for (const item of errorBuffer) {
     try {
       if (item.kind === "error") {
         Sentry.captureException(item.ev.error ?? item.ev.message);
-      } else {
+      } else if (item.kind === "rejection") {
         Sentry.captureException(item.ev.reason);
+      } else {
+        // kind === "reactError" — bounded scope (channel tag + truncated
+        // componentStack/cause), never serialize the raw cause object.
+        captureReactErrorToSentry(Sentry, item);
       }
     } catch {
       // Reporter passif — ne jamais propager

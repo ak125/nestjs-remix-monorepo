@@ -9,22 +9,20 @@
  * /pieces/kit-d-embrayage-479.html
  */
 
+import { useEffect, useState, Suspense } from "react";
 import {
-  defer,
   redirect,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import {
+  data,
   Await,
   useLoaderData,
   useNavigation,
   useNavigate,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
+} from "react-router";
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
-import { useEffect, useState, Suspense } from "react";
 
 import { ErrorGeneric } from "~/components/errors";
 import {
@@ -36,7 +34,7 @@ import {
   GammeGuideCTA,
   GammeFaq,
 } from "~/components/gamme";
-import { Footer } from "~/components/home";
+import { LazyFooter } from "~/components/home/LazyFooter";
 
 import CatalogueSection from "~/components/pieces/CatalogueSection";
 import EquipementiersSection from "~/components/pieces/EquipementiersSection";
@@ -50,11 +48,11 @@ import {
 } from "~/types/gamme-page-contract.types";
 import { type R1ImagesBySlot } from "~/types/r1-images.types";
 import { type R1RelatedBlocksPayload } from "~/types/r1-related.types";
+import { buildCacheHeaders } from "~/utils/cache-control";
 import {
   extractEditorialBlocks,
   mergeFaqBlocks,
 } from "~/utils/editorial-parser";
-import { buildCacheHeaders } from "~/utils/cache-control";
 import { parseGammePageData } from "~/utils/gamme-page-contract.utils";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
@@ -196,14 +194,19 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
     // 🚀 Fetch en parallèle : données gamme + substitution (LCP optimization)
     const API_URL = getInternalApiUrl("");
-    const currentUrl = new URL(request.url);
-    const pathname = currentUrl.pathname;
+    // 🛡️ Chemin substitution bâti depuis le param de route `slug` (toujours
+    // propre) et NON depuis `request.url` : ce dernier conserve le suffixe
+    // `.data` des requêtes React Router v8 single-fetch (navigation client),
+    // ce qui faisait résoudre la substitution en `unknown_slug` → httpStatus
+    // 404 → 404 sur une page R1 valide (incident 2026-06-25, figé 2 h par le CDN
+    // en PROD). `slug` est nettoyé par RR avant le matching de route.
+    const substitutionPath = `/pieces/${slug}`;
 
     const [apiData, substitutionResponse] = await Promise.all([
       fetchGammePageData(gammeId, { signal: controller.signal }),
       // 🔄 Substitution API pour données enrichies (412/410 handling)
       fetch(
-        `${API_URL}/api/substitution/check?url=${encodeURIComponent(pathname)}`,
+        `${API_URL}/api/substitution/check?url=${encodeURIComponent(substitutionPath)}`,
         {
           signal: subController.signal,
         },
@@ -365,7 +368,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     });
     const r1Sources = buildSourceMapFromPack(sectionPack);
 
-    return defer(
+    return data(
       {
         // === SYNC (above-fold + meta/JSON-LD) — ~5-10KB ===
         _v: pageData._v,
@@ -413,7 +416,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 }
 
 export const meta: MetaFunction<typeof loader> = ({
-  data: rawData,
+  loaderData: rawData,
   location,
 }) => {
   const data = rawData as PiecesPageSyncData | undefined;
@@ -683,7 +686,6 @@ export default function PiecesDetailPage() {
       >
         Aller au contenu principal
       </a>
-
       {/* ⏳ Indicateur de chargement */}
       {isLoading && (
         <div
@@ -692,7 +694,6 @@ export default function PiecesDetailPage() {
           className="fixed top-0 left-0 right-0 z-[60] h-1 bg-blue-500 animate-pulse"
         />
       )}
-
       <GammeHero
         gammeName={
           data.sectionPack?.sections.hero.data.h1Override?.replace(
@@ -750,7 +751,6 @@ export default function PiecesDetailPage() {
         }}
         selectedVehicle={selectedVehicle}
       />
-
       {/* Hero secondaire — Réassurance compacte + liens utiles (1 seul bloc, pas de redondance) */}
       <div className="py-4 px-4 sm:px-6 bg-slate-50 border-b border-slate-100">
         <div className="max-w-[1280px] mx-auto flex flex-wrap items-center justify-between gap-3">
@@ -805,16 +805,13 @@ export default function PiecesDetailPage() {
           </div>
         </div>
       </div>
-
       <GammeQuickNav />
-
       <GammeDiagnosticCTA />
-
       {/* ═══════════════════════════════════════════════════════
            H2 #1 — Bien choisir votre {gamme}
            Types, critères, vérifications, erreurs à éviter
            ═══════════════════════════════════════════════════════ */}
-      <section id="bien-choisir" className="py-10 px-4 sm:px-6 bg-white">
+      <section id="bien-choisir" className="py-10 px-4 sm:px-6 bg-white cv-auto">
         <div className="max-w-[1280px] mx-auto">
           <h2 className="text-2xl font-bold text-slate-900 mb-6">
             Bien choisir votre {n}
@@ -865,12 +862,14 @@ export default function PiecesDetailPage() {
           />
         </div>
       </section>
-
       {/* ═══════════════════════════════════════════════════════
            H2 #2 — Qualité, prix et marques
            Image PRICE, marques, fiche technique
            ═══════════════════════════════════════════════════════ */}
-      <section id="qualite-prix" className="py-10 px-4 sm:px-6 bg-slate-50 cv-auto">
+      <section
+        id="qualite-prix"
+        className="py-10 px-4 sm:px-6 bg-slate-50 cv-auto"
+      >
         <div className="max-w-[1280px] mx-auto">
           <h2 className="text-2xl font-bold text-slate-900 mb-6">
             Qualité, prix et marques
@@ -933,7 +932,6 @@ export default function PiecesDetailPage() {
             )}
         </div>
       </section>
-
       {/* ═══════════════════════════════════════════════════════
            H2 #3 — Où se trouve et quand remplacer
            Image LOCATION, rôle, symptômes, entretien
@@ -988,12 +986,14 @@ export default function PiecesDetailPage() {
           })()}
         </div>
       </section>
-
       {/* ═══════════════════════════════════════════════════════
            H2 #4 — Trouver la bonne référence
            Compatibilités, motorisations, commande
            ═══════════════════════════════════════════════════════ */}
-      <section id="reference" className="py-10 px-4 sm:px-6 bg-slate-50 cv-auto">
+      <section
+        id="reference"
+        className="py-10 px-4 sm:px-6 bg-slate-50 cv-auto"
+      >
         <div className="max-w-[1280px] mx-auto">
           <h2 className="text-2xl font-bold text-slate-900 mb-6">
             Trouver la bonne référence pour votre véhicule
@@ -1032,7 +1032,6 @@ export default function PiecesDetailPage() {
           </Suspense>
         </div>
       </section>
-
       {/* ═══════════════════════════════════════════════════════
            H2 #5 — Questions fréquentes (UNE SEULE)
            ═══════════════════════════════════════════════════════ */}
@@ -1044,12 +1043,14 @@ export default function PiecesDetailPage() {
           />
         </div>
       </section>
-
       {/* ═══════════════════════════════════════════════════════
            H2 #6 — Aller plus loin
            Maillage, famille, guide CTA
            ═══════════════════════════════════════════════════════ */}
-      <section id="aller-plus-loin" className="py-10 px-4 sm:px-6 bg-slate-50 cv-auto">
+      <section
+        id="aller-plus-loin"
+        className="py-10 px-4 sm:px-6 bg-slate-50 cv-auto"
+      >
         <div className="max-w-[1280px] mx-auto">
           <h2 className="text-2xl font-bold text-slate-900 mb-6">
             Aller plus loin
@@ -1091,8 +1092,7 @@ export default function PiecesDetailPage() {
           )}
         </div>
       </section>
-
-      <Footer />
+      <LazyFooter />
     </div>
   );
 }

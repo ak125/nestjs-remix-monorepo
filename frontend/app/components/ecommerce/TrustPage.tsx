@@ -8,7 +8,7 @@
  * 
  * Design System: Primary (CTA), Success (badges verts), Secondary (liens), Neutral (backgrounds)
  * Typographie: font-heading (titres), font-sans (body), font-mono (dates/refs)
- * Espacement: 8px grid (gap-md sections, p-lg cards)
+ * Espacement: 8px grid (gap-4 sections, p-6 cards)
  */
 
 import React from 'react';
@@ -262,28 +262,28 @@ export const TrustPage: React.FC<TrustPageProps> = ({
   onViewAllReviews,
 }) => {
   return (
-    <div className="w-full space-y-2xl">
+    <div className="w-full space-y-10">
       {/* Section Logos Équipementiers */}
       {showSections.partners && (
-        <section className="w-full bg-neutral-50 py-2xl">
-          <div className="container mx-auto px-md">
-            <h2 className="font-heading text-3xl text-neutral-900 text-center mb-xl">
+        <section className="w-full bg-neutral-50 py-10">
+          <div className="container mx-auto px-4">
+            <h2 className="font-heading text-3xl text-neutral-900 text-center mb-8">
               {partnersTitle}
             </h2>
-            <p className="font-sans text-neutral-600 text-center mb-2xl max-w-2xl mx-auto">
+            <p className="font-sans text-neutral-600 text-center mb-10 max-w-2xl mx-auto">
               Nous travaillons avec les plus grands équipementiers automobiles pour vous garantir
               des pièces de qualité d'origine constructeur.
             </p>
 
             {/* Grid logos */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-lg">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
               {partnerBrands.map((brand) => (
                 <div
                   key={brand.id}
-                  className="bg-white p-lg rounded-lg border border-neutral-200 hover:border-secondary-500 hover:shadow-md transition-all duration-300 flex flex-col items-center justify-center group"
+                  className="bg-white p-6 rounded-lg border border-neutral-200 hover:border-secondary-500 hover:shadow-md transition-all duration-300 flex flex-col items-center justify-center group"
                 >
                   {/* Placeholder logo (à remplacer par une vraie image en production) */}
-                  <div className="w-full h-20 flex items-center justify-center mb-sm">
+                  <div className="w-full h-20 flex items-center justify-center mb-2">
                     <div className="font-heading text-xl text-neutral-700 group-hover:text-secondary-500 transition-colors">
                       {brand.name}
                     </div>
@@ -302,14 +302,14 @@ export const TrustPage: React.FC<TrustPageProps> = ({
 
       {/* Section Badges Sécurité */}
       {showSections.security && (
-        <section className="w-full py-2xl">
-          <div className="container mx-auto px-md">
-            <h2 className="font-heading text-3xl text-neutral-900 text-center mb-xl">
+        <section className="w-full py-10">
+          <div className="container mx-auto px-4">
+            <h2 className="font-heading text-3xl text-neutral-900 text-center mb-8">
               {securityTitle}
             </h2>
 
             {/* Grid badges */}
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-lg">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
               {securityBadges.map((badge) => {
                 const bgColorClass =
                   badge.variant === 'success'
@@ -328,13 +328,13 @@ export const TrustPage: React.FC<TrustPageProps> = ({
                 return (
                   <div
                     key={badge.id}
-                    className={`${bgColorClass} border-2 rounded-lg p-lg flex flex-col items-center text-center hover:shadow-lg transition-shadow duration-300`}
+                    className={`${bgColorClass} border-2 rounded-lg p-6 flex flex-col items-center text-center hover:shadow-lg transition-shadow duration-300`}
                   >
                     {/* Icône */}
-                    <div className={`text-4xl mb-sm ${iconColorClass}`}>{badge.icon}</div>
+                    <div className={`text-4xl mb-2 ${iconColorClass}`}>{badge.icon}</div>
 
                     {/* Titre */}
-                    <h3 className="font-heading text-lg text-neutral-900 mb-xs">
+                    <h3 className="font-heading text-lg text-neutral-900 mb-1">
                       {badge.title}
                     </h3>
 
@@ -350,17 +350,17 @@ export const TrustPage: React.FC<TrustPageProps> = ({
 
       {/* Section Avis Clients avec Véhicule */}
       {showSections.reviews && (
-        <section className="w-full bg-neutral-50 py-2xl">
-          <div className="container mx-auto px-md">
-            <h2 className="font-heading text-3xl text-neutral-900 text-center mb-xl">
+        <section className="w-full bg-neutral-50 py-10">
+          <div className="container mx-auto px-4">
+            <h2 className="font-heading text-3xl text-neutral-900 text-center mb-8">
               {reviewsTitle}
             </h2>
-            <p className="font-sans text-neutral-600 text-center mb-2xl max-w-2xl mx-auto">
+            <p className="font-sans text-neutral-600 text-center mb-10 max-w-2xl mx-auto">
               Découvrez les retours d'expérience de nos clients sur leurs véhicules.
             </p>
 
             {/* Grid avis */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-lg mb-xl">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
               {customerReviews.map((review) => (
                 <CustomerReviewCard key={review.id} review={review} />
               ))}
@@ -371,7 +371,7 @@ export const TrustPage: React.FC<TrustPageProps> = ({
               <div className="text-center">
                 <button
                   onClick={onViewAllReviews}
-                  className="bg-secondary-500 hover:bg-secondary-600 text-white font-heading px-xl py-md rounded-lg transition-colors duration-200"
+                  className="bg-secondary-500 hover:bg-secondary-600 text-white font-heading px-8 py-4 rounded-lg transition-colors duration-200"
                 >
                   Voir tous les avis clients
                 </button>
@@ -393,11 +393,11 @@ export const TrustPage: React.FC<TrustPageProps> = ({
  */
 const CustomerReviewCard: React.FC<{ review: CustomerReview }> = ({ review }) => {
   return (
-    <div className="bg-white rounded-lg border border-neutral-200 p-lg hover:shadow-lg transition-shadow duration-300">
+    <div className="bg-white rounded-lg border border-neutral-200 p-6 hover:shadow-lg transition-shadow duration-300">
       {/* Header: Avatar + Nom + Date */}
-      <div className="flex items-start gap-sm mb-md">
+      <div className="flex items-start gap-2 mb-4">
         {/* Avatar */}
-        <div className="w-12 h-12 rounded-full bg-neutral-200 flex items-center justify-center flex-shrink-0 overflow-hidden">
+        <div className="w-12 h-12 rounded-full bg-neutral-200 flex items-center justify-center shrink-0 overflow-hidden">
           {review.customerPhoto ? (
             <img
               src={review.customerPhoto}
@@ -413,10 +413,10 @@ const CustomerReviewCard: React.FC<{ review: CustomerReview }> = ({ review }) =>
 
         {/* Nom + Date */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-xs">
+          <div className="flex items-center gap-1">
             <h4 className="font-heading text-neutral-900">{review.customerName}</h4>
             {review.isVerified && (
-              <span className="bg-success-500 text-white text-xs px-xs py-0.5 rounded">
+              <span className="bg-success-500 text-white text-xs px-1 py-0.5 rounded">
                 ✓ Vérifié
               </span>
             )}
@@ -432,7 +432,7 @@ const CustomerReviewCard: React.FC<{ review: CustomerReview }> = ({ review }) =>
       </div>
 
       {/* Note étoiles */}
-      <div className="flex items-center gap-xs mb-md">
+      <div className="flex items-center gap-1 mb-4">
         {[1, 2, 3, 4, 5].map((star) => (
           <span
             key={star}
@@ -444,18 +444,18 @@ const CustomerReviewCard: React.FC<{ review: CustomerReview }> = ({ review }) =>
       </div>
 
       {/* Commentaire */}
-      <p className="font-sans text-neutral-700 mb-md leading-relaxed">{review.comment}</p>
+      <p className="font-sans text-neutral-700 mb-4 leading-relaxed">{review.comment}</p>
 
       {/* Véhicule */}
-      <div className="bg-secondary-50 border border-secondary-200 rounded-md p-sm">
-        <div className="flex items-center gap-xs mb-xs">
+      <div className="bg-secondary-50 border border-secondary-200 rounded-md p-2">
+        <div className="flex items-center gap-1 mb-1">
           <span className="text-secondary-500">🚗</span>
           <span className="font-heading text-sm text-secondary-700">Véhicule du client</span>
         </div>
         <p className="font-sans text-sm text-neutral-900">
           {review.vehicle.brand} {review.vehicle.model} ({review.vehicle.year})
           {review.vehicle.engine && (
-            <span className="font-mono text-xs text-neutral-600 ml-xs">
+            <span className="font-mono text-xs text-neutral-600 ml-1">
               · {review.vehicle.engine}
             </span>
           )}
@@ -464,7 +464,7 @@ const CustomerReviewCard: React.FC<{ review: CustomerReview }> = ({ review }) =>
 
       {/* Produit acheté (optionnel) */}
       {review.productName && (
-        <p className="font-sans text-xs text-neutral-500 mt-sm">
+        <p className="font-sans text-xs text-neutral-500 mt-2">
           Produit : <span className="text-neutral-700">{review.productName}</span>
         </p>
       )}

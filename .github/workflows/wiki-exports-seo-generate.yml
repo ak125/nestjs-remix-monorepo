@@ -1,0 +1,160 @@
+name: wiki-exports-seo-generate
+
+# ADR-059 SEO Runtime Projection (Phase B, PR-5a) — génération périodique de la
+# vue dérivée SEO depuis le wiki canon approuvé vers automecanik-wiki/exports/seo/.
+#
+# Pipeline gouverné (RAW → WIKI → exports → consumers) :
+#   wiki/<entity_type>/<slug>.md (review_status: approved, exportable.seo: true)
+#     ↓ _scripts/build_exports_seo.py  (filtre + transforme, 0 LLM / 0 DB / 0 enrichissement)
+#   exports/seo/<entity_type>/<slug>.json  (commit, Pattern B comme exports/rag/)
+#
+# Le forward writer (ADR-090, côté backend) consommera ensuite exports/seo/ vers
+# la projection DB versionnée. CE job ne fait QUE produire + committer les exports.
+#
+# Idempotent par construction : le builder dérive source_wiki_commit + generated_at
+# du DERNIER commit touchant chaque fiche (pas du HEAD), donc un run sur un canon
+# inchangé reproduit des octets identiques → le diff gate est un no-op (aucun commit,
+# aucun bruit), et le commit d'export (qui ne touche pas wiki/) ne se ré-déclenche pas.
+#
+# Modèle : diag-canon-slugs-export.yml (même secret WIKI_REPO_TOKEN, même identité
+# bot, même diff-idempotent-puis-commit, même push direct sur wiki main).
+# DELTA : le builder lit le wiki canon (pas la DB) → le wiki est checkouté AVANT le
+# générateur et sert de SOURCE en plus de cible ; pas de SUPABASE_* / Node / tsx.
+#
+# OÙ ÇA TOURNE (important) : `runs-on: ubuntu-latest` = runner GitHub CLOUD, PAS la
+# machine DEV. Ce job NE dépend PAS de `npm run dev` ni d'aucune machine opérateur ;
+# il clone le wiki + lance le builder dans le cloud + recommite. Il fonctionne même
+# DEV éteint (preuve : diag-canon, même runner, commit chaque nuit avec succès).
+# Le seul runner self-hosted du repo (`hetzner-prod`, labels self-hosted/production)
+# n'a PAS le label `ubuntu-latest` → aucun risque de router ce job dessus.
+#
+# AVAL (hors scope ici) : l'étape 2 (forward writer ADR-090 qui écrit exports/seo →
+# projection DB) tourne dans le backend NestJS et DOIT s'exécuter sur un process
+# TOUJOURS allumé = le conteneur PROD (49.12.233.2), JAMAIS sur DEV (`npm run dev`,
+# intermittent). À câbler séparément, sous GO owner (apply migration + GRANT + flag).
+#
+# Secrets requis (monorepo Settings → Secrets and variables → Actions) :
+#   - WIKI_REPO_TOKEN : PAT / GitHub App token avec contents:write sur
+#                       ak125/automecanik-wiki (commit des exports/).
+
+on:
+  schedule:
+    # Quotidien 02:15 UTC — après diag-canon-slugs-export (02:00) pour partir d'un
+    # wiki main à jour. No-op si le canon SEO n'a pas bougé (diff idempotent).
+    - cron: '15 2 * * *'
+  workflow_dispatch:
+  # Pas de trigger sur PR ni sur push : le job écrit dans un autre repo (wiki),
+  # on ne le déclenche pas en boucle. Canon-change → cron quotidien (idempotent).
+
+permissions:
+  contents: read
+
+jobs:
+  generate-and-commit:
+    name: 🌙 Generate exports/seo/ from wiki canon and commit back
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout automecanik-wiki (SOURCE canon AND commit target)
+        uses: actions/checkout@v4
+        with:
+          repository: ak125/automecanik-wiki
+          path: automecanik-wiki
+          token: ${{ secrets.WIKI_REPO_TOKEN }}
+          ref: main
+          # fetch-depth: 0 — le builder fait `git log -1 -- <fiche>` pour
+          # dériver source_wiki_commit/generated_at per-fiche ; l'historique
+          # complet est requis (un shallow clone fausserait ces champs).
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install builder deps (pure Python — pas de DB, pas de LLM)
+        run: pip install --quiet "click>=8.1,<9" "pyyaml>=6.0,<7"
+
+      - name: Run builder — filter + transform only (0 LLM / 0 DB / 0 enrichment)
+        run: |
+          set -e
+          # Purge d'abord les .json existants : un export devient une PROJECTION
+          # COMPLÈTE du canon éligible courant. Les fiches dé-approuvées / supprimées
+          # / passées exportable.seo=false voient leur export retiré (sinon il
+          # resterait orphelin/stale). `git add -A` plus bas capture les suppressions.
+          find automecanik-wiki/exports/seo -name '*.json' -delete
+          python3 automecanik-wiki/_scripts/build_exports_seo.py \
+            --wiki-root "$GITHUB_WORKSPACE/automecanik-wiki"
+          echo "---exports/seo/ produits---"
+          find automecanik-wiki/exports/seo -name '*.json' -printf '%p (%s bytes)\n' | sort || true
+
+      - name: Assert exports/seo not gitignored (fail LOUD if wiki lift not merged)
+        run: |
+          cd automecanik-wiki
+          # Le builder a pu écrire des .json ; s'ils sont gitignored, `git add` les
+          # ignorerait silencieusement → no-op invisible. On échoue FORT et lisible
+          # plutôt que de produire "rien" en silence (no-silent-fallback).
+          sample="$(find exports/seo -name '*.json' | head -1)"
+          if [ -n "$sample" ] && git check-ignore -q "$sample"; then
+            echo "FATAL: $sample est gitignored sur wiki main."
+            echo "       Le lift gitignore exports/seo/ (wiki PR) n'est pas mergé."
+            echo "       Merger la PR wiki AVANT ce job. (git add -f NON utilisé : masquerait le vrai problème.)"
+            exit 1
+          fi
+
+      - name: ajv-validate exports/seo/*.json (fail-fast avant commit)
+        run: |
+          # ajv-cli@5 = ajv@8 : SANS ajv-formats, `format: date-time` (generated_at)
+          # rend le SCHEMA invalide (exit 1). --strict=false silence le warning
+          # allowUnionTypes (facts/items/value), non-fatal.
+          npm install -g ajv-cli@5 ajv-formats
+          set -e
+          shopt -s nullglob
+          files=(automecanik-wiki/exports/seo/*/*.json)
+          if [[ ${#files[@]} -eq 0 ]]; then
+            echo "no exports/seo/*.json produced — nothing to validate"
+            exit 0
+          fi
+          for f in "${files[@]}"; do
+            echo "=== ajv $f ==="
+            ajv validate -c ajv-formats --strict=false \
+              -s automecanik-wiki/_meta/schema/exports-seo.schema.json -d "$f"
+          done
+
+      - name: Stage + diff gate (catches new files AND deletions)
+        id: diff
+        run: |
+          cd automecanik-wiki
+          # Stage d'abord (--cached voit les fichiers NEUFS, que `git diff` seul
+          # ignore) ; -A capture aussi les SUPPRESSIONS (purge ci-dessus). Le gate
+          # est ainsi idempotent : canon inchangé → rien de stagé → no-op.
+          git add -A exports/seo/
+          if git diff --cached --quiet -- exports/seo/; then
+            echo "[diff] exports/seo/ identical — idempotent no-op"
+            echo "diff_status=identical" >> "$GITHUB_OUTPUT"
+          else
+            echo "[diff] exports/seo/ changed:"
+            git --no-pager diff --cached --stat -- exports/seo/
+            echo "diff_status=changed" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit and push to wiki repo
+        if: steps.diff.outputs.diff_status != 'identical'
+        run: |
+          cd automecanik-wiki
+          git config user.name "automecanik-bot"
+          git config user.email "automecanik-bot@users.noreply.github.com"
+          # Déjà stagé (git add -A) à l'étape diff.
+          DATE=$(date -u +%Y-%m-%d)
+          git commit -m "chore(exports-seo): projection ${DATE}" \
+            -m "Auto-generated by nestjs-remix-monorepo .github/workflows/wiki-exports-seo-generate.yml" \
+            -m "Source : wiki/<entity_type>/*.md (review_status=approved, exportable.seo=true) via _scripts/build_exports_seo.py (ADR-059 PR-5a)" \
+            -m "DO NOT EDIT manually — re-run the workflow to refresh."
+          git push origin main
+
+      - name: Upload exports/seo as artifact
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: exports-seo-${{ github.run_id }}
+          path: automecanik-wiki/exports/seo/
+          retention-days: 30

@@ -36,6 +36,10 @@ as $function$
 $function$;
 
 revoke all on function public.__gov_m9_callable_functions() from public;
+-- Supabase ALTER DEFAULT PRIVILEGES grants EXECUTE to anon/authenticated on every new
+-- public function; `revoke ... from public` does NOT remove those direct grants, so we
+-- must revoke them explicitly to actually reach service_role-only (verified 2026-07-01).
+revoke execute on function public.__gov_m9_callable_functions() from anon, authenticated;
 grant execute on function public.__gov_m9_callable_functions() to service_role;
 
 comment on function public.__gov_m9_callable_functions() is

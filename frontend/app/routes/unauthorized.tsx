@@ -5,9 +5,13 @@
  * Remplace get.access.response.no.privilege.php (legacy)
  */
 
-import { type MetaFunction } from "@remix-run/node";
-import { Link, useRouteError, isRouteErrorResponse } from "@remix-run/react";
 import { AlertTriangle, Home, Mail, Phone } from "lucide-react";
+import {
+  type MetaFunction,
+  Link,
+  useRouteError,
+  isRouteErrorResponse,
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";

@@ -56,6 +56,26 @@ export interface ExecutionLedgerEntry {
   /** hash déterministe du plan (dédup / idempotence). */
   plan_hash: string;
   would_change: boolean;
+  /** true = exécution réelle approuvée (Phase 2) ; absent/false = run shadow (Phase 1). */
+  executed?: boolean;
+}
+
+/**
+ * Reçu d'une exécution approuvée (Phase 2). Décrit ce qui A ÉTÉ fait (par opposition à
+ * `ExecutionPlan` = ce qui SERAIT fait) + comment l'annuler. `applied=false` ⇒ no-op
+ * (plan `would_change=false`). `reverted_by` porte l'inverse exact (réversibilité ADR-087).
+ */
+export interface ExecutionReceipt {
+  action_id: string;
+  kind: ExecutableActionKind;
+  /** une mutation a-t-elle réellement été appliquée ? false = no-op (rien à faire). */
+  applied: boolean;
+  /** hash du plan exécuté (= celui approuvé par l'humain ; traçabilité). */
+  plan_hash: string;
+  /** commande/inverse exact pour annuler (ex. `git checkout <fichier>`, `gh pr close N`). */
+  reverted_by: string | null;
+  /** détail structuré du résultat (ex. PR url, octets écrits). */
+  details: Record<string, unknown>;
 }
 
 /**
@@ -75,8 +95,10 @@ export function resolveOrchestrationMode(): OrchestrationMode {
     raw === 'auto' ||
     raw === 'off'
   ) {
-    // Phase 1 : seuls off|shadow sont implémentés ; approved|auto restent inertes ici.
-    return raw === 'approved' || raw === 'auto' ? 'off' : raw;
+    // Phase 2a : off|shadow|approved sont résolus ; `auto` (exécution sans humain)
+    // n'est PAS implémenté → reste inerte (→ off). Le mode `approved` est HITL : il ne
+    // mute qu'avec une approbation explicite + un executor branché (sinon throw).
+    return raw === 'auto' ? 'off' : raw;
   }
   return 'off';
 }

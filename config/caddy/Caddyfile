@@ -7,7 +7,18 @@
     email admin@automecanik.com
     admin off
 
-    # 🛡️ Trust Cloudflare IPs pour obtenir la vraie IP client
+    # 🛡️ Trust Cloudflare IPs pour obtenir la vraie IP client.
+    # ⚠️ NE PAS forwarder {remote_host} en X-Forwarded-For / X-Real-IP :
+    #    {remote_host} = pair TCP immédiat = IP edge Cloudflare (partagée par
+    #    des milliers de clients) → tous ces clients partageraient le même
+    #    bucket de rate-limit NestJS → 429 « Trop de requêtes » sur /cart,
+    #    /checkout, /api/* (routes no-cache qui tapent toujours l'origine).
+    #    Utiliser {client_ip} (résolu via trusted_proxies ci-dessous = vraie
+    #    IP client ; requiert Caddy ≥ 2.7.3 — image épinglée caddy:2.11-alpine (= v2.11.4), OK).
+    #    Bénéficie aussi aux consommateurs de X-Real-IP / X-Forwarded-For (logs,
+    #    error-reporting). (BotGuard lit déjà Cf-Connecting-Ip → inchangé.)
+    #    Hardening futur possible (Caddy ≥ 2.7 confirmé) :
+    #      client_ip_headers Cf-Connecting-Ip   # source CF authoritative, non-spoofable (tag déjà épinglé)
     servers {
         trusted_proxies static 173.245.48.0/20 103.21.244.0/22 103.22.200.0/22 103.31.4.0/22 141.101.64.0/18 108.162.192.0/18 190.93.240.0/20 188.114.96.0/20 197.234.240.0/22 198.41.128.0/17 162.158.0.0/15 104.16.0.0/13 104.24.0.0/14 172.64.0.0/13 131.0.72.0/22 2400:cb00::/32 2606:4700::/32 2803:f800::/32 2405:b500::/32 2405:8100::/32 2a06:98c0::/29 2c0f:f248::/32
     }
@@ -182,8 +193,8 @@ automecanik.com, www.automecanik.com {
         header Cache-Control "public, max-age=31536000, immutable"
         reverse_proxy monorepo_prod:3000 {
             header_up Host {host}
-            header_up X-Real-IP {remote_host}
-            header_up X-Forwarded-For {remote_host}
+            header_up X-Real-IP {client_ip}
+            header_up X-Forwarded-For {client_ip}
             header_up X-Forwarded-Proto {scheme}
             header_up X-Forwarded-Host {host}
         }
@@ -194,8 +205,8 @@ automecanik.com, www.automecanik.com {
         header Cache-Control "public, max-age=86400"
         reverse_proxy monorepo_prod:3000 {
             header_up Host {host}
-            header_up X-Real-IP {remote_host}
-            header_up X-Forwarded-For {remote_host}
+            header_up X-Real-IP {client_ip}
+            header_up X-Forwarded-For {client_ip}
             header_up X-Forwarded-Proto {scheme}
             header_up X-Forwarded-Host {host}
         }
@@ -238,13 +249,27 @@ automecanik.com, www.automecanik.com {
         # Default: set only if no conditional matcher above already set Cache-Control
         header ?Cache-Control "public, max-age=120, stale-while-revalidate=240"
         header Vary "Accept-Encoding"
-        
+
         reverse_proxy monorepo_prod:3000 {
             header_up Host {host}
-            header_up X-Real-IP {remote_host}
-            header_up X-Forwarded-For {remote_host}
+            header_up X-Real-IP {client_ip}
+            header_up X-Forwarded-For {client_ip}
             header_up X-Forwarded-Proto {scheme}
             header_up X-Forwarded-Host {host}
+
+            # 🛡️ Anti-cache-poisoning : une réponse d'erreur (4xx/5xx) du backend
+            # NE DOIT PAS hériter du cache CDN long (s-maxage=86400) posé par
+            # @products / @content ci-dessus. Sinon un 404/500 transitoire (boot
+            # container, TypeError SSR ponctuel) est figé jusqu'à 24h par Cloudflare
+            # sur une page qui existe en réalité (incident 2026-06-25 :
+            # /pieces/barre-stabilisatrice-274.html & plaquette-de-frein-402.html).
+            # Même garde que le bloc imgproxy ci-dessus (@upstream_4xx). `no-store`
+            # l'emporte sur une Cache-Control upstream concurrente (RFC 7234 §5.2.2).
+            @up_error status 4xx 5xx
+            handle_response @up_error {
+                header Cache-Control "no-store"
+                copy_response
+            }
         }
     }
     
@@ -257,8 +282,8 @@ automecanik.com, www.automecanik.com {
         # Laisser le backend définir Cache-Control (public, max-age=900)
         reverse_proxy monorepo_prod:3000 {
             header_up Host {host}
-            header_up X-Real-IP {remote_host}
-            header_up X-Forwarded-For {remote_host}
+            header_up X-Real-IP {client_ip}
+            header_up X-Forwarded-For {client_ip}
             header_up X-Forwarded-Proto {scheme}
             header_up X-Forwarded-Host {host}
         }
@@ -280,8 +305,8 @@ automecanik.com, www.automecanik.com {
 
         reverse_proxy monorepo_prod:3000 {
             header_up Host {host}
-            header_up X-Real-IP {remote_host}
-            header_up X-Forwarded-For {remote_host}
+            header_up X-Real-IP {client_ip}
+            header_up X-Forwarded-For {client_ip}
             header_up X-Forwarded-Proto {scheme}
             header_up X-Forwarded-Host {host}
         }
@@ -290,7 +315,8 @@ automecanik.com, www.automecanik.com {
     # ===== FALLBACK =====
     reverse_proxy monorepo_prod:3000 {
         header_up Host {host}
-        header_up X-Real-IP {remote_host}
+        header_up X-Real-IP {client_ip}
+        header_up X-Forwarded-For {client_ip}
 
         # Health checks Caddy 2
         health_uri /health

@@ -10,16 +10,14 @@
 
 import { Module } from '@nestjs/common';
 import { CacheModule } from '@nestjs/cache-manager';
+import { boundedMemoryCache } from '../../config/cache-store.factory';
 import { InvoicesController } from './invoices.controller';
 import { InvoicesService } from './invoices.service';
 
 @Module({
   imports: [
     // Cache pour optimiser les requêtes fréquentes
-    CacheModule.register({
-      ttl: 300, // 5 minutes pour les listes
-      max: 1000, // 1000 entrées max
-    }),
+    CacheModule.register(boundedMemoryCache(300, 1000)),
   ],
   controllers: [InvoicesController],
   providers: [InvoicesService],

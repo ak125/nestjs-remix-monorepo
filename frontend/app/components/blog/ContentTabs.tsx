@@ -1,7 +1,6 @@
 /**
  * ContentTabs — Tabs populaires / récents / catégories
  */
-import { Link } from "@remix-run/react";
 import {
   TrendingUp,
   Clock,
@@ -12,6 +11,7 @@ import {
   BookOpen,
   ChevronRight,
 } from "lucide-react";
+import { Link } from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
@@ -91,7 +91,7 @@ export function ContentTabs({
                   key={article.id}
                   className="hover:-translate-y-1 transition-transform duration-300"
                 >
-                  <Card className="group h-full hover:shadow-xl transition-all duration-300 border-0 bg-white/80 backdrop-blur-sm overflow-hidden">
+                  <Card className="group h-full hover:shadow-xl transition-all duration-300 border-0 bg-white/80 backdrop-blur-xs overflow-hidden">
                     {article.featuredImage && (
                       <div className="h-48 relative overflow-hidden">
                         <img
@@ -198,7 +198,7 @@ export function ContentTabs({
                     key={article.id}
                     className="hover:translate-x-1 transition-transform duration-200"
                   >
-                    <Card className="group flex flex-row h-32 hover:shadow-lg transition-all duration-300 border-0 bg-white/80 backdrop-blur-sm overflow-hidden">
+                    <Card className="group flex flex-row h-32 hover:shadow-lg transition-all duration-300 border-0 bg-white/80 backdrop-blur-xs overflow-hidden">
                       {article.featuredImage && (
                         <div className="w-32 h-full relative overflow-hidden">
                           <img

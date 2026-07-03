@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { existsSync, readFileSync, readdirSync } from 'fs';
+import { basename, join } from 'path';
+import { gzipSync } from 'zlib';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import {
   buildCertificationActions,
@@ -13,6 +16,11 @@ import {
   type GscOpportunityRow,
 } from './command-center-action-rules/seo-action.rules';
 import { buildPricingRiskActions } from './command-center-action-rules/pricing-action.rules';
+import {
+  buildImprovementCandidateActions,
+  type SizeBudgetMeasure,
+} from './command-center-action-rules/improvement-candidate.rules';
+import { resolveOrchestrationMode } from './command-center-orchestrator/executable-action.contract';
 import {
   CONFIDENCE_BY_CERT,
   finalizeAction,
@@ -67,6 +75,7 @@ export class CommandCenterActionsService extends SupabaseBaseService {
       ...buildCertificationActions(departments, chains),
       ...(await this.seoOpportunities()),
       ...(await this.pricingRisks()),
+      ...this.improvementCandidates(),
     ];
     return sortActions(raws.map(finalizeAction));
   }
@@ -229,6 +238,125 @@ export class CommandCenterActionsService extends SupabaseBaseService {
         this.sourceUnavailable('pricing', 'Requête pricing indisponible'),
       ];
     }
+  }
+
+  /** In-memory memo so an admin request doesn't re-gzip the build every time. */
+  private sizeMemo: { at: number; actions: RawAction[] } | null = null;
+  private static readonly SIZE_MEMO_TTL_MS = 60_000;
+
+  /**
+   * READ-ONLY improvement-candidate source: ranks chunks by size-limit headroom
+   * (the "candidate auto-selection" feeder for the measured-improvement loop,
+   * §8 agent-method-patterns). Pure ranking lives in improvement-candidate.rules;
+   * here we only read frontend/.size-limit.json + gzip-measure the built assets.
+   * 0-mutation, never executes. A missing build (DEV without `npm run build`) or
+   * missing config yields [] WITH a log — observable, never a silent fallback,
+   * never a crash (the source is advisory).
+   */
+  private improvementCandidates(): RawAction[] {
+    // SHADOW by default: reuse the governed COMMAND_CENTER_ORCHESTRATION flag
+    // (PROD forced 'off'; default 'off') — no new ungoverned flag. The read-only
+    // perf candidates only surface in the shadow envelope (DEV/PREPROD, opt-in),
+    // so existing behaviour/tests are unchanged until deliberately enabled.
+    if (resolveOrchestrationMode() === 'off') return [];
+    const now = Date.now();
+    if (
+      this.sizeMemo &&
+      now - this.sizeMemo.at < CommandCenterActionsService.SIZE_MEMO_TTL_MS
+    ) {
+      return this.sizeMemo.actions;
+    }
+    const actions = this.measureSizeCandidates();
+    this.sizeMemo = { at: now, actions };
+    return actions;
+  }
+
+  private measureSizeCandidates(): RawAction[] {
+    try {
+      const frontendDir = this.resolveFrontendDir();
+      if (!frontendDir) {
+        this.logger.warn(
+          '[command-center-actions] frontend/.size-limit.json introuvable — aucun candidat perf (observable, non-bloquant)',
+        );
+        return [];
+      }
+      const budgets = JSON.parse(
+        readFileSync(join(frontendDir, '.size-limit.json'), 'utf-8'),
+      ) as Array<{ name: string; path: string | string[]; limit: string }>;
+      const assetsDir = join(frontendDir, 'build', 'client', 'assets');
+      if (!existsSync(assetsDir)) {
+        this.logger.warn(
+          '[command-center-actions] build/client/assets absent (DEV sans build statique) — aucun candidat perf',
+        );
+        return [];
+      }
+      const files = readdirSync(assetsDir);
+      const measures: SizeBudgetMeasure[] = [];
+      for (const b of budgets) {
+        const patterns = (Array.isArray(b.path) ? b.path : [b.path]).map((p) =>
+          basename(p),
+        );
+        // Skip catch-all aggregates ("*.js"/"*.css"): expensive to gzip AND not a
+        // targeted candidate (the global gate already covers them).
+        if (patterns.some((p) => p === '*.js' || p === '*.css')) continue;
+        const limitBytes = this.parseSizeLimit(b.limit);
+        if (limitBytes <= 0) continue;
+        let measuredBytes = 0;
+        let matched = 0;
+        for (const f of files) {
+          if (patterns.some((p) => this.globMatch(p, f))) {
+            measuredBytes += gzipSync(readFileSync(join(assetsDir, f))).length;
+            matched++;
+          }
+        }
+        if (matched === 0) continue; // no match → don't fabricate a 0-byte candidate
+        measures.push({ name: b.name, measuredBytes, limitBytes });
+      }
+      return buildImprovementCandidateActions(measures);
+    } catch (e) {
+      this.logger.warn(
+        `[command-center-actions] size candidates indisponibles: ${e}`,
+      );
+      return [];
+    }
+  }
+
+  /**
+   * Resolve frontend/ at runtime. Anchored on REGISTRY_DIR (the Docker image sets
+   * it absolute → /app/audit/registry → /app/frontend), with cwd fallbacks that
+   * also cover the `cd backend` start.sh trap. First dir with .size-limit.json wins.
+   */
+  private resolveFrontendDir(): string | null {
+    const roots = [
+      process.env.REGISTRY_DIR
+        ? join(process.env.REGISTRY_DIR, '..', '..', 'frontend')
+        : null,
+      join(process.cwd(), 'frontend'),
+      join(process.cwd(), '..', 'frontend'),
+    ].filter((d): d is string => !!d);
+    return roots.find((d) => existsSync(join(d, '.size-limit.json'))) ?? null;
+  }
+
+  /** "34 KB" → 34000, "1 MB" → 1000000 (size-limit uses decimal KB/MB). */
+  private parseSizeLimit(limit: string): number {
+    const m = /([\d.]+)\s*(B|KB|MB)?/i.exec(limit.trim());
+    if (!m) return 0;
+    const unit = (m[2] || 'B').toUpperCase();
+    const mult = unit === 'MB' ? 1e6 : unit === 'KB' ? 1e3 : 1;
+    return Math.round(parseFloat(m[1]) * mult);
+  }
+
+  /** Minimal glob (only the `*` wildcard, which is all size-limit patterns use). */
+  private globMatch(pattern: string, name: string): boolean {
+    const re = new RegExp(
+      '^' +
+        pattern
+          .split('*')
+          .map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+          .join('.*') +
+        '$',
+    );
+    return re.test(name);
   }
 
   private sourceUnavailable(source: ActionSource, reason: string): RawAction {

@@ -12,12 +12,6 @@
  */
 
 import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, Link, Form, useSearchParams } from "@remix-run/react";
-import {
   ArrowLeft,
   Search,
   Filter,
@@ -35,6 +29,14 @@ import {
   Download,
   Upload,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+  Form,
+  useSearchParams,
+} from "react-router";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
@@ -180,7 +182,7 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
       ).length,
     };
 
-    return json<AdminGammeData>({
+    return {
       user: {
         id: user.id,
         name: userName,
@@ -202,11 +204,11 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
       },
       enhanced,
       stats,
-    });
+    };
   } catch (error) {
     logger.error("❌ Erreur loader admin gamme:", error);
 
-    return json<AdminGammeData>({
+    return {
       user: {
         id: "error",
         name: "Erreur",
@@ -223,7 +225,7 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
         error instanceof Error
           ? error.message
           : "Impossible de charger la gamme",
-    });
+    };
   }
 }
 

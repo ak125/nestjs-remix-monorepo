@@ -90,6 +90,11 @@ export class PrPropositionShadowPlanner implements ShadowPlanner {
     return Object.keys(PR_TEMPLATES);
   }
 
+  /** Catalogue exposé à l'orchestrateur (ShadowPlanner.listActionIds). */
+  listActionIds(): string[] {
+    return PrPropositionShadowPlanner.knownTemplates();
+  }
+
   async plan(actionId: string): Promise<ExecutionPlan> {
     const tpl = PR_TEMPLATES[actionId];
     if (!tpl) throw new UnknownPrPropositionError(actionId);

@@ -7,12 +7,12 @@
  * - Actions loading state
  */
 
-import { Form } from "@remix-run/react";
 import { type ReactNode, memo } from "react";
 import {
   FormProvider as RHFFormProvider,
   type UseFormReturn,
 } from "react-hook-form";
+import { Form } from "react-router";
 
 interface FormProviderProps {
   form: UseFormReturn<any>;

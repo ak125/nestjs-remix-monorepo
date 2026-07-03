@@ -1,13 +1,12 @@
+import { ChevronUp } from "lucide-react";
+import { lazy, Suspense, useEffect, useRef } from "react";
 import {
   type ActionFunctionArgs,
-  defer,
   type HeadersFunction,
   type LinksFunction,
   type LoaderFunctionArgs,
-  json,
   type MetaFunction,
-} from "@remix-run/node";
-import {
+  data,
   Links,
   Meta,
   Outlet,
@@ -20,19 +19,13 @@ import {
   useLocation,
   useMatches,
   useNavigation,
-} from "@remix-run/react";
+} from "react-router";
 
-import { ChevronUp } from "lucide-react";
-import {
-  Component,
-  lazy,
-  Suspense,
-  useEffect,
-  useRef,
-  type ErrorInfo,
-  type ReactNode,
-} from "react";
+import { LazyFooter } from "~/components/home/LazyFooter";
+import { LazyBoundary } from "~/components/LazyBoundary";
+import { cspNonceContext } from "~/utils/load-context";
 import { logger } from "~/utils/logger";
+import { safeLazy } from "~/utils/resilient-lazy";
 import { getOptionalUser } from "./auth/unified.server";
 import { ErrorGeneric } from "./components/errors";
 import { Navbar } from "./components/Navbar";
@@ -48,9 +41,15 @@ import { useScrollBehavior } from "./hooks/useScrollBehavior";
 import { getCart } from "./services/cart.server";
 import animationsStylesheet from "./styles/animations.css?url";
 
-const ChatWidget = lazy(() => import("./components/rag/ChatWidget"));
-const GlobalFooter = lazy(() => import("./components/home/Footer"));
-const BottomNav = lazy(() => import("./components/layout/BottomNav"));
+// GlobalFooter n'est plus déclaré ici : rendu via <LazyFooter/> (composant partagé,
+// specifier canonique unique `~/components/home/Footer`) — voir components/home/LazyFooter.
+// ChatWidget/BottomNav passent par safeLazy (durcissement fulfill-with-undefined).
+const ChatWidget = safeLazy(() => import("./components/rag/ChatWidget"), {
+  name: "ChatWidget",
+});
+const BottomNav = safeLazy(() => import("./components/layout/BottomNav"), {
+  name: "BottomNav",
+});
 const LazyToaster = lazy(() =>
   import("sonner").then((m) => ({ default: m.Toaster })),
 );
@@ -78,7 +77,7 @@ export const links: LinksFunction = () => [
     crossOrigin: "anonymous" as const,
   },
 
-  // CSS principal (inclut design tokens + utilities via @import, bundlé par Vite)
+  // CSS principal (inclut design tokens via @import, bundlé par Vite)
   { rel: "stylesheet", href: stylesheet },
 
   // DNS Prefetch & Preconnect
@@ -130,11 +129,11 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     return null;
   });
 
-  return defer({
+  return {
     user,
     cart: cartPromise,
     isBot,
-    cspNonce: ((context as Record<string, unknown>)?.cspNonce as string) || "",
+    cspNonce: context.get(cspNonceContext) || "",
     // Public runtime env exposed to the browser via `window.ENV` (see <script>
     // injection below). Same image runs in DEV/PROD with different values, so
     // these MUST be read at request time, not inlined at build time.
@@ -145,8 +144,14 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
         process.env.APP_ENV ||
         process.env.NODE_ENV ||
         "development",
+      // GA4 measurement ID — provisionné par environnement (docker-compose.prod.yml
+      // uniquement). Vide en DEV (`npm run dev`) et PREPROD (CI) → le tag gtag n'est
+      // PAS injecté, ce qui évite que les navigateurs headless E2E/Lighthouse polluent
+      // la propriété GA4 de PROD (hostname=localhost, géo datacenter). Config-driven,
+      // pas de measurement ID en dur dans le bundle client.
+      VITE_GA_MEASUREMENT_ID: process.env.VITE_GA_MEASUREMENT_ID || "",
     },
-  });
+  };
 };
 
 export const headers: HeadersFunction = () => ({
@@ -155,7 +160,7 @@ export const headers: HeadersFunction = () => ({
 
 // Reject POST requests from bots/crawlers - root route has no forms
 export const action = async (_args: ActionFunctionArgs) => {
-  return json(
+  return data(
     { error: "Method not allowed" },
     { status: 405, headers: { Allow: "GET" } },
   );
@@ -164,50 +169,16 @@ export const action = async (_args: ActionFunctionArgs) => {
 // Re-exports depuis module neutre pour éviter la dépendance circulaire root ↔ Navbar
 export { useOptionalUser, useRootCart } from "./hooks/useRootData";
 
-declare module "@remix-run/node" {
-  interface AppLoadContext {
-    remixService: any;
-    remixIntegration?: any; // injection côté Nest: RemixApiService
-    parsedBody?: any;
-    user: unknown;
-  }
-}
-
-/** Error boundary that silently catches ChatWidget crashes without affecting the app. */
-class ChatWidgetErrorBoundary extends Component<
-  { children: ReactNode },
-  { hasError: boolean }
-> {
-  constructor(props: { children: ReactNode }) {
-    super(props);
-    this.state = { hasError: false };
-  }
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-  componentDidCatch(error: Error, info: ErrorInfo) {
-    logger.warn(
-      "[ChatWidget] crash intercepte:",
-      error.message,
-      info.componentStack?.slice(0, 200),
-    );
-  }
-  render() {
-    if (this.state.hasError) return null;
-    return this.props.children;
-  }
-}
-
 /** Lazy-loaded ChatWidget wrapped in error boundary + suspense + hydration guard */
 function ChatWidgetSafe() {
   const isHydrated = useHydrated();
   if (!isHydrated) return null;
   return (
-    <ChatWidgetErrorBoundary>
+    <LazyBoundary name="ChatWidget">
       <Suspense fallback={null}>
         <ChatWidget />
       </Suspense>
-    </ChatWidgetErrorBoundary>
+    </LazyBoundary>
   );
 }
 
@@ -359,24 +330,22 @@ function AppShell({ children }: { children: React.ReactNode }) {
       {...pageRoleAttrs}
     >
       {!hideGlobalNavbar && <Navbar />}
-      <main className="flex-grow flex flex-col">
-        <div className="flex-grow">{children}</div>
+      <main className="grow flex flex-col">
+        <div className="grow">{children}</div>
       </main>
-      {!hideGlobalFooter && (
-        <Suspense fallback={null}>
-          <GlobalFooter />
-        </Suspense>
-      )}
+      {!hideGlobalFooter && <LazyFooter />}
       {!hideBottomNav && (
-        <Suspense fallback={null}>
-          <BottomNav />
-        </Suspense>
+        <LazyBoundary name="BottomNav">
+          <Suspense fallback={null}>
+            <BottomNav />
+          </Suspense>
+        </LazyBoundary>
       )}
       <NotificationContainer />
       <button
         onClick={scrollToTop}
         type="button"
-        className={`fixed bottom-40 right-4 md:bottom-24 md:right-8 z-[9999] w-12 h-12 rounded-full shadow-2xl flex items-center justify-center bg-cta hover:bg-cta-hover text-white transition-all duration-300 hover:scale-110 ${showScrollTop ? "opacity-100 scale-100" : "opacity-0 scale-50 pointer-events-none"}`}
+        className={`fixed bottom-40 right-4 md:bottom-24 md:right-8 z-[9999] w-12 h-12 rounded-full shadow-2xl flex items-center justify-center bg-cta hover:bg-cta-hover text-black transition-all duration-300 hover:scale-110 ${showScrollTop ? "opacity-100 scale-100" : "opacity-0 scale-50 pointer-events-none"}`}
         aria-label="Retour en haut"
       >
         <ChevronUp className="w-6 h-6" />
@@ -395,6 +364,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const data = useRouteLoaderData<typeof loader>("root");
   const nonce = data?.cspNonce || "";
   const isBot = data?.isBot ?? false;
+  // GA4 mesure uniquement quand l'ID est provisionné (PROD). Vide en DEV/PREPROD
+  // → pas de tag → pas de pollution CI/headless. Cf. loader ENV ci-dessus.
+  const gaMeasurementId = data?.ENV?.VITE_GA_MEASUREMENT_ID ?? "";
 
   return (
     <html lang="fr" className="h-full" suppressHydrationWarning>
@@ -432,8 +404,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <link rel="stylesheet" href={animationsStylesheet} />
         </noscript>
         {/* Google Analytics 4 - Optimisé avec requestIdleCallback + Consent Mode v2 (RGPD) */}
-        {/* 🤖 Bot filter: ne pas charger gtag pour les bots (évite pollution GA4) */}
-        {!isBot && (
+        {/* Double garde anti-pollution GA4 :
+            1. !isBot         → exclut les crawlers (UA serveur)
+            2. gaMeasurementId → l'ID n'est provisionné qu'en PROD (docker-compose.prod.yml),
+               donc pas de tag en DEV/PREPROD (stoppe la pollution headless E2E/Lighthouse). */}
+        {!isBot && gaMeasurementId !== "" && (
           <script
             nonce={nonce}
             suppressHydrationWarning
@@ -463,11 +438,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
                 var loadScript = function() {
                   var script = document.createElement('script');
-                  script.src = 'https://www.googletagmanager.com/gtag/js?id=G-ZVG6K5R740';
+                  script.src = 'https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}';
                   script.async = true;
                   script.onload = function() {
                     gtag('js', new Date());
-                    gtag('config', 'G-ZVG6K5R740', {
+                    gtag('config', '${gaMeasurementId}', {
                       page_title: document.title,
                       page_location: window.location.href,
                       send_page_view: false

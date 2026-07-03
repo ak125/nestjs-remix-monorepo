@@ -1,4 +1,3 @@
-import { Link } from "@remix-run/react";
 import {
   ShieldCheck,
   AlertTriangle,
@@ -6,6 +5,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { memo } from "react";
+import { Link } from "react-router";
 import { Card, CardContent, CardHeader } from "~/components/ui/card";
 
 interface SelectionCriterion {
@@ -79,7 +79,7 @@ export const R2TransactionGuide = memo(function R2TransactionGuide({
                   key={c.key}
                   className="flex items-start gap-2 text-sm text-gray-700"
                 >
-                  <ShieldCheck className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                  <ShieldCheck className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
                   <span>
                     <span className="font-medium text-gray-900">{c.label}</span>{" "}
                     — {c.guidance}
@@ -91,7 +91,7 @@ export const R2TransactionGuide = memo(function R2TransactionGuide({
                   key={`rule-${i}`}
                   className="flex items-start gap-2 text-sm text-gray-700"
                 >
-                  <ShieldCheck className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                  <ShieldCheck className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
                   <span>{rule}</span>
                 </li>
               ))}
@@ -127,7 +127,7 @@ export const R2TransactionGuide = memo(function R2TransactionGuide({
                   key={i}
                   className="flex items-start gap-2 text-sm text-gray-700"
                 >
-                  <PackageCheck className="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" />
+                  <PackageCheck className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
                   <span>{item}</span>
                 </li>
               ))}
@@ -154,7 +154,7 @@ export const R2TransactionGuide = memo(function R2TransactionGuide({
                   key={i}
                   className="flex items-start gap-2 text-sm text-gray-700"
                 >
-                  <AlertTriangle className="w-4 h-4 text-rose-500 mt-0.5 flex-shrink-0" />
+                  <AlertTriangle className="w-4 h-4 text-rose-500 mt-0.5 shrink-0" />
                   <span>{item}</span>
                 </li>
               ))}

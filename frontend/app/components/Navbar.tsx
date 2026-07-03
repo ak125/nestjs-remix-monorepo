@@ -1,4 +1,3 @@
-import { Link, useNavigate } from "@remix-run/react";
 import {
   Bell,
   BookOpen,
@@ -14,6 +13,7 @@ import {
   X,
 } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router";
 
 import { registerCartSidebarSetter } from "~/hooks/useCartSidebar";
 import { useNativeDialog } from "~/hooks/useNativeDialog";
@@ -65,7 +65,7 @@ export const Navbar = memo(function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const progressBarRef = useRef<HTMLDivElement>(null);
-  const rafIdRef = useRef<number>();
+  const rafIdRef = useRef<number>(undefined);
   const navRef = useRef<HTMLElement>(null);
 
   // Scroll detection + progress bar (P3 perf: refs pour éviter setState inutiles)
@@ -181,7 +181,7 @@ export const Navbar = memo(function Navbar() {
             >
               <ShoppingCart className="w-5 h-5" />
               {summary.total_items > 0 && (
-                <span className="absolute top-1 right-1 w-4 h-4 bg-cta rounded-full text-[9px] font-bold flex items-center justify-center text-white">
+                <span className="absolute top-1 right-1 w-4 h-4 bg-cta rounded-full text-[9px] font-bold flex items-center justify-center text-black">
                   {summary.total_items > 99 ? "99+" : summary.total_items}
                 </span>
               )}
@@ -219,7 +219,7 @@ export const Navbar = memo(function Navbar() {
           <Link
             to="/"
             prefetch="intent"
-            className="no-style no-visited flex-shrink-0 group hidden lg:block"
+            className="no-style no-visited shrink-0 group hidden lg:block"
             aria-label="Retour à l'accueil"
           >
             <span
@@ -233,7 +233,7 @@ export const Navbar = memo(function Navbar() {
           </Link>
 
           {/* DESKTOP NAV LINKS */}
-          <div className="hidden lg:flex items-center gap-1 min-w-0 flex-shrink">
+          <div className="hidden lg:flex items-center gap-1 min-w-0 shrink">
             <Link
               to="/#catalogue"
               onClick={(e) => scrollToSection(e, "catalogue")}
@@ -264,10 +264,10 @@ export const Navbar = memo(function Navbar() {
 
             <Link
               to="/diagnostic-auto"
-              className="no-style no-visited relative px-5 py-2.5 text-sm font-bold text-white rounded-xl bg-gradient-to-r from-cta to-cta-hover ring-1 ring-cta-light/30 shadow-lg shadow-cta/30 hover:shadow-xl hover:shadow-cta/40 hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center gap-2 overflow-hidden group"
+              className="no-style no-visited relative px-5 py-2.5 text-sm font-bold text-black rounded-xl bg-gradient-to-r from-cta to-cta-hover ring-1 ring-cta-light/30 shadow-lg shadow-cta/30 hover:shadow-xl hover:shadow-cta/40 hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center gap-2 overflow-hidden group"
             >
               <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/15 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-              <ScanLine className="w-4 h-4 text-white relative group-hover:scale-110 transition-transform" />
+              <ScanLine className="w-4 h-4 text-black relative group-hover:scale-110 transition-transform" />
               <span className="relative">Diagnostic</span>
               <span className="relative text-[10px] font-bold bg-white/20 px-1.5 py-0.5 rounded-md">
                 GRATUIT
@@ -310,7 +310,7 @@ export const Navbar = memo(function Navbar() {
           </form>
 
           {/* DESKTOP: User actions */}
-          <div className="hidden lg:flex items-center gap-1 flex-shrink-0">
+          <div className="hidden lg:flex items-center gap-1 shrink-0">
             {/* Cart */}
             <button
               onClick={toggleCart}
@@ -323,7 +323,7 @@ export const Navbar = memo(function Navbar() {
               {summary.total_items > 0 && (
                 <Badge
                   variant="destructive"
-                  className="min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-bold bg-cta text-white shadow-sm"
+                  className="min-w-[18px] h-[18px] px-1 flex items-center justify-center text-[10px] font-bold bg-cta text-black shadow-sm"
                 >
                   {summary.total_items > 99 ? "99+" : summary.total_items}
                 </Badge>
@@ -358,7 +358,7 @@ export const Navbar = memo(function Navbar() {
                 <Link
                   to="/register"
                   rel="nofollow"
-                  className="no-style no-visited flex px-5 py-2.5 text-sm font-bold text-white bg-cta hover:bg-cta-hover rounded-lg transition-all hover:shadow-lg active:scale-95"
+                  className="no-style no-visited flex px-5 py-2.5 text-sm font-bold text-black bg-cta hover:bg-cta-hover rounded-lg transition-all hover:shadow-lg active:scale-95"
                 >
                   Inscription
                 </Link>
@@ -374,114 +374,114 @@ export const Navbar = memo(function Navbar() {
         aria-label="Menu de navigation"
         className="navdrawer navdrawer-left fixed inset-y-0 left-0 m-0 h-full max-h-none w-[85vw] sm:max-w-sm bg-navy text-white p-0 backdrop:bg-neutral-900/80 open:flex flex-col"
       >
-          <div className="p-4 border-b border-white/10">
-            <div className="text-white font-heading font-extrabold tracking-tight text-left text-lg font-semibold">
-              <span className="text-white">AUTO</span>
-              <span className="text-cta">MECANIK</span>
-            </div>
+        <div className="p-4 border-b border-white/10">
+          <div className="text-white font-heading font-extrabold tracking-tight text-left text-lg font-semibold">
+            <span className="text-white">AUTO</span>
+            <span className="text-cta">MECANIK</span>
           </div>
+        </div>
 
-          <nav className="flex flex-col py-2" aria-label="Menu mobile">
-            <Link
-              to="/#catalogue"
-              onClick={closeMenu}
-              className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
-            >
-              <Package className="w-4 h-4" />
-              Catalogue pièces auto
-            </Link>
-            <Link
-              to="/#marques"
-              onClick={closeMenu}
-              className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
-            >
-              <Search className="w-4 h-4" />
-              Marques &amp; Constructeurs
-            </Link>
-            <Link
-              to="/blog-pieces-auto"
-              onClick={closeMenu}
-              className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
-            >
-              <BookOpen className="w-4 h-4" />
-              Blog
-            </Link>
-            <Link
-              to="/diagnostic-auto"
-              onClick={closeMenu}
-              className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-cta hover:text-cta-light hover:bg-white/[0.06] transition-colors"
-            >
-              <ScanLine className="w-4 h-4" />
-              Diagnostic
-              <span className="text-[10px] font-bold bg-cta/20 text-cta px-1.5 py-0.5 rounded-md ml-auto">
-                GRATUIT
-              </span>
-            </Link>
+        <nav className="flex flex-col py-2" aria-label="Menu mobile">
+          <Link
+            to="/#catalogue"
+            onClick={closeMenu}
+            className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
+          >
+            <Package className="w-4 h-4" />
+            Catalogue pièces auto
+          </Link>
+          <Link
+            to="/#marques"
+            onClick={closeMenu}
+            className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
+          >
+            <Search className="w-4 h-4" />
+            Marques &amp; Constructeurs
+          </Link>
+          <Link
+            to="/blog-pieces-auto"
+            onClick={closeMenu}
+            className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
+          >
+            <BookOpen className="w-4 h-4" />
+            Blog
+          </Link>
+          <Link
+            to="/diagnostic-auto"
+            onClick={closeMenu}
+            className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-cta hover:text-cta-light hover:bg-white/[0.06] transition-colors"
+          >
+            <ScanLine className="w-4 h-4" />
+            Diagnostic
+            <span className="text-[10px] font-bold bg-cta/20 text-cta px-1.5 py-0.5 rounded-md ml-auto">
+              GRATUIT
+            </span>
+          </Link>
 
-            <div className="border-t border-white/10 my-2" />
+          <div className="border-t border-white/10 my-2" />
 
-            {user ? (
-              <>
-                {user.level && user.level >= 3 && (
-                  <Link
-                    to="/commercial"
-                    onClick={closeMenu}
-                    className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-cta hover:text-cta-light hover:bg-white/[0.06] transition-colors"
-                  >
-                    <Package className="w-4 h-4" />
-                    Espace Commercial
-                  </Link>
-                )}
+          {user ? (
+            <>
+              {user.level && user.level >= 3 && (
                 <Link
-                  to="/account/dashboard"
+                  to="/commercial"
                   onClick={closeMenu}
-                  className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
+                  className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-cta hover:text-cta-light hover:bg-white/[0.06] transition-colors"
                 >
-                  <User className="w-4 h-4" />
-                  Mon compte
+                  <Package className="w-4 h-4" />
+                  Espace Commercial
                 </Link>
-                <Link
-                  to="/notifications"
-                  onClick={closeMenu}
-                  className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
-                >
-                  <Bell className="w-4 h-4" />
-                  Notifications
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link
-                  to="/login"
-                  rel="nofollow"
-                  onClick={closeMenu}
-                  className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
-                >
-                  <User className="w-4 h-4" />
-                  Connexion
-                </Link>
-                <Link
-                  to="/register"
-                  rel="nofollow"
-                  onClick={closeMenu}
-                  className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
-                >
-                  <User className="w-4 h-4" />
-                  Inscription
-                </Link>
-              </>
-            )}
+              )}
+              <Link
+                to="/account/dashboard"
+                onClick={closeMenu}
+                className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
+              >
+                <User className="w-4 h-4" />
+                Mon compte
+              </Link>
+              <Link
+                to="/notifications"
+                onClick={closeMenu}
+                className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
+              >
+                <Bell className="w-4 h-4" />
+                Notifications
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                rel="nofollow"
+                onClick={closeMenu}
+                className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
+              >
+                <User className="w-4 h-4" />
+                Connexion
+              </Link>
+              <Link
+                to="/register"
+                rel="nofollow"
+                onClick={closeMenu}
+                className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
+              >
+                <User className="w-4 h-4" />
+                Inscription
+              </Link>
+            </>
+          )}
 
-            <div className="border-t border-white/10 my-2" />
+          <div className="border-t border-white/10 my-2" />
 
-            <a
-              href={`tel:${SITE_CONFIG.contact.phone.raw}`}
-              className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
-            >
-              <Phone className="w-4 h-4" />
-              {SITE_CONFIG.contact.phone.display}
-            </a>
-          </nav>
+          <a
+            href={`tel:${SITE_CONFIG.contact.phone.raw}`}
+            className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
+          >
+            <Phone className="w-4 h-4" />
+            {SITE_CONFIG.contact.phone.display}
+          </a>
+        </nav>
       </dialog>
 
       {/* Cart Sidebar (portail, hors du flex) */}

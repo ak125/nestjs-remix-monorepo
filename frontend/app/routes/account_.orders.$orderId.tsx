@@ -1,17 +1,4 @@
 import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import {
-  useLoaderData,
-  Link,
-  Form,
-  useNavigate,
-  useRouteError,
-  isRouteErrorResponse,
-} from "@remix-run/react";
-import {
   ArrowLeft,
   Package,
   MapPin,
@@ -21,6 +8,16 @@ import {
   MessageSquare,
   RotateCcw,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+  Form,
+  useNavigate,
+  useRouteError,
+  isRouteErrorResponse,
+} from "react-router";
 
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { logger } from "~/utils/logger";
@@ -38,7 +35,7 @@ import {
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 import { getOrderDetails } from "../services/orders.server";
 
-export const meta: MetaFunction<typeof loader> = ({ data }) =>
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) =>
   createNoIndexMeta(
     data?.order?.orderNumber
       ? `Commande #${data.order.orderNumber}`
@@ -71,7 +68,7 @@ export async function loader({ request, params, context }: LoaderFunctionArgs) {
       throw new Response("Commande introuvable", { status: 404 });
     }
 
-    return json({ order, user });
+    return { order, user };
   } catch (error) {
     // Propager les Response HTTP (404, etc.) telles quelles
     if (error instanceof Response) {

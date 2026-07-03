@@ -12,7 +12,6 @@
  * ✅ Interface responsive avec dropdown
  */
 
-import { useFetcher } from "@remix-run/react";
 import {
   Bell,
   X,
@@ -27,6 +26,7 @@ import {
   EyeOff,
 } from "lucide-react";
 import { memo, useState, useEffect, useRef, useCallback } from "react";
+import { useFetcher } from "react-router";
 
 interface Notification {
   id: string;
@@ -88,7 +88,7 @@ export const NotificationCenter = memo(function NotificationCenter({
   const [showActions, setShowActions] = useState<string | null>(null);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const refreshIntervalRef = useRef<NodeJS.Timeout>();
+  const refreshIntervalRef = useRef<NodeJS.Timeout>(undefined);
 
   // Charger les notifications
   const loadNotifications = useCallback(() => {
@@ -382,7 +382,7 @@ export const NotificationCenter = memo(function NotificationCenter({
 
                         {/* Icône du type */}
                         <div
-                          className={`flex-shrink-0 mt-0.5 p-1 rounded-full bg-${typeColor}-100`}
+                          className={`shrink-0 mt-0.5 p-1 rounded-full bg-${typeColor}-100`}
                         >
                           <TypeIcon
                             className={`w-4 h-4 text-${typeColor}-600`}

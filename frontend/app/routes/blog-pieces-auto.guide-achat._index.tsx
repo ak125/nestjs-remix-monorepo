@@ -16,17 +16,6 @@
  */
 
 import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import {
-  Link,
-  useLoaderData,
-  useRouteError,
-  isRouteErrorResponse,
-} from "@remix-run/react";
-import {
   FAMILY_IDS_ORDERED,
   findFamilyIdByKeyword,
 } from "@repo/database-types";
@@ -50,6 +39,15 @@ import {
   X,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import {
+  Link,
+  useLoaderData,
+  useRouteError,
+  isRouteErrorResponse,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  data,
+} from "react-router";
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Badge } from "~/components/ui/badge";
@@ -164,7 +162,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     `Guides: ${guides.length}, Conseils: ${relatedAdvice.length}/${totalAdvice}`,
   );
 
-  return json<LoaderData>(
+  return data(
     { guides, relatedAdvice, totalAdvice },
     {
       headers: {
@@ -184,7 +182,7 @@ export const headers = buildCacheHeaders(
 /* ===========================
    Meta + Structured Data
 =========================== */
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   const count = data?.guides?.length ?? 0;
   const canonicalUrl =
     "https://www.automecanik.com/blog-pieces-auto/guide-achat";
@@ -575,7 +573,7 @@ function FaqSection() {
                     {item.q}
                   </span>
                   <ChevronDown
-                    className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform ${openIndex === idx ? "rotate-180" : ""}`}
+                    className={`w-4 h-4 text-gray-400 shrink-0 transition-transform ${openIndex === idx ? "rotate-180" : ""}`}
                   />
                 </button>
                 {openIndex === idx && (
@@ -813,7 +811,7 @@ export default function BlogGuidesIndex() {
                       <CardContent className="p-4">
                         <div className="flex items-start gap-3">
                           <div
-                            className={`w-10 h-10 rounded-lg bg-gradient-to-br ${item.color} flex items-center justify-center flex-shrink-0`}
+                            className={`w-10 h-10 rounded-lg bg-gradient-to-br ${item.color} flex items-center justify-center shrink-0`}
                           >
                             <Icon className="w-5 h-5 text-white" />
                           </div>
@@ -925,7 +923,7 @@ export default function BlogGuidesIndex() {
                 <Card className="overflow-hidden border-2 border-gray-100 hover:border-green-300 hover:shadow-2xl hover:shadow-green-100/50 transition-all duration-300 group-hover:-translate-y-1">
                   <div className="flex flex-col md:flex-row">
                     {/* Image */}
-                    <div className="relative md:w-80 h-48 md:h-auto flex-shrink-0 overflow-hidden">
+                    <div className="relative md:w-80 h-48 md:h-auto shrink-0 overflow-hidden">
                       {featuredGuide.featuredImage ? (
                         <ResponsiveImage
                           src={featuredGuide.featuredImage}
@@ -1024,7 +1022,7 @@ export default function BlogGuidesIndex() {
                   >
                     <Card className="h-full hover:shadow-xl hover:shadow-blue-100/50 transition-all duration-300 border border-blue-200 hover:border-blue-400 group-hover:-translate-y-0.5 bg-white overflow-hidden">
                       <div className="flex flex-row h-full">
-                        <div className="relative w-28 flex-shrink-0 overflow-hidden">
+                        <div className="relative w-28 shrink-0 overflow-hidden">
                           <img
                             src="/images/og/outil.webp"
                             alt=""
@@ -1180,7 +1178,7 @@ export default function BlogGuidesIndex() {
                     >
                       <Card className="h-full hover:shadow-xl hover:shadow-green-100/50 transition-all duration-300 border border-gray-100 hover:border-green-300 group-hover:-translate-y-0.5">
                         <div className="flex flex-row h-full">
-                          <div className="relative w-36 flex-shrink-0 overflow-hidden">
+                          <div className="relative w-36 shrink-0 overflow-hidden">
                             {guide.featuredImage ? (
                               <ResponsiveImage
                                 src={guide.featuredImage}
@@ -1626,7 +1624,7 @@ export default function BlogGuidesIndex() {
               to="/blog-pieces-auto/conseils"
               className="group flex items-center gap-4 rounded-lg p-3 hover:bg-blue-100/60 transition-colors"
             >
-              <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+              <div className="relative w-20 h-20 rounded-lg overflow-hidden shrink-0">
                 <img
                   src="/images/og/blog-conseil.webp"
                   alt="Conseils pratiques auto"
@@ -1647,7 +1645,7 @@ export default function BlogGuidesIndex() {
                   </span>
                 </p>
               </div>
-              <ArrowRight className="w-4 h-4 text-blue-400 group-hover:text-blue-600 flex-shrink-0 ml-auto" />
+              <ArrowRight className="w-4 h-4 text-blue-400 group-hover:text-blue-600 shrink-0 ml-auto" />
             </Link>
           </div>
         </div>

@@ -5,15 +5,16 @@
  * Route: /commercial/vehicles/compatibility
  */
 
+import { ArrowRight, Car, Cog, Search } from "lucide-react";
+import { useState } from "react";
 import {
-  json,
   redirect,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, Form, Link } from "@remix-run/react";
-import { ArrowRight, Car, Cog, Search } from "lucide-react";
-import { useState } from "react";
+  useLoaderData,
+  Form,
+  Link,
+} from "react-router";
 import { Alert } from "~/components/ui/alert";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
@@ -137,21 +138,21 @@ export async function loader({ context, request }: LoaderFunctionArgs) {
       }
     }
 
-    return json<CompatibilityData>({
+    return {
       user,
       compatibilityResult,
       partsByVehicle,
       vehicleInfo,
       searchMode,
       error,
-    });
+    };
   } catch (err) {
     logger.error("Erreur loader compatibilité:", err);
-    return json<CompatibilityData>({
+    return {
       user,
       searchMode: null,
       error: "Erreur serveur",
-    });
+    };
   }
 }
 

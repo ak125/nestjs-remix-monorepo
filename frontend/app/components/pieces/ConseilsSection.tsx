@@ -197,7 +197,7 @@ function ConseilCard({
     <div className="border border-gray-200 rounded-lg overflow-hidden hover:border-green-300 transition-colors">
       <div className="p-4">
         <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-          <span className="flex-shrink-0 w-7 h-7 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-sm font-bold">
+          <span className="shrink-0 w-7 h-7 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-sm font-bold">
             {conseil.id}
           </span>
           {conseil.title}

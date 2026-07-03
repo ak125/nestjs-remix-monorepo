@@ -1,6 +1,6 @@
-import { Link } from "@remix-run/react";
 import { BookOpen, Wrench, FileText, HelpCircle } from "lucide-react";
 import { memo } from "react";
+import { Link } from "react-router";
 
 interface ContentGuidePillsProps {
   /** Alias gamme (ex: "disque-frein") — utilisé pour construire les URLs */
@@ -38,7 +38,7 @@ export const ContentGuidePills = memo(function ContentGuidePills({
     >
       {/* Phrase universelle — 18 mots */}
       <div className="flex items-center gap-2 mb-3">
-        <HelpCircle className="w-4 h-4 text-gray-400 flex-shrink-0" />
+        <HelpCircle className="w-4 h-4 text-gray-400 shrink-0" />
         <p className="text-sm text-gray-600">
           Sélectionnez votre véhicule ci-dessus pour afficher uniquement les{" "}
           {lowerName} compatibles avec votre motorisation.

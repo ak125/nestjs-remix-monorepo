@@ -18,6 +18,7 @@ import { Badge } from "~/components/ui/badge";
 import { FilterSection } from "~/components/ui/filter-section";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { logger } from "~/utils/logger";
+import { safeLocalStorage } from "~/utils/safe-storage";
 
 export interface FilterFacet {
   field: string;
@@ -67,7 +68,7 @@ export const SearchFilters = memo(function SearchFilters({
     loadPresets();
     // Restaurer les derniers filtres si aucun filtre actif
     if (Object.keys(currentFilters).length === 0) {
-      const lastFilters = localStorage.getItem(LAST_FILTERS_KEY);
+      const lastFilters = safeLocalStorage.getItem(LAST_FILTERS_KEY);
       if (lastFilters) {
         try {
           JSON.parse(lastFilters);
@@ -82,14 +83,14 @@ export const SearchFilters = memo(function SearchFilters({
   // 💾 Sauvegarder les filtres actuels dans localStorage
   useEffect(() => {
     if (Object.keys(currentFilters).length > 0) {
-      localStorage.setItem(LAST_FILTERS_KEY, JSON.stringify(currentFilters));
+      safeLocalStorage.setItem(LAST_FILTERS_KEY, JSON.stringify(currentFilters));
     }
   }, [currentFilters]);
 
   // 📥 Charger les presets depuis localStorage
   const loadPresets = () => {
     try {
-      const stored = localStorage.getItem(PRESET_STORAGE_KEY);
+      const stored = safeLocalStorage.getItem(PRESET_STORAGE_KEY);
       if (stored) {
         const presets = JSON.parse(stored);
         setSavedPresets(presets);
@@ -121,7 +122,7 @@ export const SearchFilters = memo(function SearchFilters({
 
     const updatedPresets = [...savedPresets, newPreset];
     setSavedPresets(updatedPresets);
-    localStorage.setItem(PRESET_STORAGE_KEY, JSON.stringify(updatedPresets));
+    safeLocalStorage.setItem(PRESET_STORAGE_KEY, JSON.stringify(updatedPresets));
 
     setPresetName("");
     setShowPresetModal(false);
@@ -133,7 +134,7 @@ export const SearchFilters = memo(function SearchFilters({
 
     const updatedPresets = savedPresets.filter((p) => p.id !== presetId);
     setSavedPresets(updatedPresets);
-    localStorage.setItem(PRESET_STORAGE_KEY, JSON.stringify(updatedPresets));
+    safeLocalStorage.setItem(PRESET_STORAGE_KEY, JSON.stringify(updatedPresets));
   };
 
   // 🔄 Charger un preset
@@ -226,7 +227,7 @@ export const SearchFilters = memo(function SearchFilters({
 
           <div className="relative z-10 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 bg-white/10 backdrop-blur-sm rounded-lg flex items-center justify-center border border-white/20">
+              <div className="w-9 h-9 bg-white/10 backdrop-blur-xs rounded-lg flex items-center justify-center border border-white/20">
                 <Package className="w-4 h-4 text-white" />
               </div>
               <div>
@@ -236,7 +237,7 @@ export const SearchFilters = memo(function SearchFilters({
                 </p>
               </div>
             </div>
-            <div className="bg-white/15 backdrop-blur-sm rounded-full px-2.5 py-1 border border-white/20">
+            <div className="bg-white/15 backdrop-blur-xs rounded-full px-2.5 py-1 border border-white/20">
               <span className="text-white font-bold text-xs">
                 {resultCount}
               </span>
@@ -837,7 +838,7 @@ export const SearchFilters = memo(function SearchFilters({
       {/* Modal sauvegarde preset */}
       {showPresetModal && (
         <div
-          className="fixed inset-0 bg-neutral-900/50 backdrop-blur-sm flex items-center justify-center z-50"
+          className="fixed inset-0 bg-neutral-900/50 backdrop-blur-xs flex items-center justify-center z-50"
           onClick={() => setShowPresetModal(false)}
         >
           <div

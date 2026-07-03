@@ -9,13 +9,6 @@
  */
 
 import {
-  json,
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, useFetcher, Link } from "@remix-run/react";
-import {
   ArrowLeft,
   ArrowRight,
   Wand2,
@@ -31,6 +24,14 @@ import {
   Save,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  useFetcher,
+  Link,
+} from "react-router";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -138,10 +139,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     );
 
     if (!gammesRes.ok) {
-      return json<LoaderData>({
+      return {
         gammes: [],
         error: "Erreur chargement gammes",
-      });
+      };
     }
 
     const gammesData = await gammesRes.json();
@@ -164,13 +165,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
       }),
     );
 
-    return json<LoaderData>({ gammes, error: null });
+    return { gammes, error: null };
   } catch (error) {
     logger.error("[Generator] Loader error:", error);
-    return json<LoaderData>({
+    return {
       gammes: [],
       error: "Erreur connexion backend",
-    });
+    };
   }
 }
 
@@ -210,13 +211,13 @@ export async function action({ request }: ActionFunctionArgs) {
         },
       ];
 
-      return json({ success: true, ragSources, intent: "fetch_rag" });
+      return { success: true, ragSources, intent: "fetch_rag" };
     } catch (error) {
-      return json({
+      return {
         success: false,
         error: "Erreur lecture RAG",
         intent: "fetch_rag",
-      });
+      };
     }
   }
 
@@ -279,16 +280,16 @@ export async function action({ request }: ActionFunctionArgs) {
           keywordsMatched: ["keyword1", "keyword2"],
         };
 
-        return json({
+        return {
           success: true,
           content: mockContent,
           intent: "generate",
-        });
+        };
       }
 
       const data = await res.json();
       // Extraire les champs pour éviter le doublon de 'success' dans content
-      return json({
+      return {
         success: data.success !== false,
         content: {
           r4: data.r4,
@@ -297,13 +298,13 @@ export async function action({ request }: ActionFunctionArgs) {
           keywordsMatched: data.keywordsMatched || [],
         },
         intent: "generate",
-      });
+      };
     } catch (error) {
-      return json({
+      return {
         success: false,
         error: "Erreur génération",
         intent: "generate",
-      });
+      };
     }
   }
 
@@ -334,20 +335,20 @@ export async function action({ request }: ActionFunctionArgs) {
 
       if (!res.ok) {
         const error = await res.json();
-        return json({
+        return {
           success: false,
           error: error.message || "Erreur sauvegarde R4",
           intent: "save_r4",
-        });
+        };
       }
 
-      return json({ success: true, intent: "save_r4", slug: r4Data.slug });
+      return { success: true, intent: "save_r4", slug: r4Data.slug };
     } catch (error) {
-      return json({
+      return {
         success: false,
         error: "Erreur serveur",
         intent: "save_r4",
-      });
+      };
     }
   }
 
@@ -380,24 +381,24 @@ export async function action({ request }: ActionFunctionArgs) {
 
       if (!res.ok) {
         const error = await res.json();
-        return json({
+        return {
           success: false,
           error: error.message || "Erreur sauvegarde R5",
           intent: "save_r5",
-        });
+        };
       }
 
-      return json({ success: true, intent: "save_r5", slug: r5Data.slug });
+      return { success: true, intent: "save_r5", slug: r5Data.slug };
     } catch (error) {
-      return json({
+      return {
         success: false,
         error: "Erreur serveur",
         intent: "save_r5",
-      });
+      };
     }
   }
 
-  return json({ success: false, error: "Action non reconnue" });
+  return { success: false, error: "Action non reconnue" };
 }
 
 export default function AdminSeoGenerator() {

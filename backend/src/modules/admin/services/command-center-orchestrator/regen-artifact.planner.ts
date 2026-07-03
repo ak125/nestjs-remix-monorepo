@@ -2,12 +2,19 @@ import { execFile } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import {
+  computePlanHash,
   type ExecutableActionKind,
   type ExecutionPlan,
+  type ExecutionReceipt,
 } from './executable-action.contract';
 import { type ShadowPlanner } from './orchestrator.service';
+import {
+  ExecutorUnavailableError,
+  RegenArtifactExecutor,
+  type RegenExecTarget,
+} from './regen-artifact.executor';
 
 const execFileAsync = promisify(execFile);
 
@@ -26,6 +33,10 @@ interface RegenTarget {
   readonly generatorRel: string;
   /** résumé humain de l'effet would-be. */
   readonly summary: string;
+  /** métadonnées d'exécution réelle (Phase 2 : ouverture de PR). */
+  readonly prTitle: string;
+  readonly commitMessage: string;
+  readonly branchPrefix: string;
 }
 
 const REGEN_TARGETS: Readonly<Record<string, RegenTarget>> = {
@@ -35,6 +46,10 @@ const REGEN_TARGETS: Readonly<Record<string, RegenTarget>> = {
     generatorRel: 'scripts/governance/build-command-center-snapshot.js',
     summary:
       'Régénérer command-center-snapshot.json depuis agent-operating-map.yaml (projection déterministe).',
+    prTitle: 'chore(registry): refresh command-center-snapshot.json',
+    commitMessage:
+      'chore(registry): refresh command-center-snapshot.json (projection déterministe, HITL ADR-087)',
+    branchPrefix: 'cc-auto/regen-command-center-snapshot',
   },
 };
 
@@ -102,9 +117,21 @@ export class RegenArtifactShadowPlanner implements ShadowPlanner {
   /** stdout du snapshot peut être volumineux (déterministe, mais large). */
   private static readonly DRY_RUN_MAX_BUFFER = 32 * 1024 * 1024;
 
+  /**
+   * Executor d'exécution réelle (Phase 2b) — OPTIONNEL. Absent (ex. tests shadow) ⇒
+   * `apply` indisponible (lève). Présent ⇒ `apply` ouvre une PR (double-gardé par le flag
+   * `COMMAND_CENTER_EXECUTOR=pr`, géré DANS l'executor).
+   */
+  constructor(@Optional() private readonly executor?: RegenArtifactExecutor) {}
+
   /** Liste des cibles regen connues (introspection / observabilité). */
   static knownTargets(): string[] {
     return Object.keys(REGEN_TARGETS);
+  }
+
+  /** Catalogue exposé à l'orchestrateur (ShadowPlanner.listActionIds). */
+  listActionIds(): string[] {
+    return RegenArtifactShadowPlanner.knownTargets();
   }
 
   /**
@@ -177,5 +204,32 @@ export class RegenArtifactShadowPlanner implements ShadowPlanner {
       // Projection déterministe : l'inverse d'un regen est `git checkout <fichier>`.
       reversible: true,
     };
+  }
+
+  /**
+   * Exécution réelle (Phase 2b, HITL) : régénère + ouvre une PR draft via l'executor.
+   * `plan_hash` recalculé ici (déterministe ⇒ identique à celui approuvé) pour la
+   * traçabilité du reçu. Lève si l'executor n'est pas câblé (DI) ou si le flag executor
+   * n'est pas posé (géré DANS l'executor → `ExecutorDisabledError`). 0 écriture du checkout
+   * runtime : l'executor travaille en worktree git temporaire.
+   */
+  async apply(actionId: string): Promise<ExecutionReceipt> {
+    const target = REGEN_TARGETS[actionId];
+    if (!target) throw new UnknownRegenTargetError(actionId);
+    if (!this.executor) {
+      throw new ExecutorUnavailableError('executor regen non câblé (DI)');
+    }
+    const root = this.repoRoot();
+    const plan = await this.plan(actionId); // recalcul → plan_hash déterministe
+    const execTarget: RegenExecTarget = {
+      action_id: actionId,
+      committedRel: target.committedRel,
+      generatorRel: target.generatorRel,
+      prTitle: target.prTitle,
+      commitMessage: target.commitMessage,
+      base: 'main',
+      branchPrefix: target.branchPrefix,
+    };
+    return this.executor.execute(execTarget, root, computePlanHash(plan));
   }
 }
