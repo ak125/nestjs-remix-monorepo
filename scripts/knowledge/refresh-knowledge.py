@@ -162,11 +162,42 @@ def _rel(p: Path) -> str:
     return str(p.relative_to(APP_ROOT))
 
 
-def build_frontmatter(mod: ModuleInfo) -> str:
+_FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n", re.DOTALL)
+
+# Fields derived from the module's code. `last_scan` is intentionally excluded:
+# it is a freshness marker, not derived content, so it must not by itself force a
+# rewrite (that was the source of the daily 49-module churn on every first commit
+# of the day — the frontmatter differed only because the calendar date rolled over).
+_CONTENT_KEYS = ("module", "sources", "primary_files", "depends_on")
+
+
+def _parse_frontmatter(existing: str) -> dict:
+    """Parsed YAML frontmatter of an existing .md, or {} if absent/invalid."""
+    m = _FRONTMATTER_RE.match(existing)
+    if not m:
+        return {}
+    try:
+        data = yaml.safe_load(m.group(1))
+    except yaml.YAMLError:
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def _content_fields(mod: ModuleInfo) -> dict:
+    """The derived (code-sourced) frontmatter fields, excluding `last_scan`."""
+    return {
+        "module": mod.name,
+        "sources": [_rel(mod.module_file.parent)],
+        "primary_files": [_rel(p) for p in mod.primary_files],
+        "depends_on": list(mod.depends_on),
+    }
+
+
+def build_frontmatter(mod: ModuleInfo, last_scan: str | None = None) -> str:
     fm: dict = {
         "module": mod.name,
         "sources": [_rel(mod.module_file.parent)],
-        "last_scan": str(date.today()),
+        "last_scan": last_scan or str(date.today()),
         "primary_files": [_rel(p) for p in mod.primary_files],
         "depends_on": mod.depends_on,
     }
@@ -232,8 +263,21 @@ def replace_auto_block(existing: str, mod: ModuleInfo) -> str:
     return existing.rstrip() + "\n\n" + new_block + "\n"
 
 
-def replace_frontmatter(existing: str, mod: ModuleInfo) -> str:
-    new_fm = f"---\n{build_frontmatter(mod)}\n---\n"
+def replace_frontmatter(existing: str, mod: ModuleInfo, preserve_unchanged: bool = False) -> str:
+    """Rewrite the YAML frontmatter block.
+
+    When `preserve_unchanged` is set (the `--headers-only` path), the existing
+    `last_scan` is kept if the module's derived content (`_CONTENT_KEYS`) is
+    unchanged — so a mere calendar-day rollover no longer rewrites every module's
+    frontmatter. `last_scan` bumps to today only when the derived content changed.
+    """
+    last_scan: str | None = None
+    if preserve_unchanged:
+        existing_fm = _parse_frontmatter(existing)
+        existing_content = {k: existing_fm.get(k) for k in _CONTENT_KEYS}
+        if existing_fm.get("last_scan") and existing_content == _content_fields(mod):
+            last_scan = str(existing_fm["last_scan"])
+    new_fm = f"---\n{build_frontmatter(mod, last_scan=last_scan)}\n---\n"
     if existing.startswith("---\n"):
         return re.sub(r"^---\n.*?\n---\n", new_fm, existing, count=1, flags=re.DOTALL)
     return new_fm + existing
@@ -253,10 +297,13 @@ def process(mode: str, mods: Iterable[ModuleInfo], headers_only: bool) -> tuple[
                 print(f"SKIP     {mod.name} (no .md, use `bootstrap` mode to create)")
             continue
         existing = md_path.read_text(encoding="utf-8")
-        new = replace_frontmatter(existing, mod) if headers_only else replace_auto_block(existing, mod)
-        if headers_only is False and not headers_only:
-            # Always refresh frontmatter too in non-headers-only modes (keeps last_scan current)
-            new = replace_frontmatter(new, mod)
+        if headers_only:
+            # Pre-commit fast path: refresh frontmatter only, preserving last_scan
+            # when the module's derived content is unchanged (no daily churn).
+            new = replace_frontmatter(existing, mod, preserve_unchanged=True)
+        else:
+            # Full refresh: rewrite the AUTO block, then the frontmatter.
+            new = replace_frontmatter(replace_auto_block(existing, mod), mod)
         if new != existing:
             md_path.write_text(new, encoding="utf-8")
             print(f"UPDATED  {_rel(md_path)}")
