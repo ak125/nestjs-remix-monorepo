@@ -74,7 +74,7 @@ jobs:
       - name: Setup Node + install monorepo deps (for tsx + zod-to-json-schema)
         uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
           cache-dependency-path: monorepo/package-lock.json
       - run: cd monorepo && npm ci --ignore-scripts
@@ -165,7 +165,7 @@ jobs:
 
       - name: Upload exports as artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: diag-canon-${{ github.run_id }}
           path: /tmp/canon/

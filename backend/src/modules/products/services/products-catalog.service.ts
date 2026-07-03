@@ -269,6 +269,11 @@ export class ProductsCatalogService extends SupabaseBaseService {
       const { data: tables, error: tablesError } = await this.client
         .rpc('get_table_names')
         .limit(10);
+      if (tablesError) {
+        this.logger.warn(
+          `RPC get_table_names unavailable → tables=[]: ${tablesError.message}`,
+        );
+      }
 
       return {
         debug: true,

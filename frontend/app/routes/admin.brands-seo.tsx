@@ -6,20 +6,17 @@
  * Éditeur: TipTap WYSIWYG
  */
 
+import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
+import { useState, lazy, Suspense } from "react";
 import {
-  json,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import {
   useLoaderData,
   Form,
   useNavigation,
   useActionData,
-} from "@remix-run/react";
-import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
-import { useState, lazy, Suspense } from "react";
+} from "react-router";
 import { HtmlContent } from "~/components/seo/HtmlContent";
 import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
@@ -164,19 +161,19 @@ export async function loader({ request }: LoaderFunctionArgs) {
       }
     }
 
-    return json({
+    return {
       brand: brandData.data,
       brands: brandsData.data || [],
       editorial,
-    });
+    };
   } catch (error) {
     logger.error("[Brands SEO Admin] Error:", error);
-    return json({
+    return {
       brand: null,
       brands: [],
       editorial: null,
       error: "Erreur chargement données",
-    });
+    };
   }
 }
 
@@ -186,17 +183,17 @@ export async function action({ request }: ActionFunctionArgs) {
 
   if (action === "update-seo") {
     // TODO: Implémenter API update
-    return json({ success: true, message: "SEO mis à jour" });
+    return { success: true, message: "SEO mis à jour" };
   }
 
   if (action === "update-editorial") {
     const marqueId = Number(formData.get("marque_id"));
     if (!marqueId || marqueId <= 0) {
-      return json({
+      return {
         success: false,
         message: "marque_id invalide",
         action: "editorial",
-      });
+      };
     }
 
     // Parse JSON fields from form (textareas)
@@ -228,11 +225,11 @@ export async function action({ request }: ActionFunctionArgs) {
         curated_by: (formData.get("curated_by") || "admin-ui").toString(),
       };
     } catch (e) {
-      return json({
+      return {
         success: false,
         message: (e as Error).message,
         action: "editorial",
-      });
+      };
     }
 
     try {
@@ -252,31 +249,31 @@ export async function action({ request }: ActionFunctionArgs) {
       );
       const data = await res.json();
       if (!res.ok) {
-        return json({
+        return {
           success: false,
           message: data?.message || "Erreur upsert éditorial",
           issues: data?.issues,
           action: "editorial",
-        });
+        };
       }
-      return json({
+      return {
         success: true,
         message: `Éditorial enregistré — enrichissement R7 : ${data.enrichment?.seoDecision} (score ${data.enrichment?.diversityScore?.toFixed?.(1) || "?"})`,
         enrichment: data.enrichment,
         editorial: data.editorial,
         action: "editorial",
-      });
+      };
     } catch (e) {
       logger.error("[Brands SEO Admin] PUT editorial failed:", e);
-      return json({
+      return {
         success: false,
         message: `Erreur réseau : ${(e as Error).message}`,
         action: "editorial",
-      });
+      };
     }
   }
 
-  return json({ success: false, message: "Action inconnue" });
+  return { success: false, message: "Action inconnue" };
 }
 
 export default function AdminBrandsSeo() {

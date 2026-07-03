@@ -15,22 +15,17 @@ import {
   UploadedFile,
   BadRequestException,
   NotFoundException,
-  ConflictException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import type { Response } from 'express';
-import { createHash } from 'crypto';
-import { execSync } from 'child_process';
 import { RagProxyService } from './rag-proxy.service';
-import { RagPipelineService } from './rag-pipeline.service';
 import { RagCleanupService } from './services/rag-cleanup.service';
-import { RagWebIngestDbService } from './services/rag-web-ingest-db.service';
-import { RagIngestionService } from './services/rag-ingestion.service';
 import { RagImageManagementService } from './services/rag-image-management.service';
 import { RagVideoManagementService } from './services/rag-video-management.service';
 import { RagGammeDetectionService } from './services/rag-gamme-detection.service';
 import { RagPhase2aShadowAuditService } from './services/rag-phase2a-shadow-audit.service';
+import { WebhookAuditService } from './services/webhook-audit.service';
 import type { Phase2aArtifactType } from './types/rag-phase2a.types';
 import type { RagDocInput, IngestDecision } from './types/rag-ingest.types';
 import {
@@ -43,21 +38,6 @@ import {
   SearchRequestDto,
   SearchResponseDto,
 } from './dto/search.dto';
-import {
-  PdfIngestSingleRequestSchema,
-  PdfIngestSingleRequestDto,
-  PdfIngestRunResponseDto,
-  PdfIngestJobStatusResponseDto,
-} from './dto/pdf-ingest.dto';
-import {
-  WebIngestRequestSchema,
-  WebIngestRequestDto,
-} from './dto/web-ingest.dto';
-import {
-  ManualIngestRequestSchema,
-  ManualIngestRequestDto,
-} from './dto/manual-ingest.dto';
-import { PipelineLaunchSchema, PipelineLaunchDto } from './dto/pipeline.dto';
 import {
   WebhookIngestionCompleteSchema,
   WebhookIngestionCompleteDto,
@@ -75,14 +55,12 @@ import { RAG_KNOWLEDGE_PATH } from '../../config/rag.config';
 export class RagProxyController {
   constructor(
     private readonly ragProxyService: RagProxyService,
-    private readonly ragPipelineService: RagPipelineService,
     private readonly ragCleanupService: RagCleanupService,
-    private readonly ragWebIngestDbService: RagWebIngestDbService,
-    private readonly ragIngestionService: RagIngestionService,
     private readonly ragImageManagementService: RagImageManagementService,
     private readonly ragVideoManagementService: RagVideoManagementService,
     private readonly ragGammeDetectionService: RagGammeDetectionService,
     private readonly ragPhase2aShadowAuditService: RagPhase2aShadowAuditService,
+    private readonly webhookAuditService: WebhookAuditService,
   ) {}
 
   @Post('chat')
@@ -180,295 +158,6 @@ export class RagProxyController {
   @ApiResponse({ status: 200, description: 'Corpus stats' })
   async getCorpusStats() {
     return this.ragProxyService.getCorpusStats();
-  }
-
-  @Get('admin/ingest/pdf/jobs')
-  @UseGuards(AuthenticatedGuard, IsAdminGuard)
-  @ApiOperation({ summary: 'List all PDF ingestion jobs' })
-  @ApiResponse({ status: 200, description: 'List of ingestion jobs' })
-  async listIngestionJobs() {
-    return this.ragProxyService.listIngestionJobs();
-  }
-
-  @Post('admin/ingest/pdf/single')
-  @HttpCode(HttpStatus.ACCEPTED)
-  @UseGuards(AuthenticatedGuard, IsAdminGuard)
-  @UsePipes(new ZodValidationPipe(PdfIngestSingleRequestSchema))
-  @ApiOperation({ summary: 'Trigger single-PDF ingest + reindex job' })
-  @ApiResponse({ status: 202, description: 'Job started' })
-  @ApiResponse({ status: 400, description: 'Invalid payload/path' })
-  @ApiResponse({ status: 503, description: 'RAG service unavailable' })
-  async ingestSinglePdf(
-    @Body() request: PdfIngestSingleRequestDto,
-  ): Promise<PdfIngestRunResponseDto> {
-    return this.ragProxyService.ingestSinglePdf(request);
-  }
-
-  @Get('admin/ingest/pdf/jobs/:jobId')
-  @UseGuards(AuthenticatedGuard, IsAdminGuard)
-  @ApiOperation({ summary: 'Get single-PDF ingest job status' })
-  @ApiResponse({ status: 200, description: 'Job status' })
-  async getSinglePdfJobStatus(
-    @Param('jobId') jobId: string,
-    @Query('tailLines') tailLines?: string,
-  ): Promise<PdfIngestJobStatusResponseDto> {
-    const parsedTailLines = Number.parseInt(tailLines || '120', 10);
-    const safeTailLines = Number.isFinite(parsedTailLines)
-      ? Math.min(500, Math.max(1, parsedTailLines))
-      : 120;
-    return this.ragProxyService.getSinglePdfJobStatus(jobId, safeTailLines);
-  }
-
-  @Post('admin/ingest/web/single')
-  @HttpCode(HttpStatus.ACCEPTED)
-  @UseGuards(AuthenticatedGuard, IsAdminGuard)
-  @UsePipes(new ZodValidationPipe(WebIngestRequestSchema))
-  @ApiOperation({ summary: 'Trigger web URL ingest job' })
-  @ApiResponse({ status: 202, description: 'Job started' })
-  @ApiResponse({ status: 400, description: 'Invalid URL' })
-  async ingestWebUrl(@Body() request: WebIngestRequestDto) {
-    return this.ragProxyService.ingestWebUrl(request);
-  }
-
-  @Get('admin/ingest/web/jobs')
-  @UseGuards(AuthenticatedGuard, IsAdminGuard)
-  @ApiOperation({ summary: 'List all web URL ingestion jobs (Redis + DB)' })
-  @ApiResponse({ status: 200, description: 'List of web ingestion jobs' })
-  async listWebJobs() {
-    // Redis (hot, last 24h) + DB fallback for historical jobs
-    const redisJobs = await this.ragProxyService.listWebJobs();
-    const dbJobs = await this.ragWebIngestDbService.listJobs(50);
-
-    // Merge: Redis wins for current jobs, DB fills gaps (expired from Redis)
-    const redisIds = new Set(redisJobs.map((j) => j.jobId));
-    const dbOnly = dbJobs
-      .filter((j) => !redisIds.has(j.job_id))
-      .map((j) => ({
-        jobId: j.job_id,
-        url: j.url,
-        status: j.status,
-        truthLevel: j.truth_level,
-        startedAt: Math.floor(new Date(j.started_at).getTime() / 1000),
-        finishedAt: j.finished_at
-          ? Math.floor(new Date(j.finished_at).getTime() / 1000)
-          : null,
-        returnCode: j.return_code,
-        logLines: [] as string[],
-        errorMessage: j.error_message,
-      }));
-
-    // Add errorMessage to Redis jobs from DB (Redis doesn't store it separately)
-    const dbByJobId = new Map(dbJobs.map((j) => [j.job_id, j]));
-    const enrichedRedis = redisJobs.map((j) => ({
-      ...j,
-      errorMessage: dbByJobId.get(j.jobId)?.error_message ?? null,
-    }));
-
-    return [...enrichedRedis, ...dbOnly].sort(
-      (a, b) => (b.startedAt ?? 0) - (a.startedAt ?? 0),
-    );
-  }
-
-  @Get('admin/ingest/web/jobs/:jobId')
-  @UseGuards(AuthenticatedGuard, IsAdminGuard)
-  @ApiOperation({ summary: 'Get web URL ingest job status and logs' })
-  @ApiResponse({ status: 200, description: 'Job status with logs' })
-  @ApiResponse({ status: 404, description: 'Job not found' })
-  async getWebJobStatus(@Param('jobId') jobId: string) {
-    // Try Redis first (has live logLines for running jobs)
-    const redisJob = await this.ragProxyService.getWebJob(jobId);
-    if (redisJob) return redisJob;
-
-    // Fallback to DB (permanent store, survives Redis TTL expiry)
-    const dbJob = await this.ragWebIngestDbService.getJob(jobId);
-    if (!dbJob) throw new NotFoundException('Web ingest job not found');
-
-    return {
-      jobId: dbJob.job_id,
-      url: dbJob.url,
-      status: dbJob.status,
-      truthLevel: dbJob.truth_level,
-      startedAt: Math.floor(new Date(dbJob.started_at).getTime() / 1000),
-      finishedAt: dbJob.finished_at
-        ? Math.floor(new Date(dbJob.finished_at).getTime() / 1000)
-        : null,
-      returnCode: dbJob.return_code,
-      logLines: dbJob.log_lines || [],
-      errorMessage: dbJob.error_message,
-    };
-  }
-
-  @Post('admin/ingest/web/jobs/:jobId/retry')
-  @HttpCode(HttpStatus.ACCEPTED)
-  @UseGuards(AuthenticatedGuard, IsAdminGuard)
-  @ApiOperation({ summary: 'Retry a failed web ingest job' })
-  @ApiResponse({ status: 202, description: 'Retry job started' })
-  @ApiResponse({ status: 404, description: 'Original job not found' })
-  @ApiResponse({ status: 409, description: 'Job still running' })
-  async retryWebJob(@Param('jobId') jobId: string) {
-    const existing = await this.ragWebIngestDbService.getJob(jobId);
-    if (!existing) throw new NotFoundException('Job not found or expired');
-    if (existing.status === 'running') {
-      throw new ConflictException('Job is still running');
-    }
-    return this.ragProxyService.ingestWebUrl({
-      url: existing.url,
-      truthLevel: existing.truth_level,
-    });
-  }
-
-  @Post('admin/ingest/manual')
-  @HttpCode(HttpStatus.CREATED)
-  @UseGuards(AuthenticatedGuard, IsAdminGuard)
-  @UsePipes(new ZodValidationPipe(ManualIngestRequestSchema))
-  @ApiOperation({
-    summary:
-      'Manual RAG ingest — paste content directly (bypasses web scraper)',
-  })
-  @ApiResponse({ status: 201, description: 'Document ingested' })
-  @ApiResponse({ status: 400, description: 'Validation error' })
-  @ApiResponse({ status: 409, description: 'Duplicate content' })
-  async ingestManual(@Body() request: ManualIngestRequestDto) {
-    // #2: Validate gamme aliases exist as .md files
-    const knownSlugs =
-      this.ragGammeDetectionService.getKnownGammeAliases(RAG_KNOWLEDGE_PATH);
-    const unknownAliases = request.gamme_aliases.filter(
-      (a) => !knownSlugs.includes(a),
-    );
-    if (unknownAliases.length > 0) {
-      // Suggest closest matches
-      const suggestions = unknownAliases.map((alias) => {
-        const close = knownSlugs
-          .filter((s) => s.includes(alias) || alias.includes(s))
-          .slice(0, 3);
-        return `"${alias}" → ${close.length ? close.join(', ') : 'aucune suggestion'}`;
-      });
-      throw new BadRequestException(
-        `Gamme alias inconnu(s) : ${suggestions.join(' ; ')}. Utilisez les slugs exacts des fichiers .md.`,
-      );
-    }
-
-    const sourceHash = createHash('sha256')
-      .update(request.content.slice(0, 500))
-      .digest('hex')
-      .slice(0, 12);
-    const source = `manual/${sourceHash}`;
-
-    // Include source_url in content attribution (not in DB — column doesn't exist)
-    const contentWithAttribution = request.source_url
-      ? `${request.content}\n\n(Source: ${request.source_url})`
-      : request.content;
-
-    const doc: RagDocInput = {
-      title: request.title,
-      content: contentWithAttribution,
-      source,
-      truth_level: request.truth_level,
-      domain: request.domain || '',
-      category: request.category,
-      gamme_aliases: request.gamme_aliases,
-      job_origin: 'manual-ingest',
-    };
-
-    try {
-      // Run through the full ingestion pipeline (dedup, F1-GATE, etc.)
-      const decision: IngestDecision =
-        await this.ragCleanupService.decideIngest(doc);
-
-      if (decision.decision === 'ARCHIVE_AS_DUPLICATE') {
-        return {
-          skipped: true,
-          decision: decision.decision,
-          reasons: decision.reasons,
-          message: 'Document déjà ingéré — ignoré (idempotent).',
-        };
-      }
-
-      if (decision.decision === 'REJECT_QUARANTINE') {
-        throw new ConflictException({
-          decision: decision.decision,
-          reasons: decision.reasons,
-        });
-      }
-
-      const result = await this.ragCleanupService.applyIngest(doc, decision);
-
-      // #1: Auto-materialize into .md files
-      let materializeStatus = 'skipped';
-      try {
-        for (const alias of request.gamme_aliases) {
-          execSync(
-            `python3 /opt/automecanik/app/scripts/seo/materialize-db-to-md.py ${alias} --apply --no-backup`,
-            { timeout: 30_000, encoding: 'utf-8' },
-          );
-        }
-        materializeStatus = 'done';
-      } catch (matErr) {
-        materializeStatus = `failed: ${matErr instanceof Error ? matErr.message.slice(0, 100) : 'unknown'}`;
-      }
-
-      return {
-        id: result.id,
-        source,
-        decision: decision.decision,
-        gamme_aliases: request.gamme_aliases,
-        content_length: request.content.length,
-        materialize: materializeStatus,
-        message: `Document ingere (${decision.decision}). Materialisation .md: ${materializeStatus}.`,
-      };
-    } catch (err) {
-      if (err instanceof ConflictException) throw err;
-      if (err instanceof BadRequestException) throw err;
-      const msg =
-        err instanceof Error
-          ? err.message
-          : typeof err === 'object' && err !== null
-            ? JSON.stringify(err)
-            : String(err);
-      throw new BadRequestException(`Ingest failed: ${msg}`);
-    }
-  }
-
-  /**
-   * Machine-to-machine ingest — même logique que admin/ingest/manual
-   * mais auth via X-Internal-Key (pas de session admin requise).
-   * Utilisé par les scripts RAG automatisés (Phase F).
-   */
-  @Post('internal/ingest/manual')
-  @HttpCode(HttpStatus.CREATED)
-  @UseGuards(InternalApiKeyGuard)
-  @UsePipes(new ZodValidationPipe(ManualIngestRequestSchema))
-  @ApiOperation({
-    summary: 'Machine-to-machine RAG ingest (OEM scripts, Phase F)',
-  })
-  @ApiResponse({ status: 201, description: 'Document ingested' })
-  @ApiResponse({ status: 400, description: 'Validation error' })
-  @ApiResponse({ status: 409, description: 'Duplicate content' })
-  async ingestManualInternal(
-    @Body() request: ManualIngestRequestDto,
-  ): Promise<object> {
-    return this.ingestManual(request);
-  }
-
-  /** List quarantined files with reason metadata. */
-  @Get('admin/quarantine')
-  @UseGuards(AuthenticatedGuard, IsAdminGuard)
-  @ApiOperation({ summary: 'List quarantined RAG files with reasons' })
-  @ApiResponse({ status: 200, description: 'List of quarantined files' })
-  async listQuarantinedFiles() {
-    return this.ragIngestionService.listQuarantinedFiles();
-  }
-
-  /** Retry a quarantined file: move back, re-validate. */
-  @Post('admin/quarantine/:filename/retry')
-  @HttpCode(HttpStatus.OK)
-  @UseGuards(AuthenticatedGuard, IsAdminGuard)
-  @ApiOperation({
-    summary: 'Retry a quarantined file (move back + re-validate)',
-  })
-  @ApiResponse({ status: 200, description: 'Retry result' })
-  async retryQuarantinedFile(@Param('filename') filename: string) {
-    return this.ragIngestionService.retryQuarantinedFile(filename);
   }
 
   /** List all RAG knowledge images (admin only). */
@@ -673,6 +362,34 @@ export class RagProxyController {
     return this.ragProxyService.handleWebhookCompletion(body);
   }
 
+  @Get('admin/webhook-audit')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
+  @ApiOperation({
+    summary: 'List recent ingestion webhook audit records (read-only)',
+  })
+  @ApiResponse({ status: 200, description: 'Recent webhook audit entries' })
+  async getWebhookAudit(@Query('limit') limit?: string) {
+    const parsedLimit = Number.parseInt(limit || '30', 10);
+    const safeLimit = Number.isFinite(parsedLimit)
+      ? Math.min(100, Math.max(1, parsedLimit))
+      : 30;
+    return this.webhookAuditService.getRecentWebhooks(safeLimit, 0);
+  }
+
+  @Get('admin/webhook-stats')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
+  @ApiOperation({
+    summary: 'Aggregated ingestion webhook stats over last N days (read-only)',
+  })
+  @ApiResponse({ status: 200, description: 'Webhook stats' })
+  async getWebhookStats(@Query('days') days?: string) {
+    const parsedDays = Number.parseInt(days || '7', 10);
+    const safeDays = Number.isFinite(parsedDays)
+      ? Math.min(90, Math.max(1, parsedDays))
+      : 7;
+    return this.webhookAuditService.getWebhookStats(safeDays);
+  }
+
   // ── Gamme detection admin ─────────────────────
 
   @Post('admin/gamme-detection/rerun')
@@ -844,77 +561,13 @@ export class RagProxyController {
     return { ...result, filesMatched: files.length };
   }
 
-  // ── Pipeline endpoints (async job orchestration) ──────────
-
-  @Post('admin/pipeline/launch')
-  @HttpCode(HttpStatus.ACCEPTED)
-  @UseGuards(InternalApiKeyGuard)
-  @UsePipes(new ZodValidationPipe(PipelineLaunchSchema))
-  @ApiOperation({
-    summary: 'Launch a pipeline step (audit / enrich / reindex)',
-  })
-  @ApiResponse({
-    status: 202,
-    description: 'Job queued — poll GET /runs/:runId',
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Invalid payload or scope not found',
-  })
-  @ApiResponse({ status: 409, description: 'Pipeline already running' })
-  async launchPipeline(
-    @Body() dto: PipelineLaunchDto,
-  ): Promise<{ run_id: string; status: string }> {
-    return this.ragPipelineService.launch(dto);
-  }
-
-  @Get('admin/pipeline/status')
-  @UseGuards(InternalApiKeyGuard)
-  @ApiOperation({
-    summary: 'Global pipeline status: lock + last runs + corpus metrics',
-  })
-  @ApiResponse({ status: 200, description: 'Pipeline status' })
-  async getPipelineStatus(): Promise<object> {
-    return this.ragPipelineService.getStatus();
-  }
-
-  @Get('admin/pipeline/runs/:runId')
-  @UseGuards(InternalApiKeyGuard)
-  @ApiOperation({ summary: 'Get a specific pipeline run state' })
-  @ApiResponse({ status: 200, description: 'Pipeline run' })
-  @ApiResponse({ status: 404, description: 'Run not found' })
-  async getPipelineRun(@Param('runId') runId: string) {
-    return this.ragPipelineService.getRunById(runId);
-  }
-
-  @Get('admin/pipeline/runs/:runId/logs')
-  @UseGuards(InternalApiKeyGuard)
-  @ApiOperation({ summary: 'Get pipeline run logs (snapshot, not streamed)' })
-  @ApiResponse({ status: 200, description: 'Log lines snapshot' })
-  @ApiResponse({ status: 404, description: 'Run not found' })
-  async getPipelineRunLogs(
-    @Param('runId') runId: string,
-    @Query('tail') tail?: string,
-  ) {
-    const tailLines = tail
-      ? Math.min(10_000, Math.max(1, parseInt(tail, 10) || 200))
-      : 200;
-    return this.ragPipelineService.getRunLogs(runId, tailLines);
-  }
-
-  @Post('admin/pipeline/runs/:runId/cancel')
-  @HttpCode(HttpStatus.OK)
-  @UseGuards(InternalApiKeyGuard)
-  @ApiOperation({ summary: 'Cancel a running or queued pipeline run' })
-  @ApiResponse({ status: 200, description: 'Run cancelled' })
-  @ApiResponse({
-    status: 400,
-    description: 'Run not cancellable in current status',
-  })
-  @ApiResponse({ status: 404, description: 'Run not found' })
-  async cancelPipelineRun(@Param('runId') runId: string) {
-    return this.ragPipelineService.cancelRun(runId);
-  }
+  // ── Pipeline endpoints RETIRÉS — rag-purge B8 (ADR-031/046) ──────────
+  // Les endpoints admin/pipeline/* (launch/status/runs/logs/cancel) pilotaient
+  // RagPipelineService = ingestion/reindex RAG « propre » (spawn de scripts → Weaviate).
+  // Architecture cible : RAG = consommateur du wiki, pour le chat seulement ; sa seule
+  // entrée d'ingestion = le sync wiki→rag (scripts/rag-sync/sync-wiki-exports-to-rag.py).
+  // L'application ne déclenche plus aucune ingestion RAG. RagPipelineService est conservé
+  // pour salvage (bannerisé, non câblé) — voir rag-pipeline.service.ts.
 
   // ── Phase 2A — Legacy Adapted Shadow Audit ──────────────
 

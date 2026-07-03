@@ -1,19 +1,19 @@
 ---
 name: web-vitals-audit
-description: Use when investigating INP/LCP/CLS regressions on Remix routes — detects shared-component reflow, eager-loaded Radix, hydration cost, below-fold blocks without content-visibility, CWV ingestion gaps. Triggers — "INP élevé sur X", "audit web-vitals", "root cause LCP/CLS". Strictly scoped to Core Web Vitals root-cause ; does NOT cover Lighthouse, SEO global, WCAG, bundle size, image optimization.
+description: Use when investigating INP/LCP/CLS regressions on Remix routes — detects shared-component reflow, eager-loaded Radix, hydration cost, below-fold blocks without content-visibility, CWV RUM beacon + aggregation ingestion gaps. Triggers — "INP élevé sur X", "audit web-vitals", "root cause LCP/CLS". Strictly scoped to Core Web Vitals root-cause ; does NOT cover Lighthouse, SEO global, WCAG, bundle size, image optimization.
 type: technique
 status: experimental
 owners: ['@ak125']
 domain: D3
 runtime_class: read-only
 llm_safe: true
-last_verified: '2026-05-23'
+last_verified: '2026-06-26'
 license: Internal - Automecanik
-compatibility: Claude Code in the AutoMecanik monorepo. Reads frontend/app/** + audit/registry/canonical.json + __seo_cwv_daily. No mutations.
+compatibility: Claude Code in the AutoMecanik monorepo. Reads frontend/app/** + audit/registry/canonical.json + the RUM chain __seo_cwv_raw/__seo_cwv_hourly/__seo_cwv_daily_rum (distinct from the lab table __seo_cwv_daily) + cron.job(_run_details). No mutations.
 allowed-tools: Read Grep Glob Bash
 tags: [audit, web-vitals, frontend, performance, inp, lcp, cls, remix]
 metadata:
-  version: "0.1"
+  version: "0.2"
   argument-hint: "[check-name or 'all']"
   spec: agentskills.io/specification v1
 ---
@@ -33,7 +33,7 @@ instrumentation web-vitals + Playwright + analyse manuelle.
 
 - Triggers utilisateur : "INP élevé sur X", "LCP régression sur Y", "CLS
   shifted blocks", "root cause web-vitals"
-- Après alerte CrUX / RUM / `__seo_cwv_daily` sur une route P0
+- Après alerte CrUX / RUM (`__seo_cwv_daily_rum`) ou lab (`__seo_cwv_daily`) sur une route P0
 - Avant un audit responsive (`responsive-audit` couvre touch targets / WCAG,
   pas la root-cause CWV)
 
@@ -47,7 +47,9 @@ instrumentation web-vitals + Playwright + analyse manuelle.
 - Hydration patterns coûteux (props serializable lourde, useState init)
 - Blocs below-fold sans `content-visibility: auto` (cause #694)
 - Composants Radix lourds eager-loaded en route (cause indirecte INP)
-- Gap ingestion `__seo_cwv_daily` (la stack existe-t-elle vraiment ?)
+- Gap d'ingestion **beacon RUM** : web-vitals wiré mais `__seo_cwv_raw` vide
+- Gap de **couverture d'agrégation** : raw présent mais `__seo_cwv_hourly` /
+  `__seo_cwv_daily_rum` non agrégés (incident `web-vitals-attribution-unstable`)
 
 ### EXCLUS explicitement
 - ❌ Lighthouse complet (déjà couvert par `responsive-audit` + CI
@@ -60,7 +62,7 @@ instrumentation web-vitals + Playwright + analyse manuelle.
 Si une demande utilisateur dépasse ce scope, **rediriger vers le skill
 existant** plutôt qu'étendre `web-vitals-audit`.
 
-## Architecture atomique (6 checks)
+## Architecture atomique (7 checks)
 
 ```
 .claude/skills/web-vitals-audit/
@@ -71,7 +73,8 @@ existant** plutôt qu'étendre `web-vitals-audit`.
     lcp-route-hydration.md            # init useState coûteux dans route
     cls-shifted-blocks.md             # absence aspect-ratio / fixed dim
     content-visibility-gap.md         # cause #694 (below-fold non cv:auto)
-    cwv-ingestion-gap.md              # __seo_cwv_daily vide alors que stack existe
+    cwv-beacon-ingestion-gap.md       # web-vitals wiré mais __seo_cwv_raw vide (RUM in)
+    cwv-aggregation-coverage-gap.md   # raw non agrégé → hourly/daily_rum (incident 06-03→23)
 ```
 
 **Un check = une responsabilité** (≤ 100 lignes).
@@ -83,7 +86,10 @@ existant** plutôt qu'étendre `web-vitals-audit`.
 | `audit/registry/canonical.json` | files frontend, routes Remix |
 | `frontend/app/components/**` | composants partagés (Sheet, Dialog) |
 | `frontend/app/routes/**` | eager imports, hydration cost |
-| `__seo_cwv_daily` via supabase MCP | ingestion CWV réelle |
+| `__seo_cwv_raw` via supabase MCP | beacons RUM bruts (bloc 3, TTL ~48h, humains) |
+| `__seo_cwv_hourly` / `__seo_cwv_daily_rum` via supabase MCP | agrégats RUM (bloc 4, pg_cron) |
+| `__seo_cwv_daily` via supabase MCP | **lab PageSpeed** (top-1k) — distinct du RUM |
+| `cron.job` / `cron.job_run_details` via supabase MCP | exécution pg_cron des agrégats |
 | `web-vitals` library calls grep | attribution wired? |
 | CrUX API / Sentry / GA4 | gap d'ingestion runtime (V2) |
 
@@ -104,9 +110,10 @@ strict V1, `incidents_proven:` OU `risk_documented:`.
 
 ## Procédure (orchestrateur)
 
-1. "audit web-vitals sur /pieces" → exécuter les 6 checks sur la route
+1. "audit web-vitals sur /pieces" → exécuter les 7 checks sur la route
    ciblée + ses composants partagés.
-2. "INP élevé global" → exécuter `inp-*` checks + `cwv-ingestion-gap`.
+2. "INP élevé global" → exécuter `inp-*` checks + `cwv-beacon-ingestion-gap`
+   + `cwv-aggregation-coverage-gap` (la boucle de mesure existe-t-elle ?).
 3. Format sortie : rapport markdown structuré par metric (INP/LCP/CLS) +
    liste de root-causes priorisées par severity.
 4. **Pas d'auto-fix**. Suggérer le patch (ex: `cv: auto` sur block X) en

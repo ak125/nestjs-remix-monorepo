@@ -1,5 +1,5 @@
-import { Link } from "@remix-run/react";
 import { ArrowRight, ShoppingBag, User, MapPin, Mail, Key } from "lucide-react";
+import { Link } from "react-router";
 
 import { cn } from "../../lib/utils";
 import { Badge } from "../ui/badge";

@@ -5,19 +5,6 @@
  */
 
 import {
-  json,
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import {
-  useLoaderData,
-  useNavigation,
-  Form,
-  Link,
-  useActionData,
-} from "@remix-run/react";
-import {
   ArrowLeft,
   AlertTriangle,
   Save,
@@ -27,6 +14,16 @@ import {
   ExternalLink,
   StopCircle,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  useNavigation,
+  Form,
+  Link,
+  useActionData,
+} from "react-router";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -72,9 +69,9 @@ interface LoaderData {
   error: string | null;
 }
 
-// Action data type union (for future use)
-type _ActionData =
-  | { success: true; action: "update" | "publish" }
+type ActionData =
+  | { success: boolean; action: "publish" }
+  | { success: true; action: "update" }
   | { success: false; errors: string[] };
 
 const SAFETY_GATE_COLORS: Record<string, string> = {
@@ -98,28 +95,31 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     });
 
     if (!res.ok) {
-      return json<LoaderData>({
+      return {
         diagnostic: null,
         error: "Diagnostic non trouvé",
-      });
+      };
     }
 
     const diagnostic = await res.json();
 
-    return json<LoaderData>({
+    return {
       diagnostic,
       error: null,
-    });
+    };
   } catch (error) {
     logger.error("[R5 Edit] Loader error:", error);
-    return json<LoaderData>({
+    return {
       diagnostic: null,
       error: "Erreur connexion backend",
-    });
+    };
   }
 }
 
-export async function action({ request, params }: ActionFunctionArgs) {
+export async function action({
+  request,
+  params,
+}: ActionFunctionArgs): Promise<ActionData> {
   const backendUrl = getInternalApiUrl("");
   const cookieHeader = request.headers.get("Cookie") || "";
   const { slug } = params;
@@ -135,7 +135,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
       },
     );
     const data = await res.json();
-    return json({ success: data.success, action: "publish" });
+    return { success: data.success, action: "publish" };
   }
 
   // Update diagnostic
@@ -161,7 +161,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   }
 
   if (errors.length > 0) {
-    return json({ success: false, errors });
+    return { success: false, errors };
   }
 
   // Parse arrays
@@ -203,16 +203,16 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
     if (!res.ok) {
       const error = await res.json();
-      return json({
+      return {
         success: false,
         errors: [error.message || "Erreur lors de la mise à jour"],
-      });
+      };
     }
 
-    return json({ success: true, action: "update" });
+    return { success: true, action: "update" };
   } catch (error) {
     logger.error("[R5 Edit] Action error:", error);
-    return json({ success: false, errors: ["Erreur serveur"] });
+    return { success: false, errors: ["Erreur serveur"] };
   }
 }
 

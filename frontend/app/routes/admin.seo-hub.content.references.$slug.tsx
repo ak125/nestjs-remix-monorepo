@@ -5,19 +5,6 @@
  */
 
 import {
-  json,
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import {
-  useLoaderData,
-  useNavigation,
-  Form,
-  Link,
-  useActionData,
-} from "@remix-run/react";
-import {
   ArrowLeft,
   BookOpen,
   Save,
@@ -26,6 +13,16 @@ import {
   Check,
   ExternalLink,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  useNavigation,
+  Form,
+  Link,
+  useActionData,
+} from "react-router";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -75,9 +72,10 @@ interface LoaderData {
   error: string | null;
 }
 
-// Action data type union (for future use)
-type _ActionData =
-  | { success: true; action: "update" | "publish" }
+// Action data type union (discriminates the success/error shapes returned below)
+type ActionData =
+  | { success: boolean; action: "publish" }
+  | { success: true; action: "update" }
   | { success: false; errors: string[] };
 
 export const meta: MetaFunction = () =>
@@ -99,32 +97,35 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     ]);
 
     if (!refRes.ok) {
-      return json<LoaderData>({
+      return {
         reference: null,
         gammes: [],
         error: "Référence non trouvée",
-      });
+      };
     }
 
     const reference = await refRes.json();
     const gammesData = gammesRes.ok ? await gammesRes.json() : { data: [] };
 
-    return json<LoaderData>({
+    return {
       reference,
       gammes: gammesData.data || [],
       error: null,
-    });
+    };
   } catch (error) {
     logger.error("[R4 Edit] Loader error:", error);
-    return json<LoaderData>({
+    return {
       reference: null,
       gammes: [],
       error: "Erreur connexion backend",
-    });
+    };
   }
 }
 
-export async function action({ request, params }: ActionFunctionArgs) {
+export async function action({
+  request,
+  params,
+}: ActionFunctionArgs): Promise<ActionData> {
   const backendUrl = getInternalApiUrl("");
   const cookieHeader = request.headers.get("Cookie") || "";
   const { slug } = params;
@@ -137,7 +138,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
       headers: { Cookie: cookieHeader },
     });
     const data = await res.json();
-    return json({ success: data.success, action: "publish" });
+    return { success: data.success, action: "publish" };
   }
 
   // Update reference
@@ -160,7 +161,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   }
 
   if (errors.length > 0) {
-    return json({ success: false, errors });
+    return { success: false, errors };
   }
 
   // Parse arrays
@@ -198,16 +199,16 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
     if (!res.ok) {
       const error = await res.json();
-      return json({
+      return {
         success: false,
         errors: [error.message || "Erreur lors de la mise à jour"],
-      });
+      };
     }
 
-    return json({ success: true, action: "update" });
+    return { success: true, action: "update" };
   } catch (error) {
     logger.error("[R4 Edit] Action error:", error);
-    return json({ success: false, errors: ["Erreur serveur"] });
+    return { success: false, errors: ["Erreur serveur"] };
   }
 }
 

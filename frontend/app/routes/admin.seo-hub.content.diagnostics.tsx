@@ -5,7 +5,7 @@
  * List/create/edit live in _index, new, $slug child routes.
  */
 
-import { Outlet } from "@remix-run/react";
+import { Outlet } from "react-router";
 
 export default function SeoHubContentDiagnosticsLayout() {
   return <Outlet />;

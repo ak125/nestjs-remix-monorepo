@@ -23,6 +23,15 @@ import { RegistryReaderService } from './services/registry-reader.service';
 import { CommandCenterController } from './controllers/command-center.controller';
 import { CommandCenterReaderService } from './services/command-center-reader.service';
 import { CommandCenterActionsService } from './services/command-center-actions.service';
+import {
+  CommandCenterOrchestratorService,
+  SHADOW_PLANNERS,
+  SHADOW_LEDGER,
+} from './services/command-center-orchestrator/orchestrator.service';
+import { RegenArtifactShadowPlanner } from './services/command-center-orchestrator/regen-artifact.planner';
+import { RegenArtifactExecutor } from './services/command-center-orchestrator/regen-artifact.executor';
+import { PrPropositionShadowPlanner } from './services/command-center-orchestrator/pr-proposition.planner';
+import { CommandCenterExecutionLedgerService } from './services/command-center-orchestrator/execution-ledger.service';
 import { ConfigurationController } from './controllers/configuration.controller';
 import { StockController } from './controllers/stock.controller'; // 🔥 Controller consolidé unique
 import { AdminController } from './controllers/admin.controller';
@@ -69,6 +78,7 @@ import {
 import { ConseilEnricherService } from './services/conseil-enricher.service'; // 🔄 R3 Conseils enricher
 import { CanonObservabilityService } from './services/canon-observability.service'; // 🛡️ Canon violation Sentry emitter
 import { PageBriefService } from './services/page-brief.service'; // 📋 Page Briefs CRUD + overlap
+import { SeoBriefService } from './services/seo-brief.service'; // 🧱 D1 — WIKI-driven evidence brief (ADR-059/090)
 import { BriefGatesService } from './services/brief-gates.service'; // 🚦 Pre-publish gates anti-cannibalisation
 import { HardGatesService } from './services/hard-gates.service'; // 🚦 Hard gates (attribution, no_guess, scope, contradiction, seo)
 import { KeywordDensityGateService } from './services/keyword-density-gate.service'; // 🚦 Gate F: keyword density check
@@ -211,6 +221,32 @@ import { SeoControlRefreshProcessor } from './processors/seo-control-refresh.pro
     RegistryReaderService,
     CommandCenterReaderService,
     CommandCenterActionsService,
+    CommandCenterOrchestratorService,
+    RegenArtifactExecutor, // Phase 2b : executor PR-based (double-gardé, inerte par défaut)
+    RegenArtifactShadowPlanner, // shadow-2 ① planner regen-artifact (ADR-087)
+    {
+      // shadow-3 ② planner pr-proposition : réutilise le planner regen comme source
+      // du would-be (composition). Fourni via factory car son ctor prend un ShadowPlanner.
+      provide: PrPropositionShadowPlanner,
+      useFactory: (regen: RegenArtifactShadowPlanner) =>
+        new PrPropositionShadowPlanner(regen),
+      inject: [RegenArtifactShadowPlanner],
+    },
+    {
+      // Liste des planners shadow auto-enregistrés au boot de l'orchestrateur.
+      provide: SHADOW_PLANNERS,
+      useFactory: (
+        regen: RegenArtifactShadowPlanner,
+        prProp: PrPropositionShadowPlanner,
+      ) => [regen, prProp],
+      inject: [RegenArtifactShadowPlanner, PrPropositionShadowPlanner],
+    },
+    CommandCenterExecutionLedgerService, // shadow-2b ledger admin_audit (ADR-087)
+    {
+      // Sink ledger injecté dans l'orchestrateur (append-only __admin_audit_log).
+      provide: SHADOW_LEDGER,
+      useExisting: CommandCenterExecutionLedgerService,
+    },
     ConfigurationService,
     StockManagementService, // ✅ Service principal stock
     WorkingStockService, // ✅ Service complémentaire (search, export, stats)
@@ -236,6 +272,7 @@ import { SeoControlRefreshProcessor } from './processors/seo-control-refresh.pro
     ConseilEnricherService, // 🔄 R3 Conseils S1-S8 enricher
     CanonObservabilityService, // 🛡️ Canon violation Sentry emitter (R3 PR-E)
     PageBriefService, // 📋 Page Briefs CRUD + overlap detection
+    SeoBriefService, // 🧱 D1 — WIKI-driven evidence brief generator (flag SEO_BRIEF_WIKI_ENABLED, OFF)
     BriefGatesService, // 🚦 Pre-publish gates anti-cannibalisation
     HardGatesService, // 🚦 Hard gates (attribution, no_guess, scope, contradiction, seo)
     KeywordDensityGateService, // 🚦 Gate F: keyword density (feature flag KEYWORD_DENSITY_GATE_ENABLED)

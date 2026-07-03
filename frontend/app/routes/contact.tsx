@@ -6,13 +6,12 @@
  * Intention : Rassurer / informer
  */
 
+import { useState, useRef, useEffect } from "react";
 import {
-  json,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import {
+  data,
   useLoaderData,
   useActionData,
   Form,
@@ -20,8 +19,7 @@ import {
   Link,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { useState, useRef, useEffect } from "react";
+} from "react-router";
 import { toast } from "sonner";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import Container from "~/components/layout/Container";
@@ -141,9 +139,7 @@ interface LoaderData {
   };
 }
 
-export async function loader({
-  request,
-}: LoaderFunctionArgs): Promise<Response> {
+export async function loader({ request }: LoaderFunctionArgs) {
   const session = await getSession(request);
   const userId = session.get("userId");
 
@@ -160,12 +156,28 @@ export async function loader({
     },
   };
 
-  return json(loaderData);
+  return loaderData;
+}
+
+/**
+ * Forme unifiée de la réponse de l'action.
+ * Chaque branche (validation, succès, erreur serveur) ne renseigne qu'un
+ * sous-ensemble des champs ; les consommateurs lisent par présence (`?.`),
+ * exactement comme le runtime le fait déjà.
+ */
+interface ActionData {
+  success: boolean;
+  fieldErrors?: Record<string, string>;
+  error?: string;
+  ticketNumber?: string;
+  ticket?: unknown;
 }
 
 export async function action({
   request,
-}: ActionFunctionArgs): Promise<Response> {
+}: ActionFunctionArgs): Promise<
+  ActionData | ReturnType<typeof data<ActionData>>
+> {
   const formData = await request.formData();
   const session = await getSession(request);
 
@@ -199,7 +211,8 @@ export async function action({
   }
 
   if (Object.keys(fieldErrors).length > 0) {
-    return json({ success: false, fieldErrors }, { status: 400 });
+    const validationData: ActionData = { success: false, fieldErrors };
+    return data(validationData, { status: 400 });
   }
 
   // Préparer les données de contact
@@ -233,23 +246,22 @@ export async function action({
 
   try {
     const result = await createContact(contactData);
-    return json({
+    const successData: ActionData = {
       success: true,
       ticketNumber: result.ticketNumber,
       ticket: result.ticket,
-    });
+    };
+    return successData;
   } catch (error) {
     logger.error("Erreur lors de la création du ticket:", error);
-    return json(
-      {
-        success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : "Une erreur est survenue lors de l'envoi du message",
-      },
-      { status: 500 },
-    );
+    const errorData: ActionData = {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Une erreur est survenue lors de l'envoi du message",
+    };
+    return data(errorData, { status: 500 });
   }
 }
 
@@ -426,7 +438,7 @@ export default function ContactPage() {
               <div className="space-y-4">
                 <div className="flex items-start">
                   <svg
-                    className="w-5 h-5 text-gray-400 mt-1 mr-3 flex-shrink-0"
+                    className="w-5 h-5 text-gray-400 mt-1 mr-3 shrink-0"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -453,7 +465,7 @@ export default function ContactPage() {
 
                 <div className="flex items-start">
                   <svg
-                    className="w-5 h-5 text-gray-400 mt-1 mr-3 flex-shrink-0"
+                    className="w-5 h-5 text-gray-400 mt-1 mr-3 shrink-0"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -475,7 +487,7 @@ export default function ContactPage() {
 
                 <div className="flex items-start">
                   <svg
-                    className="w-5 h-5 text-gray-400 mt-1 mr-3 flex-shrink-0"
+                    className="w-5 h-5 text-gray-400 mt-1 mr-3 shrink-0"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -532,7 +544,7 @@ export default function ContactPage() {
                   >
                     <div className="flex">
                       <svg
-                        className="w-5 h-5 text-red-400 mr-2 flex-shrink-0"
+                        className="w-5 h-5 text-red-400 mr-2 shrink-0"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"

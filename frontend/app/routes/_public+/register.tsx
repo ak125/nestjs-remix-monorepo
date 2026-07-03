@@ -1,11 +1,4 @@
 import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-  redirect,
-} from "@remix-run/node";
-import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
-import {
   Car,
   CheckCircle2,
   ClipboardList,
@@ -18,6 +11,14 @@ import {
   Zap,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  redirect,
+  Link,
+  useLoaderData,
+  useSearchParams,
+} from "react-router";
 import { z } from "zod";
 import { GoogleSignInButton } from "~/components/auth/GoogleSignInButton";
 import { Button } from "~/components/ui/button";
@@ -45,7 +46,7 @@ export const meta: MetaFunction = () => [
 // Schema Zod — source de vérité unique
 const RegisterSchemaBase = z.object({
   civility: z.enum(["M", "Mme", "Autre"], {
-    errorMap: () => ({ message: "Civilité invalide" }),
+    error: "Civilité invalide",
   }),
   firstName: z
     .string()
@@ -158,9 +159,9 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     const redirectTo = url.searchParams.get("redirectTo") || "/profile";
     return redirect(redirectTo);
   }
-  return json({
+  return {
     googleClientId: process.env.VITE_GOOGLE_CLIENT_ID || "",
-  });
+  };
 };
 
 // --- Composants internes ---
@@ -648,7 +649,7 @@ export default function RegisterPage() {
                         role="alert"
                       >
                         <svg
-                          className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5"
+                          className="w-5 h-5 text-red-500 shrink-0 mt-0.5"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -1066,7 +1067,7 @@ export default function RegisterPage() {
                     <Button
                       type="submit"
                       disabled={isSubmitting}
-                      className="w-full h-14 bg-cta hover:bg-cta-hover text-white font-bold text-base rounded-2xl shadow-[0_12px_30px_rgba(249,115,22,0.28)] transition-colors"
+                      className="w-full h-14 bg-cta hover:bg-cta-hover text-black font-bold text-base rounded-2xl shadow-[0_12px_30px_rgba(249,115,22,0.28)] transition-colors"
                     >
                       {isSubmitting ? (
                         <span className="flex items-center gap-2">

@@ -35,6 +35,14 @@ RE_STATE_FIGE='\b(ABSENTE|PRÉSENTE|PRESENTE|DOWN)\b'
 # WARN regexes
 RE_URL_OTHER='https?://'
 RE_STATE_FLOU='\b(UP|OFF|ON)\b'
+# WARN — dérive doctrine contenu : RAG présenté comme source de CONTENU (canon : contenu = WIKI,
+# RAG = chatbot only, ADR-031/046 ; pendant prose de la garde code-only seo-no-rag-as-content-source).
+# Patterns volontairement précis pour NE PAS flagger la prose corrective ("/content-gen abandonné",
+# "RAG = chatbot only") : on exige un verbe de production suivi de "depuis le RAG", ou l'invocation
+# `--print … /content-gen` (proposer d'exécuter le générateur RAG-source legacy).
+RE_RAG_AS_CONTENT='(g[ée]n[èe]r|produi|fonctionne|pipeline|source).*depuis le RAG'
+# NB : démarre par une classe [-] (et non `--`) sinon grep interprète le motif comme une option.
+RE_CONTENT_GEN_INVOKE='[-]-print.*/content-gen'
 
 BLOCKS=0
 WARNS=0
@@ -147,6 +155,21 @@ check_antipattern_lines() {
       emit_warn "$label" "$f" "$lineno" "mot d'état flou (UP/OFF/ON)"
     fi
   done < <(printf '%s\n' "$content" | grep -nE "$RE_URL_OTHER|$RE_STATE_FLOU" 2>/dev/null || true)
+
+  # WARN — dérive doctrine contenu (RAG-comme-source / invocation du générateur RAG-source legacy)
+  while IFS= read -r line; do
+    [ -z "$line" ] && continue
+    local lineno
+    lineno=$(printf '%s\n' "$line" | sed 's/:.*//')
+    local body
+    body=$(printf '%s\n' "$line" | sed 's/^[0-9]*://')
+    if echo "$body" | grep -Eiq "$RE_RAG_AS_CONTENT"; then
+      emit_warn "$label" "$f" "$lineno" "RAG comme source de contenu — canon : contenu = WIKI (RAW→WIKI→projection), RAG = chatbot only (ADR-031/046)"
+    fi
+    if echo "$body" | grep -Eq "$RE_CONTENT_GEN_INVOKE"; then
+      emit_warn "$label" "$f" "$lineno" "invocation du générateur RAG-source /content-gen (legacy) — préférer le pipeline WIKI / seo-content-loop"
+    fi
+  done < <(printf '%s\n' "$content" | grep -niE "$RE_RAG_AS_CONTENT|$RE_CONTENT_GEN_INVOKE" 2>/dev/null || true)
 }
 
 # ─── Modes d'invocation ───────────────────────────────────────────────────────
@@ -284,8 +307,43 @@ EOF
   bash "$0" --file "$tmp/fr-down.md" >/dev/null 2>&1
   test_case "PASS — 'down' lowercase (FR normal, pas assertion)" 0 $?
 
+  # 10. WARN — dérive doctrine contenu : "génère … depuis le RAG" = WARN (non bloquant, exit 0)
+  local out10 ec10
+  printf 'Le pipeline genere le contenu depuis le RAG.\n' > "$tmp/rag-content.md"
+  out10=$(bash "$0" --file "$tmp/rag-content.md" 2>&1); ec10=$?
+  if [ "$ec10" = "0" ] && printf '%s' "$out10" | grep -q "RAG comme source de contenu"; then
+    printf '  ✓ %s\n' "WARN RAG-comme-source-de-contenu (non bloquant)"
+  else
+    printf '  ✗ %s (exit=%s, WARN attendu)\n' "WARN RAG-comme-source-de-contenu" "$ec10"
+    failed=$((failed + 1))
+  fi
+
+  # 11. WARN — invocation du générateur RAG-source legacy `--print … /content-gen` (le motif démarre
+  #     par `--`, piège grep-option → vérifie la classe [-] du regex).
+  local out11 ec11
+  printf 'cd /opt/automecanik/app && claude --print "/content-gen <alias> --r3"\n' > "$tmp/rag-invoke.md"
+  out11=$(bash "$0" --file "$tmp/rag-invoke.md" 2>&1); ec11=$?
+  if [ "$ec11" = "0" ] && printf '%s' "$out11" | grep -q "générateur RAG-source /content-gen"; then
+    printf '  ✓ %s\n' "WARN invocation /content-gen legacy (non bloquant)"
+  else
+    printf '  ✗ %s (exit=%s, WARN attendu)\n' "WARN invocation /content-gen legacy" "$ec11"
+    failed=$((failed + 1))
+  fi
+
+  # 12. PASS — non-régression : la prose CORRECTIVE ("/content-gen abandonné", "RAG = chatbot only")
+  #     ne doit PAS déclencher le WARN (pas de faux positif sur la doctrine elle-même).
+  local out12
+  printf 'Le mode RAG-source /content-gen est abandonne ; contenu = WIKI (RAG = chatbot only).\n' > "$tmp/rag-corrective.md"
+  out12=$(bash "$0" --file "$tmp/rag-corrective.md" 2>&1)
+  if printf '%s' "$out12" | grep -qE "RAG comme source de contenu|générateur RAG-source"; then
+    printf '  ✗ %s (faux positif sur prose corrective)\n' "PASS prose-corrective-non-flaggée"
+    failed=$((failed + 1))
+  else
+    printf '  ✓ %s\n' "PASS prose-corrective-non-flaggée"
+  fi
+
   if [ $failed -eq 0 ]; then
-    echo "✅ all 9 self-tests passed"
+    echo "✅ all 12 self-tests passed"
     exit 0
   else
     echo "❌ $failed self-test(s) failed"

@@ -2,7 +2,7 @@
 module: promo
 sources:
 - backend/src/modules/promo
-last_scan: '2026-05-24'
+last_scan: '2026-07-02'
 primary_files:
 - backend/src/modules/promo/promo.controller.ts
 - backend/src/modules/promo/promo.module.ts

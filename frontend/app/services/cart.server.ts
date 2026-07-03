@@ -5,7 +5,7 @@
  * Compatible avec l'architecture existante RemixApiService
  */
 
-import { type AppLoadContext } from "@remix-run/node";
+import { type RouterContextProvider } from "react-router";
 import { logger } from "~/utils/logger";
 import {
   type CartItem,
@@ -46,92 +46,92 @@ class CartServerService {
   /**
    * Obtenir le panier complet
    */
-  async getCart(request: Request, context?: AppLoadContext): Promise<CartData> {
-    try {
-      // Tentative d'appel au backend réel
-      const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
+  async getCart(request: Request, context?: Readonly<RouterContextProvider>): Promise<CartData> {
+    const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
+    const cookie = request.headers.get("Cookie") || "";
 
-      // Récupérer les cookies de session depuis la requête
-      const cookie = request.headers.get("Cookie") || "";
+    // ⚠️ Pas de fallback silencieux (CLAUDE.md « No silent fallback »).
+    // Un échec backend ne doit JAMAIS retourner un panier factice. GET idempotent
+    // → on retente UNE fois sur erreur transitoire (réseau ou 429/502/503/504,
+    // ex. fenêtre de redémarrage), puis on PROPAGE l'erreur → le loader (cart.tsx)
+    // rend l'état « Erreur de chargement » (+ bouton Réessayer). Un panier vide =
+    // réponse 200 du backend (OptionalAuthGuard couvre l'invité) → géré ci-dessous.
+    const TRANSIENT_STATUS = new Set([429, 502, 503, 504]);
+    const MAX_ATTEMPTS = 2; // 1 retry borné
+    let lastError: unknown;
 
-      const response = await fetch(`${backendUrl}/api/cart`, {
-        method: "GET",
-        headers: {
-          Cookie: cookie,
-          "Content-Type": "application/json",
-          "User-Agent": "RemixCartService/1.0",
-        },
-      });
-
-      if (response.ok) {
-        const backendData = await response.json();
-
-        // Normaliser les données du backend vers notre format
-        const normalized = this.normalizeBackendData(backendData);
-        return normalized;
-      } else {
-        logger.warn(
-          "⚠️ [CartServer] Backend non disponible, utilisation des données de démo",
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      let response: Response;
+      try {
+        response = await fetch(`${backendUrl}/api/cart`, {
+          method: "GET",
+          headers: {
+            Cookie: cookie,
+            "Content-Type": "application/json",
+            "User-Agent": "RemixCartService/1.0",
+          },
+        });
+      } catch (error) {
+        lastError = error;
+        if (attempt < MAX_ATTEMPTS) {
+          await this.delay(200);
+          continue;
+        }
+        logger.error("[CartServer] Échec réseau vers /api/cart:", error);
+        throw new Error(
+          `Cart backend unreachable: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
         );
       }
-    } catch (error) {
-      logger.warn("⚠️ [CartServer] Erreur backend, fallback vers démo:", error);
+
+      if (response.ok) {
+        let backendData: unknown;
+        try {
+          backendData = await response.json();
+        } catch (error) {
+          logger.error("[CartServer] /api/cart JSON illisible:", error);
+          throw new Error(
+            `Cart backend returned invalid JSON (${response.status})`,
+          );
+        }
+        if (
+          !backendData ||
+          typeof backendData !== "object" ||
+          Array.isArray(backendData)
+        ) {
+          logger.error(
+            "[CartServer] /api/cart a renvoyé un corps non-objet:",
+            backendData,
+          );
+          throw new Error("Cart backend returned a non-object body");
+        }
+        return this.normalizeBackendData(backendData as Record<string, any>);
+      }
+
+      if (TRANSIENT_STATUS.has(response.status) && attempt < MAX_ATTEMPTS) {
+        lastError = new Error(`transient ${response.status}`);
+        await this.delay(200);
+        continue;
+      }
+
+      logger.error(
+        `[CartServer] /api/cart a répondu ${response.status} ${response.statusText}`,
+      );
+      throw new Error(`Cart backend responded ${response.status}`);
     }
 
-    // Fallback : simulation avec données de démo
-    return {
-      items: [
-        {
-          id: "demo-item-1",
-          user_id: "demo-user",
-          product_id: "prod-123",
-          quantity: 2,
-          price: 29.99,
-          unit_price: 29.99,
-          total_price: 59.98,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          product_name: "T-Shirt Premium",
-          product_sku: "TS-001",
-          product_ref: "REF-TS-001",
-          product_image: "/images/tshirt-premium.jpg",
-          stock_available: 15,
-          weight: 0.2,
-        },
-        {
-          id: "demo-item-2",
-          user_id: "demo-user",
-          product_id: "prod-456",
-          quantity: 1,
-          price: 89.99,
-          unit_price: 89.99,
-          total_price: 89.99,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          product_name: "Sweat à Capuche",
-          product_sku: "SW-002",
-          product_ref: "REF-SW-002",
-          product_image: "/images/sweat-capuche.jpg",
-          stock_available: 5,
-          weight: 0.5,
-        },
-      ],
-      summary: {
-        total_items: 2,
-        total_price: 149.97,
-        subtotal: 149.97,
-        tax_amount: 0,
-        shipping_cost: 0,
-        discount_amount: 0,
-        consigne_total: 0,
-        currency: "EUR",
-      },
-      metadata: {
-        user_id: "demo-user",
-        session_id: "demo-session",
-        last_updated: new Date().toISOString(),
-      },
-    };
+    // Inatteignable (chaque branche retourne ou jette) — garde de type.
+    throw new Error(
+      `Cart backend failed after ${MAX_ATTEMPTS} attempts: ${
+        lastError instanceof Error ? lastError.message : String(lastError)
+      }`,
+    );
+  }
+
+  /** Petit délai pour le backoff du retry (GET idempotent uniquement). */
+  private delay(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**
@@ -358,7 +358,7 @@ class CartServerService {
    */
   async validateCart(
     request: Request,
-    context?: AppLoadContext,
+    context?: Readonly<RouterContextProvider>,
   ): Promise<CartActionResult> {
     try {
       const cart = await this.getCart(request, context);
@@ -518,7 +518,7 @@ class CartServerService {
    */
   private async getCartAsLegacyFormat(
     request: Request,
-    context?: AppLoadContext,
+    context?: Readonly<RouterContextProvider>,
   ): Promise<Cart> {
     const cartData = await this.getCart(request, context);
 
@@ -561,7 +561,7 @@ export const cartServerService = new CartServerService();
 /**
  * 🎯 Fonctions utilitaires pour l'export
  */
-export const getCart = (request: Request, context?: AppLoadContext) =>
+export const getCart = (request: Request, context?: Readonly<RouterContextProvider>) =>
   cartServerService.getCart(request, context);
 
 export const addItem = (
@@ -582,7 +582,7 @@ export const removeFromCart = (request: Request, itemId: string) =>
 export const clearCart = (request: Request) =>
   cartServerService.clearCart(request);
 
-export const validateCart = (request: Request, context?: AppLoadContext) =>
+export const validateCart = (request: Request, context?: Readonly<RouterContextProvider>) =>
   cartServerService.validateCart(request, context);
 
 /**

@@ -1,4 +1,4 @@
-import { json } from "@remix-run/node";
+import { data } from "react-router";
 import { logger } from "~/utils/logger";
 
 export async function loader({ request }: { request: Request }) {
@@ -7,7 +7,7 @@ export async function loader({ request }: { request: Request }) {
     const checkUrl = url.searchParams.get("url");
 
     if (!checkUrl) {
-      return json({ error: "URL manquante" }, { status: 400 });
+      return data({ error: "URL manquante" }, { status: 400 });
     }
 
     // Vérifier les redirections via l'API interne
@@ -23,19 +23,19 @@ export async function loader({ request }: { request: Request }) {
 
       if (response.ok) {
         const data = await response.json();
-        return json({
+        return {
           destination: data.destination || null,
           permanent: data.permanent || false,
           found: !!data.destination,
-        });
+        };
       }
     } catch (apiError) {
       logger.error("Erreur lors de l'appel API redirections:", apiError);
     }
 
-    return json({ destination: null, permanent: false, found: false });
+    return { destination: null, permanent: false, found: false };
   } catch (error) {
     logger.error("Erreur lors de la vérification de redirection:", error);
-    return json({ destination: null, permanent: false, found: false });
+    return { destination: null, permanent: false, found: false };
   }
 }

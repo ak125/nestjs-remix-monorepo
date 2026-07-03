@@ -4,12 +4,6 @@
  */
 
 import {
-  json,
-  type ActionFunctionArgs,
-  type LoaderFunctionArgs,
-} from "@remix-run/node";
-import { Link, useFetcher, useLoaderData } from "@remix-run/react";
-import {
   ArrowLeft,
   CheckCircle,
   Copy,
@@ -24,6 +18,14 @@ import {
   XCircle,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+  data,
+  Link,
+  useFetcher,
+  useLoaderData,
+} from "react-router";
 import { toast } from "sonner";
 
 import { Badge } from "~/components/ui/badge";
@@ -171,7 +173,7 @@ export const loader = async ({
       throw new Response("Commande introuvable", { status: 404 });
     }
 
-    return json<LoaderData>({ order: result.data });
+    return { order: result.data };
   } catch (error) {
     if (error instanceof Response) throw error;
     logger.error("Erreur chargement commande:", error);
@@ -189,7 +191,7 @@ export const action = async ({
 }: ActionFunctionArgs) => {
   const user = await requireUser({ context });
   if (!user || !user.level || user.level < 3) {
-    return json({ error: "Acces refuse" }, { status: 403 });
+    return data({ error: "Acces refuse" }, { status: 403 });
   }
 
   const orderId = params.orderId;
@@ -225,7 +227,7 @@ export const action = async ({
         body = JSON.stringify({ statusId: formData.get("statusId") });
         break;
       default:
-        return json({ error: "Action inconnue" }, { status: 400 });
+        return data({ error: "Action inconnue" }, { status: 400 });
     }
 
     const headers: Record<string, string> = { Cookie: cookie };
@@ -234,12 +236,12 @@ export const action = async ({
     const res = await fetch(apiUrl, { method, headers, body });
     if (!res.ok) {
       const err = await res.json().catch(() => ({ message: "Erreur" }));
-      return json({ error: err.message || "Erreur" }, { status: 500 });
+      return data({ error: err.message || "Erreur" }, { status: 500 });
     }
 
-    return json({ success: true, message: `Action "${intent}" executee` });
+    return { success: true, message: `Action "${intent}" executee` };
   } catch (error) {
-    return json({ error: "Erreur serveur" }, { status: 500 });
+    return data({ error: "Erreur serveur" }, { status: 500 });
   }
 };
 

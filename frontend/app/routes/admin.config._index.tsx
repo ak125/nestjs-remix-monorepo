@@ -3,13 +3,6 @@
  */
 
 import {
-  json,
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, useActionData, Form, Link } from "@remix-run/react";
-import {
   Settings,
   Database,
   Mail,
@@ -25,6 +18,16 @@ import {
   Search,
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
+import {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  type MetaFunction,
+  data,
+  useLoaderData,
+  useActionData,
+  Form,
+  Link,
+} from "react-router";
 import { requireAdmin } from "~/auth/unified.server";
 import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
@@ -175,20 +178,20 @@ export async function loader({ context }: LoaderFunctionArgs) {
       ),
     };
 
-    return json({
+    return {
       categories: CATEGORIES,
       configs,
       stats,
-    });
+    };
   } catch (error) {
     logger.error("❌ Erreur chargement configurations:", error);
 
-    return json({
+    return {
       categories: CATEGORIES,
       configs: [],
       stats: { totalConfigs: 0, configsByCategory: {} },
       error: "Erreur lors du chargement des configurations",
-    });
+    };
   }
 }
 
@@ -215,7 +218,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
           try {
             processedValue = JSON.parse(value);
           } catch {
-            return json(
+            return data(
               {
                 error: "Format JSON invalide",
                 field: key,
@@ -226,28 +229,28 @@ export async function action({ request, context }: ActionFunctionArgs) {
         }
 
         await mockConfigApi.updateConfig(key, processedValue);
-        return json({
+        return {
           success: true,
           message: `Configuration "${key}" mise à jour avec succès`,
           timestamp: new Date().toISOString(),
-        });
+        };
       }
 
       case "backup": {
-        return json({
+        return {
           success: true,
           backupId: "backup-" + Date.now(),
           message: "Sauvegarde créée avec succès",
           timestamp: new Date().toISOString(),
-        });
+        };
       }
 
       default:
-        return json({ error: "Action inconnue" }, { status: 400 });
+        return data({ error: "Action inconnue" }, { status: 400 });
     }
   } catch (error) {
     logger.error(`❌ Erreur action ${action}:`, error);
-    return json(
+    return data(
       {
         error: `Erreur lors de l'action ${action}`,
         timestamp: new Date().toISOString(),

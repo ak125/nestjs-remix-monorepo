@@ -10,13 +10,6 @@
  */
 
 import {
-  json,
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, useFetcher } from "@remix-run/react";
-import {
   Settings,
   Database,
   BarChart3,
@@ -35,6 +28,14 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  type MetaFunction,
+  data,
+  useLoaderData,
+  useFetcher,
+} from "react-router";
 import { Button } from "~/components/ui/button";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
@@ -140,12 +141,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
       }
     }
 
-    return json({
+    return {
       overview: overviewData.data,
       moduleData,
       environment,
       currentModule: _module,
-    });
+    };
   } catch (error) {
     throw new Response("Erreur lors du chargement des configurations", {
       status: 500,
@@ -210,9 +211,9 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     const result = await response.json();
-    return json({ success: true, data: result });
+    return { success: true, data: result };
   } catch (error) {
-    return json(
+    return data(
       {
         success: false,
         error: error instanceof Error ? error.message : "Erreur inconnue",
@@ -333,7 +334,7 @@ export default function SystemConfigurationDashboard() {
               {/* Vue d'ensemble */}
               <button
                 onClick={() => setActiveModule("overview")}
-                className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-md ${ activeModule === "overview" ? "bg-primary/15 text-blue-700 " : "text-gray-600 hover:bg-gray-50 hover:text-gray-900" }`}
+                className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-md ${activeModule === "overview" ? "bg-primary/15 text-blue-700 " : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"}`}
               >
                 <Activity className="mr-3 h-5 w-5" />
                 Vue d'ensemble
@@ -448,7 +449,7 @@ function OverviewPanel({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <Database className="h-8 w-8 text-blue-600" />
             </div>
             <div className="ml-4">
@@ -467,7 +468,7 @@ function OverviewPanel({
 
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <BarChart3 className="h-8 w-8 text-green-600" />
             </div>
             <div className="ml-4">
@@ -482,7 +483,7 @@ function OverviewPanel({
 
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <Mail className="h-8 w-8 text-foreground" />
             </div>
             <div className="ml-4">
@@ -497,7 +498,7 @@ function OverviewPanel({
 
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <Shield className="h-8 w-8 text-red-600" />
             </div>
             <div className="ml-4">
@@ -642,7 +643,7 @@ function OverviewPanel({
               </dt>
               <dd className="mt-1">
                 <span
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${ overview.health.overall === "healthy" ? "text-success bg-success/10 " : overview.health.overall === "warning" ? "text-warning bg-warning/10 " : overview.health.overall === "error" ? "text-destructive bg-destructive/10 " : "text-gray-600 bg-gray-50 " }`}
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${overview.health.overall === "healthy" ? "text-success bg-success/10 " : overview.health.overall === "warning" ? "text-warning bg-warning/10 " : overview.health.overall === "error" ? "text-destructive bg-destructive/10 " : "text-gray-600 bg-gray-50 "}`}
                 >
                   {overview.health.overall}
                 </span>

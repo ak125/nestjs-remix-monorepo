@@ -1,16 +1,18 @@
+import { ArrowLeft, User, Save, Mail, Phone, MapPin } from "lucide-react";
 import {
-  json,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, useActionData, Form, Link } from "@remix-run/react";
-import { ArrowLeft, User, Save, Mail, Phone, MapPin } from "lucide-react";
+  useLoaderData,
+  useActionData,
+  Form,
+  Link,
+} from "react-router";
 import { Alert } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   const user = data?.user;
   const userName =
     user?.firstName && user?.lastName
@@ -63,7 +65,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
     notes: "Client privilégié, excellent historique de commandes.",
   };
 
-  return json<LoaderData>({ user: mockUser });
+  return { user: mockUser };
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -72,9 +74,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   // Simuler la sauvegarde
   try {
     // En production : await updateUser(userId, formData);
-    return json<ActionData>({ success: true });
+    return { success: true };
   } catch (error) {
-    return json<ActionData>({ error: "Erreur lors de la sauvegarde" });
+    return { error: "Erreur lors de la sauvegarde" };
   }
 };
 

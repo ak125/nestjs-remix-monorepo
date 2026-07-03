@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CacheModule as NestCacheModule } from '@nestjs/cache-manager';
+import { boundedMemoryCache } from '../../config/cache-store.factory';
 import { DashboardController } from './dashboard.controller';
 import { DashboardService } from './dashboard.service';
 import { DatabaseModule } from '../../database/database.module';
@@ -11,7 +12,7 @@ import { ConfigModule } from '@nestjs/config';
     DatabaseModule,
     AuthModule, // Pour ModulePermissionGuard et AuthService
     ConfigModule, // Import du module Config pour utiliser ConfigService
-    NestCacheModule.register({ ttl: 180, max: 50 }), // Cache pour CacheInterceptor (3min pour stats)
+    NestCacheModule.register(boundedMemoryCache(180, 50)), // Cache pour CacheInterceptor
   ],
   controllers: [DashboardController],
   providers: [DashboardService],

@@ -23,12 +23,12 @@ export const AgenticRunSchema = z.object({
   goal: z.string().min(1),
   goal_type: z.string().min(1),
   phase: z.enum(RUN_PHASES),
-  plan: z.record(z.unknown()).nullable().optional(),
+  plan: z.record(z.string(), z.unknown()).nullable().optional(),
   winning_branch_id: z.string().uuid().nullable().optional(),
   critic_loops: z.number().int().min(0).default(0),
   branches_total: z.number().int().min(0).default(0),
   branches_completed: z.number().int().min(0).default(0),
-  feature_flags: z.record(z.unknown()).default({}),
+  feature_flags: z.record(z.string(), z.unknown()).default({}),
   correlation_id: z.string().nullable().optional(),
   triggered_by: z.string().min(1),
   error_message: z.string().nullable().optional(),
@@ -47,7 +47,7 @@ export const CreateRunInputSchema = z.object({
   goal_type: z.enum(GOAL_TYPES),
   triggered_by: z.string().min(1).max(200),
   correlation_id: z.string().max(200).optional(),
-  feature_flags: z.record(z.unknown()).optional(),
+  feature_flags: z.record(z.string(), z.unknown()).optional(),
 });
 export type CreateRunInput = z.infer<typeof CreateRunInputSchema>;
 
@@ -58,7 +58,7 @@ export const AgenticBranchSchema = z.object({
   run_id: z.string().uuid(),
   strategy_label: z.string().min(1),
   status: z.enum(BRANCH_STATUSES),
-  output: z.record(z.unknown()).nullable().optional(),
+  output: z.record(z.string(), z.unknown()).nullable().optional(),
   critic_score: z.number().min(0).max(100).nullable().optional(),
   critic_feedback: z.string().nullable().optional(),
   started_at: z.string().datetime().nullable().optional(),
@@ -79,7 +79,7 @@ export const AgenticStepSchema = z.object({
   step_index: z.number().int().min(0),
   status: z.enum(['pending', 'running', 'completed', 'failed', 'skipped']),
   input_hash: z.string().nullable().optional(),
-  output: z.record(z.unknown()).nullable().optional(),
+  output: z.record(z.string(), z.unknown()).nullable().optional(),
   provider_used: z.string().nullable().optional(),
   tokens_used: z.number().int().nullable().optional(),
   duration_ms: z.number().int().nullable().optional(),
@@ -103,7 +103,7 @@ export const AgenticEvidenceSchema = z.object({
   branch_id: z.string().uuid().nullable().optional(),
   step_id: z.string().uuid().nullable().optional(),
   evidence_type: z.enum(EVIDENCE_TYPES),
-  content: z.record(z.unknown()),
+  content: z.record(z.string(), z.unknown()),
   provenance: EvidenceProvenanceSchema,
   created_at: z.string().datetime().optional(),
 });
@@ -115,7 +115,7 @@ export const AgenticCheckpointSchema = z.object({
   id: z.string().uuid(),
   run_id: z.string().uuid(),
   phase: z.enum(RUN_PHASES),
-  snapshot: z.record(z.unknown()),
+  snapshot: z.record(z.string(), z.unknown()),
   created_at: z.string().datetime().optional(),
 });
 export type AgenticCheckpoint = z.infer<typeof AgenticCheckpointSchema>;

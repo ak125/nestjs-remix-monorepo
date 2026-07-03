@@ -4,13 +4,13 @@
  * @route /admin/blog-simple
  */
 
+import { useState } from "react";
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
-import { useState } from "react";
+  useLoaderData,
+  Link,
+} from "react-router";
 import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
@@ -152,7 +152,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       );
 
       // Données de fallback si API en erreur
-      return json<LoaderData>({
+      return {
         stats: {
           totalArticles: 91, // Valeurs de démonstration
           totalViews: 245680,
@@ -167,7 +167,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
           status: response.status,
           statusText: response.statusText,
         },
-      });
+      };
     }
 
     const data = await response.json();
@@ -189,7 +189,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         overview?.totalGuides || data?.data?.byType?.guide?.total || 0,
     };
 
-    return json<LoaderData>({
+    return {
       stats,
       isError: false,
       apiStatus: "success",
@@ -198,12 +198,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
         status: response.status,
         dataKeys: Object.keys(data),
       },
-    });
+    };
   } catch (error) {
     logger.error("[ADMIN BLOG SIMPLE] Erreur loader:", error);
 
     // Fallback complet en cas d'erreur
-    return json<LoaderData>({
+    return {
       stats: {
         totalArticles: 91,
         totalViews: 245680,
@@ -222,7 +222,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         error: error instanceof Error ? error.message : String(error),
         timestamp: new Date().toISOString(),
       },
-    });
+    };
   }
 }
 
@@ -349,7 +349,7 @@ export default function AdminBlogSimplePage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-center">
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 <DocumentTextIcon className="h-8 w-8 text-blue-600" />
               </div>
               <div className="ml-5 w-0 flex-1">
@@ -367,7 +367,7 @@ export default function AdminBlogSimplePage() {
 
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-center">
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 <EyeIcon className="h-8 w-8 text-green-600" />
               </div>
               <div className="ml-5 w-0 flex-1">
@@ -385,7 +385,7 @@ export default function AdminBlogSimplePage() {
 
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-center">
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 <ChartBarIcon className="h-8 w-8 text-foreground" />
               </div>
               <div className="ml-5 w-0 flex-1">
@@ -403,7 +403,7 @@ export default function AdminBlogSimplePage() {
 
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-center">
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 <UserGroupIcon className="h-8 w-8 text-orange-600" />
               </div>
               <div className="ml-5 w-0 flex-1">

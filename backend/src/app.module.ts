@@ -1,6 +1,7 @@
 import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { CloudflareThrottlerGuard } from './common/guards/cloudflare-throttler.guard';
 import { ConfigModule } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { LoggerModule } from 'nestjs-pino';
@@ -15,9 +16,12 @@ import { FeatureFlagsModule } from './config/feature-flags.module'; // 🎛️ N
 import { WriteGuardModule } from './config/write-guard.module'; // 🛡️ P1.5 - Write Ownership & Collision Guard
 import { RpcGateModule } from './security/rpc-gate/rpc-gate.module'; // 🛡️ NOUVEAU - RPC Safety Gate pour gouvernance Supabase !
 import { BotGuardModule } from './modules/bot-guard/bot-guard.module'; // 🛡️ Bot protection (geo-block, IP block, behavioral scoring)
+import { SyntheticProbeCredentialModule } from './modules/seo-control-plane/synthetic-probe-credential.module'; // 🛡️ HMAC credential du crawler synthétique (exemption rate-limit scopée)
+import { isSyntheticExemptPath } from './modules/seo-control-plane/types';
 import { DatabaseModule } from './database/database.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { HealthModule } from './modules/health/health.module';
+import { SessionInfrastructureModule } from './modules/session/session-infrastructure.module';
 import { CartModule } from './modules/cart/cart.module';
 import { PromoModule } from './modules/promo/promo.module'; // 🎫 NOUVEAU - Module promo avancé avec Zod et Cache !
 import { AuthModule } from './auth/auth.module';
@@ -37,6 +41,7 @@ import { InvoicesModule } from './modules/invoices/invoices.module'; // 🧾 NOU
 import { SeoModule } from './modules/seo/seo.module'; // 🔍 NOUVEAU - Module SEO avec services intégrés !
 import { SeoMonitoringModule } from './modules/seo-monitoring/seo-monitoring.module'; // 📊 Phase 1 — Observability GSC/GA4/CWV daily ingestion
 import { SeoControlPlaneModule } from './modules/seo-control-plane/seo-control-plane.module'; // 🤖 ADR-064 — SEO Production Control Plane (L1 synthetic crawler q15min)
+import { SeoProjectionModule } from './modules/seo-projection/seo-projection.module'; // 🗄️ ADR-059 PR-6c — forward-writer exports/seo → DB versionnée (write-side actif, feed R1 flag-gated OFF)
 import { MerchantCenterModule } from './modules/merchant-center/merchant-center.module'; // 🛒 PR commerce-loop V1 step 5B — Google Shopping XML feed
 import { SupplierTruthModule } from './modules/supplier-truth/supplier-truth.module'; // 🔌 Supplier-truth read-only observability endpoint (sync side lives in WorkerModule)
 import { SearchModule } from './modules/search/search.module'; // 🔍 NOUVEAU - Module de recherche optimisé v3.0 !
@@ -56,6 +61,7 @@ import { ApiModule as ErrorsApiModule } from './api/api.module'; // 🔌 NOUVEAU
 import { ConfigModule as CustomConfigModule } from './modules/config/config.module'; // 🔧 NOUVEAU - Module config enhanced !
 import { MetadataModule } from './modules/metadata/metadata.module'; // 🔍 NOUVEAU - Module metadata optimisé !
 import { CatalogModule } from './modules/catalog/catalog.module'; // ✅ ACTIVÉ - Catalogue automobile complet !
+import { SubstitutionModule } from './modules/substitution/substitution.module'; // 🔁 ACTIVÉ - moteur substitution: 404/410 SEO sur pages pièces vides (owner GO 2026-06-21)
 // import { CatalogModuleSimple } from './modules/catalog/catalog-simple.module'; // 🔧 TEMPORAIREMENT DÉSACTIVÉ - Version simplifiée pour test pièces !
 import { GammeRestModule } from './modules/gamme-rest/gamme-rest.module'; // 🎯 NOUVEAU - API REST simple pour gammes !
 import { WorkerModule } from './workers/worker.module'; // 🔄 NOUVEAU - Module Workers BullMQ pour jobs asynchrones !
@@ -67,7 +73,8 @@ import { RagProxyModule } from './modules/rag-proxy/rag-proxy.module';
 import { RagKnowledgeBootstrapModule } from './modules/rag-knowledge-bootstrap/rag-knowledge-bootstrap.module'; // 🛡️ ADR-046/050 — fail-fast L3 mirror state au boot
 import { RmModule } from './modules/rm/rm.module'; // ✅ RÉACTIVÉ - Fix Dockerfile: shared-types copié (2026-02-02)
 import { MarketingModule } from './modules/marketing/marketing.module'; // 📊 NOUVEAU - Module marketing avec backlinks, content roadmap et KPIs !
-// MediaFactoryModule — SUPPRIMÉ 2026-04-10 (prototype P1, axios vuln critique, 0 usage prod)
+import { MediaFactoryModule } from './modules/media-factory/media-factory.module'; // 🎬 REVIVE 2026-06-20 — fetch-only TTS (Azure REST), dé-RAG, flag-gated
+import { isMediaFactoryEnabled } from './modules/media-factory/media-factory.flag';
 import { DiagnosticEngineModule } from './modules/diagnostic-engine/diagnostic-engine.module'; // 🔧 NOUVEAU - Moteur diagnostic mecanique MVP !
 import { TrendSignalsModule } from './modules/trend-signals/trend-signals.module'; // 📈 NOUVEAU - Middle-ground trend signals ingestion (Tasks 1.9-1.11 ai-additive-layer)
 
@@ -131,6 +138,20 @@ import { TrendSignalsModule } from './modules/trend-signals/trend-signals.module
           return true;
         }
 
+        // Skip the internal synthetic crawler (seo-control-plane L1) — but ONLY
+        // for public-catalogue GETs (least-privilege). The flag is set upstream
+        // by BotGuardMiddleware after verifying an HMAC credential (NOT the UA),
+        // and isSyntheticExemptPath() blocks /api, /auth, /cart, /checkout,
+        // /admin and every non-GET, so even a leaked credential cannot relax
+        // rate-limiting beyond already-public, already-CDN-cached reads.
+        // Incident 2026-06-25 (crawler 89.7% 429 → L1 monitoring blind).
+        if (
+          request.isVerifiedSyntheticProbe === true &&
+          isSyntheticExemptPath(request.method, request.path || '')
+        ) {
+          return true;
+        }
+
         // Skip for admin users (level >= 7)
         if (user?.isAdmin === true || parseInt(user?.level) >= 7) {
           return true;
@@ -170,6 +191,11 @@ import { TrendSignalsModule } from './modules/trend-signals/trend-signals.module
     // 🛡️ Bot protection - geo-block, IP block, behavioral scoring (must be before other modules)
     BotGuardModule,
 
+    // 🛡️ Credential HMAC du crawler synthétique (@Global) — injecté par
+    // BotGuardMiddleware (verify) + SyntheticCrawlerService (sign). Posé avant les
+    // modules consommateurs pour disponibilité DI app-wide. Incident 2026-06-25.
+    SyntheticProbeCredentialModule,
+
     // 🎛️ Feature flags centralisés (Global)
     FeatureFlagsModule,
 
@@ -186,6 +212,7 @@ import { TrendSignalsModule } from './modules/trend-signals/trend-signals.module
     RpcGateModule,
 
     // Modules core fonctionnels
+    SessionInfrastructureModule, // 🔐 Store de session Redis encapsulé (PR-9e.1)
     DatabaseModule,
     OrdersModule,
     HealthModule,
@@ -210,6 +237,7 @@ import { TrendSignalsModule } from './modules/trend-signals/trend-signals.module
     SeoModule, // 🔍 NOUVEAU - Module SEO avec SeoService et SitemapService !
     SeoMonitoringModule, // 📊 Phase 1 — Observability GSC/GA4/CWV daily ingestion (cf. ADR-025)
     SeoControlPlaneModule, // 🤖 ADR-064 — SEO Production Control Plane (L1 synthetic crawler q15min)
+    SeoProjectionModule, // 🗄️ ADR-059 PR-6c — forward-writer (write-side actif ; feed R1 flag-gated OFF ; read-path dark PR-7)
     MerchantCenterModule, // 🛒 PR commerce-loop V1 step 5B — Google Shopping XML feed /api/feed/merchant-center.xml
     SupplierTruthModule, // 🔌 Read-only observability for the supplier-truth sentinel (admin status + projection); the inert-gated sync runtime lives in WorkerModule
     SearchModule, // 🔍 NOUVEAU - Module de recherche optimisé v3.0 avec Meilisearch !
@@ -229,10 +257,11 @@ import { TrendSignalsModule } from './modules/trend-signals/trend-signals.module
 
     // 🚗 CATALOGUE AUTOMOBILE
     CatalogModule, // ✅ ACTIVÉ - Catalogue automobile complet avec logique PHP exacte !
+    SubstitutionModule, // 🔁 ACTIVÉ - moteur substitution (404/410 SEO sur pages pièces vides) — owner GO 2026-06-21
     // CatalogModuleSimple, // 🔧 TEMPORAIREMENT DÉSACTIVÉ - Version simplifiée pour test pièces !
     GammeRestModule, // 🎯 ACTIVÉ - API REST simple pour gammes avec vraies tables !
     MarketingModule, // 📊 ACTIVÉ - Module marketing avec backlinks, content roadmap et KPIs !
-    // MediaFactoryModule — SUPPRIMÉ 2026-04-10
+    ...(isMediaFactoryEnabled() ? [MediaFactoryModule] : []), // 🎬 REVIVE flag-gated (MEDIA_FACTORY_ENABLED, off par défaut → 0 prod)
     DiagnosticEngineModule, // 🔧 ACTIVÉ - Moteur diagnostic mecanique MVP (Slice 1) !
     TrendSignalsModule, // 📈 ACTIVÉ - Middle-ground trend signals ingestion (Tasks 1.9-1.11)
     // AgenticEngineModule — ARCHIVÉ 2026-04-02 (tables → _archive schema, remplacé par Paperclip)
@@ -251,15 +280,17 @@ import { TrendSignalsModule } from './modules/trend-signals/trend-signals.module
     AnalyticsController, // 📊 Analytics avancées
   ], // Plus besoin du controller temporaire
   providers: [
-    // 🛡️ Rate Limiting global - Protège toutes les routes
+    // 🛡️ Rate Limiting global - Protège toutes les routes.
+    // CloudflareThrottlerGuard clé sur la vraie IP client (Cf-Connecting-Ip)
+    // au lieu de l'IP edge Cloudflare partagée — sinon 429 sur /cart & co.
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard,
+      useClass: CloudflareThrottlerGuard,
     },
   ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(RequestIdMiddleware).forRoutes('*');
+    consumer.apply(RequestIdMiddleware).forRoutes('{*path}');
   }
 }

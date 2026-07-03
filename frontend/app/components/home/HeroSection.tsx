@@ -1,4 +1,3 @@
-import { useNavigate } from "@remix-run/react";
 import {
   Award,
   BookOpen,
@@ -9,6 +8,7 @@ import {
   Truck,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
 
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -67,7 +67,12 @@ export default function HeroSection() {
             Recherche par véhicule, référence OE, Type Mine ou immatriculation.
           </p>
           {/* ====== SELECTOR ====== */}
-          <div className="mx-auto mt-5 max-w-[960px] lg:mt-8">
+          {/* translate="no" — même protection que CatalogueSection : ce sélecteur
+              (onglets Véhicule/Type Mine/Référence + formulaires) re-render au clic et
+              à la frappe. La traduction navigateur re-parente ses nœuds texte → React
+              removeChild NotFoundError. Le H1 / sous-titre / trust strip restent hors
+              de ce <div>, donc traduisibles. Cf. React #11538. */}
+          <div translate="no" className="mx-auto mt-5 max-w-[960px] lg:mt-8">
             {/* ── MOBILE SELECTOR ── */}
             <div className="relative lg:hidden">
               <div className="absolute inset-x-3 top-0 h-24 rounded-[28px] bg-white/8 blur-2xl" />
@@ -152,7 +157,7 @@ export default function HeroSection() {
                         <Button
                           type="submit"
                           disabled={mineCode.length < 5}
-                          className="h-12 w-full rounded-2xl bg-cta text-[16px] font-semibold text-white shadow-[0_12px_24px_rgba(249,115,22,0.28)] hover:bg-cta-hover disabled:opacity-50"
+                          className="h-12 w-full rounded-2xl bg-cta text-[16px] font-semibold text-black shadow-[0_12px_24px_rgba(249,115,22,0.28)] hover:bg-cta-hover disabled:opacity-50"
                         >
                           <Search size={15} className="mr-2" /> Rechercher
                         </Button>
@@ -186,7 +191,7 @@ export default function HeroSection() {
                         <Button
                           type="submit"
                           disabled={!refQuery.trim()}
-                          className="h-12 w-full rounded-2xl bg-cta text-[16px] font-semibold text-white shadow-[0_12px_24px_rgba(249,115,22,0.28)] hover:bg-cta-hover disabled:opacity-50"
+                          className="h-12 w-full rounded-2xl bg-cta text-[16px] font-semibold text-black shadow-[0_12px_24px_rgba(249,115,22,0.28)] hover:bg-cta-hover disabled:opacity-50"
                         >
                           <Search size={15} className="mr-2" /> Rechercher
                         </Button>
@@ -286,7 +291,7 @@ export default function HeroSection() {
                       <Button
                         type="submit"
                         disabled={mineCode.length < 5}
-                        className="h-12 shrink-0 rounded-2xl bg-cta px-8 text-[15px] font-semibold text-white shadow-[0_12px_24px_rgba(249,115,22,0.28)] hover:bg-cta-hover disabled:opacity-50"
+                        className="h-12 shrink-0 rounded-2xl bg-cta px-8 text-[15px] font-semibold text-black shadow-[0_12px_24px_rgba(249,115,22,0.28)] hover:bg-cta-hover disabled:opacity-50"
                       >
                         <Search size={15} className="mr-2" /> Rechercher
                       </Button>
@@ -319,7 +324,7 @@ export default function HeroSection() {
                       <Button
                         type="submit"
                         disabled={!refQuery.trim()}
-                        className="h-12 shrink-0 rounded-2xl bg-cta px-8 text-[15px] font-semibold text-white shadow-[0_12px_24px_rgba(249,115,22,0.28)] hover:bg-cta-hover disabled:opacity-50"
+                        className="h-12 shrink-0 rounded-2xl bg-cta px-8 text-[15px] font-semibold text-black shadow-[0_12px_24px_rgba(249,115,22,0.28)] hover:bg-cta-hover disabled:opacity-50"
                       >
                         <Search size={15} className="mr-2" /> Rechercher
                       </Button>

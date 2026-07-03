@@ -16,7 +16,7 @@
  *
  * @see backend/src/modules/seo/services/robots-txt.service.ts
  */
-import { type LoaderFunctionArgs } from "@remix-run/node";
+import { type LoaderFunctionArgs } from "react-router";
 import {
   SITEMAP_CONFIG,
   fetchWithRetry,

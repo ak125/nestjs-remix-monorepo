@@ -12,18 +12,6 @@
  */
 
 import {
-  json,
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import {
-  useLoaderData,
-  useNavigation,
-  Link,
-  useFetcher,
-} from "@remix-run/react";
-import {
   ArrowLeft,
   BarChart3,
   Eye,
@@ -45,6 +33,15 @@ import {
   Save,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  useNavigation,
+  Link,
+  useFetcher,
+} from "react-router";
 
 import {
   type GammeDetail,
@@ -83,7 +80,7 @@ import { Textarea } from "~/components/ui/textarea";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 
-export const meta: MetaFunction<typeof loader> = ({ data }) =>
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) =>
   createNoIndexMeta(
     data?.detail?.gamme?.pg_name
       ? `${data.detail.gamme.pg_name} - Admin`
@@ -160,7 +157,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     ),
   };
 
-  return json({ detail, freshness });
+  return { detail, freshness };
 }
 
 // Action
@@ -191,7 +188,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
         },
       );
 
-      return json(await response.json());
+      return await response.json();
     }
 
     if (intent === "updateSwitch") {
@@ -207,7 +204,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
         },
       );
 
-      return json(await response.json());
+      return await response.json();
     }
 
     if (intent === "updatePurchaseGuide") {
@@ -223,7 +220,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
         },
       );
 
-      return json(await response.json());
+      return await response.json();
     }
 
     // === TOGGLE INDEX/NOINDEX ===
@@ -242,15 +239,15 @@ export async function action({ request, params }: ActionFunctionArgs) {
         },
       );
 
-      return json(await response.json());
+      return await response.json();
     }
 
-    return json({ success: false, message: "Action non reconnue" });
+    return { success: false, message: "Action non reconnue" };
   } catch (error) {
-    return json({
+    return {
       success: false,
       message: error instanceof Error ? error.message : "Erreur",
-    });
+    };
   }
 }
 

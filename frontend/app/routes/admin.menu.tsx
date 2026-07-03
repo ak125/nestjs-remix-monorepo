@@ -3,11 +3,11 @@
  */
 
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
+  useLoaderData,
+  Link,
+} from "react-router";
 import { Button } from "~/components/ui/button";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
@@ -19,7 +19,7 @@ export const meta: MetaFunction = () =>
 export async function loader({ request, context }: LoaderFunctionArgs) {
   const user = await requireAdmin({ context });
 
-  return json({
+  return {
     user,
     menu: {
       title: "Administration",
@@ -62,7 +62,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         },
       ],
     },
-  });
+  };
 }
 
 export default function AdminMenu() {

@@ -16,17 +16,6 @@
  */
 
 import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import {
-  useLoaderData,
-  Link,
-  useRouteError,
-  isRouteErrorResponse,
-} from "@remix-run/react";
-import {
   ArrowLeft,
   Filter,
   Package,
@@ -34,6 +23,14 @@ import {
   BarChart3,
   Star,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+  useRouteError,
+  isRouteErrorResponse,
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
@@ -95,7 +92,10 @@ interface ProductsRangesData {
   error?: string;
 }
 
-export async function loader({ request, context }: LoaderFunctionArgs) {
+export async function loader({
+  request,
+  context,
+}: LoaderFunctionArgs): Promise<ProductsRangesData> {
   try {
     // Authentification optionnelle (permet l'accès aux invités)
     const user = await getOptionalUser({ context });
@@ -194,7 +194,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       totalPages: Math.ceil(totalRanges / limit),
     };
 
-    return json<ProductsRangesData>({
+    return {
       user: user
         ? {
             id: user.id,
@@ -217,11 +217,11 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       },
       enhanced,
       pagination,
-    });
+    };
   } catch (error) {
     logger.error("❌ Erreur loader products.ranges:", error);
 
-    return json<ProductsRangesData>({
+    return {
       user: {
         id: "error",
         name: "Erreur",
@@ -232,7 +232,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       stats: { total: 0, active: 0, top: 0, totalProducts: 0 },
       enhanced: false,
       error: "Impossible de charger les gammes de produits",
-    });
+    };
   }
 }
 

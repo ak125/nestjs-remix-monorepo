@@ -11,6 +11,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import * as yaml from 'js-yaml';
 import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
+import { SOURCE_TIER } from '../../../config/source-provenance.constants';
 import {
   GENERIC_PHRASES as SHARED_GENERIC_PHRASES,
   MIN_R3_SECTION_LENGTH,
@@ -222,6 +223,38 @@ interface SupplementaryClassification {
   specs: string[];
 }
 
+/**
+ * Resolve the authoritative, character-faithful gamme display term for use INSIDE
+ * a sentence ("Quand changer les {term} :", "Pièces … avec les {term} :").
+ *
+ * Source of truth = `pieces_gamme.pg_name` ("Témoin d'usure") — it carries the
+ * accents AND the apostrophe. The slug (pg_alias) must NEVER be used as the term:
+ * it is ASCII, so accents are stripped and the apostrophe is collapsed to '-'/' ',
+ * which produced the de-accented "temoin d usure" headings (pb caractère incident).
+ *
+ * Casing (applied uniformly to BOTH the pg_name and the fallback paths): every
+ * template embeds the term after a determiner, so the first letter is lower-cased —
+ * except when the leading token is an acronym / all-caps run (2+ leading uppercase:
+ * ABS, FAP, ÉTRIER…), which is preserved verbatim.
+ *
+ * When pg_name is unavailable, fall back (observably — the caller logs) to
+ * restoreAccents() on the slug: it recovers accents from the FR lexicon, the best
+ * achievable without the canonical name (it cannot recover apostrophes).
+ */
+export function formatGammeDisplayName(
+  pgName: string | null | undefined,
+  slug: string,
+  restoreAccents: (s: string) => string,
+): string {
+  const raw = (
+    pgName?.trim() || restoreAccents(slug.replace(/-/g, ' '))
+  ).trim();
+  if (/^[A-ZÀ-Ý]{2,}/.test(raw)) {
+    return raw;
+  }
+  return raw.charAt(0).toLowerCase() + raw.slice(1);
+}
+
 @Injectable()
 export class ConseilEnricherService extends SupabaseBaseService {
   protected override readonly logger = new Logger(ConseilEnricherService.name);
@@ -248,6 +281,32 @@ export class ConseilEnricherService extends SupabaseBaseService {
 
   /** LLM polish disabled — skills Claude Code (/content-gen) replace Groq for quality polish */
   private readonly llmPolishEnabled = false;
+
+  /**
+   * Authoritative gamme display term from `pieces_gamme.pg_name` (canonical product
+   * name) — resolved once per enrichment and threaded to every section builder.
+   * NEVER derive the term from the slug; see {@link formatGammeDisplayName}.
+   */
+  private async resolveGammeDisplayName(
+    pgId: string,
+    pgAlias: string,
+  ): Promise<string> {
+    const { data, error } = await this.client
+      .from('pieces_gamme')
+      .select('pg_name')
+      .eq('pg_id', parseInt(pgId, 10))
+      .maybeSingle();
+    const pgName = (data as { pg_name?: string } | null)?.pg_name;
+    if (error || !pgName) {
+      this.logger.warn(
+        `resolveGammeDisplayName: no authoritative pg_name for pgId=${pgId} ` +
+          `(${pgAlias}) — falling back to restoreAccents(slug)`,
+      );
+    }
+    return formatGammeDisplayName(pgName, pgAlias, (s) =>
+      this.textUtils.restoreAccents(s),
+    );
+  }
 
   /**
    * Enrich a single gamme's R3 Conseils sections using RAG knowledge.
@@ -278,6 +337,10 @@ export class ConseilEnricherService extends SupabaseBaseService {
         };
       }
     }
+
+    // Authoritative gamme display term (accents + apostrophe) — resolved once,
+    // threaded to every section builder. NEVER derive the term from the slug.
+    const gammeName = await this.resolveGammeDisplayName(pgId, pgAlias);
 
     // 1. Load RAG knowledge doc (API first, disk fallback)
     let ragContent: string;
@@ -313,12 +376,13 @@ export class ConseilEnricherService extends SupabaseBaseService {
             `No primary RAG doc for ${pgAlias}, building contract from ${supplementaryFiles.length} supplementary files`,
           );
           const contract: PageContract = {};
-          this.mergeSupplementaryIntoContract(contract, classified, pgAlias);
+          this.mergeSupplementaryIntoContract(contract, classified, gammeName);
           // Jump to step 3 below with this contract (always supplementary-enriched)
           return this.executeEnrichment(
             pgId,
             pgAlias,
             contract,
+            gammeName,
             true,
             conservativeMode,
           );
@@ -357,11 +421,12 @@ export class ConseilEnricherService extends SupabaseBaseService {
             `No page_contract for ${pgAlias}, building from ${supplementaryFiles.length} supplementary files`,
           );
           contract = {};
-          this.mergeSupplementaryIntoContract(contract, classified, pgAlias);
+          this.mergeSupplementaryIntoContract(contract, classified, gammeName);
           return this.executeEnrichment(
             pgId,
             pgAlias,
             contract,
+            gammeName,
             true,
             conservativeMode,
           );
@@ -391,7 +456,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
       supplementaryEnriched = this.mergeSupplementaryIntoContract(
         contract,
         classified,
-        pgAlias,
+        gammeName,
       );
       this.logger.log(
         `Merged supplementary content for ${pgAlias} (modified=${supplementaryEnriched}): ` +
@@ -537,6 +602,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
       pgId,
       pgAlias,
       contract,
+      gammeName,
       supplementaryEnriched,
       conservativeMode,
       force || ragChanged,
@@ -621,6 +687,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
     pgId: string,
     pgAlias: string,
     contract: PageContract,
+    gammeName: string,
     hasSupplementary = false,
     conservativeMode = false,
     force = false,
@@ -634,7 +701,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
     const actions = this.planActions(
       existing,
       contract,
-      pgAlias,
+      gammeName,
       hasSupplementary || force,
     );
 
@@ -646,6 +713,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
       const observableFallback = await this.buildS2DiagFromObservable(
         pgId,
         pgAlias,
+        gammeName,
         existing,
       );
       if (observableFallback) {
@@ -723,6 +791,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
         pgId,
         contract,
         pgAlias,
+        gammeName,
         conservativeMode,
       );
 
@@ -1264,6 +1333,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
   private async buildS2DiagFromObservable(
     pgId: string,
     pgAlias: string,
+    gammeName: string,
     existing: Map<string, { sgc_id: string; sgc_content: string }>,
   ): Promise<SectionAction | null> {
     const existingS2D = existing.get(SECTION_TYPES.S2_DIAG);
@@ -1289,7 +1359,6 @@ export class ConseilEnricherService extends SupabaseBaseService {
 
       if (error || !data || data.length < 2) return null;
 
-      const gammeName = pgAlias.replace(/-/g, ' ');
       const rows = (
         data as Array<{
           symptom: string;
@@ -1357,11 +1426,10 @@ export class ConseilEnricherService extends SupabaseBaseService {
       }
     >,
     contract: PageContract,
-    pgAlias: string,
+    gammeName: string,
     hasSupplementary = false,
   ): SectionAction[] {
     const actions: SectionAction[] = [];
-    const gammeName = pgAlias.replace(/-/g, ' ');
     const hp = contract.headingPlan || {};
 
     /**
@@ -1399,7 +1467,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
         const syncParts = contract.intro.syncParts || [];
         const syncHtml =
           syncParts.length > 0
-            ? `<br>Pièces liées : ${syncParts.map((p) => `<b>${p.replace(/-/g, ' ')}</b>`).join(', ')}.`
+            ? `<br>Pièces liées : ${syncParts.map((p) => `<b>${this.textUtils.restoreAccents(p.replace(/-/g, ' '))}</b>`).join(', ')}.`
             : '';
         const s1Content = `${contract.intro.role}${syncHtml}`;
         if (!wouldRegress(existingS1?.sgc_content, s1Content)) {
@@ -2053,13 +2121,15 @@ export class ConseilEnricherService extends SupabaseBaseService {
       const existingRow = existing.get(action.type);
       const sources: Array<{ type: string; ref: string; field: string }> = [
         {
-          type: 'rag',
+          // Honest provenance tier: this descriptor is parsed from the legacy RAG
+          // knowledge doc (decommissioned source) — not bare 'rag'. See ADR-031/046.
+          type: SOURCE_TIER.RAG_LEGACY,
           ref: `gammes/${pgAlias}.md`,
           field:
             action.ragField ?? SECTION_RAG_FIELD_MAP[action.type] ?? 'general',
         },
         ...supplementaryRefs.map((ref) => ({
-          type: 'web',
+          type: SOURCE_TIER.WEB,
           ref,
           field: 'supplementary',
         })),
@@ -2418,9 +2488,8 @@ export class ConseilEnricherService extends SupabaseBaseService {
   private mergeSupplementaryIntoContract(
     contract: PageContract,
     supplementary: SupplementaryClassification,
-    pgAlias: string,
+    gammeName: string,
   ): boolean {
-    const gammeName = pgAlias.replace(/-/g, ' ');
     let modified = false;
 
     // S1 (definitions) → enrich intro.role (filter marketing content)
@@ -2554,6 +2623,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
     pgId: string,
     contract: PageContract,
     pgAlias: string,
+    gammeName: string,
     conservativeMode = false,
   ): Promise<void> {
     const templateDescrip = this.composeSeoDescrip(contract, pgAlias);
@@ -2573,7 +2643,6 @@ export class ConseilEnricherService extends SupabaseBaseService {
             )
           : null;
 
-        const gammeLabelName = pgAlias.replace(/-/g, ' ');
         const result = await this.aiContentService.generateContent({
           type: brief ? 'seo_descrip_R3' : 'seo_descrip_polish',
           prompt: `Polish meta description for ${pgAlias}`,
@@ -2582,8 +2651,8 @@ export class ConseilEnricherService extends SupabaseBaseService {
           maxLength: 200,
           temperature: 0.3,
           context: brief
-            ? { draft: templateDescrip, gammeName: gammeLabelName, brief }
-            : { draft: templateDescrip, gammeName: gammeLabelName },
+            ? { draft: templateDescrip, gammeName, brief }
+            : { draft: templateDescrip, gammeName },
           useCache: true,
         });
         const polished = result.content.trim();

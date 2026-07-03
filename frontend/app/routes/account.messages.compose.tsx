@@ -1,18 +1,16 @@
+import { Send, Paperclip, ArrowLeft } from "lucide-react";
 import {
-  json,
   redirect,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import {
+  data,
   Form,
   useLoaderData,
   useNavigation,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { Send, Paperclip, ArrowLeft } from "lucide-react";
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Alert } from "~/components/ui/alert";
 import { logger } from "~/utils/logger";
@@ -44,11 +42,11 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const orderId = url.searchParams.get("order");
   const parentId = url.searchParams.get("reply");
 
-  return json<LoaderData>({
+  return {
     user,
     orderId: orderId || undefined,
     parentId: parentId || undefined,
-  });
+  };
 };
 
 export const action = async ({ request, context }: ActionFunctionArgs) => {
@@ -90,7 +88,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
     }
   } catch (error) {
     logger.error("Erreur envoi message:", error);
-    return json(
+    return data(
       { error: "Erreur lors de l'envoi du message" },
       { status: 500 },
     );

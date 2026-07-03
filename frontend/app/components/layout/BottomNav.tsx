@@ -1,6 +1,6 @@
-import { Link, useLocation } from "@remix-run/react";
 import { Home, Package, ShoppingCart, Stethoscope, User } from "lucide-react";
 import { useEffect, useRef } from "react";
+import { Link, useLocation } from "react-router";
 
 import { openCartSidebar } from "~/hooks/useCartSidebar";
 import { useRootCart } from "~/hooks/useRootData";
@@ -95,7 +95,7 @@ export default function BottomNav() {
         <span className="relative">
           <ShoppingCart size={20} strokeWidth={isCartActive ? 2.5 : 1.5} />
           {itemCount > 0 && (
-            <span className="absolute -top-1.5 -right-2.5 min-w-[16px] h-[16px] px-0.5 bg-cta rounded-full text-[9px] font-bold flex items-center justify-center text-white">
+            <span className="absolute -top-1.5 -right-2.5 min-w-[16px] h-[16px] px-0.5 bg-cta rounded-full text-[9px] font-bold flex items-center justify-center text-black">
               {itemCount > 99 ? "99+" : itemCount}
             </span>
           )}

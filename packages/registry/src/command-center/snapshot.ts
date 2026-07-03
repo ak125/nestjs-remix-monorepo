@@ -111,6 +111,9 @@ export const CcAlertCodeSchema = z.enum([
   "OVERCLAIM_RISK",
   "P0_NO_KPI",
   "HANDOFF_INCOMPLETE",
+  // A departments[].capabilities slug resolving neither in declared_capabilities
+  // nor in skills.registry — surfaced instead of silently dropped (audit 2026-06-11).
+  "DROPPED_CAPABILITY",
 ]);
 export const CcAlertSchema = z
   .object({

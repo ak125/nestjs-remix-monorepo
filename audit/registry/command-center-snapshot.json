@@ -320,6 +320,21 @@
       "certification": "CERTIFIED",
       "evidence": {
         "scripts": [
+          ".claude/skills/governance-vault-ops/SKILL.md"
+        ]
+      },
+      "has_evidence": true,
+      "id": "governance-vault-ops",
+      "module": "governance",
+      "owner": "governance",
+      "reason": null,
+      "status": "live",
+      "type": "skill"
+    },
+    {
+      "certification": "CERTIFIED",
+      "evidence": {
+        "scripts": [
           "backend/src/modules/health"
         ]
       },
@@ -618,6 +633,36 @@
       "type": "module"
     },
     {
+      "certification": "CERTIFIED",
+      "evidence": {
+        "scripts": [
+          ".claude/skills/vehicle-ops/SKILL.md"
+        ]
+      },
+      "has_evidence": true,
+      "id": "vehicle-ops",
+      "module": "catalog",
+      "owner": "catalog",
+      "reason": null,
+      "status": "live",
+      "type": "skill"
+    },
+    {
+      "certification": "CERTIFIED",
+      "evidence": {
+        "scripts": [
+          ".claude/skills/vehicle-ops/SKILL.md"
+        ]
+      },
+      "has_evidence": true,
+      "id": "vehicle-ops",
+      "module": "diagnostic",
+      "owner": "diagnostic",
+      "reason": null,
+      "status": "live",
+      "type": "skill"
+    },
+    {
       "certification": "PARTIAL",
       "evidence": {
         "adr": "ADR-033"
@@ -756,11 +801,12 @@
       "capabilities": [
         "catalog-core",
         "compatibility",
-        "catalog-integrity"
+        "catalog-integrity",
+        "vehicle-ops"
       ],
       "certification": "PARTIAL",
       "family": "Operations",
-      "health_score_base": 78,
+      "health_score_base": 81,
       "id": "catalog",
       "kpi_primary": "compat_and_displayed_availability",
       "label": "Catalogue & Compatibilité",
@@ -804,11 +850,12 @@
     {
       "capabilities": [
         "diagnostic-engine",
-        "knowledge-graph"
+        "knowledge-graph",
+        "vehicle-ops"
       ],
       "certification": "PARTIAL",
       "family": "Operations",
-      "health_score_base": 55,
+      "health_score_base": 67,
       "id": "diagnostic",
       "kpi_primary": "diagnostic_to_product",
       "label": "Diagnostic & Assistance",
@@ -833,19 +880,19 @@
       "structural_caps_applied": []
     },
     {
-      "capabilities": [],
-      "certification": "UNKNOWN",
+      "capabilities": [
+        "governance-vault-ops"
+      ],
+      "certification": "CERTIFIED",
       "family": "AI-Governance",
-      "health_score_base": 30,
+      "health_score_base": 90,
       "id": "governance",
       "kpi_primary": "limits_respected",
       "label": "Gouvernance",
       "lead": "governance-lead",
       "priority": "P0",
       "state": "live",
-      "structural_caps_applied": [
-        "no_capabilities"
-      ]
+      "structural_caps_applied": []
     },
     {
       "capabilities": [
@@ -1075,8 +1122,8 @@
       "label": "Capacités certifiées",
       "source": "canon",
       "status": "OK",
-      "unit": "/38",
-      "value": 19
+      "unit": "/41",
+      "value": 22
     },
     {
       "certified": true,
@@ -1197,8 +1244,8 @@
       "live": 3,
       "partial": 16
     },
-    "capabilities_certified": 19,
-    "capabilities_total": 38,
+    "capabilities_certified": 22,
+    "capabilities_total": 41,
     "capabilities_without_evidence": 4,
     "departments_total": 20,
     "handoffs_incomplete": 10,

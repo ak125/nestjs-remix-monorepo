@@ -12,6 +12,10 @@ import {
   deriveUrlNextStep,
 } from '../../src/modules/admin/services/command-center-action-rules/seo-action.rules';
 import { buildPricingRiskActions } from '../../src/modules/admin/services/command-center-action-rules/pricing-action.rules';
+import {
+  buildImprovementCandidateActions,
+  CANDIDATE_HEADROOM_THRESHOLD,
+} from '../../src/modules/admin/services/command-center-action-rules/improvement-candidate.rules';
 
 function biz(confidence: number): RawAction {
   return {
@@ -199,6 +203,96 @@ describe('certification rules — broken/partial sources → repair/certify, NOT
     const sup = out.find((a) => a.id === 'repair:supplier');
     expect(sup).toBeDefined();
     expect(sup!.action_type).toBe('repair'); // BROKEN → repair, not certification
+  });
+});
+
+describe('repair coverage — canon-priority-driven (audit 2026-06-11 angle mort)', () => {
+  it('an uncertified P0 department WITHOUT a curated playbook still gets a repair action (no silent skip)', () => {
+    const out = buildCertificationActions(
+      [
+        {
+          id: 'finance',
+          label: 'Finance',
+          certification: 'PARTIAL',
+          kpi_primary: 'k',
+          priority: 'P0',
+        },
+      ],
+      [],
+    ).map(finalizeAction);
+    const fin = out.find((a) => a.id === 'repair:finance');
+    expect(fin).toBeDefined(); // before the fix: finance was invisible
+    expect(fin!.action_type).toBe('certification');
+    expect(fin!.source).toBe('governance'); // catch-all source (enum-valid)
+    expect(fin!.department).toBe('finance'); // real department shown in UI
+    expect(fin!.next_step).toMatch(/verdict de fiabilité/i); // generic honest step
+  });
+
+  it('a curated P0 keeps its specific playbook weights/step (not the generic ones)', () => {
+    const out = buildCertificationActions(
+      [
+        {
+          id: 'sales',
+          label: 'Ventes',
+          certification: 'PARTIAL',
+          kpi_primary: 'k',
+          priority: 'P0',
+        },
+      ],
+      [],
+    ).map(finalizeAction);
+    const sales = out.find((a) => a.id === 'repair:sales')!;
+    expect(sales.impact).toBe(10); // curated, not generic 6
+    expect(sales.next_step).toMatch(/funnel/i); // curated step preserved
+  });
+
+  it('a non-P0 department without a curated playbook is NOT covered (conservative scope)', () => {
+    const out = buildCertificationActions(
+      [
+        {
+          id: 'media',
+          label: 'Média',
+          certification: 'PARTIAL',
+          kpi_primary: 'k',
+          priority: 'P2',
+        },
+      ],
+      [],
+    );
+    expect(out.find((a) => a.id === 'repair:media')).toBeUndefined();
+  });
+
+  it('a CERTIFIED P0 department gets no action even via the generic path', () => {
+    const out = buildCertificationActions(
+      [
+        {
+          id: 'finance',
+          label: 'Finance',
+          certification: 'CERTIFIED',
+          kpi_primary: 'k',
+          priority: 'P0',
+        },
+      ],
+      [],
+    );
+    expect(out.find((a) => a.id === 'repair:finance')).toBeUndefined();
+  });
+
+  it('a generic P0 that is BROKEN escalates to a repair action', () => {
+    const out = buildCertificationActions(
+      [
+        {
+          id: 'support',
+          label: 'Support',
+          certification: 'BROKEN',
+          kpi_primary: 'k',
+          priority: 'P0',
+        },
+      ],
+      [],
+    ).map(finalizeAction);
+    const sup = out.find((a) => a.id === 'repair:support')!;
+    expect(sup.action_type).toBe('repair');
   });
 });
 
@@ -412,5 +506,56 @@ describe('pricing rules — cautious; thresholds → certification, not a guesse
     expect(sal).toBeDefined();
     expect(sal!.action_type).toBe('risk'); // confidence 72 ≥ floor → stays risk
     expect(sal!.impact).toBe(10);
+  });
+});
+
+describe('improvement-candidate rules — read-only perf ranking, headroom-driven', () => {
+  it('tight budget → emits a runtime/business candidate; healthy budget → none', () => {
+    const out = buildImprovementCandidateActions([
+      { name: 'Tight chunk, gzip', measuredBytes: 30766, limitBytes: 34000 }, // ~9.5% headroom
+      { name: 'Healthy chunk, gzip', measuredBytes: 50000, limitBytes: 100000 }, // 50% headroom
+    ]);
+    expect(out).toHaveLength(1);
+    const c = out[0];
+    expect(c.source).toBe('runtime');
+    expect(c.action_type).toBe('business');
+    expect(c.data_confidence).toBeGreaterThanOrEqual(BUSINESS_CONFIDENCE_FLOOR); // measured → stays business
+    expect(c.id).toMatch(/^perf:size:/);
+    expect(c.next_step).toContain('boucle');
+  });
+
+  it('finalizeAction keeps the candidate as business (measured confidence ≥ floor)', () => {
+    const [c] = buildImprovementCandidateActions([
+      { name: 'X, gzip', measuredBytes: 98, limitBytes: 100 },
+    ]).map(finalizeAction);
+    expect(c.action_type).toBe('business'); // not downgraded to certification
+    expect(c.details).toBeNull();
+  });
+
+  it('ranks the tightest chunk first (smaller headroom → higher score)', () => {
+    const ranked = sortActions(
+      buildImprovementCandidateActions([
+        { name: 'Looser, gzip', measuredBytes: 85, limitBytes: 100 }, // 15% headroom
+        { name: 'Tightest, gzip', measuredBytes: 99, limitBytes: 100 }, // 1% headroom
+      ]).map(finalizeAction),
+    );
+    expect(ranked[0].title).toContain('Tightest');
+  });
+
+  it('healthy budgets only → empty (honest "nothing tight"), and threshold is a named constant', () => {
+    expect(CANDIDATE_HEADROOM_THRESHOLD).toBeGreaterThan(0);
+    const out = buildImprovementCandidateActions([
+      { name: 'A, gzip', measuredBytes: 10, limitBytes: 100 },
+      { name: 'B, gzip', measuredBytes: 0, limitBytes: 100 },
+    ]);
+    expect(out).toHaveLength(0);
+  });
+
+  it('zero/invalid limit is skipped (no divide-by-zero candidate)', () => {
+    expect(
+      buildImprovementCandidateActions([
+        { name: 'Z, gzip', measuredBytes: 10, limitBytes: 0 },
+      ]),
+    ).toHaveLength(0);
   });
 });

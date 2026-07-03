@@ -196,7 +196,7 @@ export function ResponsiveDataTable<T extends Record<string, unknown>>({
                     </div>
                   ))}
                 </div>
-                <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
               </div>
             </CardContent>
           </Card>

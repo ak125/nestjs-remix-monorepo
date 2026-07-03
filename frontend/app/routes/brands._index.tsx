@@ -10,14 +10,14 @@
  * Intention : Sélection de marque
  */
 
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
 import { Search, Car, ArrowRight } from "lucide-react";
 import { useState } from "react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+} from "react-router";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 import { Alert } from "~/components/ui/alert";
@@ -46,7 +46,7 @@ export const handle = {
 /**
  * 🔍 SEO Meta Tags
  */
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   const total = data?.total || 0;
   const title = `Toutes les Marques Automobiles (${total}) | Pièces Détachées Auto`;
   const description = `Découvrez notre catalogue complet de ${total} marques automobiles. Trouvez les pièces détachées pour BMW, Mercedes, Audi, Volkswagen, Renault, Peugeot et toutes les autres marques.`;
@@ -174,21 +174,21 @@ export async function loader({ request }: LoaderFunctionArgs) {
       logger.error("Erreur chargement logos:", error);
     }
 
-    return json({
+    return {
       brands: brands.sort((a, b) => a.marque_name.localeCompare(b.marque_name)),
       total: brands.length,
       popularModels,
       brandLogos,
-    } as LoaderData);
+    } as LoaderData;
   } catch (error) {
     logger.error("Erreur chargement marques:", error);
-    return json({
+    return {
       brands: [],
       total: 0,
       popularModels: [],
       brandLogos: [],
       error: "Impossible de charger les marques",
-    } as LoaderData);
+    } as LoaderData;
   }
 }
 

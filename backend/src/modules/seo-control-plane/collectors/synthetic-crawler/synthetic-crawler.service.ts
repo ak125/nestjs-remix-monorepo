@@ -30,11 +30,15 @@ import { randomUUID } from 'node:crypto';
 import type { TierId } from '@repo/registry';
 import { SupabaseBaseService } from '../../../../database/services/supabase-base.service';
 import { CriticalityLoaderService } from '../../services/criticality-loader.service';
+import { SyntheticProbeCredentialService } from '../../synthetic-probe-credential.service';
 import {
   SYNTHETIC_USER_AGENT,
+  SYNTHETIC_PROBE_HEADER,
+  SYNTHETIC_PROBE_ENABLED_KEY,
   type SyntheticCrawlJobData,
   type SyntheticRunResult,
   type SyntheticSnapshot,
+  type SyntheticSeedEntry,
 } from '../../types';
 
 const PROD_BASE_DEFAULT = 'https://www.automecanik.com';
@@ -45,6 +49,10 @@ interface UrlCandidate {
   url: string;
   route_path: string;
   tier: TierId;
+  // Ids catalogue reportés depuis une seed-entry (null en mode sitemap).
+  pg_id?: number | null;
+  type_id?: number | null;
+  modele_id?: number | null;
 }
 
 @Injectable()
@@ -57,9 +65,34 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
   constructor(
     private readonly criticality: CriticalityLoaderService,
     configService: ConfigService,
+    private readonly probeCredential: SyntheticProbeCredentialService,
   ) {
     super(configService);
     this.cfg = configService;
+  }
+
+  /**
+   * En-têtes de sonde : UA identifiable + (si le credential est actif) un HMAC
+   * `x-synthetic-probe` signé sur (GET|pathname|fenêtre) pour être exempté du
+   * rate-limiter sans usurper d'UA. Si l'exemption est OFF/non provisionnée, le
+   * header est omis (la sonde sera throttlée — surfacé par l'alerte 429 du run).
+   */
+  private buildProbeHeaders(url: string): Record<string, string> {
+    const headers: Record<string, string> = {
+      'User-Agent': SYNTHETIC_USER_AGENT,
+    };
+    if (this.probeCredential.isActive()) {
+      try {
+        const { pathname } = new URL(url);
+        headers[SYNTHETIC_PROBE_HEADER] = this.probeCredential.sign(
+          'GET',
+          pathname,
+        );
+      } catch {
+        // URL malformée — pas de header ; la sonde sera throttlée (observable).
+      }
+    }
+    return headers;
   }
 
   /**
@@ -93,24 +126,36 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
       `🤖 synthetic-crawler run starting (run_id=${runId} seed=${seed} sample=${sampleSize} triggeredBy=${job.triggeredBy})`,
     );
 
-    let candidates: UrlCandidate[];
-    try {
-      candidates = await this.collectCandidates();
-    } catch (err) {
-      this.logger.error(
-        `❌ sitemap fetch failed: ${this.errMsg(err)} — aborting run`,
+    // Mode seed-list (D-0) : crawl EXHAUSTIF d'une liste explicite (R8/R2 ciblé),
+    // sinon crawl sitemap échantillonné habituel. Le seed-list bypass sitemap +
+    // stratification pour ne pas être affamé par le pooling tier0 (pieces ≫ constructeurs).
+    let sampled: UrlCandidate[];
+    if (job.seedEntries && job.seedEntries.length > 0) {
+      sampled = this.candidatesFromSeed(job.seedEntries);
+      this.logger.log(
+        `🎯 seed-list mode: ${sampled.length}/${job.seedEntries.length} URL(s) classées tier (bypass sitemap + stratification)`,
       );
-      result.skipped = 'no_sitemap';
-      result.errorMessage = this.errMsg(err);
-      return this.finalize(result, startedAtMs);
+    } else {
+      let candidates: UrlCandidate[];
+      try {
+        candidates = await this.collectCandidates();
+      } catch (err) {
+        this.logger.error(
+          `❌ sitemap fetch failed: ${this.errMsg(err)} — aborting run`,
+        );
+        result.skipped = 'no_sitemap';
+        result.errorMessage = this.errMsg(err);
+        return this.finalize(result, startedAtMs);
+      }
+      sampled = this.stratifiedSample(candidates, seed, sampleSize);
     }
-
-    const sampled = this.stratifiedSample(candidates, seed, sampleSize);
     result.sample_size_effective = sampled.length;
 
     if (sampled.length === 0) {
       this.logger.warn(
-        `⚠️ stratified sample empty (sitemap returned ${candidates.length} candidates) — aborting`,
+        job.seedEntries?.length
+          ? `⚠️ seed-list mode: aucune des ${job.seedEntries.length} URL(s) fournie(s) n'est classable (toutes excluded/malformées) — aborting`
+          : `⚠️ stratified sample empty (sitemap: 0 candidat exploitable) — aborting`,
       );
       result.skipped = 'no_sitemap';
       return this.finalize(result, startedAtMs);
@@ -124,15 +169,34 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
       tier1: { probed: 0, fail_5xx: 0 },
       tier2: { probed: 0, fail_5xx: 0 },
     };
+    let http429 = 0;
     for (const s of snapshots) {
       if (s.error_kind != null || s.http_code === 0) result.totals.error++;
       else if (s.http_code >= 500) result.totals.http_5xx++;
       else if (s.http_code >= 400) result.totals.http_4xx++;
       else if (s.http_code >= 300) result.totals.http_3xx++;
       else if (s.http_code >= 200) result.totals.http_2xx++;
+      if (s.http_code === 429) http429++;
       const t = tierCounts[s.tier];
       t.probed++;
       if (s.http_code >= 500) t.fail_5xx++;
+    }
+
+    // 🚨 Observabilité anti silent-fallback : si une part anormale des sondes est
+    // throttlée (429), l'exemption rate-limit est probablement inactive (flag OFF,
+    // secret non provisionné) ou a dérivé → le monitoring L1 redevient AVEUGLE.
+    // On le rend BRUYANT (log.error, visible Sentry) plutôt que de dégrader en
+    // silence (incident 2026-06-25 : 89,7 % de 429 jamais alertés).
+    if (snapshots.length > 0) {
+      const rate429 = http429 / snapshots.length;
+      if (rate429 > 0.2) {
+        this.logger.error(
+          `🚨 synthetic-crawler: ${(rate429 * 100).toFixed(1)}% des sondes throttlées ` +
+            `(${http429}/${snapshots.length} en 429). L'exemption rate-limit est ` +
+            `probablement inactive (${SYNTHETIC_PROBE_ENABLED_KEY}/secret) ou a dérivé — ` +
+            `monitoring L1 dégradé.`,
+        );
+      }
     }
     for (const tier of ['tier0', 'tier1', 'tier2'] as TierId[]) {
       const t = tierCounts[tier];
@@ -193,6 +257,39 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
   }
 
   /**
+   * Mode seed-list (D-0) : transforme une liste explicite en candidats, en
+   * reportant les ids catalogue. Classe chaque URL par tier (les exclues sont
+   * écartées AVEC un log, jamais en silence). Aucune stratification : la liste
+   * est crawlée exhaustivement (toujours sous le pacer/concurrency de probeAll).
+   */
+  private candidatesFromSeed(entries: SyntheticSeedEntry[]): UrlCandidate[] {
+    const out: UrlCandidate[] = [];
+    for (const e of entries) {
+      try {
+        const parsed = new URL(e.url);
+        const tierResult = this.criticality.classify(parsed.pathname);
+        if (tierResult === 'excluded' || tierResult === null) {
+          this.logger.warn(
+            `seed URL écartée (tier=${tierResult ?? 'null'}): ${e.url}`,
+          );
+          continue;
+        }
+        out.push({
+          url: e.url,
+          route_path: parsed.pathname,
+          tier: tierResult,
+          pg_id: e.pgId ?? null,
+          type_id: e.typeId ?? null,
+          modele_id: e.modeleId ?? null,
+        });
+      } catch {
+        this.logger.warn(`seed URL malformée, écartée: ${e.url}`);
+      }
+    }
+    return out;
+  }
+
+  /**
    * Sample stratifié par sampling_weight (lu de L4). Seedé (mulberry32)
    * pour reproductibilité.
    */
@@ -216,7 +313,15 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
     return out;
   }
 
-  /** Probe HTTP+HTML pour chaque URL, pool de concurrency. */
+  /**
+   * Probe HTTP+HTML pour chaque URL. Pool de concurrency (borne les sockets
+   * in-flight) + PACER de débit partagé : un unique curseur monotone réserve le
+   * prochain départ pour TOUS les workers, de sorte que le débit sortant AGRÉGÉ
+   * reste sous les paliers du throttler de l'app (`app.module.ts` : short 15/1s,
+   * medium 100/60s). La sonde se comporte alors comme un client public bien élevé
+   * et ne déclenche JAMAIS de 429 — aucune exemption rate-limit n'est requise
+   * (solution structurelle vs exempter par en-tête HMAC stripable / IP qui tourne).
+   */
   private async probeAll(
     cands: UrlCandidate[],
     runId: string,
@@ -224,18 +329,51 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
   ): Promise<SyntheticSnapshot[]> {
     const concurrency = this.cfg.get<number>('SEO_CP_CONCURRENCY', 10);
     const timeoutMs = this.cfg.get<number>('SEO_CP_TIMEOUT_MS', 15_000);
+    const minIntervalMs = this.probeMinIntervalMs();
     const results: SyntheticSnapshot[] = [];
     let i = 0;
+    // Curseur monotone PARTAGÉ par tous les workers. `acquireSlot()` réserve
+    // ATOMIQUEMENT le prochain créneau (aucun await entre la lecture et l'écriture
+    // de `nextSlotAt` → exécution single-thread JS) puis avance le curseur. Débit
+    // agrégé = 1 départ / minIntervalMs, jamais un burst de `concurrency` à t0.
+    let nextSlotAt = Date.now();
+    const acquireSlot = async (): Promise<void> => {
+      const now = Date.now();
+      const slot = Math.max(now, nextSlotAt);
+      nextSlotAt = slot + minIntervalMs;
+      const wait = slot - now;
+      if (wait > 0) await this.sleep(wait);
+    };
 
     const worker = async (): Promise<void> => {
       while (i < cands.length) {
         const idx = i++;
+        await acquireSlot();
         results[idx] = await this.probe(cands[idx], runId, seed, timeoutMs);
       }
     };
 
     await Promise.all(Array.from({ length: concurrency }, () => worker()));
     return results;
+  }
+
+  /**
+   * Intervalle minimal (ms) entre deux départs de requête, tel que le débit
+   * sortant AGRÉGÉ reste strictement sous les paliers du throttler de l'app
+   * (`app.module.ts` : short 15 req/1s, medium 100 req/60s). Défauts headroomés :
+   * `SEO_CP_MAX_RPS=12` (< 15/s) et `SEO_CP_MAX_RPM=90` (< 100/min) → on retient le
+   * PLUS LENT des deux (ici 60000/90 ≈ 667 ms). Couplage assumé et documenté : si
+   * les paliers publics d'`app.module.ts` sont resserrés, baisser ces 2 knobs.
+   */
+  private probeMinIntervalMs(): number {
+    const maxRps = Math.max(1, this.cfg.get<number>('SEO_CP_MAX_RPS', 12));
+    const maxRpm = Math.max(1, this.cfg.get<number>('SEO_CP_MAX_RPM', 90));
+    return Math.max(1000 / maxRps, 60_000 / maxRpm);
+  }
+
+  /** setTimeout promisifié (pacer). */
+  private sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /** Single URL probe — fetch + HTML parse (regex minimal, no full DOM). */
@@ -251,7 +389,7 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
     try {
       const res = await fetch(cand.url, {
         signal: ctrl.signal,
-        headers: { 'User-Agent': SYNTHETIC_USER_AGENT },
+        headers: this.buildProbeHeaders(cand.url),
         redirect: 'manual',
       });
       const ttfb = Date.now() - t0;
@@ -267,11 +405,37 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
         html,
         /<meta\s+[^>]*name=["']robots["'][^>]*content=["']([^"']+)["']/i,
       );
+      // Balises émises (D-0) — meta-description + Open Graph. Même convention
+      // que robots/canonical : attribut-clé puis content (ordre rendu par le
+      // meta() Remix : { name|property, content }). Regex minimal, pas de DOM.
+      const metaDescription = this.extractAttr(
+        html,
+        /<meta\s+[^>]*name=["']description["'][^>]*content=["']([^"']*)["']/i,
+      );
+      const ogTitle = this.extractAttr(
+        html,
+        /<meta\s+[^>]*property=["']og:title["'][^>]*content=["']([^"']*)["']/i,
+      );
+      const ogDescription = this.extractAttr(
+        html,
+        /<meta\s+[^>]*property=["']og:description["'][^>]*content=["']([^"']*)["']/i,
+      );
+      const ogImage = this.extractAttr(
+        html,
+        /<meta\s+[^>]*property=["']og:image["'][^>]*content=["']([^"']*)["']/i,
+      );
+      const ogUrl = this.extractAttr(
+        html,
+        /<meta\s+[^>]*property=["']og:url["'][^>]*content=["']([^"']*)["']/i,
+      );
 
       return {
         url: cand.url,
         route_path: cand.route_path,
         tier: cand.tier,
+        pg_id: cand.pg_id ?? null,
+        type_id: cand.type_id ?? null,
+        modele_id: cand.modele_id ?? null,
         http_code: res.status,
         ttfb_ms: ttfb,
         content_length: body.length,
@@ -293,6 +457,15 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
         canonical_url: canonical,
         robots_meta: robotsMeta,
         x_robots_tag: res.headers.get('x-robots-tag'),
+        meta_description: metaDescription
+          ? metaDescription.slice(0, 1000)
+          : null,
+        has_meta_description: metaDescription !== null,
+        og_title: ogTitle ? ogTitle.slice(0, 500) : null,
+        og_description: ogDescription ? ogDescription.slice(0, 1000) : null,
+        og_image: ogImage ? ogImage.slice(0, 1000) : null,
+        og_url: ogUrl ? ogUrl.slice(0, 1000) : null,
+        has_og: ogTitle !== null || ogDescription !== null,
         error_kind: null,
         error_message: null,
         run_id: runId,
@@ -310,6 +483,9 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
         url: cand.url,
         route_path: cand.route_path,
         tier: cand.tier,
+        pg_id: cand.pg_id ?? null,
+        type_id: cand.type_id ?? null,
+        modele_id: cand.modele_id ?? null,
         http_code: 0,
         ttfb_ms: Date.now() - t0,
         content_length: null,
@@ -325,6 +501,13 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
         canonical_url: null,
         robots_meta: null,
         x_robots_tag: null,
+        meta_description: null,
+        has_meta_description: null,
+        og_title: null,
+        og_description: null,
+        og_image: null,
+        og_url: null,
+        has_og: null,
         error_kind: errorKind,
         error_message: this.errMsg(err).slice(0, 500),
         run_id: runId,
@@ -361,7 +544,7 @@ export class SyntheticCrawlerService extends SupabaseBaseService {
     try {
       const res = await fetch(url, {
         signal: ctrl.signal,
-        headers: { 'User-Agent': SYNTHETIC_USER_AGENT },
+        headers: this.buildProbeHeaders(url),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status} on ${url}`);
       return await res.text();

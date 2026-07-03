@@ -10,6 +10,7 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
+import { boundedMemoryCache } from '../../config/cache-store.factory';
 
 // Controllers
 import { VehiclesController } from './vehicles.controller';
@@ -74,13 +75,12 @@ import { ParamsPipesModule } from '../../common/pipes/params';
     forwardRef(() => CatalogModule), // 🔗 Pour le maillage interne (gammes populaires)
     CacheModule.registerAsync({
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        // TTL défaut 300s, max 100 éléments — surchargés via ENV
-        ttl: Number(config.get('VEHICLES_CACHE_TTL', 300)),
-        max: Number(config.get('VEHICLES_CACHE_MAX', 100)),
-        // keyPrefix: 'vehicles:', // 👉 active si besoin d'isoler les clés
-        // store: await redisStore({ url: config.get('REDIS_URL') }), // 👉 switch Redis en prod
-      }),
+      // TTL/max historiques en ms (valeurs verbatim), surchargeables via ENV
+      useFactory: (config: ConfigService) =>
+        boundedMemoryCache(
+          Number(config.get('VEHICLES_CACHE_TTL', 300)),
+          Number(config.get('VEHICLES_CACHE_MAX', 100)),
+        ),
     }),
   ],
   controllers: [

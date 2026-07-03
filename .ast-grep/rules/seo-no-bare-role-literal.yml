@@ -77,6 +77,14 @@ ignores:
   - "**/admin/services/content-quality-gate.service.ts" # internal gate context labels
   - "**/admin/services/rag-safe-distill.service.ts" # SearchTargetRole canon-defining map
   - "**/admin/services/conseil-enricher.service.ts" # log marker template (non-output)
+  # ── Brief composition subsystem : vocabulaire INTERNE, pas OUTPUT SEO ──
+  # `BriefRole` (type-def : 'R3_CONSEILS' | 'R3_GUIDE' | 'R8_VEHICLE') discrimine la
+  # fabrique evidence-driven WIKI ; `toBriefRole()` est un NORMALISEUR d'entrée
+  # (`if (r === 'R3') return 'R3_CONSEILS'`) qui CONSOMME les formes legacy/brutes
+  # venant de la DB — il ne les ÉMET pas en OUTPUT SEO. Même catégorie que r6-guide /
+  # diagnostic TargetRole. Migration canonique = future PR coordonnée (comme R6).
+  - "**/admin/services/seo-brief.service.ts"        # type-def BriefRole (discriminator interne)
+  - "**/admin/services/brief-template.service.ts"   # toBriefRole : normaliseur d'INPUT (non-output)
   # ── R6 buying-guide engine intentType/pageRole strict literal types ──
   # `intentType: 'R6'` and `pageRole: 'R6_BUYING_GUIDE'` are strict TS literal
   # types declared in r6-guide.interfaces.ts (backend) AND r6-guide.types.ts

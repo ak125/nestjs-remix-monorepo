@@ -117,6 +117,25 @@ if command -v python3 >/dev/null 2>&1 \
   fi
 fi
 
+# Guard the churn-preservation logic itself: when a scripts/knowledge/*.py file
+# is staged, its unit + integration + drift-guard tests must pass — otherwise a
+# regression could silently reintroduce the daily 49-module last_scan churn.
+# Soft-skip if python3/pyyaml absent (same policy as the refresh above); HARD-fail
+# on a real test failure so the guard actually guards.
+if git diff --cached --name-only --diff-filter=ACMR | grep -qE '^scripts/knowledge/.*\.py$'; then
+  if command -v python3 >/dev/null 2>&1 \
+     && python3 -c "import yaml" >/dev/null 2>&1 \
+     && [ -f scripts/knowledge/test_refresh_knowledge.py ]; then
+    python3 scripts/knowledge/test_refresh_knowledge.py || {
+      echo ""
+      echo "ERROR: scripts/knowledge/test_refresh_knowledge.py failed."
+      echo "The headers-only last_scan preservation invariant is broken — fix it"
+      echo "before committing (this guards the daily knowledge-module churn)."
+      exit 1
+    }
+  fi
+fi
+
 # Repository Control Plane (ADR-058) — Layer 2 overlay validation + Layer 1/3 no-manual-edit guard
 # Lightweight pre-commit checks per ADR-058 §Stratégie hooks :
 #   - validate-overlay : Zod check on .spec/00-canon/repository-registry/*.yaml (< 1s)

@@ -1,3 +1,9 @@
+// ⚠️ DEPRECATED (ADR-031/046 · programme rag-purge B8 2026-06-19) — RAG = retrieval chatbot only,
+// JAMAIS source de contenu/SEO. Ce service orchestrait l'ingestion/reindex RAG « propre »
+// (spawn de scripts → Weaviate) via les endpoints admin/pipeline/* — RETIRÉS (controller + provider).
+// Architecture cible : RAG = consommateur du wiki, pour le chat ; seule entrée d'ingestion =
+// le sync wiki→rag (scripts/rag-sync/sync-wiki-exports-to-rag.py). Plus aucun câblage DI.
+// Conservé pour salvage (non supprimé) — recoverable via git si réactivation gouvernée requise.
 import {
   Injectable,
   Logger,

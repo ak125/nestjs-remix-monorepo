@@ -16,19 +16,6 @@
  */
 
 import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import {
-  useLoaderData,
-  useSearchParams,
-  useNavigate,
-  useFetcher,
-  useRouteError,
-  isRouteErrorResponse,
-} from "@remix-run/react";
-import {
   Search as SearchIcon,
   Grid3X3,
   List,
@@ -41,6 +28,16 @@ import {
   Package,
 } from "lucide-react";
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  useSearchParams,
+  useNavigate,
+  useFetcher,
+  useRouteError,
+  isRouteErrorResponse,
+} from "react-router";
 
 // 🎯 Layout components
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
@@ -133,7 +130,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   // Retour rapide si pas de requête
   if (!query) {
-    return json<SearchPageData>({
+    return {
       results: null,
       pieces: [],
       groupedPieces: [],
@@ -141,7 +138,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       filters: {},
       hasError: false,
       performance: { loadTime: Date.now() - startTime },
-    });
+    };
   }
 
   try {
@@ -193,7 +190,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     const loadTime = Date.now() - startTime;
 
-    return json<SearchPageData>({
+    return {
       results: {
         ...results,
         page,
@@ -209,11 +206,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
         searchTime: results?.executionTime || 0,
         totalItems: total,
       },
-    });
+    };
   } catch (error) {
     logger.error("Erreur lors de la recherche:", error);
 
-    return json<SearchPageData>({
+    return {
       results: null,
       pieces: [],
       groupedPieces: [],
@@ -222,7 +219,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       hasError: true,
       errorMessage: error instanceof Error ? error.message : "Erreur inconnue",
       performance: { loadTime: Date.now() - startTime },
-    });
+    };
   }
 }
 
@@ -230,7 +227,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 // META SEO
 // ===============================
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   const query = data?.query || "";
   const total = data?.performance.totalItems || 0;
 
@@ -568,7 +565,6 @@ export default function SearchPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 /50 relative">
       {/* Pattern d'arrière-plan */}
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMwMDAiIGZpbGwtb3BhY2l0eT0iMC4wMiI+PHBhdGggZD0iTTM2IDE0YzIuMiAwIDQgMS44IDQgNHMtMS44IDQtNCA0LTQtMS44LTQtNGMwLTIuMiAxLjgtNCA0LTR6bTAgNDBjMi4yIDAgNCAxLjggNCA0cy0xLjggNC00IDQtNC0xLjgtNC00YzAtMi4yIDEuOC00IDQtNHoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-40 pointer-events-none"></div>
-
       <div className="relative container mx-auto px-4 py-6">
         {/* Breadcrumb */}
         <PublicBreadcrumb items={[{ label: "Recherche" }]} />
@@ -826,7 +822,7 @@ export default function SearchPage() {
                       </button>
                       <button
                         onClick={() => setSortBy("brand")}
-                        className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${ sortBy === "brand" ? "bg-primary text-white shadow-md" : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200" }`}
+                        className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${sortBy === "brand" ? "bg-primary text-white shadow-md" : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-200"}`}
                         title="Trier par marque"
                       >
                         <ArrowUpDown className="w-5 h-5" />
@@ -1062,7 +1058,6 @@ export default function SearchPage() {
           </div>
         )}
       </div>
-
       {/* Mobile Bottom Bar - Filtrer */}
       <MobileBottomBarSpacer />
       <MobileBottomBar>

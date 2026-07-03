@@ -5,14 +5,14 @@
  * Route: /commercial/vehicles
  */
 
+import { BarChart3, Car, Database, Search, Settings } from "lucide-react";
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
   redirect,
-} from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
-import { BarChart3, Car, Database, Search, Settings } from "lucide-react";
+  useLoaderData,
+  Link,
+} from "react-router";
 import { Alert } from "~/components/ui/alert";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
@@ -77,18 +77,18 @@ export async function loader({ context }: LoaderFunctionArgs) {
       error = "Erreur lors du chargement des statistiques";
     }
 
-    return json<LoaderData>({
+    return {
       user,
       stats,
       error,
-    });
+    };
   } catch (err) {
     logger.error("Erreur loader véhicules:", err);
-    return json<LoaderData>({
+    return {
       user,
       stats: null,
       error: "Erreur serveur",
-    });
+    };
   }
 }
 

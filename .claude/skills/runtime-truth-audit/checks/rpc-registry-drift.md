@@ -80,6 +80,27 @@ applicable aux RPC Postgres.
 - Extensions Postgres (pg_cron, pg_net) ajoutent des fonctions
   pas dans la spec. Mitigation : filtrer par `pronamespace = 'public'` et
   ignorer schémas d'extensions.
+- `spec_only` brut est **dominé par le bruit** : triggers (`trg_*`,
+  `*_updated_at`), fns jamais appelées. Le diff seul n'a pas de sévérité.
+
+## Triage de sévérité post-diff (appris 2026-06-21, runtime-truth-p0)
+
+Le `spec_only` brut ne suffit pas — il faut **2 croisements** avant de classer :
+
+1. **`spec_only ∩ appelé-en-code` = le sous-ensemble RÉEL.** Croiser chaque nom
+   absent contre `backend/src` + `frontend/app` **par nom-en-littéral**, en
+   incluant le wrapper interne `this.callRpc('<name>', …)` — **PAS seulement
+   `\.rpc\(['"]<name>`**. Le 2026-06-21, 9 RPC absentes appelées via `callRpc`
+   ont été **ratées par le regex `.rpc(`** (faux négatif) — trouvées seulement
+   par grep nom-littéral. Sans ce croisement, le check passe à côté.
+2. **Confirmer par vérif live AVANT de classer HIGH** (anti sur-classement). Le
+   même jour, `sitemap-v10` (bucket `temperature`, `throw` sur RPC absente)
+   semblait « dégradation SEO active » — mais `www.automecanik.com/sitemap.xml`
+   = 11 enfants **frais** → bucket non load-bearing → **MEDIUM**, pas HIGH.
+   Code-seul ⇒ déduction ; live ⇒ preuve. Cf. `feedback_no_deduction_verify_the_proof`.
+
+(Ce triage = guidance d'interprétation du diff existant, **pas** un nouveau check
+ni un mega-analyzer — cf. garde anti-AST-universe du SKILL.)
 
 ## Limites
 

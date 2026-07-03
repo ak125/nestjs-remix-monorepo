@@ -1,10 +1,4 @@
 import {
-  type LoaderFunctionArgs,
-  json,
-  type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, useSearchParams, useNavigate } from "@remix-run/react";
-import {
   Clock,
   CheckCircle,
   DollarSign,
@@ -16,6 +10,13 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  useSearchParams,
+  useNavigate,
+} from "react-router";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
@@ -138,16 +139,16 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       statsRevenue: stats.totalRevenue,
     });
 
-    return json<LoaderData>({
+    return {
       payments: paymentsResult.payments,
       stats,
       pagination: paymentsResult.pagination,
       payboxMonitoring,
       payboxHealth,
-    });
+    };
   } catch (error) {
     logger.error("❌ Error loading admin payments:", error);
-    return json<LoaderData>({
+    return {
       payments: [],
       stats: {
         totalRevenue: 0,
@@ -179,7 +180,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
       },
       payboxMonitoring: null,
       payboxHealth: null,
-    });
+    };
   }
 }
 
@@ -572,7 +573,7 @@ export default function AdminPaymentsDashboard() {
         {/* Bannière informative */}
         <div className="bg-primary/5 p-4 mb-6 rounded-r-lg">
           <div className="flex">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <AlertTriangle className="h-5 w-5 text-blue-400" />
             </div>
             <div className="ml-3">
@@ -589,7 +590,7 @@ export default function AdminPaymentsDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 <DollarSign className="h-8 w-8 text-green-600" />
               </div>
               <div className="ml-4">
@@ -605,7 +606,7 @@ export default function AdminPaymentsDashboard() {
 
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 <CheckCircle className="h-8 w-8 text-blue-600" />
               </div>
               <div className="ml-4">
@@ -621,7 +622,7 @@ export default function AdminPaymentsDashboard() {
 
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 <Clock className="h-8 w-8 text-yellow-600" />
               </div>
               <div className="ml-4">
@@ -637,7 +638,7 @@ export default function AdminPaymentsDashboard() {
 
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 <AlertTriangle className="h-8 w-8 text-red-600" />
               </div>
               <div className="ml-4">

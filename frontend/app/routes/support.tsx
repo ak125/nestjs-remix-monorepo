@@ -2,17 +2,13 @@
  * Dashboard Support - Vue d'ensemble des tickets et statistiques
  * Page principale pour la gestion du support client
  */
-import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
+import { type LoaderFunctionArgs, type MetaFunction } from "react-router";
 import {
   Link,
   useLoaderData,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
+} from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Button } from "~/components/ui/button";
 import { logger } from "~/utils/logger";
@@ -58,14 +54,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
       (ticket) => ticket.priority === "urgent" || ticket.priority === "high",
     );
 
-    return json<LoaderData>({
+    return {
       stats,
       recentTickets: recentTicketsData.tickets,
       urgentTickets: urgentTickets.slice(0, 5),
-    });
+    };
   } catch (error) {
     logger.error("Erreur lors du chargement du dashboard:", error);
-    return json<LoaderData>({
+    return {
       stats: {
         total_tickets: 0,
         open_tickets: 0,
@@ -74,7 +70,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       },
       recentTickets: [],
       urgentTickets: [],
-    });
+    };
   }
 }
 
@@ -134,7 +130,7 @@ export default function SupportDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <div className="w-8 h-8 bg-muted rounded-md flex items-center justify-center">
                 <svg
                   className="w-5 h-5 text-blue-600"
@@ -162,7 +158,7 @@ export default function SupportDashboard() {
 
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <div className="w-8 h-8 bg-success/10 rounded-md flex items-center justify-center">
                 <svg
                   className="w-5 h-5 text-green-600"
@@ -192,7 +188,7 @@ export default function SupportDashboard() {
 
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <div className="w-8 h-8 bg-muted rounded-md flex items-center justify-center">
                 <svg
                   className="w-5 h-5 text-orange-600"
@@ -220,7 +216,7 @@ export default function SupportDashboard() {
 
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <div className="w-8 h-8 bg-muted rounded-md flex items-center justify-center">
                 <svg
                   className="w-5 h-5 text-foreground"

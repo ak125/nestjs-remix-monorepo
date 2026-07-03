@@ -67,74 +67,58 @@ export class R1KeywordPlanBatchService extends SupabaseBaseService {
     const limit = options.limit ?? 50;
     const minR3Score = options.minR3Score ?? 70;
 
-    // Find eligible gammes: R3 validated, no R1 yet
-    const { data: eligible } = await this.client.rpc(
-      'execute_sql' as never,
-      {
-        query: `
-        SELECT r3.skp_pg_id AS pg_id, r3.skp_pg_alias AS pg_alias,
-               r3.skp_quality_score AS r3_score, r3.skp_section_terms AS r3_terms
-        FROM __seo_r3_keyword_plan r3
-        LEFT JOIN __seo_r1_keyword_plan r1 ON r1.rkp_pg_id = r3.skp_pg_id
-        WHERE r3.skp_status = 'validated'
-          AND r3.skp_quality_score >= ${minR3Score}
-          AND r1.rkp_id IS NULL
-        ORDER BY r3.skp_quality_score DESC
-        LIMIT ${limit}
-      `,
-      } as never,
+    // Eligible gammes = validated R3 (score ≥ min) that don't yet have an R1 plan.
+    // Fetch ALL validated R3 (well under the supabase-js 1000-row cap: ~255), then
+    // anti-join against existing R1 via a bounded .in(), then take the top `limit`.
+    // Fixes runtime-truth audit #1 (2026-07-02): the removed `execute_sql` RPC never
+    // existed, and the previous fallback capped the R3 fetch at `limit+50` by score
+    // BEFORE filtering already-R1 rows, so it silently returned 0/6 eligible gammes
+    // at the default limit (HTTP 200 with summary.total=0).
+    const { data: r3Plans, error: r3Error } = await this.client
+      .from('__seo_r3_keyword_plan')
+      .select('skp_pg_id, skp_pg_alias, skp_quality_score, skp_section_terms')
+      .eq('skp_status', 'validated')
+      .gte('skp_quality_score', minR3Score)
+      .order('skp_quality_score', { ascending: false })
+      .limit(1000);
+
+    if (r3Error) {
+      this.logger.warn(`[BATCH] R3 plans query failed: ${r3Error.message}`);
+    }
+    if (r3Plans && r3Plans.length >= 1000) {
+      this.logger.warn(
+        '[BATCH] validated R3 plans hit the 1000-row cap — anti-join may be truncated (paginate if this persists)',
+      );
+    }
+    if (!r3Plans?.length) {
+      return { results: [], summary: { total: 0 } };
+    }
+
+    // Anti-join: drop gammes that already have an R1 plan, THEN take the top `limit`.
+    const pgIds = r3Plans.map((r) => Number(r.skp_pg_id));
+    const { data: existingR1, error: r1Error } = await this.client
+      .from('__seo_r1_keyword_plan')
+      .select('rkp_pg_id')
+      .in('rkp_pg_id', pgIds);
+    if (r1Error) {
+      this.logger.warn(`[BATCH] R1 plans query failed: ${r1Error.message}`);
+    }
+    const existingSet = new Set(
+      (existingR1 ?? []).map((r: { rkp_pg_id: number }) => Number(r.rkp_pg_id)),
     );
 
-    // Fallback: direct query if RPC not available
-    let gammes: Array<{
-      pg_id: number;
-      pg_alias: string;
-      r3_score: number;
-      r3_terms: Record<string, { include_terms?: string[] }> | null;
-    }> = [];
-
-    if (eligible && Array.isArray(eligible)) {
-      gammes = eligible;
-    } else {
-      // Direct query approach
-      const { data: r3Plans } = await this.client
-        .from('__seo_r3_keyword_plan')
-        .select('skp_pg_id, skp_pg_alias, skp_quality_score, skp_section_terms')
-        .eq('skp_status', 'validated')
-        .gte('skp_quality_score', minR3Score)
-        .order('skp_quality_score', { ascending: false })
-        .limit(limit + 50); // fetch extra to filter
-
-      if (!r3Plans?.length) {
-        return { results: [], summary: { total: 0 } };
-      }
-
-      // Filter out those that already have R1
-      const pgIds = r3Plans.map((r) => Number(r.skp_pg_id));
-      const { data: existingR1 } = await this.client
-        .from('__seo_r1_keyword_plan')
-        .select('rkp_pg_id')
-        .in('rkp_pg_id', pgIds);
-
-      const existingSet = new Set(
-        (existingR1 ?? []).map((r: { rkp_pg_id: number }) =>
-          Number(r.rkp_pg_id),
-        ),
-      );
-
-      gammes = r3Plans
-        .filter((r) => !existingSet.has(Number(r.skp_pg_id)))
-        .slice(0, limit)
-        .map((r) => ({
-          pg_id: Number(r.skp_pg_id),
-          pg_alias: r.skp_pg_alias as string,
-          r3_score: r.skp_quality_score as number,
-          r3_terms: r.skp_section_terms as Record<
-            string,
-            { include_terms?: string[] }
-          > | null,
-        }));
-    }
+    const gammes = r3Plans
+      .filter((r) => !existingSet.has(Number(r.skp_pg_id)))
+      .slice(0, limit)
+      .map((r) => ({
+        pg_id: Number(r.skp_pg_id),
+        pg_alias: r.skp_pg_alias as string,
+        r3_score: r.skp_quality_score as number,
+        r3_terms: r.skp_section_terms as Record<
+          string,
+          { include_terms?: string[] }
+        > | null,
+      }));
 
     this.logger.log(`[BATCH] Found ${gammes.length} eligible gammes`);
 

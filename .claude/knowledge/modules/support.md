@@ -2,16 +2,16 @@
 module: support
 sources:
 - backend/src/modules/support
-last_scan: '2026-05-24'
+last_scan: '2026-07-02'
 primary_files:
 - backend/src/modules/support/controllers/ai-support.controller.ts
 - backend/src/modules/support/controllers/claim.controller.ts
 - backend/src/modules/support/controllers/contact.controller.ts
 - backend/src/modules/support/controllers/faq.controller.ts
+- backend/src/modules/support/controllers/leads-admin.controller.ts
 - backend/src/modules/support/controllers/legal.controller.ts
 - backend/src/modules/support/controllers/quote.controller.ts
 - backend/src/modules/support/controllers/review.controller.ts
-- backend/src/modules/support/controllers/support-analytics.controller.ts
 depends_on:
 - ConfigModule
 - DatabaseModule

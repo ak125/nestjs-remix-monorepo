@@ -3,7 +3,6 @@ import { ConfigModule } from '@nestjs/config';
 import { SupabaseStorageService } from '../upload/services/supabase-storage.service';
 import { RagProxyController } from './rag-proxy.controller';
 import { RagProxyService } from './rag-proxy.service';
-import { RagPipelineService } from './rag-pipeline.service';
 
 // Existing extracted services
 import { FrontmatterValidatorService } from './services/frontmatter-validator.service';
@@ -16,9 +15,7 @@ import { RagRedisJobService } from './services/rag-redis-job.service';
 import { RagKnowledgeService } from './services/rag-knowledge.service';
 import { RagChatService } from './services/rag-chat.service';
 import { RagGammeDetectionService } from './services/rag-gamme-detection.service';
-import { RagIngestionService } from './services/rag-ingestion.service';
 import { RagWebhookCompletionService } from './services/rag-webhook-completion.service';
-import { RagWebIngestDbService } from './services/rag-web-ingest-db.service';
 
 // PDF merge pipeline services
 import { PdfTextExtractorService } from './services/pdf-text-extractor.service';
@@ -70,9 +67,9 @@ import { RagPhase2aShadowAuditService } from './services/rag-phase2a-shadow-audi
     RagKnowledgeService,
     RagChatService,
     RagGammeDetectionService,
-    RagIngestionService,
     RagWebhookCompletionService,
-    RagWebIngestDbService,
+    // NB: RagIngestionService + RagWebIngestDbService RETIRÉS — rag-purge B9 (ADR-031/046).
+    // Plus d'ingestion RAG déclenchée par l'app ; entrée = sync wiki→rag. Services bannerisés (salvage).
     // PDF merge pipeline
     PdfTextExtractorService,
     PdfRagClassifierService,
@@ -83,8 +80,8 @@ import { RagPhase2aShadowAuditService } from './services/rag-phase2a-shadow-audi
     RagVideoManagementService,
     // Facade (depends on all above)
     RagProxyService,
-    // Pipeline orchestration (async jobs: audit / enrich / reindex)
-    RagPipelineService,
+    // NB: RagPipelineService (ingestion/reindex RAG) RETIRÉ des providers — rag-purge B8
+    // (ADR-031/046). RAG = consommateur du wiki pour le chat ; entrée = sync wiki→rag.
   ],
   exports: [
     // Backward compat — external modules inject RagProxyService
@@ -96,9 +93,7 @@ import { RagPhase2aShadowAuditService } from './services/rag-phase2a-shadow-audi
     RagKnowledgeService,
     RagChatService,
     RagGammeDetectionService,
-    RagIngestionService,
     RagWebhookCompletionService,
-    RagWebIngestDbService,
     PdfTextExtractorService,
     PdfRagClassifierService,
     RagMdMergerService,

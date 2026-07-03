@@ -3,8 +3,8 @@
  * Replaces the generic risk/timing hero from V1.
  */
 
-import { Link } from "@remix-run/react";
 import { CheckCircle2 } from "lucide-react";
+import { Link } from "react-router";
 import { type R6HeroDecision } from "~/types/r6-guide.types";
 
 interface Props {
@@ -35,7 +35,7 @@ export function R6HeroDecisionSection({
             <ul className="space-y-2 mb-4">
               {heroDecision.bullets.map((bullet, i) => (
                 <li key={i} className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
                   <span className="text-sm text-gray-700">{bullet}</span>
                 </li>
               ))}

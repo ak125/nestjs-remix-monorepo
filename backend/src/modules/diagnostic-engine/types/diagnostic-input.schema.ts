@@ -91,7 +91,7 @@ export const AnalyzeDiagnosticInputSchema = z.object({
   vehicle_context: VehicleContextInputSchema,
   usage_context: UsageContextInputSchema.optional(),
   signal_input: SignalInputSchema,
-  answers: z.record(z.string()).optional(),
+  answers: z.record(z.string(), z.string()).optional(),
   session_id: z.string().uuid().optional(),
 });
 export type AnalyzeDiagnosticInput = z.infer<

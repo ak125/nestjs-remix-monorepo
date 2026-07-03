@@ -1,7 +1,6 @@
 // 📁 frontend/app/components/vehicle/VehicleSelector.tsx
 // 🚗 VehicleSelector unifié - Un seul composant pour tous les besoins
 
-import { useNavigate } from "@remix-run/react";
 import {
   type VehicleBrand,
   type VehicleModel,
@@ -16,6 +15,7 @@ import {
   FileText,
 } from "lucide-react";
 import { memo, useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router";
 import { logger } from "~/utils/logger";
 import { enhancedVehicleApi } from "../../services/api/enhanced-vehicle.api";
 import { Button } from "../ui/button";
@@ -386,7 +386,7 @@ const VehicleSelector = memo(function VehicleSelector({
         data-nosnippet
         data-noindex
       >
-        <Car className="hidden sm:block w-5 h-5 text-cta flex-shrink-0" />
+        <Car className="hidden sm:block w-5 h-5 text-cta shrink-0" />
 
         {/* Marque */}
         <select
@@ -633,7 +633,7 @@ const VehicleSelector = memo(function VehicleSelector({
             if (selectedType) handleTypeSelect(selectedType);
           }}
           disabled={!canSearch}
-          className="w-full h-12 bg-cta rounded-2xl text-white text-[16px] font-semibold shadow-[0_12px_24px_rgba(249,115,22,0.28)] hover:bg-cta-hover active:translate-y-0 disabled:opacity-40 disabled:shadow-none"
+          className="w-full h-12 bg-cta rounded-2xl text-black text-[16px] font-semibold shadow-[0_12px_24px_rgba(249,115,22,0.28)] hover:bg-cta-hover active:translate-y-0 disabled:opacity-40 disabled:shadow-none"
         >
           Rechercher des pièces
         </Button>
@@ -663,7 +663,7 @@ const VehicleSelector = memo(function VehicleSelector({
   // 🎨 Mode full (vertical) - Design moderne avec Card + onglets
   return (
     <Card
-      className={`bg-white/95 backdrop-blur-sm shadow-2xl border-0 ${className}`}
+      className={`bg-white/95 backdrop-blur-xs shadow-2xl border-0 ${className}`}
       data-nosnippet
       data-noindex
     >
@@ -693,7 +693,7 @@ const VehicleSelector = memo(function VehicleSelector({
             </button>
             <button
               onClick={() => setSearchMode("mine")}
-              className={`flex-1 px-4 py-2.5 min-h-[44px] rounded-md text-sm font-medium transition-all duration-200 ${ searchMode === "mine" ? "bg-white text-foreground shadow-sm" : "text-gray-600 hover:text-gray-900" }`}
+              className={`flex-1 px-4 py-2.5 min-h-[44px] rounded-md text-sm font-medium transition-all duration-200 ${searchMode === "mine" ? "bg-white text-foreground shadow-sm" : "text-gray-600 hover:text-gray-900"}`}
             >
               <FileText className="w-4 h-4 inline mr-2" />
               Type Mine
@@ -871,7 +871,7 @@ const VehicleSelector = memo(function VehicleSelector({
               {/* Aide */}
               <div className="bg-muted border border-purple-200 rounded-lg p-4">
                 <div className="flex items-start gap-3">
-                  <FileText className="w-5 h-5 text-foreground mt-0.5 flex-shrink-0" />
+                  <FileText className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
                   <div className="text-sm text-foreground">
                     <p className="font-medium mb-1">
                       Le Type Mine se trouve sur votre carte grise

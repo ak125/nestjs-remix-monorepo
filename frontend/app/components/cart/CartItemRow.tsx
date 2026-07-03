@@ -1,6 +1,6 @@
-import { useFetcher } from "@remix-run/react";
 import { Info, Minus, Package, Plus, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useFetcher } from "react-router";
 import {
   Tooltip,
   TooltipContent,
@@ -118,7 +118,7 @@ export function CartItemRow({ item }: { item: CartItemType }) {
     >
       <div className="p-4 sm:p-5">
         <div className="flex items-start gap-3 mb-4">
-          <div className="w-20 h-20 flex-shrink-0 bg-slate-100 rounded-lg overflow-hidden">
+          <div className="w-20 h-20 shrink-0 bg-slate-100 rounded-lg overflow-hidden">
             {item.product_image &&
             item.product_image !== "/images/categories/default.svg" ? (
               <img

@@ -1,4 +1,3 @@
-import { Link } from "@remix-run/react";
 import {
   Disc,
   Filter,
@@ -10,6 +9,7 @@ import {
   Wrench,
 } from "lucide-react";
 import { memo } from "react";
+import { Link } from "react-router";
 
 interface Category {
   name: string;
@@ -106,7 +106,7 @@ export const PopularCategories = memo(function PopularCategories({
               to={category.href}
               className="group flex items-center gap-3 p-4 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md hover:border-primary/30 hover:bg-primary/5 transition-all duration-200"
             >
-              <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center bg-primary/10 text-primary rounded-lg group-hover:bg-primary group-hover:text-white transition-colors duration-200">
+              <div className="shrink-0 w-10 h-10 flex items-center justify-center bg-primary/10 text-primary rounded-lg group-hover:bg-primary group-hover:text-white transition-colors duration-200">
                 <Icon className="w-5 h-5" />
               </div>
               <div className="min-w-0">

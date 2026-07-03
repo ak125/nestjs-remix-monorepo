@@ -2,7 +2,7 @@
 module: layout
 sources:
 - backend/src/modules/layout
-last_scan: '2026-05-24'
+last_scan: '2026-07-02'
 primary_files:
 - backend/src/modules/layout/controllers/layout.controller.ts
 - backend/src/modules/layout/controllers/section.controller.ts

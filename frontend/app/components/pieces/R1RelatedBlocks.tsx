@@ -3,8 +3,8 @@
  * Consomme des blocs déjà qualifiés par le backend.
  * Max 3 blocs, max 3 liens par bloc.
  */
-import { Link } from "@remix-run/react";
 import { AlertTriangle, BookOpen, Wrench, ArrowRight } from "lucide-react";
+import { Link } from "react-router";
 
 interface RelatedLink {
   kind: string;

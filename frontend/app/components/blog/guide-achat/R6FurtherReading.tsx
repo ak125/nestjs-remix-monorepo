@@ -1,4 +1,3 @@
-import { Link } from "@remix-run/react";
 import {
   ShoppingCart,
   Wrench,
@@ -7,6 +6,7 @@ import {
   ArrowRight,
   type LucideIcon,
 } from "lucide-react";
+import { Link } from "react-router";
 import { GuideCard } from "~/components/guide/GuideCard";
 
 const ROLE_CONFIG: Record<

@@ -6,10 +6,10 @@
  */
 
 import {
-  json,
   type LoaderFunctionArgs,
   type ActionFunctionArgs,
-} from "@remix-run/node";
+  data as dataResponse,
+} from "react-router";
 import { logger } from "~/utils/logger";
 
 const API_BASE = process.env.API_BASE_URL || "http://127.0.0.1:3000";
@@ -40,7 +40,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         response.status,
         response.statusText,
       );
-      return json(
+      return dataResponse(
         {
           items: [],
           subtotal: 0,
@@ -61,15 +61,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
     );
 
     // Le backend retourne data.totals.*, on le transforme en format plat
-    return json({
+    return {
       items: data.items || [],
       subtotal: data.totals?.subtotal || 0,
       itemCount: data.totals?.total_items || 0,
       consigneTotal: data.totals?.consigne_total || 0,
-    });
+    };
   } catch (error) {
     logger.error("[API Cart] Erreur:", error);
-    return json(
+    return dataResponse(
       {
         items: [],
         subtotal: 0,
@@ -118,7 +118,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
       const data = await response.json();
       logger.log("[API Cart] Update response:", data.success ? "OK" : "FAIL");
-      return json(data);
+      return data;
     }
 
     if (intent === "remove") {
@@ -138,7 +138,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
       const data = await response.json();
       logger.log("[API Cart] Remove response:", data.success ? "OK" : "FAIL");
-      return json(data);
+      return data;
     }
 
     if (intent === "clear") {
@@ -156,14 +156,14 @@ export async function action({ request }: ActionFunctionArgs) {
 
       const data = await response.json();
       logger.log("[API Cart] Clear response:", data.success ? "OK" : "FAIL");
-      return json(data);
+      return data;
     }
 
     logger.error("[API Cart] Intent inconnu:", intent);
-    return json({ error: "Intent inconnu", intent }, { status: 400 });
+    return dataResponse({ error: "Intent inconnu", intent }, { status: 400 });
   } catch (error) {
     logger.error("[API Cart Action] Erreur:", error);
-    return json(
+    return dataResponse(
       { error: "Erreur serveur", details: String(error) },
       { status: 500 },
     );

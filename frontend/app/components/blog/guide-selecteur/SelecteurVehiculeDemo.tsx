@@ -3,7 +3,6 @@
  * Utilise des donnees mockees pour illustrer les 4 methodes de recherche
  */
 
-import { Link } from "@remix-run/react";
 import {
   AlertTriangle,
   ArrowRight,
@@ -18,6 +17,7 @@ import {
   Settings,
 } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router";
 
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";

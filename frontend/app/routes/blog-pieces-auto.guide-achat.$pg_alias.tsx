@@ -11,21 +11,6 @@
  */
 
 import {
-  json,
-  redirect,
-  type HeadersFunction,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import {
-  Link,
-  useLoaderData,
-  useNavigate,
-  useRouteError,
-  isRouteErrorResponse,
-  type ShouldRevalidateFunction,
-} from "@remix-run/react";
-import {
   ArrowLeft,
   BookOpen,
   AlertTriangle,
@@ -37,6 +22,19 @@ import {
   CheckCircle2,
   ExternalLink,
 } from "lucide-react";
+import {
+  redirect,
+  type HeadersFunction,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  data,
+  Link,
+  useLoaderData,
+  useNavigate,
+  useRouteError,
+  isRouteErrorResponse,
+  type ShouldRevalidateFunction,
+} from "react-router";
 
 // V2 components
 
@@ -138,7 +136,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const { pg_alias } = params;
 
   if (!pg_alias) {
-    throw json({ message: "Alias manquant" }, { status: 404 });
+    throw data({ message: "Alias manquant" }, { status: 404 });
   }
 
   try {
@@ -190,7 +188,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
       if (guide && (!guide.intentType || guide.intentType === "R6")) {
         const r4Reference = await fetchR4Reference(guide.page.pg_id, request);
-        return json({ guide, pg_alias, r4Reference });
+        return { guide, pg_alias, r4Reference };
       }
     }
 
@@ -204,7 +202,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     clearTimeout(timeoutId);
 
     if (!blogResponse.ok) {
-      throw json(
+      throw data(
         { message: `Guide "${pg_alias}" non trouve` },
         { status: 404 },
       );
@@ -214,7 +212,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const blogGuide = blogResult?.data;
 
     if (!blogGuide) {
-      throw json(
+      throw data(
         { message: `Guide "${pg_alias}" non disponible` },
         { status: 404 },
       );
@@ -261,12 +259,12 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     };
 
     const r4Reference = await fetchR4Reference(guide.page.pg_id, request);
-    return json({ guide, pg_alias, r4Reference });
+    return { guide, pg_alias, r4Reference };
   } catch (error) {
     clearTimeout(timeoutId);
     if (error instanceof Response) throw error;
     logger.error(`[R6 Guide] Error loading guide for: ${pg_alias}`, error);
-    throw json(
+    throw data(
       { message: `Erreur chargement guide "${pg_alias}"` },
       { status: 500 },
     );
@@ -290,7 +288,7 @@ export const shouldRevalidate: ShouldRevalidateFunction = ({
 
 // ── Meta (noindex if no data) ───────────────────────────
 
-export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data, location }) => {
   if (!data) {
     return [
       { title: "Guide non trouve" },
@@ -554,7 +552,7 @@ export default function R6GuidePage() {
                   {/* Cross-link R3 encadre */}
                   <div className="rounded-lg border border-blue-200 bg-blue-50/50 p-4 mb-8">
                     <div className="flex items-center gap-2">
-                      <ExternalLink className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                      <ExternalLink className="w-4 h-4 text-blue-600 shrink-0" />
                       <p className="text-sm text-gray-700">
                         Procedure de remplacement ?{" "}
                         <Link
@@ -1005,7 +1003,7 @@ function V1Sections({
               <ul className="space-y-2">
                 {guide.symptoms.map((s, i) => (
                   <li key={i} className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-orange-500 mt-0.5 shrink-0" />
                     <span className="text-sm text-gray-700">{s}</span>
                   </li>
                 ))}

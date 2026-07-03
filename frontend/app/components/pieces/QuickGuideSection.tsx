@@ -82,7 +82,7 @@ function GuideCardComponent({ card }: { card: GuideCard }) {
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
           <div
-            className={`${colors.icon} w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0`}
+            className={`${colors.icon} w-10 h-10 rounded-lg flex items-center justify-center shrink-0`}
           >
             {card.icon}
           </div>

@@ -73,7 +73,7 @@ PROD documenté pour cette codebase encore. Risque pondéré modéré.
 
 ## Limites
 
-- Pas de mesure réelle LCP — corroboration `__seo_cwv_daily` ou CrUX
-  recommandée avant action.
+- Pas de mesure réelle LCP — corroboration **RUM** (`__seo_cwv_daily_rum`, terrain) ou
+  CrUX recommandée avant action ; `__seo_cwv_daily` est du **lab** (PageSpeed), pas du terrain.
 - Ne couvre pas la cause LCP serveur (TTFB, render-blocking CSS).
   Hors scope par convention CWV root-cause client-side.

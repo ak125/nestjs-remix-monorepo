@@ -1,12 +1,16 @@
 import { HttpStatus, Injectable, Logger, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import { BotGuardService } from './bot-guard.service';
+import { SyntheticProbeCredentialService } from '../seo-control-plane/synthetic-probe-credential.service';
 
 @Injectable()
 export class BotGuardMiddleware implements NestMiddleware {
   private readonly logger = new Logger(BotGuardMiddleware.name);
 
-  constructor(private readonly botGuardService: BotGuardService) {}
+  constructor(
+    private readonly botGuardService: BotGuardService,
+    private readonly syntheticProbe: SyntheticProbeCredentialService,
+  ) {}
 
   async use(req: Request, res: Response, next: NextFunction) {
     // 1. Skip health checks and static assets
@@ -60,6 +64,28 @@ export class BotGuardMiddleware implements NestMiddleware {
       // identity is proven by forward-confirmed reverse DNS.
       if (await this.botGuardService.isVerifiedSearchEngine(ip, userAgent)) {
         (req as Request & { isVerifiedBot?: boolean }).isVerifiedBot = true;
+        this.botGuardService.trackAllowed(country).catch(() => {});
+        return next();
+      }
+
+      // 6b. Verified internal synthetic probe (seo-control-plane L1). Identity is
+      // proven by EITHER an HMAC credential header (primary) OR the probe's own
+      // egress IP (defense-in-depth floor) — NEVER the User-Agent. The HMAC header
+      // can be stripped in transit by the CDN (Cloudflare did not forward
+      // x-synthetic-probe → probe self-throttled ~90%); cf-connecting-ip is always
+      // forwarded and anti-spoofed in getClientIp, so the egress floor keeps the
+      // exemption working regardless. Like a verified crawler it bypasses geo +
+      // behavioral; the rate-limit exemption is further scoped to public-catalogue
+      // GETs in app.module.ts skipIf. The explicit IP blocklist above still wins.
+      // Both paths fail-closed (verify() false on any error; egress allowlist empty
+      // → false). `ip` is the anti-spoofed client IP from getClientIp (line 32).
+      if (
+        this.syntheticProbe.verify(req) ||
+        this.syntheticProbe.isExemptEgressIp(ip)
+      ) {
+        (
+          req as Request & { isVerifiedSyntheticProbe?: boolean }
+        ).isVerifiedSyntheticProbe = true;
         this.botGuardService.trackAllowed(country).catch(() => {});
         return next();
       }

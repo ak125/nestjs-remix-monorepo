@@ -2,8 +2,8 @@
  * Bloc conseils avances pour professionnels et utilisateurs experimentes
  */
 
-import { Link } from "@remix-run/react";
 import { Lightbulb } from "lucide-react";
+import { Link } from "react-router";
 
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";

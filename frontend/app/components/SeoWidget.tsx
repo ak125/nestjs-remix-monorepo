@@ -1,5 +1,4 @@
 // app/components/SeoWidget.tsx
-import { Link } from "@remix-run/react";
 import {
   Search,
   Globe,
@@ -11,6 +10,7 @@ import {
   Target,
 } from "lucide-react";
 import { memo } from "react";
+import { Link } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 
 interface SeoStats {
@@ -119,7 +119,7 @@ export const SeoWidget = memo(function SeoWidget({
                 <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
               </div>
             </div>
-            <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white drop-shadow-sm">
+            <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white drop-shadow-xs">
               {seoData.completionRate.toFixed(1)}%
             </div>
           </div>

@@ -1,10 +1,4 @@
 import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
-import {
   Home,
   Wrench,
   Car,
@@ -18,6 +12,12 @@ import {
   Package,
   Search,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  useLoaderData,
+  Link,
+} from "react-router";
 import Container from "~/components/layout/Container";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 
@@ -92,13 +92,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
       0,
     );
 
-    return json({ families, brands, totalGammes });
+    return { families, brands, totalGammes };
   } catch {
-    return json({
+    return {
       families: [] as Family[],
       brands: [] as Brand[],
       totalGammes: 0,
-    });
+    };
   }
 }
 
@@ -258,7 +258,7 @@ export default function PlanDuSite() {
 
       <Container size="default" className="py-8">
         {/* Navigation rapide — sticky */}
-        <nav className="mb-10 sticky top-0 z-10 bg-white/95 backdrop-blur-sm border rounded-xl p-4 shadow-sm">
+        <nav className="mb-10 sticky top-0 z-10 bg-white/95 backdrop-blur-xs border rounded-xl p-4 shadow-sm">
           <div className="flex flex-wrap gap-2">
             {quickNav.map((item) => {
               const Icon = item.icon;

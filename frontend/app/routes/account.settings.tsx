@@ -1,19 +1,17 @@
+import { Bell, Eye, Globe, Trash2, Download } from "lucide-react";
 import {
-  json,
   redirect,
-  type ActionFunction,
-  type LoaderFunction,
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import {
+  data,
   Form,
   useActionData,
   useLoaderData,
   useNavigation,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { Bell, Eye, Globe, Trash2, Download } from "lucide-react";
+} from "react-router";
 
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { requireUser } from "../auth/unified.server";
@@ -41,7 +39,7 @@ export const meta: MetaFunction = () => [
   },
 ];
 
-export const loader: LoaderFunction = async ({ context }) => {
+export const loader = async ({ context }: LoaderFunctionArgs) => {
   const user = await requireUser({ context });
 
   // Récupérer les préférences utilisateur (à implémenter côté backend)
@@ -60,35 +58,35 @@ export const loader: LoaderFunction = async ({ context }) => {
     currency: "EUR",
   };
 
-  return json({ user, preferences });
+  return { user, preferences };
 };
 
-export const action: ActionFunction = async ({ request, context }) => {
+export const action = async ({ request, context }: ActionFunctionArgs) => {
   const _user = await requireUser({ context });
   const formData = await request.formData();
   const action = formData.get("_action");
 
   if (action === "updatePreferences") {
     // TODO: Implémenter la mise à jour des préférences
-    return json({
+    return {
       success: true,
       message: "Préférences mises à jour avec succès",
-    });
+    };
   }
 
   if (action === "exportData") {
     // TODO: Implémenter l'export des données
-    return json({
+    return {
       success: true,
       message: "Export des données en cours... Vous recevrez un email",
-    });
+    };
   }
 
   if (action === "deleteAccount") {
     // TODO: Implémenter la suppression du compte
     const confirmation = formData.get("confirmation");
     if (confirmation !== "SUPPRIMER") {
-      return json(
+      return data(
         {
           success: false,
           error: "Veuillez taper SUPPRIMER pour confirmer",
@@ -101,12 +99,14 @@ export const action: ActionFunction = async ({ request, context }) => {
     return redirect("/account/deleted");
   }
 
-  return json({ success: false, error: "Action non reconnue" });
+  return { success: false, error: "Action non reconnue" };
 };
 
 export default function AccountSettings() {
   const { preferences } = useLoaderData<typeof loader>();
-  const actionData = useActionData<typeof action>();
+  const actionData = useActionData<typeof action>() as
+    | { success?: boolean; message?: string; error?: string }
+    | undefined;
   const navigation = useNavigation();
 
   const isSubmitting = navigation.state === "submitting";

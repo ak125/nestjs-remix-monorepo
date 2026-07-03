@@ -1,17 +1,14 @@
 // app/routes/blog-pieces-auto.auto.$marque.$modele.tsx
+import { ArrowLeft, Calendar, Car, Gauge, Wrench } from "lucide-react";
+import * as React from "react";
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import {
   Link,
   useLoaderData,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { ArrowLeft, Calendar, Car, Gauge, Wrench } from "lucide-react";
-import * as React from "react";
+} from "react-router";
 
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
@@ -124,12 +121,12 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
         ]
       : [];
 
-    return json<LoaderData>({
+    return {
       brand: response.data.brand,
       modelGroup: response.data.model,
       models: models,
       metadata: response.data.metadata || null,
-    });
+    };
   } catch (e) {
     clearTimeout(timeoutId);
 
@@ -154,7 +151,7 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
 /* ===========================
    Meta
 =========================== */
-export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
+export const meta: MetaFunction<typeof loader> = ({ loaderData: data, location }) => {
   const metadata = data?.metadata;
   const brand = data?.brand;
   const modelGroup = data?.modelGroup;
@@ -447,7 +444,7 @@ export default function BlogPiecesAutoMarqueModele() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                       {/* Années de production */}
                       <div className="flex items-start gap-2 bg-primary/5 rounded-lg p-3 border border-blue-200">
-                        <Calendar className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                        <Calendar className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
                         <div>
                           <div className="text-xs text-blue-600 font-semibold mb-0.5">
                             Années de production
@@ -461,7 +458,7 @@ export default function BlogPiecesAutoMarqueModele() {
 
                       {/* Motorisations */}
                       <div className="flex items-start gap-2 bg-muted rounded-lg p-3 border border-purple-200">
-                        <Gauge className="w-5 h-5 text-foreground mt-0.5 flex-shrink-0" />
+                        <Gauge className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
                         <div className="flex-1 min-w-0">
                           <div className="text-xs text-foreground font-semibold mb-0.5">
                             Motorisations
@@ -500,7 +497,7 @@ export default function BlogPiecesAutoMarqueModele() {
                     {/* Carrosseries */}
                     {modelGroup.body && (
                       <div className="flex items-start gap-2 bg-muted rounded-lg p-3 border border-indigo-200">
-                        <Car className="w-5 h-5 text-foreground mt-0.5 flex-shrink-0" />
+                        <Car className="w-5 h-5 text-foreground mt-0.5 shrink-0" />
                         <div>
                           <div className="text-xs text-foreground font-semibold mb-0.5">
                             Carrosseries
@@ -550,7 +547,7 @@ export default function BlogPiecesAutoMarqueModele() {
                   <div className="flex flex-wrap gap-1.5">
                     <button
                       onClick={() => setSelectedFuel(null)}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${ selectedFuel === null ? "bg-primary text-white shadow-md scale-105 border-indigo-700" : "bg-white text-gray-700 hover:bg-gray-50 hover:scale-105 border-gray-300" }`}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${selectedFuel === null ? "bg-primary text-white shadow-md scale-105 border-indigo-700" : "bg-white text-gray-700 hover:bg-gray-50 hover:scale-105 border-gray-300"}`}
                     >
                       <span>🔍</span>
                       <span>Tous</span>
@@ -623,7 +620,7 @@ export default function BlogPiecesAutoMarqueModele() {
                             selectedPowerRange === range.id ? null : range.id,
                           )
                         }
-                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${ selectedPowerRange === range.id ? "bg-gradient-to-r text-white shadow-md shadow-purple-200 scale-105 border-purple-600" : "bg-muted text-foreground border-purple-300 hover:bg-muted hover:scale-105" }`}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${selectedPowerRange === range.id ? "bg-gradient-to-r text-white shadow-md shadow-purple-200 scale-105 border-purple-600" : "bg-muted text-foreground border-purple-300 hover:bg-muted hover:scale-105"}`}
                       >
                         <Gauge className="w-3 h-3" />
                         <span>{range.label}</span>
@@ -685,7 +682,7 @@ export default function BlogPiecesAutoMarqueModele() {
                   return (
                     <div key={fuelType} className="space-y-3">
                       {/* Badge du carburant - En-tête de groupe */}
-                      <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm py-3 border-b-2 border-gray-200">
+                      <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-xs py-3 border-b-2 border-gray-200">
                         <div className="flex items-center gap-3">
                           <span
                             className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-base font-bold ${getBadgeClass(fuelType)}`}

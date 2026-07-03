@@ -4,19 +4,6 @@
  */
 
 import {
-  json,
-  type LoaderFunctionArgs,
-  type ActionFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import {
-  useLoaderData,
-  Link,
-  useSearchParams,
-  useNavigate,
-  useFetcher,
-} from "@remix-run/react";
-import {
   Users,
   UserPlus,
   Search,
@@ -37,6 +24,17 @@ import {
   Star,
 } from "lucide-react";
 import { useState } from "react";
+import {
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+  type MetaFunction,
+  data,
+  useLoaderData,
+  Link,
+  useSearchParams,
+  useNavigate,
+  useFetcher,
+} from "react-router";
 import { toast } from "sonner";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -151,7 +149,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
           ) / 100
         : 1;
 
-    return json<LoaderData>({
+    return {
       users: data.data || [],
       total: totalUsers,
       currentPage: page,
@@ -171,10 +169,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         newUsersToday: Math.floor(Math.random() * 50), // Simulé
         averageLevel,
       },
-    });
+    };
   } catch (error) {
     logger.error("❌ Erreur loader admin.users:", error);
-    return json<LoaderData>({
+    return {
       users: [],
       total: 0,
       currentPage: 1,
@@ -195,7 +193,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         newUsersToday: 0,
         averageLevel: 1,
       },
-    });
+    };
   }
 };
 
@@ -235,10 +233,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           );
         }
 
-        return json({
+        return {
           success: true,
           message: `Utilisateur ${newStatus ? "activé" : "désactivé"} avec succès`,
-        });
+        };
 
       case "delete":
         // Appel API pour supprimer
@@ -256,10 +254,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         if (!deleteResponse.ok)
           throw new Error("Erreur lors de la suppression");
 
-        return json({
+        return {
           success: true,
           message: "Utilisateur supprimé avec succès",
-        });
+        };
 
       case "bulkDelete":
         // Suppression en masse
@@ -278,10 +276,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         const successCount = results.filter(
           (r) => r.status === "fulfilled",
         ).length;
-        return json({
+        return {
           success: true,
           message: `${successCount}/${userIds.length} utilisateurs supprimés`,
-        });
+        };
 
       case "export":
         // Export CSV - récupérer tous les utilisateurs filtrés
@@ -329,12 +327,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         });
 
       default:
-        return json({ error: "Action non reconnue" }, { status: 400 });
+        return data({ error: "Action non reconnue" }, { status: 400 });
     }
   } catch (error: unknown) {
     logger.error("❌ Erreur action admin.users:", error);
     const message = error instanceof Error ? error.message : String(error);
-    return json(
+    return data(
       { error: message || "Une erreur est survenue" },
       { status: 500 },
     );
@@ -443,7 +441,7 @@ export default function AdminUsersIndex() {
         {/* Notification Toast */}
         {notification && (
           <div
-            className={`fixed top-6 right-6 z-50 min-w-[320px] p-4 rounded-xl shadow-2xl border-2 backdrop-blur-sm ${
+            className={`fixed top-6 right-6 z-50 min-w-[320px] p-4 rounded-xl shadow-2xl border-2 backdrop-blur-xs ${
               notification.type === "success"
                 ? "bg-success/10 border-green-500 text-success"
                 : "bg-destructive/10 border-red-500 text-red-900"
@@ -477,7 +475,7 @@ export default function AdminUsersIndex() {
         )}
 
         {/* Header avec actions */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="bg-white/80 backdrop-blur-xs rounded-xl shadow-sm border border-gray-200 p-6">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-gradient-to-br from-blue-500 rounded-xl shadow-lg">

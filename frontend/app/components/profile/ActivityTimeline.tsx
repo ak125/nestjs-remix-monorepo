@@ -123,7 +123,7 @@ export const ActivityTimeline = memo(function ActivityTimeline({
 
                 {/* Icône */}
                 <div
-                  className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${getActivityColor(activity.type)} relative z-10`}
+                  className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${getActivityColor(activity.type)} relative z-10`}
                 >
                   {getActivityIcon(activity.type)}
                 </div>
@@ -137,7 +137,7 @@ export const ActivityTimeline = memo(function ActivityTimeline({
                         {activity.description}
                       </p>
                     </div>
-                    <Badge variant="outline" className="flex-shrink-0 text-xs">
+                    <Badge variant="outline" className="shrink-0 text-xs">
                       {getActivityLabel(activity.type)}
                     </Badge>
                   </div>
@@ -174,7 +174,7 @@ export const ActivityTimelineCompact = memo(function ActivityTimelineCompact({
           className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
         >
           <div
-            className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${getActivityColor(activity.type)}`}
+            className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${getActivityColor(activity.type)}`}
           >
             {getActivityIcon(activity.type)}
           </div>

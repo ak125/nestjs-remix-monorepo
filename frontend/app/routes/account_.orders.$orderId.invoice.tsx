@@ -1,15 +1,12 @@
+import { useState } from "react";
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import {
   useLoaderData,
   Link,
   useRouteError,
   isRouteErrorResponse,
-} from "@remix-run/react";
-import { useState } from "react";
+} from "react-router";
 import { toast } from "sonner";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Alert } from "~/components/ui/alert";
@@ -177,7 +174,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     })),
   };
 
-  return json({ invoice, user });
+  return { invoice, user };
 }
 
 export default function OrderInvoice() {

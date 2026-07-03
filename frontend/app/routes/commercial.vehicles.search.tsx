@@ -5,15 +5,16 @@
  * Route: /commercial/vehicles/search
  */
 
+import { Car, Filter, RotateCcw, Search } from "lucide-react";
+import { useState } from "react";
 import {
-  json,
   redirect,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, Form, Link } from "@remix-run/react";
-import { Car, Filter, RotateCcw, Search } from "lucide-react";
-import { useState } from "react";
+  useLoaderData,
+  Form,
+  Link,
+} from "react-router";
 import { Alert } from "~/components/ui/alert";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
@@ -102,7 +103,7 @@ export async function loader({ context, request }: LoaderFunctionArgs) {
     const brandsResponse = await fetch(
       `${baseUrl}/api/catalog/vehicles/brands`,
     );
-    let brands = [];
+    let brands: VehicleSearchData["brands"] = [];
 
     if (brandsResponse.ok) {
       const brandsData = await brandsResponse.json();
@@ -112,7 +113,7 @@ export async function loader({ context, request }: LoaderFunctionArgs) {
     }
 
     // Recherche de véhicules si des critères sont spécifiés
-    let searchResults = [];
+    let searchResults: VehicleSearchData["searchResults"] = [];
     let totalResults = 0;
     let error: string | undefined = undefined;
 
@@ -146,24 +147,24 @@ export async function loader({ context, request }: LoaderFunctionArgs) {
       }
     }
 
-    return json<VehicleSearchData>({
+    return {
       user,
       brands,
       searchResults,
       totalResults,
       currentFilters: filters,
       error,
-    });
+    };
   } catch (err) {
     logger.error("Erreur loader recherche véhicules:", err);
-    return json<VehicleSearchData>({
+    return {
       user,
       brands: [],
       searchResults: [],
       totalResults: 0,
       currentFilters: filters,
       error: "Erreur serveur",
-    });
+    };
   }
 }
 

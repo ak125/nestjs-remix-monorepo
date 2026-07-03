@@ -1,20 +1,18 @@
+import { AlertCircle, CheckCircle2, Eye, EyeOff } from "lucide-react";
+import { useState } from "react";
 import {
-  json,
   redirect,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import {
+  data as dataResponse,
   Form,
   Link,
   useActionData,
   useLoaderData,
   useNavigation,
   useSearchParams,
-} from "@remix-run/react";
-import { AlertCircle, CheckCircle2, Eye, EyeOff } from "lucide-react";
-import { useState } from "react";
+} from "react-router";
 import { GoogleSignInButton } from "~/components/auth/GoogleSignInButton";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -53,9 +51,9 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     if (user.isPro) return redirect("/commercial");
     return redirect("/account/dashboard");
   }
-  return json({
+  return {
     googleClientId: process.env.VITE_GOOGLE_CLIENT_ID || "",
-  });
+  };
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -67,7 +65,7 @@ export async function action({ request }: ActionFunctionArgs) {
   });
 
   if (!parsed.success) {
-    return json(
+    return dataResponse(
       { ok: false as const, errors: parsed.error.flatten().fieldErrors },
       { status: 400 },
     );
@@ -96,7 +94,7 @@ export async function action({ request }: ActionFunctionArgs) {
       }),
     });
   } catch {
-    return json(
+    return dataResponse(
       {
         ok: false as const,
         formError: "Erreur de connexion au serveur. Veuillez réessayer.",
@@ -107,7 +105,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   // Gérer les redirects inattendus du backend (Passport)
   if (backendResponse.status >= 300 && backendResponse.status < 400) {
-    return json(
+    return dataResponse(
       {
         ok: false as const,
         formError: "Email ou mot de passe incorrect.",
@@ -118,7 +116,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   if (!backendResponse.ok) {
     const body = await backendResponse.json().catch(() => null);
-    return json(
+    return dataResponse(
       {
         ok: false as const,
         formError: body?.message || "Email ou mot de passe incorrect.",
@@ -329,7 +327,7 @@ export default function LoginPage() {
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full h-14 bg-cta hover:bg-cta-hover text-white font-bold text-base rounded-2xl shadow-[0_12px_30px_rgba(249,115,22,0.28)] transition-colors"
+                  className="w-full h-14 bg-cta hover:bg-cta-hover text-black font-bold text-base rounded-2xl shadow-[0_12px_30px_rgba(249,115,22,0.28)] transition-colors"
                 >
                   {isLoading ? (
                     <span className="flex items-center gap-2">

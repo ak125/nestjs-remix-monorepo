@@ -4,7 +4,7 @@
  * and redirects back to /panier.
  */
 
-import { redirect, type LoaderFunctionArgs } from "@remix-run/node";
+import { redirect, type LoaderFunctionArgs } from "react-router";
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const token = params.token;

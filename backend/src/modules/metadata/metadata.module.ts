@@ -15,6 +15,7 @@
 
 import { Module, Logger } from '@nestjs/common';
 import { CacheModule } from '@nestjs/cache-manager';
+import { boundedMemoryCache } from '../../config/cache-store.factory';
 
 // Modules externes
 import { DatabaseModule } from '../../database/database.module';
@@ -31,10 +32,7 @@ import { BreadcrumbAdminController } from './controllers/breadcrumb-admin.contro
 @Module({
   imports: [
     // Cache pour performance optimale
-    CacheModule.register({
-      ttl: 3600, // 1 heure
-      max: 1000, // Maximum 1000 entrées
-    }),
+    CacheModule.register(boundedMemoryCache(3600, 1000)),
     // Accès base de données
     DatabaseModule,
   ],

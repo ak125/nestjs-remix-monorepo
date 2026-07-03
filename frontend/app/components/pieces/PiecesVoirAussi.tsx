@@ -8,9 +8,9 @@
  * - Schema.org ItemList pour SEO
  */
 
-import { Link } from "@remix-run/react";
 import { Link2 } from "lucide-react";
 import { memo } from "react";
+import { Link } from "react-router";
 
 import {
   type GammeData,

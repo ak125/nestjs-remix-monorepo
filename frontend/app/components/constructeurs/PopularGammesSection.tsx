@@ -6,7 +6,7 @@
  *
  * @author Automecanik SEO Team
  */
-import { Link } from "@remix-run/react";
+import { Link } from "react-router";
 
 import { type PopularGamme } from "~/types/brand.types";
 
@@ -159,7 +159,7 @@ export function PopularGammesSection({
                 >
                   {/* Image ou icône */}
                   <div
-                    className="flex-shrink-0 w-14 h-14 md:w-16 md:h-16 mr-3 md:mr-4 
+                    className="shrink-0 w-14 h-14 md:w-16 md:h-16 mr-3 md:mr-4 
                                 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden"
                   >
                     {imageUrl ? (

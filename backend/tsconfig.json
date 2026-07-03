@@ -1,5 +1,5 @@
 {
-  "extends": "@fafa/typescript-config/base.json",
+  "extends": "@fafa/typescript-config/node-cjs-legacy.json",
   "compilerOptions": {
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
@@ -11,15 +11,15 @@
     "noEmit": false,
     "useUnknownInCatchVariables": true,
     "lib": ["DOM", "ES2023"],
-    "baseUrl": ".",
+    "types": ["node", "jest", "multer"],
     "paths": {
-      "@auth/*": ["src/auth/*"],
-      "@cache/*": ["src/cache/*"],
-      "@common/*": ["src/common/*"],
-      "@config/*": ["src/config/*"],
-      "@database/*": ["src/database/*"],
-      "@security/*": ["src/security/*"],
-      "@modules/*": ["src/modules/*"]
+      "@auth/*": ["./src/auth/*"],
+      "@cache/*": ["./src/cache/*"],
+      "@common/*": ["./src/common/*"],
+      "@config/*": ["./src/config/*"],
+      "@database/*": ["./src/database/*"],
+      "@security/*": ["./src/security/*"],
+      "@modules/*": ["./src/modules/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/exports.js"]

@@ -10,7 +10,6 @@
  * ⚡ Optimisé INP: localStorage différé avec scheduleIdleCallback
  */
 
-import { Form, useNavigate } from "@remix-run/react";
 import {
   Search,
   X,
@@ -24,8 +23,10 @@ import {
   Command,
 } from "lucide-react";
 import { useState, useEffect, useRef, memo } from "react";
+import { Form, useNavigate } from "react-router";
 
 import { logger } from "~/utils/logger";
+import { safeLocalStorage } from "~/utils/safe-storage";
 import {
   useEnhancedSearchWithDebounce,
   useEnhancedAutocomplete,
@@ -80,7 +81,7 @@ export const SearchBarEnhancedHomepage = memo(
 
     // Charger les recherches récentes depuis localStorage
     useEffect(() => {
-      const stored = localStorage.getItem("recentSearches");
+      const stored = safeLocalStorage.getItem("recentSearches");
       if (stored) {
         try {
           setRecentSearches(JSON.parse(stored).slice(0, 3));
@@ -103,7 +104,7 @@ export const SearchBarEnhancedHomepage = memo(
 
       // Différer l'écriture localStorage au temps idle
       scheduleIdleCallback(() => {
-        localStorage.setItem("recentSearches", JSON.stringify(updated));
+        safeLocalStorage.setItem("recentSearches", JSON.stringify(updated));
       });
     };
 
@@ -415,7 +416,7 @@ export const SearchBarEnhancedHomepage = memo(
                             : "hover:bg-gray-50",
                         )}
                       >
-                        <Tag className="w-4 h-4 text-foreground flex-shrink-0" />
+                        <Tag className="w-4 h-4 text-foreground shrink-0" />
                         <span className="text-gray-900 font-medium">
                           {suggestion}
                         </span>

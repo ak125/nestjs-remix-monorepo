@@ -8,13 +8,6 @@
  */
 
 import {
-  json,
-  type ActionFunctionArgs,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData, useSearchParams, useFetcher } from "@remix-run/react";
-import {
   ROLE_BADGE_COLORS,
   getRoleDisplayLabel,
   getRoleShortLabel,
@@ -31,6 +24,14 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { Fragment, useState } from "react";
+import {
+  useLoaderData,
+  useSearchParams,
+  useFetcher,
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "react-router";
 import { Badge } from "~/components/ui/badge";
 import {
   Card,
@@ -138,31 +139,31 @@ export async function loader({ request }: LoaderFunctionArgs) {
     );
 
     if (!res.ok) {
-      return json({
+      return {
         briefs: [] as BriefRow[],
         stats: null as BriefStats | null,
         total: 0,
         error: `API error: ${res.status}`,
-      });
+      };
     }
 
     const body = await res.json();
     const briefs = (body.data ?? []) as BriefRow[];
     const stats = computeStats(briefs);
 
-    return json({
+    return {
       briefs,
       stats,
       total: body.total ?? briefs.length,
       error: null,
-    });
+    };
   } catch (error) {
-    return json({
+    return {
       briefs: [] as BriefRow[],
       stats: null as BriefStats | null,
       total: 0,
       error: `Erreur chargement: ${error instanceof Error ? error.message : "inconnu"}`,
-    });
+    };
   }
 }
 
@@ -186,14 +187,14 @@ export async function action({ request }: ActionFunctionArgs) {
         body: JSON.stringify({ briefIds: [parseInt(briefId, 10)] }),
       });
       const data = await res.json();
-      return json({
+      return {
         ok: data.validated === true,
         action: "validate",
         briefId,
         message: data.validated
           ? "Brief valide"
           : `Overlap detecte: ${data.overlap?.details?.length ?? 0} conflits`,
-      });
+      };
     }
 
     if (intent === "activate") {
@@ -205,27 +206,27 @@ export async function action({ request }: ActionFunctionArgs) {
         },
       );
       const data = await res.json();
-      return json({
+      return {
         ok: !!data.id,
         action: "activate",
         briefId,
         message: data.id ? "Brief active" : "Erreur activation",
-      });
+      };
     }
 
-    return json({
+    return {
       ok: false,
       action: intent,
       briefId,
       message: "Action inconnue",
-    });
+    };
   } catch (error) {
-    return json({
+    return {
       ok: false,
       action: intent,
       briefId,
       message: `Erreur: ${error instanceof Error ? error.message : "inconnu"}`,
-    });
+    };
   }
 }
 

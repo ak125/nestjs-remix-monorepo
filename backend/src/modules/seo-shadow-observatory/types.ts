@@ -42,8 +42,8 @@ export const ShadowObservationInputSchema = z.object({
   surface: SurfaceKeySchema,
   legacy: LegacySeoSnapshotSchema,
   requestUrl: z.string().min(1),
-  ids: z.record(z.union([z.string(), z.number()])),
-  vars: z.record(z.union([z.string(), z.number()])).optional(),
+  ids: z.record(z.string(), z.union([z.string(), z.number()])),
+  vars: z.record(z.string(), z.union([z.string(), z.number()])).optional(),
   entityId: z.string().min(1),
 });
 export type ShadowObservationInput = z.infer<

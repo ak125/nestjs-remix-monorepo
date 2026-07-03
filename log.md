@@ -40,210 +40,6 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 
 ---
 
-## 2026-05-14 — feat/seo-cp-cf-analytics-collector (auto)
-
-- **Branche** : `feat/seo-cp-cf-analytics-collector`
-- **Décision** : fix(seo-cp): squawk-conform migration cf_analytics (drop BEGIN/COMMIT, BIGINT, SET timeouts) (+4 other commits)
-- **Sortie** : PR #520 | commits 9e67a8d4 be4723e1 adf76ba3 f240f3b5 8701fdf4
-
-## 2026-05-14 — feat/seo-cp-runtime-logs-collector (auto)
-
-- **Branche** : `feat/seo-cp-runtime-logs-collector`
-- **Décision** : feat(seo-cp): runtime-logs collector L1 — PR-2A-3 (ADR-064)
-- **Sortie** : PR #524 | commits 106f6816
-
-## 2026-05-14 — feat/seo-cp-runtime-logs-collector (auto)
-
-- **Branche** : `feat/seo-cp-runtime-logs-collector`
-- **Décision** : ci(migration-safety): grant pull-requests: write to job (fix squawk 403) (+2 other commits)
-- **Sortie** : PR #524 | commits bc5d4e26 772436f5 106f6816
-
-## 2026-05-14 — feat/seo-cp-runtime-logs-collector (auto)
-
-- **Branche** : `feat/seo-cp-runtime-logs-collector`
-- **Décision** : Revert "ci(migration-safety): grant pull-requests: write to job (fix squawk 403)" (+4 other commits)
-- **Sortie** : PR #524 | commits f3b660d6 ec89dff3 bc5d4e26 772436f5 106f6816
-
-## 2026-05-15 — feat/pr-3b-architecture-freshness-blocking (auto)
-
-- **Branche** : `feat/pr-3b-architecture-freshness-blocking`
-- **Décision** : ci(audit): promote architecture freshness gate to BLOCKING (PR-3b)
-- **Sortie** : PR #531 | commits 0589ed20
-
-## 2026-05-15 — feat/pr-3b-architecture-freshness-blocking (auto)
-
-- **Branche** : `feat/pr-3b-architecture-freshness-blocking`
-- **Décision** : chore(architecture): regenerate .dependency-cruiser.generated.cjs (PR-3b ratchet self-hosting fix) (+2 other commits)
-- **Sortie** : PR #531 | commits 035327f5 caee5a3c 0589ed20
-
-## 2026-05-15 — feat/pr-6-contract-drift-observatory (auto)
-
-- **Branche** : `feat/pr-6-contract-drift-observatory`
-- **Décision** : test(observatory): empty commit to validate PR-comment upsert (PR-6) (+4 other commits)
-- **Sortie** : PR #540 | commits ef4d8815a da0694748 7193c7082 27d794048 8cd5d6463
-
-## 2026-05-15 — feat/seo-r2-composition-v2-foundation (auto)
-
-- **Branche** : `feat/seo-r2-composition-v2-foundation`
-- **Décision** : chore(registry): add seo_r2_v2 migration glob to ownership.yaml (ADR-066) (+3 other commits)
-- **Sortie** : PR #543 | commits 6ab4fe6e2 40102ed6b 3441fd143 a08d62eb9
-
-## 2026-05-15 — feat/seo-r2-composition-v2-foundation (auto)
-
-- **Branche** : `feat/seo-r2-composition-v2-foundation`
-- **Décision** : fix(seo-r2): ci failures - class-validator removal, bigint ids, opa require cast (+5 other commits)
-- **Sortie** : PR #543 | commits 694945cf7 4f626d0e3 6ab4fe6e2 40102ed6b 3441fd143 a08d62eb9
-
-## 2026-05-16 — feat/seo-sitemap-auth-phase-0-foundation (auto)
-
-- **Branche** : `feat/seo-sitemap-auth-phase-0-foundation`
-- **Décision** : chore(auth): add jose + cron-parser + ioredis-mock deps for sitemap OIDC auth
-- **Sortie** : PR aucune | commits d650eada2
-
-## 2026-05-16 — chore/pr-8a-controlled-cleanup-inventory (auto)
-
-- **Branche** : `chore/pr-8a-controlled-cleanup-inventory`
-- **Décision** : feat(audit): markdown projection for cleanup-candidates inventory (+4 other commits)
-- **Sortie** : PR aucune | commits a82d25b49 191914803 72f191f3f bb7b22f00 dcc71f3cf
-
-## 2026-05-16 — chore/pr-8a-controlled-cleanup-inventory (auto)
-
-- **Branche** : `chore/pr-8a-controlled-cleanup-inventory`
-- **Décision** : feat(audit): emit PR-8 controlled cleanup inventory (333 candidates, deterministic) (+6 other commits)
-- **Sortie** : PR aucune | commits e13df3ff0 31da20001 a82d25b49 191914803 72f191f3f bb7b22f00 dcc71f3cf
-
-## 2026-05-16 — chore/pr-8a-controlled-cleanup-inventory (auto)
-
-- **Branche** : `chore/pr-8a-controlled-cleanup-inventory`
-- **Décision** : chore(registry): add ownership entry for audit/cleanup/** (PR-8a prerequisite) (+8 other commits)
-- **Sortie** : PR #567 | commits 05771dff2 8c900c13c e13df3ff0 31da20001 a82d25b49 191914803 72f191f3f bb7b22f00 dcc71f3cf
-
-## 2026-05-16 — fix/vehicles-strict-numeric-pipe (auto)
-
-- **Branche** : `fix/vehicles-strict-numeric-pipe`
-- **Décision** : chore(ownership): register backend/src/common/{pipes/params,schemas} (+1 other commit)
-- **Sortie** : PR #553 | commits 6f0030af8 08159f793
-
-## 2026-05-16 — chore/turbo-dev-depends-on-build (auto)
-
-- **Branche** : `chore/turbo-dev-depends-on-build`
-- **Décision** : chore(turbo): dev task depends on workspace builds
-- **Sortie** : PR #573 | commits 3c67dc79a
-
-## 2026-05-15 — feat/pr-7a-contract-drift-ratchet (auto)
-
-- **Branche** : `feat/pr-7a-contract-drift-ratchet`
-- **Décision** : chore(canon): cover audit/baselines/** in ownership.yaml (D15/@ak125) (+4 other commits)
-- **Sortie** : PR #545 | commits 48766b587 3402aee3f 347f4bcf5 0923c3217 18263e997
-
-## 2026-05-15 — feat/pr-7a-contract-drift-ratchet (auto)
-
-- **Branche** : `feat/pr-7a-contract-drift-ratchet`
-- **Décision** : fix(ci): bypass npm banner in ratchet json output (workflow surgical fix) (+6 other commits)
-- **Sortie** : PR #545 | commits af746ad61 f539f83e4 48766b587 3402aee3f 347f4bcf5 0923c3217 18263e997
-
-## 2026-05-17 — feat/seo-cp-cf-rum-collector (auto)
-
-- **Branche** : `feat/seo-cp-cf-rum-collector`
-- **Décision** : feat(seo-cp): pr-2a-2.5 cloudflare rum collector (web vitals edge ingestion)
-- **Sortie** : PR #583 | commits 24fdf7367
-
-## 2026-05-18 — feat/vehicle-context-cookie-jws (auto)
-
-- **Branche** : `feat/vehicle-context-cookie-jws`
-- **Décision** : fix(vehicle-context): PR-B.8 CI green (prettier + gitleaks + dep inventory) (+7 other commits)
-- **Sortie** : PR #606 | commits b99f9f80e 2fe8f2beb 6eb399a47 019b10d89 6dcfb20a5 6833edfae a51962447 ce57fa9d8
-
-## 2026-05-18 — chore/impeccable-cli-devdep (auto)
-
-- **Branche** : `chore/impeccable-cli-devdep`
-- **Décision** : chore(frontend): add impeccable@2.1.9 CLI for design anti-pattern detection
-- **Sortie** : PR #597 | commits 54afbb9d8
-
-## 2026-05-18 — feat/vehicle-context-cookie-jws (auto)
-
-- **Branche** : `feat/vehicle-context-cookie-jws`
-- **Décision** : Merge remote-tracking branch 'origin/main' into feat/vehicle-context-cookie-jws (+9 other commits)
-- **Sortie** : PR #606 | commits 4cfd22868 54aecaacd b99f9f80e 2fe8f2beb 6eb399a47 019b10d89 6dcfb20a5 6833edfae a51962447 ce57fa9d8
-
-## 2026-05-18 — refactor/impeccable-bounce-easing (auto)
-
-- **Branche** : `refactor/impeccable-bounce-easing`
-- **Décision** : refactor(frontend): smooth bounce-easing animations (-8, components-only)
-- **Sortie** : PR #610 | commits f260a8de4
-
-## 2026-05-19 — chore/impeccable-husky-hardening (auto)
-
-- **Branche** : `chore/impeccable-husky-hardening`
-- **Décision** : chore(husky): wire impeccable ratchet as warn-only pre-commit hook (PR 6)
-- **Sortie** : PR #621 | commits f977316a4
-
-## 2026-05-19 — chore/impeccable-husky-hardening (auto)
-
-- **Branche** : `chore/impeccable-husky-hardening`
-- **Décision** : chore(registry): regenerate after PR #606 (vehicle-context cookie devDep bump) (+2 other commits)
-- **Sortie** : PR #621 | commits 4d635fac7 8bd1c7c84 c7b056d68
-
-## 2026-05-19 — fix/preprod-env-contract-preflight (auto)
-
-- **Branche** : `fix/preprod-env-contract-preflight`
-- **Décision** : chore(registry): scope env-contract paths in ownership.yaml (D13) (+1 other commit)
-- **Sortie** : PR #632 | commits eacfdcbe3 fbc50be95
-
-## 2026-05-19 — fix/preprod-env-contract-preflight (auto)
-
-- **Branche** : `fix/preprod-env-contract-preflight`
-- **Décision** : style(env-contract): apply prettier (CI lint fix) (+3 other commits)
-- **Sortie** : PR #632 | commits 22cd9867e 690c78525 eacfdcbe3 fbc50be95
-
-## 2026-05-21 — worktree-commerce-loop-step4-funnel (auto)
-
-- **Branche** : `worktree-commerce-loop-step4-funnel`
-- **Décision** : feat(commerce-loop): funnel event tracking outil diagnostic (étape 4-A)
-- **Sortie** : PR #676 | commits 8d7652572
-
-## 2026-05-21 — worktree-commerce-loop-step4-funnel (auto)
-
-- **Branche** : `worktree-commerce-loop-step4-funnel`
-- **Décision** : fix(commerce-loop): squawk require-timeout-settings sur migration funnel (+4 other commits)
-- **Sortie** : PR #676 | commits af96bc122 367574432 a8b1dd059 93c0f8664 8d7652572
-
-## 2026-05-21 — worktree-commerce-loop-step4-funnel (auto)
-
-- **Branche** : `worktree-commerce-loop-step4-funnel`
-- **Décision** : fix(commerce-loop): eslint — prettier wrap + safeLocalStorage dans funnel (+5 other commits)
-- **Sortie** : PR #676 | commits 477564255 71198a3ab af96bc122 367574432 a8b1dd059 8d7652572
-
-## 2026-05-22 — fix param id véhicule int4 + retrait foot-gun smallint
-
-- **Branche** : `fix/vehicle-modelid-int4-pipe` + `fix/retire-smallint-id-param-pipe` (mergées, supprimées)
-- **Décision** : modelId/brandId validés en int4 (type réel colonne, max 667022) — `PositiveSmallIntParamPipe` rejetait 400 sur ~82% des modèles ; pipe smallint supprimé (foot-gun), garde ast-grep `.max(32767)` + test régression controller ajoutés.
-- **Sortie** : PRs #686 (live prod, tag v2026.05.21-vehicle-modelid-int4) #689 (mergé main, prod via prochaine release) | fichiers `backend/src/modules/vehicles/vehicles.controller.ts`, `backend/src/common/{schemas/numeric-param.schema.ts,pipes/params/}`, `.ast-grep/rules/backend-no-subint4-ceiling-on-id-param.yml`
-
-## 2026-05-22 — INP /pieces/ mobile : root cause + déploiement PROD
-
-- **Branche** : `perf/inp-pieces-content-visibility` (+ `perf/inp-attribution-instrumentation`)
-- **Décision** : INP 537ms p75 mobile = ouverture Radix Sheet (menu + panier, header partagé) forçant un reflow full-document ; corrigé par `content-visibility` sur blocs below-fold (−25% mesuré live PROD), attribution web-vitals livrée pour le diagnostic terrain.
-- **Sortie** : PRs #692 #694 (merged) | tag PROD `v2026.05.22-inp-pieces-content-visibility` | fichiers `frontend/app/utils/web-vitals.client.ts`, `frontend/app/global.css`, `frontend/app/components/pieces/PiecesVehicleContent.tsx`
-
-## 2026-05-22 — Rotation partitions SEO (snapshot daily + mensuel)
-
-- **Branche** : `fix/seo-observability-partition-rotation`
-- **Décision** : revue de la migration rotation snapshot daily (sûre, ajout `.down.sql`) ; livré la rotation mensuelle observability (gsc/ga4/cwv premake+3 TTL 18mo) + quality_history (réutilise `ensure_next_quality_history_partition`) pour éviter les falaises d'épuisement de partitions 2026-07-01 / 2026-08-01.
-- **Sortie** : PR #698 (open) | fichiers `backend/supabase/migrations/20260522_seo_observability_partition_rotation.sql` (+`.down.sql`)
-
-## 2026-05-23 — pieces_media_img recovery Tier C + gardes (ADR-078)
-
-- **Branche** : `recovery/pieces-media-img-corruption-20260523`
-- **Décision** : Soft-hide 1.1M lignes malformées (357K pièces affichées, 103 marques) → fallback no.png ; Tier B (vraies images) différé car files absents de toute l'infra ; 4 gardes structurelles installées (audit nightly + ast-grep paginate + brand-folder registry canon L2 + spot-fix shipping).
-- **Sortie** : PR #699 + vault PR #302 (ADR-078 / INC-2026-015) | commits a44deeb9d + 2ee8c3c (vault) | fichiers `.spec/00-canon/repository-registry/brand-folder-registry.yaml`, `scripts/audit/audit-pieces-media-img-invariants.sh`, `.ast-grep/rules/supabase-js-bulk-select-paginate.yml`, `scripts/recovery/tier-c-softhide-malformed-p1.sql`, `backend/src/modules/cart/services/shipping-calculator.service.ts`
-
-## 2026-05-23 — feat/pricing-control-plane-v1 (auto)
-
-- **Branche** : `feat/pricing-control-plane-v1`
-- **Décision** : chore(registry): cover backend/src/modules/pricing/** and pricing migrations (+8 other commits)
-- **Sortie** : PR #709 | commits 252bb1b8 e22bf3c2 a65383cc e404171c 4000e00b 358da2dd 7d29d9b6 6641b556 667581d3
-
 ## 2026-05-23 — feat/pricing-control-plane-v1 (auto)
 
 - **Branche** : `feat/pricing-control-plane-v1`
@@ -490,3 +286,212 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/rpc-drift-silent-bugs`
 - **Décision** : fix(rpc-drift): repair advice view counter + drop execute_sql anti-pattern
 - **Sortie** : PR #982 | commits 4bf1dfdef
+
+## 2026-06-16 — feat/runtime-truth-overload-runner (auto)
+
+- **Branche** : `feat/runtime-truth-overload-runner`
+- **Décision** : feat(audit): runtime-truth rpc-overload-ambiguity runner + __gov_m10 RPC (PR-B0a-4)
+- **Sortie** : PR aucune | commits 4e659dfee
+
+## 2026-06-16 — feat/cc-orchestration-shadow-phase1 (auto)
+
+- **Branche** : `feat/cc-orchestration-shadow-phase1`
+- **Décision** : feat(command-center): orchestration Phase 1 « shadow » — fondation inerte (ADR-087)
+- **Sortie** : PR #1010 | commits ed3c3be20
+
+## 2026-06-18 — feat/seo-content-loop-source-discovery (auto)
+
+- **Branche** : `feat/seo-content-loop-source-discovery`
+- **Décision** : feat(skill): seo-content-loop — découverte de sources data-driven par gamme/véhicule/diagnostic (+ track)
+- **Sortie** : PR aucune | commits 171a23158
+
+## 2026-06-19 — chore/rag-purge-b8-pipeline-service (auto)
+
+- **Branche** : `chore/rag-purge-b8-pipeline-service`
+- **Décision** : chore(rag-proxy): retire RagPipelineService + endpoints pipeline (rag-purge B8)
+- **Sortie** : PR aucune | commits f5d45041f
+
+## 2026-06-19 — feat/adr059-pr6-seo-projection-schema (auto)
+
+- **Branche** : `feat/adr059-pr6-seo-projection-schema`
+- **Décision** : feat(db): ADR-059 PR-6 — SEO projection schema (7 tables + 2 MV, kg_v3 pattern)
+- **Sortie** : PR aucune | commits 3771252c1
+
+## 2026-06-20 — feat/seo-projection-block-content-adapter (auto)
+
+- **Branche** : `feat/seo-projection-block-content-adapter`
+- **Décision** : fix(seo-projection): PR-0 — adapt flat wiki export blocks to DB content shape
+- **Sortie** : PR aucune | commits a8b79cd87
+
+## 2026-06-20 — feat/seo-projection-block-content-adapter (auto)
+
+- **Branche** : `feat/seo-projection-block-content-adapter`
+- **Décision** : feat(seo-brief): D1 — WIKI evidence-driven brief generator core (SeoBriefService, dark) (+2 other commits)
+- **Sortie** : PR aucune | commits b4a226f6a 4961b59fa a8b79cd87
+
+## 2026-06-20 — feat/seo-projection-block-content-adapter (auto)
+
+- **Branche** : `feat/seo-projection-block-content-adapter`
+- **Décision** : feat(seo-brief): D1 wiring — brief-template uses WIKI evidence brief when flag ON (dark) (+4 other commits)
+- **Sortie** : PR aucune | commits 6350b71ff 1d8c45715 b4a226f6a 4961b59fa a8b79cd87
+
+## 2026-06-20 — feat/seo-projection-block-content-adapter (auto)
+
+- **Branche** : `feat/seo-projection-block-content-adapter`
+- **Décision** : fix(migration): D1 columns — squawk gate (timeouts + text/bigint) (+7 other commits)
+- **Sortie** : PR #1045 | commits cec9dca92 e4df62251 1e61e0792 6350b71ff 1d8c45715 b4a226f6a 4961b59fa a8b79cd87
+
+## 2026-06-20 — feat/media-factory-revive-fetch (auto)
+
+- **Branche** : `feat/media-factory-revive-fetch`
+- **Décision** : chore(governance): restore main's deterministic baseline — do NOT bless main's pre-existing SEO ast-grep debt (+11 other commits)
+- **Sortie** : PR #1043 | commits c95c5c113 79bd9fb96 66a8a906e 8c2a5e5a8 ef7a98b7f 0b2fade99 03f308e68 b6d0907bc cb857874f 7ff079f64 a0e645f53 e410a5194
+
+## 2026-06-20 — feat/media-factory-revive-fetch (auto)
+
+- **Branche** : `feat/media-factory-revive-fetch`
+- **Décision** : Merge remote-tracking branch 'origin/main' into feat/media-factory-revive-fetch (+13 other commits)
+- **Sortie** : PR #1043 | commits 341285c3c 029e2eac3 c95c5c113 79bd9fb96 66a8a906e 8c2a5e5a8 ef7a98b7f 0b2fade99 03f308e68 b6d0907bc cb857874f 7ff079f64 a0e645f53 e410a5194
+
+## 2026-06-21 — fix/sitemap-children-dev-parity (auto)
+
+- **Branche** : `fix/sitemap-children-dev-parity`
+- **Décision** : fix(sitemap): serve /sitemap*.xml from Node for DEV/PROD edge parity
+- **Sortie** : PR #1068 | commits 05ca12857
+
+## 2026-06-21 — fix/sitemap-children-dev-parity (auto)
+
+- **Branche** : `fix/sitemap-children-dev-parity`
+- **Décision** : Merge remote-tracking branch 'origin/main' into fix/sitemap-children-dev-parity (+3 other commits)
+- **Sortie** : PR #1068 | commits e0bd733a0 77a4a82ca 59b7e510f 05ca12857
+
+## 2026-06-21 — fix/rpc-drift-maintenance-adr032 (auto)
+
+- **Branche** : `fix/rpc-drift-maintenance-adr032`
+- **Décision** : fix(diagnostic): apply ADR-032 PR-1 maintenance kg_* RPCs (runtime-truth-p0 drift)
+- **Sortie** : PR #1084 | commits 0a25d1b80
+
+## 2026-06-22 — fix/client-ip-429-throttle (auto)
+
+- **Branche** : `fix/client-ip-429-throttle`
+- **Décision** : Merge remote-tracking branch 'origin/main' into fix/client-ip-429-throttle (+10 other commits)
+- **Sortie** : PR #1097 | commits 7b58ac6d1 5bb95cac4 951bb51ab fb7fe4dff 349d7653b 9414165c8 f74cac270 2c8179fa0 3ad43e1f4 6047cf3c9 1334a4234
+
+## 2026-06-23 — feat/rr8-prep-sentry-decouple (auto)
+
+- **Branche** : `feat/rr8-prep-sentry-decouple`
+- **Décision** : refactor(observability): single server Sentry SDK — decouple SSR from React Router (prep RR8)
+- **Sortie** : PR #1116 | commits 33a3c6a44
+
+## 2026-06-23 — feat/rr8-prep-sentry-decouple (auto)
+
+- **Branche** : `feat/rr8-prep-sentry-decouple`
+- **Décision** : chore(canon): align dep-governance Sentry ids (owner) (+2 other commits)
+- **Sortie** : PR #1116 | commits 5233664db c583c9cfa 33a3c6a44
+
+## 2026-06-23 — feat/rr8-prep-a6-middleware (auto)
+
+- **Branche** : `feat/rr8-prep-a6-middleware`
+- **Décision** : feat(rr8-prep): A6 — adopt future.v8_middleware + RouterContextProvider bridge (RR7.18)
+- **Sortie** : PR #1124 | commits 75dfb7275
+
+## 2026-06-24 — worktree-feat+pr9e1-session-store-abstraction (auto)
+
+- **Branche** : `worktree-feat+pr9e1-session-store-abstraction`
+- **Décision** : refactor(session): encapsulate store in SessionStoreService (PR-9e.1) (+1 other commit)
+- **Sortie** : PR aucune | commits 5cbe8a899 96db34e5f
+
+## 2026-06-24 — worktree-feat+pr9e1-session-store-abstraction (auto)
+
+- **Branche** : `worktree-feat+pr9e1-session-store-abstraction`
+- **Décision** : chore(registry): map backend/src/modules/session/** ownership (D11/auth-team) (+3 other commits)
+- **Sortie** : PR aucune | commits bd7d1a547 3670bc1b7 5cbe8a899 96db34e5f
+
+## 2026-06-25 — worktree-feat+pr9e2-session-impl-swap (auto)
+
+- **Branche** : `worktree-feat+pr9e2-session-impl-swap`
+- **Décision** : feat(session): swap session store to connect-redis@9 + node-redis v5, fail-fast boot (PR-9e.2)
+- **Sortie** : PR aucune | commits 9e8a273bb
+
+## 2026-06-25 — feat/seo-a1a-observe-placeholder-events (auto)
+
+- **Branche** : `feat/seo-a1a-observe-placeholder-events`
+- **Décision** : feat(seo): A1a-observe — make silent placeholder strip + runtime fallback observable
+- **Sortie** : PR #1146 | commits d949b723e
+
+## 2026-06-25 — feat/seo-a1a-observe-placeholder-events (auto)
+
+- **Branche** : `feat/seo-a1a-observe-placeholder-events`
+- **Décision** : fix(seo): A1a-observe CI gates — prettier format + role-purity skip on aggregator module (+2 other commits)
+- **Sortie** : PR #1146 | commits 4b3d6ffb9 427927bdc d949b723e
+
+## 2026-06-25 — feat/seo-a1d-sanitize-editorial-sgcontent (auto)
+
+- **Branche** : `feat/seo-a1d-sanitize-editorial-sgcontent`
+- **Décision** : fix(seo): A1d — sanitize sg_content editorial HTML at the render boundary (latent stored-XSS)
+- **Sortie** : PR #1151 | commits bc3821665
+
+## 2026-06-25 — feat/seo-a1d-sanitize-editorial-sgcontent (auto)
+
+- **Branche** : `feat/seo-a1d-sanitize-editorial-sgcontent`
+- **Décision** : Merge branch 'feat/seo-a1d-sanitize-editorial-sgcontent' of https://github.com/ak125/nestjs-remix-monorepo into feat/seo (+4 other commits)
+- **Sortie** : PR #1151 | commits 89db0ec7d ea2fe82e7 ccb2b15e4 e45eddf2b bc3821665
+## 2026-06-25 — fix/catchall-data-suffix-redirects (auto)
+
+- **Branche** : `fix/catchall-data-suffix-redirects`
+- **Décision** : fix(catch-all): strip RR8 .data suffix so legacy 301 redirects fire on client-nav
+- **Sortie** : PR #1150 | commits 601ee8c43
+
+## 2026-06-25 — feat/pr9f-nestjs11 (auto)
+
+- **Branche** : `feat/pr9f-nestjs11`
+- **Décision** : chore(registry): register backend/src/common/{utils,decorators} ownership (PR-9f, owner-applied) (+1 other commit)
+- **Sortie** : PR #1152 | commits bffbf89f9 e74b57c6d
+
+## 2026-06-26 — feat/tw4-gate-0-visual-gate (auto)
+
+- **Branche** : `feat/tw4-gate-0-visual-gate`
+- **Décision** : feat(tw4-gate-0): wire authoritative visual-regression gate + 2-tier snapshot topology
+- **Sortie** : PR #1160 | commits 83de3e0f5
+
+## 2026-06-26 — fix/visual-gate-recapture-preprod (auto)
+
+- **Branche** : `fix/visual-gate-recapture-preprod`
+- **Décision** : fix(tw4-gate-0): purge root-owned Docker leftovers pre-checkout + fix report path (+1 other commit)
+- **Sortie** : PR #1170 | commits f94b7ad9d 9a7f2acc0
+
+## 2026-06-26 — fix/visual-gate-recapture-preprod (auto)
+
+- **Branche** : `fix/visual-gate-recapture-preprod`
+- **Décision** : feat(tw4-gate-0): re-capture 11 visual baselines against PREPROD:3200 (gate env) (+3 other commits)
+- **Sortie** : PR #1170 | commits 023c2a43f d8bc28dad f94b7ad9d 9a7f2acc0
+
+## 2026-06-27 — feat/wiki-exports-seo-generate-ci (auto)
+
+- **Branche** : `feat/wiki-exports-seo-generate-ci`
+- **Décision** : feat(ci): generate exports/seo from wiki canon + commit back (ADR-059 PR-5a)
+- **Sortie** : PR #1174 | commits c7ee94b18
+
+## 2026-06-27 — feat/wiki-exports-seo-generate-ci (auto)
+
+- **Branche** : `feat/wiki-exports-seo-generate-ci`
+- **Décision** : fix(ci): exports-seo generator — ajv-formats, untracked+deletion gate, gitignore assert (review) (+2 other commits)
+- **Sortie** : PR #1174 | commits f84c8af9d ad8e84d0a c7ee94b18
+
+## 2026-06-27 — feat/tw2-tailwind4-engine (auto)
+
+- **Branche** : `feat/tw2-tailwind4-engine`
+- **Décision** : feat(tw-2): install Tailwind CSS v4.3.1 (engine swap, @config bridge, @tailwindcss/vite)
+- **Sortie** : PR #1181 | commits fe3aef3b8
+
+## 2026-06-27 — fix/home-translate-no-removechild (auto)
+
+- **Branche** : `fix/home-translate-no-removechild`
+- **Décision** : fix(home): translate="no" sur widgets interactifs — stoppe le crash removeChild dû à la traduction navigateur
+- **Sortie** : PR aucune | commits bda4ee6d5
+
+## 2026-07-01 — fix/lazy-rolldown-mixed-import (auto)
+
+- **Branche** : `fix/lazy-rolldown-mixed-import`
+- **Décision** : fix(lazy): stop Footer mixed static+dynamic import crashing R2 pages (Rolldown fulfill-undefined)
+- **Sortie** : PR #1200 | commits 4c536b958

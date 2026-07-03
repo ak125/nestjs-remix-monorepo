@@ -1,6 +1,5 @@
 import {
   Controller,
-  Get,
   Post,
   Body,
   Logger,
@@ -40,14 +39,19 @@ interface GenerateResponse {
   };
 }
 
+// @role-purity-skip
+// Multi-role admin controller : génère/sauvegarde R4 Reference ET R5 Diagnostics
+// (generate / save-r4 / save-r5) — nomme légitimement les deux rôles.
 /**
- * Contrôleur Admin pour la génération de contenu SEO
- * Utilise les fichiers RAG pour générer R4 Reference et R5 Diagnostic
+ * Contrôleur Admin pour la génération de contenu SEO (R4 Reference / R5 Diagnostics).
+ *
+ * ADR-031/046 : la génération depuis le corpus RAG a été retirée (RAG = retrieval
+ * chatbot only) — le contenu provient de la DB (puis de la projection WIKI, ADR-059).
  *
  * Endpoints:
- * - POST /api/admin/seo/generate - Génère du contenu depuis RAG
+ * - POST /api/admin/seo/generate - Génère du contenu (source DB)
  * - POST /api/admin/seo/generate-and-save - Génère et sauvegarde en draft
- * - GET /api/admin/seo/rag-files - Liste les fichiers RAG disponibles
+ * - POST /api/admin/seo/save-r4 / save-r5 - Sauvegarde un draft validé
  *
  * ADMIN ONLY - Toutes les routes sont protégées
  */
@@ -59,7 +63,7 @@ export class SeoGeneratorController {
   constructor(private readonly generatorService: SeoGeneratorService) {}
 
   /**
-   * Génère du contenu SEO depuis un fichier RAG gamme
+   * Génère du contenu SEO pour une gamme (source DB, ADR-031/046 — plus de RAG)
    * POST /api/admin/seo/generate
    *
    * Body:
@@ -152,23 +156,8 @@ export class SeoGeneratorController {
     return this.generate({ ...dto, save_draft: true });
   }
 
-  /**
-   * Liste les fichiers RAG gammes disponibles
-   * GET /api/admin/seo/rag-files
-   *
-   * @returns Liste des slugs de gammes avec fichier RAG
-   */
-  @Get('rag-files')
-  async listRagFiles(): Promise<{ files: string[]; count: number }> {
-    this.logger.log('📁 GET /api/admin/seo/rag-files');
-
-    const files = await this.generatorService.listAvailableRagFiles();
-
-    return {
-      files,
-      count: files.length,
-    };
-  }
+  // GET /api/admin/seo/rag-files retiré — ADR-031/046 (programme rag-purge) :
+  // RAG = retrieval chatbot only, jamais source de contenu/SEO.
 
   /**
    * Sauvegarde une R4 générée en draft

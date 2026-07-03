@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -87,6 +87,20 @@ jobs:
           # Optional override. If unset, the value already present in the PROD
           # .env is used (REQUIRED_VARS below guarantees it exists).
           JWT_SECRET_OVERRIDE: ${{ secrets.PROD_JWT_SECRET }}
+          # Optional. When set, activates the seo-control-plane synthetic-crawler
+          # rate-limit exemption on PROD (HMAC verifier side). Unset = stays OFF
+          # (probes throttled; in-app 429-rate alert fires). PR #1141 / #1142.
+          SEO_CP_SYNTHETIC_PROBE_SECRET_OVERRIDE: ${{ secrets.PROD_SEO_CP_SYNTHETIC_PROBE_SECRET }}
+          # Optional defense-in-depth FLOOR (synthetic-probe egress floor, 2026-06-26): comma-separated egress
+          # IP/CIDR(s) of the synthetic probe. cf-connecting-ip is always forwarded
+          # by Cloudflare (unlike the HMAC header, which the CDN can strip — root
+          # cause of the 2026-06-25 self-throttle), so this keeps the exemption
+          # working even if the header never reaches origin. Unset = floor stays
+          # OFF (fail-closed; HMAC path only). The value is a public egress IP, NOT a
+          # credential — so it lives as a GitHub Actions *variable* (vars), which is
+          # readable/verifiable (`gh variable list`), unlike the write-only HMAC secret
+          # above. cf-connecting-ip is anti-spoofed at origin, so exposing the IP is safe.
+          SEO_CP_SYNTHETIC_PROBE_EGRESS_IPS_OVERRIDE: ${{ vars.PROD_SEO_CP_SYNTHETIC_PROBE_EGRESS_IPS }}
         run: |
           docker pull massdoc/nestjs-remix-monorepo:production
 
@@ -142,6 +156,46 @@ jobs:
               echo "JWT_SECRET=${JWT_SECRET_OVERRIDE}" >> .env
             fi
             echo "✅ JWT_SECRET updated from GitHub Secrets"
+          fi
+          # Inject the seo-control-plane synthetic-crawler probe HMAC secret and
+          # ATOMICALLY enable its rate-limit exemption (BotGuardMiddleware is the
+          # verifier — PR #1141). The enable flag is flipped to true ONLY when the
+          # secret is actually provided, so a half-config ("enabled but no secret")
+          # never reaches PROD; the app would fail-closed + log loudly anyway, but
+          # we avoid the state entirely. When PROD_SEO_CP_SYNTHETIC_PROBE_SECRET is
+          # unset the exemption stays OFF: probes get throttled and the in-app
+          # 429-rate alert fires (no silent degradation). Mirrors the JWT pattern.
+          # `|` sed delimiter is safe — the value is hex (openssl rand -hex 32).
+          if [ -n "$SEO_CP_SYNTHETIC_PROBE_SECRET_OVERRIDE" ]; then
+            if grep -q '^SEO_CP_SYNTHETIC_PROBE_SECRET=' .env; then
+              sed -i "s|^SEO_CP_SYNTHETIC_PROBE_SECRET=.*|SEO_CP_SYNTHETIC_PROBE_SECRET=${SEO_CP_SYNTHETIC_PROBE_SECRET_OVERRIDE}|" .env
+            else
+              echo "SEO_CP_SYNTHETIC_PROBE_SECRET=${SEO_CP_SYNTHETIC_PROBE_SECRET_OVERRIDE}" >> .env
+            fi
+            if grep -q '^SEO_CP_SYNTHETIC_PROBE_ENABLED=' .env; then
+              sed -i "s|^SEO_CP_SYNTHETIC_PROBE_ENABLED=.*|SEO_CP_SYNTHETIC_PROBE_ENABLED=true|" .env
+            else
+              echo "SEO_CP_SYNTHETIC_PROBE_ENABLED=true" >> .env
+            fi
+            echo "✅ SEO_CP synthetic-probe exemption secret injected + enabled from GitHub Secrets"
+          else
+            echo "ℹ️ PROD_SEO_CP_SYNTHETIC_PROBE_SECRET unset — synthetic-crawler exemption stays OFF (probes throttled; in-app 429 alert will fire)"
+          fi
+          # Inject the synthetic-probe egress allowlist (defense-in-depth FLOOR,
+          # synthetic-probe egress floor, 2026-06-26). Independent of the HMAC secret above: this floor recognizes
+          # the probe by its anti-spoofed cf-connecting-ip, so the exemption keeps
+          # working even when Cloudflare strips the x-synthetic-probe header (root
+          # cause of the 2026-06-25 self-throttle). Unset = floor OFF (fail-closed;
+          # HMAC path only). `|` sed delimiter is safe — IP/CIDR values use :, /, ,.
+          if [ -n "$SEO_CP_SYNTHETIC_PROBE_EGRESS_IPS_OVERRIDE" ]; then
+            if grep -q '^SEO_CP_SYNTHETIC_PROBE_EGRESS_IPS=' .env; then
+              sed -i "s|^SEO_CP_SYNTHETIC_PROBE_EGRESS_IPS=.*|SEO_CP_SYNTHETIC_PROBE_EGRESS_IPS=${SEO_CP_SYNTHETIC_PROBE_EGRESS_IPS_OVERRIDE}|" .env
+            else
+              echo "SEO_CP_SYNTHETIC_PROBE_EGRESS_IPS=${SEO_CP_SYNTHETIC_PROBE_EGRESS_IPS_OVERRIDE}" >> .env
+            fi
+            echo "✅ SEO_CP synthetic-probe egress floor configured from GitHub Variables"
+          else
+            echo "ℹ️ PROD_SEO_CP_SYNTHETIC_PROBE_EGRESS_IPS unset — egress floor OFF (HMAC path only)"
           fi
 
           docker network create automecanik-prod 2>/dev/null || true

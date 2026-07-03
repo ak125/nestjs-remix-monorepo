@@ -5,8 +5,8 @@
  * ⚡ Optimisé INP: localStorage différé avec scheduleIdleCallback
  */
 
-import { useLocation } from "@remix-run/react";
 import { useState, useEffect, useCallback } from "react";
+import { useLocation } from "react-router";
 import { logger } from "~/utils/logger";
 import { scheduleIdleCallback } from "../utils/performance.utils";
 

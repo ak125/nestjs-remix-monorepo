@@ -334,10 +334,20 @@ export class AdminKeywordPlannerController {
   async importHistory() {
     this.logger.log('GET /api/admin/keyword-planner/import-history');
     try {
-      const { data } = await this.supabase.rpc('get_keyword_import_history');
-      if (data) return { history: data };
-    } catch {
-      /* RPC may not exist, fallback to raw query */
+      const { data, error } = await this.supabase.rpc(
+        'get_keyword_import_history',
+      );
+      if (error) {
+        this.logger.warn(
+          `RPC get_keyword_import_history unavailable → client-side fallback: ${error.message}`,
+        );
+      } else if (data) {
+        return { history: data };
+      }
+    } catch (e) {
+      this.logger.warn(
+        `RPC get_keyword_import_history threw → client-side fallback: ${e instanceof Error ? e.message : String(e)}`,
+      );
     }
 
     // Fallback: client-side grouping

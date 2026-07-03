@@ -1,7 +1,6 @@
 /**
  * PillarArticlesGrid — 3 articles en vedette (piliers)
  */
-import { Link, useFetcher } from "@remix-run/react";
 import {
   Clock,
   Eye,
@@ -11,6 +10,7 @@ import {
   Bookmark,
   Star,
 } from "lucide-react";
+import { Link, useFetcher } from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
@@ -54,7 +54,7 @@ export function PillarArticlesGrid({ articles }: PillarArticlesGridProps) {
               key={article.id}
               className="hover:-translate-y-2 transition-transform duration-300"
             >
-              <Card className="group h-full overflow-hidden border-0 bg-white/80 backdrop-blur-sm shadow-xl hover:shadow-2xl transition-all duration-500">
+              <Card className="group h-full overflow-hidden border-0 bg-white/80 backdrop-blur-xs shadow-xl hover:shadow-2xl transition-all duration-500">
                 {article.featuredImage && (
                   <div className="h-56 relative overflow-hidden">
                     <img

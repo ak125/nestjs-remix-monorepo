@@ -195,7 +195,7 @@ function TrustBadgeV2Component({
       {/* Icon with pulse effect on highlight */}
       <div
         className={cn(
-          "flex-shrink-0 transition-transform duration-200",
+          "shrink-0 transition-transform duration-200",
           isHovered && "scale-110",
         )}
         style={{ color: colors.icon }}
@@ -270,7 +270,7 @@ function RatingDisplayV2({
             className={cn(
               "h-5 w-5 sm:h-4 sm:w-4 transition-all duration-200", // Larger on mobile for touch
               star <= fullStars
-                ? "text-amber-400 fill-amber-400 drop-shadow-sm"
+                ? "text-amber-400 fill-amber-400 drop-shadow-xs"
                 : star === fullStars + 1 && hasHalf
                   ? "text-amber-400 fill-amber-400/50"
                   : "text-slate-200 fill-slate-200",

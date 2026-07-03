@@ -39,11 +39,11 @@ export class ConfigItemDto implements ZodConfigItemDto {
   @ApiPropertyOptional({ description: 'Catégorie de la configuration' })
   category?: string;
 
-  @ApiPropertyOptional({ description: 'Configuration publique ou privée' })
-  isPublic?: boolean;
+  @ApiProperty({ description: 'Configuration publique ou privée' })
+  isPublic: boolean;
 
-  @ApiPropertyOptional({ description: 'Configuration en lecture seule' })
-  isReadOnly?: boolean;
+  @ApiProperty({ description: 'Configuration en lecture seule' })
+  isReadOnly: boolean;
 
   @ApiPropertyOptional({ description: 'Date de création' })
   createdAt?: Date;

@@ -1,6 +1,6 @@
-import { Await } from "@remix-run/react";
 import { HelpCircle, Search, Shield, Stethoscope, Truck } from "lucide-react";
 import { Suspense } from "react";
+import { Await } from "react-router";
 import { FAQ_DATA } from "~/components/home/constants";
 
 function getFaqIcon(question: string) {
@@ -24,7 +24,7 @@ function FaqCards({ items }: { items: Array<{ q: string; a: string }> }) {
             className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-[0_6px_18px_rgba(15,23,42,0.05)] transition-all duration-200 hover:border-slate-300 hover:shadow-lg"
           >
             <div className="flex items-start gap-4">
-              <div className="h-14 w-14 rounded-2xl bg-slate-50 flex items-center justify-center flex-shrink-0">
+              <div className="h-14 w-14 rounded-2xl bg-slate-50 flex items-center justify-center shrink-0">
                 <FaqIcon size={22} className="text-slate-500" />
               </div>
               <div className="flex-1 min-w-0">

@@ -1,10 +1,9 @@
+import { useEffect, useState } from "react";
 import {
-  json,
   type LoaderFunctionArgs,
   type MetaFunction,
-} from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
-import { useEffect, useState } from "react";
+  useLoaderData,
+} from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
@@ -30,7 +29,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     const response = await fetch("http://127.0.0.1:3000/dashboard/stats");
     const stats: DashboardStats = await response.json();
 
-    return json({
+    return {
       stats,
       timestamp: new Date().toISOString(),
       tests: {
@@ -38,10 +37,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         monitoring: true,
         abTesting: true,
       },
-    });
+    };
   } catch (error) {
     logger.error("Erreur lors du chargement des stats:", error);
-    return json({
+    return {
       stats: null,
       error: "Impossible de charger les statistiques",
       timestamp: new Date().toISOString(),
@@ -50,7 +49,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         monitoring: false,
         abTesting: false,
       },
-    });
+    };
   }
 };
 

@@ -1,6 +1,6 @@
-import { Link } from "@remix-run/react";
 import { ChevronDown, ChevronUp, Loader2, Search, X } from "lucide-react";
 import { memo, useCallback, useMemo, useState } from "react";
+import { Link } from "react-router";
 import {
   CATALOG_DOMAINS,
   type CatalogFamily,
@@ -69,12 +69,12 @@ const CatalogFamilyCard = memo(function CatalogFamilyCard({
             </span>
           )}
           {pop && (
-            <span className="absolute top-2.5 right-2.5 text-[10px] font-bold uppercase tracking-wide text-white bg-cta/90 px-2 py-0.5 rounded-md shadow-sm z-10">
+            <span className="absolute top-2.5 right-2.5 text-[10px] font-bold uppercase tracking-wide text-black bg-cta/90 px-2 py-0.5 rounded-md shadow-sm z-10">
               Populaire
             </span>
           )}
           {/* Gamme count chip */}
-          <span className="absolute bottom-2.5 right-2.5 text-[11px] font-semibold text-white/90 bg-neutral-900/30 backdrop-blur-sm px-2 py-0.5 rounded-md z-10">
+          <span className="absolute bottom-2.5 right-2.5 text-[11px] font-semibold text-white/90 bg-neutral-900/30 backdrop-blur-xs px-2 py-0.5 rounded-md z-10">
             {totalGammes} gammes
           </span>
         </div>
@@ -219,7 +219,16 @@ export default function CatalogueSection({
         sub={`Pièces neuves pour toutes marques — ${families.length} familles techniques`}
       />
 
+      {/* translate="no" — neutralise la cause racine du crash NotFoundError
+          "removeChild ... not a child" (Sentry PROD, page /, fragment #catalogue).
+          La traduction navigateur (Chrome / Google Translate) re-parente les nœuds
+          texte de ce widget dans des <font> ; un re-render React (frappe dans la
+          recherche, changement d'onglet, expand/collapse) appelle ensuite removeChild
+          sur un nœud déplacé → DOMException. Marquer ce sous-arbre interactif comme
+          non-traduisible empêche le traducteur d'y toucher. Le <SectionHeader>
+          ci-dessus reste hors de ce sous-arbre, donc traduisible. Cf. React #11538. */}
       <Tabs
+        translate="no"
         defaultValue="Tout"
         className="w-full"
         aria-label="Catalogue par domaine technique"
@@ -247,7 +256,7 @@ export default function CatalogueSection({
                     value={domain.label}
                     className="group text-xs sm:text-[13px] px-3 sm:px-4 py-2.5 sm:py-2.5 rounded-lg whitespace-nowrap font-semibold flex items-center gap-1.5 min-h-[44px] text-slate-500 hover:text-slate-700 hover:bg-white/60 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-slate-200"
                   >
-                    <DomainIcon className="w-3.5 h-3.5 flex-shrink-0 group-data-[state=active]:text-cta" />
+                    <DomainIcon className="w-3.5 h-3.5 shrink-0 group-data-[state=active]:text-cta" />
                     <span className="hidden sm:inline">{domain.label}</span>
                     <span className="sm:hidden">
                       {domain.label.split(" ")[0]}

@@ -10,12 +10,6 @@
  */
 
 import {
-  json,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from "@remix-run/node";
-import { Link, useLoaderData } from "@remix-run/react";
-import {
   AlertTriangle,
   Battery,
   Calendar,
@@ -28,6 +22,12 @@ import {
   Wrench,
   type LucideIcon,
 } from "lucide-react";
+import {
+  type LoaderFunctionArgs,
+  type MetaFunction,
+  Link,
+  useLoaderData,
+} from "react-router";
 
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { CompactBlogHeader } from "~/components/blog/CompactBlogHeader";
@@ -120,9 +120,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const res = await fetch(apiUrl);
     if (!res.ok) throw new Error(`API ${res.status}`);
     const calendar = (await res.json()) as CalendarPayload;
-    return json({ calendar });
+    return { calendar };
   } catch {
-    return json({
+    return {
       calendar: {
         type_id: null,
         current_km: 0,
@@ -131,7 +131,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         alerts: [],
         controles_mensuels: [],
       } as CalendarPayload,
-    });
+    };
   }
 }
 
@@ -416,10 +416,7 @@ export default function CalendrierEntretienPage() {
               ) : (
                 <div className="space-y-6">
                   {calendar.alerts.map((palier) => (
-                    <div
-                      key={palier.milestone_km}
-                      className="pl-4"
-                    >
+                    <div key={palier.milestone_km} className="pl-4">
                       <h3 className="font-semibold text-lg flex items-center gap-2 mb-2">
                         <Badge className="bg-muted text-foreground text-sm">
                           {palier.milestone_km.toLocaleString("fr-FR")} km

@@ -2,8 +2,6 @@
  * Page Rapports - Analyses et statistiques détaillées
  */
 
-import { type LoaderFunction, type MetaFunction, json } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
 import {
   BarChart3,
   Download,
@@ -14,6 +12,7 @@ import {
   AlertTriangle,
   CheckCircle,
 } from "lucide-react";
+import { type MetaFunction, useLoaderData } from "react-router";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
@@ -51,7 +50,7 @@ interface ReportOrder {
   total?: string;
 }
 
-export const loader: LoaderFunction = async () => {
+export const loader = async () => {
   try {
     logger.log("📊 Chargement des données pour les rapports...");
 
@@ -164,10 +163,10 @@ export const loader: LoaderFunction = async () => {
 
     logger.log("✅ Données des rapports chargées:", reportData);
 
-    return json({ reportData });
+    return { reportData };
   } catch (error) {
     logger.error("❌ Erreur lors du chargement des rapports:", error);
-    return json({
+    return {
       reportData: {
         users: { total: 0, active: 0, professional: 0, verified: 0 },
         orders: {
@@ -185,7 +184,7 @@ export const loader: LoaderFunction = async () => {
         trends: { usersThisMonth: 0, ordersThisMonth: 0, revenueThisMonth: 0 },
       },
       error: "Erreur de connexion aux APIs pour les rapports",
-    });
+    };
   }
 };
 
@@ -326,10 +325,7 @@ export default function AdminReports() {
               </div>
               <div className="flex items-center justify-between">
                 <span>Emails Vérifiés</span>
-                <Badge
-                  variant="default"
-                  className="bg-muted text-foreground"
-                >
+                <Badge variant="default" className="bg-muted text-foreground">
                   {reportData.users.verified}
                 </Badge>
               </div>
@@ -367,10 +363,7 @@ export default function AdminReports() {
               </div>
               <div className="flex items-center justify-between">
                 <span>Chiffre d'Affaires</span>
-                <Badge
-                  variant="default"
-                  className="bg-muted text-foreground"
-                >
+                <Badge variant="default" className="bg-muted text-foreground">
                   {reportData.orders.revenue.toFixed(2)}€
                 </Badge>
               </div>

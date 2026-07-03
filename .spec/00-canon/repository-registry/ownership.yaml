@@ -102,6 +102,40 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: low
+  # D1 brief-from-wiki — colonnes audit provenance __seo_page_brief (additif, non auto-appliqué). Owner GO 2026-06-20. Glob exact.
+  - glob: backend/supabase/migrations/20260620_d1_brief_from_wiki_evidence_columns.sql
+    domain: D14
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
+  # ADR-059 PR-6 — SEO projection write-side schema (7 tables + 2 MV). Owner GO session 2026-06-19.
+  # Glob exact volontaire — les migrations ne sont PAS auto-couvertes (review ownership à chaque fois).
+  - glob: backend/supabase/migrations/20260619_adr059_pr6_seo_projection_schema.sql
+    domain: D14
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
+  # ADR-059 PR-6c — SEO projection : REVOKE MV anon + RPC refresh_seo_projection_mvs. Owner GO 2026-06-19.
+  # Glob exact volontaire — les migrations ne sont PAS auto-couvertes (review ownership à chaque fois).
+  - glob: backend/supabase/migrations/20260619_adr059_pr6c_mv_revoke_and_refresh_rpc.sql
+    domain: D14
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
+  # Allocateur gouverné Massdoc-séquentiel type_id (ADR-085, owner GO session 2026-06-15).
+  # Glob exact volontaire — les migrations ne sont PAS auto-couvertes (review ownership à chaque fois).
+  - glob: backend/supabase/migrations/20260615_massdoc_type_id_allocator.sql
+    domain: D4
+    owner: '@ak125/vehicle-team'
+    sourceConfidence: high
+    risk: low
+  # ADR-059 PR-7 — read RPC get_active_seo_projection. Owner GO 2026-06-20.
+  # Glob exact volontaire — les migrations ne sont PAS auto-couvertes (review ownership à chaque fois).
+  - glob: backend/supabase/migrations/20260620_adr059_pr7_get_active_seo_projection_rpc.sql
+    domain: D14
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
   - glob: scripts/governance/validate-authority-graph.js
     domain: D15
     owner: '@ak125'
@@ -202,6 +236,16 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: low
+  - glob: frontend/eslint.config.js
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  - glob: frontend/react-router.config.ts
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
   - glob: CLAUDE.md
     domain: D15
     owner: '@ak125'
@@ -254,6 +298,13 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: low
+  # Scorecards funnel commerce (read-only, ancrées merge-date) — même famille que le
+  # glob *seo_event_funnel* (D3) + audit/seo-*.md. cf. audit/sales-funnel-scorecard-2026-06-23.md
+  - glob: audit/sales-funnel-*.md
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
   # V-Level doctrine de référence (PR vlevel-doctrine-lock, owner GO 2026-06-05) —
   # voir audit/levels-doctrine-cgc-vs-vlevel-2026-06-04.md. Préfixe ciblé.
   - glob: audit/levels-doctrine-*.md
@@ -296,6 +347,12 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: low
+  # PRC evidence samples (#964 vehicle-issues-from-evidence) — meme famille SEO content
+  - glob: audit/content/prc-evidence-*.yml
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
   # ADR-082 Phase 1 — continuous improvement doctrine pilots + cross-validation
   # (rangés à plat sous audit/ par convention historique, cf. audit/seo-*.md).
   - glob: audit/pilot-*.md
@@ -330,6 +387,11 @@ entries:
     owner: '@ak125/auth-team'
     sourceConfidence: medium
     risk: high
+  - glob: backend/src/modules/session/**
+    domain: D11
+    owner: '@ak125/auth-team'
+    sourceConfidence: medium
+    risk: high
   - glob: backend/src/cache/**
     domain: D10
     owner: '@ak125'
@@ -354,6 +416,21 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: medium
+  - glob: backend/src/common/guards/**
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  - glob: backend/src/common/utils/**
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  - glob: backend/src/common/decorators/**
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
   - glob: backend/src/config/**
     domain: D13
     owner: '@ak125'
@@ -362,6 +439,28 @@ entries:
   - glob: backend/src/contract/env-contract/**
     domain: D13
     owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  # ADR-059 PR-6b — SEO projection forward-writer module (workers BullMQ, NON wiré AppModule). Owner GO 2026-06-19.
+  - glob: backend/src/modules/seo-projection/**
+    domain: D14
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
+  # MediaFactory video-production module — revival 2026-06-20 (flag-gated MEDIA_FACTORY_ENABLED, fetch-only TTS Azure, de-RAG). Owner autorise 2026-06-20.
+  - glob: backend/src/modules/media-factory/**
+    domain: D12
+    owner: '@ak125/marketing-team'
+    sourceConfidence: high
+    risk: medium
+  - glob: backend/src/workers/processors/video-execution.processor.ts
+    domain: D12
+    owner: '@ak125/marketing-team'
+    sourceConfidence: high
+    risk: medium
+  - glob: backend/src/workers/types/video-execution.types.ts
+    domain: D12
+    owner: '@ak125/marketing-team'
     sourceConfidence: high
     risk: medium
   - glob: backend/src/modules/admin/**
@@ -406,16 +505,18 @@ entries:
     owner: '@ak125'
     sourceConfidence: medium
     risk: medium
-  - glob: backend/src/modules/blog-metadata/**
-    domain: D5
-    owner: '@ak125/content-team'
-    sourceConfidence: medium
-    risk: low
   - glob: backend/src/modules/blog/**
     domain: D5
     owner: '@ak125/content-team'
     sourceConfidence: medium
     risk: medium
+  # Glob exact volontaire — les migrations ne sont PAS auto-couvertes (review ownership à chaque fois).
+  # Couvre .sql + .down.sql de la migration increment_advice_views (runtime-truth #3, Lot C).
+  - glob: backend/supabase/migrations/*blog_advice_increment_views*
+    domain: D5
+    owner: '@ak125/content-team'
+    sourceConfidence: high
+    risk: low
   # bot-guard = anti-bot access-control middleware (throttling, geo/IP filtering,
   # GOOD_BOTS allowlist) → Security & Governance. Risk high: can 403 real traffic.
   - glob: backend/src/modules/bot-guard/**
@@ -592,6 +693,11 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: medium
+  - glob: backend/supabase/migrations/20260311142250_r8_diversity_system.sql
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
   - glob: backend/supabase/migrations/*seo_snapshot*
     domain: D3
     owner: '@ak125/seo-team'
@@ -640,6 +746,16 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: medium
+  - glob: backend/supabase/migrations/20260621_grant_anon_execute_page_render_rpcs.sql
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
+  - glob: backend/supabase/migrations/20260621_get_homepage_families_definer_rpc.sql
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
   - glob: backend/supabase/migrations/*seo_admin_job*
     domain: D3
     owner: '@ak125/seo-team'
@@ -650,6 +766,13 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: medium
+  # Commerce-Loop V1 PR-A — idempotency index for server-side r2_order_placed
+  # emission into __seo_event_log (funnel family, même domaine que *seo_event_funnel*).
+  - glob: backend/supabase/migrations/*seo_event_log*
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
   - glob: backend/supabase/migrations/*seo_cwv*
     domain: D3
     owner: '@ak125/seo-team'
@@ -660,6 +783,11 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: medium
+  - glob: backend/supabase/migrations/*seo_event_placeholder*
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: low
   - glob: backend/supabase/migrations/*sitemap_vehicules_drop_model_level*
     domain: D3
     owner: '@ak125/seo-team'
@@ -735,6 +863,11 @@ entries:
     owner: '@ak125/frontend-team'
     sourceConfidence: medium
     risk: medium
+  - glob: frontend/app/routes.ts
+    domain: D8
+    owner: '@ak125/frontend-team'
+    sourceConfidence: medium
+    risk: low
   - glob: frontend/app/utils/**
     domain: D8
     owner: '@ak125/frontend-team'
@@ -912,6 +1045,11 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: medium
+  - glob: workspaces/seo-batch/.claude/**
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
   - glob: docs/superpowers/specs/**
     domain: D15
     owner: '@ak125'
@@ -1035,12 +1173,32 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: low
+  # __gov_m10 read-only introspection RPC for the rpc-overload-ambiguity runtime-truth
+  # runner (Trust Ledger B0a-4; PGRST203 class, #993/#997). Additive, SECURITY DEFINER,
+  # service_role only. Glob exact (.sql + .down.sql of this migration).
+  - glob: backend/supabase/migrations/20260615_gov_m10_overload_ambiguity_rpc*.sql
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
   - glob: workspaces/ai-probe/**
     domain: D3
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: low
   - glob: docs/audit/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+
+  # Vague 5 — sécurité : RLS drift-tail + durcissement fonctions (advisor 215→0).
+  - glob: backend/supabase/migrations/20260616_vague5_*.sql
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
+  - glob: docs/security/**
     domain: D15
     owner: '@ak125'
     sourceConfidence: high

@@ -38,7 +38,7 @@ export default function GammeErrors({
         {items.map((e, i) => (
           <Reveal key={i} delay={i * 60}>
             <div className="flex items-center gap-3 bg-white border border-red-100 rounded-[18px] px-4 py-3.5 shadow-[0_6px_18px_rgba(15,23,42,0.05)] hover:border-red-200 hover:shadow-lg transition-all group">
-              <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center flex-shrink-0 group-hover:bg-red-500 transition-colors">
+              <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center shrink-0 group-hover:bg-red-500 transition-colors">
                 <X
                   size={14}
                   className="text-red-500 group-hover:text-white transition-colors"

@@ -17,6 +17,6 @@ export class BotGuardModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(BotGuardMiddleware)
-      .forRoutes({ path: '*', method: RequestMethod.ALL });
+      .forRoutes({ path: '{*path}', method: RequestMethod.ALL });
   }
 }
