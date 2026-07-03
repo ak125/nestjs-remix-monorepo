@@ -17,6 +17,8 @@
 #   - scripts/governance/__tests__/* (tests bats)
 #   - log.md / log-archive-*.md (session timeline append-only, review humaine)
 #   - .claude/prompts/** (prompts agents Claude Code, doc R-role)
+#   - .claude/skills/** (DEV skills Claude Code, doc R-role — même classe que prompts ;
+#       les skills SEO en workspace sont déjà couvertes par workspaces/**/.claude/**)
 #   - workspaces/**/.claude/** (workspace agents + skills SEO, discussion multi-role)
 #   - workspaces/**/AGENTS/** (AGENTS.md SEO workspace)
 #
@@ -32,7 +34,7 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$REPO_ROOT"
 
-WHITELIST_RE='^(\.spec/00-canon/role-matrix\.md|scripts/governance/check-cart-conversion-r-role\.sh|scripts/governance/__tests__/.*cart-conversion-r-role.*|log\.md|log-archive-.*\.md|\.claude/prompts/.*|workspaces/.*/\.claude/.*|workspaces/.*/AGENTS/.*)$'
+WHITELIST_RE='^(\.spec/00-canon/role-matrix\.md|scripts/governance/check-cart-conversion-r-role\.sh|scripts/governance/__tests__/.*cart-conversion-r-role.*|log\.md|log-archive-.*\.md|\.claude/prompts/.*|\.claude/skills/.*|workspaces/.*/\.claude/.*|workspaces/.*/AGENTS/.*)$'
 
 # Cherche \bR8\b sur même ligne que panier/cart/conver/achat/landing piece, exclut whitelist et negative-match
 VIOLATIONS=$(
