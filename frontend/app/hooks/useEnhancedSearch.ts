@@ -80,26 +80,22 @@ export function useEnhancedSearch() {
     }
   }, []);
 
-  // Fonction d'autocomplete
-  const autocomplete = useCallback(async (query: string): Promise<string[]> => {
-    if (query.length < 2) return [];
-
-    try {
-      const response = await fetch(
-        `/api/search-existing/autocomplete?q=${encodeURIComponent(query)}`,
-      );
-
-      if (!response.ok) {
-        throw new Error("Erreur autocomplete");
-      }
-
-      const data = await response.json();
-      return data.suggestions || [];
-    } catch (err) {
-      logger.warn("Erreur autocomplete:", err);
+  // Fonction d'autocomplete.
+  //
+  // La route backend `GET /api/search-existing/autocomplete` est DÉSACTIVÉE
+  // (commentée dans `search-enhanced-existing.controller.ts`, elle renvoyait
+  // toujours `{ suggestions: [] }`). L'appeler à chaque frappe ne produisait
+  // qu'une requête morte (404, ou 429 quand le rate-limiter `@nestjs/throttler`
+  // court-circuitait avant le routing) qui consommait le budget par-IP partagé —
+  // pénalisant les vrais visiteurs derrière une IP mutualisée (CGNAT mobile).
+  // Incident 429 PROD 2026-07-03. Tant que la route n'est pas rétablie côté
+  // backend, on ne la sollicite pas ; les suggestions restent vides comme avant.
+  const autocomplete = useCallback(
+    async (_query: string): Promise<string[]> => {
       return [];
-    }
-  }, []);
+    },
+    [],
+  );
 
   // Charger les métriques
   const loadMetrics = useCallback(async () => {
