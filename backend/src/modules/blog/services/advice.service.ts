@@ -507,28 +507,51 @@ export class AdviceService {
         return;
       }
 
-      await this.supabaseService.client.rpc('increment_advice_views', {
-        advice_id: adviceId,
-      });
+      // Atomic path — migration 20260703 creates public.increment_advice_views(text).
+      // ba_id is a TEXT column, so send a string: PostgREST binds the text param
+      // (a JS number would risk PGRST202/203 and — critically — postgrest-js resolves
+      // that to { error } WITHOUT throwing, so we MUST inspect `error` explicitly).
+      const { error } = await this.supabaseService.client.rpc(
+        'increment_advice_views',
+        { advice_id: String(adviceId) },
+      );
+      if (!error) return;
+
+      // RPC absent (PGRST202) or failed: surface it, then fall through to the
+      // non-atomic fallback below — observable, never silent (CLAUDE.md CRITICAL).
+      this.logger.warn(
+        `RPC increment_advice_views failed (${error.code ?? '?'}: ${error.message}) → non-atomic fallback for ba_id=${adviceId}`,
+      );
+    } catch (e) {
+      this.logger.warn(
+        `RPC increment_advice_views threw → non-atomic fallback for ba_id=${adviceId}: ${(e as Error).message}`,
+      );
+    }
+
+    await this.incrementViewsFallback(adviceId);
+  }
+
+  /**
+   * Fallback non-atomique (best-effort) : lit puis réécrit ba_visit.
+   * NB: supabase-js .update() écrit une valeur littérale — il faut donc lire puis
+   * réécrire le compteur (un `'ba_visit::int + 1'` littéral n'incrémentait rien).
+   * Comptage de vues non-critique — ne jamais casser la requête appelante.
+   */
+  private async incrementViewsFallback(adviceId: number): Promise<void> {
+    try {
+      const { data } = await this.supabaseService.client
+        .from(TABLES.blog_advice)
+        .select('ba_visit')
+        .eq('ba_id', adviceId)
+        .maybeSingle();
+      const current = Number.parseInt(data?.ba_visit ?? '0', 10);
+      const next = (Number.isNaN(current) ? 0 : current) + 1;
+      await this.supabaseService.client
+        .from(TABLES.blog_advice)
+        .update({ ba_visit: String(next) })
+        .eq('ba_id', adviceId);
     } catch {
-      // Fallback (non-atomic, best-effort) si la RPC increment_advice_views est absente.
-      // NB: supabase-js .update() écrit une valeur littérale — il faut donc lire puis
-      // réécrire le compteur (un `'ba_visit::int + 1'` littéral n'incrémentait rien).
-      try {
-        const { data } = await this.supabaseService.client
-          .from(TABLES.blog_advice)
-          .select('ba_visit')
-          .eq('ba_id', adviceId)
-          .maybeSingle();
-        const current = Number.parseInt(data?.ba_visit ?? '0', 10);
-        const next = (Number.isNaN(current) ? 0 : current) + 1;
-        await this.supabaseService.client
-          .from(TABLES.blog_advice)
-          .update({ ba_visit: String(next) })
-          .eq('ba_id', adviceId);
-      } catch {
-        // Comptage de vues non-critique — ne jamais casser la requête.
-      }
+      // Comptage de vues non-critique — ne jamais casser la requête.
     }
   }
 
