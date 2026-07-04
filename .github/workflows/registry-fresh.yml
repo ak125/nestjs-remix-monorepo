@@ -112,3 +112,91 @@ jobs:
               echo "- ❌ canonical.json missing";
             fi
           } >> "$GITHUB_STEP_SUMMARY"
+
+  # ---------------------------------------------------------------------------
+  # PR-F — Canonical committed-freshness gate (structural, warn-only first)
+  # ---------------------------------------------------------------------------
+  # WHY THIS JOB EXISTS (distinct from `registry-fresh` above)
+  #   The `registry-fresh` job runs `npm run registry` (a full rebuild) BEFORE it
+  #   runs `registry:validate-invariants`, so its I6 freshness check always
+  #   validates a freshly rebuilt — trivially fresh — canonical. It therefore
+  #   CANNOT catch a *stale committed* canonical.json: the "green but wrong" drift
+  #   where a Layer 1/2 source moved but audit/registry/canonical.json was not
+  #   regenerated (e.g. a deps.json reshape landing without a canonical rebuild).
+  #
+  #   This job runs invariant I6 (`checkCanonicalFresh`) on the COMMITTED tree
+  #   with NO rebuild first: it compares canonical.meta.inputHashes against the
+  #   actual sha256 of the committed Layer 1 ({files,rpc,runtime,db,deps}.json)
+  #   and Layer 2 (.spec/00-canon/repository-registry/*.yaml) sources. If they
+  #   diverge, the committed canonical is stale and the job flags it. This makes
+  #   the merge order between L1/L2-changing PRs irrelevant: whichever source
+  #   moves last, canonical must be regenerated before merge. It REUSES the
+  #   existing, unit-tested invariant (scripts/registry/validate-invariants.ts) —
+  #   no new engine, no parallel fingerprint.
+  #   Ref: audit/p0-rag-runtime-and-version-truth-2026-07-04.md §0 (freshness closure).
+  #
+  # ROLLOUT — WARN-ONLY FIRST (ADR-062 ratchet), same discipline as
+  # dependency-registry-freshness.yml. `continue-on-error: true` at the JOB level:
+  # the check still `exit 1`s on drift (red step + ::error annotation + a
+  # $GITHUB_STEP_SUMMARY explanation), but a failing job does NOT block the PR. On
+  # a drifted `main` this job is RED BY DESIGN until the canonical catch-up
+  # (PR-E) lands — landing it blocking now would wedge every unrelated PR.
+  #
+  # PROMOTION TO BLOCKING — remove `continue-on-error` AND add this as a REQUIRED
+  # status check in branch protection — only after ALL of:
+  #   1. the canonical catch-up (PR-E) has landed so `main` is I6-green;
+  #   2. this job has been observed GREEN on `main` for the ADR-062 ratchet
+  #      window (>= 10 consecutive green builds / ~7-14 days), no false positive.
+  # Flipping earlier requires a vault derogation ADR.
+  canonical-committed-fresh:
+    name: canonical.json == fresh(committed L1+L2) — I6 structural
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    # ADR-062 ratchet — WARN-ONLY FIRST. The step below still exits 1 on drift
+    # (detection intact), but this job-level flag prevents that failure from
+    # blocking the PR. Remove this line to promote to blocking (see ROLLOUT).
+    continue-on-error: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install
+        run: npm ci
+
+      - name: Assert committed canonical.json is fresh vs committed L1+L2 (invariant I6, NO rebuild first)
+        run: |
+          # CRITICAL: do NOT run `npm run registry` before this. We validate the
+          # COMMITTED canonical.meta.inputHashes against the COMMITTED L1/L2
+          # sources on disk. (The sibling `registry-fresh` job rebuilds first, so
+          # its I6 always sees a trivially-fresh canonical — this job is the one
+          # that catches a stale committed canonical.) Do NOT pipe / --silent:
+          # keep the real exit code so `exit 1` on I6 error is honoured.
+          if npm run registry:validate-invariants; then
+            echo "✓ committed canonical.json is fresh vs committed Layer 1 + Layer 2 (invariant I6)"
+          else
+            {
+              echo "## ❌ canonical.json is STALE vs committed Layer 1 + Layer 2 sources (invariant I6)"
+              echo ""
+              echo "A Layer 1 (\`audit/registry/{files,rpc,runtime,db,deps}.json\`) or Layer 2"
+              echo "(\`.spec/00-canon/repository-registry/*.yaml\`) source changed, but the committed"
+              echo "\`audit/registry/canonical.json\` was **not regenerated** — its \`meta.inputHashes\`"
+              echo "no longer match the committed sources."
+              echo ""
+              echo "**Fix:** run \`npm run registry\` then commit \`audit/registry/canonical.json\`"
+              echo "(and \`.claude/knowledge/REPO_MAP.md\`)."
+              echo ""
+              echo "> This gate makes the merge order between L1/L2-changing PRs irrelevant:"
+              echo "> whichever source moves last, canonical must be regenerated before merge."
+              echo ""
+              echo "Doctrine: the L3 projection must stay derived from the L1+L2 SoT couple."
+              echo "See audit/p0-rag-runtime-and-version-truth-2026-07-04.md §0."
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::error file=audit/registry/canonical.json::canonical.json is stale vs committed L1/L2 (invariant I6) — run 'npm run registry' and commit canonical.json."
+            exit 1
+          fi
