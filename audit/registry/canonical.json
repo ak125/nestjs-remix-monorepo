@@ -42350,9 +42350,10 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D10",
       "id": "backend/src/modules/errors/controllers/error.controller.ts",
       "importedBy": [
         "backend/src/modules/errors/errors.module.ts"
@@ -42365,7 +42366,7 @@
       ],
       "kind": "controller",
       "loc": 289,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "backend/src/modules/errors/controllers/error.controller.ts",
       "risk": "low",
       "runtime": true,
@@ -42376,9 +42377,10 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D10",
       "id": "backend/src/modules/errors/controllers/internal-error-log.controller.ts",
       "importedBy": [
         "backend/src/modules/errors/errors.module.ts"
@@ -42389,7 +42391,7 @@
       ],
       "kind": "controller",
       "loc": 75,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "backend/src/modules/errors/controllers/internal-error-log.controller.ts",
       "risk": "low",
       "runtime": true,
@@ -42401,9 +42403,10 @@
       "deletePolicy": "FREE",
       "derivedFrom": [
         "depcruise",
+        "manual",
         "reachability"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D10",
       "id": "backend/src/modules/errors/entities/error-log.entity.ts",
       "importedBy": [
         "backend/src/modules/errors/services/error-log.service.ts",
@@ -42412,7 +42415,7 @@
       "imports": [],
       "kind": "service",
       "loc": 89,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "backend/src/modules/errors/entities/error-log.entity.ts",
       "risk": "low",
       "runtime": false,
@@ -42423,9 +42426,10 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D10",
       "id": "backend/src/modules/errors/errors.module.ts",
       "importedBy": [
         "backend/src/api/api.module.ts",
@@ -42442,7 +42446,7 @@
       ],
       "kind": "service",
       "loc": 27,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "backend/src/modules/errors/errors.module.ts",
       "risk": "low",
       "runtime": true,
@@ -42453,9 +42457,10 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D10",
       "id": "backend/src/modules/errors/filters/global-error.filter.ts",
       "importedBy": [
         "backend/src/modules/errors/errors.module.ts"
@@ -42467,7 +42472,7 @@
       ],
       "kind": "service",
       "loc": 568,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "backend/src/modules/errors/filters/global-error.filter.ts",
       "risk": "low",
       "runtime": true,
@@ -42478,9 +42483,10 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D10",
       "id": "backend/src/modules/errors/services/error-log.service.ts",
       "importedBy": [
         "backend/src/api/errors-api.controller.ts",
@@ -42495,7 +42501,7 @@
       ],
       "kind": "service",
       "loc": 594,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "backend/src/modules/errors/services/error-log.service.ts",
       "risk": "low",
       "runtime": true,
@@ -42506,9 +42512,10 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D10",
       "id": "backend/src/modules/errors/services/error-status-population.test.ts",
       "importedBy": [],
       "imports": [
@@ -42516,7 +42523,7 @@
       ],
       "kind": "test",
       "loc": 68,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "backend/src/modules/errors/services/error-status-population.test.ts",
       "risk": "low",
       "runtime": false,
@@ -42527,9 +42534,10 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D10",
       "id": "backend/src/modules/errors/services/error.service.ts",
       "importedBy": [
         "backend/src/api/errors-api.controller.ts",
@@ -42545,7 +42553,7 @@
       ],
       "kind": "service",
       "loc": 747,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "backend/src/modules/errors/services/error.service.ts",
       "risk": "low",
       "runtime": true,
@@ -42556,9 +42564,10 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D10",
       "id": "backend/src/modules/errors/services/redirect.service.ts",
       "importedBy": [
         "backend/src/api/errors-api.controller.ts",
@@ -42573,7 +42582,7 @@
       ],
       "kind": "service",
       "loc": 598,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "backend/src/modules/errors/services/redirect.service.ts",
       "risk": "low",
       "runtime": true,
@@ -97154,7 +97163,7 @@
       ".spec/00-canon/repository-registry/automation-reality.yaml": "98f10df3b19858e0d723a5a21218be5e599b0c3f6038a3672b10bbb02baf0e29",
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "670a81abb20bf96ded77ca329883305243207680f9c05aa66190502dd4f8d2a2",
-      ".spec/00-canon/repository-registry/ownership.yaml": "584b01f38c025db7f08da6054c76fea2e22327a5b86e365099432428f1e9e361",
+      ".spec/00-canon/repository-registry/ownership.yaml": "c0ccdceb8109e801e5fb1cb4755d198585cb7f096c43ca432b08530c94d27a5f",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "00bad6b42995538dbf05a9bb9c22e1cd4ec6a58e0df4c6ab970167e75b049724",
       "audit/registry/deps.json": "a580f64acf4bb9bea3d25c935e014765913150f69ac4073803b4f650b2c35b72",
@@ -97162,7 +97171,7 @@
       "audit/registry/rpc.json": "763bbba8f325f325085e805ed042dab8b388498eff8ee6e2445a093c7f392a43",
       "audit/registry/runtime.json": "e0569902a2a706d6da9472c60f04a971a7d43dd07d7ccfcfa55396b87180da00"
     },
-    "sotFingerprint": "10ef40d83ad1"
+    "sotFingerprint": "7af32eccd540"
   },
   "runtime": [
     {

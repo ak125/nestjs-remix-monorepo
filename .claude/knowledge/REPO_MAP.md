@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 59b7601b4647f87c45cf98419d564590a65331ffdfe8e67c0c050f55b5607565
+source_sha256: 382eeb0b5ed1cefd8947ab281fa37e24854b9a89f298d11b29368eb0b0e802e8
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -24,7 +24,7 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 | Dependencies (Layer 1) | 237 |
 | Runtime entrypoints (Layer 1) | 512 |
 
-Source sotFingerprint: `10ef40d83ad1`.
+Source sotFingerprint: `7af32eccd540`.
 
 ## Comment l'utiliser
 
@@ -108,11 +108,11 @@ Source sotFingerprint: `10ef40d83ad1`.
 
 ### D10 — Quality, Monitoring & Observabilité
 
-- **Files**: 22 (service=15, test=4, controller=3)
-- **Runtime entrypoints**: 8
-- **Top owners**: @ak125 (22)
-- **Knowledge prose**: [`analytics`](modules/analytics.md), [`dashboard`](modules/dashboard.md), [`health`](modules/health.md), [`observability`](modules/observability.md)
-- **Status**: LIVE=18, UNKNOWN=4
+- **Files**: 31 (service=21, controller=5, test=5)
+- **Runtime entrypoints**: 11
+- **Top owners**: @ak125 (31)
+- **Knowledge prose**: [`analytics`](modules/analytics.md), [`dashboard`](modules/dashboard.md), [`errors`](modules/errors.md), [`health`](modules/health.md), [`observability`](modules/observability.md)
+- **Status**: LIVE=26, UNKNOWN=5
 
 ### D11 — Commerce & Users
 
@@ -155,13 +155,13 @@ Source sotFingerprint: `10ef40d83ad1`.
 
 ### UNKNOWN — Unknown (overlay non résolu)
 
-- **Files**: 274 (service=169, config=60, controller=26, script=14, test=5)
+- **Files**: 265 (service=163, config=60, controller=24, script=14, test=4)
 - **DB tables**: 308
 - **DB RPC**: 253
-- **Runtime entrypoints**: 50
-- **Top owners**: __unassigned__ (274)
-- **Knowledge prose**: [`config`](modules/config.md), [`errors`](modules/errors.md), [`layout`](modules/layout.md), [`mcp-validation`](modules/mcp-validation.md), [`metadata`](modules/metadata.md), [`navigation`](modules/navigation.md), [`search`](modules/search.md), [`shipping`](modules/shipping.md), [`staff`](modules/staff.md), [`substitution`](modules/substitution.md), [`suppliers`](modules/suppliers.md), [`system`](modules/system.md)
-- **Status**: LIVE=164, UNKNOWN=110
+- **Runtime entrypoints**: 47
+- **Top owners**: __unassigned__ (265)
+- **Knowledge prose**: [`config`](modules/config.md), [`layout`](modules/layout.md), [`mcp-validation`](modules/mcp-validation.md), [`metadata`](modules/metadata.md), [`navigation`](modules/navigation.md), [`search`](modules/search.md), [`shipping`](modules/shipping.md), [`staff`](modules/staff.md), [`substitution`](modules/substitution.md), [`suppliers`](modules/suppliers.md), [`system`](modules/system.md)
+- **Status**: LIVE=156, UNKNOWN=109
 
 ## Voir aussi
 
