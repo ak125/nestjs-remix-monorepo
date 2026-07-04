@@ -1,12 +1,12 @@
 {
   "compliantCount": 12,
-  "generatedAt": "2026-07-03T15:50:36.660Z",
+  "generatedAt": "2026-07-04T16:54:58.907Z",
   "issues": [],
   "schemaPath": ".spec/00-canon/ai-registry/skill.schema.json",
   "schemaVersion": "1.0.0",
   "skills": [
     {
-      "checksum": "sha256:689e4195c2799da2e52871d2ccb6d059cb1ff1b195f75939f347431edd5d417b",
+      "checksum": "sha256:8cf6e03a3b8527984f5633d01c9d23541e196601065623ddb5d9818506f19183",
       "domain": "D15",
       "last_verified": "2026-05-18",
       "llm_safe": true,
@@ -78,7 +78,7 @@
       "type": "discipline"
     },
     {
-      "checksum": "sha256:815cf96621e67ed3c3e4557641b01bc3d57ef1717cff7922c0f2b628a845b969",
+      "checksum": "sha256:3b9fb417ca06c91141d35688c757b95dd7bf777ecacf309ada4ba6c2c50f4ef0",
       "domain": "D15",
       "last_verified": "2026-05-18",
       "llm_safe": true,
@@ -100,7 +100,7 @@
         "a11y",
         "design-tokens",
         "frontend",
-        "remix",
+        "react-router",
         "shadcn",
         "tailwind",
         "wcag"
@@ -136,7 +136,7 @@
       "type": "discipline"
     },
     {
-      "checksum": "sha256:dcc01148c536d8c60faf0ce7f68d5ff94270e76f74d230daf6855e6836e0158d",
+      "checksum": "sha256:10bbfa0fc4f1143958961b4ae57c7f1f6a783078f04aeba446d075abf84bd08c",
       "domain": "D15",
       "last_verified": "2026-05-18",
       "llm_safe": true,
@@ -246,7 +246,7 @@
       "type": "discipline"
     },
     {
-      "checksum": "sha256:e48cd63c0c1b5d5036b9ea424a7751772ecc58719347579bb8c59e531cc2edd1",
+      "checksum": "sha256:cad4b82c559a36b2e45d84849639ff7ca2c17982b5f26a2da024fca376d59821",
       "domain": "D15",
       "last_verified": "2026-05-18",
       "llm_safe": true,
@@ -275,7 +275,7 @@
       "type": "reference"
     },
     {
-      "checksum": "sha256:814551595593f803f9589acd0a1a27f4414c679286b431a2b283a7a9de6fb7a4",
+      "checksum": "sha256:0c9e399171f44dd4d42fa99a8e25d13a4cb8bc50e99e1af7742b117def192f6d",
       "domain": "D15",
       "last_verified": "2026-05-18",
       "llm_safe": false,
@@ -303,7 +303,7 @@
       "type": "technique"
     },
     {
-      "checksum": "sha256:d43535faf56dadff89a7c40c87871e08ce7dceabfa758721ef7ff024d05fe886",
+      "checksum": "sha256:9359545ce817ca5aff7cf78406a084e043108ad790b6bd2294680c17fbb0d9ba",
       "domain": "D3",
       "last_verified": "2026-06-26",
       "llm_safe": true,
@@ -327,7 +327,7 @@
         "inp",
         "lcp",
         "performance",
-        "remix",
+        "react-router",
         "web-vitals"
       ],
       "type": "technique"
