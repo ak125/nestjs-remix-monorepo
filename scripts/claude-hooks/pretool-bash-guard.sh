@@ -58,4 +58,19 @@ if echo "$COMMAND" | grep -qE 'git\s+tag\b.*\bv[0-9]+(\.[0-9]+){1,3}\b|git\s+pus
   exit 2
 fi
 
+# Guard 7: WARN on full-content dump of a giant GENERATED registry artifact (token blow-up)
+# audit/registry/*.json = Repository Control Plane projections, meant to be queried with jq
+# FILTERS (CLAUDE.md "Query via jq"). canonical.json ~770k tok, files.json ~515k tok — a raw
+# `cat`/`jq .` with no downstream reducer dumps the WHOLE file into the agent context
+# (~77% of a 1M window). The Read tool caps at 2000 lines; cat/jq . via Bash do not.
+# Non-blocking WARN (falls through to exit 0): a jq-FILTERED read or ANY piped/reduced read
+# (contains '|') is legitimate and NOT warned. Ref: token-consumption audit 2026-07-04.
+if echo "$COMMAND" | grep -qE 'audit/registry/[A-Za-z0-9_.-]+\.json' \
+   && ! echo "$COMMAND" | grep -qF '|'; then
+  if echo "$COMMAND" | grep -qE '(^|[|&; ])(cat|bat|less|more|nl|tac)[ ]' \
+     || echo "$COMMAND" | grep -qE "jq[ ]+(-[A-Za-z]+[ ]+)*'?\.'?[ ]"; then
+    echo "WARNING: lecture PLEINE d'un artefact registry genere (audit/registry/*.json). canonical.json ~770k tokens (~77% d'un contexte 1M), files.json ~515k. Utilise jq avec un FILTRE, ex: jq '.files[] | select(.path|contains(\"payments\"))' audit/registry/canonical.json — voir CLAUDE.md (Query via jq)." >&2
+  fi
+fi
+
 exit 0
