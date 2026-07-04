@@ -1,11 +1,11 @@
 {
   "_generated_by": "scripts/audit/build-deep-inventory.js",
   "note": "Candidates only. Deletion requires the full conditions (#0–#8) incl. validate-before-delete.sh + build/tests + human review.",
-  "count": 274,
+  "count": 272,
   "by_confidence": {
     "high": 13,
     "medium": 174,
-    "low": 87
+    "low": 85
   },
   "candidates": [
     {
@@ -87,38 +87,6 @@
       "precheck_verdict": {
         "c0_not_never_auto_delete": true,
         "c1_zero_static_import": true,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "backend/src/common/decorators/index.ts",
-      "domain": "common",
-      "kind": "other",
-      "confidence": "low",
-      "derived_from": [
-        "knip"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": false,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "backend/src/common/decorators/roles.decorator.ts",
-      "domain": "common",
-      "kind": "other",
-      "confidence": "low",
-      "derived_from": [
-        "knip"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": false,
         "c2_zero_dynamic_import": true,
         "c3_zero_runtime_use": true
       },

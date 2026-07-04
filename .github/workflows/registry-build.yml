@@ -77,6 +77,9 @@ jobs:
       - name: "Run RPC parser fixture tests (V1-3: 3 parse modes)"
         run: npm run registry:test:rpc-parser
 
+      - name: "Run runtime-excludes-tests (test files never become runtime entrypoints)"
+        run: npm run registry:test:runtime-excludes
+
       - name: "Run planning builder transform tests (fixture, no live gh)"
         run: npm run registry:test:planning
 

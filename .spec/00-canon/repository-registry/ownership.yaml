@@ -554,6 +554,11 @@ entries:
     owner: '@ak125/vehicle-team'
     sourceConfidence: medium
     risk: medium
+  - glob: backend/src/modules/errors/**
+    domain: D10
+    owner: '@ak125'
+    sourceConfidence: medium
+    risk: low
   - glob: backend/src/modules/gamme-rest/**
     domain: D1
     owner: '@ak125/catalog-team'

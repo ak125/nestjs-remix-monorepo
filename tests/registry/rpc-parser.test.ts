@@ -18,6 +18,9 @@ import {
   parseArg,
   splitTopLevel,
   findFunctionBlocks,
+  lexViews,
+  lexSql,
+  maskComments,
   sigHash,
 } from "../../scripts/registry/build-rpc-registry.js";
 
@@ -165,6 +168,164 @@ describe("parseFunctionBlock — edge cases (V1-3 : 3 parse modes, never throw)"
         parseFunctionBlock(malformed, p);
       }
     });
+  });
+});
+
+describe("Case 8 : comment / string / body awareness (no phantom functions)", () => {
+  const names = () =>
+    findFunctionBlocks(FIXTURE_SQL)
+      .map((p) => parseFunctionBlock(FIXTURE_SQL, p))
+      .filter(Boolean)
+      .map((r: any) => r.funcName);
+
+  test("skips CREATE FUNCTION inside a line comment", () => {
+    const found = names();
+    assert.ok(!found.includes("fixture_line_commented"), "line-commented fn leaked");
+    // the real-world `public.grant` phantom came from `… CREATE FUNCTION grant …`
+    assert.ok(!found.includes("grant"), "`grant` phantom leaked from prose comment");
+  });
+
+  test("skips CREATE FUNCTION inside a block comment", () => {
+    assert.ok(
+      !names().includes("fixture_block_commented"),
+      "block-commented fn leaked"
+    );
+  });
+
+  test("skips CREATE FUNCTION text inside a dollar-quoted body (dynamic SQL)", () => {
+    assert.ok(!names().includes("fixture_inside_body"), "body-embedded fn leaked");
+  });
+
+  test("still extracts the real function that emits dynamic DDL", () => {
+    const f = findFunctionBlocks(FIXTURE_SQL)
+      .map((p) => parseFunctionBlock(FIXTURE_SQL, p))
+      .find((r: any) => r?.funcName === "fixture_dynamic_ddl_emitter");
+    assert.ok(f, "real emitter function not found");
+    assert.equal((f as any).parseMode, "parsed");
+  });
+
+  test("no parse yields the unknown_signature fallback on this fixture", () => {
+    const modes = findFunctionBlocks(FIXTURE_SQL)
+      .map((p) => parseFunctionBlock(FIXTURE_SQL, p))
+      .filter(Boolean)
+      .map((r: any) => r.parseMode);
+    assert.ok(
+      !modes.includes("unknown_signature"),
+      "fixture should no longer yield unknown_signature phantoms"
+    );
+  });
+});
+
+describe("Case 9 : comment-masked parsing (comments never enter args or sigHash)", () => {
+  // The production pipeline: lex once → { masked, blocks } → parse the MASKED view.
+  function extract(sql: string) {
+    const { masked, blocks } = lexSql(sql);
+    return blocks.map((p) => parseFunctionBlock(masked, p)).filter(Boolean);
+  }
+
+  // Same PostgreSQL signature, one copy carrying inline comments, one without.
+  const withComments = `CREATE FUNCTION fixture_cwv_gap(
+  p_window_hours INT,   -- heures récentes (job @ :05 + retries)
+  -- borne = TTL raw (au-dela : partition purgee)
+  p_grace_hours  INT,
+  p_min_missing  INT
+) RETURNS integer LANGUAGE sql AS $$ SELECT 1 $$;`;
+  const withoutComments = `CREATE FUNCTION fixture_cwv_gap(
+  p_window_hours INT,
+  p_grace_hours  INT,
+  p_min_missing  INT
+) RETURNS integer LANGUAGE sql AS $$ SELECT 1 $$;`;
+
+  test("same signature with vs without inline comments → identical sigHash (one registry signature)", () => {
+    const a = extract(withComments)[0] as any;
+    const b = extract(withoutComments)[0] as any;
+    assert.equal(sigHash(a.args), sigHash(b.args));
+  });
+
+  test("no argument type contains comment markers or newlines; names/types are clean", () => {
+    const a = extract(withComments)[0] as any;
+    for (const arg of a.args) {
+      assert.ok(!/--|\/\*|\n/.test(arg.type), `polluted type: ${JSON.stringify(arg.type)}`);
+    }
+    assert.deepEqual(a.args.map((x: any) => x.type), ["INT", "INT", "INT"]);
+    assert.deepEqual(
+      a.args.map((x: any) => x.name),
+      ["p_window_hours", "p_grace_hours", "p_min_missing"]
+    );
+  });
+
+  test("trailing inline comment on a type is stripped", () => {
+    const f = extract(
+      `CREATE FUNCTION fixture_trailing(p_x INT -- price in centimes\n) RETURNS void LANGUAGE sql AS $$ SELECT 1 $$;`
+    )[0] as any;
+    assert.equal(f.args[0].type, "INT");
+  });
+});
+
+describe("Case 10 : lexer hardening (E-strings, nested block comments, quoted identifiers)", () => {
+  function names(sql: string) {
+    const { masked, blocks } = lexSql(sql);
+    return blocks.map((p) => (parseFunctionBlock(masked, p) as any)?.funcName);
+  }
+
+  test("E'…' escape string (with \\' and --) does not swallow a following function", () => {
+    const sql =
+      `SELECT E'it\\'s a -- not a comment';\n` +
+      `CREATE FUNCTION fixture_after_estring(a int) RETURNS int LANGUAGE sql AS $$ SELECT a $$;`;
+    assert.deepEqual(names(sql), ["fixture_after_estring"]);
+  });
+
+  test("nested block comment is fully skipped; a following real function is still found", () => {
+    const sql =
+      `/* outer /* CREATE FUNCTION fixture_nested_phantom() */ still comment */\n` +
+      `CREATE FUNCTION fixture_after_nested(a int) RETURNS int LANGUAGE sql AS $$ SELECT a $$;`;
+    const found = names(sql);
+    assert.ok(!found.includes("fixture_nested_phantom"), "phantom from nested comment leaked");
+    assert.ok(found.includes("fixture_after_nested"), "real function after nested comment missed");
+  });
+
+  test("a quoted identifier containing CREATE FUNCTION text is not detected", () => {
+    assert.equal(lexSql(`CREATE TABLE t ("CREATE FUNCTION evil" integer);`).blocks.length, 0);
+  });
+});
+
+describe("Case 11 : two-view lexer robustness (Unicode idents, $-in-identifier boundary)", () => {
+  // These are the detection improvements the combined lexer adopts: the `topLevel`
+  // view classifies with PostgreSQL identifier rules, so a `$` that continues an
+  // identifier (`amount$rate`) does NOT open a dollar body, and a Unicode-named
+  // dollar tag is still a real body. Regression guard for the RPC producer's B1 fix.
+  function names(sql: string) {
+    const { masked, blocks } = lexSql(sql);
+    return blocks.map((p) => (parseFunctionBlock(masked, p) as any)?.funcName);
+  }
+
+  test("`$` inside an identifier does not open a dollar-quoted body (function after it still found)", () => {
+    // If `amount$rate` were mis-read as a `$…$` open, everything up to the next `$`
+    // would be swallowed and the following CREATE FUNCTION would be lost.
+    const sql =
+      `SELECT amount$rate FROM t;\n` +
+      `CREATE FUNCTION fixture_after_dollar_ident(a int) RETURNS int LANGUAGE sql AS $$ SELECT a $$;`;
+    assert.deepEqual(names(sql), ["fixture_after_dollar_ident"]);
+  });
+
+  test("a real dollar-quoted body still masks a CREATE FUNCTION it contains", () => {
+    const sql =
+      `CREATE FUNCTION fixture_real_emitter() RETURNS void LANGUAGE plpgsql AS $body$\n` +
+      `BEGIN EXECUTE 'CREATE FUNCTION phantom_in_body() RETURNS int LANGUAGE sql AS $$ SELECT 1 $$'; END;\n` +
+      `$body$;`;
+    const found = names(sql);
+    assert.ok(found.includes("fixture_real_emitter"), "real emitter missed");
+    assert.ok(!found.includes("phantom_in_body"), "phantom inside dollar body leaked");
+  });
+
+  test("commentsMasked preserves string/body bytes; topLevel blanks them (same offsets)", () => {
+    const sql = `CREATE FUNCTION f(p int) RETURNS int LANGUAGE sql AS $$ SELECT -- hi\n 1 $$;`;
+    const { topLevel, commentsMasked } = lexViews(sql);
+    assert.equal(topLevel.length, sql.length);
+    assert.equal(commentsMasked.length, sql.length);
+    // The dollar body `SELECT … 1` is blanked in topLevel but preserved in commentsMasked.
+    assert.ok(!/SELECT/.test(topLevel), "dollar body leaked into detection view");
+    assert.ok(/SELECT/.test(commentsMasked), "dollar body lost from parsing view");
   });
 });
 
