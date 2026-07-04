@@ -30,7 +30,7 @@ test("dashboard markdown contains the 6 fixed H2 sections", async () => {
   const r = await buildDashboard({ repoRoot: FIXTURE_OK });
   for (const heading of [
     "Contracts build status",
-    "Canonical fingerprint consistency",
+    "Canonical liveness / structural completeness",
     "Ownership gaps",
     "Runtime contract coverage",
     "Dep governance coverage",
@@ -126,12 +126,46 @@ test("ownership gap detection: full orphans list emitted, sorted, >10 entries", 
   );
 });
 
-test("canonical fingerprint: sotFingerprint surfaced, stale=false when sections non-empty", async () => {
+test("canonical liveness passes when canonical is parseable and required sections are non-empty", async () => {
   const r = await buildDashboard({ repoRoot: FIXTURE_OK });
+  // Signal 2 is a LIVENESS check: canonical present + all required sections
+  // non-empty. `stale=false` here means "alive & structurally complete", NOT
+  // "fresh vs sources". The rendered section title reflects that scope.
   assert.equal(r.json.fingerprint.canonical.stale, false);
-  assert.equal(r.json.fingerprint.canonical.sotFingerprint, "FIXTUREok0000");
-  // Section sizes reflect the fixture: 1 entry per Layer 1 array.
   assert.equal(r.json.fingerprint.canonical.sectionSizes.files, 1);
   assert.equal(r.json.fingerprint.canonical.sectionSizes["db.tables"], 1);
   assert.equal(r.json.fingerprint.canonical.sectionSizes["db.rpc"], 1);
+  // The markdown must NOT claim freshness, and MUST redirect freshness to I6.
+  assert.ok(
+    r.markdown.includes("## Canonical liveness / structural completeness"),
+    "liveness section title must not use the word 'fresh'/'fingerprint consistency'",
+  );
+  assert.ok(
+    r.markdown.includes("does not verify source→L1→L3 freshness") &&
+      r.markdown.includes("I6"),
+    "markdown must disclaim freshness and point to invariant I6",
+  );
+  // sotFingerprint is surfaced for provenance only, labelled as recorded.
+  assert.equal(r.json.fingerprint.canonical.sotFingerprint, "FIXTUREok0000");
+  assert.ok(
+    r.markdown.includes("recorded sotFingerprint"),
+    "sotFingerprint must be presented as recorded/provenance, not proof",
+  );
+});
+
+test("canonical liveness ignores recorded inputHashes — the dashboard is NOT the freshness engine (I6 is)", async () => {
+  // Anti-overclaim guardrail. The repo-ok fixture's canonical.meta.inputHashes
+  // are placeholder strings ("fixture-hash-files", …) that are NOT the real
+  // sha256 of any input file — i.e. by any true freshness measure the fixture
+  // canonical is "stale". Yet liveness still passes, precisely because Signal 2
+  // never recomputes or compares inputHashes. That comparison is I6's job
+  // (scripts/registry/validate-invariants.ts). If a future change makes this
+  // signal go ⚠️ on hash mismatch, it has silently re-become a freshness gate
+  // and duplicated I6 — this test must then fail on purpose.
+  const r = await buildDashboard({ repoRoot: FIXTURE_OK });
+  assert.equal(
+    r.json.fingerprint.canonical.stale,
+    false,
+    "liveness must not depend on inputHashes matching real inputs — that is I6's contract",
+  );
 });

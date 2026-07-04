@@ -406,12 +406,20 @@ function renderMarkdown(json: DashboardJson): string {
   }
   lines.push("");
 
-  // Signal 2
-  lines.push(`## Canonical fingerprint consistency`);
+  // Signal 2 — LIVENESS ONLY (not a freshness proof; see note below).
+  lines.push(`## Canonical liveness / structural completeness`);
+  lines.push("");
+  lines.push(
+    `> This signal does not verify source→L1→L3 freshness and does not recompute or validate \`sotFingerprint\`. Canonical input-hash freshness (canonical vs its 10 declared L1 registries + L2 overlays) is enforced by registry invariant **I6** (\`npm run registry:validate-invariants\`).`,
+  );
   lines.push("");
   const f = json.fingerprint.canonical;
   lines.push(
-    `- **sotFingerprint**: \`${f.sotFingerprint ?? "(none)"}\` (computed by \`scripts/registry/build-canonical-registry.js\` from input hashes)`,
+    `- **canonical present + required sections non-empty**: ${f.stale ? "⚠️ no" : "✅ yes"}`,
+  );
+  if (f.staleReason) lines.push(`- **reason**: ${f.staleReason}`);
+  lines.push(
+    `- **recorded sotFingerprint**: \`${f.sotFingerprint ?? "(none)"}\` (provenance only — written by \`scripts/registry/build-canonical-registry.js\`; **not** verified here, see I6)`,
   );
   lines.push(
     `- **canonical.meta.generatedAt**: \`${f.generatedAt ?? "(none)"}\` (V1-2 epoch-zero placeholder — informational only)`,
@@ -419,8 +427,6 @@ function renderMarkdown(json: DashboardJson): string {
   lines.push(
     `- **file mtime age**: ${f.mtimeAgeHours === null ? "n/a" : `${f.mtimeAgeHours}h`}`,
   );
-  lines.push(`- **stale**: ${f.stale ? "⚠️ yes" : "✅ no"}`);
-  if (f.staleReason) lines.push(`- **staleReason**: ${f.staleReason}`);
   lines.push("");
   lines.push("| Section | Entries |");
   lines.push("|---|---:|");

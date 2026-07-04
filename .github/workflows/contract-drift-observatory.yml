@@ -122,9 +122,13 @@ jobs:
               const rows   = health.contracts
                 .map(c => `| \`${c.name}\` | \`${c.file}\` | ${glyph(c.status)} ${c.status} | ${c.entries} |`)
                 .join('\n');
-              const stale  = health.fingerprint?.canonical?.stale
-                ? `⚠️ stale (${health.fingerprint.canonical.staleReason})`
-                : '✅ fresh';
+              // Signal 2 is a LIVENESS check (canonical present + required
+              // sections non-empty), NOT a source→L1→L3 freshness proof. We read
+              // the same `.canonical.stale` field but label it honestly; real
+              // canonical input-hash freshness is enforced by invariant I6.
+              const liveness = health.fingerprint?.canonical?.stale
+                ? `⚠️ incomplete (${health.fingerprint.canonical.staleReason})`
+                : '✅ present + required sections non-empty';
               const sotFp  = health.fingerprint?.canonical?.sotFingerprint ?? '?';
               const gaps   = health.ownership?.gapCount ?? '?';
               const body = [
@@ -137,9 +141,11 @@ jobs:
                 '|---|---|---|---:|',
                 rows,
                 '',
-                `**Canonical fingerprint:** ${stale} · sotFingerprint \`${sotFp}\``,
+                `**Canonical liveness:** ${liveness}`,
+                `**Recorded sotFingerprint:** \`${sotFp}\` — provenance only; not verified here`,
                 `**Ownership gaps:** ${gaps}`,
                 '',
+                '> This Observatory does not prove source→L1→L3 freshness. Canonical input-hash freshness is enforced by registry invariant **I6** (`npm run registry:validate-invariants`).',
                 '> This check never blocks. Reproduce locally with `npm run audit:drift-dashboard`.',
               ].join('\n');
 
