@@ -46,7 +46,14 @@ export {
   type RpcEntry,
   type RpcParseMode,
 } from "./entries/rpc-entry";
-export { DepEntrySchema, type DepEntry } from "./entries/dep-entry";
+export {
+  DepEntrySchema,
+  type DepEntry,
+  DependencyBucketSchema,
+  type DependencyBucket,
+  DepOccurrenceSchema,
+  type DepOccurrence,
+} from "./entries/dep-entry";
 export {
   RuntimeEntrySchema,
   RuntimeKindSchema,

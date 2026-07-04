@@ -74,6 +74,14 @@ describe("CanonicalRegistrySchema (Layer 3 projection)", () => {
           name: "zod",
           version: "3.25.76",
           source: "npm" as const,
+          occurrences: [
+            {
+              workspace: "@repo/registry",
+              declaredIn: "packages/registry/package.json",
+              bucket: "dependencies" as const,
+              specifier: "3.25.76",
+            },
+          ],
           status: "LIVE" as const,
           owner: "@ak125",
           sourceConfidence: "high" as const,
