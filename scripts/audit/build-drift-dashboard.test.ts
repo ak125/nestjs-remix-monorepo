@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -30,7 +31,7 @@ test("dashboard markdown contains the 6 fixed H2 sections", async () => {
   const r = await buildDashboard({ repoRoot: FIXTURE_OK });
   for (const heading of [
     "Contracts build status",
-    "Canonical fingerprint consistency",
+    "Canonical liveness / structural completeness",
     "Ownership gaps",
     "Runtime contract coverage",
     "Dep governance coverage",
@@ -126,12 +127,60 @@ test("ownership gap detection: full orphans list emitted, sorted, >10 entries", 
   );
 });
 
-test("canonical fingerprint: sotFingerprint surfaced, stale=false when sections non-empty", async () => {
+test("canonical liveness passes when canonical is parseable and required sections are non-empty", async () => {
   const r = await buildDashboard({ repoRoot: FIXTURE_OK });
+  // Signal 2 is a LIVENESS check: canonical present + all required sections
+  // non-empty. `stale=false` here means "alive & structurally complete", NOT
+  // "fresh vs sources". The rendered section title reflects that scope.
   assert.equal(r.json.fingerprint.canonical.stale, false);
-  assert.equal(r.json.fingerprint.canonical.sotFingerprint, "FIXTUREok0000");
-  // Section sizes reflect the fixture: 1 entry per Layer 1 array.
   assert.equal(r.json.fingerprint.canonical.sectionSizes.files, 1);
   assert.equal(r.json.fingerprint.canonical.sectionSizes["db.tables"], 1);
   assert.equal(r.json.fingerprint.canonical.sectionSizes["db.rpc"], 1);
+  // The markdown must NOT claim freshness, and MUST redirect freshness to I6.
+  assert.ok(
+    r.markdown.includes("## Canonical liveness / structural completeness"),
+    "liveness section title must not use the word 'fresh'/'fingerprint consistency'",
+  );
+  assert.ok(
+    r.markdown.includes("does not verify source→L1→L3 freshness") &&
+      r.markdown.includes("I6"),
+    "markdown must disclaim freshness and point to invariant I6",
+  );
+  // sotFingerprint is surfaced for provenance only, labelled as recorded.
+  assert.equal(r.json.fingerprint.canonical.sotFingerprint, "FIXTUREok0000");
+  assert.ok(
+    r.markdown.includes("recorded sotFingerprint"),
+    "sotFingerprint must be presented as recorded/provenance, not proof",
+  );
+});
+
+test("canonical liveness ignores recorded inputHashes — the dashboard is NOT the freshness engine (I6 is)", async () => {
+  // Anti-overclaim guardrail. This test must PROVE its own precondition, not
+  // assume it: first establish that the fixture is genuinely hash-stale (its
+  // recorded inputHashes ≠ the real sha256 of the input), THEN prove liveness
+  // still passes. Signal 2 never recomputes or compares inputHashes — that is
+  // I6's contract (scripts/registry/validate-invariants.ts). If someone ever
+  // refreshes the fixture with real hashes, the notEqual below fails loudly, so
+  // this test can never silently stop proving independence from freshness; and
+  // if Signal 2 ever goes ⚠️ on hash mismatch it has re-become a freshness gate
+  // duplicating I6, which the stale=false assertion then catches.
+  const canonical = JSON.parse(
+    readFileSync(join(FIXTURE_OK, "audit/registry/canonical.json"), "utf8"),
+  );
+  const declared = canonical.meta.inputHashes["audit/registry/files.json"];
+  const actual = createHash("sha256")
+    .update(readFileSync(join(FIXTURE_OK, "audit/registry/files.json")))
+    .digest("hex");
+  assert.notEqual(
+    declared,
+    actual,
+    "fixture must remain intentionally hash-stale for this anti-overclaim test",
+  );
+
+  const r = await buildDashboard({ repoRoot: FIXTURE_OK });
+  assert.equal(
+    r.json.fingerprint.canonical.stale,
+    false,
+    "liveness must not depend on inputHashes matching real inputs — that is I6's contract",
+  );
 });
