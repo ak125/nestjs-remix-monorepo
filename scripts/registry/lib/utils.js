@@ -31,6 +31,37 @@ const DEFAULT_OWNER = "__unassigned__";
 const DEFAULT_DOMAIN = "UNKNOWN";
 
 /**
+ * The three governed dependency buckets scanned across every workspace
+ * `package.json`. Shared SoT so the L1 builder, the independent semantic
+ * fidelity validator, and the modernization inventory can never disagree on
+ * *which* declaration classes are in scope. `optionalDependencies` is
+ * deliberately out of scope (never scanned historically — keep behaviour).
+ */
+const DEPENDENCY_BUCKETS = ["dependencies", "devDependencies", "peerDependencies"];
+
+/**
+ * Classify a dependency specifier into its source kind.
+ * Shared with the fidelity validator so `id` formatting can never drift.
+ */
+function classifySource(version) {
+  if (!version) return "npm";
+  if (version.startsWith("workspace:") || version === "*") return "workspace";
+  if (version.startsWith("git+") || version.startsWith("git://")) return "git";
+  if (version.startsWith("github:")) return "github";
+  return "npm";
+}
+
+/**
+ * Canonical dependency id : `<source>:<name>@<specifier>`.
+ * Single SoT for the id string so L1 (`build-deps-registry.js`), the fidelity
+ * validator (invariant `entry.id == depId(entry.name, occurrence.specifier)`),
+ * and any L2 cross-contract check produce byte-identical ids.
+ */
+function depId(name, version) {
+  return `${classifySource(version)}:${name}@${version}`;
+}
+
+/**
  * Sort object keys recursively for deterministic JSON.
  * Arrays are NOT reordered here (caller must sort by stable key).
  */
@@ -128,6 +159,9 @@ module.exports = {
   SCHEMA_VERSION,
   DEFAULT_OWNER,
   DEFAULT_DOMAIN,
+  DEPENDENCY_BUCKETS,
+  classifySource,
+  depId,
   sortKeysDeep,
   writeDeterministicJson,
   readJsonSafe,

@@ -1,3990 +1,4852 @@
 {
   "entries": [
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@anthropic-ai/sdk@^0.71.0",
       "name": "@anthropic-ai/sdk",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^0.71.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^0.71.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^0.71.0"
     },
     {
-      "declaredIn": [
-        "package.json"
-      ],
       "id": "npm:@ast-grep/cli@0.44.0",
       "name": "@ast-grep/cli",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "package.json",
+          "specifier": "0.44.0",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "0.44.0",
-      "workspaces": [
-        "nestjs-remix-monorepo"
-      ]
+      "version": "0.44.0"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:@axe-core/playwright@^4.11.3",
       "name": "@axe-core/playwright",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^4.11.3",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^4.11.3",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^4.11.3"
     },
     {
-      "declaredIn": [
-        "package.json"
-      ],
       "id": "npm:@changesets/cli@^2.31.0",
       "name": "@changesets/cli",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "package.json",
+          "specifier": "^2.31.0",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^2.31.0",
-      "workspaces": [
-        "nestjs-remix-monorepo"
-      ]
+      "version": "^2.31.0"
     },
     {
-      "declaredIn": [
-        "package.json"
-      ],
       "id": "npm:@commitlint/cli@^20.5.3",
       "name": "@commitlint/cli",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "package.json",
+          "specifier": "^20.5.3",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^20.5.3",
-      "workspaces": [
-        "nestjs-remix-monorepo"
-      ]
+      "version": "^20.5.3"
     },
     {
-      "declaredIn": [
-        "package.json"
-      ],
       "id": "npm:@commitlint/config-conventional@^20.5.3",
       "name": "@commitlint/config-conventional",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "package.json",
+          "specifier": "^20.5.3",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^20.5.3",
-      "workspaces": [
-        "nestjs-remix-monorepo"
-      ]
+      "version": "^20.5.3"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:@fafa/design-tokens@^1.0.0",
       "name": "@fafa/design-tokens",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^1.0.0",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^1.0.0",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^1.0.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@google-analytics/data@^5.2.1",
       "name": "@google-analytics/data",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^5.2.1",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^5.2.1",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^5.2.1"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:@hookform/resolvers@^5.2.2",
       "name": "@hookform/resolvers",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^5.2.2",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^5.2.2",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^5.2.2"
     },
     {
-      "declaredIn": [
-        "packages/design-tokens/package.json"
-      ],
       "id": "npm:@jridgewell/sourcemap-codec@^1.5.5",
       "name": "@jridgewell/sourcemap-codec",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "packages/design-tokens/package.json",
+          "specifier": "^1.5.5",
+          "workspace": "@fafa/design-tokens"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^1.5.5",
-      "workspaces": [
-        "@fafa/design-tokens"
-      ]
+      "version": "^1.5.5"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@nestjs-modules/ioredis@^2.0.2",
       "name": "@nestjs-modules/ioredis",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^2.0.2",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^2.0.2",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^2.0.2"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@nestjs/bull@^11.0.4",
       "name": "@nestjs/bull",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^11.0.4",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^11.0.4",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^11.0.4"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@nestjs/bullmq@^11.0.4",
       "name": "@nestjs/bullmq",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^11.0.4",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^11.0.4",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^11.0.4"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@nestjs/cache-manager@^3.1.3",
       "name": "@nestjs/cache-manager",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^3.1.3",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^3.1.3",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^3.1.3"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@nestjs/cli@^11.0.23",
       "name": "@nestjs/cli",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^11.0.23",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^11.0.23",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^11.0.23"
     },
     {
-      "declaredIn": [
-        "backend/package.json",
-        "package.json"
-      ],
       "id": "npm:@nestjs/common@^11.1.27",
       "name": "@nestjs/common",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^11.1.27",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "package.json",
+          "specifier": "^11.1.27",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^11.1.27",
-      "workspaces": [
-        "@fafa/backend",
-        "nestjs-remix-monorepo"
-      ]
+      "version": "^11.1.27"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@nestjs/config@^4.0.4",
       "name": "@nestjs/config",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^4.0.4",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^4.0.4",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^4.0.4"
     },
     {
-      "declaredIn": [
-        "backend/package.json",
-        "package.json"
-      ],
       "id": "npm:@nestjs/core@^11.1.27",
       "name": "@nestjs/core",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^11.1.27",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "package.json",
+          "specifier": "^11.1.27",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^11.1.27",
-      "workspaces": [
-        "@fafa/backend",
-        "nestjs-remix-monorepo"
-      ]
+      "version": "^11.1.27"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@nestjs/event-emitter@^3.1.0",
       "name": "@nestjs/event-emitter",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^3.1.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^3.1.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^3.1.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@nestjs/jwt@^11.0.1",
       "name": "@nestjs/jwt",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^11.0.1",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^11.0.1",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^11.0.1"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@nestjs/passport@^11.0.5",
       "name": "@nestjs/passport",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^11.0.5",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^11.0.5",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^11.0.5"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@nestjs/platform-express@^11.1.27",
       "name": "@nestjs/platform-express",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^11.1.27",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^11.1.27",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^11.1.27"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@nestjs/platform-socket.io@^11.1.27",
       "name": "@nestjs/platform-socket.io",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^11.1.27",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^11.1.27",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^11.1.27"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@nestjs/schedule@^6.1.3",
       "name": "@nestjs/schedule",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^6.1.3",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^6.1.3",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^6.1.3"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@nestjs/schematics@^11.1.0",
       "name": "@nestjs/schematics",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^11.1.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^11.1.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^11.1.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@nestjs/swagger@11.4.4",
       "name": "@nestjs/swagger",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "11.4.4",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "11.4.4",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "11.4.4"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@nestjs/testing@^11.1.27",
       "name": "@nestjs/testing",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^11.1.27",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^11.1.27",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^11.1.27"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@nestjs/throttler@^6.5.0",
       "name": "@nestjs/throttler",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^6.5.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^6.5.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^6.5.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@nestjs/websockets@^11.1.27",
       "name": "@nestjs/websockets",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^11.1.27",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^11.1.27",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^11.1.27"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@paralleldrive/cuid2@^2.2.2",
       "name": "@paralleldrive/cuid2",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^2.2.2",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^2.2.2",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^2.2.2"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:@playwright/test@1.61.0",
       "name": "@playwright/test",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "1.61.0",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "1.61.0",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "1.61.0"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:@radix-ui/react-accordion@^1.2.12",
       "name": "@radix-ui/react-accordion",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^1.2.12",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^1.2.12",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^1.2.12"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:@radix-ui/react-avatar@^1.1.11",
       "name": "@radix-ui/react-avatar",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^1.1.11",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^1.1.11",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^1.1.11"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:@radix-ui/react-collapsible@^1.1.12",
       "name": "@radix-ui/react-collapsible",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^1.1.12",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^1.1.12",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^1.1.12"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:@radix-ui/react-dialog@^1.1.15",
       "name": "@radix-ui/react-dialog",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^1.1.15",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^1.1.15",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^1.1.15"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:@radix-ui/react-dropdown-menu@^2.1.16",
       "name": "@radix-ui/react-dropdown-menu",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^2.1.16",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^2.1.16",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^2.1.16"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:@radix-ui/react-hover-card@^1.1.15",
       "name": "@radix-ui/react-hover-card",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^1.1.15",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^1.1.15",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^1.1.15"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:@radix-ui/react-navigation-menu@^1.2.14",
       "name": "@radix-ui/react-navigation-menu",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^1.2.14",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^1.2.14",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^1.2.14"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:@radix-ui/react-popover@^1.1.15",
       "name": "@radix-ui/react-popover",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^1.1.15",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^1.1.15",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^1.1.15"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:@radix-ui/react-scroll-area@^1.2.10",
       "name": "@radix-ui/react-scroll-area",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^1.2.10",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^1.2.10",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^1.2.10"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:@radix-ui/react-separator@^1.1.8",
       "name": "@radix-ui/react-separator",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^1.1.8",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^1.1.8",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^1.1.8"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:@radix-ui/react-slider@^1.3.6",
       "name": "@radix-ui/react-slider",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^1.3.6",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^1.3.6",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^1.3.6"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:@radix-ui/react-slot@^1.2.4",
       "name": "@radix-ui/react-slot",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^1.2.4",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^1.2.4",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^1.2.4"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:@radix-ui/react-switch@^1.2.6",
       "name": "@radix-ui/react-switch",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^1.2.6",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^1.2.6",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^1.2.6"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:@radix-ui/react-tabs@^1.1.13",
       "name": "@radix-ui/react-tabs",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^1.1.13",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^1.1.13",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^1.1.13"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:@radix-ui/react-tooltip@^1.2.8",
       "name": "@radix-ui/react-tooltip",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^1.2.8",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^1.2.8",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^1.2.8"
     },
     {
-      "declaredIn": [
-        "frontend/package.json",
-        "package.json"
-      ],
       "id": "npm:@react-router/dev@8.0.1",
       "name": "@react-router/dev",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "8.0.1",
+          "workspace": "@fafa/frontend"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "package.json",
+          "specifier": "8.0.1",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "8.0.1",
-      "workspaces": [
-        "@fafa/frontend",
-        "nestjs-remix-monorepo"
-      ]
+      "version": "8.0.1"
     },
     {
-      "declaredIn": [
-        "backend/package.json",
-        "frontend/package.json",
-        "package.json"
-      ],
       "id": "npm:@react-router/express@8.0.1",
       "name": "@react-router/express",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "8.0.1",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "8.0.1",
+          "workspace": "@fafa/frontend"
+        },
+        {
+          "bucket": "dependencies",
+          "declaredIn": "package.json",
+          "specifier": "8.0.1",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "8.0.1",
-      "workspaces": [
-        "@fafa/backend",
-        "@fafa/frontend",
-        "nestjs-remix-monorepo"
-      ]
+      "version": "8.0.1"
     },
     {
-      "declaredIn": [
-        "frontend/package.json",
-        "package.json"
-      ],
       "id": "npm:@react-router/node@8.0.1",
       "name": "@react-router/node",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "8.0.1",
+          "workspace": "@fafa/frontend"
+        },
+        {
+          "bucket": "dependencies",
+          "declaredIn": "package.json",
+          "specifier": "8.0.1",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "8.0.1",
-      "workspaces": [
-        "@fafa/frontend",
-        "nestjs-remix-monorepo"
-      ]
+      "version": "8.0.1"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:@react-router/remix-routes-option-adapter@8.0.1",
       "name": "@react-router/remix-routes-option-adapter",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "8.0.1",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "8.0.1",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "8.0.1"
     },
     {
-      "declaredIn": [
-        "frontend/package.json",
-        "package.json"
-      ],
       "id": "npm:@react-router/serve@8.0.1",
       "name": "@react-router/serve",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "8.0.1",
+          "workspace": "@fafa/frontend"
+        },
+        {
+          "bucket": "dependencies",
+          "declaredIn": "package.json",
+          "specifier": "8.0.1",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "8.0.1",
-      "workspaces": [
-        "@fafa/frontend",
-        "nestjs-remix-monorepo"
-      ]
+      "version": "8.0.1"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@sentry/nestjs@10.59.0",
       "name": "@sentry/nestjs",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "10.59.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "10.59.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "10.59.0"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:@sentry/react@10.59.0",
       "name": "@sentry/react",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "10.59.0",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "10.59.0",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "10.59.0"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:@size-limit/file@^12.1.0",
       "name": "@size-limit/file",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^12.1.0",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^12.1.0",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^12.1.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json",
-        "package.json"
-      ],
       "id": "npm:@supabase/supabase-js@^2.95.0",
       "name": "@supabase/supabase-js",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^2.95.0",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "bucket": "dependencies",
+          "declaredIn": "package.json",
+          "specifier": "^2.95.0",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^2.95.0",
-      "workspaces": [
-        "@fafa/backend",
-        "nestjs-remix-monorepo"
-      ]
+      "version": "^2.95.0"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:@tailwindcss/vite@^4.3.1",
       "name": "@tailwindcss/vite",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^4.3.1",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^4.3.1",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^4.3.1"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:@tanstack/react-query@^5.87.1",
       "name": "@tanstack/react-query",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^5.87.1",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^5.87.1",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^5.87.1"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@testcontainers/redis@^12.0.3",
       "name": "@testcontainers/redis",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^12.0.3",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^12.0.3",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^12.0.3"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:@testing-library/jest-dom@^6.6.3",
       "name": "@testing-library/jest-dom",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^6.6.3",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^6.6.3",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^6.6.3"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:@testing-library/react@^16.3.0",
       "name": "@testing-library/react",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^16.3.0",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^16.3.0",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^16.3.0"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:@tiptap/extension-bold@^3.26.1",
       "name": "@tiptap/extension-bold",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^3.26.1",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^3.26.1",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^3.26.1"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:@tiptap/extension-italic@^3.26.1",
       "name": "@tiptap/extension-italic",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^3.26.1",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^3.26.1",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^3.26.1"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:@tiptap/pm@^3.26.1",
       "name": "@tiptap/pm",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^3.26.1",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^3.26.1",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^3.26.1"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:@tiptap/react@^3.26.1",
       "name": "@tiptap/react",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^3.26.1",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^3.26.1",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^3.26.1"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:@tiptap/starter-kit@^3.26.1",
       "name": "@tiptap/starter-kit",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^3.26.1",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^3.26.1",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^3.26.1"
     },
     {
-      "declaredIn": [
-        "package.json"
-      ],
       "id": "npm:@types/bcrypt@^6.0.0",
       "name": "@types/bcrypt",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "package.json",
+          "specifier": "^6.0.0",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^6.0.0",
-      "workspaces": [
-        "nestjs-remix-monorepo"
-      ]
+      "version": "^6.0.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@types/bcryptjs@^2.4.6",
       "name": "@types/bcryptjs",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^2.4.6",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^2.4.6",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^2.4.6"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@types/body-parser@^1.19.5",
       "name": "@types/body-parser",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^1.19.5",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^1.19.5",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^1.19.5"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@types/bull@^4.10.4",
       "name": "@types/bull",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^4.10.4",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^4.10.4",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^4.10.4"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@types/compression@^1.8.1",
       "name": "@types/compression",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^1.8.1",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^1.8.1",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^1.8.1"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@types/cors@^2.8.19",
       "name": "@types/cors",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^2.8.19",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^2.8.19",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^2.8.19"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:@types/dompurify@^3.2.0",
       "name": "@types/dompurify",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^3.2.0",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^3.2.0",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^3.2.0"
     },
     {
-      "declaredIn": [
-        "packages/eslint-config/package.json"
-      ],
       "id": "npm:@types/eslint@^8.56.5",
       "name": "@types/eslint",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/eslint-config/package.json",
+          "specifier": "^8.56.5",
+          "workspace": "@fafa/eslint-config"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^8.56.5",
-      "workspaces": [
-        "@fafa/eslint-config"
-      ]
+      "version": "^8.56.5"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@types/express-session@^1.19.0",
       "name": "@types/express-session",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^1.19.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^1.19.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^1.19.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@types/express@^5.0.0",
       "name": "@types/express",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^5.0.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^5.0.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^5.0.0"
     },
     {
-      "declaredIn": [
-        "package.json"
-      ],
       "id": "npm:@types/file-type@^10.9.3",
       "name": "@types/file-type",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "package.json",
+          "specifier": "^10.9.3",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^10.9.3",
-      "workspaces": [
-        "nestjs-remix-monorepo"
-      ]
+      "version": "^10.9.3"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@types/ioredis@^5.0.0",
       "name": "@types/ioredis",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^5.0.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^5.0.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^5.0.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@types/jest@^29.5.2",
       "name": "@types/jest",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^29.5.2",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^29.5.2",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^29.5.2"
     },
     {
-      "declaredIn": [
-        "packages/registry/package.json"
-      ],
       "id": "npm:@types/js-yaml@4.0.9",
       "name": "@types/js-yaml",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/registry/package.json",
+          "specifier": "4.0.9",
+          "workspace": "@repo/registry"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "4.0.9",
-      "workspaces": [
-        "@repo/registry"
-      ]
+      "version": "4.0.9"
     },
     {
-      "declaredIn": [
-        "backend/package.json",
-        "package.json"
-      ],
       "id": "npm:@types/js-yaml@^4.0.9",
       "name": "@types/js-yaml",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^4.0.9",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "package.json",
+          "specifier": "^4.0.9",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^4.0.9",
-      "workspaces": [
-        "@fafa/backend",
-        "nestjs-remix-monorepo"
-      ]
+      "version": "^4.0.9"
     },
     {
-      "declaredIn": [
-        "package.json"
-      ],
       "id": "npm:@types/micromatch@^4.0.10",
       "name": "@types/micromatch",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "package.json",
+          "specifier": "^4.0.10",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^4.0.10",
-      "workspaces": [
-        "nestjs-remix-monorepo"
-      ]
+      "version": "^4.0.10"
     },
     {
-      "declaredIn": [
-        "packages/registry/package.json"
-      ],
       "id": "npm:@types/micromatch@^4.0.9",
       "name": "@types/micromatch",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/registry/package.json",
+          "specifier": "^4.0.9",
+          "workspace": "@repo/registry"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^4.0.9",
-      "workspaces": [
-        "@repo/registry"
-      ]
+      "version": "^4.0.9"
     },
     {
-      "declaredIn": [
-        "package.json"
-      ],
       "id": "npm:@types/multer@^2.1.0",
       "name": "@types/multer",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "package.json",
+          "specifier": "^2.1.0",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^2.1.0",
-      "workspaces": [
-        "nestjs-remix-monorepo"
-      ]
+      "version": "^2.1.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json",
-        "packages/cwv-taxonomy/package.json",
-        "packages/database-types/package.json",
-        "packages/design-tokens/package.json",
-        "packages/domain-commerce/package.json",
-        "packages/registry/package.json",
-        "packages/seo-role-contracts/package.json",
-        "packages/seo-roles/package.json",
-        "packages/seo-types/package.json",
-        "packages/seo-url-contract/package.json"
-      ],
       "id": "npm:@types/node@^24",
       "name": "@types/node",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^24",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/design-tokens/package.json",
+          "specifier": "^24",
+          "workspace": "@fafa/design-tokens"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/cwv-taxonomy/package.json",
+          "specifier": "^24",
+          "workspace": "@repo/cwv-taxonomy"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/database-types/package.json",
+          "specifier": "^24",
+          "workspace": "@repo/database-types"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/domain-commerce/package.json",
+          "specifier": "^24",
+          "workspace": "@repo/domain-commerce"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/registry/package.json",
+          "specifier": "^24",
+          "workspace": "@repo/registry"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/seo-role-contracts/package.json",
+          "specifier": "^24",
+          "workspace": "@repo/seo-role-contracts"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/seo-roles/package.json",
+          "specifier": "^24",
+          "workspace": "@repo/seo-roles"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/seo-types/package.json",
+          "specifier": "^24",
+          "workspace": "@repo/seo-types"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/seo-url-contract/package.json",
+          "specifier": "^24",
+          "workspace": "@repo/seo-url-contract"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^24",
-      "workspaces": [
-        "@fafa/backend",
-        "@fafa/design-tokens",
-        "@repo/cwv-taxonomy",
-        "@repo/database-types",
-        "@repo/domain-commerce",
-        "@repo/registry",
-        "@repo/seo-role-contracts",
-        "@repo/seo-roles",
-        "@repo/seo-types",
-        "@repo/seo-url-contract"
-      ]
+      "version": "^24"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@types/nodemailer@^7.0.9",
       "name": "@types/nodemailer",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^7.0.9",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^7.0.9",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^7.0.9"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@types/passport-jwt@^4.0.1",
       "name": "@types/passport-jwt",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^4.0.1",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^4.0.1",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^4.0.1"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@types/passport-local@^1.0.38",
       "name": "@types/passport-local",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^1.0.38",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^1.0.38",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^1.0.38"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@types/passport@^1.0.17",
       "name": "@types/passport",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^1.0.17",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^1.0.17",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^1.0.17"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:@types/react-dom@19.2.3",
       "name": "@types/react-dom",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "19.2.3",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "19.2.3",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "19.2.3"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:@types/react@19.2.17",
       "name": "@types/react",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "19.2.17",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "19.2.17",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "19.2.17"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@types/sharp@^0.32.0",
       "name": "@types/sharp",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^0.32.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^0.32.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^0.32.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@types/socket.io@^3.0.2",
       "name": "@types/socket.io",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^3.0.2",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^3.0.2",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^3.0.2"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@types/supertest@^6.0.0",
       "name": "@types/supertest",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^6.0.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^6.0.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^6.0.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@types/uuid@^10.0.0",
       "name": "@types/uuid",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^10.0.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^10.0.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^10.0.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json",
-        "frontend/package.json",
-        "packages/eslint-config/package.json"
-      ],
       "id": "npm:@typescript-eslint/eslint-plugin@^8.60.1",
       "name": "@typescript-eslint/eslint-plugin",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^8.60.1",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/eslint-config/package.json",
+          "specifier": "^8.60.1",
+          "workspace": "@fafa/eslint-config"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^8.60.1",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^8.60.1",
-      "workspaces": [
-        "@fafa/backend",
-        "@fafa/eslint-config",
-        "@fafa/frontend"
-      ]
+      "version": "^8.60.1"
     },
     {
-      "declaredIn": [
-        "backend/package.json",
-        "frontend/package.json",
-        "packages/eslint-config/package.json",
-        "packages/eslint-plugin-fafa-ports/package.json"
-      ],
       "id": "npm:@typescript-eslint/parser@^8.60.1",
       "name": "@typescript-eslint/parser",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^8.60.1",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/eslint-config/package.json",
+          "specifier": "^8.60.1",
+          "workspace": "@fafa/eslint-config"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^8.60.1",
+          "workspace": "@fafa/frontend"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/eslint-plugin-fafa-ports/package.json",
+          "specifier": "^8.60.1",
+          "workspace": "eslint-plugin-fafa-ports"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^8.60.1",
-      "workspaces": [
-        "@fafa/backend",
-        "@fafa/eslint-config",
-        "@fafa/frontend",
-        "eslint-plugin-fafa-ports"
-      ]
+      "version": "^8.60.1"
     },
     {
-      "declaredIn": [
-        "packages/eslint-plugin-fafa-ports/package.json"
-      ],
       "id": "npm:@typescript-eslint/rule-tester@^8.60.1",
       "name": "@typescript-eslint/rule-tester",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/eslint-plugin-fafa-ports/package.json",
+          "specifier": "^8.60.1",
+          "workspace": "eslint-plugin-fafa-ports"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^8.60.1",
-      "workspaces": [
-        "eslint-plugin-fafa-ports"
-      ]
+      "version": "^8.60.1"
     },
     {
-      "declaredIn": [
-        "packages/eslint-plugin-fafa-ports/package.json"
-      ],
       "id": "npm:@typescript-eslint/utils@^8.60.1",
       "name": "@typescript-eslint/utils",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/eslint-plugin-fafa-ports/package.json",
+          "specifier": "^8.60.1",
+          "workspace": "eslint-plugin-fafa-ports"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^8.60.1",
-      "workspaces": [
-        "eslint-plugin-fafa-ports"
-      ]
+      "version": "^8.60.1"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:@vitest/browser@^4.1.8",
       "name": "@vitest/browser",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^4.1.8",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^4.1.8",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^4.1.8"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:@vitest/coverage-v8@^4.0.2",
       "name": "@vitest/coverage-v8",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^4.0.2",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^4.0.2",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^4.0.2"
     },
     {
-      "declaredIn": [
-        "package.json"
-      ],
       "id": "npm:abort-controller@^3.0.0",
       "name": "abort-controller",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "package.json",
+          "specifier": "^3.0.0",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^3.0.0",
-      "workspaces": [
-        "nestjs-remix-monorepo"
-      ]
+      "version": "^3.0.0"
     },
     {
-      "declaredIn": [
-        "package.json"
-      ],
       "id": "npm:autoprefixer@^10.4.14",
       "name": "autoprefixer",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "package.json",
+          "specifier": "^10.4.14",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^10.4.14",
-      "workspaces": [
-        "nestjs-remix-monorepo"
-      ]
+      "version": "^10.4.14"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:axe-core@^4.12.0",
       "name": "axe-core",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^4.12.0",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^4.12.0",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^4.12.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json",
-        "package.json"
-      ],
       "id": "npm:bcrypt@^6.0.0",
       "name": "bcrypt",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^6.0.0",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "bucket": "dependencies",
+          "declaredIn": "package.json",
+          "specifier": "^6.0.0",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^6.0.0",
-      "workspaces": [
-        "@fafa/backend",
-        "nestjs-remix-monorepo"
-      ]
+      "version": "^6.0.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:body-parser@^2.3.0",
       "name": "body-parser",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^2.3.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^2.3.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^2.3.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:bull@^4.16.5",
       "name": "bull",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^4.16.5",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^4.16.5",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^4.16.5"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:bullmq@^5.63.0",
       "name": "bullmq",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^5.63.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^5.63.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^5.63.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:cache-manager@^6.0.0",
       "name": "cache-manager",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^6.0.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^6.0.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^6.0.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:cacheable@^2.3.0",
       "name": "cacheable",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^2.3.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^2.3.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^2.3.0"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:class-variance-authority@^0.7.1",
       "name": "class-variance-authority",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^0.7.1",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^0.7.1",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^0.7.1"
     },
     {
-      "declaredIn": [
-        "frontend/package.json",
-        "package.json"
-      ],
       "id": "npm:clsx@^2.1.1",
       "name": "clsx",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^2.1.1",
+          "workspace": "@fafa/frontend"
+        },
+        {
+          "bucket": "dependencies",
+          "declaredIn": "package.json",
+          "specifier": "^2.1.1",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^2.1.1",
-      "workspaces": [
-        "@fafa/frontend",
-        "nestjs-remix-monorepo"
-      ]
+      "version": "^2.1.1"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:cmdk@^1.1.1",
       "name": "cmdk",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^1.1.1",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^1.1.1",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^1.1.1"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:compression@^1.8.1",
       "name": "compression",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^1.8.1",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^1.8.1",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^1.8.1"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:connect-redis-v5@npm:connect-redis@^5.2.0",
       "name": "connect-redis-v5",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "npm:connect-redis@^5.2.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "npm:connect-redis@^5.2.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "npm:connect-redis@^5.2.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:connect-redis@^9.0.0",
       "name": "connect-redis",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^9.0.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^9.0.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^9.0.0"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:cookie@^0.7.2",
       "name": "cookie",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^0.7.2",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^0.7.2",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^0.7.2"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:cors@^2.8.5",
       "name": "cors",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^2.8.5",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^2.8.5",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^2.8.5"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:cron-parser@^4.9.0",
       "name": "cron-parser",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^4.9.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^4.9.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^4.9.0"
     },
     {
-      "declaredIn": [
-        "package.json"
-      ],
       "id": "npm:dependency-cruiser@17.4.3",
       "name": "dependency-cruiser",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "package.json",
+          "specifier": "17.4.3",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "17.4.3",
-      "workspaces": [
-        "nestjs-remix-monorepo"
-      ]
+      "version": "17.4.3"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:dotenv@^17.2.1",
       "name": "dotenv",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^17.2.1",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^17.2.1",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^17.2.1"
     },
     {
-      "declaredIn": [
-        "package.json"
-      ],
       "id": "npm:dotenv@^17.2.3",
       "name": "dotenv",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "package.json",
+          "specifier": "^17.2.3",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^17.2.3",
-      "workspaces": [
-        "nestjs-remix-monorepo"
-      ]
+      "version": "^17.2.3"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:embla-carousel-react@^8.6.0",
       "name": "embla-carousel-react",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^8.6.0",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^8.6.0",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^8.6.0"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:esbuild@^0.27.0",
       "name": "esbuild",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^0.27.0",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^0.27.0",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^0.27.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json",
-        "frontend/package.json",
-        "package.json",
-        "packages/eslint-config/package.json"
-      ],
       "id": "npm:eslint-config-prettier@^10.1.8",
       "name": "eslint-config-prettier",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^10.1.8",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/eslint-config/package.json",
+          "specifier": "^10.1.8",
+          "workspace": "@fafa/eslint-config"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^10.1.8",
+          "workspace": "@fafa/frontend"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "package.json",
+          "specifier": "^10.1.8",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^10.1.8",
-      "workspaces": [
-        "@fafa/backend",
-        "@fafa/eslint-config",
-        "@fafa/frontend",
-        "nestjs-remix-monorepo"
-      ]
+      "version": "^10.1.8"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:eslint-import-resolver-typescript@^3.6.1",
       "name": "eslint-import-resolver-typescript",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^3.6.1",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^3.6.1",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^3.6.1"
     },
     {
-      "declaredIn": [
-        "frontend/package.json",
-        "packages/eslint-config/package.json"
-      ],
       "id": "npm:eslint-plugin-import@^2.32.0",
       "name": "eslint-plugin-import",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/eslint-config/package.json",
+          "specifier": "^2.32.0",
+          "workspace": "@fafa/eslint-config"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^2.32.0",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^2.32.0",
-      "workspaces": [
-        "@fafa/eslint-config",
-        "@fafa/frontend"
-      ]
+      "version": "^2.32.0"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:eslint-plugin-jest-dom@^5.5.0",
       "name": "eslint-plugin-jest-dom",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^5.5.0",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^5.5.0",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^5.5.0"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:eslint-plugin-jest@^28.14.0",
       "name": "eslint-plugin-jest",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^28.14.0",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^28.14.0",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^28.14.0"
     },
     {
-      "declaredIn": [
-        "frontend/package.json",
-        "packages/eslint-config/package.json"
-      ],
       "id": "npm:eslint-plugin-jsx-a11y@^6.10.2",
       "name": "eslint-plugin-jsx-a11y",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/eslint-config/package.json",
+          "specifier": "^6.10.2",
+          "workspace": "@fafa/eslint-config"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^6.10.2",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^6.10.2",
-      "workspaces": [
-        "@fafa/eslint-config",
-        "@fafa/frontend"
-      ]
+      "version": "^6.10.2"
     },
     {
-      "declaredIn": [
-        "package.json",
-        "packages/eslint-config/package.json"
-      ],
       "id": "npm:eslint-plugin-prettier@^5.5.6",
       "name": "eslint-plugin-prettier",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/eslint-config/package.json",
+          "specifier": "^5.5.6",
+          "workspace": "@fafa/eslint-config"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "package.json",
+          "specifier": "^5.5.6",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^5.5.6",
-      "workspaces": [
-        "@fafa/eslint-config",
-        "nestjs-remix-monorepo"
-      ]
+      "version": "^5.5.6"
     },
     {
-      "declaredIn": [
-        "frontend/package.json",
-        "packages/eslint-config/package.json"
-      ],
       "id": "npm:eslint-plugin-react-hooks@^4.6.2",
       "name": "eslint-plugin-react-hooks",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/eslint-config/package.json",
+          "specifier": "^4.6.2",
+          "workspace": "@fafa/eslint-config"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^4.6.2",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^4.6.2",
-      "workspaces": [
-        "@fafa/eslint-config",
-        "@fafa/frontend"
-      ]
+      "version": "^4.6.2"
     },
     {
-      "declaredIn": [
-        "frontend/package.json",
-        "packages/eslint-config/package.json"
-      ],
       "id": "npm:eslint-plugin-react@^7.37.5",
       "name": "eslint-plugin-react",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/eslint-config/package.json",
+          "specifier": "^7.37.5",
+          "workspace": "@fafa/eslint-config"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^7.37.5",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^7.37.5",
-      "workspaces": [
-        "@fafa/eslint-config",
-        "@fafa/frontend"
-      ]
+      "version": "^7.37.5"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:eslint-plugin-testing-library@^7.16.2",
       "name": "eslint-plugin-testing-library",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^7.16.2",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^7.16.2",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^7.16.2"
     },
     {
-      "declaredIn": [
-        "packages/eslint-plugin-fafa-ports/package.json"
-      ],
       "id": "npm:eslint@^8.57.0 || ^9.0.0",
       "name": "eslint",
+      "occurrences": [
+        {
+          "bucket": "peerDependencies",
+          "declaredIn": "packages/eslint-plugin-fafa-ports/package.json",
+          "specifier": "^8.57.0 || ^9.0.0",
+          "workspace": "eslint-plugin-fafa-ports"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^8.57.0 || ^9.0.0",
-      "workspaces": [
-        "eslint-plugin-fafa-ports"
-      ]
+      "version": "^8.57.0 || ^9.0.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json",
-        "frontend/package.json",
-        "package.json",
-        "packages/design-tokens/package.json",
-        "packages/eslint-config/package.json",
-        "packages/eslint-plugin-fafa-ports/package.json"
-      ],
       "id": "npm:eslint@^8.57.1",
       "name": "eslint",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^8.57.1",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/design-tokens/package.json",
+          "specifier": "^8.57.1",
+          "workspace": "@fafa/design-tokens"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/eslint-config/package.json",
+          "specifier": "^8.57.1",
+          "workspace": "@fafa/eslint-config"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^8.57.1",
+          "workspace": "@fafa/frontend"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/eslint-plugin-fafa-ports/package.json",
+          "specifier": "^8.57.1",
+          "workspace": "eslint-plugin-fafa-ports"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "package.json",
+          "specifier": "^8.57.1",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^8.57.1",
-      "workspaces": [
-        "@fafa/backend",
-        "@fafa/design-tokens",
-        "@fafa/eslint-config",
-        "@fafa/frontend",
-        "eslint-plugin-fafa-ports",
-        "nestjs-remix-monorepo"
-      ]
+      "version": "^8.57.1"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:eventemitter2@^6.4.9",
       "name": "eventemitter2",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^6.4.9",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^6.4.9",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^6.4.9"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:express-session@^1.19.0",
       "name": "express-session",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^1.19.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^1.19.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^1.19.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json",
-        "package.json"
-      ],
       "id": "npm:fast-json-stable-stringify@^2.1.0",
       "name": "fast-json-stable-stringify",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^2.1.0",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "package.json",
+          "specifier": "^2.1.0",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^2.1.0",
-      "workspaces": [
-        "@fafa/backend",
-        "nestjs-remix-monorepo"
-      ]
+      "version": "^2.1.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:file-type@^20.4.1",
       "name": "file-type",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^20.4.1",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^20.4.1",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^20.4.1"
     },
     {
-      "declaredIn": [
-        "frontend/package.json",
-        "packages/eslint-config/package.json"
-      ],
       "id": "npm:globals@^14.0.0",
       "name": "globals",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/eslint-config/package.json",
+          "specifier": "^14.0.0",
+          "workspace": "@fafa/eslint-config"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^14.0.0",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^14.0.0",
-      "workspaces": [
-        "@fafa/eslint-config",
-        "@fafa/frontend"
-      ]
+      "version": "^14.0.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:google-auth-library@^10.6.1",
       "name": "google-auth-library",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^10.6.1",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^10.6.1",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^10.6.1"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:googleapis@^164.1.0",
       "name": "googleapis",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^164.1.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^164.1.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^164.1.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:gray-matter@^4.0.3",
       "name": "gray-matter",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^4.0.3",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^4.0.3",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^4.0.3"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:helmet@^8.1.0",
       "name": "helmet",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^8.1.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^8.1.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^8.1.0"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:html-react-parser@^5.2.10",
       "name": "html-react-parser",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^5.2.10",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^5.2.10",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^5.2.10"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:husky@^9.1.7",
       "name": "husky",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^9.1.7",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^9.1.7",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^9.1.7"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:impeccable@2.3.2",
       "name": "impeccable",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "2.3.2",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "2.3.2",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "2.3.2"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:ioredis-mock@^8.13.1",
       "name": "ioredis-mock",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^8.13.1",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^8.13.1",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^8.13.1"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:ioredis@^5.8.2",
       "name": "ioredis",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^5.8.2",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^5.8.2",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^5.8.2"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:isbot@^4.1.0",
       "name": "isbot",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^4.1.0",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^4.1.0",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^4.1.0"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:isomorphic-dompurify@^2.35.0",
       "name": "isomorphic-dompurify",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^2.35.0",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^2.35.0",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^2.35.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:jest@^29.5.0",
       "name": "jest",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^29.5.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^29.5.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^29.5.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json",
-        "packages/registry/package.json"
-      ],
       "id": "npm:jose@^5.10.0",
       "name": "jose",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^5.10.0",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "bucket": "dependencies",
+          "declaredIn": "packages/registry/package.json",
+          "specifier": "^5.10.0",
+          "workspace": "@repo/registry"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^5.10.0",
-      "workspaces": [
-        "@fafa/backend",
-        "@repo/registry"
-      ]
+      "version": "^5.10.0"
     },
     {
-      "declaredIn": [
-        "packages/registry/package.json"
-      ],
       "id": "npm:js-yaml@4.1.1",
       "name": "js-yaml",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "packages/registry/package.json",
+          "specifier": "4.1.1",
+          "workspace": "@repo/registry"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "4.1.1",
-      "workspaces": [
-        "@repo/registry"
-      ]
+      "version": "4.1.1"
     },
     {
-      "declaredIn": [
-        "backend/package.json",
-        "package.json"
-      ],
       "id": "npm:js-yaml@^4.1.1",
       "name": "js-yaml",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^4.1.1",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "package.json",
+          "specifier": "^4.1.1",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^4.1.1",
-      "workspaces": [
-        "@fafa/backend",
-        "nestjs-remix-monorepo"
-      ]
+      "version": "^4.1.1"
     },
     {
-      "declaredIn": [
-        "backend/package.json",
-        "package.json"
-      ],
       "id": "npm:keyv@^5.6.0",
       "name": "keyv",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^5.6.0",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "package.json",
+          "specifier": "^5.6.0",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^5.6.0",
-      "workspaces": [
-        "@fafa/backend",
-        "nestjs-remix-monorepo"
-      ]
+      "version": "^5.6.0"
     },
     {
-      "declaredIn": [
-        "package.json"
-      ],
       "id": "npm:knip@6.17.1",
       "name": "knip",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "package.json",
+          "specifier": "6.17.1",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "6.17.1",
-      "workspaces": [
-        "nestjs-remix-monorepo"
-      ]
+      "version": "6.17.1"
     },
     {
-      "declaredIn": [
-        "frontend/package.json",
-        "package.json"
-      ],
       "id": "npm:lint-staged@^16.4.0",
       "name": "lint-staged",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^16.4.0",
+          "workspace": "@fafa/frontend"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "package.json",
+          "specifier": "^16.4.0",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^16.4.0",
-      "workspaces": [
-        "@fafa/frontend",
-        "nestjs-remix-monorepo"
-      ]
+      "version": "^16.4.0"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:lucide-react@^0.462.0",
       "name": "lucide-react",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^0.462.0",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^0.462.0",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^0.462.0"
     },
     {
-      "declaredIn": [
-        "package.json"
-      ],
       "id": "npm:madge@8.0.0",
       "name": "madge",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "package.json",
+          "specifier": "8.0.0",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "8.0.0",
-      "workspaces": [
-        "nestjs-remix-monorepo"
-      ]
+      "version": "8.0.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:meilisearch@^0.52.0",
       "name": "meilisearch",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^0.52.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^0.52.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^0.52.0"
     },
     {
-      "declaredIn": [
-        "package.json",
-        "packages/registry/package.json"
-      ],
       "id": "npm:micromatch@^4.0.8",
       "name": "micromatch",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "packages/registry/package.json",
+          "specifier": "^4.0.8",
+          "workspace": "@repo/registry"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "package.json",
+          "specifier": "^4.0.8",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^4.0.8",
-      "workspaces": [
-        "@repo/registry",
-        "nestjs-remix-monorepo"
-      ]
+      "version": "^4.0.8"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:nestjs-pino@^4.5.0",
       "name": "nestjs-pino",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^4.5.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^4.5.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^4.5.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json",
-        "package.json"
-      ],
       "id": "npm:nestjs-zod@^4.3.1",
       "name": "nestjs-zod",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^4.3.1",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "bucket": "dependencies",
+          "declaredIn": "package.json",
+          "specifier": "^4.3.1",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^4.3.1",
-      "workspaces": [
-        "@fafa/backend",
-        "nestjs-remix-monorepo"
-      ]
+      "version": "^4.3.1"
     },
     {
-      "declaredIn": [
-        "package.json"
-      ],
       "id": "npm:node-fetch@^3.3.2",
       "name": "node-fetch",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "package.json",
+          "specifier": "^3.3.2",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^3.3.2",
-      "workspaces": [
-        "nestjs-remix-monorepo"
-      ]
+      "version": "^3.3.2"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:nodemailer@^8.0.0",
       "name": "nodemailer",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^8.0.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^8.0.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^8.0.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:nodemon@^3.1.14",
       "name": "nodemon",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^3.1.14",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^3.1.14",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^3.1.14"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:npm-run-all@^4.1.5",
       "name": "npm-run-all",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^4.1.5",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^4.1.5",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^4.1.5"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:openai@^4.104.0",
       "name": "openai",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^4.104.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^4.104.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^4.104.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:passport-jwt@^4.0.1",
       "name": "passport-jwt",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^4.0.1",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^4.0.1",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^4.0.1"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:passport-local@^1.0.0",
       "name": "passport-local",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^1.0.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^1.0.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^1.0.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:passport@^0.7.0",
       "name": "passport",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^0.7.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^0.7.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^0.7.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:pdf-parse@^1.1.1",
       "name": "pdf-parse",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^1.1.1",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^1.1.1",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^1.1.1"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:pino-pretty@^13.1.3",
       "name": "pino-pretty",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^13.1.3",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^13.1.3",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^13.1.3"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:pino@^10.3.0",
       "name": "pino",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^10.3.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^10.3.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^10.3.0"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:playwright@1.61.0",
       "name": "playwright",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "1.61.0",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "1.61.0",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "1.61.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:playwright@^1.48.2",
       "name": "playwright",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^1.48.2",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^1.48.2",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^1.48.2"
     },
     {
-      "declaredIn": [
-        "package.json"
-      ],
       "id": "npm:postcss@^8.4.24",
       "name": "postcss",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "package.json",
+          "specifier": "^8.4.24",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^8.4.24",
-      "workspaces": [
-        "nestjs-remix-monorepo"
-      ]
+      "version": "^8.4.24"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:postcss@^8.4.49",
       "name": "postcss",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^8.4.49",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^8.4.49",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^8.4.49"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:prettier-linter-helpers@^1.0.0",
       "name": "prettier-linter-helpers",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^1.0.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^1.0.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^1.0.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json",
-        "package.json"
-      ],
       "id": "npm:prettier@^3.8.3",
       "name": "prettier",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^3.8.3",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "package.json",
+          "specifier": "^3.8.3",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^3.8.3",
-      "workspaces": [
-        "@fafa/backend",
-        "nestjs-remix-monorepo"
-      ]
+      "version": "^3.8.3"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:prom-client@^15.1.3",
       "name": "prom-client",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^15.1.3",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^15.1.3",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^15.1.3"
     },
     {
-      "declaredIn": [
-        "frontend/package.json",
-        "package.json"
-      ],
       "id": "npm:react-dom@19.2.7",
       "name": "react-dom",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "19.2.7",
+          "workspace": "@fafa/frontend"
+        },
+        {
+          "bucket": "dependencies",
+          "declaredIn": "package.json",
+          "specifier": "19.2.7",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "19.2.7",
-      "workspaces": [
-        "@fafa/frontend",
-        "nestjs-remix-monorepo"
-      ]
+      "version": "19.2.7"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:react-hook-form@^7.62.0",
       "name": "react-hook-form",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^7.62.0",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^7.62.0",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^7.62.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json",
-        "frontend/package.json",
-        "package.json"
-      ],
       "id": "npm:react-router@8.0.1",
       "name": "react-router",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "8.0.1",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "8.0.1",
+          "workspace": "@fafa/frontend"
+        },
+        {
+          "bucket": "dependencies",
+          "declaredIn": "package.json",
+          "specifier": "8.0.1",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "8.0.1",
-      "workspaces": [
-        "@fafa/backend",
-        "@fafa/frontend",
-        "nestjs-remix-monorepo"
-      ]
+      "version": "8.0.1"
     },
     {
-      "declaredIn": [
-        "frontend/package.json",
-        "package.json"
-      ],
       "id": "npm:react@19.2.7",
       "name": "react",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "19.2.7",
+          "workspace": "@fafa/frontend"
+        },
+        {
+          "bucket": "dependencies",
+          "declaredIn": "package.json",
+          "specifier": "19.2.7",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "19.2.7",
-      "workspaces": [
-        "@fafa/frontend",
-        "nestjs-remix-monorepo"
-      ]
+      "version": "19.2.7"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:recharts@^2.15.4",
       "name": "recharts",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^2.15.4",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^2.15.4",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^2.15.4"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:redis@~5.12.0",
       "name": "redis",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "~5.12.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "~5.12.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "~5.12.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json",
-        "package.json"
-      ],
       "id": "npm:reflect-metadata@^0.2.2",
       "name": "reflect-metadata",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^0.2.2",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "package.json",
+          "specifier": "^0.2.2",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^0.2.2",
-      "workspaces": [
-        "@fafa/backend",
-        "nestjs-remix-monorepo"
-      ]
+      "version": "^0.2.2"
     },
     {
-      "declaredIn": [
-        "frontend/package.json",
-        "package.json"
-      ],
       "id": "npm:remix-flat-routes@^0.8.5",
       "name": "remix-flat-routes",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^0.8.5",
+          "workspace": "@fafa/frontend"
+        },
+        {
+          "bucket": "dependencies",
+          "declaredIn": "package.json",
+          "specifier": "^0.8.5",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^0.8.5",
-      "workspaces": [
-        "@fafa/frontend",
-        "nestjs-remix-monorepo"
-      ]
+      "version": "^0.8.5"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:rollup-plugin-visualizer@^6.0.5",
       "name": "rollup-plugin-visualizer",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^6.0.5",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^6.0.5",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^6.0.5"
     },
     {
-      "declaredIn": [
-        "backend/package.json",
-        "package.json"
-      ],
       "id": "npm:rxjs@^7.8.2",
       "name": "rxjs",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^7.8.2",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "package.json",
+          "specifier": "^7.8.2",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^7.8.2",
-      "workspaces": [
-        "@fafa/backend",
-        "nestjs-remix-monorepo"
-      ]
+      "version": "^7.8.2"
     },
     {
-      "declaredIn": [
-        "backend/package.json",
-        "package.json"
-      ],
       "id": "npm:sharp@^0.34.3",
       "name": "sharp",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^0.34.3",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "bucket": "dependencies",
+          "declaredIn": "package.json",
+          "specifier": "^0.34.3",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^0.34.3",
-      "workspaces": [
-        "@fafa/backend",
-        "nestjs-remix-monorepo"
-      ]
+      "version": "^0.34.3"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:simple-update-notifier@^2.0.0",
       "name": "simple-update-notifier",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^2.0.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^2.0.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^2.0.0"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:size-limit@^12.1.0",
       "name": "size-limit",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^12.1.0",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^12.1.0",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^12.1.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:socket.io@^4.8.1",
       "name": "socket.io",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^4.8.1",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^4.8.1",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^4.8.1"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:sonner@^2.0.7",
       "name": "sonner",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^2.0.7",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^2.0.7",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^2.0.7"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:source-map-support@^0.5.21",
       "name": "source-map-support",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^0.5.21",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^0.5.21",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^0.5.21"
     },
     {
-      "declaredIn": [
-        "package.json"
-      ],
       "id": "npm:squawk-cli@2.58.0",
       "name": "squawk-cli",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "package.json",
+          "specifier": "2.58.0",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "2.58.0",
-      "workspaces": [
-        "nestjs-remix-monorepo"
-      ]
+      "version": "2.58.0"
     },
     {
-      "declaredIn": [
-        "packages/design-tokens/package.json"
-      ],
       "id": "npm:style-dictionary@5.5.0",
       "name": "style-dictionary",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/design-tokens/package.json",
+          "specifier": "5.5.0",
+          "workspace": "@fafa/design-tokens"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "5.5.0",
-      "workspaces": [
-        "@fafa/design-tokens"
-      ]
+      "version": "5.5.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:supertest@^7.0.0",
       "name": "supertest",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^7.0.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^7.0.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^7.0.0"
     },
     {
-      "declaredIn": [
-        "package.json"
-      ],
       "id": "npm:tailwind-merge@^3.3.1",
       "name": "tailwind-merge",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "package.json",
+          "specifier": "^3.3.1",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^3.3.1",
-      "workspaces": [
-        "nestjs-remix-monorepo"
-      ]
+      "version": "^3.3.1"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:tailwind-merge@^3.4.0",
       "name": "tailwind-merge",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^3.4.0",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^3.4.0",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^3.4.0"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:tailwindcss-animate@^1.0.7",
       "name": "tailwindcss-animate",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^1.0.7",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^1.0.7",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^1.0.7"
     },
     {
-      "declaredIn": [
-        "frontend/package.json",
-        "package.json"
-      ],
       "id": "npm:tailwindcss@^4.3.1",
       "name": "tailwindcss",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^4.3.1",
+          "workspace": "@fafa/frontend"
+        },
+        {
+          "bucket": "dependencies",
+          "declaredIn": "package.json",
+          "specifier": "^4.3.1",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^4.3.1",
-      "workspaces": [
-        "@fafa/frontend",
-        "nestjs-remix-monorepo"
-      ]
+      "version": "^4.3.1"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:ts-jest@^29.4.10",
       "name": "ts-jest",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^29.4.10",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^29.4.10",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^29.4.10"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:ts-loader@^9.6.2",
       "name": "ts-loader",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^9.6.2",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^9.6.2",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^9.6.2"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:ts-node@^10.9.1",
       "name": "ts-node",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^10.9.1",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^10.9.1",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^10.9.1"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:tsc-alias@^1.8.17",
       "name": "tsc-alias",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^1.8.17",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^1.8.17",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^1.8.17"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:tsconfig-paths@^4.2.0",
       "name": "tsconfig-paths",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^4.2.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^4.2.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^4.2.0"
     },
     {
-      "declaredIn": [
-        "packages/design-tokens/package.json"
-      ],
       "id": "npm:tsup@^8.3.5",
       "name": "tsup",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/design-tokens/package.json",
+          "specifier": "^8.3.5",
+          "workspace": "@fafa/design-tokens"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^8.3.5",
-      "workspaces": [
-        "@fafa/design-tokens"
-      ]
+      "version": "^8.3.5"
     },
     {
-      "declaredIn": [
-        "frontend/package.json",
-        "packages/cwv-taxonomy/package.json",
-        "packages/database-types/package.json",
-        "packages/domain-commerce/package.json",
-        "packages/registry/package.json",
-        "packages/seo-role-contracts/package.json",
-        "packages/seo-roles/package.json",
-        "packages/seo-types/package.json",
-        "packages/seo-url-contract/package.json"
-      ],
       "id": "npm:tsx@^4.22.4",
       "name": "tsx",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^4.22.4",
+          "workspace": "@fafa/frontend"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/cwv-taxonomy/package.json",
+          "specifier": "^4.22.4",
+          "workspace": "@repo/cwv-taxonomy"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/database-types/package.json",
+          "specifier": "^4.22.4",
+          "workspace": "@repo/database-types"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/domain-commerce/package.json",
+          "specifier": "^4.22.4",
+          "workspace": "@repo/domain-commerce"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/registry/package.json",
+          "specifier": "^4.22.4",
+          "workspace": "@repo/registry"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/seo-role-contracts/package.json",
+          "specifier": "^4.22.4",
+          "workspace": "@repo/seo-role-contracts"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/seo-roles/package.json",
+          "specifier": "^4.22.4",
+          "workspace": "@repo/seo-roles"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/seo-types/package.json",
+          "specifier": "^4.22.4",
+          "workspace": "@repo/seo-types"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/seo-url-contract/package.json",
+          "specifier": "^4.22.4",
+          "workspace": "@repo/seo-url-contract"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^4.22.4",
-      "workspaces": [
-        "@fafa/frontend",
-        "@repo/cwv-taxonomy",
-        "@repo/database-types",
-        "@repo/domain-commerce",
-        "@repo/registry",
-        "@repo/seo-role-contracts",
-        "@repo/seo-roles",
-        "@repo/seo-types",
-        "@repo/seo-url-contract"
-      ]
+      "version": "^4.22.4"
     },
     {
-      "declaredIn": [
-        "package.json"
-      ],
       "id": "npm:turbo@^2.9.16",
       "name": "turbo",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "package.json",
+          "specifier": "^2.9.16",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^2.9.16",
-      "workspaces": [
-        "nestjs-remix-monorepo"
-      ]
+      "version": "^2.9.16"
     },
     {
-      "declaredIn": [
-        "packages/eslint-config/package.json"
-      ],
       "id": "npm:typescript-eslint@^8.61.1",
       "name": "typescript-eslint",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/eslint-config/package.json",
+          "specifier": "^8.61.1",
+          "workspace": "@fafa/eslint-config"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^8.61.1",
-      "workspaces": [
-        "@fafa/eslint-config"
-      ]
+      "version": "^8.61.1"
     },
     {
-      "declaredIn": [
-        "package.json"
-      ],
       "id": "npm:typescript@6.0.3",
       "name": "typescript",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "package.json",
+          "specifier": "6.0.3",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "6.0.3",
-      "workspaces": [
-        "nestjs-remix-monorepo"
-      ]
+      "version": "6.0.3"
     },
     {
-      "declaredIn": [
-        "backend/package.json",
-        "frontend/package.json",
-        "packages/cwv-taxonomy/package.json",
-        "packages/database-types/package.json",
-        "packages/design-tokens/package.json",
-        "packages/domain-commerce/package.json",
-        "packages/eslint-config/package.json",
-        "packages/registry/package.json",
-        "packages/seo-role-contracts/package.json",
-        "packages/seo-roles/package.json",
-        "packages/seo-types/package.json",
-        "packages/seo-url-contract/package.json"
-      ],
       "id": "npm:typescript@~6.0.3",
       "name": "typescript",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "~6.0.3",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/design-tokens/package.json",
+          "specifier": "~6.0.3",
+          "workspace": "@fafa/design-tokens"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/eslint-config/package.json",
+          "specifier": "~6.0.3",
+          "workspace": "@fafa/eslint-config"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "~6.0.3",
+          "workspace": "@fafa/frontend"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/cwv-taxonomy/package.json",
+          "specifier": "~6.0.3",
+          "workspace": "@repo/cwv-taxonomy"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/database-types/package.json",
+          "specifier": "~6.0.3",
+          "workspace": "@repo/database-types"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/domain-commerce/package.json",
+          "specifier": "~6.0.3",
+          "workspace": "@repo/domain-commerce"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/registry/package.json",
+          "specifier": "~6.0.3",
+          "workspace": "@repo/registry"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/seo-role-contracts/package.json",
+          "specifier": "~6.0.3",
+          "workspace": "@repo/seo-role-contracts"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/seo-roles/package.json",
+          "specifier": "~6.0.3",
+          "workspace": "@repo/seo-roles"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/seo-types/package.json",
+          "specifier": "~6.0.3",
+          "workspace": "@repo/seo-types"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/seo-url-contract/package.json",
+          "specifier": "~6.0.3",
+          "workspace": "@repo/seo-url-contract"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "~6.0.3",
-      "workspaces": [
-        "@fafa/backend",
-        "@fafa/design-tokens",
-        "@fafa/eslint-config",
-        "@fafa/frontend",
-        "@repo/cwv-taxonomy",
-        "@repo/database-types",
-        "@repo/domain-commerce",
-        "@repo/registry",
-        "@repo/seo-role-contracts",
-        "@repo/seo-roles",
-        "@repo/seo-types",
-        "@repo/seo-url-contract"
-      ]
+      "version": "~6.0.3"
     },
     {
-      "declaredIn": [
-        "package.json"
-      ],
       "id": "npm:uid@^2.0.2",
       "name": "uid",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "package.json",
+          "specifier": "^2.0.2",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^2.0.2",
-      "workspaces": [
-        "nestjs-remix-monorepo"
-      ]
+      "version": "^2.0.2"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:undici@^7.13.0",
       "name": "undici",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^7.13.0",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^7.13.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^7.13.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:unix-crypt-td-js@^1.1.4",
       "name": "unix-crypt-td-js",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^1.1.4",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^1.1.4",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "^1.1.4"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:vite-tsconfig-paths@^4.2.1",
       "name": "vite-tsconfig-paths",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^4.2.1",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^4.2.1",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^4.2.1"
     },
     {
-      "declaredIn": [
-        "frontend/package.json",
-        "package.json"
-      ],
       "id": "npm:vite@8.1.0",
       "name": "vite",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "8.1.0",
+          "workspace": "@fafa/frontend"
+        },
+        {
+          "bucket": "dependencies",
+          "declaredIn": "package.json",
+          "specifier": "8.1.0",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "8.1.0",
-      "workspaces": [
-        "@fafa/frontend",
-        "nestjs-remix-monorepo"
-      ]
+      "version": "8.1.0"
     },
     {
-      "declaredIn": [
-        "packages/design-tokens/package.json"
-      ],
       "id": "npm:vitest@^2.1.8",
       "name": "vitest",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/design-tokens/package.json",
+          "specifier": "^2.1.8",
+          "workspace": "@fafa/design-tokens"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^2.1.8",
-      "workspaces": [
-        "@fafa/design-tokens"
-      ]
+      "version": "^2.1.8"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:vitest@^4.0.2",
       "name": "vitest",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^4.0.2",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^4.0.2",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^4.0.2"
     },
     {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:web-vitals@^5.2.0",
       "name": "web-vitals",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^5.2.0",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^5.2.0",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
+      "version": "^5.2.0"
     },
     {
-      "declaredIn": [
-        "backend/package.json",
-        "frontend/package.json",
-        "package.json",
-        "packages/cwv-taxonomy/package.json",
-        "packages/database-types/package.json",
-        "packages/design-tokens/package.json",
-        "packages/registry/package.json",
-        "packages/seo-role-contracts/package.json",
-        "packages/seo-roles/package.json",
-        "packages/seo-types/package.json"
-      ],
       "id": "npm:zod@^4.4.3",
       "name": "zod",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "^4.4.3",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/design-tokens/package.json",
+          "specifier": "^4.4.3",
+          "workspace": "@fafa/design-tokens"
+        },
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "^4.4.3",
+          "workspace": "@fafa/frontend"
+        },
+        {
+          "bucket": "dependencies",
+          "declaredIn": "packages/cwv-taxonomy/package.json",
+          "specifier": "^4.4.3",
+          "workspace": "@repo/cwv-taxonomy"
+        },
+        {
+          "bucket": "dependencies",
+          "declaredIn": "packages/database-types/package.json",
+          "specifier": "^4.4.3",
+          "workspace": "@repo/database-types"
+        },
+        {
+          "bucket": "dependencies",
+          "declaredIn": "packages/registry/package.json",
+          "specifier": "^4.4.3",
+          "workspace": "@repo/registry"
+        },
+        {
+          "bucket": "dependencies",
+          "declaredIn": "packages/seo-role-contracts/package.json",
+          "specifier": "^4.4.3",
+          "workspace": "@repo/seo-role-contracts"
+        },
+        {
+          "bucket": "dependencies",
+          "declaredIn": "packages/seo-roles/package.json",
+          "specifier": "^4.4.3",
+          "workspace": "@repo/seo-roles"
+        },
+        {
+          "bucket": "dependencies",
+          "declaredIn": "packages/seo-types/package.json",
+          "specifier": "^4.4.3",
+          "workspace": "@repo/seo-types"
+        },
+        {
+          "bucket": "dependencies",
+          "declaredIn": "package.json",
+          "specifier": "^4.4.3",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^4.4.3",
-      "workspaces": [
-        "@fafa/backend",
-        "@fafa/design-tokens",
-        "@fafa/frontend",
-        "@repo/cwv-taxonomy",
-        "@repo/database-types",
-        "@repo/registry",
-        "@repo/seo-role-contracts",
-        "@repo/seo-roles",
-        "@repo/seo-types",
-        "nestjs-remix-monorepo"
-      ]
+      "version": "^4.4.3"
     },
     {
-      "declaredIn": [
-        "backend/package.json",
-        "frontend/package.json",
-        "packages/design-tokens/package.json"
-      ],
       "id": "workspace:@fafa/eslint-config@*",
       "name": "@fafa/eslint-config",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "*",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/design-tokens/package.json",
+          "specifier": "*",
+          "workspace": "@fafa/design-tokens"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "*",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "workspace",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "*",
-      "workspaces": [
-        "@fafa/backend",
-        "@fafa/design-tokens",
-        "@fafa/frontend"
-      ]
+      "version": "*"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "workspace:@fafa/frontend@*",
       "name": "@fafa/frontend",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "*",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "workspace",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "*",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "*"
     },
     {
-      "declaredIn": [
-        "backend/package.json",
-        "frontend/package.json",
-        "packages/design-tokens/package.json"
-      ],
       "id": "workspace:@fafa/typescript-config@*",
       "name": "@fafa/typescript-config",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "*",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/design-tokens/package.json",
+          "specifier": "*",
+          "workspace": "@fafa/design-tokens"
+        },
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "*",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "workspace",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "*",
-      "workspaces": [
-        "@fafa/backend",
-        "@fafa/design-tokens",
-        "@fafa/frontend"
-      ]
+      "version": "*"
     },
     {
-      "declaredIn": [
-        "backend/package.json",
-        "frontend/package.json"
-      ],
       "id": "workspace:@repo/cwv-taxonomy@*",
       "name": "@repo/cwv-taxonomy",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "*",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "*",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "workspace",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "*",
-      "workspaces": [
-        "@fafa/backend",
-        "@fafa/frontend"
-      ]
+      "version": "*"
     },
     {
-      "declaredIn": [
-        "backend/package.json",
-        "frontend/package.json"
-      ],
       "id": "workspace:@repo/database-types@*",
       "name": "@repo/database-types",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "*",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "*",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "workspace",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "*",
-      "workspaces": [
-        "@fafa/backend",
-        "@fafa/frontend"
-      ]
+      "version": "*"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "workspace:@repo/domain-commerce@*",
       "name": "@repo/domain-commerce",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "*",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "workspace",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "*",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "*"
     },
     {
-      "declaredIn": [
-        "backend/package.json",
-        "frontend/package.json"
-      ],
       "id": "workspace:@repo/registry@*",
       "name": "@repo/registry",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "*",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "*",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "workspace",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "*",
-      "workspaces": [
-        "@fafa/backend",
-        "@fafa/frontend"
-      ]
+      "version": "*"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "workspace:@repo/seo-role-contracts@*",
       "name": "@repo/seo-role-contracts",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "*",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "workspace",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "*",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "*"
     },
     {
-      "declaredIn": [
-        "backend/package.json",
-        "frontend/package.json",
-        "package.json",
-        "packages/seo-role-contracts/package.json"
-      ],
       "id": "workspace:@repo/seo-roles@*",
       "name": "@repo/seo-roles",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "*",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "*",
+          "workspace": "@fafa/frontend"
+        },
+        {
+          "bucket": "dependencies",
+          "declaredIn": "packages/seo-role-contracts/package.json",
+          "specifier": "*",
+          "workspace": "@repo/seo-role-contracts"
+        },
+        {
+          "bucket": "dependencies",
+          "declaredIn": "package.json",
+          "specifier": "*",
+          "workspace": "nestjs-remix-monorepo"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "workspace",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "*",
-      "workspaces": [
-        "@fafa/backend",
-        "@fafa/frontend",
-        "@repo/seo-role-contracts",
-        "nestjs-remix-monorepo"
-      ]
+      "version": "*"
     },
     {
-      "declaredIn": [
-        "backend/package.json",
-        "frontend/package.json"
-      ],
       "id": "workspace:@repo/seo-types@*",
       "name": "@repo/seo-types",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "*",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "*",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "workspace",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "*",
-      "workspaces": [
-        "@fafa/backend",
-        "@fafa/frontend"
-      ]
+      "version": "*"
     },
     {
-      "declaredIn": [
-        "backend/package.json",
-        "frontend/package.json"
-      ],
       "id": "workspace:@repo/seo-url-contract@*",
       "name": "@repo/seo-url-contract",
+      "occurrences": [
+        {
+          "bucket": "dependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "*",
+          "workspace": "@fafa/backend"
+        },
+        {
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
+          "specifier": "*",
+          "workspace": "@fafa/frontend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "workspace",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "*",
-      "workspaces": [
-        "@fafa/backend",
-        "@fafa/frontend"
-      ]
+      "version": "*"
     },
     {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "workspace:eslint-plugin-fafa-ports@*",
       "name": "eslint-plugin-fafa-ports",
+      "occurrences": [
+        {
+          "bucket": "devDependencies",
+          "declaredIn": "backend/package.json",
+          "specifier": "*",
+          "workspace": "@fafa/backend"
+        }
+      ],
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "workspace",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "*",
-      "workspaces": [
-        "@fafa/backend"
-      ]
+      "version": "*"
     }
   ],
   "generatedBy": "scripts/registry/build-deps-registry.js",

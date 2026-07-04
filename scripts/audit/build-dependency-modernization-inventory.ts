@@ -88,11 +88,17 @@ export function expandCluster(patterns: string[], allDepNames: Set<string>): str
 
 // --- L1 raw input ---
 
+interface RawDepOccurrence {
+  workspace: string;
+  declaredIn: string;
+  bucket: string;
+  specifier: string;
+}
+
 interface RawDepEntry {
   name: string;
   version: string;
-  workspaces: string[];
-  declaredIn: string[];
+  occurrences: RawDepOccurrence[];
 }
 
 function readDepsRegistry(): RawDepEntry[] {
@@ -100,8 +106,7 @@ function readDepsRegistry(): RawDepEntry[] {
   return raw.entries.map((e: any) => ({
     name: e.name,
     version: e.version,
-    workspaces: e.workspaces,
-    declaredIn: e.declaredIn,
+    occurrences: e.occurrences,
   }));
 }
 
@@ -155,26 +160,34 @@ export function build(): InventoryArtifact {
   const overlay = readOverlay();
   const lockResolved = readLockfileResolved();
 
-  // Group declared deps by name.
+  // Group declared deps by name — consume the L1 atomic occurrences DIRECTLY.
+  // No index-zip of parallel arrays, no `declaredIn[i] ?? declaredIn[0]`
+  // fallback: each occurrence already carries its own (workspace, declaredIn,
+  // bucket, specifier) tuple, so provenance can never be mis-paired here.
   const byName = new Map<
     string,
-    Array<{ workspace: string; declaredIn: string; specifier: string }>
+    Array<{ workspace: string; declaredIn: string; bucket: string; specifier: string }>
   >();
   for (const d of deps) {
-    for (let i = 0; i < d.workspaces.length; i++) {
-      const occ = {
-        workspace: d.workspaces[i],
-        declaredIn: d.declaredIn[i] ?? d.declaredIn[0],
-        specifier: d.version,
-      };
+    for (const occ of d.occurrences) {
       if (!byName.has(d.name)) byName.set(d.name, []);
-      byName.get(d.name)!.push(occ);
+      byName.get(d.name)!.push({
+        workspace: occ.workspace,
+        declaredIn: occ.declaredIn,
+        bucket: occ.bucket,
+        specifier: occ.specifier,
+      });
     }
   }
 
+  // Deterministic order over the FULL tuple — two occurrences from the same
+  // workspace (e.g. dependencies + devDependencies) must not be ambiguous.
+  const occTupleKey = (o: { workspace: string; declaredIn: string; bucket: string; specifier: string }) =>
+    `${o.workspace} ${o.declaredIn} ${o.bucket} ${o.specifier}`;
+
   const packageEntry = (name: string) => {
     const occurrences = (byName.get(name) ?? []).sort((a, b) =>
-      a.workspace.localeCompare(b.workspace),
+      occTupleKey(a).localeCompare(occTupleKey(b)),
     );
     const resolved = Array.from(lockResolved.get(name) ?? []).sort();
     const distinctSpecifiers = new Set(occurrences.map((o) => o.specifier));

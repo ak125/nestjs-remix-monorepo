@@ -1,11 +1,12 @@
 {
-  "artifact_immutability_hash": "sha256:f99e660b1ea68bd8d5696738e2f815311c8041c12496d89134a0bb0f3b7a0e82",
+  "artifact_immutability_hash": "sha256:5fe2da9726532c42178481106a1094bfed08e8452d5a5513c1192413770d6adc",
   "divergences": [
     {
       "kind": "resolved",
       "name": "@types/eslint",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "packages/eslint-config/package.json",
           "specifier": "^8.56.5",
           "workspace": "@fafa/eslint-config"
@@ -21,16 +22,19 @@
       "name": "@types/js-yaml",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^4.0.9",
           "workspace": "@fafa/backend"
         },
         {
+          "bucket": "devDependencies",
           "declaredIn": "packages/registry/package.json",
           "specifier": "4.0.9",
           "workspace": "@repo/registry"
         },
         {
+          "bucket": "devDependencies",
           "declaredIn": "package.json",
           "specifier": "^4.0.9",
           "workspace": "nestjs-remix-monorepo"
@@ -45,11 +49,13 @@
       "name": "@types/micromatch",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "packages/registry/package.json",
           "specifier": "^4.0.9",
           "workspace": "@repo/registry"
         },
         {
+          "bucket": "devDependencies",
           "declaredIn": "package.json",
           "specifier": "^4.0.10",
           "workspace": "nestjs-remix-monorepo"
@@ -64,6 +70,7 @@
       "name": "connect-redis",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^9.0.0",
           "workspace": "@fafa/backend"
@@ -79,11 +86,13 @@
       "name": "dotenv",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^17.2.1",
           "workspace": "@fafa/backend"
         },
         {
+          "bucket": "dependencies",
           "declaredIn": "package.json",
           "specifier": "^17.2.3",
           "workspace": "nestjs-remix-monorepo"
@@ -100,6 +109,7 @@
       "name": "esbuild",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^0.27.0",
           "workspace": "@fafa/frontend"
@@ -116,37 +126,44 @@
       "name": "eslint",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^8.57.1",
           "workspace": "@fafa/backend"
         },
         {
-          "declaredIn": "frontend/package.json",
+          "bucket": "devDependencies",
+          "declaredIn": "packages/design-tokens/package.json",
           "specifier": "^8.57.1",
           "workspace": "@fafa/design-tokens"
         },
         {
-          "declaredIn": "package.json",
+          "bucket": "devDependencies",
+          "declaredIn": "packages/eslint-config/package.json",
           "specifier": "^8.57.1",
           "workspace": "@fafa/eslint-config"
         },
         {
-          "declaredIn": "packages/design-tokens/package.json",
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
           "specifier": "^8.57.1",
           "workspace": "@fafa/frontend"
         },
         {
+          "bucket": "devDependencies",
+          "declaredIn": "packages/eslint-plugin-fafa-ports/package.json",
+          "specifier": "^8.57.1",
+          "workspace": "eslint-plugin-fafa-ports"
+        },
+        {
+          "bucket": "peerDependencies",
           "declaredIn": "packages/eslint-plugin-fafa-ports/package.json",
           "specifier": "^8.57.0 || ^9.0.0",
           "workspace": "eslint-plugin-fafa-ports"
         },
         {
-          "declaredIn": "packages/eslint-config/package.json",
-          "specifier": "^8.57.1",
-          "workspace": "eslint-plugin-fafa-ports"
-        },
-        {
-          "declaredIn": "packages/eslint-plugin-fafa-ports/package.json",
+          "bucket": "devDependencies",
+          "declaredIn": "package.json",
           "specifier": "^8.57.1",
           "workspace": "nestjs-remix-monorepo"
         }
@@ -160,6 +177,7 @@
       "name": "file-type",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^20.4.1",
           "workspace": "@fafa/backend"
@@ -175,12 +193,14 @@
       "name": "globals",
       "occurrences": [
         {
-          "declaredIn": "frontend/package.json",
+          "bucket": "devDependencies",
+          "declaredIn": "packages/eslint-config/package.json",
           "specifier": "^14.0.0",
           "workspace": "@fafa/eslint-config"
         },
         {
-          "declaredIn": "packages/eslint-config/package.json",
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
           "specifier": "^14.0.0",
           "workspace": "@fafa/frontend"
         }
@@ -195,6 +215,7 @@
       "name": "google-auth-library",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^10.6.1",
           "workspace": "@fafa/backend"
@@ -210,6 +231,7 @@
       "name": "ioredis",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^5.8.2",
           "workspace": "@fafa/backend"
@@ -225,6 +247,7 @@
       "name": "isbot",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^4.1.0",
           "workspace": "@fafa/frontend"
@@ -240,16 +263,19 @@
       "name": "js-yaml",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^4.1.1",
           "workspace": "@fafa/backend"
         },
         {
+          "bucket": "dependencies",
           "declaredIn": "packages/registry/package.json",
           "specifier": "4.1.1",
           "workspace": "@repo/registry"
         },
         {
+          "bucket": "devDependencies",
           "declaredIn": "package.json",
           "specifier": "^4.1.1",
           "workspace": "nestjs-remix-monorepo"
@@ -266,11 +292,13 @@
       "name": "keyv",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^5.6.0",
           "workspace": "@fafa/backend"
         },
         {
+          "bucket": "devDependencies",
           "declaredIn": "package.json",
           "specifier": "^5.6.0",
           "workspace": "nestjs-remix-monorepo"
@@ -286,6 +314,7 @@
       "name": "node-fetch",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "package.json",
           "specifier": "^3.3.2",
           "workspace": "nestjs-remix-monorepo"
@@ -301,11 +330,13 @@
       "name": "playwright",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^1.48.2",
           "workspace": "@fafa/backend"
         },
         {
+          "bucket": "devDependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "1.61.0",
           "workspace": "@fafa/frontend"
@@ -321,11 +352,13 @@
       "name": "postcss",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^8.4.49",
           "workspace": "@fafa/frontend"
         },
         {
+          "bucket": "dependencies",
           "declaredIn": "package.json",
           "specifier": "^8.4.24",
           "workspace": "nestjs-remix-monorepo"
@@ -340,11 +373,13 @@
       "name": "prettier",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^3.8.3",
           "workspace": "@fafa/backend"
         },
         {
+          "bucket": "devDependencies",
           "declaredIn": "package.json",
           "specifier": "^3.8.3",
           "workspace": "nestjs-remix-monorepo"
@@ -360,11 +395,13 @@
       "name": "rxjs",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^7.8.2",
           "workspace": "@fafa/backend"
         },
         {
+          "bucket": "devDependencies",
           "declaredIn": "package.json",
           "specifier": "^7.8.2",
           "workspace": "nestjs-remix-monorepo"
@@ -380,6 +417,7 @@
       "name": "source-map-support",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^0.5.21",
           "workspace": "@fafa/backend"
@@ -395,11 +433,13 @@
       "name": "tailwind-merge",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^3.4.0",
           "workspace": "@fafa/frontend"
         },
         {
+          "bucket": "dependencies",
           "declaredIn": "package.json",
           "specifier": "^3.3.1",
           "workspace": "nestjs-remix-monorepo"
@@ -414,6 +454,7 @@
       "name": "tsconfig-paths",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^4.2.0",
           "workspace": "@fafa/backend"
@@ -429,66 +470,79 @@
       "name": "typescript",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "backend/package.json",
           "specifier": "~6.0.3",
           "workspace": "@fafa/backend"
         },
         {
-          "declaredIn": "frontend/package.json",
+          "bucket": "devDependencies",
+          "declaredIn": "packages/design-tokens/package.json",
           "specifier": "~6.0.3",
           "workspace": "@fafa/design-tokens"
         },
         {
-          "declaredIn": "packages/cwv-taxonomy/package.json",
+          "bucket": "devDependencies",
+          "declaredIn": "packages/eslint-config/package.json",
           "specifier": "~6.0.3",
           "workspace": "@fafa/eslint-config"
         },
         {
-          "declaredIn": "packages/database-types/package.json",
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
           "specifier": "~6.0.3",
           "workspace": "@fafa/frontend"
         },
         {
-          "declaredIn": "packages/design-tokens/package.json",
+          "bucket": "devDependencies",
+          "declaredIn": "packages/cwv-taxonomy/package.json",
           "specifier": "~6.0.3",
           "workspace": "@repo/cwv-taxonomy"
         },
         {
-          "declaredIn": "packages/domain-commerce/package.json",
+          "bucket": "devDependencies",
+          "declaredIn": "packages/database-types/package.json",
           "specifier": "~6.0.3",
           "workspace": "@repo/database-types"
         },
         {
-          "declaredIn": "packages/eslint-config/package.json",
+          "bucket": "devDependencies",
+          "declaredIn": "packages/domain-commerce/package.json",
           "specifier": "~6.0.3",
           "workspace": "@repo/domain-commerce"
         },
         {
+          "bucket": "devDependencies",
           "declaredIn": "packages/registry/package.json",
           "specifier": "~6.0.3",
           "workspace": "@repo/registry"
         },
         {
+          "bucket": "devDependencies",
           "declaredIn": "packages/seo-role-contracts/package.json",
           "specifier": "~6.0.3",
           "workspace": "@repo/seo-role-contracts"
         },
         {
+          "bucket": "devDependencies",
           "declaredIn": "packages/seo-roles/package.json",
           "specifier": "~6.0.3",
           "workspace": "@repo/seo-roles"
         },
         {
+          "bucket": "devDependencies",
           "declaredIn": "packages/seo-types/package.json",
           "specifier": "~6.0.3",
           "workspace": "@repo/seo-types"
         },
         {
+          "bucket": "devDependencies",
           "declaredIn": "packages/seo-url-contract/package.json",
           "specifier": "~6.0.3",
           "workspace": "@repo/seo-url-contract"
         },
         {
+          "bucket": "devDependencies",
           "declaredIn": "package.json",
           "specifier": "6.0.3",
           "workspace": "nestjs-remix-monorepo"
@@ -503,6 +557,7 @@
       "name": "undici",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^7.13.0",
           "workspace": "@fafa/backend"
@@ -518,11 +573,13 @@
       "name": "vite",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "8.1.0",
           "workspace": "@fafa/frontend"
         },
         {
+          "bucket": "dependencies",
           "declaredIn": "package.json",
           "specifier": "8.1.0",
           "workspace": "nestjs-remix-monorepo"
@@ -538,11 +595,13 @@
       "name": "vitest",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "packages/design-tokens/package.json",
           "specifier": "^2.1.8",
           "workspace": "@fafa/design-tokens"
         },
         {
+          "bucket": "devDependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^4.0.2",
           "workspace": "@fafa/frontend"
@@ -558,52 +617,62 @@
       "name": "zod",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^4.4.3",
           "workspace": "@fafa/backend"
         },
         {
-          "declaredIn": "frontend/package.json",
+          "bucket": "devDependencies",
+          "declaredIn": "packages/design-tokens/package.json",
           "specifier": "^4.4.3",
           "workspace": "@fafa/design-tokens"
         },
         {
-          "declaredIn": "package.json",
+          "bucket": "dependencies",
+          "declaredIn": "frontend/package.json",
           "specifier": "^4.4.3",
           "workspace": "@fafa/frontend"
         },
         {
+          "bucket": "dependencies",
           "declaredIn": "packages/cwv-taxonomy/package.json",
           "specifier": "^4.4.3",
           "workspace": "@repo/cwv-taxonomy"
         },
         {
+          "bucket": "dependencies",
           "declaredIn": "packages/database-types/package.json",
           "specifier": "^4.4.3",
           "workspace": "@repo/database-types"
         },
         {
-          "declaredIn": "packages/design-tokens/package.json",
+          "bucket": "dependencies",
+          "declaredIn": "packages/registry/package.json",
           "specifier": "^4.4.3",
           "workspace": "@repo/registry"
         },
         {
-          "declaredIn": "packages/registry/package.json",
+          "bucket": "dependencies",
+          "declaredIn": "packages/seo-role-contracts/package.json",
           "specifier": "^4.4.3",
           "workspace": "@repo/seo-role-contracts"
         },
         {
-          "declaredIn": "packages/seo-role-contracts/package.json",
+          "bucket": "dependencies",
+          "declaredIn": "packages/seo-roles/package.json",
           "specifier": "^4.4.3",
           "workspace": "@repo/seo-roles"
         },
         {
-          "declaredIn": "packages/seo-roles/package.json",
+          "bucket": "dependencies",
+          "declaredIn": "packages/seo-types/package.json",
           "specifier": "^4.4.3",
           "workspace": "@repo/seo-types"
         },
         {
-          "declaredIn": "packages/seo-types/package.json",
+          "bucket": "dependencies",
+          "declaredIn": "package.json",
           "specifier": "^4.4.3",
           "workspace": "nestjs-remix-monorepo"
         }
@@ -701,6 +770,7 @@
           "name": "@nestjs/jwt",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^11.0.1",
               "workspace": "@fafa/backend"
@@ -716,6 +786,7 @@
           "name": "@nestjs/passport",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^11.0.5",
               "workspace": "@fafa/backend"
@@ -731,11 +802,13 @@
           "name": "bcrypt",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^6.0.0",
               "workspace": "@fafa/backend"
             },
             {
+              "bucket": "dependencies",
               "declaredIn": "package.json",
               "specifier": "^6.0.0",
               "workspace": "nestjs-remix-monorepo"
@@ -751,6 +824,7 @@
           "name": "connect-redis",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^9.0.0",
               "workspace": "@fafa/backend"
@@ -767,6 +841,7 @@
           "name": "express-session",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^1.19.0",
               "workspace": "@fafa/backend"
@@ -782,6 +857,7 @@
           "name": "passport",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^0.7.0",
               "workspace": "@fafa/backend"
@@ -797,6 +873,7 @@
           "name": "passport-jwt",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^4.0.1",
               "workspace": "@fafa/backend"
@@ -812,6 +889,7 @@
           "name": "passport-local",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^1.0.0",
               "workspace": "@fafa/backend"
@@ -992,11 +1070,13 @@
           "name": "@supabase/supabase-js",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^2.95.0",
               "workspace": "@fafa/backend"
             },
             {
+              "bucket": "dependencies",
               "declaredIn": "package.json",
               "specifier": "^2.95.0",
               "workspace": "nestjs-remix-monorepo"
@@ -1144,6 +1224,7 @@
           "name": "@fafa/design-tokens",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "frontend/package.json",
               "specifier": "^1.0.0",
               "workspace": "@fafa/frontend"
@@ -1159,17 +1240,20 @@
           "name": "@fafa/eslint-config",
           "occurrences": [
             {
+              "bucket": "devDependencies",
               "declaredIn": "backend/package.json",
               "specifier": "*",
               "workspace": "@fafa/backend"
             },
             {
-              "declaredIn": "frontend/package.json",
+              "bucket": "devDependencies",
+              "declaredIn": "packages/design-tokens/package.json",
               "specifier": "*",
               "workspace": "@fafa/design-tokens"
             },
             {
-              "declaredIn": "packages/design-tokens/package.json",
+              "bucket": "devDependencies",
+              "declaredIn": "frontend/package.json",
               "specifier": "*",
               "workspace": "@fafa/frontend"
             }
@@ -1184,6 +1268,7 @@
           "name": "@fafa/frontend",
           "occurrences": [
             {
+              "bucket": "devDependencies",
               "declaredIn": "backend/package.json",
               "specifier": "*",
               "workspace": "@fafa/backend"
@@ -1199,17 +1284,20 @@
           "name": "@fafa/typescript-config",
           "occurrences": [
             {
+              "bucket": "devDependencies",
               "declaredIn": "backend/package.json",
               "specifier": "*",
               "workspace": "@fafa/backend"
             },
             {
-              "declaredIn": "frontend/package.json",
+              "bucket": "devDependencies",
+              "declaredIn": "packages/design-tokens/package.json",
               "specifier": "*",
               "workspace": "@fafa/design-tokens"
             },
             {
-              "declaredIn": "packages/design-tokens/package.json",
+              "bucket": "devDependencies",
+              "declaredIn": "frontend/package.json",
               "specifier": "*",
               "workspace": "@fafa/frontend"
             }
@@ -1224,11 +1312,13 @@
           "name": "@repo/database-types",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "backend/package.json",
               "specifier": "*",
               "workspace": "@fafa/backend"
             },
             {
+              "bucket": "dependencies",
               "declaredIn": "frontend/package.json",
               "specifier": "*",
               "workspace": "@fafa/frontend"
@@ -1244,6 +1334,7 @@
           "name": "@repo/seo-role-contracts",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "backend/package.json",
               "specifier": "*",
               "workspace": "@fafa/backend"
@@ -1259,22 +1350,26 @@
           "name": "@repo/seo-roles",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "backend/package.json",
               "specifier": "*",
               "workspace": "@fafa/backend"
             },
             {
+              "bucket": "dependencies",
               "declaredIn": "frontend/package.json",
               "specifier": "*",
               "workspace": "@fafa/frontend"
             },
             {
-              "declaredIn": "package.json",
+              "bucket": "dependencies",
+              "declaredIn": "packages/seo-role-contracts/package.json",
               "specifier": "*",
               "workspace": "@repo/seo-role-contracts"
             },
             {
-              "declaredIn": "packages/seo-role-contracts/package.json",
+              "bucket": "dependencies",
+              "declaredIn": "package.json",
               "specifier": "*",
               "workspace": "nestjs-remix-monorepo"
             }
@@ -1399,6 +1494,7 @@
           "name": "pino",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^10.3.0",
               "workspace": "@fafa/backend"
@@ -1414,6 +1510,7 @@
           "name": "pino-pretty",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^13.1.3",
               "workspace": "@fafa/backend"
@@ -1575,6 +1672,7 @@
           "name": "@nestjs/bull",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^11.0.4",
               "workspace": "@fafa/backend"
@@ -1590,6 +1688,7 @@
           "name": "@nestjs/bullmq",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^11.0.4",
               "workspace": "@fafa/backend"
@@ -1605,6 +1704,7 @@
           "name": "bull",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^4.16.5",
               "workspace": "@fafa/backend"
@@ -1620,6 +1720,7 @@
           "name": "bullmq",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^5.63.0",
               "workspace": "@fafa/backend"
@@ -1635,6 +1736,7 @@
           "name": "ioredis",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^5.8.2",
               "workspace": "@fafa/backend"
@@ -1837,6 +1939,7 @@
           "name": "@nestjs/cache-manager",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^3.1.3",
               "workspace": "@fafa/backend"
@@ -1852,6 +1955,7 @@
           "name": "@nestjs/cli",
           "occurrences": [
             {
+              "bucket": "devDependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^11.0.23",
               "workspace": "@fafa/backend"
@@ -1867,11 +1971,13 @@
           "name": "@nestjs/common",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^11.1.27",
               "workspace": "@fafa/backend"
             },
             {
+              "bucket": "devDependencies",
               "declaredIn": "package.json",
               "specifier": "^11.1.27",
               "workspace": "nestjs-remix-monorepo"
@@ -1887,6 +1993,7 @@
           "name": "@nestjs/config",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^4.0.4",
               "workspace": "@fafa/backend"
@@ -1902,11 +2009,13 @@
           "name": "@nestjs/core",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^11.1.27",
               "workspace": "@fafa/backend"
             },
             {
+              "bucket": "devDependencies",
               "declaredIn": "package.json",
               "specifier": "^11.1.27",
               "workspace": "nestjs-remix-monorepo"
@@ -1922,6 +2031,7 @@
           "name": "@nestjs/event-emitter",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^3.1.0",
               "workspace": "@fafa/backend"
@@ -1937,6 +2047,7 @@
           "name": "@nestjs/platform-express",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^11.1.27",
               "workspace": "@fafa/backend"
@@ -1952,6 +2063,7 @@
           "name": "@nestjs/platform-socket.io",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^11.1.27",
               "workspace": "@fafa/backend"
@@ -1967,6 +2079,7 @@
           "name": "@nestjs/schedule",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^6.1.3",
               "workspace": "@fafa/backend"
@@ -1982,6 +2095,7 @@
           "name": "@nestjs/schematics",
           "occurrences": [
             {
+              "bucket": "devDependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^11.1.0",
               "workspace": "@fafa/backend"
@@ -1997,6 +2111,7 @@
           "name": "@nestjs/swagger",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "backend/package.json",
               "specifier": "11.4.4",
               "workspace": "@fafa/backend"
@@ -2012,6 +2127,7 @@
           "name": "@nestjs/testing",
           "occurrences": [
             {
+              "bucket": "devDependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^11.1.27",
               "workspace": "@fafa/backend"
@@ -2027,6 +2143,7 @@
           "name": "@nestjs/throttler",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^6.5.0",
               "workspace": "@fafa/backend"
@@ -2042,6 +2159,7 @@
           "name": "@nestjs/websockets",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^11.1.27",
               "workspace": "@fafa/backend"
@@ -2057,6 +2175,7 @@
           "name": "body-parser",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^2.3.0",
               "workspace": "@fafa/backend"
@@ -2072,11 +2191,13 @@
           "name": "reflect-metadata",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^0.2.2",
               "workspace": "@fafa/backend"
             },
             {
+              "bucket": "devDependencies",
               "declaredIn": "package.json",
               "specifier": "^0.2.2",
               "workspace": "nestjs-remix-monorepo"
@@ -2092,11 +2213,13 @@
           "name": "rxjs",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^7.8.2",
               "workspace": "@fafa/backend"
             },
             {
+              "bucket": "devDependencies",
               "declaredIn": "package.json",
               "specifier": "^7.8.2",
               "workspace": "nestjs-remix-monorepo"
@@ -2427,11 +2550,13 @@
           "name": "@react-router/dev",
           "occurrences": [
             {
+              "bucket": "devDependencies",
               "declaredIn": "frontend/package.json",
               "specifier": "8.0.1",
               "workspace": "@fafa/frontend"
             },
             {
+              "bucket": "devDependencies",
               "declaredIn": "package.json",
               "specifier": "8.0.1",
               "workspace": "nestjs-remix-monorepo"
@@ -2447,16 +2572,19 @@
           "name": "@react-router/express",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "backend/package.json",
               "specifier": "8.0.1",
               "workspace": "@fafa/backend"
             },
             {
+              "bucket": "dependencies",
               "declaredIn": "frontend/package.json",
               "specifier": "8.0.1",
               "workspace": "@fafa/frontend"
             },
             {
+              "bucket": "dependencies",
               "declaredIn": "package.json",
               "specifier": "8.0.1",
               "workspace": "nestjs-remix-monorepo"
@@ -2472,11 +2600,13 @@
           "name": "@react-router/node",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "frontend/package.json",
               "specifier": "8.0.1",
               "workspace": "@fafa/frontend"
             },
             {
+              "bucket": "dependencies",
               "declaredIn": "package.json",
               "specifier": "8.0.1",
               "workspace": "nestjs-remix-monorepo"
@@ -2492,6 +2622,7 @@
           "name": "@react-router/remix-routes-option-adapter",
           "occurrences": [
             {
+              "bucket": "devDependencies",
               "declaredIn": "frontend/package.json",
               "specifier": "8.0.1",
               "workspace": "@fafa/frontend"
@@ -2507,11 +2638,13 @@
           "name": "@react-router/serve",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "frontend/package.json",
               "specifier": "8.0.1",
               "workspace": "@fafa/frontend"
             },
             {
+              "bucket": "dependencies",
               "declaredIn": "package.json",
               "specifier": "8.0.1",
               "workspace": "nestjs-remix-monorepo"
@@ -2527,6 +2660,7 @@
           "name": "@types/react",
           "occurrences": [
             {
+              "bucket": "devDependencies",
               "declaredIn": "frontend/package.json",
               "specifier": "19.2.17",
               "workspace": "@fafa/frontend"
@@ -2542,6 +2676,7 @@
           "name": "@types/react-dom",
           "occurrences": [
             {
+              "bucket": "devDependencies",
               "declaredIn": "frontend/package.json",
               "specifier": "19.2.3",
               "workspace": "@fafa/frontend"
@@ -2557,11 +2692,13 @@
           "name": "react",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "frontend/package.json",
               "specifier": "19.2.7",
               "workspace": "@fafa/frontend"
             },
             {
+              "bucket": "dependencies",
               "declaredIn": "package.json",
               "specifier": "19.2.7",
               "workspace": "nestjs-remix-monorepo"
@@ -2577,11 +2714,13 @@
           "name": "react-dom",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "frontend/package.json",
               "specifier": "19.2.7",
               "workspace": "@fafa/frontend"
             },
             {
+              "bucket": "dependencies",
               "declaredIn": "package.json",
               "specifier": "19.2.7",
               "workspace": "nestjs-remix-monorepo"
@@ -2597,16 +2736,19 @@
           "name": "react-router",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "backend/package.json",
               "specifier": "8.0.1",
               "workspace": "@fafa/backend"
             },
             {
+              "bucket": "dependencies",
               "declaredIn": "frontend/package.json",
               "specifier": "8.0.1",
               "workspace": "@fafa/frontend"
             },
             {
+              "bucket": "dependencies",
               "declaredIn": "package.json",
               "specifier": "8.0.1",
               "workspace": "nestjs-remix-monorepo"
@@ -2622,11 +2764,13 @@
           "name": "vite",
           "occurrences": [
             {
+              "bucket": "devDependencies",
               "declaredIn": "frontend/package.json",
               "specifier": "8.1.0",
               "workspace": "@fafa/frontend"
             },
             {
+              "bucket": "dependencies",
               "declaredIn": "package.json",
               "specifier": "8.1.0",
               "workspace": "nestjs-remix-monorepo"
@@ -2789,6 +2933,7 @@
           "name": "husky",
           "occurrences": [
             {
+              "bucket": "devDependencies",
               "declaredIn": "frontend/package.json",
               "specifier": "^9.1.7",
               "workspace": "@fafa/frontend"
@@ -2804,11 +2949,13 @@
           "name": "lint-staged",
           "occurrences": [
             {
+              "bucket": "devDependencies",
               "declaredIn": "frontend/package.json",
               "specifier": "^16.4.0",
               "workspace": "@fafa/frontend"
             },
             {
+              "bucket": "devDependencies",
               "declaredIn": "package.json",
               "specifier": "^16.4.0",
               "workspace": "nestjs-remix-monorepo"
@@ -2824,11 +2971,13 @@
           "name": "prettier",
           "occurrences": [
             {
+              "bucket": "devDependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^3.8.3",
               "workspace": "@fafa/backend"
             },
             {
+              "bucket": "devDependencies",
               "declaredIn": "package.json",
               "specifier": "^3.8.3",
               "workspace": "nestjs-remix-monorepo"
@@ -2845,6 +2994,7 @@
           "name": "ts-node",
           "occurrences": [
             {
+              "bucket": "devDependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^10.9.1",
               "workspace": "@fafa/backend"
@@ -2860,46 +3010,55 @@
           "name": "tsx",
           "occurrences": [
             {
+              "bucket": "devDependencies",
               "declaredIn": "frontend/package.json",
               "specifier": "^4.22.4",
               "workspace": "@fafa/frontend"
             },
             {
+              "bucket": "devDependencies",
               "declaredIn": "packages/cwv-taxonomy/package.json",
               "specifier": "^4.22.4",
               "workspace": "@repo/cwv-taxonomy"
             },
             {
+              "bucket": "devDependencies",
               "declaredIn": "packages/database-types/package.json",
               "specifier": "^4.22.4",
               "workspace": "@repo/database-types"
             },
             {
+              "bucket": "devDependencies",
               "declaredIn": "packages/domain-commerce/package.json",
               "specifier": "^4.22.4",
               "workspace": "@repo/domain-commerce"
             },
             {
+              "bucket": "devDependencies",
               "declaredIn": "packages/registry/package.json",
               "specifier": "^4.22.4",
               "workspace": "@repo/registry"
             },
             {
+              "bucket": "devDependencies",
               "declaredIn": "packages/seo-role-contracts/package.json",
               "specifier": "^4.22.4",
               "workspace": "@repo/seo-role-contracts"
             },
             {
+              "bucket": "devDependencies",
               "declaredIn": "packages/seo-roles/package.json",
               "specifier": "^4.22.4",
               "workspace": "@repo/seo-roles"
             },
             {
+              "bucket": "devDependencies",
               "declaredIn": "packages/seo-types/package.json",
               "specifier": "^4.22.4",
               "workspace": "@repo/seo-types"
             },
             {
+              "bucket": "devDependencies",
               "declaredIn": "packages/seo-url-contract/package.json",
               "specifier": "^4.22.4",
               "workspace": "@repo/seo-url-contract"
@@ -3030,17 +3189,20 @@
           "name": "@typescript-eslint/eslint-plugin",
           "occurrences": [
             {
+              "bucket": "devDependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^8.60.1",
               "workspace": "@fafa/backend"
             },
             {
-              "declaredIn": "frontend/package.json",
+              "bucket": "devDependencies",
+              "declaredIn": "packages/eslint-config/package.json",
               "specifier": "^8.60.1",
               "workspace": "@fafa/eslint-config"
             },
             {
-              "declaredIn": "packages/eslint-config/package.json",
+              "bucket": "devDependencies",
+              "declaredIn": "frontend/package.json",
               "specifier": "^8.60.1",
               "workspace": "@fafa/frontend"
             }
@@ -3055,21 +3217,25 @@
           "name": "@typescript-eslint/parser",
           "occurrences": [
             {
+              "bucket": "devDependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^8.60.1",
               "workspace": "@fafa/backend"
             },
             {
-              "declaredIn": "frontend/package.json",
+              "bucket": "devDependencies",
+              "declaredIn": "packages/eslint-config/package.json",
               "specifier": "^8.60.1",
               "workspace": "@fafa/eslint-config"
             },
             {
-              "declaredIn": "packages/eslint-config/package.json",
+              "bucket": "devDependencies",
+              "declaredIn": "frontend/package.json",
               "specifier": "^8.60.1",
               "workspace": "@fafa/frontend"
             },
             {
+              "bucket": "devDependencies",
               "declaredIn": "packages/eslint-plugin-fafa-ports/package.json",
               "specifier": "^8.60.1",
               "workspace": "eslint-plugin-fafa-ports"
@@ -3085,37 +3251,44 @@
           "name": "eslint",
           "occurrences": [
             {
+              "bucket": "devDependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^8.57.1",
               "workspace": "@fafa/backend"
             },
             {
-              "declaredIn": "frontend/package.json",
+              "bucket": "devDependencies",
+              "declaredIn": "packages/design-tokens/package.json",
               "specifier": "^8.57.1",
               "workspace": "@fafa/design-tokens"
             },
             {
-              "declaredIn": "package.json",
+              "bucket": "devDependencies",
+              "declaredIn": "packages/eslint-config/package.json",
               "specifier": "^8.57.1",
               "workspace": "@fafa/eslint-config"
             },
             {
-              "declaredIn": "packages/design-tokens/package.json",
+              "bucket": "devDependencies",
+              "declaredIn": "frontend/package.json",
               "specifier": "^8.57.1",
               "workspace": "@fafa/frontend"
             },
             {
+              "bucket": "devDependencies",
+              "declaredIn": "packages/eslint-plugin-fafa-ports/package.json",
+              "specifier": "^8.57.1",
+              "workspace": "eslint-plugin-fafa-ports"
+            },
+            {
+              "bucket": "peerDependencies",
               "declaredIn": "packages/eslint-plugin-fafa-ports/package.json",
               "specifier": "^8.57.0 || ^9.0.0",
               "workspace": "eslint-plugin-fafa-ports"
             },
             {
-              "declaredIn": "packages/eslint-config/package.json",
-              "specifier": "^8.57.1",
-              "workspace": "eslint-plugin-fafa-ports"
-            },
-            {
-              "declaredIn": "packages/eslint-plugin-fafa-ports/package.json",
+              "bucket": "devDependencies",
+              "declaredIn": "package.json",
               "specifier": "^8.57.1",
               "workspace": "nestjs-remix-monorepo"
             }
@@ -3130,22 +3303,26 @@
           "name": "eslint-config-prettier",
           "occurrences": [
             {
+              "bucket": "devDependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^10.1.8",
               "workspace": "@fafa/backend"
             },
             {
-              "declaredIn": "frontend/package.json",
+              "bucket": "devDependencies",
+              "declaredIn": "packages/eslint-config/package.json",
               "specifier": "^10.1.8",
               "workspace": "@fafa/eslint-config"
             },
             {
-              "declaredIn": "package.json",
+              "bucket": "devDependencies",
+              "declaredIn": "frontend/package.json",
               "specifier": "^10.1.8",
               "workspace": "@fafa/frontend"
             },
             {
-              "declaredIn": "packages/eslint-config/package.json",
+              "bucket": "devDependencies",
+              "declaredIn": "package.json",
               "specifier": "^10.1.8",
               "workspace": "nestjs-remix-monorepo"
             }
@@ -3160,12 +3337,14 @@
           "name": "eslint-plugin-import",
           "occurrences": [
             {
-              "declaredIn": "frontend/package.json",
+              "bucket": "devDependencies",
+              "declaredIn": "packages/eslint-config/package.json",
               "specifier": "^2.32.0",
               "workspace": "@fafa/eslint-config"
             },
             {
-              "declaredIn": "packages/eslint-config/package.json",
+              "bucket": "devDependencies",
+              "declaredIn": "frontend/package.json",
               "specifier": "^2.32.0",
               "workspace": "@fafa/frontend"
             }
@@ -3180,12 +3359,14 @@
           "name": "eslint-plugin-jsx-a11y",
           "occurrences": [
             {
-              "declaredIn": "frontend/package.json",
+              "bucket": "devDependencies",
+              "declaredIn": "packages/eslint-config/package.json",
               "specifier": "^6.10.2",
               "workspace": "@fafa/eslint-config"
             },
             {
-              "declaredIn": "packages/eslint-config/package.json",
+              "bucket": "devDependencies",
+              "declaredIn": "frontend/package.json",
               "specifier": "^6.10.2",
               "workspace": "@fafa/frontend"
             }
@@ -3200,12 +3381,14 @@
           "name": "eslint-plugin-prettier",
           "occurrences": [
             {
-              "declaredIn": "package.json",
+              "bucket": "devDependencies",
+              "declaredIn": "packages/eslint-config/package.json",
               "specifier": "^5.5.6",
               "workspace": "@fafa/eslint-config"
             },
             {
-              "declaredIn": "packages/eslint-config/package.json",
+              "bucket": "devDependencies",
+              "declaredIn": "package.json",
               "specifier": "^5.5.6",
               "workspace": "nestjs-remix-monorepo"
             }
@@ -3220,12 +3403,14 @@
           "name": "eslint-plugin-react",
           "occurrences": [
             {
-              "declaredIn": "frontend/package.json",
+              "bucket": "devDependencies",
+              "declaredIn": "packages/eslint-config/package.json",
               "specifier": "^7.37.5",
               "workspace": "@fafa/eslint-config"
             },
             {
-              "declaredIn": "packages/eslint-config/package.json",
+              "bucket": "devDependencies",
+              "declaredIn": "frontend/package.json",
               "specifier": "^7.37.5",
               "workspace": "@fafa/frontend"
             }
@@ -3240,12 +3425,14 @@
           "name": "eslint-plugin-react-hooks",
           "occurrences": [
             {
-              "declaredIn": "frontend/package.json",
+              "bucket": "devDependencies",
+              "declaredIn": "packages/eslint-config/package.json",
               "specifier": "^4.6.2",
               "workspace": "@fafa/eslint-config"
             },
             {
-              "declaredIn": "packages/eslint-config/package.json",
+              "bucket": "devDependencies",
+              "declaredIn": "frontend/package.json",
               "specifier": "^4.6.2",
               "workspace": "@fafa/frontend"
             }
@@ -3260,66 +3447,79 @@
           "name": "typescript",
           "occurrences": [
             {
+              "bucket": "devDependencies",
               "declaredIn": "backend/package.json",
               "specifier": "~6.0.3",
               "workspace": "@fafa/backend"
             },
             {
-              "declaredIn": "frontend/package.json",
+              "bucket": "devDependencies",
+              "declaredIn": "packages/design-tokens/package.json",
               "specifier": "~6.0.3",
               "workspace": "@fafa/design-tokens"
             },
             {
-              "declaredIn": "packages/cwv-taxonomy/package.json",
+              "bucket": "devDependencies",
+              "declaredIn": "packages/eslint-config/package.json",
               "specifier": "~6.0.3",
               "workspace": "@fafa/eslint-config"
             },
             {
-              "declaredIn": "packages/database-types/package.json",
+              "bucket": "devDependencies",
+              "declaredIn": "frontend/package.json",
               "specifier": "~6.0.3",
               "workspace": "@fafa/frontend"
             },
             {
-              "declaredIn": "packages/design-tokens/package.json",
+              "bucket": "devDependencies",
+              "declaredIn": "packages/cwv-taxonomy/package.json",
               "specifier": "~6.0.3",
               "workspace": "@repo/cwv-taxonomy"
             },
             {
-              "declaredIn": "packages/domain-commerce/package.json",
+              "bucket": "devDependencies",
+              "declaredIn": "packages/database-types/package.json",
               "specifier": "~6.0.3",
               "workspace": "@repo/database-types"
             },
             {
-              "declaredIn": "packages/eslint-config/package.json",
+              "bucket": "devDependencies",
+              "declaredIn": "packages/domain-commerce/package.json",
               "specifier": "~6.0.3",
               "workspace": "@repo/domain-commerce"
             },
             {
+              "bucket": "devDependencies",
               "declaredIn": "packages/registry/package.json",
               "specifier": "~6.0.3",
               "workspace": "@repo/registry"
             },
             {
+              "bucket": "devDependencies",
               "declaredIn": "packages/seo-role-contracts/package.json",
               "specifier": "~6.0.3",
               "workspace": "@repo/seo-role-contracts"
             },
             {
+              "bucket": "devDependencies",
               "declaredIn": "packages/seo-roles/package.json",
               "specifier": "~6.0.3",
               "workspace": "@repo/seo-roles"
             },
             {
+              "bucket": "devDependencies",
               "declaredIn": "packages/seo-types/package.json",
               "specifier": "~6.0.3",
               "workspace": "@repo/seo-types"
             },
             {
+              "bucket": "devDependencies",
               "declaredIn": "packages/seo-url-contract/package.json",
               "specifier": "~6.0.3",
               "workspace": "@repo/seo-url-contract"
             },
             {
+              "bucket": "devDependencies",
               "declaredIn": "package.json",
               "specifier": "6.0.3",
               "workspace": "nestjs-remix-monorepo"
@@ -3585,52 +3785,62 @@
           "name": "zod",
           "occurrences": [
             {
+              "bucket": "dependencies",
               "declaredIn": "backend/package.json",
               "specifier": "^4.4.3",
               "workspace": "@fafa/backend"
             },
             {
-              "declaredIn": "frontend/package.json",
+              "bucket": "devDependencies",
+              "declaredIn": "packages/design-tokens/package.json",
               "specifier": "^4.4.3",
               "workspace": "@fafa/design-tokens"
             },
             {
-              "declaredIn": "package.json",
+              "bucket": "dependencies",
+              "declaredIn": "frontend/package.json",
               "specifier": "^4.4.3",
               "workspace": "@fafa/frontend"
             },
             {
+              "bucket": "dependencies",
               "declaredIn": "packages/cwv-taxonomy/package.json",
               "specifier": "^4.4.3",
               "workspace": "@repo/cwv-taxonomy"
             },
             {
+              "bucket": "dependencies",
               "declaredIn": "packages/database-types/package.json",
               "specifier": "^4.4.3",
               "workspace": "@repo/database-types"
             },
             {
-              "declaredIn": "packages/design-tokens/package.json",
+              "bucket": "dependencies",
+              "declaredIn": "packages/registry/package.json",
               "specifier": "^4.4.3",
               "workspace": "@repo/registry"
             },
             {
-              "declaredIn": "packages/registry/package.json",
+              "bucket": "dependencies",
+              "declaredIn": "packages/seo-role-contracts/package.json",
               "specifier": "^4.4.3",
               "workspace": "@repo/seo-role-contracts"
             },
             {
-              "declaredIn": "packages/seo-role-contracts/package.json",
+              "bucket": "dependencies",
+              "declaredIn": "packages/seo-roles/package.json",
               "specifier": "^4.4.3",
               "workspace": "@repo/seo-roles"
             },
             {
-              "declaredIn": "packages/seo-roles/package.json",
+              "bucket": "dependencies",
+              "declaredIn": "packages/seo-types/package.json",
               "specifier": "^4.4.3",
               "workspace": "@repo/seo-types"
             },
             {
-              "declaredIn": "packages/seo-types/package.json",
+              "bucket": "dependencies",
+              "declaredIn": "package.json",
               "specifier": "^4.4.3",
               "workspace": "nestjs-remix-monorepo"
             }
@@ -3722,7 +3932,7 @@
   ],
   "generatedFrom": {
     "deps_registry": "audit/registry/deps.json",
-    "deps_registry_sha": "sha256:a580f64acf4bb9bea3d25c935e014765913150f69ac4073803b4f650b2c35b72",
+    "deps_registry_sha": "sha256:331475aadc03b29723aed50e21527a9998b740dcb55598aa2525e6bceb7f5ef1",
     "lockfile": "package-lock.json",
     "lockfile_sha": "sha256:dc7c5bd4696d0359ce2883ef4c195ae1316ac725c5de79360f5779b0b29874b5",
     "overlay": "audit/dependencies/family-overlay.yaml",
@@ -3730,7 +3940,7 @@
   },
   "inventoryFormat": "pr-9-modernization-inventory",
   "matrixVersion": "pr9-v1",
-  "schemaVersion": "1.0.0",
+  "schemaVersion": "1.1.0",
   "summary": {
     "by_blast_radius": {
       "auth": 8,
@@ -3766,6 +3976,7 @@
       "name": "@anthropic-ai/sdk",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^0.71.0",
           "workspace": "@fafa/backend"
@@ -3781,6 +3992,7 @@
       "name": "@ast-grep/cli",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "package.json",
           "specifier": "0.44.0",
           "workspace": "nestjs-remix-monorepo"
@@ -3796,6 +4008,7 @@
       "name": "@axe-core/playwright",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^4.11.3",
           "workspace": "@fafa/frontend"
@@ -3811,6 +4024,7 @@
       "name": "@changesets/cli",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "package.json",
           "specifier": "^2.31.0",
           "workspace": "nestjs-remix-monorepo"
@@ -3826,6 +4040,7 @@
       "name": "@commitlint/cli",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "package.json",
           "specifier": "^20.5.3",
           "workspace": "nestjs-remix-monorepo"
@@ -3841,6 +4056,7 @@
       "name": "@commitlint/config-conventional",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "package.json",
           "specifier": "^20.5.3",
           "workspace": "nestjs-remix-monorepo"
@@ -3856,6 +4072,7 @@
       "name": "@google-analytics/data",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^5.2.1",
           "workspace": "@fafa/backend"
@@ -3871,6 +4088,7 @@
       "name": "@hookform/resolvers",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^5.2.2",
           "workspace": "@fafa/frontend"
@@ -3886,6 +4104,7 @@
       "name": "@jridgewell/sourcemap-codec",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "packages/design-tokens/package.json",
           "specifier": "^1.5.5",
           "workspace": "@fafa/design-tokens"
@@ -3901,6 +4120,7 @@
       "name": "@nestjs-modules/ioredis",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^2.0.2",
           "workspace": "@fafa/backend"
@@ -3916,6 +4136,7 @@
       "name": "@paralleldrive/cuid2",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^2.2.2",
           "workspace": "@fafa/backend"
@@ -3931,6 +4152,7 @@
       "name": "@playwright/test",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "1.61.0",
           "workspace": "@fafa/frontend"
@@ -3946,6 +4168,7 @@
       "name": "@radix-ui/react-accordion",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^1.2.12",
           "workspace": "@fafa/frontend"
@@ -3961,6 +4184,7 @@
       "name": "@radix-ui/react-avatar",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^1.1.11",
           "workspace": "@fafa/frontend"
@@ -3976,6 +4200,7 @@
       "name": "@radix-ui/react-collapsible",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^1.1.12",
           "workspace": "@fafa/frontend"
@@ -3991,6 +4216,7 @@
       "name": "@radix-ui/react-dialog",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^1.1.15",
           "workspace": "@fafa/frontend"
@@ -4006,6 +4232,7 @@
       "name": "@radix-ui/react-dropdown-menu",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^2.1.16",
           "workspace": "@fafa/frontend"
@@ -4021,6 +4248,7 @@
       "name": "@radix-ui/react-hover-card",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^1.1.15",
           "workspace": "@fafa/frontend"
@@ -4036,6 +4264,7 @@
       "name": "@radix-ui/react-navigation-menu",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^1.2.14",
           "workspace": "@fafa/frontend"
@@ -4051,6 +4280,7 @@
       "name": "@radix-ui/react-popover",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^1.1.15",
           "workspace": "@fafa/frontend"
@@ -4066,6 +4296,7 @@
       "name": "@radix-ui/react-scroll-area",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^1.2.10",
           "workspace": "@fafa/frontend"
@@ -4081,6 +4312,7 @@
       "name": "@radix-ui/react-separator",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^1.1.8",
           "workspace": "@fafa/frontend"
@@ -4096,6 +4328,7 @@
       "name": "@radix-ui/react-slider",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^1.3.6",
           "workspace": "@fafa/frontend"
@@ -4111,6 +4344,7 @@
       "name": "@radix-ui/react-slot",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^1.2.4",
           "workspace": "@fafa/frontend"
@@ -4126,6 +4360,7 @@
       "name": "@radix-ui/react-switch",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^1.2.6",
           "workspace": "@fafa/frontend"
@@ -4141,6 +4376,7 @@
       "name": "@radix-ui/react-tabs",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^1.1.13",
           "workspace": "@fafa/frontend"
@@ -4156,6 +4392,7 @@
       "name": "@radix-ui/react-tooltip",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^1.2.8",
           "workspace": "@fafa/frontend"
@@ -4171,11 +4408,13 @@
       "name": "@repo/cwv-taxonomy",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "*",
           "workspace": "@fafa/backend"
         },
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "*",
           "workspace": "@fafa/frontend"
@@ -4191,6 +4430,7 @@
       "name": "@repo/domain-commerce",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "*",
           "workspace": "@fafa/backend"
@@ -4206,11 +4446,13 @@
       "name": "@repo/registry",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "*",
           "workspace": "@fafa/backend"
         },
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "*",
           "workspace": "@fafa/frontend"
@@ -4226,11 +4468,13 @@
       "name": "@repo/seo-types",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "*",
           "workspace": "@fafa/backend"
         },
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "*",
           "workspace": "@fafa/frontend"
@@ -4246,11 +4490,13 @@
       "name": "@repo/seo-url-contract",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "*",
           "workspace": "@fafa/backend"
         },
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "*",
           "workspace": "@fafa/frontend"
@@ -4266,6 +4512,7 @@
       "name": "@sentry/nestjs",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "10.59.0",
           "workspace": "@fafa/backend"
@@ -4281,6 +4528,7 @@
       "name": "@sentry/react",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "10.59.0",
           "workspace": "@fafa/frontend"
@@ -4296,6 +4544,7 @@
       "name": "@size-limit/file",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^12.1.0",
           "workspace": "@fafa/frontend"
@@ -4311,6 +4560,7 @@
       "name": "@tailwindcss/vite",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^4.3.1",
           "workspace": "@fafa/frontend"
@@ -4326,6 +4576,7 @@
       "name": "@tanstack/react-query",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^5.87.1",
           "workspace": "@fafa/frontend"
@@ -4341,6 +4592,7 @@
       "name": "@testcontainers/redis",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^12.0.3",
           "workspace": "@fafa/backend"
@@ -4356,6 +4608,7 @@
       "name": "@testing-library/jest-dom",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^6.6.3",
           "workspace": "@fafa/frontend"
@@ -4371,6 +4624,7 @@
       "name": "@testing-library/react",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^16.3.0",
           "workspace": "@fafa/frontend"
@@ -4386,6 +4640,7 @@
       "name": "@tiptap/extension-bold",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^3.26.1",
           "workspace": "@fafa/frontend"
@@ -4401,6 +4656,7 @@
       "name": "@tiptap/extension-italic",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^3.26.1",
           "workspace": "@fafa/frontend"
@@ -4416,6 +4672,7 @@
       "name": "@tiptap/pm",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^3.26.1",
           "workspace": "@fafa/frontend"
@@ -4431,6 +4688,7 @@
       "name": "@tiptap/react",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^3.26.1",
           "workspace": "@fafa/frontend"
@@ -4446,6 +4704,7 @@
       "name": "@tiptap/starter-kit",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^3.26.1",
           "workspace": "@fafa/frontend"
@@ -4461,6 +4720,7 @@
       "name": "@types/bcrypt",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "package.json",
           "specifier": "^6.0.0",
           "workspace": "nestjs-remix-monorepo"
@@ -4476,6 +4736,7 @@
       "name": "@types/bcryptjs",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^2.4.6",
           "workspace": "@fafa/backend"
@@ -4491,6 +4752,7 @@
       "name": "@types/body-parser",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^1.19.5",
           "workspace": "@fafa/backend"
@@ -4506,6 +4768,7 @@
       "name": "@types/bull",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^4.10.4",
           "workspace": "@fafa/backend"
@@ -4521,6 +4784,7 @@
       "name": "@types/compression",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^1.8.1",
           "workspace": "@fafa/backend"
@@ -4536,6 +4800,7 @@
       "name": "@types/cors",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^2.8.19",
           "workspace": "@fafa/backend"
@@ -4551,6 +4816,7 @@
       "name": "@types/dompurify",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^3.2.0",
           "workspace": "@fafa/frontend"
@@ -4566,6 +4832,7 @@
       "name": "@types/eslint",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "packages/eslint-config/package.json",
           "specifier": "^8.56.5",
           "workspace": "@fafa/eslint-config"
@@ -4582,6 +4849,7 @@
       "name": "@types/express",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^5.0.0",
           "workspace": "@fafa/backend"
@@ -4597,6 +4865,7 @@
       "name": "@types/express-session",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^1.19.0",
           "workspace": "@fafa/backend"
@@ -4612,6 +4881,7 @@
       "name": "@types/file-type",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "package.json",
           "specifier": "^10.9.3",
           "workspace": "nestjs-remix-monorepo"
@@ -4627,6 +4897,7 @@
       "name": "@types/ioredis",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^5.0.0",
           "workspace": "@fafa/backend"
@@ -4642,6 +4913,7 @@
       "name": "@types/jest",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^29.5.2",
           "workspace": "@fafa/backend"
@@ -4657,16 +4929,19 @@
       "name": "@types/js-yaml",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^4.0.9",
           "workspace": "@fafa/backend"
         },
         {
+          "bucket": "devDependencies",
           "declaredIn": "packages/registry/package.json",
           "specifier": "4.0.9",
           "workspace": "@repo/registry"
         },
         {
+          "bucket": "devDependencies",
           "declaredIn": "package.json",
           "specifier": "^4.0.9",
           "workspace": "nestjs-remix-monorepo"
@@ -4682,11 +4957,13 @@
       "name": "@types/micromatch",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "packages/registry/package.json",
           "specifier": "^4.0.9",
           "workspace": "@repo/registry"
         },
         {
+          "bucket": "devDependencies",
           "declaredIn": "package.json",
           "specifier": "^4.0.10",
           "workspace": "nestjs-remix-monorepo"
@@ -4702,6 +4979,7 @@
       "name": "@types/multer",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "package.json",
           "specifier": "^2.1.0",
           "workspace": "nestjs-remix-monorepo"
@@ -4717,51 +4995,61 @@
       "name": "@types/node",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^24",
           "workspace": "@fafa/backend"
         },
         {
-          "declaredIn": "packages/cwv-taxonomy/package.json",
+          "bucket": "devDependencies",
+          "declaredIn": "packages/design-tokens/package.json",
           "specifier": "^24",
           "workspace": "@fafa/design-tokens"
         },
         {
-          "declaredIn": "packages/database-types/package.json",
+          "bucket": "devDependencies",
+          "declaredIn": "packages/cwv-taxonomy/package.json",
           "specifier": "^24",
           "workspace": "@repo/cwv-taxonomy"
         },
         {
-          "declaredIn": "packages/design-tokens/package.json",
+          "bucket": "devDependencies",
+          "declaredIn": "packages/database-types/package.json",
           "specifier": "^24",
           "workspace": "@repo/database-types"
         },
         {
+          "bucket": "devDependencies",
           "declaredIn": "packages/domain-commerce/package.json",
           "specifier": "^24",
           "workspace": "@repo/domain-commerce"
         },
         {
+          "bucket": "devDependencies",
           "declaredIn": "packages/registry/package.json",
           "specifier": "^24",
           "workspace": "@repo/registry"
         },
         {
+          "bucket": "devDependencies",
           "declaredIn": "packages/seo-role-contracts/package.json",
           "specifier": "^24",
           "workspace": "@repo/seo-role-contracts"
         },
         {
+          "bucket": "devDependencies",
           "declaredIn": "packages/seo-roles/package.json",
           "specifier": "^24",
           "workspace": "@repo/seo-roles"
         },
         {
+          "bucket": "devDependencies",
           "declaredIn": "packages/seo-types/package.json",
           "specifier": "^24",
           "workspace": "@repo/seo-types"
         },
         {
+          "bucket": "devDependencies",
           "declaredIn": "packages/seo-url-contract/package.json",
           "specifier": "^24",
           "workspace": "@repo/seo-url-contract"
@@ -4777,6 +5065,7 @@
       "name": "@types/nodemailer",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^7.0.9",
           "workspace": "@fafa/backend"
@@ -4792,6 +5081,7 @@
       "name": "@types/passport",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^1.0.17",
           "workspace": "@fafa/backend"
@@ -4807,6 +5097,7 @@
       "name": "@types/passport-jwt",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^4.0.1",
           "workspace": "@fafa/backend"
@@ -4822,6 +5113,7 @@
       "name": "@types/passport-local",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^1.0.38",
           "workspace": "@fafa/backend"
@@ -4837,6 +5129,7 @@
       "name": "@types/sharp",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^0.32.0",
           "workspace": "@fafa/backend"
@@ -4852,6 +5145,7 @@
       "name": "@types/socket.io",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^3.0.2",
           "workspace": "@fafa/backend"
@@ -4867,6 +5161,7 @@
       "name": "@types/supertest",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^6.0.0",
           "workspace": "@fafa/backend"
@@ -4882,6 +5177,7 @@
       "name": "@types/uuid",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^10.0.0",
           "workspace": "@fafa/backend"
@@ -4897,6 +5193,7 @@
       "name": "@typescript-eslint/rule-tester",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "packages/eslint-plugin-fafa-ports/package.json",
           "specifier": "^8.60.1",
           "workspace": "eslint-plugin-fafa-ports"
@@ -4912,6 +5209,7 @@
       "name": "@typescript-eslint/utils",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "packages/eslint-plugin-fafa-ports/package.json",
           "specifier": "^8.60.1",
           "workspace": "eslint-plugin-fafa-ports"
@@ -4927,6 +5225,7 @@
       "name": "@vitest/browser",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^4.1.8",
           "workspace": "@fafa/frontend"
@@ -4942,6 +5241,7 @@
       "name": "@vitest/coverage-v8",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^4.0.2",
           "workspace": "@fafa/frontend"
@@ -4957,6 +5257,7 @@
       "name": "abort-controller",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "package.json",
           "specifier": "^3.0.0",
           "workspace": "nestjs-remix-monorepo"
@@ -4972,6 +5273,7 @@
       "name": "autoprefixer",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "package.json",
           "specifier": "^10.4.14",
           "workspace": "nestjs-remix-monorepo"
@@ -4987,6 +5289,7 @@
       "name": "axe-core",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^4.12.0",
           "workspace": "@fafa/frontend"
@@ -5002,6 +5305,7 @@
       "name": "cache-manager",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^6.0.0",
           "workspace": "@fafa/backend"
@@ -5017,6 +5321,7 @@
       "name": "cacheable",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^2.3.0",
           "workspace": "@fafa/backend"
@@ -5032,6 +5337,7 @@
       "name": "class-variance-authority",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^0.7.1",
           "workspace": "@fafa/frontend"
@@ -5047,11 +5353,13 @@
       "name": "clsx",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^2.1.1",
           "workspace": "@fafa/frontend"
         },
         {
+          "bucket": "dependencies",
           "declaredIn": "package.json",
           "specifier": "^2.1.1",
           "workspace": "nestjs-remix-monorepo"
@@ -5067,6 +5375,7 @@
       "name": "cmdk",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^1.1.1",
           "workspace": "@fafa/frontend"
@@ -5082,6 +5391,7 @@
       "name": "compression",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^1.8.1",
           "workspace": "@fafa/backend"
@@ -5097,6 +5407,7 @@
       "name": "connect-redis-v5",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "backend/package.json",
           "specifier": "npm:connect-redis@^5.2.0",
           "workspace": "@fafa/backend"
@@ -5112,6 +5423,7 @@
       "name": "cookie",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^0.7.2",
           "workspace": "@fafa/frontend"
@@ -5127,6 +5439,7 @@
       "name": "cors",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^2.8.5",
           "workspace": "@fafa/backend"
@@ -5142,6 +5455,7 @@
       "name": "cron-parser",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^4.9.0",
           "workspace": "@fafa/backend"
@@ -5157,6 +5471,7 @@
       "name": "dependency-cruiser",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "package.json",
           "specifier": "17.4.3",
           "workspace": "nestjs-remix-monorepo"
@@ -5172,11 +5487,13 @@
       "name": "dotenv",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^17.2.1",
           "workspace": "@fafa/backend"
         },
         {
+          "bucket": "dependencies",
           "declaredIn": "package.json",
           "specifier": "^17.2.3",
           "workspace": "nestjs-remix-monorepo"
@@ -5194,6 +5511,7 @@
       "name": "embla-carousel-react",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^8.6.0",
           "workspace": "@fafa/frontend"
@@ -5209,6 +5527,7 @@
       "name": "esbuild",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^0.27.0",
           "workspace": "@fafa/frontend"
@@ -5226,6 +5545,7 @@
       "name": "eslint-import-resolver-typescript",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^3.6.1",
           "workspace": "@fafa/frontend"
@@ -5241,6 +5561,7 @@
       "name": "eslint-plugin-fafa-ports",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "backend/package.json",
           "specifier": "*",
           "workspace": "@fafa/backend"
@@ -5256,6 +5577,7 @@
       "name": "eslint-plugin-jest",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^28.14.0",
           "workspace": "@fafa/frontend"
@@ -5271,6 +5593,7 @@
       "name": "eslint-plugin-jest-dom",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^5.5.0",
           "workspace": "@fafa/frontend"
@@ -5286,6 +5609,7 @@
       "name": "eslint-plugin-testing-library",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^7.16.2",
           "workspace": "@fafa/frontend"
@@ -5301,6 +5625,7 @@
       "name": "eventemitter2",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^6.4.9",
           "workspace": "@fafa/backend"
@@ -5316,11 +5641,13 @@
       "name": "fast-json-stable-stringify",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^2.1.0",
           "workspace": "@fafa/backend"
         },
         {
+          "bucket": "devDependencies",
           "declaredIn": "package.json",
           "specifier": "^2.1.0",
           "workspace": "nestjs-remix-monorepo"
@@ -5336,6 +5663,7 @@
       "name": "file-type",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^20.4.1",
           "workspace": "@fafa/backend"
@@ -5352,12 +5680,14 @@
       "name": "globals",
       "occurrences": [
         {
-          "declaredIn": "frontend/package.json",
+          "bucket": "devDependencies",
+          "declaredIn": "packages/eslint-config/package.json",
           "specifier": "^14.0.0",
           "workspace": "@fafa/eslint-config"
         },
         {
-          "declaredIn": "packages/eslint-config/package.json",
+          "bucket": "devDependencies",
+          "declaredIn": "frontend/package.json",
           "specifier": "^14.0.0",
           "workspace": "@fafa/frontend"
         }
@@ -5373,6 +5703,7 @@
       "name": "google-auth-library",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^10.6.1",
           "workspace": "@fafa/backend"
@@ -5389,6 +5720,7 @@
       "name": "googleapis",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^164.1.0",
           "workspace": "@fafa/backend"
@@ -5404,6 +5736,7 @@
       "name": "gray-matter",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^4.0.3",
           "workspace": "@fafa/backend"
@@ -5419,6 +5752,7 @@
       "name": "helmet",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^8.1.0",
           "workspace": "@fafa/backend"
@@ -5434,6 +5768,7 @@
       "name": "html-react-parser",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^5.2.10",
           "workspace": "@fafa/frontend"
@@ -5449,6 +5784,7 @@
       "name": "impeccable",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "2.3.2",
           "workspace": "@fafa/frontend"
@@ -5464,6 +5800,7 @@
       "name": "ioredis-mock",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^8.13.1",
           "workspace": "@fafa/backend"
@@ -5479,6 +5816,7 @@
       "name": "isbot",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^4.1.0",
           "workspace": "@fafa/frontend"
@@ -5495,6 +5833,7 @@
       "name": "isomorphic-dompurify",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^2.35.0",
           "workspace": "@fafa/frontend"
@@ -5510,6 +5849,7 @@
       "name": "jest",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^29.5.0",
           "workspace": "@fafa/backend"
@@ -5525,11 +5865,13 @@
       "name": "jose",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^5.10.0",
           "workspace": "@fafa/backend"
         },
         {
+          "bucket": "dependencies",
           "declaredIn": "packages/registry/package.json",
           "specifier": "^5.10.0",
           "workspace": "@repo/registry"
@@ -5545,16 +5887,19 @@
       "name": "js-yaml",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^4.1.1",
           "workspace": "@fafa/backend"
         },
         {
+          "bucket": "dependencies",
           "declaredIn": "packages/registry/package.json",
           "specifier": "4.1.1",
           "workspace": "@repo/registry"
         },
         {
+          "bucket": "devDependencies",
           "declaredIn": "package.json",
           "specifier": "^4.1.1",
           "workspace": "nestjs-remix-monorepo"
@@ -5572,11 +5917,13 @@
       "name": "keyv",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^5.6.0",
           "workspace": "@fafa/backend"
         },
         {
+          "bucket": "devDependencies",
           "declaredIn": "package.json",
           "specifier": "^5.6.0",
           "workspace": "nestjs-remix-monorepo"
@@ -5593,6 +5940,7 @@
       "name": "knip",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "package.json",
           "specifier": "6.17.1",
           "workspace": "nestjs-remix-monorepo"
@@ -5608,6 +5956,7 @@
       "name": "lucide-react",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^0.462.0",
           "workspace": "@fafa/frontend"
@@ -5623,6 +5972,7 @@
       "name": "madge",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "package.json",
           "specifier": "8.0.0",
           "workspace": "nestjs-remix-monorepo"
@@ -5638,6 +5988,7 @@
       "name": "meilisearch",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^0.52.0",
           "workspace": "@fafa/backend"
@@ -5653,12 +6004,14 @@
       "name": "micromatch",
       "occurrences": [
         {
-          "declaredIn": "package.json",
+          "bucket": "dependencies",
+          "declaredIn": "packages/registry/package.json",
           "specifier": "^4.0.8",
           "workspace": "@repo/registry"
         },
         {
-          "declaredIn": "packages/registry/package.json",
+          "bucket": "devDependencies",
+          "declaredIn": "package.json",
           "specifier": "^4.0.8",
           "workspace": "nestjs-remix-monorepo"
         }
@@ -5673,6 +6026,7 @@
       "name": "nestjs-pino",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^4.5.0",
           "workspace": "@fafa/backend"
@@ -5688,11 +6042,13 @@
       "name": "nestjs-zod",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^4.3.1",
           "workspace": "@fafa/backend"
         },
         {
+          "bucket": "dependencies",
           "declaredIn": "package.json",
           "specifier": "^4.3.1",
           "workspace": "nestjs-remix-monorepo"
@@ -5708,6 +6064,7 @@
       "name": "node-fetch",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "package.json",
           "specifier": "^3.3.2",
           "workspace": "nestjs-remix-monorepo"
@@ -5724,6 +6081,7 @@
       "name": "nodemailer",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^8.0.0",
           "workspace": "@fafa/backend"
@@ -5739,6 +6097,7 @@
       "name": "nodemon",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^3.1.14",
           "workspace": "@fafa/backend"
@@ -5754,6 +6113,7 @@
       "name": "npm-run-all",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^4.1.5",
           "workspace": "@fafa/backend"
@@ -5769,6 +6129,7 @@
       "name": "openai",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^4.104.0",
           "workspace": "@fafa/backend"
@@ -5784,6 +6145,7 @@
       "name": "pdf-parse",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^1.1.1",
           "workspace": "@fafa/backend"
@@ -5799,11 +6161,13 @@
       "name": "playwright",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^1.48.2",
           "workspace": "@fafa/backend"
         },
         {
+          "bucket": "devDependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "1.61.0",
           "workspace": "@fafa/frontend"
@@ -5820,11 +6184,13 @@
       "name": "postcss",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^8.4.49",
           "workspace": "@fafa/frontend"
         },
         {
+          "bucket": "dependencies",
           "declaredIn": "package.json",
           "specifier": "^8.4.24",
           "workspace": "nestjs-remix-monorepo"
@@ -5840,6 +6206,7 @@
       "name": "prettier-linter-helpers",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^1.0.0",
           "workspace": "@fafa/backend"
@@ -5855,6 +6222,7 @@
       "name": "prom-client",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^15.1.3",
           "workspace": "@fafa/backend"
@@ -5870,6 +6238,7 @@
       "name": "react-hook-form",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^7.62.0",
           "workspace": "@fafa/frontend"
@@ -5885,6 +6254,7 @@
       "name": "recharts",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^2.15.4",
           "workspace": "@fafa/frontend"
@@ -5900,6 +6270,7 @@
       "name": "redis",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "~5.12.0",
           "workspace": "@fafa/backend"
@@ -5915,11 +6286,13 @@
       "name": "remix-flat-routes",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^0.8.5",
           "workspace": "@fafa/frontend"
         },
         {
+          "bucket": "dependencies",
           "declaredIn": "package.json",
           "specifier": "^0.8.5",
           "workspace": "nestjs-remix-monorepo"
@@ -5935,6 +6308,7 @@
       "name": "rollup-plugin-visualizer",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^6.0.5",
           "workspace": "@fafa/frontend"
@@ -5950,11 +6324,13 @@
       "name": "sharp",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^0.34.3",
           "workspace": "@fafa/backend"
         },
         {
+          "bucket": "dependencies",
           "declaredIn": "package.json",
           "specifier": "^0.34.3",
           "workspace": "nestjs-remix-monorepo"
@@ -5970,6 +6346,7 @@
       "name": "simple-update-notifier",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^2.0.0",
           "workspace": "@fafa/backend"
@@ -5985,6 +6362,7 @@
       "name": "size-limit",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^12.1.0",
           "workspace": "@fafa/frontend"
@@ -6000,6 +6378,7 @@
       "name": "socket.io",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^4.8.1",
           "workspace": "@fafa/backend"
@@ -6015,6 +6394,7 @@
       "name": "sonner",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^2.0.7",
           "workspace": "@fafa/frontend"
@@ -6030,6 +6410,7 @@
       "name": "source-map-support",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^0.5.21",
           "workspace": "@fafa/backend"
@@ -6046,6 +6427,7 @@
       "name": "squawk-cli",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "package.json",
           "specifier": "2.58.0",
           "workspace": "nestjs-remix-monorepo"
@@ -6061,6 +6443,7 @@
       "name": "style-dictionary",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "packages/design-tokens/package.json",
           "specifier": "5.5.0",
           "workspace": "@fafa/design-tokens"
@@ -6076,6 +6459,7 @@
       "name": "supertest",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^7.0.0",
           "workspace": "@fafa/backend"
@@ -6091,11 +6475,13 @@
       "name": "tailwind-merge",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^3.4.0",
           "workspace": "@fafa/frontend"
         },
         {
+          "bucket": "dependencies",
           "declaredIn": "package.json",
           "specifier": "^3.3.1",
           "workspace": "nestjs-remix-monorepo"
@@ -6111,11 +6497,13 @@
       "name": "tailwindcss",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^4.3.1",
           "workspace": "@fafa/frontend"
         },
         {
+          "bucket": "dependencies",
           "declaredIn": "package.json",
           "specifier": "^4.3.1",
           "workspace": "nestjs-remix-monorepo"
@@ -6131,6 +6519,7 @@
       "name": "tailwindcss-animate",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^1.0.7",
           "workspace": "@fafa/frontend"
@@ -6146,6 +6535,7 @@
       "name": "ts-jest",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^29.4.10",
           "workspace": "@fafa/backend"
@@ -6161,6 +6551,7 @@
       "name": "ts-loader",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^9.6.2",
           "workspace": "@fafa/backend"
@@ -6176,6 +6567,7 @@
       "name": "tsc-alias",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^1.8.17",
           "workspace": "@fafa/backend"
@@ -6191,6 +6583,7 @@
       "name": "tsconfig-paths",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^4.2.0",
           "workspace": "@fafa/backend"
@@ -6207,6 +6600,7 @@
       "name": "tsup",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "packages/design-tokens/package.json",
           "specifier": "^8.3.5",
           "workspace": "@fafa/design-tokens"
@@ -6222,6 +6616,7 @@
       "name": "turbo",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "package.json",
           "specifier": "^2.9.16",
           "workspace": "nestjs-remix-monorepo"
@@ -6237,6 +6632,7 @@
       "name": "typescript-eslint",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "packages/eslint-config/package.json",
           "specifier": "^8.61.1",
           "workspace": "@fafa/eslint-config"
@@ -6252,6 +6648,7 @@
       "name": "uid",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "package.json",
           "specifier": "^2.0.2",
           "workspace": "nestjs-remix-monorepo"
@@ -6267,6 +6664,7 @@
       "name": "undici",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^7.13.0",
           "workspace": "@fafa/backend"
@@ -6283,6 +6681,7 @@
       "name": "unix-crypt-td-js",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "backend/package.json",
           "specifier": "^1.1.4",
           "workspace": "@fafa/backend"
@@ -6298,6 +6697,7 @@
       "name": "vite-tsconfig-paths",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^4.2.1",
           "workspace": "@fafa/frontend"
@@ -6313,11 +6713,13 @@
       "name": "vitest",
       "occurrences": [
         {
+          "bucket": "devDependencies",
           "declaredIn": "packages/design-tokens/package.json",
           "specifier": "^2.1.8",
           "workspace": "@fafa/design-tokens"
         },
         {
+          "bucket": "devDependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^4.0.2",
           "workspace": "@fafa/frontend"
@@ -6334,6 +6736,7 @@
       "name": "web-vitals",
       "occurrences": [
         {
+          "bucket": "dependencies",
           "declaredIn": "frontend/package.json",
           "specifier": "^5.2.0",
           "workspace": "@fafa/frontend"

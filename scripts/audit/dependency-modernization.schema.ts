@@ -11,9 +11,13 @@
 // Projection over audit/registry/deps.json + package-lock.json + overlay.
 // NOT a new policy engine — `inventoryFormat: "pr-9-modernization-inventory"`.
 import { z } from "zod";
+import { DependencyBucketSchema } from "../../packages/registry/src/entries/dep-entry";
 
 export const INVENTORY_FORMAT = "pr-9-modernization-inventory" as const;
-export const SCHEMA_VERSION = "1.0.0" as const;
+// 1.1.0 : PackageOccurrence gained the atomic `bucket` field, sourced from the
+// L1 DepEntry.occurrences[] tuple (dep-entry.ts). Prior 1.0.0 occurrences were
+// reconstructed by index-zip of parallel arrays and could mis-pair.
+export const SCHEMA_VERSION = "1.1.0" as const;
 export const MATRIX_VERSION = "pr9-v1" as const;
 
 // ---------------- Enums ----------------
@@ -554,6 +558,7 @@ export const FamilyOverlaySchema = z.object({
 export const PackageOccurrenceSchema = z.object({
   workspace: z.string().min(1),
   declaredIn: z.string().min(1),
+  bucket: DependencyBucketSchema,
   specifier: z.string().min(1),
 });
 

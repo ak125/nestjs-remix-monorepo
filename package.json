@@ -88,6 +88,8 @@
     "registry:test:planning": "tsx --test tests/registry/planning-builder.test.ts",
     "registry:test:dependency-graph": "tsx --test tests/registry/dependency-graph-builder.test.ts",
     "registry:validate:zod": "tsx scripts/registry/validate-zod-schemas.ts",
+    "registry:validate:deps-fidelity": "tsx scripts/registry/validate-deps-fidelity.ts",
+    "registry:test:deps-fidelity": "tsx --test scripts/registry/validate-deps-fidelity.test.ts",
     "registry:seed-ownership": "node scripts/registry/seed-ownership.js --write",
     "registry:validate": "tsx scripts/registry/validate-overlay.ts",
     "registry:build:canonical": "node scripts/registry/build-canonical-registry.js",
