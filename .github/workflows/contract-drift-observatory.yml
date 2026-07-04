@@ -124,8 +124,8 @@ jobs:
                 .join('\n');
               // Signal 2 is a LIVENESS check (canonical present + required
               // sections non-empty), NOT a source→L1→L3 freshness proof. We read
-              // the same `.canonical.stale` field but label it honestly; real
-              // canonical input-hash freshness is enforced by invariant I6.
+              // the same `.canonical.stale` field but label it honestly;
+              // canonical input-hash consistency is checked separately by invariant I6.
               const liveness = health.fingerprint?.canonical?.stale
                 ? `⚠️ incomplete (${health.fingerprint.canonical.staleReason})`
                 : '✅ present + required sections non-empty';
