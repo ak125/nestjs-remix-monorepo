@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -154,14 +155,28 @@ test("canonical liveness passes when canonical is parseable and required section
 });
 
 test("canonical liveness ignores recorded inputHashes — the dashboard is NOT the freshness engine (I6 is)", async () => {
-  // Anti-overclaim guardrail. The repo-ok fixture's canonical.meta.inputHashes
-  // are placeholder strings ("fixture-hash-files", …) that are NOT the real
-  // sha256 of any input file — i.e. by any true freshness measure the fixture
-  // canonical is "stale". Yet liveness still passes, precisely because Signal 2
-  // never recomputes or compares inputHashes. That comparison is I6's job
-  // (scripts/registry/validate-invariants.ts). If a future change makes this
-  // signal go ⚠️ on hash mismatch, it has silently re-become a freshness gate
-  // and duplicated I6 — this test must then fail on purpose.
+  // Anti-overclaim guardrail. This test must PROVE its own precondition, not
+  // assume it: first establish that the fixture is genuinely hash-stale (its
+  // recorded inputHashes ≠ the real sha256 of the input), THEN prove liveness
+  // still passes. Signal 2 never recomputes or compares inputHashes — that is
+  // I6's contract (scripts/registry/validate-invariants.ts). If someone ever
+  // refreshes the fixture with real hashes, the notEqual below fails loudly, so
+  // this test can never silently stop proving independence from freshness; and
+  // if Signal 2 ever goes ⚠️ on hash mismatch it has re-become a freshness gate
+  // duplicating I6, which the stale=false assertion then catches.
+  const canonical = JSON.parse(
+    readFileSync(join(FIXTURE_OK, "audit/registry/canonical.json"), "utf8"),
+  );
+  const declared = canonical.meta.inputHashes["audit/registry/files.json"];
+  const actual = createHash("sha256")
+    .update(readFileSync(join(FIXTURE_OK, "audit/registry/files.json")))
+    .digest("hex");
+  assert.notEqual(
+    declared,
+    actual,
+    "fixture must remain intentionally hash-stale for this anti-overclaim test",
+  );
+
   const r = await buildDashboard({ repoRoot: FIXTURE_OK });
   assert.equal(
     r.json.fingerprint.canonical.stale,

@@ -410,7 +410,7 @@ function renderMarkdown(json: DashboardJson): string {
   lines.push(`## Canonical liveness / structural completeness`);
   lines.push("");
   lines.push(
-    `> This signal does not verify source→L1→L3 freshness and does not recompute or validate \`sotFingerprint\`. Canonical input-hash freshness (canonical vs its 10 declared L1 registries + L2 overlays) is enforced by registry invariant **I6** (\`npm run registry:validate-invariants\`).`,
+    `> This signal does not verify source→L1→L3 freshness and does not recompute or validate \`sotFingerprint\`. Canonical input-hash consistency against its 10 declared inputs (5 L1 registries + 5 L2 overlays) is **checked** by registry invariant **I6** (\`npm run registry:validate-invariants\`); this Observatory does not perform that check, and the current \`registry-fresh\` CI rollout is warn-only.`,
   );
   lines.push("");
   const f = json.fingerprint.canonical;

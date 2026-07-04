@@ -145,7 +145,7 @@ jobs:
                 `**Recorded sotFingerprint:** \`${sotFp}\` — provenance only; not verified here`,
                 `**Ownership gaps:** ${gaps}`,
                 '',
-                '> This Observatory does not prove source→L1→L3 freshness. Canonical input-hash freshness is enforced by registry invariant **I6** (`npm run registry:validate-invariants`).',
+                '> This Observatory does not prove source→L1→L3 freshness. Canonical input-hash consistency is checked separately by registry invariant **I6** — this Observatory does not perform that check.',
                 '> This check never blocks. Reproduce locally with `npm run audit:drift-dashboard`.',
               ].join('\n');
 
