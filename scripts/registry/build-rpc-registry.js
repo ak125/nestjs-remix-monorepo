@@ -241,12 +241,76 @@ function entryId(schemaName, funcName, args, overloadIndex) {
   return `${schemaName}.${funcName}`;
 }
 
+// Scan `sql` for top-level `CREATE [OR REPLACE] FUNCTION` keywords, returning their
+// byte offsets — but only those occurring in *code*, not inside comments or strings.
+//
+// A plain regex over raw SQL yields phantom functions from prose like the
+// `-- … CREATE FUNCTION grant EXECUTE …` comment in migration 20260619…:77
+// (→ `public.grant`). A naive "is there a `--`/`/*` before idx" test is worse: it
+// mis-flags real DDL because migration bodies contain unmatched `/*` and `--`
+// sequences inside `$$ … $$` bodies and single-quoted strings.
+//
+// The only robust approach is a single forward pass that tracks lexer state and
+// skips over: line comments (`-- … \n`), *closed* block comments (`/* … */`),
+// single-quoted strings (`'…''…'`), and dollar-quoted bodies (`$$ … $$`,
+// `$tag$ … $tag$`). CREATE FUNCTION keywords inside any of those are ignored.
 function findFunctionBlocks(sql) {
   const blocks = [];
-  const createRe = /\bCREATE\s+(?:OR\s+REPLACE\s+)?FUNCTION\b/gi;
-  let m;
-  while ((m = createRe.exec(sql)) !== null) {
-    blocks.push(m.index);
+  const n = sql.length;
+  const createRe = /^CREATE\s+(?:OR\s+REPLACE\s+)?FUNCTION\b/i;
+  const dollarRe = /^\$[A-Za-z0-9_]*\$/;
+  let i = 0;
+  let dollarTag = null; // open dollar-quote tag, e.g. "$$" or "$body$"
+  while (i < n) {
+    if (dollarTag) {
+      // inside a dollar-quoted body — only its matching tag closes it
+      if (sql.startsWith(dollarTag, i)) {
+        i += dollarTag.length;
+        dollarTag = null;
+      } else i++;
+      continue;
+    }
+    const two = sql.slice(i, i + 2);
+    if (two === "--") {
+      const nl = sql.indexOf("\n", i);
+      i = nl === -1 ? n : nl + 1;
+      continue;
+    }
+    if (two === "/*") {
+      const end = sql.indexOf("*/", i + 2);
+      i = end === -1 ? n : end + 2;
+      continue;
+    }
+    const ch = sql[i];
+    if (ch === "'") {
+      i++;
+      while (i < n) {
+        if (sql[i] === "'") {
+          if (sql[i + 1] === "'") { i += 2; continue; } // escaped ''
+          i++;
+          break;
+        }
+        i++;
+      }
+      continue;
+    }
+    if (ch === "$") {
+      const dm = dollarRe.exec(sql.slice(i, i + 64));
+      if (dm) {
+        dollarTag = dm[0];
+        i += dm[0].length;
+        continue;
+      }
+    }
+    if (ch === "C" || ch === "c") {
+      const cm = createRe.exec(sql.slice(i, i + 40));
+      if (cm) {
+        blocks.push(i);
+        i += cm[0].length;
+        continue;
+      }
+    }
+    i++;
   }
   return blocks;
 }

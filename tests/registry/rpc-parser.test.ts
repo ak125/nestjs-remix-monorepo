@@ -168,6 +168,51 @@ describe("parseFunctionBlock — edge cases (V1-3 : 3 parse modes, never throw)"
   });
 });
 
+describe("Case 8 : comment / string / body awareness (no phantom functions)", () => {
+  const names = () =>
+    findFunctionBlocks(FIXTURE_SQL)
+      .map((p) => parseFunctionBlock(FIXTURE_SQL, p))
+      .filter(Boolean)
+      .map((r: any) => r.funcName);
+
+  test("skips CREATE FUNCTION inside a line comment", () => {
+    const found = names();
+    assert.ok(!found.includes("fixture_line_commented"), "line-commented fn leaked");
+    // the real-world `public.grant` phantom came from `… CREATE FUNCTION grant …`
+    assert.ok(!found.includes("grant"), "`grant` phantom leaked from prose comment");
+  });
+
+  test("skips CREATE FUNCTION inside a block comment", () => {
+    assert.ok(
+      !names().includes("fixture_block_commented"),
+      "block-commented fn leaked"
+    );
+  });
+
+  test("skips CREATE FUNCTION text inside a dollar-quoted body (dynamic SQL)", () => {
+    assert.ok(!names().includes("fixture_inside_body"), "body-embedded fn leaked");
+  });
+
+  test("still extracts the real function that emits dynamic DDL", () => {
+    const f = findFunctionBlocks(FIXTURE_SQL)
+      .map((p) => parseFunctionBlock(FIXTURE_SQL, p))
+      .find((r: any) => r?.funcName === "fixture_dynamic_ddl_emitter");
+    assert.ok(f, "real emitter function not found");
+    assert.equal((f as any).parseMode, "parsed");
+  });
+
+  test("no parse yields the unknown_signature fallback on this fixture", () => {
+    const modes = findFunctionBlocks(FIXTURE_SQL)
+      .map((p) => parseFunctionBlock(FIXTURE_SQL, p))
+      .filter(Boolean)
+      .map((r: any) => r.parseMode);
+    assert.ok(
+      !modes.includes("unknown_signature"),
+      "fixture should no longer yield unknown_signature phantoms"
+    );
+  });
+});
+
 describe("sigHash determinism", () => {
   test("same args → same hash", () => {
     const args = [
