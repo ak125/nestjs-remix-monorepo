@@ -8,7 +8,7 @@
 
 Cibles concernées dans ce monorepo :
 - Backend NestJS : ~1 712 appels `supabase.from()` + ~19 `supabase.rpc()` (côté Data Services).
-- Frontend Remix : services `frontend/app/services/api/` qui consomment l'API NestJS (donc indirectement la Data API).
+- Frontend React Router : services `frontend/app/services/api/` qui consomment l'API NestJS (donc indirectement la Data API).
 - 3 appels directs `/rest/v1/` (auth.service.ts, admin-health.service.ts, users.controller.ts).
 
 ## État actuel
@@ -40,8 +40,8 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public
 
 Adapter selon les rôles :
 - `service_role` : NestJS server (bypass RLS, déjà `GRANT ALL` natif Supabase).
-- `anon` : Remix SSR public, requêtes non authentifiées.
-- `authenticated` : Remix SSR avec session utilisateur.
+- `anon` : React Router 8 SSR public, requêtes non authentifiées.
+- `authenticated` : React Router 8 SSR avec session utilisateur.
 
 Restreindre à des tables spécifiques (`GRANT SELECT ON public.pieces, public.__seo_*`) si RLS-strict ou compliance audit requis — `ALL TABLES` reste un raccourci pratique mais expose tout au PostgREST.
 

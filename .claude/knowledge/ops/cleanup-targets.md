@@ -66,10 +66,10 @@ Le détail (sous-dossier × count × note) et la séquence batch sont maintenant
 
 **Procédure batch** par sous-dossier (inchangée) :
 1. `ls frontend/app/components/<subdir>/*.tsx` → liste
-2. Pour chaque : `validate-before-delete.sh <path>` + grep manuel (basename, dynamic import, Remix `useLoaderData` indirection)
+2. Pour chaque : `validate-before-delete.sh <path>` + grep manuel (basename, dynamic import, React Router `useLoaderData` indirection)
 3. Supprimer les SAFE, documenter les BLOCKED
 4. **Supprimer aussi les `*.test.tsx` co-localisés**
-5. `npm run build` ×2 + `npm test` (Remix build catch les refs hiérarchiques)
+5. `npm run build` ×2 + `npm test` (React Router build catch les refs hiérarchiques)
 6. PR ciblée "chore(cleanup): remove unused components in `<subdir>/`"
 
 Statuts PR connus (à compléter quand mergent) :
@@ -116,7 +116,7 @@ Fusions = PR **plus lourdes** que simple delete (nécessitent update des imports
 | 13 | `blog/services/advice` ↔ `advice-enrichment` | Acceptable |
 | 14 | `blog/services/constructeur` ↔ `constructeur-search` | Acceptable |
 | 15-16 | `support/services/legal` ↔ `legal-page`/`legal-version` | Acceptable |
-| 17 | Frontend `root.tsx` ↔ `hooks/useRootData.ts` | Acceptable — pattern Remix SSR |
+| 17 | Frontend `root.tsx` ↔ `hooks/useRootData.ts` | Acceptable — pattern React Router SSR |
 
 Les cycles "acceptables" sont documentés ici comme **explicitement tolérés**.
 À re-évaluer si une nouvelle règle `no-circular` strict s'active côté CI.
@@ -139,7 +139,7 @@ Les cycles "acceptables" sont documentés ici comme **explicitement tolérés**.
 | 3 | **PR-3 Step B** — seul `mcp-validation` reste candidat `dead_subtree` plausible ; `upload` sorti (`partial` retention, PR-3b-2 doc 2026-05-13) ; `substitution` sorti (`http_live` retention, PR-3b prereq-2 2026-05-13) ; `agentic-engine` présomption `partial` (worker DI live) | Faible (1 PR au max, mcp-validation) | 0 à 17 fichiers selon triage | `backlog` |
 | 4 | Decider `knowledge-graph` (delete vs promote) | Faible (décision) puis Moyen (exécution) | -6 fichiers OU intent restauré | `backlog — decision pending` |
 | 5 | Fusion `blog-metadata/` → `blog/metadata/` | Faible (1h) | Supprime fragment artificiel | `backlog` |
-| 6 | **PR-4** Frontend Remix-aware — 187 candidats `frontend-shared` + 29 dup exports, par batch | Moyen-lourd (~3-4 PRs) | Cleanup du gros bucket | `backlog` (+ #158/#160 vieillissants) |
+| 6 | **PR-4** Frontend React Router-aware — 187 candidats `frontend-shared` + 29 dup exports, par batch | Moyen-lourd (~3-4 PRs) | Cleanup du gros bucket | `backlog` (+ #158/#160 vieillissants) |
 | 7 | Fusion `customers/` DTO → `users/dto/` | Très faible (30 min) | Cohérence | `backlog` |
 | 8 | **PR-5a** — cycles fortuits (`root↔useRootData`, config-types cluster, rag-proxy×3) | Moyen (3h total) | -7 cycles, gain clarté | `backlog` |
 | 9 | Fusion `seo-logs/` → `seo/` | Moyen | Consolidation logique | `backlog` |

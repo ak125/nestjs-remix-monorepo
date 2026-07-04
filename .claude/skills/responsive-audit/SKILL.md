@@ -1,6 +1,6 @@
 ---
 name: responsive-audit
-description: Use when auditing a Remix route or component for mobile-first responsive compliance — checks shadcn/ui usage, WCAG touch targets (44×44 px), viewport units, fluid tokens, design consistency at 375 / 768 / 1024 / 1440 px breakpoints. Triggers — "audit responsive on /page", "check mobile compliance", "verify touch targets", or chained after /frontend-design.
+description: Use when auditing a React Router route or component for mobile-first responsive compliance — checks shadcn/ui usage, WCAG touch targets (44×44 px), viewport units, fluid tokens, design consistency at 375 / 768 / 1024 / 1440 px breakpoints. Triggers — "audit responsive on /page", "check mobile compliance", "verify touch targets", or chained after /frontend-design.
 type: technique
 status: stable
 owners: ['@ak125']
@@ -9,7 +9,7 @@ runtime_class: read-only
 llm_safe: true
 last_verified: '2026-05-18'
 license: Internal - Automecanik
-compatibility: Designed for Claude Code in the AutoMecanik monorepo. Stack — Remix + shadcn/ui + Tailwind CSS. Read-only audit, no code mutations.
+compatibility: Designed for Claude Code in the AutoMecanik monorepo. Stack — React Router 8 + shadcn/ui + Tailwind CSS. Read-only audit, no code mutations.
 allowed-tools: Read Grep Glob
 tags: [responsive, mobile-first, wcag, viewport, shadcn]
 metadata:
@@ -157,7 +157,7 @@ className="flex flex-col sm:flex-row items-start sm:items-center gap-3"
 
 **Exceptions autorisées :**
 - `<button>` dans `SheetTrigger asChild`, `AccordionTrigger`, `DialogTrigger` (pattern Radix)
-- `<button>` dans `<form method="POST">` pour submit natif Remix
+- `<button>` dans `<form method="POST">` pour submit natif React Router
 - `<input type="hidden">` pour tokens CSRF ou champs cachés
 - Composants tiers (éditeurs, selects custom avec dropdown)
 

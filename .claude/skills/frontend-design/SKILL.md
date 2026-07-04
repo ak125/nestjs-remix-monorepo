@@ -9,8 +9,8 @@ runtime_class: mutating
 llm_safe: true
 last_verified: '2026-05-18'
 license: Internal - Automecanik. Inherits upstream MIT terms from anthropics/claude-plugins-official/frontend-design.
-compatibility: Designed for Claude Code in the AutoMecanik monorepo. Stack — Remix + React 18 + shadcn/ui + Tailwind CSS + lucide-react. Requires packages/design-tokens (SoT for colors, typography, spacing).
-tags: [frontend, remix, shadcn, tailwind, design-tokens, a11y, wcag]
+compatibility: Designed for Claude Code in the AutoMecanik monorepo. Stack — React Router 8 + shadcn/ui + Tailwind CSS + lucide-react. Requires packages/design-tokens (SoT for colors, typography, spacing).
+tags: [frontend, react-router, shadcn, tailwind, design-tokens, a11y, wcag]
 metadata:
   version: "2.0"
   upstream: anthropics/claude-plugins-official/frontend-design@2026-05
@@ -20,7 +20,7 @@ metadata:
 
 ## Overview
 
-Production frontend skill: implements Remix + shadcn/ui code with an assumed aesthetic direction and a measurable accessibility + performance budget.
+Production frontend skill: implements React Router 8 + shadcn/ui code with an assumed aesthetic direction and a measurable accessibility + performance budget.
 
 **Canon principle** — *intentionnalité > intensité*. Output must be identifiable as AutoMecanik on five measurable axes (design tokens, component states, a11y WCAG, perf budget, motion), not on vague exhortations.
 
@@ -42,7 +42,7 @@ Production frontend skill: implements Remix + shadcn/ui code with an assumed aes
 1. **Identify need**: component / page / section / redesign?
 2. **User context**: who uses it? what goal? primary device?
 3. **Tech constraints**:
-   - Framework: Remix (React 18, Vite HMR)
+   - Framework: React Router 8 (Vite HMR)
    - UI lib: shadcn/ui (`~/components/ui/`)
    - Icons: `lucide-react`
    - Styling: Tailwind CSS only (no CSS modules, no styled-components, no inline `style={}`)

@@ -1,6 +1,6 @@
 ---
 name: web-vitals-audit
-description: Use when investigating INP/LCP/CLS regressions on Remix routes — detects shared-component reflow, eager-loaded Radix, hydration cost, below-fold blocks without content-visibility, CWV RUM beacon + aggregation ingestion gaps. Triggers — "INP élevé sur X", "audit web-vitals", "root cause LCP/CLS". Strictly scoped to Core Web Vitals root-cause ; does NOT cover Lighthouse, SEO global, WCAG, bundle size, image optimization.
+description: Use when investigating INP/LCP/CLS regressions on React Router routes — detects shared-component reflow, eager-loaded Radix, hydration cost, below-fold blocks without content-visibility, CWV RUM beacon + aggregation ingestion gaps. Triggers — "INP élevé sur X", "audit web-vitals", "root cause LCP/CLS". Strictly scoped to Core Web Vitals root-cause ; does NOT cover Lighthouse, SEO global, WCAG, bundle size, image optimization.
 type: technique
 status: experimental
 owners: ['@ak125']
@@ -11,7 +11,7 @@ last_verified: '2026-06-26'
 license: Internal - Automecanik
 compatibility: Claude Code in the AutoMecanik monorepo. Reads frontend/app/** + audit/registry/canonical.json + the RUM chain __seo_cwv_raw/__seo_cwv_hourly/__seo_cwv_daily_rum (distinct from the lab table __seo_cwv_daily) + cron.job(_run_details). No mutations.
 allowed-tools: Read Grep Glob Bash
-tags: [audit, web-vitals, frontend, performance, inp, lcp, cls, remix]
+tags: [audit, web-vitals, frontend, performance, inp, lcp, cls, react-router]
 metadata:
   version: "0.2"
   argument-hint: "[check-name or 'all']"
@@ -83,7 +83,7 @@ existant** plutôt qu'étendre `web-vitals-audit`.
 
 | Source | Usage |
 |---|---|
-| `audit/registry/canonical.json` | files frontend, routes Remix |
+| `audit/registry/canonical.json` | files frontend, routes React Router |
 | `frontend/app/components/**` | composants partagés (Sheet, Dialog) |
 | `frontend/app/routes/**` | eager imports, hydration cost |
 | `__seo_cwv_raw` via supabase MCP | beacons RUM bruts (bloc 3, TTL ~48h, humains) |

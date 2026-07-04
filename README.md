@@ -3,9 +3,9 @@
 [![Production Ready](https://img.shields.io/badge/status-production%20ready-success)](https://github.com/ak125/nestjs-remix-monorepo)
 [![Tests](https://img.shields.io/badge/tests-47%2F47%20passing-success)](./backend)
 [![Score](https://img.shields.io/badge/score-100%2F100-success)](./docs/REFACTORING-COMPLETE.md)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue)](https://www.typescriptlang.org/)
-[![NestJS](https://img.shields.io/badge/NestJS-10.x-red)](https://nestjs.com/)
-[![Remix](https://img.shields.io/badge/Remix-latest-blue)](https://remix.run/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6.x-blue)](https://www.typescriptlang.org/)
+[![NestJS](https://img.shields.io/badge/NestJS-11.x-red)](https://nestjs.com/)
+[![React Router](https://img.shields.io/badge/React%20Router-8.x-blue)](https://reactrouter.com/)
 
 > Plateforme e-commerce complète pour pièces automobiles avec gestion avancée des commandes, paiements et catalogue produits.
 
@@ -22,17 +22,17 @@ docker run -d --name redis-dev --rm -p 6379:6379 redis:7-alpine
 # 2. Installation des dépendances
 npm install
 
-# 3. Démarrer l'application (Backend NestJS + Frontend Remix)
+# 3. Démarrer l'application (Backend NestJS + Frontend React Router)
 npm run dev
 ```
 
 **🌐 Application** :
 - **Application complète** : `http://localhost:3000`
 - **Backend API** : `http://localhost:3000/api/*`
-- **Frontend Remix** : `http://localhost:3000/*`
+- **Frontend React Router** : `http://localhost:3000/*`
 - **Admin Dashboard** : `http://localhost:3000/admin`
 
-> 💡 **Architecture** : Le backend NestJS sert aussi le frontend Remix sur le **même port 3000** pour une expérience développement simplifiée.
+> 💡 **Architecture** : Le backend NestJS sert aussi le frontend React Router sur le **même port 3000** pour une expérience développement simplifiée.
 
 📖 **Guide complet** : Voir [QUICK-START.md](./QUICK-START.md) pour le guide détaillé et dépannage.
 
@@ -86,16 +86,16 @@ next build and rejected by the CI freshness gate. If a reviewer asks you to
 ### Stack Technique
 
 **Backend** :
-- **Framework** : NestJS 10.x
-- **Language** : TypeScript 5.x
+- **Framework** : NestJS 11.x
+- **Language** : TypeScript 6.x
 - **Base de données** : Supabase PostgreSQL
 - **API** : REST
 
 **Frontend** :
-- **Framework** : Remix (React 18)
-- **Build** : Vite 5.x
-- **Styling** : TailwindCSS 3.x
-- **Language** : TypeScript 5.x
+- **Framework** : React Router 8 (React 19)
+- **Build** : Vite 8.x
+- **Styling** : TailwindCSS 4.x
+- **Language** : TypeScript 6.x
 
 **Infrastructure** :
 - Docker & Docker Compose
@@ -117,9 +117,9 @@ nestjs-remix-monorepo/
 │   │   └── main.ts
 │   ├── test/               # Tests
 │   └── prisma/             # Schémas DB
-├── frontend/               # Remix App
+├── frontend/               # React Router 8 App
 │   ├── app/
-│   │   ├── routes/         # Routes Remix
+│   │   ├── routes/         # Routes React Router
 │   │   ├── services/       # Services métier
 │   │   ├── components/     # Composants React
 │   │   └── utils/          # Utilitaires
@@ -457,7 +457,7 @@ Développé avec ❤️ par [@ak125](https://github.com/ak125)
 
 **Technologies** :
 - [NestJS](https://nestjs.com/) - Backend framework
-- [Remix](https://remix.run/) - Frontend framework
+- [React Router](https://reactrouter.com/) - Frontend framework
 - [Supabase](https://supabase.com/) - Database & Auth
 - [TailwindCSS](https://tailwindcss.com/) - Styling
 - [Meilisearch](https://www.meilisearch.com/) - Search engine
@@ -484,6 +484,6 @@ Ce projet utilise [Context7 MCP](https://context7.com/) pour obtenir de la docum
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 ```
 
-**Last Update** : 2 décembre 2025  
+**Last Update** : 4 juillet 2026  
 **Version** : 2.1.0  
 **Status** : Production Ready ✅
