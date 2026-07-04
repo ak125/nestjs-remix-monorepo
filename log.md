@@ -495,3 +495,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/lazy-rolldown-mixed-import`
 - **Décision** : fix(lazy): stop Footer mixed static+dynamic import crashing R2 pages (Rolldown fulfill-undefined)
 - **Sortie** : PR #1200 | commits 4c536b958
+
+## 2026-07-04 — docs/claude-md-slim (auto)
+
+- **Branche** : `docs/claude-md-slim`
+- **Décision** : docs(claude-md): slim referential sections into pointers (P1/P3 token lever)
+- **Sortie** : PR aucune | commits e34d4ee5c
