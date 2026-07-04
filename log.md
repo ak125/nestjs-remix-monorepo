@@ -501,3 +501,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `docs/claude-md-slim`
 - **Décision** : docs(claude-md): slim referential sections into pointers (P1/P3 token lever)
 - **Sortie** : PR aucune | commits e34d4ee5c
+
+## 2026-07-04 — worktree-rag-seo-served-write-pr1 (auto)
+
+- **Branche** : `worktree-rag-seo-served-write-pr1`
+- **Décision** : feat(write-guard): fail-closed RAG-provenance refusal at write gate
+- **Sortie** : PR aucune | commits 3b3282eee
