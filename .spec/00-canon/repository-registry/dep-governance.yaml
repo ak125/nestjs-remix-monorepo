@@ -96,7 +96,7 @@ dependencies:
     owner: "@ak125"
 
   # ── backend-platform (3 entries — D14) ──
-  - id: "npm:@nestjs/bull@^10.2.3"
+  - id: "npm:@nestjs/bull@^11.0.4"
     name: "@nestjs/bull"
     family: backend-platform
     domain: D14
@@ -106,7 +106,7 @@ dependencies:
     family: backend-platform
     domain: D14
     owner: "@ak125"
-  - id: "npm:@nestjs/cache-manager@^2.3.0"
+  - id: "npm:@nestjs/cache-manager@^3.1.3"
     name: "@nestjs/cache-manager"
     family: backend-platform
     domain: D14
@@ -220,7 +220,7 @@ dependencies:
     owner: "@ak125"
 
   # ── validation (1 entry — D14) ──
-  - id: "npm:zod@^3.25.76"
+  - id: "npm:zod@^4.4.3"
     name: "zod"
     family: validation
     domain: D14

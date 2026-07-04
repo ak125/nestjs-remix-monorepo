@@ -66,22 +66,6 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
-      ],
-      "id": "npm:@chromatic-com/storybook@^4.1.1",
-      "name": "@chromatic-com/storybook",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^4.1.1",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
-    },
-    {
-      "declaredIn": [
         "package.json"
       ],
       "id": "npm:@commitlint/cli@^20.5.3",
@@ -196,14 +180,14 @@
       "declaredIn": [
         "backend/package.json"
       ],
-      "id": "npm:@nestjs/bull@^10.2.3",
+      "id": "npm:@nestjs/bull@^11.0.4",
       "name": "@nestjs/bull",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^10.2.3",
+      "version": "^11.0.4",
       "workspaces": [
         "@fafa/backend"
       ]
@@ -228,14 +212,14 @@
       "declaredIn": [
         "backend/package.json"
       ],
-      "id": "npm:@nestjs/cache-manager@^2.3.0",
+      "id": "npm:@nestjs/cache-manager@^3.1.3",
       "name": "@nestjs/cache-manager",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^2.3.0",
+      "version": "^3.1.3",
       "workspaces": [
         "@fafa/backend"
       ]
@@ -244,47 +228,33 @@
       "declaredIn": [
         "backend/package.json"
       ],
-      "id": "npm:@nestjs/cli@^10.0.0",
+      "id": "npm:@nestjs/cli@^11.0.23",
       "name": "@nestjs/cli",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^10.0.0",
+      "version": "^11.0.23",
       "workspaces": [
         "@fafa/backend"
       ]
     },
     {
       "declaredIn": [
-        "backend/package.json"
-      ],
-      "id": "npm:@nestjs/common@^10.0.0",
-      "name": "@nestjs/common",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^10.0.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
-    },
-    {
-      "declaredIn": [
+        "backend/package.json",
         "package.json"
       ],
-      "id": "npm:@nestjs/common@^10.4.20",
+      "id": "npm:@nestjs/common@^11.1.27",
       "name": "@nestjs/common",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^10.4.20",
+      "version": "^11.1.27",
       "workspaces": [
+        "@fafa/backend",
         "nestjs-remix-monorepo"
       ]
     },
@@ -292,47 +262,33 @@
       "declaredIn": [
         "backend/package.json"
       ],
-      "id": "npm:@nestjs/config@^4.0.2",
+      "id": "npm:@nestjs/config@^4.0.4",
       "name": "@nestjs/config",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^4.0.2",
+      "version": "^4.0.4",
       "workspaces": [
         "@fafa/backend"
       ]
     },
     {
       "declaredIn": [
-        "backend/package.json"
-      ],
-      "id": "npm:@nestjs/core@^10.0.0",
-      "name": "@nestjs/core",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^10.0.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
-    },
-    {
-      "declaredIn": [
+        "backend/package.json",
         "package.json"
       ],
-      "id": "npm:@nestjs/core@^10.4.20",
+      "id": "npm:@nestjs/core@^11.1.27",
       "name": "@nestjs/core",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^10.4.20",
+      "version": "^11.1.27",
       "workspaces": [
+        "@fafa/backend",
         "nestjs-remix-monorepo"
       ]
     },
@@ -340,14 +296,14 @@
       "declaredIn": [
         "backend/package.json"
       ],
-      "id": "npm:@nestjs/event-emitter@^2.1.1",
+      "id": "npm:@nestjs/event-emitter@^3.1.0",
       "name": "@nestjs/event-emitter",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^2.1.1",
+      "version": "^3.1.0",
       "workspaces": [
         "@fafa/backend"
       ]
@@ -372,14 +328,14 @@
       "declaredIn": [
         "backend/package.json"
       ],
-      "id": "npm:@nestjs/passport@^10.0.3",
+      "id": "npm:@nestjs/passport@^11.0.5",
       "name": "@nestjs/passport",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^10.0.3",
+      "version": "^11.0.5",
       "workspaces": [
         "@fafa/backend"
       ]
@@ -388,14 +344,14 @@
       "declaredIn": [
         "backend/package.json"
       ],
-      "id": "npm:@nestjs/platform-express@^10.4.20",
+      "id": "npm:@nestjs/platform-express@^11.1.27",
       "name": "@nestjs/platform-express",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^10.4.20",
+      "version": "^11.1.27",
       "workspaces": [
         "@fafa/backend"
       ]
@@ -404,14 +360,14 @@
       "declaredIn": [
         "backend/package.json"
       ],
-      "id": "npm:@nestjs/platform-socket.io@^10.4.20",
+      "id": "npm:@nestjs/platform-socket.io@^11.1.27",
       "name": "@nestjs/platform-socket.io",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^10.4.20",
+      "version": "^11.1.27",
       "workspaces": [
         "@fafa/backend"
       ]
@@ -420,14 +376,14 @@
       "declaredIn": [
         "backend/package.json"
       ],
-      "id": "npm:@nestjs/schedule@^6.0.1",
+      "id": "npm:@nestjs/schedule@^6.1.3",
       "name": "@nestjs/schedule",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^6.0.1",
+      "version": "^6.1.3",
       "workspaces": [
         "@fafa/backend"
       ]
@@ -436,14 +392,14 @@
       "declaredIn": [
         "backend/package.json"
       ],
-      "id": "npm:@nestjs/schematics@^10.0.0",
+      "id": "npm:@nestjs/schematics@^11.1.0",
       "name": "@nestjs/schematics",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^10.0.0",
+      "version": "^11.1.0",
       "workspaces": [
         "@fafa/backend"
       ]
@@ -452,14 +408,14 @@
       "declaredIn": [
         "backend/package.json"
       ],
-      "id": "npm:@nestjs/swagger@7.4.2",
+      "id": "npm:@nestjs/swagger@11.4.4",
       "name": "@nestjs/swagger",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "7.4.2",
+      "version": "11.4.4",
       "workspaces": [
         "@fafa/backend"
       ]
@@ -468,14 +424,14 @@
       "declaredIn": [
         "backend/package.json"
       ],
-      "id": "npm:@nestjs/testing@^10.4.20",
+      "id": "npm:@nestjs/testing@^11.1.27",
       "name": "@nestjs/testing",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^10.4.20",
+      "version": "^11.1.27",
       "workspaces": [
         "@fafa/backend"
       ]
@@ -484,14 +440,14 @@
       "declaredIn": [
         "backend/package.json"
       ],
-      "id": "npm:@nestjs/throttler@^5.0.0",
+      "id": "npm:@nestjs/throttler@^6.5.0",
       "name": "@nestjs/throttler",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^5.0.0",
+      "version": "^6.5.0",
       "workspaces": [
         "@fafa/backend"
       ]
@@ -500,14 +456,14 @@
       "declaredIn": [
         "backend/package.json"
       ],
-      "id": "npm:@nestjs/websockets@^10.4.20",
+      "id": "npm:@nestjs/websockets@^11.1.27",
       "name": "@nestjs/websockets",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^10.4.20",
+      "version": "^11.1.27",
       "workspaces": [
         "@fafa/backend"
       ]
@@ -532,14 +488,14 @@
       "declaredIn": [
         "frontend/package.json"
       ],
-      "id": "npm:@playwright/test@^1.59.1",
+      "id": "npm:@playwright/test@1.61.0",
       "name": "@playwright/test",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^1.59.1",
+      "version": "1.61.0",
       "workspaces": [
         "@fafa/frontend"
       ]
@@ -789,14 +745,14 @@
         "frontend/package.json",
         "package.json"
       ],
-      "id": "npm:@react-router/dev@^7.15.0",
+      "id": "npm:@react-router/dev@8.0.1",
       "name": "@react-router/dev",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^7.15.0",
+      "version": "8.0.1",
       "workspaces": [
         "@fafa/frontend",
         "nestjs-remix-monorepo"
@@ -804,34 +760,20 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
-      ],
-      "id": "npm:@react-router/express@^7.0.0",
-      "name": "@react-router/express",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^7.0.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
-    },
-    {
-      "declaredIn": [
+        "backend/package.json",
         "frontend/package.json",
         "package.json"
       ],
-      "id": "npm:@react-router/express@^7.15.0",
+      "id": "npm:@react-router/express@8.0.1",
       "name": "@react-router/express",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^7.15.0",
+      "version": "8.0.1",
       "workspaces": [
+        "@fafa/backend",
         "@fafa/frontend",
         "nestjs-remix-monorepo"
       ]
@@ -841,14 +783,14 @@
         "frontend/package.json",
         "package.json"
       ],
-      "id": "npm:@react-router/node@^7.15.0",
+      "id": "npm:@react-router/node@8.0.1",
       "name": "@react-router/node",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^7.15.0",
+      "version": "8.0.1",
       "workspaces": [
         "@fafa/frontend",
         "nestjs-remix-monorepo"
@@ -858,14 +800,14 @@
       "declaredIn": [
         "frontend/package.json"
       ],
-      "id": "npm:@react-router/remix-routes-option-adapter@^7.15.0",
+      "id": "npm:@react-router/remix-routes-option-adapter@8.0.1",
       "name": "@react-router/remix-routes-option-adapter",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^7.15.0",
+      "version": "8.0.1",
       "workspaces": [
         "@fafa/frontend"
       ]
@@ -875,14 +817,14 @@
         "frontend/package.json",
         "package.json"
       ],
-      "id": "npm:@react-router/serve@^7.15.0",
+      "id": "npm:@react-router/serve@8.0.1",
       "name": "@react-router/serve",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^7.15.0",
+      "version": "8.0.1",
       "workspaces": [
         "@fafa/frontend",
         "nestjs-remix-monorepo"
@@ -938,86 +880,6 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
-      ],
-      "id": "npm:@storybook/addon-a11y@^9.1.13",
-      "name": "@storybook/addon-a11y",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^9.1.13",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
-    },
-    {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
-      "id": "npm:@storybook/addon-docs@^9.1.13",
-      "name": "@storybook/addon-docs",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^9.1.13",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
-    },
-    {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
-      "id": "npm:@storybook/addon-onboarding@^9.1.20",
-      "name": "@storybook/addon-onboarding",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^9.1.20",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
-    },
-    {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
-      "id": "npm:@storybook/addon-vitest@^9.1.13",
-      "name": "@storybook/addon-vitest",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^9.1.13",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
-    },
-    {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
-      "id": "npm:@storybook/react-vite@^9.1.13",
-      "name": "@storybook/react-vite",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^9.1.13",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
-    },
-    {
-      "declaredIn": [
         "backend/package.json",
         "package.json"
       ],
@@ -1038,6 +900,22 @@
       "declaredIn": [
         "frontend/package.json"
       ],
+      "id": "npm:@tailwindcss/vite@^4.3.1",
+      "name": "@tailwindcss/vite",
+      "owner": "__unassigned__",
+      "schemaVersion": "1.0.0",
+      "source": "npm",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "version": "^4.3.1",
+      "workspaces": [
+        "@fafa/frontend"
+      ]
+    },
+    {
+      "declaredIn": [
+        "frontend/package.json"
+      ],
       "id": "npm:@tanstack/react-query@^5.87.1",
       "name": "@tanstack/react-query",
       "owner": "__unassigned__",
@@ -1048,6 +926,22 @@
       "version": "^5.87.1",
       "workspaces": [
         "@fafa/frontend"
+      ]
+    },
+    {
+      "declaredIn": [
+        "backend/package.json"
+      ],
+      "id": "npm:@testcontainers/redis@^12.0.3",
+      "name": "@testcontainers/redis",
+      "owner": "__unassigned__",
+      "schemaVersion": "1.0.0",
+      "source": "npm",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "version": "^12.0.3",
+      "workspaces": [
+        "@fafa/backend"
       ]
     },
     {
@@ -1230,22 +1124,6 @@
       "declaredIn": [
         "backend/package.json"
       ],
-      "id": "npm:@types/cache-manager@^4.0.0",
-      "name": "@types/cache-manager",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^4.0.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
-    },
-    {
-      "declaredIn": [
-        "backend/package.json"
-      ],
       "id": "npm:@types/compression@^1.8.1",
       "name": "@types/compression",
       "owner": "__unassigned__",
@@ -1254,22 +1132,6 @@
       "sourceConfidence": "high",
       "status": "LIVE",
       "version": "^1.8.1",
-      "workspaces": [
-        "@fafa/backend"
-      ]
-    },
-    {
-      "declaredIn": [
-        "backend/package.json"
-      ],
-      "id": "npm:@types/connect-redis@^0.0.23",
-      "name": "@types/connect-redis",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^0.0.23",
       "workspaces": [
         "@fafa/backend"
       ]
@@ -1820,22 +1682,6 @@
       "declaredIn": [
         "frontend/package.json"
       ],
-      "id": "npm:autoprefixer@^10.4.20",
-      "name": "autoprefixer",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^10.4.20",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
-    },
-    {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:axe-core@^4.12.0",
       "name": "axe-core",
       "owner": "__unassigned__",
@@ -1870,14 +1716,14 @@
       "declaredIn": [
         "backend/package.json"
       ],
-      "id": "npm:body-parser@^1.20.3",
+      "id": "npm:body-parser@^2.3.0",
       "name": "body-parser",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^1.20.3",
+      "version": "^2.3.0",
       "workspaces": [
         "@fafa/backend"
       ]
@@ -1918,14 +1764,30 @@
       "declaredIn": [
         "backend/package.json"
       ],
-      "id": "npm:cache-manager@^5.0.0",
+      "id": "npm:cache-manager@^6.0.0",
       "name": "cache-manager",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^5.0.0",
+      "version": "^6.0.0",
+      "workspaces": [
+        "@fafa/backend"
+      ]
+    },
+    {
+      "declaredIn": [
+        "backend/package.json"
+      ],
+      "id": "npm:cacheable@^2.3.0",
+      "name": "cacheable",
+      "owner": "__unassigned__",
+      "schemaVersion": "1.0.0",
+      "source": "npm",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "version": "^2.3.0",
       "workspaces": [
         "@fafa/backend"
       ]
@@ -2000,14 +1862,30 @@
       "declaredIn": [
         "backend/package.json"
       ],
-      "id": "npm:connect-redis@^5.2.0",
+      "id": "npm:connect-redis-v5@npm:connect-redis@^5.2.0",
+      "name": "connect-redis-v5",
+      "owner": "__unassigned__",
+      "schemaVersion": "1.0.0",
+      "source": "npm",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "version": "npm:connect-redis@^5.2.0",
+      "workspaces": [
+        "@fafa/backend"
+      ]
+    },
+    {
+      "declaredIn": [
+        "backend/package.json"
+      ],
+      "id": "npm:connect-redis@^9.0.0",
       "name": "connect-redis",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^5.2.0",
+      "version": "^9.0.0",
       "workspaces": [
         "@fafa/backend"
       ]
@@ -2120,6 +1998,22 @@
       "sourceConfidence": "high",
       "status": "LIVE",
       "version": "^8.6.0",
+      "workspaces": [
+        "@fafa/frontend"
+      ]
+    },
+    {
+      "declaredIn": [
+        "frontend/package.json"
+      ],
+      "id": "npm:esbuild@^0.27.0",
+      "name": "esbuild",
+      "owner": "__unassigned__",
+      "schemaVersion": "1.0.0",
+      "source": "npm",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "version": "^0.27.0",
       "workspaces": [
         "@fafa/frontend"
       ]
@@ -2288,22 +2182,6 @@
       "declaredIn": [
         "frontend/package.json"
       ],
-      "id": "npm:eslint-plugin-storybook@^9.1.13",
-      "name": "eslint-plugin-storybook",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^9.1.13",
-      "workspaces": [
-        "@fafa/frontend"
-      ]
-    },
-    {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
       "id": "npm:eslint-plugin-testing-library@^7.16.2",
       "name": "eslint-plugin-testing-library",
       "owner": "__unassigned__",
@@ -2378,14 +2256,14 @@
       "declaredIn": [
         "backend/package.json"
       ],
-      "id": "npm:express-session@^1.17.3",
+      "id": "npm:express-session@^1.19.0",
       "name": "express-session",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^1.17.3",
+      "version": "^1.19.0",
       "workspaces": [
         "@fafa/backend"
       ]
@@ -2681,6 +2559,24 @@
       "sourceConfidence": "high",
       "status": "LIVE",
       "version": "^4.1.1",
+      "workspaces": [
+        "@fafa/backend",
+        "nestjs-remix-monorepo"
+      ]
+    },
+    {
+      "declaredIn": [
+        "backend/package.json",
+        "package.json"
+      ],
+      "id": "npm:keyv@^5.6.0",
+      "name": "keyv",
+      "owner": "__unassigned__",
+      "schemaVersion": "1.0.0",
+      "source": "npm",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "version": "^5.6.0",
       "workspaces": [
         "@fafa/backend",
         "nestjs-remix-monorepo"
@@ -2998,6 +2894,22 @@
     },
     {
       "declaredIn": [
+        "frontend/package.json"
+      ],
+      "id": "npm:playwright@1.61.0",
+      "name": "playwright",
+      "owner": "__unassigned__",
+      "schemaVersion": "1.0.0",
+      "source": "npm",
+      "sourceConfidence": "high",
+      "status": "LIVE",
+      "version": "1.61.0",
+      "workspaces": [
+        "@fafa/frontend"
+      ]
+    },
+    {
+      "declaredIn": [
         "backend/package.json"
       ],
       "id": "npm:playwright@^1.48.2",
@@ -3010,22 +2922,6 @@
       "version": "^1.48.2",
       "workspaces": [
         "@fafa/backend"
-      ]
-    },
-    {
-      "declaredIn": [
-        "frontend/package.json"
-      ],
-      "id": "npm:playwright@^1.56.1",
-      "name": "playwright",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^1.56.1",
-      "workspaces": [
-        "@fafa/frontend"
       ]
     },
     {
@@ -3146,34 +3042,20 @@
     },
     {
       "declaredIn": [
-        "backend/package.json"
-      ],
-      "id": "npm:react-router@^7.0.0",
-      "name": "react-router",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^7.0.0",
-      "workspaces": [
-        "@fafa/backend"
-      ]
-    },
-    {
-      "declaredIn": [
+        "backend/package.json",
         "frontend/package.json",
         "package.json"
       ],
-      "id": "npm:react-router@^7.15.0",
+      "id": "npm:react-router@8.0.1",
       "name": "react-router",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^7.15.0",
+      "version": "8.0.1",
       "workspaces": [
+        "@fafa/backend",
         "@fafa/frontend",
         "nestjs-remix-monorepo"
       ]
@@ -3214,23 +3096,24 @@
     },
     {
       "declaredIn": [
-        "package.json"
+        "backend/package.json"
       ],
-      "id": "npm:reflect-metadata@^0.1.14",
-      "name": "reflect-metadata",
+      "id": "npm:redis@~5.12.0",
+      "name": "redis",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^0.1.14",
+      "version": "~5.12.0",
       "workspaces": [
-        "nestjs-remix-monorepo"
+        "@fafa/backend"
       ]
     },
     {
       "declaredIn": [
-        "backend/package.json"
+        "backend/package.json",
+        "package.json"
       ],
       "id": "npm:reflect-metadata@^0.2.2",
       "name": "reflect-metadata",
@@ -3241,7 +3124,8 @@
       "status": "LIVE",
       "version": "^0.2.2",
       "workspaces": [
-        "@fafa/backend"
+        "@fafa/backend",
+        "nestjs-remix-monorepo"
       ]
     },
     {
@@ -3412,18 +3296,18 @@
     },
     {
       "declaredIn": [
-        "frontend/package.json"
+        "packages/design-tokens/package.json"
       ],
-      "id": "npm:storybook@^9.1.13",
-      "name": "storybook",
+      "id": "npm:style-dictionary@5.5.0",
+      "name": "style-dictionary",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^9.1.13",
+      "version": "5.5.0",
       "workspaces": [
-        "@fafa/frontend"
+        "@fafa/design-tokens"
       ]
     },
     {
@@ -3440,38 +3324,6 @@
       "version": "^7.0.0",
       "workspaces": [
         "@fafa/backend"
-      ]
-    },
-    {
-      "declaredIn": [
-        "backend/package.json"
-      ],
-      "id": "npm:swagger-ui-express@^4.6.3",
-      "name": "swagger-ui-express",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^4.6.3",
-      "workspaces": [
-        "@fafa/backend"
-      ]
-    },
-    {
-      "declaredIn": [
-        "package.json"
-      ],
-      "id": "npm:swagger-ui-express@^5.0.1",
-      "name": "swagger-ui-express",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^5.0.1",
-      "workspaces": [
-        "nestjs-remix-monorepo"
       ]
     },
     {
@@ -3527,14 +3379,14 @@
         "frontend/package.json",
         "package.json"
       ],
-      "id": "npm:tailwindcss@^3.4.15",
+      "id": "npm:tailwindcss@^4.3.1",
       "name": "tailwindcss",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^3.4.15",
+      "version": "^4.3.1",
       "workspaces": [
         "@fafa/frontend",
         "nestjs-remix-monorepo"
@@ -3823,14 +3675,14 @@
         "frontend/package.json",
         "package.json"
       ],
-      "id": "npm:vite@7.3.5",
+      "id": "npm:vite@8.1.0",
       "name": "vite",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "7.3.5",
+      "version": "8.1.0",
       "workspaces": [
         "@fafa/frontend",
         "nestjs-remix-monorepo"
@@ -3886,58 +3738,28 @@
     },
     {
       "declaredIn": [
-        "packages/registry/package.json"
-      ],
-      "id": "npm:zod-to-json-schema@3.23.0",
-      "name": "zod-to-json-schema",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "3.23.0",
-      "workspaces": [
-        "@repo/registry"
-      ]
-    },
-    {
-      "declaredIn": [
-        "backend/package.json"
-      ],
-      "id": "npm:zod-to-json-schema@^3.25.2",
-      "name": "zod-to-json-schema",
-      "owner": "__unassigned__",
-      "schemaVersion": "1.0.0",
-      "source": "npm",
-      "sourceConfidence": "high",
-      "status": "LIVE",
-      "version": "^3.25.2",
-      "workspaces": [
-        "@fafa/backend"
-      ]
-    },
-    {
-      "declaredIn": [
         "backend/package.json",
         "frontend/package.json",
         "package.json",
         "packages/cwv-taxonomy/package.json",
         "packages/database-types/package.json",
+        "packages/design-tokens/package.json",
         "packages/registry/package.json",
         "packages/seo-role-contracts/package.json",
         "packages/seo-roles/package.json",
         "packages/seo-types/package.json"
       ],
-      "id": "npm:zod@^3.25.76",
+      "id": "npm:zod@^4.4.3",
       "name": "zod",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^3.25.76",
+      "version": "^4.4.3",
       "workspaces": [
         "@fafa/backend",
+        "@fafa/design-tokens",
         "@fafa/frontend",
         "@repo/cwv-taxonomy",
         "@repo/database-types",

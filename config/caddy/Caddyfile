@@ -332,6 +332,15 @@ automecanik.com, www.automecanik.com {
     
     # ===== GESTION DES ERREURS =====
     handle_errors {
+        # 🛡️ Anti-cache-poisoning (complément de @up_error, ~l.268) : quand Caddy génère
+        # LUI-MÊME un 5xx — upstream monorepo_prod:3000 injoignable au reboot backend —
+        # handle_response @up_error ne se déclenche PAS (il n'intercepte que les réponses
+        # de l'upstream). La réponse hérite alors du Cache-Control long posé par @products
+        # (s-maxage=86400) SANS no-store, et Cloudflare (Cache Rule /pieces respect-origin)
+        # la cacherait 24h — figeant une erreur transitoire de reboot sur une page qui
+        # existe. no-store ici couvre ce chemin Caddy-généré. Incident 2026-06-25 (#1140)
+        # + résolution CF Cache Rule /pieces 2026-07-04.
+        header Cache-Control "no-store"
         @404 expression {http.error.status_code} == 404
         @500 expression {http.error.status_code} >= 500
         redir @404 /404 302
