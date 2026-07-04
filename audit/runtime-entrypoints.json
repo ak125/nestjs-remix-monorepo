@@ -574,8 +574,7 @@
       "backend/src/security/rpc-gate/rpc-gate.module.ts",
       "backend/src/services/mail.module.ts",
       "backend/src/shared/crypto/crypto.module.ts",
-      "backend/src/workers/worker.module.ts",
-      "backend/tests/unit/route-wildcard-middleware.test.ts"
+      "backend/src/workers/worker.module.ts"
     ],
     "nestjs_reachable_modules": [
       "backend/src/api/api.module.ts",
@@ -654,8 +653,7 @@
       "backend/src/modules/maintenance/maintenance.module.ts",
       "backend/src/modules/mcp-validation/mcp-validation.module.ts",
       "backend/src/modules/rm/rm.module.ts",
-      "backend/src/modules/upload/upload.module.ts",
-      "backend/tests/unit/route-wildcard-middleware.test.ts"
+      "backend/src/modules/upload/upload.module.ts"
     ],
     "nestjs_controllers": [
       "backend/src/api/errors-api.controller.ts",
@@ -2344,8 +2342,7 @@
       "backend/src/workers/processors/pipeline-chain.processor.ts",
       "backend/src/workers/processors/seo-monitor.processor.ts",
       "backend/src/workers/services/seo-monitor-scheduler.service.ts",
-      "backend/src/workers/worker.module.ts",
-      "backend/tests/unit/route-wildcard-middleware.test.ts"
+      "backend/src/workers/worker.module.ts"
     ],
     "bull_processors": [
       "backend/src/modules/admin/processors/seo-control-refresh.processor.ts",
@@ -2847,7 +2844,7 @@
       "tests/registry/rpc-parser.test.ts"
     ]
   },
-  "runtime_files_count": 1465,
+  "runtime_files_count": 1464,
   "runtime_files": [
     ".dependency-cruiser.cjs",
     ".github/workflows/agent-exit-contract-hash.yml",
@@ -4010,7 +4007,6 @@
     "backend/supabase/migrations/20260703_blog_advice_increment_views_rpc_grant_tighten.down.sql",
     "backend/supabase/migrations/20260703_blog_advice_increment_views_rpc_grant_tighten.sql",
     "backend/supabase/migrations/README.md",
-    "backend/tests/unit/route-wildcard-middleware.test.ts",
     "docker/lighthouse/Dockerfile",
     "docker/lighthouse/crontab",
     "frontend/app/entry.client.tsx",

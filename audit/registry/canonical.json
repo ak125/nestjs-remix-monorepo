@@ -1532,7 +1532,7 @@
           {
             "mode": "IN",
             "name": "p_price",
-            "type": "INT -- Price in centimes"
+            "type": "INT"
           }
         ],
         "definedInMigrations": [
@@ -1631,18 +1631,18 @@
           },
           {
             "mode": "IN",
-            "name": "",
-            "type": "-- governed batch (service-generated); required for commit\n  p_main_pg_id      INTEGER"
+            "name": "p_main_pg_id",
+            "type": "INTEGER"
           },
           {
             "mode": "IN",
-            "name": "",
-            "type": "-- the MAIN gamme (must be a valid visible strategic hub)\n  p_accessory_pg_ids INTEGER[]"
+            "name": "p_accessory_pg_ids",
+            "type": "INTEGER[]"
           },
           {
             "mode": "IN",
-            "name": "",
-            "type": "-- the accessory gammes to link (level-4/5, hidden)\n  p_operator        TEXT"
+            "name": "p_operator",
+            "type": "TEXT"
           },
           {
             "mode": "IN",
@@ -1723,7 +1723,7 @@
           "20260608_pricing_catalog_display_activate_respect_pg_display.sql"
         ],
         "domain": "UNKNOWN",
-        "id": "public.catalog_display_activate#sig:987ed037",
+        "id": "public.catalog_display_activate",
         "language": "plpgsql",
         "name": "catalog_display_activate",
         "owner": "__unassigned__",
@@ -1747,18 +1747,13 @@
           },
           {
             "mode": "IN",
-            "name": "",
-            "type": "-- governed batch (price_import_batches); required for commit\n  p_supplier  TEXT"
+            "name": "p_supplier",
+            "type": "TEXT"
           },
           {
             "mode": "IN",
-            "name": "",
-            "type": "-- pieces.piece_pm_id (brand)"
-          },
-          {
-            "mode": "IN",
-            "name": "",
-            "type": "e.g. '3410' (NK). Brand-lock.\n  p_operator  TEXT"
+            "name": "p_operator",
+            "type": "TEXT"
           },
           {
             "mode": "IN",
@@ -1767,65 +1762,8 @@
           },
           {
             "mode": "IN",
-            "name": "do",
-            "type": "not write"
-          }
-        ],
-        "definedInMigrations": [
-          "20260607_pricing_catalog_display_activate.sql"
-        ],
-        "domain": "UNKNOWN",
-        "id": "public.catalog_display_activate#sig:eecebf1d",
-        "language": "plpgsql",
-        "name": "catalog_display_activate",
-        "owner": "__unassigned__",
-        "parseMode": "parsed",
-        "parseWarnings": [],
-        "returnType": "JSONB",
-        "schema": "public",
-        "schemaVersion": "1.0.0",
-        "searchPath": [],
-        "securityDefiner": false,
-        "sourceConfidence": "high",
-        "status": "UNKNOWN",
-        "usedBy": []
-      },
-      {
-        "args": [
-          {
-            "mode": "IN",
-            "name": "p_batch_id",
-            "type": "UUID"
-          },
-          {
-            "mode": "IN",
-            "name": "",
-            "type": "-- governed batch (price_import_batches); required for commit\n  p_supplier  TEXT"
-          },
-          {
-            "mode": "IN",
-            "name": "",
-            "type": "-- pieces.piece_pm_id (brand)"
-          },
-          {
-            "mode": "IN",
-            "name": "",
-            "type": "e.g. '3410' (NK). Brand-lock.\n  p_operator  TEXT"
-          },
-          {
-            "mode": "IN",
-            "name": "p_dry_run",
-            "type": "BOOLEAN"
-          },
-          {
-            "mode": "IN",
-            "name": "",
-            "type": "-- safe default: project"
-          },
-          {
-            "mode": "IN",
-            "name": "do",
-            "type": "not write p_gamme_ids INTEGER[]"
+            "name": "p_gamme_ids",
+            "type": "INTEGER[]"
           }
         ],
         "definedInMigrations": [
@@ -1888,28 +1826,18 @@
           },
           {
             "mode": "IN",
-            "name": "",
-            "type": "-- governed batch (price_import_batches); required for commit\n  p_supplier  TEXT"
+            "name": "p_supplier",
+            "type": "TEXT"
           },
           {
             "mode": "IN",
-            "name": "",
-            "type": "-- pieces.piece_pm_id (brand)"
-          },
-          {
-            "mode": "IN",
-            "name": "",
-            "type": "e.g. '3410' (NK). Brand-lock.\n  p_operator  TEXT"
+            "name": "p_operator",
+            "type": "TEXT"
           },
           {
             "mode": "IN",
             "name": "p_dry_run",
             "type": "BOOLEAN"
-          },
-          {
-            "mode": "IN",
-            "name": "do",
-            "type": "not write"
           }
         ],
         "definedInMigrations": [
@@ -2227,45 +2155,6 @@
           },
           {
             "mode": "IN",
-            "name": "",
-            "type": "-- borne = TTL raw (au-delà : partition purgée)\n  p_grace_hours  INT"
-          },
-          {
-            "mode": "IN",
-            "name": "",
-            "type": "-- heures récentes pas encore agrégées (job @ :05 + retries)\n  p_min_missing  INT"
-          }
-        ],
-        "definedInMigrations": [
-          "20260601_seo_cwv_aggregation_coverage_alert.sql"
-        ],
-        "domain": "UNKNOWN",
-        "id": "public.detect_cwv_aggregation_coverage_gap#sig:196e099f",
-        "language": "plpgsql",
-        "name": "detect_cwv_aggregation_coverage_gap",
-        "owner": "__unassigned__",
-        "parseMode": "parsed",
-        "parseWarnings": [],
-        "returnType": "TABLE(alerts_inserted INT)",
-        "schema": "public",
-        "schemaVersion": "1.0.0",
-        "searchPath": [
-          "public"
-        ],
-        "securityDefiner": true,
-        "sourceConfidence": "high",
-        "status": "UNKNOWN",
-        "usedBy": []
-      },
-      {
-        "args": [
-          {
-            "mode": "IN",
-            "name": "p_window_hours",
-            "type": "INT"
-          },
-          {
-            "mode": "IN",
             "name": "p_grace_hours",
             "type": "INT"
           },
@@ -2276,49 +2165,10 @@
           }
         ],
         "definedInMigrations": [
-          "20260626_seo_cwv_aggregation_coverage_alert_tune.down.sql"
-        ],
-        "domain": "UNKNOWN",
-        "id": "public.detect_cwv_aggregation_coverage_gap#sig:93b1058f",
-        "language": "plpgsql",
-        "name": "detect_cwv_aggregation_coverage_gap",
-        "owner": "__unassigned__",
-        "parseMode": "parsed",
-        "parseWarnings": [],
-        "returnType": "TABLE(alerts_inserted INT)",
-        "schema": "public",
-        "schemaVersion": "1.0.0",
-        "searchPath": [
-          "public"
-        ],
-        "securityDefiner": true,
-        "sourceConfidence": "high",
-        "status": "UNKNOWN",
-        "usedBy": []
-      },
-      {
-        "args": [
-          {
-            "mode": "IN",
-            "name": "p_window_hours",
-            "type": "INT"
-          },
-          {
-            "mode": "IN",
-            "name": "",
-            "type": "-- borne = TTL raw + fenêtre auto-heal pg_cron\n  p_grace_hours  INT"
-          },
-          {
-            "mode": "IN",
-            "name": "",
-            "type": "-- heures récentes pas encore agrégées (job @ :05 + retries)\n  p_min_missing  INT"
-          }
-        ],
-        "definedInMigrations": [
           "20260626_seo_cwv_aggregation_coverage_alert_tune.sql"
         ],
         "domain": "UNKNOWN",
-        "id": "public.detect_cwv_aggregation_coverage_gap#sig:d07ba3b9",
+        "id": "public.detect_cwv_aggregation_coverage_gap",
         "language": "plpgsql",
         "name": "detect_cwv_aggregation_coverage_gap",
         "owner": "__unassigned__",
@@ -7110,18 +6960,13 @@
           },
           {
             "mode": "IN",
-            "name": "",
-            "type": "-- pri_pm_id (brand)"
-          },
-          {
-            "mode": "IN",
-            "name": "",
-            "type": "e.g. '3410' (NK). Brand-lock.\n  p_operator  TEXT"
+            "name": "p_operator",
+            "type": "TEXT"
           },
           {
             "mode": "IN",
             "name": "p_rows",
-            "type": "JSONB -- [{ \"piece_id_i\": <bigint>, \"pri_type\": \"0\", \"dispo\": \"1\"|\"2\" }]"
+            "type": "JSONB"
           }
         ],
         "definedInMigrations": [
@@ -65849,10 +65694,10 @@
       "owner": "@ak125",
       "path": "backend/tests/unit/route-wildcard-middleware.test.ts",
       "risk": "medium",
-      "runtime": true,
+      "runtime": false,
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE"
+      "status": "UNKNOWN"
     },
     {
       "deletePolicy": "FREE",
@@ -93646,7 +93491,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 652,
+      "loc": 665,
       "owner": "@ak125",
       "path": "scripts/audit/build-deep-inventory.js",
       "risk": "medium",
@@ -95226,7 +95071,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "script",
-      "loc": 491,
+      "loc": 543,
       "owner": "@ak125",
       "path": "scripts/registry/build-rpc-registry.js",
       "risk": "high",
@@ -97146,7 +96991,7 @@
       "importedBy": [],
       "imports": [],
       "kind": "test",
-      "loc": 231,
+      "loc": 306,
       "owner": "@ak125",
       "path": "tests/registry/rpc-parser.test.ts",
       "risk": "medium",
@@ -97167,11 +97012,11 @@
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "00bad6b42995538dbf05a9bb9c22e1cd4ec6a58e0df4c6ab970167e75b049724",
       "audit/registry/deps.json": "a580f64acf4bb9bea3d25c935e014765913150f69ac4073803b4f650b2c35b72",
-      "audit/registry/files.json": "b00fec6e978a81ffcf1c3dfa055dade465d53f4077cfccd03f3f2d1983407211",
-      "audit/registry/rpc.json": "763bbba8f325f325085e805ed042dab8b388498eff8ee6e2445a093c7f392a43",
-      "audit/registry/runtime.json": "e0569902a2a706d6da9472c60f04a971a7d43dd07d7ccfcfa55396b87180da00"
+      "audit/registry/files.json": "67e26498769d01bcbb894a8acf453ef70e03cc2115b3ff87233195fb959df6d6",
+      "audit/registry/rpc.json": "3559e96b687bde762d01c35793f30d779db9ae6e5a674b94d59b710d0168f9b6",
+      "audit/registry/runtime.json": "73f1a4d6496c220a6da744dfeb169b9d0d15c0bb591f2ddb238d41e5bf6f5879"
     },
-    "sotFingerprint": "7af32eccd540"
+    "sotFingerprint": "e54c32ed010d"
   },
   "runtime": [
     {
@@ -100925,15 +100770,6 @@
       "path": "backend/src/workers/worker.module.ts",
       "schemaVersion": "1.0.0",
       "sourceConfidence": "high",
-      "status": "LIVE"
-    },
-    {
-      "dependsOn": [],
-      "id": "runtime:backend/tests/unit/route-wildcard-middleware.test.ts",
-      "kind": "nestjs-module",
-      "path": "backend/tests/unit/route-wildcard-middleware.test.ts",
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
       "status": "LIVE"
     },
     {

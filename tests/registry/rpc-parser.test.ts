@@ -18,6 +18,8 @@ import {
   parseArg,
   splitTopLevel,
   findFunctionBlocks,
+  lexSql,
+  maskComments,
   sigHash,
 } from "../../scripts/registry/build-rpc-registry.js";
 
@@ -210,6 +212,79 @@ describe("Case 8 : comment / string / body awareness (no phantom functions)", ()
       !modes.includes("unknown_signature"),
       "fixture should no longer yield unknown_signature phantoms"
     );
+  });
+});
+
+describe("Case 9 : comment-masked parsing (comments never enter args or sigHash)", () => {
+  // The production pipeline: lex once → { masked, blocks } → parse the MASKED view.
+  function extract(sql: string) {
+    const { masked, blocks } = lexSql(sql);
+    return blocks.map((p) => parseFunctionBlock(masked, p)).filter(Boolean);
+  }
+
+  // Same PostgreSQL signature, one copy carrying inline comments, one without.
+  const withComments = `CREATE FUNCTION fixture_cwv_gap(
+  p_window_hours INT,   -- heures récentes (job @ :05 + retries)
+  -- borne = TTL raw (au-dela : partition purgee)
+  p_grace_hours  INT,
+  p_min_missing  INT
+) RETURNS integer LANGUAGE sql AS $$ SELECT 1 $$;`;
+  const withoutComments = `CREATE FUNCTION fixture_cwv_gap(
+  p_window_hours INT,
+  p_grace_hours  INT,
+  p_min_missing  INT
+) RETURNS integer LANGUAGE sql AS $$ SELECT 1 $$;`;
+
+  test("same signature with vs without inline comments → identical sigHash (one registry signature)", () => {
+    const a = extract(withComments)[0] as any;
+    const b = extract(withoutComments)[0] as any;
+    assert.equal(sigHash(a.args), sigHash(b.args));
+  });
+
+  test("no argument type contains comment markers or newlines; names/types are clean", () => {
+    const a = extract(withComments)[0] as any;
+    for (const arg of a.args) {
+      assert.ok(!/--|\/\*|\n/.test(arg.type), `polluted type: ${JSON.stringify(arg.type)}`);
+    }
+    assert.deepEqual(a.args.map((x: any) => x.type), ["INT", "INT", "INT"]);
+    assert.deepEqual(
+      a.args.map((x: any) => x.name),
+      ["p_window_hours", "p_grace_hours", "p_min_missing"]
+    );
+  });
+
+  test("trailing inline comment on a type is stripped", () => {
+    const f = extract(
+      `CREATE FUNCTION fixture_trailing(p_x INT -- price in centimes\n) RETURNS void LANGUAGE sql AS $$ SELECT 1 $$;`
+    )[0] as any;
+    assert.equal(f.args[0].type, "INT");
+  });
+});
+
+describe("Case 10 : lexer hardening (E-strings, nested block comments, quoted identifiers)", () => {
+  function names(sql: string) {
+    const { masked, blocks } = lexSql(sql);
+    return blocks.map((p) => (parseFunctionBlock(masked, p) as any)?.funcName);
+  }
+
+  test("E'…' escape string (with \\' and --) does not swallow a following function", () => {
+    const sql =
+      `SELECT E'it\\'s a -- not a comment';\n` +
+      `CREATE FUNCTION fixture_after_estring(a int) RETURNS int LANGUAGE sql AS $$ SELECT a $$;`;
+    assert.deepEqual(names(sql), ["fixture_after_estring"]);
+  });
+
+  test("nested block comment is fully skipped; a following real function is still found", () => {
+    const sql =
+      `/* outer /* CREATE FUNCTION fixture_nested_phantom() */ still comment */\n` +
+      `CREATE FUNCTION fixture_after_nested(a int) RETURNS int LANGUAGE sql AS $$ SELECT a $$;`;
+    const found = names(sql);
+    assert.ok(!found.includes("fixture_nested_phantom"), "phantom from nested comment leaked");
+    assert.ok(found.includes("fixture_after_nested"), "real function after nested comment missed");
+  });
+
+  test("a quoted identifier containing CREATE FUNCTION text is not detected", () => {
+    assert.equal(lexSql(`CREATE TABLE t ("CREATE FUNCTION evil" integer);`).blocks.length, 0);
   });
 });
 

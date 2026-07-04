@@ -3755,15 +3755,6 @@
     },
     {
       "dependsOn": [],
-      "id": "runtime:backend/tests/unit/route-wildcard-middleware.test.ts",
-      "kind": "nestjs-module",
-      "path": "backend/tests/unit/route-wildcard-middleware.test.ts",
-      "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
-      "status": "LIVE"
-    },
-    {
-      "dependsOn": [],
       "id": "runtime:frontend/app/entry.client.tsx",
       "kind": "other",
       "path": "frontend/app/entry.client.tsx",

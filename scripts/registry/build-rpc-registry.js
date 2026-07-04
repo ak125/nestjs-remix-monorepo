@@ -241,78 +241,126 @@ function entryId(schemaName, funcName, args, overloadIndex) {
   return `${schemaName}.${funcName}`;
 }
 
-// Scan `sql` for top-level `CREATE [OR REPLACE] FUNCTION` keywords, returning their
-// byte offsets — but only those occurring in *code*, not inside comments or strings.
+// True if `c` is a SQL identifier character. Used to detect an `E'…'` escape-string
+// prefix without misfiring on identifiers that merely end in `e`/`E`.
+function isWordChar(c) {
+  return c !== undefined && /[A-Za-z0-9_]/.test(c);
+}
+
+// Single forward-pass SQL lexer. Returns `{ masked, blocks }`.
 //
-// A plain regex over raw SQL yields phantom functions from prose like the
-// `-- … CREATE FUNCTION grant EXECUTE …` comment in migration 20260619…:77
-// (→ `public.grant`). A naive "is there a `--`/`/*` before idx" test is worse: it
-// mis-flags real DDL because migration bodies contain unmatched `/*` and `--`
-// sequences inside `$$ … $$` bodies and single-quoted strings.
+//   masked — a SAME-LENGTH copy of `sql` with every COMMENT character replaced by a
+//     space (newlines preserved). All downstream parsing (header, arguments, RETURNS,
+//     LANGUAGE) runs on `masked`, so an inline comment can NEVER leak into an argument
+//     type and pollute its sigHash. Invariant: the same PostgreSQL signature written
+//     with or without inline comments yields identical args → identical sigHash → ONE
+//     registry signature. String literals, dollar-quoted bodies and quoted identifiers
+//     are preserved verbatim (they are code, not comments).
 //
-// The only robust approach is a single forward pass that tracks lexer state and
-// skips over: line comments (`-- … \n`), *closed* block comments (`/* … */`),
-// single-quoted strings (`'…''…'`), and dollar-quoted bodies (`$$ … $$`,
-// `$tag$ … $tag$`). CREATE FUNCTION keywords inside any of those are ignored.
-function findFunctionBlocks(sql) {
-  const blocks = [];
+//   blocks — byte offsets of every top-level `CREATE [OR REPLACE] FUNCTION` keyword in
+//     executable code, never inside a comment, string, dollar body or quoted identifier.
+//     Offsets are valid in both `sql` and `masked` (identical length).
+//
+// Handles: line comments (`-- … \n`), NESTED block comments (`/* … /* … */ … */`),
+// single-quoted strings (`'…''…'`), E-strings (`E'… \' … ''…'`), double-quoted
+// identifiers (`"…""…"`), and dollar-quoted bodies (`$$ … $$`, `$tag$ … $tag$`).
+//
+// Replaces an earlier keyword-only lexer that masked comments for DETECTION but still
+// fed the ORIGINAL sql to the argument parser — letting inline comments become fake
+// argument types and fabricate spurious `#sig:` variants of one real function.
+function lexSql(sql) {
   const n = sql.length;
+  const masked = sql.split("");
+  const blocks = [];
   const createRe = /^CREATE\s+(?:OR\s+REPLACE\s+)?FUNCTION\b/i;
   const dollarRe = /^\$[A-Za-z0-9_]*\$/;
   let i = 0;
-  let dollarTag = null; // open dollar-quote tag, e.g. "$$" or "$body$"
   while (i < n) {
-    if (dollarTag) {
-      // inside a dollar-quoted body — only its matching tag closes it
-      if (sql.startsWith(dollarTag, i)) {
-        i += dollarTag.length;
-        dollarTag = null;
-      } else i++;
-      continue;
-    }
-    const two = sql.slice(i, i + 2);
-    if (two === "--") {
-      const nl = sql.indexOf("\n", i);
-      i = nl === -1 ? n : nl + 1;
-      continue;
-    }
-    if (two === "/*") {
-      const end = sql.indexOf("*/", i + 2);
-      i = end === -1 ? n : end + 2;
-      continue;
-    }
     const ch = sql[i];
-    if (ch === "'") {
-      i++;
+    const two = sql.slice(i, i + 2);
+
+    // line comment → mask to end of line (newline preserved)
+    if (two === "--") {
+      while (i < n && sql[i] !== "\n") { masked[i] = " "; i++; }
+      continue;
+    }
+
+    // block comment (nested-aware) → mask, keeping newlines
+    if (two === "/*") {
+      let depth = 0;
       while (i < n) {
-        if (sql[i] === "'") {
-          if (sql[i + 1] === "'") { i += 2; continue; } // escaped ''
-          i++;
-          break;
-        }
+        if (sql.slice(i, i + 2) === "/*") { masked[i] = " "; masked[i + 1] = " "; i += 2; depth++; continue; }
+        if (sql.slice(i, i + 2) === "*/") { masked[i] = " "; masked[i + 1] = " "; i += 2; depth--; if (depth === 0) break; continue; }
+        if (sql[i] !== "\n") masked[i] = " ";
         i++;
       }
       continue;
     }
+
+    // single-quoted string, or E'…' escape string — preserved verbatim
+    if (ch === "'" || ((ch === "E" || ch === "e") && sql[i + 1] === "'" && !isWordChar(sql[i - 1]))) {
+      const isE = ch !== "'";
+      if (isE) i += 1; // step over the E onto the opening quote
+      i += 1; // step over the opening quote into the body
+      while (i < n) {
+        const c = sql[i];
+        if (isE && c === "\\") { i += 2; continue; } // backslash escape (E-strings only)
+        if (c === "'") {
+          if (sql[i + 1] === "'") { i += 2; continue; } // doubled '' escape
+          i += 1;
+          break;
+        }
+        i += 1;
+      }
+      continue;
+    }
+
+    // double-quoted identifier — preserved; never detected as a keyword
+    if (ch === '"') {
+      i += 1;
+      while (i < n) {
+        if (sql[i] === '"') {
+          if (sql[i + 1] === '"') { i += 2; continue; } // doubled "" escape
+          i += 1;
+          break;
+        }
+        i += 1;
+      }
+      continue;
+    }
+
+    // dollar-quoted body — preserved; only its matching tag closes it
     if (ch === "$") {
       const dm = dollarRe.exec(sql.slice(i, i + 64));
       if (dm) {
-        dollarTag = dm[0];
-        i += dm[0].length;
+        const tag = dm[0];
+        i += tag.length;
+        const end = sql.indexOf(tag, i);
+        i = end === -1 ? n : end + tag.length;
         continue;
       }
     }
+
+    // top-level CREATE [OR REPLACE] FUNCTION keyword in executable code
     if (ch === "C" || ch === "c") {
       const cm = createRe.exec(sql.slice(i, i + 40));
-      if (cm) {
-        blocks.push(i);
-        i += cm[0].length;
-        continue;
-      }
+      if (cm) { blocks.push(i); i += cm[0].length; continue; }
     }
-    i++;
+
+    i += 1;
   }
-  return blocks;
+  return { masked: masked.join(""), blocks };
+}
+
+// Backward-compatible detection API: byte offsets of real CREATE FUNCTION keywords.
+function findFunctionBlocks(sql) {
+  return lexSql(sql).blocks;
+}
+
+// Comment-masked view of `sql` (comments → spaces, offsets preserved). Feed THIS to
+// parseFunctionBlock so comments cannot enter argument types / sigHash.
+function maskComments(sql) {
+  return lexSql(sql).masked;
 }
 
 function loadAllMigrations(migrationsDir) {
@@ -347,12 +395,14 @@ function main() {
   const byFullName = new Map(); // "schema.name" → array of parsed records
 
   for (const { filename, sql } of migrations) {
-    const blocks = findFunctionBlocks(sql);
+    // Parse the comment-masked view (offsets preserved) so inline comments never enter
+    // argument types or sigHash — one PG signature = one registry signature.
+    const { masked, blocks } = lexSql(sql);
     for (const start of blocks) {
-      const parsed = parseFunctionBlock(sql, start);
+      const parsed = parseFunctionBlock(masked, start);
       if (!parsed) {
         // CREATE FUNCTION matched by keyword but parser couldn't extract — emit unknown_signature
-        const around = sql.slice(start, Math.min(start + 200, sql.length));
+        const around = masked.slice(start, Math.min(start + 200, masked.length));
         const nameGuess = (around.match(/FUNCTION\s+([\w."']+)/i) || [])[1] || "unknown";
         const cleanName = nameGuess.replace(/["']/g, "");
         const [schemaName, funcName] = cleanName.includes(".")
@@ -486,5 +536,7 @@ module.exports = {
   parseArg,
   splitTopLevel,
   findFunctionBlocks,
+  lexSql,
+  maskComments,
   sigHash,
 };
