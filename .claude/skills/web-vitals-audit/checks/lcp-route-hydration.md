@@ -14,7 +14,7 @@ risk_documented:
 
 ## Pattern audité
 
-Routes Remix dont l'hydration initiale paie un coût élevé qui retarde le
+React Router routes dont l'hydration initiale paie un coût élevé qui retarde le
 LCP (Largest Contentful Paint), typiquement à cause de :
 
 1. `useState` initialisé avec un appel coûteux (`computeLargeArray()`,
@@ -29,12 +29,12 @@ LCP (Largest Contentful Paint), typiquement à cause de :
 
 ## Origine
 
-Préventif — pattern recurrent dans les apps Remix mais pas d'incident
+Préventif — pattern récurrent dans les applications avec hydration côté client mais pas d'incident
 PROD documenté pour cette codebase encore. Risque pondéré modéré.
 
 ## Méthode
 
-1. Pour chaque route Remix avec `loader` :
+1. Pour chaque React Router route avec `loader` :
    - Estimer la taille du JSON retourné (parser le type TS du loader si
      typé, sinon heuristique sur `serializable` shapes).
    - Si > 50 KB sérialisé estimé → finding `large_loader_payload`.

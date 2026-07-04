@@ -3,7 +3,7 @@
 ## Monorepo Structure
 
 - **backend/** - NestJS API (TypeScript, PostgreSQL via Supabase)
-- **frontend/** - Remix SSR (React 18, Vite)
+- **frontend/** - React Router 8 SSR frontend
 - **packages/** - `@repo/database-types`, `@monorepo/shared-types`, `@fafa/ui` (Radix+Tailwind), `@fafa/design-tokens`, `@fafa/typescript-config`, `@fafa/eslint-config`
 
 ## Three-Tier Pattern

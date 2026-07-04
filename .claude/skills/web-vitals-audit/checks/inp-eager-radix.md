@@ -15,7 +15,7 @@ risk_documented:
 
 ## Pattern audité
 
-Routes Remix qui importent **statiquement** plusieurs composants Radix
+React Router routes qui importent **statiquement** plusieurs composants Radix
 lourds (`@radix-ui/react-*`) au top-level, hydratant tout au mount initial
 même si le composant n'est jamais ouvert par l'utilisateur dans cette
 session.
@@ -34,7 +34,7 @@ contribuait au baseline cost. Préventif tant que pas mesuré individuellement.
 
 ## Méthode
 
-1. Pour chaque route Remix (`frontend/app/routes/**/*.tsx`) :
+1. Pour chaque React Router route (`frontend/app/routes/**/*.tsx`) :
    - Compter les imports `from '@radix-ui/react-*'` au top-level
    - Identifier ceux importés mais conditionnellement rendus (`{open && <X/>}`)
      — candidats à `lazy()` ou `<Suspense>`

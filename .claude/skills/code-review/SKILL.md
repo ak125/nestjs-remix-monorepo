@@ -125,7 +125,7 @@ Appliquer les checklists pertinentes selon la Phase 1.
 - [ ] Pas de requetes N+1 (utiliser RPC ou joins Supabase)
 - [ ] Gestion d'erreur explicite (pas de catch vide)
 
-## Checklist Frontend (Remix)
+## Checklist Frontend (React Router 8)
 
 - [ ] Loader pour le data fetching (pas de useEffect + fetch)
 - [ ] Meta tags SEO definis (title, description, OG)

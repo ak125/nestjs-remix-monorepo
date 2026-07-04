@@ -376,7 +376,7 @@ kg_get_dtc_lookup(p_code TEXT) RETURNS TABLE(code, description, system, severity
 | Wire `kg_record_case` dans diag-orchestrator | Univers disjoints (slugs vs UUIDs), pas de mapping | Conserver corpus diag dans `__diag_session.result`, wire kg_record_case ailleurs |
 | Creer table `__diag_dtc` | Vue `v_dtc_lookup` + RPC suffisent | Reutiliser kg_nodes.dtc_code + unnest seo_observable.dtc_codes[] |
 | Creer table `__diag_context_questions/safe_phrases/wizard_steps` | Contenu UI = wiki + exports markdown (ADR-031) | `automecanik-wiki/wiki/{diagnostic,support}/<slug>.md` + frontmatter YAML |
-| Hardcode constants TS dans calendrier-entretien.tsx (212 lignes) | Bricolage, pas dynamique | Loader Remix → `/api/diagnostic-engine/calendar` (Phase 5 PR-7) |
+| Hardcode constants TS dans calendrier-entretien.tsx (212 lignes) | Bricolage, pas dynamique | Route loader → `/api/diagnostic-engine/calendar` (Phase 5 PR-7) |
 | Fusionner `__diag_safety_rule` ↔ `kg_safety_triggers` | Sémantiques distinctes (cause-by-cause vs aggregate par observable UUIDs) | Conserver les 2 canons complementaires |
 
 ### Quand proposer ce skill (etendu)

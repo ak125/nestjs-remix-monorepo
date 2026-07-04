@@ -150,7 +150,7 @@ mémoire `feedback_no_hardcoded_infra_in_agentsmd.md`).
 ## Mémoire codebase — lire le registry AVANT toute exploration
 
 **Avant** tout `Grep` / `Glob` / lecture en rafale sur le code applicatif (modules NestJS, tables
-DB, intégrations externes, routes Remix critiques), **lire dans cet ordre** :
+DB, intégrations externes, routes React Router critiques), **lire dans cet ordre** :
 
 0. **[`audit/registry/canonical.json`](audit/registry/canonical.json)** — SoT machine-readable du
    Repository Control Plane (ADR-058). Index files/db/rpc/runtime/deps par domaine D1..D15 +
@@ -203,7 +203,13 @@ vit dans un **repo séparé** : runtime DEV `/opt/automecanik/governance-vault/`
    skill dérivé ↔ repo), **l'état du repo prime**.
 
 Ce monorepo contient uniquement : `backend/`, `frontend/`, `shared/`, `scripts/`, `docker/`,
-`.github/workflows/`, `app/`. **Aucun** `governance/`, `docs/adrs/`, `.spec/00-canon/`.
+`.github/workflows/`, `app/`. **Aucun** `governance/` ni `docs/adrs/` (la gouvernance canon —
+ADRs / rules / policies — vit au vault). Seul `.spec/00-canon/repository-registry/**` existe
+légitimement ici comme surface de contrats **Layer 2** du Repository Control Plane (ADR-058/062,
+référencé plus haut) — ce n'est PAS de la gouvernance canon dupliquée. La légitimité de cette
+surface L2 **ne confère aucune autorité courante** aux autres documents legacy `.spec/00-canon/**`
+voisins (ex. `architecture.md`, `rules.md`, `governance-policy.md`), dont le statut est traité
+séparément (fermeture gouvernée).
 
 ---
 

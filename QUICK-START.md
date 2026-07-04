@@ -2,10 +2,10 @@
 
 ## ✅ Ce qui fonctionne maintenant
 
-Votre application NestJS + Remix est **100% opérationnelle** avec :
+Votre application NestJS + React Router est **100% opérationnelle** avec :
 
 - ✅ Backend NestJS sur port **3000**
-- ✅ Frontend Remix servi par le backend
+- ✅ Frontend React Router servi par le backend
 - ✅ Redis en Docker pour les sessions/cache
 - ✅ Hot reload automatique (nodemon + tsc watch)
 - ✅ Panier e-commerce fonctionnel
@@ -16,8 +16,8 @@ Votre application NestJS + Remix est **100% opérationnelle** avec :
 ## 📋 Prérequis
 
 ```bash
-# Node.js 20+
-node --version  # v20.x.x ou supérieur
+# Node.js 24+
+node --version  # v24.x.x ou supérieur
 
 # Docker
 docker --version
@@ -59,7 +59,7 @@ npm run dev
 - 🔄 TypeScript en mode watch (compilation automatique)
 - 🔄 Nodemon pour le hot-reload
 - 🚀 Backend NestJS (API + Express)
-- 🎨 Frontend Remix (servi par le backend)
+- 🎨 Frontend React Router (servi par le backend)
 
 **Résultat attendu dans les logs** :
 ```
@@ -277,7 +277,7 @@ Port 3000 (NestJS Express)
 │   ├── /api/cart         (Panier)
 │   ├── /api/vehicles     (Véhicules)
 │   └── /api/blog         (Blog)
-└── /*              → Frontend Remix
+└── /*              → Frontend React Router
     ├── /             (Homepage)
     ├── /catalog      (Catalogue)
     └── /cart         (Panier)
@@ -296,7 +296,7 @@ Port 3000 (NestJS Express)
 
 ## ✅ Checklist de Démarrage
 
-- [ ] Node.js 20+ installé
+- [ ] Node.js 24+ installé
 - [ ] Docker installé
 - [ ] Dépendances installées (`npm install`)
 - [ ] Redis démarré (`docker run -d --name redis-dev --rm -p 6379:6379 redis:7-alpine`)

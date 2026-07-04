@@ -22,7 +22,7 @@ Si la réponse n'est pas dans REPO_MAP ni canonical, passer à la prose ci-desso
 2. `modules/<name>.md` — pour toute question portant sur un module backend NestJS
 3. `db/*.md` — pour les questions sur les tables, RPCs, migrations Supabase
 4. `integrations/*.md` — pour Paybox, SystemPay, Supabase, catalogue fournisseur (parts-feed)
-5. `routes/*.md` — pour les routes Remix critiques
+5. `routes/*.md` — pour les routes React Router critiques
 6. `ops/*.md` — pour toute question sur **cleanup / refactor / suppression** (procédures, backlog, playbook cycles)
 
 Si la question n'est pas couverte ici, lire `.claude/rules/*` puis grepper.
@@ -88,7 +88,7 @@ seo-logs, shipping, staff, suppliers, support, system, upload
 | [integrations/supabase.md](integrations/supabase.md) | Projet `cxpojprgwgubzjyqzmoq`, MCP, RLS |
 | [integrations/parts-feed.md](integrations/parts-feed.md) | Pipeline V2 catalogue fournisseur, remap, noindex legacy |
 
-## Routes Remix critiques
+## Routes React Router critiques
 
 | Fichier | Couvre |
 |---|---|
@@ -104,7 +104,7 @@ Toute action de suppression, refactor, ou fusion de module DOIT passer par ces d
 |---|---|
 | [ops/safe-delete-procedure.md](ops/safe-delete-procedure.md) | Runbook en 4 étapes + script `validate-before-delete.sh` + anti-patterns |
 | [ops/cleanup-targets.md](ops/cleanup-targets.md) | Backlog structuré : 76 scripts obsolètes, 147 dead components, fusions candidates, 17 cycles classifiés |
-| [ops/cycle-resolution-playbook.md](ops/cycle-resolution-playbook.md) | 5 patterns pour casser les cycles (fortuit / inversion / pipeline / acceptable / Remix) |
+| [ops/cycle-resolution-playbook.md](ops/cycle-resolution-playbook.md) | 5 patterns pour casser les cycles (fortuit / inversion / pipeline / acceptable / React Router) |
 | [ops/supplier-brand-price-load-procedure.md](ops/supplier-brand-price-load-procedure.md) | Procédure 7 étapes pour charger les tarifs d'une marque/fournisseur dans `pieces_price` (feed → dry-run → vérif live portail/EAN → commit taggé + rollback → contrôle 30j → MAJ incrémentale). 1er run : NK/DCA, 30621 prix |
 
 Outils associés :
@@ -117,7 +117,7 @@ Outils associés :
 Ces règles vivent dans `.claude/rules/*` — `knowledge/` les référence, jamais ne les recopie :
 
 - [rules/backend.md](../rules/backend.md) — stack NestJS, three-tier, session, Redis
-- [rules/frontend.md](../rules/frontend.md) — Remix, shadcn/ui + Tailwind, conventions
+- [rules/frontend.md](../rules/frontend.md) — React Router 8, shadcn/ui + Tailwind, conventions
 - [rules/deployment.md](../rules/deployment.md) — the PREPROD container / PROD (tag), Docker, Caddy
 - [rules/payments.md](../rules/payments.md) — règles HMAC critiques, timingSafeEqual, security
 - [rules/context7.md](../rules/context7.md) — Context7 MCP usage (frugal)

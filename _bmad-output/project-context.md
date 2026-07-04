@@ -6,6 +6,18 @@ sections_completed: ['technology_stack', 'critical_rules', 'patterns']
 existing_patterns_found: 23
 ---
 
+> ⚠️ **HISTORICAL SNAPSHOT — DO NOT USE AS CURRENT IMPLEMENTATION CONTEXT**
+>
+> This file is preserved as historical/generated BMAD output.
+> It is not a source of current stack, dependency, architecture, or implementation truth.
+>
+> For current repository state, verify:
+> 1. live package manifests,
+> 2. `audit/registry/canonical.json` where applicable,
+> 3. current code.
+>
+> Do not copy versions or implementation rules from this snapshot into new work.
+
 # Project Context for AI Agents
 
 _Ce fichier contient les regles critiques et patterns que les agents IA doivent suivre lors de l'implementation du code dans ce projet. Focus sur les details non-evidents que les agents pourraient manquer._
