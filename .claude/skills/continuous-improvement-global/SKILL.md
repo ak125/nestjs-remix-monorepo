@@ -7,7 +7,7 @@ owners: ['@ak125']
 domain: D15
 runtime_class: read-only
 llm_safe: true
-last_verified: '2026-05-28'
+last_verified: '2026-07-04'
 ---
 
 # Skill : continuous-improvement-global
@@ -92,6 +92,37 @@ The check scales with risk. Pick one mode per change:
 - **Over-loop without convergence** — more than 3 cycles without a result ⇒ `OWNER_DECISION` or `STOP_TOO_COMPLEX`.
 - **Scale before a working pilot** — bulk / mass-automation / ratchet CI / large SEO publication require ≥1 proven pilot.
 - **Adding a layer when a simpler path exists** — re-read the rules above; extension > creation.
+
+## Post-fix simplification closeout
+
+When this skill is already in use and the fix has passed its `Test`, run one final advisory,
+read-only closeout before handoff :
+
+- What new mechanism did the fix add ?
+- Could an existing mechanism absorb or replace it ?
+- What old workaround, path, flag, scanner, resolver, projection, or dependency became obsolete ?
+- Did the change create a second representation of the same concept or an accidental source of truth ?
+- What can now be deleted, reused, merged, or explicitly kept ?
+
+Keep the output compact :
+
+    Post-fix simplification
+    DELETE     — <candidate or none>
+    REUSE      — <candidate or none>
+    MERGE      — <candidate or none>
+    KEEP       — <item + real boundary / compatibility reason>
+    SOT IMPACT — NONE | GOVERNED_CHANGE (<authority>) | ACCIDENTAL_DUPLICATION
+
+`ACCIDENTAL_DUPLICATION` is incompatible with `GO` or `GO_WITH_WATCH` : use the existing
+`FIX_AND_RETEST` or `OWNER_DECISION` verdict according to scope and authority.
+
+This closeout grants no mutation authority and is never a gate. Any accepted follow-up returns to
+PATCH → VERIFY → this closeout again before handoff (a deletion can itself make something else
+obsolete) and remains governed by the existing frozen scope, ownership, danger-zone, and autonomy
+rules.
+
+Simplicity never overrides correctness, business truth, security, validation, tests, observability,
+architectural boundaries, ownership, reversibility, compatibility windows, or proofs.
 
 ## Notes
 
