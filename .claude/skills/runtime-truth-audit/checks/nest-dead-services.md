@@ -68,4 +68,4 @@ par accident.
 
 - N'audite pas les services injectés par `useFactory` ou `useExisting`
   dynamique. À documenter explicitement dans `summary.skipped`.
-- N'audite pas le frontend Remix (pas de DI NestJS).
+- N'audite pas le frontend React Router (pas de DI NestJS).

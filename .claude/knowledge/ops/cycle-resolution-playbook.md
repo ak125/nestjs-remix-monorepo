@@ -188,13 +188,13 @@ qui peuvent s'invoquer mutuellement". C'est du code métier, pas une dette.
 Si un jour une règle `no-circular` passe à severity `error`, ajouter ces
 cycles en exclusion explicite dans `.dependency-cruiser.cjs` avec commentaire.
 
-## Pattern 5 — Cycle frontend Remix SSR
+## Pattern 5 — Cycle frontend React Router 8 SSR
 
 **Signal** : `root.tsx` ↔ `hooks/useRootData.ts`.
 
-C'est le pattern typique Remix pour accéder aux loaders depuis n'importe quel
-composant. **Acceptable et documenté** ; même les templates officiels Remix
-ont ce cycle.
+C'est le pattern typique React Router (hérité de Remix) pour accéder aux loaders
+depuis n'importe quel composant. **Acceptable et documenté** ; même les templates
+officiels ont ce cycle.
 
 **Décision** : laisser.
 

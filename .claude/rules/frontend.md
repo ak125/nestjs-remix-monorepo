@@ -1,13 +1,13 @@
-# Frontend Architecture (Remix)
+# Frontend Architecture (React Router 8)
 
 ## Stack
 
-- SSR Remix (flat routes), React Query (server state), Zustand (client state), Conform.js + Zod (forms)
+- SSR React Router 8 using the repository's flat-routes convention. React Query for server state where present; forms use react-hook-form; Zod for validation where the codebase actually imports it. Do not infer package versions from this file — verify the manifests.
 - API services dans `frontend/app/services/api/`, fetch natif, base URL `http://localhost:3000`
 
 ## Routes
 
-`_index.tsx` (home), `admin.*` (dashboard), `panier.*` (cart), `pieces.*` (catalogue), `api.*` (API Remix)
+`_index.tsx` (home), `admin.*` (dashboard), `panier.*` (cart), `pieces.*` (catalogue), `api.*` (API routes)
 
 ## UI Convention (IMPORTANT)
 

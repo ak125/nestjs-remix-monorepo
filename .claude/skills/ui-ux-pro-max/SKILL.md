@@ -9,7 +9,7 @@ runtime_class: read-only
 llm_safe: true
 last_verified: '2026-05-18'
 license: Internal - Automecanik
-compatibility: Designed for Claude Code in the AutoMecanik monorepo. Stack — Remix + shadcn/ui + Tailwind CSS. Consults packages/design-tokens as project-specific overlay.
+compatibility: Designed for Claude Code in the AutoMecanik monorepo. Stack — React Router 8 + shadcn/ui + Tailwind CSS. Consults packages/design-tokens as project-specific overlay.
 tags: [design-system, ui, ux, a11y, typography, palettes, charts]
 metadata:
   version: "1.1"

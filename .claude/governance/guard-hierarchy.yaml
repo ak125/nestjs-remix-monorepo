@@ -98,7 +98,7 @@ levels:
       - new_domain                                  # adding Dn beyond canon registry
       - port_signature_breaking_change              # bump port contract major
       - vehicle_context_schema_version_bump         # OPTION A figée — v ≠ 1 = ADR
-      - new_public_route                            # opening a new Remix route (R-SEO-09 override)
+      - new_public_route                            # opening a new public route (R-SEO-09 override)
 
 # Inflation guard : adding a new guard at L3 or L4 requires an ADR
 # referencing the dev-friction budget impact. Default for new guards is L2.

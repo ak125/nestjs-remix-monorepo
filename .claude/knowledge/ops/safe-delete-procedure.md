@@ -11,7 +11,7 @@ last_scan: 2026-04-24
 
 > **Règle cardinale** : `knip` dit "unused" ≠ "safe to delete". 15-20 % des
 > flags sont des faux positifs (chargement dynamique, DI NestJS, ZodSchema
-> invoqué par nom, convention flat-routes Remix). Cette procédure transforme
+> invoqué par nom, convention flat-routes React Router). Cette procédure transforme
 > un signal knip en décision vérifiée.
 
 ## Procédure en 4 étapes
@@ -44,7 +44,7 @@ Le script vérifie **6 canaux** :
 1. Imports statiques / dynamiques (stem de fichier)
 2. `@Module({ providers | imports | exports | controllers: [...] })` (classe DI NestJS)
 3. Strings `"path/to/file"` ou `"basename.ts"` dans le code / configs / YAML
-4. Routes Remix (`frontend/app/routes/` = auto-loaded, DO NOT DELETE)
+4. Routes React Router (`frontend/app/routes/` = auto-loaded, DO NOT DELETE)
 5. Références dans `.claude/knowledge/` et `.claude/rules/`
 6. Migrations Supabase `.sql`
 
@@ -95,7 +95,7 @@ finale est le runtime, pas le grep.
 
 - ❌ Supprimer **en batch** sans passer par `validate-before-delete.sh`
 - ❌ Ignorer un BLOCKED en argumentant "je connais, c'est safe"
-- ❌ Supprimer un fichier sous `frontend/app/routes/` (convention-loaded par Remix)
+- ❌ Supprimer un fichier sous `frontend/app/routes/` (convention-loaded par React Router)
 - ❌ Commit sans `npm test` passant
 - ❌ PR qui mélange cleanup + refactor + feature — scope séparé
 
