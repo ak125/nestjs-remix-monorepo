@@ -1,6 +1,7 @@
 name: 🔒 Dependency registry truth freshness
 
-# Blocking freshness gate — ADR-058 Repository Control Plane, Layer 1.
+# Freshness gate — ADR-058 Repository Control Plane, Layer 1.
+# WARN-ONLY FIRST under the ADR-062 ratchet (see ROLLOUT below).
 #
 # WHY THIS EXISTS
 # ---------------
@@ -18,18 +19,33 @@ name: 🔒 Dependency registry truth freshness
 #
 # WHAT THIS GATE DOES
 # -------------------
-# Rebuilds `deps.json` from the live manifests and fails if the committed
-# file differs — enforcing `committed L1 == fresh(manifests)`. This is the
-# missing freshness-closure between the primary source (`package.json`) and
-# its executable projection (`deps.json`).
+# Rebuilds `deps.json` from the live manifests and flags drift when the
+# committed file differs — enforcing `committed L1 == fresh(manifests)`. This
+# is the missing freshness-closure between the primary source (`package.json`)
+# and its executable projection (`deps.json`). Under the ADR-062 ratchet the
+# drift signal is warn-only first (non-blocking) — see ROLLOUT below.
 # Ref: audit/p0-rag-runtime-and-version-truth-2026-07-04.md §3.1
 #
-# ROLLOUT NOTE (ratchet)
-# ----------------------
-# On a drifted repo this gate is RED BY DESIGN until `deps.json` is rebuilt
-# (PR-B) AND the owner-gated L2 `dep-governance.yaml` is resynced (so the
-# @repo/registry §4.2 subset test in `contract-gate.yml` stays green). Add it
-# as a REQUIRED status check in branch protection only AFTER that resync.
+# ROLLOUT — WARN-ONLY FIRST (ADR-062 ratchet)
+# -------------------------------------------
+# Per ADR-062, no new gate starts blocking. This job carries
+# `continue-on-error: true` at the JOB level: the drift DETECTION below stays
+# intact (the assert step still `exit 1`s, with a red step, an `::error`
+# annotation, and a $GITHUB_STEP_SUMMARY explanation), but a failing job does
+# NOT block the PR — it is a visible, non-blocking signal.
+#
+# WHY warn-only first: on a drifted repo this gate is RED BY DESIGN until
+# `deps.json` is rebuilt (PR-B) AND the owner-gated L2 `dep-governance.yaml`
+# is resynced (so the @repo/registry §4.2 subset test in `contract-gate.yml`
+# stays green). Landing it blocking now would wedge every unrelated PR.
+#
+# PROMOTION TO BLOCKING — remove `continue-on-error` AND add this as a REQUIRED
+# status check in branch protection — only after ALL of:
+#   1. PR-B has rebuilt `audit/registry/deps.json` from the live manifests;
+#   2. the owner-gated L2 `dep-governance.yaml` is resynced (contract-gate green);
+#   3. the gate has been observed GREEN on `main` for the ADR-062 ratchet
+#      window (>= 10 consecutive green builds / ~7-14 days), no false positive.
+# Flipping earlier requires a vault derogation ADR.
 
 on:
   pull_request:
@@ -65,6 +81,10 @@ jobs:
     name: deps.json == fresh(manifests)
     runs-on: ubuntu-latest
     timeout-minutes: 8
+    # ADR-062 ratchet — WARN-ONLY FIRST. The assert step below still exits 1 on
+    # drift (detection intact), but this job-level flag prevents that failure
+    # from blocking the PR. Remove this line to promote to blocking (see ROLLOUT).
+    continue-on-error: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
