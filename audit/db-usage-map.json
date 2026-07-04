@@ -2,7 +2,7 @@
   "_generated_by": "scripts/audit/build-db-usage-map.js",
   "note": "Candidates only — never a \"dead\" verdict. A real DROP table/function goes through the RPC Gate + a vault ADR, never from this map.",
   "important_caveats": [
-    "892 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
+    "894 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
     "Migration parsing is regex-based and tracks last CREATE vs last DROP per object (date-prefixed filenames ≈ chronological); re-create-after-drop edge cases may slip through.",
     "RLS-only / dashboard / external-cron / RPC-internal usage is invisible here — see per-candidate caveats."
   ],
@@ -11,13 +11,13 @@
     "tables_with_callsites": 201,
     "candidate_orphan_tables": 107,
     "rpc_seen": 241,
-    "rpc_with_callsites": 16,
+    "rpc_with_callsites": 14,
     "trigger_functions": 30,
-    "candidate_orphan_rpc": 195,
-    "dynamic_from_callsites": 892,
-    "dynamic_rpc_callsites": 3,
-    "migrations_scanned": 322,
-    "backend_files_scanned": 1346
+    "candidate_orphan_rpc": 197,
+    "dynamic_from_callsites": 894,
+    "dynamic_rpc_callsites": 2,
+    "migrations_scanned": 339,
+    "backend_files_scanned": 1372
   },
   "tables": {
     "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7": {
@@ -70,9 +70,10 @@
         "backend/src/modules/orders/controllers/orders.controller.ts",
         "backend/src/modules/payments/controllers/paybox-callback.controller.ts",
         "backend/src/modules/payments/controllers/payment-core.controller.ts",
-        "backend/src/modules/payments/services/paybox-callback-gate.service.ts"
+        "backend/src/modules/payments/services/paybox-callback-gate.service.ts",
+        "backend/src/modules/seo-monitoring/listeners/order-funnel.listener.ts"
       ],
-      "used_by_count": 4,
+      "used_by_count": 5,
       "in_migrations": [],
       "rls_present": false,
       "in_knowledge_db": false
@@ -89,9 +90,10 @@
     "___xtr_order_line": {
       "used_by": [
         "backend/src/modules/payments/controllers/paybox-callback.controller.ts",
+        "backend/src/modules/seo-monitoring/listeners/order-funnel.listener.ts",
         "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
       ],
-      "used_by_count": 2,
+      "used_by_count": 3,
       "in_migrations": [],
       "rls_present": false,
       "in_knowledge_db": false
@@ -984,9 +986,10 @@
         "backend/src/modules/seo-monitoring/services/funnel-events.service.ts",
         "backend/src/modules/seo-monitoring/services/runtime-events.service.ts",
         "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts",
+        "backend/src/modules/seo/services/seo-placeholder-events.service.ts",
         "backend/src/modules/seo/services/sitemap-event-log.service.ts"
       ],
-      "used_by_count": 8,
+      "used_by_count": 9,
       "in_migrations": [
         "20260425_seo_event_log.sql"
       ],
@@ -1673,6 +1676,7 @@
       ],
       "used_by_count": 1,
       "in_migrations": [
+        "20260311142250_r8_diversity_system.sql",
         "20260516_seo_r2_v2_cqrs_snapshot.sql"
       ],
       "rls_present": true,
@@ -2551,6 +2555,7 @@
         "backend/src/modules/admin/services/admin-gammes-seo.service.ts",
         "backend/src/modules/admin/services/brief-template.service.ts",
         "backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts",
+        "backend/src/modules/admin/services/conseil-enricher.service.ts",
         "backend/src/modules/admin/services/conseil-priority.service.ts",
         "backend/src/modules/admin/services/conseil-quality-scorer.service.ts",
         "backend/src/modules/admin/services/execution-router.service.ts",
@@ -2587,7 +2592,7 @@
         "backend/src/modules/seo/services/sitemap-v10-pieces.service.ts",
         "backend/src/modules/seo/services/sitemap-v10-static.service.ts"
       ],
-      "used_by_count": 40,
+      "used_by_count": 41,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false
@@ -2623,10 +2628,11 @@
       "used_by": [
         "backend/src/modules/catalog/controllers/pieces-diagnostic.controller.ts",
         "backend/src/modules/catalog/services/homepage-rpc.service.ts",
+        "backend/src/modules/gamme-rest/services/gamme-rpc.service.ts",
         "backend/src/modules/search/controllers/search-debug.controller.ts",
         "backend/src/modules/search/controllers/search-enhanced-existing.controller.ts"
       ],
-      "used_by_count": 4,
+      "used_by_count": 5,
       "in_migrations": [],
       "rls_present": true,
       "in_knowledge_db": false
@@ -3372,20 +3378,16 @@
       "is_trigger_function": false
     },
     "aggregate_cwv_daily_rum": {
-      "called_by": [
-        "backend/src/modules/seo-monitoring/services/cwv-aggregation.service.ts"
-      ],
-      "called_by_count": 1,
+      "called_by": [],
+      "called_by_count": 0,
       "defined_in_migrations": [
         "20260527_seo_cwv_aggregation.sql"
       ],
       "is_trigger_function": false
     },
     "aggregate_cwv_hourly": {
-      "called_by": [
-        "backend/src/modules/seo-monitoring/services/cwv-aggregation.service.ts"
-      ],
-      "called_by_count": 1,
+      "called_by": [],
+      "called_by_count": 0,
       "defined_in_migrations": [
         "20260527_seo_cwv_aggregation.sql"
       ],
@@ -3619,7 +3621,9 @@
       "called_by": [],
       "called_by_count": 0,
       "defined_in_migrations": [
-        "20260601_seo_cwv_aggregation_coverage_alert.sql"
+        "20260601_seo_cwv_aggregation_coverage_alert.sql",
+        "20260626_seo_cwv_aggregation_coverage_alert_tune.down.sql",
+        "20260626_seo_cwv_aggregation_coverage_alert_tune.sql"
       ],
       "is_trigger_function": false
     },
@@ -4101,7 +4105,9 @@
         "backend/src/modules/blog/services/advice.service.ts"
       ],
       "called_by_count": 1,
-      "defined_in_migrations": [],
+      "defined_in_migrations": [
+        "20260703_blog_advice_increment_views_rpc.sql"
+      ],
       "is_trigger_function": false
     },
     "kg_apply_learning": {
@@ -7801,6 +7807,38 @@
       ]
     },
     {
+      "name": "aggregate_cwv_daily_rum",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260527_seo_cwv_aggregation.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
+      "name": "aggregate_cwv_hourly",
+      "confidence": "medium",
+      "derived_from": [
+        "migrations",
+        "no-rpc-callsite"
+      ],
+      "defined_in_migrations": [
+        "20260527_seo_cwv_aggregation.sql"
+      ],
+      "caveats": [
+        "may be called from another RPC/function body (SQL-internal)",
+        "may be invoked from the Supabase dashboard or an external job",
+        "may be called via raw HTTP/PostgREST without supabase.rpc() in backend"
+      ]
+    },
+    {
       "name": "allocate_massdoc_type_id",
       "confidence": "medium",
       "derived_from": [
@@ -8216,7 +8254,9 @@
         "no-rpc-callsite"
       ],
       "defined_in_migrations": [
-        "20260601_seo_cwv_aggregation_coverage_alert.sql"
+        "20260601_seo_cwv_aggregation_coverage_alert.sql",
+        "20260626_seo_cwv_aggregation_coverage_alert_tune.down.sql",
+        "20260626_seo_cwv_aggregation_coverage_alert_tune.sql"
       ],
       "caveats": [
         "may be called from another RPC/function body (SQL-internal)",
@@ -11139,15 +11179,15 @@
     },
     {
       "file": "backend/src/modules/blog/services/advice.service.ts",
-      "line": 518
+      "line": 542
     },
     {
       "file": "backend/src/modules/blog/services/advice.service.ts",
-      "line": 525
+      "line": 549
     },
     {
       "file": "backend/src/modules/blog/services/advice.service.ts",
-      "line": 680
+      "line": 708
     },
     {
       "file": "backend/src/modules/blog/services/blog-article-data.service.ts",
@@ -12671,11 +12711,11 @@
     },
     {
       "file": "backend/src/modules/products/services/products-catalog.service.ts",
-      "line": 301
+      "line": 306
     },
     {
       "file": "backend/src/modules/products/services/products-catalog.service.ts",
-      "line": 320
+      "line": 325
     },
     {
       "file": "backend/src/modules/products/services/products-technical.service.ts",
@@ -13011,7 +13051,15 @@
     },
     {
       "file": "backend/src/modules/seo-control-plane/collectors/synthetic-crawler/synthetic-crawler.service.ts",
-      "line": 237
+      "line": 356
+    },
+    {
+      "file": "backend/src/modules/seo-control-plane/synthetic-probe-credential.service.ts",
+      "line": 210
+    },
+    {
+      "file": "backend/src/modules/seo-control-plane/synthetic-probe-credential.service.ts",
+      "line": 211
     },
     {
       "file": "backend/src/modules/seo-logs/services/url-audit.service.ts",
@@ -14233,11 +14281,7 @@
     },
     {
       "file": "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
-      "line": 71
-    },
-    {
-      "file": "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts",
-      "line": 234
+      "line": 218
     }
   ]
 }

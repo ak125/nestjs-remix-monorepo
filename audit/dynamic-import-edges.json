@@ -1,6 +1,6 @@
 {
   "_generated_by": "scripts/audit/build-deep-inventory.js",
-  "count": 19,
+  "count": 20,
   "edges": [
     {
       "from": "backend/src/modules/admin/services/execution-router.service.ts",
@@ -33,6 +33,11 @@
       "kind": "import()"
     },
     {
+      "from": "frontend/app/components/home/LazyFooter.tsx",
+      "to": "~/components/home/Footer",
+      "kind": "import()"
+    },
+    {
       "from": "frontend/app/components/pieces/CompatibilityConfirmationBlock.tsx",
       "to": "~/components/expert/CompatibilityResolverModal",
       "kind": "import()"
@@ -48,8 +53,8 @@
       "kind": "import()"
     },
     {
-      "from": "frontend/app/root.tsx",
-      "to": "frontend/app/components/home/Footer.tsx",
+      "from": "frontend/app/entry.client.tsx",
+      "to": "~/utils/chunk-error-classification",
       "kind": "import()"
     },
     {

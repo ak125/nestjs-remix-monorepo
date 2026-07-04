@@ -59,16 +59,37 @@ BEGIN
 END;
 $$;
 
--- Case 7 : Partially parseable — missing LANGUAGE (intentional, will be partially_parsed)
+-- Case 8 : CREATE FUNCTION mentions inside comments / strings / bodies must NOT
+-- be extracted. findFunctionBlocks is now comment-aware (single-pass lexer that
+-- skips line comments, closed block comments, single-quoted strings, and
+-- dollar-quoted bodies). Historical false-positives this guards against:
+-- `public.grant` and `public.unknown` (from `-- … CREATE FUNCTION grant …`),
+-- and comment-block copies of real functions (e.g. pricing_commit_chunk).
+
+-- 8a : line comment. CREATE FUNCTION fixture_line_commented(a int) — ignore me.
+-- EXECUTE : verrouiller. CREATE FUNCTION grant EXECUTE à PUBLIC (prose, not DDL).
+
+/* 8b : block comment.
+   CREATE OR REPLACE FUNCTION fixture_block_commented(p uuid)
+     RETURNS void LANGUAGE sql AS $$ SELECT 1 $$;
+*/
+
+-- 8c : CREATE FUNCTION text living inside a real function's dollar-quoted body
+-- (dynamic SQL) must not be double-counted as its own function.
+CREATE FUNCTION fixture_dynamic_ddl_emitter()
+  RETURNS void
+  LANGUAGE plpgsql
+  AS $$
+BEGIN
+  EXECUTE 'CREATE FUNCTION fixture_inside_body(x int) RETURNS int LANGUAGE sql AS ''SELECT x''';
+END;
+$$;
+
+-- Case 7 : Partially parseable — missing LANGUAGE (intentional, will be
+-- partially_parsed). MUST stay last : its classification depends on the 1KB
+-- lookahead finding no LANGUAGE keyword after it.
 CREATE FUNCTION fixture_no_language(x integer)
   RETURNS integer
 AS $$
   SELECT x
 $$;
-
--- Case bonus : a comment with 'CREATE FUNCTION' inside that should NOT match
--- because we look at top-level CREATE keyword, not inside a comment block.
--- The current parser doesn't strip SQL comments, so this is documented as a
--- known limitation : the regex matches the inline mention. V1.5+ : strip
--- comments before parsing. For now, fixture explicitly avoids triggering false
--- positives by not having CREATE inside comments here.
