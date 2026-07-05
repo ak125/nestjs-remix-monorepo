@@ -99,8 +99,9 @@ function tokenizeHtml(html: string): Token[] {
         textStart = i;
         continue;
       }
-      // Consume up to the first UNQUOTED ">" so a ">" inside an attribute value
-      // (e.g. <img alt="a>b">) does not close the tag early.
+      // Consume up to the first UNQUOTED ">" so that a ">" appearing inside a
+      // quoted attribute value (e.g. an alt/title text that contains ">") does
+      // not close the tag early.
       let j = i + 1;
       let quote: '"' | "'" | null = null;
       while (j < n) {

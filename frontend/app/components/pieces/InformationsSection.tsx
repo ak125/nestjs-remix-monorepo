@@ -13,8 +13,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "~/components/ui/accordion";
-import { addGammeLinks } from "~/lib/gamme-autolink";
 import { pluralizePieceName } from "~/lib/seo-utils";
+import { addGammeLinks } from "~/utils/gamme-autolink";
 import { HtmlContent } from "../seo/HtmlContent";
 
 interface CatalogueItem {
@@ -197,7 +197,7 @@ function categorizeItem(text: string): string {
 }
 
 /** Tailwind classes for gamme auto-links inside information text.
- *  Auto-linking logic lives in the shared, iOS-safe `~/lib/gamme-autolink` helper. */
+ *  Auto-linking logic lives in the shared, iOS-safe `~/utils/gamme-autolink` helper. */
 const INFO_GAMME_LINK_CLASS =
   "text-foreground hover:text-foreground underline decoration-dotted hover:decoration-solid font-medium";
 

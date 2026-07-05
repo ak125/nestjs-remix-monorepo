@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 
-import { addGammeLinks, type GammeLink } from "~/lib/gamme-autolink";
+import { addGammeLinks, type GammeLink } from "~/utils/gamme-autolink";
 
 /**
  * Tests for the shared gamme auto-linker that replaced the two byte-identical
