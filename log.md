@@ -507,3 +507,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `worktree-rag-seo-served-write-pr1`
 - **Décision** : feat(write-guard): fail-closed RAG-provenance refusal at write gate
 - **Sortie** : PR aucune | commits 3b3282eee
+
+## 2026-07-05 — worktree-rag-seo-served-write-pr1 (auto)
+
+- **Branche** : `worktree-rag-seo-served-write-pr1`
+- **Décision** : feat(r1-enricher): route slot writes through gate, refuse RAG (+2 other commits)
+- **Sortie** : PR aucune | commits b50d60d95 b20d1263a 3b3282eee
