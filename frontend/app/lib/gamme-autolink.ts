@@ -48,6 +48,19 @@ type Token = { type: "tag" | "text" | "comment"; value: string };
 /** Raw-text elements whose content must never be linked into. */
 const RAW_TEXT_TAGS = new Set(["script", "style", "textarea"]);
 
+/** A gamme name is a short product-family label. Anything longer is bad data and
+ *  is skipped: a >= 2^15-char regex source throws "regular expression too large"
+ *  in V8 — the same crash class this file removes. 512 is far above any real name. */
+const MAX_PATTERN_LEN = 512;
+
+/** HTML5: "<" only begins a tag/comment/declaration when followed by an ASCII
+ *  letter, "/", "!" or "?". Otherwise (e.g. "< 90°C", "<3mm") the "<" is literal
+ *  text — a browser renders it verbatim, so the tokenizer must too. */
+function startsTag(html: string, i: number): boolean {
+  const next = html[i + 1];
+  return next !== undefined && /[a-zA-Z!/?]/.test(next);
+}
+
 /** Escape a string for safe literal use inside a RegExp (identical to the old escaping). */
 function escapeRegExp(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -73,7 +86,7 @@ function tokenizeHtml(html: string): Token[] {
   let i = 0;
   let textStart = 0;
   while (i < n) {
-    if (html[i] === "<") {
+    if (html[i] === "<" && startsTag(html, i)) {
       if (i > textStart) {
         tokens.push({ type: "text", value: html.slice(textStart, i) });
       }
@@ -115,18 +128,10 @@ function tokenizeHtml(html: string): Token[] {
   return tokens;
 }
 
-function tagInfo(tag: string): {
-  name: string;
-  isClose: boolean;
-  isSelfClose: boolean;
-} {
+function tagInfo(tag: string): { name: string; isClose: boolean } {
   const m = /^<\s*(\/?)\s*([a-zA-Z][a-zA-Z0-9]*)/.exec(tag);
-  if (!m) return { name: "", isClose: false, isSelfClose: false };
-  return {
-    name: m[2].toLowerCase(),
-    isClose: m[1] === "/",
-    isSelfClose: /\/\s*>$/.test(tag),
-  };
+  if (!m) return { name: "", isClose: false };
+  return { name: m[2].toLowerCase(), isClose: m[1] === "/" };
 }
 
 /**
@@ -153,11 +158,14 @@ function linkLinkableRuns(
   for (const tok of tokens) {
     if (tok.type === "tag") {
       const info = tagInfo(tok.value);
-      if (info.name === "a" && !info.isSelfClose) {
+      // HTML5 ignores a trailing "/" on non-void elements, so an `<a …/>` start
+      // tag still OPENS an anchor (there is no self-closing <a>). Depth is driven
+      // purely by open vs close — never by a trailing slash.
+      if (info.name === "a") {
         anchorDepth = info.isClose
           ? Math.max(0, anchorDepth - 1)
           : anchorDepth + 1;
-      } else if (RAW_TEXT_TAGS.has(info.name) && !info.isSelfClose) {
+      } else if (RAW_TEXT_TAGS.has(info.name)) {
         rawTextDepth = info.isClose
           ? Math.max(0, rawTextDepth - 1)
           : rawTextDepth + 1;
@@ -225,7 +233,7 @@ export function addGammeLinks(
       `<a href="${href}" class="${linkClassName}" title="${title}">${match}</a>`;
 
     for (const pattern of patterns) {
-      if (!pattern) continue;
+      if (!pattern || pattern.length > MAX_PATTERN_LEN) continue;
       const matcher = new RegExp(`\\b(${escapeRegExp(pattern)})\\b`, "gi");
       const outcome = linkLinkableRuns(result, matcher, buildAnchor);
       if (outcome.count > 0) {

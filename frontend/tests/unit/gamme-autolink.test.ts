@@ -212,6 +212,65 @@ describe("addGammeLinks — anchor/attribute/tag safety (GLOBAL parity)", () => 
   });
 });
 
+// --- Regression guards from adversarial verification (2026-07-05) -------------
+
+describe("addGammeLinks — adversarial regressions", () => {
+  // Defect 1 (HIGH): an <a …/> start tag with a trailing "/" is NOT self-closing
+  // in HTML5 — it opens an anchor. The keyword inside must not be linked.
+  it.each([
+    `<a href=/produits/>disque</a>`, // unquoted attribute ending in '/'
+    `<a href=https://ex.com/>disque</a>`, // unquoted URL ending in '/'
+    `<a href="x" />disque</a>`, // XHTML-style self-close slash
+    `<a href="x"/>disque</a>`,
+  ])("never nests an anchor for trailing-slash start tag: %s", (html) => {
+    const out = addGammeLinks(html, [{ name: "disque", link: "/d.html" }], CLS);
+    expect(out).toBe(html); // no new <a> injected inside the existing anchor
+    expect(out).not.toMatch(/<a[^>]*><a/); // structurally: no nested anchors
+  });
+
+  // Defect 2 (LOW): an absurdly long name would overflow V8's regex size limit.
+  it("skips an over-long gamme name instead of throwing", () => {
+    const huge = "z".repeat(40000);
+    const html = `<p>${huge} tail et disque</p>`;
+    expect(() =>
+      addGammeLinks(
+        html,
+        [
+          { name: huge, link: "/z.html" },
+          { name: "disque", link: "/d.html" },
+        ],
+        CLS,
+      ),
+    ).not.toThrow();
+    // the sane gamme still links
+    expect(
+      addGammeLinks(html, [{ name: "disque", link: "/d.html" }], CLS),
+    ).toContain(a("/d.html", "disque", "disque"));
+  });
+
+  // Defect 3 (LOW): a raw unescaped "<" used as "less-than" is literal text (a
+  // browser renders it verbatim), so keywords after it must still be linked.
+  it.each([
+    [`Température < 90°C pour la courroie.`, "courroie", "/c.html"],
+    [`Épaisseur < 2mm : changez le disque.`, "disque", "/d.html"],
+    [`Usure < 20% sur la batterie.`, "batterie", "/b.html"],
+  ])("links keywords after a literal '<' in %s", (html, name, link) => {
+    expect(addGammeLinks(html, [{ name, link }], CLS)).toBe(
+      html.replace(name, a(link, name, name)),
+    );
+  });
+
+  it("still parses a real tag right after fixing literal '<' handling", () => {
+    // '<' before 'strong' is a real tag; '<' before ' 1' is literal.
+    const html = `Jeu < 1 puis <strong>disque</strong> neuf`;
+    expect(
+      addGammeLinks(html, [{ name: "disque", link: "/d.html" }], CLS),
+    ).toBe(
+      `Jeu < 1 puis <strong>${a("/d.html", "disque", "disque")}</strong> neuf`,
+    );
+  });
+});
+
 // --- Byte-for-byte parity with the original lookbehind algorithm --------------
 
 /**
