@@ -6,7 +6,10 @@ import {
   MIN_QUALITY_SCORE,
   FAMILY_MARKERS,
 } from '../../../../config/buying-guide-quality.constants';
-import { SOURCE_TIER } from '../../../../config/source-provenance.constants';
+import {
+  SOURCE_TIER,
+  isLegacyRagTier,
+} from '../../../../config/source-provenance.constants';
 import type { SectionValidationResult } from './buying-guide.types';
 import { BuyingGuideSectionExtractor } from './buying-guide-section-extractor.service';
 import { FeatureFlagsService } from '../../../../config/feature-flags.service';
@@ -176,6 +179,22 @@ export class BuyingGuideDbService extends SupabaseBaseService {
     payload: Record<string, unknown>,
     context?: WriteGuardContext,
   ): Promise<void> {
+    // ── Provenance refusal (ADR-031/046) ──
+    // R6 buying-guide editorial content is sourced from the decommissioned legacy
+    // RAG corpus. A payload stamped provenance=RAG_LEGACY must not reach the served
+    // __seo_gamme_purchase_guide table. The WriteGuard CAS below is a concurrency/
+    // ownership guard, not a provenance gate — it still writes — so the refusal is
+    // enforced here at method entry with the same canonical predicate the
+    // ContentWriteGate applies as its first step. QA-verdict metadata writes carry
+    // no sgpg_source_type and are intentionally allowed (observability is kept).
+    if (isLegacyRagTier(payload.sgpg_source_type as string | undefined)) {
+      this.logger.warn(
+        `WriteGuard: REFUSED rag-provenance buying-guide write — ` +
+          `role=${context?.roleId ?? 'n/a'} pgId=${pgId}`,
+      );
+      return;
+    }
+
     // ── Intelligent merge: enrich, don't replace ──
     // For long text fields, we merge new content INTO existing content
     // instead of replacing it. The rule is:
