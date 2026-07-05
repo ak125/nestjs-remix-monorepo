@@ -260,8 +260,13 @@ export function stripHtml(html: string): string {
 
 /** Extract the first sentence longer than minLen chars */
 function firstSentence(text: string, minLen = 30): string | null {
-  // Split on period, exclamation, question mark followed by space or end
-  const sentences = text.split(/(?<=[.!?])\s+/);
+  // Split into sentences: a run of non-terminators followed by terminators or
+  // end-of-string. Lookbehind-free on purpose — a lookbehind assertion (splitting
+  // on whitespace preceded by a terminator) throws "invalid group specifier name"
+  // on WebKit before Safari 16.4 (iOS < 16.4), crashing the component at render.
+  // Each candidate is trimmed below, so any leading whitespace kept here is
+  // irrelevant. Guarded by section-config-summary-sentence.test.ts.
+  const sentences = text.match(/[^.!?]+(?:[.!?]+|$)/g) ?? [text];
   for (const s of sentences) {
     const trimmed = s.trim();
     if (trimmed.length >= minLen) return trimmed;

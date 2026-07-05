@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useState, useMemo, memo } from "react";
 
+import { addGammeLinks } from "~/lib/gamme-autolink";
 import { pluralizePieceName } from "~/lib/seo-utils";
 import { HtmlContent } from "../seo/HtmlContent";
 
@@ -113,65 +114,10 @@ function categorizeConseil(title: string, content: string): string {
   return "general";
 }
 
-/**
- * Ajoute des liens vers les gammes connexes dans le contenu HTML des conseils
- */
-function addGammeLinksToHtml(
-  html: string,
-  catalogueFamille?: CatalogueItem[],
-): string {
-  if (
-    !catalogueFamille ||
-    !Array.isArray(catalogueFamille) ||
-    catalogueFamille.length === 0
-  )
-    return html;
-
-  const uniqueGammes = catalogueFamille.filter(
-    (gamme, index, self) =>
-      index === self.findIndex((g) => g.name === gamme.name),
-  );
-
-  let result = html;
-  const linkedGammes = new Set<string>();
-
-  for (const gamme of uniqueGammes) {
-    if (!gamme || !gamme.name) continue;
-
-    const gammeUrl =
-      gamme.link ||
-      (gamme.alias && gamme.id
-        ? `/pieces/${gamme.alias}-${gamme.id}.html`
-        : null);
-    if (!gammeUrl) continue;
-    if (linkedGammes.has(gamme.name)) continue;
-
-    const name = (gamme.name || "").toLowerCase();
-    const patterns = [
-      name,
-      name + "s",
-      name.replace("é", "e"),
-      (name + "s").replace("é", "e"),
-    ];
-
-    for (const pattern of patterns) {
-      const regex = new RegExp(
-        `(?<!<a[^>]*>)\\b(${pattern.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})\\b(?![^<]*<\\/a>)`,
-        "gi",
-      );
-
-      if (regex.test(result) && !linkedGammes.has(gamme.name)) {
-        result = result.replace(regex, (match) => {
-          linkedGammes.add(gamme.name);
-          return `<a href="${gammeUrl}" class="text-green-600 hover:text-green-800 underline decoration-dotted hover:decoration-solid font-medium" title="Voir nos ${gamme.name}">${match}</a>`;
-        });
-        break;
-      }
-    }
-  }
-
-  return result;
-}
+/** Tailwind classes for gamme auto-links inside conseil HTML.
+ *  Auto-linking logic lives in the shared, iOS-safe `~/lib/gamme-autolink` helper. */
+const CONSEIL_GAMME_LINK_CLASS =
+  "text-green-600 hover:text-green-800 underline decoration-dotted hover:decoration-solid font-medium";
 
 // Composant pour un conseil individuel
 interface ConseilCardProps {
@@ -190,7 +136,11 @@ function ConseilCard({
   gammeName,
 }: ConseilCardProps) {
   const preview = conseil.content.substring(0, 150);
-  const previewWithLinks = addGammeLinksToHtml(preview, catalogueFamille);
+  const previewWithLinks = addGammeLinks(
+    preview,
+    catalogueFamille,
+    CONSEIL_GAMME_LINK_CLASS,
+  );
   const needsExpansion = conseil.content.length > 150;
 
   return (
@@ -260,7 +210,11 @@ const ConseilsSection = memo(function ConseilsSection({
     if (!conseils?.items) return [];
     return conseils.items.map((conseil) => ({
       ...conseil,
-      contentWithLinks: addGammeLinksToHtml(conseil.content, catalogueFamille),
+      contentWithLinks: addGammeLinks(
+        conseil.content,
+        catalogueFamille,
+        CONSEIL_GAMME_LINK_CLASS,
+      ),
       category: categorizeConseil(conseil.title, conseil.content),
     }));
   }, [conseils?.items, catalogueFamille]);

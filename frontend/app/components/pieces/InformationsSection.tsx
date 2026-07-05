@@ -13,6 +13,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "~/components/ui/accordion";
+import { addGammeLinks } from "~/lib/gamme-autolink";
 import { pluralizePieceName } from "~/lib/seo-utils";
 import { HtmlContent } from "../seo/HtmlContent";
 
@@ -195,65 +196,10 @@ function categorizeItem(text: string): string {
   return "general";
 }
 
-/**
- * Ajoute des liens vers les gammes connexes dans le texte des informations
- */
-function addGammeLinksToText(
-  text: string,
-  catalogueFamille?: CatalogueItem[],
-): string {
-  if (
-    !catalogueFamille ||
-    !Array.isArray(catalogueFamille) ||
-    catalogueFamille.length === 0
-  )
-    return text;
-
-  const uniqueGammes = catalogueFamille.filter(
-    (gamme, index, self) =>
-      index === self.findIndex((g) => g.name === gamme.name),
-  );
-
-  let result = text;
-  const linkedGammes = new Set<string>();
-
-  for (const gamme of uniqueGammes) {
-    if (!gamme || !gamme.name) continue;
-
-    const gammeUrl =
-      gamme.link ||
-      (gamme.alias && gamme.id
-        ? `/pieces/${gamme.alias}-${gamme.id}.html`
-        : null);
-    if (!gammeUrl) continue;
-    if (linkedGammes.has(gamme.name)) continue;
-
-    const name = (gamme.name || "").toLowerCase();
-    const patterns = [
-      name,
-      name + "s",
-      name.replace("é", "e"),
-      (name + "s").replace("é", "e"),
-    ];
-
-    for (const pattern of patterns) {
-      const regex = new RegExp(
-        `(?<!<a[^>]*>)\\b(${pattern.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})\\b(?![^<]*<\\/a>)`,
-        "gi",
-      );
-
-      if (regex.test(result) && !linkedGammes.has(gamme.name)) {
-        result = result.replace(regex, (match) => {
-          linkedGammes.add(gamme.name);
-          return `<a href="${gammeUrl}" class="text-foreground hover:text-foreground underline decoration-dotted hover:decoration-solid font-medium" title="Voir nos ${gamme.name}">${match}</a>`;
-        });
-        break;
-      }
-    }
-  }
-
-  return result;
-}
+/** Tailwind classes for gamme auto-links inside information text.
+ *  Auto-linking logic lives in the shared, iOS-safe `~/lib/gamme-autolink` helper. */
+const INFO_GAMME_LINK_CLASS =
+  "text-foreground hover:text-foreground underline decoration-dotted hover:decoration-solid font-medium";
 
 /**
  * Rendu de l'icône selon le type
@@ -360,7 +306,7 @@ const InformationsSection = memo(function InformationsSection({
 
     const processed = informations.items.map((item) => ({
       original: item,
-      html: addGammeLinksToText(item, catalogueFamille),
+      html: addGammeLinks(item, catalogueFamille, INFO_GAMME_LINK_CLASS),
       category: categorizeItem(item),
     }));
 
