@@ -22,6 +22,10 @@ import { IsAdminGuard } from '@auth/is-admin.guard';
 import { getEffectiveSupabaseKey } from '@common/utils';
 import { R1ContentFromRagService } from '../services/r1-content-from-rag.service';
 import { R1KeywordPlanBatchService } from '../services/r1-keyword-plan-batch.service';
+import {
+  SOURCE_TIER,
+  isLegacyRagTier,
+} from '../../../config/source-provenance.constants';
 
 interface CoverageRow {
   role: string;
@@ -1330,6 +1334,26 @@ export class AdminKeywordPlannerController {
       };
     }
 
+    // ── Provenance refusal (ADR-031/046) ──
+    // sg_content here is produced by R1ContentFromRagService, which reads the
+    // decommissioned legacy RAG corpus. Persisting RAG-sourced editorial to the
+    // served __seo_gamme.sg_content is refused until re-sourced from WIKI. The
+    // dry_run preview above stays available (nothing is persisted).
+    const contentProvenance = SOURCE_TIER.RAG_LEGACY;
+    if (isLegacyRagTier(contentProvenance)) {
+      this.logger.warn(
+        `generate-from-rag: REFUSED rag-provenance sg_content write — ` +
+          `pg_alias=${pg_alias} pg_id=${pg_id}`,
+      );
+      return {
+        status: 'refused',
+        reason: 'rag_provenance_refused',
+        pg_alias,
+        pgName,
+        charCount: result.charCount,
+      };
+    }
+
     // Vérifier le contenu existant (anti-régression : ne pas rétrécir)
     const { data: existing } = await this.supabase
       .from('__seo_gamme')
@@ -1452,6 +1476,7 @@ export class AdminKeywordPlannerController {
         | 'skipped_quality'
         | 'skipped_regression'
         | 'dry_run'
+        | 'refused'
         | 'error';
       reason?: string;
     }> = [];
@@ -1494,6 +1519,30 @@ export class AdminKeywordPlannerController {
             quality: gen.quality,
             fields: gen.ragFieldsUsed.length,
             status: 'dry_run',
+          });
+          continue;
+        }
+
+        // ── Provenance refusal (ADR-031/046) — see generate-from-rag ──
+        // gen.html is RAG-sourced (R1ContentFromRagService); refuse the persist
+        // to served __seo_gamme.sg_content until re-sourced from WIKI. dry_run
+        // preview above stays available.
+        const contentProvenance = SOURCE_TIER.RAG_LEGACY;
+        if (isLegacyRagTier(contentProvenance)) {
+          this.logger.warn(
+            `batch-generate-from-rag: REFUSED rag-provenance sg_content write — ` +
+              `pg_alias=${pgAlias} pg_id=${pgId}`,
+          );
+          results.push({
+            pg_id: pgId,
+            pg_alias: pgAlias,
+            pg_name: pgName,
+            charCount: gen.charCount,
+            h2Count: gen.h2Count,
+            quality: gen.quality,
+            fields: gen.ragFieldsUsed.length,
+            status: 'refused',
+            reason: 'rag_provenance_refused',
           });
           continue;
         }
@@ -1574,6 +1623,7 @@ export class AdminKeywordPlannerController {
       skipped_regression: results.filter(
         (r) => r.status === 'skipped_regression',
       ).length,
+      refused: results.filter((r) => r.status === 'refused').length,
       errors: results.filter((r) => r.status === 'error').length,
       avg_chars: Math.round(
         results.reduce((s, r) => s + r.charCount, 0) / (results.length || 1),
