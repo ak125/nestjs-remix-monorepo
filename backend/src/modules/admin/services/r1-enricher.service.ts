@@ -4,18 +4,18 @@
  * Reads RAG gamme docs + R1 keyword plan, generates transactional
  * content slots and writes to __seo_r1_gamme_slots.
  *
- * Replaces the deleted R1ContentPipelineService (which used Groq LLM).
+ * Replaces the deleted R1ContentPipelineService (which ran on Groq LLM).
  *
  * @see r1-keyword-plan.constants.ts
  * @see execution-registry.constants.ts
  */
 
-import { Injectable, Logger, Optional } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { ContentWriteGateService } from '../../../config/content-write-gate.service';
-import { FeatureFlagsService } from '../../../config/feature-flags.service';
 import { RoleId } from '../../../config/role-ids';
+import { SOURCE_TIER } from '../../../config/source-provenance.constants';
 import type { ResourceGroup } from '../../../config/execution-registry.types';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -47,10 +47,9 @@ export class R1EnricherService extends SupabaseBaseService {
 
   constructor(
     configService: ConfigService,
-    private readonly flags: FeatureFlagsService,
     private readonly textUtils: EnricherTextUtils,
     private readonly yamlParser: EnricherYamlParser,
-    @Optional() private readonly writeGate?: ContentWriteGateService,
+    private readonly writeGate: ContentWriteGateService,
   ) {
     super(configService);
   }
@@ -206,40 +205,16 @@ export class R1EnricherService extends SupabaseBaseService {
       slots.r1s_gatekeeper_flags = flags;
       slots.r1s_updated_at = new Date().toISOString();
 
-      // ── Write to __seo_r1_gamme_slots ──
-      if (this.writeGate && this.flags.writeGuardEnabled) {
-        const result = await this.writeGate.writeToTarget({
-          roleId: RoleId.R1_ROUTER,
-          target: 'r1_gamme_slots' as ResourceGroup,
-          pkValue: pgId,
-          payload: slots,
-          correlationId: `r1-${pgAlias}-${Date.now()}`,
-        });
-        if (!result.written) {
-          return {
-            pgId,
-            status: 'skipped',
-            slotsWritten: 0,
-            qualityScore: score,
-            qualityFlags: [...flags, 'WRITE_GATE_BLOCKED'],
-            errorMessage: result.reason,
-          };
-        }
-      } else {
-        const { error } = await this.client
-          .from('__seo_r1_gamme_slots')
-          .upsert({ r1s_pg_id: pgId, ...slots }, { onConflict: 'r1s_pg_id' });
-        if (error) {
-          this.logger.error(`${ctx} Upsert failed: ${error.message}`);
-          return {
-            pgId,
-            status: 'failed',
-            slotsWritten: 0,
-            qualityScore: score,
-            qualityFlags: [...flags, 'UPSERT_FAILED'],
-            errorMessage: error.message,
-          };
-        }
+      // ── Write to __seo_r1_gamme_slots (RAG-sourced ⇒ refused at the governed gate) ──
+      const writeOutcome = await this.persistR1Slots(
+        pgId,
+        pgAlias,
+        slots,
+        score,
+        flags,
+      );
+      if (writeOutcome) {
+        return writeOutcome;
       }
 
       const slotsWritten = Object.keys(slots).filter(
@@ -285,6 +260,50 @@ export class R1EnricherService extends SupabaseBaseService {
       qualityScore: 0,
       qualityFlags: flags,
     };
+  }
+
+  /**
+   * Persist the computed R1 slots through the governed content write gate.
+   *
+   * R1 content is legacy-RAG-sourced (ADR-031/046), so the write is stamped
+   * `provenance: RAG_LEGACY` and the gate refuses it (0 rows, observable). There is
+   * NO fail-open direct-upsert fallback: `writeGate` is a required dependency, so a
+   * missing gate fails at DI boot, not silently at runtime.
+   *
+   * @returns an early-return {@link R1EnrichResult} when the write did not happen
+   *   (skipped/blocked), or `null` when the write succeeded and enrichment continues.
+   */
+  private async persistR1Slots(
+    pgId: string,
+    pgAlias: string,
+    slots: Record<string, unknown>,
+    score: number,
+    flags: string[],
+  ): Promise<R1EnrichResult | null> {
+    const result = await this.writeGate.writeToTarget({
+      roleId: RoleId.R1_ROUTER,
+      target: 'r1_gamme_slots' as ResourceGroup,
+      pkValue: pgId,
+      payload: slots,
+      correlationId: `r1-${pgAlias}-${Date.now()}`,
+      provenance: SOURCE_TIER.RAG_LEGACY,
+    });
+    if (!result.written) {
+      return {
+        pgId,
+        status: 'skipped',
+        slotsWritten: 0,
+        qualityScore: score,
+        qualityFlags: [
+          ...flags,
+          result.reason === 'rag_provenance_refused'
+            ? 'RAG_SOURCE_REFUSED'
+            : 'WRITE_GATE_BLOCKED',
+        ],
+        errorMessage: result.reason,
+      };
+    }
+    return null;
   }
 
   private extractMarkdownSections(content: string): Map<string, string> {
