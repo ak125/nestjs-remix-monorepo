@@ -11,7 +11,10 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import * as yaml from 'js-yaml';
 import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
-import { SOURCE_TIER } from '../../../config/source-provenance.constants';
+import {
+  SOURCE_TIER,
+  isLegacyRagTier,
+} from '../../../config/source-provenance.constants';
 import {
   GENERIC_PHRASES as SHARED_GENERIC_PHRASES,
   MIN_R3_SECTION_LENGTH,
@@ -267,12 +270,13 @@ export class ConseilEnricherService extends SupabaseBaseService {
     private readonly textUtils: EnricherTextUtils,
     private readonly yamlParser: EnricherYamlParser,
     private readonly ragMdMerger: RagMdMergerService,
+    // Required (non-@Optional): a RAG-substrate enricher must never fall back to a
+    // direct served-table write when the governed gate is absent (ADR-031/046).
+    private readonly writeGate: ContentWriteGateService,
     @Optional() private readonly aiContentService?: AiContentService,
     @Optional() private readonly pageBriefService?: PageBriefService,
     @Optional()
     private readonly foundationGate?: RagFoundationGateService,
-    @Optional()
-    private readonly writeGate?: ContentWriteGateService,
     @Optional()
     private readonly canonObservability?: CanonObservabilityService,
   ) {
@@ -2117,6 +2121,21 @@ export class ConseilEnricherService extends SupabaseBaseService {
     });
     if (writeActions.length === 0) return { created: 0, updated: 0 };
 
+    // R3 conseil section content is sourced from the decommissioned legacy RAG
+    // corpus (gammes/*.md — ADR-031/046). Until re-sourced from WIKI it must not
+    // reach the served __seo_gamme_conseil table. That table has a composite key
+    // (sgc_pg_id, sgc_section_type) + multi-row upserts, which the single-row
+    // ContentWriteGate cannot model — so the same canonical refusal predicate the
+    // gate applies as its first step is enforced here at the write boundary.
+    const sectionProvenance = SOURCE_TIER.RAG_LEGACY;
+    if (isLegacyRagTier(sectionProvenance)) {
+      this.logger.warn(
+        `WriteGate: REFUSED rag-provenance conseil sections — role=R3_CONSEILS ` +
+          `pgId=${pgId} sections=${writeActions.length}`,
+      );
+      return { created: 0, updated: 0 };
+    }
+
     const upsertRows = writeActions.map((action) => {
       const existingRow = existing.get(action.type);
       const sources: Array<{ type: string; ref: string; field: string }> = [
@@ -2675,45 +2694,26 @@ export class ConseilEnricherService extends SupabaseBaseService {
       }
     }
 
-    // ── P1.5 v2.1: Route through WriteGate (merge intelligent, anti-regression) ──
-    if (this.writeGate && this.flags.writeGuardEnabled) {
-      const result = await this.writeGate.writeToTarget({
-        roleId: RoleId.R3_CONSEILS,
-        target: 'seo_gamme_main' as ResourceGroup,
-        pkValue: parseInt(pgId, 10),
-        payload: {
-          sg_descrip_draft: finalDescrip,
-          sg_draft_source: draftSource,
-          sg_draft_updated_at: new Date().toISOString(),
-          sg_draft_llm_model: llmModel,
-        },
-        correlationId: `r3-descrip-${pgId}-${Date.now().toString(36)}`,
-      });
-      this.logger.log(
-        `sg_descrip_draft via WriteGate for pgId=${pgId}: written=${result.written} ` +
-          `skipped=${result.fieldsSkipped.join(',')} stripped=${result.fieldsStripped.join(',')}`,
-      );
-    } else {
-      // Legacy path
-      const { error } = await this.client
-        .from('__seo_gamme')
-        .update({
-          sg_descrip_draft: finalDescrip,
-          sg_draft_source: draftSource,
-          sg_draft_updated_at: new Date().toISOString(),
-          sg_draft_llm_model: llmModel,
-        })
-        .eq('sg_pg_id', pgId);
-
-      if (error) {
-        this.logger.warn(
-          `Failed to write sg_descrip_draft for pgId=${pgId}: ${error.message}`,
-        );
-      } else {
-        this.logger.log(
-          `sg_descrip_draft written for pgId=${pgId} (${finalDescrip.length} chars, source=${draftSource})`,
-        );
-      }
-    }
+    // ── Route through WriteGate. The descrip draft is composed from the legacy
+    // RAG-sourced PageContract (ADR-031/046): stamped provenance=RAG_LEGACY, the
+    // gate refuses it at its first step (0 rows) before any target/key resolution.
+    // writeGate is required — no fail-open direct-update fallback. ──
+    const result = await this.writeGate.writeToTarget({
+      roleId: RoleId.R3_CONSEILS,
+      target: 'seo_gamme_main' as ResourceGroup,
+      pkValue: parseInt(pgId, 10),
+      payload: {
+        sg_descrip_draft: finalDescrip,
+        sg_draft_source: draftSource,
+        sg_draft_updated_at: new Date().toISOString(),
+        sg_draft_llm_model: llmModel,
+      },
+      correlationId: `r3-descrip-${pgId}-${Date.now().toString(36)}`,
+      provenance: SOURCE_TIER.RAG_LEGACY,
+    });
+    this.logger.log(
+      `sg_descrip_draft via WriteGate for pgId=${pgId}: written=${result.written} ` +
+        `reason=${result.reason ?? 'n/a'}`,
+    );
   }
 }
