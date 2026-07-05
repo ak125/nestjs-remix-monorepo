@@ -501,3 +501,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `docs/claude-md-slim`
 - **Décision** : docs(claude-md): slim referential sections into pointers (P1/P3 token lever)
 - **Sortie** : PR aucune | commits e34d4ee5c
+
+## 2026-07-05 — fix/ios16-webkit-lookbehind-crash (auto)
+
+- **Branche** : `fix/ios16-webkit-lookbehind-crash`
+- **Décision** : fix(frontend): WebKit <16.4 regex lookbehind crash on iOS (Sentry PROD)
+- **Sortie** : PR aucune | commits c2fbda72e
