@@ -3,8 +3,12 @@
  * scripts/registry/build-deps-registry.js — Layer 1 producer (DepEntry[]).
  *
  * Aggregates package dependencies declared across all workspaces (root +
- * packages/*, backend/, frontend/). Each unique (name@version) pair becomes a
- * DepEntry capturing which workspaces import it.
+ * packages/*, backend/, frontend/). Each unique (name@specifier) pair becomes a
+ * DepEntry whose provenance is carried by an atomic `occurrences[]` array —
+ * each element a full `(workspace, declaredIn, bucket, specifier)` tuple
+ * captured AT READ TIME. The tuple is never decomposed into parallel
+ * `workspaces[]` / `declaredIn[]` arrays and re-zipped by index downstream
+ * (that lost the pairing and shipped 7/9 false `zod` occurrences).
  *
  * Per ADR-058 invariant V1-3 :
  *   - `status: 'LIVE'` (declared dep = LIVE by default)
@@ -25,6 +29,9 @@ const {
   REGISTRY_DIR,
   SCHEMA_VERSION,
   DEFAULT_OWNER,
+  DEPENDENCY_BUCKETS,
+  classifySource,
+  depId,
   writeDeterministicJson,
   readJsonSafe,
   sortById,
@@ -32,6 +39,17 @@ const {
 } = require("./lib/utils");
 
 const log = makeLogger("deps");
+
+/** Stable order for the atomic provenance tuple (workspace ▸ declaredIn ▸ bucket). */
+function occurrenceKey(o) {
+  return `${o.workspace} ${o.declaredIn} ${o.bucket} ${o.specifier}`;
+}
+
+function compareOccurrences(a, b) {
+  const ka = occurrenceKey(a);
+  const kb = occurrenceKey(b);
+  return ka < kb ? -1 : ka > kb ? 1 : 0;
+}
 
 function workspacePackageJsons() {
   const root = readJsonSafe(path.join(MONOREPO_ROOT, "package.json"));
@@ -63,64 +81,58 @@ function workspacePackageJsons() {
   return paths;
 }
 
-function classifySource(version) {
-  if (!version) return "npm";
-  if (version.startsWith("workspace:") || version === "*") return "workspace";
-  if (version.startsWith("git+") || version.startsWith("git://")) return "git";
-  if (version.startsWith("github:")) return "github";
-  return "npm";
-}
-
-function depId(name, version) {
-  return `${classifySource(version)}:${name}@${version}`;
-}
-
 function main() {
   const pkgPaths = workspacePackageJsons();
   log(`scanning ${pkgPaths.length} package.json files`);
 
-  const byId = new Map(); // id → entry
+  const byId = new Map(); // id → entry (occurrences accumulated atomically)
 
   for (const pkgPath of pkgPaths) {
     const pkg = readJsonSafe(path.join(MONOREPO_ROOT, pkgPath));
     if (!pkg) continue;
     const workspaceName = pkg.name || pkgPath;
 
-    const buckets = ["dependencies", "devDependencies", "peerDependencies"];
-    for (const bucket of buckets) {
+    for (const bucket of DEPENDENCY_BUCKETS) {
       const deps = pkg[bucket] || {};
       for (const [name, version] of Object.entries(deps)) {
         const id = depId(name, version);
-        const existing = byId.get(id);
-        if (existing) {
-          if (!existing.workspaces.includes(workspaceName)) {
-            existing.workspaces.push(workspaceName);
-          }
-          if (!existing.declaredIn.includes(pkgPath)) {
-            existing.declaredIn.push(pkgPath);
-          }
-        } else {
-          byId.set(id, {
+        // Capture the full provenance tuple AT READ TIME — never split.
+        const occurrence = {
+          workspace: workspaceName,
+          declaredIn: pkgPath,
+          bucket,
+          specifier: version,
+        };
+        let entry = byId.get(id);
+        if (!entry) {
+          entry = {
             schemaVersion: SCHEMA_VERSION,
             id,
             name,
             version,
             source: classifySource(version),
-            workspaces: [workspaceName],
-            declaredIn: [pkgPath],
+            occurrences: [],
+            _seen: new Set(),
             status: "LIVE",
             owner: DEFAULT_OWNER,
             sourceConfidence: "high",
-          });
+          };
+          byId.set(id, entry);
+        }
+        // Dedup on the FULL tuple (a package listed in two buckets of the same
+        // manifest is two distinct occurrences; an exact repeat is one).
+        const dedupKey = occurrenceKey(occurrence);
+        if (!entry._seen.has(dedupKey)) {
+          entry._seen.add(dedupKey);
+          entry.occurrences.push(occurrence);
         }
       }
     }
   }
 
-  const entries = Array.from(byId.values()).map((e) => ({
+  const entries = Array.from(byId.values()).map(({ _seen, ...e }) => ({
     ...e,
-    workspaces: [...e.workspaces].sort(),
-    declaredIn: [...e.declaredIn].sort(),
+    occurrences: [...e.occurrences].sort(compareOccurrences),
   }));
 
   log(`detected ${entries.length} unique deps`);

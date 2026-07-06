@@ -1,7 +1,16 @@
 name: 🔒 Dependency registry truth freshness
 
-# Freshness gate — ADR-058 Repository Control Plane, Layer 1.
-# WARN-ONLY FIRST under the ADR-062 ratchet (see ROLLOUT below).
+# Dependency-registry truth gate — ADR-058 Repository Control Plane, Layer 1.
+# TWO ORTHOGONAL PROOFS, one verdict, WARN-ONLY FIRST (ADR-062, see ROLLOUT):
+#   • CHECK 1 — semantic FIDELITY (Proof A): an INDEPENDENT scan of the live
+#     package.json manifests, compared tuple-for-tuple to
+#     flatten(deps.json.occurrences). Catches a WRONG producer (mis-paired
+#     provenance, dropped bucket) — which the git-diff below cannot, because it
+#     re-runs that same producer. `scripts/registry/validate-deps-fidelity.ts`.
+#   • CHECK 2 — FRESHNESS (Proof B): `committed deps.json == rebuild(manifests)`
+#     via `git diff --exit-code`. Catches a STALE artifact (dep bumped, registry
+#     not regenerated). This is NOT replaced by Check 1 — the two guard
+#     different defect classes (stale artifact vs wrong producer).
 #
 # WHY THIS EXISTS
 # ---------------
@@ -19,11 +28,15 @@ name: 🔒 Dependency registry truth freshness
 #
 # WHAT THIS GATE DOES
 # -------------------
-# Rebuilds `deps.json` from the live manifests and flags drift when the
-# committed file differs — enforcing `committed L1 == fresh(manifests)`. This
-# is the missing freshness-closure between the primary source (`package.json`)
-# and its executable projection (`deps.json`). Under the ADR-062 ratchet the
-# drift signal is warn-only first (non-blocking) — see ROLLOUT below.
+# CHECK 1 (fidelity) builds a tuple set DIRECTLY from the manifests and asserts
+# it equals flatten(deps.json.occurrences) — the producer is correct. CHECK 2
+# (freshness) rebuilds `deps.json` and flags drift when the committed file
+# differs — the artifact is current (`committed L1 == fresh(manifests)`).
+# Together they are the missing closure between the primary source
+# (`package.json`) and its executable projection (`deps.json`): fidelity ≠
+# freshness — a deterministic-but-wrong producer regenerating a wrong artifact
+# passes Check 2 but fails Check 1. Under the ADR-062 ratchet both are warn-only
+# first (non-blocking) — see ROLLOUT below.
 # Ref: audit/p0-rag-runtime-and-version-truth-2026-07-04.md §3.1
 #
 # ROLLOUT — WARN-ONLY FIRST (ADR-062 ratchet)
@@ -57,6 +70,7 @@ on:
       - "packages/*/package.json"
       - "package-lock.json"
       - "scripts/registry/build-deps-registry.js"
+      - "scripts/registry/validate-deps-fidelity.ts"
       - "scripts/registry/lib/**"
       - "audit/registry/deps.json"
       - ".github/workflows/dependency-registry-freshness.yml"
@@ -69,6 +83,7 @@ on:
       - "packages/*/package.json"
       - "package-lock.json"
       - "scripts/registry/build-deps-registry.js"
+      - "scripts/registry/validate-deps-fidelity.ts"
       - "scripts/registry/lib/**"
       - "audit/registry/deps.json"
       - ".github/workflows/dependency-registry-freshness.yml"
@@ -94,13 +109,22 @@ jobs:
         with:
           node-version: "24"
 
-      # The deps builder is pure Node (fs/path/crypto) and reads the
-      # package.json manifests directly, so no `npm ci` is required — this
-      # keeps the freshness gate fast (~seconds).
+      # CHECK 1 — semantic FIDELITY (Proof A). Independent manifest scan vs
+      # flatten(deps.json.occurrences) + 4 structural invariants. The validator
+      # imports only Node built-ins + scripts/registry/lib/utils.js (zero
+      # third-party runtime deps), so `npx tsx` runs it standalone — no `npm ci`
+      # needed, keeping the gate fast. Nest/RR/Zod are priority diagnostics;
+      # NO expected version is hardcoded (truth = the live manifests).
+      - name: "Check 1 — semantic fidelity (deps.json == manifests, tuple-for-tuple)"
+        run: npx --yes tsx@4 scripts/registry/validate-deps-fidelity.ts
+
+      # CHECK 2 — FRESHNESS (Proof B). The deps builder is pure Node
+      # (fs/path/crypto) and reads the package.json manifests directly, so no
+      # `npm ci` is required — this keeps the freshness gate fast (~seconds).
       - name: Rebuild L1 deps registry from live manifests
         run: npm run registry:build:deps
 
-      - name: Assert committed deps.json is fresh (fail on drift)
+      - name: "Check 2 — freshness (committed deps.json == fresh build; fail on drift)"
         run: |
           if git diff --exit-code -- audit/registry/deps.json; then
             echo "✓ audit/registry/deps.json matches a fresh build from the workspace manifests."

@@ -7,8 +7,14 @@
       "name": "zod",
       "version": "^3.25.76",
       "source": "npm",
-      "workspaces": ["@fafa/backend"],
-      "declaredIn": ["backend/package.json"],
+      "occurrences": [
+        {
+          "workspace": "@fafa/backend",
+          "declaredIn": "backend/package.json",
+          "bucket": "dependencies",
+          "specifier": "^3.25.76"
+        }
+      ],
       "status": "LIVE",
       "owner": "platform",
       "sourceConfidence": "high",

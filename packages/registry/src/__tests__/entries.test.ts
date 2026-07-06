@@ -181,8 +181,14 @@ describe("DepEntrySchema round-trip", () => {
       name: "zod",
       version: "3.25.76",
       source: "npm" as const,
-      workspaces: ["packages/registry"],
-      declaredIn: ["packages/registry/package.json"],
+      occurrences: [
+        {
+          workspace: "@repo/registry",
+          declaredIn: "packages/registry/package.json",
+          bucket: "dependencies" as const,
+          specifier: "3.25.76",
+        },
+      ],
       status: "LIVE" as const,
       owner: "@ak125",
       sourceConfidence: "high" as const,
@@ -197,6 +203,29 @@ describe("DepEntrySchema round-trip", () => {
       name: "zod",
       version: "",
       source: "npm" as const,
+      occurrences: [
+        {
+          workspace: "@repo/registry",
+          declaredIn: "packages/registry/package.json",
+          bucket: "dependencies" as const,
+          specifier: "3.25.76",
+        },
+      ],
+      status: "LIVE" as const,
+      owner: "x",
+      sourceConfidence: "high" as const,
+    };
+    assert.throws(() => DepEntrySchema.parse(invalid));
+  });
+
+  test("rejects empty occurrences (provenance must never be empty)", () => {
+    const invalid = {
+      schemaVersion: SchemaVersion,
+      id: "npm:zod@3.25.76",
+      name: "zod",
+      version: "3.25.76",
+      source: "npm" as const,
+      occurrences: [],
       status: "LIVE" as const,
       owner: "x",
       sourceConfidence: "high" as const,
