@@ -35,6 +35,7 @@ import { SeoService } from '../../src/modules/seo/seo.service';
 import { UrlCompatibilityService } from '../../src/modules/seo/validation/url-compatibility.service';
 import { SeoKpisService } from '../../src/modules/seo/services/seo-kpis.service';
 import { AuthenticatedGuard } from '../../src/auth/authenticated.guard';
+import { IsAdminGuard } from '../../src/auth/is-admin.guard';
 
 describe('Route splat characterization (PR-9f URL contract)', () => {
   let app: INestApplication;
@@ -72,6 +73,12 @@ describe('Route splat characterization (PR-9f URL contract)', () => {
       ],
     })
       .overrideGuard(AuthenticatedGuard)
+      .useValue({ canActivate: () => true })
+      // Metadata PUT/DELETE + breadcrumb POST are admin-guarded (served-metadata
+      // write authz P0). This suite characterizes URL decoding, not authz, so we
+      // bypass the admin boundary too — enforcement is covered by
+      // tests/unit/seo-metadata-authz.test.ts.
+      .overrideGuard(IsAdminGuard)
       .useValue({ canActivate: () => true })
       .compile();
 

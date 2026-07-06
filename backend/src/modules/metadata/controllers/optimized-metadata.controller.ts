@@ -9,12 +9,22 @@
  * ✅ DELETE /api/metadata/:path  → Supprimer métadonnées
  */
 
-import { Controller, Get, Put, Delete, Body, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Put,
+  Delete,
+  Body,
+  Logger,
+  UseGuards,
+} from '@nestjs/common';
 import {
   OptimizedMetadataService,
   PageMetadata,
   MetadataUpdateData,
 } from '../services/optimized-metadata.service';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { OperationFailedException } from '@common/exceptions';
 import { SplatPath } from '@common/decorators';
 
@@ -61,6 +71,7 @@ export class OptimizedMetadataController {
    * PUT /api/metadata/:path
    */
   @Put('{*path}')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async updateMetadata(
     @SplatPath() path: string,
     @Body() updateData: MetadataUpdateData,
@@ -95,6 +106,7 @@ export class OptimizedMetadataController {
    * DELETE /api/metadata/:path
    */
   @Delete('{*path}')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async deleteMetadata(
     @SplatPath() path: string,
   ): Promise<{ success: boolean; message: string }> {
