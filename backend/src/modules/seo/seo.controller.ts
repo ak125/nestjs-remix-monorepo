@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { SeoService } from './seo.service';
 import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { UrlCompatibilityService } from './validation/url-compatibility.service';
 import { SeoKpisService } from './services/seo-kpis.service';
 import { OperationFailedException } from '@common/exceptions';
@@ -83,7 +84,7 @@ export class SeoController {
    * PUT /seo/metadata - Met à jour les métadonnées SEO d'une page
    */
   @Put('metadata')
-  @UseGuards(AuthenticatedGuard)
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async updateMetadata(@Body() metadataDto: MetadataDto) {
     try {
       const result = await this.seoService.updateMetadata(
@@ -222,7 +223,7 @@ export class SeoController {
    * POST /seo/batch-update - Met à jour les métadonnées en lot
    */
   @Post('batch-update')
-  @UseGuards(AuthenticatedGuard)
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async batchUpdateMetadata(@Body() metadataList: MetadataDto[]) {
     try {
       const results = [];

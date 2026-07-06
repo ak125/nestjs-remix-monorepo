@@ -11,11 +11,21 @@
  * ✅ POST /api/breadcrumb/cache/clear     → Nettoyage cache
  */
 
-import { Controller, Get, Post, Body, Query, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Query,
+  Logger,
+  UseGuards,
+} from '@nestjs/common';
 import {
   OptimizedBreadcrumbService,
   BreadcrumbItem,
 } from '../services/optimized-breadcrumb.service';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { OperationFailedException } from '@common/exceptions';
 import { SplatPath } from '@common/decorators';
 
@@ -143,6 +153,7 @@ export class OptimizedBreadcrumbController {
    * POST /api/breadcrumb/:path
    */
   @Post('{*path}')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   async updateBreadcrumb(
     @SplatPath() path: string,
     @Body() breadcrumbData: any,
