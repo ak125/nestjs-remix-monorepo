@@ -519,3 +519,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `audit/tranche-b0-served-output-inventory`
 - **Décision** : audit(tranche-b0): served-output-first baseline for RAG→served closure (read-only)
 - **Sortie** : PR aucune | commits f8e75ab3d
+
+## 2026-07-06 — audit/tranche-b0-served-output-inventory (auto)
+
+- **Branche** : `audit/tranche-b0-served-output-inventory`
+- **Décision** : audit(tranche-b1a): close B0 unknowns + served-path→enforcement-owner matrix (read-only) (+2 other commits)
+- **Sortie** : PR aucune | commits 35d902e39 434f43247 f8e75ab3d
