@@ -6,8 +6,13 @@
  * ungoverned path to actually-served content from landing silently while B2..B5 close the
  * *existing* bypasses. It does NOT reroute writers, touch ContentWriteGate, add provenance,
  * or classify governed-vs-bypass. Every current served-content write sink is FROZEN as a
- * known-debt baseline; only a NEW sink (a new `file::target` pair not in the baseline) fails
- * CI — forcing owner review ("new served writer → which enforcement owner?").
+ * known-debt baseline with an OCCURRENCE COUNT; the ratchet is COUNT-EXACT and fails on any
+ * drift — forcing owner review ("new served writer → which enforcement owner?"):
+ *   - a NEW `file::target` pair, OR a HIGHER count at an existing pair (a 2nd writer to the
+ *     same file+table that the pair-key alone would hide) → fail;
+ *   - a LOWER/absent count (a real B2..B5 closure OR a detector going blind) → also fail,
+ *     unless the baseline is refreshed in the SAME PR (a real closure does this → drift = 0).
+ *     A coverage loss must never masquerade as a reduction.
  *
  * Denominator + owner matrix come from the read-only audits (do not re-derive here):
  *   audit/tranche-b0-served-output-inventory-2026-07-06.md   (served denominator)
@@ -92,6 +97,7 @@ export type Mechanism = z.infer<typeof MechanismSchema>;
 export const FindingSchema = z.object({
   mechanism: MechanismSchema,
   id: z.string().min(1), // stable `<repo-relative-file>::<target>` — line-independent (low churn)
+  count: z.number().int().positive(), // # of write occurrences for this file::target — a 2nd writer bumps it
 });
 export type Finding = z.infer<typeof FindingSchema>;
 
@@ -109,23 +115,29 @@ export type Baseline = z.infer<typeof BaselineSchema>;
 
 const key = (f: Finding) => `${f.mechanism}::${f.id}`;
 const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+// Count NON-overlapping write occurrences — so a SECOND writer to the same file::target bumps the
+// count (a new sink instance the file::target key alone would otherwise hide). Regex MUST be global.
+const countMatches = (text: string, re: RegExp): number => (text.match(re) ?? []).length;
 
-// ── Detectors (pure — take file {path,text}, return findings) ────────────────────────────────
+// ── Detectors (pure — take file {path,text}, return findings with occurrence counts) ──────────
 export function detectTsSinks(path: string, text: string): Finding[] {
   const out: Finding[] = [];
   for (const table of SERVED_TABLES) {
-    const re = new RegExp(`\\.from\\(\\s*['"\`]${escapeRe(table)}['"\`]\\s*\\)${CHAIN}\\.(${WRITE_VERBS})\\s*\\(`);
-    if (re.test(text)) out.push({ mechanism: "direct_literal", id: `${path}::${table}` });
+    const re = new RegExp(`\\.from\\(\\s*['"\`]${escapeRe(table)}['"\`]\\s*\\)${CHAIN}\\.(${WRITE_VERBS})\\s*\\(`, "g");
+    const n = countMatches(text, re);
+    if (n) out.push({ mechanism: "direct_literal", id: `${path}::${table}`, count: n });
   }
   for (const channel of SERVED_CONST_CHANNELS) {
-    const re = new RegExp(`\\.from\\(\\s*${escapeRe(channel)}\\b${CHAIN}\\.(${WRITE_VERBS})\\s*\\(`);
-    if (re.test(text)) out.push({ mechanism: "const_map", id: `${path}::${channel}` });
+    const re = new RegExp(`\\.from\\(\\s*${escapeRe(channel)}\\b${CHAIN}\\.(${WRITE_VERBS})\\s*\\(`, "g");
+    const n = countMatches(text, re);
+    if (n) out.push({ mechanism: "const_map", id: `${path}::${channel}`, count: n });
   }
   for (const rpc of SERVED_PUBLISH_RPCS) {
     // Match both the raw client (`.rpc('fn'`) and the governed wrapper (`callRpc('fn'`) used
     // by SupabaseBaseService — the R8 publisher goes through `this.callRpc(...)` (B1a Owner ③).
-    const re = new RegExp(`(?:\\.rpc|callRpc)(?:<[^>]*>)?\\(\\s*['"\`]${escapeRe(rpc)}['"\`]`);
-    if (re.test(text)) out.push({ mechanism: "rpc_publisher", id: `${path}::${rpc}` });
+    const re = new RegExp(`(?:\\.rpc|callRpc)(?:<[^>]*>)?\\(\\s*['"\`]${escapeRe(rpc)}['"\`]`, "g");
+    const n = countMatches(text, re);
+    if (n) out.push({ mechanism: "rpc_publisher", id: `${path}::${rpc}`, count: n });
   }
   return out;
 }
@@ -134,9 +146,11 @@ export function detectSqlSinks(path: string, text: string): Finding[] {
   const out: Finding[] = [];
   for (const table of SERVED_TABLES) {
     const t = escapeRe(table);
-    const writes = new RegExp(`(insert\\s+into|update)\\s+${t}\\b`, "i");
-    const fnWrites = new RegExp(`(insert\\s+into|update)\\s+${t}\\b`, "i"); // same signal inside CREATE FUNCTION bodies
-    if (writes.test(text) || fnWrites.test(text)) out.push({ mechanism: "sql_migration", id: `${path}::${table}` });
+    // INSERT INTO | UPDATE | DELETE FROM | TRUNCATE [TABLE] — every destructive write to served
+    // content, incl. inside CREATE FUNCTION bodies. DELETE/TRUNCATE destroy served rows too.
+    const re = new RegExp(`(insert\\s+into|update|delete\\s+from|truncate(\\s+table)?)\\s+${t}\\b`, "gi");
+    const n = countMatches(text, re);
+    if (n) out.push({ mechanism: "sql_migration", id: `${path}::${table}`, count: n });
   }
   return out;
 }
@@ -172,11 +186,14 @@ export function scanSinks(root: string): Finding[] {
       findings.push(...detectSqlSinks(rel, readFileSync(f, "utf8")));
     }
   }
-  // Deterministic order + dedupe
-  const seen = new Set<string>();
-  return findings
-    .filter((f) => (seen.has(key(f)) ? false : (seen.add(key(f)), true)))
-    .sort((a, b) => key(a).localeCompare(key(b)));
+  // Aggregate by key (sum occurrence counts) + deterministic order.
+  const byKey = new Map<string, Finding>();
+  for (const f of findings) {
+    const ex = byKey.get(key(f));
+    if (ex) ex.count += f.count;
+    else byKey.set(key(f), { ...f });
+  }
+  return [...byKey.values()].sort((a, b) => key(a).localeCompare(key(b)));
 }
 
 // ── Baseline + diff ────────────────────────────────────────────────────────────────────────
@@ -189,11 +206,13 @@ export function loadBaseline(path = BASELINE_PATH): Baseline {
 }
 
 export function diffFindings(current: Finding[], baseline: Finding[]): { added: Finding[]; removed: Finding[] } {
-  const bset = new Set(baseline.map(key));
-  const cset = new Set(current.map(key));
+  const bcount = new Map(baseline.map((f) => [key(f), f.count]));
+  const ccount = new Map(current.map((f) => [key(f), f.count]));
   return {
-    added: current.filter((f) => !bset.has(key(f))),
-    removed: baseline.filter((f) => !cset.has(key(f))),
+    // new key OR MORE occurrences at an existing key (a 2nd writer to the same file::target)
+    added: current.filter((f) => (bcount.get(key(f)) ?? 0) < f.count),
+    // gone key OR FEWER occurrences — a real closure OR a detector going blind; never silent
+    removed: baseline.filter((f) => (ccount.get(key(f)) ?? 0) < f.count),
   };
 }
 
@@ -218,9 +237,12 @@ export function refresh(current: Finding[], commit: string | null): Baseline {
     summary: summarize(current),
     findings: current,
     notes: [
-      "Frozen served-content write-sink debt (Tranche B1b). block-new-only: a NEW file::target pair fails CI.",
-      "Existing entries are KNOWN debt to be closed by B2..B5 — they are warn-frozen here, not endorsed.",
-      "Refresh is maintainer-only-manual; a new sink must be reviewed for its enforcement owner before baselining.",
+      "Frozen served-content write-sink debt (Tranche B1b). COUNT-EXACT block-new: a new file::target pair OR",
+      "a higher occurrence count at an existing pair (a 2nd writer to the same file+table) fails CI.",
+      "A DECREASE/DISAPPEARANCE also fails — a real B2..B5 closure MUST refresh this baseline in the SAME PR;",
+      "an unexplained drop = detector regression. Coverage loss must never masquerade as a reduction.",
+      "Existing entries are KNOWN debt to be closed by B2..B5 — warn-frozen here, not endorsed.",
+      "Refresh is maintainer-only-manual, run in the same PR that changes the served-write surface.",
     ],
   });
 }
@@ -252,25 +274,38 @@ function main() {
 
   const baseline = loadBaseline();
   const { added, removed } = diffFindings(current, baseline.findings);
-
-  if (removed.length) {
-    console.log(`ℹ️  ${removed.length} baselined sink(s) no longer present (a B2..B5 closure or move) — informational:`);
-    for (const f of removed) console.log(`   − ${key(f)}`);
-    console.log("   (reductions are always allowed; refresh the baseline in a maintainer PR to clear them.)");
-  }
+  const countOf = (arr: Finding[], k: string) => arr.find((f) => key(f) === k)?.count ?? 0;
 
   if (added.length) {
-    console.error(`\n❌ ${added.length} NEW served-content write sink(s) — ungoverned path to served content must be reviewed:`);
-    for (const f of added) console.error(`   + ${key(f)}`);
+    console.error(`\n❌ ${added.length} NEW or INCREASED served-content write sink(s) — ungoverned path to served content:`);
+    for (const f of added) console.error(`   + ${key(f)}  (was ${countOf(baseline.findings, key(f))}, now ${f.count})`);
     console.error(
-      "\nEach new sink needs an explicit enforcement owner (B1a §2). Route it through the owner boundary for its\n" +
-        "mechanism, OR (if legitimately governed) add it to the baseline via a maintainer refresh with justification.\n" +
-        "Baseline: " + relative(REPO_ROOT, BASELINE_PATH),
+      "\nEach new/increased sink needs an explicit enforcement owner (B1a §2). Route it through the owner boundary\n" +
+        "for its mechanism, OR (if legitimately governed) refresh the baseline in THIS PR with justification.",
+    );
+  }
+
+  if (removed.length) {
+    // A drop is NOT a free "reduction": either a real B2..B5 closure (which MUST update the baseline
+    // in the same PR → removed becomes 0) or a DETECTOR REGRESSION. Both must be explicit — fail-closed.
+    console.error(`\n❌ ${removed.length} served-content write sink(s) DECREASED/DISAPPEARED without a baseline update:`);
+    for (const f of removed) console.error(`   − ${key(f)}  (baseline ${f.count}, now ${countOf(current, key(f))})`);
+    console.error(
+      "\nA drop is EITHER a real closure — then refresh the baseline in THIS SAME PR so the ratchet stays honest —\n" +
+        "OR a detector regression — then fix the detector. A coverage loss must never masquerade as a reduction.",
+    );
+  }
+
+  if (added.length || removed.length) {
+    console.error(
+      "\nBaseline: " + relative(REPO_ROOT, BASELINE_PATH) +
+        "\nRefresh (maintainer, in the SAME PR that changes the surface): npm run audit:served-write-ratchet:refresh",
     );
     process.exit(1);
   }
 
-  console.log(`✅ served-content write sinks: ${current.length} known, 0 new (block-new-only).`);
+  const totalOcc = current.reduce((s, f) => s + f.count, 0);
+  console.log(`✅ served-content write sinks: count-exact match with baseline (${current.length} keys, ${totalOcc} occurrences).`);
 }
 
 // Only run as CLI (tests import the pure fns).
