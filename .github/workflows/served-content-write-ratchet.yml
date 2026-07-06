@@ -1,0 +1,72 @@
+name: 🛡️ Served-content write ratchet (block-new, Tranche B1b)
+
+# Block-new gate — ADR-058 §23 (observe → ratchet → enforce). Seatbelt before B2.
+# Fails iff a NEW served-content write sink (file::target) appears vs the accepted baseline
+# (audit/baselines/served-content-write-sinks-baseline.json). Existing debt is FROZEN and
+# warn-only here — B2..B5 close it. Reductions always allowed. CI MUST NEVER call --refresh.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "backend/src/**"
+      - "backend/supabase/migrations/**"
+      - "backend/sql/**"
+      - "scripts/audit/check-served-content-write-sinks-ratchet.ts"
+      - "scripts/audit/check-served-content-write-sinks-ratchet.test.ts"
+      - "audit/baselines/served-content-write-sinks-baseline.json"
+      - ".github/workflows/served-content-write-ratchet.yml"
+  push:
+    branches: [main]
+    paths:
+      - "backend/src/**"
+      - "backend/supabase/migrations/**"
+      - "backend/sql/**"
+      - "scripts/audit/check-served-content-write-sinks-ratchet.ts"
+      - "audit/baselines/served-content-write-sinks-baseline.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: served-content-write-ratchet-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ratchet:
+    name: Block new served-content write sinks
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Detector + comparator unit tests (must pass)
+        run: npm run audit:served-write-ratchet:test
+
+      - name: Run ratchet (BLOCKING — exit 1 on any new sink)
+        id: ratchet
+        run: npm run audit:served-write-ratchet
+
+      - name: Append summary
+        if: always()
+        run: |
+          {
+            echo "# 🛡️ Served-content write ratchet (Tranche B1b)"
+            echo ""
+            echo "_Block-new only — freezes existing served-write debt (B2..B5 close it), fails on NEW sinks._"
+            echo ""
+            echo '```json'
+            ./node_modules/.bin/tsx scripts/audit/check-served-content-write-sinks-ratchet.ts --json || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

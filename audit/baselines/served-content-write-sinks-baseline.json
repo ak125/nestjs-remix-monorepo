@@ -1,0 +1,353 @@
+{
+  "schemaVersion": "v1",
+  "createdAt": "2026-07-06",
+  "createdOnCommit": "61b38bbf3cecf1cbff25dfeaf1f5730de1d38e15",
+  "sourcePr": null,
+  "mode": "block-new-only",
+  "summary": {
+    "direct_literal": 14,
+    "const_map": 7,
+    "rpc_publisher": 1,
+    "sql_migration": 44
+  },
+  "findings": [
+    {
+      "mechanism": "const_map",
+      "id": "backend/src/database/services/meta-tags-ariane-data.service.ts::TABLES.meta_tags_ariane",
+      "count": 6
+    },
+    {
+      "mechanism": "const_map",
+      "id": "backend/src/modules/admin/services/r7-brand-enricher.service.ts::R7_TABLES",
+      "count": 5
+    },
+    {
+      "mechanism": "const_map",
+      "id": "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts::R8_TABLES",
+      "count": 6
+    },
+    {
+      "mechanism": "const_map",
+      "id": "backend/src/modules/blog/services/advice.service.ts::TABLES.blog_advice",
+      "count": 3
+    },
+    {
+      "mechanism": "const_map",
+      "id": "backend/src/modules/blog/services/blog-article-data.service.ts::TABLES.blog_advice",
+      "count": 2
+    },
+    {
+      "mechanism": "const_map",
+      "id": "backend/src/modules/blog/services/glossary.service.ts::TABLES.blog_advice",
+      "count": 1
+    },
+    {
+      "mechanism": "const_map",
+      "id": "backend/src/modules/blog/services/guide.service.ts::TABLES.blog_guide",
+      "count": 1
+    },
+    {
+      "mechanism": "direct_literal",
+      "id": "backend/src/modules/admin/controllers/admin-keyword-planner.controller.ts::__seo_gamme",
+      "count": 2
+    },
+    {
+      "mechanism": "direct_literal",
+      "id": "backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts::__seo_gamme_purchase_guide",
+      "count": 1
+    },
+    {
+      "mechanism": "direct_literal",
+      "id": "backend/src/modules/admin/services/conseil-enricher.service.ts::__seo_gamme",
+      "count": 1
+    },
+    {
+      "mechanism": "direct_literal",
+      "id": "backend/src/modules/admin/services/conseil-enricher.service.ts::__seo_gamme_conseil",
+      "count": 1
+    },
+    {
+      "mechanism": "direct_literal",
+      "id": "backend/src/modules/admin/services/conseil-quality-scorer.service.ts::__seo_gamme_conseil",
+      "count": 1
+    },
+    {
+      "mechanism": "direct_literal",
+      "id": "backend/src/modules/admin/services/r1-enricher.service.ts::__seo_r1_gamme_slots",
+      "count": 1
+    },
+    {
+      "mechanism": "direct_literal",
+      "id": "backend/src/modules/admin/services/r1-image-prompt.service.ts::__seo_r1_image_prompts",
+      "count": 6
+    },
+    {
+      "mechanism": "direct_literal",
+      "id": "backend/src/modules/admin/services/r3-image-prompt.service.ts::__seo_r3_image_prompts",
+      "count": 3
+    },
+    {
+      "mechanism": "direct_literal",
+      "id": "backend/src/modules/gamme-rest/services/purchase-guide-data.service.ts::__seo_r1_gamme_slots",
+      "count": 1
+    },
+    {
+      "mechanism": "direct_literal",
+      "id": "backend/src/modules/rag-proxy/services/rag-image-management.service.ts::__seo_r3_image_prompts",
+      "count": 1
+    },
+    {
+      "mechanism": "direct_literal",
+      "id": "backend/src/modules/seo/services/reference.service.ts::__seo_reference",
+      "count": 4
+    },
+    {
+      "mechanism": "direct_literal",
+      "id": "backend/src/modules/seo/services/seo-generator.service.ts::__seo_observable",
+      "count": 1
+    },
+    {
+      "mechanism": "direct_literal",
+      "id": "backend/src/modules/seo/services/seo-generator.service.ts::__seo_reference",
+      "count": 1
+    },
+    {
+      "mechanism": "direct_literal",
+      "id": "backend/src/modules/seo/validation/diagnostic.service.ts::__seo_observable",
+      "count": 3
+    },
+    {
+      "mechanism": "rpc_publisher",
+      "id": "backend/src/modules/seo/r2/services/r8-parent-enrichment.service.ts::__seo_r8_publish_snapshot",
+      "count": 1
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20251231_create_purchase_guide_table.sql::__seo_gamme_purchase_guide",
+      "count": 2
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20251231_seo_courroie_distribution.sql::__seo_gamme",
+      "count": 2
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260104_freinage_expert_content.sql::__seo_gamme_purchase_guide",
+      "count": 16
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260104_purchase_guide_v2_all_gammes.sql::__seo_gamme_purchase_guide",
+      "count": 1
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260104_purchase_guide_v2_client_content.sql::__seo_gamme_purchase_guide",
+      "count": 1
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260105_clean_h1_html_tags.sql::__seo_gamme",
+      "count": 1
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260105_distribution_content_v2.sql::__seo_gamme_purchase_guide",
+      "count": 5
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260105_faq_complete_answers.sql::__seo_gamme_purchase_guide",
+      "count": 3
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260105_fix_arg4_freinage.sql::__seo_gamme_purchase_guide",
+      "count": 16
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260105_fix_arguments_freinage_17.sql::__seo_gamme_purchase_guide",
+      "count": 17
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260105_fix_articles_freinage.sql::__seo_gamme_purchase_guide",
+      "count": 16
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260105_fix_freinage_duplicates.sql::__seo_gamme_purchase_guide",
+      "count": 4
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260105_fix_freinage_remaining_13.sql::__seo_gamme_purchase_guide",
+      "count": 13
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260105_fix_intro_role_plaquettes.sql::__seo_gamme_purchase_guide",
+      "count": 3
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260105_fix_timing_syncparts_freinage_17.sql::__seo_gamme_purchase_guide",
+      "count": 17
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260105_freinage_content_v2.sql::__seo_gamme_purchase_guide",
+      "count": 16
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260105_simplify_howtochoose_freinage.sql::__seo_gamme_purchase_guide",
+      "count": 16
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260106_filtres_content_v2.sql::__seo_gamme_purchase_guide",
+      "count": 5
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260106_fix_faq_confusion.sql::__seo_gamme_purchase_guide",
+      "count": 2
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260106_freinage_faq_unique.sql::__seo_gamme_purchase_guide",
+      "count": 18
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260107_clean_html_from_seo_descriptions.sql::__seo_gamme_car",
+      "count": 1
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260125_create_seo_reference.sql::__seo_reference",
+      "count": 1
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260125_enhance_seo_reference.sql::__seo_reference",
+      "count": 1
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260126_create_seo_observable.sql::__seo_observable",
+      "count": 1
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260201_insert_filtre_huile_r4_r5.sql::__seo_observable",
+      "count": 5
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260201_insert_filtre_huile_r4_r5.sql::__seo_reference",
+      "count": 1
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260213_add_purchase_guide_source_provenance.sql::__seo_gamme_purchase_guide",
+      "count": 1
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260213_backfill_purchase_guide_source_type.sql::__seo_gamme_purchase_guide",
+      "count": 7
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260213_set_disque_frein_source_provenance.sql::__seo_gamme_purchase_guide",
+      "count": 1
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260213_update_disque_frein_content.sql::__seo_gamme_purchase_guide",
+      "count": 1
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260214_add_purchase_guide_source_verification.sql::__seo_gamme_purchase_guide",
+      "count": 1
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260214_verify_disque_frein_source.sql::__seo_gamme_purchase_guide",
+      "count": 1
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260308_diagnostic_engine_mvp.sql::__diag_cause",
+      "count": 1
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260308_diagnostic_engine_mvp.sql::__diag_safety_rule",
+      "count": 1
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260308_diagnostic_engine_mvp.sql::__diag_symptom",
+      "count": 1
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260308_diagnostic_engine_mvp.sql::__diag_system",
+      "count": 1
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260311_blog_advice_content_fields.sql::__blog_advice",
+      "count": 2
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260312_r4_taxonomy_search.sql::__seo_reference",
+      "count": 3
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260321_diagnostic_engine_10_systems.sql::__diag_cause",
+      "count": 4
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260321_diagnostic_engine_10_systems.sql::__diag_safety_rule",
+      "count": 3
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260321_diagnostic_engine_10_systems.sql::__diag_symptom",
+      "count": 3
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260321_diagnostic_engine_10_systems.sql::__diag_system",
+      "count": 3
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260322_create_r1_gamme_slots.sql::__seo_r1_gamme_slots",
+      "count": 1
+    },
+    {
+      "mechanism": "sql_migration",
+      "id": "backend/supabase/migrations/20260502_diag_brake_signals_distance_warning.sql::__diag_symptom",
+      "count": 1
+    }
+  ],
+  "notes": [
+    "Frozen served-content write-sink debt (Tranche B1b). COUNT-EXACT block-new: a new file::target pair OR",
+    "a higher occurrence count at an existing pair (a 2nd writer to the same file+table) fails CI.",
+    "A DECREASE/DISAPPEARANCE also fails — a real B2..B5 closure MUST refresh this baseline in the SAME PR;",
+    "an unexplained drop = detector regression. Coverage loss must never masquerade as a reduction.",
+    "Existing entries are KNOWN debt to be closed by B2..B5 — warn-frozen here, not endorsed.",
+    "Refresh is maintainer-only-manual, run in the same PR that changes the served-write surface."
+  ]
+}
