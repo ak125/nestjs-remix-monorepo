@@ -519,3 +519,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/tranche-b1b-no-new-unowned-served-write`
 - **Décision** : feat(audit): served-content write-sink ratchet — block-new gate (Tranche B1b)
 - **Sortie** : PR #1238 | commits 149bb3a10
+
+## 2026-07-06 — feat/tranche-b1b-no-new-unowned-served-write (auto)
+
+- **Branche** : `feat/tranche-b1b-no-new-unowned-served-write`
+- **Décision** : fix(audit): close 3 ratchet gaps — occurrence-count, removed=fail, SQL DELETE/TRUNCATE (Tranche B1b, #1238 review) (+2 other commits)
+- **Sortie** : PR #1238 | commits fe47346d4 a534d23b6 149bb3a10
