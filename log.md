@@ -513,3 +513,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/ios16-webkit-lookbehind-crash`
 - **Décision** : fix(frontend): harden gamme-autolink tokenizer (adversarial-verify findings) (+2 other commits)
 - **Sortie** : PR aucune | commits 08adf15c7 541181a61 c2fbda72e
+
+## 2026-07-06 — feat/tranche-b1b-no-new-unowned-served-write (auto)
+
+- **Branche** : `feat/tranche-b1b-no-new-unowned-served-write`
+- **Décision** : feat(audit): served-content write-sink ratchet — block-new gate (Tranche B1b)
+- **Sortie** : PR #1238 | commits 149bb3a10
