@@ -2094,14 +2094,14 @@
       "declaredIn": [
         "frontend/package.json"
       ],
-      "id": "npm:eslint-plugin-jest@^28.14.0",
+      "id": "npm:eslint-plugin-jest@^29.15.4",
       "name": "eslint-plugin-jest",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^28.14.0",
+      "version": "^29.15.4",
       "workspaces": [
         "@fafa/frontend"
       ]
