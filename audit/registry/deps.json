@@ -980,14 +980,14 @@
       "declaredIn": [
         "frontend/package.json"
       ],
-      "id": "npm:@tiptap/extension-bold@^3.26.1",
+      "id": "npm:@tiptap/extension-bold@^3.27.3",
       "name": "@tiptap/extension-bold",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^3.26.1",
+      "version": "^3.27.3",
       "workspaces": [
         "@fafa/frontend"
       ]
@@ -996,14 +996,14 @@
       "declaredIn": [
         "frontend/package.json"
       ],
-      "id": "npm:@tiptap/extension-italic@^3.26.1",
+      "id": "npm:@tiptap/extension-italic@^3.27.3",
       "name": "@tiptap/extension-italic",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^3.26.1",
+      "version": "^3.27.3",
       "workspaces": [
         "@fafa/frontend"
       ]
@@ -1028,14 +1028,14 @@
       "declaredIn": [
         "frontend/package.json"
       ],
-      "id": "npm:@tiptap/react@^3.26.1",
+      "id": "npm:@tiptap/react@^3.27.3",
       "name": "@tiptap/react",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^3.26.1",
+      "version": "^3.27.3",
       "workspaces": [
         "@fafa/frontend"
       ]
@@ -1044,14 +1044,14 @@
       "declaredIn": [
         "frontend/package.json"
       ],
-      "id": "npm:@tiptap/starter-kit@^3.26.1",
+      "id": "npm:@tiptap/starter-kit@^3.27.3",
       "name": "@tiptap/starter-kit",
       "owner": "__unassigned__",
       "schemaVersion": "1.0.0",
       "source": "npm",
       "sourceConfidence": "high",
       "status": "LIVE",
-      "version": "^3.26.1",
+      "version": "^3.27.3",
       "workspaces": [
         "@fafa/frontend"
       ]
