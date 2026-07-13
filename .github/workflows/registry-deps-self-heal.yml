@@ -26,14 +26,19 @@ name: ♻️ Registry deps self-heal (main)
 # (JSON-only diff), and native auto-merge lands it — no branch-protection bypass
 # needed, least privilege.
 #
-# INERT UNTIL THE APP IS CONFIGURED
-# ---------------------------------
-# If secrets.SELF_HEAL_APP_ID is not set, this workflow still regenerates and
-# reports drift, but opens NO PR and does NOT fail — it emits a ::warning:: and a
-# job-summary telling the operator to run the manual heal. Observable, never
-# silent. It activates automatically the moment the two App secrets exist.
+# BOT IDENTITY — explicit preference chain (never silent)
+# --------------------------------------------------------
+# 1. GitHub App (secrets SELF_HEAL_APP_ID + SELF_HEAL_APP_PRIVATE_KEY) — target
+#    state: short-lived installation tokens, fine-grained, revocable.
+# 2. User token (secret SELF_HEAL_TOKEN, owner-provisioned) — PRs it opens DO
+#    trigger CI (unlike GITHUB_TOKEN). Active fallback until the App exists;
+#    delete the secret once the App is configured (App takes precedence anyway).
+# 3. Neither set -> the workflow still regenerates and reports drift, but opens
+#    NO PR and does NOT fail: ::warning:: + job summary with the manual-heal
+#    command. Observable, never silent.
+# The resolved identity mode is printed in every run's job summary.
 #
-# OWNER SETUP (one time) — see the PR description for the full guide:
+# OWNER SETUP for the App (one time) — see PR #1244 for the full guide:
 #   1. Create a GitHub App (owner-only): permissions Contents: Read & write,
 #      Pull requests: Read & write. Install it on this repo only.
 #   2. Generate a private key; add repo secrets (Settings -> Secrets -> Actions):
@@ -134,21 +139,24 @@ jobs:
             git --no-pager diff --stat -- "$DEPS" "$INV"
           fi
 
-      - name: Detect whether the self-heal GitHub App is configured
-        id: appcfg
+      - name: Resolve bot identity (App preferred, user token fallback)
+        id: identity
         env:
           APP_ID: ${{ secrets.SELF_HEAL_APP_ID }}
+          USER_TOKEN: ${{ secrets.SELF_HEAL_TOKEN }}
         run: |
           if [ -n "${APP_ID}" ]; then
-            echo "configured=true" >> "$GITHUB_OUTPUT"
+            echo "mode=app" >> "$GITHUB_OUTPUT"
+          elif [ -n "${USER_TOKEN}" ]; then
+            echo "mode=pat" >> "$GITHUB_OUTPUT"
           else
-            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "mode=none" >> "$GITHUB_OUTPUT"
           fi
 
-      # ---- App configured: open (or update) an auto-merged self-heal PR ----
+      # ---- Identity available: open (or update) an auto-merged self-heal PR ----
       - name: Mint GitHub App installation token
         id: app-token
-        if: steps.stage.outputs.status == 'changed' && steps.appcfg.outputs.configured == 'true'
+        if: steps.stage.outputs.status == 'changed' && steps.identity.outputs.mode == 'app'
         uses: actions/create-github-app-token@v1
         with:
           app-id: ${{ secrets.SELF_HEAL_APP_ID }}
@@ -156,10 +164,11 @@ jobs:
 
       - name: Open/update self-heal PR
         id: cpr
-        if: steps.stage.outputs.status == 'changed' && steps.appcfg.outputs.configured == 'true'
+        if: steps.stage.outputs.status == 'changed' && steps.identity.outputs.mode != 'none'
         uses: peter-evans/create-pull-request@v6
         with:
-          token: ${{ steps.app-token.outputs.token }}
+          # App installation token when mode=app (step ran), else the user token.
+          token: ${{ steps.app-token.outputs.token || secrets.SELF_HEAL_TOKEN }}
           base: main
           branch: chore/registry-self-heal
           add-paths: |
@@ -180,22 +189,22 @@ jobs:
             DO NOT EDIT manually.
 
       - name: Enable auto-merge on the self-heal PR
-        if: steps.cpr.outputs.pull-request-number != '' && steps.appcfg.outputs.configured == 'true'
+        if: steps.cpr.outputs.pull-request-number != '' && steps.identity.outputs.mode != 'none'
         env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.SELF_HEAL_TOKEN }}
           PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
         run: gh pr merge "$PR_NUMBER" --auto --squash
 
-      # ---- App NOT configured: report drift loudly, do not fail ----
-      - name: Notice — drift detected but self-heal App not configured
-        if: steps.stage.outputs.status == 'changed' && steps.appcfg.outputs.configured != 'true'
+      # ---- No identity configured: report drift loudly, do not fail ----
+      - name: Notice — drift detected but no self-heal identity configured
+        if: steps.stage.outputs.status == 'changed' && steps.identity.outputs.mode == 'none'
         run: |
           {
-            echo "## ⚠️ Registry drift on main — self-heal GitHub App NOT configured"
+            echo "## ⚠️ Registry drift on main — no self-heal identity configured"
             echo ""
-            echo "Regeneration found drift in the registry projections, but the App"
-            echo "secrets (\`SELF_HEAL_APP_ID\` / \`SELF_HEAL_APP_PRIVATE_KEY\`) are not"
-            echo "set, so no auto-heal PR was opened."
+            echo "Regeneration found drift in the registry projections, but neither the"
+            echo "App secrets (\`SELF_HEAL_APP_ID\` / \`SELF_HEAL_APP_PRIVATE_KEY\`) nor"
+            echo "\`SELF_HEAL_TOKEN\` are set, so no auto-heal PR was opened."
             echo ""
             echo "**Manual heal:** run"
             echo '```'
@@ -203,19 +212,21 @@ jobs:
             echo '```'
             echo "then open a PR with the two changed files (e.g. as in #1242)."
           } >> "$GITHUB_STEP_SUMMARY"
-          echo "::warning::registry drift on main; self-heal App not configured — manual heal required."
+          echo "::warning::registry drift on main; no self-heal identity configured — manual heal required."
 
       - name: Summary
         if: always()
         env:
           EVENT_NAME: ${{ github.event_name }}
           RESULT: ${{ steps.stage.outputs.status || 'aborted-or-error' }}
-          APP: ${{ steps.appcfg.outputs.configured || 'unknown' }}
+          IDENTITY: ${{ steps.identity.outputs.mode || 'unknown' }}
+          HEAL_PR: ${{ steps.cpr.outputs.pull-request-number || '-' }}
         run: |
           {
             echo "# ♻️ Registry deps self-heal"
             echo ""
             echo "- Trigger: \`${EVENT_NAME}\`"
             echo "- Drift: \`${RESULT}\`"
-            echo "- App configured: \`${APP}\`"
+            echo "- Identity mode: \`${IDENTITY}\` (app > pat > none)"
+            echo "- Heal PR: \`${HEAL_PR}\`"
           } >> "$GITHUB_STEP_SUMMARY"
