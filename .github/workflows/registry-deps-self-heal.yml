@@ -5,56 +5,51 @@ name: ♻️ Registry deps self-heal (main)
 #
 # WHY THIS EXISTS
 # ---------------
-# Two dependency-update paths write the workspace manifests with ASYMMETRIC
-# registry handling:
-#   - dependency-family-bump.yml (internal) regenerates deps.json + the PR-9
-#     modernization inventory in the SAME PR (its "Regenerate ..." steps).
-#   - Dependabot bumps a manifest but NEVER regenerates those projections.
-# So every Dependabot PR — and any manual bump — lands a manifest change without
-# refreshing the two deterministic projections:
-#     audit/registry/deps.json
-#     audit/dependencies/dependency-modernization-inventory.json
-# The freshness gates DETECT this drift but do not repair it, and neither is a
-# REQUIRED status check, so the drift can reach `main` ("green but wrong"). This
-# workflow closes the source→projection freshness loop on `main` for ALL bump
-# sources by regenerating the two projections from the live manifests and
-# committing them back. Root finding: audit/p0-rag-runtime-and-version-truth-2026-07-04.md §3.1.
+# Dependabot (and manual bumps) change the workspace manifests but never
+# regenerate the two deterministic registry projections:
+#   audit/registry/deps.json
+#   audit/dependencies/dependency-modernization-inventory.json
+# The freshness gates DETECT the resulting drift but don't repair it, and neither
+# is a REQUIRED status check, so drift can reach main ("green but wrong"). This
+# workflow closes the source->projection loop by regenerating the two projections
+# and landing them via an auto-merged PR. Ref audit §3.1.
 #
-# SCOPE (deliberately minimal — no scope creep)
-# ---------------------------------------------
-#   - Regenerates ONLY the two projections the freshness gates check, via the
-#     SAME governed scripts the family-bump uses:
-#       npm run registry:build:deps                  -> audit/registry/deps.json
-#       npm run audit:pr-9-modernization-inventory   -> audit/dependencies/dependency-modernization-inventory.json
-#   - Does NOT regenerate canonical.json / REPO_MAP.md — separate blast radius:
-#     a deps bump must not drag the unified L3 projection (memory
-#     feedback_canonical_json_unified_projection_separate_blast_radius).
-#   - Idempotent: a run on an already-fresh tree stages nothing -> no commit, no noise.
-#   - Scope-guarded: fails loud if regeneration touched ANY file other than the
-#     two projections (mirrors dependency-family-bump.yml's scope-dirty gate).
-#     No silent fallback — CLAUDE.md "No silent fallback".
+# PUSH MODEL — WHY A GITHUB APP (not a direct push, not GITHUB_TOKEN)
+# ------------------------------------------------------------------
+# main is protected with enforce_admins:true + 13 required status checks, so a
+# DIRECT push is rejected (proven: run 28922013091 -> "GH006: protected branch
+# hook declined"). A PR is the only way in. But a PR opened with the default
+# GITHUB_TOKEN does NOT trigger CI (GitHub anti-recursion rule), so its required
+# checks never run and it can never merge. The fix is a GitHub App identity: a PR
+# opened with an App installation token DOES trigger CI, its freshness gates go
+# GREEN (the PR carries the fresh projections), the 13 required checks pass
+# (JSON-only diff), and native auto-merge lands it — no branch-protection bypass
+# needed, least privilege.
 #
-# PUSH MODEL
-# ----------
-# `main` has no "require a pull request" rule (branch protection
-# required_pull_request_reviews absent) and no push restrictions, so a direct
-# push with the default GITHUB_TOKEN (contents: write) is permitted. The commit
-# touches only the two projection files (NOT in this workflow's trigger paths),
-# and commits made with GITHUB_TOKEN do not spawn new workflow runs, so it
-# cannot loop. If a future branch-protection change rejects the push, this job
-# FAILS LOUDLY — switch to a peter-evans/create-pull-request self-heal PR
-# (canon-sync.yml pattern; a registry-only PR passes the freshness gates itself).
-# >>> FIRST-RUN VERIFICATION: dispatch this workflow once on main and confirm the
-#     push is accepted before relying on it (runtime-verification doctrine).
+# BOT IDENTITY — explicit preference chain (never silent)
+# --------------------------------------------------------
+# 1. GitHub App (secrets SELF_HEAL_APP_ID + SELF_HEAL_APP_PRIVATE_KEY) — target
+#    state: short-lived installation tokens, fine-grained, revocable.
+# 2. User token (secret SELF_HEAL_TOKEN, owner-provisioned) — PRs it opens DO
+#    trigger CI (unlike GITHUB_TOKEN). Active fallback until the App exists;
+#    delete the secret once the App is configured (App takes precedence anyway).
+# 3. Neither set -> the workflow still regenerates and reports drift, but opens
+#    NO PR and does NOT fail: ::warning:: + job summary with the manual-heal
+#    command. Observable, never silent.
+# The resolved identity mode is printed in every run's job summary.
 #
-# SUPPLY-CHAIN
-# ------------
-# Runs on `main` AFTER human review of the merge; `npm ci --ignore-scripts`
-# neutralizes package lifecycle scripts. The builders are pure fs/crypto and
-# never execute the bumped dependency's code.
+# OWNER SETUP for the App (one time) — see PR #1244 for the full guide:
+#   1. Create a GitHub App (owner-only): permissions Contents: Read & write,
+#      Pull requests: Read & write. Install it on this repo only.
+#   2. Generate a private key; add repo secrets (Settings -> Secrets -> Actions):
+#        SELF_HEAL_APP_ID          = the App's numeric App ID
+#        SELF_HEAL_APP_PRIVATE_KEY = the generated .pem contents
+#   3. Ensure "Allow auto-merge" is enabled in repo settings (already used here).
 #
-# WHERE IT RUNS: `runs-on: ubuntu-latest` = GitHub CLOUD runner, never the DEV
-# machine. Works with DEV off (proof: diag-canon-slugs-export.yml, same runner).
+# SCOPE: only the two projections (NOT canonical.json — separate blast radius).
+# SUPPLY-CHAIN: npm ci --ignore-scripts; builders are pure fs/crypto, never run
+# the bumped dependency's code. Runs on main after human review of the merge.
+# WHERE: runs-on ubuntu-latest = GitHub cloud runner (works with DEV off).
 
 on:
   push:
@@ -77,18 +72,18 @@ on:
     - cron: "30 2 * * *"
   workflow_dispatch:
 
-# Least privilege: only what the direct push needs.
+# Least privilege: the workflow's own token only reads (checkout). All writes
+# (open PR, enable auto-merge) use the short-lived GitHub App installation token.
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  # Serialize self-heal runs so two cannot race on the same commit.
   group: registry-deps-self-heal
   cancel-in-progress: false
 
 jobs:
   self-heal:
-    name: Regenerate deps.json + modernization inventory on main
+    name: Regenerate deps.json + modernization inventory, open auto-merge PR
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -96,7 +91,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
-          persist-credentials: true
 
       - name: Setup Node.js 24
         uses: actions/setup-node@v4
@@ -113,14 +107,13 @@ jobs:
       - name: Regenerate PR-9 modernization inventory
         run: npm run audit:pr-9-modernization-inventory
 
-      - name: Scope-guard + stage the two projections
+      - name: Scope-guard + detect drift
         id: stage
         run: |
           set -euo pipefail
           DEPS="audit/registry/deps.json"
           INV="audit/dependencies/dependency-modernization-inventory.json"
 
-          # Every tracked file changed by regeneration (working tree vs HEAD).
           CHANGED="$(git diff --name-only HEAD -- . | sort -u)"
           UNEXPECTED="$(printf '%s\n' "$CHANGED" \
             | grep -vE '^(audit/registry/deps\.json|audit/dependencies/dependency-modernization-inventory\.json)$' \
@@ -134,52 +127,106 @@ jobs:
               printf '%s\n' "$UNEXPECTED"
               echo '```'
             } >> "$GITHUB_STEP_SUMMARY"
-            echo "::error::self-heal changed files outside the two allowlisted projections — aborting (no commit)."
+            echo "::error::self-heal changed files outside the two allowlisted projections — aborting."
             exit 1
           fi
 
-          git add -- "$DEPS" "$INV"
-          if git diff --cached --quiet -- "$DEPS" "$INV"; then
+          if git diff --quiet -- "$DEPS" "$INV"; then
             echo "status=identical" >> "$GITHUB_OUTPUT"
             echo "✓ deps.json + inventory already fresh — idempotent no-op."
           else
             echo "status=changed" >> "$GITHUB_OUTPUT"
-            git --no-pager diff --cached --stat -- "$DEPS" "$INV"
+            git --no-pager diff --stat -- "$DEPS" "$INV"
           fi
 
-      - name: Commit + push to main
-        if: steps.stage.outputs.status == 'changed'
-        # Hardening: trusted GitHub context values are passed via env (never
-        # interpolated directly into the shell) per workflow-injection guidance.
+      - name: Resolve bot identity (App preferred, user token fallback)
+        id: identity
         env:
-          RUN_ID: ${{ github.run_id }}
-          EVENT_NAME: ${{ github.event_name }}
-          COMMIT_SHA: ${{ github.sha }}
+          APP_ID: ${{ secrets.SELF_HEAL_APP_ID }}
+          USER_TOKEN: ${{ secrets.SELF_HEAL_TOKEN }}
         run: |
-          set -euo pipefail
-          git config user.name "automecanik-bot"
-          git config user.email "automecanik-bot@users.noreply.github.com"
-          git commit \
-            -m "chore(registry): self-heal deps.json + modernization inventory" \
-            -m "Auto-generated by .github/workflows/registry-deps-self-heal.yml (run ${RUN_ID})." \
-            -m "Regenerated from live workspace manifests via 'npm run registry:build:deps' + 'npm run audit:pr-9-modernization-inventory'." \
-            -m "Trigger: ${EVENT_NAME} @ ${COMMIT_SHA}." \
-            -m "DO NOT EDIT manually — projections derived from package.json (ADR-058/062)."
-          # Rebase onto the latest main in case it advanced since checkout.
-          git pull --rebase origin main
-          git push origin HEAD:main
+          if [ -n "${APP_ID}" ]; then
+            echo "mode=app" >> "$GITHUB_OUTPUT"
+          elif [ -n "${USER_TOKEN}" ]; then
+            echo "mode=pat" >> "$GITHUB_OUTPUT"
+          else
+            echo "mode=none" >> "$GITHUB_OUTPUT"
+          fi
+
+      # ---- Identity available: open (or update) an auto-merged self-heal PR ----
+      - name: Mint GitHub App installation token
+        id: app-token
+        if: steps.stage.outputs.status == 'changed' && steps.identity.outputs.mode == 'app'
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.SELF_HEAL_APP_ID }}
+          private-key: ${{ secrets.SELF_HEAL_APP_PRIVATE_KEY }}
+
+      - name: Open/update self-heal PR
+        id: cpr
+        if: steps.stage.outputs.status == 'changed' && steps.identity.outputs.mode != 'none'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          # App installation token when mode=app (step ran), else the user token.
+          token: ${{ steps.app-token.outputs.token || secrets.SELF_HEAL_TOKEN }}
+          base: main
+          branch: chore/registry-self-heal
+          add-paths: |
+            audit/registry/deps.json
+            audit/dependencies/dependency-modernization-inventory.json
+          commit-message: "chore(registry): self-heal deps.json + modernization inventory"
+          title: "chore(registry): self-heal deps.json + modernization inventory"
+          labels: dependencies
+          body: |
+            Auto-generated by `.github/workflows/registry-deps-self-heal.yml`.
+
+            Regenerates the two deterministic registry projections from the live
+            workspace manifests (`npm run registry:build:deps` +
+            `npm run audit:pr-9-modernization-inventory`) after a dependency bump
+            landed on main without them. Deterministic, scope-guarded (2 files),
+            derived from `package.json` (ADR-058/062) — safe to auto-merge.
+
+            DO NOT EDIT manually.
+
+      - name: Enable auto-merge on the self-heal PR
+        if: steps.cpr.outputs.pull-request-number != '' && steps.identity.outputs.mode != 'none'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.SELF_HEAL_TOKEN }}
+          PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
+        run: gh pr merge "$PR_NUMBER" --auto --squash
+
+      # ---- No identity configured: report drift loudly, do not fail ----
+      - name: Notice — drift detected but no self-heal identity configured
+        if: steps.stage.outputs.status == 'changed' && steps.identity.outputs.mode == 'none'
+        run: |
+          {
+            echo "## ⚠️ Registry drift on main — no self-heal identity configured"
+            echo ""
+            echo "Regeneration found drift in the registry projections, but neither the"
+            echo "App secrets (\`SELF_HEAL_APP_ID\` / \`SELF_HEAL_APP_PRIVATE_KEY\`) nor"
+            echo "\`SELF_HEAL_TOKEN\` are set, so no auto-heal PR was opened."
+            echo ""
+            echo "**Manual heal:** run"
+            echo '```'
+            echo "npm run registry:build:deps && npm run audit:pr-9-modernization-inventory"
+            echo '```'
+            echo "then open a PR with the two changed files (e.g. as in #1242)."
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "::warning::registry drift on main; no self-heal identity configured — manual heal required."
 
       - name: Summary
         if: always()
         env:
           EVENT_NAME: ${{ github.event_name }}
           RESULT: ${{ steps.stage.outputs.status || 'aborted-or-error' }}
+          IDENTITY: ${{ steps.identity.outputs.mode || 'unknown' }}
+          HEAL_PR: ${{ steps.cpr.outputs.pull-request-number || '-' }}
         run: |
           {
             echo "# ♻️ Registry deps self-heal"
             echo ""
             echo "- Trigger: \`${EVENT_NAME}\`"
-            echo "- Result: \`${RESULT}\`"
-            echo ""
-            echo "_Regenerates audit/registry/deps.json + audit/dependencies/dependency-modernization-inventory.json from the live manifests. Idempotent, scope-guarded, direct-push to main (GITHUB_TOKEN)._"
+            echo "- Drift: \`${RESULT}\`"
+            echo "- Identity mode: \`${IDENTITY}\` (app > pat > none)"
+            echo "- Heal PR: \`${HEAL_PR}\`"
           } >> "$GITHUB_STEP_SUMMARY"
