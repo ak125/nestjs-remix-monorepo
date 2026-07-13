@@ -1,5 +1,9 @@
 import { renderHook, act } from "@testing-library/react";
-import { type MouseEvent, type MutableRefObject } from "react";
+import {
+  type MouseEvent,
+  type MutableRefObject,
+  type PointerEvent,
+} from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 import { useNativeDialog } from "~/hooks/useNativeDialog";
@@ -83,17 +87,40 @@ describe("useNativeDialog", () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it("clic sur le backdrop (cible = l'élément dialog) ferme", () => {
+  it("clic sur le backdrop (pointerdown + click ciblent le dialog) ferme", () => {
     const { result } = renderHook(() => useNativeDialog());
     const dialog = attachDialog(result.current.ref, true);
 
-    act(() =>
+    act(() => {
+      result.current.dialogProps.onPointerDown({
+        target: dialog,
+      } as unknown as PointerEvent<HTMLDialogElement>);
       result.current.dialogProps.onClick({
         target: dialog,
-      } as unknown as MouseEvent<HTMLDialogElement>),
-    );
+      } as unknown as MouseEvent<HTMLDialogElement>);
+    });
 
     expect(close).toHaveBeenCalledTimes(1);
+  });
+
+  it("geste commencé DANS le contenu et relâché sur le backdrop ne ferme pas (sélection de texte)", () => {
+    // mousedown enfant + mouseup backdrop → le navigateur retarget le click
+    // sur l'ancêtre commun (le dialog) ; le garde pointerdown doit l'ignorer.
+    const { result } = renderHook(() => useNativeDialog());
+    const dialog = attachDialog(result.current.ref, true);
+    const child = document.createElement("span");
+    dialog.appendChild(child);
+
+    act(() => {
+      result.current.dialogProps.onPointerDown({
+        target: child,
+      } as unknown as PointerEvent<HTMLDialogElement>);
+      result.current.dialogProps.onClick({
+        target: dialog,
+      } as unknown as MouseEvent<HTMLDialogElement>);
+    });
+
+    expect(close).not.toHaveBeenCalled();
   });
 
   it("clic à l'intérieur (cible ≠ dialog) ne ferme pas", () => {
