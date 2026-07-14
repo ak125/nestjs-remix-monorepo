@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { memo, useRef, useState } from "react";
 import { useAiContent } from "~/hooks/useAiContent";
 import { logger } from "~/utils/logger";
 
@@ -6,6 +6,11 @@ interface SEOMetaGeneratorProps {
   initialPageTitle?: string;
   onGenerated?: (meta: { title: string; description: string }) => void;
   className?: string;
+}
+
+interface KeywordRow {
+  id: number;
+  value: string;
 }
 
 export const SEOMetaGenerator = memo(function SEOMetaGenerator({
@@ -18,22 +23,27 @@ export const SEOMetaGenerator = memo(function SEOMetaGenerator({
   const [pageTitle, setPageTitle] = useState(initialPageTitle);
   const [pageUrl, setPageUrl] = useState("");
   const [targetKeyword, setTargetKeyword] = useState("");
-  const [keywords, setKeywords] = useState<string[]>([""]);
+  const keywordIdRef = useRef(0);
+  const [keywords, setKeywords] = useState<KeywordRow[]>([
+    { id: 0, value: "" },
+  ]);
   const [businessType, setBusinessType] = useState("");
   const [generatedMeta, setGeneratedMeta] = useState<string | null>(null);
 
   const handleAddKeyword = () => {
-    setKeywords([...keywords, ""]);
+    setKeywords([...keywords, { id: ++keywordIdRef.current, value: "" }]);
   };
 
-  const handleRemoveKeyword = (index: number) => {
-    setKeywords(keywords.filter((_, i) => i !== index));
+  const handleRemoveKeyword = (id: number) => {
+    setKeywords(keywords.filter((keyword) => keyword.id !== id));
   };
 
-  const handleKeywordChange = (index: number, value: string) => {
-    const newKeywords = [...keywords];
-    newKeywords[index] = value;
-    setKeywords(newKeywords);
+  const handleKeywordChange = (id: number, value: string) => {
+    setKeywords(
+      keywords.map((keyword) =>
+        keyword.id === id ? { ...keyword, value } : keyword,
+      ),
+    );
   };
 
   const handleGenerate = async () => {
@@ -44,7 +54,7 @@ export const SEOMetaGenerator = memo(function SEOMetaGenerator({
         pageTitle,
         pageUrl: pageUrl || undefined,
         targetKeyword: targetKeyword || undefined,
-        keywords: keywords.filter((k) => k.trim()),
+        keywords: keywords.filter((k) => k.value.trim()).map((k) => k.value),
         businessType: businessType || undefined,
       });
 
@@ -122,12 +132,14 @@ export const SEOMetaGenerator = memo(function SEOMetaGenerator({
             Mots-clés secondaires
           </label>
           <div className="space-y-2">
-            {keywords.map((keyword, index) => (
-              <div key={index} className="flex gap-2">
+            {keywords.map((keyword) => (
+              <div key={keyword.id} className="flex gap-2">
                 <input
                   type="text"
-                  value={keyword}
-                  onChange={(e) => handleKeywordChange(index, e.target.value)}
+                  value={keyword.value}
+                  onChange={(e) =>
+                    handleKeywordChange(keyword.id, e.target.value)
+                  }
                   placeholder="Ex: automatisation, robinet industriel"
                   className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   disabled={isLoading}
@@ -135,7 +147,7 @@ export const SEOMetaGenerator = memo(function SEOMetaGenerator({
                 {keywords.length > 1 && (
                   <button
                     type="button"
-                    onClick={() => handleRemoveKeyword(index)}
+                    onClick={() => handleRemoveKeyword(keyword.id)}
                     className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg"
                     disabled={isLoading}
                   >
