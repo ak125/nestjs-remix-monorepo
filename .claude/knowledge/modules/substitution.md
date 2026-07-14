@@ -2,11 +2,12 @@
 module: substitution
 sources:
 - backend/src/modules/substitution
-last_scan: '2026-07-02'
+last_scan: '2026-07-14'
 primary_files:
 - backend/src/modules/substitution/controllers/substitution.controller.ts
 - backend/src/modules/substitution/services/intent-extractor.service.ts
 - backend/src/modules/substitution/services/substitution-logger.service.ts
+- backend/src/modules/substitution/services/substitution.service.light-mode.test.ts
 - backend/src/modules/substitution/services/substitution.service.ts
 - backend/src/modules/substitution/substitution.module.ts
 - backend/src/modules/substitution/types/substitution.types.ts

@@ -205,8 +205,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const [apiData, substitutionResponse] = await Promise.all([
       fetchGammePageData(gammeId, { signal: controller.signal }),
       // 🔄 Substitution API pour données enrichies (412/410 handling)
+      // ⚡ vehicleOptions=false : on ne lit que httpStatus/type et on jette `lock`
+      // du payload client (plus bas) → mode léger côté serveur pour éviter le
+      // parse ~1,1 Mo (lock.options, ~5 300 motorisations). Audit LCP §2A.
       fetch(
-        `${API_URL}/api/substitution/check?url=${encodeURIComponent(substitutionPath)}`,
+        `${API_URL}/api/substitution/check?url=${encodeURIComponent(substitutionPath)}&vehicleOptions=false`,
         {
           signal: subController.signal,
         },

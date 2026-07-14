@@ -12,6 +12,7 @@ import {
   LockType,
   SubstitutionLock,
   SubstitutionDataResponse,
+  CheckSubstitutionOptions,
 } from '../types/substitution.types';
 import { getErrorMessage } from '@common/utils/error.utils';
 
@@ -49,7 +50,15 @@ export class SubstitutionService extends SupabaseBaseService {
   async checkSubstitution(
     url: string,
     userAgent: string = '',
+    opts: CheckSubstitutionOptions = {},
   ): Promise<SubstitutionResult> {
+    // ⚡ TTFB (audit LCP 2026-07-14 §2A) : le consommateur SSR du hub gamme
+    // (pieces.$slug.tsx) ne lit que httpStatus/type et jette le `lock` du payload
+    // client. En mode léger (includeVehicleOptions:false) on n'embarque pas la
+    // liste des motorisations compatibles dans lock.options (jusqu'à ~5 300 items
+    // ≈ 1,1 Mo → parse main-thread SSR). httpStatus/type/known restent identiques.
+    // Défaut = true (rétro-compatible ; aucun autre appelant).
+    const includeVehicleOptions = opts.includeVehicleOptions !== false;
     const startTime = Date.now();
 
     // 1. Détecter les bots suspects
@@ -66,7 +75,11 @@ export class SubstitutionService extends SupabaseBaseService {
     const rpcData = await this.fetchSubstitutionData(intent);
 
     // 4. Déterminer le type de substitution
-    const result = this.determineSubstitution(intent, rpcData);
+    const result = this.determineSubstitution(
+      intent,
+      rpcData,
+      includeVehicleOptions,
+    );
 
     // 5. Logger async (ne bloque pas la réponse)
     this.substitutionLogger.logAsync({
@@ -142,6 +155,7 @@ export class SubstitutionService extends SupabaseBaseService {
   private determineSubstitution(
     intent: ExtractedIntent,
     data: SubstitutionDataResponse,
+    includeVehicleOptions: boolean = true,
   ): SubstitutionResult {
     // CASE 1: Gamme non trouvée → 404
     if (!data._meta?.gamme_found) {
@@ -179,7 +193,12 @@ export class SubstitutionService extends SupabaseBaseService {
     // CASE 3: Véhicule incomplet → 200 avec Lock (page SEO enrichie)
     // V3: Inclut compatibleGammes dans le résultat
     if (!intent.typeId && intent.gammeId) {
-      const lock = this.buildLock('vehicle', intent, data);
+      const lock = this.buildLock(
+        'vehicle',
+        intent,
+        data,
+        includeVehicleOptions,
+      );
       const gammeName = data.gamme?.pg_name || 'Pièces';
 
       return this.buildResult(
@@ -229,6 +248,7 @@ export class SubstitutionService extends SupabaseBaseService {
     type: LockType,
     intent: ExtractedIntent,
     data: SubstitutionDataResponse,
+    includeVehicleOptions: boolean = true,
   ): SubstitutionLock {
     const lock: SubstitutionLock = {
       type,
@@ -248,7 +268,9 @@ export class SubstitutionService extends SupabaseBaseService {
 
     // Remplir les options de déblocage (motorisations compatibles)
     // V3: Inclut les détails véhicule dans metadata
-    if (type === 'vehicle' && data.compatible_motors) {
+    // ⚡ Skippé en mode léger (SSR status-only) : c'est la liste lourde (~5 300
+    // items ≈ 1,1 Mo) et elle n'a aucun consommateur (le loader jette `lock`).
+    if (type === 'vehicle' && includeVehicleOptions && data.compatible_motors) {
       lock.options = data.compatible_motors.map((motor) => ({
         id: motor.type_id,
         label: motor.type_name,
