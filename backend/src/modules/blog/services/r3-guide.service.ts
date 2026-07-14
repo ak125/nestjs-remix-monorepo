@@ -38,8 +38,16 @@ import { InternalLinkingService } from '../../seo/internal-linking.service';
  *  v2 (2026-05-24) : compatible vehicles capped à 24 (LCP /blog-pieces-auto/conseils/* — voir PR LCP-R3-PR1). */
 const R3_CACHE_PREFIX = 'r3-guide:v2:';
 
-/** TTL fresh window (seconds) — CacheService utilise ioredis SETEX en secondes. */
-const R3_CACHE_TTL_SECONDS = 30 * 60;
+/** TTL fresh window (seconds) — CacheService utilise ioredis SETEX en secondes.
+ *  24 h (audit LCP 2026-07-14 §2B) : /blog-pieces-auto/conseils/* = 43 URLs à
+ *  très faible trafic (~1 hit/URL/2 j) — à 30 min quasi chaque visite humaine
+ *  tombait en cache-miss (+~450 ms compute, 9-fanout Supabase) → TTFB p75 ~2,1 s.
+ *  Contenu éditorial (change rarement).
+ *  ⚠️ L'invalidation @OnEvent('article.published'|'article.updated') existe mais
+ *  AUCUN émetteur n'est câblé (dormant) → le TTL est aujourd'hui le SEUL mécanisme
+ *  de fraîcheur : 24 h est le plafond de staleness sur une édition de guide.
+ *  Follow-up recommandé : câbler l'émetteur dans les endpoints admin publish/update. */
+const R3_CACHE_TTL_SECONDS = 24 * 60 * 60;
 
 @Injectable()
 export class R3GuideService {
