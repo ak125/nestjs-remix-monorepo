@@ -14,6 +14,10 @@ import { startTransition } from "react";
 import { hydrateRoot } from "react-dom/client";
 import { HydratedRouter } from "react-router/dom";
 import {
+  captureLandingAttribution,
+  sendLandingAttribution,
+} from "~/utils/attribution-beacon.client";
+import {
   installChunkReloadGuard,
   isChunkReloadRecoveryActive,
 } from "~/utils/chunk-reload.client";
@@ -104,6 +108,23 @@ startTransition(() => {
   // feedback_no_external_canary_when_internal_observability_exists).
   startRuntimeErrorReporter();
 });
+
+// First-party landing attribution (first-touch) — cutover cache HTML (PR A).
+// CAPTURE the landing signals SYNCHRONOUSLY here, before any Remix client
+// navigation can change location / drop UTM params, then DELIVER the snapshot
+// during idle so the beacon POST never competes with LCP / INP. Sending a
+// snapshot (not re-reading location at send time) guarantees we never record
+// the second page as the landing. The server records it once per session on
+// POST (Set-Cookie there is safe — POST is never CF-cached), keeping the HTML
+// GET cookie-free and edge-cacheable. See ~/utils/attribution-beacon.client.
+const landingSnapshot = captureLandingAttribution();
+if (typeof window.requestIdleCallback === "function") {
+  window.requestIdleCallback(() => sendLandingAttribution(landingSnapshot), {
+    timeout: 5000,
+  });
+} else {
+  setTimeout(() => sendLandingAttribution(landingSnapshot), 2000);
+}
 
 // Lazy observability init — defers ~150 KB of Sentry SDK off the critical
 // path. Body unchanged; scheduling is now done via the platform scheduler

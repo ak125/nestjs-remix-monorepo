@@ -398,6 +398,17 @@ export class OrdersController {
         }
         await sb.from('___xtr_order').update(patch).eq('ord_id', orderId);
       }
+      // Observabilité seule (aucun changement de flux). `attribution_capture_missing`
+      // = présence/absence d'attribution sur une commande AUTHENTIFIÉE. Le ratio
+      // absent/(present+absent) sur ces commandes est un indicateur de perte
+      // GLOBALE de capture d'attribution — PAS une mesure causale « no-JS » : une
+      // absence peut venir d'un beacon non livré, d'un cookie bloqué, d'une
+      // session expirée, d'une nav avant capture, d'une erreur réseau, etc.
+      if (orderId) {
+        this.logger.log(
+          `[attribution_capture] scope=auth_order landing=${landing ? 'present' : 'absent'}`,
+        );
+      }
       let resumeToken: string | undefined;
       if (orderId) {
         resumeToken = await this.generateResumeToken(orderId as string);
@@ -589,6 +600,18 @@ export class OrdersController {
           patch.landing_first_seen_at = landing.firstSeenAt;
         }
         await sb.from('___xtr_order').update(patch).eq('ord_id', finalOrderId);
+      }
+      // Observabilité seule (aucun changement de flux). Les commandes GUEST sont
+      // systématiquement `absent` : `req.session` est régénéré plus haut
+      // (promisifySessionRegenerate) AVANT ce point → EXCLUES du taux
+      // `attribution_capture_missing` (sinon elles gonflent artificiellement la
+      // perte). Perte structurelle pré-existante, non régressée / non corrigée
+      // par PR A (adjacent SEV1 tunnel paiement). Loggé pour complétude, marqué
+      // exclu — `landing` est ici toujours absent par construction.
+      if (finalOrderId) {
+        this.logger.log(
+          `[attribution_capture] scope=guest_order excluded=session_regenerate`,
+        );
       }
       // Générer resume token
       let resumeToken: string | undefined;
