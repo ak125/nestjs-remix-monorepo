@@ -376,8 +376,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
           name="viewport"
           content="width=device-width, initial-scale=1, viewport-fit=cover"
         />
-        <Meta />
+        {/* LCP: <Links/> (CSS render-blocking + font/module preloads) AVANT <Meta/>.
+            Invariant : aucun bloc JSON-LD volumineux (script:ld+json émis par meta()
+            — Product/FAQPage, ~18 Ko sur R2) ne doit précéder la découverte du CSS
+            bloquant. charSet/viewport restent en tête (parse encoding). Ne pas
+            revenir à l'ordre RR par défaut Meta→Links.
+            Ref: audit/lcp-cwv-mobile-3-groups-root-cause-2026-07-14.md §3A */}
         <Links />
+        <Meta />
         {/* Runtime ENV exposed to the browser. Must run BEFORE entry.client.tsx
             so Sentry can pick up the DSN at hydration. JSON.stringify is safe
             for this minimal set (no user-controlled keys). */}
