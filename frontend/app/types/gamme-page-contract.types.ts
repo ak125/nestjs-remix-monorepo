@@ -212,6 +212,11 @@ export interface GammePageBuyingGuide {
 
 export interface GammePageSubstitution {
   httpStatus: number;
+  /**
+   * ⚠️ Jamais présent côté client sur pieces.$slug : le loader strippe `lock`
+   * avant sérialisation (~540KB d'options wizard → input delay INP mobile).
+   * Ne lire ce champ que côté serveur (loader), jamais depuis useLoaderData.
+   */
   lock?: {
     type: "vehicle" | "technology" | "ambiguity" | "precision";
     missing: string;
