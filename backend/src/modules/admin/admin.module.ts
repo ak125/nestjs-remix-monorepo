@@ -75,7 +75,7 @@ import {
 } from './services/buying-guide'; // 📖 RAG enrichment sub-services
 // R1ContentPipelineService SUPPRIME — pipeline Groq remplace par skills /content-gen
 // ContentRefreshService SUPPRIME — pipeline auto remplace par skills /content-gen
-import { ConseilEnricherService } from './services/conseil-enricher.service'; // 🔄 R3 Conseils enricher
+// ConseilEnricherService SUPPRIMÉ — producteur RAG→__seo_gamme_conseil retiré (B2/B6, ADR-027 §Correction + ADR-080)
 import { CanonObservabilityService } from './services/canon-observability.service'; // 🛡️ Canon violation Sentry emitter
 import { PageBriefService } from './services/page-brief.service'; // 📋 Page Briefs CRUD + overlap
 import { SeoBriefService } from './services/seo-brief.service'; // 🧱 D1 — WIKI-driven evidence brief (ADR-059/090)
@@ -269,7 +269,6 @@ import { SeoControlRefreshProcessor } from './processors/seo-control-refresh.pro
     BuyingGuideSectionExtractor, // 📖 Markdown section extraction
     BuyingGuideQualityGatesService, // 📖 Quality validation gates
     BuyingGuideDbService, // 📖 DB operations (anti-regression)
-    ConseilEnricherService, // 🔄 R3 Conseils S1-S8 enricher
     CanonObservabilityService, // 🛡️ Canon violation Sentry emitter (R3 PR-E)
     PageBriefService, // 📋 Page Briefs CRUD + overlap detection
     SeoBriefService, // 🧱 D1 — WIKI-driven evidence brief generator (flag SEO_BRIEF_WIKI_ENABLED, OFF)
