@@ -92,9 +92,6 @@ jest.mock('@database/services/supabase-base.service', () => ({
 jest.mock('./buying-guide-enricher.service', () => ({
   BuyingGuideEnricherService: class {},
 }));
-jest.mock('./conseil-enricher.service', () => ({
-  ConseilEnricherService: class {},
-}));
 jest.mock('./r2-enricher.service', () => ({
   R2EnricherService: class {},
 }));
@@ -366,5 +363,38 @@ describe('ExecutionRouterService — regression smoke', () => {
 
     expect(result.results[0].status).toBe('success');
     expect(enrichSingle).toHaveBeenCalledWith(12345);
+  });
+});
+
+describe('ExecutionRouterService — R3_CONSEILS executable path removed (B2/B6, ADR-027 §Correction)', () => {
+  beforeEach(resetMocks);
+
+  it('8. R3_CONSEILS non-dry dispatch → explicit failed, enricher never called', async () => {
+    setTable('pieces_gamme', {
+      single: () => Promise.resolve({ data: null, error: null }),
+    });
+    const enrichSingle = jest.fn();
+    const service = makeService({
+      ConseilEnricherService: { enrichSingle },
+    });
+
+    const result = await service.execute({
+      roleId: 'R3_CONSEILS',
+      targetIds: ['402'],
+      dryRun: false,
+    });
+
+    // Same explicit-fail surface as a deleted-registry role (R3_GUIDE precedent):
+    // errorResult → blocked_no_write + per-target failed, never a silent skip.
+    expect(result.mode).toBe('blocked_no_write');
+    expect(result.results[0].status).toBe('failed');
+    expect(String((result.results[0] as { error?: string }).error)).toMatch(
+      /No registry entry for role: R3_CONSEILS/,
+    );
+    expect(enrichSingle).not.toHaveBeenCalled();
+  });
+
+  it('9. registry has no executable R3_CONSEILS entry (RAG producer removed)', () => {
+    expect(EXECUTION_REGISTRY[RoleId.R3_CONSEILS]).toBeUndefined();
   });
 });
