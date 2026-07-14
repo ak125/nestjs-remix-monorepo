@@ -61,6 +61,10 @@ export class SubstitutionController {
   async checkSubstitution(
     @Query('url') url: string,
     @Headers('user-agent') userAgent: string,
+    // ⚡ `vehicleOptions=false` → projection status-only (sans lock.options, la
+    // liste lourde des motorisations). Défaut = full (rétro-compatible).
+    // Audit LCP 2026-07-14 §2A.
+    @Query('vehicleOptions') vehicleOptions?: string,
   ): Promise<SubstitutionResult> {
     if (!url) {
       return {
@@ -78,7 +82,9 @@ export class SubstitutionController {
     }
 
     this.logger.debug(`Checking substitution for: ${url}`);
-    return this.substitutionService.checkSubstitution(url, userAgent || '');
+    return this.substitutionService.checkSubstitution(url, userAgent || '', {
+      includeVehicleOptions: vehicleOptions !== 'false',
+    });
   }
 
   /**

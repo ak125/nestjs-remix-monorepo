@@ -102,6 +102,16 @@ export interface SubstitutionLock {
 }
 
 /**
+ * Options de checkSubstitution.
+ * `includeVehicleOptions` (défaut true) : embarquer la liste des motorisations
+ * compatibles dans `lock.options`. Le consommateur SSR status-only la met à
+ * false pour éviter le payload ~1,1 Mo (audit LCP 2026-07-14 §2A).
+ */
+export interface CheckSubstitutionOptions {
+  includeVehicleOptions?: boolean;
+}
+
+/**
  * Resultat de la recherche de substitution
  */
 export interface SubstitutionResult {
