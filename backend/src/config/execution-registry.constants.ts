@@ -71,26 +71,15 @@ export const EXECUTION_REGISTRY: Record<string, ExecutionRegistryEntry> = {
   // (buying guides) — see PAGE_TYPE_TO_ROLE remap. Closes the matrix anomaly
   // `deprecated_but_in_registry` flagged by OperatingMatrixService.
 
-  [RoleId.R3_CONSEILS]: {
-    roleId: RoleId.R3_CONSEILS,
-    pageType: 'R3_conseils',
-    contractSchemaRef: 'page-contract-r3.schema',
-    enricherServiceKey: 'ConseilEnricherService',
-    agentFiles: ['conseil-batch.md', 'keyword-planner.md'],
-    promptChain: ['conseil_enrichment'],
-    allowedModes: [
-      'create',
-      'regenerate',
-      'refresh_partial',
-      'refresh_full',
-      'repair',
-      'qa_only',
-    ],
-    defaultWriteMode: 'draft_write',
-    stopPolicy: { maxRetries: 2, timeoutMs: 180_000 },
-    escalationPolicy: { onGateFail: 'block', onTimeout: 'hold' },
-    requiredUpstreamPhases: ['phase16_admissibility'],
-  },
+  // R3_CONSEILS: executable entry removed (B2/B6 — ADR-027 §Correction 2026-07-07 + ADR-080).
+  // ConseilEnricherService was a RAG→served-content producer (RAG doc →
+  // __seo_gamme_conseil + sg_descrip_draft); RAG has zero content authority, so the
+  // whole executable path is gone (service deleted, no replacement wired here).
+  // Same surface as the R3_GUIDE precedent above: any dispatch of R3_CONSEILS now
+  // fails explicitly with "No registry entry for role" — never a silent skip.
+  // Existing __seo_gamme_conseil rows stay served statically (readers untouched);
+  // the future canonical producer is WIKI→projection (separate, owner-gated).
+  // Do NOT re-add a RAG-fed entry.
 
   [RoleId.R4_REFERENCE]: {
     roleId: RoleId.R4_REFERENCE,

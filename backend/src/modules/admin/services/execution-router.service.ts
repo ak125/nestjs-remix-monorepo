@@ -20,7 +20,6 @@ import { FeatureFlagsService } from '../../../config/feature-flags.service';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { ConfigService } from '@nestjs/config';
 import { BuyingGuideEnricherService } from '../services/buying-guide-enricher.service';
-import { ConseilEnricherService } from '../services/conseil-enricher.service';
 import { R2EnricherService } from '../services/r2-enricher.service';
 import { R8VehicleEnricherService } from '../services/r8-vehicle-enricher.service';
 import { R7BrandEnricherService } from '../services/r7-brand-enricher.service';
@@ -89,9 +88,6 @@ export class ExecutionRouterService extends SupabaseBaseService {
     super(configService);
     this.serviceClassMap = {
       BuyingGuideEnricherService: BuyingGuideEnricherService as unknown as new (
-        ...args: unknown[]
-      ) => unknown,
-      ConseilEnricherService: ConseilEnricherService as unknown as new (
         ...args: unknown[]
       ) => unknown,
       R2EnricherService: R2EnricherService as unknown as new (
@@ -258,11 +254,10 @@ export class ExecutionRouterService extends SupabaseBaseService {
           vehicleKey,
         );
 
-      case RoleId.R3_CONSEILS:
-        if (dryRun) {
-          return this.dryRunPreview(roleId, targetId, pgAlias);
-        }
-        return enricher.enrichSingle!(targetId, pgAlias ?? targetId);
+      // R3_CONSEILS: no dispatch case — executable path removed (B2/B6, ADR-027
+      // §Correction + ADR-080; RAG producer deleted). The registry entry is gone,
+      // so execute() fails explicitly upstream ("No registry entry for role")
+      // before ever reaching this switch — same surface as R3_GUIDE.
 
       case RoleId.R3_GUIDE:
       case RoleId.R6_GUIDE_ACHAT:
