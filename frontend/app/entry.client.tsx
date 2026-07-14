@@ -13,7 +13,10 @@ import "~/utils/array-at-polyfill.client";
 import { startTransition } from "react";
 import { hydrateRoot } from "react-dom/client";
 import { HydratedRouter } from "react-router/dom";
-import { installChunkReloadGuard } from "~/utils/chunk-reload.client";
+import {
+  installChunkReloadGuard,
+  isChunkReloadRecoveryActive,
+} from "~/utils/chunk-reload.client";
 import { logger } from "~/utils/logger";
 import {
   captureReactErrorToSentry,
@@ -158,12 +161,17 @@ const initObservability = async (): Promise<void> => {
     ],
     // V0.B / S10 — RGPD scrubbing PII en defense-in-depth (strip immat FR,
     // emails, tels), PUIS classification des erreurs de chunk (cf_challenge vs
-    // stale_or_network) : pose tag + fingerprint, ne DROP aucun event (canon
-    // « no silent fallback » — tout reste observable). Le PII-scrub d'abord car
-    // il ne touche pas le nom de param `__cf_chl_` que lit le classifieur.
+    // stale_or_network vs reload_recovery_race) : pose tag + fingerprint, ne
+    // DROP aucun event (canon « no silent fallback » — tout reste observable).
+    // Le PII-scrub d'abord car il ne touche pas le nom de param `__cf_chl_` que
+    // lit le classifieur. Le contexte `inRecoveryWindow` (guard chunk-reload,
+    // incident 2026-07-10 `reading 'links'`) est lu à la CAPTURE pour classer
+    // les artefacts de course entre preventDefault() et l'unload du reload.
     // Cf. `~/utils/analytics-sanitize` + `~/utils/chunk-error-classification`.
     beforeSend: (event) =>
-      applyChunkErrorClassification(sentryBeforeSend(event)),
+      applyChunkErrorClassification(sentryBeforeSend(event), {
+        inRecoveryWindow: isChunkReloadRecoveryActive(),
+      }),
   });
 
   setSentryInstance(Sentry);

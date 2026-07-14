@@ -43,8 +43,18 @@ export const SAFE_LAZY_ERROR_PREFIX = "[safeLazy:";
 /** Préfixe des query params de challenge Cloudflare (`__cf_chl_f_tk`, …). */
 const CF_CHALLENGE_PARAM_PREFIX = "__cf_chl_";
 
-/** Classe d'erreur chunk posée en tag Sentry `chunk_error_class`. */
-export type ChunkErrorClass = "cf_challenge" | "stale_or_network";
+/**
+ * Classe d'erreur chunk posée en tag Sentry `chunk_error_class`.
+ * `reload_recovery_race` (incident 2026-07-10) : erreur émise pendant la
+ * fenêtre de recovery du guard `chunk-reload.client.ts` (preventDefault →
+ * `__vitePreload` résout `undefined` → TypeError en aval, ex. React Router
+ * prefetch `reading 'links'`) — artefact de course, l'utilisateur récupère
+ * via le reload déjà déclenché.
+ */
+export type ChunkErrorClass =
+  | "cf_challenge"
+  | "stale_or_network"
+  | "reload_recovery_race";
 
 /** Vrai si le message correspond à un échec de fetch de chunk (3 markers bundler). */
 export function isChunkLoadErrorMessage(msg: string): boolean {
@@ -101,23 +111,50 @@ function extractUrl(event: SentryEventLike): string | undefined {
 }
 
 /**
- * Étape `beforeSend` composable : si l'event est une erreur lazy/chunk, pose
- * `tags.chunk_error_class` + un `fingerprint` stable (regroupe le bruit en une
- * seule issue par classe). **Ne supprime jamais l'event, ne throw jamais** —
- * retourne l'event (inchangé si ce n'est pas une erreur chunk, ou si l'input
- * est malformé). Compose après le PII-scrub :
- *   `beforeSend: (e) => applyChunkErrorClassification(sentryBeforeSend(e))`.
+ * Contexte injecté par le beforeSend (le classifieur reste pur — aucun accès
+ * `window` ici). `inRecoveryWindow` = `isChunkReloadRecoveryActive()` du guard
+ * `chunk-reload.client.ts` au moment de la capture.
  */
-export function applyChunkErrorClassification<E>(event: E): E {
+export interface ChunkClassificationContext {
+  inRecoveryWindow?: boolean;
+}
+
+const FINGERPRINT_SLUG: Record<ChunkErrorClass, string> = {
+  cf_challenge: "cf-challenge",
+  stale_or_network: "stale-or-network",
+  reload_recovery_race: "reload-recovery-race",
+};
+
+/**
+ * Étape `beforeSend` composable : si l'event est une erreur lazy/chunk — OU si
+ * la fenêtre de recovery du guard chunk-reload est active (course
+ * post-preventDefault, incident 2026-07-10) — pose `tags.chunk_error_class` +
+ * un `fingerprint` stable (regroupe le bruit en une seule issue par classe).
+ * La classe par message (plus spécifique) prime sur la fenêtre de recovery.
+ * Trade-off assumé : un event NON-chunk capté pendant la fenêtre (quelques
+ * secondes max, bornée par l'unload + TTL du guard) est volontairement regroupé
+ * dans l'issue chunk-load au lieu de son grouping naturel — fidélité de
+ * grouping sacrifiée contre l'arrêt du paging "first error" sur artefacts.
+ * **Ne supprime jamais l'event, ne throw jamais** — retourne l'event (inchangé
+ * si ce n'est pas une erreur chunk hors fenêtre, ou si l'input est malformé).
+ * Compose après le PII-scrub :
+ *   `beforeSend: (e) => applyChunkErrorClassification(sentryBeforeSend(e), ctx)`.
+ */
+export function applyChunkErrorClassification<E>(
+  event: E,
+  context?: ChunkClassificationContext,
+): E {
   if (!event || typeof event !== "object") return event;
   const e = event as SentryEventLike;
 
   const isChunk = extractMessages(e).some(isLazyOrChunkErrorMessage);
-  if (!isChunk) return event;
+  if (!isChunk && !context?.inRecoveryWindow) return event;
 
-  const klass: ChunkErrorClass = hasCfChallengeToken(extractUrl(e))
-    ? "cf_challenge"
-    : "stale_or_network";
+  const klass: ChunkErrorClass = isChunk
+    ? hasCfChallengeToken(extractUrl(e))
+      ? "cf_challenge"
+      : "stale_or_network"
+    : "reload_recovery_race";
 
   const tags =
     e.tags && typeof e.tags === "object"
@@ -125,10 +162,7 @@ export function applyChunkErrorClassification<E>(event: E): E {
       : ((e.tags = {} as Record<string, string>) as Record<string, string>);
   tags.chunk_error_class = klass;
 
-  e.fingerprint = [
-    "chunk-load",
-    klass === "cf_challenge" ? "cf-challenge" : "stale-or-network",
-  ];
+  e.fingerprint = ["chunk-load", FINGERPRINT_SLUG[klass]];
 
   return event;
 }
