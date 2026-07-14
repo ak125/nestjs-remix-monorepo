@@ -112,10 +112,43 @@ describe('LandingAttributionController', () => {
     expect(req.session.landing).toBeUndefined();
   });
 
-  it('rejects unknown fields (strict schema) (T6)', () => {
+  it('rejects unknown fields at the root (strict schema) (T6)', () => {
     const req = mkReq();
     const out = controller.landing(
       { path: '/x', evil: 'nope' },
+      req,
+      'Mozilla/5.0',
+    );
+    expect(out).toEqual({ ok: false });
+    expect(req.session.landing).toBeUndefined();
+  });
+
+  it('rejects an unknown key INSIDE query (nested strict allowlist) (T6)', () => {
+    const req = mkReq();
+    const out = controller.landing(
+      { path: '/x', query: { utm_source: 'news', evil: 'nope' } },
+      req,
+      'Mozilla/5.0',
+    );
+    expect(out).toEqual({ ok: false });
+    expect(req.session.landing).toBeUndefined();
+  });
+
+  it('accepts a valid allowlisted query value and classifies it (T2)', () => {
+    const req = mkReq();
+    const out = controller.landing(
+      { path: '/x', query: { utm_medium: 'cpc' } },
+      req,
+      'Mozilla/5.0',
+    );
+    expect(out).toEqual({ ok: true });
+    expect(req.session.landing.source).toBe('paid'); // cpc = paid medium
+  });
+
+  it('rejects an over-long query value (size bound) (T6)', () => {
+    const req = mkReq();
+    const out = controller.landing(
+      { path: '/x', query: { utm_medium: 'x'.repeat(65) } }, // max 64
       req,
       'Mozilla/5.0',
     );

@@ -51,17 +51,34 @@ const CRAWLER_RE =
   /bot|crawler|spider|crawling|slurp|bingpreview|facebookexternalhit|headlesschrome/i;
 
 /**
- * Payload minimal & validé. `.strict()` = tout champ inconnu → rejet (202 no-op).
- * `path` : pathname only (le client envoie déjà `location.pathname`) ; on le
- * re-sanitise serveur-side pour garantir l'invariant PII (jamais de query string
- * stockée). `query` : sous-ensemble allowlisté (utm_* / click-ids) suffisant à la
- * classification — pas d'objet query arbitraire.
+ * Allowlist EXACTE des seuls params lus par le classifieur (utm_source/medium +
+ * click-ids), chacun borné en taille. `.strict()` → une clé inconnue *dans*
+ * `query` fait échouer le parse (202 no-op) : ce n'est PAS un objet query
+ * arbitraire. Doit refléter `ATTR_QUERY_KEYS` côté client
+ * (frontend/app/utils/attribution-beacon.client.ts).
+ */
+const AttributionQuerySchema = z
+  .object({
+    utm_source: z.string().max(128).optional(),
+    utm_medium: z.string().max(64).optional(),
+    gclid: z.string().max(256).optional(),
+    gbraid: z.string().max(256).optional(),
+    wbraid: z.string().max(256).optional(),
+    msclkid: z.string().max(256).optional(),
+  })
+  .strict();
+
+/**
+ * Payload minimal & validé. `.strict()` (aux DEUX niveaux) = tout champ inconnu
+ * → rejet (202 no-op). `path` : pathname only (le client envoie déjà
+ * `location.pathname`) ; re-sanitisé serveur-side pour garantir l'invariant PII
+ * (jamais de query string stockée).
  */
 const LandingPingSchema = z
   .object({
     path: z.string().min(1).max(512),
     referer: z.string().max(2048).optional(),
-    query: z.record(z.string(), z.string()).optional(),
+    query: AttributionQuerySchema.optional(),
   })
   .strict();
 
@@ -114,10 +131,13 @@ export class LandingAttributionController {
         firstSeenAt: new Date().toISOString(), // horloge serveur
       };
 
-      // Métrique no-JS (observabilité, pas de write DB — READ_ONLY-safe). Le
-      // dénominateur (commandes) est loggé côté orders.controller ; ce compteur
-      // est le numérateur (attributions réellement capturées via beacon).
-      this.logger.log(`[attribution_metric] landing_recorded source=${source}`);
+      // Observabilité seule (pas de write DB — READ_ONLY-safe) : compte les
+      // first-touch réellement enregistrés via beacon. NB: la population
+      // « sessions qui envoient un beacon » ≠ la population « commandes » — ce
+      // compteur n'est PAS le numérateur direct du taux
+      // `attribution_capture_missing` mesuré côté orders.controller (échelles
+      // distinctes, à ne pas diviser l'un par l'autre).
+      this.logger.log(`[attribution_capture] event=recorded source=${source}`);
 
       return { ok: true };
     } catch (err) {

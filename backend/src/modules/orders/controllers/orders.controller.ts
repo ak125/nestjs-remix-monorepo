@@ -398,14 +398,15 @@ export class OrdersController {
         }
         await sb.from('___xtr_order').update(patch).eq('ord_id', orderId);
       }
-      // Métrique attribution (observabilité seule, aucun changement de flux) :
-      // dénominateur du taux de perte no-JS. Ratio absent/(present+absent) parmi
-      // les commandes = estimation de la population dont le beacon d'attribution
-      // n'a pas tourné (no-JS / départ avant idle). Le numérateur (attributions
-      // capturées) est loggé par LandingAttributionController. Cf. PR A cutover.
+      // Observabilité seule (aucun changement de flux). `attribution_capture_missing`
+      // = présence/absence d'attribution sur une commande AUTHENTIFIÉE. Le ratio
+      // absent/(present+absent) sur ces commandes est un indicateur de perte
+      // GLOBALE de capture d'attribution — PAS une mesure causale « no-JS » : une
+      // absence peut venir d'un beacon non livré, d'un cookie bloqué, d'une
+      // session expirée, d'une nav avant capture, d'une erreur réseau, etc.
       if (orderId) {
         this.logger.log(
-          `[attribution_metric] order_landing=${landing ? 'present' : 'absent'}`,
+          `[attribution_capture] scope=auth_order landing=${landing ? 'present' : 'absent'}`,
         );
       }
       let resumeToken: string | undefined;
@@ -600,15 +601,16 @@ export class OrdersController {
         }
         await sb.from('___xtr_order').update(patch).eq('ord_id', finalOrderId);
       }
-      // Métrique attribution (observabilité seule, aucun changement de flux).
-      // NB: pour les commandes guest, `req.session` est régénéré plus haut
-      // (:regenerate) AVANT ce point → `landing` est déjà `absent` par
-      // construction, indépendamment de PR A (perte structurelle documentée
-      // dans la matrice de sémantique — non régressée, non corrigée ici). Voir
-      // LandingAttributionController pour le numérateur. Cf. PR A cutover.
+      // Observabilité seule (aucun changement de flux). Les commandes GUEST sont
+      // systématiquement `absent` : `req.session` est régénéré plus haut
+      // (promisifySessionRegenerate) AVANT ce point → EXCLUES du taux
+      // `attribution_capture_missing` (sinon elles gonflent artificiellement la
+      // perte). Perte structurelle pré-existante, non régressée / non corrigée
+      // par PR A (adjacent SEV1 tunnel paiement). Loggé pour complétude, marqué
+      // exclu — `landing` est ici toujours absent par construction.
       if (finalOrderId) {
         this.logger.log(
-          `[attribution_metric] order_landing=${landing ? 'present' : 'absent'} guest=1`,
+          `[attribution_capture] scope=guest_order excluded=session_regenerate`,
         );
       }
       // Générer resume token

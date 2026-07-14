@@ -13,7 +13,10 @@ import "~/utils/array-at-polyfill.client";
 import { startTransition } from "react";
 import { hydrateRoot } from "react-dom/client";
 import { HydratedRouter } from "react-router/dom";
-import { pingLandingAttribution } from "~/utils/attribution-beacon.client";
+import {
+  captureLandingAttribution,
+  sendLandingAttribution,
+} from "~/utils/attribution-beacon.client";
 import {
   installChunkReloadGuard,
   isChunkReloadRecoveryActive,
@@ -107,14 +110,20 @@ startTransition(() => {
 });
 
 // First-party landing attribution (first-touch) — cutover cache HTML (PR A).
-// Deferred to idle so the beacon POST never competes with hydration / LCP /
-// INP. The server records it once per session on POST (Set-Cookie there is
-// safe — POST is never CF-cached), keeping the HTML GET cookie-free and
-// edge-cacheable. See ~/utils/attribution-beacon.client.
+// CAPTURE the landing signals SYNCHRONOUSLY here, before any Remix client
+// navigation can change location / drop UTM params, then DELIVER the snapshot
+// during idle so the beacon POST never competes with LCP / INP. Sending a
+// snapshot (not re-reading location at send time) guarantees we never record
+// the second page as the landing. The server records it once per session on
+// POST (Set-Cookie there is safe — POST is never CF-cached), keeping the HTML
+// GET cookie-free and edge-cacheable. See ~/utils/attribution-beacon.client.
+const landingSnapshot = captureLandingAttribution();
 if (typeof window.requestIdleCallback === "function") {
-  window.requestIdleCallback(() => pingLandingAttribution(), { timeout: 5000 });
+  window.requestIdleCallback(() => sendLandingAttribution(landingSnapshot), {
+    timeout: 5000,
+  });
 } else {
-  setTimeout(() => pingLandingAttribution(), 2000);
+  setTimeout(() => sendLandingAttribution(landingSnapshot), 2000);
 }
 
 // Lazy observability init — defers ~150 KB of Sentry SDK off the critical
