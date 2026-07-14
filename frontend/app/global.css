@@ -437,6 +437,46 @@
     }
   }
 
+  /* Native <dialog> modal centré (fiche produit PieceDetailModal) : fade+zoom,
+     même dégradation gracieuse que .navdrawer (navigateurs sans allow-discrete
+     ouvrent instantanément). Remplace Radix Dialog dont l'ouverture exécutait
+     react-remove-scroll + FocusScope (reflow forcé) dans le tap carte produit
+     — interaction dominante de l'INP mobile /pieces (RUM p75 500ms). */
+  .modal-pop {
+    opacity: 0;
+    scale: 0.96;
+    transition:
+      opacity 0.2s ease,
+      scale 0.2s ease,
+      overlay 0.2s ease allow-discrete,
+      display 0.2s ease allow-discrete;
+  }
+  .modal-pop[open] {
+    opacity: 1;
+    scale: 1;
+  }
+  @starting-style {
+    .modal-pop[open] {
+      opacity: 0;
+      scale: 0.96;
+    }
+  }
+  .modal-pop::backdrop {
+    opacity: 0;
+    transition:
+      opacity 0.2s ease,
+      overlay 0.2s ease allow-discrete,
+      display 0.2s ease allow-discrete;
+  }
+  .modal-pop[open]::backdrop {
+    opacity: 1;
+  }
+  @starting-style {
+    .modal-pop[open]::backdrop {
+      opacity: 0;
+    }
+  }
+
   .animate-shimmer {
     animation: shimmer 3s ease-in-out infinite;
     will-change: transform;

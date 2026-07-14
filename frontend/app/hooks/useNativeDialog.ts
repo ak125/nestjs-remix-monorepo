@@ -25,6 +25,11 @@ interface UseNativeDialogOptions {
 
 export function useNativeDialog({ onClose }: UseNativeDialogOptions = {}) {
   const ref = useRef<HTMLDialogElement>(null);
+  // Quand mousedown et mouseup ciblent des éléments différents, le navigateur
+  // dispatch le click sur leur ancêtre commun — qui EST le <dialog> si un geste
+  // commence dans le contenu et relâche sur le backdrop/gutter (ex. sélection
+  // de texte qui déborde). Sans ce garde, la sélection fermerait le dialog.
+  const pointerDownOnBackdrop = useRef(false);
 
   const lockScroll = (locked: boolean) => {
     if (typeof document !== "undefined") {
@@ -55,9 +60,13 @@ export function useNativeDialog({ onClose }: UseNativeDialogOptions = {}) {
       lockScroll(false);
       onClose?.();
     },
-    // Clic sur le backdrop (la cible est l'élément <dialog> lui-même) = fermeture.
+    onPointerDown: (e: React.PointerEvent<HTMLDialogElement>) => {
+      pointerDownOnBackdrop.current = e.target === ref.current;
+    },
+    // Clic sur le backdrop (la cible est l'élément <dialog> lui-même) = fermeture,
+    // seulement si le geste a AUSSI commencé sur le backdrop (cf. garde ci-dessus).
     onClick: (e: React.MouseEvent<HTMLDialogElement>) => {
-      if (e.target === ref.current) close();
+      if (e.target === ref.current && pointerDownOnBackdrop.current) close();
     },
   };
 

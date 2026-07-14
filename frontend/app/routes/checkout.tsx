@@ -56,16 +56,15 @@ import {
   parseCheckoutFormData,
   validateCheckoutClient,
 } from "~/schemas/checkout.schemas";
-import { serverObservabilityContext } from "~/utils/load-context";
 import {
   buildOrderLines,
   buildPayboxRedirectUrl,
   createCheckoutOrder,
-  getOrderForPayment,
 } from "~/services/order.server";
 import { getUserProfile } from "~/services/profile.server";
 import { type PaymentMethod } from "~/types/payment";
 import { trackBeginCheckout, trackAddPaymentInfo } from "~/utils/analytics";
+import { serverObservabilityContext } from "~/utils/load-context";
 import { logger } from "~/utils/logger";
 import { reportLoaderError } from "~/utils/observability.server";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
@@ -311,26 +310,19 @@ export async function action({ request, context }: ActionFunctionArgs) {
 
     const { orderId } = orderResult;
 
-    // 6. Recuperer les details pour Paybox
-    const orderDetails = await getOrderForPayment(request, orderId);
-
-    if (!orderDetails) {
-      logger.error("[Checkout] getOrderForPayment returned null for:", orderId);
-      return data(
-        {
-          ok: false,
-          error: "Commande creee mais impossible de recuperer les details.",
-          code: "PAYMENT_UNAVAILABLE",
-        } satisfies CheckoutActionError,
-        { status: 500 },
-      );
-    }
-
-    if (orderDetails.isPaid) {
+    // 6. Details Paybox lus depuis la reponse du POST de creation — PAS de
+    // GET /api/orders/:id ici : le POST guest regenere la session backend et
+    // le cookie de cette action devient invalide (INC tunnel paiement
+    // 2026-05→07 : ce GET repondait 404 et bloquait le client avant Paybox).
+    if (orderResult.isPaid) {
       return redirect(`/account/orders/${orderId}`);
     }
 
-    if (orderDetails.totalTTC <= 0) {
+    if (orderResult.totalTTC <= 0) {
+      logger.error(
+        "[Checkout] Montant invalide dans la reponse de creation:",
+        orderId,
+      );
       return data(
         {
           ok: false,
@@ -341,7 +333,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
       );
     }
 
-    const customerEmail = orderDetails.customerEmail || guestEmail || "";
+    const customerEmail = orderResult.customerEmail || guestEmail || "";
     if (!customerEmail) {
       return data(
         {
@@ -355,13 +347,13 @@ export async function action({ request, context }: ActionFunctionArgs) {
 
     logger.log("[Checkout] Order created, building Paybox redirect:", {
       orderId,
-      totalTTC: orderDetails.totalTTC,
+      totalTTC: orderResult.totalTTC,
     });
 
     // 7. Build Paybox redirect URL
     const redirectUrl = buildPayboxRedirectUrl(
       orderId,
-      orderDetails.totalTTC,
+      orderResult.totalTTC,
       customerEmail,
     );
 

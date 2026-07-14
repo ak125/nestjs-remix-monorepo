@@ -1,11 +1,11 @@
 {
   "schemaVersion": "v1",
-  "createdAt": "2026-07-06",
-  "createdOnCommit": "61b38bbf3cecf1cbff25dfeaf1f5730de1d38e15",
+  "createdAt": "2026-07-14",
+  "createdOnCommit": null,
   "sourcePr": null,
   "mode": "block-new-only",
   "summary": {
-    "direct_literal": 14,
+    "direct_literal": 12,
     "const_map": 7,
     "rpc_publisher": 1,
     "sql_migration": 44
@@ -54,16 +54,6 @@
     {
       "mechanism": "direct_literal",
       "id": "backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts::__seo_gamme_purchase_guide",
-      "count": 1
-    },
-    {
-      "mechanism": "direct_literal",
-      "id": "backend/src/modules/admin/services/conseil-enricher.service.ts::__seo_gamme",
-      "count": 1
-    },
-    {
-      "mechanism": "direct_literal",
-      "id": "backend/src/modules/admin/services/conseil-enricher.service.ts::__seo_gamme_conseil",
       "count": 1
     },
     {

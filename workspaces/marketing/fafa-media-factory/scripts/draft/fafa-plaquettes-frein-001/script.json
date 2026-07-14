@@ -1,0 +1,30 @@
+{
+  "video_id": "fafa-plaquettes-frein-001",
+  "format": "ne-change-pas-trop-vite",
+  "hook": "Même voiture, pas toujours les mêmes plaquettes.",
+  "hook_variants": [
+    "Avant de commander tes plaquettes, vérifie ça.",
+    "Cette erreur te fait commander la mauvaise pièce."
+  ],
+  "script_voice": "Même modèle de voiture, ça ne veut pas dire mêmes plaquettes. La bonne référence dépend de trois choses : ta motorisation, le diamètre de tes disques, et la présence d'un témoin d'usure. Deux jeux peuvent se ressembler et ne pas aller sur ta voiture. Et les plaquettes se vendent par jeu de 4, montées à l'avant ou à l'arrière. Le réflexe simple : tu sélectionnes ton véhicule, et tu vois les références compatibles. Avant d'acheter, vérifie la compatibilité.",
+  "problem_text": "Même modèle de voiture ? La référence des plaquettes change selon ta version. Commander au hasard, c'est risquer la mauvaise pièce.",
+  "compatibility_factors": [
+    { "factor": "Motorisation", "detail": "La version/puissance change la référence." },
+    { "factor": "Diamètre des disques", "detail": "Vérifie la dimension exacte." },
+    { "factor": "Témoin d'usure", "detail": "Présent ou non selon finition/année." }
+  ],
+  "screen_text": [
+    "Même voiture ≠ mêmes plaquettes",
+    "Motorisation · Disques · Témoin d'usure",
+    "Vérifie la compatibilité"
+  ],
+  "advice": "Sélectionne ton véhicule pour la bonne référence.",
+  "cta": "Sur AutoMecanik, sélectionne ton véhicule pour voir les plaquettes compatibles.",
+  "disclaimer": "Conseil informatif. Vérifiez la compatibilité avant achat. Fafa est un mécano IA.",
+  "duration_estimate_sec": 38,
+  "generated_at": "2026-05-30T00:00:00Z",
+  "generated_by": "fafa-script-generator-v1",
+  "persona_signature": "fafa-v1-figée",
+  "inspired_from_pattern": null,
+  "notes": "Cadrage COMPATIBILITÉ (crown-jewel business). Réutilise la composition NeChangePasTropVite : les 3 'causes' = 3 facteurs de compatibilité ; problem_text -> prop problemText (PR #805). AUCUN claim safety/procedure dans le script (G2 reste 0 honnêtement). hook_variants = test A/B sans refaire la vidéo (corps/CTA/disclaimer identiques)."
+}
