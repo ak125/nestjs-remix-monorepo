@@ -210,7 +210,14 @@ export const PiecesGroupedDisplay = memo(function PiecesGroupedDisplay({
 
             {/* 📱 Bouton "Charger plus" - visible uniquement s'il reste des produits */}
             {hasMore && (
-              <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+              /* translate="no" (pattern PR #1187) — libellé « Charger N
+                 produit{s} de plus » éclaté en plusieurs nœuds texte
+                 conditionnels, re-rendu à chaque load-more : cible du
+                 removeChild NotFoundError sous traduction navigateur. */
+              <div
+                translate="no"
+                className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3"
+              >
                 <button
                   type="button"
                   onClick={() => handleLoadMore(groupKey, groupPieces.length)}
@@ -244,7 +251,12 @@ export const PiecesGroupedDisplay = memo(function PiecesGroupedDisplay({
 
             {/* Indicateur de pagination (visible quand pagination active) */}
             {groupPieces.length > INITIAL_VISIBLE_COUNT && (
-              <div className="mt-4 text-center text-sm text-gray-500">
+              /* translate="no" — l'indicateur bascule entre deux <span>
+                 conditionnels (hasMore) : même classe de risque removeChild. */
+              <div
+                translate="no"
+                className="mt-4 text-center text-sm text-gray-500"
+              >
                 {hasMore ? (
                   <span>
                     Affichage de {visibleCount} sur {groupPieces.length}{" "}
