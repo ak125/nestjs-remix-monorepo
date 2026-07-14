@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import {
+  data as routeData,
   useLoaderData,
   Link,
   useRouteError,
@@ -123,12 +124,20 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     if (!data?.success || !data.data?.families) {
       logger.error("Format de r\u00e9ponse inattendu:", data);
-      return {
-        groupedArticles: [],
-        allArticles: [],
-        totalArticles: 0,
-        stats: { totalViews: 0, totalCategories: 0 },
-      };
+      return routeData(
+        {
+          groupedArticles: [],
+          allArticles: [],
+          totalArticles: 0,
+          stats: { totalViews: 0, totalCategories: 0 },
+        },
+        {
+          headers: {
+            "Cache-Control": "no-store",
+            "X-Robots-Tag": "noindex, follow",
+          },
+        },
+      );
     }
 
     const allArticles: BlogArticle[] = [];
@@ -173,12 +182,20 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     };
   } catch (e) {
     logger.error("Erreur loader conseils:", e);
-    return {
-      groupedArticles: [],
-      allArticles: [],
-      totalArticles: 0,
-      stats: { totalViews: 0, totalCategories: 0 },
-    };
+    return routeData(
+      {
+        groupedArticles: [],
+        allArticles: [],
+        totalArticles: 0,
+        stats: { totalViews: 0, totalCategories: 0 },
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store",
+          "X-Robots-Tag": "noindex, follow",
+        },
+      },
+    );
   }
 };
 

@@ -4,6 +4,7 @@ import * as React from "react";
 import {
   type LoaderFunctionArgs,
   type MetaFunction,
+  data,
   Link,
   useLoaderData,
   useRouteError,
@@ -109,6 +110,9 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
     const modelsResponse = modelsRes?.ok
       ? await modelsRes.json().catch(() => null)
       : null;
+    // Backend models fetch échoué et absorbé en liste vide → état dégradé :
+    // ne pas hériter du TTL public de succès (sinon Cloudflare cache l'échec).
+    const degraded = !modelsRes?.ok || modelsResponse === null;
     const modelsData = modelsResponse?.data || [];
 
     // Mapper les modèles vers le format attendu - utiliser image_url du backend (comme /constructeurs/)
@@ -154,11 +158,21 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
         }
       : null;
 
-    return {
-      brand,
-      models: mappedModels,
-      metadata,
-    };
+    return data(
+      {
+        brand,
+        models: mappedModels,
+        metadata,
+      },
+      degraded
+        ? {
+            headers: {
+              "Cache-Control": "no-store",
+              "X-Robots-Tag": "noindex, follow",
+            },
+          }
+        : undefined,
+    );
   } catch (e) {
     logger.error("Erreur loader marque:", e);
     if (e instanceof Response) throw e;

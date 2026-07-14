@@ -155,6 +155,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
     lastUpdated: new Date().toISOString(),
   };
 
+  let degraded = false;
+
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000);
@@ -190,19 +192,26 @@ export async function loader({ request }: LoaderFunctionArgs) {
         };
       }
     } else {
+      degraded = true;
       logger.warn(`API returned ${response.status}: ${response.statusText}`);
     }
   } catch (error) {
+    degraded = true;
     logger.warn({ err: error, url: request.url }, "Blog API error");
   }
 
   return data(
     { blogData, searchParams },
     {
-      headers: {
-        "Cache-Control":
-          "public, max-age=300, s-maxage=600, stale-while-revalidate=86400",
-      },
+      headers: degraded
+        ? {
+            "Cache-Control": "no-store",
+            "X-Robots-Tag": "noindex, follow",
+          }
+        : {
+            "Cache-Control":
+              "public, max-age=300, s-maxage=600, stale-while-revalidate=86400",
+          },
     },
   );
 }

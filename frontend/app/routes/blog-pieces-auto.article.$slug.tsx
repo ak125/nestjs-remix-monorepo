@@ -188,7 +188,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const { slug } = params;
 
   if (!slug) {
-    return redirect("/blog-pieces-auto", 301);
+    return redirect("/blog-pieces-auto", {
+      status: 301,
+      headers: { "Cache-Control": "no-store" },
+    });
   }
 
   // 🎯 Détection des URLs legacy "entretien-..." qui n'existent plus (78k URLs GSC)
@@ -285,7 +288,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       // 🔄 SEO: Article non trouvé → 301 redirect vers index du blog
       // Raison: 412 est traité comme 4xx par Google → désindexation
       // 301 préserve le PageRank et guide vers une page indexable
-      return redirect("/blog-pieces-auto", 301);
+      return redirect("/blog-pieces-auto", {
+        status: 301,
+        headers: { "Cache-Control": "no-store" },
+      });
     }
 
     return {
@@ -304,7 +310,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     }
 
     logger.error("Erreur chargement article:", error);
-    return redirect("/blog-pieces-auto", 302);
+    return redirect("/blog-pieces-auto", {
+      status: 302,
+      headers: { "Cache-Control": "no-store" },
+    });
   }
 }
 

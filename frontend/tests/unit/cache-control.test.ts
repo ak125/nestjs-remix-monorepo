@@ -11,7 +11,10 @@
  */
 import { describe, it, expect } from "vitest";
 
-import { buildCacheHeaders, NO_STORE_CACHE_CONTROL } from "~/utils/cache-control";
+import {
+  buildCacheHeaders,
+  NO_STORE_CACHE_CONTROL,
+} from "~/utils/cache-control";
 
 type HeadersFn = ReturnType<typeof buildCacheHeaders>;
 type Args = Parameters<HeadersFn>[0];
@@ -22,7 +25,10 @@ const SUCCESS =
 /** Invoke the returned HeadersFunction with only the fields it reads. */
 function invoke(
   fn: HeadersFn,
-  opts: { loader?: Record<string, string>; error?: Record<string, string> } = {},
+  opts: {
+    loader?: Record<string, string>;
+    error?: Record<string, string>;
+  } = {},
 ): Record<string, string> {
   const args = {
     loaderHeaders: new Headers(opts.loader ?? {}),

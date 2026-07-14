@@ -10,6 +10,7 @@ import React, { useState, useMemo } from "react";
 import {
   type LoaderFunctionArgs,
   type MetaFunction,
+  data,
   useLoaderData,
   Link,
   useSearchParams,
@@ -214,20 +215,28 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     };
   } catch (error) {
     logger.error("[ERROR] Advice loader failed:", error);
-    return {
-      articles: [],
-      total: 0,
-      page: 1,
-      totalPages: 1,
-      search: "",
-      category: "",
-      categories: [],
-      featuredArticles: [],
-      popularTags: [],
-      stats: { totalViews: 0, avgReadingTime: 3, totalArticles: 0 },
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
-    };
+    return data(
+      {
+        articles: [],
+        total: 0,
+        page: 1,
+        totalPages: 1,
+        search: "",
+        category: "",
+        categories: [],
+        featuredArticles: [],
+        popularTags: [],
+        stats: { totalViews: 0, avgReadingTime: 3, totalArticles: 0 },
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store",
+          "X-Robots-Tag": "noindex, follow",
+        },
+      },
+    );
   }
 };
 

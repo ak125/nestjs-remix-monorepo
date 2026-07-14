@@ -11,6 +11,7 @@ import * as React from "react";
 import {
   type LoaderFunctionArgs,
   type MetaFunction,
+  data,
   Link,
   useLoaderData,
   useRouteError,
@@ -132,22 +133,45 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       }),
     );
 
-    return {
-      brands: mappedBrands,
-      popularModels: mappedModels,
-      metadata: metadataData?.success ? metadataData.data : null,
-      stats: {
-        totalBrands: mappedBrands.length,
-        totalModels: mappedModels.length,
+    // Les fetch sont individuellement `.catch(() => null)` : un backend KO ne
+    // remonte PAS au catch ci-dessous, il tombe ici avec des listes vides. Si un
+    // fetch cœur a échoué, la page est dégradée → jamais le TTL public de succès.
+    const degraded = !brandsRes?.ok || !modelsRes?.ok;
+
+    return data(
+      {
+        brands: mappedBrands,
+        popularModels: mappedModels,
+        metadata: metadataData?.success ? metadataData.data : null,
+        stats: {
+          totalBrands: mappedBrands.length,
+          totalModels: mappedModels.length,
+        },
       },
-    };
+      degraded
+        ? {
+            headers: {
+              "Cache-Control": "no-store",
+              "X-Robots-Tag": "noindex, follow",
+            },
+          }
+        : undefined,
+    );
   } catch (e) {
     logger.error("Erreur loader auto:", e);
-    return {
-      brands: [],
-      popularModels: [],
-      stats: { totalBrands: 0, totalModels: 0 },
-    };
+    return data(
+      {
+        brands: [],
+        popularModels: [],
+        stats: { totalBrands: 0, totalModels: 0 },
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store",
+          "X-Robots-Tag": "noindex, follow",
+        },
+      },
+    );
   }
 };
 

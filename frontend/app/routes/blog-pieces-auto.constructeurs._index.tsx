@@ -10,6 +10,7 @@ import React, { useState, useMemo } from "react";
 import {
   type LoaderFunctionArgs,
   type MetaFunction,
+  data,
   useLoaderData,
   Link,
   useSearchParams,
@@ -519,21 +520,29 @@ export async function loader({ request }: LoaderFunctionArgs) {
     totalModels: DEMO_CONSTRUCTEURS.reduce((sum, c) => sum + c.modelsCount, 0),
   };
 
-  return {
-    constructeurs: paginatedConstructeurs,
-    total: filteredConstructeurs.length,
-    page,
-    totalPages,
-    search,
-    letter,
-    brand,
-    sortBy,
-    letters,
-    featuredConstructeurs,
-    popularBrands,
-    stats,
-    success: true,
-  };
+  return data(
+    {
+      constructeurs: paginatedConstructeurs,
+      total: filteredConstructeurs.length,
+      page,
+      totalPages,
+      search,
+      letter,
+      brand,
+      sortBy,
+      letters,
+      featuredConstructeurs,
+      popularBrands,
+      stats,
+      success: false,
+    },
+    {
+      headers: {
+        "Cache-Control": "no-store",
+        "X-Robots-Tag": "noindex, follow",
+      },
+    },
+  );
 }
 
 export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {

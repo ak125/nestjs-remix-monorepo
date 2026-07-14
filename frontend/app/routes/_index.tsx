@@ -3,6 +3,7 @@ import {
   type LoaderFunctionArgs,
   type MetaFunction,
   Await,
+  data,
   useLoaderData,
 } from "react-router";
 
@@ -170,11 +171,19 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     logger.error("[homepage-families] Service call failed:", {
       error: err instanceof Error ? err.message : String(err),
     });
-    return {
-      families: [] as SlimFamily[],
-      belowFold: belowFoldPromise,
-      faqs: faqPromise,
-    };
+    return data(
+      {
+        families: [] as SlimFamily[],
+        belowFold: belowFoldPromise,
+        faqs: faqPromise,
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store",
+          "X-Robots-Tag": "noindex, follow",
+        },
+      },
+    );
   }
 }
 
