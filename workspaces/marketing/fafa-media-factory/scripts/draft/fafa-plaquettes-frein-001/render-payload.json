@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "1.0.0",
+  "briefId": "fafa-plaquettes-frein-001",
+  "executionLogId": 0,
+  "videoType": "short",
+  "vertical": "freinage",
+  "composition": "NeChangePasTropVite",
+  "outputFormat": "mp4",
+  "resolution": { "width": 1080, "height": 1920 },
+  "fps": 30,
+  "durationSecs": 38,
+  "compositionProps": {
+    "hook": "Même voiture, pas toujours les mêmes plaquettes.",
+    "symptom": "Plaquettes de frein",
+    "pieceWrong": "plaquettes",
+    "problemText": "Même modèle de voiture ? La référence des plaquettes change selon ta version. Commander au hasard, c'est risquer la mauvaise pièce.",
+    "causes": [
+      { "cause": "Motorisation", "duration_sec": 8, "check_suggestion": "La version change la référence" },
+      { "cause": "Diamètre des disques", "duration_sec": 4, "check_suggestion": "Vérifie la dimension exacte" },
+      { "cause": "Témoin d'usure", "duration_sec": 3, "check_suggestion": "Présent selon finition / année" }
+    ],
+    "advice": "Sélectionne ton véhicule pour la bonne référence.",
+    "cta": "Sur AutoMecanik, sélectionne ton véhicule pour voir les plaquettes compatibles.",
+    "disclaimer": "Conseil informatif. Vérifiez la compatibilité avant achat. Fafa est un mécano IA.",
+    "audioUrl": "s3://automecanik-renders/pilots/fafa-plaquettes-frein-001/voice.wav",
+    "brandName": "AutoMecanik"
+  }
+}
