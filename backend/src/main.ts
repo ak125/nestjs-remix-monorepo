@@ -40,7 +40,6 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
 import { SITE_ORIGIN } from './config/app.config';
-import { LandingAttributionMiddleware } from './modules/analytics/landing-attribution.middleware';
 import { SitemapStaticMiddleware } from './modules/seo/middleware/sitemap-static.middleware';
 
 import passport from 'passport';
@@ -82,19 +81,17 @@ async function bootstrap() {
     // chain order is preserved byte-for-byte.
     // ⚠️ ORDER INVARIANT: passport.initialize()/passport.session() (below) MUST
     // stay AFTER this — passport.session() reads `req.session` populated here.
-    // Landing attribution (just below) also depends on `req.session`.
     const sessionStore = app.get(SessionStoreService);
     app.use(sessionStore.createSessionMiddleware());
     logger.log('Middleware de session initialisé');
 
-    // Landing attribution: first-touch source capture into the session.
-    // MUST run after express-session (needs req.session) and before route
-    // handlers. Stateless instance — no DI needed here.
-    const landingAttribution = new LandingAttributionMiddleware();
-    app.use((req: any, res: any, nextFn: any) =>
-      landingAttribution.use(req, res, nextFn),
-    );
-    logger.log("Middleware d'attribution landing initialisé");
+    // ⚠️ NO landing-attribution middleware here (retiré, cutover cache HTML).
+    // Écrire la session sur un GET HTML matérialisait le store → Set-Cookie
+    // connect.sid → Cloudflare BYPASS (HTML jamais caché). La capture first-touch
+    // vit désormais sur POST /api/attribution/landing (beacon post-chargement),
+    // qui matérialise la session hors du chemin cacheable. Un GET HTML anonyme
+    // reste strictement sans effet de bord. Cf. LandingAttributionController +
+    // audit/cache-cutover-design-A-B-C-2026-07-14.md (PR A).
 
     // Compression middleware MUST be registered BEFORE useStaticAssets : Express
     // applies middlewares in registration order, and the static-asset handler

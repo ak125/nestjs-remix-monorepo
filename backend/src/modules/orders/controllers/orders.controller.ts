@@ -398,6 +398,16 @@ export class OrdersController {
         }
         await sb.from('___xtr_order').update(patch).eq('ord_id', orderId);
       }
+      // Métrique attribution (observabilité seule, aucun changement de flux) :
+      // dénominateur du taux de perte no-JS. Ratio absent/(present+absent) parmi
+      // les commandes = estimation de la population dont le beacon d'attribution
+      // n'a pas tourné (no-JS / départ avant idle). Le numérateur (attributions
+      // capturées) est loggé par LandingAttributionController. Cf. PR A cutover.
+      if (orderId) {
+        this.logger.log(
+          `[attribution_metric] order_landing=${landing ? 'present' : 'absent'}`,
+        );
+      }
       let resumeToken: string | undefined;
       if (orderId) {
         resumeToken = await this.generateResumeToken(orderId as string);
@@ -589,6 +599,17 @@ export class OrdersController {
           patch.landing_first_seen_at = landing.firstSeenAt;
         }
         await sb.from('___xtr_order').update(patch).eq('ord_id', finalOrderId);
+      }
+      // Métrique attribution (observabilité seule, aucun changement de flux).
+      // NB: pour les commandes guest, `req.session` est régénéré plus haut
+      // (:regenerate) AVANT ce point → `landing` est déjà `absent` par
+      // construction, indépendamment de PR A (perte structurelle documentée
+      // dans la matrice de sémantique — non régressée, non corrigée ici). Voir
+      // LandingAttributionController pour le numérateur. Cf. PR A cutover.
+      if (finalOrderId) {
+        this.logger.log(
+          `[attribution_metric] order_landing=${landing ? 'present' : 'absent'} guest=1`,
+        );
       }
       // Générer resume token
       let resumeToken: string | undefined;

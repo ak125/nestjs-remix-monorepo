@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 
 // Controllers
 import { SimpleAnalyticsController } from './controllers/simple-analytics.controller';
+import { LandingAttributionController } from './controllers/landing-attribution.controller';
 
 // Services
 import { SimpleAnalyticsService } from './services/simple-analytics.service';
@@ -27,7 +28,7 @@ import { DatabaseModule } from '../../database/database.module';
 @Global()
 @Module({
   imports: [ConfigModule, DatabaseModule],
-  controllers: [SimpleAnalyticsController],
+  controllers: [SimpleAnalyticsController, LandingAttributionController],
   providers: [SimpleAnalyticsService],
   exports: [SimpleAnalyticsService],
 })
