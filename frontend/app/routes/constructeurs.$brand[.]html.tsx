@@ -93,7 +93,10 @@ export const headers: HeadersFunction = () => ({
 // 🔄 META
 // ==========================================
 
-export const meta: MetaFunction<typeof loader> = ({ loaderData: data, location }) => {
+export const meta: MetaFunction<typeof loader> = ({
+  loaderData: data,
+  location,
+}) => {
   if (!data || !data.seo) {
     return [{ title: "Pièces Auto" }];
   }
@@ -329,8 +332,14 @@ export async function loader({ params }: LoaderFunctionArgs) {
   const marque_id = parseInt(match[2], 10);
 
   try {
-    // Récupération des données via l'API optimisée
-    const bestsellersResponse = await brandApi.getBrandPageData(marque_id);
+    // ⚡ LCP/TTFB (audit 2026-07-14 §2C) : les deux appels loopback ne dépendent
+    // que de marque_id → lancés en parallèle. getR7Content() ne rejette jamais
+    // (return null interne) : si les gates ci-dessous throw, sa promesse en vol
+    // est simplement abandonnée sans unhandled-rejection.
+    const bestsellersPromise = brandApi.getBrandPageData(marque_id);
+    const r7ContentPromise = brandApi.getR7Content(marque_id);
+
+    const bestsellersResponse = await bestsellersPromise;
 
     if (!bestsellersResponse.success || !bestsellersResponse.data) {
       throw new Error("Failed to fetch brand data");
@@ -347,8 +356,8 @@ export async function loader({ params }: LoaderFunctionArgs) {
       });
     }
 
-    // 🏭 R7 enriched content (optional overlay)
-    const r7Content = await brandApi.getR7Content(marque_id);
+    // 🏭 R7 enriched content (optional overlay) — déjà en vol depuis le début
+    const r7Content = await r7ContentPromise;
 
     return { ...bestsellersResponse.data, r7Content };
   } catch (error) {

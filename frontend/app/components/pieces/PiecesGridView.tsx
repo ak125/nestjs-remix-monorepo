@@ -260,7 +260,7 @@ const PieceCard = memo(function PieceCard({
                 : `Sélectionner ${piece.name}`
             }
             onClick={handleSelect}
-            className={`absolute top-2 left-2 w-6 h-6 rounded-md flex items-center justify-center transition-all duration-300 z-20 ${ isSelected ? "bg-primary shadow-lg shadow-indigo-500/50 scale-110" : "bg-white/90 backdrop-blur-xs border border-slate-200 hover:border-indigo-400 hover:bg-muted" }`}
+            className={`absolute top-2 left-2 w-6 h-6 rounded-md flex items-center justify-center transition-all duration-300 z-20 ${isSelected ? "bg-primary shadow-lg shadow-indigo-500/50 scale-110" : "bg-white/90 backdrop-blur-xs border border-slate-200 hover:border-indigo-400 hover:bg-muted"}`}
           >
             {isSelected ? (
               <svg
@@ -325,7 +325,7 @@ const PieceCard = memo(function PieceCard({
                 ? `Ajouter ${piece.name} au panier`
                 : `${piece.name} indisponible`
             }
-            className={`flex items-center justify-center gap-1.5 px-3 py-2.5 min-h-[44px] min-w-[44px] rounded-lg text-xs sm:text-sm font-bold transition-all duration-200 active:scale-95 ${ !hasStock ? "bg-slate-100 text-slate-400 cursor-not-allowed" : !isLoading ? "bg-primary hover:bg-primary text-white shadow-md shadow-indigo-500/30" : "bg-primary text-white cursor-wait" }`}
+            className={`flex items-center justify-center gap-1.5 px-3 py-2.5 min-h-[44px] min-w-[44px] rounded-lg text-xs sm:text-sm font-bold transition-all duration-200 active:scale-95 ${!hasStock ? "bg-slate-100 text-slate-400 cursor-not-allowed" : !isLoading ? "bg-primary hover:bg-primary text-white shadow-md shadow-indigo-500/30" : "bg-primary text-white cursor-wait"}`}
             disabled={isLoading || !hasStock}
             onClick={handleAddToCart}
           >
@@ -565,7 +565,7 @@ export function PiecesGridView({
             onSelect={onSelectPiece}
             onAddToCart={handleAddToCart}
             onOpenDetail={handleOpenDetail}
-            priority={index < 6}
+            priority={index < 2}
           />
         ))}
       </div>
