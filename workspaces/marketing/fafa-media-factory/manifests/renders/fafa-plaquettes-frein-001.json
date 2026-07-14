@@ -1,0 +1,90 @@
+{
+  "manifestVersion": "1.0.0",
+  "briefId": "fafa-plaquettes-frein-001",
+  "renderStatus": "RENDER_CANDIDATE",
+  "renderMode": "motion-graphics",
+  "avatar": false,
+  "voice": false,
+  "note": "Version motion-graphics silencieuse — SANS AVATAR / SANS VOIX. Compréhension complète par les textes à l'écran. Rendu candidat pour review owner ; render_approved reste false tant que l'owner n'a pas inspecté ce MP4 exact (voir approval.json).",
+  "source": {
+    "commit": "333e62ef917e1e0b226f928ee5b9ba823f13cdf9",
+    "branch_base": "origin/main",
+    "renderPayload": "scripts/draft/fafa-plaquettes-frein-001/render-payload.json",
+    "renderPayloadSha256": "34678dd58afca48c3647006e185abee0b9a4ce98bb086a982bf3e823eec87d10",
+    "propsUsedSha256": "aedae88287c68699b9e3ee323522178bed2215268c1a080f124a96c348c50506",
+    "propsDelta": "compositionProps du render-payload SANS audioUrl (aucune piste voix montée). Rendu avec --muted (0 piste audio). Le voice.wav S3 n'existe pas — non substitué (pas de fallback silencieux)."
+  },
+  "composition": {
+    "id": "NeChangePasTropVite",
+    "engine": "remotion",
+    "resolution": { "width": 1080, "height": 1920 },
+    "aspectRatio": "9:16",
+    "fps": 30,
+    "durationFrames": 1140,
+    "durationSecs": 38,
+    "codec": "h264",
+    "muted": true
+  },
+  "artifact": {
+    "filename": "fafa-plaquettes-frein-001.mp4",
+    "sha256": "61671dca9528af8a355185ad3a356231572756a74f54407739abdc23e6f6f57e",
+    "bytes": 1132000,
+    "s3KeyCanonical": "s3://automecanik-renders/pilots/fafa-plaquettes-frein-001/motion-graphics-silent.mp4",
+    "s3UploadStatus": "PENDING_OPS_UPLOAD",
+    "previewLocalPath": "(hors repo — MP4 gitignoré, S3-only ; render local pour review, upload S3 = étape ops séparée)"
+  },
+  "assetRefs": [
+    {
+      "kind": "composition-source",
+      "ref": "services/remotion-renderer/src/compositions/NeChangePasTropVite.tsx",
+      "atCommit": "333e62ef917e1e0b226f928ee5b9ba823f13cdf9"
+    },
+    {
+      "kind": "persona-lock",
+      "ref": "workspaces/marketing/fafa-media-factory/personas/fafa-visual-reference-lock.md",
+      "note": "verrou stylistique ; image-référence Higgsfield PENDING_OWNER_GENERATION (aucun avatar utilisé ici)"
+    }
+  ],
+  "visualControls": {
+    "verifiedBy": "extraction ffmpeg de 4 frames du MP4 encodé + inspection",
+    "results": [
+      { "section": "hook", "check": "palette charte navy #0F1E38 + accent orange #F97316 + kicker PLAQUETTES DE FREIN + hook", "verdict": "PASS" },
+      { "section": "problem", "check": "problemText custom (cadrage compatibilité, PAS le texte diagnostic par défaut)", "verdict": "PASS" },
+      { "section": "causes", "check": "carte facteur 1 Motorisation, panel bleu charte #0F4C81, bordure orange", "verdict": "PASS" },
+      { "section": "closer", "check": "brand AutoMecanik + CTA sélecteur véhicule", "verdict": "PASS" },
+      { "section": "transverse", "check": "disclaimer permanent (Fafa est un mécano IA) + aucun avatar + aucun claim safety/procedure", "verdict": "PASS" }
+    ],
+    "technicalChecks": {
+      "audioStreams": 0,
+      "width": 1080,
+      "height": 1920,
+      "frames": 1140,
+      "durationSecs": 38.0,
+      "verifiedVia": "ffprobe"
+    }
+  },
+  "brandSafetyReview": {
+    "reviewer": "skill:fafa-brand-safety-reviewer",
+    "reviewedArtifact": "render réel motion-graphics (sha256 61671dca...), PAS le self-report du 2026-05-30",
+    "verdictOverall": "PASS",
+    "canPublishEligible": true,
+    "note": "Éligibilité gates ≠ approbation. Les 3 flags (content/render/publish) restent la signature owner dans approval.json.",
+    "gateResults": [
+      { "gate": "G1", "name": "Truth", "verdict": "PASS", "measured": 0.0, "failThreshold": 0.30, "details": "0/4 claims non-sourcés (4/4 evidence_refs vers catalogue interne pg 402)" },
+      { "gate": "G2", "name": "Safety", "verdict": "PASS", "strict": true, "measured": 0, "details": "0 claim kind=procedure/safety (4/4 = dimension) — cadrage compatibilité, pas de conseil de sécurité" },
+      { "gate": "G3", "name": "Brand", "verdict": "PASS", "measured": 0, "details": "0 pattern interdit (aucun prix/promo/urgence/certitude/occasion dans hook+voix+screen_text+CTA+disclaimer)" },
+      { "gate": "G4", "name": "Platform", "verdict": "PASS", "measured": 0.0, "details": "38s dans la fenêtre 30-45s du format ne-change-pas-trop-vite (0% de déviation vs fenêtre)" },
+      { "gate": "G5", "name": "Reuse Risk", "verdict": "PASS", "measured": 0.0, "details": "inspired_from_pattern=null — script original, aucun corpus dérivé" },
+      { "gate": "G6", "name": "Visual Honesty", "verdict": "PASS", "strict": true, "measured": 0, "details": "render motion-graphics pur — 0 asset truth_dependency=proof, aucun avatar, aucune image IA présentée comme preuve" },
+      { "gate": "G7", "name": "Final QA", "verdict": "PASS", "measured": 0, "details": "5 artefacts P0 + approval record + manifest render présents" }
+    ]
+  },
+  "approvalBinding": {
+    "note": "render_approved (approval.json) doit être attaché à ce sha256 exact. Toute modification ultérieure (voix, avatar, durée, texte, musique, animation) produit un nouvel artefact et invalide l'approbation précédente.",
+    "boundSha256": "61671dca9528af8a355185ad3a356231572756a74f54407739abdc23e6f6f57e"
+  },
+  "publication": {
+    "publish_approved": false,
+    "note": "Aucune publication automatique. DRAFT_ONLY. Publication = geste owner explicite séparé (ADR-036 contrainte 6)."
+  }
+}
