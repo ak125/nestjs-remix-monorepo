@@ -32,6 +32,7 @@ import {
   isRouteErrorResponse,
 } from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
+import { buildCacheHeaders } from "~/utils/cache-control";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
@@ -45,6 +46,10 @@ import {
   CardHeader,
   CardTitle,
 } from "../components/ui/card";
+
+export const headers = buildCacheHeaders(
+  "public, max-age=300, s-maxage=86400, stale-while-revalidate=3600",
+);
 
 export const meta: MetaFunction = () => createNoIndexMeta("Gammes de Produits");
 

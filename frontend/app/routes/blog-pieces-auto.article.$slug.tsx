@@ -31,6 +31,7 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import { buildCacheHeaders } from "~/utils/cache-control";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { stripHtmlForMeta } from "~/utils/seo-clean.utils";
@@ -82,8 +83,15 @@ interface LoaderData {
   error?: string;
 }
 
+export const headers = buildCacheHeaders(
+  "public, max-age=1800, stale-while-revalidate=3600",
+);
+
 // Meta SEO
-export const meta: MetaFunction<typeof loader> = ({ loaderData: data, location }) => {
+export const meta: MetaFunction<typeof loader> = ({
+  loaderData: data,
+  location,
+}) => {
   if (!data?.article) {
     return [
       { title: "Article non trouvé - Blog Automecanik" },

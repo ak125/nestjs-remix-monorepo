@@ -12,6 +12,7 @@ import {
 
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
+import { buildCacheHeaders } from "~/utils/cache-control";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { CompactBlogHeader } from "../components/blog/CompactBlogHeader";
@@ -58,6 +59,10 @@ interface LoaderData {
     relfollow: string;
   } | null;
 }
+
+export const headers = buildCacheHeaders(
+  "public, max-age=1800, stale-while-revalidate=3600",
+);
 
 /* ===========================
    Loader
@@ -166,7 +171,10 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
 /* ===========================
    Meta
 =========================== */
-export const meta: MetaFunction<typeof loader> = ({ loaderData: data, location }) => {
+export const meta: MetaFunction<typeof loader> = ({
+  loaderData: data,
+  location,
+}) => {
   const metadata = data?.metadata;
   const brand = data?.brand;
   const modelsCount = data?.models?.length ?? 0;

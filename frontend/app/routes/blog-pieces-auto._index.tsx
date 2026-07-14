@@ -52,6 +52,7 @@ import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 
 // UI Components
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import { buildCacheHeaders } from "~/utils/cache-control";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
@@ -205,6 +206,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
     },
   );
 }
+
+// Single owner of this route's Cache-Control at the edge (Caddy no longer
+// backfills). Propagates the loader's success TTL and forces no-store +
+// noindex on any thrown error Response.
+export const headers = buildCacheHeaders(
+  "public, max-age=300, s-maxage=600, stale-while-revalidate=86400",
+  { defaultErrorRobots: "noindex, follow" },
+);
 
 // Action pour interactions utilisateur
 export async function action({ request }: ActionFunctionArgs) {

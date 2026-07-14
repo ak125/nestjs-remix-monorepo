@@ -6,7 +6,12 @@ import {
   isRouteErrorResponse,
 } from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
+import { buildCacheHeaders } from "~/utils/cache-control";
 import { getSeoMetadata, createSeoMeta } from "../utils/seo.server";
+
+export const headers = buildCacheHeaders(
+  "public, max-age=300, s-maxage=86400, stale-while-revalidate=3600",
+);
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const url = new URL(request.url);

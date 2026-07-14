@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import {
-  type HeadersFunction,
   type LoaderFunctionArgs,
   type MetaFunction,
   Await,
@@ -23,6 +22,7 @@ import {
 import { type BrandItem } from "~/components/home/constants";
 import { LazyFooter } from "~/components/home/LazyFooter";
 import { getRemixApiService } from "~/server/remix-api.server";
+import { buildCacheHeaders } from "~/utils/cache-control";
 import {
   type SlimFamily,
   mapFamiliesFromSplit,
@@ -178,9 +178,9 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   }
 }
 
-export const headers: HeadersFunction = () => ({
-  "Cache-Control": "public, max-age=300, stale-while-revalidate=3600",
-});
+export const headers = buildCacheHeaders(
+  "public, max-age=300, stale-while-revalidate=3600",
+);
 
 // ─── Skeleton placeholders for below-fold sections ──────
 function BrandsGridSkeleton() {

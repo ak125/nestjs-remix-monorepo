@@ -24,6 +24,7 @@ import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
+import { buildCacheHeaders } from "~/utils/cache-control";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 
@@ -68,6 +69,10 @@ interface LoaderData {
     totalModels: number;
   };
 }
+
+export const headers = buildCacheHeaders(
+  "public, max-age=1800, stale-while-revalidate=3600",
+);
 
 /* ===========================
    Loader

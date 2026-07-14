@@ -39,6 +39,7 @@ import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNaviga
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { buildCacheHeaders } from "~/utils/cache-control";
 import { getFamilyTheme } from "~/utils/family-theme";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
@@ -103,6 +104,12 @@ const FAQ_ITEMS = [
     a: "Cela d\u00e9pend du v\u00e9hicule, de l\u2019usage et des sympt\u00f4mes. Les guides donnent des rep\u00e8res g\u00e9n\u00e9raux et des signes d\u2019usure.",
   },
 ];
+
+// ── Headers ─────────────────────────────────────────────
+
+export const headers = buildCacheHeaders(
+  "public, max-age=1800, stale-while-revalidate=3600",
+);
 
 // ── Loader ──────────────────────────────────────────────
 
@@ -177,7 +184,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 // ── Meta ────────────────────────────────────────────────
 
-export const meta: MetaFunction<typeof loader> = ({ loaderData: data, location }) => {
+export const meta: MetaFunction<typeof loader> = ({
+  loaderData: data,
+  location,
+}) => {
   const count = data?.totalArticles ?? 0;
   const hasFilters = location?.search && location.search.length > 1;
 

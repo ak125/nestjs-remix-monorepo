@@ -24,6 +24,7 @@ import { BlogNavigation } from "~/components/blog/BlogNavigation";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Badge } from "~/components/ui/badge";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import { buildCacheHeaders } from "~/utils/cache-control";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
@@ -318,6 +319,10 @@ interface LoaderData {
     totalModels: number;
   };
 }
+
+export const headers = buildCacheHeaders(
+  "public, max-age=1800, stale-while-revalidate=3600",
+);
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);

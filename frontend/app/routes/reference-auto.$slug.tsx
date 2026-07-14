@@ -53,6 +53,7 @@ import {
   getSectionImageConfig,
   resolveAltText,
 } from "~/config/visual-intent";
+import { buildCacheHeaders } from "~/utils/cache-control";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
@@ -371,6 +372,14 @@ export async function loader({ params }: LoaderFunctionArgs) {
     throw new Response("Référence non trouvée", { status: 404 });
   }
 }
+
+// Single owner of this route's Cache-Control at the edge (Caddy no longer
+// backfills). Propagates the loader's success TTL, forces no-store on the
+// bare 404 throw, and noindexes that error response.
+export const headers = buildCacheHeaders(
+  "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400",
+  { defaultErrorRobots: "noindex, follow" },
+);
 
 /* ===========================
    JSON-LD Schema
