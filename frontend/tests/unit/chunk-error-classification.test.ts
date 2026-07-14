@@ -141,3 +141,69 @@ describe("applyChunkErrorClassification", () => {
     expect(applyChunkErrorClassification({})).toEqual({});
   });
 });
+
+describe("applyChunkErrorClassification — fenêtre de recovery (incident 2026-07-10)", () => {
+  // Contexte : quand le guard chunk-reload a déclenché preventDefault()+reload,
+  // __vitePreload résout `undefined` → les erreurs qui suivent sur la même page
+  // (ex. TypeError "reading 'links'" dans le prefetch React Router) sont des
+  // artefacts de course de la recovery, pas de nouvelles régressions. Le
+  // beforeSend injecte ce contexte ; le classifieur reste pur.
+  const RACE_TYPE_ERROR =
+    "Cannot read properties of undefined (reading 'links')";
+
+  it("tags a non-chunk error as reload_recovery_race when the recovery window is active", () => {
+    const ev = chunkEvent(RACE_TYPE_ERROR, PLAIN_URL);
+    const out = applyChunkErrorClassification(ev, { inRecoveryWindow: true });
+    expect(out.tags.chunk_error_class).toBe("reload_recovery_race");
+    expect((out as { fingerprint?: unknown }).fingerprint).toEqual([
+      "chunk-load",
+      "reload-recovery-race",
+    ]);
+    expect(out).toBe(ev); // never dropped
+  });
+
+  it("keeps the message-based class when a chunk error happens inside the window (specificity wins)", () => {
+    const ev = chunkEvent(ERROR_K, CF_URL);
+    const out = applyChunkErrorClassification(ev, { inRecoveryWindow: true });
+    expect(out.tags.chunk_error_class).toBe("cf_challenge");
+  });
+
+  it("a stale_or_network chunk error inside the window is NOT absorbed into the race class (storm stays visible)", () => {
+    const out = applyChunkErrorClassification(chunkEvent(ERROR_K, PLAIN_URL), {
+      inRecoveryWindow: true,
+    });
+    expect(out.tags.chunk_error_class).toBe("stale_or_network");
+    expect((out as { fingerprint?: unknown }).fingerprint).toEqual([
+      "chunk-load",
+      "stale-or-network",
+    ]);
+  });
+
+  it("leaves a non-chunk error untouched when the window is inactive or absent (regression)", () => {
+    const untouched = applyChunkErrorClassification(
+      chunkEvent(RACE_TYPE_ERROR, PLAIN_URL),
+      { inRecoveryWindow: false },
+    );
+    expect(untouched.tags.chunk_error_class).toBeUndefined();
+
+    const noContext = applyChunkErrorClassification(
+      chunkEvent(RACE_TYPE_ERROR, PLAIN_URL),
+    );
+    expect(noContext.tags.chunk_error_class).toBeUndefined();
+  });
+
+  it("never throws / never drops on a malformed event even with the window active", () => {
+    expect(() =>
+      applyChunkErrorClassification(null, { inRecoveryWindow: true }),
+    ).not.toThrow();
+    // Un event dégénéré ({}) capté PENDANT la fenêtre est quand même classé
+    // (contrat : tout event de la fenêtre est un artefact de recovery) — et
+    // surtout jamais droppé (même référence retournée).
+    const degenerate = {} as { tags?: Record<string, string> };
+    const out = applyChunkErrorClassification(degenerate, {
+      inRecoveryWindow: true,
+    });
+    expect(out).toBe(degenerate);
+    expect(out.tags?.chunk_error_class).toBe("reload_recovery_race");
+  });
+});
