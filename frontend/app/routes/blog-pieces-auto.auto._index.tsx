@@ -136,7 +136,14 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     // Les fetch sont individuellement `.catch(() => null)` : un backend KO ne
     // remonte PAS au catch ci-dessous, il tombe ici avec des listes vides. Si un
     // fetch cœur a échoué, la page est dégradée → jamais le TTL public de succès.
-    const degraded = !brandsRes?.ok || !modelsRes?.ok;
+    // Un 200 dont le corps est illisible met brandsData/modelsData à `null`
+    // (`.json().catch(() => null)`, l.99-104) sans que `.ok` soit faux → il faut
+    // aussi tester le parse (aligné sur le garde du sibling auto.$marque.index).
+    const degraded =
+      !brandsRes?.ok ||
+      !modelsRes?.ok ||
+      brandsData === null ||
+      modelsData === null;
 
     return data(
       {

@@ -63,6 +63,15 @@ const call = (loader: (a: never) => unknown, args: object = {}) =>
   loader({ request: req(), context: {}, params: {}, ...args } as never);
 
 const jsonOk = (body: unknown) => ({ ok: true, json: async () => body });
+// HTTP 200 whose body is not parseable JSON (proxy hiccup / truncated payload):
+// `.ok` is true but `.json()` rejects → the loader's `.json().catch(() => null)`
+// yields a null parsed body.
+const jsonBad = () => ({
+  ok: true,
+  json: async () => {
+    throw new SyntaxError("Unexpected end of JSON input");
+  },
+});
 
 describe("degraded fallback → never the success TTL", () => {
   it("blog _index: API failure → no-store + noindex (not the public s-maxage)", async () => {
@@ -95,6 +104,44 @@ describe("degraded fallback → never the success TTL", () => {
     const out = await call(autoIndexLoader);
     expect(cacheControlOf(out)).toBe("no-store");
     expect(xRobotsOf(out)).toBe("noindex, follow");
+  });
+
+  it("auto _index: HTTP 200 but brands body unparseable → no-store + noindex (H1, not the public TTL)", async () => {
+    // 200 OK on every fetch, but the brands payload fails to parse → brandsData === null.
+    fetchMock.mockImplementation((url: string) =>
+      /brands-logos/.test(url)
+        ? Promise.resolve(jsonBad())
+        : Promise.resolve(jsonOk({ data: [] })),
+    );
+    const out = await call(autoIndexLoader);
+    const cc = cacheControlOf(out);
+    expect(cc).toBe("no-store");
+    expect(cc).not.toContain("public");
+    expect(cc).not.toContain("s-maxage");
+    expect(xRobotsOf(out)).toBe("noindex, follow");
+  });
+
+  it("auto _index: HTTP 200 but models body unparseable → no-store + noindex (H1)", async () => {
+    fetchMock.mockImplementation((url: string) =>
+      /popular-models/.test(url)
+        ? Promise.resolve(jsonBad())
+        : Promise.resolve(jsonOk({ data: [] })),
+    );
+    const out = await call(autoIndexLoader);
+    const cc = cacheControlOf(out);
+    expect(cc).toBe("no-store");
+    expect(cc).not.toContain("public");
+    expect(xRobotsOf(out)).toBe("noindex, follow");
+  });
+
+  it("auto _index: genuine 200 success (both bodies parse) → NOT degraded (delegates to public headers export, no no-store/noindex)", async () => {
+    // Guard against over-privatising a healthy page: on real success the loader
+    // returns `data(payload, undefined)` (the public `headers` export applies) and
+    // must NOT stamp the degraded no-store/noindex.
+    fetchMock.mockResolvedValue(jsonOk({ data: [] }));
+    const out = await call(autoIndexLoader);
+    expect(cacheControlOf(out)).toBeNull();
+    expect(xRobotsOf(out)).toBeNull();
   });
 
   it("auto $marque index: brand OK but models fetch fails → degraded no-store", async () => {
