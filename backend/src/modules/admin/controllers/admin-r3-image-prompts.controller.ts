@@ -1,7 +1,6 @@
 import {
   Controller,
   Get,
-  Post,
   Patch,
   Query,
   Param,
@@ -14,44 +13,18 @@ import { Response } from 'express';
 import { AuthenticatedGuard } from '@auth/authenticated.guard';
 import { IsAdminGuard } from '@auth/is-admin.guard';
 import { R3ImagePromptService } from '../services/r3-image-prompt.service';
-import {
-  GenerateImagePromptsDto,
-  ImagePromptQueryDto,
-} from '../dto/r3-image-prompt.dto';
+import { ImagePromptQueryDto } from '../dto/r3-image-prompt.dto';
 
+// B5 (ADR-059 §Fermeture) — the RAG prompt-GENERATION endpoints (POST /generate,
+// POST /generate/:pgAlias) have been removed. This controller is now curation-only:
+// list / export / approve / set-image-url over human-owned image rows. No generation
+// path remains, so an approved image cannot be reset by regeneration.
 @Controller('api/admin/r3-image-prompts')
 @UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class AdminR3ImagePromptsController {
   private readonly logger = new Logger(AdminR3ImagePromptsController.name);
 
   constructor(private readonly imagePromptService: R3ImagePromptService) {}
-
-  /**
-   * POST /api/admin/r3-image-prompts/generate
-   * Batch generation for multiple gammes
-   */
-  @Post('generate')
-  async generateBatch(@Body() body: unknown) {
-    const parsed = GenerateImagePromptsDto.parse(body);
-    this.logger.log(`Batch generate for ${parsed.pgAliases.length} gammes`);
-    return this.imagePromptService.generateBatch(parsed.pgAliases, {
-      force: parsed.force,
-      slotsFilter: parsed.slotsFilter,
-    });
-  }
-
-  /**
-   * POST /api/admin/r3-image-prompts/generate/:pgAlias
-   * Single gamme generation
-   */
-  @Post('generate/:pgAlias')
-  async generateSingle(@Param('pgAlias') pgAlias: string) {
-    this.logger.log(`Generate for ${pgAlias}`);
-
-    // Look up pgId and pgName from the batch method (single-item batch)
-    const result = await this.imagePromptService.generateBatch([pgAlias], {});
-    return result.items[0] ?? { pgAlias, status: 'failed', reason: 'Unknown' };
-  }
 
   /**
    * GET /api/admin/r3-image-prompts
