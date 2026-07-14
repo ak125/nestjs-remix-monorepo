@@ -9,7 +9,7 @@
  * /pieces/kit-d-embrayage-479.html
  */
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useMemo, useState, Suspense } from "react";
 import {
   redirect,
   type LoaderFunctionArgs,
@@ -311,7 +311,19 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           }
         : undefined,
       purchaseGuideData: apiData.purchaseGuideData,
-      substitution: substitutionResponse,
+      // La réponse substitution ne sert qu'au routing 404/410 ci-dessus (le
+      // 410 jette une Response nue — aucun consommateur client de
+      // data.substitution sur cette route). Son wizard `lock` embarque la
+      // liste complète des options véhicule (5 309 options ≈ 540KB
+      // turbo-stream mesurés sur gamme 7, ~70% du script d'hydration → input
+      // delay INP mobile) : on le retire du payload client. SubstitutionSchema
+      // déclare lock optional.
+      substitution: substitutionResponse
+        ? (() => {
+            const { lock: _wizardLock, ...slim } = substitutionResponse;
+            return slim;
+          })()
+        : substitutionResponse,
       reference: apiData.reference,
     });
 
@@ -595,13 +607,23 @@ export default function PiecesDetailPage() {
   // Nom de la gamme en minuscule pour les titres
   const n = (data.content?.pg_name || "pièce").toLowerCase();
 
-  // Extraire les blocs éditoriaux par section narrative (6 H2)
-  const editorialBlocks = extractEditorialBlocks(data.content?.content || "");
+  // Extraire les blocs éditoriaux par section narrative (6 H2).
+  // useMemo : extractEditorialBlocks = DOMPurify.sanitize (~9,5KB) + regex —
+  // sans mémo, ré-exécuté à CHAQUE re-render (dont les 2 transitions
+  // useNavigation de chaque clic) → coût INP mobile récurrent.
+  const editorialBlocks = useMemo(
+    () => extractEditorialBlocks(data.content?.content || ""),
+    [data.content?.content],
+  );
 
   // FAQ unique fusionnée (éditorial + fallback statique)
-  const mergedFaq = mergeFaqBlocks(
-    editorialBlocks.faqSection,
-    data.sectionPack?.sections.faq.data ?? R1_SELECTOR_FAQ,
+  const mergedFaq = useMemo(
+    () =>
+      mergeFaqBlocks(
+        editorialBlocks.faqSection,
+        data.sectionPack?.sections.faq.data ?? R1_SELECTOR_FAQ,
+      ),
+    [editorialBlocks.faqSection, data.sectionPack?.sections.faq.data],
   );
 
   // Afficher un indicateur de chargement si les données sont en cours de chargement
@@ -811,7 +833,10 @@ export default function PiecesDetailPage() {
            H2 #1 — Bien choisir votre {gamme}
            Types, critères, vérifications, erreurs à éviter
            ═══════════════════════════════════════════════════════ */}
-      <section id="bien-choisir" className="py-10 px-4 sm:px-6 bg-white cv-auto">
+      <section
+        id="bien-choisir"
+        className="py-10 px-4 sm:px-6 bg-white cv-auto"
+      >
         <div className="max-w-[1280px] mx-auto">
           <h2 className="text-2xl font-bold text-slate-900 mb-6">
             Bien choisir votre {n}
