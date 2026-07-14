@@ -543,3 +543,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/frontend-interactive-list-keys`
 - **Décision** : fix(frontend): stable keys on interactive lists (admin.seo checklist + AI generator rows)
 - **Sortie** : PR #1263 | commits 6990bc13f
+
+## 2026-07-14 — feat/attribution-beacon-cache-cutover-prA (auto)
+
+- **Branche** : `feat/attribution-beacon-cache-cutover-prA`
+- **Décision** : feat(analytics): déplace l'attribution first-touch GET→POST beacon (cutover cache HTML, PR A)
+- **Sortie** : PR #1271 | commits 7f288d9da
