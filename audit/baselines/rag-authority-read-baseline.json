@@ -1,0 +1,17 @@
+{
+  "rule": "seo-no-rag-as-content-source",
+  "total": 25,
+  "files": {
+    "backend/src/modules/admin/services/buying-guide/buying-guide-rag-fetcher.service.ts": 3,
+    "backend/src/modules/admin/services/execution-router.service.ts": 2,
+    "backend/src/modules/admin/services/r1-enricher.service.ts": 2,
+    "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts": 2,
+    "backend/src/modules/admin/services/r2-enricher.service.ts": 2,
+    "backend/src/modules/admin/services/r3-image-prompt.service.ts": 2,
+    "backend/src/modules/admin/services/r4-content-enricher.service.ts": 2,
+    "backend/src/modules/admin/services/r8-vehicle-enricher.service.ts": 3,
+    "backend/src/modules/admin/services/rag-gamme-reader.service.ts": 2,
+    "backend/src/modules/admin/services/vehicle-rag-generator.service.ts": 5
+  },
+  "note": "Known B1..B8 RAG-authority-read debt, FROZEN. Additions/new files fail. A B-tranche structural deletion refreshes this DOWN in the same PR. --refresh is maintainer-only."
+}
