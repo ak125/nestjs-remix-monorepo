@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { memo, useRef, useState } from "react";
 import { useAiContent } from "~/hooks/useAiContent";
 import { logger } from "~/utils/logger";
 
@@ -6,6 +6,11 @@ interface ProductDescriptionGeneratorProps {
   productName?: string;
   onGenerated?: (description: string) => void;
   className?: string;
+}
+
+interface FeatureRow {
+  id: number;
+  value: string;
 }
 
 export const ProductDescriptionGenerator = memo(
@@ -18,7 +23,10 @@ export const ProductDescriptionGenerator = memo(
 
     const [productName, setProductName] = useState(initialProductName);
     const [category, setCategory] = useState("");
-    const [features, setFeatures] = useState<string[]>([""]);
+    const featureIdRef = useRef(0);
+    const [features, setFeatures] = useState<FeatureRow[]>([
+      { id: 0, value: "" },
+    ]);
     const [targetAudience, setTargetAudience] = useState("");
     const [tone, setTone] = useState<"professional" | "casual" | "friendly">(
       "professional",
@@ -29,17 +37,19 @@ export const ProductDescriptionGenerator = memo(
     >(null);
 
     const handleAddFeature = () => {
-      setFeatures([...features, ""]);
+      setFeatures([...features, { id: ++featureIdRef.current, value: "" }]);
     };
 
-    const handleRemoveFeature = (index: number) => {
-      setFeatures(features.filter((_, i) => i !== index));
+    const handleRemoveFeature = (id: number) => {
+      setFeatures(features.filter((feature) => feature.id !== id));
     };
 
-    const handleFeatureChange = (index: number, value: string) => {
-      const newFeatures = [...features];
-      newFeatures[index] = value;
-      setFeatures(newFeatures);
+    const handleFeatureChange = (id: number, value: string) => {
+      setFeatures(
+        features.map((feature) =>
+          feature.id === id ? { ...feature, value } : feature,
+        ),
+      );
     };
 
     const handleGenerate = async () => {
@@ -49,7 +59,7 @@ export const ProductDescriptionGenerator = memo(
         const result = await generateProductDescription({
           productName,
           category: category || undefined,
-          features: features.filter((f) => f.trim()),
+          features: features.filter((f) => f.value.trim()).map((f) => f.value),
           targetAudience: targetAudience || undefined,
           tone,
           length,
@@ -108,12 +118,14 @@ export const ProductDescriptionGenerator = memo(
               Caractéristiques principales
             </label>
             <div className="space-y-2">
-              {features.map((feature, index) => (
-                <div key={index} className="flex gap-2">
+              {features.map((feature) => (
+                <div key={feature.id} className="flex gap-2">
                   <input
                     type="text"
-                    value={feature}
-                    onChange={(e) => handleFeatureChange(index, e.target.value)}
+                    value={feature.value}
+                    onChange={(e) =>
+                      handleFeatureChange(feature.id, e.target.value)
+                    }
                     placeholder="Ex: Corps en fonte GGG40"
                     className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     disabled={isLoading}
@@ -121,7 +133,7 @@ export const ProductDescriptionGenerator = memo(
                   {features.length > 1 && (
                     <button
                       type="button"
-                      onClick={() => handleRemoveFeature(index)}
+                      onClick={() => handleRemoveFeature(feature.id)}
                       className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg"
                       disabled={isLoading}
                     >
