@@ -525,3 +525,15 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/tranche-b1b-no-new-unowned-served-write`
 - **Décision** : fix(audit): close 3 ratchet gaps — occurrence-count, removed=fail, SQL DELETE/TRUNCATE (Tranche B1b, #1238 review) (+2 other commits)
 - **Sortie** : PR #1238 | commits fe47346d4 a534d23b6 149bb3a10
+
+## 2026-07-14 — fix/payment-tunnel-guest-session (auto)
+
+- **Branche** : `fix/payment-tunnel-guest-session`
+- **Décision** : fix(checkout): redirect Paybox depuis la réponse du POST — plus de re-GET au cookie invalidé
+- **Sortie** : PR #1256 | commits 67833d2b5
+
+## 2026-07-14 — fix/payment-tunnel-guest-session (auto)
+
+- **Branche** : `fix/payment-tunnel-guest-session`
+- **Décision** : test(checkout): intégration action guest — invariant zéro re-GET après le POST (+2 other commits)
+- **Sortie** : PR #1256 | commits 0de18a874 6a877c503 67833d2b5

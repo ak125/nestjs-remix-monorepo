@@ -74,6 +74,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
       };
     }
 
+    // Email vide ⇒ /api/paybox/redirect répond 400 « Paramètres manquants » :
+    // échouer ici de façon observable plutôt que rediriger vers un échec sûr
+    // (INC tunnel paiement 2026-05→07, retries 12/07 avec email= vide).
+    if (!customerEmail) {
+      logger.error("[Resume] customerEmail vide pour la commande:", orderId);
+      throw new Response(
+        "Impossible de récupérer l'email de la commande — contactez le support.",
+        { status: 500 },
+      );
+    }
+
     // Rediriger vers Paybox (le token sera marqué used_at par le backend)
     const redirectUrl = buildPayboxRedirectUrl(
       orderId,
