@@ -537,3 +537,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/payment-tunnel-guest-session`
 - **Décision** : test(checkout): intégration action guest — invariant zéro re-GET après le POST (+2 other commits)
 - **Sortie** : PR #1256 | commits 0de18a874 6a877c503 67833d2b5
+
+## 2026-07-14 — fix/frontend-interactive-list-keys (auto)
+
+- **Branche** : `fix/frontend-interactive-list-keys`
+- **Décision** : fix(frontend): stable keys on interactive lists (admin.seo checklist + AI generator rows)
+- **Sortie** : PR #1263 | commits 6990bc13f

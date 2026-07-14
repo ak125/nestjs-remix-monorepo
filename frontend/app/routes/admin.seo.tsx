@@ -1270,9 +1270,9 @@ export default function SeoAdmin() {
                   </div>
 
                   <div className="space-y-2 max-h-96 overflow-y-auto">
-                    {pagesWithoutSeo.pages.map((page: any, index: number) => (
+                    {pagesWithoutSeo.pages.map((page: any) => (
                       <div
-                        key={index}
+                        key={page.url_path}
                         className="flex items-center justify-between p-3 border rounded hover:bg-muted/50 transition-colors"
                       >
                         <div className="flex items-center gap-3">
