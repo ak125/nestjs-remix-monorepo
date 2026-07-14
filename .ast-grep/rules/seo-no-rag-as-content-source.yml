@@ -7,11 +7,24 @@ message: |
   contenu = WIKI (chaîne RAW → WIKI → DB → R*). Ces lectures `RAG_KNOWLEDGE_PATH`
   dans les enrichers/services de contenu sont du code OBSOLÈTE (le piège) : ne
   PAS en déduire la stratégie, ne PAS l'étendre. Remplacement = WIKI.
-  Réf : mémoire feedback_no_rag_for_content_legacy_code_is_not_strategy + ADR-031/046.
-  NB : rag-proxy (chatbot) et diagnostic-engine sont HORS de cette règle (chemins
-  non couverts par `files`) — ce sont des consommateurs légitimes, on n'y touche pas.
-# Scope = modules de CONTENU uniquement. rag-proxy/** (chatbot) et
-# diagnostic-engine/** (diagnostic) ne sont PAS dans ces globs → jamais flaggés.
+  C'est le ratchet PRIMAIRE de non-réintroduction d'un writer RAG d'autorité vers
+  un EDITORIAL_AUTHORITY_SINK (scripts/audit/editorial-authority-sinks.ts) — plus
+  fiable que le ratchet write-sink servi, aveugle aux drafts/keyword-plans (B3).
+  Réf : mémoire feedback_no_rag_for_content_legacy_code_is_not_strategy + ADR-031/046
+  + audit/adr059-p0d0-audit-2026-07-14.md §6.
+# ── SCOPE = AUTORITÉ ÉDITORIALE UNIQUEMENT (jamais global) ─────────────────────
+# ERROR-cible = enrichers / image-prompts / services de contenu SEO qui écrivent un
+# EDITORIAL_AUTHORITY_SINK. ALLOW (hors `files:`, jamais flaggés) = chatbot
+# (rag-proxy/**), retrieval, ingestion/indexation, diagnostic-engine/** — ce sont
+# des CONSOMMATEURS légitimes du canon (ADR-031/046), on n'y touche pas.
+#
+# SÉVÉRITÉ = `warning` (PAS `error`) TANT QUE le corpus in-scope n'est pas à 0.
+# État 2026-07-14 : 25 findings / 11 fichiers = dette RAG connue B1..B8 (writers
+# encore présents ; seul B6 fermé). Promotion `warning → error` = PAR TRANCHE, au
+# moment de la suppression structurelle du writer (chaque B armant sa surface une
+# fois à 0 finding). Passer error MAINTENANT casserait le build sur la dette
+# existante — interdit (no silent breakage). Le flip global suit la fermeture du
+# dernier writer in-scope.
 files:
   - backend/src/modules/admin/services/**/*.ts
   - backend/src/modules/seo/services/**/*.ts

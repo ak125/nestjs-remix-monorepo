@@ -1,0 +1,31 @@
+# ast-grep rule test — RED/GREEN fixtures for the authority-scoped RAG-read ratchet.
+# Run: npx ast-grep test --test-dir scripts/audit/__fixtures__/rag-authority --skip-snapshot-tests
+#
+# invalid = RED (must MATCH): a legacy writer reads RAG_KNOWLEDGE_PATH to feed an
+#   editorial-authority sink → the ratchet must catch it.
+# valid   = GREEN (must NOT match): the chatbot/retrieval path (ADR-031/046) never
+#   reads RAG_KNOWLEDGE_PATH → a legitimate consumer, never flagged.
+id: seo-no-rag-as-content-source
+valid:
+  # GREEN — chatbot retrieval answering from an index (no RAG_KNOWLEDGE_PATH read).
+  - |
+    async answer(question: string) {
+      const docs = await this.retrieval.search(question);
+      return this.chat.complete({ context: docs, question });
+    }
+  # GREEN — reading the governed WIKI export path (not RAG) to compose content.
+  - |
+    async compose(slug: string) {
+      const wiki = await this.wiki.load(`exports/seo/gamme/${slug}.json`);
+      return this.mapper.toBlocks(wiki);
+    }
+invalid:
+  # RED — enricher reads RAG knowledge then upserts an editorial-authority sink.
+  - |
+    async enrichFromRag(slug: string) {
+      const md = fs.readFileSync(`${RAG_KNOWLEDGE_PATH}/gammes/${slug}.md`, 'utf-8');
+      await this.client.from('__seo_gamme_conseil').upsert({ pg_alias: slug, content: md });
+    }
+  # RED — image-prompt generator reads RAG to build a prompt draft.
+  - |
+    const dir = path.join(RAG_KNOWLEDGE_PATH, 'prompts');
