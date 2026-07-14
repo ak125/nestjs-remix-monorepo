@@ -221,6 +221,9 @@ frontend/tests/e2e/reports/
 .claude/*.lock
 .claude/.session-log-state/
 
+# Claude Code owner handoffs (prep vault G3 etc. — PREP_ONLY, jamais committé dans ce repo)
+.claude/handoffs/
+
 # Cookies (curl debug artifacts)
 cookies.txt
 

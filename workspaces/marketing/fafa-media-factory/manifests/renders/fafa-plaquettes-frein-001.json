@@ -28,7 +28,7 @@
   "artifact": {
     "filename": "fafa-plaquettes-frein-001.mp4",
     "sha256": "61671dca9528af8a355185ad3a356231572756a74f54407739abdc23e6f6f57e",
-    "bytes": 1132000,
+    "bytes": 1078128,
     "s3KeyCanonical": "s3://automecanik-renders/pilots/fafa-plaquettes-frein-001/motion-graphics-silent.mp4",
     "s3UploadStatus": "PENDING_OPS_UPLOAD",
     "previewLocalPath": "(hors repo — MP4 gitignoré, S3-only ; render local pour review, upload S3 = étape ops séparée)"
