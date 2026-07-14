@@ -47,6 +47,7 @@ import {
   getFunnelSessionId,
 } from "~/utils/funnel-beacon";
 import { isValidPosition } from "~/utils/pieces-filters.utils";
+import { safeSessionStorage } from "~/utils/safe-storage";
 import { buildPiecesBreadcrumbs } from "~/utils/url-builder.utils";
 
 // LCP OPTIMIZATION V6: Seul PiecesStatistics reste lazy (pur UX, zero valeur SEO)
@@ -105,7 +106,9 @@ export function PiecesVehicleContent() {
     // Namespace `amk_funnel_dedup_*` aligné avec `amk_funnel_sid` dans
     // funnel-beacon.ts — évite collision sessionStorage avec d'autres composants.
     const dedupKey = `amk_funnel_dedup_r2v_${window.location.pathname}`;
-    if (sessionStorage.getItem(dedupKey)) return;
+    // safeSessionStorage : sessionStorage.* jette SecurityError sous WebView /
+    // storage bloqué (Sentry 181aeb23) — dédup best-effort, jamais de throw.
+    if (safeSessionStorage.getItem(dedupKey)) return;
     emitFunnel({
       event_type: "r2_view",
       payload: {
@@ -125,7 +128,7 @@ export function PiecesVehicleContent() {
             : null,
       },
     });
-    sessionStorage.setItem(dedupKey, "1");
+    safeSessionStorage.setItem(dedupKey, "1");
     // Mount-only — pas de deps pour éviter re-fire sur filter change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -549,8 +552,12 @@ export function PiecesVehicleContent() {
       {/* Mobile bottom bar : Panier + Filtrer */}
       <MobileBottomBarSpacer />
       <MobileBottomBar>
-        {/* Bouton Panier — accès direct sans scroller jusqu'au navbar */}
+        {/* Bouton Panier — accès direct sans scroller jusqu'au navbar.
+            translate="no" (pattern PR #1187) : badge compteur conditionnel
+            (cartCount, "99+") re-rendu à chaque ajout panier → cible du
+            removeChild NotFoundError sous traduction navigateur. */}
         <button
+          translate="no"
           type="button"
           onClick={openCartSidebar}
           className="relative py-3 px-4 bg-orange-500 hover:bg-orange-600 text-black rounded-xl font-bold flex items-center gap-2 transition-colors"
@@ -563,8 +570,10 @@ export function PiecesVehicleContent() {
             </span>
           )}
         </button>
-        {/* Bouton Filtrer */}
+        {/* Bouton Filtrer — translate="no" : libellé qui bascule
+            (Masquer filtres/Filtrer) + badge compteur conditionnel. */}
         <button
+          translate="no"
           type="button"
           onClick={() => setShowFilters(!showFilters)}
           className="flex-1 py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-colors"

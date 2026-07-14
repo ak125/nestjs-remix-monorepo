@@ -62,7 +62,18 @@ export const PiecesToolbar = memo(function PiecesToolbar({
   selectedPiecesCount,
 }: PiecesToolbarProps) {
   return (
-    <div className="bg-white/95 rounded-2xl shadow-lg border border-gray-200/50 p-3 sm:p-5 sticky top-24 z-10">
+    /* translate="no" — anti removeChild NotFoundError (Sentry PROD 2026-07-10,
+       route R2 /pieces, même cause racine que PR #1187 home) : la traduction
+       navigateur re-parente les nœuds texte dans des <font> ; le compteur
+       `{filteredCount} pièce{s}` et les contrôles tri/vue re-rendent à chaque
+       interaction → React removeChild sur un nœud déplacé → DOMException, et
+       l'ErrorBoundary de la route remplace toute la page par une carte 500.
+       Sous-arbre 100 % widget (compteurs, tri, vue) — rien à traduire ici.
+       Cf. React #11538 + audit/sentry-prod-links-undefined-and-removechild-triage-2026-07-14.md. */
+    <div
+      translate="no"
+      className="bg-white/95 rounded-2xl shadow-lg border border-gray-200/50 p-3 sm:p-5 sticky top-24 z-10"
+    >
       {/* Layout Mobile: Compact vertical */}
       <div className="flex flex-col gap-3 sm:hidden">
         {/* Ligne 1: Compteur + Tri dropdown */}
@@ -175,7 +186,7 @@ export const PiecesToolbar = memo(function PiecesToolbar({
             variant={viewMode === "grid" ? "blue" : "ghost"}
             size="sm"
             onClick={() => setViewMode("grid")}
-            className={`gap-2 ${ viewMode === "grid" ? "bg-gradient-to-r from-blue-500 shadow-md" : "" }`}
+            className={`gap-2 ${viewMode === "grid" ? "bg-gradient-to-r from-blue-500 shadow-md" : ""}`}
           >
             <LayoutGrid className="w-4 h-4" />
             Grille
@@ -185,7 +196,7 @@ export const PiecesToolbar = memo(function PiecesToolbar({
             variant={viewMode === "list" ? "blue" : "ghost"}
             size="sm"
             onClick={() => setViewMode("list")}
-            className={`gap-2 ${ viewMode === "list" ? "bg-gradient-to-r from-blue-500 shadow-md" : "" }`}
+            className={`gap-2 ${viewMode === "list" ? "bg-gradient-to-r from-blue-500 shadow-md" : ""}`}
           >
             <LayoutList className="w-4 h-4" />
             Liste
@@ -195,7 +206,7 @@ export const PiecesToolbar = memo(function PiecesToolbar({
             variant={viewMode === "comparison" ? "blue" : "ghost"}
             size="sm"
             onClick={() => setViewMode("comparison")}
-            className={`gap-2 relative ${ viewMode === "comparison" ? "bg-gradient-to-r from-blue-500 shadow-md" : "" }`}
+            className={`gap-2 relative ${viewMode === "comparison" ? "bg-gradient-to-r from-blue-500 shadow-md" : ""}`}
           >
             <ClipboardList className="w-4 h-4" />
             Comparer

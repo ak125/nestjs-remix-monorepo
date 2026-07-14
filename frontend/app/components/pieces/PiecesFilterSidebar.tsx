@@ -86,7 +86,11 @@ export const PiecesFilterSidebar = memo(function PiecesFilterSidebar({
         }));
 
   return (
-    <div className="w-72 h-[calc(100dvh-8rem)] flex flex-col">
+    /* translate="no" — même protection que PiecesToolbar (pattern PR #1187) :
+       compteur `résultat{s}`, badges de comptage par marque et compteurs de
+       sélection re-rendent à chaque clic de filtre → cible du removeChild
+       NotFoundError sous traduction navigateur. Widget pur, rien à traduire. */
+    <div translate="no" className="w-72 h-[calc(100dvh-8rem)] flex flex-col">
       {/* Card principale des filtres - Glassmorphism premium */}
       <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-900/10 border border-slate-200/80 overflow-hidden flex flex-col flex-1 min-h-0">
         {/* Header avec gradient premium dark */}
@@ -160,7 +164,7 @@ export const PiecesFilterSidebar = memo(function PiecesFilterSidebar({
                       onClick={() =>
                         setActiveFilters({ ...activeFilters, position: pos })
                       }
-                      className={`px-3 py-2 rounded-lg text-[11px] font-bold transition-colors duration-200 ${ activeFilters.position === pos ? "bg-gradient-to-r from-blue-600 text-white shadow-lg shadow-blue-600/30" : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800" }`}
+                      className={`px-3 py-2 rounded-lg text-[11px] font-bold transition-colors duration-200 ${activeFilters.position === pos ? "bg-gradient-to-r from-blue-600 text-white shadow-lg shadow-blue-600/30" : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800"}`}
                     >
                       {pos}
                     </button>
@@ -423,8 +427,7 @@ export const PiecesFilterSidebar = memo(function PiecesFilterSidebar({
                                 bg: "bg-blue-50",
                                 border: "border-blue-400",
                                 text: "text-blue-700",
-                                activeBg:
-                                  "bg-gradient-to-r from-blue-500",
+                                activeBg: "bg-gradient-to-r from-blue-500",
                                 shadow: "shadow-blue-400/50",
                               },
                       }))
@@ -450,8 +453,7 @@ export const PiecesFilterSidebar = memo(function PiecesFilterSidebar({
                             bg: "bg-blue-50",
                             border: "border-blue-400",
                             text: "text-blue-700",
-                            activeBg:
-                              "bg-gradient-to-r from-blue-500",
+                            activeBg: "bg-gradient-to-r from-blue-500",
                             shadow: "shadow-blue-400/50",
                           },
                         },
