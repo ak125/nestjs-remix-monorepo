@@ -234,11 +234,6 @@ interface RelatedRef {
   title: string;
 }
 
-interface LoaderData {
-  reference: Reference;
-  relatedRefs: RelatedRef[];
-}
-
 /**
  * S16 — HeroRole vs HeroReference
  * HeroRole (pedagogique) si le texte roleMecanique est riche ET la piece a des interactions cross-gamme.
@@ -325,9 +320,30 @@ export async function loader({ params }: LoaderFunctionArgs) {
   try {
     const backendUrl = getInternalApiUrl("");
 
-    const res = await fetch(`${backendUrl}/api/seo/reference/${slug}`, {
+    // ⚡ LCP/TTFB (audit 2026-07-14 §2C) : le fetch principal et /related ne
+    // dépendent que de `slug` → lancés en parallèle. La promesse related ne
+    // rejette jamais (.catch → []) : si le principal throw 404, elle est
+    // abandonnée sans unhandled-rejection.
+    const referencePromise = fetch(`${backendUrl}/api/seo/reference/${slug}`, {
       headers: { "Content-Type": "application/json" },
     });
+    const relatedRefsPromise: Promise<RelatedRef[]> = fetch(
+      `${backendUrl}/api/seo/reference/${slug}/related`,
+      { headers: { "Content-Type": "application/json" } },
+    )
+      .then(async (relRes) => {
+        if (!relRes.ok) return [] as RelatedRef[];
+        const relData = await relRes.json();
+        return (relData.related || []).map(
+          (r: { slug: string; title: string }) => ({
+            slug: r.slug,
+            title: r.title,
+          }),
+        );
+      })
+      .catch(() => [] as RelatedRef[]); // Silently ignore — related refs are optional
+
+    const res = await referencePromise;
 
     if (!res.ok) {
       throw new Response("Référence non trouvée", { status: 404 });
@@ -339,25 +355,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
       throw new Response("Référence non trouvée", { status: 404 });
     }
 
-    // Fetch related references (non-blocking — empty array on error)
-    let relatedRefs: RelatedRef[] = [];
-    try {
-      const relRes = await fetch(
-        `${backendUrl}/api/seo/reference/${slug}/related`,
-        { headers: { "Content-Type": "application/json" } },
-      );
-      if (relRes.ok) {
-        const relData = await relRes.json();
-        relatedRefs = (relData.related || []).map(
-          (r: { slug: string; title: string }) => ({
-            slug: r.slug,
-            title: r.title,
-          }),
-        );
-      }
-    } catch {
-      // Silently ignore — related refs are optional
-    }
+    const relatedRefs = await relatedRefsPromise;
 
     return data(
       { reference, relatedRefs },
