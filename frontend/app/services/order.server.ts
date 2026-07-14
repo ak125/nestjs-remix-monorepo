@@ -45,7 +45,14 @@ export interface CreateCheckoutOrderPayload {
 }
 
 export type CreateOrderResult =
-  | { success: true; orderId: string; resumeToken?: string }
+  | {
+      success: true;
+      orderId: string;
+      resumeToken?: string;
+      totalTTC: number;
+      customerEmail: string;
+      isPaid: boolean;
+    }
   | {
       success: false;
       error: string;
@@ -54,13 +61,6 @@ export type CreateOrderResult =
       conflictEmail?: string;
       redirect?: string;
     };
-
-export interface OrderPaymentDetails {
-  orderId: string;
-  totalTTC: number;
-  isPaid: boolean;
-  customerEmail: string;
-}
 
 // -- Service functions --
 
@@ -79,7 +79,6 @@ export function buildOrderLines(items: CartItem[]) {
     consigne_unit: item.consigne_unit || 0,
     has_consigne: item.has_consigne || false,
     website_url: item.website_url, // F1 attribution : source d'ajout par-ligne
-
   }));
 }
 
@@ -158,7 +157,12 @@ export async function createCheckoutOrder(
     }
 
     const resumeToken = order.resumeToken || order.resume_token;
-    return { success: true, orderId, resumeToken };
+    return {
+      success: true,
+      orderId,
+      resumeToken,
+      ...extractPaymentFieldsFromCreateOrderResponse(order),
+    };
   } catch (error) {
     logger.error("[Checkout] Order creation error:", error);
     return {
@@ -171,45 +175,28 @@ export async function createCheckoutOrder(
 }
 
 /**
- * Recupere les details d'une commande necessaires pour construire le redirect Paybox.
+ * Extrait de la reponse des POST /api/orders(/guest) les champs necessaires
+ * au redirect Paybox. Le montant/email DOIVENT venir de cette reponse : le
+ * POST guest regenere la session cote backend, donc le cookie porte par
+ * l'action est invalide pour tout fetch ulterieur (INC tunnel paiement
+ * 2026-05→07 : GET /api/orders/:id → 404 → client jamais envoye vers Paybox).
  */
-export async function getOrderForPayment(
-  request: Request,
-  orderId: string,
-): Promise<OrderPaymentDetails | null> {
-  const cookieHeader = request.headers.get("Cookie") || "";
-
-  try {
-    const response = await fetch(
-      getInternalApiUrlFromRequest(`/api/orders/${orderId}`, request),
-      {
-        headers: {
-          Cookie: cookieHeader,
-          "Internal-Call": "true",
-        },
-      },
-    );
-
-    if (!response.ok) {
-      logger.error(
-        `[Checkout] Failed to fetch order ${orderId}: ${response.status}`,
-      );
-      return null;
-    }
-
-    const orderData = await response.json();
-    const details = orderData.data;
-
-    return {
-      orderId,
-      totalTTC: parseFloat(details.ord_total_ttc || "0"),
-      isPaid: parseInt(details.ord_is_pay || "0") !== 0,
-      customerEmail: details.customer?.cst_mail || "",
-    };
-  } catch (error) {
-    logger.error("[Checkout] Error fetching order for payment:", error);
-    return null;
-  }
+export function extractPaymentFieldsFromCreateOrderResponse(
+  order: Record<string, unknown>,
+): { totalTTC: number; customerEmail: string; isPaid: boolean } {
+  const data = (order?.data ?? {}) as Record<string, unknown>;
+  const customer = (order?.customer ?? data?.customer ?? {}) as Record<
+    string,
+    unknown
+  >;
+  const rawTotal = order?.ord_total_ttc ?? data?.ord_total_ttc ?? "0";
+  const rawIsPay = order?.ord_is_pay ?? data?.ord_is_pay ?? "0";
+  return {
+    totalTTC: parseFloat(String(rawTotal)) || 0,
+    customerEmail:
+      typeof customer?.cst_mail === "string" ? customer.cst_mail : "",
+    isPaid: rawIsPay === true || String(rawIsPay) === "1",
+  };
 }
 
 /**

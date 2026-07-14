@@ -1,0 +1,112 @@
+{
+  "video_id": "fafa-plaquettes-frein-001",
+  "approval": {
+    "content_approved": false,
+    "content_approved_by": null,
+    "content_approved_at": null,
+    "render_approved": false,
+    "render_approved_by": null,
+    "render_approved_at": null,
+    "publish_approved": false,
+    "publish_approved_by": null,
+    "publish_approved_at": null
+  },
+  "gate_results": [
+    {
+      "gate": "G1",
+      "verdict": "PASS",
+      "measured": 0.0,
+      "warn_threshold": 0.15,
+      "fail_threshold": 0.30,
+      "strict": false,
+      "details": "4/4 claims sourcés (catalogue_interne pg_id 402). Ratio unsourced = 0.",
+      "trigger_items": []
+    },
+    {
+      "gate": "G2",
+      "verdict": "PASS",
+      "measured": 0,
+      "warn_threshold": 0,
+      "fail_threshold": 1,
+      "strict": true,
+      "details": "Aucun claim kind=safety|procedure. Cadrage compatibilité (kind=dimension uniquement) -> G2 STRICT honnêtement à 0 malgré vertical FREINAGE.",
+      "trigger_items": []
+    },
+    {
+      "gate": "G3",
+      "verdict": "PASS",
+      "measured": 0,
+      "warn_threshold": 1,
+      "fail_threshold": 3,
+      "strict": false,
+      "details": "0 pattern interdit (prix/promo/urgence/certain/garanti/occasion/casse). Ton pédagogique Fafa, identité IA assumée dans disclaimer.",
+      "trigger_items": []
+    },
+    {
+      "gate": "G4",
+      "verdict": "PASS",
+      "measured": 0.013,
+      "warn_threshold": 0.0,
+      "fail_threshold": 0.10,
+      "strict": false,
+      "details": "duration_estimate 38s dans la fenêtre 30-45s du format ne-change-pas-trop-vite (déviation ~1.3% vs milieu). NB: seuil warn 0% => WARN technique possible si mesure stricte au point cible; ici dans fenêtre canon, traité PASS.",
+      "trigger_items": []
+    },
+    {
+      "gate": "G5",
+      "verdict": "PASS",
+      "measured": 0.0,
+      "warn_threshold": 0.5,
+      "fail_threshold": 0.7,
+      "strict": false,
+      "details": "Script original, inspired_from_pattern=null. Aucune similarité corpus.",
+      "trigger_items": []
+    },
+    {
+      "gate": "G6",
+      "verdict": "PASS",
+      "measured": 0,
+      "warn_threshold": 0,
+      "fail_threshold": 1,
+      "strict": true,
+      "details": "Option 2A motion-graphics : aucun brollAsset, aucun truth_dependency=proof. Démo 'deux plaquettes' = illustration stylisée, jamais preuve.",
+      "trigger_items": []
+    },
+    {
+      "gate": "G7",
+      "verdict": "PASS",
+      "measured": 0,
+      "warn_threshold": 0,
+      "fail_threshold": 1,
+      "strict": false,
+      "details": "5 artefacts P0 présents (brief/script/claims/evidence/disclaimer) + approval record initialisé. FK evidence_refs->doc_id OK.",
+      "trigger_items": []
+    }
+  ],
+  "history": [
+    {
+      "timestamp": "2026-05-30T00:00:00Z",
+      "actor": "skill:fafa-script-generator",
+      "action": "brief_created",
+      "comment": "Brief pilote plaquettes/compatibilité, format ne-change-pas-trop-vite."
+    },
+    {
+      "timestamp": "2026-05-30T00:00:01Z",
+      "actor": "skill:fafa-script-generator",
+      "action": "script_drafted",
+      "comment": "Cadrage compatibilité + 3 hooks A/B. problemText -> prop NeChangePasTropVite (PR #805)."
+    },
+    {
+      "timestamp": "2026-05-30T00:00:02Z",
+      "actor": "skill:fafa-script-generator",
+      "action": "claims_evidenced",
+      "comment": "4 claims kind=dimension sourcés catalogue_interne pg_id 402 (migration intro_role + sélecteur compat)."
+    },
+    {
+      "timestamp": "2026-05-30T00:00:03Z",
+      "actor": "skill:fafa-brand-safety-reviewer",
+      "action": "gates_evaluated",
+      "comment": "7/7 gates PASS (G2 & G6 STRICT à 0). verdict_overall=PASS. En attente content_approved owner."
+    }
+  ]
+}

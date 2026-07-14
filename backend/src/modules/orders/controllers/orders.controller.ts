@@ -360,7 +360,14 @@ export class OrdersController {
         const existing = await this.checkIdempotency(idempotencyKey, fp);
         if (existing) {
           const resumeToken = await this.generateResumeToken(existing.existing);
-          return { ord_id: existing.existing, resumeToken };
+          // Même shape que le happy path : le checkout construit le redirect
+          // Paybox depuis CETTE réponse (total + customer.cst_mail), sans
+          // re-GET /api/orders/:id — le cookie de l'action peut être invalide
+          // après régénération de session (INC tunnel paiement 2026-05→07).
+          const existingOrder = await this.ordersService.getOrderById(
+            existing.existing,
+          );
+          return { ...existingOrder, resumeToken };
         }
       }
 
@@ -453,7 +460,14 @@ export class OrdersController {
         const existing = await this.checkIdempotency(idempotencyKey, fp);
         if (existing) {
           const resumeToken = await this.generateResumeToken(existing.existing);
-          return { ord_id: existing.existing, resumeToken };
+          // Même shape que le happy path : le checkout construit le redirect
+          // Paybox depuis CETTE réponse (total + customer.cst_mail), sans
+          // re-GET /api/orders/:id — le cookie de l'action peut être invalide
+          // après régénération de session (INC tunnel paiement 2026-05→07).
+          const existingOrder = await this.ordersService.getOrderById(
+            existing.existing,
+          );
+          return { ...existingOrder, resumeToken };
         }
       }
 
@@ -582,6 +596,11 @@ export class OrdersController {
         resumeToken = await this.generateResumeToken(finalOrderId);
       }
 
+      // La régénération de session ci-dessus invalide le cookie que porte le
+      // fetch SSR de l'action checkout : cette réponse doit donc contenir tout
+      // le nécessaire au redirect Paybox (ord_total_ttc + customer.cst_mail,
+      // déjà présents via getOrderById) — aucun GET /api/orders/:id ne peut
+      // suivre avec ce cookie (INC tunnel paiement 2026-05→07).
       return { ...(order as object), resumeToken };
     } catch (error) {
       this.logger.error('Error in guest checkout:', error);
@@ -747,11 +766,17 @@ export class OrdersController {
     }
 
     // Récupérer l'email du client
-    const { data: customer } = await supabase
-      .from('___customer')
+    const { data: customer, error: customerError } = await supabase
+      .from('___xtr_customer')
       .select('cst_mail')
       .eq('cst_id', order.ord_cst_id)
       .single();
+    if (customerError || !customer?.cst_mail) {
+      // Email vide ⇒ /api/paybox/redirect répondra 400 — échec observable ici
+      this.logger.warn(
+        `Resume token: cst_mail introuvable pour ${order.ord_cst_id} (order ${order.ord_id})`,
+      );
+    }
 
     // Marquer used_at seulement quand on redirige (pas sur check)
     // Le frontend gère la distinction via ?check=1
