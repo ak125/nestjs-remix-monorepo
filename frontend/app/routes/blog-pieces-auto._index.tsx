@@ -52,6 +52,7 @@ import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 
 // UI Components
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import { buildCacheHeaders } from "~/utils/cache-control";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
@@ -154,6 +155,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
     lastUpdated: new Date().toISOString(),
   };
 
+  let degraded = false;
+
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000);
@@ -189,22 +192,37 @@ export async function loader({ request }: LoaderFunctionArgs) {
         };
       }
     } else {
+      degraded = true;
       logger.warn(`API returned ${response.status}: ${response.statusText}`);
     }
   } catch (error) {
+    degraded = true;
     logger.warn({ err: error, url: request.url }, "Blog API error");
   }
 
   return data(
     { blogData, searchParams },
     {
-      headers: {
-        "Cache-Control":
-          "public, max-age=300, s-maxage=600, stale-while-revalidate=86400",
-      },
+      headers: degraded
+        ? {
+            "Cache-Control": "no-store",
+            "X-Robots-Tag": "noindex, follow",
+          }
+        : {
+            "Cache-Control":
+              "public, max-age=300, s-maxage=600, stale-while-revalidate=86400",
+          },
     },
   );
 }
+
+// Single owner of this route's Cache-Control at the edge (Caddy no longer
+// backfills). Propagates the loader's success TTL and forces no-store +
+// noindex on any thrown error Response.
+export const headers = buildCacheHeaders(
+  "public, max-age=300, s-maxage=600, stale-while-revalidate=86400",
+  { defaultErrorRobots: "noindex, follow" },
+);
 
 // Action pour interactions utilisateur
 export async function action({ request }: ActionFunctionArgs) {

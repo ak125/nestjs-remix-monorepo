@@ -76,6 +76,9 @@ describe('RemixController — serverObservability injection gate', () => {
       url: '/',
       method: 'GET',
       path: '/',
+      // Real Express requests always carry `.headers`; the `.data` privacy guard
+      // (enforceSessionedDataCachePrivacy) reads request.headers.cookie.
+      headers: {},
       user: undefined,
       body: undefined,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

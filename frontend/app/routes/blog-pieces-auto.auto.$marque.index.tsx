@@ -4,6 +4,7 @@ import * as React from "react";
 import {
   type LoaderFunctionArgs,
   type MetaFunction,
+  data,
   Link,
   useLoaderData,
   useRouteError,
@@ -12,6 +13,7 @@ import {
 
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
+import { buildCacheHeaders } from "~/utils/cache-control";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { CompactBlogHeader } from "../components/blog/CompactBlogHeader";
@@ -59,6 +61,10 @@ interface LoaderData {
   } | null;
 }
 
+export const headers = buildCacheHeaders(
+  "public, max-age=1800, stale-while-revalidate=3600",
+);
+
 /* ===========================
    Loader
 =========================== */
@@ -104,6 +110,9 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
     const modelsResponse = modelsRes?.ok
       ? await modelsRes.json().catch(() => null)
       : null;
+    // Backend models fetch échoué et absorbé en liste vide → état dégradé :
+    // ne pas hériter du TTL public de succès (sinon Cloudflare cache l'échec).
+    const degraded = !modelsRes?.ok || modelsResponse === null;
     const modelsData = modelsResponse?.data || [];
 
     // Mapper les modèles vers le format attendu - utiliser image_url du backend (comme /constructeurs/)
@@ -149,11 +158,21 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
         }
       : null;
 
-    return {
-      brand,
-      models: mappedModels,
-      metadata,
-    };
+    return data(
+      {
+        brand,
+        models: mappedModels,
+        metadata,
+      },
+      degraded
+        ? {
+            headers: {
+              "Cache-Control": "no-store",
+              "X-Robots-Tag": "noindex, follow",
+            },
+          }
+        : undefined,
+    );
   } catch (e) {
     logger.error("Erreur loader marque:", e);
     if (e instanceof Response) throw e;
@@ -166,7 +185,10 @@ export const loader = async ({ params }: LoaderFunctionArgs) => {
 /* ===========================
    Meta
 =========================== */
-export const meta: MetaFunction<typeof loader> = ({ loaderData: data, location }) => {
+export const meta: MetaFunction<typeof loader> = ({
+  loaderData: data,
+  location,
+}) => {
   const metadata = data?.metadata;
   const brand = data?.brand;
   const modelsCount = data?.models?.length ?? 0;
