@@ -15,10 +15,11 @@
  * R2 est **exclu au niveau type** (BriefRole) — la page transactionnelle reste la plus stricte, traitée en dernier.
  */
 import { Injectable, Logger, Optional } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { SupabaseBaseService } from '@database/services/supabase-base.service';
-import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 import { FeatureFlagsService } from '@config/feature-flags.service';
+import {
+  SeoProjectionReaderService,
+  type ProjectionBlock,
+} from '../../seo-projection/seo-projection-reader.service';
 
 /** Rôles composables par cette fabrique. **R2 exclu structurellement** (transactionnel = chemin dédié strict). */
 export type BriefRole = 'R3_CONSEILS' | 'R3_GUIDE' | 'R8_VEHICLE';
@@ -70,25 +71,7 @@ export const SUBSTANCE_FLOOR_BY_ROLE: Record<BriefRole, number> = {
 const PROPRIETARY_TRUTH_LEVELS: ReadonlySet<BlockTruthLevel> =
   new Set<BlockTruthLevel>(['db_owned', 'sourced']);
 
-interface ProjectionBlock {
-  role?: string;
-  block_kind?: string;
-  content?: {
-    content_md?: string;
-    source_ids?: string[];
-    truth_level?: BlockTruthLevel;
-    section?: string;
-    usefulness_target?: string;
-  } | null;
-}
-
-interface ProjectionEnvelope {
-  entity_id: string;
-  entity_type: string;
-  slug: string;
-  facts: unknown[];
-  blocks: ProjectionBlock[];
-}
+// Types d'enveloppe/bloc de projection : possédés par `SeoProjectionReaderService` (C0).
 
 // ── Fonctions PURES (déterministes, sans I/O — le cœur testable du gate, partagé avec D2) ──
 
@@ -112,7 +95,9 @@ export function extractSubstanceElements(
     out.push({
       text: (c.content_md ?? '').slice(0, 200),
       source_id: sids[0] ?? null,
-      truth_level: tl,
+      // `truth_level` arrive brut (string) de la RPC ; re-narrow au domaine brief (valeur
+      // garantie par le contrat WIKI ; une valeur hors-union échoue simplement le test propriétaire).
+      truth_level: tl as BlockTruthLevel,
       field: c.section ?? c.usefulness_target ?? b.block_kind ?? 'block',
     });
   }
@@ -175,17 +160,13 @@ export function evaluateSubstanceGate(
 }
 
 @Injectable()
-export class SeoBriefService extends SupabaseBaseService {
-  protected override readonly logger = new Logger(SeoBriefService.name);
+export class SeoBriefService {
+  private readonly logger = new Logger(SeoBriefService.name);
 
   constructor(
-    configService: ConfigService,
-    @Optional() rpcGate?: RpcGateService,
+    private readonly projectionReader: SeoProjectionReaderService,
     @Optional() private readonly featureFlags?: FeatureFlagsService,
-  ) {
-    super(configService);
-    if (rpcGate) this.rpcGate = rpcGate;
-  }
+  ) {}
 
   /**
    * Compose un brief evidence-driven depuis la projection WIKI. Dégrade **observable** (wiki_available=false)
@@ -207,35 +188,19 @@ export class SeoBriefService extends SupabaseBaseService {
       return this.degraded(entityId, pageRole, 'SEO_BRIEF_WIKI_ENABLED=false');
     }
 
-    let env: ProjectionEnvelope | null = null;
-    try {
-      const { data, error } = await this.callRpc<ProjectionEnvelope | null>(
-        'get_active_seo_projection',
-        { p_entity_id: entityId, p_role: projRole },
-        { source: 'api' },
+    // Lecture d'enveloppe déléguée au reader unique (C0). Dégradation observable (null +
+    // degradeReason, déjà loggée par le reader) → on retombe sur keyword-first, jamais de fabrication.
+    const { envelope, degradeReason } =
+      await this.projectionReader.readActiveProjection(entityId, projRole);
+    if (!envelope) {
+      return this.degraded(
+        entityId,
+        pageRole,
+        degradeReason ?? 'projection absente',
       );
-      if (error) {
-        this.logger.warn(
-          `projection RPC error ${entityId}: ${error.message} → keyword-first (observable)`,
-        );
-        return this.degraded(entityId, pageRole, `RPC error: ${error.message}`);
-      }
-      env = (data as ProjectionEnvelope | null) ?? null;
-    } catch (e) {
-      this.logger.warn(
-        `projection RPC exception ${entityId}: ${String(e)} → keyword-first (observable)`,
-      );
-      return this.degraded(entityId, pageRole, 'RPC exception');
     }
 
-    if (!env) {
-      this.logger.log(
-        `projection vide ${entityId} (non projetée) → keyword-first (observable)`,
-      );
-      return this.degraded(entityId, pageRole, 'projection absente');
-    }
-
-    const elements = extractSubstanceElements(env.blocks ?? [], projRole);
+    const elements = extractSubstanceElements(envelope.blocks ?? [], projRole);
     const gate = evaluateSubstanceGate(elements, pageRole);
 
     return {

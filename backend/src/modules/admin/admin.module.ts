@@ -79,6 +79,7 @@ import {
 import { CanonObservabilityService } from './services/canon-observability.service'; // 🛡️ Canon violation Sentry emitter
 import { PageBriefService } from './services/page-brief.service'; // 📋 Page Briefs CRUD + overlap
 import { SeoBriefService } from './services/seo-brief.service'; // 🧱 D1 — WIKI-driven evidence brief (ADR-059/090)
+import { SeoProjectionReadModule } from '../seo-projection/seo-projection-read.module'; // 🔎 C0 — reader léger (moindre-privilège) consommé par SeoBriefService
 import { BriefGatesService } from './services/brief-gates.service'; // 🚦 Pre-publish gates anti-cannibalisation
 import { HardGatesService } from './services/hard-gates.service'; // 🚦 Hard gates (attribution, no_guess, scope, contradiction, seo)
 import { KeywordDensityGateService } from './services/keyword-density-gate.service'; // 🚦 Gate F: keyword density check
@@ -168,6 +169,7 @@ import { SeoControlRefreshProcessor } from './processors/seo-control-refresh.pro
     VehiclesModule, // 🚗 INC-2026-007 — pour AdminVehicleCacheController (VehicleRpcService)
     OperatingMatrixModule, // 🛡️ Read-only governance matrix (zero infra deps)
     FeatureFlagsModule, // 🎛️ PR-SBD-1 — feature.seoControlDashboardEnabled kill-switch
+    SeoProjectionReadModule, // 🔎 C0 — expose SeoProjectionReaderService à SeoBriefService (read léger, pas le write-side)
     BullModule.registerQueue({ name: SEO_CONTROL_REFRESH_QUEUE }), // 🚀 PR-SBD-1 SWR per-block refresh
   ],
   controllers: [
