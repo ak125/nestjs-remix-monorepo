@@ -567,3 +567,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/p2r3b-producer`
 - **Décision** : fix(seo-projection): idempotent regress-draft, per-run manifest, empty-export guard (+2 other commits)
 - **Sortie** : PR #1282 | commits b7f8c7601 18ae1a0ed 91d7a7dbd
+
+## 2026-07-16 — feat/c0-projection-read-module (auto)
+
+- **Branche** : `feat/c0-projection-read-module`
+- **Décision** : feat(seo-projection): extract dark projection reader (C0, behavior-identical)
+- **Sortie** : PR #1284 | commits 6c5d82c82
