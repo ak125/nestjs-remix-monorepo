@@ -24,24 +24,51 @@ SCRIPT_PATH = (
 # ────────────────────────────────────────────────────────────────────────────
 
 
-def _make_snapshot(tmp_path: Path, content: bytes) -> tuple[Path, str]:
-    """Crée un fichier <hash>.tar.zst + manifest sidecar. Retourne (path, hash_full)."""
+DEFAULT_RUN_ID = "00000000-0000-7000-8000-000000000001"
+
+
+def _default_manifest(full_hash: str, *, versions=None, entries=None) -> dict:
+    """Manifest sidecar conforme (P2-R3-B) : snapshot_hash + 5 versions + inventaire d'entrées."""
+    return {
+        "schema": "seo-projection-snapshot/1",
+        "snapshot_hash": full_hash,
+        "tar_zst_size": 123,
+        "created_from_run_id": "00000000-0000-7000-8000-000000000001",
+        "wiki_commit_sha": "abcd1234" * 5,
+        "versions": versions
+        if versions is not None
+        else {v: "1.0.0" for v in replay.REQUIRED_VERSIONS},
+        "entry_count": len(entries) if entries is not None else 1,
+        "entries": entries
+        if entries is not None
+        else [{"name": "a.json", "sha256": "a" * 64, "size": 12}],
+    }
+
+
+def _make_snapshot(
+    tmp_path: Path,
+    content: bytes,
+    *,
+    manifest: dict | None = None,
+    run_id: str = DEFAULT_RUN_ID,
+) -> tuple[Path, str]:
+    """Crée <hash>.tar.zst + manifest sidecar PER-RUN <hash>.<run_id>.manifest.json. Retourne (path, hash_full)."""
     snapshots_dir = tmp_path / "exports-snapshots"
     snapshots_dir.mkdir(parents=True, exist_ok=True)
     hex_hash = hashlib.sha256(content).hexdigest()
     full_hash = f"sha256:{hex_hash}"
     snapshot = snapshots_dir / f"{hex_hash}.tar.zst"
     snapshot.write_bytes(content)
-    manifest = snapshots_dir / f"{hex_hash}.manifest.json"
-    manifest.write_text(
-        json.dumps({"content_hash": full_hash, "filename": snapshot.name})
+    manifest_path = snapshots_dir / f"{hex_hash}.{run_id}.manifest.json"
+    manifest_path.write_text(
+        json.dumps(manifest if manifest is not None else _default_manifest(full_hash))
     )
     return snapshot, full_hash
 
 
 def _valid_run_row(snapshot_hash: str) -> dict:
     return {
-        "run_id": "00000000-0000-7000-8000-000000000001",
+        "run_id": DEFAULT_RUN_ID,
         "started_at": "2026-05-13T10:00:00+00:00",
         "exports_snapshot_hash": snapshot_hash,
         "exports_snapshot_uri": f"/opt/automecanik/object-store/exports-snapshots/{snapshot_hash.split(':')[1]}.tar.zst",
@@ -144,6 +171,87 @@ def test_validate_run_sha256_mismatch_marks_invalid(tmp_path: Path) -> None:
     report = replay.validate_run_for_replay(run, tmp_path)
     assert not report["ok"]
     assert any("integrity" in e and "sha256_mismatch" in e for e in report["errors"])
+
+
+# ────────────────────────────────────────────────────────────────────────────
+# Manifest sidecar validation (P2-R3-B : hash + versions + entry inventory MATCH)
+# ────────────────────────────────────────────────────────────────────────────
+
+
+def test_manifest_valid_passes(tmp_path: Path) -> None:
+    _make_snapshot(tmp_path, b"snap-ok")
+    run = _valid_run_row(f"sha256:{hashlib.sha256(b'snap-ok').hexdigest()}")
+    report = replay.validate_run_for_replay(run, tmp_path)
+    assert report["ok"], report["errors"]
+
+
+def test_manifest_missing_rejected(tmp_path: Path) -> None:
+    content = b"snap-nomani"
+    hex_hash = hashlib.sha256(content).hexdigest()
+    snapshots_dir = tmp_path / "exports-snapshots"
+    snapshots_dir.mkdir(parents=True)
+    (snapshots_dir / f"{hex_hash}.tar.zst").write_bytes(content)  # no sidecar
+    run = _valid_run_row(f"sha256:{hex_hash}")
+    report = replay.validate_run_for_replay(run, tmp_path)
+    assert not report["ok"]
+    assert any("manifest_sidecar_missing" in e for e in report["errors"])
+
+
+def test_manifest_hash_mismatch_rejected(tmp_path: Path) -> None:
+    content = b"snap-hash"
+    full_hash = f"sha256:{hashlib.sha256(content).hexdigest()}"
+    bad = _default_manifest(full_hash)
+    bad["snapshot_hash"] = "sha256:" + "9" * 64  # ne matche pas le run
+    _make_snapshot(tmp_path, content, manifest=bad)
+    report = replay.validate_run_for_replay(_valid_run_row(full_hash), tmp_path)
+    assert not report["ok"]
+    assert any("manifest_hash_mismatch" in e for e in report["errors"])
+
+
+def test_manifest_versions_mismatch_rejected(tmp_path: Path) -> None:
+    content = b"snap-ver"
+    full_hash = f"sha256:{hashlib.sha256(content).hexdigest()}"
+    versions = {v: "1.0.0" for v in replay.REQUIRED_VERSIONS}
+    versions["builder_version"] = "9.9.9"  # diverge du run (1.0.0)
+    _make_snapshot(tmp_path, content, manifest=_default_manifest(full_hash, versions=versions))
+    report = replay.validate_run_for_replay(_valid_run_row(full_hash), tmp_path)
+    assert not report["ok"]
+    assert any("manifest_version_mismatch:builder_version" in e for e in report["errors"])
+
+
+def test_manifest_entries_missing_rejected(tmp_path: Path) -> None:
+    content = b"snap-noentries"
+    full_hash = f"sha256:{hashlib.sha256(content).hexdigest()}"
+    m = _default_manifest(full_hash)
+    m["entries"] = []
+    m["entry_count"] = 0
+    _make_snapshot(tmp_path, content, manifest=m)
+    report = replay.validate_run_for_replay(_valid_run_row(full_hash), tmp_path)
+    assert not report["ok"]
+    assert any("manifest_entries_missing_or_empty" in e for e in report["errors"])
+
+
+def test_manifest_entry_malformed_rejected(tmp_path: Path) -> None:
+    content = b"snap-badentry"
+    full_hash = f"sha256:{hashlib.sha256(content).hexdigest()}"
+    m = _default_manifest(
+        full_hash, entries=[{"name": "a.json", "sha256": "short", "size": 1}]
+    )
+    _make_snapshot(tmp_path, content, manifest=m)
+    report = replay.validate_run_for_replay(_valid_run_row(full_hash), tmp_path)
+    assert not report["ok"]
+    assert any("manifest_entry_malformed" in e for e in report["errors"])
+
+
+def test_manifest_entry_count_mismatch_rejected(tmp_path: Path) -> None:
+    content = b"snap-count"
+    full_hash = f"sha256:{hashlib.sha256(content).hexdigest()}"
+    m = _default_manifest(full_hash)
+    m["entry_count"] = 5  # ≠ len(entries)=1
+    _make_snapshot(tmp_path, content, manifest=m)
+    report = replay.validate_run_for_replay(_valid_run_row(full_hash), tmp_path)
+    assert not report["ok"]
+    assert any("manifest_entry_count_mismatch" in e for e in report["errors"])
 
 
 # ────────────────────────────────────────────────────────────────────────────

@@ -555,3 +555,15 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/substitution-fail-open-on-rpc-error`
 - **Décision** : fix(migration): add statement_timeout + lock_timeout guards (squawk migration-safety) (+2 other commits)
 - **Sortie** : PR #1148 | commits d04a1b2e8 68b87e00b 9044444c4
+
+## 2026-07-15 — feat/p2r3b-producer (auto)
+
+- **Branche** : `feat/p2r3b-producer`
+- **Décision** : feat(seo-projection): durable reproducible snapshot producer + role-scoped writer (P2-R3-B)
+- **Sortie** : PR aucune | commits a5434bb61
+
+## 2026-07-15 — feat/p2r3b-producer (auto)
+
+- **Branche** : `feat/p2r3b-producer`
+- **Décision** : fix(seo-projection): idempotent regress-draft, per-run manifest, empty-export guard (+2 other commits)
+- **Sortie** : PR #1282 | commits b7f8c7601 18ae1a0ed 91d7a7dbd

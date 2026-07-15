@@ -34,14 +34,21 @@ export class SeoProjectionWriteProcessor {
       exportPaths = [],
       triggeredBy = 'manual',
       runMeta = {},
+      projectionRole,
     } = job.data ?? ({} as ProjectionWriteJobData);
     const result = await this.writer.projectExports(
       exportPaths,
       triggeredBy,
       runMeta,
+      projectionRole,
     );
 
-    if (!result.readOnlySkipped && result.entitiesWritten > 0) {
+    // Refresh dès qu'une version active a été flippée : facts OU blocs de rôle. Un facts no-op qui
+    // écrit de nouveaux blocs de rôle DOIT aussi rafraîchir les MV (sinon la projection reste stale).
+    if (
+      !result.readOnlySkipped &&
+      (result.entitiesWritten > 0 || result.rolesWritten > 0)
+    ) {
       // Coalescing : jobId fixe → un seul refresh en attente à la fois (single-flight, debounce 5s).
       await this.refreshQueue.add(
         PROJECTION_REFRESH_JOB,
@@ -56,7 +63,9 @@ export class SeoProjectionWriteProcessor {
       result.refreshEnqueued = true;
     }
     this.logger.log(
-      `projection write run=${result.runId ?? 'none'} written=${result.entitiesWritten} refresh=${result.refreshEnqueued}` +
+      `projection write run=${result.runId ?? 'none'} facts=${result.entitiesWritten} ` +
+        `roles(w/n/b/r)=${result.rolesWritten}/${result.rolesNoop}/${result.rolesBlocked}/${result.rolesRegressed} ` +
+        `snapshot=${result.snapshot?.hash ?? 'none'} refresh=${result.refreshEnqueued}` +
         (result.readOnlySkipped ? ' [READ_ONLY skipped]' : ''),
     );
     return result;
