@@ -10,6 +10,7 @@ import React, { useState, useMemo } from "react";
 import {
   type LoaderFunctionArgs,
   type MetaFunction,
+  data,
   useLoaderData,
   Link,
   useSearchParams,
@@ -23,6 +24,7 @@ import {
 import { BlogNavigation } from "~/components/blog/BlogNavigation";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import { buildCacheHeaders } from "~/utils/cache-control";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
@@ -84,6 +86,10 @@ interface LoaderData {
   };
   error?: string;
 }
+
+export const headers = buildCacheHeaders(
+  "public, max-age=1800, stale-while-revalidate=3600",
+);
 
 export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {
   const search = data?.search || "";
@@ -209,20 +215,28 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     };
   } catch (error) {
     logger.error("[ERROR] Advice loader failed:", error);
-    return {
-      articles: [],
-      total: 0,
-      page: 1,
-      totalPages: 1,
-      search: "",
-      category: "",
-      categories: [],
-      featuredArticles: [],
-      popularTags: [],
-      stats: { totalViews: 0, avgReadingTime: 3, totalArticles: 0 },
-      success: false,
-      error: error instanceof Error ? error.message : "Unknown error",
-    };
+    return data(
+      {
+        articles: [],
+        total: 0,
+        page: 1,
+        totalPages: 1,
+        search: "",
+        category: "",
+        categories: [],
+        featuredArticles: [],
+        popularTags: [],
+        stats: { totalViews: 0, avgReadingTime: 3, totalArticles: 0 },
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store",
+          "X-Robots-Tag": "noindex, follow",
+        },
+      },
+    );
   }
 };
 

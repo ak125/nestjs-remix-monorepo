@@ -53,6 +53,7 @@ import {
   TableRow,
 } from "~/components/ui/table";
 
+import { buildCacheHeaders } from "~/utils/cache-control";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /* ===========================================================================
@@ -149,6 +150,10 @@ const TOC_ITEMS = [
 /* ===========================================================================
    SEO
    =========================================================================== */
+
+export const headers = buildCacheHeaders(
+  "public, max-age=1800, stale-while-revalidate=3600",
+);
 
 export const handle = {
   pageRole: createPageRoleMeta(PageRole.R3_BLOG, {

@@ -11,6 +11,7 @@ import * as React from "react";
 import {
   type LoaderFunctionArgs,
   type MetaFunction,
+  data,
   Link,
   useLoaderData,
   useRouteError,
@@ -24,6 +25,7 @@ import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
+import { buildCacheHeaders } from "~/utils/cache-control";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 
@@ -68,6 +70,10 @@ interface LoaderData {
     totalModels: number;
   };
 }
+
+export const headers = buildCacheHeaders(
+  "public, max-age=1800, stale-while-revalidate=3600",
+);
 
 /* ===========================
    Loader
@@ -127,22 +133,52 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       }),
     );
 
-    return {
-      brands: mappedBrands,
-      popularModels: mappedModels,
-      metadata: metadataData?.success ? metadataData.data : null,
-      stats: {
-        totalBrands: mappedBrands.length,
-        totalModels: mappedModels.length,
+    // Les fetch sont individuellement `.catch(() => null)` : un backend KO ne
+    // remonte PAS au catch ci-dessous, il tombe ici avec des listes vides. Si un
+    // fetch cœur a échoué, la page est dégradée → jamais le TTL public de succès.
+    // Un 200 dont le corps est illisible met brandsData/modelsData à `null`
+    // (`.json().catch(() => null)`, l.99-104) sans que `.ok` soit faux → il faut
+    // aussi tester le parse (aligné sur le garde du sibling auto.$marque.index).
+    const degraded =
+      !brandsRes?.ok ||
+      !modelsRes?.ok ||
+      brandsData === null ||
+      modelsData === null;
+
+    return data(
+      {
+        brands: mappedBrands,
+        popularModels: mappedModels,
+        metadata: metadataData?.success ? metadataData.data : null,
+        stats: {
+          totalBrands: mappedBrands.length,
+          totalModels: mappedModels.length,
+        },
       },
-    };
+      degraded
+        ? {
+            headers: {
+              "Cache-Control": "no-store",
+              "X-Robots-Tag": "noindex, follow",
+            },
+          }
+        : undefined,
+    );
   } catch (e) {
     logger.error("Erreur loader auto:", e);
-    return {
-      brands: [],
-      popularModels: [],
-      stats: { totalBrands: 0, totalModels: 0 },
-    };
+    return data(
+      {
+        brands: [],
+        popularModels: [],
+        stats: { totalBrands: 0, totalModels: 0 },
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store",
+          "X-Robots-Tag": "noindex, follow",
+        },
+      },
+    );
   }
 };
 

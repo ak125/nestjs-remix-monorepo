@@ -9,7 +9,6 @@
 import { ArrowLeft, Tag, BookOpen, ExternalLink } from "lucide-react";
 import { lazy, Suspense, useEffect, useRef } from "react";
 import {
-  type HeadersFunction,
   type LoaderFunctionArgs,
   type MetaFunction,
   data,
@@ -58,6 +57,7 @@ import {
   type R3GuidePage,
 } from "~/types/r3-guide.types";
 import { trackArticleView, trackReadingTime } from "~/utils/analytics";
+import { buildCacheHeaders } from "~/utils/cache-control";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { getOgImageUrl } from "~/utils/og-image.utils";
@@ -253,10 +253,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   }
 }
 
-// Cache — 5min browser + 1h stale (contenu stable)
-export const headers: HeadersFunction = () => ({
-  "Cache-Control": "public, max-age=300, stale-while-revalidate=3600",
-});
+// Cache — 5min browser + 1h stale (contenu stable). buildCacheHeaders forces
+// no-store on the loader's thrown 404 instead of leaking this public TTL.
+export const headers = buildCacheHeaders(
+  "public, max-age=300, stale-while-revalidate=3600",
+);
 
 // Skip revalidation when navigating back to same guide
 export const shouldRevalidate: ShouldRevalidateFunction = ({
@@ -270,7 +271,10 @@ export const shouldRevalidate: ShouldRevalidateFunction = ({
 
 // ── Meta ─────────────────────────────────────────────────
 
-export const meta: MetaFunction<typeof loader> = ({ loaderData: data, location }) => {
+export const meta: MetaFunction<typeof loader> = ({
+  loaderData: data,
+  location,
+}) => {
   if (!data) {
     return [
       { title: "Article non trouvé" },

@@ -20,7 +20,7 @@ import {
   serverObservabilityContext,
 } from "~/utils/load-context";
 import { logger } from "~/utils/logger";
-import  { type ServerObservability } from "~/utils/observability-contract";
+import { type ServerObservability } from "~/utils/observability-contract";
 
 // Re-export the load-context factory so the SSR build exposes it on
 // `build.entry.module` for the NestJS façade bridge (`getCreateAppLoadContext`).
@@ -67,7 +67,10 @@ export const handleError: HandleErrorFunction = (
     observability?.captureException(error, {
       mechanism: { type: "react-router", handled: false },
       tags: { observability_channel: "react-router-handle-error" },
-      extra: { method: request.method, pathname: new URL(request.url).pathname },
+      extra: {
+        method: request.method,
+        pathname: new URL(request.url).pathname,
+      },
     });
   }
   if (error instanceof Error) {
@@ -80,6 +83,35 @@ export const handleError: HandleErrorFunction = (
 export const streamTimeout = 5_000;
 const ABORT_DELAY = streamTimeout + 1_000;
 
+// ── Request-aware cache-privacy arbiter (single owner — PR B review) ─────────
+// React Router applies the DEEPEST route's `headers` export, and those exports
+// are request-unaware: a public route (`buildCacheHeaders("public, …s-maxage…")`)
+// would ship that shared-cache policy even for a request carrying a session
+// cookie — whose rendered document embeds the logged-in user / cart in the root
+// chrome. Before PR B, Caddy's `@public_cached` matcher EXCLUDED any request with
+// a session cookie, keeping those responses on root's `private, max-age=60`. Now
+// that the Caddy per-surface backfill is gone, this arbiter re-establishes the
+// "public only without a session" invariant IN THE APP, where the request is
+// visible: every HTML document served to a session-bearing request is forced
+// private + no-store at every cache tier (browser, CDN, Cloudflare). The cookie
+// pattern MIRRORS the one still used by Caddy `@public_cached`
+// (`not header_regexp Cookie (?i)(connect\.sid|session)`) so both layers agree
+// on exactly which requests are "sessioned".
+const SESSION_COOKIE_RE = /(?:connect\.sid|session)/i;
+const SESSIONED_CACHE_CONTROL = "private, no-cache, no-store, must-revalidate";
+
+export function applySessionCachePrivacy(
+  request: Request,
+  responseHeaders: Headers,
+): void {
+  const cookie = request.headers.get("cookie");
+  if (cookie && SESSION_COOKIE_RE.test(cookie)) {
+    responseHeaders.set("Cache-Control", SESSIONED_CACHE_CONTROL);
+    responseHeaders.set("CDN-Cache-Control", "no-store");
+    responseHeaders.set("Cloudflare-CDN-Cache-Control", "no-store");
+  }
+}
+
 export default function handleRequest(
   request: Request,
   responseStatusCode: number,
@@ -90,7 +122,12 @@ export default function handleRequest(
   const nonce = loadContext.get(cspNonceContext) || "";
   // Pass the reporter OBJECT (not a detached method) down so the streaming
   // onError callbacks can forward render errors to the NestJS-owned Sentry client.
-  const observability = loadContext.get(serverObservabilityContext) ?? undefined;
+  const observability =
+    loadContext.get(serverObservabilityContext) ?? undefined;
+
+  // Request-aware final arbiter: a session-bearing document is never shared-cached,
+  // whatever public policy the deepest route's `headers` export emitted.
+  applySessionCachePrivacy(request, responseHeaders);
 
   return isbot(request.headers.get("user-agent") || "")
     ? handleBotRequest(
@@ -161,7 +198,10 @@ function handleBotRequest(
           logger.error("[SSR onError]", error);
           observability?.captureException(error, {
             mechanism: { type: "react-ssr-stream", handled: false },
-            tags: { observability_channel: "ssr-stream", rendering_path: "bot" },
+            tags: {
+              observability_channel: "ssr-stream",
+              rendering_path: "bot",
+            },
           });
         },
       },

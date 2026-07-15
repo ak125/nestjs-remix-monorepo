@@ -10,6 +10,7 @@ import React, { useState, useMemo } from "react";
 import {
   type LoaderFunctionArgs,
   type MetaFunction,
+  data,
   useLoaderData,
   Link,
   useSearchParams,
@@ -24,6 +25,7 @@ import { BlogNavigation } from "~/components/blog/BlogNavigation";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Badge } from "~/components/ui/badge";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import { buildCacheHeaders } from "~/utils/cache-control";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
@@ -319,6 +321,10 @@ interface LoaderData {
   };
 }
 
+export const headers = buildCacheHeaders(
+  "public, max-age=1800, stale-while-revalidate=3600",
+);
+
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const page = Math.max(1, parseInt(url.searchParams.get("page") || "1", 10));
@@ -514,21 +520,29 @@ export async function loader({ request }: LoaderFunctionArgs) {
     totalModels: DEMO_CONSTRUCTEURS.reduce((sum, c) => sum + c.modelsCount, 0),
   };
 
-  return {
-    constructeurs: paginatedConstructeurs,
-    total: filteredConstructeurs.length,
-    page,
-    totalPages,
-    search,
-    letter,
-    brand,
-    sortBy,
-    letters,
-    featuredConstructeurs,
-    popularBrands,
-    stats,
-    success: true,
-  };
+  return data(
+    {
+      constructeurs: paginatedConstructeurs,
+      total: filteredConstructeurs.length,
+      page,
+      totalPages,
+      search,
+      letter,
+      brand,
+      sortBy,
+      letters,
+      featuredConstructeurs,
+      popularBrands,
+      stats,
+      success: false,
+    },
+    {
+      headers: {
+        "Cache-Control": "no-store",
+        "X-Robots-Tag": "noindex, follow",
+      },
+    },
+  );
 }
 
 export const meta: MetaFunction<typeof loader> = ({ loaderData: data }) => {

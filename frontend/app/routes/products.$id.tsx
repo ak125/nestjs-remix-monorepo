@@ -33,6 +33,7 @@ import {
   isRouteErrorResponse,
 } from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
+import { buildCacheHeaders } from "~/utils/cache-control";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
@@ -58,6 +59,15 @@ export const handle = {
     contentType: "product",
   }),
 };
+
+// PR B review — /products/* = espace pro non-public : la plupart lisent
+// requireUser, sont noindex et renvoient un payload personnalisé (identité
+// user, price_pro/margin, données démo). Namespace entier retiré du cache
+// partagé (décision owner). Jamais public/s-maxage. L'arbitre entry.server
+// force aussi private/no-store sur toute requête sessionnée.
+export const headers = buildCacheHeaders(
+  "private, no-cache, no-store, must-revalidate",
+);
 
 /**
  * 🔍 SEO Meta Tags - Page produit individuel
