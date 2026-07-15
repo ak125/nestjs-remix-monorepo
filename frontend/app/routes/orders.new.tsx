@@ -43,8 +43,11 @@ export const action: ActionFunction = async () => {
   throw disabled();
 };
 
-export default function NewOrderDisabled() {
-  // Defensive: the loader always throws 503, so the ErrorBoundary renders.
+export default function NewOrder() {
+  // Disabled: the loader always throws 503, so the ErrorBoundary renders. The
+  // default export name MUST match origin/main verbatim (R-SEO-09
+  // canonical-surface immutability: a route's default export name is part of its
+  // URL identity). Defensive body below in case the route is reached raw.
   return (
     <div className="container mx-auto p-6">
       <p className="text-muted-foreground">

@@ -254,31 +254,40 @@ export class StaffDataService extends SupabaseBaseService {
     departments: string[];
   }> {
     try {
-      const { count: total } = await this.supabase
-        .from(TABLES.config_admin)
-        .select('*', { count: 'exact', head: true });
+      // supabase-js RESOLVES with `{ error }` on a failed query — it does NOT
+      // reject — so the surrounding try/catch alone would silently coerce a
+      // failed COUNT into 0 (the exact silent-fallback this must avoid). Run the
+      // three reads in parallel and surface the FIRST resolved error, fail-loud,
+      // BEFORE computing any stat.
+      const [totalResult, activeResult, departmentResult] = await Promise.all([
+        this.supabase
+          .from(TABLES.config_admin)
+          .select('*', { count: 'exact', head: true }),
+        this.supabase
+          .from(TABLES.config_admin)
+          .select('*', { count: 'exact', head: true })
+          .eq('cnfa_activ', '1'),
+        this.supabase.from(TABLES.config_admin).select('cnfa_job'),
+      ]);
 
-      const { count: active } = await this.supabase
-        .from(TABLES.config_admin)
-        .select('*', { count: 'exact', head: true })
-        .eq('cnfa_activ', '1');
+      const error =
+        totalResult.error ?? activeResult.error ?? departmentResult.error;
+      if (error) throw error;
 
-      const { data: deptData } = await this.supabase
-        .from(TABLES.config_admin)
-        .select('cnfa_job');
-
+      const total = totalResult.count ?? 0;
+      const active = activeResult.count ?? 0;
       const departments = [
         ...new Set(
-          (deptData || [])
+          (departmentResult.data || [])
             .map((d: { cnfa_job: string }) => d.cnfa_job)
             .filter(Boolean),
         ),
       ];
 
       return {
-        total: total || 0,
-        active: active || 0,
-        inactive: (total || 0) - (active || 0),
+        total,
+        active,
+        inactive: total - active,
         departments,
       };
     } catch (error) {
