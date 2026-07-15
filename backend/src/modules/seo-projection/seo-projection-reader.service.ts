@@ -10,10 +10,20 @@
  * absente → `{ envelope: null, degradeReason }` + log, JAMAIS de fabrication ni de repli silencieux.
  * L'appelant décide quoi faire du null (SeoBriefService retombe sur son chemin keyword-first).
  *
+ * **Fail-closed sur la gouvernance RPC** : `RpcGateService` est une dépendance **obligatoire**
+ * (jamais `@Optional()`). Absent, `SupabaseBaseService.callRpc()` retomberait sur
+ * `GATE_NOT_INJECTED → ALLOW` (fail-open) ; ce reader étant la surface partagée qu'importeront les
+ * futurs consumers, une mauvaise composition Nest DOIT échouer au boot, pas exécuter la RPC sans gate.
+ * `RpcGateModule` est `@Global` → l'AppModule le résout sans tirer le write-side ni `DatabaseModule`.
+ *
+ * **Moindre-privilège au niveau MODULE et surface d'appel** (read découplé du writer/Gate service_role/
+ * queues) — PAS un principal DB SELECT-only : `SupabaseBaseService` construit toujours le client avec
+ * la clé service_role en PROD (nécessaire à la RPC actuelle, hors mode READ_ONLY anon d'ADR-028).
+ *
  * **DARK** : aucun consumer public ne l'utilise encore (aucune route/loader ne sert la projection) ;
  * ce module ne fait qu'unifier la lecture existante côté admin. Pas de flag de lecture, pas de canary.
  */
-import { Injectable, Logger, Optional } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
@@ -56,12 +66,11 @@ export class SeoProjectionReaderService extends SupabaseBaseService {
     SeoProjectionReaderService.name,
   );
 
-  constructor(
-    configService: ConfigService,
-    @Optional() rpcGate?: RpcGateService,
-  ) {
+  constructor(configService: ConfigService, rpcGate: RpcGateService) {
     super(configService);
-    if (rpcGate) this.rpcGate = rpcGate;
+    // Gate OBLIGATOIRE (jamais optionnel) : garantit qu'aucune composition ne peut
+    // exécuter la RPC via le fallback GATE_NOT_INJECTED → ALLOW de SupabaseBaseService.
+    this.rpcGate = rpcGate;
   }
 
   /**
