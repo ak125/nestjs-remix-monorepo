@@ -9,8 +9,8 @@
     ],
     "devDependencies": {
         "@types/eslint": "^8.56.5",
-        "@typescript-eslint/eslint-plugin": "^8.60.1",
-        "@typescript-eslint/parser": "^8.60.1",
+        "@typescript-eslint/eslint-plugin": "^8.64.0",
+        "@typescript-eslint/parser": "^8.64.0",
         "eslint": "^8.57.1",
         "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-import": "^2.32.0",
@@ -20,7 +20,7 @@
         "eslint-plugin-react-hooks": "^4.6.2",
         "globals": "^14.0.0",
         "typescript": "~6.0.3",
-        "typescript-eslint": "^8.61.1"
+        "typescript-eslint": "^8.64.0"
     },
     "prettier": {},
     "scripts": {
