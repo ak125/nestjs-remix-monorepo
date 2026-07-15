@@ -197,12 +197,73 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
     // non-semver historique du feeder). Seed = 1er export lisible (best-effort, fail-open sur meta).
     const seed = await this.readExportMeta(exportPaths[0]);
     const versions = this.resolveRunVersions(seed, runMeta);
-    const runId = await this.openRun(
-      triggeredBy,
-      versions,
-      seed.wikiCommitSha ?? runMeta.wiki_commit_sha ?? null,
-    );
+    const wikiCommitSha = seed.wikiCommitSha ?? runMeta.wiki_commit_sha ?? null;
+    const runId = await this.openRun(triggeredBy, versions, wikiCommitSha);
 
+    // openRun a échoué (erreur DB) → aucun run attribuable → AUCUNE écriture. On ne flippe jamais
+    // de contenu actif sans run + snapshot de replay (fail-closed ; openRun a déjà loggé l'erreur).
+    if (!runId) {
+      return {
+        runId: null,
+        triggeredBy,
+        entitiesWritten: 0,
+        rolesWritten: 0,
+        rolesNoop: 0,
+        rolesBlocked: 0,
+        rolesRegressed: 0,
+        outcomes: [],
+        refreshEnqueued: false,
+        snapshot: null,
+      };
+    }
+
+    // Snapshot durable publié AVANT toute écriture (atomicité ADR-059 « active content ⇒ durable
+    // replay snapshot »). L'archive tar.zst est une fonction PURE des exports d'ENTRÉE (indépendante
+    // des écritures DB), donc publiable en amont ; son hash porte sur les octets PERSISTÉS = seule
+    // autorité de replay. Échec de publication → run `failed`, ZÉRO version flippée, et le processor
+    // ne déclenche AUCUN refresh MV (guard `entitiesWritten|rolesWritten>0`) → jamais de contenu actif
+    // orphelin de son snapshot. (Régression corrigée : l'ordre write-puis-snapshot flippait l'actif
+    // même quand le snapshot échouait ensuite.)
+    let snapshot: { hash: string; uri: string };
+    try {
+      snapshot = await this.buildSnapshotForRun(
+        exportPaths,
+        runId,
+        wikiCommitSha,
+        versions,
+      );
+    } catch (e) {
+      const snapshotError = getErrorMessage(e);
+      this.log.error(
+        `snapshot publish failed (run=${runId}): ${snapshotError}`,
+      );
+      await this.recordConflict(
+        '?',
+        null,
+        'snapshot_publish_failed',
+        { error: snapshotError },
+        runId,
+      );
+      await this.closeRun(runId, {
+        entitiesWritten: 0,
+        failed: true,
+        snapshot: null,
+      });
+      return {
+        runId,
+        triggeredBy,
+        entitiesWritten: 0,
+        rolesWritten: 0,
+        rolesNoop: 0,
+        rolesBlocked: 0,
+        rolesRegressed: 0,
+        outcomes: [],
+        refreshEnqueued: false,
+        snapshot: null,
+      };
+    }
+
+    // Snapshot durable garanti → on peut écrire (flip des versions actives) en sûreté.
     const outcomes: EntityWriteOutcome[] = [];
     for (const p of exportPaths) {
       outcomes.push(await this.projectOne(p, runId, projectionRole));
@@ -222,37 +283,10 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
       (o) => o.roleOutcome === 'regressed_draft',
     ).length;
 
-    // Snapshot durable AVANT de marquer `succeeded` : l'archive tar.zst immutable + le hash calculé
-    // sur les octets PERSISTÉS sont la seule autorité de replay (ADR-059). Échec publication → failed.
-    let snapshot: { hash: string; uri: string } | null = null;
-    let snapshotError: string | null = null;
-    if (runId) {
-      try {
-        snapshot = await this.buildSnapshotForRun(
-          exportPaths,
-          runId,
-          seed.wikiCommitSha ?? runMeta.wiki_commit_sha ?? null,
-          versions,
-        );
-      } catch (e) {
-        snapshotError = getErrorMessage(e);
-        this.log.error(
-          `snapshot publish failed (run=${runId}): ${snapshotError}`,
-        );
-        await this.recordConflict(
-          '?',
-          null,
-          'snapshot_publish_failed',
-          { error: snapshotError },
-          runId,
-        );
-      }
-    }
-
     await this.closeRun(runId, {
       entitiesWritten,
-      // succeeded UNIQUEMENT si aucun rôle bloqué ET snapshot durable publié.
-      failed: rolesBlocked > 0 || snapshotError != null,
+      // Snapshot déjà garanti durable ; seul un rôle bloqué peut encore faire échouer le run.
+      failed: rolesBlocked > 0,
       snapshot,
     });
 

@@ -8,6 +8,9 @@
  * et résout les versions "active" depuis un état pilotable. On appelle directement `writeEntity`
  * (le cœur du découplage) sans I/O.
  */
+import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { SeoProjectionWriterService } from './seo-projection-writer.service';
 import type { SeoProjectionExport } from './seo-projection.types';
 
@@ -69,8 +72,9 @@ function makeSupabase(state: MockState) {
     single() {
       if (this.op === 'insert') {
         insertSeq += 1;
+        // run_id sert à openRun (`.select('run_id')`) ; version_id aux inserts de versions.
         return Promise.resolve({
-          data: { version_id: `v-${insertSeq}` },
+          data: { version_id: `v-${insertSeq}`, run_id: `run-${insertSeq}` },
           error: null,
         });
       }
@@ -125,7 +129,14 @@ interface TestWriter {
   projectExports: (
     paths: string[],
     t?: string,
-  ) => Promise<{ runId: string | null; snapshot: unknown }>;
+    m?: Record<string, unknown>,
+    role?: string,
+  ) => Promise<{
+    runId: string | null;
+    entitiesWritten: number;
+    rolesWritten: number;
+    snapshot: unknown;
+  }>;
 }
 
 function makeWriter(client: { from: (t: string) => unknown }): TestWriter {
@@ -356,5 +367,68 @@ describe('writeEntity — facts/role decouple + role-scoping (non-negotiable)', 
     const res = await makeWriter(client).projectExports([]);
     expect(res.runId).toBeNull();
     expect(res.snapshot).toBeNull();
+  });
+
+  // Atomicité ADR-059 « active content ⇒ durable replay snapshot » : le snapshot durable est publié
+  // AVANT tout flip de version active. Export LISIBLE (writeEntity écrirait) MAIS publication snapshot
+  // en échec (object-store KO / ENOSPC) → AUCUNE version écrite/flippée, run `failed`, hash null, conflit
+  // loggé. Régression corrigée : l'ancien ordre flippait l'actif PUIS tentait le snapshot → contenu actif
+  // sans snapshot de replay, et le refresh MV était quand même enqueue (guard entitiesWritten>0).
+  it('atomicité snapshot-first : export LISIBLE mais publication snapshot ÉCHOUE → 0 flip actif, run failed', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'p2r3b-atomic-'));
+    const exportPath = join(dir, 'filtre-a-huile.json');
+    writeFileSync(exportPath, JSON.stringify(exportFixture()), 'utf-8');
+    try {
+      const { client, ops } = makeSupabase({
+        factsActive: new Map(),
+        blocksActive: new Map(),
+      });
+      const writer = makeWriter(client);
+      // gate pass (sinon projectOne bloque AVANT writeEntity) + publication snapshot en échec dur.
+      (
+        writer as unknown as {
+          gate: { evaluate: () => { ok: boolean; verdicts: [] } };
+        }
+      ).gate = { evaluate: () => ({ ok: true, verdicts: [] }) };
+      (
+        writer as unknown as { buildSnapshotForRun: () => Promise<never> }
+      ).buildSnapshotForRun = () =>
+        Promise.reject(new Error('object-store write failed (ENOSPC)'));
+
+      const res = await writer.projectExports(
+        [exportPath],
+        'manual',
+        {},
+        'R3_CONSEILS',
+      );
+
+      // Snapshot-first : le flip des versions actives ne précède JAMAIS la publication durable.
+      expect(factVersionInserts(ops)).toHaveLength(0);
+      expect(blockVersionInserts(ops)).toHaveLength(0);
+      expect(
+        ops.filter(
+          (o) => o.table === '__seo_content_blocks' && o.op === 'upsert',
+        ),
+      ).toHaveLength(0);
+      // Run ouvert PUIS fermé failed, hash de snapshot null.
+      const runUpdates = ops.filter(
+        (o) => o.table === '__seo_projection_runs' && o.op === 'update',
+      );
+      expect(runUpdates).toHaveLength(1);
+      expect(runUpdates[0].payload.status).toBe('failed');
+      expect(runUpdates[0].payload.exports_snapshot_hash).toBeNull();
+      // Échec observable (conflit), pas de repli silencieux.
+      const conflicts = inserts(ops, '__seo_projection_conflicts');
+      expect(conflicts).toHaveLength(1);
+      expect(conflicts[0].payload.conflict_kind).toBe(
+        'snapshot_publish_failed',
+      );
+      // Résultat : 0 écriture, pas de snapshot.
+      expect(res.entitiesWritten).toBe(0);
+      expect(res.rolesWritten).toBe(0);
+      expect(res.snapshot).toBeNull();
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });
