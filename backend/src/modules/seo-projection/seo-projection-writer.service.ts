@@ -173,6 +173,26 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
       };
     }
 
+    // Garde : 0 export (job malformé/stale) → aucun run ouvert, aucun snapshot vide publié (observable).
+    // Le feeder garantit ≥1 chemin (triggerEntity=1, slurp cron>0) ; ceci protège des jobs Redis corrompus.
+    if (exportPaths.length === 0) {
+      this.log.warn(
+        `projectExports: 0 exportPath (${triggeredBy}) — no-op, aucun run ouvert.`,
+      );
+      return {
+        runId: null,
+        triggeredBy,
+        entitiesWritten: 0,
+        rolesWritten: 0,
+        rolesNoop: 0,
+        rolesBlocked: 0,
+        rolesRegressed: 0,
+        outcomes: [],
+        refreshEnqueued: false,
+        snapshot: null,
+      };
+    }
+
     // Versions semver résolues depuis l'export + composants writer (jamais le `pipeline_version`
     // non-semver historique du feeder). Seed = 1er export lisible (best-effort, fail-open sur meta).
     const seed = await this.readExportMeta(exportPaths[0]);
@@ -488,6 +508,26 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
         typeof active.confidence_base === 'number' &&
         row.confidenceBase != null &&
         row.confidenceBase < active.confidence_base;
+
+      if (wouldRegress) {
+        // Idempotence : la version active ne flippant jamais sur le draft, re-projeter un export
+        // INCHANGÉ mais régressant (replay / cron d'un contenu figé) rejouerait cette branche à
+        // chaque run. Dédup : si un draft de MÊME content_hash existe déjà pour ce bloc, c'est un
+        // no-op gouverné (0 nouvelle version, 0 conflit dupliqué) — sinon les tables versionnées et
+        // __seo_projection_conflicts croîtraient sans borne (rupture d'idempotence/replay).
+        const { data: existingDraft } = await this.supabase
+          .from('__seo_content_block_versions')
+          .select('version_id')
+          .eq('block_id', row.blockId)
+          .eq('status', 'draft')
+          .eq('content_hash', row.contentHash)
+          .limit(1)
+          .maybeSingle();
+        if (existingDraft) {
+          noop += 1;
+          continue; // draft régressant déjà enregistré → no-op idempotent
+        }
+      }
 
       const { data: ins, error } = await this.supabase
         .from('__seo_content_block_versions')

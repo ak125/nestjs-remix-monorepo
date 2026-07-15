@@ -148,21 +148,24 @@ def verify_versions_complete(run_row: dict[str, Any]) -> tuple[bool, list[str]]:
 
 def verify_manifest_sidecar(
     snapshot_path: Path,
+    run_id: str,
     expected_hash_full: str,
     expected_versions: dict[str, Any],
 ) -> tuple[bool, str, dict | None]:
     """
-    Vérifie le manifest sidecar `<hash>.manifest.json` (commit marker écrit EN DERNIER par le
-    writer). Contrat de validation (P2-R3-B) — trois axes doivent MATCHER, pas juste exister :
+    Vérifie le manifest sidecar PER-RUN `<hash>.<run_id>.manifest.json` (commit marker écrit EN
+    DERNIER par le writer). Le manifest est keyé par run (pas seulement par hash) : l'archive tar.zst
+    est content-addressed (dédup entre runs d'exports identiques), mais les 5 versions sont per-run —
+    un manifest partagé serait écrasé par un run ultérieur de versions différentes. Contrat de
+    validation (P2-R3-B) — trois axes doivent MATCHER, pas juste exister :
       1. `snapshot_hash` == hash attendu du run (l'archive tar.zst persistée) ;
       2. `versions` == les 5 versions canoniques du run (replay determinism) ;
       3. inventaire d'entrées présent + cohérent (`entry_count` == len(entries) ;
          chaque entrée = {name:str non vide, sha256:64hex, size:int>=0}).
     Toute divergence → `ok=False` (fail-closed), le run n'est pas replayable.
     """
-    manifest_path = snapshot_path.parent / (
-        snapshot_path.stem.replace(".tar", "") + ".manifest.json"
-    )
+    hex_hash = snapshot_path.stem.replace(".tar", "")
+    manifest_path = snapshot_path.parent / f"{hex_hash}.{run_id}.manifest.json"
     if not manifest_path.is_file():
         return False, f"manifest_sidecar_missing: {manifest_path}", None
     try:
@@ -264,7 +267,7 @@ def validate_run_for_replay(
 
     expected_versions = {v: run_row.get(v) for v in REQUIRED_VERSIONS}
     manifest_ok, manifest_msg, _manifest_data = verify_manifest_sidecar(
-        snapshot_path, snapshot_hash_full, expected_versions
+        snapshot_path, str(run_id), snapshot_hash_full, expected_versions
     )
     if not manifest_ok:
         errors.append(f"manifest:{manifest_msg}")
@@ -277,7 +280,10 @@ def validate_run_for_replay(
         "versions": {v: run_row.get(v) for v in REQUIRED_VERSIONS},
         "wiki_commit_sha": run_row.get("wiki_commit_sha"),
         "manifest_path": (
-            str(snapshot_path.parent / (snapshot_path.stem.replace(".tar", "") + ".manifest.json"))
+            str(
+                snapshot_path.parent
+                / f"{snapshot_path.stem.replace('.tar', '')}.{run_id}.manifest.json"
+            )
             if manifest_ok
             else None
         ),

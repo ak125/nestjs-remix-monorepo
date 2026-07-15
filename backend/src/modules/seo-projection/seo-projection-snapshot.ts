@@ -90,6 +90,14 @@ function writeString(
 
 /** Header USTAR déterministe (512 bytes) pour un fichier régulier. */
 function ustarHeader(name: string, size: number): Buffer {
+  // Le champ `name` USTAR fait 100 octets : un nom plus long serait TRONQUÉ silencieusement →
+  // divergence entre l'entrée tar et l'inventaire du manifest (digestEntries garde le nom complet).
+  // Fail-loud plutôt que corruption silencieuse (no-silent-fallback). Les noms réels = slugs bornés.
+  if (Buffer.byteLength(name, 'utf-8') > 100) {
+    throw new Error(
+      `snapshot entry name exceeds 100 bytes (USTAR limit): ${name}`,
+    );
+  }
   const h = Buffer.alloc(BLOCK, 0);
   writeString(h, 0, name, 100); // name
   h.write(FIXED_MODE + '\0', 100, 8, 'ascii'); // mode
@@ -206,7 +214,12 @@ export async function buildAndPublishSnapshot(params: {
 
   const snapDir = path.join(objectStoreRoot, SNAPSHOTS_SUBDIR);
   const archivePath = path.join(snapDir, `${hex}.tar.zst`);
-  const manifestPath = path.join(snapDir, `${hex}.manifest.json`);
+  // Manifest keyé PAR RUN (`<hex>.<runId>.manifest.json`), pas seulement par hash : l'archive est
+  // content-addressed (dédup — 2 runs d'exports identiques partagent le `.tar.zst`), MAIS les 5
+  // versions sont per-run. Un manifest partagé serait écrasé par un run ultérieur d'exports identiques
+  // mais de versions bumpées → un run antérieur échouerait ensuite la validation replay (versions
+  // divergentes). Le manifest per-run garantit versions==run + reste le commit marker (écrit en dernier).
+  const manifestPath = path.join(snapDir, `${hex}.${runId}.manifest.json`);
 
   // 1. Archive d'abord (durable).
   await atomicWrite(archivePath, tarZst, runId);

@@ -18,6 +18,8 @@ interface MockState {
     string,
     { content_hash: string; confidence_base: number | null }
   >;
+  /** Drafts existants keyés `${block_id}::${content_hash}` (test d'idempotence de régression). */
+  draftsByHash?: Set<string>;
 }
 interface RecordedOp {
   table: string;
@@ -58,8 +60,11 @@ function makeSupabase(state: MockState) {
       this.filters[`neq_${k}`] = v;
       return this;
     }
+    limit(_n: number) {
+      return this;
+    }
     maybeSingle() {
-      return Promise.resolve({ data: this.resolveActive(), error: null });
+      return Promise.resolve({ data: this.resolve(), error: null });
     }
     single() {
       if (this.op === 'insert') {
@@ -69,16 +74,28 @@ function makeSupabase(state: MockState) {
           error: null,
         });
       }
-      return Promise.resolve({ data: this.resolveActive(), error: null });
+      return Promise.resolve({ data: this.resolve(), error: null });
     }
     // Rend Q awaitable pour les chaînes update/insert-conflict sans terminal explicite.
     then(onF: (v: { data: null; error: null }) => unknown) {
       return Promise.resolve({ data: null, error: null }).then(onF);
     }
-    private resolveActive(): {
-      content_hash: string;
+    private resolve(): {
+      content_hash?: string;
       confidence_base?: number | null;
+      version_id?: string;
     } | null {
+      // Query de dédup draft (status='draft' + content_hash) : idempotence de régression.
+      if (
+        this.table === '__seo_content_block_versions' &&
+        this.filters.status === 'draft' &&
+        typeof this.filters.content_hash === 'string'
+      ) {
+        const key = `${String(this.filters.block_id)}::${String(this.filters.content_hash)}`;
+        return state.draftsByHash?.has(key)
+          ? { version_id: 'existing-draft' }
+          : null;
+      }
       if (this.filters.status !== 'active') return null;
       if (this.table === '__seo_entity_fact_versions') {
         return state.factsActive.get(this.filters.entity_id as string) ?? null;
@@ -96,16 +113,28 @@ type WriteEntityFn = (
   e: SeoProjectionExport,
   r: string | null,
   role?: string,
-) => Promise<{ factsOutcome: string; roleOutcome: string }>;
+) => Promise<{
+  factsOutcome: string;
+  roleOutcome: string;
+  blocksWritten?: number;
+  conflicts?: number;
+}>;
 
-function makeWriter(client: { from: (t: string) => unknown }): {
+interface TestWriter {
   writeEntity: WriteEntityFn;
-} {
+  projectExports: (
+    paths: string[],
+    t?: string,
+  ) => Promise<{ runId: string | null; snapshot: unknown }>;
+}
+
+function makeWriter(client: { from: (t: string) => unknown }): TestWriter {
   // Bypass du constructeur SupabaseBaseService (I/O lourde) : on greffe supabase + log sur le proto.
   const writer = Object.create(SeoProjectionWriterService.prototype);
   writer.supabase = client;
   writer.log = { warn() {}, error() {}, log() {} };
-  return writer as { writeEntity: WriteEntityFn };
+  writer.readOnly = false;
+  return writer as TestWriter;
 }
 
 const exportFixture = (): SeoProjectionExport => ({
@@ -256,5 +285,76 @@ describe('writeEntity — facts/role decouple + role-scoping (non-negotiable)', 
     expect(out.roleOutcome).toBe('noop');
     expect(factVersionInserts(ops)).toHaveLength(0);
     expect(blockVersionInserts(ops)).toHaveLength(0);
+  });
+
+  // Bloc régressant : contenu différent MAIS confiance strictement inférieure à l'active.
+  const regressExport = (): SeoProjectionExport => ({
+    ...exportFixture(),
+    roles_allowed: ['R3_CONSEILS'],
+    blocks: [
+      {
+        role: 'R3_CONSEILS',
+        content_md: 'r3 moins fiable',
+        source_ids: [],
+        truth_level: 'sourced',
+        section: 'Diagnostic',
+        content_hash: 'NEW_H',
+        confidence_base: 0.5,
+      },
+    ],
+  });
+  const conflictInserts = (ops: RecordedOp[]) =>
+    inserts(ops, '__seo_projection_conflicts');
+
+  it('régression : 1er run insère 1 draft + 1 conflit (active plus fiable préservée)', async () => {
+    const state: MockState = {
+      factsActive: new Map([
+        ['gamme:filtre-a-huile', { content_hash: 'FACTS_H1' }],
+      ]),
+      blocksActive: new Map([
+        [R3_BLOCK_ID, { content_hash: 'ACTIVE_H', confidence_base: 0.9 }],
+      ]),
+      draftsByHash: new Set(),
+    };
+    const { client, ops } = makeSupabase(state);
+    const out = await makeWriter(client).writeEntity(
+      regressExport(),
+      'run-1',
+      'R3_CONSEILS',
+    );
+    expect(out.roleOutcome).toBe('regressed_draft');
+    expect(blockVersionInserts(ops)).toHaveLength(1);
+    expect(conflictInserts(ops)).toHaveLength(1);
+  });
+
+  it('régression IDEMPOTENTE : re-projeter un export régressant inchangé (draft déjà présent) → no-op, 0 draft dupliqué, 0 conflit', async () => {
+    const state: MockState = {
+      factsActive: new Map([
+        ['gamme:filtre-a-huile', { content_hash: 'FACTS_H1' }],
+      ]),
+      blocksActive: new Map([
+        [R3_BLOCK_ID, { content_hash: 'ACTIVE_H', confidence_base: 0.9 }],
+      ]),
+      draftsByHash: new Set([`${R3_BLOCK_ID}::NEW_H`]),
+    };
+    const { client, ops } = makeSupabase(state);
+    const out = await makeWriter(client).writeEntity(
+      regressExport(),
+      'run-2',
+      'R3_CONSEILS',
+    );
+    expect(out.roleOutcome).toBe('noop');
+    expect(blockVersionInserts(ops)).toHaveLength(0); // pas de draft dupliqué
+    expect(conflictInserts(ops)).toHaveLength(0); // pas de conflit dupliqué
+  });
+
+  it('projectExports([]) → no-op observable, aucun run ouvert (job malformé/stale)', async () => {
+    const { client } = makeSupabase({
+      factsActive: new Map(),
+      blocksActive: new Map(),
+    });
+    const res = await makeWriter(client).projectExports([]);
+    expect(res.runId).toBeNull();
+    expect(res.snapshot).toBeNull();
   });
 });

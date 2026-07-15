@@ -24,6 +24,9 @@ SCRIPT_PATH = (
 # ────────────────────────────────────────────────────────────────────────────
 
 
+DEFAULT_RUN_ID = "00000000-0000-7000-8000-000000000001"
+
+
 def _default_manifest(full_hash: str, *, versions=None, entries=None) -> dict:
     """Manifest sidecar conforme (P2-R3-B) : snapshot_hash + 5 versions + inventaire d'entrées."""
     return {
@@ -43,16 +46,20 @@ def _default_manifest(full_hash: str, *, versions=None, entries=None) -> dict:
 
 
 def _make_snapshot(
-    tmp_path: Path, content: bytes, *, manifest: dict | None = None
+    tmp_path: Path,
+    content: bytes,
+    *,
+    manifest: dict | None = None,
+    run_id: str = DEFAULT_RUN_ID,
 ) -> tuple[Path, str]:
-    """Crée un fichier <hash>.tar.zst + manifest sidecar. Retourne (path, hash_full)."""
+    """Crée <hash>.tar.zst + manifest sidecar PER-RUN <hash>.<run_id>.manifest.json. Retourne (path, hash_full)."""
     snapshots_dir = tmp_path / "exports-snapshots"
     snapshots_dir.mkdir(parents=True, exist_ok=True)
     hex_hash = hashlib.sha256(content).hexdigest()
     full_hash = f"sha256:{hex_hash}"
     snapshot = snapshots_dir / f"{hex_hash}.tar.zst"
     snapshot.write_bytes(content)
-    manifest_path = snapshots_dir / f"{hex_hash}.manifest.json"
+    manifest_path = snapshots_dir / f"{hex_hash}.{run_id}.manifest.json"
     manifest_path.write_text(
         json.dumps(manifest if manifest is not None else _default_manifest(full_hash))
     )
@@ -61,7 +68,7 @@ def _make_snapshot(
 
 def _valid_run_row(snapshot_hash: str) -> dict:
     return {
-        "run_id": "00000000-0000-7000-8000-000000000001",
+        "run_id": DEFAULT_RUN_ID,
         "started_at": "2026-05-13T10:00:00+00:00",
         "exports_snapshot_hash": snapshot_hash,
         "exports_snapshot_uri": f"/opt/automecanik/object-store/exports-snapshots/{snapshot_hash.split(':')[1]}.tar.zst",
