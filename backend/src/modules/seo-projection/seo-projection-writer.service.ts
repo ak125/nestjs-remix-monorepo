@@ -15,19 +15,58 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHash } from 'node:crypto';
 import { promises as fs } from 'node:fs';
+import * as path from 'node:path';
+import stableStringify from 'fast-json-stable-stringify';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
 import { getAppConfig } from '../../config/app.config';
+import { getErrorMessage } from '@common/utils/error.utils';
 import { SeoProjectionGateService } from './seo-projection-gate.service';
 import {
+  buildAndPublishSnapshot,
+  type SnapshotEntry,
+} from './seo-projection-snapshot';
+import {
   type EntityWriteOutcome,
-  type ProjectedBlockRow,
   type ProjectionRunMeta,
   type ProjectionRunResult,
   type ProjectionTriggeredBy,
+  type ProjectedBlockRow,
   type SeoProjectionBlock,
   type SeoProjectionExport,
+  OBJECT_STORE_ROOT_DEFAULT,
+  PROJECTION_BUILDER_VERSION,
+  PROJECTION_CONTRACT_FALLBACK,
+  PROJECTION_EXTRACTOR_VERSION,
+  PROJECTION_PIPELINE_VERSION,
+  PROJECTION_RUNNER_VERSION,
   WRITER_CONTRACT_VERSION,
 } from './seo-projection.types';
+
+/** Semver strict `MAJOR.MINOR.PATCH` (miroir de `replay_projection.py:verify_versions_complete`). */
+const SEMVER_RE = /^\d+\.\d+\.\d+$/;
+
+/** Retourne `candidate` s'il est un semver valide, sinon `fallback`. */
+function semverOr(candidate: unknown, fallback: string): string {
+  return typeof candidate === 'string' && SEMVER_RE.test(candidate)
+    ? candidate
+    : fallback;
+}
+
+/** Les 5 versions canoniques du run (toutes semver valides — condition NÉCESSAIRE du replay). */
+interface RunVersions {
+  projection_contract_version: string;
+  builder_version: string;
+  pipeline_version: string;
+  extractor_version: string;
+  runner_version: string;
+}
+
+/** Métadonnées lues best-effort sur le 1er export (seed des versions + wiki_commit du run). */
+interface ExportSeedMeta {
+  projectionContractVersion?: string;
+  builderVersion?: string;
+  wikiCommitSha?: string | null;
+}
 
 /** Slug déterministe (kebab, ascii) pour dériver block_kind depuis `section`. */
 function slugifyKind(raw: string): string {
@@ -72,9 +111,13 @@ export function mapExportBlockToDbBlock(
   if (b.last_verified_at != null) content.last_verified_at = b.last_verified_at;
   if (b.consumer_pages != null) content.consumer_pages = b.consumer_pages;
 
+  // Hash déterministe = sha256 sur une sérialisation à ordre de clés STABLE
+  // (`fast-json-stable-stringify`, convention repo cf. seo-control.service.ts). Remplace
+  // `md5(JSON.stringify(...))` : md5 est faible et `JSON.stringify` dépend de l'ordre d'insertion
+  // (deux `content` équivalents pouvaient produire des hash différents → no-op detection cassée).
   const contentHash =
     b.content_hash ??
-    createHash('md5').update(JSON.stringify(content)).digest('hex');
+    createHash('sha256').update(stableStringify(content)).digest('hex');
 
   return {
     blockId,
@@ -100,11 +143,16 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
     super(configService);
   }
 
-  /** Projette une liste d'exports. Retourne un résultat observable (jamais d'exception non tracée). */
+  /**
+   * Projette une liste d'exports. Retourne un résultat observable (jamais d'exception non tracée).
+   * `projectionRole` (P2-B) : quand présent, N'ÉCRIT QUE les blocs de ce rôle (facts partagés
+   * inchangés) → une canary mono-rôle ne réécrit jamais les autres rôles de la même entité.
+   */
   async projectExports(
     exportPaths: string[],
     triggeredBy: ProjectionTriggeredBy = 'manual',
     runMeta: Partial<ProjectionRunMeta> = {},
+    projectionRole?: string,
   ): Promise<ProjectionRunResult> {
     if (this.readOnly) {
       this.log.log(
@@ -114,56 +162,138 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
         runId: null,
         triggeredBy,
         entitiesWritten: 0,
+        rolesWritten: 0,
+        rolesNoop: 0,
+        rolesBlocked: 0,
+        rolesRegressed: 0,
         outcomes: [],
         refreshEnqueued: false,
         readOnlySkipped: true,
+        snapshot: null,
       };
     }
 
-    const runId = await this.openRun(triggeredBy, runMeta);
-    const outcomes: EntityWriteOutcome[] = [];
-    let written = 0;
+    // Versions semver résolues depuis l'export + composants writer (jamais le `pipeline_version`
+    // non-semver historique du feeder). Seed = 1er export lisible (best-effort, fail-open sur meta).
+    const seed = await this.readExportMeta(exportPaths[0]);
+    const versions = this.resolveRunVersions(seed, runMeta);
+    const runId = await this.openRun(
+      triggeredBy,
+      versions,
+      seed.wikiCommitSha ?? runMeta.wiki_commit_sha ?? null,
+    );
 
-    for (const path of exportPaths) {
-      const outcome = await this.projectOne(path, runId);
-      outcomes.push(outcome);
-      if (outcome.status === 'written') written += 1;
+    const outcomes: EntityWriteOutcome[] = [];
+    for (const p of exportPaths) {
+      outcomes.push(await this.projectOne(p, runId, projectionRole));
     }
 
-    await this.closeRun(
-      runId,
-      written,
-      outcomes.some((o) => o.status === 'blocked'),
-    );
+    const entitiesWritten = outcomes.filter(
+      (o) => o.factsOutcome === 'written',
+    ).length;
+    const rolesWritten = outcomes.filter(
+      (o) => o.roleOutcome === 'written',
+    ).length;
+    const rolesNoop = outcomes.filter((o) => o.roleOutcome === 'noop').length;
+    const rolesBlocked = outcomes.filter(
+      (o) => o.roleOutcome === 'blocked',
+    ).length;
+    const rolesRegressed = outcomes.filter(
+      (o) => o.roleOutcome === 'regressed_draft',
+    ).length;
+
+    // Snapshot durable AVANT de marquer `succeeded` : l'archive tar.zst immutable + le hash calculé
+    // sur les octets PERSISTÉS sont la seule autorité de replay (ADR-059). Échec publication → failed.
+    let snapshot: { hash: string; uri: string } | null = null;
+    let snapshotError: string | null = null;
+    if (runId) {
+      try {
+        snapshot = await this.buildSnapshotForRun(
+          exportPaths,
+          runId,
+          seed.wikiCommitSha ?? runMeta.wiki_commit_sha ?? null,
+          versions,
+        );
+      } catch (e) {
+        snapshotError = getErrorMessage(e);
+        this.log.error(
+          `snapshot publish failed (run=${runId}): ${snapshotError}`,
+        );
+        await this.recordConflict(
+          '?',
+          null,
+          'snapshot_publish_failed',
+          { error: snapshotError },
+          runId,
+        );
+      }
+    }
+
+    await this.closeRun(runId, {
+      entitiesWritten,
+      // succeeded UNIQUEMENT si aucun rôle bloqué ET snapshot durable publié.
+      failed: rolesBlocked > 0 || snapshotError != null,
+      snapshot,
+    });
+
     return {
       runId,
       triggeredBy,
-      entitiesWritten: written,
+      entitiesWritten,
+      rolesWritten,
+      rolesNoop,
+      rolesBlocked,
+      rolesRegressed,
       outcomes,
       refreshEnqueued: false,
+      snapshot,
     };
   }
 
-  /** Projette un export. Fail-closed : erreur → conflit + outcome blocked, jamais de throw. */
+  /** Projette un export. Fail-closed : erreur → conflit + roleOutcome blocked, jamais de throw. */
   private async projectOne(
-    path: string,
+    exportPath: string,
     runId: string | null,
+    role?: string,
   ): Promise<EntityWriteOutcome> {
     let exp: SeoProjectionExport;
     try {
-      exp = JSON.parse(await fs.readFile(path, 'utf-8')) as SeoProjectionExport;
+      exp = JSON.parse(
+        await fs.readFile(exportPath, 'utf-8'),
+      ) as SeoProjectionExport;
     } catch (e) {
       await this.recordConflict(
         '?',
         null,
         'export_unreadable',
-        { path, error: String(e) },
+        { path: exportPath, error: String(e) },
         runId,
       );
       return {
-        entity_id: path,
-        status: 'blocked',
+        entity_id: exportPath,
+        role: role ?? null,
+        factsOutcome: 'noop',
+        roleOutcome: 'blocked',
         reasons: [`export illisible: ${String(e)}`],
+      };
+    }
+
+    // Rôle demandé (P2 single-role) absent de roles_allowed → bloqué (trigger mal dirigé), rien
+    // écrit (ni facts ni blocs). Le gate ne vérifie QUE la pureté des blocs, pas le rôle demandé.
+    if (role && !(exp.roles_allowed ?? []).includes(role)) {
+      await this.recordConflict(
+        exp.entity_id,
+        null,
+        'role_not_allowed',
+        { role, roles_allowed: exp.roles_allowed },
+        runId,
+      );
+      return {
+        entity_id: exp.entity_id,
+        role,
+        factsOutcome: 'noop',
+        roleOutcome: 'blocked',
+        reasons: [`role '${role}' absent de roles_allowed`],
       };
     }
 
@@ -177,11 +307,17 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
         { verdicts },
         runId,
       );
-      return { entity_id: exp.entity_id, status: 'blocked', reasons };
+      return {
+        entity_id: exp.entity_id,
+        role: role ?? null,
+        factsOutcome: 'noop',
+        roleOutcome: 'blocked',
+        reasons,
+      };
     }
 
     try {
-      return await this.writeEntity(exp, runId);
+      return await this.writeEntity(exp, runId, role);
     } catch (e) {
       await this.recordConflict(
         exp.entity_id,
@@ -192,18 +328,26 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
       );
       return {
         entity_id: exp.entity_id,
-        status: 'blocked',
+        role: role ?? null,
+        factsOutcome: 'noop',
+        roleOutcome: 'blocked',
         reasons: [`écriture: ${String(e)}`],
       };
     }
   }
 
-  /** INSERT-new-version (facts) + flip active_version_id ; no-op si content_hash identique. */
+  /**
+   * Écrit une entité en découplant **FACTS partagés** et **BLOCS du rôle** (régression non-négociable
+   * P2-B) : un facts no-op ne court-circuite JAMAIS l'écriture des blocs du rôle demandé. Trigger R3
+   * → facts written + blocs R3 ; re-trigger R4 sur le même export inchangé → facts noop MAIS blocs R4
+   * écrits, sans réécrire un bloc R3.
+   */
   private async writeEntity(
     exp: SeoProjectionExport,
     runId: string | null,
+    role?: string,
   ): Promise<EntityWriteOutcome> {
-    // Upsert la ligne entity (idempotent ; ne touche pas active_version_id ici).
+    // 1. Upsert la ligne entity (idempotent ; ne touche pas active_version_id ici).
     await this.supabase.from('__seo_entity_facts').upsert(
       {
         entity_id: exp.entity_id,
@@ -215,7 +359,37 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
       { onConflict: 'entity_id' },
     );
 
-    // no-op detection : la version active a-t-elle déjà ce content_hash ?
+    // 2. FACTS partagés — INSERT-new-version + flip, ou no-op. Résultat INDÉPENDANT du rôle.
+    const facts = await this.writeFacts(exp, runId);
+
+    // 3. BLOCS du rôle demandé (ou tous si slurp) — TOUJOURS exécuté, même sur un facts no-op.
+    const blocks = await this.writeBlocks(exp, runId, role);
+    const roleOutcome: EntityWriteOutcome['roleOutcome'] =
+      blocks.written > 0
+        ? 'written'
+        : blocks.regressed > 0
+          ? 'regressed_draft'
+          : 'noop';
+
+    return {
+      entity_id: exp.entity_id,
+      role: role ?? null,
+      factsOutcome: facts.written ? 'written' : 'noop',
+      roleOutcome,
+      factsVersionId: facts.versionId,
+      blocksWritten: blocks.written,
+      conflicts: blocks.regressed,
+    };
+  }
+
+  /**
+   * FACTS partagés de l'entité : no-op si `content_hash` identique à l'active, sinon INSERT-new-version
+   * (`status='active'`) + dépréciation de l'ancienne + flip du pointeur (JAMAIS d'UPDATE en place).
+   */
+  private async writeFacts(
+    exp: SeoProjectionExport,
+    runId: string | null,
+  ): Promise<{ written: boolean; versionId?: string }> {
     const { data: active } = await this.supabase
       .from('__seo_entity_fact_versions')
       .select('content_hash')
@@ -224,10 +398,9 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
       .maybeSingle();
 
     if (active?.content_hash === exp.content_hash) {
-      return { entity_id: exp.entity_id, status: 'noop' };
+      return { written: false };
     }
 
-    // INSERT new version (active) — JAMAIS d'UPDATE d'une version existante.
     const { data: ins, error } = await this.supabase
       .from('__seo_entity_fact_versions')
       .insert({
@@ -242,7 +415,6 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
     if (error || !ins)
       throw new Error(`insert fact_version: ${error?.message ?? 'no row'}`);
 
-    // Déprécier l'ancienne active + flip le pointeur (audit trail préservé, jamais DELETE).
     await this.supabase
       .from('__seo_entity_fact_versions')
       .update({ status: 'deprecated', valid_to: new Date().toISOString() })
@@ -257,26 +429,28 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
       })
       .eq('entity_id', exp.entity_id);
 
-    const blocksWritten = await this.writeBlocks(exp, runId);
-    return {
-      entity_id: exp.entity_id,
-      status: 'written',
-      factsVersionId: ins.version_id,
-      blocksWritten: blocksWritten.written,
-      conflicts: blocksWritten.regressed,
-    };
+    return { written: true, versionId: ins.version_id };
   }
 
-  /** Écrit les blocks rôle-aware ; no-rétro-régression PAR BLOC (version "pire" → draft, pas active). */
+  /**
+   * Écrit les blocs — **role-scoped** (P2-B) : si `role` fourni, ne projette QUE ses blocs (les autres
+   * rôles de l'entité restent intacts) ; sinon tous (slurp legacy). L'INDEX POSITIONNEL est celui du
+   * tableau COMPLET (pas du filtré) → `block_kind` fallback `b<index>` STABLE quel que soit le rôle
+   * demandé (sinon un même bloc obtiendrait 2 block_id selon slurp vs role-scoped → no-op cassé).
+   * No-rétro-régression PAR BLOC (version "pire" → draft, jamais active).
+   */
   private async writeBlocks(
     exp: SeoProjectionExport,
     runId: string | null,
-  ): Promise<{ written: number; regressed: number }> {
+    role?: string,
+  ): Promise<{ written: number; regressed: number; noop: number }> {
     let written = 0;
     let regressed = 0;
+    let noop = 0;
     const blocks = exp.blocks ?? [];
     for (let index = 0; index < blocks.length; index += 1) {
       const b = blocks[index];
+      if (role && b?.role !== role) continue; // role-scoped : ignore les autres rôles (index préservé)
       // Adapte le bloc FLAT (builder) → forme DB (block_kind + content jsonb NOT NULL). Sans perte.
       const row = mapExportBlockToDbBlock(exp.entity_id, b, index);
       if (row.kindFallback) {
@@ -302,7 +476,10 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
         .eq('status', 'active')
         .maybeSingle();
 
-      if (active?.content_hash === row.contentHash) continue; // no-op
+      if (active?.content_hash === row.contentHash) {
+        noop += 1;
+        continue; // no-op
+      }
 
       // no-rétro-régression : si une version active existe avec une confiance strictement supérieure, on
       // insère la nouvelle en draft (jamais active) + conflit observable.
@@ -356,7 +533,7 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
         .eq('block_id', row.blockId);
       written += 1;
     }
-    return { written, regressed };
+    return { written, regressed, noop };
   }
 
   /**
@@ -388,9 +565,11 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
     return { refreshed };
   }
 
+  /** Ouvre un run avec les 5 versions canoniques semver déjà résolues (jamais de `...meta` opaque). */
   private async openRun(
     triggeredBy: ProjectionTriggeredBy,
-    meta: Partial<ProjectionRunMeta>,
+    versions: RunVersions,
+    wikiCommitSha: string | null,
   ): Promise<string | null> {
     const { data, error } = await this.supabase
       .from('__seo_projection_runs')
@@ -398,7 +577,12 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
         trigger_kind: triggeredBy === 'test' ? 'manual' : triggeredBy,
         status: 'running',
         writer_contract_version: WRITER_CONTRACT_VERSION,
-        ...meta,
+        projection_contract_version: versions.projection_contract_version,
+        builder_version: versions.builder_version,
+        pipeline_version: versions.pipeline_version,
+        extractor_version: versions.extractor_version,
+        runner_version: versions.runner_version,
+        wiki_commit_sha: wikiCommitSha,
       })
       .select('run_id')
       .single();
@@ -409,20 +593,109 @@ export class SeoProjectionWriterService extends SupabaseBaseService {
     return data?.run_id ?? null;
   }
 
+  /**
+   * Ferme le run : `succeeded` ⟺ `!failed` ; persiste `exports_snapshot_hash/_uri` (sur les octets
+   * PERSISTÉS du tarball) — l'audit trail porte désormais la référence replay authoritative.
+   */
   private async closeRun(
     runId: string | null,
-    written: number,
-    hadBlocked: boolean,
+    close: {
+      entitiesWritten: number;
+      failed: boolean;
+      snapshot: { hash: string; uri: string } | null;
+    },
   ): Promise<void> {
     if (!runId) return;
     await this.supabase
       .from('__seo_projection_runs')
       .update({
-        status: hadBlocked ? 'failed' : 'succeeded',
-        entities_written: written,
+        status: close.failed ? 'failed' : 'succeeded',
+        entities_written: close.entitiesWritten,
+        exports_snapshot_hash: close.snapshot?.hash ?? null,
+        exports_snapshot_uri: close.snapshot?.uri ?? null,
         finished_at: new Date().toISOString(),
       })
       .eq('run_id', runId);
+  }
+
+  /**
+   * Résout les 5 versions canoniques (semver garanti) : `projection_contract_version` ← export/runMeta
+   * (fallback constant) ; `builder_version` ← export ; `pipeline/extractor/runner` ← composants writer.
+   */
+  private resolveRunVersions(
+    seed: ExportSeedMeta,
+    runMeta: Partial<ProjectionRunMeta>,
+  ): RunVersions {
+    return {
+      projection_contract_version: semverOr(
+        runMeta.projection_contract_version ?? seed.projectionContractVersion,
+        PROJECTION_CONTRACT_FALLBACK,
+      ),
+      builder_version: semverOr(
+        seed.builderVersion,
+        PROJECTION_BUILDER_VERSION,
+      ),
+      pipeline_version: PROJECTION_PIPELINE_VERSION,
+      extractor_version: PROJECTION_EXTRACTOR_VERSION,
+      runner_version: PROJECTION_RUNNER_VERSION,
+    };
+  }
+
+  /** Best-effort (fail-open sur la META uniquement) : lit versions + wiki_commit du 1er export. */
+  private async readExportMeta(
+    firstPath: string | undefined,
+  ): Promise<ExportSeedMeta> {
+    if (!firstPath) return {};
+    try {
+      const exp = JSON.parse(
+        await fs.readFile(firstPath, 'utf-8'),
+      ) as Partial<SeoProjectionExport>;
+      return {
+        projectionContractVersion: exp.projection_contract_version,
+        builderVersion: exp.builder_version,
+        wikiCommitSha: exp.source_wiki_commit ?? null,
+      };
+    } catch {
+      return {};
+    }
+  }
+
+  /** Racine object-store où sont publiés les snapshots (aligné sur `replay_projection.py`). */
+  private getObjectStoreRoot(): string {
+    return (
+      this.configService?.get<string>('SEO_PROJECTION_OBJECT_STORE_ROOT') ??
+      OBJECT_STORE_ROOT_DEFAULT
+    );
+  }
+
+  /**
+   * Lit les octets bruts des exports + publie le snapshot tar.zst durable (délègue au builder
+   * reproductible). Fail-loud : toute erreur d'I/O remonte → run marqué `failed` par l'appelant.
+   */
+  private async buildSnapshotForRun(
+    exportPaths: string[],
+    runId: string,
+    wikiCommitSha: string | null,
+    versions: RunVersions,
+  ): Promise<{ hash: string; uri: string }> {
+    const entries: SnapshotEntry[] = [];
+    for (const p of exportPaths) {
+      entries.push({ name: path.basename(p), data: await fs.readFile(p) });
+    }
+    const published = await buildAndPublishSnapshot({
+      objectStoreRoot: this.getObjectStoreRoot(),
+      entries,
+      runId,
+      wikiCommitSha,
+      versions: {
+        projection_contract_version: versions.projection_contract_version,
+        builder_version: versions.builder_version,
+        pipeline_version: versions.pipeline_version,
+        extractor_version: versions.extractor_version,
+        runner_version: versions.runner_version,
+      },
+    });
+    return { hash: published.hash, uri: published.uri };
   }
 
   private async recordConflict(

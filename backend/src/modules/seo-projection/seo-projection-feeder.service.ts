@@ -17,7 +17,12 @@
  *     ne pas encore exister ; le wiki les produit en amont).
  *   - `triggerNow()` = enqueue one-off (endpoint admin) pour prouver la boucle sans attendre le cron.
  */
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  OnModuleInit,
+} from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
 import { ConfigService } from '@nestjs/config';
 import { Queue } from 'bull';
@@ -25,6 +30,7 @@ import { promises as fs } from 'node:fs';
 import * as path from 'node:path';
 import { getErrorMessage } from '@common/utils/error.utils';
 import { getAppConfig } from '../../config/app.config';
+import { FeatureFlagsService } from '../../config/feature-flags.service';
 import {
   PROJECTION_FEED_JOB,
   PROJECTION_FEED_QUEUE,
@@ -34,6 +40,9 @@ import {
   type ProjectionFeedResult,
   type ProjectionWriteJobData,
 } from './seo-projection.types';
+
+/** Slug d'entité valide (rejette `/`, `..`, majuscules — sanitize AVANT construction du chemin). */
+const ENTITY_ID_SLUG_RE = /^[a-z0-9][a-z0-9-]{0,80}$/;
 
 /** jobId stable du repeatable → pas de doublon au redeploy (BullMQ stocke les anciens cron sinon). */
 const R1_FEED_REPEATABLE_JOB_ID = 'seo-projection-r1-nightly-feed';
@@ -47,6 +56,7 @@ export class SeoProjectionFeederService implements OnModuleInit {
     @InjectQueue(PROJECTION_WRITE_QUEUE)
     private readonly writeQueue: Queue,
     private readonly configService: ConfigService,
+    private readonly featureFlags: FeatureFlagsService,
   ) {}
 
   /** Init NON-bloquant (fire-and-forget). Bloquer ici stallerait `app.listen()` (cf. backend.md). */
@@ -78,6 +88,130 @@ export class SeoProjectionFeederService implements OnModuleInit {
       `Feeder R1 déclenché manuellement (jobId=${String(job.id)}).`,
     );
     return String(job.id);
+  }
+
+  /**
+   * Enqueue un write-job **SINGLE-ENTITY ROLE-SCOPED** (P2-B, ADR-090 §C2). Résout EXACTEMENT 1
+   * fichier depuis `(entityType, entityId)`, le contient sous `exportsRoot` (realpath anti-symlink),
+   * assert que l'export porte l'`entity_id` namespacé demandé ET déclare le rôle, puis enfile UN SEUL
+   * `exportPath` avec `projectionRole`. **JAMAIS** de slurp de répertoire (≠ `discoverAndEnqueue` qui
+   * enfile tous les `*.json` → défait la cardinalité 1). Fail-closed : toute violation → `BadRequest`.
+   */
+  async triggerEntity(input: {
+    entityType: string;
+    entityId: string;
+    projectionRole: string;
+  }): Promise<{
+    jobId: string;
+    exportPath: string;
+    entityId: string;
+    role: string;
+  }> {
+    const { entityType, entityId, projectionRole } = input;
+
+    // 1. Type autorisé (diagnostic EXCLU tant que S2_DIAG ouvert — allowlist gouvernée FeatureFlags).
+    const writableTypes = this.featureFlags.seoProjectionWritableTypes;
+    if (!writableTypes.includes(entityType)) {
+      throw new BadRequestException(
+        `entityType '${entityType}' non projetable (autorisés: ${writableTypes.join(', ')})`,
+      );
+    }
+    // 2. Rôle autorisé POUR CE TYPE (un type n'autorise jamais implicitement tous ses rôles).
+    const allowedRoles =
+      this.featureFlags.seoProjectionWritableRoles(entityType);
+    if (!allowedRoles.includes(projectionRole)) {
+      throw new BadRequestException(
+        `projectionRole '${projectionRole}' non autorisé pour '${entityType}' ` +
+          `(autorisés: ${allowedRoles.join(', ') || 'aucun'})`,
+      );
+    }
+    // 3. Sanitize entityId AVANT construction du chemin (rejette '/', '..', hors-slug).
+    if (!ENTITY_ID_SLUG_RE.test(entityId)) {
+      throw new BadRequestException(
+        `entityId '${entityId}' invalide (slug \`${ENTITY_ID_SLUG_RE.source}\` requis ; '/' et '..' interdits)`,
+      );
+    }
+
+    // 4. Résout EXACTEMENT 1 chemin puis realpath-contain sous exportsRoot (attrape les symlinks).
+    const exportsRoot = this.getExportsRoot();
+    const candidate = path.join(exportsRoot, entityType, `${entityId}.json`);
+    let real: string;
+    let rootReal: string;
+    try {
+      rootReal = await fs.realpath(exportsRoot);
+      real = await fs.realpath(candidate);
+    } catch (err) {
+      throw new BadRequestException(
+        `export introuvable pour ${entityType}/${entityId} (${getErrorMessage(err)})`,
+      );
+    }
+    if (real !== rootReal && !real.startsWith(rootReal + path.sep)) {
+      throw new BadRequestException(
+        `export résolu hors exportsRoot (symlink ?) : ${real}`,
+      );
+    }
+
+    // 5. Parse + assert entity_id namespacé demandé + rôle présent dans roles_allowed de l'export.
+    let exp: { entity_id?: string; roles_allowed?: string[] };
+    try {
+      exp = JSON.parse(await fs.readFile(real, 'utf-8')) as {
+        entity_id?: string;
+        roles_allowed?: string[];
+      };
+    } catch (err) {
+      throw new BadRequestException(
+        `export illisible ${real} (${getErrorMessage(err)})`,
+      );
+    }
+    const namespaced = `${entityType}:${entityId}`;
+    if (exp.entity_id !== namespaced) {
+      throw new BadRequestException(
+        `export.entity_id='${String(exp.entity_id)}' ≠ '${namespaced}' attendu (fichier mal placé ?)`,
+      );
+    }
+    if (!(exp.roles_allowed ?? []).includes(projectionRole)) {
+      throw new BadRequestException(
+        `projectionRole '${projectionRole}' absent de roles_allowed de l'export`,
+      );
+    }
+
+    // 6. Enfile UN SEUL exportPath (assert cardinalité=1 AVANT enqueue ; le DTO n'a AUCUNE collection).
+    const exportPaths = [real];
+    if (exportPaths.length !== 1) {
+      throw new BadRequestException('cardinalité feeder single-entity violée');
+    }
+    const job = await this.writeQueue.add(
+      PROJECTION_WRITE_JOB,
+      {
+        triggeredBy: 'manual',
+        exportPaths,
+        projectionRole,
+      } satisfies ProjectionWriteJobData,
+      { removeOnComplete: 14, removeOnFail: 30, attempts: 1 },
+    );
+    this.logger.log(
+      `Feeder single-entity : ${entityType}/${entityId} role=${projectionRole} → 1 write-job (jobId=${String(job.id)}).`,
+    );
+    return {
+      jobId: String(job.id),
+      exportPath: real,
+      entityId: namespaced,
+      role: projectionRole,
+    };
+  }
+
+  /**
+   * Racine `exports/seo` (base du chemin single-entity `<root>/<entityType>/<slug>.json`). Distincte
+   * de `getExportsDir()` qui pointe le sous-dossier `gamme/` du slurp cron R1.
+   */
+  private getExportsRoot(): string {
+    const configured = this.configService.get<string>(
+      'SEO_PROJECTION_EXPORTS_ROOT',
+      'content/automecanik-wiki/exports/seo',
+    );
+    return path.isAbsolute(configured)
+      ? configured
+      : path.resolve(process.cwd(), configured);
   }
 
   /**
@@ -133,7 +267,8 @@ export class SeoProjectionFeederService implements OnModuleInit {
       {
         triggeredBy: 'cron',
         exportPaths,
-        runMeta: { pipeline_version: `r1-feeder/${triggeredBy}` },
+        // Les 5 versions canoniques sont résolues par le writer (semver garanti). Le feeder ne pose
+        // PLUS de `pipeline_version` non-semver (bug historique : tout run échouait le replay).
       } satisfies ProjectionWriteJobData,
       {
         removeOnComplete: 14,

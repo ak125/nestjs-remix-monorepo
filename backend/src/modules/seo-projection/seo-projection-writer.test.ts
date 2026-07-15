@@ -108,7 +108,7 @@ describe('mapExportBlockToDbBlock', () => {
 
     expect(h1).toBe(h2);
     expect(h1).not.toBe(h3);
-    expect(h1).toHaveLength(32); // md5 hex
+    expect(h1).toHaveLength(64); // sha256 hex (fast-json-stable-stringify → déterministe, ex-md5)
   });
 
   it('respecte un content_hash autoritaire fourni par le builder', () => {

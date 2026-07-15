@@ -146,10 +146,19 @@ def verify_versions_complete(run_row: dict[str, Any]) -> tuple[bool, list[str]]:
     return (not missing), missing
 
 
-def verify_manifest_sidecar(snapshot_path: Path) -> tuple[bool, str, dict | None]:
+def verify_manifest_sidecar(
+    snapshot_path: Path,
+    expected_hash_full: str,
+    expected_versions: dict[str, Any],
+) -> tuple[bool, str, dict | None]:
     """
-    Vérifie que le manifest sidecar `<hash>.manifest.json` (PR-5b) existe et
-    matche les versions du tar.zst. Audit-only — informational.
+    Vérifie le manifest sidecar `<hash>.manifest.json` (commit marker écrit EN DERNIER par le
+    writer). Contrat de validation (P2-R3-B) — trois axes doivent MATCHER, pas juste exister :
+      1. `snapshot_hash` == hash attendu du run (l'archive tar.zst persistée) ;
+      2. `versions` == les 5 versions canoniques du run (replay determinism) ;
+      3. inventaire d'entrées présent + cohérent (`entry_count` == len(entries) ;
+         chaque entrée = {name:str non vide, sha256:64hex, size:int>=0}).
+    Toute divergence → `ok=False` (fail-closed), le run n'est pas replayable.
     """
     manifest_path = snapshot_path.parent / (
         snapshot_path.stem.replace(".tar", "") + ".manifest.json"
@@ -160,6 +169,54 @@ def verify_manifest_sidecar(snapshot_path: Path) -> tuple[bool, str, dict | None
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError) as exc:
         return False, f"manifest_parse_failed: {exc}", None
+
+    if not isinstance(manifest, dict):
+        return False, "manifest_not_object", None
+
+    # 1. Archive hash déclaré == hash attendu (le tar.zst persisté, déjà vérifié bit-exact).
+    declared_hash = manifest.get("snapshot_hash")
+    if declared_hash != expected_hash_full:
+        return (
+            False,
+            f"manifest_hash_mismatch: manifest={declared_hash!r} run={expected_hash_full!r}",
+            manifest,
+        )
+
+    # 2. Versions déclarées == 5 versions canoniques du run.
+    declared_versions = manifest.get("versions")
+    if not isinstance(declared_versions, dict):
+        return False, "manifest_versions_missing", manifest
+    for field in REQUIRED_VERSIONS:
+        if declared_versions.get(field) != expected_versions.get(field):
+            return (
+                False,
+                f"manifest_version_mismatch:{field}: "
+                f"manifest={declared_versions.get(field)!r} run={expected_versions.get(field)!r}",
+                manifest,
+            )
+
+    # 3. Inventaire d'entrées présent + cohérent.
+    entries = manifest.get("entries")
+    if not isinstance(entries, list) or not entries:
+        return False, "manifest_entries_missing_or_empty", manifest
+    if manifest.get("entry_count") != len(entries):
+        return (
+            False,
+            f"manifest_entry_count_mismatch: declared={manifest.get('entry_count')} actual={len(entries)}",
+            manifest,
+        )
+    for entry in entries:
+        if (
+            not isinstance(entry, dict)
+            or not isinstance(entry.get("name"), str)
+            or not entry.get("name")
+            or not isinstance(entry.get("sha256"), str)
+            or len(entry.get("sha256", "")) != 64
+            or not isinstance(entry.get("size"), int)
+            or entry.get("size", -1) < 0
+        ):
+            return False, f"manifest_entry_malformed: {entry!r}", manifest
+
     return True, "manifest_ok", manifest
 
 
@@ -205,7 +262,10 @@ def validate_run_for_replay(
     if not integrity_ok:
         errors.append(f"integrity:{integrity_msg}")
 
-    manifest_ok, manifest_msg, manifest_data = verify_manifest_sidecar(snapshot_path)
+    expected_versions = {v: run_row.get(v) for v in REQUIRED_VERSIONS}
+    manifest_ok, manifest_msg, _manifest_data = verify_manifest_sidecar(
+        snapshot_path, snapshot_hash_full, expected_versions
+    )
     if not manifest_ok:
         errors.append(f"manifest:{manifest_msg}")
 

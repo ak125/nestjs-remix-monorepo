@@ -152,6 +152,43 @@ export class FeatureFlagsService {
     return this.bool('SEO_R6_CONSOLIDATION_ENABLED', false);
   }
 
+  // ── SEO Projection forward-writer (ADR-059 P2-B) — allowlists role-scoped ──
+
+  /**
+   * Types d'entités que le feeder single-entity peut projeter. **`diagnostic` EXCLU** tant que le
+   * contrat S2_DIAG n'est pas fermé (plan §R5 contrat négatif) — même si le gate l'admet encore.
+   * Override CSV `SEO_PROJECTION_WRITABLE_TYPES` (défaut : gamme, constructeur, vehicle).
+   */
+  get seoProjectionWritableTypes(): string[] {
+    const override = this.csv('SEO_PROJECTION_WRITABLE_TYPES');
+    return override.length > 0
+      ? override
+      : ['gamme', 'constructeur', 'vehicle'];
+  }
+
+  /**
+   * Rôles projetables par type d'entité (P2-B) — un type autorisé n'autorise JAMAIS implicitement
+   * tous ses rôles ; une canary mono-rôle n'écrit que le rôle demandé. `gamme` overridable via CSV
+   * `SEO_PROJECTION_GAMME_ROLES` (défaut R3/R4/R6) ; `constructeur`→R7, `vehicle`→R8. R1 = AUCUNE
+   * projection éditoriale autonome (il compose R3/R4/R6). Type inconnu → aucune écriture (fail-closed).
+   */
+  seoProjectionWritableRoles(entityType: string): string[] {
+    switch (entityType) {
+      case 'gamme': {
+        const override = this.csv('SEO_PROJECTION_GAMME_ROLES');
+        return override.length > 0
+          ? override
+          : ['R3_CONSEILS', 'R4_REFERENCE', 'R6_GUIDE_ACHAT'];
+      }
+      case 'constructeur':
+        return ['R7_BRAND'];
+      case 'vehicle':
+        return ['R8_VEHICLE'];
+      default:
+        return [];
+    }
+  }
+
   // ── Conseil Pack flags ──
 
   get conseilPackEnabled(): boolean {
