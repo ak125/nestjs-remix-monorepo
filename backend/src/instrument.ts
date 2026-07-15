@@ -20,20 +20,51 @@ import 'dotenv/config';
 import * as Sentry from '@sentry/nestjs';
 import type { ErrorEvent, EventHint } from '@sentry/nestjs';
 
-// Exported `beforeSend` predicate. Drops client-aborted body-parser errors
-// (raw-body fires `BadRequestError: request aborted` with `err.type =
-// 'request.aborted'` when the TCP connection is cut before the request body
-// finishes streaming — typical for tracking beacons during page unload). Also
+// Socket-level client-disconnect codes. A bare `Error` carrying one of these
+// with a read/write syscall is an inbound connection reset, not an application
+// fault (see sanitizeSentryEvent).
+const CLIENT_DISCONNECT_CODES = new Set([
+  'ECONNRESET',
+  'EPIPE',
+  'ECONNABORTED',
+]);
+
+// Exported `beforeSend` predicate. Drops expected client-disconnect noise and
 // scrubs sensitive request headers as defence-in-depth on top of Sentry's
-// server-side PII scrubbing.
+// server-side PII scrubbing. Two client-disconnect shapes are silenced:
+//
+//  1. raw-body `BadRequestError: request aborted` (`err.type = 'request.aborted'`)
+//     — the TCP connection is cut before the request BODY finishes streaming
+//     (typical for tracking beacons during page unload).
+//  2. bare socket resets `Error: read ECONNRESET` / `write EPIPE` /
+//     `ECONNABORTED` (`err.code` + `err.syscall`) from `TCP.onStreamRead` — an
+//     inbound keep-alive socket reset. The Docker HEALTHCHECK
+//     `wget -qO- http://localhost:3000/health` and real clients (browsers,
+//     CDN/LB) closing keep-alive sockets produce these; they carry no HTTP
+//     status and reach the global filter's `@SentryExceptionCaptured()` as
+//     unhandled `auto.function.nestjs.exception_captured` events.
+//
+// This is NOT a silent fallback for real failures: genuine UPSTREAM resets
+// (e.g. a Supabase socket drop mid-request) are caught and retried in the data
+// layer (supabase-base.service.ts) and never reach this hook as a bare socket
+// error; requiring `err.syscall` keeps the filter to true socket-level noise.
+// Server crashes stay observable via the uncaughtException handler + failing
+// (non-200) healthchecks, not via these inbound resets.
 export function sanitizeSentryEvent(
   event: ErrorEvent,
   hint: EventHint,
 ): ErrorEvent | null {
   const err = hint?.originalException as
-    | { type?: string; message?: string }
+    | { type?: string; message?: string; code?: string; syscall?: string }
     | undefined;
   if (err?.type === 'request.aborted' || err?.message === 'request aborted') {
+    return null;
+  }
+  if (
+    err?.code !== undefined &&
+    CLIENT_DISCONNECT_CODES.has(err.code) &&
+    (err.syscall === 'read' || err.syscall === 'write')
+  ) {
     return null;
   }
 
