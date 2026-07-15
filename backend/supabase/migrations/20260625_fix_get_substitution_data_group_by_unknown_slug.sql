@@ -41,6 +41,11 @@
 -- Date: 2026-06-25
 -- ============================================================================
 
+-- Garde-fous d'exécution (squawk require-timeout-settings) : borne l'attente de
+-- lock et le temps d'exécution de ce CREATE OR REPLACE (DDL métadonnée rapide).
+set statement_timeout = '5s';
+set lock_timeout = '1s';
+
 CREATE OR REPLACE FUNCTION public.get_substitution_data(
   p_gamme_alias text,
   p_marque_alias text DEFAULT NULL::text,
