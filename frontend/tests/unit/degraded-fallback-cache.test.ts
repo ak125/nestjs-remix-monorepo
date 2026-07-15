@@ -28,9 +28,10 @@ vi.mock("~/utils/internal-api.server", () => ({
   getInternalApiUrl: (p = "") => `http://internal${p}`,
   getInternalApiUrlFromRequest: (p = "") => `http://internal${p}`,
 }));
-// Home uses a DI service (not fetch) for its above-fold families.
+// Home reads the actor-bound port (in-process DI, not fetch) for its families.
+// `getRemixApplicationPort` is synchronous (the value is pre-injected).
 vi.mock("~/server/remix-api.server", () => ({
-  getRemixApiService: async () => ({
+  getRemixApplicationPort: () => ({
     getHomepageFamilies: async () => {
       throw new Error("families backend down");
     },

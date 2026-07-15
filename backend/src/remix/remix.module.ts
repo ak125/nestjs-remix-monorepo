@@ -9,6 +9,7 @@ import { DatabaseModule } from '../database/database.module';
 import { MessagesModule } from '../modules/messages/messages.module';
 import { AuthModule } from '../auth/auth.module';
 import { CatalogModule } from '../modules/catalog/catalog.module';
+import { StaffModule } from '../modules/staff/staff.module';
 
 // Services spécialisés - TOUS SUPPRIMÉS car obsolètes
 // import { OrdersIntegrationService } from './integration/orders/orders-integration.service'; // Obsolète
@@ -26,6 +27,9 @@ import { CatalogModule } from '../modules/catalog/catalog.module';
     // CatalogModule exports HomepageRpcService — used by RemixApiService
     // for direct DI calls in the home loader (eliminates HTTP loopback).
     forwardRef(() => CatalogModule),
+    // StaffModule exports StaffService — used by the actor-bound port
+    // (listAdminStaff / getAdminStaffStatistics) via direct DI, no loopback.
+    forwardRef(() => StaffModule),
   ],
   controllers: [RemixController],
   providers: [

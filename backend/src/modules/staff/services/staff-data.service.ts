@@ -12,6 +12,22 @@ import type {
 import * as bcrypt from 'bcrypt';
 
 /**
+ * Structural row shape for the `___config_admin` table (the `cnfa_*` columns the
+ * data service actually reads/writes) — replaces the untyped `any` on the DB↔DTO
+ * boundary. Note: this table has no `created_at`/`updated_at` columns.
+ */
+interface ConfigAdminRow {
+  cnfa_id: number | string;
+  cnfa_mail: string;
+  cnfa_fname?: string | null;
+  cnfa_name?: string | null;
+  cnfa_level?: number | string | null;
+  cnfa_job?: string | null;
+  cnfa_activ?: string | null;
+  cnfa_pswd?: string | null;
+}
+
+/**
  * 🎯 Service d'accès aux données STAFF (table ___config_admin)
  *
  * RESPONSABILITÉ: Accès direct à la base de données pour le personnel admin
@@ -166,7 +182,7 @@ export class StaffDataService extends SupabaseBaseService {
    */
   async update(id: string, dto: UpdateStaffDto): Promise<Staff> {
     try {
-      const updateData: any = {};
+      const updateData: Partial<ConfigAdminRow> = {};
 
       if (dto.email) updateData.cnfa_mail = dto.email;
       if (dto.firstName) updateData.cnfa_fname = dto.firstName;
@@ -266,25 +282,26 @@ export class StaffDataService extends SupabaseBaseService {
         departments,
       };
     } catch (error) {
+      // Fail-loud: never mask a DB failure as all-zeros stats (governed
+      // no-silent-fallback). StaffService.getStats / the port surface it upward
+      // so the loader can render an observable error instead of fake zeros.
       this.logger.error('Failed to get staff stats:', error);
-      return { total: 0, active: 0, inactive: 0, departments: [] };
+      throw error;
     }
   }
 
   /**
    * Mappe les données DB vers le DTO Staff
    */
-  private mapToStaff(data: any): Staff {
+  private mapToStaff(data: ConfigAdminRow): Staff {
     return {
       id: String(data.cnfa_id),
       email: data.cnfa_mail,
       firstName: data.cnfa_fname || undefined,
       lastName: data.cnfa_name || undefined,
-      level: parseInt(String(data.cnfa_level || '7')),
+      level: parseInt(String(data.cnfa_level ?? '7')),
       job: data.cnfa_job || undefined,
       isActive: data.cnfa_activ === '1',
-      createdAt: data.created_at ? new Date(data.created_at) : undefined,
-      updatedAt: data.updated_at ? new Date(data.updated_at) : undefined,
     };
   }
 }

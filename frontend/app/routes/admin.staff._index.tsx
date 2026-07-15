@@ -1,244 +1,126 @@
 /**
- * 📋 INTERFACE GESTION STAFF - Admin Interface
+ * 📋 GESTION STAFF — Admin.
  *
- * Interface de gestion du staff administratif
- * Module admin moderne avec API REST et nouveau StaffService
+ * Reads the actor-bound `RemixApplicationPort` (`listAdminStaff` /
+ * `getAdminStaffStatistics`) via in-process NestJS DI — replaces the previous
+ * `/api/users?...` HTTP loopback (no actor forwarded) that re-mapped USERS into
+ * a staff shape. This page now shows the REAL administrative staff
+ * (`___config_admin`). Admin-gated + read-only + `private, no-store` + fail-loud
+ * 503. (Behaviour change flagged in the PR: users → real staff.)
  */
 
-import { useState } from "react";
 import {
   type LoaderFunctionArgs,
   type MetaFunction,
   useLoaderData,
+  useRouteError,
+  isRouteErrorResponse,
   Link,
   Form,
   useNavigation,
 } from "react-router";
-import { Alert } from "~/components/ui/alert";
+import { requireAdmin } from "~/auth/unified.server";
+import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import { getRemixApplicationPort } from "~/server/remix-api.server";
+import { buildCacheHeaders } from "~/utils/cache-control";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
-import { requireAdmin } from "../auth/unified.server";
-import { getRemixApiService } from "../server/remix-api.server";
+import {
+  type AdminStaffMember,
+  type AdminStaffStatistics,
+} from "~/utils/remix-application-port";
 
 export const meta: MetaFunction = () =>
   createNoIndexMeta("Gestion Staff - Admin");
 
-// Types supprimés car inutilisés
+/** Admin surface: per-user + noindex → never shared-cached. */
+export const headers = buildCacheHeaders(
+  "private, no-store, no-cache, must-revalidate",
+);
 
-interface RemixUser {
-  id?: number;
-  cst_id?: number;
-  email: string;
-  level?: number;
-  job?: string;
-  name?: string;
-  cst_lastname?: string;
-  firstName?: string;
-  cst_firstname?: string;
-  phone?: string;
-  cst_phone?: string;
-  isActive?: boolean;
-  department?: string;
+function unavailable(): Response {
+  return new Response("Service staff temporairement indisponible", {
+    status: 503,
+    headers: {
+      "Cache-Control": "private, no-store, no-cache, must-revalidate",
+      "Retry-After": "30",
+    },
+  });
 }
 
-// Type pour compatibility avec les données legacy
-interface LegacyAdminStaff {
-  cnfa_id: number;
-  cnfa_login: string;
-  cnfa_mail: string;
-  cnfa_level: number;
-  cnfa_job: string;
-  cnfa_name: string;
-  cnfa_fname: string;
-  cnfa_tel: string;
-  cnfa_activ: string;
-  s_id: string;
-}
-
-interface StaffStats {
-  total: number;
-  active: number;
-  inactive: number;
-  byRole: Record<string, number>;
-  byDepartment: Record<string, number>;
-  byLevel: Record<string, number>;
-}
-
-interface StaffLoaderData {
-  staff: LegacyAdminStaff[];
-  stats: StaffStats;
-  pagination: {
-    page: number;
-    totalPages: number;
-    totalItems: number;
-  };
-  fallbackMode: boolean;
-  error?: string;
-  timestamp?: string;
-}
-
-// Fonction loader pour récupérer les données du staff
 export async function loader({ request, context }: LoaderFunctionArgs) {
-  const user = await requireAdmin({ context });
-
-  // Vérifier les permissions admin
-  if (!user.level || user.level < 7) {
-    throw new Response("Accès non autorisé", { status: 403 });
-  }
+  await requireAdmin({ context });
 
   const url = new URL(request.url);
-
-  // Paramètres de requête pour la pagination et les filtres
-  const page = parseInt(url.searchParams.get("page") || "1");
-  const search = url.searchParams.get("search") || "";
+  const page = parseInt(url.searchParams.get("page") || "1", 10);
+  const search = url.searchParams.get("search") || undefined;
   const level = url.searchParams.get("level")
-    ? parseInt(url.searchParams.get("level")!)
+    ? parseInt(url.searchParams.get("level")!, 10)
     : undefined;
+  const statusParam = url.searchParams.get("isActive");
+  const status =
+    statusParam === "true"
+      ? ("active" as const)
+      : statusParam === "false"
+        ? ("inactive" as const)
+        : undefined;
 
   try {
-    const remixService = await getRemixApiService(context);
-    const usersResult = await remixService.getUsersForRemix({
-      page,
-      limit: 10,
-      search,
-      level,
-    });
-
-    if (!usersResult.success) {
-      throw new Error(
-        usersResult.error || "Erreur API pour les données du staff",
-      );
-    }
-
-    // Transformer les données utilisateurs en format staff legacy
-    const staff: LegacyAdminStaff[] = usersResult.users.map(
-      (user: RemixUser) => ({
-        cnfa_id: user.id || user.cst_id,
-        cnfa_login: user.email,
-        cnfa_mail: user.email,
-        cnfa_level: user.level || 1,
-        cnfa_job: user.job || "Staff",
-        cnfa_name: user.name || user.cst_lastname || "",
-        cnfa_fname: user.firstName || user.cst_firstname || "",
-        cnfa_tel: user.phone || user.cst_phone || "",
-        cnfa_activ: user.isActive ? "1" : "0",
-        s_id: user.department || "general",
-      }),
-    );
-
-    // Calculer les statistiques
-    const stats: StaffStats = {
-      total: usersResult.total,
-      active: staff.filter((s) => s.cnfa_activ === "1").length,
-      inactive: staff.filter((s) => s.cnfa_activ === "0").length,
-      byLevel: staff.reduce(
-        (acc, s) => {
-          const level = s.cnfa_level.toString();
-          acc[level] = (acc[level] || 0) + 1;
-          return acc;
-        },
-        {} as Record<string, number>,
-      ),
-      byRole: staff.reduce(
-        (acc, s) => {
-          const role = s.cnfa_job;
-          acc[role] = (acc[role] || 0) + 1;
-          return acc;
-        },
-        {} as Record<string, number>,
-      ),
-      byDepartment: staff.reduce(
-        (acc, s) => {
-          const dept = s.s_id;
-          acc[dept] = (acc[dept] || 0) + 1;
-          return acc;
-        },
-        {} as Record<string, number>,
-      ),
-    };
+    const port = getRemixApplicationPort(context);
+    const [result, statistics] = await Promise.all([
+      port.listAdminStaff({ page, limit: 10, search, level, status }),
+      port.getAdminStaffStatistics(),
+    ]);
 
     return {
-      staff,
-      stats,
+      staff: result.staff,
+      statistics,
       pagination: {
-        page,
-        totalPages:
-          usersResult.pagination?.totalPages ?? usersResult.totalPages ?? 1,
-        totalItems: usersResult.total,
+        page: result.pagination.page,
+        totalPages: result.pagination.totalPages,
+        totalItems: result.pagination.total,
       },
-      fallbackMode: false,
-      timestamp: new Date().toISOString(),
     };
   } catch (error) {
-    logger.error("Erreur loader staff:", error);
-
-    // Fallback en cas d'erreur
-    return {
-      staff: [],
-      stats: {
-        total: 0,
-        active: 0,
-        inactive: 0,
-        byLevel: {},
-      },
-      pagination: { page: 1, totalPages: 1, totalItems: 0 },
-      error: "Erreur lors du chargement du staff",
-      fallbackMode: true,
-    };
+    if (error instanceof Response) throw error;
+    logger.error("[admin.staff._index] port failure:", error);
+    throw unavailable();
   }
 }
 
-// Composant principal de gestion du staff
+const LEVELS: Record<number, string> = {
+  1: "Niveau 1",
+  2: "Niveau 2",
+  3: "Service Client",
+  4: "Superviseur",
+  5: "Manager",
+  6: "Manager Senior",
+  7: "Admin Commercial",
+  8: "Admin Système",
+  9: "Super Admin",
+};
+
+function levelClass(level: number) {
+  if (level >= 9) return "error";
+  if (level >= 8) return "orange";
+  if (level >= 7) return "warning";
+  return "bg-gray-100 text-gray-800";
+}
+
 export default function AdminStaff() {
-  const data = useLoaderData<StaffLoaderData>();
+  const { staff, statistics, pagination } = useLoaderData<{
+    staff: AdminStaffMember[];
+    statistics: AdminStaffStatistics;
+    pagination: { page: number; totalPages: number; totalItems: number };
+  }>();
   const navigation = useNavigation();
-  const [_selectedStaff, _setSelectedStaff] = useState<LegacyAdminStaff | null>(
-    null,
-  );
-
   const isLoading = navigation.state === "loading";
-
-  // Fonction pour formater les dates
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("fr-FR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  // Fonction pour obtenir la classe CSS du niveau
-  const getLevelClass = (level: number) => {
-    if (level >= 9) return "error";
-    if (level >= 8) return "orange";
-    if (level >= 7) return "warning";
-    return "bg-gray-100 text-gray-800";
-  };
-
-  // Fonction pour obtenir le texte du niveau
-  const getLevelText = (level: number) => {
-    const levels: Record<number, string> = {
-      1: "Niveau 1",
-      2: "Niveau 2",
-      3: "Service Client",
-      4: "Superviseur",
-      5: "Manager",
-      6: "Manager Senior",
-      7: "Admin Commercial",
-      8: "Admin Système",
-      9: "Super Admin",
-    };
-    return levels[level] || `Niveau ${level}`;
-  };
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Navigation Breadcrumb */}
       <PublicBreadcrumb
         items={[
           { label: "Admin", href: "/admin" },
@@ -246,7 +128,6 @@ export default function AdminStaff() {
         ]}
       />
 
-      {/* En-tête avec navigation */}
       <div className="mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
@@ -254,10 +135,9 @@ export default function AdminStaff() {
               Gestion du Staff
             </h1>
             <p className="text-gray-600 mt-1">
-              Administration des utilisateurs et permissions
+              Personnel administratif (lecture seule)
             </p>
           </div>
-
           <div className="flex gap-3">
             <Button className="px-4 py-2 rounded-lg" variant="blue" asChild>
               <Link to="/admin/staff/new">Nouveau Staff</Link>
@@ -266,29 +146,14 @@ export default function AdminStaff() {
         </div>
       </div>
 
-      {/* Indicateur de mode fallback */}
-      {data.fallbackMode && (
-        <Alert className="rounded-lg p-4 mb-6" variant="warning">
-          <div className="flex items-center gap-2">
-            <span className="text-yellow-600">⚠️</span>
-            <span className="text-yellow-800 font-medium">
-              Mode Développement
-            </span>
-            <span className="text-yellow-600 text-sm">
-              - Données de test affichées
-            </span>
-          </div>
-        </Alert>
-      )}
-
-      {/* Statistiques du staff */}
+      {/* Statistiques */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Total Staff</p>
               <p className="text-2xl font-bold text-gray-900">
-                {data.stats.total}
+                {statistics.total}
               </p>
             </div>
             <div className="p-3 bg-muted rounded-full">
@@ -302,7 +167,7 @@ export default function AdminStaff() {
             <div>
               <p className="text-sm font-medium text-gray-600">Staff Actif</p>
               <p className="text-2xl font-bold text-green-600">
-                {data.stats.active}
+                {statistics.active}
               </p>
             </div>
             <div className="p-3 bg-success/10 rounded-full">
@@ -316,7 +181,7 @@ export default function AdminStaff() {
             <div>
               <p className="text-sm font-medium text-gray-600">Staff Inactif</p>
               <p className="text-2xl font-bold text-red-600">
-                {data.stats.inactive}
+                {statistics.inactive}
               </p>
             </div>
             <div className="p-3 bg-destructive/10 rounded-full">
@@ -328,13 +193,13 @@ export default function AdminStaff() {
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Super Admins</p>
+              <p className="text-sm font-medium text-gray-600">Départements</p>
               <p className="text-2xl font-bold text-foreground">
-                {data.stats.byLevel["9"] || 0}
+                {statistics.departments}
               </p>
             </div>
             <div className="p-3 bg-muted rounded-full">
-              <span className="text-foreground text-xl">👑</span>
+              <span className="text-foreground text-xl">🏢</span>
             </div>
           </div>
         </div>
@@ -351,7 +216,7 @@ export default function AdminStaff() {
               <input
                 type="text"
                 name="search"
-                placeholder="Nom, login, email..."
+                placeholder="Nom, email..."
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -368,8 +233,6 @@ export default function AdminStaff() {
                 <option value="9">Super Admin (9)</option>
                 <option value="8">Admin Système (8)</option>
                 <option value="7">Admin Commercial (7)</option>
-                <option value="6">Manager Senior (6)</option>
-                <option value="5">Manager (5)</option>
               </select>
             </div>
 
@@ -389,12 +252,12 @@ export default function AdminStaff() {
 
             <div className="flex items-end">
               <Button
-                className="w-full  px-4 py-2 rounded-md  disabled:opacity-50"
+                className="w-full px-4 py-2 rounded-md disabled:opacity-50"
                 variant="blue"
                 type="submit"
                 disabled={isLoading}
               >
-                \n {isLoading ? "Recherche..." : "Filtrer"}\n
+                {isLoading ? "Recherche..." : "Filtrer"}
               </Button>
             </div>
           </div>
@@ -420,9 +283,6 @@ export default function AdminStaff() {
                   Fonction
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Téléphone
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Statut
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -431,94 +291,76 @@ export default function AdminStaff() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {data.staff.length === 0 ? (
+              {staff.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={6}
                     className="px-6 py-12 text-center text-gray-500"
                   >
                     <div className="flex flex-col items-center gap-3">
                       <span className="text-4xl">👥</span>
                       <span>Aucun membre du staff trouvé</span>
-                      {data.fallbackMode && (
-                        <span className="text-yellow-600 text-sm">
-                          Mode de secours activé
-                        </span>
-                      )}
                     </div>
                   </td>
                 </tr>
               ) : (
-                data.staff.map((staff) => (
-                  <tr key={staff.cnfa_id} className="hover:bg-gray-50">
+                staff.map((member) => (
+                  <tr key={member.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="shrink-0 h-10 w-10">
                           <div className="h-10 w-10 rounded-full bg-primary/15 flex items-center justify-center">
                             <span className="text-blue-600 font-bold text-sm">
-                              {staff.cnfa_fname.charAt(0).toUpperCase()}
-                              {staff.cnfa_name.charAt(0).toUpperCase()}
+                              {member.firstName?.charAt(0).toUpperCase()}
+                              {member.lastName?.charAt(0).toUpperCase()}
                             </span>
                           </div>
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">
-                            {staff.cnfa_fname} {staff.cnfa_name}
+                            {member.firstName} {member.lastName}
                           </div>
                           <div className="text-sm text-gray-500">
-                            @{staff.cnfa_login}
+                            ID: {member.id}
                           </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {staff.cnfa_mail}
+                      {member.email}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getLevelClass(staff.cnfa_level)}`}
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${levelClass(member.level)}`}
                       >
-                        {getLevelText(staff.cnfa_level)}
+                        {LEVELS[member.level] || `Niveau ${member.level}`}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {staff.cnfa_job}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {staff.cnfa_tel}
+                      {member.role || "—"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <Badge
-                        className="inline-flex px-2 py-1 text-xs font-semibold rounded-full "
-                        variant={staff.cnfa_activ === "1" ? "success" : "error"}
+                        className="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                        variant={member.isActive ? "success" : "error"}
                       >
-                        \n {staff.cnfa_activ === "1" ? "Actif" : "Inactif"}\n
+                        {member.isActive ? "Actif" : "Inactif"}
                       </Badge>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end gap-2">
                         <Link
-                          to={`/admin/staff/${staff.cnfa_id}`}
+                          to={`/admin/staff/${member.id}`}
                           className="text-blue-600 hover:text-blue-900"
                         >
                           Voir
                         </Link>
                         <Link
-                          to={`/admin/staff/${staff.cnfa_id}/edit`}
+                          to={`/admin/staff/${member.id}/edit`}
                           className="text-yellow-600 hover:text-yellow-900"
                         >
                           Éditer
                         </Link>
-                        <button
-                          onClick={() => _setSelectedStaff(staff)}
-                          className={`${
-                            staff.cnfa_activ === "1"
-                              ? "text-red-600 hover:text-red-900"
-                              : "text-green-600 hover:text-green-900"
-                          }`}
-                        >
-                          {staff.cnfa_activ === "1" ? "Désactiver" : "Activer"}
-                        </button>
                       </div>
                     </td>
                   </tr>
@@ -529,92 +371,44 @@ export default function AdminStaff() {
         </div>
 
         {/* Pagination */}
-        {data.pagination.totalPages > 1 && (
+        {pagination.totalPages > 1 && (
           <div className="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
-            <div className="flex items-center justify-between">
-              <div className="flex-1 flex justify-between sm:hidden">
-                {data.pagination.page > 1 && (
+            <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+              {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
+                .filter(
+                  (p) =>
+                    p === 1 ||
+                    p === pagination.totalPages ||
+                    Math.abs(p - pagination.page) <= 2,
+                )
+                .map((p) => (
                   <Link
-                    to={`?page=${data.pagination.page - 1}`}
-                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                    key={p}
+                    to={`?page=${p}`}
+                    className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                      p === pagination.page
+                        ? "z-10 bg-primary/5 border-blue-500 text-blue-600"
+                        : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                    }`}
                   >
-                    Précédent
+                    {p}
                   </Link>
-                )}
-                {data.pagination.page < data.pagination.totalPages && (
-                  <Link
-                    to={`?page=${data.pagination.page + 1}`}
-                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                  >
-                    Suivant
-                  </Link>
-                )}
-              </div>
-              <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-sm text-gray-700">
-                    Affichage de{" "}
-                    <span className="font-medium">
-                      {(data.pagination.page - 1) * 10 + 1}
-                    </span>{" "}
-                    à{" "}
-                    <span className="font-medium">
-                      {Math.min(
-                        data.pagination.page * 10,
-                        data.pagination.totalItems,
-                      )}
-                    </span>{" "}
-                    sur{" "}
-                    <span className="font-medium">
-                      {data.pagination.totalItems}
-                    </span>{" "}
-                    membres du staff
-                  </p>
-                </div>
-                <div>
-                  <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                    {Array.from(
-                      { length: data.pagination.totalPages },
-                      (_, i) => i + 1,
-                    )
-                      .filter(
-                        (page) =>
-                          page === 1 ||
-                          page === data.pagination.totalPages ||
-                          Math.abs(page - data.pagination.page) <= 2,
-                      )
-                      .map((page, index, array) => (
-                        <div key={page}>
-                          {index > 0 && array[index - 1] !== page - 1 && (
-                            <span className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
-                              ...
-                            </span>
-                          )}
-                          <Link
-                            to={`?page=${page}`}
-                            className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
-                              page === data.pagination.page
-                                ? "z-10 bg-primary/5 border-blue-500 text-blue-600"
-                                : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
-                            }`}
-                          >
-                            {page}
-                          </Link>
-                        </div>
-                      ))}
-                  </nav>
-                </div>
-              </div>
-            </div>
+                ))}
+            </nav>
           </div>
         )}
       </div>
-
-      {/* Informations de mise à jour */}
-      <div className="mt-6 text-sm text-gray-500 text-center">
-        Dernière mise à jour:{" "}
-        {data?.timestamp ? formatDate(data.timestamp) : "-"}
-      </div>
     </div>
   );
+}
+
+// ============================================================
+// ERROR BOUNDARY — 403 non-admin / 503 backend down / …
+// ============================================================
+export function ErrorBoundary() {
+  const error = useRouteError();
+  if (isRouteErrorResponse(error)) {
+    return <ErrorGeneric status={error.status} message={error.data?.message} />;
+  }
+  return <ErrorGeneric />;
 }

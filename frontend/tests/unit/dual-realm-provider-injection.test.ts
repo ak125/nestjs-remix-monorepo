@@ -53,6 +53,7 @@ describe("dual-realm provider injection (RR8 v8_middleware DEV fix)", () => {
         remixIntegration: null,
         cspNonce: "",
         serverObservability: null,
+        remixApplicationPort: null,
       });
       // LOAD-BEARING: the façade MUST supply a makeProvider. This flips to `false`
       // if index.cjs is reverted to `return build.entry.module.createAppLoadContext`

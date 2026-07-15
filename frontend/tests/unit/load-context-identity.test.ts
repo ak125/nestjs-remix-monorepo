@@ -7,6 +7,7 @@ import {
   remixServiceContext,
   remixIntegrationContext,
   serverObservabilityContext,
+  remixApplicationPortContext,
 } from "~/utils/load-context";
 
 /**
@@ -31,6 +32,7 @@ describe("load-context identity (RR8 v8_middleware bridge)", () => {
       remixIntegration: null,
       cspNonce: "nonce-xyz",
       serverObservability: null,
+      remixApplicationPort: null,
     });
 
     const handler = createStaticHandler([
@@ -75,6 +77,7 @@ describe("load-context identity (RR8 v8_middleware bridge)", () => {
         remixIntegration: null,
         cspNonce: "n",
         serverObservability: null,
+        remixApplicationPort: null,
       },
       () => injected,
     );
@@ -90,5 +93,6 @@ describe("load-context identity (RR8 v8_middleware bridge)", () => {
     expect(empty.get(remixServiceContext)).toBeNull();
     expect(empty.get(remixIntegrationContext)).toBeNull();
     expect(empty.get(serverObservabilityContext)).toBeNull();
+    expect(empty.get(remixApplicationPortContext)).toBeNull();
   });
 });

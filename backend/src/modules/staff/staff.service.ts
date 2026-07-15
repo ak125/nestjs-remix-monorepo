@@ -54,6 +54,7 @@ export class StaffService {
       department?: string;
       isActive?: boolean;
       search?: string;
+      level?: number;
     },
   ) {
     try {
@@ -65,6 +66,7 @@ export class StaffService {
         search: filters?.search,
         job: filters?.department,
         isActive: filters?.isActive,
+        level: filters?.level,
       });
 
       this.logger.log(
