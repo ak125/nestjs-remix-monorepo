@@ -178,7 +178,10 @@ def validate_run_for_replay(
     sha256 n'est pas validé (garde-fou anti-corruption).
     """
     errors: list[str] = []
-    run_id = run_row.get("id")
+    # __seo_projection_runs PK is `run_id` (uuid) — there is no `id` column.
+    # Reading "id" here made every DB-fetched run short-circuit to missing_run_id
+    # (replay 100% non-functional on live data). No "id" fallback: the column is run_id.
+    run_id = run_row.get("run_id")
     if not run_id:
         return {"ok": False, "run_id": None, "errors": ["missing_run_id"]}
 

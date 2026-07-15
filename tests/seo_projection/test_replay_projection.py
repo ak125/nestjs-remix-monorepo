@@ -41,7 +41,7 @@ def _make_snapshot(tmp_path: Path, content: bytes) -> tuple[Path, str]:
 
 def _valid_run_row(snapshot_hash: str) -> dict:
     return {
-        "id": "00000000-0000-7000-8000-000000000001",
+        "run_id": "00000000-0000-7000-8000-000000000001",
         "started_at": "2026-05-13T10:00:00+00:00",
         "exports_snapshot_hash": snapshot_hash,
         "exports_snapshot_uri": f"/opt/automecanik/object-store/exports-snapshots/{snapshot_hash.split(':')[1]}.tar.zst",
@@ -251,7 +251,7 @@ def test_manifest_writer_writes_into_replay_queue(tmp_path: Path) -> None:
     assert "git checkout" in parsed["replay_authority"].lower()  # FORBIDDEN mention
     assert len(parsed["runs_to_replay"]) == 1
     assert parsed["runs_to_replay"][0]["trigger_kind"] == "replay"
-    assert parsed["runs_to_replay"][0]["replayed_from_run_id"] == run["id"]
+    assert parsed["runs_to_replay"][0]["replayed_from_run_id"] == run["run_id"]
 
 
 # ────────────────────────────────────────────────────────────────────────────
