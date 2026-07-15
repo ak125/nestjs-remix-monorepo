@@ -60,6 +60,27 @@ jobs:
       - name: 🎯 ast-grep scan (rule-pattern guard — blocks on severity:error)
         run: npm run audit:ast
 
+      - name: 🧪 RAG-read authority rule — RED/GREEN fixtures (BLOCKING)
+        # Proves seo-no-rag-as-content-source discriminates a RAG→editorial-sink
+        # writer (RED, must match) from a chatbot/retrieval consumer (GREEN, never
+        # matches). Guards the rule's meaning as B1..B8 close (plan §Fermeture B3).
+        run: npm run audit:rag-authority-rule:test
+
+      - name: 🗂️ EDITORIAL_AUTHORITY_SINKS registry invariants (BLOCKING)
+        # Pins the exact P0 sink set (audit §6): 2 served-tracked + 15 ratchet-blind,
+        # each evidence-linked, no rN wildcard. The blind rows justify the registry.
+        run: npm run audit:editorial-sinks:test
+
+      - name: 🧊 RAG-authority-read ratchet — comparator unit tests (BLOCKING)
+        run: npm run audit:rag-authority-read-ratchet:test
+
+      - name: 🧊 RAG-authority-read ratchet — freeze known B1..B8 debt (BLOCKING)
+        # The rule is `warning` (a scan alone exits 0 on the 25-finding debt). This
+        # ratchet fails on ANY drift vs the frozen baseline: +findings, a new file, a
+        # reappeared writer path, or a reduction not accompanied by a same-PR refresh.
+        # CI MUST NEVER call --refresh (maintainer-only). Makes `warning` a real gate.
+        run: npm run audit:rag-authority-read-ratchet
+
       - name: 🪪 Diagnostic engine boundary (PR-D, BLOCKING)
         # Engines under backend/src/modules/diagnostic-engine/engines/ must not
         # cross-import sibling modules — only via ports/ (canon PR-A.1
