@@ -12,6 +12,66 @@
  * import (no network), and `Sentry.captureException` inside the handler is a
  * safe no-op.
  */
+import type { ErrorEvent, EventHint } from '@sentry/nestjs';
+import { sanitizeSentryEvent } from './instrument';
+
+describe('sanitizeSentryEvent — client-disconnect noise filter (beforeSend)', () => {
+  const run = (originalException: unknown, event: Partial<ErrorEvent> = {}) =>
+    sanitizeSentryEvent(
+      event as ErrorEvent,
+      { originalException } as EventHint,
+    );
+
+  it('drops a raw "read ECONNRESET" socket error (wget /health probe / client RST)', () => {
+    // Node surfaces an inbound keep-alive socket reset as `Error: read
+    // ECONNRESET` (code ECONNRESET, syscall read) from TCP.onStreamRead. The
+    // Docker HEALTHCHECK `wget -qO- .../health` and real browsers/CDNs closing
+    // keep-alive sockets produce this; it is not an application fault.
+    const err = Object.assign(new Error('read ECONNRESET'), {
+      code: 'ECONNRESET',
+      syscall: 'read',
+    });
+    expect(run(err)).toBeNull();
+  });
+
+  it('drops EPIPE / ECONNABORTED socket write disconnects', () => {
+    const epipe = Object.assign(new Error('write EPIPE'), {
+      code: 'EPIPE',
+      syscall: 'write',
+    });
+    const aborted = Object.assign(new Error('ECONNABORTED'), {
+      code: 'ECONNABORTED',
+      syscall: 'read',
+    });
+    expect(run(epipe)).toBeNull();
+    expect(run(aborted)).toBeNull();
+  });
+
+  it('still drops the sibling raw-body "request aborted" noise (regression)', () => {
+    const err = Object.assign(new Error('request aborted'), {
+      type: 'request.aborted',
+    });
+    expect(run(err)).toBeNull();
+  });
+
+  it('does NOT drop a genuine application error (no over-filtering)', () => {
+    const err = new Error("Cannot read properties of undefined (reading 'x')");
+    const event = { request: { headers: {} } } as ErrorEvent;
+    expect(run(err, event)).not.toBeNull();
+  });
+
+  it('does NOT drop an ECONNRESET that is not a bare socket read/write (has no syscall)', () => {
+    // A domain-level error that merely mentions ECONNRESET in its message but is
+    // not a bare TCP socket error must still surface (guards against blanket
+    // suppression of real upstream failures, which the data layer already
+    // retries — see supabase-base.service.ts).
+    const err = Object.assign(new Error('Supabase RPC failed: ECONNRESET'), {
+      // no `code`, no `syscall` → not a bare socket disconnect
+    });
+    expect(run(err)).not.toBeNull();
+  });
+});
+
 describe('instrument.ts — process-level error handlers', () => {
   it('registers a non-fatal unhandledRejection handler (logs, never exits)', () => {
     const before = new Set(process.listeners('unhandledRejection'));

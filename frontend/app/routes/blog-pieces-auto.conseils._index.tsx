@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import {
+  data as routeData,
   useLoaderData,
   Link,
   useRouteError,
@@ -39,6 +40,7 @@ import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNaviga
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { buildCacheHeaders } from "~/utils/cache-control";
 import { getFamilyTheme } from "~/utils/family-theme";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
@@ -104,6 +106,12 @@ const FAQ_ITEMS = [
   },
 ];
 
+// ── Headers ─────────────────────────────────────────────
+
+export const headers = buildCacheHeaders(
+  "public, max-age=1800, stale-while-revalidate=3600",
+);
+
 // ── Loader ──────────────────────────────────────────────
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -116,12 +124,20 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     if (!data?.success || !data.data?.families) {
       logger.error("Format de r\u00e9ponse inattendu:", data);
-      return {
-        groupedArticles: [],
-        allArticles: [],
-        totalArticles: 0,
-        stats: { totalViews: 0, totalCategories: 0 },
-      };
+      return routeData(
+        {
+          groupedArticles: [],
+          allArticles: [],
+          totalArticles: 0,
+          stats: { totalViews: 0, totalCategories: 0 },
+        },
+        {
+          headers: {
+            "Cache-Control": "no-store",
+            "X-Robots-Tag": "noindex, follow",
+          },
+        },
+      );
     }
 
     const allArticles: BlogArticle[] = [];
@@ -166,18 +182,29 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     };
   } catch (e) {
     logger.error("Erreur loader conseils:", e);
-    return {
-      groupedArticles: [],
-      allArticles: [],
-      totalArticles: 0,
-      stats: { totalViews: 0, totalCategories: 0 },
-    };
+    return routeData(
+      {
+        groupedArticles: [],
+        allArticles: [],
+        totalArticles: 0,
+        stats: { totalViews: 0, totalCategories: 0 },
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store",
+          "X-Robots-Tag": "noindex, follow",
+        },
+      },
+    );
   }
 };
 
 // ── Meta ────────────────────────────────────────────────
 
-export const meta: MetaFunction<typeof loader> = ({ loaderData: data, location }) => {
+export const meta: MetaFunction<typeof loader> = ({
+  loaderData: data,
+  location,
+}) => {
   const count = data?.totalArticles ?? 0;
   const hasFilters = location?.search && location.search.length > 1;
 
