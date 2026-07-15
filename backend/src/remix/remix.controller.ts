@@ -55,6 +55,99 @@ const serverObservability = {
   },
 } satisfies ServerObservabilityPort;
 
+/**
+ * H2 — session privacy for single-fetch `.data` responses (PR #1272 review).
+ *
+ * React Router 8 single fetch (default; `ssr: true`) serves client navigations
+ * as `GET <path>.data` requests. Those responses NEVER flow through
+ * `frontend/app/entry.server.tsx`'s document arbiter: `applySessionCachePrivacy`
+ * runs only inside the default `handleRequest` export (HTML documents), and RR8
+ * removed the `handleDataRequest` hook. A `.data` payload embeds the REVALIDATED
+ * root loader (`{ user, cart }`), and PR B gave several previously-private public
+ * routes a `public, s-maxage` `headers` export — so a session-bearing `.data`
+ * for one of those routes would otherwise ship a shared-cache policy over a body
+ * containing the logged-in user + cart (a privacy leak the moment an edge cache
+ * honours it).
+ *
+ * These helpers close the gap at the one server chokepoint that sees every
+ * `.data` response — this façade — forcing the SAME invariant as the document
+ * arbiter and Caddy `@private`. The cookie pattern MIRRORS `entry.server.tsx`
+ * `SESSION_COOKIE_RE` and the Caddy `@public_cached` matcher
+ * (`(?i)(connect\.sid|session)`) so all three layers agree on what "sessioned"
+ * means — do not change one without the others. (Colocated here rather than in a
+ * new module so the change stays inside this already-owned file.)
+ */
+export const SESSION_COOKIE_RE = /(?:connect\.sid|session)/i;
+
+/** Exact invariant required on any sessioned `.data` response (three cache tiers). */
+export const SESSIONED_DATA_CACHE_HEADERS = {
+  'Cache-Control': 'private, no-cache, no-store, must-revalidate',
+  'CDN-Cache-Control': 'no-store',
+  'Cloudflare-CDN-Cache-Control': 'no-store',
+} as const;
+
+/** RR8 single-fetch data requests are `GET <path>.data` (query stripped by `req.path`). */
+export function isSingleFetchDataRequest(pathname: string): boolean {
+  return pathname.endsWith('.data');
+}
+
+export function isSessionedCookie(
+  cookieHeader: string | undefined | null,
+): boolean {
+  return !!cookieHeader && SESSION_COOKIE_RE.test(cookieHeader);
+}
+
+/**
+ * True iff this is a single-fetch `.data` request carrying a session cookie —
+ * i.e. a response that must be forced private/no-store. Documents (non-`.data`)
+ * are deliberately excluded here: they are already covered by the entry.server
+ * document arbiter, so this façade guard only owns the `.data` channel.
+ */
+export function requiresSessionedDataPrivacy(
+  pathname: string,
+  cookieHeader: string | undefined | null,
+): boolean {
+  return isSingleFetchDataRequest(pathname) && isSessionedCookie(cookieHeader);
+}
+
+type CachePrivacyRequest = Pick<Request, 'path'> & {
+  headers: { cookie?: string };
+};
+
+/**
+ * Arms the `.data` privacy guard for the given request/response pair, returning
+ * `true` when armed (for the controller / tests).
+ *
+ * The `@react-router/express` adapter writes the route's headers via
+ * `res.append(...)` and then streams the body — which triggers Node's implicit
+ * `res.writeHead` just before the headers are flushed. That implicit call is the
+ * only reliable seam to OVERRIDE the public `Cache-Control` the route emitted
+ * (the standard `on-headers` technique); headers are still mutable at that
+ * point. We never touch the body — only the three cache-tier headers.
+ */
+export function enforceSessionedDataCachePrivacy(
+  request: CachePrivacyRequest,
+  response: Response,
+): boolean {
+  if (!requiresSessionedDataPrivacy(request.path, request.headers.cookie)) {
+    return false;
+  }
+
+  const originalWriteHead = response.writeHead.bind(response);
+  response.writeHead = function patchedWriteHead(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ...args: any[]
+  ): Response {
+    for (const [name, value] of Object.entries(SESSIONED_DATA_CACHE_HEADERS)) {
+      response.setHeader(name, value);
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (originalWriteHead as any)(...args);
+  } as Response['writeHead'];
+
+  return true;
+}
+
 @Controller()
 export class RemixController {
   private readonly logger = new Logger(RemixController.name);
@@ -81,6 +174,13 @@ export class RemixController {
     ) {
       return next();
     }
+
+    // H2 (PR #1272 review): single-fetch `.data` responses bypass the
+    // entry.server document arbiter. Arm the sessioned-`.data` privacy guard
+    // BEFORE the RR handler runs so a session-bearing `.data` for a public route
+    // can never ship `public, s-maxage` over a body embedding the root
+    // { user, cart }. No-op for documents and anonymous `.data`.
+    enforceSessionedDataCachePrivacy(request, response);
 
     try {
       // v8_middleware: `getLoadContext` must return a `RouterContextProvider`.

@@ -549,3 +549,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/attribution-beacon-cache-cutover-prA`
 - **Décision** : feat(analytics): déplace l'attribution first-touch GET→POST beacon (cutover cache HTML, PR A)
 - **Sortie** : PR #1271 | commits 7f288d9da
+
+## 2026-07-15 — fix/substitution-fail-open-on-rpc-error (auto)
+
+- **Branche** : `fix/substitution-fail-open-on-rpc-error`
+- **Décision** : fix(migration): add statement_timeout + lock_timeout guards (squawk migration-safety) (+2 other commits)
+- **Sortie** : PR #1148 | commits d04a1b2e8 68b87e00b 9044444c4

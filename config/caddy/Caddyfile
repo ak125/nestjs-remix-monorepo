@@ -233,22 +233,29 @@ automecanik.com, www.automecanik.com {
     }
     
     handle @public_cached {
-        @homepage path /
-        header @homepage Cache-Control "public, max-age=300, stale-while-revalidate=3600"
-        
-        # 🚀 TTFB Optimization: CDN cache 24h pour pages produit
-        @products path_regexp ^/(products|pieces|catalog|vehicule)/
-        header @products Cache-Control "public, max-age=300, s-maxage=86400, stale-while-revalidate=3600"
-        
-        @content path_regexp ^/(blog-pieces-auto|blog|guides|articles|conseils)/
-        header @content Cache-Control "public, max-age=1800, stale-while-revalidate=3600"
-        
-        @search path /search
-        header @search Cache-Control "public, max-age=30, stale-while-revalidate=60"
-        
-        # Default: set only if no conditional matcher above already set Cache-Control
+        # ── Single-owner Cache-Control (PR B) ──────────────────────────────
+        # L'application (React Router) est le SEUL propriétaire du Cache-Control
+        # de chaque surface publique : chaque route indexée exporte `headers`
+        # via `buildCacheHeaders(...)` (frontend/app/utils/cache-control.ts) ;
+        # sinon root.tsx pose le défaut gouverné `private, max-age=60`.
+        #
+        # Les anciens `header @homepage|@products|@content|@search Cache-Control`
+        # étaient des SET *immédiats* (avant reverse_proxy) : le proxy AJOUTE
+        # ensuite le Cache-Control amont → 2 en-têtes Cache-Control sur le fil,
+        # combinaison ambiguë côté Cloudflare (RFC 7234 §5.2). Supprimés pour
+        # garantir exactement UN Cache-Control gouverné par surface (PR B).
+        # Les préfixes fantômes (catalog|vehicule|blog|guides|articles|conseils
+        # top-level, /products/admin) n'avaient aucune route publique indexée et
+        # étaient mis en cache public à tort ; ils retombent désormais sur le
+        # splat racine `no-cache` / `private, max-age=60` — plus correct.
+        #
+        # Filet déterministe : `?Cache-Control` = set-if-absent + différé (après
+        # amont) → ne s'applique QUE si l'app n'a émis AUCUN Cache-Control
+        # (ex. redirections 301 de pieces.$.tsx). Ne peut jamais dupliquer un
+        # en-tête déjà possédé par la route.
         header ?Cache-Control "public, max-age=120, stale-while-revalidate=240"
-        header Vary "Accept-Encoding"
+        # ?Vary différé (idem) : évite un doublon Vary avec l'amont / `encode`.
+        header ?Vary "Accept-Encoding"
 
         reverse_proxy monorepo_prod:3000 {
             header_up Host {host}
@@ -258,10 +265,14 @@ automecanik.com, www.automecanik.com {
             header_up X-Forwarded-Host {host}
 
             # 🛡️ Anti-cache-poisoning : une réponse d'erreur (4xx/5xx) du backend
-            # NE DOIT PAS hériter du cache CDN long (s-maxage=86400) posé par
-            # @products / @content ci-dessus. Sinon un 404/500 transitoire (boot
-            # container, TypeError SSR ponctuel) est figé jusqu'à 24h par Cloudflare
-            # sur une page qui existe en réalité (incident 2026-06-25 :
+            # NE DOIT PAS hériter du cache CDN long (s-maxage=86400) posé par le
+            # Cache-Control de la route (buildCacheHeaders success policy, désormais
+            # seul propriétaire — PR B). buildCacheHeaders force déjà `no-store` côté
+            # app sur les throws ; cette garde est le filet côté edge (défense en
+            # profondeur, couvre aussi les 4xx/5xx qui ne passent pas par un
+            # `headers` de route). Sinon un 404/500 transitoire (boot container,
+            # TypeError SSR ponctuel) serait figé jusqu'à 24h par Cloudflare sur une
+            # page qui existe en réalité (incident 2026-06-25 :
             # /pieces/barre-stabilisatrice-274.html & plaquette-de-frein-402.html).
             # Même garde que le bloc imgproxy ci-dessus (@upstream_4xx). `no-store`
             # l'emporte sur une Cache-Control upstream concurrente (RFC 7234 §5.2.2).

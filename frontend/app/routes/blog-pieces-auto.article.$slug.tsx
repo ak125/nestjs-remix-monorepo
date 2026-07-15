@@ -31,6 +31,7 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import { buildCacheHeaders } from "~/utils/cache-control";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { stripHtmlForMeta } from "~/utils/seo-clean.utils";
@@ -82,8 +83,15 @@ interface LoaderData {
   error?: string;
 }
 
+export const headers = buildCacheHeaders(
+  "public, max-age=1800, stale-while-revalidate=3600",
+);
+
 // Meta SEO
-export const meta: MetaFunction<typeof loader> = ({ loaderData: data, location }) => {
+export const meta: MetaFunction<typeof loader> = ({
+  loaderData: data,
+  location,
+}) => {
   if (!data?.article) {
     return [
       { title: "Article non trouvé - Blog Automecanik" },
@@ -180,7 +188,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const { slug } = params;
 
   if (!slug) {
-    return redirect("/blog-pieces-auto", 301);
+    return redirect("/blog-pieces-auto", {
+      status: 301,
+      headers: { "Cache-Control": "no-store" },
+    });
   }
 
   // 🎯 Détection des URLs legacy "entretien-..." qui n'existent plus (78k URLs GSC)
@@ -277,7 +288,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       // 🔄 SEO: Article non trouvé → 301 redirect vers index du blog
       // Raison: 412 est traité comme 4xx par Google → désindexation
       // 301 préserve le PageRank et guide vers une page indexable
-      return redirect("/blog-pieces-auto", 301);
+      return redirect("/blog-pieces-auto", {
+        status: 301,
+        headers: { "Cache-Control": "no-store" },
+      });
     }
 
     return {
@@ -296,7 +310,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     }
 
     logger.error("Erreur chargement article:", error);
-    return redirect("/blog-pieces-auto", 302);
+    return redirect("/blog-pieces-auto", {
+      status: 302,
+      headers: { "Cache-Control": "no-store" },
+    });
   }
 }
 
