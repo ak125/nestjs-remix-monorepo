@@ -108,16 +108,19 @@ test("closure done right → refreshed baseline matches new scan → ok", () => 
   assert.equal(ok, true);
 });
 
-// ── Integration: the committed baseline matches the live scan (25/10) ──────────
-test("committed baseline totals 25 findings across 10 files", () => {
+// ── Integration: the committed baseline matches the live scan (23/9) ───────────
+// Frozen at 23/9 after B5 removed the R3 image-prompt RAG generation (the
+// r3-image-prompt.service.ts entry dropped 2→0, so the debt fell 25/10 → 23/9
+// via an explicit same-PR baseline refresh — the only sanctioned way to reduce it).
+test("committed baseline totals 23 findings across 9 files", () => {
   const p = join(
     process.cwd(),
     "audit/baselines/rag-authority-read-baseline.json",
   );
   const b = JSON.parse(readFileSync(p, "utf-8")) as Baseline;
   assert.equal(b.rule, "seo-no-rag-as-content-source");
-  assert.equal(b.total, 25);
-  assert.equal(Object.keys(b.files).length, 10);
+  assert.equal(b.total, 23);
+  assert.equal(Object.keys(b.files).length, 9);
   assert.equal(
     Object.values(b.files).reduce((a, c) => a + c, 0),
     b.total,
