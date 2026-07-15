@@ -1,6 +1,6 @@
 {
   "schemaVersion": "v1",
-  "createdAt": "2026-07-14",
+  "createdAt": "2026-07-15",
   "createdOnCommit": null,
   "sourcePr": null,
   "mode": "block-new-only",
@@ -74,7 +74,7 @@
     {
       "mechanism": "direct_literal",
       "id": "backend/src/modules/admin/services/r3-image-prompt.service.ts::__seo_r3_image_prompts",
-      "count": 3
+      "count": 2
     },
     {
       "mechanism": "direct_literal",
