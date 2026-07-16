@@ -9,7 +9,10 @@
  * (exports-seo.schema.json v1.1.0, ADR-086 — post-RPC : champs sous `content`,
  * source_ids préfixés db:|web:|oem:, truth_level ∈ db_owned|sourced|inferred|editorial).
  */
-import { PLANNABLE_SECTIONS } from '@config/keyword-plan.constants';
+import {
+  PLANNABLE_SECTIONS,
+  type PlannableSection,
+} from '@config/keyword-plan.constants';
 import type { ProjectionEnvelope } from './seo-projection-reader.service';
 import { mapR3Projection, R3_MAPPER_ROLE } from './projection-r3.mapper';
 
@@ -259,6 +262,163 @@ describe('mapR3Projection — 8. envelope vide ou sans R3 → résultat explicit
     const r = mapR3Projection(envelope(blocks));
     expect(r.mapped).toEqual([]);
     expect(r.ignoredNonR3).toBe(1);
+    expect(r.ready).toBe(false);
+  });
+});
+
+/**
+ * 9. Validation STRUCTURELLE des blocs (fail-closed) — un bloc R3 à section canonique dont les
+ * champs requis du contrat (exports-seo.schema.json v1.1.0 / SeoProjectionBlock) sont absents ou
+ * mal typés ne doit produire AUCUN slot : jamais de valeur synthétique ('' / []).
+ */
+describe('mapR3Projection — 9. bloc hors contrat → block_contract_invalid, aucun slot', () => {
+  it('section canonique + content_md absent → aucun slot, block_contract_invalid, ready=false', () => {
+    // Cas exact signalé en revue : le bloc ne porte que sa section.
+    const r = mapR3Projection(
+      envelope([{ role: 'R3_CONSEILS', content: { section: 'S1' } }]),
+    );
+    expect(r.slots.S1).toBeUndefined();
+    expect(r.mapped).toEqual([]);
+    expect(r.invalid).toHaveLength(1);
+    expect(r.invalid[0].kind).toBe('block_contract_invalid');
+    expect(r.invalid[0].section).toBe('S1');
+    expect(r.invalid[0].detail).toContain('content_md');
+    expect(r.ready).toBe(false);
+  });
+
+  it('section canonique + content_md chaîne vide → block_contract_invalid', () => {
+    const r = mapR3Projection(
+      envelope([r3Block('S1', '', ['db:x'], 'db_owned')]),
+    );
+    expect(r.slots.S1).toBeUndefined();
+    expect(r.invalid[0].kind).toBe('block_contract_invalid');
+    expect(r.invalid[0].detail).toContain('content_md');
+    expect(r.ready).toBe(false);
+  });
+
+  it('section canonique + truth_level inconnu → aucun slot, block_contract_invalid', () => {
+    const r = mapR3Projection(
+      envelope([r3Block('S1', 'contenu', ['db:x'], 'rag_generated')]),
+    );
+    expect(r.slots.S1).toBeUndefined();
+    expect(r.mapped).toEqual([]);
+    expect(r.invalid[0].kind).toBe('block_contract_invalid');
+    expect(r.invalid[0].detail).toContain('truth_level');
+    expect(r.ready).toBe(false);
+  });
+
+  it('section canonique + source_ids non-array → aucun slot, block_contract_invalid', () => {
+    const r = mapR3Projection(
+      envelope([
+        {
+          role: 'R3_CONSEILS',
+          content: {
+            section: 'S1',
+            content_md: 'contenu',
+            source_ids: 'db:x',
+            truth_level: 'db_owned',
+          },
+        },
+      ]),
+    );
+    expect(r.slots.S1).toBeUndefined();
+    expect(r.invalid[0].kind).toBe('block_contract_invalid');
+    expect(r.invalid[0].detail).toContain('source_ids');
+    expect(r.ready).toBe(false);
+  });
+
+  it('section canonique + source_ids contenant un non-string → aucun slot, block_contract_invalid', () => {
+    const r = mapR3Projection(
+      envelope([
+        {
+          role: 'R3_CONSEILS',
+          content: {
+            section: 'S1',
+            content_md: 'contenu',
+            source_ids: ['db:x', 42],
+            truth_level: 'db_owned',
+          },
+        },
+      ]),
+    );
+    expect(r.slots.S1).toBeUndefined();
+    expect(r.invalid[0].kind).toBe('block_contract_invalid');
+    expect(r.invalid[0].detail).toContain('source_ids');
+    expect(r.ready).toBe(false);
+  });
+
+  it('section canonique + usefulness_target ni string ni null → block_contract_invalid', () => {
+    const r = mapR3Projection(
+      envelope([
+        {
+          role: 'R3_CONSEILS',
+          content: {
+            section: 'S1',
+            content_md: 'contenu',
+            source_ids: ['db:x'],
+            truth_level: 'db_owned',
+            usefulness_target: 7,
+          },
+        },
+      ]),
+    );
+    expect(r.slots.S1).toBeUndefined();
+    expect(r.invalid[0].kind).toBe('block_contract_invalid');
+    expect(r.invalid[0].detail).toContain('usefulness_target');
+    expect(r.ready).toBe(false);
+  });
+
+  it('content absent / non-objet → aucun slot (section illisible → unmapped, jamais synthétique)', () => {
+    const r = mapR3Projection(
+      envelope([
+        { role: 'R3_CONSEILS' },
+        { role: 'R3_CONSEILS', content: null },
+        { role: 'R3_CONSEILS', content: 'pas-un-objet' },
+      ]),
+    );
+    expect(r.slots).toEqual({});
+    expect(r.mapped).toEqual([]);
+    expect(r.unmapped).toHaveLength(3);
+    expect(r.unmapped.every((u) => u.reason === 'missing_section')).toBe(true);
+    expect(r.ready).toBe(false);
+  });
+
+  it('un bloc hors contrat n’empêche pas les blocs valides d’être mappés, mais ready reste false', () => {
+    const r = mapR3Projection(
+      envelope([
+        r3Block('S1', 'valide', ['db:x'], 'db_owned'),
+        { role: 'R3_CONSEILS', content: { section: 'S3' } },
+      ]),
+    );
+    expect(r.mapped).toEqual(['S1']);
+    expect(r.slots.S3).toBeUndefined();
+    expect(r.invalid[0].kind).toBe('block_contract_invalid');
+    expect(r.ready).toBe(false);
+  });
+});
+
+/**
+ * 10. Durcissement `requiredSections` — une valeur hors canon est une FAUTE DE CONFIGURATION
+ * (ex. S2_DIAGNOSTIC au lieu de S2_DIAG), pas un simple contenu manquant.
+ */
+describe('mapR3Projection — 10. requiredSections hors canon → required_section_unknown', () => {
+  it('section requise hors canon → required_section_unknown (jamais required_slot_missing), ready=false', () => {
+    const r = mapR3Projection(
+      envelope([r3Block('S1', 'ok', ['db:x'], 'db_owned')]),
+      // Simule un requis venu d'un pack JSON/DB avec une faute de frappe.
+      { requiredSections: ['S2_DIAGNOSTIC'] as unknown as PlannableSection[] },
+    );
+    expect(r.invalid).toEqual([
+      {
+        kind: 'required_section_unknown',
+        section: 'S2_DIAGNOSTIC',
+        detail:
+          'section requise S2_DIAGNOSTIC hors vocabulaire canonique R3 (faute de configuration)',
+      },
+    ]);
+    expect(r.invalid.some((i) => i.kind === 'required_slot_missing')).toBe(
+      false,
+    );
     expect(r.ready).toBe(false);
   });
 });

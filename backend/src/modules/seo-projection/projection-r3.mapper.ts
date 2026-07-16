@@ -12,10 +12,17 @@
  * préfixée db:|web:|oem:…) / `truth_level` / `usefulness_target` **verbatim**. Rien n'est généré,
  * complété ni reformulé.
  *
+ * **Fail-closed sur le contrat de bloc** : un bloc qui revendique un slot canonique DOIT satisfaire
+ * le contrat (`content_md` non-vide · `source_ids` tableau de chaînes · `truth_level` ∈
+ * `BlockTruthLevel` · `usefulness_target` string|null si présent). Sinon → `block_contract_invalid`,
+ * **aucun slot émis** : jamais de valeur synthétique (`''` / `[]`) substituée à un champ requis —
+ * ce serait un fail-open déguisé en « verbatim ». Un `content` absent/non-objet rend la section
+ * illisible : le bloc ne revendique aucun slot → `unmapped`.
+ *
  * **Classification observable** : `mapped` (slot rempli) · `unmapped` (bloc R3 dont la section est
- * absente ou hors-canon — exclu, jamais interprété) · `invalid` (collision de slot OU slot requis
- * absent). `ready` = aucun `invalid` ET au moins un slot mappé — une projection vide/incomplète
- * n'est JAMAIS présentée comme prête.
+ * absente ou hors-canon — exclu, jamais interprété) · `invalid` (collision de slot · bloc hors
+ * contrat · slot requis absent · section requise hors canon). `ready` = aucun `invalid` ET au moins
+ * un slot mappé — une projection vide/incomplète n'est JAMAIS présentée comme prête.
  *
  * **Politique de complétude déléguée** : `requiredSections` est **injecté par l'appelant** (des
  * section_id canoniques ; défaut vide). Le mapper n'affirme aucun contrat de rendu non ratifié
@@ -24,7 +31,11 @@
  *
  * **DARK** : aucun consumer public ne l'appelle (le branchement runtime R3 = PR P2-R3-D, séparée).
  */
-import { PLANNABLE_SECTIONS } from '@config/keyword-plan.constants';
+import {
+  PLANNABLE_SECTIONS,
+  type PlannableSection,
+} from '@config/keyword-plan.constants';
+import type { BlockTruthLevel } from './seo-projection.types';
 import type {
   ProjectionBlock,
   ProjectionEnvelope,
@@ -36,6 +47,25 @@ export const R3_MAPPER_ROLE = 'R3_CONSEILS' as const;
 /** Vocabulaire canonique des sections R3 (SoT existant — aucune invention locale). */
 const CANONICAL_R3_SECTIONS: readonly string[] = PLANNABLE_SECTIONS;
 
+/**
+ * Valeurs contractuelles de `truth_level` (SoT : `BlockTruthLevel`, miroir de
+ * `exports-seo.schema.json`). Le `Record` force l'**exhaustivité** : ajouter/retirer une valeur au
+ * type casse la compilation ici — aucune liste parallèle qui dériverait en silence.
+ */
+const CONTRACT_TRUTH_LEVELS: Record<BlockTruthLevel, true> = {
+  db_owned: true,
+  sourced: true,
+  inferred: true,
+  editorial: true,
+};
+
+function isContractTruthLevel(value: unknown): value is BlockTruthLevel {
+  return (
+    typeof value === 'string' &&
+    Object.prototype.hasOwnProperty.call(CONTRACT_TRUTH_LEVELS, value)
+  );
+}
+
 /** Rang canonique d'une section (ordre déterministe des sorties). -1 si hors-canon. */
 function canonicalRank(section: string): number {
   return CANONICAL_R3_SECTIONS.indexOf(section);
@@ -46,12 +76,49 @@ function strcmp(a: string, b: string): number {
   return a < b ? -1 : a > b ? 1 : 0;
 }
 
+/** Contenu de bloc VALIDÉ contre le contrat — aucun champ requis absent ni mal typé. */
+interface ValidatedR3Content {
+  content_md: string;
+  source_ids: string[];
+  truth_level: BlockTruthLevel;
+  usefulness_target?: string | null;
+}
+
+/**
+ * Champs du bloc hors contrat (`SeoProjectionBlock` / `exports-seo.schema.json` v1.1.0 :
+ * `content_md`, `source_ids`, `truth_level` REQUIS ; `usefulness_target` optionnel `string|null`).
+ * Renvoie la liste des champs fautifs, dans un ordre fixe (déterminisme du `detail`).
+ */
+function blockContractViolations(content: Record<string, unknown>): string[] {
+  const bad: string[] = [];
+  if (
+    typeof content.content_md !== 'string' ||
+    content.content_md.length === 0
+  ) {
+    bad.push('content_md');
+  }
+  if (
+    !Array.isArray(content.source_ids) ||
+    !content.source_ids.every((s) => typeof s === 'string')
+  ) {
+    bad.push('source_ids');
+  }
+  if (!isContractTruthLevel(content.truth_level)) {
+    bad.push('truth_level');
+  }
+  const target = content.usefulness_target;
+  if (target !== undefined && target !== null && typeof target !== 'string') {
+    bad.push('usefulness_target');
+  }
+  return bad;
+}
+
 /** Slot R3 mappé — contenu de bloc préservé verbatim (aucune transformation). */
 export interface R3Slot {
   section: string;
   content_md: string;
   source_ids: string[];
-  truth_level: string;
+  truth_level: BlockTruthLevel;
   usefulness_target: string | null;
 }
 
@@ -62,9 +129,18 @@ export interface R3UnmappedBlock {
   truth_level: string | null;
 }
 
-/** Entrée invalide : collision de slot ou slot requis manquant. */
+/**
+ * Entrée invalide. `block_contract_invalid` = bloc revendiquant un slot canonique mais violant le
+ * contrat (fail-closed : aucun slot, aucune valeur synthétique). `required_section_unknown` =
+ * faute de configuration des requis (ex. `S2_DIAGNOSTIC` au lieu de `S2_DIAG`), jamais présentée
+ * comme un simple contenu manquant.
+ */
 export interface R3InvalidEntry {
-  kind: 'slot_collision' | 'required_slot_missing';
+  kind:
+    | 'slot_collision'
+    | 'required_slot_missing'
+    | 'block_contract_invalid'
+    | 'required_section_unknown';
   section: string;
   detail: string;
 }
@@ -85,22 +161,26 @@ export interface R3MapperResult {
 }
 
 export interface R3MapperOptions {
-  /** Sections canoniques requises (injectées par l'appelant ; défaut : aucune). */
-  requiredSections?: readonly string[];
+  /**
+   * Sections canoniques requises (injectées par l'appelant ; défaut : aucune). Typées via le SoT
+   * `PlannableSection`, MAIS revalidées au runtime : les requis pourront venir d'un pack JSON ou
+   * de la DB, hors garantie du compilateur.
+   */
+  requiredSections?: readonly PlannableSection[];
 }
 
-/** Copie verbatim du contenu d'un bloc dans un slot (aucune reformulation). */
-function toSlot(
-  section: string,
-  content: NonNullable<ProjectionBlock['content']>,
-): R3Slot {
+/**
+ * Copie verbatim du contenu VALIDÉ dans un slot. Aucune valeur synthétique : les champs requis ont
+ * déjà été vérifiés par `blockContractViolations` (un bloc fautif n'arrive jamais ici).
+ */
+function toSlot(section: string, content: ValidatedR3Content): R3Slot {
   return {
     section,
-    content_md: content.content_md ?? '',
-    source_ids: Array.isArray(content.source_ids)
-      ? [...content.source_ids]
-      : [],
-    truth_level: content.truth_level ?? '',
+    content_md: content.content_md,
+    source_ids: [...content.source_ids],
+    truth_level: content.truth_level,
+    // Champ OPTIONNEL du contrat (`string | null`) : absent ⇒ null. Normalisation d'un optionnel,
+    // jamais une valeur de remplacement pour un champ requis.
     usefulness_target: content.usefulness_target ?? null,
   };
 }
@@ -125,24 +205,32 @@ export function mapR3Projection(
   const invalid: R3InvalidEntry[] = [];
   let ignoredNonR3 = 0;
 
-  // Regroupe les blocs R3 par section canonique (order-independent : seul le comptage compte).
-  const bySection = new Map<
-    string,
-    NonNullable<ProjectionBlock['content']>[]
-  >();
+  // Regroupe les blocs R3 VALIDÉS par section canonique (order-independent : seul le comptage compte).
+  const bySection = new Map<string, ValidatedR3Content[]>();
 
   for (const block of blocks) {
     if (block?.role !== R3_MAPPER_ROLE) {
       ignoredNonR3 += 1;
       continue;
     }
-    const content = block.content ?? {};
+    const raw: unknown = block.content;
+    if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) {
+      // `content` absent / non-objet ⇒ section illisible ⇒ le bloc ne revendique aucun slot.
+      unmapped.push({
+        section: null,
+        reason: 'missing_section',
+        truth_level: null,
+      });
+      continue;
+    }
+    const content = raw as Record<string, unknown>;
+    const rawTruth = content.truth_level;
+    const truthLevel = typeof rawTruth === 'string' ? rawTruth : null;
     const section = content.section;
-    const truthLevel = content.truth_level ?? null;
 
     if (typeof section !== 'string' || section.length === 0) {
       unmapped.push({
-        section: typeof section === 'string' ? section : null,
+        section: null,
         reason: 'missing_section',
         truth_level: truthLevel,
       });
@@ -156,8 +244,20 @@ export function mapR3Projection(
       });
       continue;
     }
+
+    // Le bloc revendique un slot canonique ⇒ le contrat de bloc devient OBLIGATOIRE (fail-closed).
+    const violations = blockContractViolations(content);
+    if (violations.length > 0) {
+      invalid.push({
+        kind: 'block_contract_invalid',
+        section,
+        detail: `champs hors contrat : ${violations.join(', ')}`,
+      });
+      continue; // aucun slot émis, aucune valeur synthétique ('' / [])
+    }
+
     const group = bySection.get(section) ?? [];
-    group.push(content);
+    group.push(content as unknown as ValidatedR3Content);
     bySection.set(section, group);
   }
 
@@ -178,8 +278,18 @@ export function mapR3Projection(
     }
   }
 
-  // Slots requis absents (politique injectée par l'appelant).
+  // Slots requis (politique injectée par l'appelant) — revalidés au runtime.
   for (const section of requiredSections) {
+    if (canonicalRank(section) < 0) {
+      // Faute de configuration (ex. S2_DIAGNOSTIC vs S2_DIAG) : ne JAMAIS la présenter comme un
+      // simple contenu manquant, sinon un requis mal orthographié deviendrait indétectable.
+      invalid.push({
+        kind: 'required_section_unknown',
+        section,
+        detail: `section requise ${section} hors vocabulaire canonique R3 (faute de configuration)`,
+      });
+      continue;
+    }
     if (!(section in slots)) {
       invalid.push({
         kind: 'required_slot_missing',
@@ -199,7 +309,9 @@ export function mapR3Projection(
   invalid.sort(
     (a, b) =>
       canonicalRank(a.section) - canonicalRank(b.section) ||
-      strcmp(a.kind, b.kind),
+      strcmp(a.section, b.section) ||
+      strcmp(a.kind, b.kind) ||
+      strcmp(a.detail, b.detail),
   );
 
   return {
