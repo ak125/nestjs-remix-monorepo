@@ -18,6 +18,7 @@ import { BlogArticleDataService } from './blog-article-data.service';
 import { BlogSeoService } from './blog-seo.service';
 import { BlogArticleRelationService } from './blog-article-relation.service';
 import { InternalLinkingService } from '../../seo/internal-linking.service';
+import { R3ProjectionDecisionService } from './r3-projection-decision.service';
 import { R3GuideService } from './r3-guide.service';
 
 interface CacheEntry {
@@ -97,7 +98,18 @@ function makeMocks() {
   const internalLinkingService = {
     processLinkGamme: jest.fn().mockImplementation(async (s: string) => s),
   };
-  return { dataService, seoService, relationService, internalLinkingService };
+  // Par défaut : HORS canary (flags OFF en prod) → le chemin legacy caché reste inchangé.
+  const projectionDecision = {
+    isTargeted: jest.fn().mockReturnValue(false),
+    decide: jest.fn(),
+  };
+  return {
+    dataService,
+    seoService,
+    relationService,
+    internalLinkingService,
+    projectionDecision,
+  };
 }
 
 async function buildService(): Promise<{
@@ -105,6 +117,7 @@ async function buildService(): Promise<{
   cache: InMemoryCacheServiceStub;
   dataService: ReturnType<typeof makeMocks>['dataService'];
   relationService: ReturnType<typeof makeMocks>['relationService'];
+  projectionDecision: ReturnType<typeof makeMocks>['projectionDecision'];
 }> {
   const cache = new InMemoryCacheServiceStub();
   const mocks = makeMocks();
@@ -120,6 +133,10 @@ async function buildService(): Promise<{
         provide: InternalLinkingService,
         useValue: mocks.internalLinkingService,
       },
+      {
+        provide: R3ProjectionDecisionService,
+        useValue: mocks.projectionDecision,
+      },
     ],
   }).compile();
 
@@ -129,6 +146,7 @@ async function buildService(): Promise<{
     cache,
     dataService: mocks.dataService,
     relationService: mocks.relationService,
+    projectionDecision: mocks.projectionDecision,
   };
 }
 
@@ -304,5 +322,118 @@ describe('R3GuideService — cache + single-flight + invalidation (PR-A)', () =>
 
       expect(dataService.getArticleByGamme).toHaveBeenCalledTimes(2);
     });
+  });
+});
+
+describe('R3GuideService — canary projection (P2-R3-D, dark)', () => {
+  const TARGETED_DECISION = {
+    entityKey: `gamme:${PG_ALIAS}`,
+    projectionRole: 'R3_CONSEILS' as const,
+    bodySource: 'projection' as const,
+    fallbackReason: null,
+    mappedCount: 7,
+    invalidCount: 0,
+    slots: {},
+  };
+
+  it('hors canary : aucune décision projetée, aucun appel à decide(), payload legacy intact', async () => {
+    const { service, projectionDecision } = await buildService();
+
+    const payload = await service.getR3GuidePayload(PG_ALIAS);
+
+    expect(projectionDecision.isTargeted).toHaveBeenCalledWith(PG_ALIAS);
+    expect(projectionDecision.decide).not.toHaveBeenCalled();
+    expect(payload?.projectionMeta).toBeUndefined();
+  });
+
+  it('hors canary : le cache Redis legacy sert toujours le 2e appel (chemin inchangé)', async () => {
+    const { service, dataService } = await buildService();
+
+    await service.getR3GuidePayload(PG_ALIAS);
+    await service.getR3GuidePayload(PG_ALIAS);
+
+    expect(dataService.getArticleByGamme).toHaveBeenCalledTimes(1);
+  });
+
+  it('canary ciblée : bypass total du cache — jamais de lecture ni écriture Redis', async () => {
+    const { service, cache, projectionDecision } = await buildService();
+    projectionDecision.isTargeted.mockReturnValue(true);
+    projectionDecision.decide.mockResolvedValue(TARGETED_DECISION);
+    const getSpy = jest.spyOn(cache, 'get');
+    const setSpy = jest.spyOn(cache, 'set');
+
+    await service.getR3GuidePayload(PG_ALIAS);
+    await service.getR3GuidePayload(PG_ALIAS);
+
+    expect(getSpy).not.toHaveBeenCalled();
+    expect(setSpy).not.toHaveBeenCalled();
+  });
+
+  it('canary ciblée : aucune clé legacy ne peut retenir un payload ciblé (recompute à chaque appel)', async () => {
+    const { service, dataService, projectionDecision } = await buildService();
+    projectionDecision.isTargeted.mockReturnValue(true);
+    projectionDecision.decide.mockResolvedValue(TARGETED_DECISION);
+
+    await service.getR3GuidePayload(PG_ALIAS);
+    await service.getR3GuidePayload(PG_ALIAS);
+
+    expect(dataService.getArticleByGamme).toHaveBeenCalledTimes(2);
+  });
+
+  it('canary ciblée : attache projectionMeta (signal de ciblage) sans toucher le HEAD', async () => {
+    const { service, projectionDecision } = await buildService();
+    projectionDecision.isTargeted.mockReturnValue(true);
+    projectionDecision.decide.mockResolvedValue(TARGETED_DECISION);
+
+    const payload = await service.getR3GuidePayload(PG_ALIAS);
+
+    expect(payload?.projectionMeta).toEqual({
+      decision: 'projection',
+      fallbackReason: null,
+      mappedCount: 7,
+      invalidCount: 0,
+    });
+    // HEAD (autorité SEO) strictement inchangé par la canary.
+    expect(payload?.page.sourceType).toBe('article');
+    expect(payload?.page.metaTitle).toBe(articleStub.title);
+  });
+
+  it('canary ciblée + repli : projectionMeta expose la cause, BODY legacy servi', async () => {
+    const { service, projectionDecision } = await buildService();
+    projectionDecision.isTargeted.mockReturnValue(true);
+    projectionDecision.decide.mockResolvedValue({
+      ...TARGETED_DECISION,
+      bodySource: 'legacy',
+      fallbackReason: 'PROJECTION_ABSENT',
+      mappedCount: 0,
+      slots: null,
+    });
+
+    const payload = await service.getR3GuidePayload(PG_ALIAS);
+
+    expect(payload?.projectionMeta?.decision).toBe('legacy');
+    expect(payload?.projectionMeta?.fallbackReason).toBe('PROJECTION_ABSENT');
+
+    // BODY legacy COMPLET : hors projectionMeta, le payload est identique à celui servi
+    // hors canary. Aucune fusion partielle possible.
+    const legacy = await (
+      await buildService()
+    ).service.getR3GuidePayload(PG_ALIAS);
+    const { projectionMeta: _meta, ...targetedBody } = payload!;
+    expect(targetedBody).toEqual(legacy);
+  });
+
+  it('canary ciblée : un article introuvable reste 404 (null), sans appeler decide()', async () => {
+    const { service, dataService, projectionDecision } = await buildService();
+    projectionDecision.isTargeted.mockReturnValue(true);
+    dataService.getArticleByGamme.mockResolvedValueOnce({
+      article: null,
+      gammeData: null,
+    });
+
+    const payload = await service.getR3GuidePayload(PG_ALIAS);
+
+    expect(payload).toBeNull();
+    expect(projectionDecision.decide).not.toHaveBeenCalled();
   });
 });

@@ -4,6 +4,10 @@
  */
 
 import type { BlogArticle } from './blog.interfaces';
+import type {
+  R3BodySource,
+  R3FallbackReason,
+} from '../services/r3-projection-decision.service';
 
 export interface R3GuidePage {
   pg_alias: string;
@@ -48,6 +52,24 @@ export interface R3GuideSection {
   image?: R3GuideSectionImage | null;
 }
 
+/**
+ * Verdict de la chaîne de décision projection (P2-R3-D).
+ *
+ * **Présent UNIQUEMENT si la paire `R3_CONSEILS@gamme:<alias>` est ciblée par la canary** — sa
+ * présence EST le signal de ciblage (elle commande le bypass de cache backend et le `no-store`
+ * côté loader). Absent = hors canary = chemin legacy strictement inchangé.
+ *
+ * **P2-R3-D est une chaîne de décision, pas un rendu** : `decision: 'projection'` signifie « la
+ * projection est complète et servable », PAS « le BODY ci-joint vient de la projection ». Le BODY
+ * reste legacy dans TOUS les cas tant que le rendu md→HTML gouverné n'existe pas (P2-R3-E).
+ */
+export interface R3ProjectionMeta {
+  decision: R3BodySource;
+  fallbackReason: R3FallbackReason | null;
+  mappedCount: number;
+  invalidCount: number;
+}
+
 export interface R3GuidePayload {
   page: R3GuidePage;
   s1Sections: R3GuideSection[];
@@ -62,4 +84,6 @@ export interface R3GuidePayload {
     previous: BlogArticle | null;
     next: BlogArticle | null;
   };
+  /** Voir {@link R3ProjectionMeta} — absent hors canary (donc absent partout tant que les flags sont OFF). */
+  projectionMeta?: R3ProjectionMeta;
 }

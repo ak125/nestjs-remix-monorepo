@@ -22,6 +22,7 @@ import type {
   R3GuidePage,
   R3GuideSection,
 } from '../interfaces/r3-guide.interfaces';
+import { R3ProjectionDecisionService } from './r3-projection-decision.service';
 import {
   slugifyTitle,
   normalizeStepHtml,
@@ -70,6 +71,7 @@ export class R3GuideService {
     private readonly seoService: BlogSeoService,
     private readonly relationService: BlogArticleRelationService,
     private readonly internalLinkingService: InternalLinkingService,
+    private readonly projectionDecision: R3ProjectionDecisionService,
   ) {}
 
   /**
@@ -97,6 +99,14 @@ export class R3GuideService {
    * 9-fanout, but cached null risks delaying legitimate publishes.
    */
   async getR3GuidePayload(pg_alias: string): Promise<R3GuidePayload | null> {
+    // Canary ciblée → bypass TOTAL du cache (lecture ET écriture). Sans cela, la clé partagée
+    // `r3-guide:v2:<alias>` pourrait contenir alternativement un payload ciblé et un payload
+    // hors-canary selon qui l'a peuplée en premier — empoisonnement croisé. Décision synchrone,
+    // 0 RPC : hors canary, le chemin ci-dessous reste strictement inchangé.
+    if (this.projectionDecision.isTargeted(pg_alias)) {
+      return this.computeTargetedPayload(pg_alias);
+    }
+
     const cacheKey = `${R3_CACHE_PREFIX}${pg_alias}`;
     const startedAt = Date.now();
 
@@ -152,6 +162,32 @@ export class R3GuideService {
 
     this.inflight.set(cacheKey, promise);
     return promise;
+  }
+
+  /**
+   * Chemin canary ciblé — hors cache Redis (ni lecture, ni écriture, ni single-flight partagé).
+   *
+   * Compose le BODY **legacy** puis attache le verdict de la chaîne de décision. En P2-R3-D le
+   * BODY servi reste legacy même quand `decision === 'projection'` : cette PR prouve le câblage
+   * gouverné (flag → allowlist → reader → mapper → ready) et l'observabilité du repli, pas le
+   * rendu — le rendu md→HTML de la projection est le périmètre de P2-R3-E.
+   */
+  private async computeTargetedPayload(
+    pg_alias: string,
+  ): Promise<R3GuidePayload | null> {
+    const payload = await this.computeLegacyPayload(pg_alias);
+    if (payload === null) return null;
+
+    const decision = await this.projectionDecision.decide(pg_alias);
+    return {
+      ...payload,
+      projectionMeta: {
+        decision: decision.bodySource,
+        fallbackReason: decision.fallbackReason,
+        mappedCount: decision.mappedCount,
+        invalidCount: decision.invalidCount,
+      },
+    };
   }
 
   /**

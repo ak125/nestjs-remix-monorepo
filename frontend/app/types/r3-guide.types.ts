@@ -48,6 +48,19 @@ export interface R3GuideSection {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyArticle = any;
 
+/**
+ * Miroir de `R3ProjectionMeta` (backend `r3-guide.interfaces.ts`) — verdict de la chaîne de
+ * décision projection (P2-R3-D). **Présent uniquement si la paire R3_CONSEILS@gamme:<alias> est
+ * ciblée par la canary** : sa présence EST le signal de ciblage (le loader impose alors
+ * `private, no-store`). Absent hors canary — donc absent partout tant que les flags sont OFF.
+ */
+export interface R3ProjectionMeta {
+  decision: "projection" | "legacy";
+  fallbackReason: string | null;
+  mappedCount: number;
+  invalidCount: number;
+}
+
 export interface R3GuidePayload {
   page: R3GuidePage;
   s1Sections: R3GuideSection[];
@@ -62,4 +75,6 @@ export interface R3GuidePayload {
     previous: AnyArticle | null;
     next: AnyArticle | null;
   };
+  /** Voir {@link R3ProjectionMeta} — absent hors canary. */
+  projectionMeta?: R3ProjectionMeta;
 }

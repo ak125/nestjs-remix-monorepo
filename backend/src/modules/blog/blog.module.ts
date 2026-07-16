@@ -28,6 +28,7 @@ import { BlogArticleRelationService } from './services/blog-article-relation.ser
 import { ConstructeurSearchService } from './services/constructeur-search.service';
 import { ConstructeurTransformService } from './services/constructeur-transform.service';
 import { AdviceTransformService } from './services/advice-transform.service';
+import { R3ProjectionDecisionService } from './services/r3-projection-decision.service';
 import { AdviceEnrichmentService } from './services/advice-enrichment.service';
 import { R3GuideService } from './services/r3-guide.service';
 import { R6GuideService } from './services/r6-guide.service';
@@ -35,6 +36,7 @@ import { R6GuideService } from './services/r6-guide.service';
 // Modules externes requis
 import { SearchModule } from '../search/search.module';
 import { SeoModule } from '../seo/seo.module';
+import { SeoProjectionReadModule } from '../seo-projection/seo-projection-read.module';
 
 /**
  * 📰 BlogModule - Module de gestion complète du contenu blog
@@ -69,6 +71,10 @@ import { SeoModule } from '../seo/seo.module';
     }),
     SearchModule, // Services Meilisearch et Supabase intégrés
     SeoModule, // 🔗 InternalLinkingService pour maillage interne
+    // Lecture seule de la projection SEO (ADR-059). Module LÉGER volontairement : jamais
+    // `SeoProjectionModule` (writer + gate service_role + queues) ni `AdminModule` — le runtime
+    // public ne doit tirer aucune capacité d'écriture.
+    SeoProjectionReadModule,
   ],
   controllers: [
     BlogController, // API générale blog et recherche
@@ -100,6 +106,7 @@ import { SeoModule } from '../seo/seo.module';
     ConstructeurTransformService,
     AdviceTransformService,
     AdviceEnrichmentService,
+    R3ProjectionDecisionService, // Chaîne de décision projection R3 (DARK — flags OFF)
     R3GuideService, // R3 page engine orchestrator
     R6GuideService, // R6 guide d'achat orchestrator
   ],
