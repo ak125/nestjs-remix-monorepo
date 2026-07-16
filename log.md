@@ -573,3 +573,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/c0-projection-read-module`
 - **Décision** : feat(seo-projection): extract dark projection reader (C0, behavior-identical)
 - **Sortie** : PR #1284 | commits 6c5d82c82
+
+## 2026-07-16 — feat/p2-r3c-projection-r3-mapper (auto)
+
+- **Branche** : `feat/p2-r3c-projection-r3-mapper`
+- **Décision** : feat(seo-projection): add dark r3 projection mapper (P2-R3-C, pure)
+- **Sortie** : PR #1286 | commits 645e33eea
