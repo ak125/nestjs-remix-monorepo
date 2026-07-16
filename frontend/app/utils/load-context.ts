@@ -18,6 +18,7 @@
  */
 import { createContext, RouterContextProvider } from "react-router";
 import { type ServerObservability } from "~/utils/observability-contract";
+import { type RemixApplicationPort } from "~/utils/remix-application-port";
 
 /* ── Structural ports (no NestJS class import) ───────────────────────────── */
 
@@ -48,6 +49,14 @@ export const remixIntegrationContext =
 export const cspNonceContext = createContext<string>("");
 export const serverObservabilityContext =
   createContext<ServerObservability | null>(null);
+/**
+ * LIVE. The per-request, actor-bound, FROZEN application port injected by NestJS
+ * `RemixController`. Nullable default so `.get` never throws; consumers MUST read
+ * it via `getRemixApplicationPort` (fail-loud) — never a silent fallback. This is
+ * the typed seam replacing the untyped `remixIntegration` for migrated routes.
+ */
+export const remixApplicationPortContext =
+  createContext<RemixApplicationPort | null>(null);
 
 /* ── Factory: plain values → RouterContextProvider ───────────────────────── */
 
@@ -57,6 +66,7 @@ export interface AppLoadContextValues {
   remixIntegration: RemixIntegrationPort | null;
   cspNonce: string;
   serverObservability: ServerObservability | null;
+  remixApplicationPort: RemixApplicationPort | null;
 }
 
 /**
@@ -88,5 +98,6 @@ export function createAppLoadContext(
   provider.set(remixIntegrationContext, values.remixIntegration);
   provider.set(cspNonceContext, values.cspNonce);
   provider.set(serverObservabilityContext, values.serverObservability);
+  provider.set(remixApplicationPortContext, values.remixApplicationPort);
   return provider;
 }

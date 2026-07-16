@@ -22,7 +22,7 @@ import {
 } from "~/components/home";
 import { type BrandItem } from "~/components/home/constants";
 import { LazyFooter } from "~/components/home/LazyFooter";
-import { getRemixApiService } from "~/server/remix-api.server";
+import { getRemixApplicationPort } from "~/server/remix-api.server";
 import { buildCacheHeaders } from "~/utils/cache-control";
 import {
   type SlimFamily,
@@ -117,7 +117,9 @@ export const meta: MetaFunction = () => [
 const HOME_DEFER_BUDGET_MS = 3000;
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
-  const remixApi = await getRemixApiService(context);
+  // Public homepage capabilities — actor-bound port, no HTTP loopback. The port
+  // is always injected per request; `getRemixApplicationPort` is synchronous.
+  const port = getRemixApplicationPort(context);
 
   // Below-fold: direct service call wrapped in a Promise so Remix can
   // still defer-stream it via <Await>. The await is captured *inside* the
@@ -128,7 +130,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     blogArticles: [] as any[],
   };
   const belowFoldPromise = Promise.race([
-    Promise.resolve(remixApi.getHomepageBelowFold()).then((data: any) =>
+    Promise.resolve(port.getHomepageBelowFold()).then((data) =>
       data ? mapBelowFoldData(data) : belowFoldEmpty,
     ),
     // Deadline : si le service DI dépasse le budget, on RÉSOUT le fallback vide
@@ -159,7 +161,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   // call — bypasses TCP loopback handshake that previously cost ~10-50ms
   // cold per SSR and consumed a connection pool slot.
   try {
-    const familiesRaw = await remixApi.getHomepageFamilies();
+    const familiesRaw = await port.getHomepageFamilies();
     const families = mapFamiliesFromSplit(familiesRaw);
 
     return {

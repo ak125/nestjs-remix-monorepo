@@ -63,14 +63,22 @@ describe('RemixController — serverObservability injection gate', () => {
           expect(context).toEqual(
             expect.objectContaining({
               serverObservability: { captureException: expect.any(Function) },
+              // The actor-bound port is injected per request alongside the reporter.
+              remixApplicationPort: expect.anything(),
             }),
           );
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
         }) as any,
     );
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const controller = new RemixController({} as any, {} as any);
+    // 2nd ctor arg is RemixApiService; the handler calls `.createRequestPort`
+    // per request to build the injected port, so the stub must provide it.
+    const controller = new RemixController(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      {} as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      { createRequestPort: () => ({}) } as any,
+    );
     // url='/' so the handler does NOT early-return on the /api,/auth… guards.
     const request = {
       url: '/',

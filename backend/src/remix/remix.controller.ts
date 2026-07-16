@@ -201,6 +201,13 @@ export class RemixController {
             remixIntegration: this.remixApiService,
             cspNonce: response.locals.cspNonce ?? '',
             serverObservability,
+            // Per-request, actor-bound, frozen application port. Closes over the
+            // authenticated `request.user`, so migrated SSR routes reach the
+            // NestJS domain services in-process (no HTTP loopback) with
+            // authorization travelling WITH the port instead of `X-User-*`.
+            remixApplicationPort: this.remixApiService.createRequestPort(
+              request.user,
+            ),
           }),
       })(request, response, next);
     } catch (error) {

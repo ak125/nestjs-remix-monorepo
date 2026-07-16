@@ -2,9 +2,10 @@
 module: staff
 sources:
 - backend/src/modules/staff
-last_scan: '2026-07-02'
+last_scan: '2026-07-16'
 primary_files:
 - backend/src/modules/staff/dto/staff.dto.ts
+- backend/src/modules/staff/services/staff-data.service.test.ts
 - backend/src/modules/staff/services/staff-data.service.ts
 - backend/src/modules/staff/staff.controller.ts
 - backend/src/modules/staff/staff.module.ts
