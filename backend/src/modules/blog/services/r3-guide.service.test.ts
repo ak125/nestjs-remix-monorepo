@@ -329,7 +329,8 @@ describe('R3GuideService — canary projection (P2-R3-D, dark)', () => {
   const TARGETED_DECISION = {
     entityKey: `gamme:${PG_ALIAS}`,
     projectionRole: 'R3_CONSEILS' as const,
-    bodySource: 'projection' as const,
+    projectionStatus: 'READY_FOR_RENDER' as const,
+    servedBodySource: 'legacy' as const,
     fallbackReason: null,
     mappedCount: 7,
     invalidCount: 0,
@@ -388,7 +389,9 @@ describe('R3GuideService — canary projection (P2-R3-D, dark)', () => {
     const payload = await service.getR3GuidePayload(PG_ALIAS);
 
     expect(payload?.projectionMeta).toEqual({
-      decision: 'projection',
+      projectionStatus: 'READY_FOR_RENDER',
+      // Prête à être rendue, mais le BODY servi reste legacy : D n'a pas de renderer.
+      servedBodySource: 'legacy',
       fallbackReason: null,
       mappedCount: 7,
       invalidCount: 0,
@@ -403,7 +406,7 @@ describe('R3GuideService — canary projection (P2-R3-D, dark)', () => {
     projectionDecision.isTargeted.mockReturnValue(true);
     projectionDecision.decide.mockResolvedValue({
       ...TARGETED_DECISION,
-      bodySource: 'legacy',
+      projectionStatus: 'FALLBACK',
       fallbackReason: 'PROJECTION_ABSENT',
       mappedCount: 0,
       slots: null,
@@ -411,7 +414,8 @@ describe('R3GuideService — canary projection (P2-R3-D, dark)', () => {
 
     const payload = await service.getR3GuidePayload(PG_ALIAS);
 
-    expect(payload?.projectionMeta?.decision).toBe('legacy');
+    expect(payload?.projectionMeta?.projectionStatus).toBe('FALLBACK');
+    expect(payload?.projectionMeta?.servedBodySource).toBe('legacy');
     expect(payload?.projectionMeta?.fallbackReason).toBe('PROJECTION_ABSENT');
 
     // BODY legacy COMPLET : hors projectionMeta, le payload est identique à celui servi

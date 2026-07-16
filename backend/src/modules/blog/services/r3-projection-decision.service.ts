@@ -1,8 +1,15 @@
 /**
  * R3ProjectionDecisionService — chaîne de décision DARK du consumer R3 (P2-R3-D, ADR-059).
  *
- * Décide, pour une gamme, si le BODY servi doit venir de la **projection** (RAW → WIKI → exports
- * → projection) ou rester **legacy**. Ne rend RIEN : le rendu md→HTML est hors périmètre (P2-R3-E).
+ * Évalue, pour une gamme, si la projection (RAW → WIKI → exports → projection) est **prête à être
+ * rendue**. Ne rend RIEN et ne sert RIEN : le rendu md→HTML gouverné est le périmètre de P2-R3-E.
+ *
+ * **Deux notions distinctes, jamais confondues** (le mapper émet du Markdown, la surface servie
+ * attend du HTML, et aucun renderer gouverné n'existe encore) :
+ *   - `projectionStatus` — état de PRÉPARATION : `READY_FOR_RENDER` | `FALLBACK` ;
+ *   - `servedBodySource` — source RÉELLEMENT rendue. En D, littéralement `'legacy'`, TOUJOURS.
+ * `READY_FOR_RENDER` signifie « le mapper a produit un DTO complet » — jamais « c'est servi ».
+ * Seule P2-R3-E, après renderer + sanitization, pourra élargir `servedBodySource` à `'projection'`.
  *
  * Ordre imposé — chaque étape est un gate fail-closed franchi AVANT la suivante :
  *   1. résoudre l'`entityKey` canonique (`gamme:<alias>`, forme namespacée attendue par la RPC) ;
@@ -10,14 +17,14 @@
  *   3. allowlist EXACTE `<ROLE>@<entity_id>` (rôle + entité, jamais l'entité seule) ;
  *   4. seulement alors, appeler le reader ;
  *   5. mapper avec les sections requises du pack `standard` ;
- *   6. servir la projection UNIQUEMENT si `ready` ;
- *   7. sinon fallback legacy observable.
+ *   6. `READY_FOR_RENDER` UNIQUEMENT si le mapper est `ready` ;
+ *   7. sinon `FALLBACK` avec cause observable.
  *
  * **Invariant** : master flag OFF **ou** paire non allowlistée ⇒ **0 appel RPC**. Les deux flags
  * étant OFF/vides par défaut, l'état mergé de cette PR est : 100 % legacy, 0 RPC, 0 lecture.
  *
  * **Atomicité BODY** : le verdict porte sur la page entière. Jamais « S1 projection + S2 legacy » —
- * une projection incomplète ou invalide fait basculer le BODY ENTIER sur le legacy.
+ * une projection incomplète ou invalide disqualifie la projection ENTIÈRE.
  */
 import { Injectable, Logger } from '@nestjs/common';
 import { PACK_DEFINITIONS } from '@config/conseil-pack.constants';
@@ -25,6 +32,7 @@ import { FeatureFlagsService } from '@config/feature-flags.service';
 import {
   mapR3Projection,
   R3_MAPPER_ROLE,
+  type R3InvalidEntry,
   type R3Slot,
 } from '@modules/seo-projection/projection-r3.mapper';
 import { SeoProjectionReaderService } from '@modules/seo-projection/seo-projection-reader.service';
@@ -35,7 +43,18 @@ export const R3_PROJECTION_ROLE = R3_MAPPER_ROLE;
 /** Pack de complétude du pilote R3 (résolu SERVEUR — jamais depuis la requête publique). */
 const R3_PACK = PACK_DEFINITIONS.standard;
 
-export type R3BodySource = 'projection' | 'legacy';
+/**
+ * État de PRÉPARATION de la projection — **pas** la source servie.
+ * `READY_FOR_RENDER` = le mapper a produit un DTO complet et conforme, rendable par P2-R3-E.
+ */
+export type R3ProjectionStatus = 'READY_FOR_RENDER' | 'FALLBACK';
+
+/**
+ * Source RÉELLEMENT rendue. Volontairement figée au littéral `'legacy'` en P2-R3-D : aucun
+ * renderer md→HTML gouverné n'existe, donc aucune valeur `'projection'` ne peut être honnête ici.
+ * L'élargissement de ce type est le livrable central de P2-R3-E.
+ */
+export type R3ServedBodySource = 'legacy';
 
 /** Causes de repli — toutes observables, aucune muette. */
 export type R3FallbackReason =
@@ -50,15 +69,18 @@ export type R3FallbackReason =
 export interface R3ProjectionDecision {
   entityKey: string;
   projectionRole: typeof R3_PROJECTION_ROLE;
-  bodySource: R3BodySource;
-  /** `null` seulement si `bodySource === 'projection'`. */
+  /** Préparation seulement. `READY_FOR_RENDER` ≠ « servi ». */
+  projectionStatus: R3ProjectionStatus;
+  /** Toujours `'legacy'` en D — le BODY servi ne dépend pas encore de `projectionStatus`. */
+  servedBodySource: R3ServedBodySource;
+  /** `null` seulement si `projectionStatus === 'READY_FOR_RENDER'`. */
   fallbackReason: R3FallbackReason | null;
   mappedCount: number;
   invalidCount: number;
   /**
-   * Slots projetés — présents UNIQUEMENT si `bodySource === 'projection'`. Transportés verbatim
-   * depuis le mapper (aucune reformulation intermédiaire). `null` sur tout repli legacy, pour
-   * qu'aucune projection partielle ne puisse fuiter dans un BODY legacy.
+   * Slots projetés — présents UNIQUEMENT si `projectionStatus === 'READY_FOR_RENDER'`. Transportés
+   * verbatim depuis le mapper (aucune reformulation intermédiaire). `null` sur tout `FALLBACK`,
+   * pour qu'aucune projection partielle ne puisse fuiter.
    */
   slots: Record<string, R3Slot> | null;
 }
@@ -71,6 +93,29 @@ function toEntityKey(pgAlias: string): string {
 /** Jeton d'allowlist : la PAIRE rôle+entité, jamais l'entité seule. */
 function toCanaryToken(entityKey: string): string {
   return `${R3_PROJECTION_ROLE}@${entityKey}`;
+}
+
+/**
+ * Classe un verdict `ready: false` du mapper — **fail-closed par construction**.
+ *
+ * Seul un manque de CONTENU (`required_slot_missing` exclusivement) est une projection
+ * « incomplète ». Tout le reste est un contrat INVALIDE :
+ *   - `block_contract_invalid` / `slot_collision` — données hors contrat ;
+ *   - `required_section_unknown` — **faute de configuration** (ex. `S2_DIAGNOSTIC` au lieu de
+ *     `S2_DIAG`) : la présenter comme « contenu manquant » masquerait un bug de config derrière
+ *     un état d'attente légitime, et on attendrait indéfiniment un contenu impossible ;
+ *   - toute invalidité FUTURE ajoutée au mapper — inconnue ⇒ INVALID, jamais absorbée en silence.
+ *
+ * Pure et exportée : testable sans monter le service ni contourner le typage `PlannableSection[]`
+ * de `requiredSections` (qui rend `required_section_unknown` inatteignable via le pack canonique).
+ */
+export function classifyMapperFallback(
+  invalid: readonly R3InvalidEntry[],
+): R3FallbackReason {
+  const incompleteOnly =
+    invalid.length > 0 &&
+    invalid.every((entry) => entry.kind === 'required_slot_missing');
+  return incompleteOnly ? 'MAPPER_INCOMPLETE' : 'MAPPER_INVALID';
 }
 
 @Injectable()
@@ -125,16 +170,11 @@ export class R3ProjectionDecisionService {
       requiredSections: R3_PACK.requiredSections,
     });
 
-    // 6/7. Atomicité : ready ⇒ BODY projection ; sinon BODY legacy ENTIER.
+    // 6/7. Atomicité : ready ⇒ DTO rendable ; sinon FALLBACK (la projection ENTIÈRE est écartée).
     if (!result.ready) {
-      const structurallyInvalid = result.invalid.some(
-        (entry) =>
-          entry.kind === 'block_contract_invalid' ||
-          entry.kind === 'slot_collision',
-      );
       return this.fallback(
         entityKey,
-        structurallyInvalid ? 'MAPPER_INVALID' : 'MAPPER_INCOMPLETE',
+        classifyMapperFallback(result.invalid),
         result.mapped.length,
         result.invalid.length,
       );
@@ -143,7 +183,9 @@ export class R3ProjectionDecisionService {
     return this.emit({
       entityKey,
       projectionRole: R3_PROJECTION_ROLE,
-      bodySource: 'projection',
+      projectionStatus: 'READY_FOR_RENDER',
+      // Prête, mais PAS servie : D n'a pas de renderer. Cf. P2-R3-E.
+      servedBodySource: 'legacy',
       fallbackReason: null,
       mappedCount: result.mapped.length,
       invalidCount: result.invalid.length,
@@ -177,7 +219,8 @@ export class R3ProjectionDecisionService {
     return this.emit({
       entityKey,
       projectionRole: R3_PROJECTION_ROLE,
-      bodySource: 'legacy',
+      projectionStatus: 'FALLBACK',
+      servedBodySource: 'legacy',
       fallbackReason,
       mappedCount,
       invalidCount,
@@ -190,7 +233,8 @@ export class R3ProjectionDecisionService {
     this.logger.log({
       entity_key: decision.entityKey,
       projection_role: decision.projectionRole,
-      decision: decision.bodySource,
+      projection_status: decision.projectionStatus,
+      served_body_source: decision.servedBodySource,
       fallback_reason: decision.fallbackReason,
       mapped_count: decision.mappedCount,
       invalid_count: decision.invalidCount,

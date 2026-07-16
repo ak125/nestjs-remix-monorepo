@@ -53,9 +53,14 @@ type AnyArticle = any;
  * décision projection (P2-R3-D). **Présent uniquement si la paire R3_CONSEILS@gamme:<alias> est
  * ciblée par la canary** : sa présence EST le signal de ciblage (le loader impose alors
  * `private, no-store`). Absent hors canary — donc absent partout tant que les flags sont OFF.
+ *
+ * `projectionStatus` = PRÉPARATION (`READY_FOR_RENDER` = DTO complet côté mapper).
+ * `servedBodySource` = source RÉELLEMENT rendue — littéralement `"legacy"` tant que le renderer
+ * md→HTML gouverné n'existe pas (P2-R3-E). `READY_FOR_RENDER` ne veut PAS dire « projection servie ».
  */
 export interface R3ProjectionMeta {
-  decision: "projection" | "legacy";
+  projectionStatus: "READY_FOR_RENDER" | "FALLBACK";
+  servedBodySource: "legacy";
   fallbackReason: string | null;
   mappedCount: number;
   invalidCount: number;

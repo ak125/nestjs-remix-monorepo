@@ -5,8 +5,9 @@
 
 import type { BlogArticle } from './blog.interfaces';
 import type {
-  R3BodySource,
   R3FallbackReason,
+  R3ProjectionStatus,
+  R3ServedBodySource,
 } from '../services/r3-projection-decision.service';
 
 export interface R3GuidePage {
@@ -59,12 +60,15 @@ export interface R3GuideSection {
  * présence EST le signal de ciblage (elle commande le bypass de cache backend et le `no-store`
  * côté loader). Absent = hors canary = chemin legacy strictement inchangé.
  *
- * **P2-R3-D est une chaîne de décision, pas un rendu** : `decision: 'projection'` signifie « la
- * projection est complète et servable », PAS « le BODY ci-joint vient de la projection ». Le BODY
- * reste legacy dans TOUS les cas tant que le rendu md→HTML gouverné n'existe pas (P2-R3-E).
+ * **P2-R3-D est une chaîne de décision, pas un rendu.** Les deux champs sont distincts :
+ * `projectionStatus` = état de PRÉPARATION (`READY_FOR_RENDER` = DTO complet produit par le
+ * mapper) ; `servedBodySource` = source RÉELLEMENT rendue, figée au littéral `'legacy'` tant que
+ * le renderer md→HTML gouverné n'existe pas (P2-R3-E). `READY_FOR_RENDER` ne signifie JAMAIS
+ * « le BODY ci-joint vient de la projection ».
  */
 export interface R3ProjectionMeta {
-  decision: R3BodySource;
+  projectionStatus: R3ProjectionStatus;
+  servedBodySource: R3ServedBodySource;
   fallbackReason: R3FallbackReason | null;
   mappedCount: number;
   invalidCount: number;

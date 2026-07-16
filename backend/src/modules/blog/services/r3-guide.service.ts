@@ -168,9 +168,9 @@ export class R3GuideService {
    * Chemin canary ciblé — hors cache Redis (ni lecture, ni écriture, ni single-flight partagé).
    *
    * Compose le BODY **legacy** puis attache le verdict de la chaîne de décision. En P2-R3-D le
-   * BODY servi reste legacy même quand `decision === 'projection'` : cette PR prouve le câblage
-   * gouverné (flag → allowlist → reader → mapper → ready) et l'observabilité du repli, pas le
-   * rendu — le rendu md→HTML de la projection est le périmètre de P2-R3-E.
+   * BODY servi reste legacy même quand `projectionStatus === 'READY_FOR_RENDER'` : cette PR prouve
+   * le câblage gouverné (flag → allowlist → reader → mapper → ready) et l'observabilité du repli,
+   * pas le rendu — le rendu md→HTML de la projection est le périmètre de P2-R3-E.
    */
   private async computeTargetedPayload(
     pg_alias: string,
@@ -182,7 +182,8 @@ export class R3GuideService {
     return {
       ...payload,
       projectionMeta: {
-        decision: decision.bodySource,
+        projectionStatus: decision.projectionStatus,
+        servedBodySource: decision.servedBodySource,
         fallbackReason: decision.fallbackReason,
         mappedCount: decision.mappedCount,
         invalidCount: decision.invalidCount,

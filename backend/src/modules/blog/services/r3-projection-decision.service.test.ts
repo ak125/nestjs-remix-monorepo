@@ -2,7 +2,7 @@
  * Tests P2-R3-D — chaîne de décision DARK du consumer R3.
  *
  * Prouve l'ORDRE imposé (entityKey → master flag → allowlist rôle+entité → reader → mapper →
- * ready → bodySource) et surtout l'invariant : master flag OFF **ou** paire non allowlistée
+ * ready → projectionStatus) et surtout l'invariant : master flag OFF **ou** paire non allowlistée
  * ⇒ **0 appel RPC**. Les flags sont OFF par défaut → tout le monde reste sur le legacy.
  */
 import { Logger } from '@nestjs/common';
@@ -11,7 +11,9 @@ import { FeatureFlagsService } from '@config/feature-flags.service';
 import { PACK_DEFINITIONS } from '@config/conseil-pack.constants';
 import { SeoProjectionReaderService } from '@modules/seo-projection/seo-projection-reader.service';
 import type { ProjectionEnvelope } from '@modules/seo-projection/seo-projection-reader.service';
+import type { R3InvalidEntry } from '@modules/seo-projection/projection-r3.mapper';
 import {
+  classifyMapperFallback,
   R3ProjectionDecisionService,
   R3_PROJECTION_ROLE,
 } from './r3-projection-decision.service';
@@ -80,7 +82,8 @@ describe('R3ProjectionDecisionService (P2-R3-D, dark)', () => {
   it('flag OFF (défaut) → legacy + MASTER_OFF, sans AUCUN appel RPC', async () => {
     const decision = await service.decide(PILOT_ALIAS);
 
-    expect(decision.bodySource).toBe('legacy');
+    expect(decision.projectionStatus).toBe('FALLBACK');
+    expect(decision.servedBodySource).toBe('legacy');
     expect(decision.fallbackReason).toBe('MASTER_OFF');
     expect(reader.readActiveProjection).not.toHaveBeenCalled();
   });
@@ -101,7 +104,8 @@ describe('R3ProjectionDecisionService (P2-R3-D, dark)', () => {
 
     const decision = await service.decide(PILOT_ALIAS);
 
-    expect(decision.bodySource).toBe('legacy');
+    expect(decision.projectionStatus).toBe('FALLBACK');
+    expect(decision.servedBodySource).toBe('legacy');
     expect(decision.fallbackReason).toBe('NOT_ALLOWLISTED');
     expect(reader.readActiveProjection).not.toHaveBeenCalled();
   });
@@ -177,7 +181,8 @@ describe('R3ProjectionDecisionService (P2-R3-D, dark)', () => {
 
       const decision = await service.decide(PILOT_ALIAS);
 
-      expect(decision.bodySource).toBe('legacy');
+      expect(decision.projectionStatus).toBe('FALLBACK');
+      expect(decision.servedBodySource).toBe('legacy');
       expect(decision.fallbackReason).toBe(expected);
     },
   );
@@ -200,7 +205,8 @@ describe('R3ProjectionDecisionService (P2-R3-D, dark)', () => {
 
     const decision = await service.decide(PILOT_ALIAS);
 
-    expect(decision.bodySource).toBe('legacy');
+    expect(decision.projectionStatus).toBe('FALLBACK');
+    expect(decision.servedBodySource).toBe('legacy');
     expect(decision.fallbackReason).toBe('MAPPER_INVALID');
     expect(decision.invalidCount).toBeGreaterThan(0);
   });
@@ -219,7 +225,8 @@ describe('R3ProjectionDecisionService (P2-R3-D, dark)', () => {
 
     const decision = await service.decide(PILOT_ALIAS);
 
-    expect(decision.bodySource).toBe('legacy');
+    expect(decision.projectionStatus).toBe('FALLBACK');
+    expect(decision.servedBodySource).toBe('legacy');
     expect(decision.fallbackReason).toBe('MAPPER_INCOMPLETE');
   });
 
@@ -233,13 +240,14 @@ describe('R3ProjectionDecisionService (P2-R3-D, dark)', () => {
 
     const decision = await service.decide(PILOT_ALIAS);
 
-    expect(decision.bodySource).toBe('legacy');
+    expect(decision.projectionStatus).toBe('FALLBACK');
+    expect(decision.servedBodySource).toBe('legacy');
     expect(decision.fallbackReason).toBe('MAPPER_INCOMPLETE');
   });
 
   // ── 6. Chemin nominal + complétude via le pack `standard` ─────────────────
 
-  it('projection complète (pack standard satisfait) → bodySource=projection, 0 fallback', async () => {
+  it('projection complète (pack standard satisfait) → READY_FOR_RENDER, 0 fallback', async () => {
     flags.seoProjectionReadV1 = true;
     flags.seoProjectionReadCanary = [PILOT_TOKEN];
     reader.readActiveProjection.mockResolvedValue({
@@ -249,8 +257,10 @@ describe('R3ProjectionDecisionService (P2-R3-D, dark)', () => {
 
     const decision = await service.decide(PILOT_ALIAS);
 
-    expect(decision.bodySource).toBe('projection');
+    expect(decision.projectionStatus).toBe('READY_FOR_RENDER');
     expect(decision.fallbackReason).toBeNull();
+    // Prête ≠ servie : D n'a pas de renderer, le BODY reste legacy.
+    expect(decision.servedBodySource).toBe('legacy');
     expect(decision.invalidCount).toBe(0);
     expect(decision.mappedCount).toBe(
       PACK_DEFINITIONS.standard.requiredSections.length,
@@ -272,7 +282,8 @@ describe('R3ProjectionDecisionService (P2-R3-D, dark)', () => {
     const decision = await service.decide(PILOT_ALIAS);
 
     expect(decision.fallbackReason).toBe('MAPPER_INCOMPLETE');
-    expect(decision.bodySource).toBe('legacy');
+    expect(decision.projectionStatus).toBe('FALLBACK');
+    expect(decision.servedBodySource).toBe('legacy');
   });
 
   // ── 7. Caractérisation : 0 reformulation intermédiaire ────────────────────
@@ -348,12 +359,68 @@ describe('R3ProjectionDecisionService (P2-R3-D, dark)', () => {
       expect.objectContaining({
         entity_key: PILOT_ENTITY_KEY,
         projection_role: R3_PROJECTION_ROLE,
-        decision: 'legacy',
+        projection_status: 'FALLBACK',
+        served_body_source: 'legacy',
         fallback_reason: 'PROJECTION_ABSENT',
         mapped_count: 0,
         invalid_count: 0,
       }),
     );
     logSpy.mockRestore();
+  });
+});
+
+// ── 10. Classification fail-closed des verdicts mapper (fonction pure) ──────
+//
+// Testée directement : `requiredSections` est typé `PlannableSection[]`, donc un
+// `required_section_unknown` est INATTEIGNABLE via le pack canonique — le prouver au niveau du
+// service exigerait de casser le typage. La fonction pure est le vrai point de contrat.
+describe('classifyMapperFallback (fail-closed)', () => {
+  const entry = (kind: R3InvalidEntry['kind']): R3InvalidEntry => ({
+    kind,
+    section: 'S1',
+    detail: 'peu importe',
+  });
+
+  it('required_slot_missing uniquement → MAPPER_INCOMPLETE (seul vrai manque de contenu)', () => {
+    expect(
+      classifyMapperFallback([
+        entry('required_slot_missing'),
+        entry('required_slot_missing'),
+      ]),
+    ).toBe('MAPPER_INCOMPLETE');
+  });
+
+  it.each<[R3InvalidEntry['kind']]>([
+    ['block_contract_invalid'],
+    ['slot_collision'],
+    ['required_section_unknown'],
+  ])('%s → MAPPER_INVALID', (kind) => {
+    expect(classifyMapperFallback([entry(kind)])).toBe('MAPPER_INVALID');
+  });
+
+  it('required_section_unknown = faute de CONFIGURATION, jamais un contenu manquant', () => {
+    // Mélangé à de vrais manques de contenu, il doit continuer de dominer : sinon un
+    // S2_DIAGNOSTIC mal orthographié se lirait comme « en attente de rédaction », et on
+    // attendrait indéfiniment un contenu impossible à produire.
+    expect(
+      classifyMapperFallback([
+        entry('required_slot_missing'),
+        entry('required_section_unknown'),
+      ]),
+    ).toBe('MAPPER_INVALID');
+  });
+
+  it('aucune entrée invalide (ready=false inattendu) → MAPPER_INVALID, jamais INCOMPLETE', () => {
+    expect(classifyMapperFallback([])).toBe('MAPPER_INVALID');
+  });
+
+  it('invalidité FUTURE inconnue → MAPPER_INVALID (fail-closed par défaut)', () => {
+    const future = {
+      kind: 'some_future_kind',
+      section: 'S1',
+      detail: '',
+    } as unknown as R3InvalidEntry;
+    expect(classifyMapperFallback([future])).toBe('MAPPER_INVALID');
   });
 });
