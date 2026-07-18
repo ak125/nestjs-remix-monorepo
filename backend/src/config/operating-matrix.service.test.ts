@@ -109,10 +109,15 @@ describe('OperatingMatrixService', () => {
     const snap = svc.snapshot();
     const byRole = new Map(snap.roles.map((r) => [r.roleId, r]));
 
-    it('R1_ROUTER scores ≥80 (registry + writeScope + non-deprecated; +20 if agents found)', () => {
+    it('R1_ROUTER — enrichment writer removed (Tranche-B R1); registry entry gone, not deprecated', () => {
+      // R1EnricherService (RAG → __seo_r1_gamme_slots) deleted per ADR-031/046: RAG has zero
+      // content-write authority. No executable enricher is wired (future canonical producer =
+      // WIKI→projection, owner-gated). R1 is NOT deprecated — its pages stay served via the
+      // read path; only the RAG enrichment path is gone. Same registry-absent surface as
+      // R3_CONSEILS. R1 legitimately surfaces in gaps[] until a canonical producer is added.
       const r = byRole.get(RoleId.R1_ROUTER)!;
-      expect(r.healthScore).toBeGreaterThanOrEqual(80);
-      if (r.agents.length > 0) expect(r.healthScore).toBe(100);
+      expect(r.registry.present).toBe(false);
+      expect(r.deprecated).toBe(false);
     });
 
     it('R3_GUIDE — deprecated role removed from registry (closed deprecation)', () => {

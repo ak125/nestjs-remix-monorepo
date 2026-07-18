@@ -1,11 +1,11 @@
 {
   "schemaVersion": "v1",
-  "createdAt": "2026-07-15",
+  "createdAt": "2026-07-18",
   "createdOnCommit": null,
   "sourcePr": null,
   "mode": "block-new-only",
   "summary": {
-    "direct_literal": 12,
+    "direct_literal": 10,
     "const_map": 7,
     "rpc_publisher": 1,
     "sql_migration": 44
@@ -48,22 +48,12 @@
     },
     {
       "mechanism": "direct_literal",
-      "id": "backend/src/modules/admin/controllers/admin-keyword-planner.controller.ts::__seo_gamme",
-      "count": 2
-    },
-    {
-      "mechanism": "direct_literal",
       "id": "backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts::__seo_gamme_purchase_guide",
       "count": 1
     },
     {
       "mechanism": "direct_literal",
       "id": "backend/src/modules/admin/services/conseil-quality-scorer.service.ts::__seo_gamme_conseil",
-      "count": 1
-    },
-    {
-      "mechanism": "direct_literal",
-      "id": "backend/src/modules/admin/services/r1-enricher.service.ts::__seo_r1_gamme_slots",
       "count": 1
     },
     {
