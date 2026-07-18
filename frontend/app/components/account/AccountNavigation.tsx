@@ -5,7 +5,6 @@ import {
   Mail,
   Key,
   Home,
-  Package,
   LogOut,
   ChevronRight,
   AlertTriangle,
@@ -158,17 +157,19 @@ export function SideNavigation({ user, stats }: SideNavigationProps) {
           Actions rapides
         </h3>
         <div className="space-y-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full justify-start"
-            asChild
-          >
-            <Link to="/orders/new">
-              <Package className="w-4 h-4 mr-2" />
-              Nouvelle commande
-            </Link>
-          </Button>
+          {/*
+           * NO "Nouvelle commande" CTA here.
+           *
+           * `/orders/new` is intentionally disabled (loader + action return 503)
+           * until an authenticated, idempotent, audited order-create use case
+           * exists — the real contract (idempotency `order_idempotency` +
+           * `create_order_atomic` RPC + resume-token) lives in OrdersController.
+           * This nav is rendered by AccountLayout on every /account/* route, so a
+           * CTA here put every logged-in customer one click from a bare 503.
+           *
+           * Do NOT re-add a link to /orders/new until that use case ships.
+           * Guarded by frontend/tests/unit/no-orders-new-cta.test.ts.
+           */}
           <Button
             variant="outline"
             size="sm"

@@ -5,6 +5,25 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      break_glass_no_rollback_point:
+        description: >-
+          BREAK-GLASS. Deploy even though no PROD container is running, i.e. with
+          NO rollback point. Only legitimate for a first deploy or a host rebuild.
+          On an existing PROD, a missing container means something is already
+          wrong — deploying blind would leave no way back.
+        type: boolean
+        default: false
+
+# A PROD deploy mutates shared, external state (the :production tag + the running
+# container). Two tags racing would interleave their rollback points: run B could
+# capture the image A just installed — or capture nothing — and "rollback" would
+# then restore the wrong build. Serialize them, and NEVER cancel a run mid-deploy:
+# a cancelled deploy can leave PROD stopped, or leave :production pushed with no
+# container behind it.
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
 
 permissions:
   contents: read
@@ -23,6 +42,68 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: 💾 Capture rollback point — current PROD image ID (BEFORE any :production mutation)
+        env:
+          # Break-glass escape hatch. `inputs.*` is empty on a tag push, so the
+          # repo variable is the tag-push path. Read via env (never interpolated
+          # into the script body) so no expression value can be executed.
+          BREAK_GLASS: ${{ inputs.break_glass_no_rollback_point || vars.PROD_BREAK_GLASS_NO_ROLLBACK_POINT }}
+        run: |
+          # ⚠️ Ordering is load-bearing. This step MUST stay before the safety gate.
+          #
+          # The previous rollback was a proven NO-OP: the safety gate below retags
+          # `:production` to the NEW image, and the deploy step then derived
+          # `production-previous` FROM `:production` — so `production-previous`
+          # WAS the new image, and "rolling back" re-deployed the broken build.
+          # (`CURRENT_IMAGE` was computed there, echoed, and never used.)
+          #
+          # Fix: capture the RUNNING container's IMMUTABLE image ID here, while
+          # `:production` still points at the live build, then pin it in the job
+          # env so every later step rolls back to a byte-exact known-good image.
+          # Retagging `:production` does not mutate a running container's image
+          # ID, but capturing before any mutation keeps the invariant obvious.
+          set -uo pipefail
+
+          CURRENT_IMAGE=$(docker inspect --format='{{.Image}}' nestjs-remix-monorepo-prod 2>/dev/null || echo "")
+
+          if [ -z "$CURRENT_IMAGE" ]; then
+            # No running container on an EXISTING PROD is itself an anomaly
+            # (crashed? half-deployed?). Deploying from here would mutate
+            # :production with NO way back — fail-closed BEFORE any mutation
+            # rather than discover it once the runtime is already broken.
+            if [ "${BREAK_GLASS:-}" != "true" ]; then
+              echo "❌ FATAL: no running nestjs-remix-monorepo-prod container — no rollback point can be captured."
+              echo ""
+              echo "  Deploying now would mutate :production with NO way back."
+              echo "  Nothing has been mutated yet; PROD is untouched."
+              echo ""
+              echo "  If this is a FIRST deploy or a host rebuild (i.e. there is legitimately"
+              echo "  nothing to roll back to), re-run deliberately in break-glass mode:"
+              echo "    - Actions → 'Deploy PROD (via tag)' → Run workflow → break_glass_no_rollback_point = true"
+              echo "    - or set repo variable PROD_BREAK_GLASS_NO_ROLLBACK_POINT=true for a tag push"
+              echo ""
+              echo "  Otherwise investigate why PROD is not running before deploying over it."
+              exit 1
+            fi
+            echo "::warning::BREAK-GLASS: no PROD container and no rollback point — deploying blind on explicit operator request. Auto-rollback is DISABLED for this run."
+            echo "ROLLBACK_IMAGE_ID=" >> "$GITHUB_ENV"
+            exit 0
+          fi
+
+          echo "🔒 Current PROD container image ID : $CURRENT_IMAGE"
+          docker tag "$CURRENT_IMAGE" massdoc/nestjs-remix-monorepo:production-previous
+
+          # Push it as an off-box recovery point. Best-effort: the local tag and
+          # the pinned ID below are what the in-job rollback actually uses, so a
+          # registry hiccup must not abort a deploy.
+          if docker push massdoc/nestjs-remix-monorepo:production-previous; then
+            echo "📤 production-previous pushed (off-box recovery point)"
+          else
+            echo "::warning::Could not push production-previous — local tag + pinned ID remain available for in-job rollback"
+          fi
+
+          echo "ROLLBACK_IMAGE_ID=$CURRENT_IMAGE" >> "$GITHUB_ENV"
 
       - name: 🔒 Safety gate — SHA consistency (preprod image ↔ tag commit)
         run: |
@@ -47,10 +128,25 @@ jobs:
           echo "🐳 Preprod image SHA    : ${IMAGE_SHA:-<unset>}"
 
           if [ -z "$IMAGE_SHA" ]; then
-            echo "⚠️  Preprod image has no OCI revision label."
-            echo "    Cette image a été buildée avant build.yml labeling (pré 2026-04-21)."
-            echo "    On laisse passer cette fois mais prochain build sera validé."
-            echo "    Si ce message apparaît après le 2026-05-01, c'est un bug à investiguer."
+            # Was tolerated for images built before build.yml started labelling
+            # (pré 2026-04-21). That grace period self-declared its own expiry
+            # ("si ce message apparaît après le 2026-05-01, c'est un bug") and is
+            # now long past, so the tolerance is REMOVED: an unlabelled image is
+            # an image whose provenance cannot be proven, and promoting an
+            # unprovable image to PROD is exactly the class of bug this gate
+            # exists to stop (INC-2026-006).
+            echo ""
+            echo "❌ FATAL: l'image :preprod n'a AUCUN label OCI revision."
+            echo ""
+            echo "  Impossible de prouver que cette image correspond au commit du tag ($TAG_SHA)."
+            echo "  La tolérance historique (images pré-2026-04-21) est retirée — voir audit"
+            echo "  2026-07-16 : promouvoir une image de provenance non vérifiable = INC-2026-006."
+            echo ""
+            echo "Remède :"
+            echo "  1. Re-builder :preprod depuis le commit $TAG_SHA (merge/re-run du workflow PREPROD)"
+            echo "  2. OU promouvoir explicitement l'image :sha-$TAG_SHA"
+            echo ""
+            exit 1
           elif [ "$IMAGE_SHA" != "$TAG_SHA" ]; then
             echo ""
             echo "❌ FATAL: l'image :preprod ne correspond PAS au commit du tag."
@@ -200,10 +296,19 @@ jobs:
 
           docker network create automecanik-prod 2>/dev/null || true
 
-          # Sauvegarder l'image actuelle pour rollback automatique
-          CURRENT_IMAGE=$(docker inspect --format='{{.Image}}' nestjs-remix-monorepo-prod 2>/dev/null || echo "")
-          echo "Current image: $CURRENT_IMAGE"
-          docker tag massdoc/nestjs-remix-monorepo:production massdoc/nestjs-remix-monorepo:production-previous 2>/dev/null || true
+          # Rollback point already captured by the "💾 Capture rollback point"
+          # step as $ROLLBACK_IMAGE_ID — the running container's IMMUTABLE image
+          # ID, read BEFORE the safety gate retagged :production.
+          # Do NOT re-derive production-previous from :production here: by this
+          # point :production already points at the NEW image, which is exactly
+          # what made the old rollback restore the broken build.
+          echo "🔒 Rollback point pinned: ${ROLLBACK_IMAGE_ID:-<none — auto-rollback disabled>}"
+
+          # POINT OF NO RETURN. Past this line the running container is destroyed,
+          # so ANY later failure — including in "Validate PROD" — must roll back.
+          # The dedicated `if: failure()` rollback step keys off this flag, which
+          # is why it is set BEFORE the stop/rm rather than after a successful up.
+          echo "DEPLOY_STARTED=1" >> "$GITHUB_ENV"
 
           docker stop nestjs-remix-caddy nestjs-remix-monorepo-prod 2>/dev/null || true
           docker rm nestjs-remix-caddy nestjs-remix-monorepo-prod 2>/dev/null || true
@@ -271,30 +376,38 @@ jobs:
             sleep 10
           done
 
-          if ! echo "$HEALTH" | grep -q '"status":"ok"'; then
-            echo "Health check failed after $RETRIES attempts — initiating rollback"
-            docker logs nestjs-remix-monorepo-prod --tail 30
+          HEALTH_OK=0
+          if echo "$HEALTH" | grep -q '"status":"ok"'; then HEALTH_OK=1; fi
 
-            # Rollback to previous image
-            if docker image inspect massdoc/nestjs-remix-monorepo:production-previous > /dev/null 2>&1; then
-              echo "Rolling back to production-previous..."
-              docker stop nestjs-remix-monorepo-prod 2>/dev/null || true
-              docker rm nestjs-remix-monorepo-prod 2>/dev/null || true
-              docker tag massdoc/nestjs-remix-monorepo:production-previous massdoc/nestjs-remix-monorepo:production
-              docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml up -d --no-deps monorepo_prod caddy redis_prod
-              sleep 30
-              ROLLBACK_HEALTH=$(docker exec nestjs-remix-monorepo-prod wget -qO- http://localhost:3000/health 2>/dev/null || echo "")
-              if echo "$ROLLBACK_HEALTH" | grep -q '"status":"ok"'; then
-                echo "Rollback successful — previous version restored"
-              else
-                echo "Rollback also failed — manual intervention required"
+          # SSR gate (BLOCKING). Only meaningful once the process answers /health.
+          # See scripts/ci/prod-ssr-probe.sh for why /health alone is not enough
+          # and why `noindex` is the signal that catches the degraded fallback.
+          SSR_OK=0
+          if [ "$HEALTH_OK" = "1" ]; then
+            echo "🖥️ Running SSR gate (GET /)..."
+            for i in $(seq 1 3); do
+              if bash "$GITHUB_WORKSPACE/scripts/ci/prod-ssr-probe.sh" "post-deploy $i/3"; then
+                SSR_OK=1
+                break
               fi
+              echo "  SSR gate attempt $i/3 failed, waiting 10s..."
+              sleep 10
+            done
+          fi
+
+          if [ "$HEALTH_OK" != "1" ] || [ "$SSR_OK" != "1" ]; then
+            if [ "$HEALTH_OK" != "1" ]; then
+              echo "❌ Health check failed after $RETRIES attempts"
             else
-              echo "No previous image available for rollback"
+              echo "❌ SSR gate failed — GET / is not a healthy, indexable, server-rendered document"
             fi
+            docker logs nestjs-remix-monorepo-prod --tail 30
+            # Rollback is NOT done here: the dedicated `if: failure()` step owns it,
+            # so that a failure in "Validate PROD" rolls back through the SAME path.
             exit 1
           fi
-          echo "PROD deployment successful - API responding"
+
+          echo "✅ PROD deployment successful — /health OK and GET / is a healthy indexable SSR document"
 
           docker image prune -f
 
@@ -324,6 +437,14 @@ jobs:
           else
             echo "❌ /health -> FAILED: $HEALTH"
             docker logs nestjs-remix-monorepo-prod --tail 20
+            FAILED=1
+          fi
+
+          # SSR gate (BLOCKING) — /health and the API probes never render SSR, so
+          # this is the only gate here that sees an SSR regression. A failure of
+          # THIS step now rolls back, via the dedicated `if: failure()` step.
+          echo "🖥️ Testing SSR document (GET /)..."
+          if ! bash "$GITHUB_WORKSPACE/scripts/ci/prod-ssr-probe.sh" "validate"; then
             FAILED=1
           fi
 
@@ -369,6 +490,25 @@ jobs:
           fi
 
           echo "🎉 Version ${{ github.ref_name }} deployed to production!"
+
+      - name: ⏪ Rollback PROD (any failure past the point of no return)
+        # Owns the rollback for the WHOLE job, so that a failure in "Validate
+        # PROD" rolls back through the SAME verified path as a failed health/SSR
+        # gate — previously only the deploy step could roll back, and a Validate
+        # failure left the broken build live.
+        #
+        # Guards:
+        #   DEPLOY_STARTED=1 — only set once the running container is destroyed.
+        #     A failure BEFORE that (checkout, capture, safety gate) left PROD
+        #     untouched, so rolling back would be wrong.
+        #   ROLLBACK_IMAGE_ID — empty only in break-glass mode (no rollback
+        #     point existed); the script fails loudly rather than pretend.
+        if: ${{ failure() && env.DEPLOY_STARTED == '1' }}
+        env:
+          ROLLBACK_IMAGE_ID: ${{ env.ROLLBACK_IMAGE_ID }}
+        run: |
+          cd ~/production
+          bash "$GITHUB_WORKSPACE/scripts/ci/prod-rollback.sh"
 
       - name: 🔔 Notify Slack on success
         if: ${{ success() && env.SLACK_WEBHOOK_URL != '' }}
