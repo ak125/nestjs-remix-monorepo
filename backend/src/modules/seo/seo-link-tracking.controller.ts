@@ -34,46 +34,56 @@ import {
   LinkMetrics,
   LinkPerformanceReport,
 } from './infrastructure/seo-link-tracking.service';
+import { z } from 'zod';
 
-// DTO pour les requêtes
-class TrackClickDto {
-  linkType:
-    | 'LinkGammeCar'
-    | 'LinkGammeCar_ID'
-    | 'LinkGamme'
-    | 'CompSwitch'
-    | 'CrossSelling'
-    | 'VoirAussi'
-    | 'Footer'
-    | 'RelatedArticles'
-    | string;
-  sourceUrl: string;
-  destinationUrl: string;
-  anchorText?: string;
-  linkPosition?:
-    | 'header'
-    | 'content'
-    | 'sidebar'
-    | 'footer'
-    | 'crossselling'
-    | 'voiraussi';
-  sessionId?: string;
-  deviceType?: 'mobile' | 'desktop' | 'tablet';
-  userAgent?: string;
-  referer?: string;
+// ── Body schemas (public, unauthenticated beacon endpoints) ────────────────
+// These POST endpoints are hit fire-and-forget via `navigator.sendBeacon`
+// (frontend/app/utils/beacon.ts). Being public, they ALSO receive empty-body,
+// wrong-content-type, bot and aborted requests — for those the custom
+// body-parser in `main.ts` (`body-parser.json()`, default
+// `type: 'application/json'`) never populates `req.body`, so `@Body()` binds to
+// `undefined`. Validating with `safeParse` (and treating a malformed body as a
+// silent no-op) mirrors the governed sibling beacon `LandingAttributionController`
+// and prevents the 500 previously reported to Sentry
+// (`TypeError: reading 'linkType'`). Unknown extra keys are stripped, never a
+// hard reject, so a slightly richer client payload can't drop legit telemetry.
+
+const DEVICE_TYPES = ['mobile', 'desktop', 'tablet'] as const;
+const LINK_POSITIONS = [
+  'header',
+  'content',
+  'sidebar',
+  'footer',
+  'crossselling',
+  'voiraussi',
+  'blog',
+] as const;
+
+const TrackClickSchema = z.object({
+  linkType: z.string().min(1),
+  sourceUrl: z.string().min(1),
+  destinationUrl: z.string().min(1),
+  anchorText: z.string().optional(),
+  // Constrained optionals use `.catch(undefined)` so an out-of-range value drops
+  // that single field instead of failing (and dropping) the whole beacon.
+  linkPosition: z.enum(LINK_POSITIONS).optional().catch(undefined),
+  sessionId: z.string().optional(),
+  deviceType: z.enum(DEVICE_TYPES).optional().catch(undefined),
+  userAgent: z.string().optional(),
+  referer: z.string().optional(),
   // A/B Testing fields
-  switchVerbId?: number;
-  switchNounId?: number;
-  switchFormula?: string;
-  targetGammeId?: number;
-}
+  switchVerbId: z.number().optional().catch(undefined),
+  switchNounId: z.number().optional().catch(undefined),
+  switchFormula: z.string().optional(),
+  targetGammeId: z.number().optional().catch(undefined),
+});
 
-class TrackImpressionDto {
-  linkType: string;
-  pageUrl: string;
-  linkCount: number;
-  sessionId?: string;
-}
+const TrackImpressionSchema = z.object({
+  linkType: z.string().min(1),
+  pageUrl: z.string().min(1),
+  linkCount: z.number(),
+  sessionId: z.string().optional(),
+});
 
 @ApiTags('SEO Link Tracking')
 @Controller('api/seo')
@@ -89,10 +99,21 @@ export class SeoLinkTrackingController {
   @ApiOperation({ summary: 'Track un clic sur lien interne' })
   @ApiResponse({ status: 201, description: 'Clic enregistré' })
   async trackClick(
-    @Body() dto: TrackClickDto,
+    @Body() body: unknown,
     @Headers('user-agent') userAgent?: string,
     @Headers('referer') referer?: string,
   ): Promise<{ success: boolean }> {
+    const parsed = TrackClickSchema.safeParse(body);
+    if (!parsed.success) {
+      // Empty/malformed/bot request to a public beacon endpoint → observable
+      // no-op, never a 500 (cf. Sentry TypeError on undefined body).
+      this.logger.debug(
+        `track-click: body absent/malformed — no-op (${parsed.error.message})`,
+      );
+      return { success: false };
+    }
+    const dto = parsed.data;
+
     // Détecter le type de device (utiliser celui du DTO si fourni)
     const deviceType = dto.deviceType || this.detectDeviceType(userAgent);
 
@@ -128,15 +149,18 @@ export class SeoLinkTrackingController {
   @Post('track-impression')
   @ApiOperation({ summary: 'Track une impression de liens' })
   @ApiResponse({ status: 201, description: 'Impression enregistrée' })
-  async trackImpression(
-    @Body() dto: TrackImpressionDto,
-  ): Promise<{ success: boolean }> {
-    const event: LinkImpressionEvent = {
-      linkType: dto.linkType,
-      pageUrl: dto.pageUrl,
-      linkCount: dto.linkCount,
-      sessionId: dto.sessionId,
-    };
+  async trackImpression(@Body() body: unknown): Promise<{ success: boolean }> {
+    const parsed = TrackImpressionSchema.safeParse(body);
+    if (!parsed.success) {
+      // Empty/malformed/bot request to a public beacon endpoint → observable
+      // no-op, never a 500 (cf. Sentry TypeError on undefined body).
+      this.logger.debug(
+        `track-impression: body absent/malformed — no-op (${parsed.error.message})`,
+      );
+      return { success: false };
+    }
+
+    const event: LinkImpressionEvent = parsed.data;
 
     const success = await this.trackingService.trackImpression(event);
     return { success };
