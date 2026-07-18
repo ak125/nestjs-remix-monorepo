@@ -312,6 +312,14 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: high
     risk: low
+  # Audits de bundle de release PROD (read-only, ancrés au SHA candidat) — même
+  # famille D13 que la surface deploy (.github/workflows/** + scripts/ci/**).
+  # Owner GO nominatif 2026-07-16. cf. audit/2026-07-16-prod-bundle-da90deabd-a931205c.md
+  - glob: audit/*-prod-bundle-*.md
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
   # V-Level doctrine de référence (PR vlevel-doctrine-lock, owner GO 2026-06-05) —
   # voir audit/levels-doctrine-cgc-vs-vlevel-2026-06-04.md. Préfixe ciblé.
   - glob: audit/levels-doctrine-*.md
