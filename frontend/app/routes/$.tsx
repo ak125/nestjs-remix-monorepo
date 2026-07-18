@@ -4,8 +4,9 @@ import {
   type LoaderFunctionArgs,
   type MetaFunction,
   data,
+  useRouteError,
+  isRouteErrorResponse,
 } from "react-router";
-import { useRouteError, isRouteErrorResponse } from "react-router";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { buildCacheHeaders } from "~/utils/cache-control";
 import { logger } from "~/utils/logger";
@@ -288,6 +289,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
  * Retourne true pour court-circuiter AVANT tout appel API (économie de 3 fetch/requête).
  */
 function isGarbageUrl(pathname: string): boolean {
+  // Caractère de remplacement Unicode U+FFFD (`�`, encodé `%EF%BF%BD`) = input
+  // corrompu (mojibake d'un lien cassé / scraper). decodeURIComponent réussit
+  // (UTF-8 valide) mais le caractère SURVIT à la normalisation d'accents de
+  // `resolveKnownPattern` et empoisonne le header `Location` d'un redirect 301
+  // (octet > 0xFF → ByteString/ERR_INVALID_CHAR → 500). Traité comme garbage → 410.
+  try {
+    if (decodeURIComponent(pathname).includes("�")) return true;
+  } catch {
+    // %-encoding invalide (ex. `%ZZ`) : laissé aux gardes suivantes (404).
+  }
+
   // Base64-encoded strings: /wl8k5m6HsSkVW3cXi61ZQ==
   if (/^\/[A-Za-z0-9+/]{8,}={1,2}$/.test(pathname)) return true;
 
@@ -333,7 +345,14 @@ function resolveKnownPattern(pathname: string): string | null {
   try {
     const decoded = decodeURIComponent(pathname);
     const normalized = decoded.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    if (normalized !== decoded) {
+    // Défense en profondeur : ne JAMAIS renvoyer une cible de redirect
+    // contenant un caractère non-latin1 (> 0xFF, ex. U+FFFD survivant à la
+    // normalisation), sinon `redirect(target, 301)` construit un header
+    // `Location` invalide → ByteString/ERR_INVALID_CHAR → 500. `isGarbageUrl`
+    // intercepte déjà le cas U+FFFD en amont (410) ; ce garde couvre tout
+    // autre caractère exotique → on retombe proprement sur le 404.
+    const headerSafe = ![...normalized].some((ch) => ch.charCodeAt(0) > 0xff);
+    if (normalized !== decoded && headerSafe) {
       return normalized;
     }
   } catch {
