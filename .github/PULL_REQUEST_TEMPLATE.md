@@ -36,4 +36,22 @@
 
 ---
 
+## Runtime verification
+
+<!-- Preuve MINCE que le changement a été exécuté et le comportement observé (pas seulement CI-vert).
+     Router la surface du diff vers le vérificateur EXISTANT — voir .claude/knowledge/agent-method-patterns.md §9.
+     SKIP uniquement si aucune surface runtime (doc / test-only). Surfaces critiques
+     (paiement / prix / stock / panier / RLS / prod / SEO indexé) = owner gate + env sûr ou read-only.
+     Un PASS pré-merge ou hors env-cible ne clôt PAS GATE 2 (vérif LIVE post-tag en env cible) —
+     cf. mémoire feedback-runtime-verification-mandatory (matrice par type de changement). -->
+
+- **Surface:** <!-- frontend / backend / seo / projection / edge / pipeline / commerce -->
+- **Environment:** <!-- DEV:3000 · Docker isolé · read-only · PROD post-tag (env cible GATE 2) -->
+- **Verdict:** <!-- PASS / FAIL / BLOCKED / SKIP (effet partiel = FAIL, jamais PASS) -->
+- **Evidence:** <!-- lien : artefact Playwright, log smoke, trace curl/HTTP, capture -->
+- **GATE 2 (post-merge, env cible) dû:** <!-- no · ou yes + env cible (ex. PROD après tag v*) -->
+- **Owner gate required:** <!-- yes / no -->
+
+---
+
 🤖 Generated with [Claude Code](https://claude.com/claude-code)

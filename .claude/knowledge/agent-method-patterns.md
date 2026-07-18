@@ -118,6 +118,66 @@ holdout 8-fichiers vert aurait livré 73 tests cassés — détail dans `audit/k
 > La boucle **garde** le gain réel et sûr, **rejette** le reste : améliorer le chiffre en cassant
 > autre chose (SEO, tests, DI) = surapprentissage, refusé. Le « keep » exige score↑ **et** holdout vert.
 
+## 9. Contrat de preuve runtime — routage VERIFY → vérificateur existant
+
+Détaille la phase **VERIFY** (§1) : une modification à **surface runtime** n'est vérifiée que
+lorsqu'on **exécute le flux touché et qu'on observe le comportement réel** — CI verte ≠ observé
+(mémoire `feedback-runtime-verification-mandatory` : GATE 1 chemin prouvé *avant* PR, GATE 2
+observation runtime *après* merge). Ce contrat **route** le diff vers un vérificateur **déjà
+existant** ; il ne crée ni skill, ni script, ni schéma, ni gate.
+
+**Routage — surface du diff → vérificateur (déjà là) → ce qu'on observe :**
+
+| Surface | Piloter avec (existant) | Observer |
+|---|---|---|
+| frontend | skills `/run` ou `/verify` · [Playwright E2E](../../frontend/playwright.config.ts) · [responsive-audit](../skills/responsive-audit/SKILL.md) · [web-vitals-audit](../skills/web-vitals-audit/SKILL.md) *(INP/LCP/CLS uniquement)* | navigation, hydratation, console, réseau, responsive 375/768/1024/1440, CWV (INP/LCP/CLS) |
+| backend | vraie requête HTTP (`curl http://localhost:3000/...`) · [prod-smoke-tests.yml](../../.github/workflows/prod-smoke-tests.yml) | status, corps, effet de bord observable |
+| seo | `curl` de la page servie (`http://localhost:3000/<page>`) + extraction du champ HTML servi (`grep -oP`) — matrice « SEO HTML » de la mémoire `feedback-runtime-verification-mandatory` | status, canonical, robots, meta, H1, JSON-LD, duplication (HTML servi) |
+| projection | [runtime-truth-audit](../skills/runtime-truth-audit/SKILL.md) — flags OFF/ON, allowlist, fallback, provenance | sortie servie selon l'état du flag |
+| edge | contrôle **read-only** des headers Caddy / Cloudflare | cache, confidentialité, `Cache-Control` single-owner |
+| pipeline | trace `RAW → WIKI → projection → consommateur` (jamais de writer RAG) | lignage de la source |
+| commerce | **sandbox + owner GO** (paiement, panier, stock, commande) | jamais de mutation PROD live |
+
+**Verdict = axe d'observation runtime** (distinct de la décision §DECIDE et du GATE 1 chemin) :
+
+| Verdict | Sens |
+|---|---|
+| `PASS` | comportement réellement observé, correct |
+| `FAIL` | comportement observé incorrect |
+| `BLOCKED` | environnement / prérequis indisponible — non observé |
+| `SKIP` | aucune surface runtime à observer (doc / test-only) |
+
+Ce verdict **alimente** le champ *Evidence after* de [continuous-improvement-global](../skills/continuous-improvement-global/SKILL.md) — il ne le remplace pas :
+`PASS` = prérequis d'un `GO` / `GO_WITH_WATCH` · `FAIL` → `FIX_AND_RETEST` ou `ROLLBACK_REQUIRED` ·
+`BLOCKED` → `OWNER_DECISION` ou prérequis manquant noté · `SKIP` seulement si rien à observer.
+
+**Crosswalk avec la mémoire (une seule vérité runtime, pas un 2ᵉ vocabulaire)** : `PASS` ↔
+`LIVE_CONFIRMED` · `FAIL` ↔ `LIVE_FAILED` **et** `LIVE_PARTIAL` (un effet seulement partiel = **pas**
+`PASS` ; il reste `FAIL` → `FIX_AND_RETEST` — ne jamais surdéclarer un demi-fix, cf. incident PR #762) ·
+`BLOCKED` ↔ `NOT_DEPLOYED` · `SKIP` = aucune surface runtime (pas d'équivalent GATE 2).
+
+**Deux gates séparés** : un `PASS` obtenu en **pré-merge** ou **hors env-cible** (DEV:3000, Docker)
+**ne clôt PAS** GATE 2. Une surface à cible PROD (SEO indexé, redirection, webhook, GA4, panier…) doit
+une vérification LIVE **distincte** en env cible après tag `v*` — env & commande **par type** dans la
+**matrice de la mémoire** `feedback-runtime-verification-mandatory` (pointer, ne pas la recopier ici).
+
+**Preuve** : la conserver dans la PR / `audit/` / artefacts Playwright / logs smoke / trace `curl` —
+**jamais** dans `.local/governance-vault/` (déprécié, `.gitignored`, refusé par pre-commit).
+
+**Boucle bornée** : modifier → vérifier → corriger → re-vérifier, avec **nombre max de tentatives**
+et **cause d'arrêt** (jamais de boucle infinie ; > 3 cycles sans convergence → `OWNER_DECISION`,
+cf. anti-patterns continuous-improvement).
+
+**Garde-fous (inchangés — restatés)** : paiement · prix runtime · stock · panier · commande · RLS ·
+migration DB destructive · SEO indexé · PROD = mode **Full** (§ risk-modes continuous-improvement) +
+environnement sûr (Docker isolé) ou vérification **read-only** + preuve complète + **décision owner
+explicite**. Un agent *prépare et vérifie* ces changements ; il ne s'auto-autorise **jamais** une
+mutation PROD, et le **même agent ne s'auto-approuve jamais** un changement critique (l'owner arbitre).
+
+**Ce n'est PAS** : un nouveau skill `/verify` (les built-ins `/verify` + `/run` existent déjà) · un
+script dupliqué · un nouveau schéma JSON / registry · Percy · une règle de plus dans `CLAUDE.md`.
+Pointeur mince uniquement, zéro autorité.
+
 ---
 
 _Non-canon. Pour toute règle qui fait foi, voir la source pointée (vault · `.spec/00-canon/` ·
