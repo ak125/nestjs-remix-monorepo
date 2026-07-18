@@ -69,6 +69,7 @@
     "audit:served-write-ratchet:refresh": "tsx scripts/audit/check-served-content-write-sinks-ratchet.ts --refresh",
     "audit:served-write-ratchet:test": "tsx --test scripts/audit/check-served-content-write-sinks-ratchet.test.ts",
     "audit:editorial-sinks:test": "tsx --test scripts/audit/editorial-authority-sinks.test.ts",
+    "test:prod-rollback": "node --test scripts/ci/prod-rollback.test.mjs",
     "audit:rag-authority-rule:test": "ast-grep test --test-dir scripts/audit/__fixtures__/rag-authority --skip-snapshot-tests",
     "audit:rag-authority-read-ratchet": "tsx scripts/audit/check-rag-authority-read-ratchet.ts",
     "audit:rag-authority-read-ratchet:json": "tsx scripts/audit/check-rag-authority-read-ratchet.ts --json",
