@@ -134,9 +134,9 @@ existant** ; il ne crée ni skill, ni script, ni schéma, ni gate.
 | backend | vraie requête HTTP (`curl http://localhost:3000/...`) · [prod-smoke-tests.yml](../../.github/workflows/prod-smoke-tests.yml) | status, corps, effet de bord observable |
 | seo | `curl` de la page servie (`http://localhost:3000/<page>`) + extraction du champ HTML servi (`grep -oP`) — matrice « SEO HTML » de la mémoire `feedback-runtime-verification-mandatory` | status, canonical, robots, meta, H1, JSON-LD, duplication (HTML servi) |
 | projection | [runtime-truth-audit](../skills/runtime-truth-audit/SKILL.md) — flags OFF/ON, allowlist, fallback, provenance | sortie servie selon l'état du flag |
-| edge | contrôle **read-only** des headers Caddy / Cloudflare | cache, confidentialité, `Cache-Control` single-owner |
-| pipeline | trace `RAW → WIKI → projection → consommateur` (jamais de writer RAG) | lignage de la source |
-| commerce | **sandbox + owner GO** (paiement, panier, stock, commande) | jamais de mutation PROD live |
+| edge | `curl -I` **read-only** de l'URL servie · [config/caddy/Caddyfile](../../config/caddy/Caddyfile) · invariant `Cache-Control` single-owner (arbitre `entry.server`) | cache, confidentialité, `Cache-Control` des headers servis |
+| pipeline | trace `RAW → WIKI → projection → consommateur` (jamais de writer RAG) — gates du contrat d'export WIKI (`quality-gates` / AEC-hash / slug-uniqueness) | lignage & provenance de la source |
+| commerce | **sandbox + owner GO** — matrice « Panier » / « Paiement » de la mémoire `feedback-runtime-verification-mandatory` (sandbox paiement impératif) | flux réel en env sûr ; jamais de mutation PROD live |
 
 **Verdict = axe d'observation runtime** (distinct de la décision §DECIDE et du GATE 1 chemin) :
 
