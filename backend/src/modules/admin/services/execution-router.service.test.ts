@@ -101,9 +101,6 @@ jest.mock('./r8-vehicle-enricher.service', () => ({
 jest.mock('./r7-brand-enricher.service', () => ({
   R7BrandEnricherService: class {},
 }));
-jest.mock('./r1-enricher.service', () => ({
-  R1EnricherService: class {},
-}));
 jest.mock('./r4-content-enricher.service', () => ({
   R4ContentEnricherService: class {},
 }));
@@ -396,5 +393,37 @@ describe('ExecutionRouterService — R3_CONSEILS executable path removed (B2/B6,
 
   it('9. registry has no executable R3_CONSEILS entry (RAG producer removed)', () => {
     expect(EXECUTION_REGISTRY[RoleId.R3_CONSEILS]).toBeUndefined();
+  });
+});
+
+describe('ExecutionRouterService — R1_ROUTER executable path removed (Tranche-B R1, ADR-031/046)', () => {
+  beforeEach(resetMocks);
+
+  it('10. R1_ROUTER non-dry dispatch → explicit failed (RAG writer R1EnricherService deleted)', async () => {
+    setTable('pieces_gamme', {
+      single: () => Promise.resolve({ data: null, error: null }),
+    });
+    const enrichSingle = jest.fn();
+    const service = makeService({ R1EnricherService: { enrichSingle } });
+
+    const result = await service.execute({
+      roleId: 'R1_ROUTER',
+      targetIds: ['7'],
+      dryRun: false,
+    });
+
+    // Same explicit-fail surface as the R3_CONSEILS precedent: the registry entry is
+    // removed, so execute() short-circuits at "No registry entry for role" →
+    // blocked_no_write + per-target failed, never a silent skip. No enricher resolved.
+    expect(result.mode).toBe('blocked_no_write');
+    expect(result.results[0].status).toBe('failed');
+    expect(String((result.results[0] as { error?: string }).error)).toMatch(
+      /No registry entry for role: R1_ROUTER/,
+    );
+    expect(enrichSingle).not.toHaveBeenCalled();
+  });
+
+  it('11. registry has no executable R1_ROUTER entry (RAG producer removed)', () => {
+    expect(EXECUTION_REGISTRY[RoleId.R1_ROUTER]).toBeUndefined();
   });
 });

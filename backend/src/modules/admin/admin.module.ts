@@ -105,7 +105,6 @@ import { AdminFeatureFlagsController } from './controllers/admin-feature-flags.c
 // PipelineChainPollerService SUPPRIME — dependait de content-refresh queue
 // RagCatchupService SUPPRIME — catch-up auto remplace par skills /content-gen
 import { R3ImagePromptService } from './services/r3-image-prompt.service'; // 🎨 R3 Image Prompts (template-based, 0-LLM)
-import { R1ContentFromRagService } from './services/r1-content-from-rag.service'; // 📝 R1 Content from RAG (0-LLM, template)
 import { R1ImagePromptService } from './services/r1-image-prompt.service'; // 🎨 R1 Image Brief generator (brief-driven, 0-LLM)
 import { R8VehicleEnricherService } from './services/r8-vehicle-enricher.service'; // 🚗 R8 Vehicle page enricher (RAG + diversity scoring)
 import { R7BrandEnricherService } from './services/r7-brand-enricher.service'; // 🏭 R7 Brand page enricher (RAG + diversity scoring)
@@ -139,7 +138,6 @@ import { AdminDbGovernanceController } from './controllers/admin-db-governance.c
 import { AdminPipelineController } from './controllers/admin-pipeline.controller'; // 🚀 Unified pipeline execution
 import { ExecutionRouterService } from './services/execution-router.service'; // 🚀 Enricher dispatch router
 import { R2EnricherService } from './services/r2-enricher.service'; // 🏗️ R2 Product enricher (WriteGate-native)
-import { R1EnricherService } from './services/r1-enricher.service'; // 🏗️ R1 Router enricher (0-LLM, RAG+KP)
 import { R4ContentEnricherService } from './services/r4-content-enricher.service'; // 🏗️ R4 Reference enricher (0-LLM audit + lint)
 import { R4LintGatesService } from './services/r4-lint-gates.service'; // 🚦 R4 content lint gates LG1-LG8
 import { InternalPipelineController } from './controllers/internal-pipeline.controller'; // 🚀 Internal pipeline (X-Internal-Key auth)
@@ -291,7 +289,6 @@ import { SeoControlRefreshProcessor } from './processors/seo-control-refresh.pro
     R1KeywordPlanGatesService, // 🚦 R1 Keyword plan gates KA1-KA6 (R1 pipeline + keyword-planner R1 mode)
     R1KeywordPlanBatchService, // 🔄 R1 KP batch 0-LLM generator
     R3ImagePromptService, // 🎨 R3 Image Prompts (template-based, 0-LLM)
-    R1ContentFromRagService, // 📝 R1 Content from RAG (0-LLM)
     R1ImagePromptService, // 🎨 R1 Image Brief generator
     R8VehicleEnricherService, // 🚗 R8 Vehicle page enricher (RAG + diversity scoring, 0-LLM)
     R7BrandEnricherService, // 🏭 R7 Brand page enricher (RAG + diversity scoring, 0-LLM)
@@ -301,7 +298,6 @@ import { SeoControlRefreshProcessor } from './processors/seo-control-refresh.pro
     // AdminSupplierStatsService — not ready for prod
     ExecutionRouterService, // 🚀 Unified enricher dispatch router (ExecutionRegistry-based)
     R2EnricherService, // 🏗️ R2 Product enricher (WriteGate-native, 0-LLM)
-    R1EnricherService, // 🏗️ R1 Router enricher (0-LLM, RAG+KP → r1_gamme_slots)
     R4ContentEnricherService, // 🏗️ R4 Reference enricher (0-LLM audit + lint gates)
     R4LintGatesService, // 🚦 R4 content lint gates LG1-LG8
     // PR-SBD-1 Task 4 — SEO Business Control Dashboard
