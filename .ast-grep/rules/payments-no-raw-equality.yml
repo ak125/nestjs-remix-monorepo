@@ -1,6 +1,10 @@
 id: payments-no-raw-equality
 language: typescript
-severity: warning
+# Promoted warning -> error (PR-C, 2026-07-19): payments/** corpus verified CLEAN
+# (0 findings via `npx ast-grep scan --config sgconfig.yml --rule <this> backend/src`),
+# per sgconfig policy "promote to error once the codebase is clean". Payments HMAC is an
+# owner-STOP zone (.claude/rules/payments.md: timingSafeEqual obligatoire, JAMAIS ===).
+severity: error
 message: |
   Signature/HMAC comparison in payments/* must use crypto.timingSafeEqual,
   not === or !==. Plain string equality is vulnerable to timing attacks.

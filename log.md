@@ -579,3 +579,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/p2-r3c-projection-r3-mapper`
 - **Décision** : feat(seo-projection): add dark r3 projection mapper (P2-R3-C, pure)
 - **Sortie** : PR #1286 | commits 645e33eea
+
+## 2026-07-18 — feat/runtime-verification-contract (auto)
+
+- **Branche** : `feat/runtime-verification-contract`
+- **Décision** : docs(agent-method): add thin runtime-verification proof contract (§9 + PR template)
+- **Sortie** : PR #1293 | commits b06e869a9
