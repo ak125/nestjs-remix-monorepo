@@ -21,9 +21,13 @@ Criteria (each is independent, returns PASS/FAIL with evidence) :
   C3 — diag-canon export à jour :
        - automecanik-wiki/exports/diag-canon-slugs.json + diag-canon.json exist
        - ≥ 5 distinct slugs (validity, read from diag-canon-slugs.json)
-       - last commit on diag-canon.json < 7 days old (liveness — this file
-         carries `generated_at` so it is re-committed every run; the slugs
-         array is content-stable and not a reliable freshness signal)
+       - export cron is ALIVE : the diag-canon-slugs-export.yml workflow had a
+         successful run < 7 days ago. Liveness is measured from THIS repo's
+         GitHub Actions run-history, NOT from commit recency: the export now only
+         commits when the symptom→system map actually changes (no more nightly
+         `generated_at`-only churn), so commit age is no longer a liveness signal.
+         Local mode (no GITHUB_TOKEN) reports liveness as UNVERIFIED and asserts
+         validity only — the authoritative liveness check runs in CI.
 
   C4 — fiches gamme migrées :
        - 0 hits for `entity_data.symptoms:` or `^symptoms:` in
@@ -68,6 +72,9 @@ import os
 import re
 import subprocess
 import sys
+import time
+import urllib.error
+import urllib.request
 from pathlib import Path
 
 
@@ -77,7 +84,12 @@ DEFAULT_WIKI_PATH = Path(os.environ.get("AUTOMECANIK_WIKI_PATH", "/opt/automecan
 DEFAULT_RAG_PATH = Path(os.environ.get("AUTOMECANIK_RAG_PATH", "/opt/automecanik/rag"))
 DEFAULT_MONOREPO_PATH = Path(os.environ.get("AUTOMECANIK_MONOREPO_PATH", "/opt/automecanik/app"))
 
-EXPORT_FRESHNESS_DAYS = 7  # C3 : commit < 7 days = "alive"
+EXPORT_FRESHNESS_DAYS = 7  # C3 : last SUCCESSFUL export run < 7 days = "alive"
+# C3 liveness is measured from this workflow's GitHub Actions run-history (the
+# authoritative "did the scheduled export run" signal), decoupled from content
+# commit recency (the export is now idempotent on `generated_at`).
+EXPORT_WORKFLOW_FILE = "diag-canon-slugs-export.yml"
+DEFAULT_GITHUB_REPO = "ak125/nestjs-remix-monorepo"
 
 
 # ── Criteria ─────────────────────────────────────────────────────────────────
@@ -123,16 +135,101 @@ def c2_validator_ci_active(monorepo_path: Path) -> tuple[bool, str]:
     return True, f"{workflow.relative_to(monorepo_path)} present and blocking ✓"
 
 
-def c3_export_diag_canon_slugs_fresh(wiki_path: Path) -> tuple[bool, str]:
-    """C3 — diag-canon export is alive: ≥ 5 slugs present AND it ran < 7 days ago.
+def export_workflow_liveness(
+    repo: str | None = None,
+    token: str | None = None,
+    now: datetime.datetime | None = None,
+    attempts: int = 3,
+) -> tuple[bool | None, str]:
+    """Liveness of the nightly diag-canon export, read from THIS repo's GitHub
+    Actions run-history — the authoritative "did the SCHEDULED job run" signal,
+    decoupled from content-commit recency.
+
+    Only `event=schedule` runs count: a manual `workflow_dispatch` must not mask a
+    dead nightly cron (a one-off manual run would otherwise read as "alive" for up
+    to EXPORT_FRESHNESS_DAYS). Transient API errors are retried (bounded, with
+    backoff) before we fail-closed, so a single blip does not spuriously red a PR.
+
+    Returns (status, detail):
+      (True,  detail) — a successful SCHEDULED run happened < EXPORT_FRESHNESS_DAYS ago.
+      (False, detail) — no recent successful scheduled run, OR the API query kept
+                        failing (after retries) while a token WAS present
+                        (fail-closed: never mask a dead cron).
+      (None,  detail) — no token (local mode). Caller MUST treat liveness as
+                        UNVERIFIED and say so explicitly (authoritative = CI).
+    """
+    token = token or os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
+    if not token:
+        return None, (
+            "no GITHUB_TOKEN/GH_TOKEN — CI run-history not queryable "
+            "(run in CI for the authoritative liveness check)"
+        )
+    repo = repo or os.environ.get("GITHUB_REPOSITORY") or DEFAULT_GITHUB_REPO
+    now = now or datetime.datetime.now(tz=datetime.timezone.utc)
+    url = (
+        f"https://api.github.com/repos/{repo}/actions/workflows/"
+        f"{EXPORT_WORKFLOW_FILE}/runs?status=success&event=schedule&per_page=1"
+    )
+    req = urllib.request.Request(
+        url,
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+            "User-Agent": "wiki-readiness-check",
+        },
+    )
+    n = max(1, attempts)
+    last_err = ""
+    payload = None
+    for attempt in range(1, n + 1):
+        try:
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                payload = json.loads(resp.read().decode("utf-8"))
+            break
+        except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError) as e:
+            last_err = f"{type(e).__name__}: {e}"
+            if attempt < n:
+                time.sleep(min(2 ** (attempt - 1), 4))  # 1s, 2s, 4s … capped
+    if payload is None:
+        # Token present but the API kept erroring: fail-closed rather than
+        # silently pass a liveness gate (CLAUDE.md — no silent fallback).
+        return False, f"GitHub API query failed after {n} attempts ({last_err}) — fail-closed"
+
+    runs = payload.get("workflow_runs") or []
+    if not runs:
+        return False, (
+            f"no successful scheduled run of {EXPORT_WORKFLOW_FILE} found via API "
+            "(nightly cron may be dead/disabled)"
+        )
+    created = runs[0].get("created_at") or runs[0].get("run_started_at")
+    try:
+        started = datetime.datetime.fromisoformat(str(created).replace("Z", "+00:00"))
+    except (TypeError, ValueError):
+        return False, f"API run record has unparseable timestamp: {created!r}"
+    age_days = (now - started).total_seconds() / 86_400.0
+    if age_days >= EXPORT_FRESHNESS_DAYS:
+        return False, (
+            f"last successful scheduled export run was {age_days:.1f}d ago "
+            f"(expected < {EXPORT_FRESHNESS_DAYS}d) — cron may be dead"
+        )
+    return True, f"last successful scheduled export run {age_days:.1f}d ago"
+
+
+def c3_export_diag_canon_slugs_fresh(
+    wiki_path: Path, liveness_fn=export_workflow_liveness
+) -> tuple[bool, str]:
+    """C3 — diag-canon export is alive: ≥ 5 slugs present AND the export cron ran
+    successfully < EXPORT_FRESHNESS_DAYS ago.
 
     Content validity (≥ 5 distinct slugs) is read from the legacy array
-    `diag-canon-slugs.json`. Freshness (liveness) is measured on
-    `diag-canon.json` instead: the flat-map artifact carries a `generated_at`
-    field, so it is re-committed on EVERY nightly run. The legacy array is only
-    re-committed when the slug set itself changes — so its commit age is NOT a
-    reliable "export ran recently" signal (a healthy nightly emitting identical
-    slugs would never re-commit it, ageing out C3 while the export is fine).
+    `diag-canon-slugs.json`. Liveness is measured from the export workflow's
+    GitHub Actions run-history (see `export_workflow_liveness`), NOT from commit
+    recency: the export is now idempotent on `generated_at` (it only commits when
+    the symptom→system map changes), so commit age no longer proves the cron ran.
+    In local mode (no GITHUB_TOKEN) liveness cannot be queried, so C3 asserts
+    validity only and labels liveness UNVERIFIED — a documented, observable skip
+    (CLAUDE.md no-silent-fallback exception); the authoritative check runs in CI.
     """
     slugs_file = wiki_path / "exports" / "diag-canon-slugs.json"
     fresh_file = wiki_path / "exports" / "diag-canon.json"
@@ -151,21 +248,19 @@ def c3_export_diag_canon_slugs_fresh(wiki_path: Path) -> tuple[bool, str]:
     if len(slugs) < 5:
         return False, f"FAIL: only {len(slugs)} distinct slugs (expected ≥ 5)"
 
-    # Freshness measured on diag-canon.json (re-committed every run via
-    # `generated_at`), NOT the content-stable legacy array.
-    try:
-        result = subprocess.run(
-            ["git", "-C", str(wiki_path), "log", "-1", "--format=%ct", "--", "exports/diag-canon.json"],
-            capture_output=True, text=True, check=True
+    # Liveness via CI run-history (decoupled from content commits).
+    live_ok, detail = liveness_fn()
+    if live_ok is None:
+        # Local mode: cannot verify the CI cron. Assert validity only and label
+        # liveness explicitly (observable, not a silent pass).
+        sys.stderr.write(f"[C3] liveness UNVERIFIED: {detail}\n")
+        return True, (
+            f"{len(slugs)} slugs ✓ | liveness UNVERIFIED locally ({detail}) — "
+            f"authoritative check = CI run-history"
         )
-        ts = int(result.stdout.strip())
-        last_commit = datetime.datetime.fromtimestamp(ts, tz=datetime.timezone.utc)
-        age = datetime.datetime.now(tz=datetime.timezone.utc) - last_commit
-        if age.days >= EXPORT_FRESHNESS_DAYS:
-            return False, f"FAIL: last export commit was {age.days}d ago (expected < {EXPORT_FRESHNESS_DAYS}d)"
-        return True, f"{len(slugs)} slugs; diag-canon.json last commit {age.days}d ago ✓"
-    except (subprocess.CalledProcessError, ValueError) as e:
-        return False, f"FAIL: cannot read git log: {e}"
+    if not live_ok:
+        return False, f"FAIL: export liveness — {detail}"
+    return True, f"{len(slugs)} slugs; export workflow {detail} ✓"
 
 
 def c4_fiches_migrated(wiki_path: Path) -> tuple[bool, str]:
