@@ -6,106 +6,93 @@
 
 ---
 
-## Contrat d'exécution (comportement de l'agent)
+## Contrat d'exécution (noyau permanent — 9 invariants)
 
-Repo **gouverné** (ADRs, contracts, registries déterministes, ratchets CI). L'assistant
-**ÉTEND** l'existant — **JAMAIS** de système parallèle, source de vérité dupliquée, ni
-abstraction spéculative. Objectif permanent : cohérence archi · entropie minimale ·
-changements déterministes & revue-ables · périmètre minimal.
+> Repo **gouverné** (ADRs, contracts, registries déterministes, ratchets CI). L'assistant
+> **ÉTEND** l'existant — **JAMAIS** de système parallèle, source de vérité dupliquée, ni
+> abstraction spéculative. Objectif permanent : cohérence archi · entropie minimale ·
+> changements déterministes & revue-ables · périmètre minimal.
 
-`[CRITICAL]` **NEVER invent architecture already governed elsewhere** : si une convention /
-structure existe (vault, `.spec`, registry, `.claude/knowledge`), l'**étendre**, jamais en
-réinventer une locale (pattern de dérive #1 des agents).
+**1. Analyser AVANT muter** `[CRITICAL]` — mode read-only par défaut ; cartographie avant mutation.
+Ordre de lecture **registry-first** (détail §"Mémoire codebase") : `audit/registry/canonical.json`
+(via `jq`, jamais `cat`) → `REPO_MAP.md` → `.claude/knowledge/` → **grep en dernier recours**.
+**NEVER** commencer par `Grep`/`Glob`, **NEVER** créer un fichier avant cartographie, **NEVER**
+proposer avant audit. L'état réel du repo (`git show origin/main:<chemin>`) **prime** sur toute
+doc/skill/ADR ; vérifier la fraîcheur d'un checkout externe
+(`scripts/ops/check-repo-freshness.sh`) avant de conclure (incident 2026-07-02).
 
-### Mode par défaut = analyser AVANT muter `[CRITICAL]`
+**2. Étendre AVANT créer** `[CRITICAL]` — **NEVER invent architecture already governed elsewhere** :
+si une convention/structure existe (vault, `.spec`, registry, `.claude/knowledge`), l'**étendre**,
+jamais en réinventer une locale (pattern de dérive #1 des agents). Pas de SoT dupliquée ni
+d'abstraction spéculative ; **rule-of-three** (pas de nouvelle abstraction tant que le pattern
+n'apparaît pas dans 3+ fichiers distincts). Avant toute création : équivalent inexistant ? capacité
+non déjà fournie ? ownership + bounded-context définis ?
 
-Cartographie d'abord, mutation ensuite. Ordre de lecture obligatoire : voir §"Mémoire codebase"
-(registry → REPO_MAP → knowledge → ADR vault → patterns du bounded context → **grep en dernier recours**).
+**3. Corriger la CAUSE RACINE** `[CRITICAL]` — solution structurelle, **zéro bricolage** (canon vault
+`rules-engineering-quality` Q1-Q4 / `rules-ai-antipatterns` AP-*). Patterns interdits : registry
+ad-hoc, cache caché, schéma dupliqué, magic constant, runtime guessing, filler SEO générique,
+feature flag non gouverné. **No silent fallback** : tout repli (fail-open, cache/noindex/skip
+implicite) INTERDIT sauf explicitement gouverné **ET** observable (cause directe de plusieurs incidents).
 
-- **NEVER** commencer par `Grep` / `Glob`. **NEVER** créer un fichier avant cartographie.
-  **NEVER** proposer avant audit. Vérifier l'existant avant d'inventer (§dédiée, non-négociable).
-- `[HIGH]` **Fraîcheur avant analyse** : avant de conclure sur un repo externe (wiki, vault) ou
-  un checkout, vérifier qu'il n'est pas EN RETARD sur `origin/main`
-  (`scripts/ops/check-repo-freshness.sh <repo> origin/main`). Conclure sur un checkout périmé =
-  cause directe d'analyses fausses (incident 2026-07-02). En cas de doute, l'état réel du repo
-  (`git show origin/main:<chemin>`) prime sur toute doc / skill dérivé.
+**4. RAW → WIKI → DB = vérité ; RAG = chatbot only** `[HIGH]` — ADR-031. `raw` = brut, `wiki` =
+connaissance sourcée/lintée/validée humainement. **Aucun consommateur (RAG/SEO/blog/chatbot/diagnostic)
+ne lit `raw`.** RAG = couche **consommatrice**, **ZÉRO autorité d'écriture contenu** (ADR-046). Un
+producteur RAG→contenu = défaut à **retirer + re-sourcer WIKI**.
 
-### Repository Control Plane + artefacts générés `[HIGH]`
+**5. Jamais inventer mots-clés ni URL** `[HIGH]` — pas d'invention LLM, pas de filler SEO générique ;
+le top-kw brut de `__seo_keywords` = signal de demande/comptage, **jamais** un terme produit (mapping
+contaminé).
 
-ADR-058/062. **L1** data auto (`audit/registry/*.json`) + **L2** overlay manuel
-(`.spec/00-canon/repository-registry/*.yaml`) = **SoT (le couple)** ; **L3**
-`audit/registry/canonical.json` = projection générée. Détail : `packages/registry/README.md`.
+**6. Préserver URL legacy + contrats SEO** `[HIGH]` — **no URL change ever**. SoT des rôles =
+`.spec/00-canon/role-matrix.md` (v5 figée : R1 routage gamme/compat, R2 transactionnel produit, R8
+fiche véhicule) ; préserver `catalog_signature` (ADR-066, gate structurel avant diversité texte),
+génération structural-first, composition vehicle-aware, relations canoniques. **NEVER** : filler SEO,
+amplification de duplicate-content, modif meta_title/desc/H1 optimisés sans autorisation, suppression
+auto de page.
 
-`[HIGH]` **Generated artifacts are projections, never sources of truth** : ne jamais éditer un
-artefact généré (`canonical.json`, blocs `<!-- AUTO-GENERATED -->`, `REPO_MAP.md`, canon mirrors
-hash-lockés) — corriger L1+L2 puis rebuild. AI Operating Map (interop des surfaces IA, non-canon,
-non orchestrateur) : `.spec/00-canon/ai-registry/agent-operating-map.yaml` — mutation autoritaire
-= vault ADR requis.
+**7. Vérification proportionnée au risque + format de sortie** `[HIGH]` — Evidence-before /
+Evidence-after ; honnêteté de couverture (Vérifié / Partiellement vérifié / Non-vérifiable) ; verdict
+par défaut **≠** « COMPLETE » / « DONE » ; **coverage manifest obligatoire**. Contrat de sortie =
+`.claude/canon-mirrors/agent-exit-contract.md` (hash-locké, hors-contexte volontaire — **ne pas
+recopier**). Artefacts générés = **projections, jamais éditées à la main** (`canonical.json`, blocs
+`<!-- AUTO-GENERATED -->`, `REPO_MAP.md`, canon mirrors hash-lockés) : corriger L1+L2 puis rebuild.
 
-### Heuristiques de décision (en cas de doute) `[HIGH]`
+**8. Distinguer présent / branché / activé / réellement servi** `[HIGH]` — ne jamais conclure « en
+prod » depuis du code présent ni depuis une vieille PR. **Runtime-awareness** : toute mutation runtime
+évalue observabilité · rollout · impact cache · queues (BullMQ) · rollback · feature flags (réutiliser
+l'observabilité interne existante — `rpc_*_alerts_v1`, `__seo_event_log`, stack CWV/RUM — avant tout
+canary externe). Vocabulaire déploiement strict : merge `main` → **PREPROD** container CI uniquement ;
+tag `v*` → **PROD** ; jamais annoncer « déployé en PROD » sur un merge `main` (détail §Vocabulaire
+déploiement + `.claude/rules/deployment.md`).
 
-Dans l'ordre : 1) étendre l'existant · 2) préserver le déterminisme · 3) réduire l'entropie ·
-4) minimiser le blast radius · 5) préférer l'observabilité.
+**9. STOP owner** `[CRITICAL]` (accord **nominatif** requis, jamais d'auto-escalade) — **paiement**
+(module `payments/`, Paybox/SystemPay/Cyberplus, `PAYBOX_*`/`SYSTEMPAY_*`, `.claude/rules/payments.md`),
+**prix/stock** runtime, **panier/commande**, **RLS + DB destructive** (`DROP`/`TRUNCATE`, migration
+irréversible sans validation), **SEO indexé**, **déploiement PROD** (tag `v*`). Jamais de bypass de
+feature flag, suppression de guard/gate CI, ni désactivation d'observabilité.
 
 ### Discipline de périmètre `[HIGH]`
 
 Rester strictement dans le scope demandé. **INTERDIT** : refactor opportuniste, cleanup hors
 bounded-context, upgrade de dépendance sans accord explicite, reformatage de fichiers non touchés,
 réécriture archi, changement de comportement silencieux. Un seul « fais-le » = le scope nommé
-uniquement, jamais d'auto-escalade. Chaque changement préserve la rétro-compat (sauf demande
-contraire) et minimise le blast radius.
-
-### Anti-bricolage & patterns interdits `[CRITICAL]`
-
-Canon : vault `rules-engineering-quality.md` (Q1-Q4, solution structurelle vs bricolage) +
-`rules-ai-antipatterns.md` (AP-*). Patterns interdits : registry ad-hoc, cache caché, schéma
-dupliqué, magic constant, runtime guessing, filler SEO générique, feature flag non gouverné.
-
-- `[CRITICAL]` **No silent fallback** : tout repli (fail-open, fallback implicite, cache / noindex /
-  skip silencieux) est INTERDIT sauf explicitement gouverné ET observable (cause directe de
-  plusieurs incidents).
-- `[HIGH]` **Prefer extension over creation** : étendre un module / bounded-context existant avant
-  de créer un fichier. Avant toute création : équivalent inexistant ? capacité non déjà fournie ?
-  ownership + bounded-context définis ?
+uniquement, jamais d'auto-escalade. Chaque changement préserve la rétro-compat (sauf demande contraire)
+et minimise le blast radius. Tie-break en cas de doute : 1) étendre l'existant · 2) préserver le
+déterminisme · 3) réduire l'entropie · 4) minimiser le blast radius · 5) préférer l'observabilité.
 
 Gardes mécaniques : `.ast-grep/rules/*.yml`, `.husky/pre-commit`, `scripts/agents/validate-agents-md.sh`.
 
-### Sécurité opérationnelle `[CRITICAL]`
+### Repository Control Plane + règles domaine (pointers)
 
-Mode par défaut = analyse en lecture seule.
-
-- **NEVER** : commande destructive (`DROP` / `TRUNCATE`), migration irréversible sans validation,
-  bypass de feature flag, désactivation d'observabilité, suppression de guard / gate CI.
-- **NEVER** modifier le module `payments/` (Paybox / SystemPay / Cyberplus, `PAYBOX_*` /
-  `SYSTEMPAY_*`) sans demande explicite nominative — voir `.claude/rules/payments.md`.
-- `[HIGH]` **Runtime-awareness** : toute mutation runtime DOIT évaluer observabilité · rollout ·
-  impact cache · impact queues (BullMQ) · rollback · feature flags. Réutiliser l'observabilité
-  interne existante (`rpc_*_alerts_v1`, `__seo_event_log`, stack CWV / RUM) avant tout canary externe.
-- Topologie deploy DEV / PREPROD / PROD : voir §Vocabulaire déploiement + `.claude/rules/deployment.md`.
-
-### Connaissance : RAW → WIKI → exports → consumers `[HIGH]`
-
-ADR-031 (vault). `automecanik-raw` et `automecanik-wiki` sont des **repos externes** (comme le
-vault). `raw` = donnée brute ; `wiki` = connaissance sourcée, lintée, validée humainement.
-**Aucun consommateur (RAG, SEO, blog, chatbot, diagnostic) ne lit `raw` directement.** RAG =
-couche **consommatrice**, jamais source de vérité.
-
-### Invariants SEO R* `[HIGH]`
-
-SoT des rôles : `.spec/00-canon/role-matrix.md` (v5 figée). Les rôles R* **ne sont pas** des
-générateurs de contenu génériques (R1 routage gamme / compatibilité, R2 transactionnel produit,
-R8 fiche véhicule). Préserver : `catalog_signature` (ADR-066, gate structurel avant diversité
-texte), génération structural-first, composition vehicle-aware, relations canoniques.
-
-- **NEVER** : filler SEO générique, amplification de duplicate-content, modification de
-  meta_title / desc / H1 optimisés sans autorisation, suppression auto de page, usage du top-kw
-  brut de `__seo_keywords` comme terme produit (mapping contaminé).
-
-### Format de sortie `[HIGH]`
-
-Contrat de sortie = `.claude/canon-mirrors/agent-exit-contract.md` (hash-locké, hors-contexte
-volontaire — **ne pas recopier**). Anti-overclaim : verdict par défaut ≠ « COMPLETE » / « DONE »,
-coverage manifest obligatoire.
+- **Repository Control Plane** (ADR-058/062) : **L1** data auto (`audit/registry/*.json`) + **L2**
+  overlay manuel (`.spec/00-canon/repository-registry/*.yaml`) = **SoT (le couple)** ; **L3**
+  `audit/registry/canonical.json` = projection générée. Détail : `packages/registry/README.md`. AI
+  Operating Map (interop des surfaces IA, non-canon, non orchestrateur) :
+  `.spec/00-canon/ai-registry/agent-operating-map.yaml` — mutation autoritaire = vault ADR requis.
+- **Règles domaine** `.claude/rules/` (référencées par bounded-context) : `backend.md` (NestJS),
+  `frontend.md` (RR8), `payments.md` (zone STOP), `deployment.md` (infra — charger AVANT toute action
+  infra), `context7.md` (API/syntaxe lib externe), `security-hooks.md` (édition, advisory),
+  `agent-doc-search.md` (recherche registry-first — cf. invariant 1).
 
 ---
 
@@ -221,6 +208,8 @@ séparément (fermeture gouvernée).
 
 ---
 
-_Dernière mise à jour : 2026-07-04 (slim P1/P3 : sections référentielles condensées en pointers,
-0 non-négociable retiré)._
+_Dernière mise à jour : 2026-07-19 (PR-A2 : contrat d'exécution consolidé 49 règles → 9 invariants ;
+duplication retirée, 0 non-négociable supprimé — validé par la suite d'éval
+`audit/agent-instructions-eval-suite-2026-07-18.md` 22/22 + coverage manifest MECE
+`audit/claude-md-kernel-candidate-2026-07-18.md`)._
 _Contrat d'exécution + pointer — pour toute règle canon, voir le vault._
