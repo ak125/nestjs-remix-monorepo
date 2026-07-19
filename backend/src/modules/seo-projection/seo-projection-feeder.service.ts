@@ -65,6 +65,15 @@ export class SeoProjectionFeederService implements OnModuleInit {
       this.logger.log(
         'SEO_PROJECTION_R1_FEED_ENABLED!=true — feeder R1 non planifié (flag OFF, rollout owner-gated).',
       );
+      // Réconciliation fail-safe OFF : « désactivé » DOIT signifier « aucun
+      // repeatable ne peut se déclencher », pas seulement « n'enregistre rien de
+      // neuf ». Un flag basculé ON→OFF laissait vivre le repeatable nocturne
+      // (le nettoyage ne tournait que sur le chemin d'activation) → le writer
+      // continuait de tirer malgré OFF. On dérégistre tout résidu ici, à chaque
+      // boot, de façon observable. Fire-and-forget (`void`) : `onModuleInit`
+      // reste non-bloquant (backend.md) ; Bull = Redis local (local-fast OK,
+      // pas d'I/O distante Supabase).
+      void this.deregisterResidualRepeatable();
       return;
     }
     this.logger.log(
@@ -309,12 +318,35 @@ export class SeoProjectionFeederService implements OnModuleInit {
     }
   }
 
-  private async removeStaleRepeatableJob(): Promise<void> {
+  /**
+   * Réconciliation OFF observable : prouve, à chaque boot d'un feeder désactivé,
+   * qu'AUCUN repeatable n'est vivant — et le dit dans les logs. Transforme le
+   * « SSH en PROD + inspection Redis d'un repeatable résiduel » (vérif manuelle)
+   * en invariant de code appliqué au démarrage. Pas de repli silencieux : on
+   * journalise le résultat dans les deux cas (résidu supprimé vs rien à faire).
+   */
+  private async deregisterResidualRepeatable(): Promise<void> {
+    const removed = await this.removeStaleRepeatableJob();
+    if (removed > 0) {
+      this.logger.warn(
+        `🧹 Feeder R1 OFF — ${removed} repeatable résiduel supprimé (activation passée non nettoyée) : le writer nocturne ne se déclenchera plus.`,
+      );
+    } else {
+      this.logger.log(
+        '✅ Feeder R1 OFF — aucun repeatable résiduel (rien à nettoyer).',
+      );
+    }
+  }
+
+  /** Supprime les repeatables feeder obsolètes ; retourne le nombre supprimé (0 = aucun). */
+  private async removeStaleRepeatableJob(): Promise<number> {
+    let removed = 0;
     try {
       const jobs = await this.feedQueue.getRepeatableJobs();
       for (const job of jobs) {
         if (job.name === PROJECTION_FEED_JOB) {
           await this.feedQueue.removeRepeatableByKey(job.key);
+          removed += 1;
           this.logger.log(
             `🗑️ Repeatable feeder R1 obsolète supprimé: ${job.key}`,
           );
@@ -325,6 +357,7 @@ export class SeoProjectionFeederService implements OnModuleInit {
         `Énumération des repeatables feeder impossible: ${getErrorMessage(err)}`,
       );
     }
+    return removed;
   }
 
   /** 02:00 UTC = avant la régénération sitemap (03:00) → projection fraîche avant le sitemap. */
