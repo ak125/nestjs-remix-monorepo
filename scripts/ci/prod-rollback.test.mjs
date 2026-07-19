@@ -57,13 +57,17 @@ case "$1" in
   push) [ "\${STUB_PUSH_FAIL:-0}" = "1" ] && exit 1 || exit 0 ;;
   exec)
     shift 2
+    # SSR probe headers: wget --server-response -O /dev/null (body discarded)
     if printf '%s' "$*" | grep -q -- '--server-response'; then
       printf '%s\\n' "$STUB_SSR_HEADERS" >&2
       exit 0
+    # health: wget -qO- .../health
     elif printf '%s' "$*" | grep -q -- '/health'; then
       printf '%s\\n' "$STUB_HEALTH"
       exit 0
-    elif printf '%s' "$*" | grep -q -- 'cat'; then
+    # SSR probe body: wget -qO- .../ (no temp file — was 'cat /tmp/...' before
+    # the read-only-rootfs fix, 2026-07-19)
+    elif printf '%s' "$*" | grep -q -- 'wget'; then
       printf '%s\\n' "$STUB_SSR_BODY"
       exit 0
     fi
