@@ -34,6 +34,7 @@ on:
 
 permissions:
   contents: read
+  actions: read  # C3 liveness queries diag-canon-slugs-export.yml run-history via GITHUB_TOKEN
 
 jobs:
   readiness-check:
@@ -50,7 +51,7 @@ jobs:
         with:
           repository: ak125/automecanik-wiki
           path: automecanik-wiki
-          fetch-depth: 0  # need git log for C3 freshness check
+          fetch-depth: 0  # full history kept for wiki-side checks (C5 quality-gates)
 
       - name: Checkout automecanik-rag
         uses: actions/checkout@v4
@@ -73,6 +74,8 @@ jobs:
           AUTOMECANIK_WIKI_PATH: ${{ github.workspace }}/automecanik-wiki
           AUTOMECANIK_RAG_PATH: ${{ github.workspace }}/automecanik-rag
           AUTOMECANIK_MONOREPO_PATH: ${{ github.workspace }}/monorepo
+          # C3 liveness reads diag-canon-slugs-export.yml run-history (needs actions:read).
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Don't fail the workflow if NOT_READY — this is informational on schedule.
           # On PR triggers, fail to surface regression.
