@@ -78,6 +78,14 @@ if [ "$RAG_BRANCH" != "main" ]; then
   log "ERROR: rag not on main (branch=$RAG_BRANCH), aborting (manual cleanup needed)"
   exit 3
 fi
+# Transition safety: Step 4 intentionally never commits knowledge/.last-sync.json,
+# so the sync script's per-run rewrite leaves it a dirty TRACKED file until the
+# companion rag-repo untrack lands. A dirty tracked file blocks `git pull --ff-only`
+# the moment an incoming commit touches it (notably the untrack commit's deletion),
+# which would wedge this cron every hour under `set -euo pipefail`. Discard our
+# local manifest churn first — it is regenerated from scratch in Step 3, so this is
+# always safe. No-op once the manifest is untracked/ignored (post-untrack).
+git checkout -- knowledge/.last-sync.json 2>/dev/null || true
 git pull --ff-only origin main 2>&1 | tee -a "$LOG_FILE"
 
 # --- Step 3: Run sync (D20 enforce + sha256 idempotent) ---
@@ -87,16 +95,32 @@ python3 "$SYNC_SCRIPT" \
   --rag-repo "$RAG_PATH" \
   --apply 2>&1 | tee -a "$LOG_FILE"
 
-# --- Step 4: Commit + push if changes ---
+# --- Step 4: Commit + push only if real CONTENT changed ---
+# knowledge/.last-sync.json is a per-run runtime freshness manifest: the sync
+# script rewrites it every run with a fresh `synced_at` (+ stats), and it is
+# read *from disk* by RagMirrorFreshnessService for the 36h mirror-freshness
+# SLO. It is runtime observability state, NOT git-tracked source content —
+# committing it turned every hourly no-op sync into a `synced-from-wiki:` churn
+# commit (defeating the idempotency intent of this step). We exclude it from
+# both the change-detection guard and staging so a run that copies 0 new files
+# produces NO commit. The rag repo also untracks it (.gitignore, companion PR)
+# for a clean working tree; this exclude keeps the job correct during that
+# transition and if the ignore is ever reverted.
 cd "$RAG_PATH"
-if git diff --quiet -- knowledge/ && git diff --cached --quiet -- knowledge/; then
-  log "[4/4] No changes under knowledge/ — nothing to commit (idempotent)"
+MANIFEST_EXCLUDE=':(exclude)knowledge/.last-sync.json'
+# Stage first (excluding the manifest), THEN inspect the index. A plain `git diff`
+# guard is blind to UNTRACKED files and would silently drop a pure-addition sync
+# (a brand-new knowledge file) — the mirror's primary payload. Staging surfaces
+# additions, modifications and deletions in one shot; the exclude keeps the
+# runtime manifest churn out of the commit.
+git add -- knowledge/ "$MANIFEST_EXCLUDE"
+if git diff --cached --quiet -- knowledge/ "$MANIFEST_EXCLUDE"; then
+  log "[4/4] No content changes under knowledge/ (runtime manifest churn ignored) — nothing to commit (idempotent)"
   log "=== sync-rag-from-wiki done (no-op) ==="
   exit 0
 fi
 
-log "[4/4] Committing + pushing changes"
-git add knowledge/
+log "[4/4] Committing + pushing content changes"
 
 # D22 marker : marker `synced-from-wiki: <sha>` requis par .githooks/commit-msg
 # et .github/workflows/d22-protected-paths.yml côté rag.
