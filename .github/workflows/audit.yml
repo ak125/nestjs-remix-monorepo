@@ -84,6 +84,14 @@ jobs:
         # container temp-file write from ever coming back.
         run: npm run test:prod-ssr-probe
 
+      - name: 🔄 PROD app-recreate path — behavioural proof vs stubbed docker (BLOCKING)
+        # Also runs ONLY in deploy-prod.yml. Its whole reason for existing is a
+        # behaviour static YAML review cannot prove: Caddy (the public TLS listener)
+        # is NEVER stopped, the readiness poll succeeds early / fails fast, and Caddy
+        # is restarted ONLY when the Caddyfile changed. This executes
+        # prod-app-recreate.sh against a stubbed docker and asserts exactly that.
+        run: npm run test:prod-app-recreate
+
       - name: 🗂️ EDITORIAL_AUTHORITY_SINKS registry invariants (BLOCKING)
         # Pins the exact P0 sink set (audit §6): 2 served-tracked + 15 ratchet-blind,
         # each evidence-linked, no rN wildcard. The blind rows justify the registry.
