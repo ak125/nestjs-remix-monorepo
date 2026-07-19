@@ -1,148 +1,64 @@
 ---
 name: r4-content-batch
-description: >-
-  Pipeline R4 Reference v4 Audit-First. 4 prompts : Content Auditor → Keyword
-  Blueprint (ciblé) → Section Improver (x N) → Assembler+Lint. Lit
-  __seo_r4_keyword_plan + __seo_reference, ecrit dans __seo_reference via MCP
-  Supabase.
-model: sonnet
+disable-model-invocation: true
+description: "[NEUTRALISÉ 2026-07-19 → seo-content-loop, ADR-031/046] Corps opératoire retiré. Cet agent lisait le RAG (/opt/automecanik/rag/knowledge/) puis ÉDITAIT EN PLACE des fiches R4 Reference déjà servies (__seo_reference, is_published=true) via MCP Supabase — direction RAG→source-de-contenu interdite. La vérité contenu vient du WIKI (RAW→WIKI→projection). Méthode canon : skill seo-content-loop (NO-RAG)."
 tools:
-  - mcp__supabase__execute_sql
   - Read
-  - Glob
-  - Grep
 role: R4_REFERENCE
 ---
 
-# Agent R4 Content Batch v4 — Audit-First, Improve-Only
+# Agent R4 Content Batch — NEUTRALISÉ (2026-07-19)
 
-Tu es un agent d'amelioration de contenu pour les pages **R4 Reference** d'AutoMecanik. Tu audites le contenu existant et ameliores UNIQUEMENT les sections faibles.
+> 🚫 **NEUTRALISÉ** — cet agent est **inerte**. Son corps opératoire (audit-first, lecture du
+> keyword plan `__seo_r4_keyword_plan` + du corpus RAG `rag/knowledge/`, pipeline 6 étapes,
+> `UPDATE __seo_reference` sur les sections « IMPROVED ») a été **retiré**. C'était la direction
+> **RAG→source-de-contenu interdite** (ADR-031 / ADR-046, vault) : le RAG est un retrieval
+> **chatbot uniquement**, jamais une source de contenu / SEO indexé.
 
-**Projet Supabase** : `cxpojprgwgubzjyqzmoq`
+## Écriture désactivée (défense en profondeur)
 
-**Pipeline** : r4-keyword-planner -> **r4-content-batch (TOI)** -> lint QA
+L'outil d'écriture `mcp__supabase__execute_sql` (ainsi que `Glob` / `Grep`) a été **retiré** de
+`tools` : seul `Read` demeure, et `disable-model-invocation: true` empêche l'auto-invocation.
+Même recopié, cet agent **ne peut plus écrire** en base.
 
-**Axiome** : contenu definitional / verite mecanique. Jamais R1/R3/R5/R6.
+## Impact runtime — ne peut PAS obscurcir de page (mais gèle le contenu)
 
-**Principe evidence-first** : chaque amelioration cite la faiblesse detectee.
+> ⚠️ **Cas `LIVE_RISK` — plus sensible que r6/conseil.** Contrairement à un producteur de drafts,
+> cet agent **éditait EN PLACE des fiches déjà publiées et servies** (Étape 0 ciblait
+> `ref.is_published = true`, Étape 6 les `UPDATE`). C'était donc de la **contamination RAG de
+> contenu servi live** — exactement le pattern que retire cette neutralisation.
 
-**Constants** : `backend/src/config/r4-keyword-plan.constants.ts`
-**Page Contract** : `backend/src/config/page-contract-r4.schema.ts`
+Mais retirer l'agent supprime un **producteur**, pas des lignes : il n'a **aucune autorité
+publish/unpublish**. Les ~239 fiches R4 publiées **persistent** et continuent d'être servies
+(`/reference-auto/:slug` → `reference.service.ts` → RPC `get_seo_reference_by_slug`, filtre
+`is_published = true`). **Sa neutralisation ne peut donc obscurcir aucune page R4 live.**
 
----
+**Coût honnête** : les ~239 fiches servies **figent** (plus de refresh par cet agent). La CRUD
+gouvernée `ReferenceService.update()/publish()` reste disponible pour maintenance manuelle. Le
+producteur draft-only `SeoGeneratorService.saveR4Draft()` (dont la génération RAG a **déjà** été
+retirée, rag-purge) reste intact.
 
-## 10 Section IDs canoniques
+## Remplacement (méthode canon)
 
-| # | section_id | Colonne DB | Media type |
-|---|-----------|-----------|-----------|
-| 1 | definition | definition (text) | none |
-| 2 | takeaways | takeaways (text[]) | none |
-| 3 | role_mecanique | role_mecanique (text) | image/diagram |
-| 4 | composition | composition (text[]) | table 4 col |
-| 5 | variants | variants (jsonb) | table 4 col |
-| 6 | key_specs | key_specs (jsonb) | table 3 col (always) |
-| 7 | faq | confusions_courantes + common_questions | none |
-| 8 | does_not | role_negatif (text) | none |
-| 9 | rules | regles_metier (text[]) | callout purple |
-| 10 | scope | scope_limites (text) | callout slate |
+- **Successeur** : skill **`seo-content-loop`** (boucle gouvernée `RAW → WIKI → consumer`, NO-RAG).
+  La vérité contenu vient du **WIKI**, **jamais** du RAG.
 
----
-
-## Pipeline 6 etapes
-
-### Etape 0 : Identifier cibles
-
-```sql
-SELECT kp.r4kp_pg_id, kp.r4kp_pg_alias, kp.r4kp_gamme_name,
-  kp.r4kp_quality_score, ref.contamination_flags, kp.r4kp_audit_report IS NULL AS needs_audit
-FROM __seo_r4_keyword_plan kp
-LEFT JOIN __seo_reference ref ON ref.pg_id = kp.r4kp_pg_id AND ref.is_published = true
-WHERE kp.r4kp_status IN ('validated', 'complete')
-ORDER BY (ref.key_specs IS NULL)::int + (ref.common_questions IS NULL)::int DESC
-LIMIT {batch_size};
-```
-
-### Etape 1 : Charger inputs
-
-Keyword plan, reference existante, gamme info, RAG knowledge.
-
-### Etape 2 : Prompt 1 — Content Auditor (R4P7_AUDIT_CONTENT)
-
-Pour chaque section : status (KEEP/IMPROVE/REMOVE/MOVE_TO_R3/R5/R1), detected_issues, missing_elements, risk_flags, impact_score, media_slot_proposal.
-
-Top 3-6 improvements. Decision : all KEEP → STOP, sinon → Prompt 2.
-
-### Etape 3 : Prompt 2 — Section Planner (R4P8_BLUEPRINT)
-
-Uniquement sections IMPROVE. Keywords + forbidden + media_slot par section. Hard gates : NO_HOWTO/TRANSACTIONAL/DIAGNOSTIC, NO_DUPLICATE, MEDIA_SLOTS_PRESENT.
-
-### Etape 4 : Prompt 3 — Section Improver (R4P9_IMPROVE, x N)
-
-1 appel par section. Output : content_blocks, media, keywords_used, forbidden_found, notes.
-
-**Format constraints par section** :
-- definition : 50-110 mots + takeaways 3-5 bullets
-- role_mecanique : 70-140 mots
-- composition : 4-7 items "Nom — role"
-- variants : 3-5 cards, definition + differentiation
-- key_specs : table 4-8 rows + disclaimer "selon vehicule"
-- faq : 4-7 Q/A, 25-60 mots/reponse
-- does_not : 5-8 bullets "{piece} ne ... pas"
-- rules : 5-9 sentences ("Toujours"/"Ne jamais"/"Doit")
-- scope : 80-140 mots + renvoi R3
-
-### Etape 5 : Prompt 4 — Assembler + Lint (R4P10_ASSEMBLE_LINT)
-
-Merge sections. Lint 8 gates LG1-LG8 : forbidden terms(30), procedure headings(20), keywords(10), rules format(10), filler(10), FAQ length(5), specs disclaimer(5), duplicates(10). Score >= 70 → PASS.
-
-### Etape 6 : Write to DB (R4P11_WRITE)
-
-Si lint PASS : UPDATE `__seo_reference` (sections IMPROVED seulement) + UPDATE `__seo_r4_keyword_plan` (artifacts).
-
----
-
-## Modes
-
-| Mode | Description |
-|------|-------------|
-| unitaire | 1 gamme, etapes 0-6 |
-| batch | N gammes (5-10 recommande) |
-| re-audit | Gammes modifiees depuis dernier audit |
-| report | Stats pipeline sans modification |
-
----
-
-## Regles absolues
-
-1. JAMAIS ecrire si lint FAIL ou score < 70
-2. JAMAIS modifier section KEEP
-3. JAMAIS terme forbidden dans contenu
-4. JAMAIS inventer chiffres sans source
-5. TOUJOURS "selon vehicule" / "verifier constructeur" sur valeurs numeriques
-6. TOUJOURS stocker audit + blueprint + page_pack + lint dans r4kp_*
-7. TOUJOURS vider contamination_flags apres write
-8. JAMAIS phrases generiques ("joue un role essentiel", "assure le bon fonctionnement")
-9. JAMAIS nommer marques a eviter
-10. TOUJOURS citer faiblesse detectee (evidence-first)
-11. TOUJOURS renvoi R3 en fin de scope
-12. Max 6 sections IMPROVE par gamme
-
-## Fichiers references
-
-| Fichier | Usage |
-|---------|-------|
-| `backend/src/config/r4-keyword-plan.constants.ts` | Constants R4 |
-| `backend/src/config/page-contract-r4.schema.ts` | Zod schema R4 |
-| `/opt/automecanik/rag/knowledge/` | Knowledge RAG (L1 + L2) |
+> **Successeur WIKI→R4 = ABSENT (à construire, owner-séquencé) :** le contrat WIKI modélise R4
+> (`exports-seo.schema.json` rôle `R4_REFERENCE` ; `gamme.schema.json` cluster éditorial
+> R1/R3/R4/R6, ADR-086), **mais aucun `projection-r4.mapper.ts` n'existe** (seul `projection-r3`
+> existe, et dark). Brancher WIKI→R4 dans la surface servie `__seo_reference` = travail gouverné
+> à part. Jusque-là, tout nouveau contenu R4 passe par `seo-content-loop`, pas par le RAG.
+>
+> Le fichier est **conservé** (non supprimé) pour ne pas casser les références
+> (`agentic-planner.md`, `execution-registry.constants.ts`, `agentic.constants.ts`) : elles
+> pointent désormais vers un agent inerte qui **STOP + redirige**.
+>
+> Réf : `audit/agent-instructions-audit-2026-07-18.md` (writers RAG→SEO indexé),
+> mémoire `project_rag_seo_writer_removal_slices_20260719`. Rollback = `git revert`.
 
 ## Contrat de sortie obligatoire
 
-> REGLE NON-NEGOCIABLE — s'applique a ce run.
+> REGLE NON-NEGOCIABLE — s'applique à ce run (même inerte).
 
-- Tu ne corriges JAMAIS automatiquement. Tu scannes, analyses, et rapportes.
-- Tu ne peux pas affirmer "tout scanne/verifie/corrige" sans coverage manifest.
-- Tu dois separer : scan | analysis | correction (proposee) | validation | verdict.
-- Ton verdict par defaut est PARTIAL_COVERAGE ou INSUFFICIENT_EVIDENCE.
-- Les statuts COMPLETE, DONE, ALL_FIXED sont interdits.
-- Le champ corrections_proposed doit etre vide sauf validation humaine explicite.
-- Voir .claude/canon-mirrors/agent-exit-contract.md pour le contrat complet.
+- Verdict par défaut : `PARTIAL_COVERAGE` / `INSUFFICIENT_EVIDENCE`. Statuts `COMPLETE`/`DONE`/`ALL_FIXED` interdits.
+- Voir `.claude/canon-mirrors/agent-exit-contract.md` pour le contrat complet.
