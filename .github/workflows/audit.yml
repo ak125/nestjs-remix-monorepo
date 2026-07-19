@@ -75,6 +75,15 @@ jobs:
         # (the regression that made the previous rollback a no-op).
         run: npm run test:prod-rollback
 
+      - name: 🖥️ PROD SSR gate — behavioural proof vs stubbed docker (BLOCKING)
+        # The SSR gate runs ONLY in deploy-prod.yml (never PREPROD/CI), so it shipped
+        # untested and false-failed in PROD on 2026-07-19: it wrote the body to a temp
+        # file inside a read-only-rootfs container, capturing an empty body and rejecting
+        # even the known-good image on rollback. This executes prod-ssr-probe.sh against a
+        # stubbed docker (pass/fail per homepage state) and statically forbids the
+        # container temp-file write from ever coming back.
+        run: npm run test:prod-ssr-probe
+
       - name: 🗂️ EDITORIAL_AUTHORITY_SINKS registry invariants (BLOCKING)
         # Pins the exact P0 sink set (audit §6): 2 served-tracked + 15 ratchet-blind,
         # each evidence-linked, no rN wildcard. The blind rows justify the registry.

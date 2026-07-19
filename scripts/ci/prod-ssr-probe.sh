@@ -37,8 +37,17 @@ CONTAINER="${PROD_CONTAINER:-nestjs-remix-monorepo-prod}"
 URL="${SSR_URL:-http://localhost:3000/}"
 MARKER="${SSR_MARKER:-__reactRouterContext}"
 
-hdrs=$(docker exec "$CONTAINER" wget -q --server-response -O /tmp/ssr-probe.html "$URL" 2>&1 || true)
-body=$(docker exec "$CONTAINER" cat /tmp/ssr-probe.html 2>/dev/null || echo "")
+# Capture WITHOUT writing a temp file inside the container. The PROD container's
+# rootfs is not writable by this process, so `wget -O /tmp/ssr-probe.html` failed
+# with "Read-only file system" — yet `--server-response` still printed the 200 to
+# stderr, so status/Content-Type parsed fine while the body file stayed EMPTY →
+# the marker check false-failed and rejected even the known-good image on rollback
+# (PROD deploy incident 2026-07-19, tag v2026.07.19-deploy-safety-sentry-beacon).
+# Headers go to stderr with the body discarded to /dev/null (writable even on a
+# read-only rootfs); the body streams to stdout via `wget -qO-` — the exact
+# pattern the /health probe in prod-rollback.sh already relies on.
+hdrs=$(docker exec "$CONTAINER" wget -q --server-response -O /dev/null "$URL" 2>&1 || true)
+body=$(docker exec "$CONTAINER" wget -qO- "$URL" 2>/dev/null || echo "")
 
 status=$(echo "$hdrs" | grep -m1 'HTTP/' | awk '{print $2}')
 ctype=$(echo "$hdrs" | grep -i -m1 'Content-Type:' | tr -d '\r')
