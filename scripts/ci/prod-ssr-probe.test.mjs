@@ -45,6 +45,17 @@ const JSON_HEADERS = ["  HTTP/1.1 200 OK", "  Content-Type: application/json"].j
 const SSR_BODY = '<!DOCTYPE html><html lang="fr"><body>x<script>window.__reactRouterContext={};</script></body></html>';
 const NO_MARKER_BODY = "<!DOCTYPE html><html><body>no hydration payload here</body></html>";
 
+// A healthy homepage larger than the 64 KB OS pipe buffer, marker near the top.
+// This is the shape that made the old `printf '%s' "$body" | grep -qF` marker check
+// a SIGPIPE false-negative on the 275 KB PROD homepage (run 29701454004): grep -q
+// matched early and closed the pipe, printf took SIGPIPE, and `set -o pipefail`
+// turned a PRESENT marker into "not server-rendered". ~100 KB stays under
+// MAX_ARG_STRLEN (128 KB) so it can ride an env var into the docker stub.
+const LARGE_SSR_BODY =
+  '<!DOCTYPE html><html lang="fr"><body><script>window.__reactRouterContext={};</script>' +
+  "x".repeat(100 * 1024) +
+  "</body></html>";
+
 /**
  * A stub `docker` mirroring the two calls the probe makes:
  *   - `wget --server-response -O /dev/null URL`  → headers to STDERR
@@ -105,6 +116,16 @@ describe("prod-ssr-probe.sh — behavioural proof of the SSR gate", () => {
     assert.match(stdout, /✅.*SSR marker present, indexable/);
   });
 
+  test("PASSES on a LARGE (>64 KB) healthy homepage (SIGPIPE-under-pipefail regression)", () => {
+    // The marker check must not choke on a real homepage. The old
+    // `printf '%s' "$body" | grep -qF` form false-failed here: grep -q closed the
+    // pipe on first match, printf took SIGPIPE, and pipefail turned the PRESENT
+    // marker into a "not server-rendered" failure (run 29701454004).
+    const { code, stdout } = runProbe({ STUB_SSR_BODY: LARGE_SSR_BODY });
+    assert.equal(code, 0, `large healthy SSR page must pass, got ${code}\n${stdout.slice(0, 800)}`);
+    assert.match(stdout, /✅.*SSR marker present, indexable/);
+  });
+
   test("FAILS when the body lacks the SSR marker (not server-rendered)", () => {
     const { code, stdout } = runProbe({ STUB_SSR_BODY: NO_MARKER_BODY });
     assert.notEqual(code, 0);
@@ -154,5 +175,14 @@ describe("prod-ssr-probe.sh — must not write a temp file in the container (202
   test("captures body via stdout (wget -qO-) and headers via /dev/null", () => {
     assert.match(code, /wget\s+-qO-/, "body must stream to stdout");
     assert.match(code, /-O\s+\/dev\/null/, "headers must discard body to /dev/null");
+  });
+
+  test("marker check is a pure-bash test, not a pipe into grep (SIGPIPE-under-pipefail)", () => {
+    // `printf '%s' "$body" | grep -qF` SIGPIPEs on a large page under `set -o
+    // pipefail` (grep -q closes the pipe, printf fails) → false negative. The marker
+    // check must be a pure-bash substring test with no subprocess. (Header/ctype/
+    // robots greps stay fine — those pipe tiny values, not the body.)
+    assert.doesNotMatch(code, /"\$body"\s*\|/, "must not pipe the response body into another process");
+    assert.match(code, /\[\[.*\$body.*\$MARKER.*\]\]/, "marker check must be a pure-bash [[ ]] substring test");
   });
 });
