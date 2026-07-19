@@ -63,7 +63,14 @@ if ! echo "$ctype" | grep -qi 'text/html'; then
   echo "  ❌ [$LABEL] GET / Content-Type is not text/html"
   exit 1
 fi
-if ! printf '%s' "$body" | grep -qF "$MARKER"; then
+# Pure-bash substring test — deliberately NOT `printf '%s' "$body" | grep -qF`.
+# With `set -o pipefail`, `grep -q` exits on the FIRST match and closes the pipe;
+# on a large (>64 KB) SSR page printf is still streaming and takes SIGPIPE, so the
+# pipeline returns FAILURE even though the marker IS present — a false negative that
+# sank the first real deploy to reach this gate (run 29701454004, tag
+# v2026.07.19-catch-all-410-prod-rollback-ssr-gate) and its rollback. No subprocess/
+# pipe = flavour-independent (GNU grep triggered it; the dev box's ugrep hid it).
+if [[ "$body" != *"$MARKER"* ]]; then
   echo "  ❌ [$LABEL] GET / lacks the stable SSR marker $MARKER — document was not server-rendered"
   exit 1
 fi
