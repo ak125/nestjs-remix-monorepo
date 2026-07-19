@@ -304,27 +304,37 @@ jobs:
           # what made the old rollback restore the broken build.
           echo "🔒 Rollback point pinned: ${ROLLBACK_IMAGE_ID:-<none — auto-rollback disabled>}"
 
-          # POINT OF NO RETURN. Past this line the running container is destroyed,
-          # so ANY later failure — including in "Validate PROD" — must roll back.
-          # The dedicated `if: failure()` rollback step keys off this flag, which
-          # is why it is set BEFORE the stop/rm rather than after a successful up.
+          # POINT OF NO RETURN. Past this line the running app container is
+          # recreated (destroyed + replaced), so ANY later failure — including in
+          # "Validate PROD" — must roll back. The dedicated `if: failure()`
+          # rollback step keys off this flag, set BEFORE the recreate.
+          #
+          # NOTE: Caddy (the public 80/443 TLS listener) is deliberately NOT torn
+          # down anymore. The old deploy did `docker stop nestjs-remix-caddy …`,
+          # which dropped the public listener for the whole window → total outage,
+          # not just a 502. prod-app-recreate.sh keeps Caddy up and recreates ONLY
+          # the app container; a changed Caddyfile is applied by a targeted Caddy
+          # restart AFTER the app is healthy (admin is off ⇒ restart is the apply
+          # path). See scripts/ci/prod-app-recreate.sh + its behavioural test.
           echo "DEPLOY_STARTED=1" >> "$GITHUB_ENV"
-
-          docker stop nestjs-remix-caddy nestjs-remix-monorepo-prod 2>/dev/null || true
-          docker rm nestjs-remix-caddy nestjs-remix-monorepo-prod 2>/dev/null || true
 
           # 🚨 Sentry secrets injection via SOPS exec-env wrapper (parity with
           # ci.yml preprod deploy step). docker-compose.prod.yml declares
           # `environment: - SENTRY_DSN` etc. which inherit from this shell's env.
-          # If sops/age unavailable on this runner, fall back to plain
-          # `docker compose up` — Sentry SDK no-ops, deploy still succeeds.
-          # Source ~/production/.env first so bare `environment: - VAR` refs
-          # for SUPABASE_*, INTERNAL_API_KEY, etc. inherit from the shell
-          # (not just env_file, which is overridden by `environment: -` listings).
+          # If sops/age unavailable on this runner, fall back to a plain run —
+          # Sentry SDK no-ops, deploy still succeeds. Source ~/production/.env
+          # first so bare `environment: - VAR` refs for SUPABASE_*,
+          # INTERNAL_API_KEY, etc. inherit from the shell (not just env_file,
+          # which is overridden by `environment: -` listings).
           set -a
           # shellcheck disable=SC1091
           . "$PROD_DIR/.env"
           set +a
+
+          # The app recreate (Caddy-preserving, readiness-polled, SSR-gated) lives
+          # in a tested script so the deploy path is provable — see
+          # scripts/ci/prod-app-recreate.test.mjs (npm run test:prod-app-recreate).
+          RECREATE="bash $GITHUB_WORKSPACE/scripts/ci/prod-app-recreate.sh"
 
           SOPS_FILE="$GITHUB_WORKSPACE/secrets/sentry.prod.sops.env"
           AGE_KEY_FILE="${SOPS_AGE_KEY_FILE:-$HOME/.config/sops/age/keys.txt}"
@@ -333,81 +343,20 @@ jobs:
              && [ -r "$AGE_KEY_FILE" ]; then
             echo "✅ Injecting Sentry secrets via sops exec-env"
             export SOPS_AGE_KEY_FILE="$AGE_KEY_FILE"
-            sops exec-env "$SOPS_FILE" \
-              'docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml up -d --no-deps monorepo_prod caddy redis_prod'
+            sops exec-env "$SOPS_FILE" "$RECREATE"
           else
             echo "::warning::sops binary, secrets file, or age key missing on runner — Sentry SDK will start in no-op mode for PROD"
             echo "  sops:        $(command -v sops || echo 'NOT FOUND')"
             echo "  SOPS_FILE:   $SOPS_FILE ($([ -f "$SOPS_FILE" ] && echo present || echo absent))"
             echo "  age key:     $AGE_KEY_FILE ($([ -r "$AGE_KEY_FILE" ] && echo readable || echo unreadable))"
-            docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml up -d --no-deps monorepo_prod caddy redis_prod
+            $RECREATE
           fi
+          # imgproxy is a separate stateless, Cloudflare-cached service; recreate it
+          # after the app is healthy. (Its own zero-downtime treatment is out of
+          # scope for this PR — tracked in the design note.)
           docker compose -f docker-compose.imgproxy.yml up -d --force-recreate
 
-          echo "Waiting for containers to start (60s)..."
-          sleep 60
-
-          if ! docker ps | grep -q nestjs-remix-monorepo-prod; then
-            echo "Container not running - checking logs..."
-            docker logs nestjs-remix-monorepo-prod --tail 50
-            exit 1
-          fi
-
-          # Image assertion: verify container runs the correct image
-          EXPECTED_IMAGE="massdoc/nestjs-remix-monorepo:production"
-          ACTUAL_IMAGE=$(docker inspect nestjs-remix-monorepo-prod --format='{{.Config.Image}}')
-          if [ "$ACTUAL_IMAGE" != "$EXPECTED_IMAGE" ]; then
-            echo "FATAL: Container running $ACTUAL_IMAGE instead of $EXPECTED_IMAGE"
-            exit 1
-          fi
-          echo "Image verified: $ACTUAL_IMAGE"
-
-          # Health check with retry
-          echo "Running health check (inside container)..."
-          RETRIES=5
-          HEALTH=""
-          for i in $(seq 1 $RETRIES); do
-            HEALTH=$(docker exec nestjs-remix-monorepo-prod wget -qO- http://localhost:3000/health 2>/dev/null || echo "")
-            if echo "$HEALTH" | grep -q '"status":"ok"'; then
-              echo "/health -> OK (attempt $i/$RETRIES)"
-              break
-            fi
-            echo "Health check attempt $i/$RETRIES failed, waiting 10s..."
-            sleep 10
-          done
-
-          HEALTH_OK=0
-          if echo "$HEALTH" | grep -q '"status":"ok"'; then HEALTH_OK=1; fi
-
-          # SSR gate (BLOCKING). Only meaningful once the process answers /health.
-          # See scripts/ci/prod-ssr-probe.sh for why /health alone is not enough
-          # and why `noindex` is the signal that catches the degraded fallback.
-          SSR_OK=0
-          if [ "$HEALTH_OK" = "1" ]; then
-            echo "🖥️ Running SSR gate (GET /)..."
-            for i in $(seq 1 3); do
-              if bash "$GITHUB_WORKSPACE/scripts/ci/prod-ssr-probe.sh" "post-deploy $i/3"; then
-                SSR_OK=1
-                break
-              fi
-              echo "  SSR gate attempt $i/3 failed, waiting 10s..."
-              sleep 10
-            done
-          fi
-
-          if [ "$HEALTH_OK" != "1" ] || [ "$SSR_OK" != "1" ]; then
-            if [ "$HEALTH_OK" != "1" ]; then
-              echo "❌ Health check failed after $RETRIES attempts"
-            else
-              echo "❌ SSR gate failed — GET / is not a healthy, indexable, server-rendered document"
-            fi
-            docker logs nestjs-remix-monorepo-prod --tail 30
-            # Rollback is NOT done here: the dedicated `if: failure()` step owns it,
-            # so that a failure in "Validate PROD" rolls back through the SAME path.
-            exit 1
-          fi
-
-          echo "✅ PROD deployment successful — /health OK and GET / is a healthy indexable SSR document"
+          echo "✅ PROD deployment successful — Caddy stayed up, /health OK and GET / is a healthy indexable SSR document"
 
           docker image prune -f
 
