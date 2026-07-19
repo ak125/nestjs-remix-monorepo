@@ -1,10 +1,9 @@
 {
   "rule": "seo-no-rag-as-content-source",
-  "total": 23,
+  "total": 21,
   "files": {
     "backend/src/modules/admin/services/buying-guide/buying-guide-rag-fetcher.service.ts": 3,
     "backend/src/modules/admin/services/execution-router.service.ts": 2,
-    "backend/src/modules/admin/services/r1-enricher.service.ts": 2,
     "backend/src/modules/admin/services/r1-keyword-plan-batch.service.ts": 2,
     "backend/src/modules/admin/services/r2-enricher.service.ts": 2,
     "backend/src/modules/admin/services/r4-content-enricher.service.ts": 2,
