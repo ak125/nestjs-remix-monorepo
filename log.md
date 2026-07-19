@@ -585,3 +585,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/runtime-verification-contract`
 - **Décision** : docs(agent-method): add thin runtime-verification proof contract (§9 + PR template)
 - **Sortie** : PR #1293 | commits b06e869a9
+
+## 2026-07-19 — worktree-fix-timestamp-only-commits (auto)
+
+- **Branche** : `worktree-fix-timestamp-only-commits`
+- **Décision** : fix(jobs): stop timestamp-only churn commits in diag-canon export + RAG sync
+- **Sortie** : PR aucune | commits 94d050bb5
