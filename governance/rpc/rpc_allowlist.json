@@ -2,7 +2,7 @@
   "version": "1.0.0",
   "generated_at": "2026-02-03T14:00:00Z",
   "description": "RPC READ_SAFE - Autorisees pour tous les roles",
-  "total": 169,
+  "total": 171,
   "functions": [
     {
       "name": "auth_email_exists",
@@ -243,6 +243,11 @@
       "name": "get_action_definition",
       "volatility": "STABLE",
       "reason": "SELECT only"
+    },
+    {
+      "name": "get_active_seo_projection",
+      "volatility": "STABLE",
+      "reason": "ADR-059/090 D1 — SEO projection read (facts+blocks envelope, role-filtered). STABLE SECURITY DEFINER pure SELECT over mv_seo_entity_facts_current × mv_seo_content_blocks_current. Backend-proxied (no anon GRANT), called by SeoBriefService.composeBrief. EXECUTE service_role only."
     },
     {
       "name": "get_all_seo_observables_for_sitemap",
