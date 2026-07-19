@@ -6,6 +6,7 @@ import type { ConfigService } from '@nestjs/config';
 import type { Queue } from 'bull';
 import { promises as fs } from 'node:fs';
 import { SeoProjectionFeederService } from './seo-projection-feeder.service';
+import { PROJECTION_FEED_JOB } from './seo-projection.types';
 import { getAppConfig } from '../../config/app.config';
 import type { FeatureFlagsService } from '../../config/feature-flags.service';
 
@@ -25,15 +26,23 @@ const mockGetAppConfig = getAppConfig as jest.Mock;
 
 const EXPORTS_ROOT = '/abs/seo';
 
-function makeService(opts: { exportsDir?: string } = {}) {
+function makeService(
+  opts: {
+    exportsDir?: string;
+    enabled?: boolean;
+    repeatables?: Array<{ name: string; key: string }>;
+  } = {},
+) {
   const feedQueue = {
     add: jest.fn().mockResolvedValue({ id: 'feed-1' }),
-    getRepeatableJobs: jest.fn().mockResolvedValue([]),
-    removeRepeatableByKey: jest.fn(),
+    getRepeatableJobs: jest.fn().mockResolvedValue(opts.repeatables ?? []),
+    removeRepeatableByKey: jest.fn().mockResolvedValue(undefined),
   };
   const writeQueue = { add: jest.fn().mockResolvedValue({ id: 'write-1' }) };
   const config = {
     get: jest.fn((key: string, def?: string) => {
+      if (key === 'SEO_PROJECTION_R1_FEED_ENABLED')
+        return opts.enabled ? 'true' : def;
       if (key === 'SEO_PROJECTION_R1_EXPORTS_DIR')
         return opts.exportsDir ?? '/abs/exports';
       if (key === 'SEO_PROJECTION_EXPORTS_ROOT') return EXPORTS_ROOT;
@@ -200,5 +209,75 @@ describe('SeoProjectionFeederService.triggerEntity — single-entity role-scoped
     const { svc, writeQueue } = makeService();
     await expect(svc.triggerEntity(input)).rejects.toThrow(/roles_allowed/);
     expect(writeQueue.add).not.toHaveBeenCalled();
+  });
+});
+
+describe('SeoProjectionFeederService.onModuleInit — réconciliation fail-safe OFF', () => {
+  // `onModuleInit` lance ses effets en fire-and-forget (`void`, non-bloquant,
+  // backend.md). `flush()` draine microtasks + macrotasks (toutes les queues
+  // sont mockées → résolues) pour observer l'état APRÈS la réconciliation.
+  const flush = () => new Promise((resolve) => setImmediate(resolve));
+
+  const STALE = {
+    name: PROJECTION_FEED_JOB,
+    key: `repeat:${PROJECTION_FEED_JOB}:0 2 * * *`,
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetAppConfig.mockReturnValue({ supabase: { readOnly: false } });
+  });
+
+  it('OFF + repeatable résiduel (activation passée) → dérégistré au boot, jamais réenregistré', async () => {
+    const { svc, feedQueue } = makeService({
+      enabled: false,
+      repeatables: [STALE],
+    });
+    svc.onModuleInit();
+    await flush();
+    expect(feedQueue.getRepeatableJobs).toHaveBeenCalledTimes(1);
+    expect(feedQueue.removeRepeatableByKey).toHaveBeenCalledWith(STALE.key);
+    // OFF ne doit JAMAIS (ré)enregistrer un repeatable.
+    expect(feedQueue.add).not.toHaveBeenCalled();
+  });
+
+  it('OFF + aucun repeatable → no-op (rien supprimé, rien enregistré)', async () => {
+    const { svc, feedQueue } = makeService({
+      enabled: false,
+      repeatables: [],
+    });
+    svc.onModuleInit();
+    await flush();
+    expect(feedQueue.getRepeatableJobs).toHaveBeenCalledTimes(1);
+    expect(feedQueue.removeRepeatableByKey).not.toHaveBeenCalled();
+    expect(feedQueue.add).not.toHaveBeenCalled();
+  });
+
+  it('OFF ne touche PAS un repeatable d’un autre job (filtre par nom)', async () => {
+    const { svc, feedQueue } = makeService({
+      enabled: false,
+      repeatables: [{ name: 'un-autre-job', key: 'repeat:un-autre-job:x' }],
+    });
+    svc.onModuleInit();
+    await flush();
+    expect(feedQueue.removeRepeatableByKey).not.toHaveBeenCalled();
+    expect(feedQueue.add).not.toHaveBeenCalled();
+  });
+
+  it('ON → purge des obsolètes PUIS enregistre le repeatable (cron + jobId stable)', async () => {
+    const { svc, feedQueue } = makeService({
+      enabled: true,
+      repeatables: [STALE],
+    });
+    svc.onModuleInit();
+    await flush();
+    // La purge tourne d'abord (idempotence au redeploy)…
+    expect(feedQueue.removeRepeatableByKey).toHaveBeenCalledWith(STALE.key);
+    // …puis un unique repeatable est (ré)enregistré.
+    expect(feedQueue.add).toHaveBeenCalledTimes(1);
+    const [jobName, , addOpts] = feedQueue.add.mock.calls[0];
+    expect(jobName).toBe(PROJECTION_FEED_JOB);
+    expect(addOpts.jobId).toBe('seo-projection-r1-nightly-feed');
+    expect(addOpts.repeat).toMatchObject({ cron: '0 2 * * *', tz: 'UTC' });
   });
 });
