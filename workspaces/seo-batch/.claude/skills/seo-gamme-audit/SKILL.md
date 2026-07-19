@@ -1,7 +1,7 @@
 ---
 name: seo-gamme-audit
-description: "Audit SEO complet gamme/véhicule : métriques R1-R8, RAG coverage, scores, maillage, score composite + auto-fix. Use when user wants gamme audit, vehicle SEO audit. CLI: /seo-gamme-audit <pg_alias|vehicle_slug>"
-argument-hint: "<pg_alias ou vehicle_slug> [--batch top20|worst|ready] [--fix] [--history]"
+description: "Audit SEO complet gamme/véhicule (report-only) : métriques R1-R8, RAG coverage, scores, maillage, score composite. Mesure + recommande, n'écrit aucun contenu. Use when user wants gamme audit, vehicle SEO audit. CLI: /seo-gamme-audit <pg_alias|vehicle_slug>"
+argument-hint: "<pg_alias ou vehicle_slug> [--batch top20|worst|ready] [--history]"
 ---
 
 # SEO Audit — Skill v4.0 (gamme + véhicule unifié)
@@ -10,12 +10,10 @@ argument-hint: "<pg_alias ou vehicle_slug> [--batch top20|worst|ready] [--fix] [
 - `/seo-gamme-audit filtre-a-huile` — audit complet d'une gamme (R1/R3/R4/R5/R6)
 - `/seo-gamme-audit renault-clio-3` — audit complet d'un véhicule (R8)
 - `/seo-gamme-audit 7` — par pg_id (gamme)
-- `/seo-gamme-audit filtre-a-huile --fix` — audit + correction automatique des gaps
 - `/seo-gamme-audit filtre-a-huile --history` — historique des scores
 - `/seo-gamme-audit --batch top20` — 20 entités (gammes + véhicules) avec le plus de gaps
 - `/seo-gamme-audit --batch worst` — entités avec les pires scores
 - `/seo-gamme-audit --batch ready` — entités prêtes pour publication
-- `/seo-gamme-audit --batch top20 --fix` — audit + fix sur les 20 pires
 
 ## Exécution DB
 
@@ -557,266 +555,29 @@ Calculer automatiquement :
 
 ---
 
-## Étape 13 — Auto-fix via moteur agentique (mode --fix uniquement)
+## Étape 13 — Auto-fix RETIRÉ (report-only)
 
-**Pré-requis** : l'argument `--fix` est présent. Sans `--fix`, afficher uniquement le rapport + actions recommandées.
-
-### Mode agentique (recommandé)
-
-Si le backend est démarré (localhost:3000), router les fixes via le moteur agentique :
-
-```bash
-curl -s -X POST http://localhost:3000/api/admin/agentic/runs \
-  -H "Content-Type: application/json" \
-  -d '{
-    "goal": "SEO audit fix pour gamme {pg_alias} (pg_id={pg_id}) — gaps: {liste_gaps}",
-    "goal_type": "seo_audit",
-    "triggered_by": "skill:seo-gamme-audit:fix"
-  }'
-```
-
-Puis lancer planner → solvers → critic → approve (même pattern que `/kp` et `/content-gen`).
-Le moteur crée des branches pour chaque type de fix (research-agent, brief-enricher, etc.).
-Les corrections ne sont appliquées qu'après approbation humaine.
-
-### Mode direct (fallback si backend indisponible)
-
-Toutes les requêtes via `mcp__claude_ai_Supabase__execute_sql` avec `project_id: 'cxpojprgwgubzjyqzmoq'`.
-Les fichiers RAG via l'outil `Read` pour lire `/opt/automecanik/rag/knowledge/gammes/{pg_alias}.md`.
-
-### Fix 1 — Quarantine thin docs RAG
-**Condition** : thin_docs > 0
-```sql
-UPDATE __rag_knowledge
-SET retrievable = false, status = 'quarantined',
-    quarantine_reason = 'auto_thin_gate_lt500'
-WHERE gamme_aliases @> ARRAY['{pg_alias}']
-  AND status = 'active' AND length(content) < 500;
-```
-Reporter le nombre de docs quarantinées.
-
-### Fix 2 — Sync confusions RAG → __seo_reference
-**Condition** : R4 confusion_items < 3
-
-**Étape 1** : Lire `/opt/automecanik/rag/knowledge/gammes/{pg_alias}.md`, parser `domain.confusion_with[]`.
-**Étape 2** : Comparer avec `confusions_courantes` dans `__seo_reference`.
-**Étape 3** : Si RAG a plus de confusions que DB → array_append les manquantes.
-**Étape 4** : Si après sync on a toujours < 3, utiliser le dictionnaire ci-dessous pour proposer une confusion pertinente par domaine.
-
-```sql
-UPDATE __seo_reference
-SET confusions_courantes = array_append(confusions_courantes,
-  '{term} : {difference}')
-WHERE pg_id = {pg_id}
-  AND NOT (confusions_courantes @> ARRAY['{term} : {difference}']);
-```
-
-**Dictionnaire de confusions candidates par domaine** (à utiliser quand RAG insuffisant) :
-
-| Domaine | Confusion candidate | Différence |
-|---------|-------------------|------------|
-| freinage | disque de frein ≠ disque d'embrayage | Le disque de frein ralentit le véhicule, le disque d'embrayage transmet le couple moteur |
-| freinage | plaquette ≠ garniture de frein à tambour | La plaquette est externe (étrier), la garniture est interne (tambour) |
-| filtration | filtre à huile moteur ≠ filtre à huile boîte | Le filtre moteur filtre l'huile de lubrification, le filtre boîte filtre l'huile de transmission |
-| filtration | filtre à air moteur ≠ filtre d'habitacle | Le filtre moteur filtre l'air admission, le filtre habitacle filtre l'air ventilation |
-| suspension | amortisseur ≠ ressort | L'amortisseur freine les oscillations, le ressort supporte le poids du véhicule |
-| suspension | rotule ≠ silent-bloc | La rotule autorise la rotation, le silent-bloc absorbe les vibrations |
-| distribution | courroie de distribution ≠ courroie d'accessoires | La distribution synchronise le moteur, les accessoires entraînent alternateur/clim/DA |
-| embrayage | disque d'embrayage ≠ volant moteur | Le disque transmet le couple, le volant lisse les à-coups moteur |
-| allumage | bougie d'allumage ≠ bougie de préchauffage | L'allumage enflamme le mélange essence, le préchauffage chauffe la chambre diesel |
-| refroidissement | thermostat ≠ calorstat | Synonymes (le calorstat est l'ancien terme pour thermostat) |
-| direction | crémaillère ≠ boîtier de direction | La crémaillère est à pignon, le boîtier est à vis (véhicules anciens/utilitaires) |
-| échappement | catalyseur ≠ filtre à particules | Le catalyseur traite les gaz (CO, NOx), le FAP retient les particules solides |
-
-### Fix 2bis — Sync confusion vers fichier RAG .md (bidirectionnel)
-**Condition** : une confusion a été ajoutée en DB par Fix 2 mais n'existe pas dans le fichier gamme .md
-1. Lire `/opt/automecanik/rag/knowledge/gammes/{pg_alias}.md`
-2. Si la confusion ajoutée en DB n'est pas dans `domain.confusion_with[]` du frontmatter
-3. Ajouter l'entrée dans le fichier .md via `Edit` :
-```yaml
-    - term: {term}
-      difference: {difference}
-```
-Cela garantit la cohérence RAG ↔ DB.
-
-### Fix 3 — Maillage R1 (liens manquants)
-**Condition** : has_link_rX = 0 ET la surface cible existe
-
-Pour chaque lien manquant, vérifier d'abord que la surface cible existe :
-
-**R3 manquant** :
-```sql
-SELECT ba_alias, ba_title FROM __blog_advice WHERE ba_pg_id = '{pg_id}' LIMIT 1;
-```
-Si résultat :
-```sql
-UPDATE __seo_gamme
-SET sg_content = sg_content || chr(10) ||
-  '<p>🔧 <a href="/blog-pieces-auto/conseils/' || '{ba_alias}' || '">' || '{ba_title}' || '</a></p>'
-WHERE sg_pg_id = '{pg_id}';
-```
-
-**R4 manquant** :
-```sql
--- Vérifier existence
-SELECT 1 FROM __seo_reference WHERE pg_id = {pg_id};
-```
-Si existe :
-```sql
-UPDATE __seo_gamme
-SET sg_content = sg_content || chr(10) ||
-  '<p class="mt-3 text-sm"><a href="/reference-auto/{pg_alias}">En savoir plus sur {pg_name}</a></p>'
-WHERE sg_pg_id = '{pg_id}';
-```
-
-**R5 manquant** :
-Vérifier si fichier `/opt/automecanik/rag/knowledge/diagnostic/{pg_alias}.md` existe via `Read`.
-Si existe, ajouter lien diagnostic.
-
-**R6 manquant** :
-```sql
-SELECT 1 FROM __seo_gamme_purchase_guide WHERE sgpg_pg_id = '{pg_id}';
-```
-Si existe :
-```sql
-UPDATE __seo_gamme
-SET sg_content = sg_content || chr(10) ||
-  '<p class="mt-3 text-sm"><a href="/blog-pieces-auto/guide-achat/{pg_alias}">Guide d''achat {pg_name}</a></p>'
-WHERE sg_pg_id = '{pg_id}';
-```
-
-### Fix 4 — Meta description courte
-**Condition** : descrip_len < 120
-```sql
-UPDATE __seo_gamme
-SET sg_descrip = sg_descrip || ' Pièces vérifiées et compatibilité garantie.'
-WHERE sg_pg_id = '{pg_id}' AND length(sg_descrip) < 120;
-```
-
-### Fix 5 — Scoring R6
-**Condition** : aucune ligne dans `__quality_page_scores` pour ce pg_id
-```sql
-SELECT count(*) FROM __quality_page_scores WHERE pg_id = {pg_id};
-```
-Si 0 :
-```bash
-curl -s -X POST http://localhost:3000/api/internal/buying-guides/compute-quality-scores \
-  -H "X-Internal-Key: $(grep INTERNAL_API_KEY /opt/automecanik/app/backend/.env | cut -d= -f2)" \
-  -H "Content-Type: application/json"
-```
-Note : score toutes les gammes. En mode batch, n'exécuter qu'une seule fois.
-
-### Fix 6 — Sync timing depuis RAG
-**Condition** : sgpg_timing_km IS NULL OU sgpg_timing_years IS NULL
-1. Lire `/opt/automecanik/rag/knowledge/gammes/{pg_alias}.md`, section `maintenance.interval`
-2. Extraire `interval.value` (ex: "10000-30000 km") → sgpg_timing_km
-3. Extraire les années depuis `interval.note` : chercher le pattern `X an(s)` ou `X-Y ans` dans la note. Exemples :
-   - "Essence 10 000 km ou 1 an" → "1 an"
-   - "Se change à chaque vidange" + intervalle 60000-80000 km → estimer "4-5 ans" (60000÷15000/an)
-   - Si note mentionne "Longlife" → "2-3 ans"
-4. Si aucune info années dans le RAG, estimer : `timing_years = round(timing_km_max / 15000)` ans (base 15000 km/an usage mixte)
-```sql
-UPDATE __seo_gamme_purchase_guide
-SET sgpg_timing_km = COALESCE(sgpg_timing_km, '{interval_value}'),
-    sgpg_timing_years = COALESCE(sgpg_timing_years, '{years_estimated}')
-WHERE sgpg_pg_id = '{pg_id}';
-```
-
-### Fix 7 — Enrichir role_mecanique court
-**Condition** : role_meca_chars < 200 ET fichier RAG a domain.role + must_be_true
-
-1. Lire `/opt/automecanik/rag/knowledge/gammes/{pg_alias}.md`
-2. Extraire : `domain.role`, `domain.must_be_true[]`, `domain.related_parts[]`, `domain.norms[]`
-3. Rédiger un texte technique de 400-700c qui inclut :
-   - **Position dans le système** : où la pièce s'insère (ex: "entre la pompe et les organes moteur")
-   - **Principe de fonctionnement** : comment elle agit (friction, filtration, transmission, etc.)
-   - **Paramètres clés** : valeurs numériques si dispo (pression, température, vitesse)
-   - **Variantes** : types principaux (ventilé/plein, spin-on/cartouche, etc.)
-   - **Interaction pièces** : lien avec related_parts (1-2 phrases)
-   - **Norme** : si norms[] existe, mentionner (ex: "conforme ECE R90")
-4. Style : technique, factuel, pas de conseil achat ni de diagnostic
-```sql
-UPDATE __seo_reference
-SET role_mecanique = '{enriched_role_text}'
-WHERE pg_id = {pg_id} AND length(role_mecanique) < 200;
-```
-
-### Fix 8 — Créer fichier diagnostic manquant
-**Condition** : fichier `/opt/automecanik/rag/knowledge/diagnostic/{pg_alias}.md` n'existe pas ET fichier gamme a section `diagnostic.symptoms`
-1. Lire `/opt/automecanik/rag/knowledge/gammes/{pg_alias}.md`
-2. Extraire `diagnostic.symptoms[]` et `diagnostic.causes[]`
-3. Générer le fichier diagnostic .md avec le template standard :
-```yaml
----
-category: {category}
-doc_family: diagnostic
-site_section: diagnostic
-source_type: diagnostic
-title: Diagnostic - {pg_name}
-truth_level: L2
-updated_at: {today}
-verification_status: verified
----
-```
-4. Écrire via l'outil `Write` dans `/opt/automecanik/rag/knowledge/diagnostic/{pg_alias}.md`
-
-### Fix 9 — Enrichir risk_explanation court
-**Condition** : risk_len < 100
-1. Lire `/opt/automecanik/rag/knowledge/gammes/{pg_alias}.md`, section `diagnostic.causes[]`
-2. Rédiger une explication de risque de 100-200c basée sur les causes et conséquences
-3. Style : factuel, conséquences techniques, pas alarmiste
-```sql
-UPDATE __seo_gamme_purchase_guide
-SET sgpg_risk_explanation = '{enriched_risk}'
-WHERE sgpg_pg_id = '{pg_id}' AND length(sgpg_risk_explanation) < 100;
-```
-
-### Fix 10 — Force-enrich après corrections
-**Condition** : au moins 1 fix appliqué (fixes_applied > 0)
-Lancer le force-enrich pour régénérer le contenu avec les données corrigées :
-```bash
-curl -s -X POST http://localhost:3000/api/admin/rag/pdf-merge/force-enrich \
-  -b tests-curl/.cookies \
-  -H "Content-Type: application/json" \
-  -d '{"pgAlias":"{pg_alias}"}'
-```
-Note : en mode batch, regrouper les force-enrich à la fin (pas après chaque gamme).
-
----
-
-## Rapport fix (après Étape 13)
-
-Afficher un tableau récapitulatif des corrections appliquées :
-
-| Fix | Appliqué | Détail |
-|-----|----------|--------|
-| 1. Thin docs | ✅/⏭️ | {N} docs quarantinées |
-| 2. Confusions sync | ✅/⏭️ | +{N} confusions ajoutées |
-| 3. Liens R1 | ✅/⏭️ | R3:{oui/non} R4:{oui/non} R5:{oui/non} R6:{oui/non} |
-| 4. Meta description | ✅/⏭️ | {old_len}c → {new_len}c |
-| 5. Scoring R6 | ✅/⏭️ | score={X} |
-| 6. Timing sync | ✅/⏭️ | km={val}, years={val} |
-| 7. Role mécanique | ✅/⏭️ | {old_len}c → {new_len}c |
-| 8. Fichier diagnostic | ✅/⏭️ | créé/existant |
-| 9. Risk explanation | ✅/⏭️ | {old_len}c → {new_len}c |
-| 10. Force-enrich | ✅/⏭️ | queued / aucun fix appliqué |
-
-Légende : ✅ = corrigé, ⏭️ = pas nécessaire (déjà conforme)
-
-Puis relancer le calcul du score composite pour montrer l'amélioration :
-```
-Score avant fix : {old_score}/100
-Score après fix : {new_score}/100 (+{delta})
-```
+> 🚫 Le mode `--fix` (écriture automatique RAG→SEO indexé) a été **retiré**. Il lisait
+> `rag/knowledge/gammes/*.md` puis écrivait dans le SEO indexé — `__seo_gamme.sg_descrip`
+> (meta description), `__seo_reference.role_mecanique` / `risk_explanation`,
+> `__seo_gamme_conseil` — et concaténait du **filler** (`' Pièces vérifiées et
+> compatibilité garantie.'`). C'est la direction **RAG→source-de-contenu interdite**
+> (ADR-031/046 ; invariants #4 « RAG = chatbot only » et #6 « NEVER filler SEO / no-touch
+> meta »).
+>
+> Cet audit est désormais **report-only** : il **mesure** et **recommande** des actions,
+> il n'**écrit jamais** de contenu ni de meta. Pour produire ou corriger du contenu,
+> passer par la **boucle gouvernée** `RAW → WIKI → consumer` — skill **`seo-content-loop`**
+> (NO-RAG). Toute correction de meta/H1 optimisés reste **owner-gated** (STOP SEO indexé).
 
 ---
 
 ## Étape 16 — Stocker l'audit en DB
 
-Après chaque audit (avec ou sans --fix), sauvegarder le résultat :
+Après chaque audit, sauvegarder le résultat (report-only : `fixes_applied` = 0, colonne conservée pour compat schéma) :
 ```sql
 INSERT INTO __seo_audit_history (pg_id, pg_alias, audit_date, composite_score, r1_score, r3_score, r4_score, r6_score, rag_score, overall_readiness, fixes_applied, skill_version)
-VALUES ({pg_id}, '{pg_alias}', now(), {composite_score}, {r1_score}, {r3_score}, {r4_score}, {r6_score}, {rag_score}, '{overall_readiness}', {fixes_applied}, 'v3.3')
+VALUES ({pg_id}, '{pg_alias}', now(), {composite_score}, {r1_score}, {r3_score}, {r4_score}, {r6_score}, {rag_score}, '{overall_readiness}', 0, 'v3.3')
 ON CONFLICT DO NOTHING;
 ```
 
