@@ -189,6 +189,28 @@ export class FeatureFlagsService {
     }
   }
 
+  // ── SEO projection READ (P2-R3-D) ──
+
+  /**
+   * Master flag de **LECTURE** de la projection SEO (ADR-059, P2-R3-D). Contrairement à
+   * `r1ContentPipelineEnabled` / `r8OwnedEditorialEnabled` qui gatent le chemin d'ÉCRITURE, celui-ci
+   * gate le **chemin servi** : OFF ⇒ le consumer ne lit RIEN (0 appel RPC) et sert le legacy.
+   * **Défaut OFF** — DARK au boot. L'activation d'une entité exige EN PLUS `seoProjectionReadCanary`.
+   */
+  get seoProjectionReadV1(): boolean {
+    return this.bool('SEO_PROJECTION_READ_V1', false);
+  }
+
+  /**
+   * Allowlist canary **role-scoped** de lecture : jetons `<ROLE>@<entity_id>` (ex.
+   * `R3_CONSEILS@gamme:filtre-a-huile`). Un GO R3 sur une gamme n'active JAMAIS R4/R6 de la même
+   * gamme — l'identité est la PAIRE, jamais l'entité seule. **Défaut vide = fail-closed** (aucune
+   * entité lue même si le master flag passe ON).
+   */
+  get seoProjectionReadCanary(): string[] {
+    return this.csv('SEO_PROJECTION_READ_CANARY');
+  }
+
   // ── Conseil Pack flags ──
 
   get conseilPackEnabled(): boolean {
@@ -394,6 +416,8 @@ export class FeatureFlagsService {
     'BRIEF_GATES_ENABLED',
     'BRIEF_GATES_OBSERVE_ONLY',
     'SEO_BRIEF_WIKI_ENABLED',
+    'SEO_PROJECTION_READ_V1',
+    'SEO_PROJECTION_READ_CANARY',
     'RAG_CATCHUP_ENABLED',
     'RAG_MERGE_DRY_RUN',
     'RAG_MERGE_ALLOWED_ROLES',
