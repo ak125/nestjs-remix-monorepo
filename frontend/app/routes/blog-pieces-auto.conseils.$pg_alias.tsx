@@ -234,12 +234,26 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       }
     })();
 
+    // Canary projection R3 (P2-R3-D) : `projectionMeta` n'est présent que si la paire
+    // R3_CONSEILS@gamme:<alias> est allowlistée côté backend — sa présence EST le signal de
+    // ciblage. Une réponse ciblée ne doit JAMAIS être mise en cache partagé : le contenu
+    // dépend d'un flag runtime, donc un CDN/navigateur pourrait resservir la variante ciblée
+    // à tout le monde (ou l'inverse) après un flip. Hors canary : politique publique inchangée.
+    // `buildCacheHeaders` honore déjà les `loaderHeaders` — pas de réécriture de `headers()`.
+    const isCanaryTargeted = guide.projectionMeta !== undefined;
+
     return data(
       { guide, pg_alias, r4Reference: r4ReferencePromise },
       {
-        headers: {
-          "Cache-Control": "public, max-age=300, stale-while-revalidate=3600",
-        },
+        headers: isCanaryTargeted
+          ? {
+              "Cache-Control": "private, no-store",
+              "X-R3-Canary": "1",
+            }
+          : {
+              "Cache-Control":
+                "public, max-age=300, stale-while-revalidate=3600",
+            },
       },
     );
   } catch (error) {

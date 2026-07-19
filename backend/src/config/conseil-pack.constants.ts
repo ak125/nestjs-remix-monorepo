@@ -3,6 +3,8 @@
  * Used by ConseilQualityScorerService, ConseilPriorityService, and conseil-batch agent.
  */
 
+import { type PlannableSection } from './keyword-plan.constants';
+
 // ── Pack levels ──────────────────────────────────────────
 
 export type PackLevel = 'standard' | 'pro' | 'eeat';
@@ -10,8 +12,14 @@ export type PackLevel = 'standard' | 'pro' | 'eeat';
 export interface PackDefinition {
   id: PackLevel;
   label: string;
-  requiredSections: string[];
-  optionalSections: string[];
+  /**
+   * Sections exigées, typées sur le vocabulaire canonique `PLANNABLE_SECTIONS` (SoT unique,
+   * miroir de l'enum `page-contract-r3.json`). Le typage empêche à la compilation une entrée
+   * hors canon (ex. `S2_DIAGNOSTIC` au lieu de `S2_DIAG`) que les consommateurs traiteraient
+   * sinon comme une section indéfiniment manquante.
+   */
+  requiredSections: PlannableSection[];
+  optionalSections: PlannableSection[];
   minSectionScore: number;
   minPackScore: number;
   minFaqCount: number;

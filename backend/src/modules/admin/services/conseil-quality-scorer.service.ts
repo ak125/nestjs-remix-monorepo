@@ -203,8 +203,11 @@ export class ConseilQualityScorerService extends SupabaseBaseService {
       const scores = sections
         .filter(
           (s) =>
-            pack.requiredSections.includes(s.sgc_section_type) &&
-            s.sgc_quality_score !== null,
+            // `sgc_section_type` est une chaîne DB arbitraire testée pour appartenance à la
+            // liste canonique : on élargit le RÉCEPTEUR, sans affaiblir le type du pack.
+            (pack.requiredSections as readonly string[]).includes(
+              s.sgc_section_type,
+            ) && s.sgc_quality_score !== null,
         )
         .map((s) => s.sgc_quality_score!);
 

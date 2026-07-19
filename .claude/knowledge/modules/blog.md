@@ -2,7 +2,7 @@
 module: blog
 sources:
 - backend/src/modules/blog
-last_scan: '2026-07-02'
+last_scan: '2026-07-16'
 primary_files:
 - backend/src/modules/blog/blog.module.ts
 - backend/src/modules/blog/controllers/advice-hierarchy.controller.ts
@@ -16,6 +16,7 @@ depends_on:
 - CacheModule
 - SearchModule
 - SeoModule
+- SeoProjectionReadModule
 ---
 
 # Module Blog
