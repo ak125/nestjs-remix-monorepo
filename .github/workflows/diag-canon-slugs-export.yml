@@ -122,20 +122,33 @@ jobs:
           token: ${{ secrets.WIKI_REPO_TOKEN }}
           ref: main
 
-      - name: Diff vs current wiki exports/ (3 files)
+      - name: Diff vs current wiki exports/ (3 files, ignoring volatile generated_at)
         id: diff
+        shell: bash
         run: |
           mkdir -p automecanik-wiki/exports
+          # `generated_at` is a provenance timestamp that export-diag-canon-slugs.py
+          # stamps with wall-clock time on EVERY run (it is required by the Zod schema
+          # in backend/src/config/diag-canon.schema.ts, but no consumer treats it as a
+          # freshness signal). Comparing it byte-for-byte defeated this idempotency
+          # guard and re-committed diag-canon.json nightly with NO content change.
+          # We compare CONTENT only — strip generated_at (objects only) before diffing —
+          # so a no-op run makes no commit. Export liveness is measured separately by
+          # scripts/wiki/wiki-readiness-check.py C3 via THIS workflow's CI run-history,
+          # not by commit recency. (diag-canon-slugs.json is an array and
+          # diag-canon.schema.json has no generated_at — the normalization is a no-op
+          # for those.)
+          norm() { jq -S 'if type=="object" then del(.generated_at) else . end' "$1"; }
           changed=0
           for f in diag-canon-slugs.json diag-canon.json diag-canon.schema.json; do
             if [ ! -f "automecanik-wiki/exports/$f" ]; then
               echo "[diff] $f: missing in wiki — will create"
               changed=1
-            elif diff -q "/tmp/canon/$f" "automecanik-wiki/exports/$f" > /dev/null; then
-              echo "[diff] $f: identical (idempotent)"
+            elif diff -q <(norm "/tmp/canon/$f") <(norm "automecanik-wiki/exports/$f") > /dev/null; then
+              echo "[diff] $f: content identical (ignoring generated_at) — idempotent"
             else
               echo "[diff] $f: content changed — will update"
-              diff -u "automecanik-wiki/exports/$f" "/tmp/canon/$f" | head -20 || true
+              diff -u <(norm "automecanik-wiki/exports/$f") <(norm "/tmp/canon/$f") | head -20 || true
               changed=1
             fi
           done
