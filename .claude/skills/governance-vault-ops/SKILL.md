@@ -7,7 +7,7 @@ owners: ['@ak125']
 domain: D15
 runtime_class: privileged
 llm_safe: false
-last_verified: '2026-05-18'
+last_verified: '2026-07-05'
 license: Internal - Automecanik
 compatibility: Designed for Claude Code on the DEV VPS (single-write-point per ADR-015). Requires /opt/automecanik/governance-vault checkout, SSH signing configured, GOVERNANCE_VAULT_PATH env var. CI read-only enforced.
 tags: [governance, vault, adr-015, ssh-signing, ledger, audit]
@@ -30,12 +30,13 @@ Objectif: opérer le vault Obsidian `governance-vault` comme un registre (ledger
 
 ## Contexte & chemins (par défaut)
 
-- Vault repo: `/opt/automecanik/governance-vault`
-- Canon (monorepo): `/opt/automecanik/app/.spec/00-canon`
-- Scripts vault:
-  - `./scripts/sync-canon.sh`
-  - `./scripts/check-orphans.sh`
-  - `./scripts/audit-signatures.sh`
+- Vault repo (**SoT canonique**, write): `/opt/automecanik/governance-vault`
+- Miroirs canon (monorepo, **read-only**, hash-lockés) : `/opt/automecanik/app/.claude/canon-mirrors`
+- Scripts vault (sous `_scripts/` dans le repo vault) :
+  - `_scripts/check-orphans.sh`
+  - `_scripts/audit-signatures.sh`
+  - `_scripts/cron-sync-canon-mirrors.sh` / `_scripts/sync_canon_mirrors.py` (sync **vault → miroirs monorepo**, cf. Règle 4)
+  - `_scripts/sync-canon.sh` — **legacy** (`.spec/00-canon` → vault ; superseded, cf. Règle 4)
 - Les commits doivent afficher: `Good "git" signature ...`
 
 > Si ces chemins diffèrent, les fournir à l'utilisateur et/ou les rendre configurables via variables d'environnement.
@@ -57,18 +58,23 @@ Objectif: opérer le vault Obsidian `governance-vault` comme un registre (ledger
 - Un seul poste autorisé pour écrire/push: Deploy VPS.
 - Interdit: push depuis laptop/PC/devbox non autorisé.
 
-4) **CANON IS SOURCE OF TRUTH**
-- Les docs canon vivent dans `.spec/00-canon/` du monorepo.
-- Le vault est un miroir enrichi + ledger opérationnel.
-- Sync: canon → vault uniquement.
+4) **VAULT = SOURCE OF TRUTH CANONIQUE** (sens du flux — cf. CLAUDE.md §Gouvernance, ADR-012/015)
+- Le canon (ADR / rules / policies) est **écrit dans le vault** (`ak125/governance-vault`, single-write-point DEV). Toute mutation canon = **PR vault signée G3** — **jamais** écrite dans le monorepo.
+- Le monorepo ne contient que des **miroirs read-only hash-lockés** (`.claude/canon-mirrors/`), synchronisés **vault → monorepo** (`_scripts/cron-sync-canon-mirrors.sh` / `sync_canon_mirrors.py`). Ne jamais les éditer à la main.
+- Les docs legacy `.spec/00-canon/*` (`architecture.md`, `rules.md`, `governance-policy.md`…) = **sans autorité courante** (fermeture gouvernée) — SAUF `.spec/00-canon/repository-registry/**` (surface L2 du Repository Control Plane, ADR-058/062).
+- ⚠️ **Legacy** : `_scripts/sync-canon.sh` (`.spec/00-canon` → vault) reflète un staging **superseded** par le modèle vault=SoT ci-dessus. Ne pas traiter `.spec/00-canon` comme source canon.
 
 ---
 
 ## Workflows (utilisation quotidienne)
 
 ### A) "Je n'y pense jamais" (commande unique)
+> ⚠️ `gov`/`sync-canon.sh` = chemin **legacy** `.spec/00-canon → vault` (cf. Règle 4). La sync
+> canon **courante** est `vault → miroirs monorepo` via `_scripts/cron-sync-canon-mirrors.sh`
+> (automatisée). N'utiliser `gov` que pour le staging legacy, jamais pour « écrire du canon ».
+
 Commande recommandée: `gov` (script).
-- Fait un dry-run sync canon → vault
+- Fait un dry-run sync `.spec/00-canon` → vault (legacy)
 - Montre les changements
 - Demande confirmation
 - Si OK: sync + commit signé + check-orphans + push
@@ -85,14 +91,14 @@ Usage:
 1) Créer un fichier depuis template (incidents/decisions/rules)
 2) Remplir le contenu
 3) Exécuter:
-   - `./scripts/check-orphans.sh .`
+   - `_scripts/check-orphans.sh .`
 4) Commit signé + push
 
 ---
 
 ### C) Audit mensuel signatures
 1) Générer rapport:
-   - `./scripts/audit-signatures.sh --report`
+   - `_scripts/audit-signatures.sh --report`
 2) Commit signé + push du rapport
 
 ---
@@ -119,8 +125,8 @@ Usage:
   - ou marquer correctement "deprecated/archived" selon conventions
   - relancer `check-orphans.sh` jusqu'à zéro
 
-### 4) Conflit / divergence canon ↔ vault
-- Le canon gagne.
+### 4) Conflit / divergence `.spec/00-canon` (legacy) ↔ vault
+- Le **vault** (SoT canonique) gagne — cf. Règle 4. Les docs `.spec/00-canon` legacy ne priment **jamais** sur le vault.
 - Action:
   - exécuter `sync-canon.sh` en dry-run
   - inspecter diff
@@ -132,9 +138,9 @@ Usage:
 ## Checklists (avant push)
 
 - [ ] `git log --show-signature -1` affiche `Good "git" signature`
-- [ ] `./scripts/check-orphans.sh .` => "No orphans found"
+- [ ] `_scripts/check-orphans.sh .` => "No orphans found"
 - [ ] Aucune action CI n'a commité/poussé dans le vault
-- [ ] Les changements canon→vault sont confirmés humainement
+- [ ] Les changements de sync (legacy `.spec/00-canon` → vault) sont confirmés humainement
 
 ---
 

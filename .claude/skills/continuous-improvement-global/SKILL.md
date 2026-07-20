@@ -1,6 +1,6 @@
 ---
 name: continuous-improvement-global
-description: Use when reviewing any AutoMecanik PR, audit, script, pipeline, owner-action or code change as the priority operational filter — checks whether the action improves a real measured problem with evidence, controlled risk, tests, and a clear next action. Non-blocking by default; proportional to risk. Triggers — "review PR", "audit this change", "validate before merge", "should I add this layer", "this looks ready", "ready to ship", "ouvrir une PR", or any request that touches code/archi/DB/contenu/SEO/conversion/pipeline.
+description: Use when reviewing any AutoMecanik PR, audit, script, pipeline, owner-action or code change as the priority operational filter — checks whether the action improves a real measured problem with evidence, controlled risk, tests, and a clear next action. Non-blocking by default; proportional to risk. Triggers — "review PR", "audit this change", "validate before merge", "should I add this layer", "this looks ready", "ready to ship", "ouvrir une PR", or any request that touches code/archi/DB/contenu/SEO/conversion/pipeline. Advisory only, never default-blocking (ADR-082, amendment Voie 3).
 type: technique
 status: stable
 owners: ['@ak125']
@@ -11,6 +11,10 @@ last_verified: '2026-07-04'
 ---
 
 # Skill : continuous-improvement-global
+
+> **Advisory only, never default-blocking** — ce skill est un *filtre conseil*, jamais un gate
+> bloquant automatique (ADR-082, amendement Voie 3). Toute promotion en gate bloquant = décision
+> owner explicite + amendement vault séparé.
 
 ## Purpose
 
