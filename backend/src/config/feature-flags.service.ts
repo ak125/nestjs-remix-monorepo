@@ -79,6 +79,49 @@ export class FeatureFlagsService {
     return this.bool('SEO_BRIEF_WIKI_ENABLED', false);
   }
 
+  // ── ADR-059 SEO projection READ (dark-launch, role-scoped canary) ──
+
+  /**
+   * Master switch for the ADR-059 projection READ path (`SeoProjectionReaderService`
+   * consuming `get_active_seo_projection`). OFF (default) → every role serves its
+   * legacy reader, unconditionally. Hard prerequisite: while this is OFF, no
+   * `(entity_key, projection_role)` pair can be projection-eligible, whatever the
+   * canary allowlist holds. Dark-launch — this PR ships it OFF with an empty
+   * allowlist; no page is activated.
+   */
+  get seoProjectionReadV1(): boolean {
+    return this.bool('SEO_PROJECTION_READ_V1', false);
+  }
+
+  /**
+   * Role-scoped canary allowlist for the projection READ path. CSV of
+   * `<projection_role>@<entity_key>` tokens, where `entity_key` is the namespaced
+   * canonical identity used by the RPC (e.g. `gamme:filtre-a-huile`), or
+   * `<projection_role>@*` to canary every entity of a SINGLE role. Empty by default.
+   * There is deliberately NO bare `*`: a token can never cross roles, so a GO on one
+   * role for an entity can never activate a sibling role (R4/R6) on the same entity.
+   * Membership is resolved through `isProjectionReadCanary`, never read directly.
+   */
+  get seoProjectionReadCanary(): string[] {
+    return this.csv('SEO_PROJECTION_READ_CANARY');
+  }
+
+  /**
+   * True only if BOTH the master switch is ON AND the `(entity_key, projection_role)`
+   * pair is explicitly allowlisted — either the exact `<role>@<entity_key>` token or
+   * the role-scoped wildcard `<role>@*`. Never honors a bare `*`: role isolation is
+   * structural. This is the single decision point for "is this scope projection-eligible?".
+   */
+  isProjectionReadCanary(entityKey: string, projectionRole: string): boolean {
+    if (!this.seoProjectionReadV1) return false;
+    if (!entityKey || !projectionRole) return false;
+    const list = this.seoProjectionReadCanary;
+    return (
+      list.includes(`${projectionRole}@${entityKey}`) ||
+      list.includes(`${projectionRole}@*`)
+    );
+  }
+
   // ── Phase 2 Orchestration flags ──
 
   get executionRegistryEnabled(): boolean {
