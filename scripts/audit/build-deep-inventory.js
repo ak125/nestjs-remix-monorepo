@@ -305,6 +305,15 @@ function decoratorName(node, ts) {
   return null;
 }
 
+// Single shared test-path predicate. A Jest/spec file may declare a local `@Module()`
+// (e.g. a ProbeModule for `Test.createTestingModule`) — that is a test double, NEVER a
+// runtime entrypoint. Test files stay in the FILE inventory (classifyKind → 'test') but
+// must be excluded from NestJS/Remix runtime-metadata collection so their decorators can
+// never be projected as a LIVE runtime module. Same pattern used by classifyKind().
+function isTestPath(f) {
+  return /\.spec\.ts$|\.e2e-spec\.ts$|\.test\.tsx?$|\/__tests__\//.test(f);
+}
+
 /**
  * Parse every tracked .ts/.tsx file once:
  *  - classByName: className → file (only classes carrying a NestJS class decorator)
@@ -342,6 +351,10 @@ function scanTypeScript(files, ts) {
 
   for (const file of files) {
     if (!TS_EXT.has(path.extname(file))) continue;
+    // Test files stay in the file inventory but never contribute runtime metadata
+    // (Nest @Module/@Controller/@Injectable, @Processor, Remix loaders). A test's local
+    // @Module() is a test double, not an app entrypoint — see isTestPath().
+    if (isTestPath(file)) continue;
     let src;
     try { src = fs.readFileSync(path.join(REPO_ROOT, file), 'utf8'); } catch { continue; }
     const sf = ts.createSourceFile(file, src, ts.ScriptTarget.Latest, /*setParentNodes*/ true, file.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
@@ -472,7 +485,7 @@ async function main() {
 
   // ---- file kind classification ------------------------------------------
   function classifyKind(f) {
-    if (/\.spec\.ts$|\.e2e-spec\.ts$|\.test\.tsx?$|\/__tests__\//.test(f)) return 'test';
+    if (isTestPath(f)) return 'test';
     if (f.endsWith('.module.ts')) return 'module';
     if (f.endsWith('.controller.ts')) return 'controller';
     if (f.endsWith('.service.ts')) return 'service';
@@ -648,4 +661,9 @@ async function main() {
   log('  artefacts written to audit/ (+ audit/cache/codebase-inventory.json, gitignored)');
 }
 
-main().catch((e) => die(e && e.stack ? e.stack : String(e)));
+// Run as a CLI; importable (for tests) without side effects.
+if (require.main === module) {
+  main().catch((e) => die(e && e.stack ? e.stack : String(e)));
+}
+
+module.exports = { isTestPath };

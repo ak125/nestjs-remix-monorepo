@@ -114,7 +114,8 @@
         "backend/src/modules/orders/controllers/orders.controller.ts",
         "backend/src/modules/payments/controllers/paybox-callback.controller.ts",
         "backend/src/modules/payments/controllers/payment-core.controller.ts",
-        "backend/src/modules/payments/services/paybox-callback-gate.service.ts"
+        "backend/src/modules/payments/services/paybox-callback-gate.service.ts",
+        "backend/src/modules/seo-monitoring/listeners/order-funnel.listener.ts"
       ]
     },
     {
@@ -214,6 +215,7 @@
       "status": "LIVE",
       "usedBy": [
         "backend/src/modules/payments/controllers/paybox-callback.controller.ts",
+        "backend/src/modules/seo-monitoring/listeners/order-funnel.listener.ts",
         "backend/src/modules/supplier-truth/supplier-truth.repository.ts"
       ]
     },
@@ -4681,6 +4683,7 @@
         "backend/src/modules/seo-monitoring/services/funnel-events.service.ts",
         "backend/src/modules/seo-monitoring/services/runtime-events.service.ts",
         "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts",
+        "backend/src/modules/seo/services/seo-placeholder-events.service.ts",
         "backend/src/modules/seo/services/sitemap-event-log.service.ts"
       ]
     },
@@ -7693,7 +7696,218 @@
       ]
     },
     {
-      "columns": [],
+      "columns": [
+        {
+          "hasDefault": true,
+          "name": "id",
+          "nullable": true,
+          "type": "UUID PRIMARY KEY"
+        },
+        {
+          "hasDefault": false,
+          "name": "page_key",
+          "nullable": true,
+          "type": "TEXT NOT NULL UNIQUE"
+        },
+        {
+          "hasDefault": false,
+          "name": "brand",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "model",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "type_name",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "power_ps",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "fuel",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "body",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "year_from",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "year_to",
+          "nullable": true,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": true,
+          "name": "engine_codes",
+          "nullable": false,
+          "type": "JSONB"
+        },
+        {
+          "hasDefault": true,
+          "name": "cnit_codes",
+          "nullable": false,
+          "type": "JSONB"
+        },
+        {
+          "hasDefault": true,
+          "name": "mine_codes",
+          "nullable": false,
+          "type": "JSONB"
+        },
+        {
+          "hasDefault": false,
+          "name": "brand_id",
+          "nullable": true,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "model_id",
+          "nullable": true,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "type_id",
+          "nullable": true,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "canonical_url",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "h1",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "meta_title",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "meta_description",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "content_main",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "rendered_json",
+          "nullable": false,
+          "type": "JSONB"
+        },
+        {
+          "hasDefault": false,
+          "name": "block_plan",
+          "nullable": false,
+          "type": "JSONB"
+        },
+        {
+          "hasDefault": false,
+          "name": "content_fingerprint",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "normalized_text_fingerprint",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "faq_signature",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "category_signature",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "neighbor_family_key",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "engine_family_key",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": true,
+          "name": "sitemap_included",
+          "nullable": false,
+          "type": "BOOLEAN"
+        },
+        {
+          "hasDefault": true,
+          "name": "robots_directive",
+          "nullable": false,
+          "type": "TEXT"
+        },
+        {
+          "hasDefault": false,
+          "name": "review_required_since",
+          "nullable": true,
+          "type": "TIMESTAMPTZ"
+        },
+        {
+          "hasDefault": false,
+          "name": "published_at",
+          "nullable": true,
+          "type": "TIMESTAMPTZ"
+        },
+        {
+          "hasDefault": true,
+          "name": "created_at",
+          "nullable": false,
+          "type": "TIMESTAMPTZ"
+        },
+        {
+          "hasDefault": true,
+          "name": "updated_at",
+          "nullable": false,
+          "type": "TIMESTAMPTZ"
+        }
+      ],
       "deletePolicy": "ADR_REQUIRED",
       "domain": "UNKNOWN",
       "id": "__seo_r8_pages",
@@ -7705,7 +7919,7 @@
       "rlsEnabled": true,
       "schema": "public",
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "low",
+      "sourceConfidence": "high",
       "status": "LIVE",
       "usedBy": [
         "backend/src/modules/seo/r2/services/r2-r8-gate-status.service.ts",
@@ -7735,15 +7949,28 @@
         },
         {
           "hasDefault": false,
+          "name": "disambiguation_signature",
+          "nullable": false,
+          "type": "JSONB"
+        },
+        {
+          "hasDefault": false,
           "name": "source_lineage",
           "nullable": true,
           "type": "JSONB"
+        },
+        {
+          "hasDefault": true,
+          "name": "created_at",
+          "nullable": false,
+          "type": "TIMESTAMPTZ"
         }
       ],
       "deletePolicy": "ADR_REQUIRED",
       "domain": "UNKNOWN",
       "id": "__seo_r8_snapshot_store",
       "inMigrations": [
+        "20260311142250_r8_diversity_system.sql",
         "20260516_seo_r2_v2_cqrs_snapshot.sql"
       ],
       "indexes": [],
@@ -11777,6 +12004,7 @@
         "backend/src/modules/admin/services/admin-gammes-seo.service.ts",
         "backend/src/modules/admin/services/brief-template.service.ts",
         "backend/src/modules/admin/services/buying-guide/buying-guide-db.service.ts",
+        "backend/src/modules/admin/services/conseil-enricher.service.ts",
         "backend/src/modules/admin/services/conseil-priority.service.ts",
         "backend/src/modules/admin/services/conseil-quality-scorer.service.ts",
         "backend/src/modules/admin/services/execution-router.service.ts",
@@ -11945,6 +12173,7 @@
       "usedBy": [
         "backend/src/modules/catalog/controllers/pieces-diagnostic.controller.ts",
         "backend/src/modules/catalog/services/homepage-rpc.service.ts",
+        "backend/src/modules/gamme-rest/services/gamme-rpc.service.ts",
         "backend/src/modules/search/controllers/search-debug.controller.ts",
         "backend/src/modules/search/controllers/search-enhanced-existing.controller.ts"
       ]

@@ -1050,33 +1050,6 @@
         {
           "mode": "IN",
           "name": "p_type_id",
-          "type": "INTEGER"
-        }
-      ],
-      "definedInMigrations": [
-        "20260421_vehicle_page_cache_inline_and_drop_legacy.sql"
-      ],
-      "domain": "UNKNOWN",
-      "id": "public.build_vehicle_page_payload#sig:7e35db43",
-      "language": "plpgsql",
-      "name": "build_vehicle_page_payload",
-      "owner": "__unassigned__",
-      "parseMode": "parsed",
-      "parseWarnings": [],
-      "returnType": "JSONB",
-      "schema": "public",
-      "schemaVersion": "1.0.0",
-      "searchPath": [],
-      "securityDefiner": true,
-      "sourceConfidence": "high",
-      "status": "UNKNOWN",
-      "usedBy": []
-    },
-    {
-      "args": [
-        {
-          "mode": "IN",
-          "name": "p_type_id",
           "type": "integer"
         }
       ],
@@ -1084,7 +1057,7 @@
         "20260425_optimize_build_vehicle_page_payload_catalog.sql"
       ],
       "domain": "UNKNOWN",
-      "id": "public.build_vehicle_page_payload#sig:c19fc985",
+      "id": "public.build_vehicle_page_payload",
       "language": "plpgsql",
       "name": "build_vehicle_page_payload",
       "owner": "__unassigned__",
@@ -1119,7 +1092,7 @@
         {
           "mode": "IN",
           "name": "p_price",
-          "type": "INT -- Price in centimes"
+          "type": "INT"
         }
       ],
       "definedInMigrations": [
@@ -1218,18 +1191,18 @@
         },
         {
           "mode": "IN",
-          "name": "",
-          "type": "-- governed batch (service-generated); required for commit\n  p_main_pg_id      INTEGER"
+          "name": "p_main_pg_id",
+          "type": "INTEGER"
         },
         {
           "mode": "IN",
-          "name": "",
-          "type": "-- the MAIN gamme (must be a valid visible strategic hub)\n  p_accessory_pg_ids INTEGER[]"
+          "name": "p_accessory_pg_ids",
+          "type": "INTEGER[]"
         },
         {
           "mode": "IN",
-          "name": "",
-          "type": "-- the accessory gammes to link (level-4/5, hidden)\n  p_operator        TEXT"
+          "name": "p_operator",
+          "type": "TEXT"
         },
         {
           "mode": "IN",
@@ -1310,7 +1283,7 @@
         "20260608_pricing_catalog_display_activate_respect_pg_display.sql"
       ],
       "domain": "UNKNOWN",
-      "id": "public.catalog_display_activate#sig:987ed037",
+      "id": "public.catalog_display_activate",
       "language": "plpgsql",
       "name": "catalog_display_activate",
       "owner": "__unassigned__",
@@ -1334,18 +1307,13 @@
         },
         {
           "mode": "IN",
-          "name": "",
-          "type": "-- governed batch (price_import_batches); required for commit\n  p_supplier  TEXT"
+          "name": "p_supplier",
+          "type": "TEXT"
         },
         {
           "mode": "IN",
-          "name": "",
-          "type": "-- pieces.piece_pm_id (brand)"
-        },
-        {
-          "mode": "IN",
-          "name": "",
-          "type": "e.g. '3410' (NK). Brand-lock.\n  p_operator  TEXT"
+          "name": "p_operator",
+          "type": "TEXT"
         },
         {
           "mode": "IN",
@@ -1354,65 +1322,8 @@
         },
         {
           "mode": "IN",
-          "name": "do",
-          "type": "not write"
-        }
-      ],
-      "definedInMigrations": [
-        "20260607_pricing_catalog_display_activate.sql"
-      ],
-      "domain": "UNKNOWN",
-      "id": "public.catalog_display_activate#sig:eecebf1d",
-      "language": "plpgsql",
-      "name": "catalog_display_activate",
-      "owner": "__unassigned__",
-      "parseMode": "parsed",
-      "parseWarnings": [],
-      "returnType": "JSONB",
-      "schema": "public",
-      "schemaVersion": "1.0.0",
-      "searchPath": [],
-      "securityDefiner": false,
-      "sourceConfidence": "high",
-      "status": "UNKNOWN",
-      "usedBy": []
-    },
-    {
-      "args": [
-        {
-          "mode": "IN",
-          "name": "p_batch_id",
-          "type": "UUID"
-        },
-        {
-          "mode": "IN",
-          "name": "",
-          "type": "-- governed batch (price_import_batches); required for commit\n  p_supplier  TEXT"
-        },
-        {
-          "mode": "IN",
-          "name": "",
-          "type": "-- pieces.piece_pm_id (brand)"
-        },
-        {
-          "mode": "IN",
-          "name": "",
-          "type": "e.g. '3410' (NK). Brand-lock.\n  p_operator  TEXT"
-        },
-        {
-          "mode": "IN",
-          "name": "p_dry_run",
-          "type": "BOOLEAN"
-        },
-        {
-          "mode": "IN",
-          "name": "",
-          "type": "-- safe default: project"
-        },
-        {
-          "mode": "IN",
-          "name": "do",
-          "type": "not write p_gamme_ids INTEGER[]"
+          "name": "p_gamme_ids",
+          "type": "INTEGER[]"
         }
       ],
       "definedInMigrations": [
@@ -1475,28 +1386,18 @@
         },
         {
           "mode": "IN",
-          "name": "",
-          "type": "-- governed batch (price_import_batches); required for commit\n  p_supplier  TEXT"
+          "name": "p_supplier",
+          "type": "TEXT"
         },
         {
           "mode": "IN",
-          "name": "",
-          "type": "-- pieces.piece_pm_id (brand)"
-        },
-        {
-          "mode": "IN",
-          "name": "",
-          "type": "e.g. '3410' (NK). Brand-lock.\n  p_operator  TEXT"
+          "name": "p_operator",
+          "type": "TEXT"
         },
         {
           "mode": "IN",
           "name": "p_dry_run",
           "type": "BOOLEAN"
-        },
-        {
-          "mode": "IN",
-          "name": "do",
-          "type": "not write"
         }
       ],
       "definedInMigrations": [
@@ -1707,28 +1608,35 @@
         {
           "mode": "IN",
           "name": "p_order",
-          "type": "jsonb"
+          "type": "JSONB"
         },
         {
           "mode": "IN",
           "name": "p_lines",
-          "type": "jsonb"
+          "type": "JSONB"
+        },
+        {
+          "mode": "IN",
+          "name": "p_correlation_id",
+          "type": "UUID"
         }
       ],
       "definedInMigrations": [
-        "20260522160000_order_line_website_url_attribution.sql"
+        "20260523_002_cancel_order_atomic.sql"
       ],
       "domain": "UNKNOWN",
-      "id": "public.create_order_atomic#sig:5bfb8ea6",
+      "id": "public.create_order_atomic#sig:3df29f30",
       "language": "plpgsql",
       "name": "create_order_atomic",
       "owner": "__unassigned__",
       "parseMode": "parsed",
       "parseWarnings": [],
-      "returnType": "text",
+      "returnType": "TEXT",
       "schema": "public",
       "schemaVersion": "1.0.0",
-      "searchPath": [],
+      "searchPath": [
+        "public"
+      ],
       "securityDefiner": true,
       "sourceConfidence": "high",
       "status": "UNKNOWN",
@@ -1751,7 +1659,7 @@
         "20260523_002_cancel_order_atomic.down.sql"
       ],
       "domain": "UNKNOWN",
-      "id": "public.create_order_atomic#sig:a26e3b02",
+      "id": "public.create_order_atomic#sig:5bfb8ea6",
       "language": "plpgsql",
       "name": "create_order_atomic",
       "owner": "__unassigned__",
@@ -1770,61 +1678,22 @@
       "args": [
         {
           "mode": "IN",
-          "name": "p_order",
-          "type": "JSONB"
-        },
-        {
-          "mode": "IN",
-          "name": "p_lines",
-          "type": "JSONB"
-        },
-        {
-          "mode": "IN",
-          "name": "p_correlation_id",
-          "type": "UUID"
-        }
-      ],
-      "definedInMigrations": [
-        "20260523_002_cancel_order_atomic.sql"
-      ],
-      "domain": "UNKNOWN",
-      "id": "public.create_order_atomic#sig:c86cee62",
-      "language": "plpgsql",
-      "name": "create_order_atomic",
-      "owner": "__unassigned__",
-      "parseMode": "parsed",
-      "parseWarnings": [],
-      "returnType": "TEXT",
-      "schema": "public",
-      "schemaVersion": "1.0.0",
-      "searchPath": [
-        "public"
-      ],
-      "securityDefiner": true,
-      "sourceConfidence": "high",
-      "status": "UNKNOWN",
-      "usedBy": []
-    },
-    {
-      "args": [
-        {
-          "mode": "IN",
           "name": "p_window_hours",
           "type": "INT"
         },
         {
           "mode": "IN",
-          "name": "",
-          "type": "-- borne = TTL raw (au-delà : partition purgée)\n  p_grace_hours  INT"
+          "name": "p_grace_hours",
+          "type": "INT"
         },
         {
           "mode": "IN",
-          "name": "",
-          "type": "-- heures récentes pas encore agrégées (job @ :05 + retries)\n  p_min_missing  INT"
+          "name": "p_min_missing",
+          "type": "INT"
         }
       ],
       "definedInMigrations": [
-        "20260601_seo_cwv_aggregation_coverage_alert.sql"
+        "20260626_seo_cwv_aggregation_coverage_alert_tune.sql"
       ],
       "domain": "UNKNOWN",
       "id": "public.detect_cwv_aggregation_coverage_gap",
@@ -2170,6 +2039,40 @@
       "usedBy": []
     },
     {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "p_entity_id",
+          "type": "text"
+        },
+        {
+          "mode": "IN",
+          "name": "p_role",
+          "type": "text"
+        }
+      ],
+      "definedInMigrations": [
+        "20260620_adr059_pr7_get_active_seo_projection_rpc.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.get_active_seo_projection",
+      "language": "sql",
+      "name": "get_active_seo_projection",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "jsonb",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [
+        "public"
+      ],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
       "args": [],
       "definedInMigrations": [
         "20260126_create_seo_observable.sql"
@@ -2257,45 +2160,6 @@
         {
           "mode": "IN",
           "name": "p_gamme_id",
-          "type": "INTEGER"
-        },
-        {
-          "mode": "IN",
-          "name": "p_exclude_type_id",
-          "type": "INTEGER"
-        },
-        {
-          "mode": "IN",
-          "name": "p_limit",
-          "type": "INTEGER"
-        }
-      ],
-      "definedInMigrations": [
-        "20260309_no_products_alternatives_rpcs.sql"
-      ],
-      "domain": "UNKNOWN",
-      "id": "public.get_alternative_vehicles_for_gamme#sig:553c6de2",
-      "language": "sql",
-      "name": "get_alternative_vehicles_for_gamme",
-      "owner": "__unassigned__",
-      "parseMode": "partially_parsed",
-      "parseWarnings": [
-        "RETURNS clause not found in 1KB lookahead"
-      ],
-      "returnType": "",
-      "schema": "public",
-      "schemaVersion": "1.0.0",
-      "searchPath": [],
-      "securityDefiner": false,
-      "sourceConfidence": "medium",
-      "status": "UNKNOWN",
-      "usedBy": []
-    },
-    {
-      "args": [
-        {
-          "mode": "IN",
-          "name": "p_gamme_id",
           "type": "integer"
         },
         {
@@ -2313,7 +2177,7 @@
         "20260421_adr017_rpc_pieces_cast_cleanup.sql"
       ],
       "domain": "UNKNOWN",
-      "id": "public.get_alternative_vehicles_for_gamme#sig:fca9ebcc",
+      "id": "public.get_alternative_vehicles_for_gamme",
       "language": "sql",
       "name": "get_alternative_vehicles_for_gamme",
       "owner": "__unassigned__",
@@ -3493,33 +3357,6 @@
         {
           "mode": "IN",
           "name": "p_type_id",
-          "type": "INTEGER"
-        }
-      ],
-      "definedInMigrations": [
-        "20260420_vehicle_page_cache_build_fn.sql"
-      ],
-      "domain": "UNKNOWN",
-      "id": "public.get_vehicle_page_data_cached#sig:7e35db43",
-      "language": "plpgsql",
-      "name": "get_vehicle_page_data_cached",
-      "owner": "__unassigned__",
-      "parseMode": "parsed",
-      "parseWarnings": [],
-      "returnType": "JSON",
-      "schema": "public",
-      "schemaVersion": "1.0.0",
-      "searchPath": [],
-      "securityDefiner": true,
-      "sourceConfidence": "high",
-      "status": "UNKNOWN",
-      "usedBy": []
-    },
-    {
-      "args": [
-        {
-          "mode": "IN",
-          "name": "p_type_id",
           "type": "integer"
         }
       ],
@@ -3527,7 +3364,7 @@
         "20260522_vehicle_page_cached_volatile.sql"
       ],
       "domain": "UNKNOWN",
-      "id": "public.get_vehicle_page_data_cached#sig:c19fc985",
+      "id": "public.get_vehicle_page_data_cached",
       "language": "plpgsql",
       "name": "get_vehicle_page_data_cached",
       "owner": "__unassigned__",
@@ -3700,6 +3537,33 @@
       "searchPath": [
         "public"
       ],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [
+        {
+          "mode": "IN",
+          "name": "advice_id",
+          "type": "text"
+        }
+      ],
+      "definedInMigrations": [
+        "20260703_blog_advice_increment_views_rpc.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.increment_advice_views",
+      "language": "sql",
+      "name": "increment_advice_views",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "void",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
       "securityDefiner": true,
       "sourceConfidence": "high",
       "status": "UNKNOWN",
@@ -5047,24 +4911,36 @@
           "mode": "IN",
           "name": "p_last_maintenance_records",
           "type": "JSONB"
+        },
+        {
+          "mode": "IN",
+          "name": "p_type_id",
+          "type": "INT"
+        },
+        {
+          "mode": "IN",
+          "name": "p_fuel_type",
+          "type": "TEXT"
         }
       ],
       "definedInMigrations": [
-        "20260125_kg_v3_maintenance_risk.sql"
+        "20260429_diag_maintenance_via_kg.sql"
       ],
       "domain": "UNKNOWN",
-      "id": "public.kg_get_smart_maintenance_schedule#sig:0b3a8e2a",
-      "language": "",
+      "id": "public.kg_get_smart_maintenance_schedule#sig:a0710670",
+      "language": "plpgsql",
       "name": "kg_get_smart_maintenance_schedule",
       "owner": "__unassigned__",
       "parseMode": "partially_parsed",
       "parseWarnings": [
-        "LANGUAGE clause not found in 1KB lookahead"
+        "RETURNS clause not found in 1KB lookahead"
       ],
-      "returnType": "SETOF kg_smart_maintenance_item",
+      "returnType": "",
       "schema": "public",
       "schemaVersion": "1.0.0",
-      "searchPath": [],
+      "searchPath": [
+        "public"
+      ],
       "securityDefiner": false,
       "sourceConfidence": "medium",
       "status": "UNKNOWN",
@@ -5091,36 +4967,24 @@
           "mode": "IN",
           "name": "p_last_maintenance_records",
           "type": "JSONB"
-        },
-        {
-          "mode": "IN",
-          "name": "p_type_id",
-          "type": "INT"
-        },
-        {
-          "mode": "IN",
-          "name": "p_fuel_type",
-          "type": "TEXT"
         }
       ],
       "definedInMigrations": [
-        "20260429_diag_maintenance_via_kg.sql"
+        "20260125_kg_v3_maintenance_risk.sql"
       ],
       "domain": "UNKNOWN",
-      "id": "public.kg_get_smart_maintenance_schedule#sig:1b4233d0",
-      "language": "plpgsql",
+      "id": "public.kg_get_smart_maintenance_schedule#sig:a6c6af5d",
+      "language": "",
       "name": "kg_get_smart_maintenance_schedule",
       "owner": "__unassigned__",
       "parseMode": "partially_parsed",
       "parseWarnings": [
-        "RETURNS clause not found in 1KB lookahead"
+        "LANGUAGE clause not found in 1KB lookahead"
       ],
-      "returnType": "",
+      "returnType": "SETOF kg_smart_maintenance_item",
       "schema": "public",
       "schemaVersion": "1.0.0",
-      "searchPath": [
-        "public"
-      ],
+      "searchPath": [],
       "securityDefiner": false,
       "sourceConfidence": "medium",
       "status": "UNKNOWN",
@@ -6558,18 +6422,13 @@
         },
         {
           "mode": "IN",
-          "name": "",
-          "type": "-- pri_pm_id (brand)"
-        },
-        {
-          "mode": "IN",
-          "name": "",
-          "type": "e.g. '3410' (NK). Brand-lock.\n  p_operator  TEXT"
+          "name": "p_operator",
+          "type": "TEXT"
         },
         {
           "mode": "IN",
           "name": "p_rows",
-          "type": "JSONB -- [{ \"piece_id_i\": <bigint>, \"pri_type\": \"0\", \"dispo\": \"1\"|\"2\" }]"
+          "type": "JSONB"
         }
       ],
       "definedInMigrations": [
@@ -6628,54 +6487,7 @@
         "20260608_pricing_commit_chunk_persist_pri_ref.sql"
       ],
       "domain": "UNKNOWN",
-      "id": "public.pricing_commit_chunk#sig:31e9b09e",
-      "language": "plpgsql",
-      "name": "pricing_commit_chunk",
-      "owner": "__unassigned__",
-      "parseMode": "parsed",
-      "parseWarnings": [],
-      "returnType": "JSONB",
-      "schema": "public",
-      "schemaVersion": "1.0.0",
-      "searchPath": [],
-      "securityDefiner": false,
-      "sourceConfidence": "high",
-      "status": "UNKNOWN",
-      "usedBy": []
-    },
-    {
-      "args": [
-        {
-          "mode": "IN",
-          "name": "",
-          "type": "--   p_batch_id UUID"
-        },
-        {
-          "mode": "IN",
-          "name": "p_chunk_id",
-          "type": "UUID"
-        },
-        {
-          "mode": "IN",
-          "name": "p_supplier",
-          "type": "TEXT"
-        },
-        {
-          "mode": "IN",
-          "name": "p_operator",
-          "type": "TEXT"
-        },
-        {
-          "mode": "IN",
-          "name": "p_rows",
-          "type": "JSONB --"
-        }
-      ],
-      "definedInMigrations": [
-        "20260604_pricing_commit_chunk_import_pending_mode.sql"
-      ],
-      "domain": "UNKNOWN",
-      "id": "public.pricing_commit_chunk#sig:e0a855c1",
+      "id": "public.pricing_commit_chunk#sig:419ad653",
       "language": "plpgsql",
       "name": "pricing_commit_chunk",
       "owner": "__unassigned__",
@@ -6722,7 +6534,7 @@
         "20260522_pricing_control_plane_v1_functions.sql"
       ],
       "domain": "UNKNOWN",
-      "id": "public.pricing_commit_chunk#sig:f618195b",
+      "id": "public.pricing_commit_chunk#sig:e5ce8da1",
       "language": "plpgsql",
       "name": "pricing_commit_chunk",
       "owner": "__unassigned__",
@@ -7115,6 +6927,27 @@
       "searchPath": [],
       "securityDefiner": true,
       "sourceConfidence": "medium",
+      "status": "UNKNOWN",
+      "usedBy": []
+    },
+    {
+      "args": [],
+      "definedInMigrations": [
+        "20260619_adr059_pr6c_mv_revoke_and_refresh_rpc.sql"
+      ],
+      "domain": "UNKNOWN",
+      "id": "public.refresh_seo_projection_mvs",
+      "language": "plpgsql",
+      "name": "refresh_seo_projection_mvs",
+      "owner": "__unassigned__",
+      "parseMode": "parsed",
+      "parseWarnings": [],
+      "returnType": "TABLE(view_name text, refreshed boolean)",
+      "schema": "public",
+      "schemaVersion": "1.0.0",
+      "searchPath": [],
+      "securityDefiner": true,
+      "sourceConfidence": "high",
       "status": "UNKNOWN",
       "usedBy": []
     },
@@ -7569,7 +7402,7 @@
         "20260614_seo_control_005_low_ctr_v3_pages.sql"
       ],
       "domain": "UNKNOWN",
-      "id": "public.rpc_seo_low_ctr_v3#sig:09c79f28",
+      "id": "public.rpc_seo_low_ctr_v3",
       "language": "sql",
       "name": "rpc_seo_low_ctr_v3",
       "owner": "__unassigned__",
@@ -7581,28 +7414,6 @@
       "searchPath": [],
       "securityDefiner": false,
       "sourceConfidence": "high",
-      "status": "UNKNOWN",
-      "usedBy": []
-    },
-    {
-      "args": [],
-      "definedInMigrations": [
-        "20260614_seo_control_005_low_ctr_v3_pages.sql"
-      ],
-      "domain": "UNKNOWN",
-      "id": "public.rpc_seo_low_ctr_v3#sig:da39a3ee",
-      "language": "",
-      "name": "rpc_seo_low_ctr_v3",
-      "owner": "__unassigned__",
-      "parseError": "Header regex failed",
-      "parseMode": "unknown_signature",
-      "parseWarnings": [],
-      "returnType": "",
-      "schema": "public",
-      "schemaVersion": "1.0.0",
-      "searchPath": [],
-      "securityDefiner": false,
-      "sourceConfidence": "low",
       "status": "UNKNOWN",
       "usedBy": []
     },
@@ -8015,28 +7826,6 @@
       "searchPath": [],
       "securityDefiner": false,
       "sourceConfidence": "high",
-      "status": "UNKNOWN",
-      "usedBy": []
-    },
-    {
-      "args": [],
-      "definedInMigrations": [
-        "20260421_adr017_rpc_pieces_cast_cleanup.sql"
-      ],
-      "domain": "UNKNOWN",
-      "id": "public.unknown",
-      "language": "",
-      "name": "unknown",
-      "owner": "__unassigned__",
-      "parseError": "Header regex failed",
-      "parseMode": "unknown_signature",
-      "parseWarnings": [],
-      "returnType": "",
-      "schema": "public",
-      "schemaVersion": "1.0.0",
-      "searchPath": [],
-      "securityDefiner": false,
-      "sourceConfidence": "low",
       "status": "UNKNOWN",
       "usedBy": []
     },
