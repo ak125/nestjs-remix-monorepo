@@ -284,9 +284,10 @@ export class BuyingGuideQualityGatesService {
    * Build the R6 gatekeeper verdict persisted to
    * `__seo_gamme_purchase_guide.sgpg_gatekeeper_{score,flags,checks}`.
    *
-   * Mirrors the R1EnricherService persistence pattern (see r1-enricher.service.ts
-   * lines 192-193) but carries the richer R6 signal — per-section OK + anti-wiki
-   * gate — into the JSONB `checks` column.
+   * Mirrors the gatekeeper persistence pattern formerly held by
+   * R1EnricherService (removed 2026-07 — RAG→R1 writer, ADR-031/046) but
+   * carries the richer R6 signal — per-section OK + anti-wiki gate — into the
+   * JSONB `checks` column.
    *
    * Pure sync: never reads/writes DB. The caller merges the returned fields
    * into the enricher payload passed to BuyingGuideDbService.upsertBuyingGuide.

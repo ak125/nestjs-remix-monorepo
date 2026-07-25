@@ -1,9 +1,13 @@
 /**
  * R1_ROUTER — Slots gamme (5 colonnes compatibilité/sélection) + page HTML
  *
- * Services backend canon :
- *   - `r1-enricher.service.ts` (slots DB)
- *   - `r1-content-from-rag.service.ts` (page HTML)
+ * Services backend canon : AUCUN générateur.
+ *   Les deux producteurs RAG→R1 — `r1-enricher.service.ts` (slots DB) et
+ *   `r1-content-from-rag.service.ts` (page HTML) — ont été RETIRÉS : le RAG
+ *   n'a aucune autorité d'écriture contenu (ADR-031/046). Les lignes
+ *   `__seo_r1_gamme_slots` existantes restent servies en LECTURE via la RPC
+ *   `get_buying_guide_with_r1_slots` (priorité R1 → sgpg) puis
+ *   `GammeResponseBuilderService`. Un producteur WIKI→R1 reste à construire.
  *
  * Section S4_MICRO_SEO bornes 1500/3000c migrées depuis les constants
  * `R1_MICRO_SEO_MIN_CHARS`/`MAX_CHARS` (PR monorepo #346 commit

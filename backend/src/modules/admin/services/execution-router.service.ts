@@ -24,7 +24,6 @@ import { R2EnricherService } from '../services/r2-enricher.service';
 import { R8VehicleEnricherService } from '../services/r8-vehicle-enricher.service';
 import { R7BrandEnricherService } from '../services/r7-brand-enricher.service';
 import { DiagnosticService } from '../../seo/validation/diagnostic.service';
-import { R1EnricherService } from '../services/r1-enricher.service';
 import { ReferenceService } from '../../seo/services/reference.service';
 import { R4ContentEnricherService } from '../services/r4-content-enricher.service';
 import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
@@ -100,9 +99,6 @@ export class ExecutionRouterService extends SupabaseBaseService {
         ...args: unknown[]
       ) => unknown,
       DiagnosticService: DiagnosticService as unknown as new (
-        ...args: unknown[]
-      ) => unknown,
-      R1EnricherService: R1EnricherService as unknown as new (
         ...args: unknown[]
       ) => unknown,
       ReferenceService: ReferenceService as unknown as new (
@@ -238,11 +234,10 @@ export class ExecutionRouterService extends SupabaseBaseService {
     const pgAlias = await this.resolvePgAlias(targetId);
 
     switch (roleId) {
-      case RoleId.R1_ROUTER:
-        if (dryRun) {
-          return this.dryRunPreview(roleId, targetId, pgAlias);
-        }
-        return enricher.enrichSingle!(targetId, pgAlias ?? targetId);
+      // R1_ROUTER: no dispatch case — executable path removed (Tranche-B R1, ADR-031/046;
+      // RAG producer R1EnricherService deleted). The registry entry is gone, so execute()
+      // fails explicitly upstream ("No registry entry for role") before ever reaching this
+      // switch — same surface as R3_CONSEILS. Do NOT re-add a RAG-fed R1 enricher.
 
       case RoleId.R2_PRODUCT:
         if (dryRun) {

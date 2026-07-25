@@ -3,11 +3,19 @@
 Backfill r1s_micro_seo_block for __seo_r1_gamme_slots rows where the
 content length is below the canonical Option B threshold (1500c min).
 
+INOPÉRANT depuis 2026-07 — NE PAS UTILISER.
+R1EnricherService (producteur RAG→R1) a été retiré : le RAG n'a aucune
+autorité d'écriture contenu (ADR-031/046). L'entrée R1_ROUTER de
+l'EXECUTION_REGISTRY n'existe plus, donc le POST ci-dessous fail-closed
+("No registry entry for role" → blocked_no_write). Les lignes existantes
+restent servies en lecture. Ré-écriture R1 = producteur WIKI→R1 à construire.
+Conservé comme trace de la procédure de backfill, pas comme outil courant.
+
 Mirror of `scripts/seo/backfill-r1-gatekeeper.py` — same psycopg2 + .env +
-dry-run + resume-safe + sleep pattern. The actual content synthesis runs
+dry-run + resume-safe + sleep pattern. The content synthesis used to run
 inside `R1EnricherService.synthesizeMicroSeo` (richer 5-paragraph synth +
-truncate cap 3000c, see commit feat/r1-enricher-micro-seo-1500c-canon),
-invoked via the canonical pipeline endpoint :
+truncate cap 3000c, see commit feat/r1-enricher-micro-seo-1500c-canon) —
+service removed — invoked via the canonical pipeline endpoint :
 
     POST /api/internal/pipeline/execute
     { "roleId": "R1_ROUTER", "targetIds": [<pg_id>], "dryRun": false }
@@ -51,7 +59,7 @@ API_BASE = os.environ.get("BACKFILL_API_BASE", "http://localhost:3000")
 ENDPOINT = f"{API_BASE}/api/internal/pipeline/execute"
 HEALTH_URL = f"{API_BASE}/health"
 
-# Canon threshold — must match R1_MICRO_SEO_MIN_CHARS in r1-enricher.service.ts
+# Canon threshold — was R1_MICRO_SEO_MIN_CHARS in r1-enricher.service.ts (removed)
 MIN_CHARS = 1500
 # Legacy band : rows in [700, 1499] are above the old threshold but below
 # the new one. Excluded by default (the user explicitly scoped 163 rows in

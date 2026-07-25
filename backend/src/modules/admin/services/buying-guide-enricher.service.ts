@@ -295,7 +295,8 @@ export class BuyingGuideEnricherService {
       qualityScore,
     );
 
-    // Gatekeeper verdict — mirrors R1EnricherService (r1s_gatekeeper_{score,flags})
+    // Gatekeeper verdict — same shape as the former R1EnricherService fields
+    // (r1s_gatekeeper_{score,flags}); that service was removed 2026-07 (RAG→R1).
     // Persisted in the same UPDATE as content columns so the BEFORE UPDATE
     // trigger `trg_invalidate_sgpg_gatekeeper` keeps our fresh values instead
     // of nulling them out.

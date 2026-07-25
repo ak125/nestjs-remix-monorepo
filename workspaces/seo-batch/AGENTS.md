@@ -15,7 +15,7 @@ Référentiel comportemental : **`packages/seo-role-contracts/`** (Phase 2 PR-F,
 | Rôle | Générateur LIVE | Type | Fichier | Contract (Phase 2) |
 |------|-----------------|------|---------|---------------------|
 | **R0_HOME** | `R0HomeAggregatorService` | NestJS service | `backend/src/modules/admin/services/r0-home-aggregator.service.ts` | `packages/seo-role-contracts/src/contracts/r0.ts` (TBD Phase 2) |
-| **R1_ROUTER** | `R1EnricherService` | NestJS service (0-LLM) | `backend/src/modules/admin/services/r1-enricher.service.ts` | `r1.ts` |
+| **R1_ROUTER** | _aucun_ (retiré 2026-07) | — | — | `r1.ts` |
 | **R2_PRODUCT** | `R2EnricherService` | NestJS service | `backend/src/modules/admin/services/r2-enricher.service.ts` | `r2.ts` |
 | **R3_CONSEILS** | `ConseilEnricherService` | NestJS service | `backend/src/modules/admin/services/conseil-enricher.service.ts` | `r3.ts` |
 | **R4_REFERENCE** | `R4ContentEnricherService` | NestJS service | `backend/src/modules/admin/services/r4-content-enricher.service.ts` | `r4.ts` |
@@ -25,6 +25,8 @@ Référentiel comportemental : **`packages/seo-role-contracts/`** (Phase 2 PR-F,
 
 **Note R5** : déprécié par [[ADR-027-r5-consolidation-into-r3-s2-diag]]. Aucun générateur LIVE.
 
+**Note R1** : les deux producteurs RAG→R1 (`R1EnricherService` slots DB, `R1ContentFromRagService` page HTML) ont été **retirés** — le RAG n'a aucune autorité d'écriture contenu (ADR-031/046). Les lignes `__seo_r1_gamme_slots` existantes restent **servies en lecture** ; aucun producteur WIKI→R1 n'existe encore. Méthode canon de production : skill `seo-content-loop` (NO-RAG).
+
 ---
 
 ## Skills Claude Code complémentaires (pas de génération canon)
@@ -33,7 +35,7 @@ Les agents `.claude/agents/` de ce workspace orchestrent le LLM Claude Code pour
 
 | Agent | Rôle ciblé | Usage |
 |-------|------------|-------|
-| `r1-content-batch.md` | R1_ROUTER | Polish LLM si template R1Enricher produit < min_chars contract |
+| `r1-content-batch.md` | R1_ROUTER | **NEUTRALISÉ** (2026-07-19) — agent inerte, redirige vers `seo-content-loop` |
 | `conseil-batch.md` | R3_CONSEILS | Multi-section orchestration |
 | `r4-content-batch.md` | R4_REFERENCE | Definition + sections génération LLM |
 | `r6-content-batch.md` | R6_GUIDE_ACHAT | Comparison + tier polish |
@@ -49,7 +51,7 @@ Les agents `.claude/agents/` de ce workspace orchestrent le LLM Claude Code pour
 
 | Path | Type | Raison sunset | Remplacement |
 |------|------|---------------|--------------|
-| `scripts/seo/generate-content-r1.py` | Python script | Anthropic API direct (non-canon, hors gouvernance rate-limit) | Skill `/content-gen --r1` ou `R1EnricherService` |
+| `scripts/seo/generate-content-r1.py` | Python script | Anthropic API direct (non-canon, hors gouvernance rate-limit) | Skill `seo-content-loop` (NO-RAG) — `R1EnricherService` retiré 2026-07 |
 | `scripts/rag/rag-enrich-from-web-corpus.py` | Python script | Écrit `rag/knowledge/` direct (bypass wiki/exports — viole ADR-031) | Phase 3B PR-O `wiki-to-rag-exporter.py` |
 | `scripts/seo/materialize-db-to-md.py` | Python script | Écrit `rag/knowledge/diagnostic/` direct | Phase 3B promotion gate |
 | `workspaces/seo-batch/.claude/agents/phase5-vague{4,5,6}-*.md` | Claude Code agent | Curation humaine direct rag/ (avant pivot ADR-033) | Phase 3A PR-K `legacy-rag-importer.py` (passage par wiki/proposals/) |

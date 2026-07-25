@@ -1,7 +1,7 @@
 # SEO Agent Operating Matrix
 
-> Généré le : 2026-07-14T05:32:26.146Z
-> Sources hash : registry=d6354274 types=6c585a30 catalog=de4b23f1 roleIds=1e6f6ff6
+> Généré le : 2026-07-18T22:55:57.768Z
+> Sources hash : registry=a386ffa5 types=6c585a30 catalog=de4b23f1 roleIds=1e6f6ff6
 > Registry version : 1.0.0 — Field catalog : 141 entrées
 
 ## Matrice principale
@@ -9,7 +9,7 @@
 | Rôle | Health | Registry | Agents | Tables ownées | # Fields |
 |---|---|---|---|---|---|
 | R0_HOME | 40 | ❌ | r0-home-execution, r0-home-validator | — | 0 |
-| R1_ROUTER | 100 | ✅ | r1-content-batch, r1-keyword-planner, r1-router-validator | __seo_gamme, __seo_r1_gamme_slots, __seo_page_brief | 38 |
+| R1_ROUTER | 70 | ❌ | r1-content-batch, r1-keyword-planner, r1-router-validator | __seo_gamme, __seo_r1_gamme_slots, __seo_page_brief | 38 |
 | R2_PRODUCT | 100 | ✅ | r2-keyword-planner, r2-product-validator | __seo_r2_keyword_plan | 15 |
 | R3_GUIDE (deprecated) | 0 | ❌ | — | — | 0 |
 | R3_CONSEILS | 70 | ❌ | conseil-batch, r3-conseils-validator, r3-image-prompt, r3-keyword-plan-batch, r3-keyword-planner | __seo_gamme_conseil | 12 |
@@ -25,6 +25,7 @@
 
 ## Gaps (agents sans entrée registry)
 
+- ❌ **R1_ROUTER** : 3 agent(s) — r1-content-batch, r1-keyword-planner, r1-router-validator
 - ❌ **R3_CONSEILS** : 5 agent(s) — conseil-batch, r3-conseils-validator, r3-image-prompt, r3-keyword-plan-batch, r3-keyword-planner
 
 ## Anomalies

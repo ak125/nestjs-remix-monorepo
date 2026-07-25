@@ -43,26 +43,16 @@ export const EXECUTION_REGISTRY: Record<string, ExecutionRegistryEntry> = {
     requiredUpstreamPhases: [],
   },
 
-  [RoleId.R1_ROUTER]: {
-    roleId: RoleId.R1_ROUTER,
-    pageType: 'R1_pieces',
-    contractSchemaRef: 'page-contract-r1.schema',
-    enricherServiceKey: 'R1EnricherService',
-    agentFiles: ['r1-content-batch.md'],
-    promptChain: ['intent_lock', 'serp_pack', 'section_copy', 'gatekeeper'],
-    allowedModes: [
-      'create',
-      'regenerate',
-      'refresh_partial',
-      'refresh_full',
-      'repair',
-      'qa_only',
-    ],
-    defaultWriteMode: 'draft_write',
-    stopPolicy: { maxRetries: 2, timeoutMs: 120_000 },
-    escalationPolicy: { onGateFail: 'block', onTimeout: 'hold' },
-    requiredUpstreamPhases: ['phase16_admissibility'],
-  },
+  // R1_ROUTER: executable enrichment entry removed (Tranche-B R1 — ADR-031/046 +
+  // memory feedback_rag_zero_content_write_authority_remove_not_secure). R1EnricherService
+  // was a RAG→served-content producer (RAG .md → __seo_r1_gamme_slots); RAG has ZERO
+  // content-write authority, so the writer is DELETED (not gated/provenance-tagged). No
+  // replacement wired here — the future canonical producer is WIKI→projection (separate,
+  // owner-gated). Same surface as the R3_CONSEILS precedent below: any R1_ROUTER enrichment
+  // dispatch now fails explicitly with "No registry entry for role" (blocked_no_write) —
+  // never a silent skip. Existing __seo_r1_gamme_slots rows stay served statically via RPC
+  // get_buying_guide_with_r1_slots (readers untouched); R1 pages remain served through the
+  // read path (GammeResponseBuilderService). Do NOT re-add a RAG-fed entry.
 
   // R3_GUIDE: deprecated since role-ids.ts:17 ("no route, no contract, no prompts").
   // Already in FORBIDDEN_ROLE_IDS + DEPRECATED_OUTPUT_ROLES (role-ids.ts).

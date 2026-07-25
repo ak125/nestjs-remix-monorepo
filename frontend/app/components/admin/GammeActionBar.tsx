@@ -4,16 +4,10 @@
  * Contrat :
  * - Reçoit la gamme déjà résolue (pas de lookup interne)
  * - Handlers centralisés passés par le parent
- * - États de chargement séparés (content / images)
+ * - État de chargement images
  * - Double-clic protégé par disabled
  */
-import {
-  ClipboardCopy,
-  ExternalLink,
-  ImageIcon,
-  Loader2,
-  Sparkles,
-} from "lucide-react";
+import { ClipboardCopy, ExternalLink, ImageIcon, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -34,10 +28,8 @@ interface GammeRow {
 
 interface GammeActionBarProps {
   gamme: GammeRow | null;
-  onGenerateContent: () => void;
   onGenerateImages: () => void;
   gammeUrl: string | null;
-  isGeneratingContent: boolean;
   isGeneratingImages: boolean;
   contentResult?: {
     command?: string;
@@ -56,10 +48,8 @@ const ROLES = [
 
 export function GammeActionBar({
   gamme,
-  onGenerateContent,
   onGenerateImages,
   gammeUrl,
-  isGeneratingContent,
   isGeneratingImages,
   contentResult,
 }: GammeActionBarProps) {
@@ -131,20 +121,6 @@ export function GammeActionBar({
 
       {/* Ligne 2 — Actions principales */}
       <div className="flex flex-wrap items-center gap-3 px-4 py-3">
-        <Button
-          size="lg"
-          className="gap-2 bg-primary hover:bg-primary text-white"
-          onClick={onGenerateContent}
-          disabled={isGeneratingContent}
-        >
-          {isGeneratingContent ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Sparkles className="h-4 w-4" />
-          )}
-          Générer contenu
-        </Button>
-
         <Button
           size="lg"
           className="gap-2 bg-orange-500 hover:bg-orange-600 text-white"

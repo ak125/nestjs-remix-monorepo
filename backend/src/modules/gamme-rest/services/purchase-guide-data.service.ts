@@ -215,35 +215,6 @@ export class PurchaseGuideDataService extends SupabaseBaseService {
   }
 
   /**
-   * Upsert R1 slots into __seo_r1_gamme_slots.
-   * Used by R1ContentPipelineService, r1-content-batch agent, /content-gen --r1.
-   */
-  async upsertR1Slots(
-    pgId: string,
-    slots: Partial<Omit<R1SlotsDbRow, 'r1s_pg_id'>>,
-  ): Promise<{ success: boolean; error?: string }> {
-    try {
-      const { error } = await this.client
-        .from('__seo_r1_gamme_slots')
-        .upsert({ r1s_pg_id: pgId, ...slots }, { onConflict: 'r1s_pg_id' });
-
-      if (error) {
-        this.logger.error(
-          `Erreur upsert R1 slots pour gamme ${pgId}: ${error.message}`,
-        );
-        return { success: false, error: error.message };
-      }
-
-      this.logger.log(`R1 slots upserted pour gamme ${pgId}`);
-      return { success: true };
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
-      this.logger.error(`Erreur upsert R1 slots pour gamme ${pgId}: ${msg}`);
-      return { success: false, error: msg };
-    }
-  }
-
-  /**
    * Récupère les données du guide d'achat V2 pour une gamme
    */
   async getPurchaseGuideV2(pgId: string): Promise<PurchaseGuideDataV2 | null> {
