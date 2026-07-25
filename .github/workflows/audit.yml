@@ -84,6 +84,15 @@ jobs:
         # container temp-file write from ever coming back.
         run: npm run test:prod-ssr-probe
 
+      - name: ⏱️ PREPROD response probe — status vs latency proof (BLOCKING)
+        # The step this backs used to time responses without asserting anything, so a
+        # fast 500 scored ✅ — the ADR-024 R1 gamme gate was blind on its own subject
+        # (found verifying #1297 on PREPROD). These tests execute the probe against a
+        # real local HTTP server and prove the decision for 200 / 500 / 301 / 302 /
+        # connection-refused / timeout / a flapping endpoint, plus that latency stays
+        # a warning and redirects are never followed.
+        run: npm run test:preprod-response-probe
+
       - name: 🗂️ EDITORIAL_AUTHORITY_SINKS registry invariants (BLOCKING)
         # Pins the exact P0 sink set (audit §6): 2 served-tracked + 15 ratchet-blind,
         # each evidence-linked, no rN wildcard. The blind rows justify the registry.
