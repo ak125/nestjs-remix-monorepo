@@ -106,21 +106,21 @@ describe("preprod-response-probe.sh — status is asserted, not just latency", (
 
   test("FAILS on a fast 500 — the exact blind spot (was a green ✅ row before)", async () => {
     const { code, stdout, summary } = await runProbe("/boom");
-    assert.notEqual(code, 0, "a 500 must be blocking, however fast it answers");
+    assert.equal(code, 1, "a 500 must exit 1 (wrong status — never retryable)");
     assert.match(stdout, /HTTP 500.*expected 200/);
     assert.match(summary, /❌ HTTP/);
   });
 
   test("FAILS on a fast 301 and does NOT follow it", async () => {
     const { code, stdout } = await runProbe("/moved");
-    assert.notEqual(code, 0);
+    assert.equal(code, 1, "a redirect is a wrong status, not a transport failure");
     assert.match(stdout, /HTTP 301.*expected 200/);
     assert.match(stdout, /redirect not followed on purpose/);
   });
 
   test("FAILS on a fast 302 and does NOT follow it", async () => {
     const { code, stdout } = await runProbe("/found");
-    assert.notEqual(code, 0);
+    assert.equal(code, 1);
     assert.match(stdout, /HTTP 302.*expected 200/);
   });
 
@@ -129,21 +129,21 @@ describe("preprod-response-probe.sh — status is asserted, not just latency", (
     const { code, stdout, summary } = await runProbeUrl("http://127.0.0.1:1/ok", {
       label: "unreachable",
     });
-    assert.notEqual(code, 0);
+    assert.equal(code, 2, "transport failures exit 2 so the caller may retry once");
     assert.match(stdout, /no usable response/);
     assert.match(summary, /no response/);
   });
 
   test("FAILS on a timeout (server never answers)", async () => {
     const { code, stdout } = await runProbe("/hang", { env: { PROBE_MAX_TIME: "1" } });
-    assert.notEqual(code, 0);
+    assert.equal(code, 2, "a timeout is transport, not a status defect");
     assert.match(stdout, /no usable response/);
   });
 
   test("FAILS when only ONE of the three probes is bad (no averaging away a flap)", async () => {
     flapCount = 0;
     const { code, stdout } = await runProbe("/flap");
-    assert.notEqual(code, 0, "a 200,500,200 sequence must fail — every probe is checked");
+    assert.equal(code, 1, "a 200,500,200 sequence must exit 1 — every probe is checked");
     assert.match(stdout, /HTTP 200 500 200|HTTP .*500/);
   });
 });
@@ -167,7 +167,7 @@ describe("preprod-response-probe.sh — declared non-200 contracts", () => {
 
   test("FAILS when a declared-301 URL starts answering 200 (contract drift both ways)", async () => {
     const { code, stdout } = await runProbe("/ok", { expected: 301 });
-    assert.notEqual(code, 0);
+    assert.equal(code, 1);
     assert.match(stdout, /HTTP 200.*expected 301/);
   });
 });

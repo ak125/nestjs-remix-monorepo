@@ -1011,75 +1011,16 @@ jobs:
         # NOTHING: a page answering 500 in 20ms scored a green ✅ row. Found while
         # verifying PR #1297 on PREPROD — this step does probe the R1 gamme pages, so
         # it looked like proof they were served, while being unable to tell 200 from
-        # 500. Logic now lives in scripts/ci/preprod-response-probe.sh so it is unit-
-        # tested (npm run test:preprod-response-probe, RED→GREEN) instead of shipping
-        # untested inline YAML — same lesson as the PROD SSR gate (incident 2026-07-19).
+        # 500. Both the per-endpoint probe AND the suite that decides the verdict now
+        # live in scripts/ci/ so they are unit-tested (npm run test:preprod-response-probe
+        # + test:preprod-response-suite, RED→GREEN) instead of shipping untested inline
+        # YAML — same lesson as the PROD SSR gate (incident 2026-07-19). Keeping the retry
+        # branch in YAML is what let an early revision make a WRONG STATUS retryable.
         #
-        # Contract: wrong status / network error / timeout / redirect = BLOCKING.
-        # Latency over budget stays a ::warning:: — unchanged, non-blocking.
-        run: |
-          BASE="http://localhost:3200"
-          PROBE="scripts/ci/preprod-response-probe.sh"
-          echo "## ⏱️ PREPROD Response Times" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Endpoint | Median (ms) | Budget (ms) | Status | HTTP |" >> $GITHUB_STEP_SUMMARY
-          echo "|----------|-------------|-------------|--------|------|" >> $GITHUB_STEP_SUMMARY
-
-          run_probes() {
-            local failed=0
-            # Every endpoint is probed even after a failure, so the summary shows the
-            # FULL picture instead of truncating at the first defect.
-            "$PROBE" "$BASE/health" "/health" 200 || failed=1
-            "$PROBE" "$BASE/api/catalog/families" "/api/catalog/families" 1000 || failed=1
-            "$PROBE" "$BASE/" "Homepage" 2000 || failed=1
-            # /pieces/catalogue is a legacy route that 301s to `/` — verified on both DEV
-            # and PREPROD (the API smoke step has been printing "⚠️ 301" for it). Its 301
-            # is DECLARED here rather than silently timed as if it were a page: the probe
-            # never follows redirects, so this row now fails if the route drifts either
-            # way (301→200 or 301→500). Repointing or dropping this probe is an owner call.
-            "$PROBE" "$BASE/pieces/catalogue" "/pieces/catalogue (legacy 301→/)" 2000 301 || failed=1
-            "$PROBE" "$BASE/pieces/plaquette-de-frein-402/renault-140/megane-iii-140049/1-5-dci-100413.html" "R2 Product Page" 3000 || failed=1
-            # ADR-024 R1 gamme perf gate (parity R2). Backed by __gamme_page_cache (Phase 1) +
-            # SSR cache-first read path (Phase 5a). Hot-path target ~5ms (PK lookup),
-            # cold-path/legacy ceiling 3000ms. Top 5 G1 gammes covering bulk of indexed traffic.
-            "$PROBE" "$BASE/pieces/plaquette-de-frein-402.html"        "R1 Gamme (plaquette-de-frein)"  3000 || failed=1
-            "$PROBE" "$BASE/pieces/disque-de-frein-82.html"            "R1 Gamme (disque-de-frein)"     3000 || failed=1
-            "$PROBE" "$BASE/pieces/filtre-a-huile-7.html"              "R1 Gamme (filtre-a-huile)"      3000 || failed=1
-            "$PROBE" "$BASE/pieces/filtre-a-air-8.html"                "R1 Gamme (filtre-a-air)"        3000 || failed=1
-            "$PROBE" "$BASE/pieces/courroie-de-distribution-306.html"  "R1 Gamme (courroie-distribution)" 3000 || failed=1
-            return $failed
-          }
-
-          if run_probes; then exit 0; fi
-
-          # Same transient-restart discipline as "🎭 Run critical E2E tests" below: the
-          # shared PREPROD container can restart MID-STEP (~20s blind window, diagnostic
-          # 2026-06-21) → connection-refused on an otherwise healthy app. Wait until it is
-          # STABLY healthy, then re-run the probes ONCE. If it never re-stabilizes, or the
-          # re-run also fails, it is a genuine failure. No silent fallback: the retry is
-          # announced, bounded to one, and a still-failing probe still blocks.
-          echo "::warning::Response probes failed — checking for a transient PREPROD restart…"
-          need=4; stable=0
-          for _ in $(seq 1 30); do
-            if curl -sf "$BASE/health" > /dev/null 2>&1; then
-              stable=$((stable + 1))
-              if [ "$stable" -ge "$need" ]; then break; fi
-            else
-              stable=0
-            fi
-            sleep 3
-          done
-          if [ "$stable" -lt "$need" ]; then
-            echo "::error::PREPROD did not re-stabilize — real failure, not a transient restart"
-            exit 1
-          fi
-          echo "PREPROD stably healthy again — re-running the response probes once"
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "_(re-run after a transient PREPROD restart)_" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Endpoint | Median (ms) | Budget (ms) | Status | HTTP |" >> $GITHUB_STEP_SUMMARY
-          echo "|----------|-------------|-------------|--------|------|" >> $GITHUB_STEP_SUMMARY
-          run_probes
+        # Contract: wrong status = BLOCKING and NEVER retried. Transport-only failures
+        # (connection refused / reset / DNS / timeout) may be re-run ONCE after PREPROD is
+        # stably healthy. Latency over budget stays a ::warning:: — unchanged, non-blocking.
+        run: scripts/ci/preprod-response-suite.sh http://localhost:3200
 
       - name: ⏱️ API Timing Gate (blocking)
         run: |

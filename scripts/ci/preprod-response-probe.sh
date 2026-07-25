@@ -15,22 +15,27 @@
 # served, but the run could not distinguish 200 from 500. The R1 gamme perf gate
 # (ADR-024) was blind on exactly the surface it exists to protect.
 #
-# CONTRACT
-# --------
-#   status != expected            → FAIL (exit 1), blocking.
-#   network error / timeout / 000 → FAIL (exit 1), blocking.
-#   redirect (301/302/307/308)    → FAIL unless explicitly declared as expected;
-#                                   redirects are NEVER followed (no `-L`), so a
-#                                   canonical URL that silently starts redirecting
-#                                   is caught instead of being measured as its target.
-#   status OK but median > budget → WARNING only (unchanged behaviour, non-blocking).
+# CONTRACT — the two failure exits are DISTINCT on purpose
+# --------------------------------------------------------
+#   0  expected status on every probe (may still warn on latency).
+#   1  WRONG STATUS — a real defect. The caller must NEVER retry this. An endpoint
+#      answering 500 then 200 is broken, and re-running until it looks green is
+#      precisely the silent fallback this gate exists to prevent.
+#   2  TRANSPORT — network error / DNS / connection reset / timeout / http_code 000.
+#      No status was ever observed, so the caller MAY re-run once after the target
+#      is stably healthy again (the ~20s PREPROD container-restart blind window).
+#
+#   redirect (301/302/307/308) → exit 1 unless explicitly declared as expected;
+#                                redirects are NEVER followed (no `-L`), so a
+#                                canonical URL that silently starts redirecting is
+#                                caught instead of being measured as its target.
+#   status OK but median > budget → WARNING only (unchanged, non-blocking).
 #
 # All three probes are status-checked, not just one: an endpoint that flaps
 # 200/500/200 is a real defect and must not average away into a green row.
 #
 # Usage:  preprod-response-probe.sh <url> <label> <budget_ms> [expected_status]
-# Exit:   0 = expected status on all 3 probes (may still warn on latency)
-#         1 = wrong status, network error, or timeout on any probe
+# Exit:   0 = ok · 1 = wrong status (never retry) · 2 = transport (retryable once)
 #
 # Env overrides (used by the behavioural tests):
 #   PROBE_COUNT           number of probes           (default 3)
@@ -62,9 +67,10 @@ for _ in $(seq 1 "$COUNT"); do
 
   if [ "$rc" -ne 0 ] || [ -z "$code" ] || [ "$code" = "000" ]; then
     # curl exit 28 = timeout, 6 = DNS, 7 = connection refused, 56 = recv error.
+    # exit 2 = TRANSPORT: no status was observed, so the caller may retry once.
     echo "❌ $LABEL — $URL: no usable response (curl exit $rc, http_code=${code:-<none>})"
     echo "| $LABEL | — | ${BUDGET_MS} | ❌ no response (curl $rc) | ❌ |" >>"$SUMMARY"
-    exit 1
+    exit 2
   fi
 
   statuses+=("$code")
@@ -79,6 +85,7 @@ for code in "${statuses[@]}"; do
       echo "   redirect not followed on purpose: this URL is canonical and must answer directly."
     fi
     echo "| $LABEL | — | ${BUDGET_MS} | ❌ HTTP ${statuses[*]} (expected $EXPECTED) | ❌ |" >>"$SUMMARY"
+    # exit 1 = WRONG STATUS: a real defect, never retried by the caller.
     exit 1
   fi
 done

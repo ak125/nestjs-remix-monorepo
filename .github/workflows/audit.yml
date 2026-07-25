@@ -93,6 +93,15 @@ jobs:
         # a warning and redirects are never followed.
         run: npm run test:preprod-response-probe
 
+      - name: ⏱️ PREPROD response suite — retry boundary proof (BLOCKING)
+        # The per-probe tests cannot see the ORCHESTRATION defect: an aggregate
+        # "any failure → retry" made a WRONG STATUS retryable, so 200,500,200 on the
+        # first pass followed by a clean second pass ended the job green. These tests
+        # drive the whole suite against a real server and pin the boundary — a wrong
+        # status is never retried (and never waits for stability), a transport failure
+        # may be re-run once, and when both occur the wrong status dominates.
+        run: npm run test:preprod-response-suite
+
       - name: 🗂️ EDITORIAL_AUTHORITY_SINKS registry invariants (BLOCKING)
         # Pins the exact P0 sink set (audit §6): 2 served-tracked + 15 ratchet-blind,
         # each evidence-linked, no rN wildcard. The blind rows justify the registry.
