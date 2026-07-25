@@ -33,15 +33,23 @@ const SUITE_SH = join(SCRIPT_DIR, "preprod-response-suite.sh");
 // wait 12s. The VALUES are not what is under test — the retry BOUNDARY is.
 const FAST_STABILITY = { STABLE_NEEDED: "2", STABLE_SLEEP: "1", STABLE_TRIES: "15" };
 
-/** Starts a stub app. `routes` maps a path to a handler(res, hitIndex). */
+/**
+ * Starts a stub app. `routes` maps a path to a handler(res, hitIndex).
+ *
+ * The routing table is a Map, not a plain object: `req.url` is attacker-controlled,
+ * so `routes[path]` would resolve inherited members (`constructor`, `toString`, …)
+ * and then invoke them — CodeQL js/unvalidated-dynamic-method-call, high severity.
+ * A Map has no prototype chain to walk, so only declared routes can ever dispatch.
+ */
 async function startServer(routes, port = 0) {
+  const table = new Map(Object.entries(routes));
   const hits = new Map();
   const server = createServer((req, res) => {
     const path = req.url.split("?")[0];
     const n = hits.get(path) ?? 0;
     hits.set(path, n + 1);
-    const handler = routes[path];
-    if (!handler) return res.writeHead(404).end();
+    const handler = table.get(path);
+    if (typeof handler !== "function") return res.writeHead(404).end();
     return handler(res, n);
   });
   await new Promise((resolve, reject) => {
