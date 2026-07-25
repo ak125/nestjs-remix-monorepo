@@ -132,6 +132,48 @@ describe("preprod-response-suite.sh — a wrong status is never retried", () => 
     }
   });
 
+  test("exit 1, no retry, when a probe sees 500 → connection reset → 200", async () => {
+    // The residual masking path: the 500 is real, the reset lands mid-sequence.
+    // If the probe reports "transport", the suite re-runs, the endpoint is warm,
+    // and the defect ships green. End-to-end proof that it cannot.
+    const app = await startServer({
+      "/health": ok,
+      "/mixed": (res, hit) => {
+        if (hit === 0) return boom(res);
+        if (hit === 1) return res.socket.destroy();
+        return ok(res);
+      },
+    });
+    try {
+      const spec = specFile(["/health|/health|2000|200", "/mixed|Mixed|2000|200"]);
+      const { code, stdout } = await runSuite(app.port, spec);
+      assert.equal(code, 1, `an observed 500 must dominate a later reset, got ${code}\n${stdout}`);
+      assert.doesNotMatch(stdout, /re-running the response probes/, "must NOT re-run");
+      assert.doesNotMatch(stdout, /transient PREPROD restart/, "must NOT wait for stability");
+    } finally {
+      await app.close();
+    }
+  });
+
+  test("an unexpected probe exit code is a defect, never classified as transport", async () => {
+    // 127 = probe not executable / not found. It proves NOTHING about the
+    // endpoint, so granting it the transport re-run would be a free green.
+    const dir = mkdtempSync(join(tmpdir(), "preprod-suite-badprobe-"));
+    const stub = join(dir, "exit127.sh");
+    writeFileSync(stub, "#!/usr/bin/env bash\nexit 127\n", { mode: 0o755 });
+
+    const app = await startServer({ "/health": ok });
+    try {
+      const spec = specFile(["/health|/health|2000|200"]);
+      const { code, stdout } = await runSuite(app.port, spec, { PROBE_BIN: stub });
+      assert.equal(code, 1, "an unexpected exit code must block, not retry");
+      assert.match(stdout, /exited 127 \(unexpected\)/);
+      assert.doesNotMatch(stdout, /re-running the response probes/);
+    } finally {
+      await app.close();
+    }
+  });
+
   test("every endpoint is still probed after a failure (summary is complete)", async () => {
     const app = await startServer({ "/health": ok, "/boom": boom, "/late": ok });
     try {
@@ -211,6 +253,31 @@ describe("preprod-response-suite.sh — a transport failure may be retried once"
       assert.match(stdout, /still failing after the single re-run/);
     } finally {
       await app?.close();
+    }
+  });
+});
+
+describe("preprod-response-suite.sh — a run that probes nothing must fail", () => {
+  test("exit 1 when PROBE_SPEC_FILE points at a missing file", async () => {
+    const app = await startServer({ "/health": ok });
+    try {
+      const missing = join(mkdtempSync(join(tmpdir(), "preprod-suite-nospec-")), "absent.txt");
+      const { code, stdout } = await runSuite(app.port, missing);
+      assert.equal(code, 1, "a missing spec must fail, not silently probe zero endpoints");
+      assert.match(stdout, /missing or unreadable/);
+    } finally {
+      await app.close();
+    }
+  });
+
+  test("exit 1 when PROBE_SPEC_FILE is empty (or whitespace only)", async () => {
+    const app = await startServer({ "/health": ok });
+    try {
+      const { code, stdout } = await runSuite(app.port, specFile(["", "   "]));
+      assert.equal(code, 1, "an empty spec must fail — a vacuous green proves nothing");
+      assert.match(stdout, /is empty/);
+    } finally {
+      await app.close();
     }
   });
 });

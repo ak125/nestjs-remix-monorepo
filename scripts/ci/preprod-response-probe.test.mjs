@@ -36,6 +36,7 @@ const PROBE_SH = join(SCRIPT_DIR, "preprod-response-probe.sh");
  * probe is status-checked rather than only the first (or an average).
  */
 let flapCount = 0;
+let mixedCount = 0;
 let server;
 let PORT;
 
@@ -61,6 +62,15 @@ before(async () => {
       case "/flap": {
         const code = flapCount++ === 1 ? 500 : 200;
         return res.writeHead(code, { "Content-Type": "text/html" }).end("x");
+      }
+      case "/mixed": {
+        // 500 → connection reset → 200. The reset must NOT erase the 500 already
+        // observed: if the probe exits "transport", the suite retries and a clean
+        // second pass buries a real defect.
+        const hit = mixedCount++;
+        if (hit === 0) return res.writeHead(500).end("err");
+        if (hit === 1) return res.socket.destroy();
+        return res.writeHead(200, { "Content-Type": "text/html" }).end("ok");
       }
       default:
         return res.writeHead(404).end();
@@ -138,6 +148,16 @@ describe("preprod-response-probe.sh — status is asserted, not just latency", (
     const { code, stdout } = await runProbe("/hang", { env: { PROBE_MAX_TIME: "1" } });
     assert.equal(code, 2, "a timeout is transport, not a status defect");
     assert.match(stdout, /no usable response/);
+  });
+
+  test("FAILS with exit 1 when a 500 is followed by a transport error (status wins)", async () => {
+    // Regression: the probe used to `exit 2` the instant a transport error hit,
+    // discarding the 500 already collected. The suite then read "transport-only",
+    // retried, got a clean pass, and the real defect shipped green.
+    mixedCount = 0;
+    const { code, stdout } = await runProbe("/mixed");
+    assert.equal(code, 1, "a status already observed must outrank a later transport error");
+    assert.match(stdout, /500/);
   });
 
   test("FAILS when only ONE of the three probes is bad (no averaging away a flap)", async () => {

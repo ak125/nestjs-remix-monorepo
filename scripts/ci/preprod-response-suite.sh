@@ -22,6 +22,10 @@
 #     STABLY healthy again — the ~20s PREPROD container-restart blind window
 #     (diagnostic 2026-06-21). Same discipline as the "🎭 Run critical E2E tests"
 #     job: announced, bounded to one, and a still-failing re-run still blocks.
+#   * ONLY exit 2 is retryable. Any other unexpected probe exit code (127, 126,
+#     signal death) proved nothing about the endpoint and is treated as a defect.
+#   * A run that probes NOTHING (unreadable/empty spec) FAILS. A vacuous green is
+#     the worst outcome a gate can produce.
 #
 # Usage:  preprod-response-suite.sh [base_url]
 # Exit:   0 = all endpoints answered their expected status
@@ -65,8 +69,19 @@ read -r -d '' DEFAULT_SPEC <<'SPEC' || true
 /pieces/courroie-de-distribution-306.html|R1 Gamme (courroie-distribution)|3000|200
 SPEC
 
+# An override that cannot be read must FAIL, never fall through to zero probes:
+# `cat` on a missing path printed to stderr and left SPEC empty, so the suite
+# probed nothing and exited 0 — a green run proving strictly nothing.
 if [ -n "${PROBE_SPEC_FILE:-}" ]; then
+  if [ ! -r "$PROBE_SPEC_FILE" ]; then
+    echo "::error::PROBE_SPEC_FILE=$PROBE_SPEC_FILE is missing or unreadable — refusing to run zero probes."
+    exit 1
+  fi
   SPEC=$(cat "$PROBE_SPEC_FILE")
+  if [ -z "${SPEC//[[:space:]]/}" ]; then
+    echo "::error::PROBE_SPEC_FILE=$PROBE_SPEC_FILE is empty — refusing to run zero probes."
+    exit 1
+  fi
 else
   SPEC="$DEFAULT_SPEC"
 fi
@@ -80,17 +95,30 @@ summary_header() {
 # A wrong status DOMINATES: if both kinds happen, the verdict is 1, never 2,
 # so a co-occurring transport blip can never make a real defect retryable.
 run_probes() {
-  local status_fail=0 transport_fail=0 rc path label budget expected
+  local status_fail=0 transport_fail=0 probes_run=0 rc path label budget expected
   while IFS='|' read -r path label budget expected; do
     [ -z "${path:-}" ] && continue
+    probes_run=$((probes_run + 1))
     "$PROBE" "${BASE}${path}" "$label" "$budget" "${expected:-200}"
     rc=$?
     case "$rc" in
       0) ;;
       1) status_fail=1 ;;
-      *) transport_fail=1 ;;
+      2) transport_fail=1 ;;
+      # ONLY 2 is retryable. A probe that dies otherwise (127 not-executable,
+      # 126 permission, 2xx signal death) has proven nothing about the endpoint —
+      # calling it "transport" would grant it a free re-run it never earned.
+      *)
+        echo "::error::probe for '$label' exited $rc (unexpected) — treated as a defect, not a retryable transport failure"
+        status_fail=1
+        ;;
     esac
   done <<<"$SPEC"
+
+  if [ "$probes_run" -eq 0 ]; then
+    echo "::error::no endpoint was probed — the spec matched nothing. Refusing a vacuous pass."
+    return 1
+  fi
 
   [ "$status_fail" -eq 1 ] && return 1
   [ "$transport_fail" -eq 1 ] && return 2
