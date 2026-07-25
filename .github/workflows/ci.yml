@@ -1006,46 +1006,21 @@ jobs:
             echo '```'
           } | tee -a "$GITHUB_STEP_SUMMARY"
 
-      - name: ⏱️ Response Time Baseline
-        run: |
-          BASE="http://localhost:3200"
-          echo "## ⏱️ PREPROD Response Times" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Endpoint | Median (ms) | Budget (ms) | Status |" >> $GITHUB_STEP_SUMMARY
-          echo "|----------|-------------|-------------|--------|" >> $GITHUB_STEP_SUMMARY
-
-          check_timing() {
-            local url="$1"
-            local label="$2"
-            local budget_ms="$3"
-
-            local t1=$(curl -s -o /dev/null -w "%{time_total}" "$url" --max-time 30 | awk '{printf "%.0f", $1 * 1000}')
-            local t2=$(curl -s -o /dev/null -w "%{time_total}" "$url" --max-time 30 | awk '{printf "%.0f", $1 * 1000}')
-            local t3=$(curl -s -o /dev/null -w "%{time_total}" "$url" --max-time 30 | awk '{printf "%.0f", $1 * 1000}')
-
-            local median=$(echo -e "$t1\n$t2\n$t3" | sort -n | sed -n '2p')
-
-            if [ "$median" -gt "$budget_ms" ]; then
-              echo "| $label | ${median} | ${budget_ms} | ⚠️ SLOW |" >> $GITHUB_STEP_SUMMARY
-              echo "::warning::$label response time (${median}ms) exceeds budget (${budget_ms}ms)"
-            else
-              echo "| $label | ${median} | ${budget_ms} | ✅ |" >> $GITHUB_STEP_SUMMARY
-            fi
-          }
-
-          check_timing "$BASE/health" "/health" 200
-          check_timing "$BASE/api/catalog/families" "/api/catalog/families" 1000
-          check_timing "$BASE/" "Homepage" 2000
-          check_timing "$BASE/pieces/catalogue" "/pieces/catalogue" 2000
-          check_timing "$BASE/pieces/plaquette-de-frein-402/renault-140/megane-iii-140049/1-5-dci-100413.html" "R2 Product Page" 3000
-          # ADR-024 R1 gamme perf gate (parity R2). Backed by __gamme_page_cache (Phase 1) +
-          # SSR cache-first read path (Phase 5a). Hot-path target ~5ms (PK lookup),
-          # cold-path/legacy ceiling 3000ms. Top 5 G1 gammes covering bulk of indexed traffic.
-          check_timing "$BASE/pieces/plaquette-de-frein-402.html"        "R1 Gamme (plaquette-de-frein)"  3000
-          check_timing "$BASE/pieces/disque-de-frein-82.html"            "R1 Gamme (disque-de-frein)"     3000
-          check_timing "$BASE/pieces/filtre-a-huile-7.html"              "R1 Gamme (filtre-a-huile)"      3000
-          check_timing "$BASE/pieces/filtre-a-air-8.html"                "R1 Gamme (filtre-a-air)"        3000
-          check_timing "$BASE/pieces/courroie-de-distribution-306.html"  "R1 Gamme (courroie-distribution)" 3000
+      - name: ⏱️ Response Time Baseline (status-asserting, BLOCKING on wrong status)
+        # The inline check_timing this replaces measured `%{time_total}` and asserted
+        # NOTHING: a page answering 500 in 20ms scored a green ✅ row. Found while
+        # verifying PR #1297 on PREPROD — this step does probe the R1 gamme pages, so
+        # it looked like proof they were served, while being unable to tell 200 from
+        # 500. Both the per-endpoint probe AND the suite that decides the verdict now
+        # live in scripts/ci/ so they are unit-tested (npm run test:preprod-response-probe
+        # + test:preprod-response-suite, RED→GREEN) instead of shipping untested inline
+        # YAML — same lesson as the PROD SSR gate (incident 2026-07-19). Keeping the retry
+        # branch in YAML is what let an early revision make a WRONG STATUS retryable.
+        #
+        # Contract: wrong status = BLOCKING and NEVER retried. Transport-only failures
+        # (connection refused / reset / DNS / timeout) may be re-run ONCE after PREPROD is
+        # stably healthy. Latency over budget stays a ::warning:: — unchanged, non-blocking.
+        run: scripts/ci/preprod-response-suite.sh http://localhost:3200
 
       - name: ⏱️ API Timing Gate (blocking)
         run: |
