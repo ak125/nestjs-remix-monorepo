@@ -437,7 +437,6 @@ export default function KeywordPlannerPage() {
 
   // ── Centralized handlers (shared between ActionBar and row actions) ──
   const revalidator = useRevalidator();
-  const [isGenContent, setIsGenContent] = useState(false);
   const [isGenImages, setIsGenImages] = useState(false);
   const [activePgId, setActivePgId] = useState<number | null>(null);
 
@@ -449,34 +448,6 @@ export default function KeywordPlannerPage() {
 
   function buildGammeUrl(alias: string, pgId: number): string {
     return `/pieces/${alias}-${pgId}.html`;
-  }
-
-  async function handleGenerateContent(pgId: number, alias: string) {
-    if (isGenContent) return;
-    setIsGenContent(true);
-    setActivePgId(pgId);
-    try {
-      const resp = await fetch("/api/admin/keyword-planner/generate-from-rag", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pg_id: pgId, pg_alias: alias }),
-      });
-      const data = await resp.json();
-      if (data.status === "written") {
-        toast.success(
-          `Contenu généré : ${data.charCount} chars, ${data.h2Count} H2 (${data.quality})`,
-        );
-        revalidator.revalidate();
-      } else if (data.error) {
-        toast.error(data.error);
-      }
-    } catch {
-      toast.error("Erreur réseau");
-    } finally {
-      setIsGenContent(false);
-      setActivePgId(null);
-    }
   }
 
   async function handleGenerateImages(pgId: number, alias: string) {
@@ -630,10 +601,6 @@ export default function KeywordPlannerPage() {
       <div className="mt-6">
         <GammeActionBar
           gamme={selectedGamme}
-          onGenerateContent={() =>
-            selectedGamme &&
-            handleGenerateContent(selectedGamme.pg_id, selectedGamme.pg_alias)
-          }
           onGenerateImages={() =>
             selectedGamme &&
             handleGenerateImages(selectedGamme.pg_id, selectedGamme.pg_alias)
@@ -643,7 +610,6 @@ export default function KeywordPlannerPage() {
               ? buildGammeUrl(selectedGamme.pg_alias, selectedGamme.pg_id)
               : null
           }
-          isGeneratingContent={isGenContent}
           isGeneratingImages={isGenImages}
           contentResult={contentResult}
         />
@@ -1038,10 +1004,8 @@ export default function KeywordPlannerPage() {
       {/* ── FAMILLES — Vue par systeme avec recommandations ── */}
       <FamilyOverview
         gammes={gammes}
-        onGenContent={handleGenerateContent}
         onGenImages={handleGenerateImages}
         buildUrl={buildGammeUrl}
-        isGenContent={isGenContent}
         isGenImages={isGenImages}
         activePgId={activePgId}
       />
@@ -1073,18 +1037,14 @@ interface FamilyStats {
 
 function FamilyOverview({
   gammes,
-  onGenContent,
   onGenImages,
   buildUrl,
-  isGenContent,
   isGenImages,
   activePgId,
 }: {
   gammes: GammeRow[];
-  onGenContent: (pgId: number, alias: string) => void;
   onGenImages: (pgId: number, alias: string) => void;
   buildUrl: (alias: string, pgId: number) => string;
-  isGenContent: boolean;
   isGenImages: boolean;
   activePgId: number | null;
 }) {
@@ -1510,10 +1470,8 @@ function FamilyOverview({
                         <GammeAuditRow
                           key={g.pg_id}
                           g={g}
-                          onGenContent={onGenContent}
                           onGenImages={onGenImages}
                           buildUrl={buildUrl}
-                          isGenContent={isGenContent && activePgId === g.pg_id}
                           isGenImages={isGenImages && activePgId === g.pg_id}
                         />
                       ))}
@@ -1908,17 +1866,13 @@ interface AuditData {
 
 function GammeAuditRow({
   g,
-  onGenContent,
   onGenImages,
   buildUrl,
-  isGenContent,
   isGenImages,
 }: {
   g: GammeRow;
-  onGenContent: (pgId: number, alias: string) => void;
   onGenImages: (pgId: number, alias: string) => void;
   buildUrl: (alias: string, pgId: number) => string;
-  isGenContent: boolean;
   isGenImages: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
@@ -2018,12 +1972,6 @@ function GammeAuditRow({
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onClick={() => onGenContent(g.pg_id, g.pg_alias)}
-                disabled={isGenContent}
-              >
-                <Sparkles className="h-3 w-3 mr-2" /> Générer contenu
-              </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => onGenImages(g.pg_id, g.pg_alias)}
                 disabled={isGenImages}

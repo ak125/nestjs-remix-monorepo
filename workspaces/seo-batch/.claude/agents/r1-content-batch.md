@@ -36,15 +36,19 @@ aucune page R1 live.**
 - **Successeur** : skill **`seo-content-loop`** (boucle gouvernée `RAW → WIKI → consumer`, NO-RAG).
   La vérité contenu vient du **WIKI**, **jamais** du RAG.
 
-> **Retrait PARTIEL — deux chantiers plus larges, hors périmètre de cet agent, laissés à l'owner :**
-> 1. Un **second producteur RAG→R1** existe en code backend runtime :
->    `backend/src/modules/admin/services/r1-enricher.service.ts` (upsert `__seo_r1_gamme_slots`
->    depuis `rag/knowledge/gammes/*.md` — miroir littéral de `buying-guide-enricher.service.ts`).
->    Candidat retrait ADR-031/046 aussi, mais **runtime backend** = slice distincte (Tranche B).
->    Le helper partagé `PurchaseGuideDataService.upsertR1Slots()` écrit aussi la même table.
-> 2. Le **mapper de projection WIKI→R1** est **absent** (seul `projection-r3` existe, dark).
+> **État de la fermeture RAG→R1 :**
+> 1. ✅ **CLOS** — le second producteur RAG→R1 backend runtime
+>    (`r1-enricher.service.ts`, upsert `__seo_r1_gamme_slots` depuis
+>    `rag/knowledge/gammes/*.md`) a été **supprimé** (slice Tranche B backend), avec
+>    `r1-content-from-rag.service.ts` et les endpoints `*-generate-from-rag`. L'entrée
+>    R1_ROUTER de l'EXECUTION_REGISTRY est retirée : le dispatch R1 **fail-closed**.
+>    Reste sans appelant le helper `PurchaseGuideDataService.upsertR1Slots()` (code
+>    orphelin, aucun producteur ne l'invoque).
+> 2. ❌ **OUVERT** — le **mapper de projection WIKI→R1** est toujours **absent**
+>    (seul `projection-r3` existe, dark).
 >
-> Donc neutraliser cet agent seul **ne ferme pas** la violation RAG→R1 (le backend l'écrit encore).
+> Donc la violation RAG→R1 est fermée côté **écriture**, mais aucun producteur WIKI→R1
+> ne la remplace encore.
 > Le fichier est **conservé** (non supprimé) pour ne pas casser les références (`agentic-planner.md`,
 > `execution-registry.constants.ts`, `agentic.constants.ts`) : elles pointent vers un agent inerte
 > qui **STOP + redirige**.

@@ -4,7 +4,7 @@
  * Remplace les 5 copies de readRagFromDisk/parseRagData dispersees dans :
  * - r1-image-prompt.service.ts
  * - r3-image-prompt.service.ts
- * - r1-enricher.service.ts
+ * - r1-enricher.service.ts (supprime 2026-07 — producteur RAG, ADR-031/046)
  * - r1-related-resources.service.ts
  * - vehicle-rag-generator.service.ts
  *

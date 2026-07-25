@@ -3,6 +3,14 @@
 Backfill R1 gatekeeper verdict for __seo_r1_gamme_slots rows where
 r1s_gatekeeper_score IS NULL.
 
+INOPÉRANT depuis 2026-07 — NE PAS UTILISER.
+R1EnricherService (producteur RAG→R1) a été retiré : le RAG n'a aucune
+autorité d'écriture contenu (ADR-031/046). L'entrée R1_ROUTER de
+l'EXECUTION_REGISTRY n'existe plus, donc le POST ci-dessous fail-closed
+("No registry entry for role" → blocked_no_write). Les lignes existantes
+restent servies en lecture. Ré-écriture R1 = producteur WIKI→R1 à construire.
+Conservé comme trace de la procédure de backfill, pas comme outil courant.
+
 Symmetric to scripts/seo/backfill-r6-gatekeeper.py. Where R6 backfill went
 through the buying-guide enrich endpoint, R1 backfill goes through the
 generic pipeline/execute endpoint with roleId=R1_ROUTER.
