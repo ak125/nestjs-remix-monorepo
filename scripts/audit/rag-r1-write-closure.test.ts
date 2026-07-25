@@ -2,7 +2,10 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
-import { detectTsSinks } from "./check-served-content-write-sinks-ratchet.ts";
+import {
+  detectTsSinks,
+  scanSinks,
+} from "./check-served-content-write-sinks-ratchet.ts";
 
 /**
  * Tranche-B R1 — RAG→R1 write-closure guard (structural, not "secured").
@@ -17,7 +20,15 @@ import { detectTsSinks } from "./check-served-content-write-sinks-ratchet.ts";
  * R1-scoped on purpose: __seo_r1_gamme_slots is a pure-R1 table, and the *-from-rag routes
  * are the R1 corpus writers — so this never false-trips on the remaining R2/R3/R8 RAG debt
  * (that stays warning-frozen in seo-no-rag-as-content-source.yml until its own tranche).
- * Reuses the canonical detector detectTsSinks (extend, don't invent a parallel scanner).
+ * Reuses the canonical detectors detectTsSinks / scanSinks (extend, don't invent a parallel
+ * scanner).
+ *
+ * Third assertion (owner decision 2026-07-25): the table must have ZERO active TypeScript
+ * write sink at all — not merely zero RAG-sourced ones. The removal of R1EnricherService left
+ * PurchaseGuideDataService.upsertR1Slots() callerless: an orphan writer is exactly the latent
+ * re-entry point a structural closure exists to eliminate. This assertion holds until a
+ * canonical (WIKI-sourced) writer is approved; the SQL migration that CREATEs the table is
+ * historical DDL, not a write path, so it is excluded by mechanism.
  */
 
 const REPO_ROOT = process.cwd();
@@ -67,5 +78,23 @@ test("no generate-from-rag / batch-generate-from-rag route writes R1 content (__
     offenders,
     [],
     `RAG→content endpoint(s) still present — must be removed, not gated: ${offenders.join(", ")}`,
+  );
+});
+
+test("zero active TypeScript write sink targets __seo_r1_gamme_slots (no canonical writer approved)", () => {
+  const offenders = scanSinks(REPO_ROOT)
+    .filter(
+      (s) =>
+        s.mechanism !== "sql_migration" &&
+        s.id.endsWith("::__seo_r1_gamme_slots"),
+    )
+    .map((s) => `${s.mechanism}::${s.id}`);
+
+  assert.deepEqual(
+    offenders,
+    [],
+    `__seo_r1_gamme_slots has TypeScript writer(s) again. No canonical (WIKI-sourced) writer is approved — ` +
+      `a writer here is either a re-introduced RAG producer or a callerless orphan. Remove it, or land the ` +
+      `approved writer and update this guard in the same PR: ${offenders.join(", ")}`,
   );
 });

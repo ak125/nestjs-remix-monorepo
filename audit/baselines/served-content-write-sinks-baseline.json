@@ -1,11 +1,11 @@
 {
   "schemaVersion": "v1",
-  "createdAt": "2026-07-18",
+  "createdAt": "2026-07-25",
   "createdOnCommit": null,
   "sourcePr": null,
   "mode": "block-new-only",
   "summary": {
-    "direct_literal": 10,
+    "direct_literal": 9,
     "const_map": 7,
     "rpc_publisher": 1,
     "sql_migration": 44
@@ -65,11 +65,6 @@
       "mechanism": "direct_literal",
       "id": "backend/src/modules/admin/services/r3-image-prompt.service.ts::__seo_r3_image_prompts",
       "count": 2
-    },
-    {
-      "mechanism": "direct_literal",
-      "id": "backend/src/modules/gamme-rest/services/purchase-guide-data.service.ts::__seo_r1_gamme_slots",
-      "count": 1
     },
     {
       "mechanism": "direct_literal",

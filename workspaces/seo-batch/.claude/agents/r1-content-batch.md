@@ -42,8 +42,9 @@ aucune page R1 live.**
 >    `rag/knowledge/gammes/*.md`) a été **supprimé** (slice Tranche B backend), avec
 >    `r1-content-from-rag.service.ts` et les endpoints `*-generate-from-rag`. L'entrée
 >    R1_ROUTER de l'EXECUTION_REGISTRY est retirée : le dispatch R1 **fail-closed**.
->    Reste sans appelant le helper `PurchaseGuideDataService.upsertR1Slots()` (code
->    orphelin, aucun producteur ne l'invoque).
+>    Le helper devenu orphelin `PurchaseGuideDataService.upsertR1Slots()` est **supprimé**
+>    lui aussi : `__seo_r1_gamme_slots` n'a plus **aucun** writer TypeScript actif, et un
+>    guard le verrouille tant qu'aucun writer canonique (sourcé WIKI) n'est approuvé.
 > 2. ❌ **OUVERT** — le **mapper de projection WIKI→R1** est toujours **absent**
 >    (seul `projection-r3` existe, dark).
 >
