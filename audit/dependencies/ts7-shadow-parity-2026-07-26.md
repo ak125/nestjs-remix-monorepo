@@ -87,21 +87,57 @@ measurement above shows both land on a working resolution for these 12 projects,
 does **not** prove the two derived resolutions are identical. `--traceResolution` is
 the instrument that settles that.
 
-### Not cleared — required before any GO
+### VERDICT: NO-GO for the simple removal (matrix run 2026-07-27)
 
-Comparing backend emit under both configs: identical file count (4161), but some
-`.d.ts` differ in the module specifiers TS writes inside inferred type positions —
-it picks a shorter specifier resolving to the same module, e.g.
+The first half of the matrix has now been run on `backend`, removing **both** lines
+together. Result: **NO-GO**, on the `resolution differs` clause of the decision rule.
+
+**Emit — passes.** Identical counts (1387 each of `.js`, `.d.ts`, `.js.map`; no
+`.d.ts.map`), and aggregate SHA-256 per class:
+
+| class | before | after | |
+|---|---|---|---|
+| `.js` | `3be33871…` | `3be33871…` | **IDENTICAL** |
+| `.js.map` | `17a0005b…` | `17a0005b…` | **IDENTICAL** |
+| `.d.ts` | `3cd78d58…` | `0b127b7a…` | differs — 15 / 1387 files |
+
+All 15 `.d.ts` diffs are confined to `import("…")` specifier text (0 files with a
+differing line that does not contain `import(`), e.g. a shorter specifier resolving via
+a barrel:
 
 ```
 - import("../../gamme-rest/services/buying-guide-data.service").GammeBuyingGuideV1
 + import("../../gamme-rest/services").GammeBuyingGuideV1
 ```
 
-**Whether any `.js` differs was not measured.** Until the matrix below is run, this is
-a lead, not a green light.
+**Resolution — fails.** `--traceResolution`, normalised and compared on outcomes only
+(`Module name 'X' was successfully resolved to 'Y'`, probe-path noise discarded):
 
-#### Validation matrix
+- `packages/registry`: **same outcomes** (228 = 228). Clean.
+- `backend`: **outcomes differ** — 6720 → 6812 unique resolutions; **27 distinct
+  specifiers resolve to a different target**, 2 disappear, 81 are new.
+- Resolutions landing on **ESM declarations (`.d.mts`) go from 1 to 7** on a backend
+  that emits CommonJS `require()`: `helmet`, `openai`, `@anthropic-ai/sdk`, `cookie-es`,
+  `js-yaml`, …
+- Flips in both directions: `engine.io-parser` moves `build/esm/*.d.ts` →
+  `build/cjs/*.d.ts`; `gaxios` gains `build/esm/*` alongside its `build/cjs/*`.
+
+**Why `.js` identity was never sufficient evidence.** Types are erased at emit, so the
+emitted JavaScript is byte-identical *even though the type-checking basis moved under
+it*. The runtime shipped today is unaffected; what changed is which declaration files
+27+81 specifiers are checked against — including six new CJS→ESM declaration surfaces.
+That is not "inert", so it fails the bar this removal was allowed under.
+
+**Consequence.** Deleting the line trades a loud, correct TS7 error for a silent
+resolution change. The right fix is an explicit, supported `moduleResolution` — i.e.
+the real `nodenext` migration — not omission. The 4–7 day estimate stands; the shortcut
+does not exist.
+
+Remaining matrix items (`tsc-alias`, `node dist/main` boot, Jest DI, the 29 dynamic
+`import()` sites, Docker + PREPROD smoke) were **not run**: the decision rule already
+fires NO-GO on resolution difference, and `.js` identity means they could not overturn it.
+
+#### Validation matrix (as specified)
 
 Both lines (`moduleResolution` **and** `ignoreDeprecations`) must be removed together.
 
@@ -182,10 +218,16 @@ across all 12 projects on both compilers), so including them costs nothing.
 
 ## Next actions (owner-gated)
 
-1. Run the validation matrix above in a **separate PR**. This one stays observational.
-2. If the decision rule says GO, remove both lines there — it unblocks 8 projects and
-   pays a TS6 deprecation.
-3. Re-run `npm run audit:ts7-shadow`; expect the 8 to move `BLOCKED_CONFIG` → `PARITY`.
+1. **Do not remove the two lines.** The matrix returned NO-GO (see Finding 1): `.js` is
+   byte-identical but backend module resolution changes on 27 specifiers, with 6 new
+   ESM declaration surfaces on a CommonJS backend.
+2. The unblock is the real migration to an explicit supported `moduleResolution`
+   (`nodenext`, with `module: nodenext`), scoped per project, smallest blast radius
+   first (`seo-url-contract` 3 files → `domain-commerce` 6 → … → `backend` 1389).
+   `packages/registry` is already clean at the resolution level, which de-risks the
+   consumer previously assumed hardest.
+3. Re-run `npm run audit:ts7-shadow` after each step; expect projects to move
+   `BLOCKED_CONFIG` → `PARITY`.
 4. Leave TS7 out-of-band until `typescript-eslint` opens its peer range.
 
 Editing `packages/typescript-config/node-cjs-legacy.json` invalidates every turbo cache
